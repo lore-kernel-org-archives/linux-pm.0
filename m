@@ -5,32 +5,32 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2B4C433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC045C43381
 	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F311323332
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7812C23139
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726329AbgLXGJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726611AbgLXGJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 24 Dec 2020 01:09:45 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:57724 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726342AbgLXGJo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:44 -0500
-X-UUID: a09ed3fc8cb04ef49081ba3c0055ed88-20201224
-X-UUID: a09ed3fc8cb04ef49081ba3c0055ed88-20201224
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+Received: from mailgw02.mediatek.com ([210.61.82.184]:59071 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1725446AbgLXGJn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:43 -0500
+X-UUID: 92ee19a3d68f49529c6149f347680a1d-20201224
+X-UUID: 92ee19a3d68f49529c6149f347680a1d-20201224
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1246145896; Thu, 24 Dec 2020 14:08:58 +0800
+        with ESMTP id 2127767031; Thu, 24 Dec 2020 14:08:58 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Thu, 24 Dec 2020 14:08:57 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 24 Dec 2020 14:08:57 +0800
+ Transport; Thu, 24 Dec 2020 14:08:58 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -46,10 +46,11 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <devicetree@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH V6 02/13] soc: mediatek: add header for mediatek SIP interface
-Date:   Thu, 24 Dec 2020 14:08:43 +0800
-Message-ID: <1608790134-27425-3-git-send-email-henryc.chen@mediatek.com>
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V6 06/13] dt-bindings: interconnect: add MT8183 interconnect dt-bindings
+Date:   Thu, 24 Dec 2020 14:08:47 +0800
+Message-ID: <1608790134-27425-7-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
 References: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
@@ -60,31 +61,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Arvin Wang <arvin.wang@mediatek.com>
+Add interconnect provider dt-bindings for MT8183.
 
-Add a header to collect SIPs and add one SIP call to initialize power
-management hardware for the SIP interface defined to access the SPM
-handling vcore voltage and ddr rate changes on mt8183 (and most likely
-later socs).
-
-Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
+Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/dt-bindings/interconnect/mtk,mt8183-emi.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
 
-diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
-index 082398e..079bbcb 100644
---- a/include/linux/soc/mediatek/mtk_sip_svc.h
-+++ b/include/linux/soc/mediatek/mtk_sip_svc.h
-@@ -22,4 +22,8 @@
- 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
- 			   ARM_SMCCC_OWNER_SIP, fn_id)
- 
-+/* VCOREFS */
-+#define MTK_SIP_VCOREFS_CONTROL \
-+	MTK_SIP_SMC_CMD(0x506)
+diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
+new file mode 100644
+index 0000000..f921961
+--- /dev/null
++++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0
++ *
++ * Copyright (c) 2020 MediaTek Inc.
++ */
 +
- #endif
++#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
++#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
++
++#define MT8183_SLAVE_DDR_EMI			0
++#define MT8183_MASTER_MCUSYS			1
++#define MT8183_MASTER_GPU			2
++#define MT8183_MASTER_MMSYS			3
++#define MT8183_MASTER_MM_VPU			4
++#define MT8183_MASTER_MM_DISP			5
++#define MT8183_MASTER_MM_VDEC			6
++#define MT8183_MASTER_MM_VENC			7
++#define MT8183_MASTER_MM_CAM			8
++#define MT8183_MASTER_MM_IMG			9
++#define MT8183_MASTER_MM_MDP			10
++
++#endif
 -- 
 1.9.1
 
