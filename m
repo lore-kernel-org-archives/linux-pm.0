@@ -2,105 +2,89 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CA4CC433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Dec 2020 15:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2B4C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B8B5F233EA
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Dec 2020 15:33:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F311323332
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726885AbgLWPdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Dec 2020 10:33:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44690 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726558AbgLWPdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Dec 2020 10:33:10 -0500
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7F7BEC061248
-        for <linux-pm@vger.kernel.org>; Wed, 23 Dec 2020 07:32:11 -0800 (PST)
-Received: by mail-wr1-x430.google.com with SMTP id y17so18965973wrr.10
-        for <linux-pm@vger.kernel.org>; Wed, 23 Dec 2020 07:32:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=APOQ9kG45mY5w5kh29jxRw045BvRYkfndMw6OXmAPYc=;
-        b=B7l/cLmNW5nFe2LP/8tSzO4OXAcAES5ZGgOzMbHI1eF8hSt+p5U9cD5Cf05WeZbj0N
-         /CBzSxj3QVBJG2RElkrc6CJzWyxLQKs8PtlFquOMuM+lJmbItcyK08CUzogQdk7NZ6v5
-         LhFuQq/IDWG0UOzqrAoPgKzSGOkY1hXbN8VYiZX9OFRGaftivZfkXZlRJkwEny5k5c+s
-         o5hT0r5OI7JvKRPzNNFLM5lLHZpoFbhA9DIEhqpv6TGwWmt+ULL/6cdvN77FYEt9SqdX
-         q6O9wB8Tx+3lqVCwVYOEKOKL+SuBMkkMMo0DqQZWl/xVxZlidjlFY9Io+SS7N55sG8K3
-         Pmlg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=APOQ9kG45mY5w5kh29jxRw045BvRYkfndMw6OXmAPYc=;
-        b=L1lqiC0leZZyDLKqwllC6ejuMIarhz76A0jeAQ76Oz5KfwZeN0lK38xLYcVmSObNx/
-         m4YMOAaEKKWhpUF6D8j1we6nkNCf0IHr+3egoa2S6AdBJprK9jUcDsfqk+Nt2iMZpbwW
-         l+SwzcWZ3nCstkUS8jaN1TSto19ywobx/e8gcs5CpglkmMI6xxdvExXTeOlN9kjgWPuO
-         Ar/3GDApg70fxr32Yp65+zkuLSF1bS+zA5TSuaTDjWK4DbWaItG54630/PuSExWYIiL8
-         oBUaKipBC533maCmlqa2uU/EHvPGmDpjdo9CVMc3YaiZSB6okXudDMsV+6rKs6PVJVkC
-         Tu+w==
-X-Gm-Message-State: AOAM53302kPWtwtD5zXHfRA68vitU4YZdXj3z+TsL3EBvE6/49wjNg0Z
-        WapQ/aEsT2FTuQftMJ3E6YAMEw==
-X-Google-Smtp-Source: ABdhPJxjESmTfREO+w1uHhDdJWsQX1lnseZsrrxnSGZa25+eqeg+7LT6wpaBO3gpqmgsTPqBe2MEbQ==
-X-Received: by 2002:a5d:558a:: with SMTP id i10mr30371323wrv.363.1608737530253;
-        Wed, 23 Dec 2020 07:32:10 -0800 (PST)
-Received: from dell ([91.110.221.175])
-        by smtp.gmail.com with ESMTPSA id h16sm135166wmb.41.2020.12.23.07.32.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Dec 2020 07:32:09 -0800 (PST)
-Date:   Wed, 23 Dec 2020 15:32:07 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Timon Baetz <timon.baetz@protonmail.com>
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
+        id S1726329AbgLXGJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Dec 2020 01:09:45 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:57724 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726342AbgLXGJo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:44 -0500
+X-UUID: a09ed3fc8cb04ef49081ba3c0055ed88-20201224
+X-UUID: a09ed3fc8cb04ef49081ba3c0055ed88-20201224
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <henryc.chen@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1246145896; Thu, 24 Dec 2020 14:08:58 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 24 Dec 2020 14:08:57 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 24 Dec 2020 14:08:57 +0800
+From:   Henry Chen <henryc.chen@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH v4 3/7] mfd: max8997: Add of_compatible to extcon and
- charger mfd_cell
-Message-ID: <20201223153207.GA300650@dell>
-References: <20201223134221.804943-1-timon.baetz@protonmail.com>
- <20201223134221.804943-3-timon.baetz@protonmail.com>
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>,
+        Mark Brown <broonie@kernel.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Fan Chen <fan.chen@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH V6 02/13] soc: mediatek: add header for mediatek SIP interface
+Date:   Thu, 24 Dec 2020 14:08:43 +0800
+Message-ID: <1608790134-27425-3-git-send-email-henryc.chen@mediatek.com>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
+References: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20201223134221.804943-3-timon.baetz@protonmail.com>
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 23 Dec 2020, Timon Baetz wrote:
+From: Arvin Wang <arvin.wang@mediatek.com>
 
-> Add of_compatible ("maxim,max8997-muic") to the mfd_cell to have a
-> of_node set in the extcon driver.
-> 
-> Add of_compatible ("maxim,max8997-battery") to the mfd_cell to configure
-> the charger driver.
-> 
-> Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
-> ---
->  drivers/mfd/max8997.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Add a header to collect SIPs and add one SIP call to initialize power
+management hardware for the SIP interface defined to access the SPM
+handling vcore voltage and ddr rate changes on mt8183 (and most likely
+later socs).
 
-Why have you resent this?  It's already applied.
+Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
+---
+ include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+index 082398e..079bbcb 100644
+--- a/include/linux/soc/mediatek/mtk_sip_svc.h
++++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+@@ -22,4 +22,8 @@
+ 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+ 			   ARM_SMCCC_OWNER_SIP, fn_id)
+ 
++/* VCOREFS */
++#define MTK_SIP_VCOREFS_CONTROL \
++	MTK_SIP_SMC_CMD(0x506)
++
+ #endif
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+1.9.1
+
