@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC045C43381
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCB03C4332D
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7812C23139
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 71BFB2253D
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726611AbgLXGJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Dec 2020 01:09:45 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:59071 "EHLO
+        id S1726284AbgLXGJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Dec 2020 01:09:42 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:59098 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725446AbgLXGJn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:43 -0500
-X-UUID: 92ee19a3d68f49529c6149f347680a1d-20201224
-X-UUID: 92ee19a3d68f49529c6149f347680a1d-20201224
+        with ESMTP id S1725811AbgLXGJm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:42 -0500
+X-UUID: daa7748e44764aafa99fc174bc7257a7-20201224
+X-UUID: daa7748e44764aafa99fc174bc7257a7-20201224
 Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 2127767031; Thu, 24 Dec 2020 14:08:58 +0800
+        with ESMTP id 1238430578; Thu, 24 Dec 2020 14:08:58 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
  mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 24 Dec 2020 14:08:57 +0800
+ 15.0.1497.2; Thu, 24 Dec 2020 14:08:58 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
  Transport; Thu, 24 Dec 2020 14:08:58 +0800
@@ -48,9 +48,9 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V6 06/13] dt-bindings: interconnect: add MT8183 interconnect dt-bindings
-Date:   Thu, 24 Dec 2020 14:08:47 +0800
-Message-ID: <1608790134-27425-7-git-send-email-henryc.chen@mediatek.com>
+Subject: [PATCH V6 09/13] arm64: dts: mt8183: add dvfsrc related nodes
+Date:   Thu, 24 Dec 2020 14:08:50 +0800
+Message-ID: <1608790134-27425-10-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
 References: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
@@ -61,41 +61,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interconnect provider dt-bindings for MT8183.
+Add DDR EMI provider dictating dram interconnect bus performance found on
+MT8183-based platforms
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- include/dt-bindings/interconnect/mtk,mt8183-emi.h | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-new file mode 100644
-index 0000000..f921961
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0
-+ *
-+ * Copyright (c) 2020 MediaTek Inc.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+
-+#define MT8183_SLAVE_DDR_EMI			0
-+#define MT8183_MASTER_MCUSYS			1
-+#define MT8183_MASTER_GPU			2
-+#define MT8183_MASTER_MMSYS			3
-+#define MT8183_MASTER_MM_VPU			4
-+#define MT8183_MASTER_MM_DISP			5
-+#define MT8183_MASTER_MM_VDEC			6
-+#define MT8183_MASTER_MM_VENC			7
-+#define MT8183_MASTER_MM_CAM			8
-+#define MT8183_MASTER_MM_IMG			9
-+#define MT8183_MASTER_MM_MDP			10
-+
-+#endif
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 06ef8e0..22b3a68 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -11,6 +11,7 @@
+ #include <dt-bindings/reset-controller/mt8183-resets.h>
+ #include <dt-bindings/phy/phy.h>
+ #include "mt8183-pinfunc.h"
++#include <dt-bindings/interconnect/mtk,mt8183-emi.h>
+ 
+ / {
+ 	compatible = "mediatek,mt8183";
+@@ -331,6 +332,7 @@
+ 		ddr_emi: dvfsrc@10012000 {
+ 			compatible = "mediatek,mt8183-dvfsrc";
+ 			reg = <0 0x10012000 0 0x1000>;
++			#interconnect-cells = <1>;
+ 		};
+ 
+ 		pwrap: pwrap@1000d000 {
 -- 
 1.9.1
 
