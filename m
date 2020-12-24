@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCB03C4332D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D19E6C4332E
 	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 71BFB2253D
+	by mail.kernel.org (Postfix) with ESMTP id 9B14E23128
 	for <linux-pm@archiver.kernel.org>; Thu, 24 Dec 2020 06:10:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726284AbgLXGJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Dec 2020 01:09:42 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:59098 "EHLO
+        id S1727081AbgLXGJ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Dec 2020 01:09:59 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:59071 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725811AbgLXGJm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:42 -0500
-X-UUID: daa7748e44764aafa99fc174bc7257a7-20201224
-X-UUID: daa7748e44764aafa99fc174bc7257a7-20201224
-Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
+        with ESMTP id S1726338AbgLXGJ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Dec 2020 01:09:59 -0500
+X-UUID: 4243d9d593604d4d83322e3bc6623576-20201224
+X-UUID: 4243d9d593604d4d83322e3bc6623576-20201224
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1238430578; Thu, 24 Dec 2020 14:08:58 +0800
+        with ESMTP id 1963684905; Thu, 24 Dec 2020 14:08:58 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 24 Dec 2020 14:08:58 +0800
+ mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 24 Dec 2020 14:08:55 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 24 Dec 2020 14:08:58 +0800
+ Transport; Thu, 24 Dec 2020 14:08:57 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -48,47 +48,102 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V6 09/13] arm64: dts: mt8183: add dvfsrc related nodes
-Date:   Thu, 24 Dec 2020 14:08:50 +0800
-Message-ID: <1608790134-27425-10-git-send-email-henryc.chen@mediatek.com>
+Subject: [PATCH V6 01/13] dt-bindings: soc: Add dvfsrc driver bindings
+Date:   Thu, 24 Dec 2020 14:08:42 +0800
+Message-ID: <1608790134-27425-2-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
 References: <1608790134-27425-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+X-TM-SNTS-SMTP: 1E126D6CA7E69C15CFF57DEC5B4CDCF39BE7DD0F95E2F63FCBE502A2572686892000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add DDR EMI provider dictating dram interconnect bus performance found on
-MT8183-based platforms
+Document the binding for enabling dvfsrc on MediaTek SoC.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 2 ++
- 1 file changed, 2 insertions(+)
+ .../devicetree/bindings/soc/mediatek/dvfsrc.yaml   | 68 ++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 06ef8e0..22b3a68 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/reset-controller/mt8183-resets.h>
- #include <dt-bindings/phy/phy.h>
- #include "mt8183-pinfunc.h"
-+#include <dt-bindings/interconnect/mtk,mt8183-emi.h>
- 
- / {
- 	compatible = "mediatek,mt8183";
-@@ -331,6 +332,7 @@
- 		ddr_emi: dvfsrc@10012000 {
- 			compatible = "mediatek,mt8183-dvfsrc";
- 			reg = <0 0x10012000 0 0x1000>;
-+			#interconnect-cells = <1>;
- 		};
- 
- 		pwrap: pwrap@1000d000 {
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+new file mode 100644
+index 0000000..60e0b7c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+@@ -0,0 +1,68 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/soc/mediatek/dvfsrc.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: MediaTek dynamic voltage and frequency scaling resource collector (DVFSRC)
++
++description: |
++  The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
++  HW module which is used to collect all the requests from both software and
++  hardware and turn into the decision of minimum operating voltage and minimum
++  DRAM frequency to fulfill those requests.
++
++maintainers:
++  - henryc.chen <henryc.chen@mediatek.com>
++
++properties:
++  reg:
++    description: DVFSRC common register address and length.
++
++  compatible:
++    enum:
++      - mediatek,mt6873-dvfsrc
++      - mediatek,mt8183-dvfsrc
++      - mediatek,mt8192-dvfsrc
++
++  '#interconnect-cells':
++    const: 1
++
++patternProperties:
++  dvfsrc-vcore:
++    type: object
++    description:
++      The DVFSRC regulator is modelled as a subdevice of the DVFSRC.
++      Because DVFSRC can request power directly via register read/write, likes
++      vcore which is a core power of mt8183. As such, the DVFSRC regulator
++      requires that DVFSRC nodes be present.
++    $ref: /schemas/regulator/regulator.yaml#
++
++required:
++  - compatible
++  - reg
++  - "#interconnect-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/soc/mtk,dvfsrc.h>
++    #include <dt-bindings/interconnect/mtk,mt8183-emi.h>
++
++    soc {
++        #address-cells = <2>;
++        #size-cells = <2>;
++
++        dvfsrc@10012000 {
++            compatible = "mediatek,mt8183-dvfsrc";
++            reg = <0 0x10012000 0 0x1000>;
++            #interconnect-cells = <1>;
++            dvfsrc_vcore: dvfsrc-vcore {
++                    regulator-name = "dvfsrc-vcore";
++                    regulator-min-microvolt = <725000>;
++                    regulator-max-microvolt = <800000>;
++                    regulator-always-on;
++            };
++        };
++    };
 -- 
 1.9.1
 
