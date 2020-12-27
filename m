@@ -2,102 +2,146 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78393C433DB
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 16:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4D17C433E9
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 17:23:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 49A2222512
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 16:57:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BAA2022507
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 17:23:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726317AbgL0Q5Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Dec 2020 11:57:24 -0500
-Received: from mail-ot1-f43.google.com ([209.85.210.43]:36027 "EHLO
-        mail-ot1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726032AbgL0Q5X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2020 11:57:23 -0500
-Received: by mail-ot1-f43.google.com with SMTP id d20so7393252otl.3;
-        Sun, 27 Dec 2020 08:57:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=TObSc2rN2u01if4JX76VdLUyjWOAUXL7fU5P8PBtpkM=;
-        b=g5jQBoqD+PalW/6iUwd12NegR4Wf/bn5PWfxRue1ExYzHlP45ItpqZ8MtfL5RbRV9a
-         /UKtgU8tmkFC0b6ba2bJl/XAR7y72FCdYXIXow2YGbHQ2SBqUlN6RJNat0CahRbHBvBq
-         0gkRkBvkNd6ygmRFEVEnsC+RmOCanXbKn2nsXUUFulNuhrJ0F8lLQhsqDRmOLNdFtWxo
-         szqJnopzC0vq+K1D77zz9vI2831FZr0/3HEZgA3TT4URJlIOagvdGLa+Sa3rtiaXDiW+
-         k+9JFvFXPuadTBjY57EiMPaPZ+vgx3joNpiNWQRsBI4f1xhUlTf7MpVP54WwYPQD7HU/
-         gmTw==
-X-Gm-Message-State: AOAM532I8sAcuGRFLMjUynx7Nh5z5hE6LYdvH1f9Y8l5IOULdFJaT0gi
-        9LoW6HFQjLueeO/NAwDwRw==
-X-Google-Smtp-Source: ABdhPJzI+JDdO/V+OlTYv1dpS5qIypw11v1uqG0HcyZZgUUJzAQL9TRwlx44+N9mra2kD+OYyuT5Vw==
-X-Received: by 2002:a05:6830:214c:: with SMTP id r12mr30777477otd.208.1609088202417;
-        Sun, 27 Dec 2020 08:56:42 -0800 (PST)
-Received: from robh.at.kernel.org ([64.188.179.253])
-        by smtp.gmail.com with ESMTPSA id o135sm8531474ooo.38.2020.12.27.08.56.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Dec 2020 08:56:41 -0800 (PST)
-Received: (nullmailer pid 1338176 invoked by uid 1000);
-        Sun, 27 Dec 2020 16:56:21 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Roger Lu <roger.lu@mediatek.com>
-Cc:     linux-mediatek@lists.infradead.org,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Rob Herring <robh+dt@kernel.org>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Kevin Hilman <khilman@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Fan Chen <fan.chen@mediatek.com>, Nishanth Menon <nm@ti.com>,
-        Mark Rutland <mark.rutland@arm.com>
-In-Reply-To: <20201227105449.11452-2-roger.lu@mediatek.com>
-References: <20201227105449.11452-1-roger.lu@mediatek.com> <20201227105449.11452-2-roger.lu@mediatek.com>
-Subject: Re: [PATCH v10 1/7] [v10, 1/7]: dt-bindings: soc: mediatek: add mtk svs dt-bindings
-Date:   Sun, 27 Dec 2020 09:56:21 -0700
-Message-Id: <1609088181.501243.1338175.nullmailer@robh.at.kernel.org>
+        id S1726344AbgL0RXr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Dec 2020 12:23:47 -0500
+Received: from smtp05.smtpout.orange.fr ([80.12.242.127]:45627 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726131AbgL0RXq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2020 12:23:46 -0500
+Received: from [192.168.42.210] ([93.22.148.120])
+        by mwinf5d09 with ME
+        id 9VMz2400G2c5cNt03VN0zk; Sun, 27 Dec 2020 18:22:02 +0100
+X-ME-Helo: [192.168.42.210]
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sun, 27 Dec 2020 18:22:02 +0100
+X-ME-IP: 93.22.148.120
+Subject: Re: [PATCH] cpufreq: brcmstb-avs-cpufreq: Fix some resource leaks in
+ the error handling path of the probe function
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     mmayer@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
+        rjw@rjwysocki.net, f.fainelli@gmail.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+References: <20201219101751.181783-1-christophe.jaillet@wanadoo.fr>
+ <20201222043505.rq3cmajc3mxv3p2z@vireshk-i7>
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Message-ID: <a7e1f78c-b4c9-4ef5-7ca4-94a65fefd299@wanadoo.fr>
+Date:   Sun, 27 Dec 2020 18:22:00 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
+MIME-Version: 1.0
+In-Reply-To: <20201222043505.rq3cmajc3mxv3p2z@vireshk-i7>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 27 Dec 2020 18:54:43 +0800, Roger Lu wrote:
-> Document the binding for enabling mtk svs on MediaTek SoC.
+Le 22/12/2020 à 05:35, Viresh Kumar a écrit :
+> On 19-12-20, 11:17, Christophe JAILLET wrote:
+>> If 'cpufreq_register_driver()' fails, we must release the resources
+>> allocated in 'brcm_avs_prepare_init()' as already done in the remove
+>> function.
+>>
+>> To do that, introduce a new function 'brcm_avs_prepare_uninit()' in order
+>> to avoid code duplication. This also makes the code more readable (IMHO).
+>>
+>> Fixes: de322e085995 ("cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver for Broadcom STB SoCs")
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>> ---
+>> I'm not sure that the existing error handling in the remove function is
+>> correct and/or needed.
+>> ---
+>>   drivers/cpufreq/brcmstb-avs-cpufreq.c | 25 ++++++++++++++++++++-----
+>>   1 file changed, 20 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> index 3e31e5d28b79..750ca7cfccb0 100644
+>> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> @@ -597,6 +597,16 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
+>>   	return ret;
+>>   }
+>>   
+>> +static void brcm_avs_prepare_uninit(struct platform_device *pdev)
+>> +{
+>> +	struct private_data *priv;
+>> +
+>> +	priv = platform_get_drvdata(pdev);
+>> +
+>> +	iounmap(priv->avs_intr_base);
+>> +	iounmap(priv->base);
+>> +}
+>> +
+>>   static int brcm_avs_cpufreq_init(struct cpufreq_policy *policy)
+>>   {
+>>   	struct cpufreq_frequency_table *freq_table;
+>> @@ -732,21 +742,26 @@ static int brcm_avs_cpufreq_probe(struct platform_device *pdev)
+>>   
+>>   	brcm_avs_driver.driver_data = pdev;
+>>   
+>> -	return cpufreq_register_driver(&brcm_avs_driver);
+>> +	ret = cpufreq_register_driver(&brcm_avs_driver);
+>> +	if (ret)
+>> +		goto err_uninit;
+>> +
+>> +	return 0;
+>> +
+>> +err_uninit:
+>> +	brcm_avs_prepare_uninit(pdev);
+>> +	return ret;
 > 
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> ---
->  .../bindings/soc/mediatek/mtk-svs.yaml        | 75 +++++++++++++++++++
->  1 file changed, 75 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+> Maybe rewrite as:
+> 
+> 	ret = cpufreq_register_driver(&brcm_avs_driver);
+> 	if (ret)
+>                  brcm_avs_prepare_uninit(pdev);
+> 	return ret;
 > 
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Personlaly, I prefer what I have proposed. Having a clear and dedicated 
+error handling path is more future proff, IMHO.
 
-yamllint warnings/errors:
+>>   }
+>>   
+>>   static int brcm_avs_cpufreq_remove(struct platform_device *pdev)
+>>   {
+>> -	struct private_data *priv;
+>>   	int ret;
+>>   
+>>   	ret = cpufreq_unregister_driver(&brcm_avs_driver);
+>>   	if (ret)
+>>   		return ret;
+> 
+> Instead of returning here, it can be just WARN_ON(ret); and then go on and free
+> the resources and this needs to be done in a separate patch.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.example.dt.yaml: example-0: svs@1100b000:reg:0: [0, 285257728, 0, 4096] is too long
-	From schema: /usr/local/lib/python3.8/dist-packages/dtschema/schemas/reg.yaml
+Ok, I agree (see my comment below the --- in my patch).
+I'll send a patch for it when the first patch will be applied, unless 
+you prefer if I resend as a serie.
 
-See https://patchwork.ozlabs.org/patch/1420728
+CJ
 
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
+> 
+>>   
+>> -	priv = platform_get_drvdata(pdev);
+>> -	iounmap(priv->base);
+>> -	iounmap(priv->avs_intr_base);
+>> +	brcm_avs_prepare_uninit(pdev);
+>>   
+>>   	return 0;
+>>   }
+> 
 
