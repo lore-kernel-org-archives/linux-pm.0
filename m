@@ -2,157 +2,185 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0EC0C433E6
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00CB1C433E0
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 11:58:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 854D9224B8
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:57:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AFCA3224DE
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 11:58:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726423AbgL0K5B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Dec 2020 05:57:01 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:47759 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726094AbgL0K5B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2020 05:57:01 -0500
-X-UUID: d053e3d308724f2e9f305bd5b7bb44e5-20201227
-X-UUID: d053e3d308724f2e9f305bd5b7bb44e5-20201227
-Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw01.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1599531679; Sun, 27 Dec 2020 18:55:15 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Sun, 27 Dec 2020 18:56:16 +0800
-Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Sun, 27 Dec 2020 18:56:16 +0800
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH v10 1/7] [v10,1/7]: dt-bindings: soc: mediatek: add mtk svs dt-bindings
-Date:   Sun, 27 Dec 2020 18:54:43 +0800
-Message-ID: <20201227105449.11452-2-roger.lu@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20201227105449.11452-1-roger.lu@mediatek.com>
-References: <20201227105449.11452-1-roger.lu@mediatek.com>
+        id S1726039AbgL0L6B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Dec 2020 06:58:01 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:21738 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726075AbgL0L6A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2020 06:58:00 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1609070193;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=9ys+IfJQ4jaDgELByvREU1Pf0LqPPJ8r6KX3wnASlGk=;
+        b=B7G5RpGQgNLVkc1uj6up5RfAg3Ys326cnusiwlr0ibpnXsGK2vSHodafEnvJCZTQ2tnswN
+        uwrOi5JmKDTtERH52EjdFXoOaVTb//krikk0HJxZgwt4fg/eni9cycwrMXt061GfSGImxc
+        YZ5U9i2ZsdPlhQA1P1FdlbqRm6RLVao=
+Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
+ [209.85.218.71]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-374-_zhlLx5YP4i9XwVhQQeG5A-1; Sun, 27 Dec 2020 06:56:24 -0500
+X-MC-Unique: _zhlLx5YP4i9XwVhQQeG5A-1
+Received: by mail-ej1-f71.google.com with SMTP id dc13so3367110ejb.9
+        for <linux-pm@vger.kernel.org>; Sun, 27 Dec 2020 03:56:24 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=9ys+IfJQ4jaDgELByvREU1Pf0LqPPJ8r6KX3wnASlGk=;
+        b=VQ0iEbihOGpavKZkZGTRrjY0WEXF0I2HzFVMbh0lUwQCyoWuSsNbP3YHBsGUEBv2SI
+         jAhFIYm6xIVSO4tcEFbSZEGtKyDLD4bNdrhM9ZyoB7MHwZ2LhmOlr2FNWpi5VNH4JBp0
+         hI1hixLUcH2pCMhNg9LRMLjnnI1AmKAQSBGUxJCjInORTswP95lBC6CKobqT7PJglqJy
+         EUQZ07MyO2sSek0Mxd6eTbyZHknrBQr8+C5HODCh3N6bXH18Mqbmhp11Y3+c77kFIwCR
+         bc1mYqoVVL+g1TaOQ7CW9WBZDYKHcBpkkrNe+6aa4zCHI4LdNtmBzzAW+wORwNsNfr4y
+         mKfw==
+X-Gm-Message-State: AOAM5324DibH+gdFHmNsdr3SQPTYQGW1BtQnhuTzKg3ihBQufIFu2Frr
+        bpmvD0y+P1H+e2xCvhe2/cvx6H0F8nPLVuoZHm09vpqtwZ2EJLVDQRtZITnNL9hkP/WjhVu4zmc
+        EfcaD1580eRjtlEHP1dk=
+X-Received: by 2002:a17:906:710b:: with SMTP id x11mr39696674ejj.433.1609070183312;
+        Sun, 27 Dec 2020 03:56:23 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwnc5Um/4mkKSiag3jZlEv6fWKGuXg9vVpDEurV5CS3KXc+TJKo9Vs2YkS+2syQUvzKwp7z8A==
+X-Received: by 2002:a17:906:710b:: with SMTP id x11mr39696662ejj.433.1609070183123;
+        Sun, 27 Dec 2020 03:56:23 -0800 (PST)
+Received: from x1.localdomain (2001-1c00-0c0c-fe00-d2ea-f29d-118b-24dc.cable.dynamic.v6.ziggo.nl. [2001:1c00:c0c:fe00:d2ea:f29d:118b:24dc])
+        by smtp.gmail.com with ESMTPSA id w17sm34409942edu.90.2020.12.27.03.56.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 27 Dec 2020 03:56:22 -0800 (PST)
+Subject: Re: [pm:bleeding-edge 8612/8615]
+ drivers/acpi/platform_profile.c:147:24: warning: address of array
+ 'pprof->choices' will always evaluate to 'true'
+To:     kernel test robot <lkp@intel.com>,
+        Mark Pearson <markpearson@lenovo.com>
+Cc:     kbuild-all@lists.01.org, clang-built-linux@googlegroups.com,
+        linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+References: <202012271352.JvNDF17O-lkp@intel.com>
+From:   Hans de Goede <hdegoede@redhat.com>
+Message-ID: <34a43212-ff2b-cbc6-a670-975d39ac9f12@redhat.com>
+Date:   Sun, 27 Dec 2020 12:56:21 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+In-Reply-To: <202012271352.JvNDF17O-lkp@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the binding for enabling mtk svs on MediaTek SoC.
+Hi,
 
-Signed-off-by: Roger Lu <roger.lu@mediatek.com>
----
- .../bindings/soc/mediatek/mtk-svs.yaml        | 75 +++++++++++++++++++
- 1 file changed, 75 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+On 12/27/20 6:11 AM, kernel test robot wrote:
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> head:   a33520709645543f108361fe21fa9434a351c4e9
+> commit: 8c9b909fb1282e43792433e6c1cba125ccfc6201 [8612/8615] ACPI: platform-profile: Add platform profile support
+> config: x86_64-randconfig-a015-20201221 (attached as .config)
+> compiler: clang version 12.0.0 (https://github.com/llvm/llvm-project cee1e7d14f4628d6174b33640d502bff3b54ae45)
+> reproduce (this is a W=1 build):
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # install x86_64 cross compiling tool for clang build
+>         # apt-get install binutils-x86-64-linux-gnu
+>         # https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?id=8c9b909fb1282e43792433e6c1cba125ccfc6201
+>         git remote add pm https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+>         git fetch --no-tags pm bleeding-edge
+>         git checkout 8c9b909fb1282e43792433e6c1cba125ccfc6201
+>         # save the attached .config to linux build tree
+>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+> 
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+> 
+> All warnings (new ones prefixed by >>):
+> 
+>>> drivers/acpi/platform_profile.c:147:24: warning: address of array 'pprof->choices' will always evaluate to 'true' [-Wpointer-bool-conversion]
+>            if (!pprof || !pprof->choices || !pprof->profile_set ||
+>                          ~~~~~~~~^~~~~~~
+>    1 warning generated.
 
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-new file mode 100644
-index 000000000000..9c7da0acd82f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-@@ -0,0 +1,75 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/mediatek/mtk-svs.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Introduce MTK SVS engine
-+
-+maintainers:
-+  - Matthias Brugger <matthias.bgg@gmail.com>
-+  - Kevin Hilman <khilman@kernel.org>
-+  - Nishanth Menon <nm@ti.com>
-+
-+description: |+
-+  The Smart Voltage Scaling(SVS) engine is a piece of hardware
-+  which has several controllers(banks) for calculating suitable
-+  voltage to different power domains(CPU/GPU/CCI) according to
-+  chip process corner, temperatures and other factors. Then DVFS
-+  driver could apply SVS bank voltage to PMIC/Buck.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8183-svs
-+
-+  reg:
-+    description: Address range of the MTK SVS controller.
-+    maxItems: 1
-+
-+  interrupts:
-+    description: IRQ for the MTK SVS controller.
-+    maxItems: 1
-+
-+  clocks:
-+    description: Main clock for MTK SVS controller to work.
-+
-+  clock-names:
-+    const: main
-+
-+  nvmem-cells:
-+    maxItems: 2
-+    description:
-+      Phandle to the calibration data provided by a nvmem device.
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: svs-calibration-data
-+      - const: t-calibration-data
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - clocks
-+  - clock-names
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/mt8183-clk.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    svs: svs@1100b000 {
-+        compatible = "mediatek,mt8183-svs";
-+        reg = <0 0x1100b000 0 0x1000>;
-+        interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
-+        clocks = <&infracfg CLK_INFRA_THERM>;
-+        clock-names = "main";
-+        nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
-+        nvmem-cell-names = "svs-calibration-data", "t-calibration-data";
-+    };
--- 
-2.18.0
+
+Ah, this is caused by changing choices from a single long to:
+
+	unsigned long choices[BITS_TO_LONGS(PLATFORM_PROFILE_LAST)];
+
+So that we can use for_each_set_bit and are future proof for more then
+32 profiles.
+
+To fix this the check should be changed into this (untested):
+
+#include <linux/bitmap.h>
+
+	if (!pprof || bitmap_empty(pprof->choices, PLATFORM_PROFILE_LAST) ||
+	    !pprof->profile_set || !pprof->profile_get) {
+		mutex_unlock(&profile_lock);
+		return -EINVAL;
+	}
+
+Mark can you provide a (tested) patch for this?
+
+Regards,
+
+Hans
+
+
+
+
+
+
+
+
+> 
+> 
+> vim +147 drivers/acpi/platform_profile.c
+> 
+>    134	
+>    135	int platform_profile_register(const struct platform_profile_handler *pprof)
+>    136	{
+>    137		int err;
+>    138	
+>    139		mutex_lock(&profile_lock);
+>    140		/* We can only have one active profile */
+>    141		if (cur_profile) {
+>    142			mutex_unlock(&profile_lock);
+>    143			return -EEXIST;
+>    144		}
+>    145	
+>    146		/* Sanity check the profile handler field are set */
+>  > 147		if (!pprof || !pprof->choices || !pprof->profile_set ||
+>    148				!pprof->profile_get) {
+>    149			mutex_unlock(&profile_lock);
+>    150			return -EINVAL;
+>    151		}
+>    152	
+>    153		err = sysfs_create_group(acpi_kobj, &platform_profile_group);
+>    154		if (err) {
+>    155			mutex_unlock(&profile_lock);
+>    156			return err;
+>    157		}
+>    158	
+>    159		cur_profile = pprof;
+>    160		mutex_unlock(&profile_lock);
+>    161		return 0;
+>    162	}
+>    163	EXPORT_SYMBOL_GPL(platform_profile_register);
+>    164	
+> 
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> 
 
