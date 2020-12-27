@@ -2,145 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C072C433E0
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:12:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E247C433E9
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:56:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F2840207CF
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:11:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44B4D224B8
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Dec 2020 10:56:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726046AbgL0KL7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Dec 2020 05:11:59 -0500
-Received: from mga06.intel.com ([134.134.136.31]:1558 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725841AbgL0KL7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 27 Dec 2020 05:11:59 -0500
-IronPort-SDR: ijlHiFiIHP8L8ttMi6kyq59H939LviHu5R78lE10MP5nBXvaSZ1la8AYaVYxQEpPhaBEwT2HLK
- hcFEQWapV58Q==
-X-IronPort-AV: E=McAfee;i="6000,8403,9846"; a="237854270"
-X-IronPort-AV: E=Sophos;i="5.78,452,1599548400"; 
-   d="scan'208";a="237854270"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Dec 2020 02:11:18 -0800
-IronPort-SDR: DatykGpWndZiCNUZwvmGEj/EOSj6/0HQsA8R7aho3wHKfDFS6YTEEn3IJsv/pNzSTG0dPPf63Y
- lVjoXi+VAt4Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,452,1599548400"; 
-   d="scan'208";a="346589046"
-Received: from powerlab.fi.intel.com (HELO powerlab.backendnet) ([10.237.71.25])
-  by fmsmga008.fm.intel.com with ESMTP; 27 Dec 2020 02:11:17 -0800
-From:   Artem Bityutskiy <dedekind1@gmail.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM Mailing List <linux-pm@vger.kernel.org>
-Subject: [PATCH v2] intel_idle: add SnowRidge C-state table
-Date:   Sun, 27 Dec 2020 12:11:16 +0200
-Message-Id: <20201227101116.1888740-1-dedekind1@gmail.com>
-X-Mailer: git-send-email 2.26.2
+        id S1726182AbgL0Kz5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Dec 2020 05:55:57 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:47759 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726156AbgL0Kz4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2020 05:55:56 -0500
+X-UUID: 5a988252da3145f5a3d23bd1d3a93067-20201227
+X-UUID: 5a988252da3145f5a3d23bd1d3a93067-20201227
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1350880203; Sun, 27 Dec 2020 18:55:10 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs06n2.mediatek.inc (172.21.101.130) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Sun, 27 Dec 2020 18:55:08 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Sun, 27 Dec 2020 18:56:16 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH v10 2/7] [v10,2/7]: arm64: dts: mt8183: add svs device information
+Date:   Sun, 27 Dec 2020 18:54:44 +0800
+Message-ID: <20201227105449.11452-3-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20201227105449.11452-1-roger.lu@mediatek.com>
+References: <20201227105449.11452-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-SNTS-SMTP: BAC2FF0050AB195E418ABA2768031E9D913225DFC97EC9EB1CF9A891A0A5323C2000:8
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+add compitable/reg/irq/clock/efuse setting in svs node
 
-Add C-state table for the SnowRidge SoC which is found on Intel Jacobsville
-platforms.
-
-The following has been changed.
-1. C1E latency changed from 10us to 15us. It was measured using the
-   opensource "wult" tool (the "nic" method, 15us is the 99.99th percentile).
-2. C1E power break even changed from 20us to 25us, which may result in less C1E
-   residency in some workloads.
-3. C6 latency changed from 50us to 130us. Measured the same way as C1E.
-
-The C6 C-state is supported only by some SnowRidge revisions, so add a C-state
-table commentary about this.
-
-On SnowRidge, C6 support is enumerated via the usual mechanism: "mwait" leaf of
-the "cpuid" instruction. The 'intel_idle' driver does check this leaf, so even
-though C6 is present in the table, the driver will only use it if the CPU does
-support it.
-
-Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- drivers/idle/intel_idle.c | 41 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-Changelog:
-v2. Fixed C6 latency value in the commit message (120 -> 130).
-
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 9a810e4a7946..1ef4ac3cc87c 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -976,6 +976,39 @@ static struct cpuidle_state dnv_cstates[] __initdata = {
- 		.enter = NULL }
- };
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 9cfd961c45eb..b017eb7fbf2a 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -479,6 +479,18 @@
+ 			status = "disabled";
+ 		};
  
-+/*
-+ * Note, depending on HW and FW revision, SnowRidge SoC may or may not support
-+ * C6, and this is indicated in the CPUID mwait leaf.
-+ */
-+static struct cpuidle_state snr_cstates[] __initdata = {
-+	{
-+		.name = "C1",
-+		.desc = "MWAIT 0x00",
-+		.flags = MWAIT2flg(0x00),
-+		.exit_latency = 2,
-+		.target_residency = 2,
-+		.enter = &intel_idle,
-+		.enter_s2idle = intel_idle_s2idle, },
-+	{
-+		.name = "C1E",
-+		.desc = "MWAIT 0x01",
-+		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
-+		.exit_latency = 15,
-+		.target_residency = 25,
-+		.enter = &intel_idle,
-+		.enter_s2idle = intel_idle_s2idle, },
-+	{
-+		.name = "C6",
-+		.desc = "MWAIT 0x20",
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.exit_latency = 130,
-+		.target_residency = 500,
-+		.enter = &intel_idle,
-+		.enter_s2idle = intel_idle_s2idle, },
-+	{
-+		.enter = NULL }
-+};
++		svs: svs@1100b000 {
++			compatible = "mediatek,mt8183-svs";
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
++			clocks = <&infracfg CLK_INFRA_THERM>;
++			clock-names = "main";
++			nvmem-cells = <&svs_calibration>,
++				      <&thermal_calibration>;
++			nvmem-cell-names = "svs-calibration-data",
++					   "t-calibration-data";
++		};
 +
- static const struct idle_cpu idle_cpu_nehalem __initconst = {
- 	.state_table = nehalem_cstates,
- 	.auto_demotion_disable_flags = NHM_C1_AUTO_DEMOTE | NHM_C3_AUTO_DEMOTE,
-@@ -1097,6 +1130,12 @@ static const struct idle_cpu idle_cpu_dnv __initconst = {
- 	.use_acpi = true,
- };
+ 		i2c3: i2c@1100f000 {
+ 			compatible = "mediatek,mt8183-i2c";
+ 			reg = <0 0x1100f000 0 0x1000>,
+@@ -724,6 +736,14 @@
+ 			compatible = "mediatek,mt8183-efuse",
+ 				     "mediatek,efuse";
+ 			reg = <0 0x11f10000 0 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			thermal_calibration: calib@180 {
++				reg = <0x180 0xc>;
++			};
++			svs_calibration: calib@580 {
++				reg = <0x580 0x64>;
++			};
+ 		};
  
-+static const struct idle_cpu idle_cpu_snr __initconst = {
-+	.state_table = snr_cstates,
-+	.disable_promotion_to_c1e = true,
-+	.use_acpi = true,
-+};
-+
- static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(NEHALEM_EP,		&idle_cpu_nhx),
- 	X86_MATCH_INTEL_FAM6_MODEL(NEHALEM,		&idle_cpu_nehalem),
-@@ -1135,7 +1174,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_GOLDMONT,	&idle_cpu_bxt),
- 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_GOLDMONT_PLUS,	&idle_cpu_bxt),
- 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_GOLDMONT_D,	&idle_cpu_dnv),
--	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT_D,	&idle_cpu_dnv),
-+	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT_D,	&idle_cpu_snr),
- 	{}
- };
- 
+ 		u3phy: usb-phy@11f40000 {
 -- 
-2.26.2
+2.18.0
 
