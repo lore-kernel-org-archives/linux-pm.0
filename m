@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC53EC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:50:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37E52C433E9
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:50:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BF42722472
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:50:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D8D322583
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:50:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408309AbgL1Pu2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Dec 2020 10:50:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46744 "EHLO
+        id S2408280AbgL1PuY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Dec 2020 10:50:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46730 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2408306AbgL1Pu1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 10:50:27 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94E4CC0617A1;
-        Mon, 28 Dec 2020 07:49:46 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id m12so24768016lfo.7;
-        Mon, 28 Dec 2020 07:49:46 -0800 (PST)
+        with ESMTP id S2632864AbgL1PuX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 10:50:23 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E74C2C061799;
+        Mon, 28 Dec 2020 07:49:42 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id b26so24742189lff.9;
+        Mon, 28 Dec 2020 07:49:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=5dCbZvyPJ9eUu2G59fWkwNpYcrEO/zvwjAoLRWdkXSE=;
-        b=lxCFa2HVC3jf+yN4MDuz+0pTX6fn8ErcyMKifELPEAcor9P6+ePXhRlRpz2yamox05
-         RSOkQeVuqkF+lDy8aFpV3cxjEX2bAQzGf72WJAL3z9DN951jjzAMrUmANiTL6IE6VMzh
-         SBmmTOGKQgYYkrFQJgQT6jXpFoSq+m+dL9GStVrkfCyHDBnKCxaCfyc/A6wCIikCM49F
-         wprwIQmGOm/q6nKYhPQJAD5C2m3WGo/ubhVvsK/FnNPp3w6R5R03c/Jb58PekVJv+deD
-         9pbzn3wlk9Q8AVC1wy04rSeOz8+WYLJ9vrQ4Tkc8aDT89prFPrTcNNqEtgh9XQNFrX9j
-         3VwA==
+        bh=zfb2Oj304hhOwNOrbWB2XftwVoXzBWq5pLB1bTxGch8=;
+        b=iKAngwlt+W4NxAIhqG3ODUV2rL1VHbtt064egT/aLYXOjgxVVioyQMQPdfh9xqFnzW
+         2j/7TLctY7/Jt/+zLn39D3TIWWiEHxZd46vbYzYHsv5mIgW5XRl0m5tqQlrrL7JY+iTG
+         dTLC22cOtc+kENBLIZjGD7xvCZP3nAt26NJA2FiumScaMui6AW0oPSGO35BEOi9MQMke
+         970Qd8GzgEFT9EfM6bneVleleEezvSil/17XxsxD6XMpKOLpuaZWd5l64enrOJ0d/HXM
+         LsLNRmXCO1KqdWCT3uE6t7oM7ibVHHZi10/38/+P6rA39s69pZvDA4bkuvuQwKI2g2XY
+         hB6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=5dCbZvyPJ9eUu2G59fWkwNpYcrEO/zvwjAoLRWdkXSE=;
-        b=i7g2zBcNIU0+NCzeQ2ellwgKTnBMMqcu9JrzNrXhvUWADyOo6FbUDULhNQqRR62Nfj
-         YYuVEyYX12kxDurE89WmAqBy5tLRPfSOs3AF9sAwroS6KiVR00rdyLcspxWzebYX55JM
-         0AFqG/3BgTFVQE785UtHf5QSWeSwigr7pCMk2b9lxYzzaP8BuzUq7gIHzcsYp2n0w7Sa
-         F8WisPLFyPClEnYkFlEiJDdUnR6UqT6B+OXtSppSxhwfwhN8liQp2Kn7Lk9Cvad4pLAS
-         2vG5y1uWDGW+HpXLqdhN0F0QNmuCB4+eBLSGN6H93Mhshif9mLHkSP8Yp0ARjjkI+IbF
-         hWGA==
-X-Gm-Message-State: AOAM533ZBu1kw+sMXMrEVOTwPZwPTX+pn0gNqjExzD2cal7r6z4GWds+
-        WSxVJTVj3pwjmUK2enKa4+s=
-X-Google-Smtp-Source: ABdhPJzBVEvhOC7XYqv+u4u4PeXBR3zK+J5gKZL4Q5ljEmnhhYEl7ehktajcZM2/mDlsqeeNzLADyQ==
-X-Received: by 2002:ac2:5333:: with SMTP id f19mr20745727lfh.344.1609170585132;
-        Mon, 28 Dec 2020 07:49:45 -0800 (PST)
+        bh=zfb2Oj304hhOwNOrbWB2XftwVoXzBWq5pLB1bTxGch8=;
+        b=ATiVll00SxJdq87OsrtYHPop4udFJyh94CaofjBH+yjtdC1FgZB3UZQ0RCqc74hx/m
+         JIkBJq3LDbXiZoGGdzkl1KLsUzR+p34Ek2O88Kt8i28ZlVPfjnu2YNDFrVPp4Jz/kryf
+         RoYp417Kov5FspcA7tF8DPkcn9pAUnwPWj1D8idME8TOxe4KOCTwozx2M7GlwDpwsebz
+         cVEHr9e/7+nLl3mFmUJTGlQk75bG1oKuL0e+lKei7fYRgDqzfRxH2+87EaQa7CRriTGB
+         WcGmfGsekhYrE0RsTCxOJDr6pPGg0y0oRlx/RkYPmmXYEz8fWWw+hSpMG1N4A6Ts9pOk
+         Yh7A==
+X-Gm-Message-State: AOAM530Ou/cxp3bUrSBQ0LkiZoHibCYiIdTVLsM6sb7bP9OUM4QCjUXU
+        k7s9jpeRl9bkzsXvv1SKFQU=
+X-Google-Smtp-Source: ABdhPJxG3IWIMT27oeVAaZqGgz4TA2twhb51FD6wTCGze7pM3+B5tX3hafbdwAiOVbMcB7IcbTK1rQ==
+X-Received: by 2002:a2e:8e2a:: with SMTP id r10mr21685009ljk.237.1609170581530;
+        Mon, 28 Dec 2020 07:49:41 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id s27sm6502262ljd.25.2020.12.28.07.49.44
+        by smtp.gmail.com with ESMTPSA id s27sm6502262ljd.25.2020.12.28.07.49.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Dec 2020 07:49:44 -0800 (PST)
+        Mon, 28 Dec 2020 07:49:41 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,9 +74,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH v12 5/5] drm/tegra: dc: Extend debug stats with total number of events
-Date:   Mon, 28 Dec 2020 18:49:20 +0300
-Message-Id: <20201228154920.18846-6-digetx@gmail.com>
+Subject: [PATCH v12 2/5] memory: tegra124-emc: Continue probing if timings are missing in device-tree
+Date:   Mon, 28 Dec 2020 18:49:17 +0300
+Message-Id: <20201228154920.18846-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201228154920.18846-1-digetx@gmail.com>
 References: <20201228154920.18846-1-digetx@gmail.com>
@@ -86,88 +86,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's useful to know the total number of underflow events and currently
-the debug stats are getting reset each time CRTC is being disabled. Let's
-account the overall number of events that doesn't get a reset.
+EMC driver will become mandatory after turning it into interconnect
+provider because interconnect users, like display controller driver, will
+fail to probe using newer device-trees that have interconnect properties.
+Thus make EMC driver to probe even if timings are missing in device-tree.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com>
 Tested-by: Nicolas Chauvet <kwizart@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/drm/tegra/dc.c | 10 ++++++++++
- drivers/gpu/drm/tegra/dc.h |  5 +++++
- 2 files changed, 15 insertions(+)
+ drivers/memory/tegra/tegra124-emc.c | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index 5c587cfd1bb2..b6676f1fe358 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -1539,6 +1539,11 @@ static int tegra_dc_show_stats(struct seq_file *s, void *data)
- 	seq_printf(s, "underflow: %lu\n", dc->stats.underflow);
- 	seq_printf(s, "overflow: %lu\n", dc->stats.overflow);
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index edfbf6d6d357..8fb8c1af25c9 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -1201,23 +1201,15 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	ram_code = tegra_read_ram_code();
  
-+	seq_printf(s, "frames total: %lu\n", dc->stats.frames_total);
-+	seq_printf(s, "vblank total: %lu\n", dc->stats.vblank_total);
-+	seq_printf(s, "underflow total: %lu\n", dc->stats.underflow_total);
-+	seq_printf(s, "overflow total: %lu\n", dc->stats.overflow_total);
-+
- 	return 0;
- }
- 
-@@ -2310,6 +2315,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
- 		/*
- 		dev_dbg(dc->dev, "%s(): frame end\n", __func__);
- 		*/
-+		dc->stats.frames_total++;
- 		dc->stats.frames++;
+ 	np = tegra_emc_find_node_by_ram_code(pdev->dev.of_node, ram_code);
+-	if (!np) {
+-		dev_err(&pdev->dev,
+-			"no memory timings for RAM code %u found in DT\n",
+-			ram_code);
+-		return -ENOENT;
+-	}
+-
+-	err = tegra_emc_load_timings_from_dt(emc, np);
+-	of_node_put(np);
+-	if (err)
+-		return err;
+-
+-	if (emc->num_timings == 0) {
+-		dev_err(&pdev->dev,
+-			"no memory timings for RAM code %u registered\n",
+-			ram_code);
+-		return -ENOENT;
++	if (np) {
++		err = tegra_emc_load_timings_from_dt(emc, np);
++		of_node_put(np);
++		if (err)
++			return err;
++	} else {
++		dev_info(&pdev->dev,
++			 "no memory timings for RAM code %u found in DT\n",
++			 ram_code);
  	}
  
-@@ -2318,6 +2324,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
- 		dev_dbg(dc->dev, "%s(): vertical blank\n", __func__);
- 		*/
- 		drm_crtc_handle_vblank(&dc->base);
-+		dc->stats.vblank_total++;
- 		dc->stats.vblank++;
- 	}
- 
-@@ -2325,6 +2332,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
- 		/*
- 		dev_dbg(dc->dev, "%s(): underflow\n", __func__);
- 		*/
-+		dc->stats.underflow_total++;
- 		dc->stats.underflow++;
- 	}
- 
-@@ -2332,11 +2340,13 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
- 		/*
- 		dev_dbg(dc->dev, "%s(): overflow\n", __func__);
- 		*/
-+		dc->stats.overflow_total++;
- 		dc->stats.overflow++;
- 	}
- 
- 	if (status & HEAD_UF_INT) {
- 		dev_dbg_ratelimited(dc->dev, "%s(): head underflow\n", __func__);
-+		dc->stats.underflow_total++;
- 		dc->stats.underflow++;
- 	}
- 
-diff --git a/drivers/gpu/drm/tegra/dc.h b/drivers/gpu/drm/tegra/dc.h
-index 0d7bdf66a1ec..ba4ed35139fb 100644
---- a/drivers/gpu/drm/tegra/dc.h
-+++ b/drivers/gpu/drm/tegra/dc.h
-@@ -48,6 +48,11 @@ struct tegra_dc_stats {
- 	unsigned long vblank;
- 	unsigned long underflow;
- 	unsigned long overflow;
-+
-+	unsigned long frames_total;
-+	unsigned long vblank_total;
-+	unsigned long underflow_total;
-+	unsigned long overflow_total;
- };
- 
- struct tegra_windowgroup_soc {
+ 	err = emc_init(emc);
 -- 
 2.29.2
 
