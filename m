@@ -8,26 +8,26 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F291C433E6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3E20C4332E
 	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 11:37:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF7D222B47
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 11:37:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7F5BF22B3A
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 11:37:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727239AbgL1Lgr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Dec 2020 06:36:47 -0500
-Received: from mail-40136.protonmail.ch ([185.70.40.136]:16533 "EHLO
-        mail-40136.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727213AbgL1Lgp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 06:36:45 -0500
-Date:   Mon, 28 Dec 2020 11:35:55 +0000
+        id S1727224AbgL1LhA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Dec 2020 06:37:00 -0500
+Received: from mail-40131.protonmail.ch ([185.70.40.131]:35959 "EHLO
+        mail-40131.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727180AbgL1LhA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 06:37:00 -0500
+Date:   Mon, 28 Dec 2020 11:36:11 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1609155362;
-        bh=ip5p7Pxxgl/bGFgwefwc0Ay9tM3EP/O8bZ6TsydSY1I=;
+        s=protonmail; t=1609155378;
+        bh=LoywmZ2m8EV1hoMLF9riPIBEq49S02Dp5TOP/fNI2z8=;
         h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=IIjM4y/2ev4URGE1ZsDtEVETChUxsdkU/KNHS46L1QtdkR/wRwobW7Mlye1TJPDSv
-         DBCfF8Ygre7j9FmAHwNmold9/kyPweNRfZbJqOup4f6YHnEtGIa3a5Sn5k/shUV+lX
-         fj4ct/JM4jaR7MpnsXFjspuqdNdWvydTd0ewZHXg=
+        b=SwXmZqq2YdgZ5pSE5W6RWAdLRAxdqqhLdvQ9GV0aBKOhyOGOjyRFBGDZaleoTYgQJ
+         WASLXVMYmjAs1we/p89BBUWsh6BgFNypcqNd4FHqroUE7TM6lyJF0XQAQ83zDps3R+
+         yF03Ch527Zf/sEHN7D4xsdgPKtgbfhXoAwTUeQSc=
 To:     Krzysztof Kozlowski <krzk@kernel.org>
 From:   Timon Baetz <timon.baetz@protonmail.com>
 Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -44,8 +44,8 @@ Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
         ~postmarketos/upstreaming@lists.sr.ht,
         Timon Baetz <timon.baetz@protonmail.com>
 Reply-To: Timon Baetz <timon.baetz@protonmail.com>
-Subject: [PATCH v5 2/8] regulator: dt-bindings: Document max8997-pmic nodes
-Message-ID: <20201228113507.1292506-2-timon.baetz@protonmail.com>
+Subject: [PATCH v5 4/8] ARM: dts: exynos: Add muic and charger nodes for I9100
+Message-ID: <20201228113507.1292506-4-timon.baetz@protonmail.com>
 In-Reply-To: <20201228113507.1292506-1-timon.baetz@protonmail.com>
 References: <20201228113507.1292506-1-timon.baetz@protonmail.com>
 MIME-Version: 1.0
@@ -55,43 +55,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add maxim,max8997-battery and maxim,max8997-muic optional nodes.
+muic node is only used for extcon consumers.
+charger node is used to point to muic and regulator.
 
 Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- .../bindings/regulator/max8997-regulator.txt         | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/arm/boot/dts/exynos4210-i9100.dts | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/regulator/max8997-regulator.=
-txt b/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-index 6fe825b8ac1b..faaf2bbf0272 100644
---- a/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-+++ b/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-@@ -53,6 +53,18 @@ Additional properties required if either of the optional=
- properties are used:
- - max8997,pmic-buck125-dvs-gpios: GPIO specifiers for three host gpio's us=
-ed
-   for dvs. The format of the gpio specifier depends in the gpio controller=
-.
+diff --git a/arch/arm/boot/dts/exynos4210-i9100.dts b/arch/arm/boot/dts/exy=
+nos4210-i9100.dts
+index 5370ee477186..8fa704babd5e 100644
+--- a/arch/arm/boot/dts/exynos4210-i9100.dts
++++ b/arch/arm/boot/dts/exynos4210-i9100.dts
+@@ -584,6 +584,16 @@ EN32KHZ_CP {
+ =09=09=09=09regulator-always-on;
+ =09=09=09};
+ =09=09};
++
++=09=09muic: max8997-muic {
++=09=09=09compatible =3D "maxim,max8997-muic";
++=09=09};
++
++=09=09charger {
++=09=09=09compatible =3D "maxim,max8997-battery";
++=09=09=09charger-supply =3D <&charger_reg>;
++=09=09=09extcon =3D <&muic>;
++=09=09};
+ =09};
+ };
 =20
-+Optional nodes:
-+- charger: Node for configuring the charger driver.
-+  Required properties:
-+  - compatible: "maxim,max8997-battery"
-+  Optional properties:
-+  - extcon: extcon specifier for charging events
-+  - charger-supply: regulator node for charging current
-+
-+- muic: Node used only by extcon consumers.
-+  Required properties:
-+  - compatible: "maxim,max8997-muic"
-+
- Regulators: The regulators of max8997 that have to be instantiated should =
-be
- included in a sub-node named 'regulators'. Regulator nodes included in thi=
-s
- sub-node should be of the format as listed below.
 --=20
 2.25.1
 
