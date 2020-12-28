@@ -8,459 +8,413 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 143EFC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:52:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BBF0C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 16:07:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D2A2B20791
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 15:52:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E862A2074A
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Dec 2020 16:07:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408394AbgL1Puu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Dec 2020 10:50:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46728 "EHLO
+        id S2393459AbgL1QG6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Dec 2020 11:06:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2632853AbgL1PuW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 10:50:22 -0500
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F38D9C061798;
-        Mon, 28 Dec 2020 07:49:41 -0800 (PST)
-Received: by mail-lf1-x130.google.com with SMTP id o13so24798547lfr.3;
-        Mon, 28 Dec 2020 07:49:41 -0800 (PST)
+        with ESMTP id S2393395AbgL1QG4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2020 11:06:56 -0500
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E892CC06179E;
+        Mon, 28 Dec 2020 08:06:07 -0800 (PST)
+Received: by mail-lf1-x12f.google.com with SMTP id x20so24823261lfe.12;
+        Mon, 28 Dec 2020 08:06:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=SYqB7FEw68SeQwuJRfi2dBM2z15ZxlZU6C2m0canOnM=;
-        b=sEgcyPWlaSSTwXBAomOpVZo6RxKFFLPZoVPyBw0vKfBwS/xjyG5T11OENKFHmpg7uU
-         sW/7ysR1TOJTmER7yNNs1+ZshW2+P3b98SoCy9yMMrusKpxg044d+pt3VLGVA5uNGWq7
-         9AVIAy/4rtd6gZie8/XLQF3X7wdmKq1E6zqNXOakdfP5kmMic0J785/hVHDMiCowVWa7
-         WuowyaL9Jej6omI+zOLun4EdPY/CWiS9AmGi8TxUVmBHzuvLMqwejSN+LK/rpr2VM6aI
-         oM7E/qjq2YetB7DQIsx8Q+EdJikpheT5ODXudeKRdDCJDnrCazmnHPAySWaqrp9MaFnE
-         Eiww==
+        bh=CFJiOxbFynL24gVLzjszwGgwYXRjyPqIbyEb12EfMGo=;
+        b=E9ABOjyxLxhSP4LNrbmlCVRj20IuW2Zk8G1gFhKjqYSMmbhFh7dqNOCS2ZaPe2MHtm
+         fOYx+9CwXb505vNKEYO6yvp8Y+9+ZsBQ2SsPdr0AJBG7227AZSrh79QQo2iXc7dBBkqp
+         AwqddnUghtHK+hJFDHHXeiXJNTIJFkBrlsvHMrmOT9/pDT/otIfRs09A3I9sFPI9xbDi
+         E0mrV3Y3RhXDdwUXrRGeuAVet3l9tcHFKIkVwNV+QT6T5M97+XajxXiBCA6ib1w00A83
+         d2vC3PcJKiWuJYRuR53HxcH/qVXpnTkfPxWnAAujlTfgQxpRjwN8ryGNxHRDqQ+dpU1C
+         oXLg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=SYqB7FEw68SeQwuJRfi2dBM2z15ZxlZU6C2m0canOnM=;
-        b=flDqXatXa6ekbvpMJUdCcunmq/BxEC3Tc8GS7jmnFTyqYgEQw3MtCTio0bW547iNvp
-         lj2KXd1Apr9Ol98AuM9Kw4SO0vzj5qC5igIcTOJCGbrjBHt13NiICYdqIPGSOjm+HiIy
-         vSsjkhWPbZhapcaHwyDfA82QJLrCLWWAhPa/1PqvJEuDgSy39NQAz7c7sUDWFQwseT0A
-         kOZcYqLc0Ti1MCbfJGE/B+D5cVTe6WBpsh4R5SrfsZ4j2e9BAFL2sFhkjtBwiIgIViSt
-         G93b66gUHNDJ2BT5mDZ5RRKhNCQwPUayvtTJqokXAYvChUJ2KJ9EFuTr4jgTcVHmgaFT
-         sGaw==
-X-Gm-Message-State: AOAM531Wl8vHGDRRcvYlp0fEknPdJXvQK6YLT5loZoSqS07vwovbYTUg
-        qwDMR7XSQWQb4YcZDHm+CuA=
-X-Google-Smtp-Source: ABdhPJx6of6SGDaYGkMgwUrHD1FNT9wEk0MrqiLjo3AUiuA45X6RdT8LZUx/Su87DaBj+BgkYQkFew==
-X-Received: by 2002:a2e:894c:: with SMTP id b12mr21161181ljk.401.1609170580520;
-        Mon, 28 Dec 2020 07:49:40 -0800 (PST)
+        bh=CFJiOxbFynL24gVLzjszwGgwYXRjyPqIbyEb12EfMGo=;
+        b=ajClbVAe5nVFidipJdN4Zi7R/bcD5SeApAONEFw2OOfS1krUQ1ifa4++HrZ8TL5++g
+         xys1d2VnYtUYMO0GvWxByOfBLnxxmyafoXTLLtg4MSjBd4lvA9Kp4Cl4m3YdHTakdEbn
+         CQ/6FBf4b2iNct3wNKSChTfVzaa5y77C6kWbsGRsUVRiDfTkQzhs9cd08E76tpzGh8p8
+         0z/FeHOmYzFPCskpcKW67iwCyRpTCyTabKFmC4PLvXE52CpECTgZaG0TtKDO4GVwpGwQ
+         YaWHEGURnf8YqRLEMUOGR9ErxtCNMF/GloWjfodpgbzzFkwXKPWGVNUQihRX2pcgzJ2p
+         Y8mQ==
+X-Gm-Message-State: AOAM533U3c6g6bPMC0JZe1wqIxnHsEy2i6Il4Hv2GPaYc42U1pkQGgI3
+        iKY0pRGldtkUc9qPCiN+7po=
+X-Google-Smtp-Source: ABdhPJyhPbnEzLK/h2sLcWYP9Lsf1lrpZqWSS0imLwFvYadXFQXqR8OrXOg1axihxCRzzRgpZDByYQ==
+X-Received: by 2002:a2e:8995:: with SMTP id c21mr21313013lji.251.1609171566450;
+        Mon, 28 Dec 2020 08:06:06 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id s27sm6502262ljd.25.2020.12.28.07.49.39
+        by smtp.gmail.com with ESMTPSA id v28sm5338837lfd.57.2020.12.28.08.06.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Dec 2020 07:49:40 -0800 (PST)
+        Mon, 28 Dec 2020 08:06:06 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH v12 1/5] memory: tegra124-emc: Make driver modular
-Date:   Mon, 28 Dec 2020 18:49:16 +0300
-Message-Id: <20201228154920.18846-2-digetx@gmail.com>
+        Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v8 3/3] power: supply: Add battery gauge driver for Acer Iconia Tab A500
+Date:   Mon, 28 Dec 2020 19:05:47 +0300
+Message-Id: <20201228160547.30562-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201228154920.18846-1-digetx@gmail.com>
-References: <20201228154920.18846-1-digetx@gmail.com>
+In-Reply-To: <20201228160547.30562-1-digetx@gmail.com>
+References: <20201228160547.30562-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add modularization support to the Tegra124 EMC driver, which now can be
-compiled as a loadable kernel module.
+This patch adds battery gauge driver for Acer Iconia Tab A500 device.
+The battery gauge function is provided via the Embedded Controller,
+which is found on the Acer A500.
 
-Note that EMC clock must be registered at clk-init time, otherwise PLLM
-will be disabled as unused clock at boot time if EMC driver is compiled
-as a module. Hence add a prepare/complete callbacks. similarly to what is
-done for the Tegra20/30 EMC drivers.
-
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/clk/tegra/Kconfig            |  3 ++
- drivers/clk/tegra/Makefile           |  2 +-
- drivers/clk/tegra/clk-tegra124-emc.c | 41 ++++++++++++++++++++++++----
- drivers/clk/tegra/clk-tegra124.c     | 26 ++++++++++++++++--
- drivers/clk/tegra/clk.h              | 18 ++++++++----
- drivers/memory/tegra/Kconfig         |  3 +-
- drivers/memory/tegra/tegra124-emc.c  | 31 ++++++++++++++-------
- include/linux/clk/tegra.h            |  8 ++++++
- include/soc/tegra/emc.h              | 16 -----------
- 9 files changed, 106 insertions(+), 42 deletions(-)
- delete mode 100644 include/soc/tegra/emc.h
+ drivers/power/supply/Kconfig             |   6 +
+ drivers/power/supply/Makefile            |   1 +
+ drivers/power/supply/acer_a500_battery.c | 297 +++++++++++++++++++++++
+ 3 files changed, 304 insertions(+)
+ create mode 100644 drivers/power/supply/acer_a500_battery.c
 
-diff --git a/drivers/clk/tegra/Kconfig b/drivers/clk/tegra/Kconfig
-index deaa4605824c..90df619dc087 100644
---- a/drivers/clk/tegra/Kconfig
-+++ b/drivers/clk/tegra/Kconfig
-@@ -7,3 +7,6 @@ config TEGRA_CLK_DFLL
- 	depends on ARCH_TEGRA_124_SOC || ARCH_TEGRA_210_SOC
- 	select PM_OPP
- 	def_bool y
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index eec646c568b7..bc493173ddbc 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -774,4 +774,10 @@ config RN5T618_POWER
+ 	  This driver can also be built as a module. If so, the module will be
+ 	  called rn5t618_power.
+ 
++config BATTERY_ACER_A500
++	tristate "Acer Iconia Tab A500 battery driver"
++	depends on MFD_ACER_A500_EC
++	help
++	  Say Y to include support for Acer Iconia Tab A500 battery fuel gauge.
 +
-+config TEGRA124_CLK_EMC
-+	bool
-diff --git a/drivers/clk/tegra/Makefile b/drivers/clk/tegra/Makefile
-index eec2313fd37e..7b1816856eb5 100644
---- a/drivers/clk/tegra/Makefile
-+++ b/drivers/clk/tegra/Makefile
-@@ -22,7 +22,7 @@ obj-$(CONFIG_ARCH_TEGRA_3x_SOC)		+= clk-tegra20-emc.o
- obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= clk-tegra114.o
- obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= clk-tegra124.o
- obj-$(CONFIG_TEGRA_CLK_DFLL)		+= clk-tegra124-dfll-fcpu.o
--obj-$(CONFIG_TEGRA124_EMC)		+= clk-tegra124-emc.o
-+obj-$(CONFIG_TEGRA124_CLK_EMC)		+= clk-tegra124-emc.o
- obj-$(CONFIG_ARCH_TEGRA_132_SOC)	+= clk-tegra124.o
- obj-y					+= cvb.o
- obj-$(CONFIG_ARCH_TEGRA_210_SOC)	+= clk-tegra210.o
-diff --git a/drivers/clk/tegra/clk-tegra124-emc.c b/drivers/clk/tegra/clk-tegra124-emc.c
-index 745f9faa98d8..bdf6f4a51617 100644
---- a/drivers/clk/tegra/clk-tegra124-emc.c
-+++ b/drivers/clk/tegra/clk-tegra124-emc.c
-@@ -11,7 +11,9 @@
- #include <linux/clk-provider.h>
- #include <linux/clk.h>
- #include <linux/clkdev.h>
-+#include <linux/clk/tegra.h>
- #include <linux/delay.h>
-+#include <linux/export.h>
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-@@ -21,7 +23,6 @@
- #include <linux/string.h>
- 
- #include <soc/tegra/fuse.h>
--#include <soc/tegra/emc.h>
- 
- #include "clk.h"
- 
-@@ -80,6 +81,9 @@ struct tegra_clk_emc {
- 	int num_timings;
- 	struct emc_timing *timings;
- 	spinlock_t *lock;
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index dd4b86318cd9..0607a3d64c0f 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -98,3 +98,4 @@ obj-$(CONFIG_CHARGER_BD70528)	+= bd70528-charger.o
+ obj-$(CONFIG_CHARGER_BD99954)	+= bd99954-charger.o
+ obj-$(CONFIG_CHARGER_WILCO)	+= wilco-charger.o
+ obj-$(CONFIG_RN5T618_POWER)	+= rn5t618_power.o
++obj-$(CONFIG_BATTERY_ACER_A500)	+= acer_a500_battery.o
+diff --git a/drivers/power/supply/acer_a500_battery.c b/drivers/power/supply/acer_a500_battery.c
+new file mode 100644
+index 000000000000..32a0bfcac08f
+--- /dev/null
++++ b/drivers/power/supply/acer_a500_battery.c
+@@ -0,0 +1,297 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Battery driver for Acer Iconia Tab A500.
++ *
++ * Copyright 2020 GRATE-driver project.
++ *
++ * Based on downstream driver from Acer Inc.
++ * Based on NVIDIA Gas Gauge driver for SBS Compliant Batteries.
++ *
++ * Copyright (c) 2010, NVIDIA Corporation.
++ */
 +
-+	tegra124_emc_prepare_timing_change_cb *prepare_timing_change;
-+	tegra124_emc_complete_timing_change_cb *complete_timing_change;
- };
- 
- /* Common clock framework callback implementations */
-@@ -176,6 +180,9 @@ static struct tegra_emc *emc_ensure_emc_driver(struct tegra_clk_emc *tegra)
- 	if (tegra->emc)
- 		return tegra->emc;
- 
-+	if (!tegra->prepare_timing_change || !tegra->complete_timing_change)
-+		return NULL;
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/regmap.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/workqueue.h>
 +
- 	if (!tegra->emc_node)
- 		return NULL;
- 
-@@ -241,7 +248,7 @@ static int emc_set_timing(struct tegra_clk_emc *tegra,
- 
- 	div = timing->parent_rate / (timing->rate / 2) - 2;
- 
--	err = tegra_emc_prepare_timing_change(emc, timing->rate);
-+	err = tegra->prepare_timing_change(emc, timing->rate);
- 	if (err)
- 		return err;
- 
-@@ -259,7 +266,7 @@ static int emc_set_timing(struct tegra_clk_emc *tegra,
- 
- 	spin_unlock_irqrestore(tegra->lock, flags);
- 
--	tegra_emc_complete_timing_change(emc, timing->rate);
-+	tegra->complete_timing_change(emc, timing->rate);
- 
- 	clk_hw_reparent(&tegra->hw, __clk_get_hw(timing->parent));
- 	clk_disable_unprepare(tegra->prev_parent);
-@@ -473,8 +480,8 @@ static const struct clk_ops tegra_clk_emc_ops = {
- 	.get_parent = emc_get_parent,
- };
- 
--struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
--				   spinlock_t *lock)
-+struct clk *tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
-+				      spinlock_t *lock)
- {
- 	struct tegra_clk_emc *tegra;
- 	struct clk_init_data init;
-@@ -538,3 +545,27 @@ struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
- 
- 	return clk;
- };
++enum {
++	REG_CAPACITY,
++	REG_VOLTAGE,
++	REG_CURRENT,
++	REG_DESIGN_CAPACITY,
++	REG_TEMPERATURE,
++};
 +
-+void tegra124_clk_set_emc_callbacks(tegra124_emc_prepare_timing_change_cb *prep_cb,
-+				    tegra124_emc_complete_timing_change_cb *complete_cb)
-+{
-+	struct clk *clk = __clk_lookup("emc");
-+	struct tegra_clk_emc *tegra;
-+	struct clk_hw *hw;
-+
-+	if (clk) {
-+		hw = __clk_get_hw(clk);
-+		tegra = container_of(hw, struct tegra_clk_emc, hw);
-+
-+		tegra->prepare_timing_change = prep_cb;
-+		tegra->complete_timing_change = complete_cb;
-+	}
++#define EC_DATA(_reg, _psp) {			\
++	.psp = POWER_SUPPLY_PROP_ ## _psp,	\
++	.reg = _reg,				\
 +}
-+EXPORT_SYMBOL_GPL(tegra124_clk_set_emc_callbacks);
 +
-+bool tegra124_clk_emc_driver_available(struct clk_hw *hw)
++static const struct battery_register {
++	enum power_supply_property psp;
++	unsigned int reg;
++} ec_data[] = {
++	[REG_CAPACITY]		= EC_DATA(0x00, CAPACITY),
++	[REG_VOLTAGE]		= EC_DATA(0x01, VOLTAGE_NOW),
++	[REG_CURRENT]		= EC_DATA(0x03, CURRENT_NOW),
++	[REG_DESIGN_CAPACITY]	= EC_DATA(0x08, CHARGE_FULL_DESIGN),
++	[REG_TEMPERATURE]	= EC_DATA(0x0a, TEMP),
++};
++
++static const enum power_supply_property a500_battery_properties[] = {
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++};
++
++struct a500_battery {
++	struct delayed_work poll_work;
++	struct power_supply *psy;
++	struct regmap *regmap;
++	unsigned int capacity;
++};
++
++static bool a500_battery_update_capacity(struct a500_battery *bat)
 +{
-+	struct tegra_clk_emc *tegra = container_of(hw, struct tegra_clk_emc, hw);
++	unsigned int capacity;
++	int err;
 +
-+	return tegra->prepare_timing_change && tegra->complete_timing_change;
-+}
-diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
-index e931319dcc9d..934520aab6e3 100644
---- a/drivers/clk/tegra/clk-tegra124.c
-+++ b/drivers/clk/tegra/clk-tegra124.c
-@@ -1500,6 +1500,26 @@ static void __init tegra124_132_clock_init_pre(struct device_node *np)
- 	writel(plld_base, clk_base + PLLD_BASE);
- }
- 
-+static struct clk *tegra124_clk_src_onecell_get(struct of_phandle_args *clkspec,
-+						void *data)
-+{
-+	struct clk_hw *hw;
-+	struct clk *clk;
++	err = regmap_read(bat->regmap, ec_data[REG_CAPACITY].reg, &capacity);
++	if (err)
++		return false;
 +
-+	clk = of_clk_src_onecell_get(clkspec, data);
-+	if (IS_ERR(clk))
-+		return clk;
++	/* capacity can be >100% even if max value is 100% */
++	capacity = min(capacity, 100u);
 +
-+	hw = __clk_get_hw(clk);
-+
-+	if (clkspec->args[0] == TEGRA124_CLK_EMC) {
-+		if (!tegra124_clk_emc_driver_available(hw))
-+			return ERR_PTR(-EPROBE_DEFER);
++	if (bat->capacity != capacity) {
++		bat->capacity = capacity;
++		return true;
 +	}
 +
-+	return clk;
-+}
-+
- /**
-  * tegra124_132_clock_init_post - clock initialization postamble for T124/T132
-  * @np: struct device_node * of the DT node for the SoC CAR IP block
-@@ -1516,10 +1536,10 @@ static void __init tegra124_132_clock_init_post(struct device_node *np)
- 				  &pll_x_params);
- 	tegra_init_special_resets(1, tegra124_reset_assert,
- 				  tegra124_reset_deassert);
--	tegra_add_of_provider(np, of_clk_src_onecell_get);
-+	tegra_add_of_provider(np, tegra124_clk_src_onecell_get);
- 
--	clks[TEGRA124_CLK_EMC] = tegra_clk_register_emc(clk_base, np,
--							&emc_lock);
-+	clks[TEGRA124_CLK_EMC] = tegra124_clk_register_emc(clk_base, np,
-+							   &emc_lock);
- 
- 	tegra_register_devclks(devclks, ARRAY_SIZE(devclks));
- 
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index 6b565f6b5f66..c3e36b5dcc75 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -881,16 +881,22 @@ void tegra_super_clk_gen5_init(void __iomem *clk_base,
- 			void __iomem *pmc_base, struct tegra_clk *tegra_clks,
- 			struct tegra_clk_pll_params *pll_params);
- 
--#ifdef CONFIG_TEGRA124_EMC
--struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
--				   spinlock_t *lock);
-+#ifdef CONFIG_TEGRA124_CLK_EMC
-+struct clk *tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
-+				      spinlock_t *lock);
-+bool tegra124_clk_emc_driver_available(struct clk_hw *emc_hw);
- #else
--static inline struct clk *tegra_clk_register_emc(void __iomem *base,
--						 struct device_node *np,
--						 spinlock_t *lock)
-+static inline struct clk *
-+tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
-+			  spinlock_t *lock)
- {
- 	return NULL;
- }
-+
-+static inline bool tegra124_clk_emc_driver_available(struct clk_hw *emc_hw)
-+{
 +	return false;
 +}
- #endif
- 
- void tegra114_clock_tune_cpu_trimmers_high(void);
-diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
-index ca7077a06f4c..f5b451403c58 100644
---- a/drivers/memory/tegra/Kconfig
-+++ b/drivers/memory/tegra/Kconfig
-@@ -32,9 +32,10 @@ config TEGRA30_EMC
- 	  external memory.
- 
- config TEGRA124_EMC
--	bool "NVIDIA Tegra124 External Memory Controller driver"
-+	tristate "NVIDIA Tegra124 External Memory Controller driver"
- 	default y
- 	depends on TEGRA_MC && ARCH_TEGRA_124_SOC
-+	select TEGRA124_CLK_EMC
- 	help
- 	  This driver is for the External Memory Controller (EMC) found on
- 	  Tegra124 chips. The EMC controls the external DRAM on the board.
-diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
-index ee8ee39e98ed..edfbf6d6d357 100644
---- a/drivers/memory/tegra/tegra124-emc.c
-+++ b/drivers/memory/tegra/tegra124-emc.c
-@@ -9,16 +9,17 @@
- #include <linux/clk-provider.h>
- #include <linux/clk.h>
- #include <linux/clkdev.h>
-+#include <linux/clk/tegra.h>
- #include <linux/debugfs.h>
- #include <linux/delay.h>
- #include <linux/io.h>
-+#include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/sort.h>
- #include <linux/string.h>
- 
--#include <soc/tegra/emc.h>
- #include <soc/tegra/fuse.h>
- #include <soc/tegra/mc.h>
- 
-@@ -562,8 +563,8 @@ static struct emc_timing *tegra_emc_find_timing(struct tegra_emc *emc,
- 	return timing;
- }
- 
--int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
--				    unsigned long rate)
-+static int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
-+					   unsigned long rate)
- {
- 	struct emc_timing *timing = tegra_emc_find_timing(emc, rate);
- 	struct emc_timing *last = &emc->last_timing;
-@@ -790,8 +791,8 @@ int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
- 	return 0;
- }
- 
--void tegra_emc_complete_timing_change(struct tegra_emc *emc,
--				      unsigned long rate)
-+static void tegra_emc_complete_timing_change(struct tegra_emc *emc,
-+					     unsigned long rate)
- {
- 	struct emc_timing *timing = tegra_emc_find_timing(emc, rate);
- 	struct emc_timing *last = &emc->last_timing;
-@@ -987,6 +988,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
- 	{ .compatible = "nvidia,tegra132-emc" },
- 	{}
- };
-+MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
- 
- static struct device_node *
- tegra_emc_find_node_by_ram_code(struct device_node *node, u32 ram_code)
-@@ -1226,9 +1228,19 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, emc);
- 
-+	tegra124_clk_set_emc_callbacks(tegra_emc_prepare_timing_change,
-+				       tegra_emc_complete_timing_change);
 +
- 	if (IS_ENABLED(CONFIG_DEBUG_FS))
- 		emc_debugfs_init(&pdev->dev, emc);
- 
++static int a500_battery_get_status(struct a500_battery *bat)
++{
++	if (bat->capacity < 100) {
++		if (power_supply_am_i_supplied(bat->psy))
++			return POWER_SUPPLY_STATUS_CHARGING;
++		else
++			return POWER_SUPPLY_STATUS_DISCHARGING;
++	}
++
++	return POWER_SUPPLY_STATUS_FULL;
++}
++
++static void a500_battery_unit_adjustment(struct device *dev,
++					 enum power_supply_property psp,
++					 union power_supply_propval *val)
++{
++	const unsigned int base_unit_conversion = 1000;
++	const unsigned int temp_kelvin_to_celsius = 2731;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		val->intval *= base_unit_conversion;
++		break;
++
++	case POWER_SUPPLY_PROP_TEMP:
++		val->intval -= temp_kelvin_to_celsius;
++		break;
++
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = !!val->intval;
++		break;
++
++	default:
++		dev_dbg(dev,
++			"%s: no need for unit conversion %d\n", __func__, psp);
++	}
++}
++
++static int a500_battery_get_ec_data_index(struct device *dev,
++					  enum power_supply_property psp)
++{
++	unsigned int i;
++
 +	/*
-+	 * Don't allow the kernel module to be unloaded. Unloading adds some
-+	 * extra complexity which doesn't really worth the effort in a case of
-+	 * this driver.
++	 * DESIGN_CAPACITY register always returns a non-zero value if
++	 * battery is connected and zero if disconnected, hence we'll use
++	 * it for judging the battery presence.
 +	 */
-+	try_module_get(THIS_MODULE);
++	if (psp == POWER_SUPPLY_PROP_PRESENT)
++		psp = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
 +
- 	return 0;
- };
- 
-@@ -1240,9 +1252,8 @@ static struct platform_driver tegra_emc_driver = {
- 		.suppress_bind_attrs = true,
- 	},
- };
-+module_platform_driver(tegra_emc_driver);
- 
--static int tegra_emc_init(void)
--{
--	return platform_driver_register(&tegra_emc_driver);
--}
--subsys_initcall(tegra_emc_init);
-+MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
-+MODULE_DESCRIPTION("NVIDIA Tegra124 EMC driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/clk/tegra.h b/include/linux/clk/tegra.h
-index 3f01d43f0598..eb016fc9cc0b 100644
---- a/include/linux/clk/tegra.h
-+++ b/include/linux/clk/tegra.h
-@@ -136,6 +136,7 @@ extern void tegra210_clk_emc_dll_update_setting(u32 emc_dll_src_value);
- extern void tegra210_clk_emc_update_setting(u32 emc_src_value);
- 
- struct clk;
-+struct tegra_emc;
- 
- typedef long (tegra20_clk_emc_round_cb)(unsigned long rate,
- 					unsigned long min_rate,
-@@ -146,6 +147,13 @@ void tegra20_clk_set_emc_round_callback(tegra20_clk_emc_round_cb *round_cb,
- 					void *cb_arg);
- int tegra20_clk_prepare_emc_mc_same_freq(struct clk *emc_clk, bool same);
- 
-+typedef int (tegra124_emc_prepare_timing_change_cb)(struct tegra_emc *emc,
-+						    unsigned long rate);
-+typedef void (tegra124_emc_complete_timing_change_cb)(struct tegra_emc *emc,
-+						      unsigned long rate);
-+void tegra124_clk_set_emc_callbacks(tegra124_emc_prepare_timing_change_cb *prep_cb,
-+				    tegra124_emc_complete_timing_change_cb *complete_cb);
++	for (i = 0; i < ARRAY_SIZE(ec_data); i++)
++		if (psp == ec_data[i].psp)
++			return i;
 +
- struct tegra210_clk_emc_config {
- 	unsigned long rate;
- 	bool same_freq;
-diff --git a/include/soc/tegra/emc.h b/include/soc/tegra/emc.h
-deleted file mode 100644
-index 05199a97ccf4..000000000000
---- a/include/soc/tegra/emc.h
-+++ /dev/null
-@@ -1,16 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (c) 2014 NVIDIA Corporation. All rights reserved.
-- */
--
--#ifndef __SOC_TEGRA_EMC_H__
--#define __SOC_TEGRA_EMC_H__
--
--struct tegra_emc;
--
--int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
--				    unsigned long rate);
--void tegra_emc_complete_timing_change(struct tegra_emc *emc,
--				      unsigned long rate);
--
--#endif /* __SOC_TEGRA_EMC_H__ */
++	dev_dbg(dev, "%s: invalid property %u\n", __func__, psp);
++
++	return -EINVAL;
++}
++
++static int a500_battery_get_property(struct power_supply *psy,
++				     enum power_supply_property psp,
++				     union power_supply_propval *val)
++{
++	struct a500_battery *bat = power_supply_get_drvdata(psy);
++	struct device *dev = psy->dev.parent;
++	int ret = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		val->intval = a500_battery_get_status(bat);
++		break;
++
++	case POWER_SUPPLY_PROP_TECHNOLOGY:
++		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
++		break;
++
++	case POWER_SUPPLY_PROP_CAPACITY:
++		a500_battery_update_capacity(bat);
++		val->intval = bat->capacity;
++		break;
++
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_PRESENT:
++	case POWER_SUPPLY_PROP_TEMP:
++		ret = a500_battery_get_ec_data_index(dev, psp);
++		if (ret < 0)
++			break;
++
++		ret = regmap_read(bat->regmap, ec_data[ret].reg, &val->intval);
++		break;
++
++	default:
++		dev_err(dev, "%s: invalid property %u\n", __func__, psp);
++		return -EINVAL;
++	}
++
++	if (!ret) {
++		/* convert units to match requirements of power supply class */
++		a500_battery_unit_adjustment(dev, psp, val);
++	}
++
++	dev_dbg(dev, "%s: property = %d, value = %x\n",
++		__func__, psp, val->intval);
++
++	/* return NODATA for properties if battery not presents */
++	if (ret)
++		return -ENODATA;
++
++	return 0;
++}
++
++static void a500_battery_poll_work(struct work_struct *work)
++{
++	struct a500_battery *bat;
++	bool capacity_changed;
++
++	bat = container_of(work, struct a500_battery, poll_work.work);
++	capacity_changed = a500_battery_update_capacity(bat);
++
++	if (capacity_changed)
++		power_supply_changed(bat->psy);
++
++	/* continuously send uevent notification */
++	schedule_delayed_work(&bat->poll_work, 30 * HZ);
++}
++
++static const struct power_supply_desc a500_battery_desc = {
++	.name = "ec-battery",
++	.type = POWER_SUPPLY_TYPE_BATTERY,
++	.properties = a500_battery_properties,
++	.get_property = a500_battery_get_property,
++	.num_properties = ARRAY_SIZE(a500_battery_properties),
++	.external_power_changed = power_supply_changed,
++};
++
++static int a500_battery_probe(struct platform_device *pdev)
++{
++	struct power_supply_config psy_cfg = {};
++	struct a500_battery *bat;
++
++	bat = devm_kzalloc(&pdev->dev, sizeof(*bat), GFP_KERNEL);
++	if (!bat)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, bat);
++
++	psy_cfg.of_node = pdev->dev.parent->of_node;
++	psy_cfg.drv_data = bat;
++
++	bat->regmap = dev_get_regmap(pdev->dev.parent, "KB930");
++	if (!bat->regmap)
++		return -EINVAL;
++
++	bat->psy = devm_power_supply_register_no_ws(&pdev->dev,
++						    &a500_battery_desc,
++						    &psy_cfg);
++	if (IS_ERR(bat->psy))
++		return dev_err_probe(&pdev->dev, PTR_ERR(bat->psy),
++				     "failed to register battery\n");
++
++	INIT_DELAYED_WORK(&bat->poll_work, a500_battery_poll_work);
++	schedule_delayed_work(&bat->poll_work, HZ);
++
++	return 0;
++}
++
++static int a500_battery_remove(struct platform_device *pdev)
++{
++	struct a500_battery *bat = dev_get_drvdata(&pdev->dev);
++
++	cancel_delayed_work_sync(&bat->poll_work);
++
++	return 0;
++}
++
++static int __maybe_unused a500_battery_suspend(struct device *dev)
++{
++	struct a500_battery *bat = dev_get_drvdata(dev);
++
++	cancel_delayed_work_sync(&bat->poll_work);
++
++	return 0;
++}
++
++static int __maybe_unused a500_battery_resume(struct device *dev)
++{
++	struct a500_battery *bat = dev_get_drvdata(dev);
++
++	schedule_delayed_work(&bat->poll_work, HZ);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(a500_battery_pm_ops,
++			 a500_battery_suspend, a500_battery_resume);
++
++static struct platform_driver a500_battery_driver = {
++	.driver = {
++		.name = "acer-a500-iconia-battery",
++		.pm = &a500_battery_pm_ops,
++	},
++	.probe = a500_battery_probe,
++	.remove = a500_battery_remove,
++};
++module_platform_driver(a500_battery_driver);
++
++MODULE_DESCRIPTION("Battery gauge driver for Acer Iconia Tab A500");
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_ALIAS("platform:acer-a500-iconia-battery");
++MODULE_LICENSE("GPL");
 -- 
 2.29.2
 
