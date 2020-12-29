@@ -2,77 +2,290 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62DB3C433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 17:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14020C4332D
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 17:32:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B21421D94
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 17:21:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7E18221F8
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 17:32:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726126AbgL2RVK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Dec 2020 12:21:10 -0500
-Received: from mga18.intel.com ([134.134.136.126]:6917 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726111AbgL2RVK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 29 Dec 2020 12:21:10 -0500
-IronPort-SDR: i+PmgkS09dfN3pKiwtgGflOu6gHVkLiaKFE6e1kXkAUz4LYFV51LIFVGDw4FHvnBg2JPP6q1Lx
- GYL2jFqg1QJg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9849"; a="164228702"
-X-IronPort-AV: E=Sophos;i="5.78,458,1599548400"; 
-   d="scan'208";a="164228702"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Dec 2020 09:20:29 -0800
-IronPort-SDR: bbvQao6qL7U8CvteIPgd/sWex/DkQoA9L2mdDhXfWsEJaK2TCoW7pYN29a2VKm3GkNla8cSBKI
- rLjhrfXIkAsw==
-X-IronPort-AV: E=Sophos;i="5.78,458,1599548400"; 
-   d="scan'208";a="376124749"
-Received: from rjwysock-mobl1.ger.corp.intel.com (HELO [10.249.150.176]) ([10.249.150.176])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Dec 2020 09:20:28 -0800
-Subject: Re: Commit a365ab6b9df ("Implement the ->adjust_perf() callback")
- causing resume failures
-To:     "Kenneth R. Crudup" <kenny@panix.com>
-Cc:     srinivas.pandruvada@linux.intel.com, viresh.kumar@linaro.org,
-        Linux PM <linux-pm@vger.kernel.org>
-References: <c185acb9-c757-bb5e-60df-b18bd85d79b@panix.com>
-From:   "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Organization: Intel Technology Poland Sp. z o. o., KRS 101882, ul. Slowackiego
- 173, 80-298 Gdansk
-Message-ID: <1610e3f7-9699-374d-3375-d421f31fbd98@intel.com>
-Date:   Tue, 29 Dec 2020 18:20:25 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+        id S1726290AbgL2RcL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Dec 2020 12:32:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58230 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726278AbgL2RcK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Dec 2020 12:32:10 -0500
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F381FC061798;
+        Tue, 29 Dec 2020 09:31:29 -0800 (PST)
+Received: by mail-ej1-x62e.google.com with SMTP id q22so19040367eja.2;
+        Tue, 29 Dec 2020 09:31:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=LI9mt81CVBwBrxE0HZ6xGCeZ8da/K/wOcXVmfavfX5s=;
+        b=pm8njTLGUJ7K1PwXHHQDslHwqsbVkJjYnuppHab942yzxoLbwWNduM6UEchzGGwKxl
+         ePVhZEET4X4gwA4LsCK8bSj56aVV2QqIIiJtoBa5P4QTVZDuSpI4MQJ7AANYrdU/BggI
+         HXLdeSuZFoL4oFsv589ruFIjy2iRntKqFzmtHbPq/G6MnLkwh/POUPoOmKhOgeeP/JPK
+         1AWFyHJ+h65KJGoVLNNNicCznoDGXnpom9Lzpg+eMGCEAB7ch3HUJSjsABY2UFTscIKM
+         1z+Uann45Es3G4ltixGmkQO0WCH35OgOT1NSzwSQf/hOhwLoQ5MqQ3fP6zKouqV40R9r
+         +f7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=LI9mt81CVBwBrxE0HZ6xGCeZ8da/K/wOcXVmfavfX5s=;
+        b=C1MpBWlXcLdPa3F2VWCuqrhbSN7AaSIbZq2Ihb7liaLh46pf6xK7V8eba9zge+IrmS
+         qG+p2y4Zfj0ri74CPM+1HyJIpPLE5iooMKaOyGM5rbQrk053whl5+lrCy7eWdvuC89E1
+         6gwOdkJwdZ58rqqBB7YnMZj3dnuz9pEqhm01JE8tIrEaKo8gTEKdJPbyYaOq6Ei6Aw5C
+         xpD0m/xOH+9QOQ7Ewx9GwM1AxGKe+gB/rmvu/65b5/3YIm3TgYldE+AolVkFeRdaFD3s
+         Rfe6zveNoK+UluRtrkptv5+I8byA5MoZGY00wNjeFFAIXKzKBhkZv2ucmncfzVFuigwj
+         nXdw==
+X-Gm-Message-State: AOAM533csOFJyI4DGcHFbiiMzdsB1Sm2WPhK5AePnBJUFU/Ndj19fpiE
+        aRhs5gcXnHU/MsrQpj3CZ9M=
+X-Google-Smtp-Source: ABdhPJzCs11i548dmxcQdKR+5d8pp7em8Py5DxbqkP9wIvbdhHIJzJoO9VrIwtdrbGAG6ia6NnYDAQ==
+X-Received: by 2002:a17:906:118c:: with SMTP id n12mr47380123eja.167.1609263088702;
+        Tue, 29 Dec 2020 09:31:28 -0800 (PST)
+Received: from localhost.localdomain ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id q25sm37385362eds.85.2020.12.29.09.31.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Dec 2020 09:31:28 -0800 (PST)
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>
+Subject: [PATCH v4 2/7] dt-bindings: mfd: Add Actions Semi ATC260x PMIC binding
+Date:   Tue, 29 Dec 2020 19:31:17 +0200
+Message-Id: <7e15d367eee714c997def0a02383d62845c15c2d.1609258905.git.cristian.ciocaltea@gmail.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <cover.1609258905.git.cristian.ciocaltea@gmail.com>
+References: <cover.1609258905.git.cristian.ciocaltea@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <c185acb9-c757-bb5e-60df-b18bd85d79b@panix.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/27/2020 4:39 AM, Kenneth R. Crudup wrote:
-> My laptop (XPS-13 2-in-1, i7-1065G7 CPU) hibernates just fine with this commit
-> in place, but suspends fail, so hard that many times EFI pstore can't finish
-> writing out the crash most times (but I attached one that made it OK).
->
-> I'm sure you'll need more information, just let me know.
+Add devicetree binding for Actions Semi ATC260x PMICs.
 
-Well, not really.
+Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+Changes in v4
+ - Added Reviewed-by from Rob
+ - Added support for ATC2603C LDO12 fixed regulator per Mark's suggestion
 
-Please test this patch:
+Changes in v3 (according to Rob's review):
+ - Dropped the 'pwrc' and 'onkey' nodes
+ - Used a common 'reset-time-sec' property
 
-https://patchwork.kernel.org/project/linux-pm/patch/2586979.mvXUDI8C0e@kreacher/
+ .../bindings/mfd/actions,atc260x.yaml         | 183 ++++++++++++++++++
+ 1 file changed, 183 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
 
-also available as a git commit:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=bleeding-edge&id=d77a56dee59ef2f15da63501c50c2c903a36c10b
-
-it should fix the problem.
-
-Thanks for the report!
-
+diff --git a/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+new file mode 100644
+index 000000000000..dd43a0c766f3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+@@ -0,0 +1,183 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/actions,atc260x.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Actions Semi ATC260x Power Management IC bindings
++
++maintainers:
++  - Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++  - Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
++
++description: |
++  ATC260x series PMICs integrates Audio Codec, Power Management, RTC, IR
++  and GPIO controller blocks. Currently only the PM related functionalities
++  (i.e. regulators and system power-off/reboot) for the ATC2603C and ATC2609A
++  chip variants are supported.
++  ATC2603C includes 3 programmable DC-DC converters, 9 programmable LDO
++  regulators and 1 fixed LDO regulator.
++  ATC2609A includes 5 programmable DC-DC converters and 10 programmable LDO
++  regulators.
++
++allOf:
++  - $ref: ../input/input.yaml
++
++properties:
++  compatible:
++    enum:
++      - actions,atc2603c
++      - actions,atc2609a
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  reset-time-sec:
++    description: |
++      Duration in seconds which the key should be kept pressed for device
++      to reset automatically. The hardware default is 8. Use 0 to disable
++      this functionality.
++    enum: [0, 6, 8, 10, 12]
++
++  regulators:
++    type: object
++    description: |
++      List of child nodes specifying the regulators, depending on chip variant:
++      * ATC2603C: dcdc[1-3], ldo[1-3,5-8,11,12], switchldo1
++      * ATC2609A: dcdc[0-4], ldo[0-9]
++
++    properties:
++      compatible:
++        enum:
++          - actions,atc2603c-regulator
++          - actions,atc2609a-regulator
++
++      switchldo1:
++        type: object
++        $ref: ../regulator/regulator.yaml
++
++        properties:
++          regulator-name: true
++          regulator-boot-on: true
++          regulator-always-on: true
++          regulator-min-microvolt: true
++          regulator-max-microvolt: true
++          regulator-allow-bypass: true
++          regulator-active-discharge: true
++
++        additionalProperties: false
++
++    patternProperties:
++      "^(dcdc[0-4]|ldo[0-9]|ldo1[1-2]|switchldo1)-supply$":
++        description: ATC260x voltage regulators supplies
++
++      "^(dcdc[0-4]|ldo[0-9]|ldo1[1-2])$":
++        type: object
++        $ref: ../regulator/regulator.yaml
++
++        properties:
++          regulator-name: true
++          regulator-boot-on: true
++          regulator-always-on: true
++          regulator-min-microvolt: true
++          regulator-max-microvolt: true
++          regulator-allow-bypass: true
++
++        additionalProperties: false
++
++    allOf:
++      - if:
++          properties:
++            compatible:
++              contains:
++                const: actions,atc2603c-regulator
++        then:
++          patternProperties:
++            "^(dcdc[0,4]|ldo[0,4,9])(-supply)?$": false
++
++            "^(ldo|dcdc)":
++              properties:
++                regulator-allow-bypass: false
++      - if:
++          properties:
++            compatible:
++              contains:
++                const: actions,atc2609a-regulator
++        then:
++          patternProperties:
++            "^(ldo1[1-2]|switchldo1)(-supply)?$": false
++
++            "^(dcdc|ldo[3-9])":
++              properties:
++                regulator-allow-bypass: false
++
++    required:
++      - compatible
++
++    additionalProperties: false
++
++additionalProperties: false
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    i2c0 {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        pmic@65 {
++            compatible = "actions,atc2603c";
++            reg = <0x65>;
++            interrupt-parent = <&sirq>;
++            interrupts = <2 IRQ_TYPE_LEVEL_HIGH>;
++
++            reset-time-sec = <6>;
++
++            regulators {
++                compatible = "actions,atc2603c-regulator";
++
++                dcdc1-supply = <&reg_5v0>;
++                dcdc3-supply = <&reg_5v0>;
++                ldo5-supply = <&reg_5v0>;
++                switchldo1-supply = <&vcc>;
++
++                vdd_cpu: dcdc1 {
++                    regulator-name = "VDD_CPU";
++                    regulator-min-microvolt = <700000>;
++                    regulator-max-microvolt = <1400000>;
++                    regulator-always-on;
++                };
++
++                vcc: dcdc3 {
++                    regulator-name = "VCC";
++                    regulator-min-microvolt = <2600000>;
++                    regulator-max-microvolt = <3300000>;
++                    regulator-always-on;
++                };
++
++                vcc_3v1: ldo5 {
++                    regulator-name = "VCC_3V1";
++                    regulator-min-microvolt = <2600000>;
++                    regulator-max-microvolt = <3300000>;
++                };
++
++                sd_vcc: switchldo1 {
++                    regulator-name = "SD_VCC";
++                    regulator-min-microvolt = <3000000>;
++                    regulator-max-microvolt = <3300000>;
++                    regulator-always-on;
++                    regulator-boot-on;
++                };
++            };
++        };
++    };
++
++...
+-- 
+2.30.0
 
