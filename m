@@ -3,34 +3,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 135E8C4332E
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 06:18:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E74D8C43331
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 06:18:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E527D207AE
+	by mail.kernel.org (Postfix) with ESMTP id CEE48207B8
 	for <linux-pm@archiver.kernel.org>; Tue, 29 Dec 2020 06:18:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726156AbgL2GSI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Dec 2020 01:18:08 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:33816 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725832AbgL2GSI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Dec 2020 01:18:08 -0500
-X-UUID: 41a8b44ef2ea45fca9cfccf68da20dca-20201229
-X-UUID: 41a8b44ef2ea45fca9cfccf68da20dca-20201229
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+        id S1726281AbgL2GSL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Dec 2020 01:18:11 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:45532 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726029AbgL2GSL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Dec 2020 01:18:11 -0500
+X-UUID: 764e0c4411ae4c1b93d096821168c564-20201229
+X-UUID: 764e0c4411ae4c1b93d096821168c564-20201229
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
         (envelope-from <hector.yuan@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1171348968; Tue, 29 Dec 2020 14:17:21 +0800
+        with ESMTP id 727670328; Tue, 29 Dec 2020 14:17:19 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
  mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Tue, 29 Dec 2020 14:17:19 +0800
+ 15.0.1497.2; Tue, 29 Dec 2020 14:17:16 +0800
 Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 29 Dec 2020 14:17:19 +0800
+ Transport; Tue, 29 Dec 2020 14:17:16 +0800
 From:   Hector Yuan <hector.yuan@mediatek.com>
 To:     <linux-mediatek@lists.infradead.org>,
         <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
@@ -40,12 +40,10 @@ To:     <linux-mediatek@lists.infradead.org>,
         Rob Herring <robh+dt@kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
 CC:     <wsd_upstream@mediatek.com>, <hector.yuan@mediatek.com>
-Subject: [PATCH v10 2/2] dt-bindings: cpufreq: add bindings for MediaTek cpufreq HW
-Date:   Tue, 29 Dec 2020 14:17:09 +0800
-Message-ID: <1609222629-2979-3-git-send-email-hector.yuan@mediatek.com>
+Subject: [PATCH v10] cpufreq: mediatek-hw: Add support for Mediatek cpufreq HW driver
+Date:   Tue, 29 Dec 2020 14:17:07 +0800
+Message-ID: <1609222629-2979-1-git-send-email-hector.yuan@mediatek.com>
 X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <1609222629-2979-1-git-send-email-hector.yuan@mediatek.com>
-References: <1609222629-2979-1-git-send-email-hector.yuan@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -53,138 +51,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Hector.Yuan" <hector.yuan@mediatek.com>
+The CPUfreq HW present in some Mediatek chipsets offloads the steps necessary for changing the frequency of CPUs. 
+The driver implements the cpufreq driver interface for this hardware engine. 
+This patch depends on MT6779 DTS patchset[1] submitted by Hanks Chen.
 
-Add devicetree bindings for MediaTek HW driver.
+From v8 to v9, there are three more modifications.
+1. Based on patchset[2], align binding with scmi for performance domain.
+2. Add the CPUFREQ fast switch function support and define DVFS latency.
+3. Based on patchser[3], add energy model API parameter for mW.
 
-Signed-off-by: Hector.Yuan <hector.yuan@mediatek.com>
----
- .../bindings/cpufreq/cpufreq-mediatek-hw.yaml      |  116 ++++++++++++++++++++
- 1 file changed, 116 insertions(+)
+From v7 to v8, there are three more patches based on patchset v8[4].
+This patchset is about to register power table to Energy model for EAS and thermal usage.
+1. EM CPU power table
+- Register energy model table for EAS and thermal cooling device usage.
+- Read the coresponding LUT for power table.
+2. SVS initialization
+- The SVS(Smart Voltage Scaling) engine is a hardware which is
+  used to calculate optimized voltage values for CPU power domain.
+  DVFS driver could apply those optimized voltage values to reduce power consumption.
+- Driver will polling if HW engine is done for SVS initialization.
+  After that, driver will read power table and register it to EAS.
+- CPUs must be in power on state when doing SVS. Use pm_qos to block cpu-idle state for SVS initializing.
+3. Cooling device flag
+- Add cooling device flag for thermal
+
+[1]  https://lkml.org/lkml/2020/8/4/1094
+[2]  https://lore.kernel.org/lkml/20201116181356.804590-1-sudeep.holla@arm.com/
+[3]  https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=c250d50fe2ce627ca9805d9c8ac11cbbf922a4a6
+[4]  https://lkml.org/lkml/2020/9/23/384
+
+
+Hector.Yuan (2):
+  cpufreq: mediatek-hw: Add support for CPUFREQ HW
+  dt-bindings: cpufreq: add bindings for MediaTek cpufreq HW
+
+ .../bindings/cpufreq/cpufreq-mediatek-hw.yaml      |  116 ++++++
+ drivers/cpufreq/Kconfig.arm                        |   12 +
+ drivers/cpufreq/Makefile                           |    1 +
+ drivers/cpufreq/mediatek-cpufreq-hw.c              |  370 ++++++++++++++++++++
+ 4 files changed, 499 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
-new file mode 100644
-index 0000000..53e0eb3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
-@@ -0,0 +1,116 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/cpufreq/cpufreq-mediatek-hw.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MediaTek's CPUFREQ Bindings
-+
-+maintainers:
-+  - Hector Yuan <hector.yuan@mediatek.com>
-+
-+description:
-+  CPUFREQ HW is a hardware engine used by MediaTek
-+  SoCs to manage frequency in hardware. It is capable of controlling frequency
-+  for multiple clusters.
-+
-+properties:
-+  compatible:
-+    const: mediatek,cpufreq-hw
-+
-+  reg:
-+    minItems: 1
-+    maxItems: 2
-+    description: |
-+      Addresses and sizes for the memory of the
-+      HW bases in each frequency domain.
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: true
-+
-+examples:
-+  - |
-+    cpus {
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            cpu0: cpu@0 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 0>;
-+                reg = <0x000>;
-+            };
-+
-+            cpu1: cpu@100 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 0>;
-+                reg = <0x100>;
-+            };
-+
-+            cpu2: cpu@200 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 0>;
-+                reg = <0x200>;
-+            };
-+
-+            cpu3: cpu@300 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 0>;
-+                reg = <0x300>;
-+            };
-+
-+            cpu4: cpu@400 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 1>;
-+                reg = <0x400>;
-+            };
-+
-+            cpu5: cpu@500 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 1>;
-+                reg = <0x500>;
-+            };
-+
-+            cpu6: cpu@600 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a75";
-+                enable-method = "psci";
-+                performance-domains = <&performance 1>;
-+                reg = <0x600>;
-+            };
-+
-+            cpu7: cpu@700 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a75";
-+                enable-method = "psci";
-+                performance-domains = <&performance 1>;
-+                reg = <0x700>;
-+            };
-+    };
-+
-+    /* ... */
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        performance: performance-controller@11bc00 {
-+            compatible = "mediatek,cpufreq-hw";
-+            reg = <0 0x0011bc10 0 0x120>, <0 0x0011bd30 0 0x120>;
-+            #performance-domain-cells = <1>;
-+        };
-+    };
--- 
-1.7.9.5
+ create mode 100644 drivers/cpufreq/mediatek-cpufreq-hw.c
 
