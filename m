@@ -2,128 +2,89 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8C4FC433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jan 2021 18:14:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A54EC433E0
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jan 2021 18:20:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A1A2E22D06
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Jan 2021 18:14:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3D95A22D57
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Jan 2021 18:20:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727986AbhAESOE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Jan 2021 13:14:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35772 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727902AbhAESOE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2021 13:14:04 -0500
-Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7ACFC061793
-        for <linux-pm@vger.kernel.org>; Tue,  5 Jan 2021 10:13:23 -0800 (PST)
-Received: by mail-ot1-x334.google.com with SMTP id b24so596180otj.0
-        for <linux-pm@vger.kernel.org>; Tue, 05 Jan 2021 10:13:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=GxkJo5g4V4czIVLT4j/kAOkJxRGEcQTcKpmMI8mFQbU=;
-        b=S1KTQA0hFGQnlkBt6vPEdxNuehUu3XeZgcYJmw5IVzuvvVi3rZIayqrqbki6LTknon
-         y7c6NGcqfYuX6D4zzOzO5fyVgqpiG/JgEZyY2p0p2ZaWzwO3aqVH7EJbn1mlVPQkp3Zq
-         Xi5k7qgxSHXAb6K0+Tyb1Vz6tCvCQwW87UCUs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=GxkJo5g4V4czIVLT4j/kAOkJxRGEcQTcKpmMI8mFQbU=;
-        b=OGd8i5rk0PB1E2C6GhSHh8Gqz5fSAQvSVsFaC1z7qLYkCUNDjiuWgQyFG+yQj4pUsx
-         jyS7E7VXOizfZ3xNg0UKOJ7hd2kUvq9s/ySTYOZO66uAz1j1cAzyuNflgVfnk+faQznq
-         hjaXKOtTZbpgEYz0PawX2zoexh1o/udak4MpM7of46Xo0jaX9pvzgKjK/bTgRKHBOiEe
-         pPyM82SsdCDpdqJgOjMHULy/eUkvyIA0iphc1lDbfavJGv0z+zWkDkF1q13VVJ34Kw1U
-         VxfvuTv4lGoAaXSyo0e3AaOYjgztrOXVs358XHFgrHSEtAv83M1tOyRRRI5QvAvjBl+2
-         skfQ==
-X-Gm-Message-State: AOAM531NLrEw+w7SCMtmGp/dVIGPEv+N7F3CDfTbfkRv2ZINvnaQtlVo
-        YoNYlD36zYkF8JTqU068eI130w==
-X-Google-Smtp-Source: ABdhPJyJOPa2iuR/DDqycjJ6gFVcvIOxDc6bpCNHPBbNd35njGXSiYkI1RHMAJWfHibjadg1BAhngw==
-X-Received: by 2002:a05:6830:403a:: with SMTP id i26mr511468ots.111.1609870403194;
-        Tue, 05 Jan 2021 10:13:23 -0800 (PST)
-Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
-        by smtp.gmail.com with ESMTPSA id n16sm20932oop.9.2021.01.05.10.13.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 05 Jan 2021 10:13:22 -0800 (PST)
-Subject: Re: [PATCH] cpuidle_set accepts alpha numeric values for idle-set
- operation
-To:     Brahadambal Srinivasan <latha@linux.vnet.ibm.com>,
-        shuah@kernel.org, trenn@suse.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Shuah Khan <skhan@linuxfoundation.org>
-References: <20210105122452.8687-1-latha@linux.vnet.ibm.com>
- <e2234e38-e18e-e0d3-1a2a-7c8b136d8817@linuxfoundation.org>
-From:   Shuah Khan <skhan@linuxfoundation.org>
-Message-ID: <b6060801-9477-a61b-abb5-b6eecf5940c9@linuxfoundation.org>
-Date:   Tue, 5 Jan 2021 11:13:21 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        id S1727375AbhAESUB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Jan 2021 13:20:01 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:45758 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726651AbhAESUB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2021 13:20:01 -0500
+Received: from 89-77-60-66.dynamic.chello.pl (89.77.60.66) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
+ id 3070e0ba3920ff17; Tue, 5 Jan 2021 19:19:19 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Shyam Sundar S K <Shyam-sundar.S-k@amd.com>
+Subject: [PATCH] ACPI: PM: s2idle: Drop unused local variables and related code
+Date:   Tue, 05 Jan 2021 19:19:18 +0100
+Message-ID: <3607102.xkEKTzvHZR@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <e2234e38-e18e-e0d3-1a2a-7c8b136d8817@linuxfoundation.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 1/5/21 11:03 AM, Shuah Khan wrote:
-> On 1/5/21 5:24 AM, Brahadambal Srinivasan wrote:
->> For both the d and e options in cpuidle_set, an atoi() conversion is
->> done without checking if the input argument is all numeric. So, an
->> atoi conversion is done on any character provided as input and the
->> CPU idle_set operation continues with that integer value, which may
->> not be what is intended or entirely correct.
->>
->> A similar check is present for cpufreq-set already.
->>
->> This patch adds a check to see that the idle_set value is all numeric
->> before doing a string-to-int conversion.
->>
->> Signed-off-by: Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
->> ---
->>   tools/power/cpupower/utils/cpuidle-set.c | 39 +++++++++++++++++++++---
->>   1 file changed, 34 insertions(+), 5 deletions(-)
->>
->> diff --git a/tools/power/cpupower/utils/cpuidle-set.c 
->> b/tools/power/cpupower/utils/cpuidle-set.c
->> index 46158928f9ad..b3dec48e7141 100644
->> --- a/tools/power/cpupower/utils/cpuidle-set.c
->> +++ b/tools/power/cpupower/utils/cpuidle-set.c
->> @@ -21,6 +21,19 @@ static struct option info_opts[] = {
->>        { },
->>   };
->> +int is_number(char *arg)
->> +{
->> +    size_t len, i = 0;
->> +
->> +    len = strlen(arg);
->> +
->> +    for (i = 0; i < len; i++) {
->> +        if (!isdigit(arg[i]))
->> +            return 0;
->> +    }
->> +
->> +    return 1;
->> +}
-> 
-> Any reason why you can't use isdigit()? Please see isdigit()
-> usages examples in other tools and cpupower itself.
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Another thing. Please add "cpupower:" to identify what you are
-changing clearly.
+Two local variables in drivers/acpi/x86/s2idle.c are never read, so
+drop them along with the code updating their values (in vain).
 
-thanks,
--- Shuah
+Fixes: fef98671194b ("ACPI: PM: s2idle: Move x86-specific code to the x86 directory")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/x86/s2idle.c |   14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
+
+Index: linux-pm/drivers/acpi/x86/s2idle.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/x86/s2idle.c
++++ linux-pm/drivers/acpi/x86/s2idle.c
+@@ -105,18 +105,8 @@ static void lpi_device_get_constraints_a
+ 
+ 	for (i = 0; i < out_obj->package.count; i++) {
+ 		union acpi_object *package = &out_obj->package.elements[i];
+-		struct lpi_device_info_amd info = { };
+ 
+-		if (package->type == ACPI_TYPE_INTEGER) {
+-			switch (i) {
+-			case 0:
+-				info.revision = package->integer.value;
+-				break;
+-			case 1:
+-				info.count = package->integer.value;
+-				break;
+-			}
+-		} else if (package->type == ACPI_TYPE_PACKAGE) {
++		if (package->type == ACPI_TYPE_PACKAGE) {
+ 			lpi_constraints_table = kcalloc(package->package.count,
+ 							sizeof(*lpi_constraints_table),
+ 							GFP_KERNEL);
+@@ -135,12 +125,10 @@ static void lpi_device_get_constraints_a
+ 
+ 				for (k = 0; k < info_obj->package.count; ++k) {
+ 					union acpi_object *obj = &info_obj->package.elements[k];
+-					union acpi_object *obj_new;
+ 
+ 					list = &lpi_constraints_table[lpi_constraints_table_size];
+ 					list->min_dstate = -1;
+ 
+-					obj_new = &obj[k];
+ 					switch (k) {
+ 					case 0:
+ 						dev_info.enabled = obj->integer.value;
 
 
 
