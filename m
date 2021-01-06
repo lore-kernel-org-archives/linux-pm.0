@@ -2,102 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3FDCC433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:37:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82396C433E6
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:42:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 91D172310A
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:37:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A0BE2310B
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:42:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726157AbhAFIhf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jan 2021 03:37:35 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:53644 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726074AbhAFIhe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 03:37:34 -0500
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 1068VNI4052402;
-        Wed, 6 Jan 2021 08:36:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2020-01-29;
- bh=q+KJ8AfPkiSCHLPRdLSxb87gjhWi/QLcykmElkTz1T0=;
- b=yoTjTwaXig6Czqfr4rcKDk7U2dVFqJQKrVm4tXkcxaCkVSo9eFMr6B4hIz+0BpdZGaqF
- m3V0rg/djTklghEcNJwa4rOVgvLOwu4v/AhiJoo9GQTqMoRQ3vwb8Oe0AzpZ275kkLTN
- f4EL9CRw1PiFLu5DLQbrj+Qijv07LsBvesJT8im8LClS/NKKEVtVx8tddj05/79FGyIo
- OW7nUXLNDdYlaB2iYe4b0jJRKTmzPxxJMKejYJC1I0+GEiB+AZlCT91ekYxkeHKKjHYo
- LWdxkNGc/e8wKleqHKS1QYyJEPtSQ4LvlDMB4tAZQxZB+uDOe9FLbL1E3kqqy2B5zVtI 3g== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by userp2130.oracle.com with ESMTP id 35w53b0r1g-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 06 Jan 2021 08:36:47 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 1068XAha042304;
-        Wed, 6 Jan 2021 08:36:47 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
-        by userp3030.oracle.com with ESMTP id 35w3g0p66r-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 06 Jan 2021 08:36:47 +0000
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
-        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 1068ajMG027546;
-        Wed, 6 Jan 2021 08:36:45 GMT
-Received: from mwanda (/102.36.221.92)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 06 Jan 2021 08:36:44 +0000
-Date:   Wed, 6 Jan 2021 11:36:35 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/3] powercap/drivers/dtpm: Fix a double shift bug
-Message-ID: <X/V2k8dwaXJH6VFh@mwanda>
+        id S1726341AbhAFImn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jan 2021 03:42:43 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:45377 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1725836AbhAFImm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 03:42:42 -0500
+X-UUID: 344a96c5f6c448c197ebc83a23976be8-20210106
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=HjDudKT6CirLj9XUT1/FsMduOj9/1XKYdNqPso3wAXI=;
+        b=ZUvHxZ9U/OW4QIu8hz2QCXzAwn1b7a4Ftz3MbmO+w5wLR4nFCGB0431y8ldOlmmF3xuEVcL53zrVf93Li2A0Nna2jNgHl5uZwlpCciXlx8O0iAlrDdqPN6TgsOYUT/cH6z3iNGhTIT8ypEM2sQkcy+sEeYRYOos7kxAoEhfDUMI=;
+X-UUID: 344a96c5f6c448c197ebc83a23976be8-20210106
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 189377158; Wed, 06 Jan 2021 16:41:56 +0800
+Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 6 Jan 2021 16:41:54 +0800
+Received: from [172.21.77.4] (172.21.77.4) by MTKCAS06.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 6 Jan 2021 16:41:55 +0800
+Message-ID: <1609922515.18506.17.camel@mtksdaap41>
+Subject: Re: [PATCH v10 3/7] [v10, 3/7]: soc: mediatek: SVS: introduce MTK
+ SVS engine
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Nicolas Boichat <drinkcat@chromium.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        lkml <linux-kernel@vger.kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Devicetree List" <devicetree@vger.kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Charles Yang" <Charles.Yang@mediatek.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        YT Lee <yt.lee@mediatek.com>, Fan Chen <fan.chen@mediatek.com>,
+        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+Date:   Wed, 6 Jan 2021 16:41:55 +0800
+In-Reply-To: <1609750266.20758.40.camel@mtksdaap41>
+References: <20201227105449.11452-1-roger.lu@mediatek.com>
+         <20201227105449.11452-4-roger.lu@mediatek.com>
+         <CANMq1KBNKy708Vz67WOc+n7V7ne4L1EZVkUVGj6abd5voxKjxA@mail.gmail.com>
+         <1609750266.20758.40.camel@mtksdaap41>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.10.4-0ubuntu2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9855 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 malwarescore=0 adultscore=0
- phishscore=0 spamscore=0 mlxlogscore=999 suspectscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101060051
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9855 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 clxscore=1011 adultscore=0
- priorityscore=1501 lowpriorityscore=0 phishscore=0 malwarescore=0
- mlxlogscore=999 bulkscore=0 impostorscore=0 spamscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101060051
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DTPM_POWER_LIMIT_FLAG is used for test_bit() etc which take a bit
-number so it should be bit 0.  But currently it's set to BIT(0) then
-that is double shifted equivalent to BIT(BIT(0)).  This doesn't cause a
-run time problem because it's done consistently.
-
-Fixes: a20d0ef97abf ("powercap/drivers/dtpm: Add API for dynamic thermal power management")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/powercap/dtpm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-index 0abcc439d728..d49df0569cd4 100644
---- a/drivers/powercap/dtpm.c
-+++ b/drivers/powercap/dtpm.c
-@@ -24,7 +24,7 @@
- #include <linux/slab.h>
- #include <linux/mutex.h>
- 
--#define DTPM_POWER_LIMIT_FLAG BIT(0)
-+#define DTPM_POWER_LIMIT_FLAG 0
- 
- static const char *constraint_name[] = {
- 	"Instantaneous",
--- 
-2.29.2
+SGkgTmljb2xhcywNCg0KW3NuaXBdDQo+ID4gDQo+ID4gPiArDQo+ID4gPiArICAgICAgIC8qIFN2
+cyBlZnVzZSBwYXJzaW5nICovDQo+ID4gPiArICAgICAgIGZ0X3BnbSA9IChzdnNwLT5lZnVzZVsw
+XSA+PiA0KSAmIEdFTk1BU0soMywgMCk7DQo+ID4gPiArDQo+ID4gPiArICAgICAgIGZvciAoaWR4
+ID0gMDsgaWR4IDwgc3ZzcC0+YmFua19udW07IGlkeCsrKSB7DQo+ID4gPiArICAgICAgICAgICAg
+ICAgc3ZzYiA9ICZzdnNwLT5iYW5rc1tpZHhdOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAgICAgICAg
+ICAgIGlmIChmdF9wZ20gPD0gMSkNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHN2c2It
+PmluaXQwMV92b2x0X2ZsYWcgPSBTVlNCX0lOSVQwMV9WT0xUX0lHTk9SRTsNCj4gPiA+ICsNCj4g
+PiA+ICsgICAgICAgICAgICAgICBzd2l0Y2ggKHN2c2ItPnN3X2lkKSB7DQo+ID4gPiArICAgICAg
+ICAgICAgICAgY2FzZSBTVlNCX0NQVV9MSVRUTEU6DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
+ICAgICBzdnNiLT5iZGVzID0gc3ZzcC0+ZWZ1c2VbMTZdICYgR0VOTUFTSyg3LCAwKTsNCj4gPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgIHN2c2ItPm1kZXMgPSAoc3ZzcC0+ZWZ1c2VbMTZdID4+
+IDgpICYgR0VOTUFTSyg3LCAwKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHN2c2It
+PmRjYmRldCA9IChzdnNwLT5lZnVzZVsxNl0gPj4gMTYpICYgR0VOTUFTSyg3LCAwKTsNCj4gPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgIHN2c2ItPmRjbWRldCA9IChzdnNwLT5lZnVzZVsxNl0g
+Pj4gMjQpICYgR0VOTUFTSyg3LCAwKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHN2
+c2ItPm10ZGVzICA9IChzdnNwLT5lZnVzZVsxN10gPj4gMTYpICYgR0VOTUFTSyg3LCAwKTsNCj4g
+PiANCj4gPiBBZ2FpbiwgaWYgYWxsIG9mIHRob3NlIHZhbHVlcyB3ZXJlIHU4LCB0aGVyZSdkIGJl
+IG5vIG5lZWQgZm9yIHRoZXNlIEdFTk1BU0sNCj4gDQo+IE9rLCBJJ2xsIHVzZSB1OCBpbnN0ZWFk
+IG9mIEdFTk1BU0suIFRoYW5rcy4NCg0KQWZ0ZXIgcmVmaW5pbmcgdGhlIGNvZGVzLCBJIHRoaW5r
+IGl0J3MgbXVjaCBleHBsaWNpdCB0byBhc3NpZ24gdGhlIGJpdHMNCkkgd2FudCBieSBHRU5NQVNL
+KCkgYW5kIHdpbGwgcmVtb3ZlIG90aGVyIEdFTk1BU0soKSB0aGF0IGFyZSByZXBldGl0aXZlDQps
+aWtlIGluIHN2c19zZXRfYmFua19waGFzZSgpIG9yIHN2c19zZXRfZnJlcXNfcGN0X3YyKCkuDQoN
+CltzbmlwXQ0KDQo=
 
