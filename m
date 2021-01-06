@@ -2,122 +2,136 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 059E4C433DB
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:45:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6491C433DB
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:47:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B56F12310A
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:45:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7DFD223107
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Jan 2021 08:47:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726438AbhAFIpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jan 2021 03:45:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59742 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726157AbhAFIpM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 03:45:12 -0500
-Received: from mail-vs1-xe2d.google.com (mail-vs1-xe2d.google.com [IPv6:2607:f8b0:4864:20::e2d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B901BC061357
-        for <linux-pm@vger.kernel.org>; Wed,  6 Jan 2021 00:44:31 -0800 (PST)
-Received: by mail-vs1-xe2d.google.com with SMTP id h6so1413786vsr.6
-        for <linux-pm@vger.kernel.org>; Wed, 06 Jan 2021 00:44:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=8BtqrpAZ+ssFRAoqkcqoX+i0pgFKIbpTJROkFhKnB54=;
-        b=X6NOAGdSiz/IW64htDr3odCGFCPzWLdw7XHUJBvbZ00IdN6jDKzb1siXxIaPi6D5A4
-         5SY3alIe8rbRH0qev5KIOe0isaJ7wHkYHKpmsWbmKEocFdYPWRLY5uyQIMJum8Q1qUOk
-         bfZgrO8BjvLdMl6IN7roLOGRKB7/n15FTRqJg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=8BtqrpAZ+ssFRAoqkcqoX+i0pgFKIbpTJROkFhKnB54=;
-        b=fdr8FSJmQXmc/6aqwOG9MQGUWv+c9ZmFNkh38N1GSCfDgHbD1KjV+ep1zEaECwUdG7
-         jCLa0+vH/fUTLud3eWU8w7i3l9XFthxno+2a9MjVtlSVN88nBFFCaRysefydpmxuyzLb
-         vxzCVUkfsmFAR+qVsunPbbdVj39BB5Kw9eD3DUWX7AYoX/VdEPu/pf42qcP6gCdoN4yI
-         lDenxc1EGWgrIrvEA8Hffa4DGTG5ZMprBIAGZcv1bMi+3zq/OhWIlMicJ8i4sN97+p1f
-         VxaLxPbtJbl6XwXvxwCAYz2q4ugOLD3DXZAPFyRTcmpq4aTBeiNhKtoqgC684OMOczGl
-         G0Dg==
-X-Gm-Message-State: AOAM532th7zb6556pf3LKnxRToKgQxKfk4XQGU5Z6r5YUJm9E64uPdpo
-        BwqOjQ+aTuoZGyxof8mV8fMQOJSKqp1VUEsKSb/DAw==
-X-Google-Smtp-Source: ABdhPJyvWwQuY4TJxmlVoIBqvuScGueMmhttXzbYyJihh6nXvK0B7iBhP8fCeeXeXIPqoFUXoWoASZIehmQdnjNOooo=
-X-Received: by 2002:a67:5c03:: with SMTP id q3mr2298164vsb.47.1609922670668;
- Wed, 06 Jan 2021 00:44:30 -0800 (PST)
+        id S1726620AbhAFIrW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jan 2021 03:47:22 -0500
+Received: from aserp2130.oracle.com ([141.146.126.79]:34418 "EHLO
+        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726074AbhAFIrW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 03:47:22 -0500
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 1068dQhF044099;
+        Wed, 6 Jan 2021 08:46:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : mime-version : content-type : in-reply-to;
+ s=corp-2020-01-29; bh=z7ZqTjI99oyi2EBTjUIXeXaGoLqGycL6Kku7VSNhOzk=;
+ b=KzrjzJmDX90z+a0bN4LKxiT/ZEzY/IGsojIef8EJw/uvjFO4ofbFDmFmqpR3kQh8+1RN
+ zL2WZrLIdJ8i4sEhqIM/64MF3095UOlL8I/R8Zcw5ACpF+DqJzBn9YDRcnw4WGk8XVuV
+ Sdxw7ri7bf58IIfsFG+AmIswKlHHXFgjraN9lYis7wFO8GXFhZ82xe32E3WVhmiu+YOi
+ ze0QBJCFrhw2jNHN3p3W4VTPMGp8P3yrPjCiVuiT455WHM2aTXTscxTqnurgquULl2yY
+ oXwZ517itfJl4FELxjP7LQniQMt5b2tI2rp3wbX0A3n9K9HBPzAdfjD+C8YdTfTbRXF6 1A== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by aserp2130.oracle.com with ESMTP id 35w7p0gdqm-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 06 Jan 2021 08:46:36 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 1068kV5T007244;
+        Wed, 6 Jan 2021 08:46:35 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by aserp3030.oracle.com with ESMTP id 35v4rce8f2-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 06 Jan 2021 08:46:34 +0000
+Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 1068fJ8v000798;
+        Wed, 6 Jan 2021 08:41:19 GMT
+Received: from mwanda (/102.36.221.92)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Wed, 06 Jan 2021 00:41:18 -0800
+Date:   Wed, 6 Jan 2021 11:41:09 +0300
+From:   Dan Carpenter <dan.carpenter@oracle.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/3] powercap/drivers/dtpm: Fix some missing unlock bugs
+Message-ID: <X/V3pV//ui0rcxbs@mwanda>
 MIME-Version: 1.0
-References: <20201227105449.11452-1-roger.lu@mediatek.com> <20201227105449.11452-4-roger.lu@mediatek.com>
- <CANMq1KBNKy708Vz67WOc+n7V7ne4L1EZVkUVGj6abd5voxKjxA@mail.gmail.com>
- <1609750266.20758.40.camel@mtksdaap41> <1609922515.18506.17.camel@mtksdaap41>
-In-Reply-To: <1609922515.18506.17.camel@mtksdaap41>
-From:   Nicolas Boichat <drinkcat@chromium.org>
-Date:   Wed, 6 Jan 2021 16:44:19 +0800
-Message-ID: <CANMq1KCDPn6vRXMC5piH=Ym+ZGTiF=B4KAJ-5iKSWwVQLWgYNA@mail.gmail.com>
-Subject: Re: [PATCH v10 3/7] [v10, 3/7]: soc: mediatek: SVS: introduce MTK SVS engine
-To:     Roger Lu <roger.lu@mediatek.com>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        lkml <linux-kernel@vger.kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Devicetree List <devicetree@vger.kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        "moderated list:ARM/Mediatek SoC support" 
-        <linux-mediatek@lists.infradead.org>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        YT Lee <yt.lee@mediatek.com>, Fan Chen <fan.chen@mediatek.com>,
-        linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <X/V2k8dwaXJH6VFh@mwanda>
+X-Mailer: git-send-email haha only kidding
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9855 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 mlxscore=0 bulkscore=0
+ suspectscore=0 spamscore=0 adultscore=0 malwarescore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101060053
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9855 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 phishscore=0 adultscore=0
+ lowpriorityscore=0 spamscore=0 suspectscore=0 impostorscore=0 mlxscore=0
+ priorityscore=1501 malwarescore=0 clxscore=1015 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101060052
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jan 6, 2021 at 4:41 PM Roger Lu <roger.lu@mediatek.com> wrote:
->
-> Hi Nicolas,
->
-> [snip]
-> > >
-> > > > +
-> > > > +       /* Svs efuse parsing */
-> > > > +       ft_pgm = (svsp->efuse[0] >> 4) & GENMASK(3, 0);
-> > > > +
-> > > > +       for (idx = 0; idx < svsp->bank_num; idx++) {
-> > > > +               svsb = &svsp->banks[idx];
-> > > > +
-> > > > +               if (ft_pgm <= 1)
-> > > > +                       svsb->init01_volt_flag = SVSB_INIT01_VOLT_IGNORE;
-> > > > +
-> > > > +               switch (svsb->sw_id) {
-> > > > +               case SVSB_CPU_LITTLE:
-> > > > +                       svsb->bdes = svsp->efuse[16] & GENMASK(7, 0);
-> > > > +                       svsb->mdes = (svsp->efuse[16] >> 8) & GENMASK(7, 0);
-> > > > +                       svsb->dcbdet = (svsp->efuse[16] >> 16) & GENMASK(7, 0);
-> > > > +                       svsb->dcmdet = (svsp->efuse[16] >> 24) & GENMASK(7, 0);
-> > > > +                       svsb->mtdes  = (svsp->efuse[17] >> 16) & GENMASK(7, 0);
-> > >
-> > > Again, if all of those values were u8, there'd be no need for these GENMASK
-> >
-> > Ok, I'll use u8 instead of GENMASK. Thanks.
->
-> After refining the codes, I think it's much explicit to assign the bits
-> I want by GENMASK() and will remove other GENMASK() that are repetitive
-> like in svs_set_bank_phase() or svs_set_freqs_pct_v2().
+We need to unlock on these paths before returning.
 
-I'm not sure what you mean, but, sure, you can go ahead with v11 and
-we'll see how it looks.
+Fixes: a20d0ef97abf ("powercap/drivers/dtpm: Add API for dynamic thermal power management")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/powercap/dtpm.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-Thanks,
+diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+index d49df0569cd4..470a1182b868 100644
+--- a/drivers/powercap/dtpm.c
++++ b/drivers/powercap/dtpm.c
+@@ -147,13 +147,17 @@ static void __dtpm_add_power(struct dtpm *dtpm)
+  */
+ int dtpm_update_power(struct dtpm *dtpm, u64 power_min, u64 power_max)
+ {
++	int ret = 0;
++
+ 	mutex_lock(&dtpm_lock);
+ 
+ 	if (power_min == dtpm->power_min && power_max == dtpm->power_max)
+-		return 0;
++		goto unlock;
+ 
+-	if (power_max < power_min)
+-		return -EINVAL;
++	if (power_max < power_min) {
++		ret = -EINVAL;
++		goto unlock;
++	}
+ 
+ 	__dtpm_sub_power(dtpm);
+ 
+@@ -164,9 +168,10 @@ int dtpm_update_power(struct dtpm *dtpm, u64 power_min, u64 power_max)
+ 
+ 	__dtpm_add_power(dtpm);
+ 
++unlock:
+ 	mutex_unlock(&dtpm_lock);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -187,8 +192,10 @@ int dtpm_release_zone(struct powercap_zone *pcz)
+ 
+ 	mutex_lock(&dtpm_lock);
+ 
+-	if (!list_empty(&dtpm->children))
++	if (!list_empty(&dtpm->children)) {
++		mutex_unlock(&dtpm_lock);
+ 		return -EBUSY;
++	}
+ 
+ 	if (parent)
+ 		list_del(&dtpm->sibling);
+-- 
+2.29.2
 
-> [snip]
->
