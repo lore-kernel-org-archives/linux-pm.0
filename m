@@ -2,174 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87138C433DB
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 17:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DCEDC433E0
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 18:45:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 45AF523403
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 17:43:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE9AF233CE
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 18:45:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728814AbhAGRnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Jan 2021 12:43:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58314 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728008AbhAGRnY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2021 12:43:24 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FCF7C0612F5
-        for <linux-pm@vger.kernel.org>; Thu,  7 Jan 2021 09:42:38 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id h205so16530688lfd.5
-        for <linux-pm@vger.kernel.org>; Thu, 07 Jan 2021 09:42:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cloudflare.com; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=LRqxwEPJISEBHpjqZE2l6FmdiTZQs0jM9TpD8cQN+YA=;
-        b=V0YYF8gWI5uIyBICJ6udbyu5HQC3NPDSYKcM0W27RFdEEv//zmAWylWYvEw3vVGTLk
-         7shGRVqcO5n0D/CR7V6LG8naB6ZmufIvZoX0HqL5BSNYe7lr1TVddGvzs3mMPz0MCPKo
-         +zVPhNZ4dqAaZf48kkvaUOFLNxKSL/LGiN9TI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=LRqxwEPJISEBHpjqZE2l6FmdiTZQs0jM9TpD8cQN+YA=;
-        b=CY0wVWB6Vly2oTczy7CxlMYA7zPbzFExd1v+W0JfJN2ieVP2IrSZUh0hM0GI0Q5a7b
-         yd0+vpi8Y8QGdORzNlC0fqQq9bHdwDd6F+jZns60BNDtV1hlSdZswEDFqAo1yFxhJEbw
-         QTjrl5Q0wdAKVW8dQGj6JNB+u9jY3qPDduV1C6/12Txo8TgiHK9Ky5DbqtNRCQ5El2Ur
-         2wVS9aFLtzkylxBCmz/0obsLGaKeXj6n8CddNG9Ca3BmciQzYdJ4NjtaKqE6iA06a9tr
-         wEm9dxUJJivTdLIMRhTiYeZ1EjR6aNAjuk1Ig9NI+vLbtpVCJbEpvvXFAaZEZ+6rNIbm
-         YRPA==
-X-Gm-Message-State: AOAM532J44AX/t+C6DeYiWwnTSVKWVVFtOIAHmwzv8CXVXIONhZO1sYn
-        BgWpDkUncUZ/S9SYvRz/MQJDeOM/swwEDuLyxsikEw==
-X-Google-Smtp-Source: ABdhPJygMEw3KJuTWrlpSqVWGq/if+SbZTegdcW3m7/dcUQTyYrmU8L70iiNQ3ssYUB7pnsZwuPEnSXXThhWN89nycE=
-X-Received: by 2002:a2e:361a:: with SMTP id d26mr4804735lja.115.1610041356957;
- Thu, 07 Jan 2021 09:42:36 -0800 (PST)
+        id S1729053AbhAGSpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Jan 2021 13:45:12 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:50092 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728088AbhAGSpM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2021 13:45:12 -0500
+Received: from 89-64-81-64.dynamic.chello.pl (89.64.81.64) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
+ id 8eddfbd0a4e78645; Thu, 7 Jan 2021 19:44:30 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH v1 3/3] cpufreq: intel_pstate: Rename two functions
+Date:   Thu, 07 Jan 2021 19:44:18 +0100
+Message-ID: <6740994.gz1i9f73Yi@kreacher>
+In-Reply-To: <5701645.lOV4Wx5bFT@kreacher>
+References: <5701645.lOV4Wx5bFT@kreacher>
 MIME-Version: 1.0
-References: <20210104235719.13525-1-ivan@cloudflare.com> <2100533.HVZEckHxcR@c100>
-In-Reply-To: <2100533.HVZEckHxcR@c100>
-From:   Ivan Babrou <ivan@cloudflare.com>
-Date:   Thu, 7 Jan 2021 09:42:25 -0800
-Message-ID: <CABWYdi0sne=6reP5oZMFbYk9Nctws=FLoYkjdmnBwXu0bVFozA@mail.gmail.com>
-Subject: Re: [PATCH] cpupower: add Makefile dependencies for install targets
-To:     Thomas Renninger <trenn@suse.com>
-Cc:     linux-pm@vger.kernel.org,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        kernel-team <kernel-team@cloudflare.com>,
-        Shuah Khan <shuah@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 7, 2021 at 2:07 AM Thomas Renninger <trenn@suse.com> wrote:
->
-> Am Dienstag, 5. Januar 2021, 00:57:18 CET schrieb Ivan Babrou:
-> > This allows building cpupower in parallel rather than serially.
->
-> cpupower is built serially:
->
-> [ make clean ]
->
-> time make
-> real    0m3,742s
-> user    0m3,330s
-> sys     0m1,105s
->
-> [ make clean ]
->
-> time make -j10
-> real    0m1,045s
-> user    0m3,153s
-> sys     0m1,037s
->
-> Only advantage I see is that you can call
-> make install-xy
-> targets without calling the corresponding build target
-> make xy
-> similar to the general install target:
-> install: all install-lib ...
->
-> Not sure anyone needs this and whether all targets
-> successfully work this way.
-> If you'd show a useful usecase example...
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-We build a bunch of kernel related tools (perf, cpupower, bpftool,
-etc.) from our own top level Makefile, propagating parallelism
-downwards like one should. Without this patch we have to remove
-parallelism for cpupower, which doesn't seem like a very clean thing
-to do, especially if you consider that it's 3x faster with parallelism
-enabled in wall clock terms.
+Rename intel_cpufreq_adjust_hwp() and intel_cpufreq_adjust_perf_ctl()
+to intel_cpufreq_hwp_update() and intel_cpufreq_perf_ctl_update(),
+respectively, to avoid possible confusion with the ->adjist_perf()
+callback function, intel_cpufreq_adjust_perf().
 
->        Thomas
->
-> >
-> > Signed-off-by: Ivan Babrou <ivan@cloudflare.com>
-> > ---
-> >  tools/power/cpupower/Makefile       | 8 ++++----
-> >  tools/power/cpupower/bench/Makefile | 2 +-
-> >  2 files changed, 5 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-> > index c7bcddbd486d..3b1594447f29 100644
-> > --- a/tools/power/cpupower/Makefile
-> > +++ b/tools/power/cpupower/Makefile
-> > @@ -270,14 +270,14 @@ clean:
-> >       $(MAKE) -C bench O=$(OUTPUT) clean
-> >
-> >
-> > -install-lib:
-> > +install-lib: libcpupower
-> >       $(INSTALL) -d $(DESTDIR)${libdir}
-> >       $(CP) $(OUTPUT)libcpupower.so* $(DESTDIR)${libdir}/
-> >       $(INSTALL) -d $(DESTDIR)${includedir}
-> >       $(INSTALL_DATA) lib/cpufreq.h $(DESTDIR)${includedir}/cpufreq.h
-> >       $(INSTALL_DATA) lib/cpuidle.h $(DESTDIR)${includedir}/cpuidle.h
-> >
-> > -install-tools:
-> > +install-tools: $(OUTPUT)cpupower
-> >       $(INSTALL) -d $(DESTDIR)${bindir}
-> >       $(INSTALL_PROGRAM) $(OUTPUT)cpupower $(DESTDIR)${bindir}
-> >       $(INSTALL) -d $(DESTDIR)${bash_completion_dir}
-> > @@ -293,14 +293,14 @@ install-man:
-> >       $(INSTALL_DATA) -D man/cpupower-info.1
-> > $(DESTDIR)${mandir}/man1/cpupower-info.1 $(INSTALL_DATA) -D
-> > man/cpupower-monitor.1 $(DESTDIR)${mandir}/man1/cpupower-monitor.1
-> >
-> > -install-gmo:
-> > +install-gmo: create-gmo
-> >       $(INSTALL) -d $(DESTDIR)${localedir}
-> >       for HLANG in $(LANGUAGES); do \
-> >               echo '$(INSTALL_DATA) -D $(OUTPUT)po/$$HLANG.gmo
-> > $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo'; \ $(INSTALL_DATA)
-> > -D $(OUTPUT)po/$$HLANG.gmo
-> > $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo; \ done;
-> >
-> > -install-bench:
-> > +install-bench: compile-bench
-> >       @#DESTDIR must be set from outside to survive
-> >       @sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$
-> (confdir)
-> > $(MAKE) -C bench O=$(OUTPUT) install
-> >
-> > diff --git a/tools/power/cpupower/bench/Makefile
-> > b/tools/power/cpupower/bench/Makefile index f68b4bc55273..d9d9923af85c
-> > 100644
-> > --- a/tools/power/cpupower/bench/Makefile
-> > +++ b/tools/power/cpupower/bench/Makefile
-> > @@ -27,7 +27,7 @@ $(OUTPUT)cpufreq-bench: $(OBJS)
-> >
-> >  all: $(OUTPUT)cpufreq-bench
-> >
-> > -install:
-> > +install: $(OUTPUT)cpufreq-bench
-> >       mkdir -p $(DESTDIR)/$(sbindir)
-> >       mkdir -p $(DESTDIR)/$(bindir)
-> >       mkdir -p $(DESTDIR)/$(docdir)
->
->
->
->
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2527,7 +2527,7 @@ static void intel_cpufreq_trace(struct c
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
+ 
+-static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 min, u32 max,
++static void intel_cpufreq_hwp_update(struct cpudata *cpu, u32 min, u32 max,
+ 				     u32 desired, bool fast_switch)
+ {
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
+@@ -2551,7 +2551,7 @@ static void intel_cpufreq_adjust_hwp(str
+ 		wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
+ }
+ 
+-static void intel_cpufreq_adjust_perf_ctl(struct cpudata *cpu,
++static void intel_cpufreq_perf_ctl_update(struct cpudata *cpu,
+ 					  u32 target_pstate, bool fast_switch)
+ {
+ 	if (fast_switch)
+@@ -2573,10 +2573,10 @@ static int intel_cpufreq_update_pstate(s
+ 		int max_pstate = policy->strict_target ?
+ 					target_pstate : cpu->max_perf_ratio;
+ 
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate, max_pstate, 0,
++		intel_cpufreq_hwp_update(cpu, target_pstate, max_pstate, 0,
+ 					 fast_switch);
+ 	} else if (target_pstate != old_pstate) {
+-		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
++		intel_cpufreq_perf_ctl_update(cpu, target_pstate, fast_switch);
+ 	}
+ 
+ 	cpu->pstate.current_pstate = target_pstate;
+@@ -2674,7 +2674,7 @@ static void intel_cpufreq_adjust_perf(un
+ 
+ 	target_pstate = clamp_t(int, target_pstate, min_pstate, max_pstate);
+ 
+-	intel_cpufreq_adjust_hwp(cpu, min_pstate, max_pstate, target_pstate, true);
++	intel_cpufreq_hwp_update(cpu, min_pstate, max_pstate, target_pstate, true);
+ 
+ 	cpu->pstate.current_pstate = target_pstate;
+ 	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
+
+
+
