@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47CB5C433DB
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 02:44:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D73F3C433E9
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 02:45:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0F39223101
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 02:44:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A88F823101
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 02:45:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726477AbhAGCoo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Jan 2021 21:44:44 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:35745 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726260AbhAGCoo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 21:44:44 -0500
-X-UUID: c8c9ba09879d498db371bd69143d298d-20210107
-X-UUID: c8c9ba09879d498db371bd69143d298d-20210107
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        id S1726828AbhAGCos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Jan 2021 21:44:48 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:53723 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726774AbhAGCos (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2021 21:44:48 -0500
+X-UUID: 58708fbd0f1a48769422a69eb7a087ce-20210107
+X-UUID: 58708fbd0f1a48769422a69eb7a087ce-20210107
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1892806515; Thu, 07 Jan 2021 10:44:00 +0800
+        with ESMTP id 1601819296; Thu, 07 Jan 2021 10:44:01 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 7 Jan 2021 10:43:58 +0800
+ mtkmbs05n2.mediatek.inc (172.21.101.140) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 7 Jan 2021 10:43:59 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 7 Jan 2021 10:43:59 +0800
+ Transport; Thu, 7 Jan 2021 10:44:00 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -51,10 +51,12 @@ CC:     Fan Chen <fan.chen@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH v11 0/7] soc: mediatek: SVS: introduce MTK SVS
-Date:   Thu, 7 Jan 2021 10:43:49 +0800
-Message-ID: <20210107024356.583-1-roger.lu@mediatek.com>
+Subject: [PATCH v11 5/7] dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
+Date:   Thu, 7 Jan 2021 10:43:54 +0800
+Message-ID: <20210107024356.583-6-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210107024356.583-1-roger.lu@mediatek.com>
+References: <20210107024356.583-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -62,48 +64,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-1. SVS driver uses OPP adjust event in [1] to update OPP table voltage part.
-2. SVS driver gets thermal/GPU device by node [2][3] and CPU device by
-get_cpu_device(). After retrieving subsys device, SVS driver does
-device_link_add() to make sure probe/suspend callback priority.
-3. SVS dts refers to reset controller [4] to help reset SVS HW.
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+---
+ .../devicetree/bindings/soc/mediatek/mtk-svs.yaml        | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-#mt8183 SVS related patches
-[1] https://patchwork.kernel.org/patch/11193513/
-[2] https://patchwork.kernel.org/project/linux-mediatek/patch/20201013102358.22588-2-michael.kao@mediatek.com/
-[3] https://patchwork.kernel.org/project/linux-mediatek/patch/20200306041345.259332-3-drinkcat@chromium.org/
-
-#mt8192 SVS related patches
-[1] https://patchwork.kernel.org/patch/11193513/
-[2] https://patchwork.kernel.org/project/linux-mediatek/patch/20201223074944.2061-1-michael.kao@mediatek.com/
-[3] https://lore.kernel.org/patchwork/patch/1360551/
-[4] https://patchwork.kernel.org/project/linux-mediatek/patch/20200817030324.5690-5-crystal.guo@mediatek.com/
-
-changes since v10:
-- Fix typos and remove duplicate GENASK()
-- Use DIV_ROUND_UP instead of creating own math
-- Remove fake_efuse related codes and some type casting
-- Optimize svs_get_vops_v2() coding
-- Check "supplier links.status DL_DEV_DRIVER_BOUND" to make
-sure supplier is ready after doing device_link_add()
-
-Roger Lu (7):
-  [v11,1/7]: dt-bindings: soc: mediatek: add mtk svs dt-bindings
-  [v11,2/7]: arm64: dts: mt8183: add svs device information
-  [v11,3/7]: soc: mediatek: SVS: introduce MTK SVS engine
-  [v11,4/7]: soc: mediatek: SVS: add debug commands
-  [v11,5/7]: dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
-  [v11,6/7]: arm64: dts: mt8192: add svs device information
-  [v11,7/7]: soc: mediatek: SVS: add mt8192 SVS GPU driver
-
- .../bindings/soc/mediatek/mtk-svs.yaml        |   89 +
- arch/arm64/boot/dts/mediatek/mt8183.dtsi      |   18 +
- arch/arm64/boot/dts/mediatek/mt8192.dtsi      |   34 +
- drivers/soc/mediatek/Kconfig                  |   10 +
- drivers/soc/mediatek/Makefile                 |    1 +
- drivers/soc/mediatek/mtk-svs.c                | 2492 +++++++++++++++++
- 6 files changed, 2644 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
- create mode 100644 drivers/soc/mediatek/mtk-svs.c
-
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+index bb8c345a0c0a..2e61b07921aa 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
++++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+@@ -22,6 +22,7 @@ properties:
+   compatible:
+     enum:
+       - mediatek,mt8183-svs
++      - mediatek,mt8192-svs
+ 
+   reg:
+     description: Address range of the MTK SVS controller.
+@@ -47,6 +48,14 @@ properties:
+       - const: svs-calibration-data
+       - const: t-calibration-data
+ 
++  resets:
++    description:
++      svs reset control.
++
++  reset-names:
++    items:
++      - const: svs_rst
++
+ required:
+   - compatible
+   - reg
+-- 
+2.18.0
 
