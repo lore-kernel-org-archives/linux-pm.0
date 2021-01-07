@@ -2,82 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D067DC4332D
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 11:19:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A645AC433DB
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 12:19:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9DB2A23125
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 11:19:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 62E4C23355
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 12:19:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727954AbhAGLTP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Jan 2021 06:19:15 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34864 "EHLO mail.kernel.org"
+        id S1726338AbhAGMTH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Jan 2021 07:19:07 -0500
+Received: from comms.puri.sm ([159.203.221.185]:43920 "EHLO comms.puri.sm"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727949AbhAGLTO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 7 Jan 2021 06:19:14 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 45A63221E9;
-        Thu,  7 Jan 2021 11:18:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1610018313;
-        bh=CePN95XLwXDP+83fIST32f96djP/fsYDPjd7ZQQqssE=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=CvcbyZghY1IZ0LMMm4/G0bzhADIvVPiSVZV5KPz7ymJR9nh21WnJfhS8ZiEkiKHzh
-         ThOq6gaB3jUxM0bZNjGA/gBalhLpkEevIRh34dOhKBHD0Anvs5Z3IJt3vwaxzuZJr1
-         E70cv6nLVBA4US15UPVZVFIEuT44YmR52B8WHQaw=
-Date:   Thu, 7 Jan 2021 12:19:53 +0100
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] interconnect fixes for 5.11-rc
-Message-ID: <X/buWeMxnoIs8ck4@kroah.com>
-References: <20210106094723.563-1-georgi.djakov@linaro.org>
- <X/X5euQ0xgzVv/0R@kroah.com>
- <16762fad-e814-6f74-333e-71676aa4b90d@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <16762fad-e814-6f74-333e-71676aa4b90d@linaro.org>
+        id S1726229AbhAGMTH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 7 Jan 2021 07:19:07 -0500
+Received: from localhost (localhost [127.0.0.1])
+        by comms.puri.sm (Postfix) with ESMTP id A5CB3E20F7;
+        Thu,  7 Jan 2021 04:18:26 -0800 (PST)
+Received: from comms.puri.sm ([127.0.0.1])
+        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id Vacq4ajD9Ilv; Thu,  7 Jan 2021 04:18:25 -0800 (PST)
+From:   Martin Kepplinger <martin.kepplinger@puri.sm>
+To:     robh@kernel.org, shawnguo@kernel.org, festevam@gmail.com,
+        catalin.marinas@arm.com, will@kernel.org, georgi.djakov@linaro.org,
+        cdleonard@gmail.com, gregkh@linuxfoundation.org
+Cc:     kernel@pengutronix.de, linux-imx@nxp.com, kernel@puri.sm,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Leonard Crestez <leonard.crestez@nxp.com>,
+        Martin Kepplinger <martin.kepplinger@puri.sm>
+Subject: [PATCH v4 1/5] arm64: dts: imx8mq: Add NOC node
+Date:   Thu,  7 Jan 2021 13:17:50 +0100
+Message-Id: <20210107121754.3295-2-martin.kepplinger@puri.sm>
+In-Reply-To: <20210107121754.3295-1-martin.kepplinger@puri.sm>
+References: <20210107121754.3295-1-martin.kepplinger@puri.sm>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 07, 2021 at 01:12:14PM +0200, Georgi Djakov wrote:
-> On 1/6/21 19:55, Greg KH wrote:
-> > On Wed, Jan 06, 2021 at 11:47:23AM +0200, Georgi Djakov wrote:
-> > > Hello Greg,
-> > > 
-> > > Here is a pull request with a few interconnect fixes for 5.11-rc.
-> > > More details are available in the signed tag. Please take them into
-> > > char-misc-linus when possible. The patches have been in linux-next
-> > > during the last few days.
-> > > 
-> > > Thanks,
-> > > Georgi
-> > > 
-> > > The following changes since commit 5c8fe583cce542aa0b84adc939ce85293de36e5e:
-> > > 
-> > >    Linux 5.11-rc1 (2020-12-27 15:30:22 -0800)
-> > > 
-> > > are available in the Git repository at:
-> > > 
-> > >    git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-5.11-rc3
-> > 
-> > Pulled and pushed out, thanks.
-> > 
-> Hi Greg,
-> 
-> I still don't see this in your tree, so just checking whether i need to fix
-> something or some script is stuck? Or maybe I just need to be more patient,
-> since you haven't had a chance to push yet.
+From: Leonard Crestez <leonard.crestez@nxp.com>
 
-{sigh}
+Add initial support for dynamic frequency scaling of the main NOC
+on imx8mq.
 
-I forgot the "push" part of the above statement :)
+Make DDRC the parent of the NOC (using passive governor) so that the
+main NOC is automatically scaled together with DDRC by default.
 
-Should now be there, sorry about that.
+Support for proactive scaling via interconnect will come on top.
 
-greg k-h
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
+Acked-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi | 24 +++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+index a841a023e8e0..dbe480a76aa1 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -1158,6 +1158,30 @@
+ 			};
+ 		};
+ 
++		noc: interconnect@32700000 {
++			compatible = "fsl,imx8mq-noc", "fsl,imx8m-noc";
++			reg = <0x32700000 0x100000>;
++			clocks = <&clk IMX8MQ_CLK_NOC>;
++			fsl,ddrc = <&ddrc>;
++			operating-points-v2 = <&noc_opp_table>;
++
++			noc_opp_table: opp-table {
++				compatible = "operating-points-v2";
++
++				opp-133M {
++					opp-hz = /bits/ 64 <133333333>;
++				};
++
++				opp-400M {
++					opp-hz = /bits/ 64 <400000000>;
++				};
++
++				opp-800M {
++					opp-hz = /bits/ 64 <800000000>;
++				};
++			};
++		};
++
+ 		bus@32c00000 { /* AIPS4 */
+ 			compatible = "fsl,aips-bus", "simple-bus";
+ 			reg = <0x32c00000 0x400000>;
+-- 
+2.20.1
+
