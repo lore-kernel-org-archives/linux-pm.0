@@ -2,36 +2,33 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F2A4C433E9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1544C4332B
 	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 18:45:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6AE1F23406
+	by mail.kernel.org (Postfix) with ESMTP id A272123403
 	for <linux-pm@archiver.kernel.org>; Thu,  7 Jan 2021 18:45:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729270AbhAGSpP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Jan 2021 13:45:15 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59348 "EHLO
+        id S1729300AbhAGSpW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Jan 2021 13:45:22 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44726 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728105AbhAGSpN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2021 13:45:13 -0500
+        with ESMTP id S1728088AbhAGSpP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2021 13:45:15 -0500
 Received: from 89-64-81-64.dynamic.chello.pl (89.64.81.64) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
- id 83169161bdda93df; Thu, 7 Jan 2021 19:44:31 +0100
+ id 4b1f4f3bf6ea13e3; Thu, 7 Jan 2021 19:44:33 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH v1 2/3] cpufreq: intel_pstate: Change intel_pstate_get_hwp_max() argument
-Date:   Thu, 07 Jan 2021 19:43:30 +0100
-Message-ID: <2241039.bdjsIDbar3@kreacher>
-In-Reply-To: <5701645.lOV4Wx5bFT@kreacher>
-References: <5701645.lOV4Wx5bFT@kreacher>
+Subject: [PATCH v1 0/3] cpufreq: intel_pstate: Assorted cleanups
+Date:   Thu, 07 Jan 2021 19:40:56 +0100
+Message-ID: <5701645.lOV4Wx5bFT@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -39,85 +36,17 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-All of the callers of intel_pstate_get_hwp_max() access the struct
-cpudata object that corresponds to the given CPU already and the
-function itself needs to access that object (in order to update
-hwp_cap_cached), so modify the code to pass a struct cpudata pointer
-to it instead of the CPU number.
+These three patches clean up intel_pstate a bit:
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+[1/3] makes it always use READ_ONCE() for reading hwp_cap_cached
+[2/3] changes the first argument of intel_pstate_get_hwp_max()
+[3/3] renames to functions (to avoid possible confusion).
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -819,13 +819,13 @@ static struct freq_attr *hwp_cpufreq_att
- 	NULL,
- };
- 
--static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
-+static void intel_pstate_get_hwp_max(struct cpudata *cpu, int *phy_max,
- 				     int *current_max)
- {
- 	u64 cap;
- 
--	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
--	WRITE_ONCE(all_cpu_data[cpu]->hwp_cap_cached, cap);
-+	rdmsrl_on_cpu(cpu->cpu, MSR_HWP_CAPABILITIES, &cap);
-+	WRITE_ONCE(cpu->hwp_cap_cached, cap);
- 	if (global.no_turbo || global.turbo_disabled)
- 		*current_max = HWP_GUARANTEED_PERF(cap);
- 	else
-@@ -1213,7 +1213,7 @@ static void update_qos_request(enum freq
- 			continue;
- 
- 		if (hwp_active)
--			intel_pstate_get_hwp_max(i, &turbo_max, &max_state);
-+			intel_pstate_get_hwp_max(cpu, &turbo_max, &max_state);
- 		else
- 			turbo_max = cpu->pstate.turbo_pstate;
- 
-@@ -1723,7 +1723,7 @@ static void intel_pstate_get_cpu_pstates
- 	if (hwp_active && !hwp_mode_bdw) {
- 		unsigned int phy_max, current_max;
- 
--		intel_pstate_get_hwp_max(cpu->cpu, &phy_max, &current_max);
-+		intel_pstate_get_hwp_max(cpu, &phy_max, &current_max);
- 		cpu->pstate.turbo_freq = phy_max * cpu->pstate.scaling;
- 		cpu->pstate.turbo_pstate = phy_max;
- 	} else {
-@@ -2208,7 +2208,7 @@ static void intel_pstate_update_perf_lim
- 	 * rather than pure ratios.
- 	 */
- 	if (hwp_active) {
--		intel_pstate_get_hwp_max(cpu->cpu, &turbo_max, &max_state);
-+		intel_pstate_get_hwp_max(cpu, &turbo_max, &max_state);
- 	} else {
- 		max_state = global.no_turbo || global.turbo_disabled ?
- 			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
-@@ -2323,7 +2323,7 @@ static void intel_pstate_verify_cpu_poli
- 	if (hwp_active) {
- 		int max_state, turbo_max;
- 
--		intel_pstate_get_hwp_max(cpu->cpu, &turbo_max, &max_state);
-+		intel_pstate_get_hwp_max(cpu, &turbo_max, &max_state);
- 		max_freq = max_state * cpu->pstate.scaling;
- 	} else {
- 		max_freq = intel_pstate_get_max_freq(cpu);
-@@ -2710,7 +2710,7 @@ static int intel_cpufreq_cpu_init(struct
- 	if (hwp_active) {
- 		u64 value;
- 
--		intel_pstate_get_hwp_max(policy->cpu, &turbo_max, &max_state);
-+		intel_pstate_get_hwp_max(cpu, &turbo_max, &max_state);
- 		policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY_HWP;
- 		rdmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, &value);
- 		WRITE_ONCE(cpu->hwp_req_cached, value);
+Please see patch changelogs for details.
+
+Thanks!
 
 
 
