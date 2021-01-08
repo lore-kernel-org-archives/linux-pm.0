@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 797F2C4321A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E11C0C4361A
 	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:49:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 32DBB233CF
+	by mail.kernel.org (Postfix) with ESMTP id AFA41233EA
 	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:49:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727801AbhAHHt3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jan 2021 02:49:29 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:45721 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725848AbhAHHt2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2021 02:49:28 -0500
-X-UUID: 1dad6a0ace0f4dca9560c533439814b2-20210108
-X-UUID: 1dad6a0ace0f4dca9560c533439814b2-20210108
-Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw01.mediatek.com
+        id S1727856AbhAHHtk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jan 2021 02:49:40 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:36536 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1727200AbhAHHtj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2021 02:49:39 -0500
+X-UUID: fa6ef0881d284686b07b18e364875b70-20210108
+X-UUID: fa6ef0881d284686b07b18e364875b70-20210108
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 745784426; Fri, 08 Jan 2021 15:48:21 +0800
+        with ESMTP id 866831395; Fri, 08 Jan 2021 15:48:22 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
  mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 8 Jan 2021 15:48:19 +0800
+ 15.0.1497.2; Fri, 8 Jan 2021 15:48:20 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 8 Jan 2021 15:48:19 +0800
+ Transport; Fri, 8 Jan 2021 15:48:20 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -48,44 +48,75 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V7 02/13] soc: mediatek: add header for mediatek SIP interface
-Date:   Fri, 8 Jan 2021 15:48:04 +0800
-Message-ID: <1610092095-5113-3-git-send-email-henryc.chen@mediatek.com>
+Subject: [PATCH V7 08/13] dt-bindings: interconnect: add MT6873 interconnect dt-bindings
+Date:   Fri, 8 Jan 2021 15:48:10 +0800
+Message-ID: <1610092095-5113-9-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1610092095-5113-1-git-send-email-henryc.chen@mediatek.com>
 References: <1610092095-5113-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-SNTS-SMTP: 0434C206EEC073FB41FBF94E499BCAFCB360D7D9EAC0C15ED2B3A37196C75C682000:8
+X-TM-SNTS-SMTP: 6B1DF9DBDD549F125D6B2394143AEE8EE4E2198D41E08187442E2BD806D80FC62000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a header to collect SIPs and add one SIP call to initialize power
-management hardware for the SIP interface defined to access the SPM
-handling vcore voltage and ddr rate changes on mt8183 (and most likely
-later socs).
+Add interconnect provider dt-bindings for MT6873.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
 ---
- include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/dt-bindings/interconnect/mtk,mt6873-emi.h | 41 +++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/mtk,mt6873-emi.h
 
-diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
-index 082398e..079bbcb 100644
---- a/include/linux/soc/mediatek/mtk_sip_svc.h
-+++ b/include/linux/soc/mediatek/mtk_sip_svc.h
-@@ -22,4 +22,8 @@
- 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
- 			   ARM_SMCCC_OWNER_SIP, fn_id)
- 
-+/* VCOREFS */
-+#define MTK_SIP_VCOREFS_CONTROL \
-+	MTK_SIP_SMC_CMD(0x506)
+diff --git a/include/dt-bindings/interconnect/mtk,mt6873-emi.h b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
+new file mode 100644
+index 0000000..0b20011
+--- /dev/null
++++ b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
+@@ -0,0 +1,41 @@
++/* SPDX-License-Identifier: GPL-2.0
++ *
++ * Copyright (c) 2021 MediaTek Inc.
++ */
 +
- #endif
++#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
++#define __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
++
++#define MT6873_SLAVE_DDR_EMI		0
++#define MT6873_MASTER_MCUSYS		1
++#define MT6873_MASTER_GPUSYS		2
++#define MT6873_MASTER_MMSYS		3
++#define MT6873_MASTER_MM_VPU		4
++#define MT6873_MASTER_MM_DISP		5
++#define MT6873_MASTER_MM_VDEC		6
++#define MT6873_MASTER_MM_VENC		7
++#define MT6873_MASTER_MM_CAM		8
++#define MT6873_MASTER_MM_IMG		9
++#define MT6873_MASTER_MM_MDP		10
++#define MT6873_MASTER_VPUSYS		11
++#define MT6873_MASTER_VPU_0		12
++#define MT6873_MASTER_VPU_1		13
++#define MT6873_MASTER_MDLASYS		14
++#define MT6873_MASTER_MDLA_0		15
++#define MT6873_MASTER_UFS		16
++#define MT6873_MASTER_PCIE		17
++#define MT6873_MASTER_USB		18
++#define MT6873_MASTER_DBGIF		19
++#define MT6873_SLAVE_HRT_DDR_EMI	20
++#define MT6873_MASTER_HRT_MMSYS		21
++#define MT6873_MASTER_HRT_MM_DISP	22
++#define MT6873_MASTER_HRT_MM_VDEC	23
++#define MT6873_MASTER_HRT_MM_VENC	24
++#define MT6873_MASTER_HRT_MM_CAM	25
++#define MT6873_MASTER_HRT_MM_IMG	26
++#define MT6873_MASTER_HRT_MM_MDP	27
++#define MT6873_MASTER_HRT_DBGIF		28
++#define MT6873_MASTER_WIFI		29
++#define MT6873_MASTER_BT		30
++#define MT6873_MASTER_NETSYS		31
++#endif
 -- 
 1.9.1
 
