@@ -2,113 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 145D1C433DB
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 15:20:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80DAFC433DB
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 16:18:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B2B49239EB
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 15:20:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 42BF1235FF
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 16:18:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726650AbhAHPUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jan 2021 10:20:33 -0500
-Received: from foss.arm.com ([217.140.110.172]:52996 "EHLO foss.arm.com"
+        id S1728010AbhAHQSE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jan 2021 11:18:04 -0500
+Received: from mail.kernel.org ([198.145.29.99]:37262 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726600AbhAHPUd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 Jan 2021 10:20:33 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 41474113E;
-        Fri,  8 Jan 2021 07:19:48 -0800 (PST)
-Received: from e108754-lin.cambridge.arm.com (unknown [10.1.198.32])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0B29C3F70D;
-        Fri,  8 Jan 2021 07:19:46 -0800 (PST)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        manivannan.sadhasivam@linaro.org, agross@kernel.org,
-        bjorn.andersson@linaro.org
-Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Ionela Voinescu <ionela.voinescu@arm.com>
-Subject: [PATCH] cpufreq: Revert "cpufreq: qcom-hw: Use devm_platform_ioremap_resource() to simplify code"
-Date:   Fri,  8 Jan 2021 15:14:06 +0000
-Message-Id: <20210108151406.23595-1-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.29.2.dirty
+        id S1727884AbhAHQSE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 Jan 2021 11:18:04 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C2A6D2333E;
+        Fri,  8 Jan 2021 16:17:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1610122643;
+        bh=9fRyQu8uYFa7h3cUZz3MMpHk6GCetpc3R4IJdyxZytI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=rGlBTzuo4+3lbmj5uzGwUyA9RiJ+oXV7++NC+iKEtjOMkrO3J/xVM6cjBI1nghCFq
+         sm+bhdfvyXiWq0jvyUsgOpqMDI/u5JByMoQcUh+TKwlc8CHbqfIQeiz49x7MHrP5uw
+         xRxQZtyGo2behH4Z1kAeUjKBdIkRz1yw5Af0cyV0iTidmAMv3zsPXKJgOZlxkUlCbL
+         KY1H+ng88THoLRia4zT9T17xJrpDjeqiZB8LGOXilPiZQaAyLoFX7D7XM7p5BAvSrs
+         jNv7jgtsYd4m5O0t0Tc4YF1b+YzCOLBEq5ZFmAotzg5w8MZPutANKY61Mu3JxeKAMP
+         iZBcr7nJL+9wg==
+Date:   Fri, 8 Jan 2021 16:16:53 +0000
+From:   Mark Brown <broonie@kernel.org>
+To:     Timon Baetz <timon.baetz@protonmail.com>
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH v6 2/8] regulator: dt-bindings: Document max8997-pmic
+ nodes
+Message-ID: <20210108161653.GA4554@sirena.org.uk>
+References: <20201230205139.1812366-1-timon.baetz@protonmail.com>
+ <20201230205139.1812366-2-timon.baetz@protonmail.com>
+ <20210104135156.GB5645@sirena.org.uk>
+ <20210104181825.GB27043@kozik-lap>
+ <20210104182734.GH5645@sirena.org.uk>
+ <20210104183821.GA29033@kozik-lap>
+ <20210104212449.GJ5645@sirena.org.uk>
+ <20210105165529.GB20401@kozik-lap>
+ <20210106145931.GE4752@sirena.org.uk>
+ <20210108161635.1b9303c8.timon.baetz@protonmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+Content-Disposition: inline
+In-Reply-To: <20210108161635.1b9303c8.timon.baetz@protonmail.com>
+X-Cookie: Should I do my BOBBIE VINTON medley?
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This reverts commit f17b3e44320b4079e69135c63d1e416b0703a21e.
 
-This commit introduces a regression on platforms using the driver,
-by failing to initialise a policy, when one is created post hotplug.
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-When all the CPUs of a policy are hoptplugged out, the call to .exit()
-and later to devm_iounmap() does not release the memory region that was
-requested during devm_platform_ioremap_resource().
+On Fri, Jan 08, 2021 at 03:16:48PM +0000, Timon Baetz wrote:
 
-Therefore, a subsequent call to .init() will result in the following
-error, which will prevent a new policy to be initialised:
+> Muic needs a node to be used with extcon_get_edev_by_phandle().
+> Charger needs a node to reference a regulator.
 
-qcom-cpufreq-hw 17d43000.cpufreq: can't request region for resource
-[mem 0x17d43000-0x17d443ff]
+The pattern is to use the parent device's node.
 
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
----
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Hi guys,
+-----BEGIN PGP SIGNATURE-----
 
-I noticed the issue described in the commit message on DB845c platforms
-on 5.11-rc2.
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl/4hXQACgkQJNaLcl1U
+h9D1Kgf9FdFEaCB21a+mhIY1QWeD08qM2lyq1/GCIzsj4p/ssGdqVnpGAJhLWZqn
+nf9Uvf3q/dHc8o07Wvwh9s0zWde4kF56AyBrBbUdBwVONek4vGgb7tTfMIyTbZUR
+O/SW1Uj9CodqLzfJz/5Z+zhsa+HXi5Jeroi7oGHe57U+2SGv/gYIfx/aLBIMbz3s
+85OyLGL2c41FOTtB4IZYAsdag/eDCAC9B0UfvP2vu3Winr9RHIQlAKs4KZ/wGnQ3
+4JTI7pCAlao2ZIKUAuwNvGLAnCIxqNWAvTUfwc0SMGnZkYGpNWB59vhrEd35jiYN
+uWvieVoEAZtYG/ygcGXyN/uIcN1w4Q==
+=pp/6
+-----END PGP SIGNATURE-----
 
-I tried to fix this, rather than revert it, but I did not find any
-better way to fix this, other than possibly calling
-devm_release_mem_region() directly in the cpufreq driver or reworking
-some of the resource management functions. But in comparison, reverting
-the patch still seemed the cleaner solution to me.
-
-Hope it helps,
-Ionela.
-
- drivers/cpufreq/qcom-cpufreq-hw.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 9ed5341dc515..79e637616856 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -280,6 +280,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	struct of_phandle_args args;
- 	struct device_node *cpu_np;
- 	struct device *cpu_dev;
-+	struct resource *res;
- 	void __iomem *base;
- 	struct qcom_cpufreq_data *data;
- 	int ret, index;
-@@ -303,9 +304,13 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 
- 	index = args.args[0];
- 
--	base = devm_platform_ioremap_resource(pdev, index);
--	if (IS_ERR(base))
--		return PTR_ERR(base);
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
-+	if (!res)
-+		return -ENODEV;
-+
-+	base = devm_ioremap(dev, res->start, resource_size(res));
-+	if (!base)
-+		return -ENOMEM;
- 
- 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
- 	if (!data) {
-
-base-commit: e71ba9452f0b5b2e8dc8aa5445198cd9214a6a62
-prerequisite-patch-id: a6b26dcf2cc7750362150ced269bc05a6cbd0a05
--- 
-2.29.2.dirty
-
+--jRHKVT23PllUwdXP--
