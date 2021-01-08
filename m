@@ -4,120 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB5C8C433E6
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 13:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A5ABC433E0
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 15:17:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7496A23A00
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 13:46:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D79323A04
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 15:17:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727482AbhAHNqh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Jan 2021 08:46:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48146 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727130AbhAHNqg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2021 08:46:36 -0500
-Received: from mail-il1-x12e.google.com (mail-il1-x12e.google.com [IPv6:2607:f8b0:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9373BC0612F4;
-        Fri,  8 Jan 2021 05:45:56 -0800 (PST)
-Received: by mail-il1-x12e.google.com with SMTP id u12so10275285ilv.3;
-        Fri, 08 Jan 2021 05:45:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=cKHeUR1zK43NQMUQKMTc/nRz+XRhb8es7I3o2+Po5OM=;
-        b=QUE6Q4+lt/2IpN5/4MWXoP7r0zJ6gpUbj1DYEZl5QziVOJF8mGuSPZ4J+rL14IiCDW
-         5m78yFYf0V/P5spwFvv2o9vWhc8AVD/UXQQNy4yaR50rIwb87ufnDX6VsgU1SwDX17xo
-         F6MFJBs+ENedFrk3eZMLEzRT6yAlvdM0BhRN/cn75uGqyWtoXsOcuZff7G/4I7OXoPzt
-         DxQ4L9VUR8B2dmmuKGGX6Z/ZijmawRDUESWOR+dT4DnAcv+q8YL5P+oZYErPsHAP/Pe/
-         pNN28cP7WYRNIgrSQtWwtgbjOc0q8QqiGsXZFNG4v3POd+VlM9L0mLIoFR7GiLQLUhy2
-         bPSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=cKHeUR1zK43NQMUQKMTc/nRz+XRhb8es7I3o2+Po5OM=;
-        b=n8Q/41A0FWZDscct4DFtarxeZ1yiU/cZTQKGU8Lko4jI7u+ENVFijdcIaQ/HuhA+Cj
-         CCfJ6j8jlwHU7mTkG4VIPMMz5SsobJQph1bEfknYb94ELhHyyVRWn1Yd9YAvs+Uw9Tfv
-         9guOabVQ7wWxzQpBTnBkGp+6UGXGVrim4EPGUkjPy0jcbxROkSF4JEBsw3zdLKaxASCX
-         42b3BU+4ynQ6bW1ik/Z9PD3hpfprHXQ+UvFaLOdEyj3Mbxuw3/BydQijC1OjBIa+eNpm
-         sEdzj7H1W+HsvNcySM31U5cTHFdeP4hoYz7Afu2exUgUzS803hiOZ7WHgrNkV/d1U7f2
-         w77A==
-X-Gm-Message-State: AOAM533XUXx0h8Mm6tkm+/7M61JZWxsJugoMPdhxHqydZ+CLz2yMSGQf
-        80H37zePRwtlVfgAq0lJNTNaesDmO27eh4zfeGM=
-X-Google-Smtp-Source: ABdhPJxCDlsxvVBHcnRxKe76pie+vUEs4FqREROSJT+0vN+DUoNM18G/O5julpRlaHGXvzKU3rmH0/vttv0j61jeuFw=
-X-Received: by 2002:a92:c561:: with SMTP id b1mr3896749ilj.65.1610113555882;
- Fri, 08 Jan 2021 05:45:55 -0800 (PST)
-MIME-Version: 1.0
-References: <20201230084338.19410-1-tony@atomide.com> <CAHCN7xJmwcUOpoza-LNxTAbRNb9ToERnBNuKboP86DSBdtS61A@mail.gmail.com>
- <7C9106E0-FC75-4056-AD5F-16CCFA9C24E5@goldelico.com> <X/gIO9Ta3JPDaeV3@atomide.com>
-In-Reply-To: <X/gIO9Ta3JPDaeV3@atomide.com>
-From:   Adam Ford <aford173@gmail.com>
-Date:   Fri, 8 Jan 2021 07:45:44 -0600
-Message-ID: <CAHCN7xKzeqabm5YJbNS_jcENnhxdU9tAuhWZv81xJA7VbaW6NA@mail.gmail.com>
-Subject: Re: [PATCH 1/3] thermal: ti-soc-thermal: Fix stuck sensor with
- continuous mode for 4430
-To:     Tony Lindgren <tony@atomide.com>
-Cc:     "H. Nikolaus Schaller" <hns@goldelico.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux-OMAP <linux-omap@vger.kernel.org>,
-        Carl Philipp Klemm <philipp@uvos.xyz>,
-        Merlijn Wajer <merlijn@wizzup.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        id S1727612AbhAHPRk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Jan 2021 10:17:40 -0500
+Received: from mail-40134.protonmail.ch ([185.70.40.134]:48943 "EHLO
+        mail-40134.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726650AbhAHPRj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2021 10:17:39 -0500
+Date:   Fri, 08 Jan 2021 15:16:48 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
+        s=protonmail; t=1610119016;
+        bh=nTvFORzb1bf2GhxFAnJcMjuDAmjBfj16QbcnGKmQQN8=;
+        h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
+        b=I3etT1bVJJGG6EmNOlOKiyuMd9VujUvYRzGxE60kGx0AXi0dA8XeUIIGWXYLxRAfJ
+         DvU62wDrGEyiH8DuYssDVuJ4t5139c5U3Gbz1gfMg+Jy+qYrh7t4cNju86CvimuKbO
+         59pR8dRcakP+eFG72Q3elh57SfTrSYFBbiBdvoQ8=
+To:     Mark Brown <broonie@kernel.org>
+From:   Timon Baetz <timon.baetz@protonmail.com>
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Lee Jones <lee.jones@linaro.org>,
         Sebastian Reichel <sre@kernel.org>,
-        Andreas Kemnade <andreas@kemnade.info>
-Content-Type: text/plain; charset="UTF-8"
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Reply-To: Timon Baetz <timon.baetz@protonmail.com>
+Subject: Re: [PATCH v6 2/8] regulator: dt-bindings: Document max8997-pmic nodes
+Message-ID: <20210108161635.1b9303c8.timon.baetz@protonmail.com>
+In-Reply-To: <20210106145931.GE4752@sirena.org.uk>
+References: <20201230205139.1812366-1-timon.baetz@protonmail.com> <20201230205139.1812366-2-timon.baetz@protonmail.com> <20210104135156.GB5645@sirena.org.uk> <20210104181825.GB27043@kozik-lap> <20210104182734.GH5645@sirena.org.uk> <20210104183821.GA29033@kozik-lap> <20210104212449.GJ5645@sirena.org.uk> <20210105165529.GB20401@kozik-lap> <20210106145931.GE4752@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jan 8, 2021 at 1:22 AM Tony Lindgren <tony@atomide.com> wrote:
->
-> * H. Nikolaus Schaller <hns@goldelico.com> [201230 13:29]:
-> > > Am 30.12.2020 um 13:55 schrieb Adam Ford <aford173@gmail.com>:
-> > > On Wed, Dec 30, 2020 at 2:43 AM Tony Lindgren <tony@atomide.com> wrote:
-> > >>
-> > >> At least for 4430, trying to use the single conversion mode eventually
-> > >> hangs the thermal sensor. This can be quite easily seen with errors:
-> > >>
-> > >> thermal thermal_zone0: failed to read out thermal zone (-5)
-> ...
->
-> > > I don't have an OMAP4, but if you want, I can test a DM3730.
-> >
-> > Indeed I remember a similar discussion from the DM3730 [1]. temp values were
-> > always those from the last measurement. E.g. the first one was done
-> > during (cold) boot and the first request after 10 minutes did show a
-> > quite cold system... The next one did show a hot system independent
-> > of what had been between (suspend or high activity).
-> >
-> > It seems as if it was even reproducible with a very old kernel on a BeagleBoard.
-> > So it is quite fundamental.
-> >
-> > We tried to fix it but did not come to a solution [2]. So we opened an issue
-> > in our tracker [3] and decided to stay with continuous conversion although this
-> > raises idle mode processor load.
->
-> Hmm so maybe eocz high always times out in single mode since it also
-> triggers at least on dra7?
->
-> Yes it would be great if you guys can the $subject patch a try at
-> least on your omap36xx and omap5 boards and see if you see eocz
-> time out warnings in dmesg.
+On Wed, 6 Jan 2021 14:59:31 +0000, Mark Brown wrote:
+> On Tue, Jan 05, 2021 at 05:55:29PM +0100, Krzysztof Kozlowski wrote:
+> > On Mon, Jan 04, 2021 at 09:24:49PM +0000, Mark Brown wrote: =20
+>=20
+> > > I'm not sure I follow, sorry?  Either the core driver can parse the
+> > > bindings enough to know what children it has or (probably better) it =
+can
+> > > instantiate the children unconditionally and then the function driver=
+s
+> > > can figure out if they need to do anything. =20
+>=20
+> > Currently the MFD parent/core driver will instantiate children
+> > unconditionally.  It would have to be adapted. With proposed bindings -
+> > nothing to change.  MFD core already does the thing. =20
+>=20
+> We're not talking massive amounts of code here, but we are talking ABI
+> for a DT update.
+>=20
+> > The point is that function drivers should not be even bound, should not
+> > start to probe. Otherwise if they probe and fail, they will pollute the
+> > dmesg/probe log with failure. With the failure coming from looking for
+> > missing of_node or any other condition from parent/core driver. =20
+>=20
+> There will only be an error message if one is printed, if we can do a
+> definitive -ENODEV there should be no need to print an error.
+>=20
+> > > > Another point, is that this reflects the real hardware. The same as=
+ we
+> > > > model entire SoC as multiple children of soc node (with their own
+> > > > properties), here we represent smaller chip which also has
+> > > > sub-components. =20
+>=20
+> > > Components we're calling things like "extcon"... =20
+>=20
+> > I am rather thinking about charger, but yes, extcon as well. Either you
+> > have USB socket (and want to use associated logic) or not. =20
+>=20
+> Right, I'm just saying we don't need to add new device nodes reflecting
+> implementation details into the DT to do that.
 
-I should be able to try it on the dm3730 logicpd-torpedo kit this weekend.
+I'm not sure I can contribute that much to this discussion (this is my
+first proper kernel patch, also I don't really understand the argument).
+FWIW I looked at other MFD devices while implementing this like max77836,=
+=20
+max77693, max77650, max77843 (just to name a few).=20
+Assigning of_node to sub-devices using sub-nodes with compatible strings=20
+seemed to be a common pattern for MFD devices.
+Muic needs a node to be used with extcon_get_edev_by_phandle().
+Charger needs a node to reference a regulator.
 
-adam
->
-> Regards,
->
-> Tony
