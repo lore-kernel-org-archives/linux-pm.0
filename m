@@ -5,32 +5,32 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22163C4161F
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2198BC433DB
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:50:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EEAF623718
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:49:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CBB8E2343F
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Jan 2021 07:50:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727909AbhAHHtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727914AbhAHHtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 8 Jan 2021 02:49:47 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:45721 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1727887AbhAHHtq (ORCPT
+Received: from mailgw02.mediatek.com ([210.61.82.184]:36559 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1727200AbhAHHtq (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2021 02:49:46 -0500
-X-UUID: 4da9f238122f4677aa3cd8f736f2359f-20210108
-X-UUID: 4da9f238122f4677aa3cd8f736f2359f-20210108
-Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+X-UUID: 64e7c9ec7375442391282f92623e7c5a-20210108
+X-UUID: 64e7c9ec7375442391282f92623e7c5a-20210108
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 2100744168; Fri, 08 Jan 2021 15:48:21 +0800
+        with ESMTP id 911436242; Fri, 08 Jan 2021 15:48:21 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Fri, 8 Jan 2021 15:48:20 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 8 Jan 2021 15:48:20 +0800
+ Transport; Fri, 8 Jan 2021 15:48:19 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -48,56 +48,42 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V7 07/13] dt-bindings: interconnect: add MT8183 interconnect dt-bindings
-Date:   Fri, 8 Jan 2021 15:48:09 +0800
-Message-ID: <1610092095-5113-8-git-send-email-henryc.chen@mediatek.com>
+Subject: [PATCH V7 05/13] arm64: dts: mt8183: add dvfsrc related nodes
+Date:   Fri, 8 Jan 2021 15:48:07 +0800
+Message-ID: <1610092095-5113-6-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1610092095-5113-1-git-send-email-henryc.chen@mediatek.com>
 References: <1610092095-5113-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-SNTS-SMTP: FA9BF6AA4A12925736383033AB167ED530013778A4C6177CBAAD5729B2FC50682000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interconnect provider dt-bindings for MT8183.
+Enable dvfsrc on mt8183 platform.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- include/dt-bindings/interconnect/mtk,mt8183-emi.h | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-new file mode 100644
-index 0000000..dfd143f
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0
-+ *
-+ * Copyright (c) 2021 MediaTek Inc.
-+ */
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 5b782a4..062afe8 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -497,6 +497,11 @@
+ 			#clock-cells = <1>;
+ 		};
+ 
++		ddr_emi: dvfsrc@10012000 {
++			compatible = "mediatek,mt8183-dvfsrc";
++			reg = <0 0x10012000 0 0x1000>;
++		};
 +
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+
-+#define MT8183_SLAVE_DDR_EMI			0
-+#define MT8183_MASTER_MCUSYS			1
-+#define MT8183_MASTER_GPU			2
-+#define MT8183_MASTER_MMSYS			3
-+#define MT8183_MASTER_MM_VPU			4
-+#define MT8183_MASTER_MM_DISP			5
-+#define MT8183_MASTER_MM_VDEC			6
-+#define MT8183_MASTER_MM_VENC			7
-+#define MT8183_MASTER_MM_CAM			8
-+#define MT8183_MASTER_MM_IMG			9
-+#define MT8183_MASTER_MM_MDP			10
-+
-+#endif
+ 		pwrap: pwrap@1000d000 {
+ 			compatible = "mediatek,mt8183-pwrap";
+ 			reg = <0 0x1000d000 0 0x1000>;
 -- 
 1.9.1
 
