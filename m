@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C339C43331
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 227ECC43333
 	for <linux-pm@archiver.kernel.org>; Sat,  9 Jan 2021 18:06:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD35A23A03
+	by mail.kernel.org (Postfix) with ESMTP id EC149239FE
 	for <linux-pm@archiver.kernel.org>; Sat,  9 Jan 2021 18:06:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726897AbhAISG0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726871AbhAISG0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 9 Jan 2021 13:06:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35168 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726881AbhAISGZ (ORCPT
+        with ESMTP id S1726884AbhAISGZ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 9 Jan 2021 13:06:25 -0500
-Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42DE9C061382;
-        Sat,  9 Jan 2021 10:04:52 -0800 (PST)
+Received: from relay04.th.seeweb.it (relay04.th.seeweb.it [IPv6:2001:4b7a:2000:18::165])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C302C061384
+        for <linux-pm@vger.kernel.org>; Sat,  9 Jan 2021 10:04:53 -0800 (PST)
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 7AB431F5FD;
-        Sat,  9 Jan 2021 19:04:12 +0100 (CET)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 0068A1F614;
+        Sat,  9 Jan 2021 19:04:13 +0100 (CET)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     linux-arm-msm@vger.kernel.org
@@ -40,9 +40,9 @@ Cc:     konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v2 12/15] dt-bindings: arm: cpus: Document 'qcom,freq-domain' property
-Date:   Sat,  9 Jan 2021 19:03:56 +0100
-Message-Id: <20210109180359.236098-13-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v2 15/15] dt-bindings: cpufreq: qcom-hw: Add bindings for 8998
+Date:   Sat,  9 Jan 2021 19:03:59 +0100
+Message-Id: <20210109180359.236098-16-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210109180359.236098-1-angelogioacchino.delregno@somainline.org>
 References: <20210109180359.236098-1-angelogioacchino.delregno@somainline.org>
@@ -52,35 +52,94 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+The OSM programming addition has been done under the
+qcom,cpufreq-hw-8998 compatible name: specify the requirement
+of two additional register spaces for this functionality.
+This implementation, with the same compatible, has been
+tested on MSM8998 and SDM630.
 
-Add devicetree documentation for 'qcom,freq-domain' property specific
-to Qualcomm CPUs. This property is used to reference the CPUFREQ node
-along with Domain ID (0/1).
-
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- Documentation/devicetree/bindings/arm/cpus.yaml | 6 ++++++
- 1 file changed, 6 insertions(+)
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 44 ++++++++++++++++---
+ 1 file changed, 39 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
-index 14cd727d3c4b..1d60975df23a 100644
---- a/Documentation/devicetree/bindings/arm/cpus.yaml
-+++ b/Documentation/devicetree/bindings/arm/cpus.yaml
-@@ -290,6 +290,12 @@ properties:
- 
-       * arm/msm/qcom,kpss-acc.txt
- 
-+  qcom,freq-domain:
-+    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-+    description: |
-+      CPUs supporting freq-domain must set their "qcom,freq-domain" property
-+      with phandle to a cpufreq_hw node followed by the Domain ID(0/1).
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+index bc81b6203e27..0bf539954558 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -18,6 +18,10 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - description: Non-secure v1 of CPUFREQ HW
++        items:
++          - const: qcom,cpufreq-hw-8998
 +
-   rockchip,pmu:
-     $ref: '/schemas/types.yaml#/definitions/phandle'
-     description: |
+       - description: v1 of CPUFREQ HW
+         items:
+           - const: qcom,cpufreq-hw
+@@ -30,19 +34,27 @@ properties:
+ 
+   reg:
+     minItems: 2
+-    maxItems: 3
++    maxItems: 7
+     items:
+       - description: Frequency domain 0 register region
+       - description: Frequency domain 1 register region
+       - description: Frequency domain 2 register region
++      - description: PLL ACD domain 0 register region
++      - description: PLL ACD domain 1 register region
++      - description: Operating State Manager domain 0 register region
++      - description: Operating State Manager domain 1 register region
+ 
+   reg-names:
+     minItems: 2
+-    maxItems: 3
++    maxItems: 7
+     items:
+-      - const: freq-domain0
+-      - const: freq-domain1
+-      - const: freq-domain2
++      - const: "freq-domain0"
++      - const: "freq-domain1"
++      - const: "freq-domain2"
++      - const: "osm-acd0"
++      - const: "osm-acd1"
++      - const: "osm-domain0"
++      - const: "osm-domain1"
+ 
+   clocks:
+     items:
+@@ -57,6 +69,28 @@ properties:
+   '#freq-domain-cells':
+     const: 1
+ 
++allOf:
++ - if:
++     properties:
++       reg-names:
++         contains:
++           const: qcom,cpufreq-hw-8998
++   then:
++     properties:
++       reg:
++         minItems: 4
++         maxItems: 6
++       reg-names:
++         items:
++           minItems: 4
++   else:
++     properties:
++       reg:
++         maxItems: 3
++       reg-names:
++         items:
++           maxItems: 3
++
+ required:
+   - compatible
+   - reg
 -- 
 2.29.2
 
