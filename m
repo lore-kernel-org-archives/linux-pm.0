@@ -2,137 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3333FC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 14:58:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E83AC433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 15:43:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DF175225AC
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 14:58:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CC2552065D
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 15:43:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728348AbhAKO6a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Jan 2021 09:58:30 -0500
-Received: from mail-ot1-f52.google.com ([209.85.210.52]:42583 "EHLO
-        mail-ot1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728288AbhAKO63 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 09:58:29 -0500
-Received: by mail-ot1-f52.google.com with SMTP id 11so17100812oty.9;
-        Mon, 11 Jan 2021 06:58:14 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=E7t35NkDKfW6AJAxopDvtvnjqNf+LDF0wYVO4JWwW3k=;
-        b=NBHbal7YLIXwkRZ+F0yBC0iXsf/VDxFTdWgROPpLJThgF2ENs0Hico0EoA6m+fBm9t
-         XGIE2Ra3mEv00iKyzwHM8QqCr+daWRzEKZQYSzwHVn1Gg6YnCX/4xhhtt/vdrAfbIQHW
-         gR3k2bCMRzus02qg2Sa+cGEsgcVx6ijbmUyirtQ7ON/vWp6l9Kx9O2EySlhStJN6XF/k
-         BJVwff6O9BXqIPrnbkLpt8tEn3tjri31Ne3qrlQcyT9gN58u8g16K6Xz1e6hS+c23Z5+
-         CR0aPGWEUbxIS9UsAnrzLn9ZfVGH7U0hb2rUTgrUacCgH+ZQ0TEx7ziE8DY49Mwy+Wf5
-         xJhA==
-X-Gm-Message-State: AOAM532YMe16C7EiQ5xP1QS55opgTRoyLQGeYWyqCZnZ9isAAGjLYKJk
-        6HpgPpex250TxQIBEa4FdcUpmGwSpWsJvvcyGHE=
-X-Google-Smtp-Source: ABdhPJzFuSTDnqMMfBrV+MaNHGkqEHhQbvoD7ET4N8z1jcqX9D14iVLIXpgXJsOUjHyh94OVxLMJuOQsdw7RRieQsWU=
-X-Received: by 2002:a9d:745a:: with SMTP id p26mr11525956otk.206.1610377068634;
- Mon, 11 Jan 2021 06:57:48 -0800 (PST)
+        id S1730204AbhAKPno (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Jan 2021 10:43:44 -0500
+Received: from foss.arm.com ([217.140.110.172]:60220 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728633AbhAKPnn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 11 Jan 2021 10:43:43 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3019B1042;
+        Mon, 11 Jan 2021 07:42:58 -0800 (PST)
+Received: from ubuntu.arm.com (unknown [10.57.39.85])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AC0C23F70D;
+        Mon, 11 Jan 2021 07:42:55 -0800 (PST)
+From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, sudeep.holla@arm.com, rjw@rjwysocki.net,
+        vireshk@kernel.org, cristian.marussi@arm.com
+Cc:     morten.rasmussen@arm.com, chris.redpath@arm.com,
+        nicola.mazzucato@arm.com
+Subject: [PATCH v6 0/4] CPUFreq: Add support for opp-sharing cpus
+Date:   Mon, 11 Jan 2021 15:45:20 +0000
+Message-Id: <20210111154524.20196-1-nicola.mazzucato@arm.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-References: <alpine.LSU.2.11.2101102010200.25762@eggly.anvils> <X/xV7ZV5jzI7RvAe@ulmo>
-In-Reply-To: <X/xV7ZV5jzI7RvAe@ulmo>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 11 Jan 2021 15:57:37 +0100
-Message-ID: <CAJZ5v0iriRkEN8dVJ9gE3+Wyn_96=SNhav1QaQ59i9O0genTNQ@mail.gmail.com>
-Subject: Re: 5.11-rc device reordering breaks ThinkPad rmi4 suspend
-To:     Thierry Reding <treding@nvidia.com>
-Cc:     Hugh Dickins <hughd@google.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jan 11, 2021 at 2:43 PM Thierry Reding <treding@nvidia.com> wrote:
->
-> On Sun, Jan 10, 2021 at 08:44:13PM -0800, Hugh Dickins wrote:
-> > Hi Rafael,
-> >
-> > Synaptics RMI4 SMBus touchpad on ThinkPad X1 Carbon (5th generation)
-> > fails to suspend when running 5.11-rc kernels: bisected to
-> > 5b6164d3465f ("driver core: Reorder devices on successful probe"),
-> > and reverting that fixes it.  dmesg.xz attached, but go ahead and ask
-> > me to switch on a debug option to extract further info if that may help.
->
-> Hi Hugh,
->
-> Quoting what I think are the relevant parts of that log:
->
-> [   34.373742] printk: Suspending console(s) (use no_console_suspend to debug)
-> [   34.429015] rmi4_physical rmi4-00: Failed to read irqs, code=-6
-> [   34.474973] rmi4_f01 rmi4-00.fn01: Failed to write sleep mode: -6.
-> [   34.474994] rmi4_f01 rmi4-00.fn01: Suspend failed with code -6.
-> [   34.475001] rmi4_physical rmi4-00: Failed to suspend functions: -6
-> [   34.475105] rmi4_smbus 6-002c: Failed to suspend device: -6
-> [   34.475113] PM: dpm_run_callback(): rmi_smb_suspend+0x0/0x3c returns -6
-> [   34.475130] PM: Device 6-002c failed to suspend: error -6
-> [   34.475187] PM: Some devices failed to suspend, or early wake event detected
-> [   34.480324] rmi4_f03 rmi4-00.fn03: rmi_f03_pt_write: Failed to write to F03 TX register (-6).
-> [   34.480748] rmi4_f03 rmi4-00.fn03: rmi_f03_pt_write: Failed to write to F03 TX register (-6).
-> [   34.481558] rmi4_physical rmi4-00: rmi_driver_clear_irq_bits: Failed to change enabled interrupts!
-> [   34.487935] acpi LNXPOWER:02: Turning OFF
-> [   34.488707] acpi LNXPOWER:01: Turning OFF
-> [   34.489554] rmi4_physical rmi4-00: rmi_driver_set_irq_bits: Failed to change enabled interrupts!
-> [   34.489669] psmouse: probe of serio2 failed with error -1
-> [   34.489882] OOM killer enabled.
-> [   34.489891] Restarting tasks ... done.
-> [   34.589183] PM: suspend exit
-> [   34.589839] PM: suspend entry (s2idle)
-> [   34.605884] Filesystems sync: 0.017 seconds
-> [   34.607594] Freezing user space processes ... (elapsed 0.006 seconds) done.
-> [   34.613645] OOM killer disabled.
-> [   34.613650] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
-> [   34.615482] printk: Suspending console(s) (use no_console_suspend to debug)
-> [   34.653097] rmi4_f01 rmi4-00.fn01: Failed to write sleep mode: -6.
-> [   34.653108] rmi4_f01 rmi4-00.fn01: Suspend failed with code -6.
-> [   34.653115] rmi4_physical rmi4-00: Failed to suspend functions: -6
-> [   34.653123] rmi4_smbus 6-002c: Failed to suspend device: -6
-> [   34.653129] PM: dpm_run_callback(): rmi_smb_suspend+0x0/0x3c returns -6
-> [   34.653160] PM: Device 6-002c failed to suspend: error -6
-> [   34.653174] PM: Some devices failed to suspend, or early wake event detected
-> [   34.660515] OOM killer enabled.
-> [   34.660524] Restarting tasks ...
-> [   34.661456] rmi4_physical rmi4-00: rmi_driver_set_irq_bits: Failed to change enabled interrupts!
-> [   34.661591] psmouse: probe of serio2 failed with error -1
-> [   34.669469] done.
-> [   34.748386] PM: suspend exit
->
-> I think what might be happening here is that the offending patch causes
-> some devices to be reordered in a way different to how they were ordered
-> originally and the rmi4 driver currently depends on that implicit order.
+Hi All,
 
-Actually, the only possible case in which the commit in question can
-introduce suspend failures like this is when some dependency
-information is missing and so the reordering causes the ordering to
-change from the (working) implicit one.
+In this V6 posting I have addressed comments on reworking the scmi cpufreq
+driver in smaller changes.
 
-> Interestingly one of the bugs that the offending patch fixes is similar
-> in the failure mode but for the reverse reason: the implicit order
-> causes suspend/resume to fail.
+This is to support systems where exposed cpu performance controls are more
+fine-grained that the platform's ability to scale cpus independently.
 
-And that happens because some dependency information is missing.
+Many thanks,
+Nicola
 
-So we have failing cases when dependency information is missing, so
-instead of fixing those we have tried to make the core change the
-ordering after every successful probe in the hope that this will take
-care of the problem without introducing new breakage.
+[v6]
+  * Remove deferred probe, not occurring
+  * Move common stuff for CPUs from _init stage to _probe
 
-However, it evidently has introduced new breakage and in order to fix
-it we need to figure out what dependency information is missing in the
-failing cases and put that information in, but we may as well do the
-same for the cases that are failing without the offending change.
+This V6 is rebased on next-20210111
 
-So why don't we revert the commit in question and do just that?
+[v5]
+  * Rework documentation of opp-shared within OPP node
+  * Register EM only for the first CPU within cpumask in driver
+  * Add check for nr_opp in driver before registering EM
+  * Add comments on both dev_pm_opp_get_opp_count in driver
+  * Remove redundant ret=0 in driver
+
+This v5 is rebased on top of:
+next-20201208 + Lukasz Luba's patches [1]
+
+[v4]
+  * Remove unconditional set of opp_table->shared_opp to exclusive
+  * Add implementation for scmi-cpufreq
+  * Change subject
+
+These patches are on top of:
+next-20201201 + Lukasz Luba's patches (waiting for Rafael) [1]
+
+[v3]
+  * Remove proposal for new 'cpu-performance-dependencies' as we instead
+    can reuse the opp table.
+  * Update documentation for devicetree/bindings/opp
+  * Minor changes within opp to support empty opp table
+  * Rework the RFC by adding a second proposal
+
+[v2]
+  * Fix errors when running make dt_binding_check
+  * Improve commit message description for the dt-binding
+  * Add RFC for implementation in cpufreq-core and one of its
+    drivers.
+
+Nicola Mazzucato (3):
+  scmi-cpufreq: Remove deferred probe
+  scmi-cpufreq: Move CPU initialisation to probe
+  scmi-cpufreq: Get opp_shared_cpus from opp-v2 for EM
+
+Sudeep Holla (1):
+  cpufreq: blacklist Arm Vexpress platforms in cpufreq-dt-platdev
+
+ drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
+ drivers/cpufreq/scmi-cpufreq.c       | 196 +++++++++++++++++++++------
+ 2 files changed, 155 insertions(+), 43 deletions(-)
+
+-- 
+2.27.0
+
