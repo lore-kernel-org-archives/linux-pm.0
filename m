@@ -5,70 +5,71 @@ X-Spam-Level:
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 079A5C43332
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 589B7C43217
 	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DA488230FF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3362222CF7
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388391AbhALAZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Jan 2021 19:25:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38890 "EHLO
+        id S2391731AbhALAZk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Jan 2021 19:25:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404011AbhAKXTN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 18:19:13 -0500
-Received: from mail-il1-x130.google.com (mail-il1-x130.google.com [IPv6:2607:f8b0:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E89FFC061795
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:18:32 -0800 (PST)
-Received: by mail-il1-x130.google.com with SMTP id q5so1017524ilc.10
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:18:32 -0800 (PST)
+        with ESMTP id S2403949AbhAKXQL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 18:16:11 -0500
+Received: from mail-il1-x135.google.com (mail-il1-x135.google.com [IPv6:2607:f8b0:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAF34C061794
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:15:30 -0800 (PST)
+Received: by mail-il1-x135.google.com with SMTP id q5so1010027ilc.10
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:15:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=aUUZwHzjsRYlgS0NeBcgamHcfmVNx8VRCg6rcyz29Ew=;
-        b=JOmh6HLIkJ9lOpv74pzfRyhuDr03MiEHvX/RCjvThgjrpvgVp90RYHFCR0sOTKeKmv
-         MSRmnPa/jurKPJIrVi4fb848glclEjyoe2BO7biC7i7YPd1X8RpkyM34x73w8bZwShEi
-         V6UB+/qGpJZah5ihPnoY8Fb8Vh3/VS+OXhLM717MlZSBhP6inNdXxWv0b8CjVCO79KN0
-         Sk1zjoxY9JuEWTOYq3HRJjeFNFllzS2Il7GtRgp+Aid/FtZktKXZTA3cOEHRgLV/xTMq
-         y9w3fu7p/h2uCD92au2hdM52RfXuQz//UtEr87He/JM9lBVXSXEG+SS/YJO5kKGPrHkj
-         SjoQ==
+        bh=FwCcHXIwvmfHyHokPaF3+kDwTlr3KIMrsOj6iB1l8/Q=;
+        b=qL/hoG0x3VGuUVJz3XLblstAzv7RI+xZIW3smtXYnQRW4+8KdZGgHmfTh688qhpLeg
+         iqg+P6k87I7DbzWA3juYgmQ9CrQLYfEoDydeKLUCRaxv6UX9bw4nzW8jjnEcSD63jde+
+         kyGB0VQJgBHRWdCjUdFu08B1Sbs6YdmdHfe1/JB3b0H+Qa2xXiQRqZJq/4fuPSKbvO+o
+         iUoQFhMzWrgfYsMJk7LmBGcYJHjr88tPPkAPogG21vpJ9CkTy/S5d3J/NAGfj+VWFm+v
+         ehHacRctZyNAknOwDjjpOv8AbXcHVukwo+JPhEvA1OKyrhbTZ6qdjevI2PQpJQI2nPPZ
+         U3Vg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=aUUZwHzjsRYlgS0NeBcgamHcfmVNx8VRCg6rcyz29Ew=;
-        b=oLktDBO9hI5CFIV6kYJ6U7uXjSOUuYqP41QkA2BJFcbv/fHJjh38Z7Bq7KtSDTNvO8
-         w8pVCq2XLWe+FwhrT/7OF2nx/CJJy1iDhtuGs0EYbf7EqHm/pNRpb54gB8MlFCrClGpP
-         jrgRCToVsLaT568GbW7DPjd7nbARP2/w/NnT7T8fp8O5OzNKOKfnz4WfgFN0VGPe4HZL
-         w86D7E6yTTYn2f4gBOwGqGtJY0Daj3Y9/HBr1NetLg+X26cLlKfVfYcjpmFmC7dH6Pwr
-         EE4fkdPoorxlPpA5ORxwTSDuEWCzvXj7PwEB2J6aveF+N23jT1jDke9Tq3gOA3Mp/jCs
-         OkSw==
-X-Gm-Message-State: AOAM533ynuujmjcr/zeh7C1j6rJSz9lMmnP7ia82hRCATYnKvVjCQzf2
-        UfTobjADf7s1WGQhmO1qY26DOA==
-X-Google-Smtp-Source: ABdhPJyU/ftyqly4VUye4FW0Xp/hyN7hsyGsYakMBkzkvhlCZo4F7n22Hmjf2SP0tboQmAEvWTPo2w==
-X-Received: by 2002:a05:6e02:f93:: with SMTP id v19mr1305913ilo.154.1610407112352;
-        Mon, 11 Jan 2021 15:18:32 -0800 (PST)
+        bh=FwCcHXIwvmfHyHokPaF3+kDwTlr3KIMrsOj6iB1l8/Q=;
+        b=SS5zfWfvRR4xgdL26WPZxRgsfLdSxTjYjykEzujjhTG/n+eNOHWBN9d8WVepOxLw2q
+         snId7Qy7oqKjdfI+BKzJJx6ibVEYhgHVNOkqMjPer9DsZEx+5sGk3TPH54udPUhdhRRd
+         ZbZmSS9zQiRuEYU8VdfkAhIjoT33rlqlhT9GAGyibrbLNsMl/ux75tmJBfQG2Y0qVEWm
+         NbAVUPk/V77w9p5j7xF+bh6GgEUMGW5QamR0e+G2/mvO7sKnu6MvbltF+bho9iJWXvjh
+         LtTwpG2TC2gYizQW7wFM1MaIAVZFg0/G6gXmdVD/EvdHnr0cHr1D3bbF6Il5K5BIs7sm
+         Z9HQ==
+X-Gm-Message-State: AOAM5318hPxLGdX2ZPG2NUbel3eLmGMVwFxHuXR0ChLGiFy+TyxiyDoG
+        gorGB5H3r2aTw4LzxHShSsVpkSzrScJI1g==
+X-Google-Smtp-Source: ABdhPJzE5u69CLhCljTsjOjdO9D9yYr3OMEAqnW01A3juxITd/peCCFGR8IZn1ZeYZKw+NT0vaCZhA==
+X-Received: by 2002:a92:bbcb:: with SMTP id x72mr1315983ilk.104.1610406930122;
+        Mon, 11 Jan 2021 15:15:30 -0800 (PST)
 Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.gmail.com with ESMTPSA id p19sm835661ili.84.2021.01.11.15.18.30
+        by smtp.gmail.com with ESMTPSA id y5sm867733ilh.24.2021.01.11.15.15.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jan 2021 15:18:31 -0800 (PST)
-Subject: Re: [PATCH 5/6] thermal/core: Remove THERMAL_TRIPS_NONE test
+        Mon, 11 Jan 2021 15:15:29 -0800 (PST)
+Subject: Re: [PATCH 2/6] thermal/core: Remove unused functions rebind/unbind
+ exception
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
 Cc:     mjg59@codon.org.uk, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, amitk@kernel.org
 References: <20201214233811.485669-1-daniel.lezcano@linaro.org>
- <20201214233811.485669-5-daniel.lezcano@linaro.org>
+ <20201214233811.485669-2-daniel.lezcano@linaro.org>
 From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <6d1a9bc5-e124-b6ee-41f8-b7042c093c1a@linaro.org>
-Date:   Mon, 11 Jan 2021 18:18:30 -0500
+Message-ID: <7aa8396e-9dab-09ad-0eb6-86b412fccd02@linaro.org>
+Date:   Mon, 11 Jan 2021 18:15:28 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20201214233811.485669-5-daniel.lezcano@linaro.org>
+In-Reply-To: <20201214233811.485669-2-daniel.lezcano@linaro.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -79,33 +80,90 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 On 12/14/20 6:38 PM, Daniel Lezcano wrote:
-> The last site calling the thermal_zone_bind_cooling_device() function
-> with the THERMAL_TRIPS_NONE parameter was removed.
+> The functions thermal_zone_device_rebind_exception and
+> thermal_zone_device_unbind_exception are not used from anywhere.
 > 
-> We can get rid of this test as no user of this function is calling
-> this function with this parameter.
+> Remove that code.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
 
 Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
 
->   drivers/thermal/thermal_core.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> ---
+>   drivers/thermal/thermal_core.c | 37 ----------------------------------
+>   drivers/thermal/thermal_core.h |  4 ----
+>   2 files changed, 41 deletions(-)
 > 
 > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index a0f0c33c8d9c..bcc2ea4f5482 100644
+> index 567bc6f254c0..a0f0c33c8d9c 100644
 > --- a/drivers/thermal/thermal_core.c
 > +++ b/drivers/thermal/thermal_core.c
-> @@ -710,7 +710,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->   	unsigned long max_state;
->   	int result, ret;
+> @@ -598,26 +598,6 @@ static void thermal_zone_device_check(struct work_struct *work)
+>   	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+>   }
 >   
-> -	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
-> +	if (trip >= tz->trips || trip < 0)
->   		return -EINVAL;
+> -void thermal_zone_device_rebind_exception(struct thermal_zone_device *tz,
+> -					  const char *cdev_type, size_t size)
+> -{
+> -	struct thermal_cooling_device *cdev = NULL;
+> -
+> -	mutex_lock(&thermal_list_lock);
+> -	list_for_each_entry(cdev, &thermal_cdev_list, node) {
+> -		/* skip non matching cdevs */
+> -		if (strncmp(cdev_type, cdev->type, size))
+> -			continue;
+> -
+> -		/* re binding the exception matching the type pattern */
+> -		thermal_zone_bind_cooling_device(tz, THERMAL_TRIPS_NONE, cdev,
+> -						 THERMAL_NO_LIMIT,
+> -						 THERMAL_NO_LIMIT,
+> -						 THERMAL_WEIGHT_DEFAULT);
+> -	}
+> -	mutex_unlock(&thermal_list_lock);
+> -}
+> -
+>   int for_each_thermal_governor(int (*cb)(struct thermal_governor *, void *),
+>   			      void *data)
+>   {
+> @@ -685,23 +665,6 @@ struct thermal_zone_device *thermal_zone_get_by_id(int id)
+>   	return match;
+>   }
 >   
->   	list_for_each_entry(pos1, &thermal_tz_list, node) {
+> -void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
+> -					  const char *cdev_type, size_t size)
+> -{
+> -	struct thermal_cooling_device *cdev = NULL;
+> -
+> -	mutex_lock(&thermal_list_lock);
+> -	list_for_each_entry(cdev, &thermal_cdev_list, node) {
+> -		/* skip non matching cdevs */
+> -		if (strncmp(cdev_type, cdev->type, size))
+> -			continue;
+> -		/* unbinding the exception matching the type pattern */
+> -		thermal_zone_unbind_cooling_device(tz, THERMAL_TRIPS_NONE,
+> -						   cdev);
+> -	}
+> -	mutex_unlock(&thermal_list_lock);
+> -}
+> -
+>   /*
+>    * Device management section: cooling devices, zones devices, and binding
+>    *
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+> index 8df600fa7b79..e50c6b2909fe 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -118,10 +118,6 @@ struct thermal_instance {
+>   
+>   int thermal_register_governor(struct thermal_governor *);
+>   void thermal_unregister_governor(struct thermal_governor *);
+> -void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
+> -					  const char *, size_t);
+> -void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
+> -					  const char *, size_t);
+>   int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
+>   int thermal_build_list_of_policies(char *buf);
+>   
 > 
 
 -- 
