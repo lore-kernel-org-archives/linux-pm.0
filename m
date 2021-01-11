@@ -2,118 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-24.8 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35620C43219
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD718C43333
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12B6322CB8
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C478C22D0A
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391732AbhALAZk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Jan 2021 19:25:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38752 "EHLO
+        id S2391734AbhALAZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Jan 2021 19:25:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2403991AbhAKXSe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 18:18:34 -0500
-Received: from mail-io1-xd2c.google.com (mail-io1-xd2c.google.com [IPv6:2607:f8b0:4864:20::d2c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B56FC061794
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:17:53 -0800 (PST)
-Received: by mail-io1-xd2c.google.com with SMTP id o6so310455iob.10
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:17:53 -0800 (PST)
+        with ESMTP id S2404189AbhAKXnX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 18:43:23 -0500
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B724AC061794
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:42:42 -0800 (PST)
+Received: by mail-oi1-x22b.google.com with SMTP id f132so432355oib.12
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:42:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=1SMcU2clwjDpXCJK5XGOPy9evEO2ZkmmmyeSpWnkqzo=;
-        b=L1+RTzlS30PWKtGajGKUYzf3lYvzrFa1iZgpwC/oABOLEWItgwvmATS94OaMClPd08
-         TTC4dSMWwmGHhi4/B70+FupsHB2TmG1UExGp61spGneY6lHm/lNVlwMbe6JM1mlJBFcW
-         pGd3Fyf5uEywv8l5QQbeSHl7nJH60J5A0TdAvTHXR7qNpFYkvY4rBX5PgFnwZ6mf6fF0
-         vXHGI15fPimZE/ROArLXwD6khBbCVRReOF/+jcA+tsBZlaQUGXG6JlE1gCwiYUS/YPXa
-         crWLgPze3huQdHiou8ccnR8NaMisZDs6KBQXmyeeAMiH/wJf0tEm6goBpgQJCNCFzqUy
-         xPrQ==
+        d=google.com; s=20161025;
+        h=date:from:to:cc:subject:in-reply-to:message-id:references
+         :user-agent:mime-version;
+        bh=Byv4yeeKkAWUlNgWtR9WJhmRvDT7D9MJeHLwHQJ0UdU=;
+        b=Njto5ZPxhyf0Rn1c8M8Mt78kivEYcxQakmUjN8sOSvICZYE6RS4YA43/GGBN/EHIZW
+         jnCUFHtqH/XR1o+CbGUqoFiHBMWvt6TRa+o8T6CgLmsLxr/cRYZPZs01IotP5Y0OZbL1
+         Xn2QekLyRbAeex/t8xpxuKLvVOP1hi/LN7ko4zBC71PnmTW4IuBHyTdt7D7pfe0Ua9CI
+         e78w2HY4y2DRBMrCoLlpV2BzuuuDHosNDOfGfFYnAUFIPEKyeseIWiqxORTnhYC9Wlf8
+         7pi+oyM8DXBszGz083g5zXIOC/tkD8g6MqFnOxSabF/+TWFlcf3qNeBI7abnUWpF9yrI
+         isJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=1SMcU2clwjDpXCJK5XGOPy9evEO2ZkmmmyeSpWnkqzo=;
-        b=cMPdYWZIi+UOELRHVNyHv1Pol6vbSPNEeHdsqKOPxi6gEQjdqZPsHrDlkCf/U2jUyz
-         9ibNWPw1pMzJL62Lh0Nft9xJqBFYmLV23xXxQlW8xxEWTcvz+qa/rfvg9p5tEg/yOlHj
-         USp50V9x3YnZuAzLplRvpbA8wfxQYtz/yo7U0a9AXjp9MS1iMQOVv4ZgMPF+iHMLGIdL
-         1eN4bAQrDjpLPndLNPpjOtevzLxPmhBrg7kCwzWBIH3T8JlCkAiI1gFYgHKHBk3nzAOr
-         r1rcqYzscTq2jicg6AubDJFghdjuGR/UoJNdtPo/zYQj7REE8gEEYfiyqXh2/fUykTbT
-         icEg==
-X-Gm-Message-State: AOAM532uRja2cP01fEgBdvxGQgwvtI7CMcj7+NybFi5iJ6AOhYcJIJ9W
-        Hu3PSott/8jirDwofDNegthNrw==
-X-Google-Smtp-Source: ABdhPJwARI7XlKp+saf8vwkHa28PhErKDJFPLfMlYUrC90/EGDll/IMwejNtlaRVO2ODqOA73ccF3Q==
-X-Received: by 2002:a02:6a0e:: with SMTP id l14mr1742689jac.58.1610407072636;
-        Mon, 11 Jan 2021 15:17:52 -0800 (PST)
-Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.gmail.com with ESMTPSA id o195sm876229ila.38.2021.01.11.15.17.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jan 2021 15:17:52 -0800 (PST)
-Subject: Re: [PATCH 3/6] thermal/core: Remove pointless test with the
- THERMAL_TRIPS_NONE macro
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
-Cc:     mjg59@codon.org.uk, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, amitk@kernel.org
-References: <20201214233811.485669-1-daniel.lezcano@linaro.org>
- <20201214233811.485669-3-daniel.lezcano@linaro.org>
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <8a7ca60c-8f94-b8e3-22d6-32ea2e00459a@linaro.org>
-Date:   Mon, 11 Jan 2021 18:17:50 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        h=x-gm-message-state:date:from:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version;
+        bh=Byv4yeeKkAWUlNgWtR9WJhmRvDT7D9MJeHLwHQJ0UdU=;
+        b=pxquBpeky7/pmvv685LpbdjeW7KNMxPnWBIXWdj3GUUI6zXKYIdG7Qxnk2D5Y4aSIe
+         RSn6NgRO8c/RAcH1EYFBe8FyT0zbY4qllFST+4KfvLK6ZyuZ9O1w5WhhcDTfDXHEgT3f
+         +oVSq7QW3Jcc/MfhxsU5HyUcPOOHsByY5w7swXfqrqJnWTPW0pBSroDdRYHLprxcE0SH
+         0GsMNAo01jatLCeQW20J1xuhmluDsib8O4kiQ26AYeytBowUnsPsTM12f6oP22GuG+kP
+         u/bLkV3VztqdvgLbGv6HbDIAofoBgFQPY9RsBecVcgOuR2xeGxwj6OMfM1lntDnuSQWx
+         qp3w==
+X-Gm-Message-State: AOAM532uzYRxU1SQwG9M0JipddYcJRhDt5BXwGx4zRze5MQsiXrr8btb
+        5D6aHXDtp/rOLVbMjJArYUGQXQ==
+X-Google-Smtp-Source: ABdhPJxN0FcCUJvUqpV9ny4+A645+PuCqUPRLJFm/k7zZ382PyRzeDZcjJKgwbpYX6CKhPDTVKgqlg==
+X-Received: by 2002:aca:cc01:: with SMTP id c1mr774890oig.18.1610408562014;
+        Mon, 11 Jan 2021 15:42:42 -0800 (PST)
+Received: from eggly.attlocal.net (172-10-233-147.lightspeed.sntcca.sbcglobal.net. [172.10.233.147])
+        by smtp.gmail.com with ESMTPSA id n16sm236777oop.9.2021.01.11.15.42.40
+        (version=TLS1 cipher=ECDHE-ECDSA-AES128-SHA bits=128/128);
+        Mon, 11 Jan 2021 15:42:41 -0800 (PST)
+Date:   Mon, 11 Jan 2021 15:42:27 -0800 (PST)
+From:   Hugh Dickins <hughd@google.com>
+X-X-Sender: hugh@eggly.anvils
+To:     Saravana Kannan <saravanak@google.com>
+cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Hugh Dickins <hughd@google.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Vincent Huang <vincent.huang@tw.synaptics.com>,
+        "Jason A. Donenfeld" <Jason@zx2c4.com>,
+        Andrew Duggan <aduggan@synaptics.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: 5.11-rc device reordering breaks ThinkPad rmi4 suspend
+In-Reply-To: <CAGETcx_odme9ufTps6tctOW+zfOox6iXgTx_9GAjoYn=+jy1BQ@mail.gmail.com>
+Message-ID: <alpine.LSU.2.11.2101111539070.2728@eggly.anvils>
+References: <alpine.LSU.2.11.2101102010200.25762@eggly.anvils> <X/xV7ZV5jzI7RvAe@ulmo> <CAJZ5v0iriRkEN8dVJ9gE3+Wyn_96=SNhav1QaQ59i9O0genTNQ@mail.gmail.com> <X/x49o3EtrUh6vuO@ulmo> <CAJZ5v0hyvdcKsPJ7U5WioXb1c8Pg_F1BLC_dbKesFBLTUSiVaw@mail.gmail.com>
+ <CAGETcx_odme9ufTps6tctOW+zfOox6iXgTx_9GAjoYn=+jy1BQ@mail.gmail.com>
+User-Agent: Alpine 2.11 (LSU 23 2013-08-11)
 MIME-Version: 1.0
-In-Reply-To: <20201214233811.485669-3-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Mon, 11 Jan 2021, Saravana Kannan wrote:
+> 
+> I happen to have an X1 Carbon (different gen though) lying around and
+> I poked at its /sys folders. None of the devices in the rmi4_smbus are
+> considered the grandchildren of the i2c device. I think the real
+> problem is rmi_register_transport_device() [1] not setting up the
+> parent for any of the new devices it's adding.
+> 
+> Hugh, can you try this patch?
 
-
-On 12/14/20 6:38 PM, Daniel Lezcano wrote:
-> The THERMAL_TRIPS_NONE is equal to -1, it is pointless to do a
-> conversion in this function.
-
-It is pointless because you have removed force_passive and
-will be removing THERMAL_TRIPS_NONE in the following patches.
-Maybe that should be mentioned in the commit message.
-Otherwise,
-
-Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
+Just tried, but no, this patch does not help; but I bet
+you're along the right lines, and something as simple will do it.
 
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->   drivers/thermal/thermal_sysfs.c | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
+> diff --git a/drivers/input/rmi4/rmi_bus.c b/drivers/input/rmi4/rmi_bus.c
+> index 24f31a5c0e04..50a0134b6901 100644
+> --- a/drivers/input/rmi4/rmi_bus.c
+> +++ b/drivers/input/rmi4/rmi_bus.c
+> @@ -90,6 +90,7 @@ int rmi_register_transport_device(struct
+> rmi_transport_dev *xport)
 > 
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index 4e7f9e880d76..345917a58f2f 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -875,10 +875,7 @@ trip_point_show(struct device *dev, struct device_attribute *attr, char *buf)
->   	instance =
->   	    container_of(attr, struct thermal_instance, attr);
->   
-> -	if (instance->trip == THERMAL_TRIPS_NONE)
-> -		return sprintf(buf, "-1\n");
-> -	else
-> -		return sprintf(buf, "%d\n", instance->trip);
-> +	return sprintf(buf, "%d\n", instance->trip);
->   }
->   
->   ssize_t
+>         rmi_dev->dev.bus = &rmi_bus_type;
+>         rmi_dev->dev.type = &rmi_device_type;
+> +       rmi_dev->dev.parent = xport->dev;
 > 
-
--- 
-Warm Regards
-Thara
+>         xport->rmi_dev = rmi_dev;
+> 
+> -Saravana
+> 
+> [1] - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/input/rmi4/rmi_bus.c#n74
