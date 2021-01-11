@@ -2,118 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6710C4332B
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28F40C432C3
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AFD46230FD
+	by mail.kernel.org (Postfix) with ESMTP id EFC4822CF7
 	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2403928AbhALAZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S2391733AbhALAZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 11 Jan 2021 19:25:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51024 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38990 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404254AbhALAP5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 19:15:57 -0500
-Received: from mail-yb1-xb2f.google.com (mail-yb1-xb2f.google.com [IPv6:2607:f8b0:4864:20::b2f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A249AC061786
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 16:15:16 -0800 (PST)
-Received: by mail-yb1-xb2f.google.com with SMTP id k4so521922ybp.6
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 16:15:16 -0800 (PST)
+        with ESMTP id S2404018AbhAKXTi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 18:19:38 -0500
+Received: from mail-il1-x130.google.com (mail-il1-x130.google.com [IPv6:2607:f8b0:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 645FDC061786
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:18:58 -0800 (PST)
+Received: by mail-il1-x130.google.com with SMTP id y13so1001635ilm.12
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 15:18:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Fc5a4hAhJ0U9BAhymt1K2IV9OCgvqNN915qhRxj3a0A=;
-        b=FzgCAPKursjzIMbGBkZ3eH2LGTIcSWMdRXFZNb0iI3dW4FJfXN+URBiA/7Xr+TVtlN
-         ZsuEticrEnOZQYGu0X3IURnQHoVxez1gbevX2V+Rjbl2KQIcP+gd3S9jBPvKE/vFM9fA
-         gC+3kvYqIKAPySd/E91vcBp6hfdVkgHZ3ZzveccYyg/KfXQYsqrciKw/K+9x5p2/vwe4
-         72SM8FYv8L3RaHi6niX74hsTtEOKwN8NTWRejFUphdQCu5D/FBNb9AAYCKfWaixWTFJy
-         VDsV/HgHRNk0K3kkGfTwX2vRF5evlUidVnWhYu07t79EZxSitSNx8GFUOeWtA+dDxQrA
-         C3hA==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=DzM+l+OrORvWleo/gSP2T8zlV12gITtUclo5BsatvVk=;
+        b=DF/Xx8LaQ4UemEllrG1BNDUDXHS5E/kqcfqqvnCnUKMOPYX742aPvcegZ3ciVt/5a3
+         dfCyWBvA0S1HTg4faZaqpGykLBtHBXb7sWfVKziAkARrcSjSnXrVSa+QMuK7KWYV0lgO
+         nH3JVa4Sk8Srv4BHVui1lKVdsVmmiyaH18CU22DoLXXmsDmQv1d8g04tYO5tB7sPU7h1
+         IOTT6nWyHVXcstbMT7gAOCaR/jkXbfL4mG3KwVhvUS3K3n9SGfRzR4xU6uwK6+P4vera
+         9eT90W0vhYEZ/J6LqkS5pg0m1N8oz1wjCj/4PZNxvJTh9Zf7wzMtBx23XvDfVyUeMIm9
+         dsQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Fc5a4hAhJ0U9BAhymt1K2IV9OCgvqNN915qhRxj3a0A=;
-        b=YqYddaeSfKT/O1Q2yPfJJH3HDdA5N19+oduej0fArVfYQlL1/91hQSRKMxEaRfA31Z
-         3fz7fzKON8v26hOR8vJFHgJsDO5rc+pIRSoxbdn0JSQ5jfOGYX1s0R2I5Ld4P2cBHunO
-         73S+YI3YZGehQmOKPYJ/J7dd+L/eZ7Dml2SQoVJ2d6JBEXQdcNKmghJoIw0gfp1NAx/+
-         jp+4V8rgfeHNJP2C5cZRzjVQWJmXWJ9VuEE+WnTMn44DPJEWClq6EN3zvP5SXEuxCvr1
-         pSWOuztB1LefkxN9vWPdbXiYvJPOPycSk+Kw3kplL3T0MiCiGVY1p66uPMwnwiy52fHL
-         IylQ==
-X-Gm-Message-State: AOAM530d3b2Cqaj2d4tFA5/DHxj6jLUqVfHnAwQ+T14EAD+nDTcAhehc
-        IhdZzymMEskkYaUa6qBOYmnanlFn4d+0vTovS8ZWTg==
-X-Google-Smtp-Source: ABdhPJxJqSOmEsqdTeDCPTa7EFhYl9pJJKu4sfDgU6Qpp/aNyX+mQBLDMHr8nyNikVp5Tk7R/XBhnLtRzCsI8xCnWCw=
-X-Received: by 2002:a25:b703:: with SMTP id t3mr3722472ybj.96.1610410515726;
- Mon, 11 Jan 2021 16:15:15 -0800 (PST)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=DzM+l+OrORvWleo/gSP2T8zlV12gITtUclo5BsatvVk=;
+        b=ieyojaxzEWyWmhmxUQ43o/mOI9UflEFuj62aq825uMcn+5QxDvGOmhOjZcFi4fVPnV
+         KGIwVsGFVQHEV8GTn17EV1wqaXuqFcIpVGVRCq2QdaRyw3yLbKYaxnPRprKPsS+MVAgv
+         GsUCDrlXHuSgXtQTTHJzb5DuxmcyhxP+2I1evz7qlELqSBL1Dn09kBn2t6Sg4glUFtBc
+         HiREtEeqlqagJAsBgSIra4jnd3yq3jscLSZwTlMx+7gZm1H1P8ddQu6usjQRt/ZKRWd0
+         UjcdJJBS6noycpiBu7NUN6HuF18Jq94bVBqt58SamdLwgeXsOxzc14XgUk2gDrGVbEx4
+         j/nA==
+X-Gm-Message-State: AOAM532U7BduyTaaUvwkPjvhttcY9armuu3Ssy+9DjcDysta9O4zQRUa
+        5NFApr2ibRf3dp4WlCoKFLxadw==
+X-Google-Smtp-Source: ABdhPJzZqdOXJaohzzZtDz50ASTwrjoZKe7xMde8PAXwlMCjmyvILxigfyXlLK3pJV2BdP8D9/wuzA==
+X-Received: by 2002:a05:6e02:1c8d:: with SMTP id w13mr1285591ill.301.1610407137843;
+        Mon, 11 Jan 2021 15:18:57 -0800 (PST)
+Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
+        by smtp.gmail.com with ESMTPSA id h1sm821992ilj.8.2021.01.11.15.18.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Jan 2021 15:18:57 -0800 (PST)
+Subject: Re: [PATCH 6/6] thermal/core: Remove unused macro THERMAL_TRIPS_NONE
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
+Cc:     mjg59@codon.org.uk, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, amitk@kernel.org
+References: <20201214233811.485669-1-daniel.lezcano@linaro.org>
+ <20201214233811.485669-6-daniel.lezcano@linaro.org>
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+Message-ID: <50f6df7f-2ac7-4fa5-c605-4dd476c7ffbc@linaro.org>
+Date:   Mon, 11 Jan 2021 18:18:55 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-References: <alpine.LSU.2.11.2101102010200.25762@eggly.anvils>
- <X/xV7ZV5jzI7RvAe@ulmo> <CAJZ5v0iriRkEN8dVJ9gE3+Wyn_96=SNhav1QaQ59i9O0genTNQ@mail.gmail.com>
- <X/x49o3EtrUh6vuO@ulmo> <CAJZ5v0hyvdcKsPJ7U5WioXb1c8Pg_F1BLC_dbKesFBLTUSiVaw@mail.gmail.com>
- <CAGETcx_odme9ufTps6tctOW+zfOox6iXgTx_9GAjoYn=+jy1BQ@mail.gmail.com> <alpine.LSU.2.11.2101111539070.2728@eggly.anvils>
-In-Reply-To: <alpine.LSU.2.11.2101111539070.2728@eggly.anvils>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Mon, 11 Jan 2021 16:14:39 -0800
-Message-ID: <CAGETcx-gPA3HeSKS6XW1zYj_imjDH_86897Jub56b9ctBOqmwg@mail.gmail.com>
-Subject: Re: 5.11-rc device reordering breaks ThinkPad rmi4 suspend
-To:     Hugh Dickins <hughd@google.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Thierry Reding <treding@nvidia.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Vincent Huang <vincent.huang@tw.synaptics.com>,
-        "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        Andrew Duggan <aduggan@synaptics.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20201214233811.485669-6-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jan 11, 2021 at 3:42 PM Hugh Dickins <hughd@google.com> wrote:
->
-> On Mon, 11 Jan 2021, Saravana Kannan wrote:
-> >
-> > I happen to have an X1 Carbon (different gen though) lying around and
-> > I poked at its /sys folders. None of the devices in the rmi4_smbus are
-> > considered the grandchildren of the i2c device. I think the real
-> > problem is rmi_register_transport_device() [1] not setting up the
-> > parent for any of the new devices it's adding.
-> >
-> > Hugh, can you try this patch?
->
-> Just tried, but no, this patch does not help; but I bet
-> you're along the right lines, and something as simple will do it.
 
-Did you see this patch change the organization of devices under /sys/devices/?
-The rmi* devices need to be under one of the i2c devices after this
-patch. Is that not the case? Or is that the case, but you are still
-seeing suspend/resume issues?
 
--Saravana
+On 12/14/20 6:38 PM, Daniel Lezcano wrote:
+> The macro THERMAL_TRIPS_NONE is no longer used, remove it.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
->
-> >
-> > diff --git a/drivers/input/rmi4/rmi_bus.c b/drivers/input/rmi4/rmi_bus.c
-> > index 24f31a5c0e04..50a0134b6901 100644
-> > --- a/drivers/input/rmi4/rmi_bus.c
-> > +++ b/drivers/input/rmi4/rmi_bus.c
-> > @@ -90,6 +90,7 @@ int rmi_register_transport_device(struct
-> > rmi_transport_dev *xport)
-> >
-> >         rmi_dev->dev.bus = &rmi_bus_type;
-> >         rmi_dev->dev.type = &rmi_device_type;
-> > +       rmi_dev->dev.parent = xport->dev;
-> >
-> >         xport->rmi_dev = rmi_dev;
-> >
-> > -Saravana
-> >
-> > [1] - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/input/rmi4/rmi_bus.c#n74
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
+
+>   include/linux/thermal.h | 1 -
+>   1 file changed, 1 deletion(-)
+> 
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index a57232a9a6f9..060a2160add4 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -17,7 +17,6 @@
+>   #include <linux/workqueue.h>
+>   #include <uapi/linux/thermal.h>
+>   
+> -#define THERMAL_TRIPS_NONE	-1
+>   #define THERMAL_MAX_TRIPS	12
+>   
+>   /* invalid cooling state */
+> 
+
+-- 
+Warm Regards
+Thara
