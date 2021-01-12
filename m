@@ -2,32 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAA55C43603
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2488EC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:23:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A4A1E2311D
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:22:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D07722311D
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:23:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406449AbhALSWl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Jan 2021 13:22:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59104 "EHLO
+        id S2406469AbhALSWv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Jan 2021 13:22:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59158 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406451AbhALSWi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 13:22:38 -0500
+        with ESMTP id S2406465AbhALSWv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 13:22:51 -0500
 Received: from relay06.th.seeweb.it (relay06.th.seeweb.it [IPv6:2001:4b7a:2000:18::167])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F33FC0617BB
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2021 10:21:03 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A425DC0617AA;
+        Tue, 12 Jan 2021 10:21:02 -0800 (PST)
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id D45653EEC3;
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 1CD753EE77;
         Tue, 12 Jan 2021 19:21:01 +0100 (CET)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
@@ -41,9 +40,9 @@ Cc:     konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v3 10/15] MAINTAINERS: Add entry for Qualcomm CPRv3/v4/Hardened driver
-Date:   Tue, 12 Jan 2021 19:20:47 +0100
-Message-Id: <20210112182052.481888-11-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v3 08/15] arm64: qcom: qcs404: Change CPR nvmem-names
+Date:   Tue, 12 Jan 2021 19:20:45 +0100
+Message-Id: <20210112182052.481888-9-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210112182052.481888-1-angelogioacchino.delregno@somainline.org>
 References: <20210112182052.481888-1-angelogioacchino.delregno@somainline.org>
@@ -53,30 +52,60 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add maintainers entry for the Qualcomm CPR3/CPR4/CPRh driver.
+The CPR driver's common functions were split and put in another
+file in order to support newer CPR revisions: to simplify the
+commonization, the expected names of the fuses had to be changed
+in order for both new and old support to use the same fuse name
+retrieval function and keeping the naming consistent.
+
+The thread id was added to the fuse name and, since CPRv1 does
+not support threads, it is expected to always read ID 0, which
+means that the expected name here is now "cpr0_(fuse_name)"
+instead of "cpr_(fuse_name)": luckily, QCS404 is the only user
+so change it accordingly.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- MAINTAINERS | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/arm64/boot/dts/qcom/qcs404.dtsi | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 66052be495fb..3d9f9037f1c7 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14766,6 +14766,12 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/soc/qcom/qcom,cpr.yaml
- F:	drivers/soc/qcom/cpr.c
+diff --git a/arch/arm64/boot/dts/qcom/qcs404.dtsi b/arch/arm64/boot/dts/qcom/qcs404.dtsi
+index 339790ba585d..f9350b028435 100644
+--- a/arch/arm64/boot/dts/qcom/qcs404.dtsi
++++ b/arch/arm64/boot/dts/qcom/qcs404.dtsi
+@@ -1168,19 +1168,19 @@ cpr: power-controller@b018000 {
+ 				<&cpr_efuse_ring2>,
+ 				<&cpr_efuse_ring3>,
+ 				<&cpr_efuse_revision>;
+-			nvmem-cell-names = "cpr_quotient_offset1",
+-				"cpr_quotient_offset2",
+-				"cpr_quotient_offset3",
+-				"cpr_init_voltage1",
+-				"cpr_init_voltage2",
+-				"cpr_init_voltage3",
+-				"cpr_quotient1",
+-				"cpr_quotient2",
+-				"cpr_quotient3",
+-				"cpr_ring_osc1",
+-				"cpr_ring_osc2",
+-				"cpr_ring_osc3",
+-				"cpr_fuse_revision";
++			nvmem-cell-names = "cpr0_quotient_offset1",
++				"cpr0_quotient_offset2",
++				"cpr0_quotient_offset3",
++				"cpr0_init_voltage1",
++				"cpr0_init_voltage2",
++				"cpr0_init_voltage3",
++				"cpr0_quotient1",
++				"cpr0_quotient2",
++				"cpr0_quotient3",
++				"cpr0_ring_osc1",
++				"cpr0_ring_osc2",
++				"cpr0_ring_osc3",
++				"cpr0_fuse_revision";
+ 		};
  
-+QUALCOMM CORE POWER REDUCTION v3/v4/Hardened AVS DRIVER
-+M:	AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/soc/qcom/qcom,cpr3.yaml
-+F:	drivers/soc/qcom/cpr3.c
-+
- QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096
- M:	Ilia Lin <ilia.lin@kernel.org>
- L:	linux-pm@vger.kernel.org
+ 		timer@b120000 {
 -- 
 2.29.2
 
