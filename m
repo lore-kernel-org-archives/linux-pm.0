@@ -2,117 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CFBAC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 14:49:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FE7DC433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 15:01:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 372CF20739
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 14:49:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB03223130
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 15:01:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728166AbhALOtY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Jan 2021 09:49:24 -0500
-Received: from mail-ot1-f51.google.com ([209.85.210.51]:36768 "EHLO
-        mail-ot1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726241AbhALOtY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 09:49:24 -0500
-Received: by mail-ot1-f51.google.com with SMTP id d20so2482248otl.3;
-        Tue, 12 Jan 2021 06:49:08 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=R65jgJ9ZXA6KLRUaL143AJzdpFEYKDU6ZEDoHXUUWuk=;
-        b=WKLfL0IGoZ95VBhxdscMxzsP6g+H50HF0Xtr89dmjE20KnEMONPufI87oif7xdQHpz
-         zDm8U9d6ff/r7hyH/+Th4ENtzbHEzms5wGukLX8sE6RkGlzoXIGZnMEUzM8HOPeAXUXc
-         6+WOaWULHqHetUbtlWxim2hnqQPFeVf0goOIKJBG2BLK8uviOxAFWs6+kppt2VYhzXEl
-         dDhEps9M//FX9AB6KWMp8BW1w5RLseSqSqB/PIao6khDM6Ff/3T92HWX2vUMRICIKWrq
-         PpAWsDvmHqSBdFcZt+1QAmeIMaMxLOQGvTfcU2QRH/o9EXJo82FPuI1PX0ok1q+enLTD
-         zqwg==
-X-Gm-Message-State: AOAM532CpNAL4o0f6hvznov56GbbO0rJL0KaVsv6wlqxD+8Wpry6lZeh
-        qoAF1Snba638srXcIANw2g==
-X-Google-Smtp-Source: ABdhPJz47DeFCqd1oQBxWpdz0vtjnHrb9OMZhE+QbK/kAhF8YobPG+Mkx0lWOxRC/NuYKWzUBCBJpQ==
-X-Received: by 2002:a9d:71cf:: with SMTP id z15mr2992431otj.259.1610462923140;
-        Tue, 12 Jan 2021 06:48:43 -0800 (PST)
-Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id n13sm654071otk.58.2021.01.12.06.48.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Jan 2021 06:48:42 -0800 (PST)
-Received: (nullmailer pid 329242 invoked by uid 1000);
-        Tue, 12 Jan 2021 14:48:41 -0000
-Date:   Tue, 12 Jan 2021 08:48:41 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Roger Lu <roger.lu@mediatek.com>
-Cc:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v11 5/7] dt-bindings: soc: mediatek: add mt8192 svs
- dt-bindings
-Message-ID: <20210112144841.GA327919@robh.at.kernel.org>
-References: <20210107024356.583-1-roger.lu@mediatek.com>
- <20210107024356.583-6-roger.lu@mediatek.com>
+        id S1730986AbhALPBF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Jan 2021 10:01:05 -0500
+Received: from mga06.intel.com ([134.134.136.31]:48640 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728574AbhALPBE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 Jan 2021 10:01:04 -0500
+IronPort-SDR: bigQfL0RdZSvw+EWQaaSpXiKIKlc/Pa70HSwZzEIOiQ3PQ6mFkC2WuPLYwWwYSXJ3sVVVATmGf
+ ccCxMfc80g6Q==
+X-IronPort-AV: E=McAfee;i="6000,8403,9861"; a="239592233"
+X-IronPort-AV: E=Sophos;i="5.79,341,1602572400"; 
+   d="scan'208";a="239592233"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2021 07:00:22 -0800
+IronPort-SDR: 9X8eWtH59RL9xfctl3owzHGS3bEVAKRfaT8ZCCkLMo6joFK2nyLXZ8olC2Oyl4rU4BQBdKaBl2
+ U7Sukbtiy/Yg==
+X-IronPort-AV: E=Sophos;i="5.79,341,1602572400"; 
+   d="scan'208";a="381456283"
+Received: from chenyu-office.sh.intel.com ([10.239.158.173])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2021 07:00:20 -0800
+Date:   Tue, 12 Jan 2021 23:03:40 +0800
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] cpufreq: intel_pstate: Get percpu max freq via HWP
+ MSR register if available
+Message-ID: <20210112150340.GA17152@chenyu-office.sh.intel.com>
+References: <20210112052127.4557-1-yu.c.chen@intel.com>
+ <CAJZ5v0i5jdp6YcpvVuLyxGePRAsFPUPL6=iQC7PEFSzjNRUJLw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210107024356.583-6-roger.lu@mediatek.com>
+In-Reply-To: <CAJZ5v0i5jdp6YcpvVuLyxGePRAsFPUPL6=iQC7PEFSzjNRUJLw@mail.gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 07, 2021 at 10:43:54AM +0800, Roger Lu wrote:
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> ---
->  .../devicetree/bindings/soc/mediatek/mtk-svs.yaml        | 9 +++++++++
->  1 file changed, 9 insertions(+)
+On Tue, Jan 12, 2021 at 02:52:50PM +0100, Rafael J. Wysocki wrote:
+> On Tue, Jan 12, 2021 at 6:19 AM Chen Yu <yu.c.chen@intel.com> wrote:
+> >
+> > Currently when turbo is disabled(either by BIOS or by the user), the
+> > intel_pstate driver reads the max non-turbo frequency from the package-wide
+> > MSR_PLATFORM_INFO(0xce) register. However on asymmetric platforms it is
+> > possible in theory that small and big core with HWP enabled might have
+> > different max non-turbo cpu frequency, because the MSR_HWP_CAPABILITIES
+> > is percpu scope according to Intel Software Developer Manual.
+> >
+> > The turbo max freq is already percpu basis in current code, thus make
+> > similar change to the max non-turbo frequency as well.
+> >
+> > Reported-by: Wendy Wang <wendy.wang@intel.com>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> > v2: Per Srinivas' suggestion, avoid duplicated assignment of max_pstate.
+> > v3: Per Rafael's suggestion, do not add new argument in intel_pstate_get_hwp_max()
+> >     to avoid redundant local vars.
+> >     Per Srinivas' suggestion, refined the commit log to reflect the 'non-turbo'
+> >     max frequency.
 > 
-> diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-> index bb8c345a0c0a..2e61b07921aa 100644
-> --- a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-> +++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-> @@ -22,6 +22,7 @@ properties:
->    compatible:
->      enum:
->        - mediatek,mt8183-svs
-> +      - mediatek,mt8192-svs
->  
->    reg:
->      description: Address range of the MTK SVS controller.
-> @@ -47,6 +48,14 @@ properties:
->        - const: svs-calibration-data
->        - const: t-calibration-data
->  
-> +  resets:
-> +    description:
-> +      svs reset control.
-
-How many?
-
-And you can drop the description given there's only 1.
-
-> +
-> +  reset-names:
-> +    items:
-> +      - const: svs_rst
-> +
->  required:
->    - compatible
->    - reg
-> -- 
-> 2.18.0
+> Looks good now, thanks!
 > 
+> Is it needed in -stable and if so, which -stable series should it go into?
+>
+Yes, I think so, it should be 
+Cc: stable@vger.kernel.org # 4.18+
+as the HWP reading turbo frequency was firstly introduced in v4.18-rc2 and it
+was easier to be applied.
+BTW, this patch is on top of your previous patch set on intel_pstate clean up:
+https://patchwork.kernel.org/project/linux-pm/list/?series=410797
+
+thanks,
+Chenyu
