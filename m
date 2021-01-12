@@ -2,122 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D939C4332B
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 21:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6710C4332B
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 486F322D49
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Jan 2021 21:51:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AFD46230FD
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 00:33:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728040AbhAKVup (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Jan 2021 16:50:45 -0500
-Received: from mail-ot1-f43.google.com ([209.85.210.43]:37508 "EHLO
-        mail-ot1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727380AbhAKVuo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 16:50:44 -0500
-Received: by mail-ot1-f43.google.com with SMTP id o11so350980ote.4;
-        Mon, 11 Jan 2021 13:50:29 -0800 (PST)
+        id S2403928AbhALAZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Jan 2021 19:25:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51024 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404254AbhALAP5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2021 19:15:57 -0500
+Received: from mail-yb1-xb2f.google.com (mail-yb1-xb2f.google.com [IPv6:2607:f8b0:4864:20::b2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A249AC061786
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 16:15:16 -0800 (PST)
+Received: by mail-yb1-xb2f.google.com with SMTP id k4so521922ybp.6
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2021 16:15:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Fc5a4hAhJ0U9BAhymt1K2IV9OCgvqNN915qhRxj3a0A=;
+        b=FzgCAPKursjzIMbGBkZ3eH2LGTIcSWMdRXFZNb0iI3dW4FJfXN+URBiA/7Xr+TVtlN
+         ZsuEticrEnOZQYGu0X3IURnQHoVxez1gbevX2V+Rjbl2KQIcP+gd3S9jBPvKE/vFM9fA
+         gC+3kvYqIKAPySd/E91vcBp6hfdVkgHZ3ZzveccYyg/KfXQYsqrciKw/K+9x5p2/vwe4
+         72SM8FYv8L3RaHi6niX74hsTtEOKwN8NTWRejFUphdQCu5D/FBNb9AAYCKfWaixWTFJy
+         VDsV/HgHRNk0K3kkGfTwX2vRF5evlUidVnWhYu07t79EZxSitSNx8GFUOeWtA+dDxQrA
+         C3hA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=qZB7YFnYmK5pmVyjaf+FA297zYveGF4/mkcj6q7QOss=;
-        b=KzzdNZ6Atd3vBpENJVNI0RJlHFY4HrjV+UMAXXdX00Rah+o4Fl1mJCK/L9LhydwEGD
-         UBkdr1YSw5din4zzw9jg3kI+rDjFEZMR1eV/eKMCa9J+bT7fdxH3G1IyqP4ZZH91OjG0
-         BHQOsgyKaJpl4/BV9D8HDdFc6C6tflQUSNhEzlXKsm0kvIdG/0IdXWk4cQAPmkUbQt8L
-         eAtQ1FV5acmEQGkjaebMlD01hygS9bIlXx0pTbPipZ2k1aJ4irsHg25X0Drp2Rjyr9xJ
-         zlvb8VaqbZH77Au1hgxblZnIYAn8POm9FuNekOSEZV58gqGoP6zDGTk8vj32l8mCR2ZF
-         JXXg==
-X-Gm-Message-State: AOAM53088rib++/Yfr0VEHejVfTiIWtEYfyhsXKZo1UIk/udhHTNwNhs
-        Kv4w46R3+5BYL3ew65PalQ==
-X-Google-Smtp-Source: ABdhPJx4sESqsRtj0tIKhFssBKghbCoKpOR5OcYFGX1jMiDvJvhAgfB0xNG4OTZoj71kNHt+15hP5w==
-X-Received: by 2002:a05:6830:1343:: with SMTP id r3mr753075otq.344.1610401803679;
-        Mon, 11 Jan 2021 13:50:03 -0800 (PST)
-Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id f18sm214594otf.55.2021.01.11.13.50.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Jan 2021 13:50:02 -0800 (PST)
-Received: (nullmailer pid 3120427 invoked by uid 1000);
-        Mon, 11 Jan 2021 21:50:01 -0000
-Date:   Mon, 11 Jan 2021 15:50:01 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Timon Baetz <timon.baetz@protonmail.com>
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH v6 2/8] regulator: dt-bindings: Document max8997-pmic
- nodes
-Message-ID: <20210111215001.GA3111856@robh.at.kernel.org>
-References: <20201230205139.1812366-1-timon.baetz@protonmail.com>
- <20201230205139.1812366-2-timon.baetz@protonmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Fc5a4hAhJ0U9BAhymt1K2IV9OCgvqNN915qhRxj3a0A=;
+        b=YqYddaeSfKT/O1Q2yPfJJH3HDdA5N19+oduej0fArVfYQlL1/91hQSRKMxEaRfA31Z
+         3fz7fzKON8v26hOR8vJFHgJsDO5rc+pIRSoxbdn0JSQ5jfOGYX1s0R2I5Ld4P2cBHunO
+         73S+YI3YZGehQmOKPYJ/J7dd+L/eZ7Dml2SQoVJ2d6JBEXQdcNKmghJoIw0gfp1NAx/+
+         jp+4V8rgfeHNJP2C5cZRzjVQWJmXWJ9VuEE+WnTMn44DPJEWClq6EN3zvP5SXEuxCvr1
+         pSWOuztB1LefkxN9vWPdbXiYvJPOPycSk+Kw3kplL3T0MiCiGVY1p66uPMwnwiy52fHL
+         IylQ==
+X-Gm-Message-State: AOAM530d3b2Cqaj2d4tFA5/DHxj6jLUqVfHnAwQ+T14EAD+nDTcAhehc
+        IhdZzymMEskkYaUa6qBOYmnanlFn4d+0vTovS8ZWTg==
+X-Google-Smtp-Source: ABdhPJxJqSOmEsqdTeDCPTa7EFhYl9pJJKu4sfDgU6Qpp/aNyX+mQBLDMHr8nyNikVp5Tk7R/XBhnLtRzCsI8xCnWCw=
+X-Received: by 2002:a25:b703:: with SMTP id t3mr3722472ybj.96.1610410515726;
+ Mon, 11 Jan 2021 16:15:15 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201230205139.1812366-2-timon.baetz@protonmail.com>
+References: <alpine.LSU.2.11.2101102010200.25762@eggly.anvils>
+ <X/xV7ZV5jzI7RvAe@ulmo> <CAJZ5v0iriRkEN8dVJ9gE3+Wyn_96=SNhav1QaQ59i9O0genTNQ@mail.gmail.com>
+ <X/x49o3EtrUh6vuO@ulmo> <CAJZ5v0hyvdcKsPJ7U5WioXb1c8Pg_F1BLC_dbKesFBLTUSiVaw@mail.gmail.com>
+ <CAGETcx_odme9ufTps6tctOW+zfOox6iXgTx_9GAjoYn=+jy1BQ@mail.gmail.com> <alpine.LSU.2.11.2101111539070.2728@eggly.anvils>
+In-Reply-To: <alpine.LSU.2.11.2101111539070.2728@eggly.anvils>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Mon, 11 Jan 2021 16:14:39 -0800
+Message-ID: <CAGETcx-gPA3HeSKS6XW1zYj_imjDH_86897Jub56b9ctBOqmwg@mail.gmail.com>
+Subject: Re: 5.11-rc device reordering breaks ThinkPad rmi4 suspend
+To:     Hugh Dickins <hughd@google.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Vincent Huang <vincent.huang@tw.synaptics.com>,
+        "Jason A. Donenfeld" <Jason@zx2c4.com>,
+        Andrew Duggan <aduggan@synaptics.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Dec 30, 2020 at 08:52:07PM +0000, Timon Baetz wrote:
-> Add maxim,max8997-battery and maxim,max8997-muic optional nodes.
-> 
-> Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
-> v6: No change.
-> v5: No change.
-> v4: Make extcon and charger-supply optional.
-> v3: Reorder patch, no change.
-> v2: Add patch.
-> 
->  .../bindings/regulator/max8997-regulator.txt         | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
+On Mon, Jan 11, 2021 at 3:42 PM Hugh Dickins <hughd@google.com> wrote:
+>
+> On Mon, 11 Jan 2021, Saravana Kannan wrote:
+> >
+> > I happen to have an X1 Carbon (different gen though) lying around and
+> > I poked at its /sys folders. None of the devices in the rmi4_smbus are
+> > considered the grandchildren of the i2c device. I think the real
+> > problem is rmi_register_transport_device() [1] not setting up the
+> > parent for any of the new devices it's adding.
+> >
+> > Hugh, can you try this patch?
+>
+> Just tried, but no, this patch does not help; but I bet
+> you're along the right lines, and something as simple will do it.
 
-This exceeds my threshold of changes for please convert this to schema 
-first. However, I agree with what Mark has said already, so maybe some 
-of this isn't needed.
+Did you see this patch change the organization of devices under /sys/devices/?
+The rmi* devices need to be under one of the i2c devices after this
+patch. Is that not the case? Or is that the case, but you are still
+seeing suspend/resume issues?
 
-> 
-> diff --git a/Documentation/devicetree/bindings/regulator/max8997-regulator.txt b/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-> index 6fe825b8ac1b..faaf2bbf0272 100644
-> --- a/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-> +++ b/Documentation/devicetree/bindings/regulator/max8997-regulator.txt
-> @@ -53,6 +53,18 @@ Additional properties required if either of the optional properties are used:
->  - max8997,pmic-buck125-dvs-gpios: GPIO specifiers for three host gpio's used
->    for dvs. The format of the gpio specifier depends in the gpio controller.
->  
-> +Optional nodes:
-> +- charger: Node for configuring the charger driver.
-> +  Required properties:
-> +  - compatible: "maxim,max8997-battery"
-> +  Optional properties:
-> +  - extcon: extcon specifier for charging events
+-Saravana
 
-Don't use 'extcon' for new bindings. Define a connector node. USB I 
-suppose?
-
-> +  - charger-supply: regulator node for charging current
-> +
-> +- muic: Node used only by extcon consumers.
-> +  Required properties:
-> +  - compatible: "maxim,max8997-muic"
-> +
->  Regulators: The regulators of max8997 that have to be instantiated should be
->  included in a sub-node named 'regulators'. Regulator nodes included in this
->  sub-node should be of the format as listed below.
-> -- 
-> 2.25.1
-> 
-> 
+>
+> >
+> > diff --git a/drivers/input/rmi4/rmi_bus.c b/drivers/input/rmi4/rmi_bus.c
+> > index 24f31a5c0e04..50a0134b6901 100644
+> > --- a/drivers/input/rmi4/rmi_bus.c
+> > +++ b/drivers/input/rmi4/rmi_bus.c
+> > @@ -90,6 +90,7 @@ int rmi_register_transport_device(struct
+> > rmi_transport_dev *xport)
+> >
+> >         rmi_dev->dev.bus = &rmi_bus_type;
+> >         rmi_dev->dev.type = &rmi_device_type;
+> > +       rmi_dev->dev.parent = xport->dev;
+> >
+> >         xport->rmi_dev = rmi_dev;
+> >
+> > -Saravana
+> >
+> > [1] - https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/input/rmi4/rmi_bus.c#n74
