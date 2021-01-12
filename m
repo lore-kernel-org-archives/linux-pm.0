@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 257F2C43333
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13863C43217
 	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:23:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BCC12311A
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:23:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D08F72311D
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Jan 2021 18:23:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406644AbhALSXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Jan 2021 13:23:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59314 "EHLO
+        id S2406536AbhALSX3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Jan 2021 13:23:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59096 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406612AbhALSXb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 13:23:31 -0500
-Received: from m-r2.th.seeweb.it (m-r2.th.seeweb.it [IPv6:2001:4b7a:2000:18::171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4CF1C061786
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2021 10:21:42 -0800 (PST)
+        with ESMTP id S2406634AbhALSXX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 13:23:23 -0500
+Received: from relay07.th.seeweb.it (relay07.th.seeweb.it [IPv6:2001:4b7a:2000:18::168])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1711DC0617A7
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2021 10:22:27 -0800 (PST)
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id EBBE53EBD9;
-        Tue, 12 Jan 2021 19:20:58 +0100 (CET)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id E4EE13EEDB;
+        Tue, 12 Jan 2021 19:21:02 +0100 (CET)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     linux-arm-msm@vger.kernel.org
@@ -40,9 +40,9 @@ Cc:     konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v3 02/15] soc: qcom: spm: Implement support for SAWv4.1, SDM630/660 L2 AVS
-Date:   Tue, 12 Jan 2021 19:20:39 +0100
-Message-Id: <20210112182052.481888-3-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v3 13/15] dt-bindings: cpufreq: cpufreq-qcom-hw: Convert to YAML bindings
+Date:   Tue, 12 Jan 2021 19:20:50 +0100
+Message-Id: <20210112182052.481888-14-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210112182052.481888-1-angelogioacchino.delregno@somainline.org>
 References: <20210112182052.481888-1-angelogioacchino.delregno@somainline.org>
@@ -52,80 +52,407 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Implement the support for SAW v4.1, used in at least MSM8998,
-SDM630, SDM660 and APQ variants and, while at it, also add the
-configuration for the SDM630/660 Silver and Gold cluster L2
-Adaptive Voltage Scaler: this is also one of the prerequisites
-to allow the OSM controller to perform DCVS.
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 
+Convert Qualcomm cpufreq devicetree binding to YAML.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/soc/qcom/spm.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ .../bindings/cpufreq/cpufreq-qcom-hw.txt      | 172 ---------------
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 204 ++++++++++++++++++
+ 2 files changed, 204 insertions(+), 172 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
 
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index 0c8aa9240c41..843732d12c54 100644
---- a/drivers/soc/qcom/spm.c
-+++ b/drivers/soc/qcom/spm.c
-@@ -32,9 +32,28 @@ enum spm_reg {
- 	SPM_REG_SEQ_ENTRY,
- 	SPM_REG_SPM_STS,
- 	SPM_REG_PMIC_STS,
-+	SPM_REG_AVS_CTL,
-+	SPM_REG_AVS_LIMIT,
- 	SPM_REG_NR,
- };
- 
-+static const u16 spm_reg_offset_v4_1[SPM_REG_NR] = {
-+	[SPM_REG_AVS_CTL]	= 0x904,
-+	[SPM_REG_AVS_LIMIT]	= 0x908,
-+};
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+deleted file mode 100644
+index 9299028ee712..000000000000
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
++++ /dev/null
+@@ -1,172 +0,0 @@
+-Qualcomm Technologies, Inc. CPUFREQ Bindings
+-
+-CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+-SoCs to manage frequency in hardware. It is capable of controlling frequency
+-for multiple clusters.
+-
+-Properties:
+-- compatible
+-	Usage:		required
+-	Value type:	<string>
+-	Definition:	must be "qcom,cpufreq-hw" or "qcom,cpufreq-epss".
+-
+-- clocks
+-	Usage:		required
+-	Value type:	<phandle> From common clock binding.
+-	Definition:	clock handle for XO clock and GPLL0 clock.
+-
+-- clock-names
+-	Usage:		required
+-	Value type:	<string> From common clock binding.
+-	Definition:	must be "xo", "alternate".
+-
+-- reg
+-	Usage:		required
+-	Value type:	<prop-encoded-array>
+-	Definition:	Addresses and sizes for the memory of the HW bases in
+-			each frequency domain.
+-- reg-names
+-	Usage:		Optional
+-	Value type:	<string>
+-	Definition:	Frequency domain name i.e.
+-			"freq-domain0", "freq-domain1".
+-
+-- #freq-domain-cells:
+-	Usage:		required.
+-	Definition:	Number of cells in a freqency domain specifier.
+-
+-* Property qcom,freq-domain
+-Devices supporting freq-domain must set their "qcom,freq-domain" property with
+-phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+-
+-
+-Example:
+-
+-Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+-DCVS state together.
+-
+-/ {
+-	cpus {
+-		#address-cells = <2>;
+-		#size-cells = <0>;
+-
+-		CPU0: cpu@0 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x0>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_0>;
+-			qcom,freq-domain = <&cpufreq_hw 0>;
+-			L2_0: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-				L3_0: l3-cache {
+-				      compatible = "cache";
+-				};
+-			};
+-		};
+-
+-		CPU1: cpu@100 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x100>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_100>;
+-			qcom,freq-domain = <&cpufreq_hw 0>;
+-			L2_100: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU2: cpu@200 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x200>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_200>;
+-			qcom,freq-domain = <&cpufreq_hw 0>;
+-			L2_200: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU3: cpu@300 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x300>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_300>;
+-			qcom,freq-domain = <&cpufreq_hw 0>;
+-			L2_300: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU4: cpu@400 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x400>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_400>;
+-			qcom,freq-domain = <&cpufreq_hw 1>;
+-			L2_400: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU5: cpu@500 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x500>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_500>;
+-			qcom,freq-domain = <&cpufreq_hw 1>;
+-			L2_500: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU6: cpu@600 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x600>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_600>;
+-			qcom,freq-domain = <&cpufreq_hw 1>;
+-			L2_600: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-
+-		CPU7: cpu@700 {
+-			device_type = "cpu";
+-			compatible = "qcom,kryo385";
+-			reg = <0x0 0x700>;
+-			enable-method = "psci";
+-			next-level-cache = <&L2_700>;
+-			qcom,freq-domain = <&cpufreq_hw 1>;
+-			L2_700: l2-cache {
+-				compatible = "cache";
+-				next-level-cache = <&L3_0>;
+-			};
+-		};
+-	};
+-
+- soc {
+-	cpufreq_hw: cpufreq@17d43000 {
+-		compatible = "qcom,cpufreq-hw";
+-		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+-		reg-names = "freq-domain0", "freq-domain1";
+-
+-		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+-		clock-names = "xo", "alternate";
+-
+-		#freq-domain-cells = <1>;
+-	};
+-}
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+new file mode 100644
+index 000000000000..bc81b6203e27
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -0,0 +1,204 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/cpufreq/cpufreq-qcom-hw.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+static const struct spm_reg_data spm_reg_660_gold_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4580458,
-+};
++title: Qualcomm Technologies, Inc. CPUFREQ
 +
-+static const struct spm_reg_data spm_reg_660_silver_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x101c031,
-+	.avs_limit = 0x4580458,
-+};
++maintainers:
++  - Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 +
- static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
- 	[SPM_REG_CFG]		= 0x08,
- 	[SPM_REG_SPM_CTL]	= 0x30,
-@@ -126,6 +145,10 @@ void spm_set_low_power_mode(struct spm_driver_data *drv,
- }
- 
- static const struct of_device_id spm_match_table[] = {
-+	{ .compatible = "qcom,sdm660-gold-saw2-v4.1-l2",
-+	  .data = &spm_reg_660_gold_l2 },
-+	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
-+	  .data = &spm_reg_660_silver_l2 },
- 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
- 	  .data = &spm_reg_8974_8084_cpu },
- 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
-@@ -169,6 +192,8 @@ static int spm_dev_probe(struct platform_device *pdev)
- 	 * CPU was held in reset, the reset signal could trigger the SPM state
- 	 * machine, before the sequences are completely written.
- 	 */
-+	spm_register_write(drv, SPM_REG_AVS_CTL, drv->reg_data->avs_ctl);
-+	spm_register_write(drv, SPM_REG_AVS_LIMIT, drv->reg_data->avs_limit);
- 	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
- 	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
- 	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
-@@ -178,7 +203,8 @@ static int spm_dev_probe(struct platform_device *pdev)
- 				drv->reg_data->pmic_data[1]);
- 
- 	/* Set up Standby as the default low power mode */
--	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
-+	if (drv->reg_data->reg_offset[SPM_REG_SPM_CTL])
-+		spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
- 
- 	return 0;
- }
++description: |
++
++  CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
++  SoCs to manage frequency in hardware. It is capable of controlling frequency
++  for multiple clusters.
++
++properties:
++  compatible:
++    oneOf:
++      - description: v1 of CPUFREQ HW
++        items:
++          - const: qcom,cpufreq-hw
++
++      - description: v2 of CPUFREQ HW (EPSS)
++        items:
++          - enum:
++              - qcom,sm8250-cpufreq-epss
++          - const: qcom,cpufreq-epss
++
++  reg:
++    minItems: 2
++    maxItems: 3
++    items:
++      - description: Frequency domain 0 register region
++      - description: Frequency domain 1 register region
++      - description: Frequency domain 2 register region
++
++  reg-names:
++    minItems: 2
++    maxItems: 3
++    items:
++      - const: freq-domain0
++      - const: freq-domain1
++      - const: freq-domain2
++
++  clocks:
++    items:
++      - description: XO Clock
++      - description: GPLL0 Clock
++
++  clock-names:
++    items:
++      - const: xo
++      - const: alternate
++
++  '#freq-domain-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - clocks
++  - clock-names
++  - '#freq-domain-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/qcom,gcc-sdm845.h>
++    #include <dt-bindings/clock/qcom,rpmh.h>
++
++    // Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster
++    // switch DCVS state together.
++    cpus {
++      #address-cells = <2>;
++      #size-cells = <0>;
++
++      CPU0: cpu@0 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x0>;
++        enable-method = "psci";
++        next-level-cache = <&L2_0>;
++        qcom,freq-domain = <&cpufreq_hw 0>;
++        L2_0: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++          L3_0: l3-cache {
++            compatible = "cache";
++          };
++        };
++      };
++
++      CPU1: cpu@100 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x100>;
++        enable-method = "psci";
++        next-level-cache = <&L2_100>;
++        qcom,freq-domain = <&cpufreq_hw 0>;
++        L2_100: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU2: cpu@200 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x200>;
++        enable-method = "psci";
++        next-level-cache = <&L2_200>;
++        qcom,freq-domain = <&cpufreq_hw 0>;
++        L2_200: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU3: cpu@300 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x300>;
++        enable-method = "psci";
++        next-level-cache = <&L2_300>;
++        qcom,freq-domain = <&cpufreq_hw 0>;
++        L2_300: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU4: cpu@400 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x400>;
++        enable-method = "psci";
++        next-level-cache = <&L2_400>;
++        qcom,freq-domain = <&cpufreq_hw 1>;
++        L2_400: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU5: cpu@500 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x500>;
++        enable-method = "psci";
++        next-level-cache = <&L2_500>;
++        qcom,freq-domain = <&cpufreq_hw 1>;
++        L2_500: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU6: cpu@600 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x600>;
++        enable-method = "psci";
++        next-level-cache = <&L2_600>;
++        qcom,freq-domain = <&cpufreq_hw 1>;
++        L2_600: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++
++      CPU7: cpu@700 {
++        device_type = "cpu";
++        compatible = "qcom,kryo385";
++        reg = <0x0 0x700>;
++        enable-method = "psci";
++        next-level-cache = <&L2_700>;
++        qcom,freq-domain = <&cpufreq_hw 1>;
++        L2_700: l2-cache {
++          compatible = "cache";
++          next-level-cache = <&L3_0>;
++        };
++      };
++    };
++
++    soc {
++      #address-cells = <1>;
++      #size-cells = <1>;
++
++      cpufreq@17d43000 {
++        compatible = "qcom,cpufreq-hw";
++        reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
++        reg-names = "freq-domain0", "freq-domain1";
++
++        clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
++        clock-names = "xo", "alternate";
++
++        #freq-domain-cells = <1>;
++      };
++    };
++...
 -- 
 2.29.2
 
