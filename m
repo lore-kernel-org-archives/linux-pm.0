@@ -2,99 +2,76 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07CF2C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 01:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177D9C4332E
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 02:12:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BFED02343F
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 01:58:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E63F8235FA
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 02:12:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727560AbhANB5f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Jan 2021 20:57:35 -0500
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:39172 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729575AbhAMXn3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 18:43:29 -0500
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 10DMsMQN093342;
-        Wed, 13 Jan 2021 16:54:22 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1610578462;
-        bh=/Zlmr8Iad4qwtDW5CFTi5k84Y25UAYrbaevAVuzfJqI=;
-        h=From:To:CC:Subject:Date;
-        b=e+Mh/pxPLXzs3fpPzvpw8wl3JP26qlk5xGjDhmzuSm3rO2j8kzmyQNGdACH9gx0Ug
-         nrxFvrQrvTX9enhUg+zifxoqk4CKSRHOc1WmXehV9QUH+Rz31YB7fi7Qhqo3jF+oZj
-         NvNMo+U3HQQEAAsHNuvUYfQ0MDHO+1NqwUNEOqi4=
-Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 10DMsMeA004637
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 13 Jan 2021 16:54:22 -0600
-Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 13
- Jan 2021 16:54:21 -0600
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE104.ent.ti.com
- (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Wed, 13 Jan 2021 16:54:21 -0600
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 10DMsLDl042146;
-        Wed, 13 Jan 2021 16:54:21 -0600
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <dan.carpenter@oracle.com>,
-        Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: [PATCH] power: supply: bq256xx: Fix BQ256XX_NUM_WD_VAL and bq256xx_watchdog_time[] overrun
-Date:   Wed, 13 Jan 2021 16:53:52 -0600
-Message-ID: <20210113225352.13099-1-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.30.0
+        id S1729231AbhANCLl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Jan 2021 21:11:41 -0500
+Received: from relay08.th.seeweb.it ([5.144.164.169]:46675 "EHLO
+        relay08.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727192AbhAMWOP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 17:14:15 -0500
+X-Greylist: delayed 100318 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jan 2021 17:14:14 EST
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 2110D3EFD1;
+        Wed, 13 Jan 2021 23:12:30 +0100 (CET)
+Subject: Re: [PATCH] cpufreq: qcom-hw: add missing devm_release_mem_region()
+ call
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     Shawn Guo <shawn.guo@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Andy Gross <agross@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+References: <20210112095236.20515-1-shawn.guo@linaro.org>
+ <X/210llTiuNt3haG@builder.lan> <20210113043143.y45mmnw3e2kjkxnl@vireshk-i7>
+ <X/5+GbueKg66DoEE@builder.lan> <20210113050651.q2txref3d6bifrf3@vireshk-i7>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Message-ID: <cbd4fb28-24b8-9aa7-fe5f-24571ef6258d@somainline.org>
+Date:   Wed, 13 Jan 2021 23:12:29 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <20210113050651.q2txref3d6bifrf3@vireshk-i7>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Corrects BQ256XX_NUM_WD_VAL from value of "8" to "4" and fixes the issue when 'i'
-is equal to array size then array index over runs the array
+Il 13/01/21 06:06, Viresh Kumar ha scritto:
+> On 12-01-21, 22:59, Bjorn Andersson wrote:
+>> But that said, why are the ioremap done at init and not at probe time?
+> 
+> These are some hardware registers per cpufreq policy I believe, and so
+> they did it from policy init instead.
+> 
+> And yes I agree that we shouldn't use devm_ from init() for the cases
+> where we need to put the resources in exit() as well. But things like
+> devm_kzalloc() are fine there.
+> 
+> Ionela, since you were the first one to post a patch about this, can
+> you send a fix for this by dropping the devm_ thing altogether for the
+> ioremap thing ? Mark it suggested by Bjorn. Thanks.
+> 
 
-Fixes: 32e4978bb92 ("power: supply: bq256xx: Introduce the BQ256XX charger driver")
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
----
- drivers/power/supply/bq256xx_charger.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Sorry, are you sure that the eventual fix shouldn't be rebased on top of 
+my change (12014503) [1] that is enabling CPU scaling for all of the 
+platforms that aren't getting the OSM set-up entirely by the TZ/bootloader?
+It's a pretty big series, that I've rebased 3 times already...
 
-diff --git a/drivers/power/supply/bq256xx_charger.c b/drivers/power/supply/bq256xx_charger.c
-index dc74c44618af..8414472083a6 100644
---- a/drivers/power/supply/bq256xx_charger.c
-+++ b/drivers/power/supply/bq256xx_charger.c
-@@ -135,7 +135,7 @@
- #define BQ256XX_NTC_FAULT_COLD		(BIT(2) | BIT(0))
- #define BQ256XX_NTC_FAULT_HOT		(BIT(2) | BIT(1))
- 
--#define BQ256XX_NUM_WD_VAL	8
-+#define BQ256XX_NUM_WD_VAL	4
- #define BQ256XX_WATCHDOG_MASK	GENMASK(5, 4)
- #define BQ256XX_WATCHDOG_MAX	1600000
- #define BQ256XX_WATCHDOG_DIS	0
-@@ -1508,6 +1508,10 @@ static int bq256xx_hw_init(struct bq256xx_device *bq)
- 	int i;
- 
- 	for (i = 0; i < BQ256XX_NUM_WD_VAL; i++) {
-+		if (bq->watchdog_timer == bq256xx_watchdog_time[i]) {
-+			wd_reg_val = i;
-+			break;
-+		}
- 		if (bq->watchdog_timer > bq256xx_watchdog_time[i] &&
- 		    bq->watchdog_timer < bq256xx_watchdog_time[i + 1])
- 			wd_reg_val = i;
--- 
-2.30.0
-
+[1]: 
+https://patchwork.kernel.org/project/linux-arm-msm/patch/20210112182052.481888-15-angelogioacchino.delregno@somainline.org/
