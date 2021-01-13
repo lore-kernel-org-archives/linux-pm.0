@@ -2,135 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,BIGNUM_EMAILS,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6835C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 09:15:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24A38C433E9
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 11:07:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 750BC2339D
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 09:15:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CBA7222AAF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 11:06:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727398AbhAMJOq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Jan 2021 04:14:46 -0500
-Received: from aserp2130.oracle.com ([141.146.126.79]:38258 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727390AbhAMJOq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 04:14:46 -0500
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10D99gQR125560;
-        Wed, 13 Jan 2021 09:14:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- content-transfer-encoding : in-reply-to; s=corp-2020-01-29;
- bh=PJppwapMJ05TyudPkc3cYi6LZO9tAK25mpSwQywEWRw=;
- b=NuwFQIe25jyda5T61hLMe0Q9HRBtB4v7+aR31uwCP28mc+JotF1GfIJdmeJKdRtS0dUq
- YrdwuMZ8gk5N//MO0IPRCV2Em4wEweM9l6FGncCd6GE6JuM383vx5omVW5XtMdcHl9SY
- /qOWCYyA3QKWxkDx8vvW7B3uVCxQ+7wfwRSj7tl+3hKZzvGUfIKu8oDF/WTv00h4xj/J
- bnrJn7+Qg7z9IPkgsDM/oEwG00YGref1YOlclPgs0+9HHeP34drTo7mXTONVM4r1TSCX
- Z8k6WWpUvEb+UQVNrJ7rwP+lod3iMKUziRiT40D3v5Kg0drNZ4R2gzasE71DrirXC5ga 6g== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by aserp2130.oracle.com with ESMTP id 360kg1tck8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 13 Jan 2021 09:14:03 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10D9BePD104307;
-        Wed, 13 Jan 2021 09:14:03 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3020.oracle.com with ESMTP id 360ke8159u-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 13 Jan 2021 09:14:03 +0000
-Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 10D9E2Lt028370;
-        Wed, 13 Jan 2021 09:14:02 GMT
-Received: from kadam (/102.36.221.92)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 13 Jan 2021 01:14:01 -0800
-Date:   Wed, 13 Jan 2021 12:13:56 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: Re: [EXTERNAL] [bug report] power: supply: bq256xx: Introduce the
- BQ256XX charger driver
-Message-ID: <20210113091356.GF5105@kadam>
-References: <X/1jy5+2elOl3Lm8@mwanda>
- <d0a0fccf-d7c5-c5a4-c4f0-68a8a01b7c34@ti.com>
+        id S1727819AbhAMLGp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Jan 2021 06:06:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49798 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727426AbhAMLGo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 06:06:44 -0500
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36E51C061786;
+        Wed, 13 Jan 2021 03:06:03 -0800 (PST)
+Received: by mail-ed1-x52c.google.com with SMTP id b6so970171edx.5;
+        Wed, 13 Jan 2021 03:06:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=WAyq9g0d7+JzFu52aSiUagBWIroviqXUqIhKxXyrEzw=;
+        b=e72TK9j3gAcNIhH9UAJHW/8/s+OktO1hrpTtZs3cmFspf1db2q6nEJUoeZBAKkggao
+         O25nJGT4vZ/VvO4OPgIOtHgOXDSma6hb4nwlrfIUOkv5naxpqGYqLMqHUaaHQCZdwpI4
+         VYGw6FbGldR1UfwIM41wa2s/6P1mlVrLXDDQBewaVLu9vvL/4BrFH9B7IlibKv1JsSTd
+         TwAU1vTy451xSazQkzWGYG9uuSb3Mo+BEeBxhEZE0zPE/XdMJ0rd1vvIA/Geuxc9e7ld
+         /fNsnFK12Z42Tgngd79BEEEzWepVBaciIChLHfBLPBNJo0ef5fW6SKE2QMBMtSQtYnxX
+         Zvow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=WAyq9g0d7+JzFu52aSiUagBWIroviqXUqIhKxXyrEzw=;
+        b=Fuze8KoGDATmj8wCOxtOadjbFlPTIKnU61puaj189sGl2u4cFvRxAJLmu2hZqgHOap
+         Hzwp4wLxzANjQv5ywmg8eayljOUFvevUUE+30zRxJsI15tL+iXsiLLYrFLcLZbMpwTg3
+         CxMfpzNrRUOdfrWQ7qXfDstq1j6KXHgV6NzLZJZTx/4vJgIGcgB0wTlKfhxfYeCh468c
+         XLYhKGwoOpwKdhddo+0Tn+Ho7eNiOG08yAopsGVuxLQozk2t75hYNq0od7L/LtaWMRLO
+         Jpjj1+CIqVLbpWx4FMnTcx1Qr/448jO2Jp5f2lG5AsGvbUR7heNFZvrOZyz9qiy+P3b9
+         z7Pw==
+X-Gm-Message-State: AOAM530+cF8ZSd2vZqjkN2Gn1ZmADLCYO4VBdsR/Ys3oyFKcKqXU9fBY
+        bbQqZymAGq+Y9MIIla4kFH0=
+X-Google-Smtp-Source: ABdhPJzbd9MyV/gyU92mF+qfH/jhxq9qwhMEA4Awv6lRltvE3WBb+NE0TZcc3wcfNNv4ZNvyommO5w==
+X-Received: by 2002:a50:8b02:: with SMTP id l2mr1297960edl.322.1610535961901;
+        Wed, 13 Jan 2021 03:06:01 -0800 (PST)
+Received: from localhost.localdomain ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id zn8sm597343ejb.39.2021.01.13.03.06.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Jan 2021 03:06:01 -0800 (PST)
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>
+Subject: [PATCH v5 1/7] dt-bindings: input: Add reset-time-sec common property
+Date:   Wed, 13 Jan 2021 13:05:51 +0200
+Message-Id: <dfa2b49142ed00835050f4ccfd80b1f48e4aa71d.1610534765.git.cristian.ciocaltea@gmail.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <cover.1610534765.git.cristian.ciocaltea@gmail.com>
+References: <cover.1610534765.git.cristian.ciocaltea@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <d0a0fccf-d7c5-c5a4-c4f0-68a8a01b7c34@ti.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 suspectscore=0 spamscore=0
- mlxlogscore=999 malwarescore=0 bulkscore=0 mlxscore=0 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101130055
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 suspectscore=0
- clxscore=1015 impostorscore=0 spamscore=0 priorityscore=1501 mlxscore=0
- phishscore=0 mlxlogscore=999 bulkscore=0 adultscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2101130055
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 12, 2021 at 05:44:52PM -0600, Ricardo Rivera-Matos wrote:
-> Dan,
-> 
-> On 1/12/21 2:54 AM, Dan Carpenter wrote:
-> > Hello Ricardo Rivera-Matos,
-> > 
-> > The patch 32e4978bb920: "power: supply: bq256xx: Introduce the
-> > BQ256XX charger driver" from Jan 6, 2021, leads to the following
-> > static checker warning:
-> > 
-> > 	drivers/power/supply/bq256xx_charger.c:1512 bq256xx_hw_init()
-> > 	error: buffer overflow 'bq256xx_watchdog_time' 8 <= 8
-> > 
-> > drivers/power/supply/bq256xx_charger.c
-> >    1503  static int bq256xx_hw_init(struct bq256xx_device *bq)
-> >    1504  {
-> >    1505          struct power_supply_battery_info bat_info = { };
-> >    1506          int wd_reg_val = BQ256XX_WATCHDOG_DIS;
-> >    1507          int ret = 0;
-> >    1508          int i;
-> >    1509
-> >    1510          for (i = 0; i < BQ256XX_NUM_WD_VAL; i++) {
-> >    1511                  if (bq->watchdog_timer > bq256xx_watchdog_time[i] &&
-> >    1512                      bq->watchdog_timer < bq256xx_watchdog_time[i + 1])
-> >                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > The last four members of this array are all zero.
-> ACK, BQ256XX_NUM_WD_VAL should actually be 4 instead of 8
-> > 
-> > On the last iteration through the loop this will read beyond the end of
-> > the array possibly setting "wd_reg_val = 7" uninitentionally.
-> ACK, bq256xx_parse_dt() will clamp bq->watchdog_timer so then in
-> bq256xx_hw_init()
-> 
->     for (i = 0; i < BQ256XX_NUM_WD_VAL; i++) {
->         if (bq->watchdog_timer == bq256xx_watchdog_time[i]) {
->             wd_reg_val = i;
->             break;
->         }
->         if (bq->watchdog_timer > bq256xx_watchdog_time[i] &&
->             bq->watchdog_timer < bq256xx_watchdog_time[i + 1])
->             wd_reg_val = i;
->     }
-> 
-> The first if will catch the exact matches and the second if will catch the
-> "in-betweens" and round down. The final iteration will always fall into the
-> first if statement and break.
-> 
+Add a new common property 'reset-time-sec' to be used in conjunction
+with the devices supporting the key pressed reset feature.
 
-This looks good.  This is a patch you are proposing or it's already
-merged in an upstream tree somewhere?  Either way, that sounds fine.
-Thank!
+Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+Changes in v5:
+ - None
 
-regards,
-dan carpenter
+Changes in v4:
+ - Added Reviewed-by from Rob
+
+Changes in v3:
+ - This patch was not present in v2
+
+ Documentation/devicetree/bindings/input/input.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/input/input.yaml b/Documentation/devicetree/bindings/input/input.yaml
+index ab407f266bef..caba93209ae7 100644
+--- a/Documentation/devicetree/bindings/input/input.yaml
++++ b/Documentation/devicetree/bindings/input/input.yaml
+@@ -34,4 +34,11 @@ properties:
+       specify this property.
+     $ref: /schemas/types.yaml#/definitions/uint32
+ 
++  reset-time-sec:
++    description:
++      Duration in seconds which the key should be kept pressed for device to
++      reset automatically. Device with key pressed reset feature can specify
++      this property.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
+ additionalProperties: true
+-- 
+2.30.0
 
