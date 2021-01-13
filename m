@@ -2,121 +2,158 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,BIGNUM_EMAILS,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB4F7C433E9
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 00:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE05FC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 02:34:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B53A323134
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 00:50:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A5D92310F
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Jan 2021 02:34:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2393627AbhAMAnC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Jan 2021 19:43:02 -0500
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:47486 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390430AbhALXqb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 18:46:31 -0500
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 10CNireg045135;
-        Tue, 12 Jan 2021 17:44:53 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1610495093;
-        bh=7/0ruDU9mU6ZquxSnJ3W4pd4JINdjABWsegVS43LhGo=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=pwtzB7Uk9epk88WGoBOrFEgLLY8XVMgR6nuj4vyaEbKhBlLsi3ls6SRzVOCJUn4L2
-         UK7uCHX+hkMplYWAbGDYESPogoM1STTntsv/hLIP5MIfzQfAXSJ9BMOpnqYG+GI3Km
-         sWanwGt2AHC+aarmUJZ0gLVocYX7o4gBHwAjRJzE=
-Received: from DLEE104.ent.ti.com (dlee104.ent.ti.com [157.170.170.34])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 10CNir7Y069494
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 12 Jan 2021 17:44:53 -0600
-Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE104.ent.ti.com
- (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 12
- Jan 2021 17:44:52 -0600
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Tue, 12 Jan 2021 17:44:53 -0600
-Received: from [10.250.64.103] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 10CNiqCU019337;
-        Tue, 12 Jan 2021 17:44:53 -0600
-Subject: Re: [EXTERNAL] [bug report] power: supply: bq256xx: Introduce the
- BQ256XX charger driver
-To:     Dan Carpenter <dan.carpenter@oracle.com>
-CC:     <linux-pm@vger.kernel.org>
-References: <X/1jy5+2elOl3Lm8@mwanda>
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Message-ID: <d0a0fccf-d7c5-c5a4-c4f0-68a8a01b7c34@ti.com>
-Date:   Tue, 12 Jan 2021 17:44:52 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1725890AbhAMCep (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Jan 2021 21:34:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53030 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725843AbhAMCep (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2021 21:34:45 -0500
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E7FEC061575
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2021 18:34:04 -0800 (PST)
+Received: by mail-pl1-x62b.google.com with SMTP id s15so228215plr.9
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2021 18:34:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=suL/CDhJ5J0e33aS880Tja/HdCZZi4bFgOMZKkQ26j8=;
+        b=01yMqNrXT5Br39Gp/RrCLThEEM8zUfiuTXzsiIQ1O6//YWWlQ54Bb3b3dy7NOCOuRj
+         fOCHU2E/P5JNTY5yLIi7NY4jSFQz4IO6AP4WgxZTl+w32sD5fwEmpmPB79Y0GYhQZEhV
+         jloI9tA/DDVAcx5U8n8E8iAdbqnIcj9Xa16yzz0IxMtBriSsVFFqsQb8waoSBorIJ5T6
+         oRP+wo4zwOSRsmHAADVL5qXA9C2bzYs4/76Y455niwk7acFRmBVKS5yLdKix8E7AEN5R
+         w3oDExzdmhP+Y+hTXTkXgqSl3VLsFJy8m5y+6eBnpYo/gtdPJlpLVHkWF1HoTkf2Xj2+
+         KUng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=suL/CDhJ5J0e33aS880Tja/HdCZZi4bFgOMZKkQ26j8=;
+        b=AhOHjgENfEwWQheIPGRyPGrbcP12xbzYOBcNbhIcrfW+MgipPvbL4N1McUsg6wmRZu
+         r/RA43EDNZy/422Mhm2GSUlvj4T96dGH1k7ww8ez2wf68dSagPWS9K0epuKA9GJk8yUN
+         2olYl9KYzExlTj43MZehUwAfZsIahB7kKLwOGJswHKfaIoClSqxmOIG4XcObw4Qtt5wm
+         CxDyzduCO5RFJkL7gZIb2QdhefG99p/V6627dUCLCiWhKxEgxpWCWxbixux5UNMxhwPE
+         l0RkuOqjiqk2ZEq82tkFefxgsM4915vR5CdF15U4gDszHozS8aoWBf6/ijCEApkVyZup
+         B/FA==
+X-Gm-Message-State: AOAM532rh9oikfc8Q0ko1f4g7Fu6tmBDn7m5Z/PPz7OdP0MvDCX1oAP7
+        0q98m0xDZeLx5RWZoX7Nluw3xw==
+X-Google-Smtp-Source: ABdhPJwM+Rk1/NxantYdzfjT2rbioeRP6Pl5SWYzV3zJc2IIM0VLSkQDwPrd1v43mifOzC60whINuQ==
+X-Received: by 2002:a17:90a:c203:: with SMTP id e3mr231963pjt.8.1610505244082;
+        Tue, 12 Jan 2021 18:34:04 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id z3sm469944pfq.89.2021.01.12.18.34.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 Jan 2021 18:34:03 -0800 (PST)
+Message-ID: <5ffe5c1b.1c69fb81.5aadf.1c2d@mx.google.com>
+Date:   Tue, 12 Jan 2021 18:34:03 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <X/1jy5+2elOl3Lm8@mwanda>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.11-rc3-12-g8cbb6cfa9b8e
+X-Kernelci-Report-Type: build
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 1 warning (v5.11-rc3-12-g8cbb6cfa9b8e)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dan,
+pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.11-rc3-12-g8c=
+bb6cfa9b8e)
 
-On 1/12/21 2:54 AM, Dan Carpenter wrote:
-> Hello Ricardo Rivera-Matos,
->
-> The patch 32e4978bb920: "power: supply: bq256xx: Introduce the
-> BQ256XX charger driver" from Jan 6, 2021, leads to the following
-> static checker warning:
->
-> 	drivers/power/supply/bq256xx_charger.c:1512 bq256xx_hw_init()
-> 	error: buffer overflow 'bq256xx_watchdog_time' 8 <= 8
->
-> drivers/power/supply/bq256xx_charger.c
->    1503  static int bq256xx_hw_init(struct bq256xx_device *bq)
->    1504  {
->    1505          struct power_supply_battery_info bat_info = { };
->    1506          int wd_reg_val = BQ256XX_WATCHDOG_DIS;
->    1507          int ret = 0;
->    1508          int i;
->    1509
->    1510          for (i = 0; i < BQ256XX_NUM_WD_VAL; i++) {
->    1511                  if (bq->watchdog_timer > bq256xx_watchdog_time[i] &&
->    1512                      bq->watchdog_timer < bq256xx_watchdog_time[i + 1])
->                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> The last four members of this array are all zero.
-ACK, BQ256XX_NUM_WD_VAL should actually be 4 instead of 8
->
-> On the last iteration through the loop this will read beyond the end of
-> the array possibly setting "wd_reg_val = 7" uninitentionally.
-ACK, bq256xx_parse_dt() will clamp bq->watchdog_timer so then in 
-bq256xx_hw_init()
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+11-rc3-12-g8cbb6cfa9b8e/
 
-     for (i = 0; i < BQ256XX_NUM_WD_VAL; i++) {
-         if (bq->watchdog_timer == bq256xx_watchdog_time[i]) {
-             wd_reg_val = i;
-             break;
-         }
-         if (bq->watchdog_timer > bq256xx_watchdog_time[i] &&
-             bq->watchdog_timer < bq256xx_watchdog_time[i + 1])
-             wd_reg_val = i;
-     }
+Tree: pm
+Branch: testing
+Git Describe: v5.11-rc3-12-g8cbb6cfa9b8e
+Git Commit: 8cbb6cfa9b8ef84f97642e04038e571673f6ffe4
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
-The first if will catch the exact matches and the second if will catch 
-the "in-betweens" and round down. The final iteration will always fall 
-into the first if statement and break.
+Warnings Detected:
 
->
->    1513                          wd_reg_val = i;
->    1514          }
->    1515          ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_1,
->    1516                                   BQ256XX_WATCHDOG_MASK, wd_reg_val <<
->    1517                                                  BQ256XX_WDT_BIT_SHIFT);
->
-> regards,
-> dan carpenter
-Ricardo
+arc:
+
+arm64:
+
+arm:
+    multi_v7_defconfig (gcc-8): 1 warning
+
+i386:
+
+mips:
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    1    drivers/pinctrl/nomadik/pinctrl-nomadik.c:952:8: warning: unused v=
+ariable =E2=80=98wake=E2=80=99 [-Wunused-variable]
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    drivers/pinctrl/nomadik/pinctrl-nomadik.c:952:8: warning: unused variab=
+le =E2=80=98wake=E2=80=99 [-Wunused-variable]
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---
+For more info write to <info@kernelci.org>
