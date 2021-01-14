@@ -2,360 +2,168 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B513C43381
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 10:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F2E2C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 10:43:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1C4C023A52
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 10:28:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4220F23A50
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 10:43:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725982AbhANK2R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Jan 2021 05:28:17 -0500
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:57886 "EHLO
-        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726503AbhANK2R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2021 05:28:17 -0500
-Received: from pps.filterd (m0045851.ppops.net [127.0.0.1])
-        by mx0b-0016f401.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 10EAPAHO015418;
-        Thu, 14 Jan 2021 02:27:30 -0800
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marvell.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=pfpt0220; bh=eFDjoveljCQQJKcxDvUtCMV2TbXj5Ak0PinCMDmx6Uk=;
- b=XQQyXTHecQaz03pF1ebSXJAnSj5+N33gz4th6aQOtBIxxSv0NO3Okf0x5MRYR+33duF2
- 99S4ceVlTz3lYDt8zC327+5AEhsFZcRcrZ/lRQjCZagsvNV56vnuBFry481xns/YIbpc
- uKXzPUt2lzNEERzYvA3o9hvE/fSIntg/ucM54u5AOoi41tXLdG78xpaMCAy0S5tZn4+Z
- ZE3WdXfg68oq7JHh+8POiYi75FgCt3qcQD+B9ghVsEARlszniCUhdwx8B9bdC9NulDPp
- eorbfKg1UdcVqZLSGzJJfoxxjltBGz2xgUzhWlnbsYB9zAyEIscoJw5hG6Zw4q6q8YUV YA== 
-Received: from dc5-exch02.marvell.com ([199.233.59.182])
-        by mx0b-0016f401.pphosted.com with ESMTP id 35ycvpxknt-5
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NOT);
-        Thu, 14 Jan 2021 02:27:30 -0800
-Received: from SC-EXCH01.marvell.com (10.93.176.81) by DC5-EXCH02.marvell.com
- (10.69.176.39) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 14 Jan
- 2021 02:26:56 -0800
-Received: from DC5-EXCH01.marvell.com (10.69.176.38) by SC-EXCH01.marvell.com
- (10.93.176.81) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 14 Jan
- 2021 02:26:55 -0800
-Received: from maili.marvell.com (10.69.176.80) by DC5-EXCH01.marvell.com
- (10.69.176.38) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 14 Jan 2021 02:26:55 -0800
-Received: from octopus.marvell.com (octopus.marvell.com [10.5.24.3])
-        by maili.marvell.com (Postfix) with ESMTP id BC8C53F7045;
-        Thu, 14 Jan 2021 02:26:52 -0800 (PST)
-From:   <kostap@marvell.com>
-To:     <linux-clk@vger.kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <mturquette@baylibre.com>,
-        <sboyd@kernel.org>, <miquel.raynal@bootlin.com>,
-        <rui.zhang@intel.com>, <daniel.lezcano@linaro.org>,
-        <amitk@kernel.org>, <mw@semihalf.com>, <jaz@semihalf.com>,
-        <nadavh@marvell.com>, <bpeled@marvell.com>, <stefanc@marvell.com>,
-        Konstantin Porotchkin <kostap@marvell.com>
-Subject: [PATCH v2 1/2] thermal: armada: ap806: use firmware SiP services for thermal operations
-Date:   Thu, 14 Jan 2021 12:26:42 +0200
-Message-ID: <20210114102643.16108-2-kostap@marvell.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210114102643.16108-1-kostap@marvell.com>
-References: <20210114102643.16108-1-kostap@marvell.com>
+        id S1727035AbhANKnI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Jan 2021 05:43:08 -0500
+Received: from esa.microchip.iphmx.com ([68.232.154.123]:5555 "EHLO
+        esa.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726822AbhANKnG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2021 05:43:06 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1610620985; x=1642156985;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-id:content-transfer-encoding:
+   mime-version;
+  bh=sXN9DbQVc/sgKaFnh/p2/p/3ilUNERt3JAO34CLinWs=;
+  b=OJUCFl4Ww+VPpmHKNjavVFurx8lCyv0VWbi8SE9uoVHS0YT2qEt+7+US
+   Bm6uPpO+wgS4Z3qYBWPWUgkvHiN1nwvj+HDuhCgjkCoVG6kSr4hmGZplh
+   zRPongmvT1RFnJmBQAvCfTrC1raJRilCUBMUdviEjyj/TglmBqndebP3Q
+   tYSFi6aM+h2WPgpttLRkRltnC3ZUkN0b4rHAdb3mBo6594A86FkHtYtmV
+   xVNa6ov4HEkQ5k2HvOcwWDdPoIVnA0ScpuAYPoWdVPka5gCdK7eDQWB6D
+   /z5hDOpfvF802SmJoV2do9rr6PojxvZsFCLZXAQ9+qWL4AF/aedY9wDie
+   Q==;
+IronPort-SDR: x3+lJNpVxUieZ1DpDoiVU/9R5lEpBsPeCRkLK/ptBSTPjt1xbFne2ezggc/DxHw1veJG3VEfwb
+ qveQIwK5E2lfWuzLqpgR5VsVpMwn1WAQSN/HzDIj0tPW7q5c5kxADS5fmj9DSlwR9GJcvyyonc
+ hjGcyQfdjNCBErULur4B3Q0q2PuGkESv3T+5Zm5x4eP23ZBkCqlStvNl7KYeuX2zL5fctG13vx
+ tqj1OD1Zu57sI1dGXWHNXBOtdkdaj4qhoxUlMMxz10iBwAUNTfLlF9s3tp4y9nvrQSgh1G2veq
+ P+g=
+X-IronPort-AV: E=Sophos;i="5.79,347,1602572400"; 
+   d="scan'208";a="40393262"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 14 Jan 2021 03:41:49 -0700
+Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1979.3; Thu, 14 Jan 2021 03:41:48 -0700
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (10.10.215.89) by
+ email.microchip.com (10.10.87.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1979.3 via Frontend
+ Transport; Thu, 14 Jan 2021 03:41:48 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=gPbao10oYZf51SQ4IYFpI84nCJjQzqMSF3p23/e6+zj2p9lITUiGTGIUuNYg87k3QQ2HrEJSnApoyRGnqiqMCAxT6rTe45J6ZnQJRf4qrLl39rhdrjqjkQ7bxgA4smYG9qoUUXQRe4K5lP09BI3/zfGjY5oc1wACsz6w0TojrRyz2NnAHFCvOJwosBj4IUZ9a6tu31H/CsjGb4dIJyMQ7Rjw4BzhGjdf2cA7sSq81cdzbhqOavzX/wHWpfZ1+/gxKV913zxj/F4j5bP2Rs6URQJ4gal/2UHAdX0lr0PfMldnTm6JXCMTEeBcY2F7noDnuavPfgXwFw5cNZPcZiW3FA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sXN9DbQVc/sgKaFnh/p2/p/3ilUNERt3JAO34CLinWs=;
+ b=Xc+Yi5zV+yFwKhZ3knoCk9Rj4TdXNY9KnyE0ZXri0FtcDUTS0EeXBvkg4PRz1ANwzdJMAQQH7msXK7iynWLn/+jAwgQwGmIK5ckTdbOQUwb4Y40k1FN3j28DKQopDQPNRI8D7E71zQip+51eFRE05VTii7eEH7i1a8e37sVVryQp5IkPNfQxXwhQLDY6skWGHuUsgp5h6elFBd7CE+IqMw2KxpoL87DZk9XcMdiJyr/s8VS/p3xE6viI6JSh0hspJUPCIUl77uvnvpwLysG/U0eNSqzM1kpzNOcNc2t6VMlTdnL1aD2EGkXwW77M6USmOp3Eu4pkooKhLO8fX9JPSg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microchip.com; dmarc=pass action=none
+ header.from=microchip.com; dkim=pass header.d=microchip.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=microchiptechnology.onmicrosoft.com;
+ s=selector2-microchiptechnology-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sXN9DbQVc/sgKaFnh/p2/p/3ilUNERt3JAO34CLinWs=;
+ b=WFZfh7134QZOfPmFKXFLcFIWW/nZCtYH5IHs3YF0cZCWOZDh0lI/IqSfshrlRS9xMlHJOEIl2VK5fixV2LBRpJCczQdbgUSQr4nfB3+iLFKewQm8qQlLBYBjWsmHCwi9aZz+WnWvQLhfNHo5mnqHybgADCS/zvrKwU+Ic9lriYs=
+Received: from DM6PR11MB3420.namprd11.prod.outlook.com (2603:10b6:5:69::31) by
+ DM5PR11MB1674.namprd11.prod.outlook.com (2603:10b6:4:b::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.3763.9; Thu, 14 Jan 2021 10:41:46 +0000
+Received: from DM6PR11MB3420.namprd11.prod.outlook.com
+ ([fe80::b96e:6776:6971:80f4]) by DM6PR11MB3420.namprd11.prod.outlook.com
+ ([fe80::b96e:6776:6971:80f4%5]) with mapi id 15.20.3763.010; Thu, 14 Jan 2021
+ 10:41:46 +0000
+From:   <Claudiu.Beznea@microchip.com>
+To:     <linux@armlinux.org.uk>
+CC:     <hkallweit1@gmail.com>, <andrew@lunn.ch>, <davem@davemloft.net>,
+        <kuba@kernel.org>, <rjw@rjwysocki.net>, <pavel@ucw.cz>,
+        <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH] net: phy: micrel: reconfigure the phy on resume
+Thread-Topic: [PATCH] net: phy: micrel: reconfigure the phy on resume
+Thread-Index: AQHW6Y6UrG2j4PiM1k2BT3XuGZuJHg==
+Date:   Thu, 14 Jan 2021 10:41:46 +0000
+Message-ID: <fe4c31a0-b807-0eb2-1223-c07d7580e1fc@microchip.com>
+References: <1610120754-14331-1-git-send-email-claudiu.beznea@microchip.com>
+ <25ec943f-ddfc-9bcd-ef30-d0baf3c6b2a2@gmail.com>
+ <ce20d4f3-3e43-154a-0f57-2c2d42752597@microchip.com>
+ <ee0fd287-c737-faa5-eee1-99ffa120540a@gmail.com>
+ <ae4e73e9-109f-fdb9-382c-e33513109d1c@microchip.com>
+ <7976f7df-c22f-d444-c910-b0462b3d7f61@gmail.com>
+ <d9fcf8da-c0b0-0f18-48e9-a7534948bc93@microchip.com>
+ <20210114102508.GO1551@shell.armlinux.org.uk>
+In-Reply-To: <20210114102508.GO1551@shell.armlinux.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+authentication-results: armlinux.org.uk; dkim=none (message not signed)
+ header.d=none;armlinux.org.uk; dmarc=none action=none
+ header.from=microchip.com;
+x-originating-ip: [82.76.227.226]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 10fe355b-c275-4dc5-5a52-08d8b878fdf6
+x-ms-traffictypediagnostic: DM5PR11MB1674:
+x-microsoft-antispam-prvs: <DM5PR11MB1674397A8C169DCDEBA4381187A80@DM5PR11MB1674.namprd11.prod.outlook.com>
+x-bypassexternaltag: True
+x-ms-oob-tlc-oobclassifiers: OLM:10000;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 1+9eqpDft6dwB+SnsrpWKtRVsoXik+GmYGxzf3gpQKCdFqWt9MG1jL59pqDGTbBck6lv12WRQ6DgGV9xz2sZX7PulxRQxRtTIbJc2hZvbRFy/nM1fM+09cxAnd1A3WQjnAzZzXNg+eOyOo39rDb5YpCKDgITj3SgHzujicqzAcjBgZQm9t0YEAzEnooaxWCwOAUPXUrvriZOnYCn/WVUgY2C1erJy5LQc776nq/Il86//kHE/G0tIDD8aklzYc2UjEjHWEcqQI73Ob2lKSCcBcBz0xkW024AcVG6ZL7PSMgvaOzH8Ha1FpfJXYtyyqAXmZp2xqhFEGvXN3fLbZ1H/PDLBZ4QbtCid2a4ntOiABO4Xlb0mwBdTy+WnEaqHhy4N1c+qp4S49bOpFAPi8VpuQZuaApJIVV/mM8kZdTjkLZm3Y8KSz0vDhpxdeM/nobVTHnPa9QMwL/L8Unv4zP0YLS9h2pKKCic5BYZORKQ7O00RB75hb9dkwqW2AKU8fICrpMguqC0WeswKy2JXBdkq3pA4sKDnAe+dcPLZSSOxM44yQfhp5cPDU0lwvdXzaB8
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR11MB3420.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(346002)(396003)(136003)(39860400002)(366004)(376002)(66946007)(66446008)(8936002)(64756008)(36756003)(186003)(66556008)(66476007)(8676002)(91956017)(76116006)(6512007)(83380400001)(53546011)(26005)(31696002)(6506007)(6486002)(4744005)(54906003)(31686004)(4326008)(478600001)(966005)(6916009)(316002)(7416002)(71200400001)(2616005)(86362001)(2906002)(5660300002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata: =?utf-8?B?L0hnVGs5aHFpYlp4cWVaM0ZLM2VJa3dudzFTZFJFV1g5Y0lMZlBOSk1EUDZ3?=
+ =?utf-8?B?bDh0MHBxcmVJNDY2V2V6dzMwZHk1SUFxNkUxNHNvTUh5ZFpjSmxuQ0t0cmNS?=
+ =?utf-8?B?TEVVK293SmF6dkNCTTV3Sm5nblF5SnUxRzBoeDdESUhrUHZYcm5WdkpkRWZi?=
+ =?utf-8?B?L3ZrTm13cW4rYld2WVhBVXUrSzVwcUdKT20wUGU5NXgrUTJNMXNBNHJqalFu?=
+ =?utf-8?B?L3VjNVZWZlBIUUNCdHRTYlR2YzJ4RlMzUThPZzUwcmxkd3RsbWkwZENuREVm?=
+ =?utf-8?B?Z1V3Z3BUMk1rZGR0UGVwZ3RqZlhDNGY3VUtKRFRFbHVhWW13Q0tjZU9NVUtz?=
+ =?utf-8?B?anl0NXY0ZFBPSnA3K1FvOUdsaDhudVNBWUgwRXp0cC9wUFczNy9TeFFwcEw4?=
+ =?utf-8?B?NXpLWTcvOGp1U3N4UjBndm45TlY3bzNZRGE5M21sTzJYa1JoTVpVZlhYZWVa?=
+ =?utf-8?B?cWk3OUtmVWxTcjdET0VrZitMTk5adkMzcnphQXZqa3ZaZDYybml0bzN4U1Az?=
+ =?utf-8?B?MHk4a1gyb0VFbEJqMjlPUEZPVlJlWCs5WWhWdXJPZGFET0NCd3pqMlJoRUFi?=
+ =?utf-8?B?eXRXaHZLSC93eFNoekRWUWRGUTNnRnUzSjYvL2hZZnJTQ3JyTFJlcHZKV1lM?=
+ =?utf-8?B?NVpJVVJ3ZktFOGxwVEJuVUh5RVJiVE90MjNvUW1ZRUg5UlRvNUtZaEhZTE14?=
+ =?utf-8?B?U25GMlpDMFZUQUpBN2VtLzZpQUk3bVluMTNITWVjSDV1QmVIem9MMDd2MlIx?=
+ =?utf-8?B?NCtXK1RuTFpDYWdhTkpxMUV5ZmJ4UkpZTmtKVmhZZlFHTGFFeTFUNnlKQUx2?=
+ =?utf-8?B?aHZkZnNFRDJ4bEJiY1NXcmoxT0JmeVZmQ01pZitqc25GdXd6eDE3eTl1eFhW?=
+ =?utf-8?B?OFN1NWxaOTZtUGNsZ3ZEeHVGekdPdW1RRHZmS2JlTEw1cWhNaTZMRTc4UnZw?=
+ =?utf-8?B?OGRFQTFvMlRuOFZzWlNaclR5RDJ4NmFiRGN3YUZXdnlwY2c3ZFIvYVAyTjRC?=
+ =?utf-8?B?eGJBZjFlL0FvOTRLdldPaDUxbHZsOGd2WWR1RDRWcG1zQ3ZnbXZlM1h5Y283?=
+ =?utf-8?B?NlFvUnNTSXRjSkFUYXRWZm1heTlWZzhoM1pWQXFRb0VQZE4vNWtZc3BWY3hq?=
+ =?utf-8?B?QVhIVDRSeTRqUmVZSUN0UUl1ZjBUTEpDYlpuSWt2YnpKYUxnRmwzOTViV08r?=
+ =?utf-8?B?ZTdRZ29ocS9KaXkzRDdnTVlKRmNEQTVTaEZTUDc0M0N1RU5uZm5JQ2RIa3Ft?=
+ =?utf-8?B?T3R6cGNxaXZEVGlJTjFjTU80ODFoWk5lUFZFTWpkaFJPVU4vOXVDS1pqeXdF?=
+ =?utf-8?Q?URMAccFex70lLDaVkmYttzB1mnBSojB/75?=
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <0B109A135574A5448683246C753961E8@namprd11.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343,18.0.737
- definitions=2021-01-14_03:2021-01-13,2021-01-14 signatures=0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3420.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 10fe355b-c275-4dc5-5a52-08d8b878fdf6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Jan 2021 10:41:46.8112
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3f4057f3-b418-4d4e-ba84-d55b4e897d88
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: wfmWtEw5A+gJx20JuopMAZH+o1GxXOm2cjieW9Qc3eCdLK7xYoHl2q5i8DKwBwB5XbFhzJ5LPgYq5vkUJYedo7w7tJ/1SjHHT7/gAUfFysM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR11MB1674
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Grzegorz Jaszczyk <jaz@semihalf.com>
-
-This patch introduces support for ap806 thermal driver in case when SoC
-DFX region is marked as secure by the firmware. In such case accessing
-thermal registers, which are part of dfx register set, will not be
-possible from non-secure world. Due to above the ARM Trusted Firmware
-exposes thermal driver as a SiP service.  This allows Linux thermal
-driver to initialise and perform various operations on thermal sensor
-with use of SMC calls.
-
-If during ap806 thermal initialisation the SMC is unhandled (old fw
-case), fallback to regmap handling.
-
-Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-Signed-off-by: Konstantin Porotchkin <kostap@marvell.com>
----
- drivers/thermal/armada_thermal.c  | 125 +++++++++++++++++++-
- include/soc/marvell/armada8k/fw.h |  19 +++
- 2 files changed, 141 insertions(+), 3 deletions(-)
- create mode 100644 include/soc/marvell/armada8k/fw.h
-
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index c2ebfb5be4b3..ec077e834c85 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -4,6 +4,7 @@
-  *
-  * Copyright (C) 2013 Marvell
-  */
-+#include <linux/arm-smccc.h>
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/io.h>
-@@ -18,6 +19,8 @@
- #include <linux/mfd/syscon.h>
- #include <linux/regmap.h>
- #include <linux/interrupt.h>
-+#include <linux/time.h>
-+#include "soc/marvell/armada8k/fw.h"
- 
- #include "thermal_core.h"
- 
-@@ -62,6 +65,8 @@
- #define STATUS_POLL_TIMEOUT_US		100000
- #define OVERHEAT_INT_POLL_DELAY_MS	1000
- 
-+#define THERMAL_SUPPORTED_IN_FIRMWARE(priv) (priv->data->is_smc_supported)
-+
- struct armada_thermal_data;
- 
- /* Marvell EBU Thermal Sensor Dev Structure */
-@@ -111,6 +116,12 @@ struct armada_thermal_data {
- 
- 	/* One sensor is in the thermal IC, the others are in the CPUs if any */
- 	unsigned int cpu_nr;
-+
-+	/*
-+	 * Thermal sensor operations exposed as firmware SIP services and
-+	 * accessed via SMC
-+	 */
-+	bool is_smc_supported;
- };
- 
- struct armada_drvdata {
-@@ -135,6 +146,18 @@ struct armada_thermal_sensor {
- 	int id;
- };
- 
-+static int thermal_smc(u32 addr, u32 *reg, u32 val1, u32 val2)
-+{
-+	struct arm_smccc_res res;
-+
-+	arm_smccc_smc(MV_SIP_DFX, addr, val1, val2, 0, 0, 0, 0, &res);
-+
-+	if (res.a0 == 0 && reg != NULL)
-+		*reg = res.a1;
-+
-+	return res.a0;
-+}
-+
- static void armadaxp_init(struct platform_device *pdev,
- 			  struct armada_thermal_priv *priv)
- {
-@@ -206,6 +229,27 @@ static void armada375_init(struct platform_device *pdev,
- static int armada_wait_sensor_validity(struct armada_thermal_priv *priv)
- {
- 	u32 reg;
-+	int ret;
-+	ktime_t timeout;
-+
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		timeout = ktime_add_us(ktime_get(), STATUS_POLL_TIMEOUT_US);
-+		do {
-+			ret = thermal_smc(MV_SIP_DFX_THERMAL_IS_VALID,
-+					  &reg, 0, 0);
-+			if (ret || reg)
-+				break;
-+
-+			usleep_range((STATUS_POLL_PERIOD_US >> 2) + 1,
-+				     STATUS_POLL_PERIOD_US);
-+
-+		} while (ktime_before(ktime_get(), timeout));
-+
-+		if (ret == SMCCC_RET_SUCCESS)
-+			return reg ? 0 : -ETIMEDOUT;
-+
-+		return ret;
-+	}
- 
- 	return regmap_read_poll_timeout(priv->syscon,
- 					priv->data->syscon_status_off, reg,
-@@ -238,6 +282,22 @@ static void armada_ap806_init(struct platform_device *pdev,
- {
- 	struct armada_thermal_data *data = priv->data;
- 	u32 reg;
-+	int ret;
-+
-+	/*
-+	 * The ap806 thermal sensor registers are part of DFX which is secured
-+	 * by latest firmware, therefore accessing relevant registers from
-+	 * not-secure world will not be possible. In that case Arm Trusted
-+	 * Firmware exposes thermal operations as firmware run-time service. If
-+	 * SMC initialization succeeds, perform other thermal operations using
-+	 * SMC, otherwise (old fw case) fallback to regmap handling.
-+	 */
-+	ret = thermal_smc(MV_SIP_DFX_THERMAL_INIT, 0x0, 0, 0);
-+	if (ret == SMCCC_RET_SUCCESS) {
-+		dev_info(&pdev->dev, "firmware support\n");
-+		THERMAL_SUPPORTED_IN_FIRMWARE(priv) = true;
-+		return;
-+	}
- 
- 	regmap_read(priv->syscon, data->syscon_control0_off, &reg);
- 	reg &= ~CONTROL0_TSEN_RESET;
-@@ -274,11 +334,17 @@ static void armada_cp110_init(struct platform_device *pdev,
- 
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
-+	int ret;
- 	u32 reg;
- 
- 	if (!priv->data->is_valid_bit)
- 		return true;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		ret = thermal_smc(MV_SIP_DFX_THERMAL_IS_VALID, &reg, 0, 0);
-+		return ret ? false : reg;
-+	}
-+
- 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
- 
- 	return reg & priv->data->is_valid_bit;
-@@ -324,6 +390,7 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- {
- 	struct armada_thermal_data *data = priv->data;
- 	u32 ctrl0;
-+	int ret;
- 
- 	if (channel < 0 || channel > priv->data->cpu_nr)
- 		return -EINVAL;
-@@ -331,6 +398,16 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- 	if (priv->current_channel == channel)
- 		return 0;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		ret = thermal_smc(MV_SIP_DFX_THERMAL_SEL_CHANNEL,
-+				  NULL, channel, 0);
-+		if (ret)
-+			return ret;
-+
-+		priv->current_channel = channel;
-+		goto is_valid;
-+	}
-+
- 	/* Stop the measurements */
- 	regmap_read(priv->syscon, data->syscon_control0_off, &ctrl0);
- 	ctrl0 &= ~CONTROL0_TSEN_START;
-@@ -357,6 +434,7 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- 	ctrl0 |= CONTROL0_TSEN_START;
- 	regmap_write(priv->syscon, data->syscon_control0_off, ctrl0);
- 
-+is_valid:
- 	/*
- 	 * The IP has a latency of ~15ms, so after updating the selected source,
- 	 * we must absolutely wait for the sensor validity bit to ensure we read
-@@ -376,6 +454,9 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, int *temp)
- 	u32 reg, div;
- 	s64 sample, b, m;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv))
-+		return thermal_smc(MV_SIP_DFX_THERMAL_READ, temp, 0, 0);
-+
- 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
- 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
- 	if (priv->data->signed_sample)
-@@ -559,7 +640,13 @@ static irqreturn_t armada_overheat_isr_thread(int irq, void *blob)
- 			goto enable_irq;
- 	} while (temperature >= low_threshold);
- 
--	regmap_read(priv->syscon, priv->data->dfx_irq_cause_off, &dummy);
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		if (thermal_smc(MV_SIP_DFX_THERMAL_IRQ, 0, 0, 0))
-+			return IRQ_NONE;
-+	} else {
-+		regmap_read(priv->syscon, priv->data->dfx_irq_cause_off,
-+			    &dummy);
-+	}
- 
- 	/* Notify the thermal core that the temperature is acceptable again */
- 	thermal_zone_device_update(priv->overheat_sensor,
-@@ -772,6 +859,27 @@ static void armada_set_sane_name(struct platform_device *pdev,
- 	} while (insane_char);
- }
- 
-+/*
-+ * Let the firmware configure the thermal overheat threshold, hysteresis and
-+ * enable overheat interrupt
-+ */
-+static int armada_fw_overheat_settings(struct armada_thermal_priv *priv,
-+				       int thresh_mc, int hyst_mc)
-+{
-+	int ret;
-+
-+	ret = thermal_smc(MV_SIP_DFX_THERMAL_THRESH, NULL, thresh_mc, hyst_mc);
-+	if (ret)
-+		return ret;
-+
-+	if (thresh_mc >= 0)
-+		priv->current_threshold = thresh_mc;
-+	if (hyst_mc >= 0)
-+		priv->current_hysteresis = hyst_mc;
-+
-+	return 0;
-+}
-+
- /*
-  * The IP can manage to trigger interrupts on overheat situation from all the
-  * sensors. However, the interrupt source changes along with the last selected
-@@ -803,11 +911,22 @@ static int armada_configure_overheat_int(struct armada_thermal_priv *priv,
- 	if (ret)
- 		return ret;
- 
-+	priv->overheat_sensor = tz;
-+	priv->interrupt_source = sensor_id;
-+
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		/*
-+		 * When thermal supported in firmware the configuring overheat
-+		 * threshold and enabling overheat interrupt is done in one
-+		 * step.
-+		 */
-+		return armada_fw_overheat_settings(priv, trips[i].temperature,
-+						   trips[i].hysteresis);
-+	}
-+
- 	armada_set_overheat_thresholds(priv,
- 				       trips[i].temperature,
- 				       trips[i].hysteresis);
--	priv->overheat_sensor = tz;
--	priv->interrupt_source = sensor_id;
- 
- 	armada_enable_overheat_interrupt(priv);
- 
-diff --git a/include/soc/marvell/armada8k/fw.h b/include/soc/marvell/armada8k/fw.h
-new file mode 100644
-index 000000000000..2a80f26cbf6f
---- /dev/null
-+++ b/include/soc/marvell/armada8k/fw.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2019 Marvell International Ltd.
-+ */
-+
-+#ifndef _SOC_MARVELL_ARMADA8K_FW_H
-+#define _SOC_MARVELL_ARMADA8K_FW_H
-+
-+/* FW related definitions */
-+#define MV_SIP_DFX			0x82000014
-+
-+#define MV_SIP_DFX_THERMAL_INIT		1
-+#define MV_SIP_DFX_THERMAL_READ		2
-+#define MV_SIP_DFX_THERMAL_IS_VALID	3
-+#define MV_SIP_DFX_THERMAL_IRQ		4
-+#define MV_SIP_DFX_THERMAL_THRESH	5
-+#define MV_SIP_DFX_THERMAL_SEL_CHANNEL	6
-+
-+#endif /* _SOC_MARVELL_ARMADA8K_FW_H */
--- 
-2.17.1
-
+DQoNCk9uIDE0LjAxLjIwMjEgMTI6MjUsIFJ1c3NlbGwgS2luZyAtIEFSTSBMaW51eCBhZG1pbiB3
+cm90ZToNCj4gDQo+IEFzIEkndmUgc2FpZCwgaWYgcGh5bGliL1BIWSBkcml2ZXIgaXMgbm90IHJl
+c3RvcmluZyB0aGUgc3RhdGUgb2YgdGhlDQo+IFBIWSBvbiByZXN1bWUgZnJvbSBzdXNwZW5kLXRv
+LXJhbSwgdGhlbiB0aGF0J3MgYW4gaXNzdWUgd2l0aCBwaHlsaWINCj4gYW5kL29yIHRoZSBwaHkg
+ZHJpdmVyLg0KDQpJbiB0aGUgcGF0Y2ggSSBwcm9wb3NlZCBpbiB0aGlzIHRocmVhZCB0aGUgcmVz
+dG9yaW5nIGlzIGRvbmUgaW4gUEhZIGRyaXZlci4NCkRvIHlvdSB0aGluayBJIHNob3VsZCBjb250
+aW51ZSB0aGUgaW52ZXN0aWdhdGlvbiBhbmQgY2hlY2sgaWYgc29tZXRoaW5nDQpzaG91bGQgYmUg
+ZG9uZSBmcm9tIHRoZSBwaHlsaWIgaXRzZWxmPw0KDQpUaGFuayB5b3UsDQpDbGF1ZGl1IEJlem5l
+YQ0KDQo+IA0KPiAtLQ0KPiBSTUsncyBQYXRjaCBzeXN0ZW06IGh0dHBzOi8vd3d3LmFybWxpbnV4
+Lm9yZy51ay9kZXZlbG9wZXIvcGF0Y2hlcy8NCj4gRlRUUCBpcyBoZXJlISA0ME1icHMgZG93biAx
+ME1icHMgdXAuIERlY2VudCBjb25uZWN0aXZpdHkgYXQgbGFzdCENCj4g
