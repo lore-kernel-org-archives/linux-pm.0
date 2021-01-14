@@ -2,423 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9380DC43381
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 02:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6D2FC433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 04:59:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5B93623343
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 02:16:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 83F97238E9
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 04:59:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727306AbhANCPo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Jan 2021 21:15:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41458 "EHLO
+        id S1726845AbhANE7J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Jan 2021 23:59:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55216 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729079AbhAMVVI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 16:21:08 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B2CBC061575;
-        Wed, 13 Jan 2021 13:20:27 -0800 (PST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id A7BE41F450C7
-Received: by earth.universe (Postfix, from userid 1000)
-        id D41A73C0C94; Wed, 13 Jan 2021 22:20:23 +0100 (CET)
-Date:   Wed, 13 Jan 2021 22:20:23 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 5/7] power: reset: Add poweroff driver for ATC260x
- PMICs
-Message-ID: <20210113212023.5pqk5dlzs4qd6xat@earth.universe>
-References: <cover.1610534765.git.cristian.ciocaltea@gmail.com>
- <466a2ad571343fdcb3061af6996091a787c9568e.1610534765.git.cristian.ciocaltea@gmail.com>
+        with ESMTP id S1726612AbhANE7I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2021 23:59:08 -0500
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F4F4C061575
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jan 2021 20:58:22 -0800 (PST)
+Received: by mail-pf1-x42a.google.com with SMTP id 11so2662634pfu.4
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jan 2021 20:58:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=pj7+cBEgJXtMaQZzh3Z5M/qdd4smvWQjfRymnLpNJDE=;
+        b=OTqEl53tlZIfTcY6c6ogIn6A/A5YR8Y1PMMhxyNO6pYF+mFBSkEX2+xbZRn040Dnha
+         YZMStQBY1cay6decowTVBFjzhaa4nNnFmONpXeJ3Ip7ncrbp7LqbM3jeyHjIQVBcCURH
+         OTqIIKehZ/Ivd8qs8NHFXrH54BP6+waVyWJ6kn9A7lTofRaC9zUg/HSUgmGOr1dYyHlb
+         NreRWe8fjyutBWpLl3WcJNXPRvY6XF/afU4c27IJ1nTmnZFKMfTu7Eza4xYhqPAxRpwQ
+         gsepjva9wc78cBOzpEb5yVFypgb6hze0/4zqD3QxWWlJLTs3l7WgDGLfKuxa+LnN3I/q
+         72xg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=pj7+cBEgJXtMaQZzh3Z5M/qdd4smvWQjfRymnLpNJDE=;
+        b=JtVelK8ncKulRdxTDbDj5S11YSR2PDZFJSlOaNpTKsgvDp/dPSX1h6RDs1HpQhIJx5
+         LRMJyx/UE7sMgmuk6P/xebTDdaotA8DJUzNUGJrbPW95DE2nj8ebFC/iU8YD3GfeZhgU
+         JXy0BJ+wHoz/NsxcFxxoazmLU4SunFEeOA/GXUDR3B5uupZNsLBn6y9Pf8VdnNMoiBEV
+         zfyU+Rho3r6zgU0WUddkE0UuuVlY1lbSPC9MluiqVnBkBX1S0jkxO/mDRmPakyb1Ii2q
+         5hAYI/WZXtjvHc4L+zA1GWIavOseJlX1D9btEK0IuHIZJ1L+eOfVaPejUn/TqwqkfL9v
+         b3iA==
+X-Gm-Message-State: AOAM530btYQwfo60QpseYtuRGFLD6pHDYbm991Z8aTWxaKip9amKBcE4
+        qiFb0gzE538xNvToIzjvoWzKog==
+X-Google-Smtp-Source: ABdhPJwCm/dwbUIScsf1C9L4ZGYnnv2zRUj6lm0DFn9Y/Pv2L3hwsFwVrHcrgxReyH107F0pQ3jFTQ==
+X-Received: by 2002:a63:c501:: with SMTP id f1mr5563244pgd.1.1610600301891;
+        Wed, 13 Jan 2021 20:58:21 -0800 (PST)
+Received: from localhost ([122.172.85.111])
+        by smtp.gmail.com with ESMTPSA id f24sm4109293pjj.5.2021.01.13.20.58.20
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 13 Jan 2021 20:58:20 -0800 (PST)
+Date:   Thu, 14 Jan 2021 10:28:18 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
+        Shawn Guo <shawn.guo@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Andy Gross <agross@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: qcom-hw: add missing devm_release_mem_region()
+ call
+Message-ID: <20210114045818.d3qu6jpekjol7ch2@vireshk-i7>
+References: <20210112095236.20515-1-shawn.guo@linaro.org>
+ <X/210llTiuNt3haG@builder.lan>
+ <20210113043143.y45mmnw3e2kjkxnl@vireshk-i7>
+ <X/5+GbueKg66DoEE@builder.lan>
+ <20210113050651.q2txref3d6bifrf3@vireshk-i7>
+ <cbd4fb28-24b8-9aa7-fe5f-24571ef6258d@somainline.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="myf3sar6iguaxnb7"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466a2ad571343fdcb3061af6996091a787c9568e.1610534765.git.cristian.ciocaltea@gmail.com>
+In-Reply-To: <cbd4fb28-24b8-9aa7-fe5f-24571ef6258d@somainline.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 13-01-21, 23:12, AngeloGioacchino Del Regno wrote:
+> Sorry, are you sure that the eventual fix shouldn't be rebased on top of my
+> change (12014503) [1] that is enabling CPU scaling for all of the platforms
+> that aren't getting the OSM set-up entirely by the TZ/bootloader?
+> It's a pretty big series, that I've rebased 3 times already...
+> 
+> [1]: https://patchwork.kernel.org/project/linux-arm-msm/patch/20210112182052.481888-15-angelogioacchino.delregno@somainline.org/
 
---myf3sar6iguaxnb7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I am waiting for someone from Qcom background to review the stuff, perhaps Bjorn
+or someone else as it is a big change.
 
-Hi,
+Second, the fixes never get rebased on new stuff as they also need to make it to
+stable kernels and current Linux release instead of the next one.
 
-On Wed, Jan 13, 2021 at 01:05:55PM +0200, Cristian Ciocaltea wrote:
-> This driver provides poweroff and reboot support for a system through
-> the ATC2603C and ATC2609A chip variants of the Actions Semi ATC260x
-> family of PMICs.
->=20
-> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-> ---
+So, this fix will go first irrespective of the timeframe when it was posted.
 
-Thanks, queued to power-supply's for-next branch.
+Thanks Angelo.
 
--- Sebastian
-
-> Changes in v5:
->  - Drop unneeded '#include <linux/of.h>'
->=20
-> Changes in v4:
->  - None
->=20
-> Changes in v3:
->  - Removed the unnecessary driver compatibles
->=20
->  drivers/power/reset/Kconfig            |   8 +-
->  drivers/power/reset/Makefile           |   1 +
->  drivers/power/reset/atc260x-poweroff.c | 262 +++++++++++++++++++++++++
->  3 files changed, 270 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/power/reset/atc260x-poweroff.c
->=20
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index b22c4fdb2561..1737e227b16e 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -39,6 +39,13 @@ config POWER_RESET_AT91_SAMA5D2_SHDWC
->  	  This driver supports the alternate shutdown controller for some Atmel
->  	  SAMA5 SoCs. It is present for example on SAMA5D2 SoC.
-> =20
-> +config POWER_RESET_ATC260X
-> +	tristate "Actions Semi ATC260x PMIC power-off driver"
-> +	depends on MFD_ATC260X
-> +	help
-> +	  This driver provides power-off and restart support for a system
-> +	  through Actions Semi ATC260x series PMICs.
-> +
->  config POWER_RESET_AXXIA
->  	bool "LSI Axxia reset driver"
->  	depends on ARCH_AXXIA
-> @@ -292,4 +299,3 @@ config NVMEM_REBOOT_MODE
->  	  action according to the mode.
-> =20
->  endif
-> -
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index 9dc49d3a57ff..b4601c0a96ed 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -3,6 +3,7 @@ obj-$(CONFIG_POWER_RESET_AS3722) +=3D as3722-poweroff.o
->  obj-$(CONFIG_POWER_RESET_AT91_POWEROFF) +=3D at91-poweroff.o
->  obj-$(CONFIG_POWER_RESET_AT91_RESET) +=3D at91-reset.o
->  obj-$(CONFIG_POWER_RESET_AT91_SAMA5D2_SHDWC) +=3D at91-sama5d2_shdwc.o
-> +obj-$(CONFIG_POWER_RESET_ATC260X) +=3D atc260x-poweroff.o
->  obj-$(CONFIG_POWER_RESET_AXXIA) +=3D axxia-reset.o
->  obj-$(CONFIG_POWER_RESET_BRCMKONA) +=3D brcm-kona-reset.o
->  obj-$(CONFIG_POWER_RESET_BRCMSTB) +=3D brcmstb-reboot.o
-> diff --git a/drivers/power/reset/atc260x-poweroff.c b/drivers/power/reset=
-/atc260x-poweroff.c
-> new file mode 100644
-> index 000000000000..98f20251a6d1
-> --- /dev/null
-> +++ b/drivers/power/reset/atc260x-poweroff.c
-> @@ -0,0 +1,262 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * Poweroff & reset driver for Actions Semi ATC260x PMICs
-> + *
-> + * Copyright (c) 2020 Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-> + */
-> +
-> +#include <linux/delay.h>
-> +#include <linux/mfd/atc260x/core.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/reboot.h>
-> +#include <linux/regmap.h>
-> +
-> +struct atc260x_pwrc {
-> +	struct device *dev;
-> +	struct regmap *regmap;
-> +	struct notifier_block restart_nb;
-> +	int (*do_poweroff)(const struct atc260x_pwrc *pwrc, bool restart);
-> +};
-> +
-> +/* Global variable needed only for pm_power_off */
-> +static struct atc260x_pwrc *atc260x_pwrc_data;
-> +
-> +static int atc2603c_do_poweroff(const struct atc260x_pwrc *pwrc, bool re=
-start)
-> +{
-> +	int ret, deep_sleep =3D 0;
-> +	uint reg_mask, reg_val;
-> +
-> +	/* S4-Deep Sleep Mode is NOT available for WALL/USB power */
-> +	if (!restart && !power_supply_is_system_supplied()) {
-> +		deep_sleep =3D 1;
-> +		dev_info(pwrc->dev, "Enabling S4-Deep Sleep Mode");
-> +	}
-> +
-> +	/* Update wakeup sources */
-> +	reg_val =3D ATC2603C_PMU_SYS_CTL0_ONOFF_LONG_WK_EN |
-> +		  (restart ? ATC2603C_PMU_SYS_CTL0_RESET_WK_EN
-> +			   : ATC2603C_PMU_SYS_CTL0_ONOFF_SHORT_WK_EN);
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2603C_PMU_SYS_CTL0,
-> +				 ATC2603C_PMU_SYS_CTL0_WK_ALL, reg_val);
-> +	if (ret)
-> +		dev_warn(pwrc->dev, "failed to write SYS_CTL0: %d\n", ret);
-> +
-> +	/* Update power mode */
-> +	reg_mask =3D ATC2603C_PMU_SYS_CTL3_EN_S2 | ATC2603C_PMU_SYS_CTL3_EN_S3;
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2603C_PMU_SYS_CTL3, reg_mas=
-k,
-> +				 deep_sleep ? 0 : ATC2603C_PMU_SYS_CTL3_EN_S3);
-> +	if (ret) {
-> +		dev_err(pwrc->dev, "failed to write SYS_CTL3: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Trigger poweroff / restart sequence */
-> +	reg_mask =3D restart ? ATC2603C_PMU_SYS_CTL0_RESTART_EN
-> +			   : ATC2603C_PMU_SYS_CTL1_EN_S1;
-> +	reg_val =3D restart ? ATC2603C_PMU_SYS_CTL0_RESTART_EN : 0;
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap,
-> +				 restart ? ATC2603C_PMU_SYS_CTL0 : ATC2603C_PMU_SYS_CTL1,
-> +				 reg_mask, reg_val);
-> +	if (ret) {
-> +		dev_err(pwrc->dev, "failed to write SYS_CTL%d: %d\n",
-> +			restart ? 0 : 1, ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Wait for trigger completion */
-> +	mdelay(200);
-> +
-> +	return 0;
-> +}
-> +
-> +static int atc2609a_do_poweroff(const struct atc260x_pwrc *pwrc, bool re=
-start)
-> +{
-> +	int ret, deep_sleep =3D 0;
-> +	uint reg_mask, reg_val;
-> +
-> +	/* S4-Deep Sleep Mode is NOT available for WALL/USB power */
-> +	if (!restart && !power_supply_is_system_supplied()) {
-> +		deep_sleep =3D 1;
-> +		dev_info(pwrc->dev, "Enabling S4-Deep Sleep Mode");
-> +	}
-> +
-> +	/* Update wakeup sources */
-> +	reg_val =3D ATC2609A_PMU_SYS_CTL0_ONOFF_LONG_WK_EN |
-> +		  (restart ? ATC2609A_PMU_SYS_CTL0_RESET_WK_EN
-> +			   : ATC2609A_PMU_SYS_CTL0_ONOFF_SHORT_WK_EN);
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2609A_PMU_SYS_CTL0,
-> +				 ATC2609A_PMU_SYS_CTL0_WK_ALL, reg_val);
-> +	if (ret)
-> +		dev_warn(pwrc->dev, "failed to write SYS_CTL0: %d\n", ret);
-> +
-> +	/* Update power mode */
-> +	reg_mask =3D ATC2609A_PMU_SYS_CTL3_EN_S2 | ATC2609A_PMU_SYS_CTL3_EN_S3;
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2609A_PMU_SYS_CTL3, reg_mas=
-k,
-> +				 deep_sleep ? 0 : ATC2609A_PMU_SYS_CTL3_EN_S3);
-> +	if (ret) {
-> +		dev_err(pwrc->dev, "failed to write SYS_CTL3: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Trigger poweroff / restart sequence */
-> +	reg_mask =3D restart ? ATC2609A_PMU_SYS_CTL0_RESTART_EN
-> +			   : ATC2609A_PMU_SYS_CTL1_EN_S1;
-> +	reg_val =3D restart ? ATC2609A_PMU_SYS_CTL0_RESTART_EN : 0;
-> +
-> +	ret =3D regmap_update_bits(pwrc->regmap,
-> +				 restart ? ATC2609A_PMU_SYS_CTL0 : ATC2609A_PMU_SYS_CTL1,
-> +				 reg_mask, reg_val);
-> +	if (ret) {
-> +		dev_err(pwrc->dev, "failed to write SYS_CTL%d: %d\n",
-> +			restart ? 0 : 1, ret);
-> +		return ret;
-> +	}
-> +
-> +	/* Wait for trigger completion */
-> +	mdelay(200);
-> +
-> +	return 0;
-> +}
-> +
-> +static int atc2603c_init(const struct atc260x_pwrc *pwrc)
-> +{
-> +	int ret;
-> +
-> +	/*
-> +	 * Delay transition from S2/S3 to S1 in order to avoid
-> +	 * DDR init failure in Bootloader.
-> +	 */
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2603C_PMU_SYS_CTL3,
-> +				 ATC2603C_PMU_SYS_CTL3_S2S3TOS1_TIMER_EN,
-> +				 ATC2603C_PMU_SYS_CTL3_S2S3TOS1_TIMER_EN);
-> +	if (ret)
-> +		dev_warn(pwrc->dev, "failed to write SYS_CTL3: %d\n", ret);
-> +
-> +	/* Set wakeup sources */
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2603C_PMU_SYS_CTL0,
-> +				 ATC2603C_PMU_SYS_CTL0_WK_ALL,
-> +				 ATC2603C_PMU_SYS_CTL0_HDSW_WK_EN |
-> +				 ATC2603C_PMU_SYS_CTL0_ONOFF_LONG_WK_EN);
-> +	if (ret)
-> +		dev_warn(pwrc->dev, "failed to write SYS_CTL0: %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int atc2609a_init(const struct atc260x_pwrc *pwrc)
-> +{
-> +	int ret;
-> +
-> +	/* Set wakeup sources */
-> +	ret =3D regmap_update_bits(pwrc->regmap, ATC2609A_PMU_SYS_CTL0,
-> +				 ATC2609A_PMU_SYS_CTL0_WK_ALL,
-> +				 ATC2609A_PMU_SYS_CTL0_HDSW_WK_EN |
-> +				 ATC2609A_PMU_SYS_CTL0_ONOFF_LONG_WK_EN);
-> +	if (ret)
-> +		dev_warn(pwrc->dev, "failed to write SYS_CTL0: %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static void atc260x_pwrc_pm_handler(void)
-> +{
-> +	atc260x_pwrc_data->do_poweroff(atc260x_pwrc_data, false);
-> +
-> +	WARN_ONCE(1, "Unable to power off system\n");
-> +}
-> +
-> +static int atc260x_pwrc_restart_handler(struct notifier_block *nb,
-> +					unsigned long mode, void *cmd)
-> +{
-> +	struct atc260x_pwrc *pwrc =3D container_of(nb, struct atc260x_pwrc,
-> +						 restart_nb);
-> +	pwrc->do_poweroff(pwrc, true);
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int atc260x_pwrc_probe(struct platform_device *pdev)
-> +{
-> +	struct atc260x *atc260x =3D dev_get_drvdata(pdev->dev.parent);
-> +	struct atc260x_pwrc *priv;
-> +	int ret;
-> +
-> +	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	priv->dev =3D &pdev->dev;
-> +	priv->regmap =3D atc260x->regmap;
-> +	priv->restart_nb.notifier_call =3D atc260x_pwrc_restart_handler;
-> +	priv->restart_nb.priority =3D 192;
-> +
-> +	switch (atc260x->ic_type) {
-> +	case ATC2603C:
-> +		priv->do_poweroff =3D atc2603c_do_poweroff;
-> +		ret =3D atc2603c_init(priv);
-> +		break;
-> +	case ATC2609A:
-> +		priv->do_poweroff =3D atc2609a_do_poweroff;
-> +		ret =3D atc2609a_init(priv);
-> +		break;
-> +	default:
-> +		dev_err(priv->dev,
-> +			"Poweroff not supported for ATC260x PMIC type: %u\n",
-> +			atc260x->ic_type);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (ret)
-> +		return ret;
-> +
-> +	platform_set_drvdata(pdev, priv);
-> +
-> +	if (!pm_power_off) {
-> +		atc260x_pwrc_data =3D priv;
-> +		pm_power_off =3D atc260x_pwrc_pm_handler;
-> +	} else {
-> +		dev_warn(priv->dev, "Poweroff callback already assigned\n");
-> +	}
-> +
-> +	ret =3D register_restart_handler(&priv->restart_nb);
-> +	if (ret)
-> +		dev_err(priv->dev, "failed to register restart handler: %d\n",
-> +			ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int atc260x_pwrc_remove(struct platform_device *pdev)
-> +{
-> +	struct atc260x_pwrc *priv =3D platform_get_drvdata(pdev);
-> +
-> +	if (atc260x_pwrc_data =3D=3D priv) {
-> +		pm_power_off =3D NULL;
-> +		atc260x_pwrc_data =3D NULL;
-> +	}
-> +
-> +	unregister_restart_handler(&priv->restart_nb);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver atc260x_pwrc_driver =3D {
-> +	.probe =3D atc260x_pwrc_probe,
-> +	.remove =3D atc260x_pwrc_remove,
-> +	.driver =3D {
-> +		.name =3D "atc260x-pwrc",
-> +	},
-> +};
-> +
-> +module_platform_driver(atc260x_pwrc_driver);
-> +
-> +MODULE_DESCRIPTION("Poweroff & reset driver for ATC260x PMICs");
-> +MODULE_AUTHOR("Cristian Ciocaltea <cristian.ciocaltea@gmail.com>");
-> +MODULE_LICENSE("GPL");
-> --=20
-> 2.30.0
->=20
-
---myf3sar6iguaxnb7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl//ZBcACgkQ2O7X88g7
-+prL/A//cMPbifHzEcQqrm7+8mQmURrRtgQUKY1kVr8fVAaD4fE+i2FrlUKQeZf1
-MaO950sxS4A5Yy69FMdicS7MHN/N+qiUsnLWtfe9GFlT5FzB82Qig/Bh5q4QzyAt
-5/cgcTZDv2wHpAoj/tdAogiDlRQ0G3fdCUKxXVTcfwivrvQaUOfZ3QeRhRkEhBUE
-eyDAqrJdiviX75N2v6JJ1ONYHUeomKUlIYGNo2+dpT55NG0ysdOFRfWO2gN8QcEQ
-hIrqK/aDQtV9YO52W52I0iI17LfSnsxIUUuW3fUWSFnk+Bk21aDZO4LXAHkZfqfX
-WPHa5r/oQGfvztfOv6Osjqx9RqRYRDbTCIghnKxRqon6d9SZ5xYxselO6YcQMcCV
-wRf325Z9q2sc/BIx++xggre/xqvX8dQ8hw9jldDLMPRk/amR+nMP58HE4utMl5o0
-qSHstbJXVl+hTDGbpKaeZYCVEd3vUddlUior6qR+LpW50nA1rIsAS8Ewq/RHG327
-48je5uAcaPCgRFJhTpQhMpx7EH5M3tpGeaU+3E28sv2LTOtXryMKFJPTXVuFx39y
-snGgWBIevQu4XtoDIGNzLjwtSGmH7GRp5YqdS/SCIRvkYZqQWd3ikbmtZ+FxFTNe
-QvtsViE2M+GrL/ds+UAFV/9St5u4QPl3M5aj9XEg45/YzazWAiU=
-=NlC6
------END PGP SIGNATURE-----
-
---myf3sar6iguaxnb7--
+-- 
+viresh
