@@ -2,91 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E486C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:41:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 217E0C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F1D11238EC
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:41:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8669238EC
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727274AbhANHly (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Jan 2021 02:41:54 -0500
-Received: from wnew3-smtp.messagingengine.com ([64.147.123.17]:45203 "EHLO
+        id S1726820AbhANHmP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Jan 2021 02:42:15 -0500
+Received: from wnew3-smtp.messagingengine.com ([64.147.123.17]:57343 "EHLO
         wnew3-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726806AbhANHlx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2021 02:41:53 -0500
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2021 02:41:53 EST
+        by vger.kernel.org with ESMTP id S1727184AbhANHmO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2021 02:42:14 -0500
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
-        by mailnew.west.internal (Postfix) with ESMTP id 7B3B81264;
-        Thu, 14 Jan 2021 02:34:39 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute6.internal (MEProxy); Thu, 14 Jan 2021 02:34:39 -0500
+        by mailnew.west.internal (Postfix) with ESMTP id 1FC7C12FF;
+        Thu, 14 Jan 2021 02:30:17 -0500 (EST)
+Received: from mailfrontend2 ([10.202.2.163])
+  by compute6.internal (MEProxy); Thu, 14 Jan 2021 02:30:17 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
-        from:to:cc:subject:date:message-id:mime-version
-        :content-transfer-encoding; s=fm1; bh=dDIFxzNu3vWVo+l1dCICe/VaE1
-        aaZujoPHgnsTlqRZ4=; b=qS+bqO1czqSFZqRECl8C2AwWadpiT0Q5fslkVoV0aF
-        IoYWtoUMRENXpnwKV/W40ZgTEdmUDidgpuJmY3mpVn1juNlrTk2FjqRNhxR8ZgoJ
-        3V/n97I984/IUiFJ9jxAUj4m0XhGjFblPEsmlhukVsyhPoEE/QVK+c5eGsnzfa52
-        fxcJBtjDLgzSb3O+ut5PuT7F2IBjYp2Py/2uyXCSP+ziZFv+P/InsV9OA2Y+Fmql
-        J2kQ/68WbpYVukoSbXZFDMtB5pFILFXI4HXkQv+ez4LwK9rWjVME6tBC9U/3s+w8
-        /EDYet2pP6o2ClQeG4K9kBKX7SSWAw5UX14VuTUgHseQ==
+        from:to:cc:subject:date:message-id:in-reply-to:references
+        :mime-version:content-transfer-encoding; s=fm1; bh=pl/fwFs3liZoW
+        1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=BI0LDD2GoxMjL26gyU+iOizKcSWr0
+        1HaMutMvHBoo8RpmAmvEd5+I2mdI1LSawp3yc9Qn+jSAn83FTctDSFOhqsaAVl0+
+        wpInRqcY6md7hC/95ofB3J4L/AT/f5aXAOAajvjl5z0p3KSqKLhp7A2YiuirVnm4
+        GaWBE3P+oZOvdidIvuYGuB7icYBc/IajT5Uyv6FpIH8yF1iF/7olsWq6dHy1Etp8
+        ovOOhvINwy0xQSqyEBdULtMqrKrXSFOiZnK2HDOFezcHB2AlUtHGfzCEA2sq1RQy
+        clGDtctX30+RJGqEZhnNLy8WLzAmxLhY5FhA0/VmtQV5utucv3ZHgLNiA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-transfer-encoding:date:from
-        :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
-        :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=dDIFxzNu3vWVo+l1d
-        CICe/VaE1aaZujoPHgnsTlqRZ4=; b=VWG+Zja+aD5qGDpdpQcH+Vrbq8wq0ReOU
-        RwiEmRPVhv/2pGbYp4BMTv6/YJAuA1rnK2tQzvZC5fvVuLO/QHKtoFC/1UC8lxO7
-        +2y0YWlsyJXy2oSfY8emEn7BqIFPEHiKJ9CdDW8oAavFJWInTbdbUy3ct5W0ww4w
-        TQvR7Or2I6gqX2exvnOV9BxxGShHqEs5FrtRg1H5s2OXzKE7NdCyjDL/7N2RYy/N
-        wyeLMZX/kCXsrf+fhDQGXYxt85ar9fdGepgGlzg61AH6mMCFjv+BbEd7M1V5LrZF
-        Igm/IDt8buPwmfC1ufu9iUAuWHHBCTZMrf6ajva56g9nIXij348UQ==
-X-ME-Sender: <xms:DvT_X_FW0Ir--91IHqAas9PObZ4goB4MV9l1taT6rejNugcpqfetRQ>
-    <xme:DvT_X8Wm87RgjfP2ucCbPbH6WF-YskmIWBON3ijWlnwmNa5e4VmGYP55ta_xJEG21
-    nZGvIlk753igvFE_ws>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedukedrtdeggddutdelucetufdoteggodetrfdotf
+        :in-reply-to:message-id:mime-version:references:subject:to
+        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+        fm1; bh=pl/fwFs3liZoW1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=rCg5rHjS
+        9y49OLQb0JdvrwR53IPLinRqWsQ80A+Qo1v+7bfqu6yJGieWIEGYPWhYfpy6pBki
+        PbgCf7Y+bMslx4BK6vdl6R1r3DHoXCBMdTYu6OyiKwR+U6SGSoumHjglySCVgS/H
+        V86uDCs1OtNH6Us9/CEGA5lniHXYa84ADeRI2P9Uu5wSvMuzSNweeLCf4yXj7UHZ
+        6iFr58XemHn+5SIaXGNl5R/C4DP43cExiQQQGxH/SGSACEujppYxekMzYCkK7PVv
+        GcPxx5zLJeGEXpmYf63sZWTi83GtLn3XbIsjghAA7mJpHeA7x4muW89Qc6rm5Bao
+        a7KmUDMn+QKzrA==
+X-ME-Sender: <xms:CPP_X8DgdF0W1esa_eUxLF1m6BNRaXDvJNCt56hphkDJ_jL5bBrkWg>
+    <xme:CPP_X-hNpsW0-XiCDJ0w6nROgjIwmgO5bubX0p20m0hFfyMbfudnBepH3Yo_IcD-G
+    7zh32Vl_flFuVWasEE>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedukedrtdeggddutdekucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucenucfjughrpefhvffufffkofgggfestdekredtre
-    dttdenucfhrhhomheplfhirgiguhhnucgjrghnghcuoehjihgrgihunhdrhigrnhhgsehf
-    lhihghhorghtrdgtohhmqeenucggtffrrghtthgvrhhnpefhjedtkedtueehtdeifeetke
-    evffetjeetfeegkeevgefftedvudfgleeihfdtudenucfkphepudduiedrvddvkedrkeeg
-    rddvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepjh
-    hirgiguhhnrdihrghnghesfhhlhihgohgrthdrtghomh
-X-ME-Proxy: <xmx:DvT_XxJYj36GoqLCquvvWY4BiEYgPNKcbhyVYrotAgicVWdwbS2Ryw>
-    <xmx:DvT_X9EXpL1l7qLid52MG4mre5K6rOJzM3JD_W-VYHtH2oApnS1HAg>
-    <xmx:DvT_X1WuM5vbQKjGDmWYcBCQo9ZMc0PE4A2CY_qqoKrbj0-e-aJ00w>
-    <xmx:DvT_XyhRBNUH8-C3ZyvN1m2PCrLf2vtWQalgpydZYowYnWcrHahHy-uVCtU>
+    uceurghilhhouhhtmecufedttdenucenucfjughrpefhvffufffkofgjfhgggfestdekre
+    dtredttdenucfhrhhomheplfhirgiguhhnucgjrghnghcuoehjihgrgihunhdrhigrnhhg
+    sehflhihghhorghtrdgtohhmqeenucggtffrrghtthgvrhhnpeehgfelvdeugeetheekge
+    dvgeehhfektdetteelhfefkeeuudekvedtteffteegkeenucffohhmrghinhepkhgvrhhn
+    vghlrdhorhhgnecukfhppeduudeirddvvdekrdekgedrvdenucevlhhushhtvghrufhiii
+    gvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehjihgrgihunhdrhigrnhhgsehflhih
+    ghhorghtrdgtohhm
+X-ME-Proxy: <xmx:CPP_X_nzDYu7aSe4WcCri5SV-DXdvJ4h5YuNyXF-BdvwLgaIXJEg0Q>
+    <xmx:CPP_XywDktoM2iR645hHh7G4ro15Xk4L2iy91ydtXiZIF4tJvgjTZA>
+    <xmx:CPP_XxSm2I8puEZp8SWnvM65oC9hv0Wv_-Ni8GffQZO2qf_3mGjNWw>
+    <xmx:CPP_X8fhwkPlkQmuKC-BR7b1xOSXYTdRjZ2M0X8NzDMyNSKQDIAAQFzI3To>
 Received: from strike.U-LINK.com (unknown [116.228.84.2])
-        by mail.messagingengine.com (Postfix) with ESMTPA id EA0A4240062;
-        Thu, 14 Jan 2021 02:34:35 -0500 (EST)
+        by mail.messagingengine.com (Postfix) with ESMTPA id 13BAA108005C;
+        Thu, 14 Jan 2021 02:30:13 -0500 (EST)
 From:   Jiaxun Yang <jiaxun.yang@flygoat.com>
-To:     linux-acpi@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, rjw@rjwysocki.net, hdegoede@redhat.com,
+To:     linux-acpi@vger-kernel.org
+Cc:     hdegoede@redhat.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
         Jiaxun Yang <jiaxun.yang@flygoat.com>
-Subject: [PATCH RESEND 0/2] ACPI: platform-profile enhancements
-Date:   Thu, 14 Jan 2021 15:34:27 +0800
-Message-Id: <20210114073429.176462-1-jiaxun.yang@flygoat.com>
+Subject: [PATCH 1/2] ACPI: platform-profile: Drop const qualifier for cur_profile
+Date:   Thu, 14 Jan 2021 15:30:03 +0800
+Message-Id: <20210114073004.174502-2-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210114073004.174502-1-jiaxun.yang@flygoat.com>
+References: <20210114073004.174502-1-jiaxun.yang@flygoat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Resend as previous mail has a typo at to address.
-Replacing b417d9c7404df67b9be0104585fefb2ca8d36677 at pm/bleeding-edge.
+All planned uses of cur_profile have their platform_profile_handler
+defined as const, so just drop const qualifier here to prevent build
+error.
 
-Jiaxun Yang (2):
-  ACPI: platform-profile: Drop const qualifier for cur_profile
-  ACPI: platform-profile: Introduce object pointers to callbacks
+Link: https://lore.kernel.org/linux-acpi/5e7a4d87-52ef-e487-9cc2-8e7094beaa08@redhat.com/
+Suggested-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
+---
+ drivers/acpi/platform_profile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/acpi/platform_profile.c  | 6 +++---
- include/linux/platform_profile.h | 6 ++++--
- 2 files changed, 7 insertions(+), 5 deletions(-)
-
+diff --git a/drivers/acpi/platform_profile.c b/drivers/acpi/platform_profile.c
+index 91be50a32cc8..9dddf44b43d4 100644
+--- a/drivers/acpi/platform_profile.c
++++ b/drivers/acpi/platform_profile.c
+@@ -9,7 +9,7 @@
+ #include <linux/platform_profile.h>
+ #include <linux/sysfs.h>
+ 
+-static const struct platform_profile_handler *cur_profile;
++static struct platform_profile_handler *cur_profile;
+ static DEFINE_MUTEX(profile_lock);
+ 
+ static const char * const profile_names[] = {
 -- 
 2.30.0
 
