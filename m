@@ -5,49 +5,49 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 217E0C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 207E7C43381
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8669238EC
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C4381238E7
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Jan 2021 07:42:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726820AbhANHmP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727237AbhANHmP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 14 Jan 2021 02:42:15 -0500
-Received: from wnew3-smtp.messagingengine.com ([64.147.123.17]:57343 "EHLO
+Received: from wnew3-smtp.messagingengine.com ([64.147.123.17]:55133 "EHLO
         wnew3-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727184AbhANHmO (ORCPT
+        by vger.kernel.org with ESMTP id S1726806AbhANHmO (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2021 02:42:14 -0500
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
-        by mailnew.west.internal (Postfix) with ESMTP id 1FC7C12FF;
-        Thu, 14 Jan 2021 02:30:17 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute6.internal (MEProxy); Thu, 14 Jan 2021 02:30:17 -0500
+        by mailnew.west.internal (Postfix) with ESMTP id A2DA3132C;
+        Thu, 14 Jan 2021 02:34:41 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute6.internal (MEProxy); Thu, 14 Jan 2021 02:34:42 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
         from:to:cc:subject:date:message-id:in-reply-to:references
         :mime-version:content-transfer-encoding; s=fm1; bh=pl/fwFs3liZoW
-        1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=BI0LDD2GoxMjL26gyU+iOizKcSWr0
-        1HaMutMvHBoo8RpmAmvEd5+I2mdI1LSawp3yc9Qn+jSAn83FTctDSFOhqsaAVl0+
-        wpInRqcY6md7hC/95ofB3J4L/AT/f5aXAOAajvjl5z0p3KSqKLhp7A2YiuirVnm4
-        GaWBE3P+oZOvdidIvuYGuB7icYBc/IajT5Uyv6FpIH8yF1iF/7olsWq6dHy1Etp8
-        ovOOhvINwy0xQSqyEBdULtMqrKrXSFOiZnK2HDOFezcHB2AlUtHGfzCEA2sq1RQy
-        clGDtctX30+RJGqEZhnNLy8WLzAmxLhY5FhA0/VmtQV5utucv3ZHgLNiA==
+        1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=Vjx7eaOy1vJv654LTe33cK7wrK7ki
+        cxqh1sckvpLPILenpW40fU96MM0i5tqiJWOvH6wZXPHeGIoK89GxBsJfFvxtbrWa
+        u/ZViEotgUSHRpcx4fX9RcaHRQTPTuDUufSbW8SGpTmpB6P+yIXVya8uaCI+DsCk
+        RI++t9XnAEGt60pubaZCL9axdNvaoFT51FE9VGCyhqKbZqD5ybJhKKrY7kyL0EBL
+        k/of1r1lwdAykELA10rhhR56fnN7yaBi2KVfKIeviIlcAGhm7+pshE92rUvYiP8G
+        Tsffk34iueSsuprrt5lwKUub3OIRcirU65PsLjlNzTp2JSIfBOEDTO5uQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-transfer-encoding:date:from
         :in-reply-to:message-id:mime-version:references:subject:to
         :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm1; bh=pl/fwFs3liZoW1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=rCg5rHjS
-        9y49OLQb0JdvrwR53IPLinRqWsQ80A+Qo1v+7bfqu6yJGieWIEGYPWhYfpy6pBki
-        PbgCf7Y+bMslx4BK6vdl6R1r3DHoXCBMdTYu6OyiKwR+U6SGSoumHjglySCVgS/H
-        V86uDCs1OtNH6Us9/CEGA5lniHXYa84ADeRI2P9Uu5wSvMuzSNweeLCf4yXj7UHZ
-        6iFr58XemHn+5SIaXGNl5R/C4DP43cExiQQQGxH/SGSACEujppYxekMzYCkK7PVv
-        GcPxx5zLJeGEXpmYf63sZWTi83GtLn3XbIsjghAA7mJpHeA7x4muW89Qc6rm5Bao
-        a7KmUDMn+QKzrA==
-X-ME-Sender: <xms:CPP_X8DgdF0W1esa_eUxLF1m6BNRaXDvJNCt56hphkDJ_jL5bBrkWg>
-    <xme:CPP_X-hNpsW0-XiCDJ0w6nROgjIwmgO5bubX0p20m0hFfyMbfudnBepH3Yo_IcD-G
-    7zh32Vl_flFuVWasEE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedukedrtdeggddutdekucetufdoteggodetrfdotf
+        fm1; bh=pl/fwFs3liZoW1v6PYB/hJz7Z5at8pyDDKPnWlYHs1U=; b=m4+3rHxg
+        q3fjYVSNPIXoHSYd+cwQwAxEnlVDa8Ad/BKqihP3amQStSTsrRk+KAuySHMfms1N
+        WkSocEcHJgZUo3nRL5ODSiVTzbq2XTst3iIlXYsDPMPf6lVPUtLNGK/2iBoEaHsE
+        TQ28Ikln1/iJnecSsEf1vSzCpYns702p1gs/zbfThdjDqgdu1dxEgX3vQ3IDUDe0
+        kl/7N6fyhgX3h4WLV5kPGd7TJzsPEdOuDgl+mJV37SmLXF3KfNEpJ2imTHji3EhL
+        HXwxf7MBpZMejkZysOeWZb/EzaGq0KWNqxlLpF76gjKPthv4hnBl8n9B7KgcvaHq
+        Y/P2NaKr5AFbhg==
+X-ME-Sender: <xms:EPT_X7xWW_bwgpUsq3e8NmjB3_DQm1sQhl108BG0lG25LisRa3KCKg>
+    <xme:EPT_XzTyFjpvOdoKReS-CfLLFLGBtAUuX2m3TJiS4Y30FjXrsCqWqe0VJBaSJyPYA
+    WsKaww09lUhSSweS30>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedukedrtdeggddutdelucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucenucfjughrpefhvffufffkofgjfhgggfestdekre
     dtredttdenucfhrhhomheplfhirgiguhhnucgjrghnghcuoehjihgrgihunhdrhigrnhhg
@@ -56,23 +56,23 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedukedrtdeggddutdekucetufdoteggod
     vghlrdhorhhgnecukfhppeduudeirddvvdekrdekgedrvdenucevlhhushhtvghrufhiii
     gvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehjihgrgihunhdrhigrnhhgsehflhih
     ghhorghtrdgtohhm
-X-ME-Proxy: <xmx:CPP_X_nzDYu7aSe4WcCri5SV-DXdvJ4h5YuNyXF-BdvwLgaIXJEg0Q>
-    <xmx:CPP_XywDktoM2iR645hHh7G4ro15Xk4L2iy91ydtXiZIF4tJvgjTZA>
-    <xmx:CPP_XxSm2I8puEZp8SWnvM65oC9hv0Wv_-Ni8GffQZO2qf_3mGjNWw>
-    <xmx:CPP_X8fhwkPlkQmuKC-BR7b1xOSXYTdRjZ2M0X8NzDMyNSKQDIAAQFzI3To>
+X-ME-Proxy: <xmx:EPT_X1UwsLDzCBhTqU30tesIwV7Nypc-KA8puv0UYfMrc_6sN4AwWg>
+    <xmx:EPT_X1hesA8pFRyhr1X1kDTMPPIDongoAFtWjPi8-kp06nDSh4u2aA>
+    <xmx:EPT_X9D_PqjHQH1Opg2dPoYTRYrnIo6RK3WqOPAUZoneGLNVeMU1Rw>
+    <xmx:EPT_XwM33LbnoOsinfmBgEkrYfgXliXQaWxTZFflMD0TL54749TfdvsuZKI>
 Received: from strike.U-LINK.com (unknown [116.228.84.2])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 13BAA108005C;
-        Thu, 14 Jan 2021 02:30:13 -0500 (EST)
+        by mail.messagingengine.com (Postfix) with ESMTPA id AD72D240064;
+        Thu, 14 Jan 2021 02:34:38 -0500 (EST)
 From:   Jiaxun Yang <jiaxun.yang@flygoat.com>
-To:     linux-acpi@vger-kernel.org
-Cc:     hdegoede@redhat.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
+To:     linux-acpi@vger.kernel.org
+Cc:     linux-pm@vger.kernel.org, rjw@rjwysocki.net, hdegoede@redhat.com,
         Jiaxun Yang <jiaxun.yang@flygoat.com>
-Subject: [PATCH 1/2] ACPI: platform-profile: Drop const qualifier for cur_profile
-Date:   Thu, 14 Jan 2021 15:30:03 +0800
-Message-Id: <20210114073004.174502-2-jiaxun.yang@flygoat.com>
+Subject: [PATCH RESEND 1/2] ACPI: platform-profile: Drop const qualifier for cur_profile
+Date:   Thu, 14 Jan 2021 15:34:28 +0800
+Message-Id: <20210114073429.176462-2-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210114073004.174502-1-jiaxun.yang@flygoat.com>
-References: <20210114073004.174502-1-jiaxun.yang@flygoat.com>
+In-Reply-To: <20210114073429.176462-1-jiaxun.yang@flygoat.com>
+References: <20210114073429.176462-1-jiaxun.yang@flygoat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
