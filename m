@@ -2,141 +2,231 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2FA9C433E6
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 08:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 105D3C433DB
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 09:37:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DD4B23358
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 08:51:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C44AA22A84
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 09:37:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727116AbhAOIu5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jan 2021 03:50:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47596 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726439AbhAOIu5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2021 03:50:57 -0500
-Received: from mail-io1-xd2f.google.com (mail-io1-xd2f.google.com [IPv6:2607:f8b0:4864:20::d2f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2556C061757;
-        Fri, 15 Jan 2021 00:50:16 -0800 (PST)
-Received: by mail-io1-xd2f.google.com with SMTP id u17so16782010iow.1;
-        Fri, 15 Jan 2021 00:50:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=kPMXpX5qpR3CJZ1K+xbqsLksYzchwvV9Jojvc6tLjhw=;
-        b=jRQrdRvhWftgoG6phrV/VhF0KOZLhPah28jYzmicAmueBvd1MFi3hSlwffrNn0shpM
-         ZCi8bvAtr/YhKpyNUO+wBpuU5e/ZHB48a7h6Wc4n6IObAMFkEKxlyEva+4V9xbAoQroQ
-         qPjKyCcLmL7J4ps5+25ofW+8IqNePnLfLBzmkQTJeR27Xf2odYwGABDbD62Y9xwVQCAd
-         6i6dBh5WxXHD3EaNYNGfJ/Qz1w3gFZ4E8pxVDtlCOOuxQtynifzxGKOMUmLCmPyWj4Nh
-         AI/8fd0j8LHrEB+YycTFfVW28Vzv5rGP3Ls49nTcU5T4CVYHkd6UoL9fmkQege42qQ8V
-         dyVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=kPMXpX5qpR3CJZ1K+xbqsLksYzchwvV9Jojvc6tLjhw=;
-        b=QmxJuq+MYsUoHlf0ljAiWkKY+E9IUWNxnCnyHhHiPJh8bC2eYs6OjtCdz0sB9xzh6i
-         C98Gn/9DNCwxIke6dGXOUFPuU1auS6fSvZDs+RUBLBQxHTMipFyTPQKCGAZNH5Ub4NP4
-         EoP+6zNchVZtuF7Idjdhsv1ogGqQqYl8L3QIQe0N0LPZaGmpOAQV54mEAEBzc+3LoWMR
-         GMZG+zHtBcVtKL6DDRd5Vb2CrFYkxYTorMcEsYlQfqwRUhr/nA4QzcDQKJZ6T/bG9uXi
-         8oV/mGukkXGq3r0X3g+WIhpKLbJ77MokRj0xV4cijpVGydtt9nXFhsB/fzZt9HVOe/8u
-         SedQ==
-X-Gm-Message-State: AOAM532vMwfjBoIzWgCja1u+Y6nhxmN/g4T4eGFMwE+7WNYVLOIp240y
-        2FC/svXWirovFaut1rLOH0uH+wqdGOIHSmGjcvoYnwSNT3+cqw==
-X-Google-Smtp-Source: ABdhPJxp/9Hdim39Vq4JepGKeoqre+PYKGQU0++N9W5WVVTwNmBxH7ZptHnnW74tuInQu/DuLsmMFN1qGnsB3uN5dyY=
-X-Received: by 2002:a05:6e02:1447:: with SMTP id p7mr10137889ilo.93.1610700615983;
- Fri, 15 Jan 2021 00:50:15 -0800 (PST)
-MIME-Version: 1.0
-References: <CAHKzcEPuwZFei+6RehMn1yzRD45k_xfMgGC2Ma4eeR9y5rnFow@mail.gmail.com>
- <20210114205142.GA2021118@bjorn-Precision-5520>
-In-Reply-To: <20210114205142.GA2021118@bjorn-Precision-5520>
-From:   Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Date:   Fri, 15 Jan 2021 09:49:40 +0100
-Message-ID: <CAHKzcEPcw_6XSQ5hqbgxAKY9P0MOeRo68WoWyRo27gp-FCw68g@mail.gmail.com>
-Subject: Re: Hook up a PCIe device into the thermal framework
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        id S1727696AbhAOJgx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jan 2021 04:36:53 -0500
+Received: from mga14.intel.com ([192.55.52.115]:38898 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726652AbhAOJgw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Jan 2021 04:36:52 -0500
+IronPort-SDR: aI+/has4LV6qC+eTLFm+RfnXhWSdjndiPQziv/TRwfZuAlwCaFfbl4tMkdArz6Wum7krLJfwuA
+ hJNnGeai4e4A==
+X-IronPort-AV: E=McAfee;i="6000,8403,9864"; a="177747256"
+X-IronPort-AV: E=Sophos;i="5.79,349,1602572400"; 
+   d="scan'208";a="177747256"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jan 2021 01:36:20 -0800
+IronPort-SDR: LLxmZCnZzLY8SYSKds3LuVI1ZZrZZ95+qHhkPkE3NX2b9+hJj4NHJu/xUTLnjp0GniQVrT6yu2
+ fPlD9Gt0FZSA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,349,1602572400"; 
+   d="scan'208";a="425253586"
+Received: from power-sh.sh.intel.com ([10.239.48.130])
+  by orsmga001.jf.intel.com with ESMTP; 15 Jan 2021 01:36:17 -0800
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     linux-pm@vger.kernel.org
+Cc:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        srinivas.pandruvada@linux.intel.com
+Subject: [PATCH] thermal/intel: introduce tcc cooling driver
+Date:   Fri, 15 Jan 2021 17:47:44 +0800
+Message-Id: <20210115094744.21156-1-rui.zhang@intel.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Intel processors, the core frequency can be reduced below OS request,
+when the current temperature reaches the TCC (Thermal Control Circuit)
+activation temperature.
 
-> > topology that DT modification will not work and still I have no device
-> > node.
->
-> I'm absolutely not a DT expert, but I assume that a thermal zone would
-> be associated with some resource fixed by the platform, such as a fan,
-> so I would think a thermal zone would have to be described in terms of
-> the platform physical topology, not the PCI device type.
+The default TCC activation temperature is specified by
+MSR_IA32_TEMPERATURE_TARGET. However, it can be adjusted by specifying an
+offset in degrees C, using the TCC Offset bits in the same MSR register.
 
-The thermal zone needs a temperature sensor device to read out
-temperature and also some cooling devices which are mapped to specific
-zone trips.
-In a below scenario, when TZ hists the wifi_allert0 trip it will run
-the fan but if the temp still rises it will try to dissipate the heat
-by running some actions within wifi adapter eg. switch off some
-antennas.
+This patch introduces a cooling devices driver that utilizes the TCC
+Offset feature. The bigger the current cooling state is, the lower the
+effective TCC activation temperature is, so that the processors can be
+throttled earlier before system critical overheats.
 
-[...]
-wifi_thermal: wifi-thermal {
-    thermal-sensors = <&wifi_device>;
-    trips {
-        wifi_alert0: wifi-alert0 {
-            temperature = <90000>;
-            hysteresis = <5000>;
-            type = "active";
-        };
+This patch has been tested on a KBL mobile platform.
 
-        wifi_alert1: wifi-alert1 {
-            temperature = <110000>;
-            hysteresis = <5000>;
-            type = "passive";
-        };
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/intel/Kconfig             |   8 ++
+ drivers/thermal/intel/Makefile            |   1 +
+ drivers/thermal/intel/intel_tcc_cooling.c | 128 ++++++++++++++++++++++
+ 3 files changed, 137 insertions(+)
+ create mode 100644 drivers/thermal/intel/intel_tcc_cooling.c
 
-        cooling-maps {
-            map0 {
-                 trip = <&wifi_alert0>;
-                 cooling-device = <&fan0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-            };
-            map1 {
-                 trip = <&wifi_alert1>;
-                 cooling-device = <&wifi_device THERMAL_NO_LIMIT
-THERMAL_NO_LIMIT>;
-            };
-        };
-};
-[...]
+diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+index 8025b21f43fa..67de49cc9fb4 100644
+--- a/drivers/thermal/intel/Kconfig
++++ b/drivers/thermal/intel/Kconfig
+@@ -75,3 +75,11 @@ config INTEL_PCH_THERMAL
+ 	  Enable this to support thermal reporting on certain intel PCHs.
+ 	  Thermal reporting device will provide temperature reading,
+ 	  programmable trip points and other information.
++
++config INTEL_TCC_COOLING
++	tristate "Intel TCC offset cooling Driver"
++	depends on X86
++	help
++	  Enable this to support system cooling by adjusting the effective TCC
++          activation temperature via the TCC Offset register, which is widely
++          supported on modern Intel platforms.
+diff --git a/drivers/thermal/intel/Makefile b/drivers/thermal/intel/Makefile
+index 0d9736ced5d4..40e86973f88d 100644
+--- a/drivers/thermal/intel/Makefile
++++ b/drivers/thermal/intel/Makefile
+@@ -10,3 +10,4 @@ obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) += intel_bxt_pmic_thermal.o
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
++obj-$(CONFIG_INTEL_TCC_COOLING)	+= intel_tcc_cooling.o
+diff --git a/drivers/thermal/intel/intel_tcc_cooling.c b/drivers/thermal/intel/intel_tcc_cooling.c
+new file mode 100644
+index 000000000000..aa6bbb9ba898
+--- /dev/null
++++ b/drivers/thermal/intel/intel_tcc_cooling.c
+@@ -0,0 +1,128 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * cooling device driver that activates the processor throttling by
++ * programming the TCC Offset register.
++ * Copyright (c) 2021, Intel Corporation.
++ */
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/thermal.h>
++#include <asm/cpu_device_id.h>
++
++#define TCC_SHIFT 24
++#define TCC_MASK	(0x3fULL<<24)
++#define TCC_PROGRAMMABLE	BIT(30)
++
++static struct thermal_cooling_device *tcc_cdev;
++
++static int tcc_get_max_state(struct thermal_cooling_device *cdev, unsigned long
++			     *state)
++{
++	*state = TCC_MASK >> TCC_SHIFT;
++	return 0;
++}
++
++static int tcc_offset_update(int tcc)
++{
++	u64 val;
++	int err;
++
++	err = rdmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, &val);
++	if (err)
++		return err;
++
++	val &= ~TCC_MASK;
++	val |= tcc << TCC_SHIFT;
++
++	err = wrmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, val);
++	if (err)
++		return err;
++
++	return 0;
++}
++
++static int tcc_get_cur_state(struct thermal_cooling_device *cdev, unsigned long
++			     *state)
++{
++	u64 val;
++	int err;
++
++	err = rdmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, &val);
++	if (err)
++		return err;
++
++	*state = (val & TCC_MASK) >> TCC_SHIFT;
++	return 0;
++}
++
++static int tcc_set_cur_state(struct thermal_cooling_device *cdev, unsigned long
++			     state)
++{
++	return tcc_offset_update(state);
++}
++
++static const struct thermal_cooling_device_ops tcc_cooling_ops = {
++	.get_max_state = tcc_get_max_state,
++	.get_cur_state = tcc_get_cur_state,
++	.set_cur_state = tcc_set_cur_state,
++};
++
++static const struct x86_cpu_id tcc_ids[] __initconst = {
++	X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE_L, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE_L, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_L, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(TIGERLAKE, NULL),
++	X86_MATCH_INTEL_FAM6_MODEL(TIGERLAKE_L, NULL),
++	{}
++};
++
++MODULE_DEVICE_TABLE(x86cpu, tcc_ids);
++
++static int __init tcc_cooling_init(void)
++{
++	int ret;
++	u64 val;
++	const struct x86_cpu_id *id;
++
++	int err;
++
++	id = x86_match_cpu(tcc_ids);
++	if (!id)
++		return -ENODEV;
++
++	err = rdmsrl_safe(MSR_PLATFORM_INFO, &val);
++	if (err)
++		return err;
++
++	if (!(val & TCC_PROGRAMMABLE))
++		return -ENODEV;
++
++	pr_info("Programmable TCC Offset detected\n");
++
++	tcc_cdev =
++	    thermal_cooling_device_register("TCC Offset", NULL,
++					    &tcc_cooling_ops);
++	if (IS_ERR(tcc_cdev)) {
++		ret = PTR_ERR(tcc_cdev);
++		return ret;
++	}
++	return 0;
++}
++
++module_init(tcc_cooling_init)
++
++static void __exit tcc_cooling_exit(void)
++{
++	thermal_cooling_device_unregister(tcc_cdev);
++}
++
++module_exit(tcc_cooling_exit)
++
++MODULE_DESCRIPTION("TCC offset cooling device Driver");
++MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
++MODULE_LICENSE("GPL v2");
+-- 
+2.17.1
 
-My problem is not a cooling method but the binding of the PCI device
-(it has a thermal sensor) with the thermal zone
-
-    thermal-sensors = <&wifi_device>;     // wifi_devcie does not
-exist until I will statically define it under PCI controller
-
-The point here is that defining wifi_device under the controller I
-need to reflect the PCI topology. Which is fair as DT should reflect
-the HW connection. Even if I define a wifi_device anywhere in DT and
-assuming the PCI core will search whole DT and not only subnodes of
-the controller/bridge/switch here likely comes another problem. What
-should be the key to search for the device node? PCI addresses devices
-by bus:device: function and this is known after PCI scan.
-
-To me seems that so far no one found a good way to handle thermal
-within PCI devices, so some drivers statically create TZ and handle it
-within the driver. This way, unfortunately, we lose the flexibility of
-thermal control from a system-wide perspective. WiFi adapter is not
-aware of the fan for example.
-
-/Waldek
