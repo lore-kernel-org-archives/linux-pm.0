@@ -2,304 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A370BC4321A
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 12:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2A93C4332E
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 13:00:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 814AF22473
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 12:57:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8045422473
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 13:00:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732456AbhAOMeT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jan 2021 07:34:19 -0500
-Received: from mail.kernel.org ([198.145.29.99]:41160 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387460AbhAOMeS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 15 Jan 2021 07:34:18 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id C635923403;
-        Fri, 15 Jan 2021 12:33:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1610714017;
-        bh=9rfeQFWDLHpk0C5kvAXsSj+fHByNXU8h1esp9GMVos4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=MJilnvETzTR6t/cGoOdvtTLo0x5CAD0BRgjH0fHICycRGEH2MCAGqHzV65p3XZZsb
-         MKqlhyyr66BMWmaScNXFuRN2xTIeKydT3pP/AWLLLKtUt7dle1Dl1Vwx81cCPyNEw9
-         tREKzvsiJT8zSJfgca4o49kRXAmdnHX1Kc5CLz10=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
-        Borislav Petkov <bp@suse.de>,
-        Andy Lutomirski <luto@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Josh Poimboeuf <jpoimboe@redhat.com>,
-        Juergen Gross <jgross@suse.com>,
-        Len Brown <len.brown@intel.com>, linux-arch@vger.kernel.org,
-        linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Pingfan Liu <kernelfans@gmail.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        "Steven Rostedt (VMware)" <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>, x86-ml <x86@kernel.org>,
-        xen-devel@lists.xenproject.org, Sasha Levin <sashal@kernel.org>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH 5.4 01/62] x86/asm/32: Add ENDs to some functions and relabel with SYM_CODE_*
-Date:   Fri, 15 Jan 2021 13:27:23 +0100
-Message-Id: <20210115121958.466877482@linuxfoundation.org>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210115121958.391610178@linuxfoundation.org>
-References: <20210115121958.391610178@linuxfoundation.org>
-User-Agent: quilt/0.66
-X-stable: review
-X-Patchwork-Hint: ignore
+        id S1733288AbhAONAM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jan 2021 08:00:12 -0500
+Received: from mail-oi1-f173.google.com ([209.85.167.173]:33651 "EHLO
+        mail-oi1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726137AbhAONAM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2021 08:00:12 -0500
+Received: by mail-oi1-f173.google.com with SMTP id d203so9452040oia.0;
+        Fri, 15 Jan 2021 04:59:56 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=YvhCbOA5k3IxeAVfkiAa0smIV4HU4p/9zKuQCQSUGuA=;
+        b=d3Df1OQWM7JhlLwuGGl4ks/DRfFzKHSVJJxCveRIpooutIpsA1RF3O1SJ+X+/IFt6Q
+         5UJpEkk3CWMKSWCEm1mIIPzY+A0THjxf5sY+o6h4HV6N0NVwzReGK+ff7ALudNx4A1zZ
+         OR+p2hporsTzuB1nj8UvqsYVSQT+P40CQz+xxtbNj65Posy9vId+WhKOS9tqpGSZR2lY
+         ZQ4QMo3lqGoV0ONkK376cKLXslw5FwPJuLHxn10R9r4P0pp6XI8As7MEhR2CKW6Fzq6B
+         iqxeBDmMVzLR8MhrN/QZYgOvSoAF61kyibqMykVQF1kfyq0zimwQqZeDUBjpGwUUYOIB
+         YVGA==
+X-Gm-Message-State: AOAM5328V4x0ShoFPzCKxtMhNmLvodJUq9C+qD4j6qjp9mYFExXQrKp0
+        FRydQqFk2m3hiJMtcvKGYcLIhOC1zeLm5B/xhsY=
+X-Google-Smtp-Source: ABdhPJzfeNsLfCbNEnl1Wxpov3PlygdxuZSAjP6IZbsk08NqecL/DEtG1ZxX7kxEXIO9udsCfLeE5f1LcHmC25DWG+k=
+X-Received: by 2002:aca:d6c8:: with SMTP id n191mr5229964oig.69.1610715570885;
+ Fri, 15 Jan 2021 04:59:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <2073294.4OfjquceTg@kreacher> <CAGETcx980TXe_Jur3LqpWoMwt0wG9BBvVdXfhAo3jU8-tgv=kw@mail.gmail.com>
+ <CAJZ5v0jREeXtYa8LAiLoRBG1ok66BR86MCQxrQ1WPR5qbhTKbw@mail.gmail.com> <CAGETcx-G4YQ2Og0CrpVXK3n9Re=VNQbdSt=d7MA7gzRf8D5SxA@mail.gmail.com>
+In-Reply-To: <CAGETcx-G4YQ2Og0CrpVXK3n9Re=VNQbdSt=d7MA7gzRf8D5SxA@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 15 Jan 2021 13:59:19 +0100
+Message-ID: <CAJZ5v0ganM6exWL62Pua4ETY_RNieW0JHixQZAx3ebiya94qNQ@mail.gmail.com>
+Subject: Re: [PATCH] driver core: Extend device_is_dependent()
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Stephan Gerhold <stephan@gerhold.net>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jiri Slaby <jslaby@suse.cz>
+On Thu, Jan 14, 2021 at 8:59 PM Saravana Kannan <saravanak@google.com> wrote:
+>
+> On Thu, Jan 14, 2021 at 11:38 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Thu, Jan 14, 2021 at 8:32 PM Saravana Kannan <saravanak@google.com> wrote:
+> > >
+> > > On Thu, Jan 14, 2021 at 10:41 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > >
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > When adding a new device link, device_is_dependent() is used to
+> > > > check whether or not the prospective supplier device does not
+> > > > depend on the prospective consumer one to avoid adding loops
+> > > > to the graph of device dependencies.
+> > > >
+> > > > However, device_is_dependent() does not take the ancestors of
+> > > > the target device into account, so it may not detect an existing
+> > > > reverse dependency if, for example, the parent of the target
+> > > > device depends on the device passed as its first argument.
+> > > >
+> > > > For this reason, extend device_is_dependent() to also check if
+> > > > the device passed as its first argument is an ancestor of the
+> > > > target one and return 1 if that is the case.
+> > > >
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > Reported-by: Stephan Gerhold <stephan@gerhold.net>
+> > > > ---
+> > > >  drivers/base/core.c |   12 +++++++++++-
+> > > >  1 file changed, 11 insertions(+), 1 deletion(-)
+> > > >
+> > > > Index: linux-pm/drivers/base/core.c
+> > > > ===================================================================
+> > > > --- linux-pm.orig/drivers/base/core.c
+> > > > +++ linux-pm/drivers/base/core.c
+> > > > @@ -208,6 +208,16 @@ int device_links_read_lock_held(void)
+> > > >  #endif
+> > > >  #endif /* !CONFIG_SRCU */
+> > > >
+> > > > +static bool device_is_ancestor(struct device *dev, struct device *target)
+> > > > +{
+> > > > +       while (target->parent) {
+> > > > +               target = target->parent;
+> > > > +               if (dev == target)
+> > > > +                       return true;
+> > > > +       }
+> > > > +       return false;
+> > > > +}
+> > > > +
+> > > >  /**
+> > > >   * device_is_dependent - Check if one device depends on another one
+> > > >   * @dev: Device to check dependencies for.
+> > > > @@ -221,7 +231,7 @@ int device_is_dependent(struct device *d
+> > > >         struct device_link *link;
+> > > >         int ret;
+> > > >
+> > > > -       if (dev == target)
+> > > > +       if (dev == target || device_is_ancestor(dev, target))
+> > > >                 return 1;
+> > > >
+> > > >         ret = device_for_each_child(dev, target, device_is_dependent);
+> > > >
+> > >
+> > > The code works, but it's not at all obvious what it's doing. Because,
+> > > at first glance, it's easy to mistakenly think that it's trying to
+> > > catch this case:
+> > > dev <- child1 <- child2 <- target
+> > >
+> > > Maybe it's clearer if we do this check inside the loop?
+> >
+> > Which of the loops do you mean?
+>
+> Sorry, the list of consumers loop.
+>
+> > There are two of them and both need
+> > to do the check in each step AFAICS.
+>
+> I don't think we need it in the "loop through children" one. Here's why.
+>
+> We already make sure:
+> 1. The prospective supplier (target) is not a child of the prospective
+> consumer (dev).
+> 2. The prospective supplier (target) is not a consumer of the
+> prospective consumer (dev) or any of its children.
+>
+> To address the problem in the commit, we need to make changes to make sure:
+> 3. The ancestor of prospective supplier (ancestor of target) is not a
+> child of prospective consumer (dev)
+> 4. The ancestor of prospective supplier (ancestor of target) is not a
+> consumer of the prospective consumer (dev) or any of its children.
 
-commit 78762b0e79bc1dd01347be061abdf505202152c9 upstream.
+This should be taken care of by the recursive device_is_depedent()
+invocation in the loop over consumers, but only if (and that's what's
+really missing) the supplier has been fully registered.
 
-All these are functions which are invoked from elsewhere but they are
-not typical C functions. So annotate them using the new SYM_CODE_START.
-All these were not balanced with any END, so mark their ends by
-SYM_CODE_END, appropriately.
+If the supplier has been initialized, which is specifically checked by
+device_link_add(), but not added, it may be missing from its parent's
+list of children, but device_is_depedent() only checks those lists.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com> [xen bits]
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com> [hibernate]
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: linux-arch@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Pingfan Liu <kernelfans@gmail.com>
-Cc: Stefano Stabellini <sstabellini@kernel.org>
-Cc: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: x86-ml <x86@kernel.org>
-Cc: xen-devel@lists.xenproject.org
-Link: https://lkml.kernel.org/r/20191011115108.12392-26-jslaby@suse.cz
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/x86/entry/entry_32.S            | 3 ++-
- arch/x86/kernel/acpi/wakeup_32.S     | 7 ++++---
- arch/x86/kernel/ftrace_32.S          | 3 ++-
- arch/x86/kernel/head_32.S            | 3 ++-
- arch/x86/power/hibernate_asm_32.S    | 6 ++++--
- arch/x86/realmode/rm/trampoline_32.S | 6 ++++--
- arch/x86/xen/xen-asm_32.S            | 7 ++++---
- 7 files changed, 22 insertions(+), 13 deletions(-)
+> But (3) would be caught automatically when we do (1). Because if (3)
+> is true, (1) would also be true.
+> So, what's left is (4), for which my suggestion should be sufficient?
+>
+> Does it make sense? Or am I missing anything else that needs to be checked?
 
-diff --git a/arch/x86/entry/entry_32.S b/arch/x86/entry/entry_32.S
-index 390edb7638265..bde3e0f85425f 100644
---- a/arch/x86/entry/entry_32.S
-+++ b/arch/x86/entry/entry_32.S
-@@ -869,9 +869,10 @@ GLOBAL(__begin_SYSENTER_singlestep_region)
-  * Xen doesn't set %esp to be precisely what the normal SYSENTER
-  * entry point expects, so fix it up before using the normal path.
-  */
--ENTRY(xen_sysenter_target)
-+SYM_CODE_START(xen_sysenter_target)
- 	addl	$5*4, %esp			/* remove xen-provided frame */
- 	jmp	.Lsysenter_past_esp
-+SYM_CODE_END(xen_sysenter_target)
- #endif
- 
- /*
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index e95e95960156b..5b076cb79f5fb 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -9,8 +9,7 @@
- 	.code32
- 	ALIGN
- 
--ENTRY(wakeup_pmode_return)
--wakeup_pmode_return:
-+SYM_CODE_START(wakeup_pmode_return)
- 	movw	$__KERNEL_DS, %ax
- 	movw	%ax, %ss
- 	movw	%ax, %fs
-@@ -39,6 +38,7 @@ wakeup_pmode_return:
- 	# jump to place where we left off
- 	movl	saved_eip, %eax
- 	jmp	*%eax
-+SYM_CODE_END(wakeup_pmode_return)
- 
- bogus_magic:
- 	jmp	bogus_magic
-@@ -72,7 +72,7 @@ restore_registers:
- 	popfl
- 	ret
- 
--ENTRY(do_suspend_lowlevel)
-+SYM_CODE_START(do_suspend_lowlevel)
- 	call	save_processor_state
- 	call	save_registers
- 	pushl	$3
-@@ -87,6 +87,7 @@ ret_point:
- 	call	restore_registers
- 	call	restore_processor_state
- 	ret
-+SYM_CODE_END(do_suspend_lowlevel)
- 
- .data
- ALIGN
-diff --git a/arch/x86/kernel/ftrace_32.S b/arch/x86/kernel/ftrace_32.S
-index 073aab525d800..2cc0303522c99 100644
---- a/arch/x86/kernel/ftrace_32.S
-+++ b/arch/x86/kernel/ftrace_32.S
-@@ -89,7 +89,7 @@ WEAK(ftrace_stub)
- 	ret
- END(ftrace_caller)
- 
--ENTRY(ftrace_regs_caller)
-+SYM_CODE_START(ftrace_regs_caller)
- 	/*
- 	 * We're here from an mcount/fentry CALL, and the stack frame looks like:
- 	 *
-@@ -163,6 +163,7 @@ GLOBAL(ftrace_regs_call)
- 	popl	%eax
- 
- 	jmp	.Lftrace_ret
-+SYM_CODE_END(ftrace_regs_caller)
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- ENTRY(ftrace_graph_caller)
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 2e6a0676c1f43..11a5d5ade52ce 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -64,7 +64,7 @@ RESERVE_BRK(pagetables, INIT_MAP_SIZE)
-  * can.
-  */
- __HEAD
--ENTRY(startup_32)
-+SYM_CODE_START(startup_32)
- 	movl pa(initial_stack),%ecx
- 	
- 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
-@@ -172,6 +172,7 @@ num_subarch_entries = (. - subarch_entries) / 4
- #else
- 	jmp .Ldefault_entry
- #endif /* CONFIG_PARAVIRT */
-+SYM_CODE_END(startup_32)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- /*
-diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
-index 6fe383002125f..a19ed3d231853 100644
---- a/arch/x86/power/hibernate_asm_32.S
-+++ b/arch/x86/power/hibernate_asm_32.S
-@@ -35,7 +35,7 @@ ENTRY(swsusp_arch_suspend)
- 	ret
- ENDPROC(swsusp_arch_suspend)
- 
--ENTRY(restore_image)
-+SYM_CODE_START(restore_image)
- 	/* prepare to jump to the image kernel */
- 	movl	restore_jump_address, %ebx
- 	movl	restore_cr3, %ebp
-@@ -45,9 +45,10 @@ ENTRY(restore_image)
- 	/* jump to relocated restore code */
- 	movl	relocated_restore_code, %eax
- 	jmpl	*%eax
-+SYM_CODE_END(restore_image)
- 
- /* code below has been relocated to a safe page */
--ENTRY(core_restore_code)
-+SYM_CODE_START(core_restore_code)
- 	movl	temp_pgt, %eax
- 	movl	%eax, %cr3
- 
-@@ -77,6 +78,7 @@ copy_loop:
- 
- done:
- 	jmpl	*%ebx
-+SYM_CODE_END(core_restore_code)
- 
- 	/* code below belongs to the image kernel */
- 	.align PAGE_SIZE
-diff --git a/arch/x86/realmode/rm/trampoline_32.S b/arch/x86/realmode/rm/trampoline_32.S
-index 1868b158480d4..3a0ef0d577344 100644
---- a/arch/x86/realmode/rm/trampoline_32.S
-+++ b/arch/x86/realmode/rm/trampoline_32.S
-@@ -29,7 +29,7 @@
- 	.code16
- 
- 	.balign	PAGE_SIZE
--ENTRY(trampoline_start)
-+SYM_CODE_START(trampoline_start)
- 	wbinvd			# Needed for NUMA-Q should be harmless for others
- 
- 	LJMPW_RM(1f)
-@@ -54,11 +54,13 @@ ENTRY(trampoline_start)
- 	lmsw	%dx			# into protected mode
- 
- 	ljmpl	$__BOOT_CS, $pa_startup_32
-+SYM_CODE_END(trampoline_start)
- 
- 	.section ".text32","ax"
- 	.code32
--ENTRY(startup_32)			# note: also used from wakeup_asm.S
-+SYM_CODE_START(startup_32)			# note: also used from wakeup_asm.S
- 	jmp	*%eax
-+SYM_CODE_END(startup_32)
- 
- 	.bss
- 	.balign 8
-diff --git a/arch/x86/xen/xen-asm_32.S b/arch/x86/xen/xen-asm_32.S
-index cd177772fe4d5..2712e91553063 100644
---- a/arch/x86/xen/xen-asm_32.S
-+++ b/arch/x86/xen/xen-asm_32.S
-@@ -56,7 +56,7 @@
- 	_ASM_EXTABLE(1b,2b)
- .endm
- 
--ENTRY(xen_iret)
-+SYM_CODE_START(xen_iret)
- 	/* test eflags for special cases */
- 	testl $(X86_EFLAGS_VM | XEN_EFLAGS_NMI), 8(%esp)
- 	jnz hyper_iret
-@@ -122,6 +122,7 @@ xen_iret_end_crit:
- hyper_iret:
- 	/* put this out of line since its very rarely used */
- 	jmp hypercall_page + __HYPERVISOR_iret * 32
-+SYM_CODE_END(xen_iret)
- 
- 	.globl xen_iret_start_crit, xen_iret_end_crit
- 
-@@ -152,7 +153,7 @@ hyper_iret:
-  * The only caveat is that if the outer eax hasn't been restored yet (i.e.
-  * it's still on stack), we need to restore its value here.
-  */
--ENTRY(xen_iret_crit_fixup)
-+SYM_CODE_START(xen_iret_crit_fixup)
- 	/*
- 	 * Paranoia: Make sure we're really coming from kernel space.
- 	 * One could imagine a case where userspace jumps into the
-@@ -179,4 +180,4 @@ ENTRY(xen_iret_crit_fixup)
- 
- 2:
- 	ret
--END(xen_iret_crit_fixup)
-+SYM_CODE_END(xen_iret_crit_fixup)
--- 
-2.27.0
+AFAICS, the failing case is when the suppliers has been initialized
+already, but not fully registered yet, because in that case it is not
+sufficient to walk the list of children, it is also necessary to look
+at the supplier's parent pointer (and the whole chain of direct
+ancestors associated with it).
 
+So the code change in the patch is correct, but the description of it isn't.
 
-
+Let me respin.
