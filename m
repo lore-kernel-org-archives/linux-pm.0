@@ -2,190 +2,221 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82985C4332B
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 16:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73850C433DB
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 17:06:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 607FB222B3
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 16:51:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 441182313E
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Jan 2021 17:06:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727750AbhAOQvD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Jan 2021 11:51:03 -0500
-Received: from m43-15.mailgun.net ([69.72.43.15]:18020 "EHLO
-        m43-15.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726404AbhAOQvD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2021 11:51:03 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1610729436; h=Content-Transfer-Encoding: MIME-Version:
- References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=ebuTB+lOQpoMmGc21ZFUXwBFQ/EtSUoL2mQqLOzUuUg=; b=J6n9EYIukrLQxFvnB71RG9QFTbO5dRvpWPnUTCWvn7qNR1qdz0lo0btV2f0VhUyqZ/HXBGf0
- xD2z+3DnUiLD8UneQuqWFu2cguTBeCYU00RZHgpa0Ux579EqWMS//lK4lmn9lxdKrw/B+qpO
- ZoxHSgHkOC+s01OdlTyiePWaE60=
-X-Mailgun-Sending-Ip: 69.72.43.15
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n09.prod.us-west-2.postgun.com with SMTP id
- 6001c7c3fdec81ad1e2230d0 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 15 Jan 2021 16:50:11
- GMT
-Sender: ilina=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 28AB7C43461; Fri, 15 Jan 2021 16:50:11 +0000 (UTC)
-Received: from codeaurora.org (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: ilina)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 92B6DC433CA;
-        Fri, 15 Jan 2021 16:50:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 92B6DC433CA
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
-From:   Lina Iyer <ilina@codeaurora.org>
-To:     ulf.hansson@linaro.org, rjw@rjwysocki.net
-Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Lina Iyer <ilina@codeaurora.org>
-Subject: [PATCH v8 1/2] PM / domains: inform PM domain of a device's next wakeup
-Date:   Fri, 15 Jan 2021 09:50:03 -0700
-Message-Id: <20210115165004.22385-2-ilina@codeaurora.org>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210115165004.22385-1-ilina@codeaurora.org>
-References: <20210115165004.22385-1-ilina@codeaurora.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1728999AbhAORGZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Jan 2021 12:06:25 -0500
+Received: from foss.arm.com ([217.140.110.172]:45946 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728943AbhAORGY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Jan 2021 12:06:24 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D1C78D6E;
+        Fri, 15 Jan 2021 09:05:38 -0800 (PST)
+Received: from e123648.arm.com (unknown [10.57.3.129])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0612A3F719;
+        Fri, 15 Jan 2021 09:05:36 -0800 (PST)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        cw00.choi@samsung.com
+Cc:     lukasz.luba@arm.com, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com
+Subject: [PATCH] PM / devfreq: Add sysfs attributes to simple_ondemand governor
+Date:   Fri, 15 Jan 2021 17:05:30 +0000
+Message-Id: <20210115170530.22603-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some devices may have a predictable interrupt pattern while executing
-usecases. An example would be the VSYNC interrupt associated with
-display devices. A 60 Hz display could cause a interrupt every 16 ms. If
-the device were in a PM domain, the domain would need to be powered up
-for device to resume and handle the interrupt.
+The simple_ondemand devfreq governor is used by quite a few devices, like
+GPUs, DSPs, memory controllers, etc. It implements algorithm which tries
+to predict the device frequency based on past statistics. There are two
+tunables for the algorithm: 'upthreshold' and 'downdifferential'. These
+tunables change the behavior of the decision, e.g. how fast to increase
+the frequency or how rapidly limit the frequency. These values might be
+different based on the application which is currently running, e.g.
+different behavior is needed for a game than for web browsing or clean
+desktop. The patch exports these two tunables so they can be adjusted
+based on current need. There is also a check with the allowed ranges
+to make sure the values are correct and safe.
 
-Entering a domain idle state saves power, only if the residency of the
-idle state is met. Without knowing the idle duration of the domain, the
-governor would just choose the deepest idle state that matches the QoS
-requirements. The domain might be powered off just as the device is
-expecting to wake up. If devices could inform PM frameworks of their
-next event, the parent PM domain's idle duration can be determined.
-
-So let's add the dev_pm_genpd_set_next_wakeup() API for the device to
-inform PM domains of the impending wakeup. This information will be the
-domain governor to determine the best idle state given the wakeup.
-
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
-Changes in v8:
-	- Update documentation. Add Reviewed-by tag.
-Changes in v7:
-	- Simplify and set next-wakeup locklessly
-Changes in v6:
-	- Update documentation
-Changes in v5:
-	- Fix commit text as pointed by Ulf
-	- Use -EOPNOTSUPP
-Changes in v4:
-	- Use PM domain data to store next_wakeup
-	- Drop runtime PM documentation
-Changes in v3:
-	- Fix unwanted change
-Changes in v2:
-	- Update documentation
-	- Remove runtime PM enabled check
-	- Update commit text
----
- drivers/base/power/domain.c | 25 +++++++++++++++++++++++++
- include/linux/pm_domain.h   |  6 ++++++
- 2 files changed, 31 insertions(+)
+ drivers/devfreq/governor_simpleondemand.c | 135 ++++++++++++++++++++++
+ 1 file changed, 135 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 9a14eedacb92..10a960bd3204 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -423,6 +423,30 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
- 
-+/**
-+ * dev_pm_genpd_set_next_wakeup - Notify PM framework of an impending wakeup.
-+ *
-+ * @dev: Device to handle
-+ * @next: impending interrupt/wakeup for the device
-+ *
-+ *
-+ * Allow devices to inform of the next wakeup. It's assumed that the users
-+ * guarantee that the genpd wouldn't be detached while this routine is getting
-+ * called. Additionally, it's also assumed that @dev isn't runtime suspended
-+ * (RPM_SUSPENDED)."
-+ * Although devices are expected to update the next_wakeup after the end of
-+ * their usecase as well, it is possible the devices themselves may not know
-+ * about that, so stale @next will be ignored when powering off the domain.
-+ */
-+void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+	gpd_data->next_wakeup = next;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index d57b82a2b570..4b3c182e0a49 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -15,6 +15,7 @@
+ /* Default constants for DevFreq-Simple-Ondemand (DFSO) */
+ #define DFSO_UPTHRESHOLD	(90)
+ #define DFSO_DOWNDIFFERENCTIAL	(5)
++#define DFSO_MAX_VALUE		(100)
+ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 					unsigned long *freq)
  {
- 	unsigned int state_idx = genpd->state_idx;
-@@ -1465,6 +1489,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
- 	gpd_data->td.constraint_changed = true;
- 	gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
- 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
-+	gpd_data->next_wakeup = KTIME_MAX;
- 
- 	spin_lock_irq(&dev->power.lock);
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 2ca919ae8d36..735583c0bc6d 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -9,6 +9,7 @@
- #define _LINUX_PM_DOMAIN_H
- 
- #include <linux/device.h>
-+#include <linux/ktime.h>
- #include <linux/mutex.h>
- #include <linux/pm.h>
- #include <linux/err.h>
-@@ -191,6 +192,7 @@ struct generic_pm_domain_data {
- 	struct notifier_block *power_nb;
- 	int cpu;
- 	unsigned int performance_state;
-+	ktime_t	next_wakeup;
- 	void *data;
- };
- 
-@@ -217,6 +219,7 @@ int pm_genpd_remove(struct generic_pm_domain *genpd);
- int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
- int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
- int dev_pm_genpd_remove_notifier(struct device *dev);
-+void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -275,6 +278,9 @@ static inline int dev_pm_genpd_remove_notifier(struct device *dev)
- 	return -EOPNOTSUPP;
+@@ -84,15 +85,149 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 	return 0;
  }
  
-+static inline void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
-+{ }
++static ssize_t upthreshold_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct devfreq_simple_ondemand_data *data;
++	struct devfreq *df = to_devfreq(dev);
 +
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
++	if (!df->data)
++		return -EINVAL;
++
++	data = df->data;
++
++	return sprintf(buf, "%d\n", data->upthreshold);
++}
++
++static ssize_t upthreshold_store(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
++{
++	struct devfreq_simple_ondemand_data *data;
++	struct devfreq *df = to_devfreq(dev);
++	unsigned int value;
++	int ret;
++
++	if (!df->data)
++		return -EINVAL;
++
++	data = df->data;
++
++	ret = kstrtouint(buf, 10, &value);
++	if (ret < 0)
++		return -EINVAL;
++
++	mutex_lock(&df->lock);
++
++	if (value > DFSO_MAX_VALUE || value <= data->downdifferential) {
++		mutex_unlock(&df->lock);
++		return -EINVAL;
++	}
++
++	data->upthreshold = value;
++	mutex_unlock(&df->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(upthreshold);
++
++static ssize_t downdifferential_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct devfreq_simple_ondemand_data *data;
++	struct devfreq *df = to_devfreq(dev);
++
++	if (!df->data)
++		return -EINVAL;
++
++	data = df->data;
++
++	return sprintf(buf, "%d\n", data->downdifferential);
++}
++
++static ssize_t downdifferential_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
++{
++	struct devfreq_simple_ondemand_data *data;
++	struct devfreq *df = to_devfreq(dev);
++	unsigned int value;
++	int ret;
++
++	if (!df->data)
++		return -EINVAL;
++
++	data = df->data;
++
++	ret = kstrtouint(buf, 10, &value);
++	if (ret < 0)
++		return -EINVAL;
++
++	mutex_lock(&df->lock);
++
++	if (value > DFSO_MAX_VALUE || value >= data->upthreshold) {
++		mutex_unlock(&df->lock);
++		return -EINVAL;
++	}
++
++	data->downdifferential = value;
++	mutex_unlock(&df->lock);
++
++	return count;
++}
++static DEVICE_ATTR_RW(downdifferential);
++
++static void devfreq_simple_ondemand_sysfs_setup(struct devfreq *df)
++{
++	struct devfreq_simple_ondemand_data *data;
++	int ret;
++
++	if (!df->data) {
++		/* The memory will be freed automatically */
++		df->data = devm_kzalloc(&df->dev,
++				sizeof(struct devfreq_simple_ondemand_data),
++				GFP_KERNEL);
++		if (!df->data) {
++			dev_warn(&df->dev, "Unable to allocate memory");
++			return;
++		}
++	}
++
++	data = df->data;
++
++	/* After new allocation setup default values, since they are used */
++	if (!data->upthreshold)
++		data->upthreshold = DFSO_UPTHRESHOLD;
++
++	if (!data->downdifferential)
++		data->downdifferential = DFSO_DOWNDIFFERENCTIAL;
++
++	ret = sysfs_create_file(&df->dev.kobj, &dev_attr_upthreshold.attr);
++	if (ret < 0)
++		dev_warn(&df->dev, "Unable to create 'upthreshold' attr\n");
++
++	ret = sysfs_create_file(&df->dev.kobj, &dev_attr_downdifferential.attr);
++	if (ret < 0)
++		dev_warn(&df->dev, "Unable to create 'downdifferential' attr\n");
++}
++
++static void devfreq_simple_ondemand_sysfs_remove(struct devfreq *df)
++{
++	sysfs_remove_file(&df->dev.kobj, &dev_attr_upthreshold.attr);
++	sysfs_remove_file(&df->dev.kobj, &dev_attr_downdifferential.attr);
++}
++
+ static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+ 				unsigned int event, void *data)
+ {
+ 	switch (event) {
+ 	case DEVFREQ_GOV_START:
+ 		devfreq_monitor_start(devfreq);
++		devfreq_simple_ondemand_sysfs_setup(devfreq);
+ 		break;
+ 
+ 	case DEVFREQ_GOV_STOP:
++		devfreq_simple_ondemand_sysfs_remove(devfreq);
+ 		devfreq_monitor_stop(devfreq);
+ 		break;
+ 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.17.1
 
