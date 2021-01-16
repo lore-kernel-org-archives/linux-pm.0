@@ -5,78 +5,91 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7561DC433DB
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 12:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3F2FC433E9
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:08:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3C6FF2311F
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 12:01:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8F1522B2E
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:08:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726111AbhAPMBm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Jan 2021 07:01:42 -0500
-Received: from m12-12.163.com ([220.181.12.12]:57152 "EHLO m12-12.163.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726018AbhAPMBl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 16 Jan 2021 07:01:41 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=PL/Jq
-        HSck/4HYIlMBJO7I9Krmfq9sE0LU3UwCK14FsA=; b=oF7csRQpgjxY1Rk7eykVO
-        ZM+UVqiDRg9Boa/wfs9y1KMx289//0Ki0qjWmUbNWyPYz4wGrmVGyoxzPBsP1rJD
-        Y+TeWW8AXHXoxuEF4qn7NFwgGkcGyLMBCIGHhAx1HJE+mWB2wUkobFxvlzk0UfLG
-        yLtAKW44Epn2GjldXmI4NE=
-Received: from yangjunlin.ccdomain.com (unknown [119.137.52.218])
-        by smtp8 (Coremail) with SMTP id DMCowAAXWOM40QJgnUpiMQ--.32724S2;
-        Sat, 16 Jan 2021 19:42:49 +0800 (CST)
-From:   angkery <angkery@163.com>
-To:     sre@kernel.org, yangjunlin@yulong.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] power: supply: charger-manager: fix the wrong status of health
-Date:   Sat, 16 Jan 2021 19:41:20 +0800
-Message-Id: <20210116114120.3531-1-angkery@163.com>
-X-Mailer: git-send-email 2.24.0.windows.2
+        id S1727905AbhAPRI2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Jan 2021 12:08:28 -0500
+Received: from mail-pj1-f43.google.com ([209.85.216.43]:37377 "EHLO
+        mail-pj1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725964AbhAPRIZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Jan 2021 12:08:25 -0500
+Received: by mail-pj1-f43.google.com with SMTP id g15so2735764pjd.2;
+        Sat, 16 Jan 2021 09:08:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=4I6/1V/j2pZFuVVOV4REVkDfm4tmUoy6tKgu0Y3qV6s=;
+        b=Basl4BJW/0jwOQd6SHCq+AJpjtzYWfYmlrTdm8INaFQtVsYPtMUM70jFguBF8giKNQ
+         eTBbm0MPV3HAf2nviXqnHVW0lIllExXdnOfMHylFphFSkiBu9+CFao39+QAq6a2jahPn
+         ujhoBLeycc7GcBpXC6O6mS9vENkfWB+gItwfBk+Bv/3dAy7pBahxGC48+GWgsU2NPOSD
+         UqFhdvHWtd8WNlJcjGdp1NXTa1ArYuwNU0fMT6DxEZbBferUv1ErsN9j31F9sh0wKfhQ
+         LjBuFmTIj18IhnL45BjolcKkUdjwG2IenUqphBhgpNkLd0QzgO1AanRUK39O+aj5iKVp
+         m2nQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=4I6/1V/j2pZFuVVOV4REVkDfm4tmUoy6tKgu0Y3qV6s=;
+        b=Vsxk3TdWQBsJTqvlkrTMyTFdO/KBxjHYsxay22ORBxhmw7ve3Yl+GgyJhohZIWlLCD
+         pF6z8OnOt6GhgpSu0tGMEc0+tBDn1qOj2Aqk0Ky/Dj8uCwnDu70HkbU+laZuAzzAhFQZ
+         /tDnADr8NYjG6zLD1yoBV0Px0mLCwIivS2lV02QsexjSCoFqohXbUXAKqJDMbsU6v/YY
+         t5M2/q3prDK92rKWBL5irIpVmHGrjBCS2z4AbAra18BjX48RTMfTKQg4sWiDj5KMzFNT
+         0Hdn/J1oiGkSfcr+hYOOF63k8lrX2/HuwGl3C82NDoKnW3s74RjOSWTBOf8aqG0sQQA+
+         zFRA==
+X-Gm-Message-State: AOAM530kORAxWsUkYLr3DNm4ojmuv+D9O/97kNP5wrOVvS1/uxgSPeFI
+        YlUma3YpN3s4SGM8rf31LEk=
+X-Google-Smtp-Source: ABdhPJxOjIduViQHxvOqYtA2ywxH3Gq6Yfse9K31DSEVwd4cDB8kQI9eoejGMYHfMtxpuAGkdE3uKw==
+X-Received: by 2002:a17:90a:474c:: with SMTP id y12mr17448532pjg.175.1610816864856;
+        Sat, 16 Jan 2021 09:07:44 -0800 (PST)
+Received: from s18.smythies.com (test.smythies.com. [173.180.45.3])
+        by smtp.gmail.com with ESMTPSA id f13sm7247566pjj.1.2021.01.16.09.07.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 16 Jan 2021 09:07:44 -0800 (PST)
+From:   Doug Smythies <doug.smythies@gmail.com>
+X-Google-Original-From: Doug Smythies <dsmythies@telus.net>
+To:     lenb@kernel.org
+Cc:     dsmythies@telus.net, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH] tools/power/x86/turbostat: Fix TCC offset bit mask
+Date:   Sat, 16 Jan 2021 09:07:25 -0800
+Message-Id: <20210116170725.5245-1-dsmythies@telus.net>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DMCowAAXWOM40QJgnUpiMQ--.32724S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrZF4UXr4DXryxJr1UKF1kuFg_yoWkGrgEka
-        ykA340qFya9r1ayrnrKFn3Zry09ayrXayxWa92grZ8A3WYqw4kJrykZF98Jw47GF43uFZI
-        qas8JFn5CFy8KjkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU5HxR3UUUUU==
-X-Originating-IP: [119.137.52.218]
-X-CM-SenderInfo: 5dqjyvlu16il2tof0z/xtbBFBkcI1aD+EUA9AAAsu
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Junlin Yang <yangjunlin@yulong.com>
+The TCC offset mask is incorrect, resulting in
+incorrect target temperature calculations, if
+the offset is big enough to exceed the mask size.
 
-cm->emergency_stop will only be the value in the enumeration,
-and can not be less than zero, it will get an exception value.
-So replace it with the corresponding value.
-
-Signed-off-by: Junlin Yang <yangjunlin@yulong.com>
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
 ---
- drivers/power/supply/charger-manager.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index 6fcebe4..0d28741 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -723,9 +723,9 @@ static int charger_get_property(struct power_supply *psy,
- 		val->intval = cm->battery_status;
- 		break;
- 	case POWER_SUPPLY_PROP_HEALTH:
--		if (cm->emergency_stop > 0)
-+		if (cm->emergency_stop == CM_BATT_OVERHEAT)
- 			val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;
--		else if (cm->emergency_stop < 0)
-+		else if (cm->emergency_stop == CM_BATT_COLD)
- 			val->intval = POWER_SUPPLY_HEALTH_COLD;
- 		else
- 			val->intval = POWER_SUPPLY_HEALTH_GOOD;
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 389ea5209a83..d7acdd4d16c4 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -4823,7 +4823,7 @@ int read_tcc_activation_temp()
+ 
+ 	target_c = (msr >> 16) & 0xFF;
+ 
+-	offset_c = (msr >> 24) & 0xF;
++	offset_c = (msr >> 24) & 0x3F;
+ 
+ 	tcc = target_c - offset_c;
+ 
 -- 
-1.9.1
-
+2.25.1
 
