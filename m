@@ -2,185 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97D41C433E9
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:09:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D40FFC43332
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:10:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6FA0B235DD
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:09:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B6FAB23750
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Jan 2021 17:10:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728021AbhAPRJR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Jan 2021 12:09:17 -0500
-Received: from cmta19.telus.net ([209.171.16.92]:41724 "EHLO cmta19.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728005AbhAPRJN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 16 Jan 2021 12:09:13 -0500
-Received: from dougxps ([173.180.45.4])
-        by cmsmtp with SMTP
-        id 0p3qlG1kyxoDi0p3slzzsF; Sat, 16 Jan 2021 10:08:30 -0700
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
-        t=1610816910; bh=JQ1lIQOw/FQhQdyihlNdeL4ktOlij8E6lAkowA8vVPg=;
-        h=From:To:Cc:References:In-Reply-To:Subject:Date;
-        b=62ip32+bQMWpDwPvK8BsqUoUci/+Z+ZIbQI6vsfuval2J8SWFbPFLlAukgsoeZIUs
-         6vM2GgAnRgPInNVoQ19jhjpA6jFVP585xLBGdIxdfKX+ybGLMhNsF1Vq1CCWAc4H18
-         Q1SVkrPISfDUL0hJAbwg90kTj5cZzMhKzRxVR56KFns/ExKRSLqfSHjn/AV9R5Mo22
-         EcGI6CyezufUof4JfDqOa1xQLFKbjbudbxk6f8ZGqaMqS0Qdz4mLEtX2EMyEs3iOpb
-         nHk+d6TOGpT0bCvXOJN5fKUK7Knqf9aAWwOTsY7QlhKAiNnlPEWG6TGbSJi8H2ta0O
-         ArsrUMH/Sj2hQ==
-X-Telus-Authed: none
-X-Authority-Analysis: v=2.4 cv=ctJeL30i c=1 sm=1 tr=0 ts=60031d8e
- a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
- a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=kj9zAlcOel0A:10 a=aatUQebYAAAA:8
- a=skdSOlplxTDZW_2ePFQA:9 a=CjuIK1q_8ugA:10 a=7715FyvI7WU-l6oqrZBK:22
-From:   "Doug Smythies" <dsmythies@telus.net>
-To:     "'Zhang Rui'" <rui.zhang@intel.com>
-Cc:     <daniel.lezcano@linaro.org>, <srinivas.pandruvada@linux.intel.com>,
-        <linux-pm@vger.kernel.org>
-References: <20210115094744.21156-1-rui.zhang@intel.com>
-In-Reply-To: <20210115094744.21156-1-rui.zhang@intel.com>
-Subject: RE: [PATCH] thermal/intel: introduce tcc cooling driver
-Date:   Sat, 16 Jan 2021 09:08:26 -0800
-Message-ID: <002601d6ec2a$36663da0$a332b8e0$@net>
+        id S1728263AbhAPRK1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Jan 2021 12:10:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39038 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728079AbhAPRKZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Jan 2021 12:10:25 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33188C0617A6;
+        Sat, 16 Jan 2021 06:04:34 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 766AA1F45AB1
+Received: by earth.universe (Postfix, from userid 1000)
+        id 106B23C0C94; Sat, 16 Jan 2021 15:03:49 +0100 (CET)
+Date:   Sat, 16 Jan 2021 15:03:48 +0100
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     angkery <angkery@163.com>
+Cc:     yangjunlin@yulong.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: charger-manager: fix the wrong status of
+ health
+Message-ID: <20210116140348.ym75ldaalfadznvb@earth.universe>
+References: <20210116114120.3531-1-angkery@163.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AdbrIkJv3Xd49VUQTf+fLZID/bj4xQAuumUQ
-Content-Language: en-ca
-X-CMAE-Envelope: MS4xfEFPzzj+ZSNq7CLh2pOs4LDiCDQlUhrwBfQjg/8yirKr/JaqqmOwKIwUS2xKLV02rEP9uwBpvpvOJW19uoiELEl2k0cGynXFFSehkizV98hlAzmD83+8
- rueChHB0lLFXLjv/oHcokSWdzNBWcz9sS5Fp5kTrHiLFMLQoglArnDQV99z4FnFDQQ5IiCC7D+ID/jqJL0QotpgYLXt21OTUuY2WnMH4aUbtEIvlFzpa9Uej
- ZNrQBp8RXwS4gZSGX+lO270WnxKyMNKJBn1sH5OXVXVQ+oHA2Se18REUTXyJVMqGRxqb1UltgWni4ElSuZSJAA==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="fngjxqr44dfbbnjc"
+Content-Disposition: inline
+In-Reply-To: <20210116114120.3531-1-angkery@163.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2021.01.15 Zhang Rui wrote:
-> 
-> On Intel processors, the core frequency can be reduced below OS request,
-> when the current temperature reaches the TCC (Thermal Control Circuit)
-> activation temperature.
-> 
-> The default TCC activation temperature is specified by
-> MSR_IA32_TEMPERATURE_TARGET. However, it can be adjusted by specifying an
-> offset in degrees C, using the TCC Offset bits in the same MSR register.
-> 
-> This patch introduces a cooling devices driver that utilizes the TCC
-> Offset feature. The bigger the current cooling state is, the lower the
-> effective TCC activation temperature is, so that the processors can be
-> throttled earlier before system critical overheats.
 
-Thank you for this useful patch.
-My systems don't need thermald or any other thermal control, but it is nice
-to have this extra margin to add to the critical stuff, as a backup.
-I also like to use the offset to test stuff.
+--fngjxqr44dfbbnjc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I use the internal power limit servo for power limiting,
-and that servo works very well indeed. Using this temperature
-offset as a way to servo the thermal operating limit does work,
-but tends to overshoot, oscillate, hold low excessively long
-(minutes). It also seems to limit CPU clock frequency reduction
-to the non-turbo limit, regardless of the desired maximum
-temperature.
+Hi,
 
-I am not familiar with the thermal stuff at all, and didn't know
-where to find the trip point knob. Anyway, found "cooling_devices11".
+On Sat, Jan 16, 2021 at 07:41:20PM +0800, angkery wrote:
+> From: Junlin Yang <yangjunlin@yulong.com>
+>=20
+> cm->emergency_stop will only be the value in the enumeration,
+> and can not be less than zero, it will get an exception value.
+> So replace it with the corresponding value.
+>=20
+> Signed-off-by: Junlin Yang <yangjunlin@yulong.com>
+> ---
 
-I do not understand this:
+Thanks, queued.
 
-~$ cat /sys/devices/virtual/thermal/cooling_device11/stats/trans_table
-cat: /sys/devices/virtual/thermal/cooling_device11/stats/trans_table: File too large
+-- Sebastian
 
-Rather than enter the actual TCC offset, I would rather enter the desired trip
-point, and have the driver do the math to convert it to the offset.
+>  drivers/power/supply/charger-manager.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/suppl=
+y/charger-manager.c
+> index 6fcebe4..0d28741 100644
+> --- a/drivers/power/supply/charger-manager.c
+> +++ b/drivers/power/supply/charger-manager.c
+> @@ -723,9 +723,9 @@ static int charger_get_property(struct power_supply *=
+psy,
+>  		val->intval =3D cm->battery_status;
+>  		break;
+>  	case POWER_SUPPLY_PROP_HEALTH:
+> -		if (cm->emergency_stop > 0)
+> +		if (cm->emergency_stop =3D=3D CM_BATT_OVERHEAT)
+>  			val->intval =3D POWER_SUPPLY_HEALTH_OVERHEAT;
+> -		else if (cm->emergency_stop < 0)
+> +		else if (cm->emergency_stop =3D=3D CM_BATT_COLD)
+>  			val->intval =3D POWER_SUPPLY_HEALTH_COLD;
+>  		else
+>  			val->intval =3D POWER_SUPPLY_HEALTH_GOOD;
+> --=20
+> 1.9.1
+>=20
+>=20
 
-Example step function overshoot, trip point set to 55 degrees C.
+--fngjxqr44dfbbnjc
+Content-Type: application/pgp-signature; name="signature.asc"
 
-doug@s18:~$ sudo ~/turbostat --Summary --quiet --show Busy%,Bzy_MHz,PkgTmp,PkgWatt,GFXWatt,IRQ --interval 1
-Busy%   Bzy_MHz IRQ     PkgTmp  PkgWatt GFXWatt
-0.07    800     45      24      1.89    0.00
-0.04    800     29      23      1.89    0.00
-61.76   4546    4151    66      103.77  0.00 < step function load applied on 4 of 6 cores
-67.76   4570    4476    66      120.42  0.00
-68.03   4567    4488    66      120.73  0.00
-67.98   4572    4492    67      121.00  0.00 < 19 degrees over trip point
-68.10   4489    4493    58      109.19  0.00 < this throttling is either the power servo or the temp servo.
-68.08   4262    4476    51      82.82   0.00 < this throttling is the temp servo.
-68.13   4143    4513    48      75.16   0.00
-68.03   4086    4488    46      71.87   0.00 < It actually undershoots often, I don't know why.
-68.12   4000    4505    46      67.02   0.00 < often it doesn't undershoot.
-68.44   4000    4502    45      67.16   0.00
-68.06   4000    4483    45      66.95   0.00
-68.02   3973    4490    44      65.20   0.00
-67.94   3900    4489    43      60.51   0.00
-67.88   3900    4501    44      60.55   0.00
-67.85   3900    4472    43      60.52   0.00
-67.96   3900    4481    43      60.59   0.00
-68.26   3900    4501    44      60.70   0.00
-67.93   3900    4498    43      60.58   0.00
-68.03   3900    4476    43      60.68   0.00
-67.83   3900    4481    44      60.54   0.00
-35.06   3895    2412    25      32.13   0.00 < load removed.
-0.04    800     25      24      1.89    0.00
-0.04    800     22      23      1.89    0.00
-0.06    800     35      23      1.90    0.00
-0.03    800     18      23      1.89    0.00
-0.04    800     26      22      1.90    0.00
-0.30    1927    44      23      1.97    0.00
-^C0.10  800     25      23      1.91    0.00
+-----BEGIN PGP SIGNATURE-----
 
-Example long time to recover:
-(actually, this example never recovers, unusual):
-Note: 3.7 GHz is the limit.
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmAC8kQACgkQ2O7X88g7
++pqEzRAAjFmekAooCxV/8ZfdIrMmp9lCr12iWfBN6JPV0Mx1nxzXzOwRQm8Sa/du
+OwTk5TkiPoW3Rs5nHf2CwPo4kBHSrwY0v7TYh8bOKLQeWt1wiUq7Gmczy/4c5h4a
+AC/3Nzf7C5U+vhVHvB59kubQPRhwr2Rvaqph9BaqFi5Vto14Osc0FoTjPavI0uK0
++iQfpWEqoCGME49z2IQBJe8i33PdKrXcicQZni6IVrNVm0aUuWcrottF7agJy9Wm
+CGbk6Zo4m+mut7boo7hSecPInWRrdGJDAq5wIfI7wRUICtetBtabZ4A9OTWdtcv4
+ZDxPBTJSKL/2dvb0XykPr8uIzpv51TG1LPmOH+qbsHKcKqwIef4tRcnNvjemCmdz
+hMYHmmP49blGp2HiyDdwsuEVfFIIko6GJwokFc+eQ5z12SDMSp6pLWdSz8q/kYDW
+3lZvscSVbH0IlrIReoxihC8M4O9Wu1mkkAoYMjCwyzNNXErIXbPy+AKfHQcvghpq
+gwZ2LGaMKkvCfBykMlRl0OH4YeBL1UdnKgk5eGkYe/Be5BHTSkhm1tJizoVX4mV3
+Uwq3PaPhvJC/iAQ6+NQPZNFTefwhS1mM6y3CdEFEOowfVqZlGp/m129nJGBq1Jjs
++TGFl4wWficNfbDgrUenReAYr2keRahjRGYmHh2JRZS/0Se1uso=
+=0AAy
+-----END PGP SIGNATURE-----
 
-doug@s18:~$ sudo ~/turbostat --Summary --quiet --show Busy%,Bzy_MHz,PkgTmp,PkgWatt,GFXWatt,IRQ --interval 30
-Busy%   Bzy_MHz IRQ     PkgTmp  PkgWatt GFXWatt
-67.58   3700    134812  42      52.15   0.00 <<< the trip point was changed from 37 to 57 degrees
-67.90   3700    134964  42      52.08   0.00
-68.07   3700    134424  42      52.06   0.00
-68.01   3700    134415  41      50.76   0.00
-68.14   3700    134521  41      50.78   0.00
-68.11   3700    134424  42      50.75   0.00
-68.03   3700    134329  42      50.70   0.00
-68.11   3700    134321  42      50.76   0.00
-68.05   3700    134456  42      51.09   0.00
-68.12   3700    134549  42      52.21   0.00
-68.12   3700    134482  42      52.19   0.00
-68.10   3700    134301  42      52.20   0.00
-68.11   3700    134444  42      52.14   0.00
-68.08   3700    134422  42      52.17   0.00
-68.07   3700    134430  42      52.23   0.00
-68.00   3700    134723  42      52.12   0.00
-67.96   3711    135207  44      52.53   0.00 <<< It takes 8 minutes until the frequency goes above 3.7 GHz
-68.05   3765    134519  42      54.34   0.00
-68.11   3771    134461  43      54.60   0.00
-67.83   3763    134867  43      54.26   0.00
-67.93   3773    134577  43      54.78   0.00 <<< But it never recovers, Why not?
-...
-
-For unknown reason the processor seems to now
-think it is not heavily loaded. From my MSR decoder:
-
-0x64F: MSR_CORE_PERF_LIMIT_REASONS: 200020 AUTO AUTOL
-
-From the book:
-
-> Autonomous Utilization-Based Frequency Control
-> Status (R0)
-> When set, frequency is reduced below the operating
-> system request because the processor has detected
-> that utilization is low.
-
-Which is not true.
-
-Anyway,
-
-Acked-by: Doug Smythies <dsmythies@telus.net>
-
-... Doug
-
-
+--fngjxqr44dfbbnjc--
