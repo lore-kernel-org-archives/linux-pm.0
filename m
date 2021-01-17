@@ -2,149 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 756E2C433DB
-	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 18:22:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3D23C433DB
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:48:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 38C7420793
-	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 18:22:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A4E9420791
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:48:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729456AbhAQSWD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 13:22:03 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:59442 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729315AbhAQSWC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 13:22:02 -0500
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id 96E761F44A51
-Received: by earth.universe (Postfix, from userid 1000)
-        id BC9953C0C95; Sun, 17 Jan 2021 19:21:17 +0100 (CET)
-Date:   Sun, 17 Jan 2021 19:21:17 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Cc:     Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        nicolassaenzj@gmail.com,
-        Nicolas Saenz Julienne <nicolas.saenz@prodys.net>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] power: supply: fix sbs-charger build, needs REGMAP_I2C
-Message-ID: <20210117182117.ewq2e6ce2c5p2mdz@earth.universe>
-References: <20210116211310.19232-1-rdunlap@infradead.org>
- <537de36b-6709-3e58-5610-9f54e2bee8a9@fold.natur.cuni.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="zzpialt2nuswu7ld"
-Content-Disposition: inline
-In-Reply-To: <537de36b-6709-3e58-5610-9f54e2bee8a9@fold.natur.cuni.cz>
+        id S1728469AbhAQVsU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 16:48:20 -0500
+Received: from sender11-of-o51.zoho.eu ([31.186.226.237]:21109 "EHLO
+        sender11-of-o51.zoho.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728042AbhAQVsR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 16:48:17 -0500
+X-Greylist: delayed 319 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jan 2021 16:48:16 EST
+ARC-Seal: i=1; a=rsa-sha256; t=1610920000; cv=none; 
+        d=zohomail.eu; s=zohoarc; 
+        b=P+H6nnM+FZeWXf0MXvP4oVecdDTXhjY5XD32pfmLSKEzzXf2SblMhA3zoEIVLPaQbi8BsPXE+ZEMM+mc/1GWt3b0MWax0DFWcO0IZxSePYxfkQMOlcIEpwBjK81A77Pfh3jdMFJEyYTek96AHfL1PEjfcUEHyZxgy0GPi5tMiB4=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
+        t=1610920000; h=Content-Type:Content-Transfer-Encoding:Cc:Date:From:MIME-Version:Message-ID:Subject:To; 
+        bh=Wnte+4AlAVGi6rAOeWTfm7Nsc593X5q+3gShAhPDrqw=; 
+        b=NBVsPC1GiSViiEe790BSbU4Cc0MogeUhrHexpPXHeW1y93bZmeUuERIB4MlP1cY0HZY4ToaNWeVZpFEhmtdVRt2iq5ceQnl/iXOE1dST+OHdJGw4d+fTobW+oudnIU5/cNxYY+A4U151jMENoCNl+EMIy4vqKowTSC/KkXkoL40=
+ARC-Authentication-Results: i=1; mx.zohomail.eu;
+        spf=pass  smtp.mailfrom=philipp@uvos.xyz;
+        dmarc=pass header.from=<philipp@uvos.xyz> header.from=<philipp@uvos.xyz>
+Received: from localhost.localdomain (ip-95-222-215-9.hsi15.unitymediagroup.de [95.222.215.9]) by mx.zoho.eu
+        with SMTPS id 1610919998920388.4063998988232; Sun, 17 Jan 2021 22:46:38 +0100 (CET)
+Date:   Sun, 17 Jan 2021 22:46:38 +0100
+From:   Carl Philipp Klemm <philipp@uvos.xyz>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
+        Arthur Demchenkov <spinal.by@gmail.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Merlijn Wajer <merlijn@wizzup.org>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 3/5] power: supply: cpcap-battery: invalidate
+ empty->counter_uah and charge_full when they are grossly wrong
+Message-Id: <20210117224638.10c9d9aee7c0144fafd70520@uvos.xyz>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ZohoMailClient: External
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This invalidates empty->counter_uah and charge_full when charge_now indicates
+that they are grossly wrong and adds some tolerance to
+POWER_SUPPLY_PROP_CHARGE_FULL to allow for inaccuracies in the charge counter
+and manufacturing tolerances in the battery.
 
---zzpialt2nuswu7ld
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Carl Philipp Klemm <philipp@uvos.xyz>
+---
+ drivers/power/supply/cpcap-battery.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-Hi,
+diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+index 86ed41d9627f..8ae0c9c7ebcb 100644
+--- a/drivers/power/supply/cpcap-battery.c
++++ b/drivers/power/supply/cpcap-battery.c
+@@ -667,10 +667,22 @@ static int cpcap_battery_get_property(struct power_supply *psy,
+ 		if (!empty->voltage)
+ 			return -ENODATA;
+ 		val->intval = empty->counter_uah - latest->counter_uah;
+-		if (val->intval < 0)
++		if (val->intval < 0) {
++			if (ddata->charge_full && abs(val->intval) > ddata->charge_full/5) {
++				empty->voltage = 0;
++				ddata->charge_full = 0;
++				return -ENODATA;
++			}
+ 			val->intval = 0;
+-		else if (ddata->charge_full && ddata->charge_full < val->intval)
++		}
++		else if (ddata->charge_full && ddata->charge_full < val->intval) {
++			if (val->intval > (6*ddata->charge_full)/5) {
++				empty->voltage = 0;
++				ddata->charge_full = 0;
++				return -ENODATA;
++			}
+ 			val->intval = ddata->charge_full;
++		}
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+ 		if (!ddata->charge_full)
+@@ -747,7 +759,7 @@ static int cpcap_battery_set_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+ 		if (val->intval < 0)
+ 			return -EINVAL;
+-		if (val->intval > ddata->config.info.charge_full_design)
++		if (val->intval > (6*ddata->config.info.charge_full_design)/5)
+ 			return -EINVAL;
+ 
+ 		ddata->charge_full = val->intval;
+-- 
+2.29.2
 
-On Sun, Jan 17, 2021 at 10:48:44AM +0100, Martin Mokrejs wrote:
-> Hi Randy,
->   thank you very much. I would not mind dropping my name but I tested the=
- patch
-> now with 5.4.89 so you may actually also add
->=20
-> Tested-by: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
->=20
-> It also happened with 5.10.7, it is probably obvious.
->=20
-> Thank you for quick action.
-> Martin
->=20
-> On 16/01/2021 22:13, Randy Dunlap wrote:
-> > CHARGER_SBS should select REGMAP_I2C since it uses API(s) that are
-> > provided by that Kconfig symbol.
-> >=20
-> > Fixes these errors:
-> >=20
-> > ../drivers/power/supply/sbs-charger.c:149:21: error: variable =E2=80=98=
-sbs_regmap=E2=80=99 has initializer but incomplete type
-> >  static const struct regmap_config sbs_regmap =3D {
-> > ../drivers/power/supply/sbs-charger.c:150:3: error: =E2=80=98const stru=
-ct regmap_config=E2=80=99 has no member named =E2=80=98reg_bits=E2=80=99
-> >   .reg_bits =3D 8,
-> > ../drivers/power/supply/sbs-charger.c:155:23: error: =E2=80=98REGMAP_EN=
-DIAN_LITTLE=E2=80=99 undeclared here (not in a function)
-> >   .val_format_endian =3D REGMAP_ENDIAN_LITTLE, /* since based on SMBus =
-*/
-> > ../drivers/power/supply/sbs-charger.c: In function =E2=80=98sbs_probe=
-=E2=80=99:
-> > ../drivers/power/supply/sbs-charger.c:183:17: error: implicit declarati=
-on of function =E2=80=98devm_regmap_init_i2c=E2=80=99; did you mean =E2=80=
-=98devm_request_irq=E2=80=99? [-Werror=3Dimplicit-function-declaration]
-> >   chip->regmap =3D devm_regmap_init_i2c(client, &sbs_regmap);
-> > ../drivers/power/supply/sbs-charger.c: At top level:
-> > ../drivers/power/supply/sbs-charger.c:149:35: error: storage size of =
-=E2=80=98sbs_regmap=E2=80=99 isn=E2=80=99t known
-> >  static const struct regmap_config sbs_regmap =3D {
-> >=20
-> > Fixes: feb583e37f8a ("power: supply: add sbs-charger driver")
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: nicolassaenzj@gmail.com
-> > Cc: Nicolas Saenz Julienne <nicolas.saenz@prodys.net>
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > ---
-> > Martin, do you want Reported-by: on this?
 
-Thanks, queued. I added Reported-by and Tested-by from Martin.
-
--- Sebastian
-
-> >=20
-> >  drivers/power/supply/Kconfig |    1 +
-> >  1 file changed, 1 insertion(+)
-> >=20
-> > --- linux-next-20210115.orig/drivers/power/supply/Kconfig
-> > +++ linux-next-20210115/drivers/power/supply/Kconfig
-> > @@ -229,6 +229,7 @@ config BATTERY_SBS
-> >  config CHARGER_SBS
-> >  	tristate "SBS Compliant charger"
-> >  	depends on I2C
-> > +	select REGMAP_I2C
-> >  	help
-> >  	  Say Y to include support for SBS compliant battery chargers.
-> > =20
-> >=20
->=20
-
---zzpialt2nuswu7ld
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmAEgBcACgkQ2O7X88g7
-+prWyBAAoxtPZN6DuY6SHm6D8CnY7c7aVcpUum3Ipc3dLD1HOKOc2t+qo2dtMBbX
-WJALYV/QhsBmOChnNNd9962fOhxlU8mpBftAO6FONjCJnupRdG5cTqacJBcUv8R2
-UZb6ABAmFkjScRUoGXR7OcBirzCbwNh9/e0sIxu4JrCAA9qtXuFCQt4/lAtWVSiT
-m582qGLMDEH9cbrmlITgAmDPgzXZHQJugCAA0zt1kFbd5d7XfZCHXW50lAvNb+Bw
-MvApWZEK0hD1YrGcYOLwz8CMHoiDUYZm+3LC0n4gZoZxVc9ey/84pr0PnI0b9Ttr
-K346KBMnArUpBATUG3OloCdfGc744anNe+FA5DbpYZc0YeZJ9QJ8nHe8H/bzsSFW
-RxzeWwejrfj2jE5f+avln0Cuup+5uzt7XUh/xV4tTU/PjhUfdDBiU+k3ai/9r2ql
-qtAP5vi1BOov7unk6HOZmtCHRTzIhDtyRM7/hXt9ktKXnfU/WJDGzRomSJR0clfT
-yTFROIEBCAiE9czAogHnD8h8IL7lVAoIzmZNCsI4nwiL/9csYm9LtUwHNZwhIg0x
-ZHKuWpFqHF0zT23kofOTiZyfIeXWnx9jlwHP12s3672K+Ks2ZDp95uVZXK0d0uDJ
-ZsmM+MlPwqw4JUhssPZE1rsjZrjxipY9LosE3ziM29byjak4GUc=
-=4asC
------END PGP SIGNATURE-----
-
---zzpialt2nuswu7ld--
