@@ -7,40 +7,40 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE25CC433E0
-	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B097C433E0
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:59:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BC1C0208DB
-	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:49:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A3EE208A9
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Jan 2021 21:59:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729877AbhAQVtq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 16:49:46 -0500
-Received: from sender11-of-o51.zoho.eu ([31.186.226.237]:21172 "EHLO
+        id S1730186AbhAQV7b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 16:59:31 -0500
+Received: from sender11-of-o51.zoho.eu ([31.186.226.237]:21128 "EHLO
         sender11-of-o51.zoho.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729331AbhAQVtp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 16:49:45 -0500
-ARC-Seal: i=1; a=rsa-sha256; t=1610920135; cv=none; 
+        with ESMTP id S1730185AbhAQV7X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 16:59:23 -0500
+ARC-Seal: i=1; a=rsa-sha256; t=1610919720; cv=none; 
         d=zohomail.eu; s=zohoarc; 
-        b=RPQODZVz2LCAHCSLHehY6mdIQolV4jP55AqPvfh7dz7obnIAV74iifmpgQJUc9Q9TI2qjan9wAUdBgfpIhwgJLqsXLP6IqHciVQCQN4OOin4aAcTMoqr2i9+EC/q3CHmzw/mUbM48NdHhwGvDfZDRepuIdtZIN+V77ac0qlc+z0=
+        b=T6ZiSJEnKAgD1fHvgi9+5OBGTROu7NvHycmmlw7UvMeOPw4EVzFyCrfdA5HZTtFdFH+b0d2Y1UE2T+EI7FoVYCNiomhvy1yXYv92Vn6LHP7Fi/eXH3KaJf3wIVHA7MFUBtSOcfyqLzEiqnUBRPnWQi9WdkaV3RvfFQRucinDCXY=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
-        t=1610920135; h=Content-Type:Content-Transfer-Encoding:Cc:Date:From:MIME-Version:Message-ID:Subject:To; 
-        bh=/iqAgMNp+FlnJhzzH8xC5dIrusI6dNUJwgOXRb8KHSM=; 
-        b=SPLoYxWNIFBZAlpzeCp3jyzkhm8tP+Kh4ZML6QZrDF9nBfqNZ+giW4rLCa473vB9hb+PvhmQS/PpbF8BTzx6gWOMZxvTN+3kSYCoci78SQinwezQraP5jxbOfR//S7AHdyoTPAa7Of6fNn2s8eg33TWZQBPRIZPW/Zfs+7hBeSQ=
+        t=1610919720; h=Content-Type:Content-Transfer-Encoding:Cc:Date:From:MIME-Version:Message-ID:Subject:To; 
+        bh=oya5WPtN116hQHLGQkYpVddhzhK3tPiR8VPGqrDlLac=; 
+        b=U+4FG+fY8t05ED6tIRPav8b0t+sTJTkCT0lWwK2wLf0DZp7sM/V2HjWDcZGpBu8go/oSevB3Wsn+O3havb0CRUHz0SrTuISs3PS3mxQvTMyhLLUISNreAwY6wpPZ/Dm7b5uwSwQXiaCOSEGunjFA6nsDZkIuzNaYQKtspwySVuI=
 ARC-Authentication-Results: i=1; mx.zohomail.eu;
         spf=pass  smtp.mailfrom=philipp@uvos.xyz;
         dmarc=pass header.from=<philipp@uvos.xyz> header.from=<philipp@uvos.xyz>
 Received: from localhost.localdomain (ip-95-222-215-9.hsi15.unitymediagroup.de [95.222.215.9]) by mx.zoho.eu
-        with SMTPS id 1610920133704549.3530334433713; Sun, 17 Jan 2021 22:48:53 +0100 (CET)
-Date:   Sun, 17 Jan 2021 22:48:53 +0100
+        with SMTPS id 1610919718953679.2994000138575; Sun, 17 Jan 2021 22:41:58 +0100 (CET)
+Date:   Sun, 17 Jan 2021 22:41:58 +0100
 From:   Carl Philipp Klemm <philipp@uvos.xyz>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
         Arthur Demchenkov <spinal.by@gmail.com>,
         Tony Lindgren <tony@atomide.com>,
         Merlijn Wajer <merlijn@wizzup.org>, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 5/5] power: supply: cpcap-charger: Add usleep to cpcap
- charger to avoid usb plug bounce
-Message-Id: <20210117224853.3602368391c9785e74748239@uvos.xyz>
+Subject: [PATCH 1/5] power: supply: cpcap-charger: get the battery inserted
+ infomation from cpcap-battery
+Message-Id: <20210117224158.f0ac792da5f480a660ff3c89@uvos.xyz>
 X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -50,44 +50,86 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Adds 80000 us sleep when the usb cable is plugged in to hopefully avoid
-bouncing contacts.
-
-Upon pluging in the usb cable vbus will bounce for some time, causing cpcap to
-dissconnect charging due to detecting an undervoltage condition. This is a
-scope of vbus on xt894 while quickly inserting the usb cable with firm force,
-probed at the far side of the usb socket and vbus loaded with approx 1k:
-http://uvos.xyz/maserati/usbplug.jpg.
-
-As can clearly be seen, vbus is all over the place for the first 15 ms or so
-with a small blip at ~40 ms this causes the cpcap to trip up and disable
-charging again.
-
-The delay helps cpcap_usb_detect avoid the worst of this. It is, however, still
-not ideal as strong vibrations can cause the issue to reapear any time during
-charging. I have however not been able to cause the device to stop charging due
-to this in practice as it is hard to vibrate the device such that the vbus pins
-start bouncing again but cpcap_usb_detect is not called again due to a detected
-disconnect/reconnect event.
+This avoids reimplementing the detection logic twice and removes the
+possibility of activating charging with 500mA even if a battery is not
+detected.
 
 Signed-off-by: Carl Philipp Klemm <philipp@uvos.xyz>
 ---
- drivers/power/supply/cpcap-charger.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/power/supply/cpcap-charger.c | 41 ++++++++++++++--------------
+ 1 file changed, 21 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
-index be7d1da7a5a5..3e5fbdbdd645 100644
+index 823d666f09e0..152090faf5b2 100644
 --- a/drivers/power/supply/cpcap-charger.c
 +++ b/drivers/power/supply/cpcap-charger.c
-@@ -650,6 +650,9 @@ static void cpcap_usb_detect(struct work_struct *work)
- 		return;
- 	}
+@@ -26,8 +26,8 @@
+ #include <linux/gpio/consumer.h>
+ #include <linux/usb/phy_companion.h>
+ #include <linux/phy/omap_usb.h>
+-#include <linux/usb/otg.h>
+ #include <linux/iio/consumer.h>
++#include <linux/usb/otg.h>
+ #include <linux/mfd/motorola-cpcap.h>
  
-+	/* Delay for 80ms to avoid vbus bouncing when usb cable is plugged in */
-+	usleep_range(80000, 120000);
+ /*
+@@ -173,23 +173,6 @@ static enum power_supply_property cpcap_charger_props[] = {
+ 	POWER_SUPPLY_PROP_CURRENT_NOW,
+ };
+ 
+-/* No battery always shows temperature of -40000 */
+-static bool cpcap_charger_battery_found(struct cpcap_charger_ddata *ddata)
+-{
+-	struct iio_channel *channel;
+-	int error, temperature;
+-
+-	channel = ddata->channels[CPCAP_CHARGER_IIO_BATTDET];
+-	error = iio_read_channel_processed(channel, &temperature);
+-	if (error < 0) {
+-		dev_warn(ddata->dev, "%s failed: %i\n", __func__, error);
+-
+-		return false;
+-	}
+-
+-	return temperature > -20000 && temperature < 60000;
+-}
+-
+ static int cpcap_charger_get_charge_voltage(struct cpcap_charger_ddata *ddata)
+ {
+ 	struct iio_channel *channel;
+@@ -696,11 +679,29 @@ static void cpcap_usb_detect(struct work_struct *work)
+ 
+ 	if (!ddata->feeding_vbus && cpcap_charger_vbus_valid(ddata) &&
+ 	    s.chrgcurr1) {
+-		int max_current = 532000;
++		int max_current;
+ 		int vchrg, ichrg;
++		union power_supply_propval val;
++		struct power_supply *battery;
+ 
+-		if (cpcap_charger_battery_found(ddata))
++		battery = power_supply_get_by_phandle(ddata->dev->of_node, "battery");
++		if (IS_ERR_OR_NULL(battery)) {
++			dev_err(ddata->dev, "battery described by phandle not available %li\n",
++					PTR_ERR(battery));
++			return;
++		}
 +
- 	/* Throttle chrgcurr2 interrupt for charger done and retry */
- 	switch (ddata->status) {
- 	case POWER_SUPPLY_STATUS_CHARGING:
++		error = power_supply_get_property(battery, POWER_SUPPLY_PROP_PRESENT, &val);
++		power_supply_put(battery);
++		if (error)
++			goto out_err;
++
++		if (val.intval) {
+ 			max_current = 1596000;
++		} else {
++			dev_info(ddata->dev, "battery not inserted charging disabled\n");
++			max_current = 0;
++		}
+ 
+ 		if (max_current > ddata->limit_current)
+ 			max_current = ddata->limit_current;
 -- 
 2.29.2
+
+
