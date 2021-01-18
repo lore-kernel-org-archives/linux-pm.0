@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B163DC433DB
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:15:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C986C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:16:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 755A720759
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:15:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C7BF62075B
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:16:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730521AbhARBPW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 20:15:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52844 "EHLO
+        id S1730652AbhARBPd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 20:15:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52854 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730583AbhARBOg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 20:14:36 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FFC9C061573;
-        Sun, 17 Jan 2021 17:13:54 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id v24so15046631lfr.7;
-        Sun, 17 Jan 2021 17:13:54 -0800 (PST)
+        with ESMTP id S1730611AbhARBOh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 20:14:37 -0500
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2619C061575;
+        Sun, 17 Jan 2021 17:13:56 -0800 (PST)
+Received: by mail-lf1-x135.google.com with SMTP id o17so21705198lfg.4;
+        Sun, 17 Jan 2021 17:13:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=XcOh2xAP7VZKJ2ySQGqyTzs8gZeIcwyB1WogfvPY5Tg=;
-        b=jwMdfO03LYllUg/SmQv5V0IyTz6rRHafgK7yVjJLnaYbh1QHDZfQA6+wg4WjNueUnj
-         9FbsJVqGj6A4Rfpz33uKcze/8s6eUFZ24LcVL11sPtUP82qZGVTIPPl0FqgZ5sp81PEi
-         jXqf1Y+RRqnUt/Kp5Usi3oYXfVSGqpelKiMQvFTTUKwiRuAeu8PWnstgc9zdpnWsbdpR
-         Gxe+xFCY2GH4EUc/2aKTzYPeaTIfkFY/G3IQB1MMUq9PgYv4dEK0tzOIIbVntPrCCxrt
-         YuJ723qycWEq1iK5negTXvkTQjCX5wbODDG2E3VIF3MQOOryUM4bTKNXeBLvoh8Bl/Dk
-         w9zA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=nCuBXNhGojlrgJVxSay00xtDttizwyfPZHpVA3kvWHc=;
+        b=oszOrekknXS9fkwgtul+5DMPuV0bcT2R17dEPyNlxmF5V8qqrCiR/PYZlrPH4FvAKv
+         NQGq3zrIW/aFj5OzgxIzhYnIDLkneLKWXkyOxrChrYQxsb3W/VRXaWjVKyQr00nwF1HX
+         Y7mJERYIIGCzZQ/OKIaYxA0Y51eq0yXy6Pqej5kmqjj28a/T+Fn4ylCwcwkEwdpU+KMT
+         XVdRgswyw49QRSzkf+BsqjA6M8B6iK98k6J8z15HqJLGV9SyHx71FHn6X5o0AqO2zu62
+         9D1s7gFO+bB4DkhKSQ0+ej5xehNOJ9FaSIstrVO1ldNXBj7ZLxFBOGNrYEfIGphZulFz
+         iAUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=XcOh2xAP7VZKJ2ySQGqyTzs8gZeIcwyB1WogfvPY5Tg=;
-        b=bBrpqKvUBPkwVPijomtkpcurVS1AUDsgKamNAoW/P6xa/QuvMqKyY2JZhIwmXCgxkq
-         W+w5qTKDwP+HA2On+3OmZPUuv7NwcdpGq02U6h9+b2UJ8V0o5mTWux92TDndtz6GUzK0
-         UL5ZMWQZyEZdd/isRNVyLVlExAvhm5fb4IE55cXNqYxPfKDcOlgBf0S2DTgjG7l0RwBO
-         zqUdB4jK4rR5qYhmWN9TXVLxE48Sjp5k84g00vOiWQOsyM3LfbuRCiUiirchZ20boOyV
-         fLR0y3WhVUx7qbXiMYibqhR5cg6jB5yDJEv6wEjSyiIRtS3BI1clbv20qTTuJL35Ut3b
-         e27A==
-X-Gm-Message-State: AOAM532WZ0c/NXg3SueNkFK6hpk7nmDkhtecoI+QHJ5Ljcpbmr5f31Vf
-        XfmChE6YfCpwL04FlVPlZFE=
-X-Google-Smtp-Source: ABdhPJxKlbuErs5/kZ5sbgaR/zrvu00CfzF9pCQWh/7rECWFKpoUl30ragGPVNw4E0Ebeo/UfN1GYQ==
-X-Received: by 2002:a19:8343:: with SMTP id f64mr10329900lfd.542.1610932433355;
-        Sun, 17 Jan 2021 17:13:53 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=nCuBXNhGojlrgJVxSay00xtDttizwyfPZHpVA3kvWHc=;
+        b=nff3WvxcXtohYgDWKt5+zIRE6Fic5eaA1hwx4vLoxxA92Va5M29IHeRz3UDNbnFpBS
+         NNAxCP3WKa3+DUccXZXZPCHGhnd6aO+KDUWBPQmcnHbyt9imCCAuN+DyE4em8VQgjt64
+         /27BtaZZHOcB6f4tafUgR5cnzyMDOwL7/QisyC18mBaFzZ3hsZnRiQRZtQJBtE/hh/4k
+         6Ndcs9KrL/j4SmF6hIoVpbRmJ0+WV5C9gDNf4zo9bDELYoo+/AcMbGzdVPkyPhaMwLBS
+         w+dXd56nTbFV95iwxxxfc8D28A1z/NxWytIE5ncIXZVVR+V3NG7QI5ykG8FyWbQhxFEB
+         Sg+w==
+X-Gm-Message-State: AOAM533gkRF9U7vIZnAPbseRfC7mdH45ihHQk1pmH5k0jDwhVu3MYGUM
+        8oRyC78LLYDV9e7xTZQCP80=
+X-Google-Smtp-Source: ABdhPJz0XMurcJmPJ3DTpkXeeGjl31IA9sGKlHz+e92BjWIqjVlBNPlNEO69/gxvaNhBszp3jKaAMg==
+X-Received: by 2002:ac2:4a71:: with SMTP id q17mr9711227lfp.11.1610932435222;
+        Sun, 17 Jan 2021 17:13:55 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id l84sm1710836lfd.75.2021.01.17.17.13.52
+        by smtp.gmail.com with ESMTPSA id l84sm1710836lfd.75.2021.01.17.17.13.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Jan 2021 17:13:52 -0800 (PST)
+        Sun, 17 Jan 2021 17:13:54 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -71,43 +71,89 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Matt Merhar <mattmerhar@protonmail.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 0/3] GENPD API improvements
-Date:   Mon, 18 Jan 2021 04:13:27 +0300
-Message-Id: <20210118011330.4145-1-digetx@gmail.com>
+Subject: [PATCH v3 2/3] PM: domains: Add "performance" column to debug summary
+Date:   Mon, 18 Jan 2021 04:13:29 +0300
+Message-Id: <20210118011330.4145-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210118011330.4145-1-digetx@gmail.com>
+References: <20210118011330.4145-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Add "performance" column to debug summary which shows performance state
+of all power domains and theirs devices.
 
-This is a continuation of [1], where Ulf Hansson suggested to factor out
-GENPD patches into a separate series. This series is a prerequisite of
-the power domain driver for NVIDIA Tegra SoCs.
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+Tested-by: Matt Merhar <mattmerhar@protonmail.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/base/power/domain.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-[1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
-
-Changelog:
-
-v3: - Added r-b from Ulf Hansson.
-
-    - Added new patch "Make of_genpd_add_subdomain() to return -EPROBE_DEFER",
-      which was suggested by Ulf Hansson.
-
-    - Improved "Add "performance" column to debug summary" patch by
-      correcting the formatting of debug output, which had a superfluous
-      whitespace.
-
-Dmitry Osipenko (3):
-  PM: domains: Make set_performance_state() callback optional
-  PM: domains: Add "performance" column to debug summary
-  PM: domains: Make of_genpd_add_subdomain() to return -EPROBE_DEFER
-
- drivers/base/power/domain.c | 32 +++++++++++++++++++++-----------
- 1 file changed, 21 insertions(+), 11 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index a3e1bfc233d4..2ab77aa516eb 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2951,7 +2951,15 @@ static void rtpm_status_str(struct seq_file *s, struct device *dev)
+ 	else
+ 		WARN_ON(1);
+ 
+-	seq_puts(s, p);
++	seq_printf(s, "%-25s  ", p);
++}
++
++static void perf_status_str(struct seq_file *s, struct device *dev)
++{
++	struct generic_pm_domain_data *gpd_data;
++
++	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++	seq_put_decimal_ull(s, "", gpd_data->performance_state);
+ }
+ 
+ static int genpd_summary_one(struct seq_file *s,
+@@ -2979,7 +2987,7 @@ static int genpd_summary_one(struct seq_file *s,
+ 	else
+ 		snprintf(state, sizeof(state), "%s",
+ 			 status_lookup[genpd->status]);
+-	seq_printf(s, "%-30s  %-15s ", genpd->name, state);
++	seq_printf(s, "%-30s  %-50s %u", genpd->name, state, genpd->performance_state);
+ 
+ 	/*
+ 	 * Modifications on the list require holding locks on both
+@@ -2987,6 +2995,8 @@ static int genpd_summary_one(struct seq_file *s,
+ 	 * Also genpd->name is immutable.
+ 	 */
+ 	list_for_each_entry(link, &genpd->parent_links, parent_node) {
++		if (list_is_first(&link->parent_node, &genpd->parent_links))
++			seq_printf(s, "\n%48s", " ");
+ 		seq_printf(s, "%s", link->child->name);
+ 		if (!list_is_last(&link->parent_node, &genpd->parent_links))
+ 			seq_puts(s, ", ");
+@@ -3001,6 +3011,7 @@ static int genpd_summary_one(struct seq_file *s,
+ 
+ 		seq_printf(s, "\n    %-50s  ", kobj_path);
+ 		rtpm_status_str(s, pm_data->dev);
++		perf_status_str(s, pm_data->dev);
+ 		kfree(kobj_path);
+ 	}
+ 
+@@ -3016,9 +3027,9 @@ static int summary_show(struct seq_file *s, void *data)
+ 	struct generic_pm_domain *genpd;
+ 	int ret = 0;
+ 
+-	seq_puts(s, "domain                          status          children\n");
++	seq_puts(s, "domain                          status          children                           performance\n");
+ 	seq_puts(s, "    /device                                             runtime status\n");
+-	seq_puts(s, "----------------------------------------------------------------------\n");
++	seq_puts(s, "----------------------------------------------------------------------------------------------\n");
+ 
+ 	ret = mutex_lock_interruptible(&gpd_list_lock);
+ 	if (ret)
 -- 
 2.29.2
 
