@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2351DC433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BDF2C433E6
 	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 00:57:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EBE192256F
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 00:57:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D28520758
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 00:57:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730324AbhARA4w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 19:56:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48920 "EHLO
+        id S1729666AbhARA4R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 19:56:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48900 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730186AbhARA4T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 19:56:19 -0500
-Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42253C061757;
-        Sun, 17 Jan 2021 16:55:39 -0800 (PST)
-Received: by mail-lj1-x22a.google.com with SMTP id n8so7709970ljg.3;
-        Sun, 17 Jan 2021 16:55:39 -0800 (PST)
+        with ESMTP id S1726785AbhARA4Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 19:56:16 -0500
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F644C061573;
+        Sun, 17 Jan 2021 16:55:36 -0800 (PST)
+Received: by mail-lj1-x229.google.com with SMTP id u21so16546011lja.0;
+        Sun, 17 Jan 2021 16:55:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=oWDHn2kHepqBlhfwoh/fWAV+Z/o0dseWB+wQwSbUTtY=;
-        b=mzEe1X1FOiyM2KN66Sqw8MM4IaAXnqe/GZ80PpC1BblpLlCv2w4uE5Mb/pMIIGoh3P
-         BXqvFO9fuGnLsxJuwyFmtyHbekfZbeRTw4C24K4tp0LUcQXo4UZByKtdlf3unsj/LcLq
-         Y7QPHiMyGihaWZJn/MmNAArw8Ej9PH02ZvD0vFxqyaPAx7FO/5UtlhXJGG9+GhbG8Y2Z
-         s4IVr9huD7p0gBcPt6HwQZBQ8rTzefpi/xtzCOA5o5BbHGbHJhMFPMmRcpVyruLq5Chb
-         IeSJSwpQ89/PRIRjzPY1BcnM/ZRkGaiIAVV3+Nakj8WTuXv2bAe3W7v7FuvicN2k95k6
-         8ayQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rMgp5qBVepVz5NKCcoZ4TY79R+AV1qH3h7i7WZm6eww=;
+        b=DfJfh9Kk+MCB59YPAzxfUunHUTrnaLHCStoIyl3SZ6FXYsLwSv7PEWN3/9XtIpSFgV
+         UelFVYApIyATt0TkGsspjlhezJ1kZr7YV1fpyxvWe6Clj3+fsKzGc6xljr6nWMtggTn5
+         tpQoH9kzJSDhka2eGsDqRB+PrggGWUY8BwOO6wtCLfh5DZvmmcxmIvYMZCv/kAbAkLQC
+         dQAlbrDcUz0HCKY6+qtMNJuJjnQmi9VJqbnbzyFiyiMacK90ZXYBb9o2tuRZI+zyaCdQ
+         ZDQSatDwcaivCTtd4QABXcB6XbT7XiW0rJqR5I5JhqhOx0hpPaIxu4QFXtYIvGxMdDXK
+         py/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=oWDHn2kHepqBlhfwoh/fWAV+Z/o0dseWB+wQwSbUTtY=;
-        b=HFplaadYI4fy9SNYIjlz+P8/o2Yxq4iOPof2dwxFh0q6feTcryzbXWqCxXBPRR5Pgs
-         YiSV3Cb1Ivv3vNgNdeKKzdp0L15y0gJrWDIs5KdgXNjBaAeSuV6wgJjr9p+jOZbZmsPt
-         OLHVTZLzGhTlKQI/vWGxg/phXwxwUr/GIL67XPwpKlrhlAwPvVS7raawOskUGkWg/Oz+
-         SssLLuiTnJMKxkDJd0GI6jX0ThQ52bV2db6SJKzgV4WbK1kdih35hNtRDU/DG8MAuNTH
-         rYXuVg9Lje2J7duvtnAAhxXXO/DLUQoWyVE/EP2x/atnUr8qYZUTohrwsByr6GFFpYQ/
-         MFLg==
-X-Gm-Message-State: AOAM532qWQ8ecgV3uuXu5dHa1OcYfH32pJ3LQR1Owqi0CvMAAeUmvFSz
-        QSxeSwQRobV+S070eQlG2OU=
-X-Google-Smtp-Source: ABdhPJy+hz3BIUUk1wNYjcQ0h/81YCFl5L/xhHLYcQJRmIeC49DpfG8263aOYLk7r+GHlmSiKHkxTg==
-X-Received: by 2002:a05:651c:2005:: with SMTP id s5mr9014741ljo.152.1610931337792;
-        Sun, 17 Jan 2021 16:55:37 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rMgp5qBVepVz5NKCcoZ4TY79R+AV1qH3h7i7WZm6eww=;
+        b=rCTBNVkEF+bx0EPrna1NJE4MHM+aktBnV3ehTkWkW1Jwz+1KgQvI+l+0Nv/N84XAl+
+         ud7IkqZOr6Xj1CGnw7Q+B45C34XVAH5xpRSEBCB1ZOAXfT4khy4WCbK8pZbLdeBWVG5b
+         oRu4qZSmRQFLP3Z58/zQyJy7TLzao74I2lflkknDiKQ4FJAMC2W7UOEnUB6B+PpsmqPK
+         ibnYZdmEhIEWDfue3SEvNMLzGRwdjk6zZ0F4+/M4B0YEm+ze1lxvi3w6gq2u7K+gVYV9
+         OZy2Ip3m7Rp0ZXjwECU6VMwRdUFYCmwUA6NQq5Z4hhXoGckTEmep3RtRV+27dHWsGUzo
+         RWHw==
+X-Gm-Message-State: AOAM531sKMgyL7vgYmbX0Xsy5iHh3MOQBd/kiHMegWjpqYtd4634c1pb
+        +MA1lkBV3wh+51gk3gt+88c=
+X-Google-Smtp-Source: ABdhPJyE5TmK4dBOotPQzx4Metvd3XuBro3RPkVDf2RU/677Q+KiB8eMvdPnMG/1mYZbfR/LlEoPZA==
+X-Received: by 2002:a2e:914d:: with SMTP id q13mr9373344ljg.205.1610931334944;
+        Sun, 17 Jan 2021 16:55:34 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id m24sm1484553ljj.62.2021.01.17.16.55.36
+        by smtp.gmail.com with ESMTPSA id m24sm1484553ljj.62.2021.01.17.16.55.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Jan 2021 16:55:37 -0800 (PST)
+        Sun, 17 Jan 2021 16:55:34 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -73,50 +73,68 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Matt Merhar <mattmerhar@protonmail.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 03/12] opp: Correct debug message in _opp_add_static_v2()
-Date:   Mon, 18 Jan 2021 03:55:15 +0300
-Message-Id: <20210118005524.27787-4-digetx@gmail.com>
+Subject: [PATCH v3 00/12] OPP API fixes and improvements
+Date:   Mon, 18 Jan 2021 03:55:12 +0300
+Message-Id: <20210118005524.27787-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210118005524.27787-1-digetx@gmail.com>
-References: <20210118005524.27787-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The debug message always prints rate=0 instead of a proper value, fix it.
+Hi,
 
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-Tested-by: Matt Merhar <mattmerhar@protonmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/opp/of.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This series fixes problems and adds features to OPP API that are required
+for implementation of a power domain driver for NVIDIA Tegra SoCs.
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 50df483c7dc3..63b16cdba5ea 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -755,7 +755,6 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
- 		struct device *dev, struct device_node *np)
- {
- 	struct dev_pm_opp *new_opp;
--	u64 rate = 0;
- 	u32 val;
- 	int ret;
- 	bool rate_not_available = false;
-@@ -772,7 +771,8 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
- 
- 	/* Check if the OPP supports hardware's hierarchy of versions or not */
- 	if (!_opp_is_supported(dev, opp_table, np)) {
--		dev_dbg(dev, "OPP not supported by hardware: %llu\n", rate);
-+		dev_dbg(dev, "OPP not supported by hardware: %lu\n",
-+			new_opp->rate);
- 		goto free_opp;
- 	}
- 
+It is a continuation of [1], where Viresh Kumar asked to factor OPP
+patches into a separate series. I factored out the patches into this
+series, addressed the previous review comments and re-based patches
+on top of [2], which replaced some of my patches that added resource-managed
+helpers.
+
+[1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
+[2] https://lore.kernel.org/linux-pm/20210101165507.19486-1-tiny.windzz@gmail.com/
+
+Changelog:
+
+v3: - Reordered patches by importance.
+
+    - Added locking to dev_pm_opp_set_voltage().
+
+    - Reworked "Fix adding OPP entries in a wrong order if rate is unavailable"
+      patch, like it was suggested by Viresh Kumar.
+
+    - Reworked "Support set_opp() customization without requiring to use
+      regulators" patch, like it was suggested by Viresh Kumar.
+
+      The opp_table->set_opp_data is now allocated by dev_pm_opp_register_set_opp_helper().
+
+      The set_opp_data is refcounted now and can be allocated by any other
+      OPP functions if this will become needed in the future for other OPP API
+      changes.
+
+Dmitry Osipenko (12):
+  opp: Fix adding OPP entries in a wrong order if rate is unavailable
+  opp: Filter out OPPs based on availability of a required-OPP
+  opp: Correct debug message in _opp_add_static_v2()
+  opp: Add dev_pm_opp_sync_regulators()
+  opp: Add dev_pm_opp_set_voltage()
+  opp: Add dev_pm_opp_find_level_ceil()
+  opp: Add dev_pm_opp_get_required_pstate()
+  opp: Add devm_pm_opp_register_set_opp_helper
+  opp: Add devm_pm_opp_attach_genpd
+  opp: Support set_opp() customization without requiring to use
+    regulators
+  opp: Handle missing OPP table in dev_pm_opp_xlate_performance_state()
+  opp: Print OPP level in debug message of _opp_add_static_v2()
+
+ drivers/opp/core.c     | 309 +++++++++++++++++++++++++++++++++++++++--
+ drivers/opp/of.c       |   9 +-
+ include/linux/pm_opp.h |  49 +++++++
+ 3 files changed, 349 insertions(+), 18 deletions(-)
+
 -- 
 2.29.2
 
