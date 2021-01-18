@@ -2,65 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C408AC433E9
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B163DC433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:15:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E33E207AE
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:05:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 755A720759
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:15:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730539AbhARBF0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 20:05:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49084 "EHLO
+        id S1730521AbhARBPW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 20:15:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52844 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730433AbhARA5E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 19:57:04 -0500
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE51CC0613ED;
-        Sun, 17 Jan 2021 16:55:43 -0800 (PST)
-Received: by mail-lf1-x136.google.com with SMTP id o13so21663816lfr.3;
-        Sun, 17 Jan 2021 16:55:43 -0800 (PST)
+        with ESMTP id S1730583AbhARBOg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 20:14:36 -0500
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FFC9C061573;
+        Sun, 17 Jan 2021 17:13:54 -0800 (PST)
+Received: by mail-lf1-x12f.google.com with SMTP id v24so15046631lfr.7;
+        Sun, 17 Jan 2021 17:13:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=vgDoSUPRoPUFpDdr936+57Rv3VyE6xZwg/R405Zj7FM=;
-        b=Q9Xr1KYDDf/wQO0QAAoJdCsR2X3CU7X12Zn+9x7ok8bjlryXvSfBcnYhXSGFpEjT/B
-         nDqZ6GJkMxI8xISHL/hgL9NIDd+mI7Lv+cPCvTPFQwPfOcZsmDKiPAk0njQJyGJTqSA8
-         MlsZtl7ST3Wj/kG9MNcptgsppWrwLTRsEEZsmApI0JimIQoGoOrI/KL3spNwUAdVyMTn
-         1OqS/98Hg8uVZIKW0nuwpSQh7rly8krNrgY4RjNORxzmsQFgEfMZGMlESAUqBRB0XpW7
-         UshUuvEtwfV7valYKFBhg18jtXBcOkMIu99RrZWqHhCxlpXHGv+d/h3LYmYgt6RUndGj
-         U5VQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=XcOh2xAP7VZKJ2ySQGqyTzs8gZeIcwyB1WogfvPY5Tg=;
+        b=jwMdfO03LYllUg/SmQv5V0IyTz6rRHafgK7yVjJLnaYbh1QHDZfQA6+wg4WjNueUnj
+         9FbsJVqGj6A4Rfpz33uKcze/8s6eUFZ24LcVL11sPtUP82qZGVTIPPl0FqgZ5sp81PEi
+         jXqf1Y+RRqnUt/Kp5Usi3oYXfVSGqpelKiMQvFTTUKwiRuAeu8PWnstgc9zdpnWsbdpR
+         Gxe+xFCY2GH4EUc/2aKTzYPeaTIfkFY/G3IQB1MMUq9PgYv4dEK0tzOIIbVntPrCCxrt
+         YuJ723qycWEq1iK5negTXvkTQjCX5wbODDG2E3VIF3MQOOryUM4bTKNXeBLvoh8Bl/Dk
+         w9zA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=vgDoSUPRoPUFpDdr936+57Rv3VyE6xZwg/R405Zj7FM=;
-        b=HUBqg7V+b8IqLvuwJC633ZsV/ID6nRUwxevu/CDaymfM2O94+sKNdwMclIljClnoHY
-         hR6g+qQCdBQ56AuftQAhn+yRtvy9EU4Nuu7aMpqKYYa5oeZ3EvLuY3eA6K0UDbzp6cvI
-         G/Qunpfm8tpDNaXXb1OYzJt9iWEewgLw2aiAkAdxpbIj3vz8XeD0nK54b+zUwhmnnWMq
-         ueKXvXH0ZoCe5xojpXgbbDPVzq6Hh2zbJDCtYB9FyK7hjUXRKl8bKnZz3qMpDVOuIMJC
-         I8jB3RUzIGZZfjK83NG7pDwnHaQLeN7qUn286W4jvEWy5NSo9UrAsp6Yq9ANcKRiBUHH
-         cywg==
-X-Gm-Message-State: AOAM531iBOTfLZdWYzFBuNKbR3+6+8F7bcBRzbJwyC00k3ByUxPLEIF9
-        KeV/KM9alwNh9A9zs3Rub3s=
-X-Google-Smtp-Source: ABdhPJyVyFQhDEzOgofsjcTMdMzB3JK/5khRhA4EtPdSZyVBvc2EQbXNf/IfFQoYpIg2bvHagCpgag==
-X-Received: by 2002:a19:6459:: with SMTP id b25mr9607365lfj.635.1610931342481;
-        Sun, 17 Jan 2021 16:55:42 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=XcOh2xAP7VZKJ2ySQGqyTzs8gZeIcwyB1WogfvPY5Tg=;
+        b=bBrpqKvUBPkwVPijomtkpcurVS1AUDsgKamNAoW/P6xa/QuvMqKyY2JZhIwmXCgxkq
+         W+w5qTKDwP+HA2On+3OmZPUuv7NwcdpGq02U6h9+b2UJ8V0o5mTWux92TDndtz6GUzK0
+         UL5ZMWQZyEZdd/isRNVyLVlExAvhm5fb4IE55cXNqYxPfKDcOlgBf0S2DTgjG7l0RwBO
+         zqUdB4jK4rR5qYhmWN9TXVLxE48Sjp5k84g00vOiWQOsyM3LfbuRCiUiirchZ20boOyV
+         fLR0y3WhVUx7qbXiMYibqhR5cg6jB5yDJEv6wEjSyiIRtS3BI1clbv20qTTuJL35Ut3b
+         e27A==
+X-Gm-Message-State: AOAM532WZ0c/NXg3SueNkFK6hpk7nmDkhtecoI+QHJ5Ljcpbmr5f31Vf
+        XfmChE6YfCpwL04FlVPlZFE=
+X-Google-Smtp-Source: ABdhPJxKlbuErs5/kZ5sbgaR/zrvu00CfzF9pCQWh/7rECWFKpoUl30ragGPVNw4E0Ebeo/UfN1GYQ==
+X-Received: by 2002:a19:8343:: with SMTP id f64mr10329900lfd.542.1610932433355;
+        Sun, 17 Jan 2021 17:13:53 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id m24sm1484553ljj.62.2021.01.17.16.55.41
+        by smtp.gmail.com with ESMTPSA id l84sm1710836lfd.75.2021.01.17.17.13.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Jan 2021 16:55:42 -0800 (PST)
+        Sun, 17 Jan 2021 17:13:52 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         Peter Geis <pgwipeout@gmail.com>,
         Nicolas Chauvet <kwizart@gmail.com>,
@@ -68,102 +66,48 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Kevin Hilman <khilman@kernel.org>,
         Peter De Schrijver <pdeschrijver@nvidia.com>,
         Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Matt Merhar <mattmerhar@protonmail.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 08/12] opp: Add devm_pm_opp_register_set_opp_helper
-Date:   Mon, 18 Jan 2021 03:55:20 +0300
-Message-Id: <20210118005524.27787-9-digetx@gmail.com>
+Subject: [PATCH v3 0/3] GENPD API improvements
+Date:   Mon, 18 Jan 2021 04:13:27 +0300
+Message-Id: <20210118011330.4145-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210118005524.27787-1-digetx@gmail.com>
-References: <20210118005524.27787-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add resource-managed version of dev_pm_opp_register_set_opp_helper().
+Hi,
 
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-Tested-by: Matt Merhar <mattmerhar@protonmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/opp/core.c     | 34 ++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h |  8 ++++++++
- 2 files changed, 42 insertions(+)
+This is a continuation of [1], where Ulf Hansson suggested to factor out
+GENPD patches into a separate series. This series is a prerequisite of
+the power domain driver for NVIDIA Tegra SoCs.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index fde2ec00ab0e..8e0d2193fd5f 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2857,3 +2857,37 @@ int dev_pm_opp_set_voltage(struct device *dev, struct dev_pm_opp *opp)
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_set_voltage);
-+
-+static void devm_pm_opp_unregister_set_opp_helper(void *data)
-+{
-+	dev_pm_opp_unregister_set_opp_helper(data);
-+}
-+
-+/**
-+ * devm_pm_opp_register_set_opp_helper() - Register custom set OPP helper
-+ * @dev: Device for which the helper is getting registered.
-+ * @set_opp: Custom set OPP helper.
-+ *
-+ * This is a resource-managed version of dev_pm_opp_register_set_opp_helper().
-+ *
-+ * Return: pointer to 'struct opp_table' on success and errorno otherwise.
-+ */
-+struct opp_table *
-+devm_pm_opp_register_set_opp_helper(struct device *dev,
-+				    int (*set_opp)(struct dev_pm_set_opp_data *data))
-+{
-+	struct opp_table *opp_table;
-+	int err;
-+
-+	opp_table = dev_pm_opp_register_set_opp_helper(dev, set_opp);
-+	if (IS_ERR(opp_table))
-+		return opp_table;
-+
-+	err = devm_add_action_or_reset(dev, devm_pm_opp_unregister_set_opp_helper,
-+				       opp_table);
-+	if (err)
-+		return ERR_PTR(err);
-+
-+	return opp_table;
-+}
-+EXPORT_SYMBOL_GPL(devm_pm_opp_register_set_opp_helper);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index e072148ae0e1..6de5853aaada 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -169,6 +169,7 @@ void dev_pm_opp_remove_table(struct device *dev);
- void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask);
- int dev_pm_opp_sync_regulators(struct device *dev);
- int dev_pm_opp_set_voltage(struct device *dev, struct dev_pm_opp *opp);
-+struct opp_table *devm_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
- #else
- static inline struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
- {
-@@ -428,6 +429,13 @@ static inline int dev_pm_opp_set_voltage(struct device *dev, struct dev_pm_opp *
- 	return -ENOTSUPP;
- }
- 
-+static inline struct opp_table *
-+devm_pm_opp_register_set_opp_helper(struct device *dev,
-+				    int (*set_opp)(struct dev_pm_set_opp_data *data))
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
- #endif		/* CONFIG_PM_OPP */
- 
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+[1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
+
+Changelog:
+
+v3: - Added r-b from Ulf Hansson.
+
+    - Added new patch "Make of_genpd_add_subdomain() to return -EPROBE_DEFER",
+      which was suggested by Ulf Hansson.
+
+    - Improved "Add "performance" column to debug summary" patch by
+      correcting the formatting of debug output, which had a superfluous
+      whitespace.
+
+Dmitry Osipenko (3):
+  PM: domains: Make set_performance_state() callback optional
+  PM: domains: Add "performance" column to debug summary
+  PM: domains: Make of_genpd_add_subdomain() to return -EPROBE_DEFER
+
+ drivers/base/power/domain.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
+
 -- 
 2.29.2
 
