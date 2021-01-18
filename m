@@ -2,107 +2,167 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4E22C433DB
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 11:06:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B85DC433E9
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 11:07:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 73F53223E8
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 11:06:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1CF36221F8
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 11:07:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389414AbhARLGG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Jan 2021 06:06:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38382 "EHLO
+        id S2388307AbhARLGD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Jan 2021 06:06:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389372AbhARLFu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 06:05:50 -0500
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB3C1C061573
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 03:05:09 -0800 (PST)
-Received: by mail-pj1-x1031.google.com with SMTP id p15so9182004pjv.3
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 03:05:09 -0800 (PST)
+        with ESMTP id S2389422AbhARKv2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 05:51:28 -0500
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D255BC0613D6
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 02:50:16 -0800 (PST)
+Received: by mail-pg1-x531.google.com with SMTP id n10so10671151pgl.10
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 02:50:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=F9OQYnavHQh6bInpVCgqxHJv31pmZgSymN0VE7tszfk=;
-        b=uHiQpPrKff4B+Bu4b3Uw6CEvRp88ejQHmkcqCav+K5jRXxOd7H9iZ8b3LdJ43LJK8H
-         1H/PN0RmI1u69Yl0uDvL00yx47sYssOdXGQhn4ARwTmp143byQ15wYJRMGqo+ZHvd9Nj
-         Kb9w3CXJzRQdjggnlhx9eZ8Ak60nAyHb0qDe1HIvCwlnCsjQ9xq1gW/swlR9o5tCa9q+
-         ASr4qB87WY74lv8qtdQY2s5IoFw9mFLmpvwtufih4qTHZzHPDlaLpe+3ABgptj7HtTZj
-         c7uquBZ5TMvWqU/zPQx7OD7j8dx4YW1FEoN1VUXWVUAby0EQEwOkI7v/qCU0R63Z0q9e
-         r0pA==
+        bh=/R3UCFnO6UqmoJANzPoDRlRakiNGCKfWPdfz/PEj6G0=;
+        b=JgIT275MouwzJRI/IlJros32BFBpp/uk6O7jXlgjoZdf6afSkxXYI/VEZ3g/9LKgeO
+         TAPfaMpRl2EyOW6sCdSNNDar8odE4NwLSQS0HZ4t0kj3NwzxWauJuqsYUW7tgFoibNue
+         VYJTENAAxRe6O7YBYHSkHGXrYrHoViznGpSPU0/OfMyQYlWbFQFX1ctE7Pg9txrZAtW+
+         jGxhip9cMCnYTZG2rF3qZC0P2Yq+uCVhyKF7t0dwAabht79kiIhxD368XFeUXT8xcHlK
+         OuLDXgTuET2lSUWm5p4ybvI2c2y1ZWAEL+K56v7obPBK2OggzcSmu/K8GfkMl2r6IfaN
+         QIMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=F9OQYnavHQh6bInpVCgqxHJv31pmZgSymN0VE7tszfk=;
-        b=KOE8BwfFhk0XkvgF/7CYOODN2pEcqUh0BdoJX0I2jUbnIJLxPBSaNaFrMPo4h2fzmO
-         NWLoFbpioy/nL+8iqgvjPObhyZMPBrGDE39PWxuozO8Tc+HqmAOWvx2VVVOH0v317AQ6
-         WWQHm+A8/xb7xliIC7tIOQVpOFMJtWVp2IOGWwoAhrZO+1lWWfACp/MQLFZEt4F9IU5+
-         1usIB7gav3h7XkTuKvb3GqUEPpwQyyYth+ACPhKU/JFdRqBvPmd6AQyNUOtR3bTeQYfO
-         TxB+No8OBQfjzAKBfKI0Bns1KpwGomNT8UKAwRqQ94eOX0ApCatfq7f4mZUHucDpvoso
-         vO3w==
-X-Gm-Message-State: AOAM533oqk/ii6xr0UJiOg9a8oqpegflsS1urXmAo7dX/sBaPuMyGkdE
-        ytWmEPfQGKxeeyFTW4o53BRbDw==
-X-Google-Smtp-Source: ABdhPJxeVSyHqI2EvkjRyPU8nAOFau0V4zeSgemv9Z5asSa44ik/HYhXmOYIPlsQxBg9EFClym1bIw==
-X-Received: by 2002:a17:90b:f08:: with SMTP id br8mr25567326pjb.134.1610967909472;
-        Mon, 18 Jan 2021 03:05:09 -0800 (PST)
+        bh=/R3UCFnO6UqmoJANzPoDRlRakiNGCKfWPdfz/PEj6G0=;
+        b=tBSYNLRy9TVL6HS/sX2dJbRQpQe2PBXWBtOq6TbCIUzemc6j08OMRQD8VSbrzX/pkW
+         MpeESzZ74Pcc5/paXYLXw0og+J+j/0t1DZu7hOo1Bia2jSxKWyKQj5Q4zrAwwvAMgVYZ
+         QRN8hs1+Q+YFXwR8I3WTtYwiG+Mryl2aRq20CIEvE98FhJHD8OXGfdyW2nMDenbuuKvN
+         X9iprLnga3sz+8jtD6UgTbIsd9mB8ztpGKYQ0gJ2/FOfUi7wYfCAz9vxRP0V5vMauO6P
+         KQ1ZtwrELTFnvE9GfQQasZHpJzOAyJ1uuw/PFL4aGiSfsCrau/OBKwQqYwVsWzM+tKm9
+         RlIw==
+X-Gm-Message-State: AOAM532aB438HfyDBgSpAj4U2d+e5QI4+cmusViLgnfdsH61yKQALPHG
+        cXqcsloYuse8r1vHxRfq9PRlQA==
+X-Google-Smtp-Source: ABdhPJx/jeIGcSJLY/ARAydthMDOg2XQJOnRGnR84+atUL4sjdxZXtdurD1hIIsNAIhbU+3GF7/Abw==
+X-Received: by 2002:a63:504e:: with SMTP id q14mr25486348pgl.21.1610967016260;
+        Mon, 18 Jan 2021 02:50:16 -0800 (PST)
 Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id k8sm525490pfp.114.2021.01.18.03.05.07
+        by smtp.gmail.com with ESMTPSA id e3sm9140099pgs.60.2021.01.18.02.50.15
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 18 Jan 2021 03:05:08 -0800 (PST)
-Date:   Mon, 18 Jan 2021 16:35:06 +0530
+        Mon, 18 Jan 2021 02:50:15 -0800 (PST)
+Date:   Mon, 18 Jan 2021 16:20:13 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
+        Mark Brown <broonie@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
         Peter Geis <pgwipeout@gmail.com>,
         Nicolas Chauvet <kwizart@gmail.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Kevin Hilman <khilman@kernel.org>,
         Peter De Schrijver <pdeschrijver@nvidia.com>,
         Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
         Matt Merhar <mattmerhar@protonmail.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v3 1/3] PM: domains: Make set_performance_state()
- callback optional
-Message-ID: <20210118110506.linvsoca7jbl42iq@vireshk-i7>
-References: <20210118011330.4145-1-digetx@gmail.com>
- <20210118011330.4145-2-digetx@gmail.com>
- <20210118072855.anncyl6z3e5uznvd@vireshk-i7>
- <CAPDyKFquCGUSTvcCpmN0vm1eGEz9B_hYSNm7wojhgwuXT=jkEQ@mail.gmail.com>
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 07/12] opp: Add dev_pm_opp_get_required_pstate()
+Message-ID: <20210118105013.ah2gvizv3rjdt4vr@vireshk-i7>
+References: <20210118005524.27787-1-digetx@gmail.com>
+ <20210118005524.27787-8-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFquCGUSTvcCpmN0vm1eGEz9B_hYSNm7wojhgwuXT=jkEQ@mail.gmail.com>
+In-Reply-To: <20210118005524.27787-8-digetx@gmail.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 18-01-21, 11:59, Ulf Hansson wrote:
-> Good point! I certainly overlooked that when reviewing. We need to
-> reevaluate the new state when propagating to the parent(s).
+On 18-01-21, 03:55, Dmitry Osipenko wrote:
+> Add dev_pm_opp_get_required_pstate() which allows OPP users to retrieve
+> required performance state of a given OPP.
 > 
-> To me, it looks like when doing the propagation we must check if the
-> parent has the ->set_performance_state() callback assigned. If so, we
-> should call dev_pm_opp_xlate_performance_state(), but otherwise just
-> use the value of "state", when doing the reevaluation.
+> Tested-by: Peter Geis <pgwipeout@gmail.com>
+> Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+> Tested-by: Matt Merhar <mattmerhar@protonmail.com>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/opp/core.c     | 22 ++++++++++++++++++++++
+>  include/linux/pm_opp.h | 10 ++++++++++
+>  2 files changed, 32 insertions(+)
 > 
-> Does it make sense?
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index df0969002555..fde2ec00ab0e 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -145,6 +145,28 @@ unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_level);
+>  
+> +/**
+> + * dev_pm_opp_get_required_pstate() - Gets the required performance state
+> + *                                    corresponding to an available opp
+> + * @opp:	opp for which performance state has to be returned for
+> + * @index:	index of the required opp
+> + *
+> + * Return: performance state read from device tree corresponding to the
+> + * required opp, else return 0.
+> + */
+> +unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
+> +					    unsigned int index)
+> +{
+> +	if (IS_ERR_OR_NULL(opp) || !opp->available ||
+> +	    index >= opp->opp_table->required_opp_count) {
+> +		pr_err("%s: Invalid parameters\n", __func__);
+> +		return 0;
+> +	}
+> +
+> +	return opp->required_opps[index]->pstate;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_required_pstate);
+> +
+>  /**
+>   * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
+>   * @opp: opp for which turbo mode is being verified
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index b7dc993487c7..e072148ae0e1 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -98,6 +98,9 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
+>  
+>  unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp);
+>  
+> +unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
+> +					    unsigned int index);
+> +
+>  bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
+>  
+>  int dev_pm_opp_get_opp_count(struct device *dev);
+> @@ -194,6 +197,13 @@ static inline unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
+>  	return 0;
+>  }
+>  
+> +static inline
+> +unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
+> +					    unsigned int index)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
+>  {
+>  	return false;
 
-That will work but I am wondering if there is a way to avoid the
-unnecessary propagation if we can somehow find out if someone above in
-hierarchy supports pstates or not ?
+Applied. Thanks.
 
 -- 
 viresh
