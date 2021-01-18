@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E92FDC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80FD5C43381
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:05:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C26922137B
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:04:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5711720759
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 01:05:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729919AbhARBDq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 17 Jan 2021 20:03:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49112 "EHLO
+        id S1730797AbhARBF1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Jan 2021 20:05:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730472AbhARA5L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 19:57:11 -0500
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B18D1C061795;
-        Sun, 17 Jan 2021 16:55:47 -0800 (PST)
-Received: by mail-lj1-x22b.google.com with SMTP id w26so16519202ljo.4;
-        Sun, 17 Jan 2021 16:55:47 -0800 (PST)
+        with ESMTP id S1730435AbhARA5E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2021 19:57:04 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09141C0613D6;
+        Sun, 17 Jan 2021 16:55:43 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id 23so21606921lfg.10;
+        Sun, 17 Jan 2021 16:55:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=DilXPRI3TRJmzULgddpAwxGtKs9uc5bXa700Snpt8eg=;
-        b=jkazrJTlp36hPiUFrC7+kV3l/6K9OcH+n0l0ToQZJatwEfH45vuOuQHKdbSx5Agt/m
-         Zkx4gfKuxm8joxqX1fCVKjv7tfssLoyYjVBzVbctl4sHyY31hy2etFKh5TVmGHunzGVI
-         wPoW89LcSShSPDDGOzHRofjldjka5fVLPMgggkwnu1crxdMRmSPz8+dz2F4YrHWV2RrJ
-         jCeJtjFJV+hsdcu0GYJJYVIBKfiiKP4ggQ0wjotl4yJ1RhXZEuWz7fmiQlkPh4hkgIwV
-         /gD6sxhVwLpG9Sq+P0k6ktUIuGfpb1HLxo129X+uf5ZDsRhPvKjZQKfkTICNf9HtvS0R
-         hK8w==
+        bh=d8BYKrVjCHK2ATkUn9Bn3mODsj1VGuehzu+tpszr3yE=;
+        b=RVZ6+QUecC4p1baC6nkw1UzPNHHeQQMMmFiEOBBXGz1hfh/BWaj0eD2AY+hfFcsBM2
+         uzfzOk/00N+NJataeb92ZCWAbHC9a5wJ/4sj3KsMyFKIptEEhSQOjv36HLUjsw6mw9uE
+         gadSVo7rh9cuTbwNPKOnZR78leJuri0vgA8F2N0n8lWhFC7rF1kMv4d7uvmYpQyDoNFe
+         mtsfXXNkXwmh4WIvmWmgBio0u4vr/awNFzT5P6Rd1Xly6GAyVTN5y9NiA9Y5HB7Wv/Z7
+         +L0PgnjEnuVhZWwlPG8N+hIJfAGlv4lCGmZU0qHyaE8taXV9HofVPrueJr0HbgMEGMwV
+         w4Xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=DilXPRI3TRJmzULgddpAwxGtKs9uc5bXa700Snpt8eg=;
-        b=YejkF1/uF7f5rPtNmCHgCRruilv7dIfoQP0fODcbnbKZJKfccrV9dvxoCuK2pgx7hD
-         /o4AqqTefUQIg27O19FYvBU9jVGO2ku5D6aOmQ4OGgSJatFdkUggOI7Ep+wtq7Z1tXRk
-         lVMwTQPQPuFaKOfSsTS6HtCfpo3kotzadMW4KrxN6553/SC83WWqEF+VMTLcAJ+oAfNB
-         MeyLg8aE5W4Nfs8T2IecvGIzRD1sP4k1FwUq7nzdKZhRUg86XyUFPdJLByHwH9neewpG
-         Jh9mXSoN9T/1FP4pGAyUHD8bsDbjv4TMm4jXbLjFd5qHf0RzyfQ8lhtBuo5y3DKoja2r
-         uSDw==
-X-Gm-Message-State: AOAM531yrYcu1sFMV1B44rv5e3BMCdEPq9TQywIgIHh+gokh92aci7QK
-        qyvHQ4w6YAZ9HVCbsFFzL5Fv2+Wcjps=
-X-Google-Smtp-Source: ABdhPJwJPyNTEMevAfSEECE2toaXbJUsIn96iIntXcmUHGkNfR12JhXMpsdGv6/2GG1f0eSXZU1wzA==
-X-Received: by 2002:a2e:9497:: with SMTP id c23mr9805613ljh.362.1610931346276;
-        Sun, 17 Jan 2021 16:55:46 -0800 (PST)
+        bh=d8BYKrVjCHK2ATkUn9Bn3mODsj1VGuehzu+tpszr3yE=;
+        b=Wp9kBDnjlDJbvMbZPJMEQ+acij6uGOL/T+QQooRm+oZrIa9P2VzFnBqNhl94f3Oc6s
+         cZlfyVT8t6VKdtL4GJY9gSIyH/JTwTHaqElMrBRPFIAfcYIq2WHbKm4GJB6kRQcK5fHM
+         Cdt5tewCLQir4a2NDIqpEqQ8el7HOsRuH7kCgflE+JlO2xeoBoyEEDLZRJgtbg+ztFIl
+         gW5gLacmMtmjiqO5GOgvOMyk0S0jb70wJYrGNdaEUOHS4qujxWJSbUafyql8+B+kXs+I
+         Bu6MnM+Px1qK/IfIAavFg7D9MoA3clSMA13MCdcMQ0dmXAqKhDnLHAGqebfFfaMlW/XV
+         dhFg==
+X-Gm-Message-State: AOAM5303NvpmrDAV0+qui1/8HKuXRKfB14ScLhKOl3RIsrobcdCpNjZG
+        uitN17zjBXOJCsrs6aZU0bM=
+X-Google-Smtp-Source: ABdhPJxkBnLKRUA5i2l0ufZhrcFnHI8gJ0IfG7hUjISt1Y5rErImhyYEtzRaG3xwQVMO5IZkDjePMA==
+X-Received: by 2002:a19:6901:: with SMTP id e1mr9465665lfc.461.1610931341578;
+        Sun, 17 Jan 2021 16:55:41 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id m24sm1484553ljj.62.2021.01.17.16.55.45
+        by smtp.gmail.com with ESMTPSA id m24sm1484553ljj.62.2021.01.17.16.55.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 Jan 2021 16:55:45 -0800 (PST)
+        Sun, 17 Jan 2021 16:55:41 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -73,9 +73,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Matt Merhar <mattmerhar@protonmail.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 12/12] opp: Print OPP level in debug message of _opp_add_static_v2()
-Date:   Mon, 18 Jan 2021 03:55:24 +0300
-Message-Id: <20210118005524.27787-13-digetx@gmail.com>
+Subject: [PATCH v3 07/12] opp: Add dev_pm_opp_get_required_pstate()
+Date:   Mon, 18 Jan 2021 03:55:19 +0300
+Message-Id: <20210118005524.27787-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210118005524.27787-1-digetx@gmail.com>
 References: <20210118005524.27787-1-digetx@gmail.com>
@@ -85,35 +85,79 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Print OPP level in debug message of _opp_add_static_v2(). This helps to
-chase GENPD bugs.
+Add dev_pm_opp_get_required_pstate() which allows OPP users to retrieve
+required performance state of a given OPP.
 
 Tested-by: Peter Geis <pgwipeout@gmail.com>
 Tested-by: Nicolas Chauvet <kwizart@gmail.com>
 Tested-by: Matt Merhar <mattmerhar@protonmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/opp/of.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/opp/core.c     | 22 ++++++++++++++++++++++
+ include/linux/pm_opp.h | 10 ++++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 63b16cdba5ea..758730d070da 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -822,10 +822,11 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
- 	if (new_opp->clock_latency_ns > opp_table->clock_latency_ns_max)
- 		opp_table->clock_latency_ns_max = new_opp->clock_latency_ns;
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index df0969002555..fde2ec00ab0e 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -145,6 +145,28 @@ unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_level);
  
--	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
-+	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu level:%u\n",
- 		 __func__, new_opp->turbo, new_opp->rate,
- 		 new_opp->supplies[0].u_volt, new_opp->supplies[0].u_volt_min,
--		 new_opp->supplies[0].u_volt_max, new_opp->clock_latency_ns);
-+		 new_opp->supplies[0].u_volt_max, new_opp->clock_latency_ns,
-+		 new_opp->level);
++/**
++ * dev_pm_opp_get_required_pstate() - Gets the required performance state
++ *                                    corresponding to an available opp
++ * @opp:	opp for which performance state has to be returned for
++ * @index:	index of the required opp
++ *
++ * Return: performance state read from device tree corresponding to the
++ * required opp, else return 0.
++ */
++unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
++					    unsigned int index)
++{
++	if (IS_ERR_OR_NULL(opp) || !opp->available ||
++	    index >= opp->opp_table->required_opp_count) {
++		pr_err("%s: Invalid parameters\n", __func__);
++		return 0;
++	}
++
++	return opp->required_opps[index]->pstate;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_required_pstate);
++
+ /**
+  * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
+  * @opp: opp for which turbo mode is being verified
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index b7dc993487c7..e072148ae0e1 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -98,6 +98,9 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
  
- 	/*
- 	 * Notify the changes in the availability of the operable
+ unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp);
+ 
++unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
++					    unsigned int index);
++
+ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
+ 
+ int dev_pm_opp_get_opp_count(struct device *dev);
+@@ -194,6 +197,13 @@ static inline unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
+ 	return 0;
+ }
+ 
++static inline
++unsigned int dev_pm_opp_get_required_pstate(struct dev_pm_opp *opp,
++					    unsigned int index)
++{
++	return 0;
++}
++
+ static inline bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
+ {
+ 	return false;
 -- 
 2.29.2
 
