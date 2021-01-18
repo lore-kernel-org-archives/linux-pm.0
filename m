@@ -2,97 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D59DC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 12:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0C0BC433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 12:48:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DCD9622286
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 12:45:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6FA982231F
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 12:48:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404198AbhARMmm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Jan 2021 07:42:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59054 "EHLO
+        id S2404083AbhARMsN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Jan 2021 07:48:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60222 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404083AbhARMmg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 07:42:36 -0500
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CAF9C061573;
-        Mon, 18 Jan 2021 04:41:55 -0800 (PST)
-Received: by mail-pl1-x636.google.com with SMTP id x18so8596350pln.6;
-        Mon, 18 Jan 2021 04:41:55 -0800 (PST)
+        with ESMTP id S2391806AbhARMsB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 07:48:01 -0500
+Received: from mail-vk1-xa32.google.com (mail-vk1-xa32.google.com [IPv6:2607:f8b0:4864:20::a32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52D6AC061575
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 04:47:21 -0800 (PST)
+Received: by mail-vk1-xa32.google.com with SMTP id d23so3931804vkf.3
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 04:47:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=j/l8cPJOJH+vqkRjd6MNCTHNYSadcinQYa6/IVKJ8QE=;
-        b=VJK0JRsDuiQQDf97WzOaZ5n+rrSucOvZ6TZXUO+o5F0nD4SX7ppXGC+zdd4OV+YzqM
-         jRW+F8AFgA3b5DDNUI2cZrWgHX+G8MN0skaebe2fxHyl9NV+GOdGe1YNubnD5j4127Jx
-         B8aSg+jOR6pHhAwz7e7fpo6io8hzl05ShCiJr1KWQvBQyle0YOAXyGnxMqJpwpGgsXaw
-         j4NjadFyfLvuSpDz0Mak1+jjqY4BFGePR8vJG431eGqByDNWNoI34tQWip4CaXW0x35M
-         cJ/cZwt1urb14LbF2N6ZIo9TkZJdiQSQxuPXHwn8RcbzjZ8jNs55FQzpEJ+oYcZ2wgYA
-         3V7g==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=b83F1B/qVW2V5ML+weocFQV9HBWi+FGn2tiA4+WY95g=;
+        b=JIzaye8OLy57uPzFlpwaIvTQ0n5EhlhqPWsLXmmZuXzLj3MFi5nTnPIbqGxjfiJUwE
+         EYOXXVZbs4UUl7EvUTgLNaY7I0KIiifJmW/Cl2ZEG9GWG17fBV+/cIH2buyjjrDCvOGT
+         v6pDzHuLeJX86SdopnLzngsn6+8EmRr7xC7ok/up+2tebxYrkH7fgIqPInk+RM06/yN7
+         sbryszEQiwuLQC27si31af2ky/xbchx9rVE2/epkZZUofXapn3bkxkDUVn8QPdX3dkgG
+         AIzZOEfXvd1qdZBf4jWS+W7vguWpKJv8cF4tM4JPkuVFTJpZJJDu3fzR3MlhjwZAW3LH
+         FA4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=j/l8cPJOJH+vqkRjd6MNCTHNYSadcinQYa6/IVKJ8QE=;
-        b=drt7ECsaXRinUrk8aw7i5E+0Yg4Yx3Ra8OjkmPJBctrnd2rx+jeYsIzPLYgzfPoaVc
-         iktXZt6T1PkdZQsDtN9bp8uo8vV9gYm2oToVvZBUrj8D/n1kBx21vgrtqaKnTNVdEYUK
-         4mf+WNHe6gG/HfTtuZdJOqNUU6ub4z3EnrWz3u38sQTKOqf4mit1+c53wsvWmy63Y84W
-         EXMRh7RBSLgFQpiJkFDHn5cct2epFBkw8pnHSj0fpzgOrX+nZZ6ieBIDLsXOjgcJoNQe
-         jVCrZM7pbwEIyT/5jt1rAjOn44zTDh69YhMTnq1Gsf8Xn5F+rcr/9X8aaBmej7ep7vmM
-         PGng==
-X-Gm-Message-State: AOAM532a405EQZXK7TdywN4v2r84NqXJhJw2460hHytM9HK26Svbzlry
-        KSyd/dpSJUtmQLetsAZSf7VnMvcpDyQ=
-X-Google-Smtp-Source: ABdhPJyRCa3t/Huh81DI/pMTm+4Y9hYkJTlAvaIsX5e/jn4oN1Nf87GtnTqy4s2nOttCDrMS0bAKEg==
-X-Received: by 2002:a17:902:aa45:b029:de:2fb:995 with SMTP id c5-20020a170902aa45b02900de02fb0995mr26112581plr.81.1610973715075;
-        Mon, 18 Jan 2021 04:41:55 -0800 (PST)
-Received: from localhost.localdomain ([2402:7500:57a:fa4f:eecf:e69a:c4f:ee4e])
-        by smtp.gmail.com with ESMTPSA id np7sm15563431pjb.10.2021.01.18.04.41.51
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 18 Jan 2021 04:41:54 -0800 (PST)
-From:   Gene Chen <gene.chen.richtek@gmail.com>
-To:     sre@kernel.org, matthias.bgg@gmail.com, robh+dt@kernel.org
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        gene_chen@richtek.com, Wilma.Wu@mediatek.com,
-        shufan_lee@richtek.com, cy_huang@richtek.com,
-        benjamin.chao@mediatek.com
-Subject: [PATCH v4 0/2] power: supply: mt6360_charger: add MT6360 charger support
-Date:   Mon, 18 Jan 2021 20:41:41 +0800
-Message-Id: <1610973703-676-1-git-send-email-gene.chen.richtek@gmail.com>
-X-Mailer: git-send-email 2.7.4
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=b83F1B/qVW2V5ML+weocFQV9HBWi+FGn2tiA4+WY95g=;
+        b=Mh1iUG2Q44zcIjAjGrxA/TNk/wsPDS6B/RSuyP2N4dgRfrJJ7z1bYBTx3rZJAc26yD
+         chTMtb8weMkwIOoY26nXuXsuKJaHKR7lUDe8hW8Iko5y1364u/yMFE94RycbE/UVHHAN
+         SqJHvLxviqi+81HqtJ9MAhRgA70ou2dTG3b1HUxT2tn5Xc+r/mC5x6vMWC459muGxsUR
+         W102uqQ2IBpzsI9uOYybVWNmicvPMww8o9Ov2p1YrWyZiLaeo3V56V/4FKutGvxKtrY2
+         pCNJnNIg64WnsIrWGIGNxCzZuhwudltaQfC5Cnck5Vj+sSKGW2I9REGWLusiWBIcIRpg
+         7EVg==
+X-Gm-Message-State: AOAM533yQNq/w7L+FX6MRHQzIq6l7b9BsvSj7ozs24XG4REL5rWTWiKo
+        EhVgOBI9ve+DZwEw9bCkBE3GlgufF+qZXHgzLiJkqg==
+X-Google-Smtp-Source: ABdhPJwv6E3z66cqB95O4c0V2uVDpQXhiPOpTXlNp8u1EQNaJMUuByE7k6gKfvyf/E25VneGlD54u9W7Zh6OW4OJh7Q=
+X-Received: by 2002:a1f:dec2:: with SMTP id v185mr17551711vkg.8.1610974040303;
+ Mon, 18 Jan 2021 04:47:20 -0800 (PST)
+MIME-Version: 1.0
+References: <20210118011330.4145-1-digetx@gmail.com> <20210118011330.4145-2-digetx@gmail.com>
+ <20210118072855.anncyl6z3e5uznvd@vireshk-i7> <CAPDyKFquCGUSTvcCpmN0vm1eGEz9B_hYSNm7wojhgwuXT=jkEQ@mail.gmail.com>
+ <20210118110506.linvsoca7jbl42iq@vireshk-i7>
+In-Reply-To: <20210118110506.linvsoca7jbl42iq@vireshk-i7>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Mon, 18 Jan 2021 13:46:43 +0100
+Message-ID: <CAPDyKFr7SD_A9sKD2+90XfjP09T+PCLE=8qvn=M-yPEPXvBhsg@mail.gmail.com>
+Subject: Re: [PATCH v3 1/3] PM: domains: Make set_performance_state() callback optional
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-tegra <linux-tegra@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch series add MT6360 Charger support contains driver and binding
-document
+On Mon, 18 Jan 2021 at 12:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 18-01-21, 11:59, Ulf Hansson wrote:
+> > Good point! I certainly overlooked that when reviewing. We need to
+> > reevaluate the new state when propagating to the parent(s).
+> >
+> > To me, it looks like when doing the propagation we must check if the
+> > parent has the ->set_performance_state() callback assigned. If so, we
+> > should call dev_pm_opp_xlate_performance_state(), but otherwise just
+> > use the value of "state", when doing the reevaluation.
+> >
+> > Does it make sense?
+>
+> That will work but I am wondering if there is a way to avoid the
+> unnecessary propagation if we can somehow find out if someone above in
+> hierarchy supports pstates or not ?
 
-Gene Chen (2)
- dt-bindings: power: Add bindings document for Charger support on MT6360 PMIC
- power: supply: mt6360_charger: add MT6360 charger support
+You seem to be worried about latency/overhead while doing the
+propagation upwards in the hierarchy. That seems like a reasonable
+concern to me, especially as the genpd lock is taken at each level.
 
- Documentation/devicetree/bindings/power/supply/mt6360_charger.yaml |   48 
- drivers/power/supply/Kconfig                                       |   10 
- drivers/power/supply/Makefile                                      |    1 
- drivers/power/supply/mt6360_charger.c                              |  914 ++++++++++
- 4 files changed, 973 insertions(+)
+However, to mitigate this can be rather messy. In principle, we would
+need to walk the hierarchy upwards, each time a new subdomain is added
+in genpd_add_subdomain(). While doing this, we would also need to keep
+track on what level we set to continue the propagation of the
+performance states for. Even if this can be done in non-latency
+sensitive paths, I don't think it's worth it because of complexity (I
+haven't even thought of what happens when removing a subdomain).
 
-changelogs between v1 & v2
- - Add binding property with unit and custom name prefix
- - Remove extcon device, redundant brackets and interrupts
- - Fix power supply prop "charger type"
+So, maybe we should simply just stick to the existing code, forcing
+the parent to have a ->set_performance() callback assigned if
+propagation should continue?
 
-changelogs between v2 & v3
- - Add register selector to value mapping
-
-changelogs between v3 & v4
- - move pdata vinovp to mt6360_chg_info
- - remove unuse sysfs attribute
- - refactor debug log and warning
- - add power supply prop input voltage limit
-
+Kind regards
+Uffe
