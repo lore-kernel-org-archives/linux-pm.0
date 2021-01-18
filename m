@@ -2,313 +2,172 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-22.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C4FC433DB
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 06:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F2E6C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 06:39:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 946B12222A
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 06:34:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4B716229C4
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Jan 2021 06:39:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732534AbhARGev (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Jan 2021 01:34:51 -0500
-Received: from mailout4.samsung.com ([203.254.224.34]:42046 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732531AbhARGel (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 01:34:41 -0500
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
-        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20210118063355epoutp04fdf2bd63383b82c5d801b0979a10e977~bP-osYLsA2250222502epoutp04Z
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 06:33:55 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20210118063355epoutp04fdf2bd63383b82c5d801b0979a10e977~bP-osYLsA2250222502epoutp04Z
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1610951635;
-        bh=hQHgH71GUMRIFwLl2ZCUbd6ufxok+cvZxVmobsYCrbg=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=myiCAREeKebqXWoE7kWMFR+MUlfsUBhEdceR9zOnt6v8Hnt/kF1Mj544ruZFBr5bc
-         5ccSgUM186KGFbgo19a1xZs+iouq07TuFp11kTBO/QOvlJeASYgI1dKWPi+0w06WVD
-         Ci5YqC8uIu73dpRNWyhHF9kz0dIBk/zRSw9ID0/0=
-Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20210118063355epcas1p4045124b3f0d3fa6cbb6dd32eba28bf11~bP-oUXg-R3004230042epcas1p4y;
-        Mon, 18 Jan 2021 06:33:55 +0000 (GMT)
-Received: from epsmges1p1.samsung.com (unknown [182.195.40.152]) by
-        epsnrtp2.localdomain (Postfix) with ESMTP id 4DK2745nl5z4x9Pt; Mon, 18 Jan
-        2021 06:33:52 +0000 (GMT)
-Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
-        19.D3.02418.CCB25006; Mon, 18 Jan 2021 15:33:48 +0900 (KST)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20210118063348epcas1p1249bd98a42dea3105b36a83fac55f4b6~bP-h_Ik7A2903229032epcas1p1D;
-        Mon, 18 Jan 2021 06:33:48 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20210118063348epsmtrp2d45ca5837ad84021d8d23ed8309ae720~bP-h9agGZ2706427064epsmtrp2O;
-        Mon, 18 Jan 2021 06:33:48 +0000 (GMT)
-X-AuditID: b6c32a35-c23ff70000010972-73-60052bccf70f
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        25.CB.13470.CCB25006; Mon, 18 Jan 2021 15:33:48 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20210118063347epsmtip189a4cd44993c357c18e45358f6ca495a~bP-hvHPL20191501915epsmtip1f;
-        Mon, 18 Jan 2021 06:33:47 +0000 (GMT)
-Subject: Re: [PATCH] PM / devfreq: Add sysfs attributes to simple_ondemand
- governor
-To:     Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Cc:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <e09da2a0-f4cc-d93e-07a5-3551004fed83@samsung.com>
-Date:   Mon, 18 Jan 2021 15:49:20 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
+        id S1732654AbhARGj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Jan 2021 01:39:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37734 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731704AbhARGjy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2021 01:39:54 -0500
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4595BC061573
+        for <linux-pm@vger.kernel.org>; Sun, 17 Jan 2021 22:39:14 -0800 (PST)
+Received: by mail-pj1-x102e.google.com with SMTP id x20so3723954pjh.3
+        for <linux-pm@vger.kernel.org>; Sun, 17 Jan 2021 22:39:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=CpHvZU/WHkbGaD9FSLMeszBMLktHGvhDw07CKXGAXcM=;
+        b=n2447+zLT2BNNoFymdo6Rxu/Seh7vQq4D61F35xbPAcpQH6CxNWNrw7w6yiUKgl9Ro
+         6pKS/BwIhKimVzuBUxM3Q54cZl/yblYhqIuVpVNNBO/RIAl6BfF0LKLFoZfaHDN8sWzW
+         PQy/jevmGeg+rVsfB1r6xWvgU/F+WSZ8UM0Nr9c+MZfG2xedjDiMmaX4r4UWoFh0G7hP
+         lZzHw33cUAYBZJxtf0qE+y5z0dGjZCtuExRxt7qPdw1L/ohCj6SjBrdf9gX5LG37JONn
+         uOkUQPZjroxxjlgj96sKwIFlhiHkmb7EKiPWV2wOWl5QEndTK/FXi2bnRReVaAZYrS5t
+         carg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=CpHvZU/WHkbGaD9FSLMeszBMLktHGvhDw07CKXGAXcM=;
+        b=MPfe6uCB9t65Xu9CgjwP91PnMi2EiO8CH4jzNP8HnaERAfIpzNnS+Z9Hm9Ek5uY5tP
+         SYb3i7PhMJ4hO0xlni4dgLULj1zWapKvbuljW5NuzwO1WWYetVgiTOz7o2B0VI257Rnq
+         8ms6OESvrlyApO1zqS0lDQLH9Vv3hK41lv/nvLzD6S94iaze3KbZEqYBYkMsNlQFNdvs
+         v9PrGFZzyeFZuwQqFVMENJTdfItAHPzC7UkyHQ/02lGTkM+LK1wDlY4HkDieljxfuHJg
+         f/oplSPgi0oZ9uHfL8O+Bc11M3AlECPQNzykzy2DbmOns/f5/rAVIKhBQfa8Aoo4vo0v
+         w9wg==
+X-Gm-Message-State: AOAM533es65ZutVwUrVjtj9qIi2mmpqFHdkdXwLvZUvBtgAVAm+xl2dO
+        JBJSskh5z7sdYNm0WtvN3pV+2twxqfls4Q==
+X-Google-Smtp-Source: ABdhPJzfQB0pY61O/yD92LvRQT3eJPpAsD1G0s0K5sAYQL/z6uupIyVPgf0FrCoo524PwWasTUy9qw==
+X-Received: by 2002:a17:90b:80d:: with SMTP id bk13mr24583776pjb.41.1610951953745;
+        Sun, 17 Jan 2021 22:39:13 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id o13sm3235849pfg.124.2021.01.17.22.39.12
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 17 Jan 2021 22:39:12 -0800 (PST)
+Date:   Mon, 18 Jan 2021 12:09:10 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J . Wysocki " <rjw@rjwysocki.net>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1] cpufreq: tegra20: Use resource-managed API
+Message-ID: <20210118063910.on4vgbllfmsduezo@vireshk-i7>
+References: <20210117231825.28256-1-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20210115170530.22603-1-lukasz.luba@arm.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmpkk+LIzCtJLcpLzFFi42LZdlhTT/eMNmuCwZRPhhZnm96wW1zeNYfN
-        4nPvEUaLhU0t7Ba3G1ewObB6rJm3htGjb8sqRo/Pm+QCmKOybTJSE1NSixRS85LzUzLz0m2V
-        vIPjneNNzQwMdQ0tLcyVFPISc1NtlVx8AnTdMnOAVioplCXmlAKFAhKLi5X07WyK8ktLUhUy
-        8otLbJVSC1JyCiwL9IoTc4tL89L1kvNzrQwNDIxMgQoTsjO2fFjCUnBYr2L/l8PMDYwbVbsY
-        OTkkBEwkWu+sZO5i5OIQEtjBKDHn4VEmkISQwCdGifUnYiDsb4wSO9+FwTSsPfOdCaJhL6PE
-        p4Y2doii94wSN8/WgtjCAqEShz51sYLYIgLxEgsPfQCrYRYwl/i79ywLiM0moCWx/8UNNhCb
-        X0BR4uqPx4wgNq+AncSxXS+BLuLgYBFQlZjRXgISFhUIkzi5rQWqRFDi5MwnYGM4BSwl/j7/
-        ywQxXlzi1pP5ULa8xPa3c8AekxD4yy4xY+s+JogHXCS+7b7NCmELS7w6voUdwpaS+PxuLxuE
-        XS2x8uQRNojmDkaJLfsvQDUYS+xfOpkJ5DhmAU2J9bv0IcKKEjt/z2WEWMwn8e5rDytIiYQA
-        r0RHmxBEibLE5Qd3oU6QlFjc3sk2gVFpFpJ3ZiF5YRaSF2YhLFvAyLKKUSy1oDg3PbXYsMAQ
-        Oao3MYLTopbpDsaJbz/oHWJk4mA8xCjBwawkwlu6jilBiDclsbIqtSg/vqg0J7X4EKMpMHwn
-        MkuJJucDE3NeSbyhqZGxsbGFiaGZqaGhkjhvksGDeCGB9MSS1OzU1ILUIpg+Jg5OqQamtKKl
-        3vNnnNpu/W9Hz+8t2lqP5CcZ/zBl+DzDU+91/f9FxUeTdTPyPhzecnb25b18Kl8nnNklmnDr
-        rmMFb+DO+3s7K2tjIn/6CZpM9l0vdoYtdtv+gj9hEwtUQ3o0/+Sp6RrsqWp8sj9xlWTO7ju8
-        3icev57zOldT4MT+q4dOJOkriP1PCVPZL/xfJjiuv+rgttkVto7dbM4c6se6mMz/J/Jdvx61
-        v7InY/e2FybGIQe6s6ziPSxr8rdPZvP8p9x2+L2bbZPB0ZzJd5sKRcNNN658zxdkxJfbP3HV
-        nEc8l55qiU7kXjH7vphegV97VLoqv12rVI6IssRf+eR2j0rl5zY1jjeuR3huLZR8ZqjEUpyR
-        aKjFXFScCABMr7L1FAQAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrLLMWRmVeSWpSXmKPExsWy7bCSnO4ZbdYEg2832SzONr1ht7i8aw6b
-        xefeI4wWC5ta2C1uN65gc2D1WDNvDaNH35ZVjB6fN8kFMEdx2aSk5mSWpRbp2yVwZWz5sISl
-        4LBexf4vh5kbGDeqdjFyckgImEisPfOdqYuRi0NIYDejxMpvX1khEpIS0y4eZe5i5ACyhSUO
-        Hy4GCQsJvGWU6NkiDWILC4RKHPrUBVYuIhAvMeHBdXYQm1nAXOLv3rMsEDN7GCXWtjQygiTY
-        BLQk9r+4wQZi8wsoSlz98RgszitgJ3Fs10uwXSwCqhIz2ktAwqICYRI7lzxmgigRlDg58wkL
-        iM0pYCnx9/lfJohd6hJ/5l1ihrDFJW49mQ8Vl5fY/nYO8wRG4VlI2mchaZmFpGUWkpYFjCyr
-        GCVTC4pz03OLDQsM81LL9YoTc4tL89L1kvNzNzGCY0RLcwfj9lUf9A4xMnEwHmKU4GBWEuEt
-        XceUIMSbklhZlVqUH19UmpNafIhRmoNFSZz3QtfJeCGB9MSS1OzU1ILUIpgsEwenVAPT2dJo
-        1v63CZc/1p6KSQo0ne+grv63uHXvv3Tvi4oRe1udfGfZdIVMneV8I07pz71PEXH80/hqPs9/
-        pLP90UM2h9gDf46FBC1miDs7N+1CRN/bSb9naf7Vf7hhvZHubMXG0+HPMpP2T+QsOjCjPsAr
-        4Uz+h4QphZdez0/dWbrzeWNefsSHedUlJd79B5vNH2+Jv8h01+HnPMtA0fU7mC0qRGxDVnof
-        dNdgzK4+qrzwxV3HxRvjmicbbWf858razJOY+X3HkqC//Us7r92JK1/I+6frqOCNvvK5hRKM
-        Hht6XsvdFdcPymF+NG2zo83CpVdDdXgP31mdJXe+rrTfW+Pww7X6Gx6kH1mwb4rQV657SizF
-        GYmGWsxFxYkATLyD2gADAAA=
-X-CMS-MailID: 20210118063348epcas1p1249bd98a42dea3105b36a83fac55f4b6
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20210115170541epcas1p1b7bc36fb5a4f1b907da5771ca0c37891
-References: <CGME20210115170541epcas1p1b7bc36fb5a4f1b907da5771ca0c37891@epcas1p1.samsung.com>
-        <20210115170530.22603-1-lukasz.luba@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210117231825.28256-1-digetx@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Lukasz,
-
-I has been developed[1] the sysfs attributes for upthreshold and downdifferential.
-But, I has not yet posted it[1]. I'll post my approach with some changes.
-
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/commit/?h=devfreq-testing&id=e7c59dfb4afebe0c96de54516e9be23d76d96492
-
-On 1/16/21 2:05 AM, Lukasz Luba wrote:
-> The simple_ondemand devfreq governor is used by quite a few devices, like
-> GPUs, DSPs, memory controllers, etc. It implements algorithm which tries
-> to predict the device frequency based on past statistics. There are two
-> tunables for the algorithm: 'upthreshold' and 'downdifferential'. These
-> tunables change the behavior of the decision, e.g. how fast to increase
-> the frequency or how rapidly limit the frequency. These values might be
-> different based on the application which is currently running, e.g.
-> different behavior is needed for a game than for web browsing or clean
-> desktop. The patch exports these two tunables so they can be adjusted
-> based on current need. There is also a check with the allowed ranges
-> to make sure the values are correct and safe.
+On 18-01-21, 02:18, Dmitry Osipenko wrote:
+> Switch cpufreq-tegra20 driver to use resource-managed API.
+> This removes the need to get opp_table pointer using
+> dev_pm_opp_get_opp_table() in order to release OPP table that
+> was requested by dev_pm_opp_set_supported_hw(), making the code
+> a bit more straightforward.
 > 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/governor_simpleondemand.c | 135 ++++++++++++++++++++++
->  1 file changed, 135 insertions(+)
+>  drivers/cpufreq/tegra20-cpufreq.c | 45 +++++++++++++++----------------
+>  1 file changed, 22 insertions(+), 23 deletions(-)
 > 
-> diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-> index d57b82a2b570..4b3c182e0a49 100644
-> --- a/drivers/devfreq/governor_simpleondemand.c
-> +++ b/drivers/devfreq/governor_simpleondemand.c
-> @@ -15,6 +15,7 @@
->  /* Default constants for DevFreq-Simple-Ondemand (DFSO) */
->  #define DFSO_UPTHRESHOLD	(90)
->  #define DFSO_DOWNDIFFERENCTIAL	(5)
-> +#define DFSO_MAX_VALUE		(100)
->  static int devfreq_simple_ondemand_func(struct devfreq *df,
->  					unsigned long *freq)
+> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+> index 8c893043953e..e8db3d75be25 100644
+> --- a/drivers/cpufreq/tegra20-cpufreq.c
+> +++ b/drivers/cpufreq/tegra20-cpufreq.c
+> @@ -32,6 +32,16 @@ static bool cpu0_node_has_opp_v2_prop(void)
+>  	return ret;
+>  }
+>  
+> +static void tegra20_cpufreq_put_supported_hw(void *opp_table)
+> +{
+> +	dev_pm_opp_put_supported_hw(opp_table);
+> +}
+> +
+> +static void tegra20_cpufreq_dt_unregister(void *cpufreq_dt)
+> +{
+> +	platform_device_unregister(cpufreq_dt);
+> +}
+> +
+>  static int tegra20_cpufreq_probe(struct platform_device *pdev)
 >  {
-> @@ -84,15 +85,149 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+>  	struct platform_device *cpufreq_dt;
+> @@ -68,42 +78,31 @@ static int tegra20_cpufreq_probe(struct platform_device *pdev)
+>  		return err;
+>  	}
+>  
+> +	err = devm_add_action_or_reset(&pdev->dev,
+> +				       tegra20_cpufreq_put_supported_hw,
+> +				       opp_table);
+> +	if (err)
+> +		return err;
+> +
+>  	cpufreq_dt = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+>  	err = PTR_ERR_OR_ZERO(cpufreq_dt);
+>  	if (err) {
+>  		dev_err(&pdev->dev,
+>  			"failed to create cpufreq-dt device: %d\n", err);
+> -		goto err_put_supported_hw;
+> +		return err;
+>  	}
+>  
+> -	platform_set_drvdata(pdev, cpufreq_dt);
+> -
+> -	return 0;
+> -
+> -err_put_supported_hw:
+> -	dev_pm_opp_put_supported_hw(opp_table);
+> -
+> -	return err;
+> -}
+> -
+> -static int tegra20_cpufreq_remove(struct platform_device *pdev)
+> -{
+> -	struct platform_device *cpufreq_dt;
+> -	struct opp_table *opp_table;
+> -
+> -	cpufreq_dt = platform_get_drvdata(pdev);
+> -	platform_device_unregister(cpufreq_dt);
+> -
+> -	opp_table = dev_pm_opp_get_opp_table(get_cpu_device(0));
+> -	dev_pm_opp_put_supported_hw(opp_table);
+> -	dev_pm_opp_put_opp_table(opp_table);
+> +	err = devm_add_action_or_reset(&pdev->dev,
+> +				       tegra20_cpufreq_dt_unregister,
+> +				       cpufreq_dt);
+> +	if (err)
+> +		return err;
+>  
 >  	return 0;
 >  }
 >  
-> +static ssize_t upthreshold_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct devfreq_simple_ondemand_data *data;
-> +	struct devfreq *df = to_devfreq(dev);
-> +
-> +	if (!df->data)
-> +		return -EINVAL;
-> +
-> +	data = df->data;
-> +
-> +	return sprintf(buf, "%d\n", data->upthreshold);
-> +}
-> +
-> +static ssize_t upthreshold_store(struct device *dev,
-> +				 struct device_attribute *attr,
-> +				 const char *buf, size_t count)
-> +{
-> +	struct devfreq_simple_ondemand_data *data;
-> +	struct devfreq *df = to_devfreq(dev);
-> +	unsigned int value;
-> +	int ret;
-> +
-> +	if (!df->data)
-> +		return -EINVAL;
-> +
-> +	data = df->data;
-> +
-> +	ret = kstrtouint(buf, 10, &value);
-> +	if (ret < 0)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&df->lock);
-> +
-> +	if (value > DFSO_MAX_VALUE || value <= data->downdifferential) {
-> +		mutex_unlock(&df->lock);
-> +		return -EINVAL;
-> +	}
-> +
-> +	data->upthreshold = value;
-> +	mutex_unlock(&df->lock);
-> +
-> +	return count;
-> +}
-> +static DEVICE_ATTR_RW(upthreshold);
-> +
-> +static ssize_t downdifferential_show(struct device *dev,
-> +				     struct device_attribute *attr, char *buf)
-> +{
-> +	struct devfreq_simple_ondemand_data *data;
-> +	struct devfreq *df = to_devfreq(dev);
-> +
-> +	if (!df->data)
-> +		return -EINVAL;
-> +
-> +	data = df->data;
-> +
-> +	return sprintf(buf, "%d\n", data->downdifferential);
-> +}
-> +
-> +static ssize_t downdifferential_store(struct device *dev,
-> +				      struct device_attribute *attr,
-> +				      const char *buf, size_t count)
-> +{
-> +	struct devfreq_simple_ondemand_data *data;
-> +	struct devfreq *df = to_devfreq(dev);
-> +	unsigned int value;
-> +	int ret;
-> +
-> +	if (!df->data)
-> +		return -EINVAL;
-> +
-> +	data = df->data;
-> +
-> +	ret = kstrtouint(buf, 10, &value);
-> +	if (ret < 0)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&df->lock);
-> +
-> +	if (value > DFSO_MAX_VALUE || value >= data->upthreshold) {
-> +		mutex_unlock(&df->lock);
-> +		return -EINVAL;
-> +	}
-> +
-> +	data->downdifferential = value;
-> +	mutex_unlock(&df->lock);
-> +
-> +	return count;
-> +}
-> +static DEVICE_ATTR_RW(downdifferential);
-> +
-> +static void devfreq_simple_ondemand_sysfs_setup(struct devfreq *df)
-> +{
-> +	struct devfreq_simple_ondemand_data *data;
-> +	int ret;
-> +
-> +	if (!df->data) {
-> +		/* The memory will be freed automatically */
-> +		df->data = devm_kzalloc(&df->dev,
-> +				sizeof(struct devfreq_simple_ondemand_data),
-> +				GFP_KERNEL);
-> +		if (!df->data) {
-> +			dev_warn(&df->dev, "Unable to allocate memory");
-> +			return;
-> +		}
-> +	}
-> +
-> +	data = df->data;
-> +
-> +	/* After new allocation setup default values, since they are used */
-> +	if (!data->upthreshold)
-> +		data->upthreshold = DFSO_UPTHRESHOLD;
-> +
-> +	if (!data->downdifferential)
-> +		data->downdifferential = DFSO_DOWNDIFFERENCTIAL;
-> +
-> +	ret = sysfs_create_file(&df->dev.kobj, &dev_attr_upthreshold.attr);
-> +	if (ret < 0)
-> +		dev_warn(&df->dev, "Unable to create 'upthreshold' attr\n");
-> +
-> +	ret = sysfs_create_file(&df->dev.kobj, &dev_attr_downdifferential.attr);
-> +	if (ret < 0)
-> +		dev_warn(&df->dev, "Unable to create 'downdifferential' attr\n");
-> +}
-> +
-> +static void devfreq_simple_ondemand_sysfs_remove(struct devfreq *df)
-> +{
-> +	sysfs_remove_file(&df->dev.kobj, &dev_attr_upthreshold.attr);
-> +	sysfs_remove_file(&df->dev.kobj, &dev_attr_downdifferential.attr);
-> +}
-> +
->  static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
->  				unsigned int event, void *data)
->  {
->  	switch (event) {
->  	case DEVFREQ_GOV_START:
->  		devfreq_monitor_start(devfreq);
-> +		devfreq_simple_ondemand_sysfs_setup(devfreq);
->  		break;
->  
->  	case DEVFREQ_GOV_STOP:
-> +		devfreq_simple_ondemand_sysfs_remove(devfreq);
->  		devfreq_monitor_stop(devfreq);
->  		break;
->  
-> 
+>  static struct platform_driver tegra20_cpufreq_driver = {
+>  	.probe		= tegra20_cpufreq_probe,
+> -	.remove		= tegra20_cpufreq_remove,
+>  	.driver		= {
+>  		.name	= "tegra20-cpufreq",
+>  	},
 
+Applied. Thanks.
+
+Though please remember to update this to use the devm_ variant when it comes
+out.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
