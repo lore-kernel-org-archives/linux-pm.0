@@ -7,72 +7,96 @@ X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60FB0C433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 15:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9976CC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 16:07:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 30ED022D2A
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 15:23:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6CB602245C
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 16:07:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390723AbhASPX0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 10:23:26 -0500
-Received: from mail.kernel.org ([198.145.29.99]:50828 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391286AbhASPWV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 Jan 2021 10:22:21 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A0A3E23110;
-        Tue, 19 Jan 2021 15:21:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1611069701;
-        bh=qk7bTIU32WQXEVpSYr8ZQ5kj+qrngrcgdHRTogxr7Dc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=eoxZAwoaQ5d6ppq/JxVV+ZvPnmkXzAaC9P+yuT6raP3pPaU968h2eqioupYXq7+6e
-         xl74BdLKtv+HGlEak8XzPTvbwxi/9J7S2EpeiwyloIpCViCIVYGst39naXNI3Vxybm
-         MDvv8H20ZZEVUDe1FAGYKjyUuGTOrVvWf8YdTsOA=
-Date:   Tue, 19 Jan 2021 16:21:38 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        id S2389915AbhASQHS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 11:07:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44760 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391385AbhASQD4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 11:03:56 -0500
+Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A50DC061575;
+        Tue, 19 Jan 2021 08:03:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=EhVNN5w31+BoStuV5p83fjIjrTbho1tnvewJve+/h9Q=; b=UWCs2GbaEiVNzA19wKWlr9c/PQ
+        UMAZuyoJbhGdlV8lgXLhfgFbaPPe7Lpsa68jxwobKbaLIK+P95bRELv5UA3iWDav8I5VDBfvkedFS
+        L655rampQgJNMFtqTyNpv4zhDBCk/jYsuzhSepx26gdFHNwfX1Uc1s17Q8QY/zMfurFb/78c8Y0we
+        MDdUdDeZ+qlSShuLda/IkktpDC0tDiIidFBkainB86N45fT63FFku/gyzrJFqNzf7dmi9FK1xiQOb
+        CPyBMTYfs8OAwFR4XgeYhEW+k1h+t85peDC+ohOBO0BCTXoWjFUiCPrp3agxiORyWrL6fKJt+QkvY
+        IKD6dfBg==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1l1tTE-0007Eu-LV; Tue, 19 Jan 2021 16:03:04 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 104D53059DD;
+        Tue, 19 Jan 2021 17:03:03 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 02B0A202638D9; Tue, 19 Jan 2021 17:03:02 +0100 (CET)
+Date:   Tue, 19 Jan 2021 17:03:02 +0100
+From:   Peter Zijlstra <peterz@infradead.org>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Saravana Kannan <saravanak@google.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] driver core: Extend device_is_dependent()
-Message-ID: <YAb5AofFj8akz3Kb@kroah.com>
-References: <17705994.d592GUb2YH@kreacher>
- <CAJZ5v0gccJKSVuN-okBnvHPjNYJ_FbkzfOueb=AUDr2xHaL7Xg@mail.gmail.com>
+        LKML <linux-kernel@vger.kernel.org>,
+        x86 Maintainers <x86@kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Giovanni Gherdovich <ggherdovich@suse.com>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>
+Subject: Re: [PATCH] x86: PM: Register syscore_ops for scale invariance
+Message-ID: <YAcCtnYbhasv+ENi@hirez.programming.kicks-ass.net>
+References: <1803209.Mvru99baaF@kreacher>
+ <X/25ssA2scFSu+3/@hirez.programming.kicks-ass.net>
+ <CAJZ5v0gHHPcBbL-EnCYJieMV-pRJWsjb5qC-iqHYznYjzrkitw@mail.gmail.com>
+ <CAJZ5v0gY+WjB2q=wnRYxpwFmLzOcLMKewrCgKdpC0oNPFgoDww@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gccJKSVuN-okBnvHPjNYJ_FbkzfOueb=AUDr2xHaL7Xg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gY+WjB2q=wnRYxpwFmLzOcLMKewrCgKdpC0oNPFgoDww@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 19, 2021 at 04:09:14PM +0100, Rafael J. Wysocki wrote:
-> On Fri, Jan 15, 2021 at 7:31 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Tue, Jan 19, 2021 at 04:12:20PM +0100, Rafael J. Wysocki wrote:
+> On Tue, Jan 12, 2021 at 4:10 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
 > >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > On Tue, Jan 12, 2021 at 4:02 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> > >
+> > > On Fri, Jan 08, 2021 at 07:05:59PM +0100, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > On x86 scale invariace tends to be disabled during resume from
+> > > > suspend-to-RAM, because the MPERF or APERF MSR values are not as
+> > > > expected then due to updates taking place after the platform
+> > > > firmware has been invoked to complete the suspend transition.
+> > > >
+> > > > That, of course, is not desirable, especially if the schedutil
+> > > > scaling governor is in use, because the lack of scale invariance
+> > > > causes it to be less reliable.
+> > > >
+> > > > To counter that effect, modify init_freq_invariance() to register
+> > > > a syscore_ops object for scale invariance with the ->resume callback
+> > > > pointing to init_counter_refs() which will run on the CPU starting
+> > > > the resume transition (the other CPUs will be taken care of the
+> > > > "online" operations taking place later).
+> > > >
+> > > > Fixes: e2b0d619b400 ("x86, sched: check for counters overflow in frequency invariant accounting")
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > Thanks!, I'll take it through the sched/urgent tree?
 > >
-> > If the device passed as the target (second argument) to
-> > device_is_dependent() is not completely registered (that is, it has
-> > been initialized, but not added yet), but the parent pointer of it
-> > is set, it may be missing from the list of the parent's children
-> > and device_for_each_child() called by device_is_dependent() cannot
-> > be relied on to catch that dependency.
-> >
-> > For this reason, modify device_is_dependent() to check the ancestors
-> > of the target device by following its parent pointer in addition to
-> > the device_for_each_child() walk.
-> >
-> > Fixes: 9ed9895370ae ("driver core: Functional dependencies tracking support")
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Reported-by: Stephan Gerhold <stephan@gerhold.net>
-> > Tested-by: Stephan Gerhold <stephan@gerhold.net>
+> > That works, thanks!
 > 
-> Greg, are you going to pick up this one or do you want me to take care of it?
-> 
-> It has been reviewed by Saravana.
+> Any news on this front?  It's been a few days ...
 
-I'll take it, thanks.  sorry for the delay.
-
-greg k-h
+My bad, it's been held up behind me trying to fix another sched
+regression. Lemme push out just this one so it doesn't go walk-about.
