@@ -7,58 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3644CC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:29:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3D4C433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:31:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 01A0022D71
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:29:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6299B22D71
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:31:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729070AbhASV3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 16:29:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58682 "EHLO
+        id S1727729AbhASVb2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 16:31:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728740AbhASV2x (ORCPT
+        with ESMTP id S1728650AbhASV2x (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 16:28:53 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49A38C061786
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D730C0613D3
         for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 13:27:31 -0800 (PST)
 Date:   Tue, 19 Jan 2021 21:27:26 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1611091647;
+        s=2020; t=1611091646;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=reOexqO18r52eZRsqC7RDtYXLoHPJ9Fb181N4MTfypE=;
-        b=iwXEfi55o1M7opknW/n0mIkGKMec+64MzfN9XIp8kKAQmIlip4uOIWwTDxQiIT0/QAgQAt
-        XKVwVlco+Nk/AHwMTkQRXZYbr3nruALrOoVotD9mesH6o2wExslZLUhZDqahLjXT8/GVhE
-        UADiraOHanMDyAv0i++teBxCv9wV9tSQ/pv2goqnGRyBTvC8e6o+447tyvAilnFK0in9xS
-        vC87qH7KpgG1Y0sYS1LHpVMX8T65m2VfOej2ge8r3MLDSOMFpKKDlhqo9ca6gXTQfAGhnL
-        BXAX+d99TVdPAcirXAOvNlQy99z5oj8hHGe2L+7xz7ZNBag2ilYlMmGY/kh3KQ==
+        bh=ngn/TZ5sPqqLKekh4wg9dLqmCdWWh8CK2YUIjBEkr+o=;
+        b=ak3XXndeHwMBoCZtONi1atzcUNJHShnm2y9HEM8FVPa9X6dSY8sqjAf3c7iyGDX65deqDe
+        wJzc5ESCbqqzU3VCJuGfR12iuOec5PmEZcN37pKgZI9p/4+9S2q6LzrzGQGx/PvIsv/jk2
+        JDGz4ayuHwN41FakSBvibO40h+e3pbW/Z6hfAGxmjAqB0AS5Nq5crteVujapH8PEBHd2Vx
+        BRNiga1LflMIz+eakpO9WA+P12NZSbYqVi9byVV9V/ht8kuVNA+qg3MheK9JnY0LxPzy7j
+        Cxvf/s6WsQIiFQC85SIc9bSnETRd/6BBCvxXePZAHwdJEGVkGFOXhlhMkBDuWg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1611091647;
+        s=2020e; t=1611091646;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=reOexqO18r52eZRsqC7RDtYXLoHPJ9Fb181N4MTfypE=;
-        b=vZUEpITpMZM3C4tkpOy+FlH8Pnw4Rwg6sVh2WDn+IIgz0EPcQ7FangCfsp80oonw0xozaX
-        euzHGq/W+DlArUCw==
+        bh=ngn/TZ5sPqqLKekh4wg9dLqmCdWWh8CK2YUIjBEkr+o=;
+        b=sYiVSOhEoiYbV/Rm7bMvGvRzHcDzh+Tx1byVeRJOAJryIVAmw2eyrD8l8r+ufTF+U4mN82
+        9HeIZ6nT1U/ixOAw==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Remove unused functions
- rebind/unbind exception
+Subject: [thermal: thermal/next] acpi/drivers/thermal: Remove TRIPS_NONE
+ cooling device binding
 Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201214233811.485669-2-daniel.lezcano@linaro.org>
-References: <20201214233811.485669-2-daniel.lezcano@linaro.org>
+        Zhang Rui <rui.zhang@intel.com>,
+        Thara Gopinath <thara.gopinath@linaro.org>, amitk@kernel.org
+In-Reply-To: <20201214233811.485669-4-daniel.lezcano@linaro.org>
+References: <20201214233811.485669-4-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161109164686.414.14084700235811896963.tip-bot2@tip-bot2>
+Message-ID: <161109164649.414.16835710488335910524.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,95 +69,57 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     a20b995b23e41190fb088e7dab4a2b956bf343ae
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//a20b995b23e41190fb088e7dab4a2b956bf343ae
+Commit-ID:     43bb4a9d658398151ad1b77340003ff81f4b8650
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//43bb4a9d658398151ad1b77340003ff81f4b8650
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Tue, 15 Dec 2020 00:38:05 +01:00
+AuthorDate:    Tue, 15 Dec 2020 00:38:07 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 19 Jan 2021 22:23:04 +01:00
+CommitterDate: Tue, 19 Jan 2021 22:23:18 +01:00
 
-thermal/core: Remove unused functions rebind/unbind exception
+acpi/drivers/thermal: Remove TRIPS_NONE cooling device binding
 
-The functions thermal_zone_device_rebind_exception and
-thermal_zone_device_unbind_exception are not used from anywhere.
+The loop is here to create default cooling device binding on the
+THERMAL_TRIPS_NONE number which is used to be the 'forced_passive'
+feature. However, we removed all code dealing with that in the thermal
+core, thus this binding does no longer make sense.
 
-Remove that code.
+Remove it.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
-Link: https://lore.kernel.org/r/20201214233811.485669-2-daniel.lezcano@linaro.org
+Link: https://lore.kernel.org/r/20201214233811.485669-4-daniel.lezcano@linaro.org
 ---
- drivers/thermal/thermal_core.c | 37 +---------------------------------
- drivers/thermal/thermal_core.h |  4 +----
- 2 files changed, 41 deletions(-)
+ drivers/acpi/thermal.c | 19 -------------------
+ 1 file changed, 19 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 567bc6f..a0f0c33 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -598,26 +598,6 @@ static void thermal_zone_device_check(struct work_struct *work)
- 	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
- }
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index b5e4bc9..26a89ff 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -764,25 +764,6 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
+ 		}
+ 	}
  
--void thermal_zone_device_rebind_exception(struct thermal_zone_device *tz,
--					  const char *cdev_type, size_t size)
--{
--	struct thermal_cooling_device *cdev = NULL;
--
--	mutex_lock(&thermal_list_lock);
--	list_for_each_entry(cdev, &thermal_cdev_list, node) {
--		/* skip non matching cdevs */
--		if (strncmp(cdev_type, cdev->type, size))
--			continue;
--
--		/* re binding the exception matching the type pattern */
--		thermal_zone_bind_cooling_device(tz, THERMAL_TRIPS_NONE, cdev,
--						 THERMAL_NO_LIMIT,
+-	for (i = 0; i < tz->devices.count; i++) {
+-		handle = tz->devices.handles[i];
+-		status = acpi_bus_get_device(handle, &dev);
+-		if (ACPI_SUCCESS(status) && (dev == device)) {
+-			if (bind)
+-				result = thermal_zone_bind_cooling_device
+-						(thermal, THERMAL_TRIPS_NONE,
+-						 cdev, THERMAL_NO_LIMIT,
 -						 THERMAL_NO_LIMIT,
 -						 THERMAL_WEIGHT_DEFAULT);
+-			else
+-				result = thermal_zone_unbind_cooling_device
+-						(thermal, THERMAL_TRIPS_NONE,
+-						 cdev);
+-			if (result)
+-				goto failed;
+-		}
 -	}
--	mutex_unlock(&thermal_list_lock);
--}
 -
- int for_each_thermal_governor(int (*cb)(struct thermal_governor *, void *),
- 			      void *data)
- {
-@@ -685,23 +665,6 @@ struct thermal_zone_device *thermal_zone_get_by_id(int id)
- 	return match;
+ failed:
+ 	return result;
  }
- 
--void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
--					  const char *cdev_type, size_t size)
--{
--	struct thermal_cooling_device *cdev = NULL;
--
--	mutex_lock(&thermal_list_lock);
--	list_for_each_entry(cdev, &thermal_cdev_list, node) {
--		/* skip non matching cdevs */
--		if (strncmp(cdev_type, cdev->type, size))
--			continue;
--		/* unbinding the exception matching the type pattern */
--		thermal_zone_unbind_cooling_device(tz, THERMAL_TRIPS_NONE,
--						   cdev);
--	}
--	mutex_unlock(&thermal_list_lock);
--}
--
- /*
-  * Device management section: cooling devices, zones devices, and binding
-  *
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 8df600f..e50c6b2 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -118,10 +118,6 @@ struct thermal_instance {
- 
- int thermal_register_governor(struct thermal_governor *);
- void thermal_unregister_governor(struct thermal_governor *);
--void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
--					  const char *, size_t);
--void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
--					  const char *, size_t);
- int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
- int thermal_build_list_of_policies(char *buf);
- 
