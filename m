@@ -2,89 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 119E9C433E6
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32E89C433E9
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:59:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA0A62310B
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E2D7923109
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:59:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389995AbhASSun (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 13:50:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39780 "EHLO
+        id S1727621AbhASU6z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 15:58:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52182 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391955AbhASRyj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 12:54:39 -0500
-Received: from relay07.th.seeweb.it (relay07.th.seeweb.it [IPv6:2001:4b7a:2000:18::168])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC249C06129E
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 09:48:01 -0800 (PST)
-Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 8039E3F211;
-        Tue, 19 Jan 2021 18:46:00 +0100 (CET)
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-To:     viresh.kumar@linaro.org
-Cc:     bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
-        devicetree@vger.kernel.org, robh+dt@kernel.org,
-        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
-        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
-        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v4 6/7] cpufreq: qcom-hw: Allow getting the maximum transition latency for OPPs
-Date:   Tue, 19 Jan 2021 18:45:56 +0100
-Message-Id: <20210119174557.227318-7-angelogioacchino.delregno@somainline.org>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210119174557.227318-1-angelogioacchino.delregno@somainline.org>
-References: <20210119174557.227318-1-angelogioacchino.delregno@somainline.org>
+        with ESMTP id S1729358AbhASU6w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 15:58:52 -0500
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D314C061575
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 12:58:04 -0800 (PST)
+Received: by mail-wm1-x332.google.com with SMTP id 190so1026006wmz.0
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 12:58:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=of/pRXfYf8KADmbm/k7eAlaIB9piSSwAWZ8glb4h2lk=;
+        b=ccFf+1ObrkxxiKN/zv8a7jjbmKQyeEBznWyroAQD9yAVMaTnl+JtmHf5fIQ6Rp+Rob
+         yF6h+EoyFK6Nz8ldK6DIOj3AlTamfWWRGssGaVrp0pH3oJyLLVbDPqFujsScurwkRcWl
+         W5s3zsXqXedGuTW5KIVCMkdQMRm8U5j6auWhsAC7XoBgP/6bNtGTGQq2dheNWz4C+hQm
+         03s+pcyRBjTWifFxRg0eOAj3uT1X5kZtY43JsBlyIx0DaudguLPTC/wtCvNhziENpMaK
+         s24C/rJOhJfvsmE6w/eGa2e3KP5nCwFcaWp3A/+ugQQn4g/rmnPvx4dpPeaHRHZBHFCO
+         jhEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=of/pRXfYf8KADmbm/k7eAlaIB9piSSwAWZ8glb4h2lk=;
+        b=L06rn+NuC1Eok1DcrUqWqwwKtVkwgt/xjbPUZRIIJY60dF0lx/0NYU4j/vmuD+3znW
+         +ezM2tcecW/z3BO9aq1G4xv8w1dZJ6pHbaITMRG015Irrb04PrtWvhGrEZgySKL5MSbq
+         llzDch/vWc6+3/haGUGroZYZZVYWHitd+vz55hiAz15Iyn6yWVauCfj93Gr3hMD3vqWO
+         Kw5bx92aGcFqT0YJ8Yf1VqAUrnAAbKt9cxZ3I3/GiF1BgDRlMFv8RdkdgCZL6xQHGs8p
+         bmKAAj4eJSeY9WMWKHOTylYQOyffD+ZKKE+rb+78Se9OY/oo45xkX01x1dPgI8lMawvB
+         xsOA==
+X-Gm-Message-State: AOAM533haPz3HfDGQzaEh6fnjJGTnBeY8Qc/qR6RVHGgcauJa6AEZxgt
+        nFr132EqOk8rCGVdtPISKv1geA==
+X-Google-Smtp-Source: ABdhPJwwlkl7tUgr70Wbh1Oql8bMdbNpHNrfJ1G+pno8wXk6Ry+lDe8WS36QVLc2VM7Vg8xp0m5a8w==
+X-Received: by 2002:a1c:6089:: with SMTP id u131mr1230059wmb.187.1611089882759;
+        Tue, 19 Jan 2021 12:58:02 -0800 (PST)
+Received: from ?IPv6:2a01:e34:ed2f:f020:c8a3:239a:c6eb:c10b? ([2a01:e34:ed2f:f020:c8a3:239a:c6eb:c10b])
+        by smtp.googlemail.com with ESMTPSA id a62sm6592680wmf.7.2021.01.19.12.58.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 19 Jan 2021 12:58:02 -0800 (PST)
+Subject: Re: [PATCH v12 0/5] qcom: pm8150: add support for thermal monitoring
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Jishnu Prakash <jprakash@qti.qualcomm.com>
+References: <20210119054848.592329-1-dmitry.baryshkov@linaro.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <078a7025-ce5c-a252-f8f4-694c56153b3a@linaro.org>
+Date:   Tue, 19 Jan 2021 21:57:59 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <20210119054848.592329-1-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In order to fine-tune the frequency scaling from various governors,
-allow to set a maximum transition latency from OPPs, which may be
-different depending on the SoC.
+On 19/01/2021 06:48, Dmitry Baryshkov wrote:
+> This patch serie adds support for thermal monitoring block on Qualcomm's
+> PMIC5 chips. PM8150{,b,l}, qrb5165-rb5 board and sm8250-mtp board device
+> trees are extended to support thermal zones provided by this thermal
+> monitoring block.  Unlike the rest of PMIC thermal senses, these thermal
+> zones describe particular thermistors, which differ between from board
+> to board.
+> 
+> Dependencies: https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git/log/?h=ib-iio-thermal-5.11-rc1
 
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
----
- drivers/cpufreq/qcom-cpufreq-hw.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Shall I pick 3,4,5 also ?
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index a92959bb7b50..5f67da796f6c 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -1401,6 +1401,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	void __iomem *base;
- 	struct qcom_cpufreq_data *data;
- 	const char *fdom_resname;
-+	unsigned int transition_latency;
- 	int cpu_count, index, ret;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
-@@ -1478,6 +1479,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 		goto error;
- 	}
- 
-+	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
-+	if (!transition_latency)
-+		transition_latency = CPUFREQ_ETERNAL;
-+
-+	policy->cpuinfo.transition_latency = transition_latency;
-+
- 	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
- 
- 	if (policy_has_boost_freq(policy)) {
+
 -- 
-2.30.0
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
