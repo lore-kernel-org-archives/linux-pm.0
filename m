@@ -2,127 +2,151 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CAADC433E9
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E5ACC07548
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:42:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 31E7422D08
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7888923104
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:42:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727377AbhASVfB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 16:35:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58516 "EHLO
+        id S2391317AbhASRs2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 12:48:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727829AbhASV2K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 16:28:10 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFE64C0613C1
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 13:27:29 -0800 (PST)
-Date:   Tue, 19 Jan 2021 21:27:25 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1611091646;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=0HkW5o91COjuekgU/TS60vkKAW2ep46WmQ+q5F8/shw=;
-        b=cLdneG5tGBo3RyxJB6tvs89dRfA1p3KTt1GuifSMCZBNxoqSMh0Depk1d76NRfdyn/lwMJ
-        FJW9VSo0H5ziEEBwkLhHxm8LpqXCJ6tL/TEas9tB0QuG0mTrAT+EOGR1bI31G5OHzL+Fao
-        RFDsz1CetAcoSG9FvjalGkuGNjLW6UisAks2PjqBXZ6ZqaX65afe7m1krrYKlAFS/wx3nf
-        YDNAch2jUEQg2qsbpD5jgFxL19hVYoJzReIfFOyQOSzP/YX3+7/vSxtX2QhwdD1rWAl//M
-        +ljpToTVayi/ZCMT49lv21lU8dt9LR6L9LP76BwZI0mYkWEmWfZQQQUE0dveyQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1611091646;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=0HkW5o91COjuekgU/TS60vkKAW2ep46WmQ+q5F8/shw=;
-        b=wxYJsmKSGg3me+S1Cd2FcM96wy2tuTteHcdpuIHqGXsXfmfNhgNFJNzZxmEH5C35gnKI8D
-        hrSMKBoiipPCh7Dw==
-From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Use precomputed jiffies for the polling
-Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>, rui.zhang@intel.com,
-        amitk@kernel.org
-In-Reply-To: <20201216220337.839878-2-daniel.lezcano@linaro.org>
-References: <20201216220337.839878-2-daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-Message-ID: <161109164575.414.18091167535205437557.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+        with ESMTP id S1732203AbhASPGb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 10:06:31 -0500
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A991C061573
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 07:04:34 -0800 (PST)
+Received: by mail-pl1-x636.google.com with SMTP id r4so10643923pls.11
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 07:04:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=obLBRjopawFQS1P0rqiT1SLY+yVd5BfnpOSpsiCeQOg=;
+        b=P2ovxFuQDjm6i1Kc1LZl71Kh1iEyhh65t8/0MCrbGJjM+rEM3R970ra2v1YbJn7FUa
+         1O6/9sso/ZaiDcjnBEplmpI02ExkVe3tuqK45OK+RHBtsi+h8atAkUShz7ctunjpY5wh
+         f53aMEw9XjpuVXYy3t998cx+jMbNy3O1f/+hoZPkdhP7lNa6k4yKiJxeyhswP6eIBLrP
+         4MalxEix3AtW9p4qTm+jvGfx6TjTTvXOm8l3gI0dcKCgawja98u1XWtdgM30T9m/cV2n
+         Y1weFt0sw8roZRCwOil7kwjZLKGiQT9b74Uy9QDoH0NyaTxqAFK2pA0Ad7LNzwe8/5Si
+         sHoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=obLBRjopawFQS1P0rqiT1SLY+yVd5BfnpOSpsiCeQOg=;
+        b=KnVxSgn8WJH9KRzowJDHW4nH/n6XoK9cPNXoBETeeMOjV8NCptmM2VB7q+tV4ZdOkm
+         y9HsFGKKEfF/S1rdHOmrSHFxokE6E91XwZ/yIhiD90vtOCtoAu1hpi6kJT/v57Ak7HPb
+         0pJHF/el9N0gdi8NK6+UqyOlYc0zyeyJqN5L9f0RqA9bZeSm5rKeRZMT9i0AolNxgojE
+         3VymVwbACrEoAo5IbQG6O2+q7Upnkn8rfxtK0e7Fpc/hXXY2l7dQLRT2jKRbAAvJbfpT
+         ISdzJ39Y7kG7wiOktwdEhpkABQ1VFBduTM4U1x9nGR8/thZiyurH2IPGxDALsy4s12eS
+         ewQA==
+X-Gm-Message-State: AOAM531qJTwfcBkzCIQhDWq0c+zq90UMLQPZC22+dcVNCV8b7iWoZqvZ
+        +j0d7QXOVJqtfrfFE/6PsqaS64nHu3N++Q==
+X-Google-Smtp-Source: ABdhPJz5Apet0aiImh5hOn4lqyBPRePY7QfHi7TDCE3PbT+pPnVLJZNesa11IUEdD0uyPn+I8MA7Gg==
+X-Received: by 2002:a17:902:6903:b029:da:f458:798c with SMTP id j3-20020a1709026903b02900daf458798cmr5154506plk.68.1611068674086;
+        Tue, 19 Jan 2021 07:04:34 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id e63sm10328723pfe.216.2021.01.19.07.04.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 Jan 2021 07:04:33 -0800 (PST)
+Message-ID: <6006f501.1c69fb81.1f180.756a@mx.google.com>
+Date:   Tue, 19 Jan 2021 07:04:33 -0800 (PST)
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Report-Type: build
+X-Kernelci-Kernel: v5.11-rc4-16-g192963bcaa64
+Subject: pm/testing build: 6 builds: 0 failed, 6 passed,
+ 1 warning (v5.11-rc4-16-g192963bcaa64)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the thermal/next branch of thermal:
+pm/testing build: 6 builds: 0 failed, 6 passed, 1 warning (v5.11-rc4-16-g19=
+2963bcaa64)
 
-Commit-ID:     39a38808d082fc0fbf45cfefda17252ed8c6b31f
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//39a38808d082fc0fbf45cfefda17252ed8c6b31f
-Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Wed, 16 Dec 2020 23:03:36 +01:00
-Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 19 Jan 2021 22:23:43 +01:00
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+11-rc4-16-g192963bcaa64/
 
-thermal/core: Use precomputed jiffies for the polling
+Tree: pm
+Branch: testing
+Git Describe: v5.11-rc4-16-g192963bcaa64
+Git Commit: 192963bcaa64826582bed29644e2a54b81c0fb9a
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 6 unique architectures
 
-The delays are also stored in jiffies based unit. Use them instead of
-the ms.
+Warnings Detected:
 
-Cc: Thara Gopinath <thara.gopinath@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
-Link: https://lore.kernel.org/r/20201216220337.839878-2-daniel.lezcano@linaro.org
+arc:
+
+arm:
+    multi_v7_defconfig (gcc-8): 1 warning
+
+i386:
+
+mips:
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    1    drivers/pinctrl/nomadik/pinctrl-nomadik.c:952:8: warning: unused v=
+ariable =E2=80=98wake=E2=80=99 [-Wunused-variable]
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    drivers/pinctrl/nomadik/pinctrl-nomadik.c:952:8: warning: unused variab=
+le =E2=80=98wake=E2=80=99 [-Wunused-variable]
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
 ---
- drivers/thermal/thermal_core.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 2c41d4a..d96c515 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -289,16 +289,11 @@ static int __init thermal_register_governors(void)
-  * - Critical trip point will cause a system shutdown.
-  */
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
--					    int delay)
-+					    unsigned long delay)
- {
--	if (delay > 1000)
-+	if (delay)
- 		mod_delayed_work(system_freezable_power_efficient_wq,
--				 &tz->poll_queue,
--				 round_jiffies(msecs_to_jiffies(delay)));
--	else if (delay)
--		mod_delayed_work(system_freezable_power_efficient_wq,
--				 &tz->poll_queue,
--				 msecs_to_jiffies(delay));
-+				 &tz->poll_queue, delay);
- 	else
- 		cancel_delayed_work(&tz->poll_queue);
- }
-@@ -317,9 +312,9 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- 	mutex_lock(&tz->lock);
- 
- 	if (!stop && tz->passive)
--		thermal_zone_device_set_polling(tz, tz->passive_delay);
-+		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
- 	else if (!stop && tz->polling_delay)
--		thermal_zone_device_set_polling(tz, tz->polling_delay);
-+		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
- 	else
- 		thermal_zone_device_set_polling(tz, 0);
- 
+For more info write to <info@kernelci.org>
