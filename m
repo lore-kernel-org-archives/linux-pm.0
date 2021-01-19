@@ -2,210 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95C13C433E9
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B236C4332E
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 52A5A2313A
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E90242312E
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730796AbhASOor (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 09:44:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51664 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389315AbhASKC2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 05:02:28 -0500
-Received: from mail-vs1-xe32.google.com (mail-vs1-xe32.google.com [IPv6:2607:f8b0:4864:20::e32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CEFDC0613C1
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 02:01:27 -0800 (PST)
-Received: by mail-vs1-xe32.google.com with SMTP id p20so3468224vsq.7
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 02:01:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=ZFiICJwniMc0Mg91xgmY2/SkSt2U98JxqZWHMzErHqI=;
-        b=EJRJbsr3k7ZHbk8Tfyu4r3RFd7m7/nXBSpmTxaHZ1j6GYoE3PHBScLqAWa0H1U+VXq
-         24pDFQT09sOrdWpptqcrUJt89G0GBdQoHexg9QHOjqLyqD1c6lH3B9zfEJBjmaX6wgg3
-         5eOOPxFTyAs17E+U4GWXMLgn5jC9xvbCY5LBV5gDTi0pQf4eGOGX6YwUXWN0opi55hFF
-         ZpepDAm2dyDyds6SJp9u6VSkRYwFL8lq8FfayCw8xs3a7SEVaBFi/0XWHRNDt9Fufo3J
-         r20PFRCQOBbitGw81vBlUkwyzw2j1SvkwiIubHo3QRPYAlBqubrwQJQm959qigD67a4f
-         BYnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ZFiICJwniMc0Mg91xgmY2/SkSt2U98JxqZWHMzErHqI=;
-        b=UqNfkgg6yWwxdaJKQzZrSR134Raa6SjBrYwAtqA7vxzGSYnClEalunBe2cYpdwcoDg
-         O79NpStPmh9T98MgD/o0Bbu9jNki9BsERa+x8XXw2+71MOYLABJ0g01cXLIWZQSkOdt4
-         kms1esbHpZVeEmk+2R3IvjYocNr9IzT0hHAESdszFj+/UxgYi/sNIOBGBbBsZWYLLXtJ
-         MzYVN9skKQVM2eQrH+/LXcemN2HIfH0rRG9iQlQP40eJ2/I+njvoQM3pRAlaz8ENaJ1w
-         xXRmjb4tyEicrLOphSc1DuIOPM/vwsNjyCLuxlkezpVW+SLTaJBES7O1Kogrhk7gakMB
-         v5MQ==
-X-Gm-Message-State: AOAM531lpEDzRoYy/Xv7+/E5nweEVXRAXGZsDP9yYmcql8/LHrDTsFXg
-        vaRdr6SAnK6OLyl1onTFJdPzR8phWrJigtur2cFqSA==
-X-Google-Smtp-Source: ABdhPJy2RQAuq0B7Krbdn+Ul9WJ02t79YLdw2ym10tsq+ZsL8PYYwZCm7Zo1EGHSq8lvwMbikXefekKPz4bpkUaUzKY=
-X-Received: by 2002:a67:c787:: with SMTP id t7mr2238076vsk.48.1611050486284;
- Tue, 19 Jan 2021 02:01:26 -0800 (PST)
-MIME-Version: 1.0
-References: <20210115165004.22385-1-ilina@codeaurora.org> <20210115165004.22385-2-ilina@codeaurora.org>
-In-Reply-To: <20210115165004.22385-2-ilina@codeaurora.org>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 19 Jan 2021 11:00:50 +0100
-Message-ID: <CAPDyKFqcPsr-aLP0zRgj2F4h_j0Vj7kSy5-aiH5qyH47dM6oYA@mail.gmail.com>
-Subject: Re: [PATCH v8 1/2] PM / domains: inform PM domain of a device's next wakeup
-To:     Lina Iyer <ilina@codeaurora.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S2390820AbhASOp5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 09:45:57 -0500
+Received: from foss.arm.com ([217.140.110.172]:52696 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388791AbhASLnC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 Jan 2021 06:43:02 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0986E113E;
+        Tue, 19 Jan 2021 03:41:51 -0800 (PST)
+Received: from e123648.arm.com (unknown [10.57.9.187])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5D4093F719;
+        Tue, 19 Jan 2021 03:41:49 -0800 (PST)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        daniel.lezcano@linaro.org
+Cc:     amitk@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com
+Subject: [PATCH v2] thermal: power allocator: fail binding for non-power actor devices
+Date:   Tue, 19 Jan 2021 11:41:26 +0000
+Message-Id: <20210119114126.19480-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 15 Jan 2021 at 17:50, Lina Iyer <ilina@codeaurora.org> wrote:
->
-> Some devices may have a predictable interrupt pattern while executing
-> usecases. An example would be the VSYNC interrupt associated with
-> display devices. A 60 Hz display could cause a interrupt every 16 ms. If
-> the device were in a PM domain, the domain would need to be powered up
-> for device to resume and handle the interrupt.
->
-> Entering a domain idle state saves power, only if the residency of the
-> idle state is met. Without knowing the idle duration of the domain, the
-> governor would just choose the deepest idle state that matches the QoS
-> requirements. The domain might be powered off just as the device is
-> expecting to wake up. If devices could inform PM frameworks of their
-> next event, the parent PM domain's idle duration can be determined.
->
-> So let's add the dev_pm_genpd_set_next_wakeup() API for the device to
-> inform PM domains of the impending wakeup. This information will be the
-> domain governor to determine the best idle state given the wakeup.
->
-> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> Changes in v8:
->         - Update documentation. Add Reviewed-by tag.
-> Changes in v7:
->         - Simplify and set next-wakeup locklessly
-> Changes in v6:
->         - Update documentation
-> Changes in v5:
->         - Fix commit text as pointed by Ulf
->         - Use -EOPNOTSUPP
-> Changes in v4:
->         - Use PM domain data to store next_wakeup
->         - Drop runtime PM documentation
-> Changes in v3:
->         - Fix unwanted change
-> Changes in v2:
->         - Update documentation
->         - Remove runtime PM enabled check
->         - Update commit text
-> ---
->  drivers/base/power/domain.c | 25 +++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  6 ++++++
->  2 files changed, 31 insertions(+)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 9a14eedacb92..10a960bd3204 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -423,6 +423,30 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
->
-> +/**
-> + * dev_pm_genpd_set_next_wakeup - Notify PM framework of an impending wakeup.
-> + *
-> + * @dev: Device to handle
-> + * @next: impending interrupt/wakeup for the device
-> + *
-> + *
-> + * Allow devices to inform of the next wakeup. It's assumed that the users
-> + * guarantee that the genpd wouldn't be detached while this routine is getting
-> + * called. Additionally, it's also assumed that @dev isn't runtime suspended
-> + * (RPM_SUSPENDED)."
-> + * Although devices are expected to update the next_wakeup after the end of
-> + * their usecase as well, it is possible the devices themselves may not know
-> + * about that, so stale @next will be ignored when powering off the domain.
-> + */
-> +void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
-> +{
-> +       struct generic_pm_domain_data *gpd_data;
+The thermal zone can have cooling devices which are missing power actor
+API. This could be due to missing Energy Model for devfreq or cpufreq
+cooling device. In this case it is safe to fail the binding rather than
+trying to workaround and control the temperature in such thermal zone.
 
-Looks like you have dropped one of the needed sanity checks, to make
-sure the device is attached to a genpd. My apologies if I missed that
-in the previous version. So you need something like this:
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+Hi all,
 
-genpd = dev_to_genpd_safe(dev);
-if (!genpd)
-    return;
+This is a v2 patch which just stops the binding when there is some
+cooling device which is not implementing power actor API. As discussed
+with Daniel, it's better option than trying to control such undefined
+thermal zone.
+The v1 and related seggestion from Daniel can be found here [1].
 
-> +
-> +       gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-> +       gpd_data->next_wakeup = next;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
-> +
->  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
->  {
->         unsigned int state_idx = genpd->state_idx;
-> @@ -1465,6 +1489,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
->         gpd_data->td.constraint_changed = true;
->         gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
->         gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
-> +       gpd_data->next_wakeup = KTIME_MAX;
->
->         spin_lock_irq(&dev->power.lock);
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 2ca919ae8d36..735583c0bc6d 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -9,6 +9,7 @@
->  #define _LINUX_PM_DOMAIN_H
->
->  #include <linux/device.h>
-> +#include <linux/ktime.h>
->  #include <linux/mutex.h>
->  #include <linux/pm.h>
->  #include <linux/err.h>
-> @@ -191,6 +192,7 @@ struct generic_pm_domain_data {
->         struct notifier_block *power_nb;
->         int cpu;
->         unsigned int performance_state;
-> +       ktime_t next_wakeup;
->         void *data;
->  };
->
-> @@ -217,6 +219,7 @@ int pm_genpd_remove(struct generic_pm_domain *genpd);
->  int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
->  int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
->  int dev_pm_genpd_remove_notifier(struct device *dev);
-> +void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
->
->  extern struct dev_power_governor simple_qos_governor;
->  extern struct dev_power_governor pm_domain_always_on_gov;
-> @@ -275,6 +278,9 @@ static inline int dev_pm_genpd_remove_notifier(struct device *dev)
->         return -EOPNOTSUPP;
->  }
->
-> +static inline void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
-> +{ }
-> +
->  #define simple_qos_governor            (*(struct dev_power_governor *)(NULL))
->  #define pm_domain_always_on_gov                (*(struct dev_power_governor *)(NULL))
->  #endif
-> --
-> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-> a Linux Foundation Collaborative Project
->
+Regards,
+Lukasz Luba
 
-Kind regards
-Uffe
+[1] https://lore.kernel.org/linux-pm/20210105190107.30479-1-lukasz.luba@arm.com/
+
+
+ drivers/thermal/gov_power_allocator.c | 35 ++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 7a4170a0b51f..39e64eea7841 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -589,6 +589,34 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+ 	mutex_unlock(&tz->lock);
+ }
+ 
++/**
++ * check_power_actors() - Check all cooling devices and warn when they are
++ *			not power actors
++ * @tz:		thermal zone to operate on
++ *
++ * Check all cooling devices in the @tz and warn every time they are missing
++ * power actor API. The warning should help to investigate the issue, which
++ * could be e.g. lack of Energy Model for a given device.
++ *
++ * Return: 0 on success, -EINVAL if any cooling device does not implement
++ * the power actor API.
++ */
++static int check_power_actors(struct thermal_zone_device *tz)
++{
++	struct thermal_instance *instance;
++	int ret = 0;
++
++	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
++		if (!cdev_is_power_actor(instance->cdev)) {
++			dev_warn(&tz->device, "power_allocator: %s is not a power actor\n",
++				 instance->cdev->type);
++			ret = -EINVAL;
++		}
++	}
++
++	return ret;
++}
++
+ /**
+  * power_allocator_bind() - bind the power_allocator governor to a thermal zone
+  * @tz:	thermal zone to bind it to
+@@ -596,7 +624,8 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+  * Initialize the PID controller parameters and bind it to the thermal
+  * zone.
+  *
+- * Return: 0 on success, or -ENOMEM if we ran out of memory.
++ * Return: 0 on success, or -ENOMEM if we ran out of memory, or -EINVAL
++ * when there are unsupported cooling devices in the @tz.
+  */
+ static int power_allocator_bind(struct thermal_zone_device *tz)
+ {
+@@ -604,6 +633,10 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+ 	struct power_allocator_params *params;
+ 	int control_temp;
+ 
++	ret = check_power_actors(tz);
++	if (ret)
++		return ret;
++
+ 	params = kzalloc(sizeof(*params), GFP_KERNEL);
+ 	if (!params)
+ 		return -ENOMEM;
+-- 
+2.17.1
+
