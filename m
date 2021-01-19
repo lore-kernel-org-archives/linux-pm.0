@@ -7,54 +7,59 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A712AC433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:34:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC643C433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A30C22D71
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:34:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EFDE22D08
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726549AbhASVeg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 16:34:36 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:36596 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727011AbhASV2L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 16:28:11 -0500
-Date:   Tue, 19 Jan 2021 21:27:27 -0000
+        id S1727011AbhASVfC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 16:35:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58522 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727959AbhASV2K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 16:28:10 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF682C061575
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 13:27:29 -0800 (PST)
+Date:   Tue, 19 Jan 2021 21:27:25 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1611091648;
+        s=2020; t=1611091646;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=LwHULTeYR9W4/tnb7Ba43vDJre/OdT1Q2IcjFYcK3VY=;
-        b=hFj1z9fosM9SrWI/H0zMzNmjk+lLgl9FoWkFvPOsC/knlHwATzWSCeu5+5citvJ6DHlcDG
-        9e93GQmhuplGVdps2K0sxwJlVVM7wIboFY+OQK1jlE891GpVdS52s0f1DMqe2ehUv1h0uT
-        j4qzcQKRfGRxWp14rbGpYvLrcJ60r58TAr+59eeVMFXUHfuKngvxebyKKofXuB4Klzhp2L
-        QInTPYfb+UPse3CN04tDYudIgFg6qEPhKYIjBYncFa3ARpQX4e01oeNC+Rz1p5BpNFUhmQ
-        5Jv5A3qskinU+jQh7L3zrk4viJ/D0BvoTiGWS1ueukKhqzBhyMWb41+G8yiVPQ==
+        bh=Q3G+YDwPYN7neBOD8rA6aRuClL/6iHsM/u3oBKqzayY=;
+        b=TkL13HYN9M6JRe7rlBVraTdGp7oxkM89DQD3OINLS4mQFCo//EXh5dnRM3VvZknOMZWWy7
+        kdXbRtjFT+9F0xVaTpAg2MzWslJb3uYXgKqCZISkzEKNXsUX3zZYCyrRbU+lXvBUsEBXrS
+        JvM7vdlL5bwCO59IHFi1g13l4ek8XlLg8gwwFioYVwut76y/bCemeMIxzZqWOQS2a4d2b4
+        UQ33e3pbl9CUbBd6Ycihekn64O/BAtpRO9WhW4zXZ1TCM4A7hrT/47wpg6PyKfC7YCWInD
+        CzDhwayF5OOc+vGS9RXuF888KdH4wq+GftCrP7Z2ojmCJxRBy2r2oApGWUxz3Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1611091648;
+        s=2020e; t=1611091646;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=LwHULTeYR9W4/tnb7Ba43vDJre/OdT1Q2IcjFYcK3VY=;
-        b=HiYa7fvg1hMAmHfpTN6Pbo7ARkpVORtLPZ9SGoE8ZEZ+WGTr58yT07EqVCuhUAmUPa5KS6
-        umPcCF20bs/yfCAw==
+        bh=Q3G+YDwPYN7neBOD8rA6aRuClL/6iHsM/u3oBKqzayY=;
+        b=kQydRSo09rSqVDQlai7Lvq/QO+zy3Iv1EJzvqtZub9K3MAuwlsJqvN4//xKG0lZAXZTwJd
+        1oft3R9va22iayCg==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/acpi: Use hot and critical ops
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201210121514.25760-3-daniel.lezcano@linaro.org>
-References: <20201210121514.25760-3-daniel.lezcano@linaro.org>
+Subject: [thermal: thermal/next] thermal/core: Precompute the delays from
+ msecs to jiffies
+Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>, rui.zhang@intel.com,
+        amitk@kernel.org
+In-Reply-To: <20201216220337.839878-1-daniel.lezcano@linaro.org>
+References: <20201216220337.839878-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161109164757.414.15779969442983899331.tip-bot2@tip-bot2>
+Message-ID: <161109164594.414.12897889848127148595.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -65,77 +70,102 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     a73cb2024caa3480263a009dce91fa581b3748bf
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//a73cb2024caa3480263a009dce91fa581b3748bf
+Commit-ID:     17d399cd9c8936909bc8936a5837b6da9af9c29e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//17d399cd9c8936909bc8936a5837b6da9af9c29e
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Thu, 10 Dec 2020 13:15:12 +01:00
+AuthorDate:    Wed, 16 Dec 2020 23:03:35 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 07 Jan 2021 17:48:55 +01:00
+CommitterDate: Tue, 19 Jan 2021 22:23:38 +01:00
 
-thermal/drivers/acpi: Use hot and critical ops
+thermal/core: Precompute the delays from msecs to jiffies
 
-The acpi driver wants to do a netlink notification in case of a hot or
-critical trip point. Implement the corresponding ops to be used for
-the thermal zone and use them instead of the notify ops.
+The delays are stored in ms units and when the polling function is
+called this delay is converted into jiffies at each call.
 
+Instead of doing the conversion again and again, compute the jiffies
+at init time and use the value directly when setting the polling.
+
+Cc: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Link: https://lore.kernel.org/r/20201210121514.25760-3-daniel.lezcano@linaro.org
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
+Link: https://lore.kernel.org/r/20201216220337.839878-1-daniel.lezcano@linaro.org
 ---
- drivers/acpi/thermal.c | 30 ++++++++++++++----------------
- 1 file changed, 14 insertions(+), 16 deletions(-)
+ drivers/thermal/thermal_core.c    | 3 +++
+ drivers/thermal/thermal_core.h    | 1 +
+ drivers/thermal/thermal_helpers.c | 7 +++++++
+ include/linux/thermal.h           | 7 +++++++
+ 4 files changed, 18 insertions(+)
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 12c0ece..b5e4bc9 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -677,27 +677,24 @@ static int thermal_get_trend(struct thermal_zone_device *thermal,
- 	return 0;
- }
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index bcc2ea4..2c41d4a 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1315,6 +1315,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
  
--
--static int thermal_notify(struct thermal_zone_device *thermal, int trip,
--			   enum thermal_trip_type trip_type)
-+static void acpi_thermal_zone_device_hot(struct thermal_zone_device *thermal)
- {
--	u8 type = 0;
- 	struct acpi_thermal *tz = thermal->devdata;
- 
--	if (trip_type == THERMAL_TRIP_CRITICAL)
--		type = ACPI_THERMAL_NOTIFY_CRITICAL;
--	else if (trip_type == THERMAL_TRIP_HOT)
--		type = ACPI_THERMAL_NOTIFY_HOT;
--	else
--		return 0;
--
- 	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
--					dev_name(&tz->device->dev), type, 1);
-+					dev_name(&tz->device->dev),
-+					ACPI_THERMAL_NOTIFY_HOT, 1);
-+}
- 
--	if (trip_type == THERMAL_TRIP_CRITICAL && nocrt)
--		return 1;
-+static void acpi_thermal_zone_device_critical(struct thermal_zone_device *thermal)
-+{
-+	struct acpi_thermal *tz = thermal->devdata;
- 
--	return 0;
-+	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
-+					dev_name(&tz->device->dev),
-+					ACPI_THERMAL_NOTIFY_CRITICAL, 1);
++	thermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);
++	thermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);
 +
-+	thermal_zone_device_critical(thermal);
+ 	/* sys I/F */
+ 	/* Add nodes that are always present via .groups */
+ 	result = thermal_zone_create_device_groups(tz, mask);
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index e50c6b2..90f9a80 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -123,6 +123,7 @@ int thermal_build_list_of_policies(char *buf);
+ 
+ /* Helpers */
+ void thermal_zone_set_trips(struct thermal_zone_device *tz);
++void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms);
+ 
+ /* sysfs I/F */
+ int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index c94bc82..7f50f41 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -175,6 +175,13 @@ exit:
+ 	mutex_unlock(&tz->lock);
  }
  
- static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
-@@ -812,7 +809,8 @@ static struct thermal_zone_device_ops acpi_thermal_zone_ops = {
- 	.get_trip_temp = thermal_get_trip_temp,
- 	.get_crit_temp = thermal_get_crit_temp,
- 	.get_trend = thermal_get_trend,
--	.notify = thermal_notify,
-+	.hot = acpi_thermal_zone_device_hot,
-+	.critical = acpi_thermal_zone_device_critical,
- };
- 
- static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
++void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms)
++{
++	*delay_jiffies = msecs_to_jiffies(delay_ms);
++	if (delay_ms > 1000)
++		*delay_jiffies = round_jiffies(*delay_jiffies);
++}
++
+ static void thermal_cdev_set_cur_state(struct thermal_cooling_device *cdev,
+ 				       int target)
+ {
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 060a216..d1b82c7 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -117,9 +117,14 @@ struct thermal_cooling_device {
+  * @trips_disabled;	bitmap for disabled trips
+  * @passive_delay:	number of milliseconds to wait between polls when
+  *			performing passive cooling.
++ * @passive_delay_jiffies: number of jiffies to wait between polls when
++ *			performing passive cooling.
+  * @polling_delay:	number of milliseconds to wait between polls when
+  *			checking whether trip points have been crossed (0 for
+  *			interrupt driven systems)
++ * @polling_delay_jiffies: number of jiffies to wait between polls when
++ *			checking whether trip points have been crossed (0 for
++ *			interrupt driven systems)
+  * @temperature:	current temperature.  This is only for core code,
+  *			drivers should use thermal_zone_get_temp() to get the
+  *			current temperature
+@@ -155,6 +160,8 @@ struct thermal_zone_device {
+ 	void *devdata;
+ 	int trips;
+ 	unsigned long trips_disabled;	/* bitmap for disabled trips */
++	unsigned long passive_delay_jiffies;
++	unsigned long polling_delay_jiffies;
+ 	int passive_delay;
+ 	int polling_delay;
+ 	int temperature;
