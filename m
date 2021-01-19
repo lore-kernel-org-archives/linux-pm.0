@@ -7,20 +7,20 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC643C433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CAADC433E9
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5EFDE22D08
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 31E7422D08
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 21:35:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727011AbhASVfC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 16:35:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58522 "EHLO
+        id S1727377AbhASVfB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 16:35:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727959AbhASV2K (ORCPT
+        with ESMTP id S1727829AbhASV2K (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 16:28:10 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF682C061575
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFE64C0613C1
         for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 13:27:29 -0800 (PST)
 Date:   Tue, 19 Jan 2021 21:27:25 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
@@ -30,12 +30,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Q3G+YDwPYN7neBOD8rA6aRuClL/6iHsM/u3oBKqzayY=;
-        b=TkL13HYN9M6JRe7rlBVraTdGp7oxkM89DQD3OINLS4mQFCo//EXh5dnRM3VvZknOMZWWy7
-        kdXbRtjFT+9F0xVaTpAg2MzWslJb3uYXgKqCZISkzEKNXsUX3zZYCyrRbU+lXvBUsEBXrS
-        JvM7vdlL5bwCO59IHFi1g13l4ek8XlLg8gwwFioYVwut76y/bCemeMIxzZqWOQS2a4d2b4
-        UQ33e3pbl9CUbBd6Ycihekn64O/BAtpRO9WhW4zXZ1TCM4A7hrT/47wpg6PyKfC7YCWInD
-        CzDhwayF5OOc+vGS9RXuF888KdH4wq+GftCrP7Z2ojmCJxRBy2r2oApGWUxz3Q==
+        bh=0HkW5o91COjuekgU/TS60vkKAW2ep46WmQ+q5F8/shw=;
+        b=cLdneG5tGBo3RyxJB6tvs89dRfA1p3KTt1GuifSMCZBNxoqSMh0Depk1d76NRfdyn/lwMJ
+        FJW9VSo0H5ziEEBwkLhHxm8LpqXCJ6tL/TEas9tB0QuG0mTrAT+EOGR1bI31G5OHzL+Fao
+        RFDsz1CetAcoSG9FvjalGkuGNjLW6UisAks2PjqBXZ6ZqaX65afe7m1krrYKlAFS/wx3nf
+        YDNAch2jUEQg2qsbpD5jgFxL19hVYoJzReIfFOyQOSzP/YX3+7/vSxtX2QhwdD1rWAl//M
+        +ljpToTVayi/ZCMT49lv21lU8dt9LR6L9LP76BwZI0mYkWEmWfZQQQUE0dveyQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1611091646;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -43,23 +43,22 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Q3G+YDwPYN7neBOD8rA6aRuClL/6iHsM/u3oBKqzayY=;
-        b=kQydRSo09rSqVDQlai7Lvq/QO+zy3Iv1EJzvqtZub9K3MAuwlsJqvN4//xKG0lZAXZTwJd
-        1oft3R9va22iayCg==
+        bh=0HkW5o91COjuekgU/TS60vkKAW2ep46WmQ+q5F8/shw=;
+        b=wxYJsmKSGg3me+S1Cd2FcM96wy2tuTteHcdpuIHqGXsXfmfNhgNFJNzZxmEH5C35gnKI8D
+        hrSMKBoiipPCh7Dw==
 From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core: Precompute the delays from
- msecs to jiffies
+Subject: [thermal: thermal/next] thermal/core: Use precomputed jiffies for the polling
 Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Lukasz Luba <lukasz.luba@arm.com>, rui.zhang@intel.com,
         amitk@kernel.org
-In-Reply-To: <20201216220337.839878-1-daniel.lezcano@linaro.org>
-References: <20201216220337.839878-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20201216220337.839878-2-daniel.lezcano@linaro.org>
+References: <20201216220337.839878-2-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161109164594.414.12897889848127148595.tip-bot2@tip-bot2>
+Message-ID: <161109164575.414.18091167535205437557.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -70,102 +69,60 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     17d399cd9c8936909bc8936a5837b6da9af9c29e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//17d399cd9c8936909bc8936a5837b6da9af9c29e
+Commit-ID:     39a38808d082fc0fbf45cfefda17252ed8c6b31f
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//39a38808d082fc0fbf45cfefda17252ed8c6b31f
 Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Wed, 16 Dec 2020 23:03:35 +01:00
+AuthorDate:    Wed, 16 Dec 2020 23:03:36 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 19 Jan 2021 22:23:38 +01:00
+CommitterDate: Tue, 19 Jan 2021 22:23:43 +01:00
 
-thermal/core: Precompute the delays from msecs to jiffies
+thermal/core: Use precomputed jiffies for the polling
 
-The delays are stored in ms units and when the polling function is
-called this delay is converted into jiffies at each call.
-
-Instead of doing the conversion again and again, compute the jiffies
-at init time and use the value directly when setting the polling.
+The delays are also stored in jiffies based unit. Use them instead of
+the ms.
 
 Cc: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
-Link: https://lore.kernel.org/r/20201216220337.839878-1-daniel.lezcano@linaro.org
+Link: https://lore.kernel.org/r/20201216220337.839878-2-daniel.lezcano@linaro.org
 ---
- drivers/thermal/thermal_core.c    | 3 +++
- drivers/thermal/thermal_core.h    | 1 +
- drivers/thermal/thermal_helpers.c | 7 +++++++
- include/linux/thermal.h           | 7 +++++++
- 4 files changed, 18 insertions(+)
+ drivers/thermal/thermal_core.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index bcc2ea4..2c41d4a 100644
+index 2c41d4a..d96c515 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1315,6 +1315,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	tz->passive_delay = passive_delay;
- 	tz->polling_delay = polling_delay;
- 
-+	thermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);
-+	thermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);
-+
- 	/* sys I/F */
- 	/* Add nodes that are always present via .groups */
- 	result = thermal_zone_create_device_groups(tz, mask);
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index e50c6b2..90f9a80 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -123,6 +123,7 @@ int thermal_build_list_of_policies(char *buf);
- 
- /* Helpers */
- void thermal_zone_set_trips(struct thermal_zone_device *tz);
-+void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms);
- 
- /* sysfs I/F */
- int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index c94bc82..7f50f41 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -175,6 +175,13 @@ exit:
- 	mutex_unlock(&tz->lock);
- }
- 
-+void thermal_set_delay_jiffies(unsigned long *delay_jiffies, int delay_ms)
-+{
-+	*delay_jiffies = msecs_to_jiffies(delay_ms);
-+	if (delay_ms > 1000)
-+		*delay_jiffies = round_jiffies(*delay_jiffies);
-+}
-+
- static void thermal_cdev_set_cur_state(struct thermal_cooling_device *cdev,
- 				       int target)
+@@ -289,16 +289,11 @@ static int __init thermal_register_governors(void)
+  * - Critical trip point will cause a system shutdown.
+  */
+ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+-					    int delay)
++					    unsigned long delay)
  {
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 060a216..d1b82c7 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -117,9 +117,14 @@ struct thermal_cooling_device {
-  * @trips_disabled;	bitmap for disabled trips
-  * @passive_delay:	number of milliseconds to wait between polls when
-  *			performing passive cooling.
-+ * @passive_delay_jiffies: number of jiffies to wait between polls when
-+ *			performing passive cooling.
-  * @polling_delay:	number of milliseconds to wait between polls when
-  *			checking whether trip points have been crossed (0 for
-  *			interrupt driven systems)
-+ * @polling_delay_jiffies: number of jiffies to wait between polls when
-+ *			checking whether trip points have been crossed (0 for
-+ *			interrupt driven systems)
-  * @temperature:	current temperature.  This is only for core code,
-  *			drivers should use thermal_zone_get_temp() to get the
-  *			current temperature
-@@ -155,6 +160,8 @@ struct thermal_zone_device {
- 	void *devdata;
- 	int trips;
- 	unsigned long trips_disabled;	/* bitmap for disabled trips */
-+	unsigned long passive_delay_jiffies;
-+	unsigned long polling_delay_jiffies;
- 	int passive_delay;
- 	int polling_delay;
- 	int temperature;
+-	if (delay > 1000)
++	if (delay)
+ 		mod_delayed_work(system_freezable_power_efficient_wq,
+-				 &tz->poll_queue,
+-				 round_jiffies(msecs_to_jiffies(delay)));
+-	else if (delay)
+-		mod_delayed_work(system_freezable_power_efficient_wq,
+-				 &tz->poll_queue,
+-				 msecs_to_jiffies(delay));
++				 &tz->poll_queue, delay);
+ 	else
+ 		cancel_delayed_work(&tz->poll_queue);
+ }
+@@ -317,9 +312,9 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
+ 	mutex_lock(&tz->lock);
+ 
+ 	if (!stop && tz->passive)
+-		thermal_zone_device_set_polling(tz, tz->passive_delay);
++		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
+ 	else if (!stop && tz->polling_delay)
+-		thermal_zone_device_set_polling(tz, tz->polling_delay);
++		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
+ 	else
+ 		thermal_zone_device_set_polling(tz, 0);
+ 
