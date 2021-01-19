@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F12AC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 119E9C433E6
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 212A123107
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA0A62310B
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 20:44:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389792AbhASSu2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 13:50:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39782 "EHLO
+        id S2389995AbhASSun (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 13:50:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39780 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391788AbhASRw4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 12:52:56 -0500
-Received: from relay06.th.seeweb.it (relay06.th.seeweb.it [IPv6:2001:4b7a:2000:18::167])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE2D7C0612EE
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 09:47:42 -0800 (PST)
+        with ESMTP id S2391955AbhASRyj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 12:54:39 -0500
+Received: from relay07.th.seeweb.it (relay07.th.seeweb.it [IPv6:2001:4b7a:2000:18::168])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC249C06129E
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 09:48:01 -0800 (PST)
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 431483F20B;
-        Tue, 19 Jan 2021 18:45:59 +0100 (CET)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 8039E3F211;
+        Tue, 19 Jan 2021 18:46:00 +0100 (CET)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     viresh.kumar@linaro.org
@@ -39,9 +39,9 @@ Cc:     bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
         martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v4 2/7] cpufreq: blacklist MSM8998 in cpufreq-dt-platdev
-Date:   Tue, 19 Jan 2021 18:45:52 +0100
-Message-Id: <20210119174557.227318-3-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v4 6/7] cpufreq: qcom-hw: Allow getting the maximum transition latency for OPPs
+Date:   Tue, 19 Jan 2021 18:45:56 +0100
+Message-Id: <20210119174557.227318-7-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.30.0
 In-Reply-To: <20210119174557.227318-1-angelogioacchino.delregno@somainline.org>
 References: <20210119174557.227318-1-angelogioacchino.delregno@somainline.org>
@@ -51,26 +51,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the MSM8998 to the blacklist since the CPU scaling is handled
-out of this.
+In order to fine-tune the frequency scaling from various governors,
+allow to set a maximum transition latency from OPPs, which may be
+different depending on the SoC.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index f82f4ec17ff2..061de3031787 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -133,6 +133,7 @@ static const struct of_device_id blacklist[] __initconst = {
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index a92959bb7b50..5f67da796f6c 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -1401,6 +1401,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 	void __iomem *base;
+ 	struct qcom_cpufreq_data *data;
+ 	const char *fdom_resname;
++	unsigned int transition_latency;
+ 	int cpu_count, index, ret;
  
- 	{ .compatible = "qcom,apq8096", },
- 	{ .compatible = "qcom,msm8996", },
-+	{ .compatible = "qcom,msm8998", },
- 	{ .compatible = "qcom,qcs404", },
- 	{ .compatible = "qcom,sc7180", },
- 	{ .compatible = "qcom,sdm630", },
+ 	cpu_dev = get_cpu_device(policy->cpu);
+@@ -1478,6 +1479,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 		goto error;
+ 	}
+ 
++	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
++	if (!transition_latency)
++		transition_latency = CPUFREQ_ETERNAL;
++
++	policy->cpuinfo.transition_latency = transition_latency;
++
+ 	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
+ 
+ 	if (policy_has_boost_freq(policy)) {
 -- 
 2.30.0
 
