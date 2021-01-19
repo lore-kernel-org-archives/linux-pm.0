@@ -2,155 +2,216 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8871BC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 16:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C69A8C433E6
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 18:27:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 577CA21D1B
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 16:07:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8D0AB22C9E
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 18:27:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389138AbhASQHb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 11:07:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44710 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391224AbhASQD4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 11:03:56 -0500
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CADAC061573
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 08:03:00 -0800 (PST)
-Received: by mail-pj1-x102f.google.com with SMTP id g15so158300pjd.2
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 08:03:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=yq46fU2UhqS8M9Zthah4LUZ0vX50wKV+7yazyHD9svE=;
-        b=jPBHWhROQhfq7p+X9RRpS85+ysvGnpMnCihtAMQ2qf9d9Wzi6ir6tagJfjM2n36wUF
-         6wa8rkGfSoEfLtxJpW83RZXJMFxBtH+VxSsIBcTx8Q6AZqvZVb3hrvY+wshijRpnWAZx
-         vBhV7L/5uZdYJqn/+p+ZpVJ1PRs8ZlJjbjW+u2tJw6qX/45G+yB5m+DeLABBcuEy14v8
-         +iubq2xaERhiaGWqZXfMMiB8Rloj9kUqxfdu/2B256xo4Z7C0eqJZRJhZdipe9PLjLgR
-         qQ5eRrAvz/RmqpI9mivc2tbKX79+nrOFl7PVguN86tWP1OESymWxOoP9AloEGqvbJjTR
-         ArkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=yq46fU2UhqS8M9Zthah4LUZ0vX50wKV+7yazyHD9svE=;
-        b=fdcnZdpwVkWqB5JN+hM8uelT0x2ehZp/Y3D2fcKTtjxUx1B8rk4g1tEiB5UpMaQEDS
-         GYn3gqyRzK5CfAudE00/Rsxoohkn8Kq8o8gtU7qXM1gx9uHiMHt7CDtvNZh9gghJa5HR
-         qQFpMlsnctckHQ8kLq/+Kv/9HEYR6RlWvONWYQbUp9X5U2mAag5jCNF6OiVIkFcSNk3k
-         TZCRlkVmukOuhxwHkXpiAbijt+XkI3t6yewXy5U9i6dA+OiSgPukcR3soyzfFxVHyoxa
-         Uj3tk/+JAFYeSZXDS8fwu44o7JU93JXMwxjgLZFbclMR2bAmY/JNucYHF9edFn47XjQi
-         Smjw==
-X-Gm-Message-State: AOAM530QYeJhfdGy1PxroAlLvTws7hpXux0NrIeV95HxXWT2T0QRPElm
-        raNM8qA1uxczTdZAssK2GfvT6Q==
-X-Google-Smtp-Source: ABdhPJwIHbAwz43j8CiUN6CPz1D70j9N4FAEqnVg6ROq1rrk7yaI/M3WSe9wsWh0+wcLqc2xfPOcgA==
-X-Received: by 2002:a17:90b:3507:: with SMTP id ls7mr374483pjb.208.1611072179744;
-        Tue, 19 Jan 2021 08:02:59 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id 11sm18945070pgz.22.2021.01.19.08.02.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Jan 2021 08:02:59 -0800 (PST)
-Message-ID: <600702b3.1c69fb81.112c1.db08@mx.google.com>
-Date:   Tue, 19 Jan 2021 08:02:59 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S1726732AbhASQS1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 11:18:27 -0500
+Received: from a1.mail.mailgun.net ([198.61.254.60]:17976 "EHLO
+        a1.mail.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389567AbhASQNB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 11:13:01 -0500
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jan 2021 11:13:00 EST
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1611072758; h=In-Reply-To: Content-Type: MIME-Version:
+ References: Message-ID: Subject: Cc: To: From: Date: Sender;
+ bh=AtbnlRvAS8yN8UKf7OYvL9rmN50YvFPDLcQ5jq6qWlk=; b=f301rqoo+6dng0em3bVaBLlZhS/mcr1Ku72nae6sYkXH35DK1Qzuw7j+JJLzgZR+0b1Zt81a
+ 0hR1WLdTfTmaDa9O8TNrFKJs7PUb8LhFx6dnlERTihdIOowEfTILX/whhes265z/2vGXuVy1
+ S55BbZ0msuVrYH1eRbY697hWl8Q=
+X-Mailgun-Sending-Ip: 198.61.254.60
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
+ 6007034321210999ed44ba35 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 19 Jan 2021 16:05:23
+ GMT
+Sender: ilina=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 0DEA5C43464; Tue, 19 Jan 2021 16:05:23 +0000 (UTC)
+Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: ilina)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8F9B1C43461;
+        Tue, 19 Jan 2021 16:05:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8F9B1C43461
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
+Date:   Tue, 19 Jan 2021 09:05:20 -0700
+From:   Lina Iyer <ilina@codeaurora.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>
+Subject: Re: [PATCH v8 1/2] PM / domains: inform PM domain of a device's next
+ wakeup
+Message-ID: <YAcDQHkKZoQ4YWO8@codeaurora.org>
+References: <20210115165004.22385-1-ilina@codeaurora.org>
+ <20210115165004.22385-2-ilina@codeaurora.org>
+ <CAPDyKFqcPsr-aLP0zRgj2F4h_j0Vj7kSy5-aiH5qyH47dM6oYA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Report-Type: test
-X-Kernelci-Kernel: v5.11-rc4-16-g192963bcaa64
-Subject: pm/testing sleep: 2 runs, 2 regressions (v5.11-rc4-16-g192963bcaa64)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFqcPsr-aLP0zRgj2F4h_j0Vj7kSy5-aiH5qyH47dM6oYA@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 2 runs, 2 regressions (v5.11-rc4-16-g192963bcaa64)
+On Tue, Jan 19 2021 at 03:01 -0700, Ulf Hansson wrote:
+>On Fri, 15 Jan 2021 at 17:50, Lina Iyer <ilina@codeaurora.org> wrote:
+>>
+>> Some devices may have a predictable interrupt pattern while executing
+>> usecases. An example would be the VSYNC interrupt associated with
+>> display devices. A 60 Hz display could cause a interrupt every 16 ms. If
+>> the device were in a PM domain, the domain would need to be powered up
+>> for device to resume and handle the interrupt.
+>>
+>> Entering a domain idle state saves power, only if the residency of the
+>> idle state is met. Without knowing the idle duration of the domain, the
+>> governor would just choose the deepest idle state that matches the QoS
+>> requirements. The domain might be powered off just as the device is
+>> expecting to wake up. If devices could inform PM frameworks of their
+>> next event, the parent PM domain's idle duration can be determined.
+>>
+>> So let's add the dev_pm_genpd_set_next_wakeup() API for the device to
+>> inform PM domains of the impending wakeup. This information will be the
+>> domain governor to determine the best idle state given the wakeup.
+>>
+>> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>> Changes in v8:
+>>         - Update documentation. Add Reviewed-by tag.
+>> Changes in v7:
+>>         - Simplify and set next-wakeup locklessly
+>> Changes in v6:
+>>         - Update documentation
+>> Changes in v5:
+>>         - Fix commit text as pointed by Ulf
+>>         - Use -EOPNOTSUPP
+>> Changes in v4:
+>>         - Use PM domain data to store next_wakeup
+>>         - Drop runtime PM documentation
+>> Changes in v3:
+>>         - Fix unwanted change
+>> Changes in v2:
+>>         - Update documentation
+>>         - Remove runtime PM enabled check
+>>         - Update commit text
+>> ---
+>>  drivers/base/power/domain.c | 25 +++++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  6 ++++++
+>>  2 files changed, 31 insertions(+)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 9a14eedacb92..10a960bd3204 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -423,6 +423,30 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
+>>  }
+>>  EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
+>>
+>> +/**
+>> + * dev_pm_genpd_set_next_wakeup - Notify PM framework of an impending wakeup.
+>> + *
+>> + * @dev: Device to handle
+>> + * @next: impending interrupt/wakeup for the device
+>> + *
+>> + *
+>> + * Allow devices to inform of the next wakeup. It's assumed that the users
+>> + * guarantee that the genpd wouldn't be detached while this routine is getting
+>> + * called. Additionally, it's also assumed that @dev isn't runtime suspended
+>> + * (RPM_SUSPENDED)."
+>> + * Although devices are expected to update the next_wakeup after the end of
+>> + * their usecase as well, it is possible the devices themselves may not know
+>> + * about that, so stale @next will be ignored when powering off the domain.
+>> + */
+>> +void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
+>> +{
+>> +       struct generic_pm_domain_data *gpd_data;
+>
+>Looks like you have dropped one of the needed sanity checks, to make
+>sure the device is attached to a genpd. My apologies if I missed that
+>in the previous version. So you need something like this:
+>
+Oops. I assumed that we leave that to the driver to ensure that
+requirement. I will send another version with this. Thanks for catching
+this and the review.
 
-Regressions Summary
--------------------
+--Lina
 
-platform            | arch | lab           | compiler | defconfig          =
-| regressions
---------------------+------+---------------+----------+--------------------=
-+------------
-rk3288-rock2-square | arm  | lab-collabora | gcc-8    | multi_v7_defconfig =
-| 2          =
-
-
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.11-rc=
-4-16-g192963bcaa64/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.11-rc4-16-g192963bcaa64
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      192963bcaa64826582bed29644e2a54b81c0fb9a =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform            | arch | lab           | compiler | defconfig          =
-| regressions
---------------------+------+---------------+----------+--------------------=
-+------------
-rk3288-rock2-square | arm  | lab-collabora | gcc-8    | multi_v7_defconfig =
-| 2          =
-
-
-  Details:     https://kernelci.org/test/plan/id/6006f615015073c434bb5d17
-
-  Results:     2 PASS, 12 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.11-rc4-16-g19296=
-3bcaa64/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squar=
-e.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.11-rc4-16-g19296=
-3bcaa64/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squar=
-e.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
-0118.2/armhf/rootfs.cpio.gz =
-
-
-
-  * sleep.rtcwake-mem-4: https://kernelci.org/test/case/id/6006f615015073c4=
-34bb5d1a
-        new failure (last pass: v5.11-rc3-19-g9f0b1e583eac)
-
-    2021-01-19 15:08:58.844000+00:00  ake: assuming RTC uses UTC ...
-    2021-01-19 15:08:58.890000+00:00  rtcwake: read rtc time failed: Invali=
-d argument
-    2021-01-19 15:08:58.891000+00:00  1 RESULT=3Dfail>
-    2021-01-19 15:08:58.891000+00:00  rtcwake: assuming RTC uses UTC ...
-    2021-01-19 15:08:58.891000+00:00  rtcwake: read rtc time failed: Invali=
-d argument
-    2021-01-19 15:08:58.891000+00:00  CASE_ID=3Drtcwake-mem-2 RESULT=3Dfail>
-    2021-01-19 15:08:58.891000+00:00  rtcwake: assuming RTC uses UTC ...
-    2021-01-19 15:08:58.892000+00:00  rtcwake: read rtc time failed: Invali=
-d argument
-    2021-01-19 15:08:58.939000+00:00  IGNAL_TESTCASE TEST_CASE_ID=3Drtcwake=
--mem-3 RESULT=3Dfail>
-    2021-01-19 15:08:58.939000+00:00  rtcwake: assuming RTC uses UTC ... =
-
-    ... (2 line(s) more)  =
-
-
-  * sleep.rtcwake-mem-5: https://kernelci.org/test/case/id/6006f615015073c4=
-34bb5d1b
-        new failure (last pass: v5.11-rc3-19-g9f0b1e583eac) =
-
- =20
+>genpd = dev_to_genpd_safe(dev);
+>if (!genpd)
+>    return;
+>
+>> +
+>> +       gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
+>> +       gpd_data->next_wakeup = next;
+>> +}
+>> +EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
+>> +
+>>  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+>>  {
+>>         unsigned int state_idx = genpd->state_idx;
+>> @@ -1465,6 +1489,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
+>>         gpd_data->td.constraint_changed = true;
+>>         gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
+>>         gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+>> +       gpd_data->next_wakeup = KTIME_MAX;
+>>
+>>         spin_lock_irq(&dev->power.lock);
+>>
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 2ca919ae8d36..735583c0bc6d 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -9,6 +9,7 @@
+>>  #define _LINUX_PM_DOMAIN_H
+>>
+>>  #include <linux/device.h>
+>> +#include <linux/ktime.h>
+>>  #include <linux/mutex.h>
+>>  #include <linux/pm.h>
+>>  #include <linux/err.h>
+>> @@ -191,6 +192,7 @@ struct generic_pm_domain_data {
+>>         struct notifier_block *power_nb;
+>>         int cpu;
+>>         unsigned int performance_state;
+>> +       ktime_t next_wakeup;
+>>         void *data;
+>>  };
+>>
+>> @@ -217,6 +219,7 @@ int pm_genpd_remove(struct generic_pm_domain *genpd);
+>>  int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
+>>  int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
+>>  int dev_pm_genpd_remove_notifier(struct device *dev);
+>> +void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
+>>
+>>  extern struct dev_power_governor simple_qos_governor;
+>>  extern struct dev_power_governor pm_domain_always_on_gov;
+>> @@ -275,6 +278,9 @@ static inline int dev_pm_genpd_remove_notifier(struct device *dev)
+>>         return -EOPNOTSUPP;
+>>  }
+>>
+>> +static inline void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
+>> +{ }
+>> +
+>>  #define simple_qos_governor            (*(struct dev_power_governor *)(NULL))
+>>  #define pm_domain_always_on_gov                (*(struct dev_power_governor *)(NULL))
+>>  #endif
+>> --
+>> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+>> a Linux Foundation Collaborative Project
+>>
+>
+>Kind regards
+>Uffe
