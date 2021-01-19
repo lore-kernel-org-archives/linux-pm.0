@@ -2,136 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A3CAC43332
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E8EC4332B
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 374472312E
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6F0123139
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 14:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390595AbhASOqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 09:46:03 -0500
-Received: from mail-oi1-f176.google.com ([209.85.167.176]:35991 "EHLO
-        mail-oi1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389267AbhASNZT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 08:25:19 -0500
-Received: by mail-oi1-f176.google.com with SMTP id 9so21130460oiq.3;
-        Tue, 19 Jan 2021 05:24:22 -0800 (PST)
+        id S2390723AbhASOpt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 09:45:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37092 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2405177AbhASLGH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 06:06:07 -0500
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB3D4C061757
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 03:05:20 -0800 (PST)
+Received: by mail-pf1-x42f.google.com with SMTP id q131so1669021pfq.10
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2021 03:05:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=4TOzYyZIin/yiRGi1ie9o6/CbIyjNQOy95/3SVEBU9A=;
+        b=uExiI/2TzOCWPI0pjBTK0TdMIUfxRWt8KPMbORnS5c9XO68eyPvKDWJwxuopER796L
+         vURhfaHxKLDrdEPMFkOr9D58bDFAGeSBZqyZoZFnV8Ds7wkLh1pLnTtIRfKzC3SNrIG8
+         4yP6GQFO22QzekfpAs4U1eCA1618km+cf6i7I1xDcH3U66TWqpFoSnJURTiEhgICz/DU
+         PNnFj2qdBYVwZw3IYfwhM3DmNJJsRyPbxgsnldEdXpXHVPwmlxWQ3gmqbfaoayhgLuzv
+         3XIncpgMG7FADLMlh68SnARce4hUuVnnPuu2JPftCXyp7Mk01bVkT2woy+Zvbj/1lR5b
+         eoIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Idlx9RREqweSUD8lcoD8wW/tGcOzRTqi7qMTCAE3Qko=;
-        b=LP0j9td4/h/qiWWMUW/rQuu6r90kvreGW2E4JPLasy23bl2IWJyl8pYtzLBXHgvSKm
-         7kyuNVSacByAgw4WeoAPGxnW6RVqo5TvF/2RHxaToiXUoNZRZILwNsc8YQjbtgOu7zXb
-         QLVmhAbkq85HFOEDd2Vc9JOPg31tQWGg/XvjyMxA792wG4hxwjekxF7H8/bMzjcu764S
-         oMGhupjSpMFhIQKtnVg4Dlq4s2A/thPNZ0zqUMdRDTc2C3MTCY8WSi1DThZlROIXEP0f
-         jrDKyKPWjlyxhcsBypuealUpDeDRDzdF8fbuCHuiJ3O+9+C9O88Y2T0YKr0ZwTaWewoK
-         ezrw==
-X-Gm-Message-State: AOAM5312FMEw4TCLhZsTbz32jkv8KrN+zYWlEo4Y7QS9hbVZt6xY5rzy
-        NTnxabb+SlHnMz9xseJOyE6p3TCLhd71CW2EaJ8=
-X-Google-Smtp-Source: ABdhPJxZKTE21Z1XKEJRaORsKkBXwppVd0J7GH8X1+iaPGmeyQUSVxwzJG3dhbhqhxFD9wSDdc17wENeX3UpaLU8vd8=
-X-Received: by 2002:aca:5c05:: with SMTP id q5mr2566295oib.157.1611062636064;
- Tue, 19 Jan 2021 05:23:56 -0800 (PST)
-MIME-Version: 1.0
-References: <17705994.d592GUb2YH@kreacher> <CAGETcx9Bk0-nF+wnNXyLpgx7Ny-EchdUpXOYeBmhxTNF+mCR2A@mail.gmail.com>
-In-Reply-To: <CAGETcx9Bk0-nF+wnNXyLpgx7Ny-EchdUpXOYeBmhxTNF+mCR2A@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 19 Jan 2021 14:23:44 +0100
-Message-ID: <CAJZ5v0iJeZYDMoub1u4CMs8ciZkAPkZKVYg6+OS4XxPRaPYhjQ@mail.gmail.com>
-Subject: Re: [PATCH v2] driver core: Extend device_is_dependent()
-To:     Saravana Kannan <saravanak@google.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        LKML <linux-kernel@vger.kernel.org>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=4TOzYyZIin/yiRGi1ie9o6/CbIyjNQOy95/3SVEBU9A=;
+        b=RJUB+Lrf5dyVdAVAZ4cehUhfM1LyCOGcSw7JKljazkx46jUOKXTyQEFmKvG24RlbOJ
+         Rah1ArckAnjfxI7kiT4WwfapBNioX0W5M1RpH93ZKHXR9FeDazszLdzNbMB+Klf2YFP7
+         D27zPpjIFyl+EH4ce8BJmM8T90f5Jkwnnni1PK5nxpLX+TLD2XlMB4tsL/NATL3kJ4zR
+         yxVSarQKOSJNIrv/RGTlqwuNfhqg1/hj5IOdJHXL0UEvF10b+qkQOTj7GDvEr3W/DRHD
+         7+SmTOQ6fonIUa/7QJ4Hyl1Fuu1dLNiOqz5iVtvU6pHlgqn5aFdPaenMS2kAqaOo/I1a
+         AueQ==
+X-Gm-Message-State: AOAM530HV6+jxHzXJHXXP4WSpCmz2erQceFqd0X98J7Kskxwi6hxCnZr
+        YcBzw5iDma3FdzdOM7yeCLAwnQ==
+X-Google-Smtp-Source: ABdhPJypZ7g85maNn/Fq9wWXClDnT5wovR1kfqNu7P4AWwxVkN+tY7vWNWWbv+l/0xEltuRgBAxuTA==
+X-Received: by 2002:a62:a508:0:b029:1ba:621:ff29 with SMTP id v8-20020a62a5080000b02901ba0621ff29mr707798pfm.44.1611054320340;
+        Tue, 19 Jan 2021 03:05:20 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id a5sm18186189pgl.41.2021.01.19.03.05.18
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 19 Jan 2021 03:05:18 -0800 (PST)
+Date:   Tue, 19 Jan 2021 16:35:16 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Rajendra Nayak <rnayak@codeaurora.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Roja Rani Yarubandi <rojay@codeaurora.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Wolfram Sang <wsa@kernel.org>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Doug Anderson <dianders@chromium.org>,
+        Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>,
+        Matthias Kaehlcke <mka@chromium.org>, akashast@codeaurora.org,
+        msavaliy@qti.qualcomm.com, parashar@codeaurora.org,
         Linux PM <linux-pm@vger.kernel.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-Content-Type: text/plain; charset="UTF-8"
+        DTML <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Andy Gross <agross@kernel.org>, linux-i2c@vger.kernel.org
+Subject: Re: [PATCH 3/3] i2c: i2c-qcom-geni: Add support for
+ 'assigned-performance-states'
+Message-ID: <20210119110516.fgbbllyg7lxwwfdz@vireshk-i7>
+References: <20201224111210.1214-1-rojay@codeaurora.org>
+ <20201224111210.1214-4-rojay@codeaurora.org>
+ <YAGqKfDfB7EEuZVn@builder.lan>
+ <6bfec3e6-3d26-7ade-d836-032273856ce2@codeaurora.org>
+ <CAPDyKFqF0NE3QRAEfiqj5QOXXH2om4CpyyeudeqoovANfvjsaQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFqF0NE3QRAEfiqj5QOXXH2om4CpyyeudeqoovANfvjsaQ@mail.gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jan 18, 2021 at 11:03 PM Saravana Kannan <saravanak@google.com> wrote:
->
-> On Fri, Jan 15, 2021 at 10:30 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > If the device passed as the target (second argument) to
-> > device_is_dependent() is not completely registered (that is, it has
-> > been initialized, but not added yet), but the parent pointer of it
-> > is set, it may be missing from the list of the parent's children
-> > and device_for_each_child() called by device_is_dependent() cannot
-> > be relied on to catch that dependency.
-> >
-> > For this reason, modify device_is_dependent() to check the ancestors
-> > of the target device by following its parent pointer in addition to
-> > the device_for_each_child() walk.
-> >
-> > Fixes: 9ed9895370ae ("driver core: Functional dependencies tracking support")
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Reported-by: Stephan Gerhold <stephan@gerhold.net>
-> > Tested-by: Stephan Gerhold <stephan@gerhold.net>
-> > ---
-> >
-> > -> v2:
-> >    * Improve the changelog.
-> >    * Add a comment to explain the reason for the extra check.
-> >    * Add tags.
-> >
-> >    No code changes.
-> >
-> > ---
-> >  drivers/base/core.c |   17 ++++++++++++++++-
-> >  1 file changed, 16 insertions(+), 1 deletion(-)
-> >
-> > Index: linux-pm/drivers/base/core.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/core.c
-> > +++ linux-pm/drivers/base/core.c
-> > @@ -208,6 +208,16 @@ int device_links_read_lock_held(void)
-> >  #endif
-> >  #endif /* !CONFIG_SRCU */
-> >
-> > +static bool device_is_ancestor(struct device *dev, struct device *target)
-> > +{
-> > +       while (target->parent) {
-> > +               target = target->parent;
-> > +               if (dev == target)
-> > +                       return true;
-> > +       }
-> > +       return false;
-> > +}
-> > +
-> >  /**
-> >   * device_is_dependent - Check if one device depends on another one
-> >   * @dev: Device to check dependencies for.
-> > @@ -221,7 +231,12 @@ int device_is_dependent(struct device *d
-> >         struct device_link *link;
-> >         int ret;
-> >
-> > -       if (dev == target)
-> > +       /*
-> > +        * The "ancestors" check is needed to catch the case when the target
-> > +        * device has not been completely initialized yet and it is still
-> > +        * missing from the list of children of its parent device.
-> > +        */
-> > +       if (dev == target || device_is_ancestor(dev, target))
-> >                 return 1;
-> >
-> >         ret = device_for_each_child(dev, target, device_is_dependent);
-> >
->
-> Reviewed-by: Saravana Kannan <saravanak@google.com>
->
-> fw_devlink_relax_cycle() needs a similar fix. Want me to handle that
-> as a separate patch to driver-core-next? Or do you want to combine
-> that in this patch?
+On 19-01-21, 12:02, Ulf Hansson wrote:
+> As a matter of fact this was quite recently discussed [1], which also
+> pointed out some issues when using the "required-opps" in combination,
+> but perhaps that got resolved? Viresh?
 
-I would prefer that to be a different patch because of the Fixes: tag.
+Perhaps we never did anything there ..
 
-Also fw_devlink_relax_cycle() is in linux-next only for now, so it is
-better to avoid mixing a mainline fix with updating that one.
+-- 
+viresh
