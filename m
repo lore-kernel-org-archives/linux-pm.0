@@ -2,158 +2,255 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3579C4332E
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 06:36:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7A99C43381
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 06:37:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B49BE23121
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 06:36:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B0901230FA
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Jan 2021 06:37:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726292AbhASGXT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 01:23:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53820 "EHLO
+        id S1726732AbhASGhV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 01:37:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391312AbhASFte (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 00:49:34 -0500
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 761CEC061574
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 21:48:54 -0800 (PST)
-Received: by mail-lj1-x22e.google.com with SMTP id b10so20561377ljp.6
-        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 21:48:54 -0800 (PST)
+        with ESMTP id S1730106AbhASGgh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2021 01:36:37 -0500
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61B4BC061573
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 22:35:57 -0800 (PST)
+Received: by mail-pg1-x534.google.com with SMTP id z21so12406083pgj.4
+        for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2021 22:35:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=BaDAnz5PWlBb3FvhcqwZjvy+ViqKXKxtEUXuyfVUfG0=;
-        b=qGROhCgSdGzhZsNXSPaDyyoY6c8nRMnGYynnd1NPmCMGf8MWrc9+z7jJRYietSod5v
-         Snkh4Nf8Z9dt/m5G2oPEQr6AwPgKR7AVgv0VbTKRTvBuvlcbXdi/qNJVGBmU0TgpOKIM
-         COWa+4zGLbkNGGo+htqIpH8jr9dxUk20sIgO41FsyHjUzVfvjhieK5qLmI1PSL/ElNMF
-         a/Uukm4BmE1VTSJuD5PxkxJ0hRDoOLUTDalZI2ew5VHX3AQc/1UY61vyDk+hGQs1JFg/
-         O3DoPdlPpciL7SJD6/7wkyl4R0o5O+UkvNNFGnvEnB1Sp6b6ScuH1g8hKnuGL/99m3ng
-         EkSw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Q5t2YjjrAXHch+7Xya1g/yjAqbZsA5MpNpKfsmJhRf4=;
+        b=kFyYDXH/HoKISTq0lGJTbQu68KwzA1WoUcj+zq03SxTIxjeFVzCqbMMfTtNbz1Z5k9
+         Hh95YZKxP8gvVdYnuk/dCJwmi9uwCCnAQCAnkdVuUhYW9k/fQQUXdsaaAh79hHauBzIZ
+         HQg69TqOHgF3iQ40pVqTzu8T8mETV9KG0eY6WcXiU8ZmqnojPFOT0FqOxRfzOVAEcecB
+         F1BwPWkwvmUqyO1qjsEgIctdhtKQ1VjYV2JsFrviE2aRQQZ/Ww+ap/8Pr8QrBc1oxoE6
+         5EpObs7CH9uY9Th/12LKB6irG9reJS7Nt2fQgEnqekUXJzxkgHTxSrHAmcWsqpym1xGA
+         Obcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=BaDAnz5PWlBb3FvhcqwZjvy+ViqKXKxtEUXuyfVUfG0=;
-        b=aUw9mqtglwyHXOf7z7akAyGprdayqYslCPlk/f3hi9lpKg1xE5/oo7auw3ziPgRGqz
-         EwNDubLqiAAj2vS+s5/bowPmgVBRccUkM5vYTD53zGgo4qxMIy5EWTTXkXHTToGKoJ6S
-         rupr5vRrQGALSoRsoCiqtG5s1CQI9Kk5XZisqxaSJprN0VQNlLCH2Qmt0kpfSb/JDrqT
-         Nhnrw6Bx3gloq0vgfmF3VnaZI9ppAyQz4HhLzxTdTbkVcLu+u2GRKnuWO1156qGyBRLM
-         5jlJAmNLqMhMJazSaxPnJcozzyGxuut6q3Mef2N+NftxlvNohl6VBPZNq6r59qteVPE4
-         g+8Q==
-X-Gm-Message-State: AOAM531U8PjWEGB7DnMVF2a5kjxL4roawBBI8dgokImCX3Zp4BLWKXKd
-        39luPQeegFH57iUJ9ZXsjzPRVQ==
-X-Google-Smtp-Source: ABdhPJxr60rrFyHyqXKzidTuEJ8xN9YnUb2PM6mzzejfg9XkbpQ173bQfYl83EyRrbi0sghCKO6bMA==
-X-Received: by 2002:a2e:8691:: with SMTP id l17mr572169lji.408.1611035332781;
-        Mon, 18 Jan 2021 21:48:52 -0800 (PST)
-Received: from eriador.lumag.spb.ru ([188.162.65.64])
-        by smtp.gmail.com with ESMTPSA id j3sm2168207lfb.29.2021.01.18.21.48.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Jan 2021 21:48:52 -0800 (PST)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>
-Subject: [PATCH v12 0/5] qcom: pm8150: add support for thermal monitoring
-Date:   Tue, 19 Jan 2021 08:48:43 +0300
-Message-Id: <20210119054848.592329-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.29.2
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Q5t2YjjrAXHch+7Xya1g/yjAqbZsA5MpNpKfsmJhRf4=;
+        b=UuuZRtvTa2eA40jB5Jos/NtM3ptz/nfiIvaxkn2O/NsOqudg/ViT9iKd9B8/iYZr70
+         abbynQCqRpYUu1w+odYgMU0pw7H/L9+OQ8TK4n63dwUNoTtvP6ORHNV+B8C4NLakskpQ
+         BnESm1oNOGJFFUa+/++kJRJiW80kqI0ttzV4jIX4t5b0YglX8048uo4jqc2fKCid6ygJ
+         af5FJDHk2mMcGkdOxFOGB23z+1w+MrxkhrEgqnvMcaQjuC7VfAyunDjRymoFkO1nlyRq
+         5ANQr9oTHSMBdkCuS6wniAQYINvP+dlgGJebWukC4dYzGsYf4xZ+BT/COeb1MUAjCK3i
+         e+zQ==
+X-Gm-Message-State: AOAM5308QmwFT4J3Pijk/BZicf7E+/NsqKCf50qAKBHOQRY6V1FZoUsT
+        Vyhn9c9g9eVaZoWAUOumitjz3Q==
+X-Google-Smtp-Source: ABdhPJz/3uXoF3KKJza1xEuNergpk0wDYBT20iygWGP3plOndf+LX/fnc5hewqGbptdFlh+CG1BvlA==
+X-Received: by 2002:a63:2265:: with SMTP id t37mr3109575pgm.336.1611038156869;
+        Mon, 18 Jan 2021 22:35:56 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id h12sm17824893pgs.7.2021.01.18.22.35.55
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 18 Jan 2021 22:35:56 -0800 (PST)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] opp: Prepare for ->set_opp() helper to work without regulators
+Date:   Tue, 19 Jan 2021 12:05:51 +0530
+Message-Id: <302c014726dbd9fcde852985528c139d2214a1f2.1611038066.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <fb69353c-a35b-9b7c-46bc-d464c6dab6f5@gmail.com>
+References: <fb69353c-a35b-9b7c-46bc-d464c6dab6f5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch serie adds support for thermal monitoring block on Qualcomm's
-PMIC5 chips. PM8150{,b,l}, qrb5165-rb5 board and sm8250-mtp board device
-trees are extended to support thermal zones provided by this thermal
-monitoring block.  Unlike the rest of PMIC thermal senses, these thermal
-zones describe particular thermistors, which differ between from board
-to board.
+Until now the ->set_opp() helper (i.e. special implementation for
+setting the OPPs for platforms) was implemented only to take care of
+multiple regulators case, but going forward we would need that for other
+use cases as well.
 
-Dependencies: https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git/log/?h=ib-iio-thermal-5.11-rc1
+This patch prepares for that by allocating the regulator specific part
+from dev_pm_opp_set_regulators() and the opp helper part from
+dev_pm_opp_register_set_opp_helper().
 
-Changes since v11:
- - Drop io-channel-ranges from dts example.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Dmitry,
 
-Changes since v10:
- - Rebased on top of ib-iio-thermal-5.11-rc1 immutable branch, with
-   IIO-related patches picked up by Jonathan.
- - Changed thermal zone device tree nodes to use -thermal suffix
-   following the schema.
- - Reordered device tree nodes to keep the alphanumeric sorting order.
+I haven't tested this patch, can you please help with that ?
 
-Changes since v9:
- - In patch 12 add comments to the code as requested by Daniel Lezcano.
- - Change copyright comment in qcom-spmi-adc-tm5.c to clearly note
-   driver history.
+ drivers/opp/core.c | 81 ++++++++++++++++++++++++----------------------
+ drivers/opp/opp.h  |  2 ++
+ 2 files changed, 45 insertions(+), 38 deletions(-)
 
-Changes since v8:
- - Simplified qcom_vadc_map_voltage_temp() code by removing ascending
-   tables support
- - Simplified qcom-vadc-common volt/temp mapping code
- - Implement suggestions by Matthias Kaehlcke: message formatting,
-   rewrite comments, remove unused variable initialization.
-
-Changes since v7:
- - Move qcom-vadc-common.h header to include/linux/iio/adc/ dir.
- - Use explicit sizeof(var) instead of hand-coding 1 when accessing
-   adc-tm registers.
- - Remove buffer read from adc_tm5_init().
- - Remove extra on-stack var from adc_tm5_get_temp().
- - Minor formatting changes as suggested Daniel.
-
-Changes since v6:
- - Added include <linux/bitfield.h> as noted by Jishnu Prakash.
-
-Changes since v5:
- - Reworked DT bindings:
-   * Removed qcom,adc-channel, instead it is parsed from io-channels
-   * Renamed qcom,hw-settle-time to include -us suffix
- - Re-added monitor enabling which got lost during refactored. Noted by
-   Jishnu Prakash.
- - Use threaded IRQ handler as susggested by Jishnu.
-
-Changes since v4:
- - Added kernel-doc comments to ADC-TM structures
- - Used several sizeof(buf) instead of hand-conding register size
-
-Changes since v3:
- - Fix DT description to spell "thermal monitoring" instead of just TM
- - Fix warnings in DT example
- - Add EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name)
- - Fixed whitespace chanes in qcom-vadc-common.c
- - Removed error message if IIO chanel get returns -EPROBE_DEFER
-
-Changes since v2:
- - IIO: export of_iio_channel_get_by_name() function
- - dt-bindings: move individual io-channels to each thermal monitoring
-   channel rather than listing them all in device node
- - added fallback defaults to of_device_get_match_data calls in
-   qcom-spmi-adc5 and qcom-spmi-adc-tm5 drivers
- - minor typo fixes
-
-Changes since v1:
- - Introduce fixp_linear_interpolate() by Craig Tatlor
- - Lots of syntax/whitespace changes
- - Cleaned up register definitions per Jonathan's suggestion
- - Implemented most of the suggestions from Bjorn's and Jonathan's
-   review
-
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index b1a2296f3065..f80b6f1ca108 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1817,38 +1817,6 @@ void dev_pm_opp_put_prop_name(struct opp_table *opp_table)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+ 
+-static int _allocate_set_opp_data(struct opp_table *opp_table)
+-{
+-	struct dev_pm_set_opp_data *data;
+-	int len, count = opp_table->regulator_count;
+-
+-	if (WARN_ON(!opp_table->regulators))
+-		return -EINVAL;
+-
+-	/* space for set_opp_data */
+-	len = sizeof(*data);
+-
+-	/* space for old_opp.supplies and new_opp.supplies */
+-	len += 2 * sizeof(struct dev_pm_opp_supply) * count;
+-
+-	data = kzalloc(len, GFP_KERNEL);
+-	if (!data)
+-		return -ENOMEM;
+-
+-	data->old_opp.supplies = (void *)(data + 1);
+-	data->new_opp.supplies = data->old_opp.supplies + count;
+-
+-	opp_table->set_opp_data = data;
+-
+-	return 0;
+-}
+-
+-static void _free_set_opp_data(struct opp_table *opp_table)
+-{
+-	kfree(opp_table->set_opp_data);
+-	opp_table->set_opp_data = NULL;
+-}
+-
+ /**
+  * dev_pm_opp_set_regulators() - Set regulator names for the device
+  * @dev: Device for which regulator name is being set.
+@@ -1865,6 +1833,8 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+ 					    const char * const names[],
+ 					    unsigned int count)
+ {
++	struct dev_pm_opp_supply *supplies;
++	struct dev_pm_set_opp_data *data;
+ 	struct opp_table *opp_table;
+ 	struct regulator *reg;
+ 	int ret, i;
+@@ -1906,10 +1876,20 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+ 
+ 	opp_table->regulator_count = count;
+ 
+-	/* Allocate block only once to pass to set_opp() routines */
+-	ret = _allocate_set_opp_data(opp_table);
+-	if (ret)
++	supplies = kmalloc_array(count * 2, sizeof(*supplies), GFP_KERNEL);
++	if (!supplies) {
++		ret = -ENOMEM;
+ 		goto free_regulators;
++	}
++
++	mutex_lock(&opp_table->lock);
++	opp_table->sod_supplies = supplies;
++	if (opp_table->set_opp_data) {
++		data = opp_table->set_opp_data;
++		data->old_opp.supplies = supplies;
++		data->new_opp.supplies = supplies + count;
++	}
++	mutex_unlock(&opp_table->lock);
+ 
+ 	return opp_table;
+ 
+@@ -1952,9 +1932,16 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+ 	for (i = opp_table->regulator_count - 1; i >= 0; i--)
+ 		regulator_put(opp_table->regulators[i]);
+ 
+-	_free_set_opp_data(opp_table);
++	mutex_lock(&opp_table->lock);
++	if (opp_table->sod_supplies) {
++		opp_table->set_opp_data->old_opp.supplies = NULL;
++		opp_table->set_opp_data->new_opp.supplies = NULL;
++	}
++	mutex_unlock(&opp_table->lock);
+ 
++	kfree(opp_table->sod_supplies);
+ 	kfree(opp_table->regulators);
++	opp_table->sod_supplies = NULL;
+ 	opp_table->regulators = NULL;
+ 	opp_table->regulator_count = -1;
+ 
+@@ -2046,6 +2033,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_clkname);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 			int (*set_opp)(struct dev_pm_set_opp_data *data))
+ {
++	struct dev_pm_set_opp_data *data;
+ 	struct opp_table *opp_table;
+ 
+ 	if (!set_opp)
+@@ -2062,8 +2050,23 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 	}
+ 
+ 	/* Another CPU that shares the OPP table has set the helper ? */
+-	if (!opp_table->set_opp)
+-		opp_table->set_opp = set_opp;
++	if (opp_table->set_opp)
++		return opp_table;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_lock(&opp_table->lock);
++	opp_table->set_opp_data = data;
++	if (opp_table->sod_supplies) {
++		data->old_opp.supplies = opp_table->sod_supplies;
++		data->new_opp.supplies = opp_table->sod_supplies +
++					 opp_table->regulator_count;
++	}
++	mutex_unlock(&opp_table->lock);
++
++	opp_table->set_opp = set_opp;
+ 
+ 	return opp_table;
+ }
+@@ -2085,6 +2088,8 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+ 	WARN_ON(!list_empty(&opp_table->opp_list));
+ 
+ 	opp_table->set_opp = NULL;
++	kfree(opp_table->set_opp_data);
++	opp_table->set_opp_data = NULL;
+ 	dev_pm_opp_put_opp_table(opp_table);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 4ced7ffa8158..4408cfcb0f31 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -155,6 +155,7 @@ enum opp_table_access {
+  * @genpd_performance_state: Device's power domain support performance state.
+  * @is_genpd: Marks if the OPP table belongs to a genpd.
+  * @set_opp: Platform specific set_opp callback
++ * @sod_supplies: Set opp data supplies
+  * @set_opp_data: Data to be passed to set_opp callback
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+@@ -202,6 +203,7 @@ struct opp_table {
+ 	bool is_genpd;
+ 
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
++	struct dev_pm_opp_supply *sod_supplies;
+ 	struct dev_pm_set_opp_data *set_opp_data;
+ 
+ #ifdef CONFIG_DEBUG_FS
+-- 
+2.25.0.rc1.19.g042ed3e048af
 
