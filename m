@@ -2,121 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8697BC433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FDDCC433E6
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:59:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 58BCC22CE3
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:17:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EF52233F8
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732627AbhATPql (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 10:46:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40500 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732535AbhATPm0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 10:42:26 -0500
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EEC8C0613C1;
-        Wed, 20 Jan 2021 07:41:46 -0800 (PST)
-Received: by mail-lj1-x22d.google.com with SMTP id f17so26568807ljg.12;
-        Wed, 20 Jan 2021 07:41:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=9sJ1ScRq8N/XaLEQifnGC6kRifQqptOQ2pXix1nlQlY=;
-        b=Uajiq292D24xViZSilHw5Nw54/tYtaDcIPIzm0DmQ1axRpfxwauVk6W3xes7SPa8ME
-         /Qdm+mMXRCwcadGLIWF8ocpHiR24QX5YLae+1HzZwWnKQztag6cmwfKZbONjTi7Ga3fH
-         q5RP5Oy90ofLvcDP3vqOxS3TLOGic5cXgVIogUXp/KQrop3QNZIJet0XLVPeu7nD0TbD
-         D+ebXCuRzp1A3rlGZmbgc0KU7yLtuJ1A2G4F+M+6jSzOBqkP+P2AsM9JXL7BD78B91O5
-         3ehukk8m/3jWoqMe0tB+VjLGd8sIfjaBrGBx8TIMWxIBRBQ+H7AxMJCw1RextufG0Hc2
-         rRNw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=9sJ1ScRq8N/XaLEQifnGC6kRifQqptOQ2pXix1nlQlY=;
-        b=J5Tl1owmaH5flvbn/Xed5ltELFrv2dEaRrFAuIY/+FXglX8Dxa/jBMwwW19WbJZcO6
-         T0yfFeFL76FmMXNx9m5LoiapzJSS3FPi06Hfs+0+tvlGx+E4RJdQRIll79LuY+2vJkwe
-         AtsCDWPrs4Ahff9f972DU8Igq8F7iv5UpI/C5QGvgZU4zUlyFY935GNY7iNkkoyiUP8D
-         1SwrjCFZyrvZ7KQt7gE2GP/E3ynVZdZg61i+RNeho5K2S0MAacMQFa29BQlRC1X6mtT9
-         GnZrMi/3/6m0G21k0vhjSyxNumxwNNvmNOYH4LmCmvVfX9ZE0LEJyv302s/aW0EeQc3Q
-         IpZA==
-X-Gm-Message-State: AOAM531RQiq94fBGiowe8DfQybf/jdqF3WYDb0hMd/ufMjdGZhD4g9z3
-        kHeCAz4KloA66Q7Qep2Dx1YVpRGPBZE=
-X-Google-Smtp-Source: ABdhPJwS4Qe/V4DTqXpHPpVFyBynrwBLREgqIfYmzBAewWBaQBUksbpctc33wZx6P9VYWEGo5ma19g==
-X-Received: by 2002:a2e:b4cd:: with SMTP id r13mr1564048ljm.273.1611157304363;
-        Wed, 20 Jan 2021 07:41:44 -0800 (PST)
-Received: from [192.168.2.145] (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.googlemail.com with ESMTPSA id 29sm229492lfr.304.2021.01.20.07.41.42
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 20 Jan 2021 07:41:43 -0800 (PST)
-Subject: Re: [PATCH v3 00/12] OPP API fixes and improvements
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20210118005524.27787-1-digetx@gmail.com>
- <20210118114613.fzq7nkrdfm53upkr@vireshk-i7>
- <1d17901f-6341-d278-f517-33d9c7aadf42@gmail.com>
-Message-ID: <af1044be-263e-0aa2-7061-0b217f94197b@gmail.com>
-Date:   Wed, 20 Jan 2021 18:41:41 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.2
+        id S2389818AbhATR7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 12:59:30 -0500
+Received: from m12-14.163.com ([220.181.12.14]:48926 "EHLO m12-14.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388332AbhATR7W (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Jan 2021 12:59:22 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=hrdhG
+        az8gDPEnZPEUy95ik6pEd/YqLL0i9CWiIXBNIs=; b=aA376+qLVSO1i3uSD/D77
+        kraFp1GZfLCk7arOqr6OZryWcPnav/Ch5GqoCYd0N9DzL9W5OqKJQ/vhFdkj7FXu
+        AXlJxlbJ3Lt++EX668A1cKUtwLdPywEs9lpzSkgAyQl6dXQLJ7dbj8XAwNr4v5Is
+        UPryXjPc9XVgvAGcYpGuLs=
+Received: from DONGJIAN-NJ.ccdomain.com (unknown [218.94.48.178])
+        by smtp10 (Coremail) with SMTP id DsCowADXqeXY_QdgK0fqgw--.18973S2;
+        Wed, 20 Jan 2021 17:54:40 +0800 (CST)
+From:   Jian Dong <dj0227@163.com>
+To:     sre@kernel.org
+Cc:     linux-pm@vger.kernel.org, dongjian@yulong.com, huyue2@yulong.com,
+        zhangwen@yulong.com
+Subject: [PATCH] power-supply: Constify static psy_tzd_ops struct
+Date:   Wed, 20 Jan 2021 17:54:26 +0800
+Message-Id: <20210120095427.10592-1-dj0227@163.com>
+X-Mailer: git-send-email 2.20.1.windows.1
 MIME-Version: 1.0
-In-Reply-To: <1d17901f-6341-d278-f517-33d9c7aadf42@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DsCowADXqeXY_QdgK0fqgw--.18973S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7JF45AFy3KFy8Cr4fJFWrKrg_yoWfurgE93
+        48Xw1IgrZ5WFy0yrn09w47XFy8tr17u3yfJF40qFW3tFyYq3WDZr1DWryqqF1UWrWUuFZr
+        XFWqqF43tFy8WjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUbm9atUUUUU==
+X-Originating-IP: [218.94.48.178]
+X-CM-SenderInfo: dgmqjjqx6rljoofrz/xtbBEAAg3VUMVXFi3AAAsu
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-19.01.2021 20:35, Dmitry Osipenko пишет:
-> 18.01.2021 14:46, Viresh Kumar пишет:
->> On 18-01-21, 03:55, Dmitry Osipenko wrote:
->>> Hi,
->>>
->>> This series fixes problems and adds features to OPP API that are required
->>> for implementation of a power domain driver for NVIDIA Tegra SoCs.
->>>
->>> It is a continuation of [1], where Viresh Kumar asked to factor OPP
->>> patches into a separate series. I factored out the patches into this
->>> series, addressed the previous review comments and re-based patches
->>> on top of [2], which replaced some of my patches that added resource-managed
->>> helpers.
->>>
->>> [1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
->>> [2] https://lore.kernel.org/linux-pm/20210101165507.19486-1-tiny.windzz@gmail.com/
->>
->> Hi Dmitry,
->>
->> I have applied 9 out of 12 patches already. Thanks.
->>
-> 
-> Thanks, I checked that everything is applied properly using today's
-> linux-next.
-> 
+From: dongjian <dongjian@yulong.com>
 
-Turned out that one minor issue was actually introduced, the
-devm_pm_opp_attach_genpd() lost the export. I'll make a patch to fix this.
+The usage of this struct is to assign operation function's address
+to the field in thermal_zone_device_ops, it is a const pointer.
+make it const to allow the compiler to put it in read-only memory.
+
+Signed-off-by: dongjian <dongjian@yulong.com>
+---
+ drivers/power/supply/power_supply_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 38e3aa64..ae34856 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -952,7 +952,7 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+ 	return ret;
+ }
+ 
+-static struct thermal_zone_device_ops psy_tzd_ops = {
++static const struct thermal_zone_device_ops psy_tzd_ops = {
+ 	.get_temp = power_supply_read_temp,
+ };
+ 
+-- 
+1.9.1
+
+
