@@ -8,57 +8,56 @@ X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5F61C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4E2AC433E6
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 16:02:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A10882339E
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:54:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9148D233A1
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 16:02:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732795AbhATPyk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 10:54:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42886 "EHLO
+        id S2388514AbhATQCN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 11:02:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390562AbhATPx3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 10:53:29 -0500
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38FE4C061575;
-        Wed, 20 Jan 2021 07:52:49 -0800 (PST)
-Received: by mail-lf1-x134.google.com with SMTP id o17so34757590lfg.4;
-        Wed, 20 Jan 2021 07:52:49 -0800 (PST)
+        with ESMTP id S2391211AbhATQBE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 11:01:04 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0C5FC061575;
+        Wed, 20 Jan 2021 08:00:23 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id q8so3172464lfm.10;
+        Wed, 20 Jan 2021 08:00:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=/KIgJpukkTUseLKOL+nfTNs+iHfOcLiaf/sA4jMSc7o=;
-        b=b2NLVokQPZCUuJAyv3kiWNUb/D7/YvKoWfUJcCHR1heKGaiZjLpcSwBstX7Q3YX8MD
-         0VSL3nGarP20z1Z7t1EQA7XA2H4vpXyhlGms2qwFGmlN5vFPCkNOEwhXvgcl2dX2OHl0
-         Fk8lwe7s8eUZ2wwS5RMH6/mUWuXSRNmTjNvQCAwK5Dd3NdzmkpZHt4llHrw8Ni5khkmn
-         myMjJRhAiEUeq/sHdT1yh60NnMmGAROPatvIjJ8mP6HQeV19cvk6YGXY87IpFAtncwaV
-         v00shKKr9e/yxCXAB3jbsK18rnr4dn0SL3OuJ8SyDsoqZnywmH2zxXJFRB0YEqFQqi04
-         OP8Q==
+        bh=6pR6fg/vKnYn4hcu/THLeviR1hmHEHC9vnXYnmcjF/Q=;
+        b=abtLr1uy/58LoLQJLzYbf0L+o2zJbLuT/uYCyd48HpLF2JAhOx0hrfWwOfIcXeXTgE
+         9HOfUHGHmtSumGGVFBAuddWJ/pQvwtaaVjlR8LOgYJgvOr0axxti6ZdEumKE2Pdt5BDV
+         FdhlVFIlj6sF2mxWlGuxZfNjGlGpgOG+qnZ8Et4+3QqTh7tvZ5Ct1Xh1dbAdXTf2umqX
+         8x4F+Ku4eBtZ7uQ6IoiGOouZ5VCOxgk5/J7a8NInuLXOSX16zmC+Z7HYRrj5QDJifKoe
+         cNs1iMgtdoOFx+imchuo2kJ4HyYbPQwyxvWWVEV3zFd+tqiJgOtPAD/z2arSBt5IR3Cd
+         InCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=/KIgJpukkTUseLKOL+nfTNs+iHfOcLiaf/sA4jMSc7o=;
-        b=nbGUUFMp2tvkeX6XBsXTytoIiQPoz2eDIbHMmu4obTt01NoNLbaj2f9zx3wVyrCp4j
-         XIEjmjHhN6R1F1fnjSKUn9LIH2fe1HWXJOARadqqsVIByKni7NkJOPdLj+5chmh06SoZ
-         6TH9b14hriqgE1+ThonVV1NND8L1OGT9qf8dXWsrbFRjvgVWZ0Hv2ANhdQP7Pp0rUInH
-         DdyJhS2vnOcnkWMdS4WMk+TAwt6OmI0ezULfIAVj4iUL3FbjIeIkwceqBm8ZxGEFnVmy
-         1k1exhCfw1zlHcU/HC6vF73fyQJL7udqR/YCzWTZyBsWL6xCKgckEZ+apslDjtXdNUTt
-         jDZQ==
-X-Gm-Message-State: AOAM5338hi7aA1pHPOm9dFhgTGZXp4CKCcQIfKiU3dvNwEKhL+T6Bgjo
-        K/NSxyBc5oPD2aA5LNiSlbJh8+WQmjY=
-X-Google-Smtp-Source: ABdhPJz54jp4p6N7ro9OB4UGTlGLwMbj9w9A1NhmVFwuW25RiB7kgYemoqd4C3nN1Esa+ddCNU5GUA==
-X-Received: by 2002:a19:ac45:: with SMTP id r5mr4942869lfc.305.1611157967504;
-        Wed, 20 Jan 2021 07:52:47 -0800 (PST)
+        bh=6pR6fg/vKnYn4hcu/THLeviR1hmHEHC9vnXYnmcjF/Q=;
+        b=RjbihLs+ibnaGKRrtYsjPcyjTXNDV7TTEnrV4jv84GzBkhRCsf6C4+9ml9v9Ij1aiQ
+         cI+S5b/gQeCFcPYKEPyle9eSkE0VAcnHeGGChLKUt+QgIhfZ7MvGUFrB4p/L3/nenipY
+         WjQjso/bCG0pLaERjWTQoymZkrAwkW9MqeQhYfMg0ZAjQ9Soy+r34Gb+AnVTBYDxJjRs
+         M8V5I3+CdZudBI/QbdyJQ4vXynJC/jCmDOQSHy54jFcUm9VJAYbQTbkqn+YdcrMN2kNr
+         7utFUyomsaV2R11NuP+OLVmfxhZpCQqDJxTGo4F0d2Sd5HZMrctP0FYAMssiHnhLArbQ
+         JpXQ==
+X-Gm-Message-State: AOAM5328VRFpEImjdkhWz/tdhNBxlx2bY1/ImzfpKcMKILrUtjsm7HLB
+        sIFCN0EiJ3ybcJaz+VAdQTB6EjiP2aI=
+X-Google-Smtp-Source: ABdhPJx4ryhDhUccrXGgvid3ZVbrnrbevGoNExSyx1pGmnWuOH6PWddYTRxvkvma6v12P7EIGAI0ZA==
+X-Received: by 2002:ac2:58f2:: with SMTP id v18mr4396795lfo.623.1611158422110;
+        Wed, 20 Jan 2021 08:00:22 -0800 (PST)
 Received: from [192.168.2.145] (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.googlemail.com with ESMTPSA id b4sm74228ljp.53.2021.01.20.07.52.43
+        by smtp.googlemail.com with ESMTPSA id 76sm233715lfh.163.2021.01.20.08.00.19
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 20 Jan 2021 07:52:46 -0800 (PST)
-Subject: Re: [PATCH 02/31] opp: Add devres wrapper for
- dev_pm_opp_set_regulators and dev_pm_opp_put_regulators
+        Wed, 20 Jan 2021 08:00:21 -0800 (PST)
+Subject: Re: [PATCH 24/31] memory: tegra20: convert to use devm_pm_opp_* API
 To:     Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com,
         kyungmin.park@samsung.com, cw00.choi@samsung.com, krzk@kernel.org,
         shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
@@ -94,14 +93,14 @@ Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
         linux-spi@vger.kernel.org, linux-serial@vger.kernel.org
 References: <20210101165507.19486-1-tiny.windzz@gmail.com>
- <20210101165507.19486-3-tiny.windzz@gmail.com>
+ <20210101165507.19486-25-tiny.windzz@gmail.com>
 From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <43c251a2-430a-040c-4152-94cf10c884e0@gmail.com>
-Date:   Wed, 20 Jan 2021 18:52:43 +0300
+Message-ID: <b9f19bb2-c225-b64d-a995-1f84926bd18b@gmail.com>
+Date:   Wed, 20 Jan 2021 19:00:19 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.4.2
 MIME-Version: 1.0
-In-Reply-To: <20210101165507.19486-3-tiny.windzz@gmail.com>
+In-Reply-To: <20210101165507.19486-25-tiny.windzz@gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -109,15 +108,16 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-01.01.2021 19:54, Yangtao Li пишет:
-> Add devres wrapper for dev_pm_opp_set_regulators()
-> dev_pm_opp_put_regulators () to simplify driver code.
+01.01.2021 19:55, Yangtao Li пишет:
+> Use devm_pm_opp_* API to simplify code.
 > 
 > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
->  drivers/opp/core.c     | 50 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h |  9 ++++++++
->  2 files changed, 59 insertions(+)
+>  drivers/memory/tegra/tegra20-emc.c | 29 +++++++++--------------------
+>  1 file changed, 9 insertions(+), 20 deletions(-)
 
-Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
-Tested-by: Dmitry Osipenko <digetx@gmail.com>
+There are also tegra30-emc.c and tegra124-emc.c with a similar OPP code.
+
+But could we please not touch these memory drivers? I already have a
+prepared patch which replaces all the tegra_emc_opp_table_init() with a
+single common helper that will use devm_opp_* helpers.
