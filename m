@@ -2,142 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07D9BC433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 22:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF50DC43381
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 23:42:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C45FC23437
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 22:34:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7F5B023619
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 23:42:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727463AbhATWby (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 17:31:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43094 "EHLO
+        id S1730699AbhATVZT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 16:25:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387511AbhATW1m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 17:27:42 -0500
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3ED33C061575;
-        Wed, 20 Jan 2021 14:27:02 -0800 (PST)
-Received: by mail-wm1-x333.google.com with SMTP id s24so4062848wmj.0;
-        Wed, 20 Jan 2021 14:27:02 -0800 (PST)
+        with ESMTP id S2388556AbhATVRG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 16:17:06 -0500
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86252C0613D6
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 13:16:20 -0800 (PST)
+Received: by mail-pl1-x62c.google.com with SMTP id b8so13239939plx.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 13:16:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dKcbJOeGT1X867/R9y81CHjqL2NMHtb7qjxbq5JTTeY=;
-        b=WEjw89t9vfKEoWaPW9FfwUDOx7EJFwSflfFIYw7I7k7tG7mjfLOXk4r3Wwq+1JqEQm
-         OFRkXqQTNsZfGeO5qk5XlU/FGvRLR+faZ0lAa1BRI+omdBVc3A7vbOdfkTaJh8vJ+CW/
-         KxKwKPeZJ2R/wLFDYF/FH7TFeiyTyJWsP/W9OOrei5ZNy1606QXqkginswgWFvx1CFZd
-         VV29M0YZBztO7fpfB9SGkoXA4pdPhZN9WDGTRTG89cU73IkT1GINHY5MfOld7V6CLHr1
-         r7xeWetE0YOsKgSw8UT9OI9HUTjlVDcx/gEieadPNSdtFJyXtVBSKhq/BUQiR5csP/va
-         s+vA==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=ca+8NzTfETzVE4+uw+qveOGQYKjaycmberW1KwYsv+g=;
+        b=sp/+zyym2ObOAZ5VSgKGDvFyd7fzMiEelycw2XiJgLanPAV191du/v4seZcP2n1ckS
+         14O504wPDap2gIAXzcaB/PQnNGWe0xB5neErN1fyt3P41nv3RkeBk/ilNj6zXtdahhHo
+         I8K+OTjgm5aURXGPoa+cSxvje004UqQMR7ejb0dF0m6CU+YR185Pskgmy7TQazkfD8E5
+         gNfEpWMUecYuiBrLN/ad5GzWAPFClDd2KIdrBqCNKXMtkeEwBEHahx2/gbNVbE/xk2/V
+         V93OlgwEvSV2JRtRHvnFizXWIP83SwZQf/MlPOfVQiVJD8WYXW//tjWbv9MDssegIoLd
+         ZCUw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dKcbJOeGT1X867/R9y81CHjqL2NMHtb7qjxbq5JTTeY=;
-        b=QMzu0gpS328nKqKRCFuw6gsvdjvLpmzxCLEqyahoPN3C/tOpAqjE2ycTbw2X8mCMJQ
-         rgPcbWuEE5qsJ4ww8PAKTSA4qFQIxSv0NwUfKUy1v8jcESQuy3XOycIt9+ooEgmxu3jK
-         04fxuHtmKa4uTQn277+zg4x9soZs8KAs2RghKjTffMLRWddnHllicuGbMHNpWpw7OMTU
-         U+F1tp/33/ry/v6zX2lnd4v1NGgc3aw7h4zDMQ7Mpkppr5mVZ3ZKBsxU9Y6xA0vMJ4hx
-         9YXggAh+GVG33CKQ6cIWTnAl1uL4IVZT1S/0ANnhDsFLhkrHqrrMv0hhUNQnQBplBXEo
-         btUg==
-X-Gm-Message-State: AOAM533IKCF0pOvdcApozMBbEI9xJH+RTZhqi1mN6lHhtyqewpkdn5iY
-        oYbXUeFvvHq5Gz6hU9fNJlo=
-X-Google-Smtp-Source: ABdhPJyyrGsYpY1bAWX8P5JPdH4Zf1EuoMPcCtKKcCDcP95EdaCe7tIrn7eHGT2F1R9v6Ws8LWzYDw==
-X-Received: by 2002:a1c:a7c5:: with SMTP id q188mr6130788wme.108.1611181620905;
-        Wed, 20 Jan 2021 14:27:00 -0800 (PST)
-Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id i131sm5663710wmi.25.2021.01.20.14.26.59
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=ca+8NzTfETzVE4+uw+qveOGQYKjaycmberW1KwYsv+g=;
+        b=YuBPImg9WNnOvrY1hrsC4dlJBsZGUNOxMNjtPzJis1gqbYdzJmvXfRLH7tHeCIPEtl
+         jw/B5Nzf1IKhDgnI8Ks1kTEZlTXiBhjRfh0lDuLKuFlgJHvfJnb7DwhDPrULoYh27k+l
+         mgMkqfRFUNipNXvYwowF2xmTTK4//jQX2AcU2dMXQwn2CL0PRj5wO6/LMKNxUb3S7AH1
+         Gz3ez+/3MLgK/cb2XGT79wM5qN4SITKhhzlz8jLG7W4jGTX+jqjTqHKAX6bm3+9damx+
+         6W2tcHb+TIbTT3iJ69InuFrre+84A56s9YAxIg9vdGvlkWUyfnch8b63VGtAjJGznL2R
+         62lA==
+X-Gm-Message-State: AOAM53368rnHR4UxMv49YhgwNc4zxOMYBFiS0dsdhVTQoKPMWaZKFtKX
+        WITLdXO19N0+nsVE1u8bxz68tg==
+X-Google-Smtp-Source: ABdhPJw4pOCKvDfQNI0uJJUeDzQYXxP9mahfTb+hb/0MVvzM3/BurD6mZpkApPxQpERLeXet9cWjkw==
+X-Received: by 2002:a17:90a:4cc5:: with SMTP id k63mr7552829pjh.202.1611177380010;
+        Wed, 20 Jan 2021 13:16:20 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id n128sm3487876pga.55.2021.01.20.13.16.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Jan 2021 14:27:00 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v4 0/4] OPP API fixes and improvements
-Date:   Thu, 21 Jan 2021 01:26:45 +0300
-Message-Id: <20210120222649.28149-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.29.2
+        Wed, 20 Jan 2021 13:16:19 -0800 (PST)
+Message-ID: <60089da3.1c69fb81.bbd1d.859a@mx.google.com>
+Date:   Wed, 20 Jan 2021 13:16:19 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v5.11-rc4-28-ga31400ec480e
+Subject: pm/testing sleep: 4 runs, 1 regressions (v5.11-rc4-28-ga31400ec480e)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+pm/testing sleep: 4 runs, 1 regressions (v5.11-rc4-28-ga31400ec480e)
 
-This series fixes problems and adds features to OPP API that are required
-for implementation of a power domain driver for NVIDIA Tegra SoCs.
+Regressions Summary
+-------------------
 
-It is a continuation of [1], where Viresh Kumar asked to factor OPP
-patches into a separate series. I factored out the patches into this
-series, addressed the previous review comments and re-based patches
-on top of [2], which replaced some of my patches that added resource-managed
-helpers.
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
 
-[1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
-[2] https://lore.kernel.org/linux-pm/20210101165507.19486-1-tiny.windzz@gmail.com/
 
-Changelog:
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.11-rc=
+4-28-ga31400ec480e/plan/sleep/
 
-v4: - Fixed missing export of devm_pm_opp_attach_genpd(). Thanks to
-      Nicolas Chauvet for catching this problem.
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.11-rc4-28-ga31400ec480e
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      a31400ec480e8a579467fbe36d7ea49c952109dc =
 
-    - Removed a bit questionable locking from dev_pm_opp_sync_regulators()
-      and dev_pm_opp_set_voltage(). We may come back to the OPP locking
-      sometime later, it's not an essential problem right now. I moved
-      the lock from OPP core to the PD driver for now.
 
-    - Added "Make _set_opp_custom() work without regulators" patch,
-      which is made on top of "Prepare for ->set_opp() helper to work without
-      regulators" patch from Viresh Kumar. The set_opp() helper now works
-      without regulators.
 
-v3: - Reordered patches by importance.
+Test Regressions
+---------------- =
 
-    - Added locking to dev_pm_opp_set_voltage().
 
-    - Reworked "Fix adding OPP entries in a wrong order if rate is unavailable"
-      patch, like it was suggested by Viresh Kumar.
 
-    - Reworked "Support set_opp() customization without requiring to use
-      regulators" patch, like it was suggested by Viresh Kumar.
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
 
-      The opp_table->set_opp_data is now allocated by dev_pm_opp_register_set_opp_helper().
 
-      The set_opp_data is refcounted now and can be allocated by any other
-      OPP functions if this will become needed in the future for other OPP API
-      changes.
+  Details:     https://kernelci.org/test/plan/id/60088d0d11d9b575b6bb5d49
 
-Dmitry Osipenko (4):
-  opp: Export devm_pm_opp_attach_genpd()
-  opp: Add dev_pm_opp_sync_regulators()
-  opp: Add dev_pm_opp_set_voltage()
-  opp: Make _set_opp_custom() work without regulators
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.11-rc4-28-ga3140=
+0ec480e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.11-rc4-28-ga3140=
+0ec480e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
+0118.2/arm64/rootfs.cpio.gz =
 
- drivers/opp/core.c     | 119 +++++++++++++++++++++++++++++++++++++----
- include/linux/pm_opp.h |  12 +++++
- 2 files changed, 122 insertions(+), 9 deletions(-)
 
--- 
-2.29.2
 
+  * sleep.login: https://kernelci.org/test/case/id/60088d0d11d9b575b6bb5d4a
+        failing since 154 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
+il: v5.9-rc1-4-g1f08d51cd57f) =
+
+ =20
