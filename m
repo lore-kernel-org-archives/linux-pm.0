@@ -2,133 +2,259 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E714C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1AB9C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:37:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0715A23131
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:17:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 65033225AA
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:37:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730353AbhATIQi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 03:16:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55542 "EHLO
+        id S1730973AbhATIfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 03:35:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33190 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730465AbhATIHF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 03:07:05 -0500
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88146C061798
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:06:14 -0800 (PST)
-Received: by mail-pg1-x529.google.com with SMTP id 30so14685030pgr.6
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:06:14 -0800 (PST)
+        with ESMTP id S1730947AbhATIec (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 03:34:32 -0500
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA57BC061575
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:33:51 -0800 (PST)
+Received: by mail-wm1-x333.google.com with SMTP id c127so2015055wmf.5
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:33:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=oNkS7BO+I4iYqbb8e23nWgzCyCIirVtUbZHdA/+LLQk=;
-        b=H8ahtFkrl8XoAAXOdig+ykUsHL1WV8A6ooGgVzGod+L1cIXRgMBoBvdTwc/Bk1DSAw
-         PlXgpR+6+XSKVseQkHvUwtknt1dIbynk1U0WfmpbYJx0KfQJ60w7GCa6j2ZecpEDDwEo
-         nZZoGepdNQ9fPJxFhxL/+9UAerRGCpTZra+L94Rj4OQuHY79Ahi/XVBbvK9hMw9c+U7M
-         8X1qo+PBEB4Y4p9FSHCVeEFTMnNiPSudwgYQ7iYxcN+1kwI6v1CiXCY2zvxc5qAJyP9k
-         iZVJ8Ku2VjFoupFP/yuzfnbVR0/qVdTPP9WFLH6tYXQGiUp6x4P/9Ga2F5nvtoMXwt6r
-         eR5g==
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=kf68twK2VJqQ9rG90iy/Ey4koGBofqxtFe6BH41DE2U=;
+        b=ugv47AZmMA+xT9rztkNUf1l1ZWJmiwwKfuZcduQNMyAoiXL1mZ4978OKPr3LEWr7vz
+         KNR0D99j9aUzgV+TNPAvrOBbhn7PIvz7iQEtTR8K7v2JE6FekzIw1fz+7P8nFv0cCABa
+         DFK85L7PJVYKs3/kbL4eFwcH8lwz93GswENPw+JUpWOI4HzhyrwL1SkCK8duQCmGJj/J
+         Zykl2cLd1X48gVne+VuwLslmUSSTeNwdoTkcr/PaN0H1vjdySHEBNArm4zAIzxcmNa3P
+         /oxAmhso1coeEuToHfQMLoUafrOJ1eonMC542hB3+fycgWMDpuMVbNSJBoZp6Aee3GnB
+         yUwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=oNkS7BO+I4iYqbb8e23nWgzCyCIirVtUbZHdA/+LLQk=;
-        b=F+tbqwSNg5Zh9HfERR5ubtt/q/ZLkBJL0EFvJmstsAJ/8U4q+HDl4U1q58AY7MACf/
-         l2UBVD2I8lBiGXHV9YYNI5OeblejNETxXCI91ZU+ixP2pXnMBA2gh2DYqN4onoSBUcyy
-         H9UPqtauzGpDHvnhigeEzFiXYzJsYs1cwxGbmvJ7jHhVEjxxezOhU0WMb7fjHqN0+xnZ
-         Hw3nRXuYUdEYDYQ9/XCR0ckzgFQjlJRwPaJNZqM1rXhVVFYoDs08NfLtNXgRVAgIaTnO
-         emKRmHop+teyBVouE2gwGp4zyoap9x+yDiy2b6f+WdGPfmup8trjFgr9ysrRp4RIYRtj
-         RywQ==
-X-Gm-Message-State: AOAM530SI0LlI7KQo8Lqa5FhSiRVfUXdYrzOwecKcgPWNwSVPdWT2daY
-        WeIknB0PQ/GkIm9l+zOs4K+xHg==
-X-Google-Smtp-Source: ABdhPJxxnQpjU22yEmNNtaWWmWh2iwZ/WZIldmsDhPNptwyaFHrkBk9JWxSodC3SuvlwGpHnbs4W8g==
-X-Received: by 2002:a63:ef14:: with SMTP id u20mr8314758pgh.93.1611129973985;
-        Wed, 20 Jan 2021 00:06:13 -0800 (PST)
-Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id p15sm1419910pgl.19.2021.01.20.00.06.12
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 20 Jan 2021 00:06:12 -0800 (PST)
-Date:   Wed, 20 Jan 2021 13:36:11 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [BUG] NULL pointer in dev_pm_opp_put_regulators
-Message-ID: <20210120080611.uqmik3hc5kq6mpxw@vireshk-i7>
-References: <20210120075902.lfz6cw4jgqg6e7c3@kozik-lap>
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=kf68twK2VJqQ9rG90iy/Ey4koGBofqxtFe6BH41DE2U=;
+        b=r/tPys7b8dhyOTxdjIxrrIgl//0hASGvidah77kI7WoZNxUnShLYHdXAtSjgbaq5tf
+         5CMZ5525adUr/8gIGXERj/LklKZOjerTDcGQYNx5QgrtYVjKIln491QKCnnfRtM6Blz7
+         FJBM7YIw0siHB54nAPTwnKgxl/Pob940YypTqqsaDV2NS+v1eRRWN6HFoQqFJCmMqoNt
+         54VO05mclyMxNQidK6axAWLx0AeESzTGFxW8xyEGR3Xx2xhX1CtiYjvVcpHzsiWx4B+N
+         8k3rl7kDJXbOzhEAbyYdptANuULHuDR1fmQ3POTf7cBtr4PZ+pg0UpNgtFzQbzikKycj
+         +3yQ==
+X-Gm-Message-State: AOAM533xh9m5ukTgpTfRfYl6aqUdsXRyr/eyoj/y3ArqocnC/57Q3TOa
+        9xclZgLSHLy2Rja3too9ja1f5w==
+X-Google-Smtp-Source: ABdhPJzEiyHU50818frV69xIg7wQLT2H4SHkDbjF641qDAzxYiCtZvuG6UsYBlE6su9suTh5V1Du6g==
+X-Received: by 2002:a1c:6005:: with SMTP id u5mr3248278wmb.122.1611131630513;
+        Wed, 20 Jan 2021 00:33:50 -0800 (PST)
+Received: from dell ([91.110.221.158])
+        by smtp.gmail.com with ESMTPSA id h13sm2480169wrm.28.2021.01.20.00.33.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 Jan 2021 00:33:49 -0800 (PST)
+Date:   Wed, 20 Jan 2021 08:33:48 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+Cc:     Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 3/7] mfd: Add MFD driver for ATC260x PMICs
+Message-ID: <20210120083348.GM4903@dell>
+References: <cover.1610534765.git.cristian.ciocaltea@gmail.com>
+ <81546cf3265f51374a1b38b9e801003fd6c3e298.1610534765.git.cristian.ciocaltea@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20210120075902.lfz6cw4jgqg6e7c3@kozik-lap>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <81546cf3265f51374a1b38b9e801003fd6c3e298.1610534765.git.cristian.ciocaltea@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20-01-21, 08:59, Krzysztof Kozlowski wrote:
-> Hi,
-> 
-> Today's next fails to boot on Exynos5422 Odroid HC1 board:
-> 
-> [    6.409023] Unable to handle kernel NULL pointer dereference at virtual address 00000004
-> [    6.417199] pgd = (ptrval)
-> [    6.419748] [00000004] *pgd=00000000
-> [    6.423499] Internal error: Oops: 805 [#1] PREEMPT SMP ARM
-> [    6.428724] Modules linked in:
-> [    6.431752] CPU: 5 PID: 1 Comm: swapper/0 Not tainted 5.11.0-rc4-next-20210120 #2
-> [    6.439209] Hardware name: Samsung Exynos (Flattened Device Tree)
-> [    6.445273] PC is at dev_pm_opp_put_regulators+0xb4/0x114
-> ...
-> [    6.680370] [<c086f51c>] (dev_pm_opp_put_regulators) from [<c08d5d48>] (exynos_bus_probe+0x45c/0x620)
-> [    6.689556] [<c08d5d48>] (exynos_bus_probe) from [<c06b49a8>] (platform_probe+0x80/0xc0)
-> [    6.697614] [<c06b49a8>] (platform_probe) from [<c06b1ab4>] (really_probe+0x1d4/0x500)
-> [    6.705499] [<c06b1ab4>] (really_probe) from [<c06b1e58>] (driver_probe_device+0x78/0x1dc)
-> [    6.713731] [<c06b1e58>] (driver_probe_device) from [<c06b236c>] (device_driver_attach+0x58/0x60)
-> [    6.722571] [<c06b236c>] (device_driver_attach) from [<c06b2470>] (__driver_attach+0xfc/0x160)
-> [    6.731149] [<c06b2470>] (__driver_attach) from [<c06af85c>] (bus_for_each_dev+0x68/0xb4)
-> [    6.739294] [<c06af85c>] (bus_for_each_dev) from [<c06b0b5c>] (bus_add_driver+0x158/0x214)
-> [    6.747526] [<c06b0b5c>] (bus_add_driver) from [<c06b3314>] (driver_register+0x78/0x110)
-> [    6.755585] [<c06b3314>] (driver_register) from [<c0102464>] (do_one_initcall+0x8c/0x430)
-> [    6.763731] [<c0102464>] (do_one_initcall) from [<c11010e4>] (kernel_init_freeable+0x190/0x1e0)
-> [    6.772397] [<c11010e4>] (kernel_init_freeable) from [<c0b4fc50>] (kernel_init+0x8/0x120)
-> [    6.780542] [<c0b4fc50>] (kernel_init) from [<c010011c>] (ret_from_fork+0x14/0x38)
-> 
-> https://krzk.eu/#/builders/21/builds/2862/steps/15/logs/serial0
-> 
-> I did not do a bisect but the last commit touching these parts was:
-> 
-> commit 302c014726dbd9fcde852985528c139d2214a1f2
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Tue Jan 19 11:58:58 2021 +0530
->     opp: Prepare for ->set_opp() helper to work without regulators
-> 
-> Maybe you have some idea of cause?
+On Wed, 13 Jan 2021, Cristian Ciocaltea wrote:
 
-t a/drivers/opp/core.c b/drivers/opp/core.c
-index 1ed673334565..7c0e0e76a57e 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2038,7 +2038,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
-                regulator_put(opp_table->regulators[i]);
- 
-        mutex_lock(&opp_table->lock);
--       if (opp_table->sod_supplies) {
-+       if (opp_table->set_opp_data) {
-                opp_table->set_opp_data->old_opp.supplies = NULL;
-                opp_table->set_opp_data->new_opp.supplies = NULL;
-        }
+> Add initial support for the Actions Semi ATC260x PMICs which integrates
+> Audio Codec, Power management, Clock generation and GPIO controller
+> blocks.
+> 
+> For the moment this driver only supports Regulator, Poweroff and Onkey
+> functionalities for the ATC2603C and ATC2609A chip variants.
+> 
+> Since the PMICs can be accessed using both I2C and SPI buses, the
+> following driver structure has been adopted:
+> 
+>            -----> atc260x-core.c (Implements core functionalities)
+>           /
+> ATC260x --------> atc260x-i2c.c (Implements I2C interface)
+>           \
+>            -----> atc260x-spi.c (Implements SPI interface - TODO)
+> 
+> Co-developed-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> ---
+> Changes in v5:
+>  - None
+> 
+> Changes in v4 - according to Lee's review:
+>  - Replaced 'regmap_add_irq_chip()' with 'devm' counterpart and dropped
+>    'atc260x_device_remove()' and 'atc260x_i2c_remove()' functions
+>  - Moved kerneldoc sections from prototypes to real functions
+>  - Placed single line entries on one line for mfd_cells[]
+>  - Several other minor changes
+> 
+> Changes in v3:
+>  - Fixed the issues reported by Lee's kernel test robot:
+>    WARNING: modpost: missing MODULE_LICENSE() in drivers/mfd/atc260x-core.o
+>    >> FATAL: modpost: drivers/mfd/atc260x-i2c: sizeof(struct i2c_device_id)=24 is
+>       not a modulo of the size of section __mod_i2c__<identifier>_device_table=588.
+>    >> Fix definition of struct i2c_device_id in mod_devicetable.h
+>  - Dropped the usage of '.of_compatible' fields in {atc2603c,atc2609a}_mfd_cells[]
+>  - Added 'Co-developed-by' tag in commit message and dropped [cristian: ...] line
+> 
+>  drivers/mfd/Kconfig                  |  18 ++
+>  drivers/mfd/Makefile                 |   3 +
+>  drivers/mfd/atc260x-core.c           | 293 +++++++++++++++++++++++++
+>  drivers/mfd/atc260x-i2c.c            |  64 ++++++
+>  include/linux/mfd/atc260x/atc2603c.h | 281 ++++++++++++++++++++++++
+>  include/linux/mfd/atc260x/atc2609a.h | 308 +++++++++++++++++++++++++++
+>  include/linux/mfd/atc260x/core.h     |  58 +++++
+>  7 files changed, 1025 insertions(+)
+>  create mode 100644 drivers/mfd/atc260x-core.c
+>  create mode 100644 drivers/mfd/atc260x-i2c.c
+>  create mode 100644 include/linux/mfd/atc260x/atc2603c.h
+>  create mode 100644 include/linux/mfd/atc260x/atc2609a.h
+>  create mode 100644 include/linux/mfd/atc260x/core.h
 
-This shall fix it, sorry about that. I have pushed my branch again. Thanks.
+[...]
+
+> +/**
+> + * atc260x_device_probe(): Probe a configured ATC260x device
+> + *
+> + * @atc260x: ATC260x device to probe (must be configured)
+> + *
+> + * This function lets the ATC260x core register the ATC260x MFD devices
+> + * and IRQCHIP. The ATC260x device passed in must be fully configured
+> + * with atc260x_match_device, its IRQ set, and regmap created.
+> + */
+> +int atc260x_device_probe(struct atc260x *atc260x)
+> +{
+> +	struct device *dev = atc260x->dev;
+> +	unsigned int chip_rev;
+> +	int ret;
+> +
+> +	if (!atc260x->irq) {
+> +		dev_err(dev, "No interrupt support\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Initialize the hardware */
+> +	atc260x->dev_init(atc260x);
+> +
+> +	ret = regmap_read(atc260x->regmap, atc260x->rev_reg, &chip_rev);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to get chip revision\n");
+> +		return ret;
+> +	}
+> +
+> +	if (chip_rev > 31) {
+
+Nit: If you have to respin this, please define this magic number.
+
+> +		dev_err(dev, "Unknown chip revision: %u\n", chip_rev);
+> +		return -EINVAL;
+> +	}
+> +
+> +	atc260x->ic_ver = __ffs(chip_rev + 1U);
+> +
+> +	dev_info(dev, "Detected chip type %s rev.%c\n",
+> +		 atc260x->type_name, 'A' + atc260x->ic_ver);
+> +
+> +	ret = devm_regmap_add_irq_chip(dev, atc260x->regmap, atc260x->irq, IRQF_ONESHOT,
+> +				       -1, atc260x->regmap_irq_chip, &atc260x->irq_data);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to add IRQ chip: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> +				   atc260x->cells, atc260x->nr_cells, NULL, 0,
+> +				   regmap_irq_get_domain(atc260x->irq_data));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to add child devices: %d\n", ret);
+> +		regmap_del_irq_chip(atc260x->irq, atc260x->irq_data);
+> +	}
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(atc260x_device_probe);
+
+[...]
+
+> +static struct i2c_driver atc260x_i2c_driver = {
+> +	.driver = {
+> +		.name	= "atc260x",
+> +		.of_match_table	= of_match_ptr(atc260x_i2c_of_match),
+> +	},
+> +	.probe		= atc260x_i2c_probe,
+> +};
+
+Nit: These spacings/line-ups just look odd.
+
+Please stick to one ' ' after the '='.
+
+> +module_i2c_driver(atc260x_i2c_driver);
+
+[...]
+
+> +struct atc260x {
+> +	struct device *dev;
+> +
+> +	struct regmap *regmap;
+> +	const struct regmap_irq_chip *regmap_irq_chip;
+> +	struct regmap_irq_chip_data *irq_data;
+> +
+> +	struct mutex *regmap_mutex;	/* mutex for custom regmap locking */
+> +
+> +	const struct mfd_cell *cells;
+> +	int nr_cells;
+> +	int irq;
+> +
+> +	enum atc260x_type ic_type;
+> +	enum atc260x_ver ic_ver;
+> +	const char *type_name;
+> +	unsigned int rev_reg;
+> +
+> +	int (*dev_init)(struct atc260x *atc260x);
+
+Ah, I didn't see this before.
+
+Call-backs of this nature are the devil.  Please populate a struct
+with the differentiating register addresses/values instead and always
+call a generic deivce_init().
+
+> +};
+> +
+> +struct regmap_config;
+> +
+> +int atc260x_match_device(struct atc260x *atc260x, struct regmap_config *regmap_cfg);
+> +int atc260x_device_probe(struct atc260x *atc260x);
+> +
+> +#endif /* __LINUX_MFD_ATC260X_CORE_H */
 
 -- 
-viresh
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog
