@@ -5,97 +5,83 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0A67C43217
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:33:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FEA8C433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:34:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C248823358
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:33:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 04A1123358
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 15:34:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732086AbhATPdE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 10:33:04 -0500
-Received: from mail-m975.mail.163.com ([123.126.97.5]:55002 "EHLO
-        mail-m975.mail.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732346AbhATPWu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 10:22:50 -0500
+        id S1726683AbhATPeZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 10:34:25 -0500
+Received: from m12-14.163.com ([220.181.12.14]:52050 "EHLO m12-14.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2390270AbhATPeE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Jan 2021 10:34:04 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id; bh=HSOMGmJKfL1rX2qIMN
-        /0Rl6FIRq81VcX1sAW1LqlfqU=; b=ml/ixOdtO7GbHbx36eyL332hIBPp89v1E6
-        atbEKoIpvlF3TH5EACTUDTGs1rw5EeFjDTfx/10+sD5wny+ypYUypySR8Dfu2B0R
-        SyabV/PENPt6hevGgRxfytCnaaNU/NL13SiDYsj+UqbMhTZHyS7SjIVxRfO3g2n7
-        QgPJAja8w=
-Received: from localhost.localdomain (unknown [111.201.134.89])
-        by smtp5 (Coremail) with SMTP id HdxpCgDnI1_7RQhgBWkCAw--.303S4;
-        Wed, 20 Jan 2021 23:02:25 +0800 (CST)
-From:   Pan Bian <bianpan2016@163.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=91X/C
+        uC+inNqElz0yh7ejsq+wKcYyR14IVBS4gV/fmM=; b=MN2st6R3L3ncWTXCieKVG
+        QFAWed3pv34DSDPLQ99MiefWGibk/wR4i93gJakZy0lzb+U5P/4YTk2lbRfLjQ2Q
+        rUPh1Qoi3X4Am/5OUvrWQjNx0UzrLYTG20ZBtUke+XMcKZcq36joTwvZtW9FI0br
+        /aF9bsBlZU5UszonAmhIpQ=
+Received: from yangjunlin.ccdomain.com (unknown [119.137.55.77])
+        by smtp10 (Coremail) with SMTP id DsCowABnaRWhKAhgCXQAhA--.28868S2;
+        Wed, 20 Jan 2021 20:57:06 +0800 (CST)
+From:   angkery <angkery@163.com>
+To:     sre@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Pan Bian <bianpan2016@163.com>
-Subject: [PATCH] thermal: drop reference of child node on error
-Date:   Wed, 20 Jan 2021 07:02:08 -0800
-Message-Id: <20210120150208.24868-1-bianpan2016@163.com>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: HdxpCgDnI1_7RQhgBWkCAw--.303S4
-X-Coremail-Antispam: 1Uf129KBjvJXoW7tr43JrWfuF1rZry5urWUXFb_yoW8GF1rpF
-        4j9FWIyrWUWa109a10yr1UZayqqa18tayxWr1rC3W5uas8trZ7JrWfWFyUXrWrJFZ5Ca15
-        A3WDKF40van5C3DanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U1BTOUUUUU=
-X-Originating-IP: [111.201.134.89]
-X-CM-SenderInfo: held01tdqsiiqw6rljoofrz/1tbiNgEgclWBluMj4QAAsG
+        xinjian@yulong.com, Junlin Yang <yangjunlin@yulong.com>
+Subject: [PATCH] power: supply: charger-manager: fix typo
+Date:   Wed, 20 Jan 2021 20:45:53 +0800
+Message-Id: <20210120124553.751-1-angkery@163.com>
+X-Mailer: git-send-email 2.24.0.windows.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DsCowABnaRWhKAhgCXQAhA--.28868S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWrZF1DJw45CFy3trWfGF1DGFg_yoW8Jr1kpa
+        n2vFnrWw4jyFWUXa4DA3ya9Fy5uanakrWj9w4xG3W5XF43Xwn3Wr45tF47Xr1Iyr4xJF4S
+        va4ayw4xtF1jkw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07bjF4iUUUUU=
+X-Originating-IP: [119.137.55.77]
+X-CM-SenderInfo: 5dqjyvlu16il2tof0z/1tbiUAIgI1WBqSMq9QAAsQ
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Drop the reference of the child node sen_child before goto out of
-the loop.
+From: Junlin Yang <yangjunlin@yulong.com>
 
-Signed-off-by: Pan Bian <bianpan2016@163.com>
+Change 'exeeds' to 'exceeds'.
+
+Signed-off-by: Junlin Yang <yangjunlin@yulong.com>
 ---
- drivers/thermal/sprd_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/power/supply/charger-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-index 3682edb2f466..e843f10167b8 100644
---- a/drivers/thermal/sprd_thermal.c
-+++ b/drivers/thermal/sprd_thermal.c
-@@ -387,6 +387,7 @@ static int sprd_thm_probe(struct platform_device *pdev)
- 	for_each_child_of_node(np, sen_child) {
- 		sen = devm_kzalloc(&pdev->dev, sizeof(*sen), GFP_KERNEL);
- 		if (!sen) {
-+			of_node_put(sen_child);
- 			ret = -ENOMEM;
- 			goto disable_clk;
- 		}
-@@ -397,12 +398,14 @@ static int sprd_thm_probe(struct platform_device *pdev)
- 		ret = of_property_read_u32(sen_child, "reg", &sen->id);
- 		if (ret) {
- 			dev_err(&pdev->dev, "get sensor reg failed");
-+			of_node_put(sen_child);
- 			goto disable_clk;
- 		}
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 6fcebe4..731351d8 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -570,7 +570,7 @@ static int cm_get_target_status(struct charger_manager *cm)
+ 		return POWER_SUPPLY_STATUS_DISCHARGING;
  
- 		ret = sprd_thm_sensor_calibration(sen_child, thm, sen);
- 		if (ret) {
- 			dev_err(&pdev->dev, "efuse cal analysis failed");
-+			of_node_put(sen_child);
- 			goto disable_clk;
- 		}
+ 	if (cm_check_thermal_status(cm)) {
+-		/* Check if discharging duration exeeds limit. */
++		/* Check if discharging duration exceeds limit. */
+ 		if (check_charging_duration(cm))
+ 			goto charging_ok;
+ 		return POWER_SUPPLY_STATUS_NOT_CHARGING;
+@@ -578,7 +578,7 @@ static int cm_get_target_status(struct charger_manager *cm)
  
-@@ -415,6 +418,7 @@ static int sprd_thm_probe(struct platform_device *pdev)
- 		if (IS_ERR(sen->tzd)) {
- 			dev_err(&pdev->dev, "register thermal zone failed %d\n",
- 				sen->id);
-+			of_node_put(sen_child);
- 			ret = PTR_ERR(sen->tzd);
- 			goto disable_clk;
- 		}
+ 	switch (cm->battery_status) {
+ 	case POWER_SUPPLY_STATUS_CHARGING:
+-		/* Check if charging duration exeeds limit. */
++		/* Check if charging duration exceeds limit. */
+ 		if (check_charging_duration(cm))
+ 			return POWER_SUPPLY_STATUS_FULL;
+ 		fallthrough;
 -- 
-2.17.1
+1.9.1
+
 
