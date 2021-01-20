@@ -2,77 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A31C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 02:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BE0FC433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 03:14:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4E6A72245C
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 02:06:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1AE2C2310D
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 03:14:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729841AbhATCGc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Jan 2021 21:06:32 -0500
-Received: from m12-12.163.com ([220.181.12.12]:59552 "EHLO m12-12.163.com"
+        id S1729659AbhATDOU convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Jan 2021 22:14:20 -0500
+Received: from mga07.intel.com ([134.134.136.100]:41730 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728939AbhATCF5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 Jan 2021 21:05:57 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=XVfX1
-        7Zs72gwj0Y+DXdHxGS7GyATCKP2lfOSz9IDsYg=; b=XXaiBy+YzdYoUQWeuV5QI
-        v6S1tzcziUts644V9qBSsXYUecFKVYoGFFBNLkRvVAusd+S7r1cwBuW16TWA+c4c
-        JZnpH2+cudWrBNRrzOuJOXyg4LgYJygs19LV4tl7E2BH74li2fAudOHCIr5qFoJW
-        hkLEMZfjZb7hNtGa1LBfKM=
-Received: from DONGJIAN-NJ.ccdomain.com (unknown [218.94.48.178])
-        by smtp8 (Coremail) with SMTP id DMCowAD3_8+3iwdg9iWYMw--.22870S2;
-        Wed, 20 Jan 2021 09:47:40 +0800 (CST)
-From:   Jian Dong <dj0227@163.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, dongjian@yulong.com, huyue2@yulong.com,
-        zhangwen@yulong.com
-Subject: [PATCH] power-supply: use kobj_to_dev()
-Date:   Wed, 20 Jan 2021 09:47:12 +0800
-Message-Id: <20210120014713.17668-1-dj0227@163.com>
-X-Mailer: git-send-email 2.20.1.windows.1
+        id S2389369AbhATC50 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 Jan 2021 21:57:26 -0500
+IronPort-SDR: +tqYSUAvJq2j8vQm2vJgum2crtz0M/pklOwucfGKg7ih7nrOs9QRC9/7D7j5h94/cUacFnrgrn
+ hT7FDvFvbzXg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9869"; a="243105324"
+X-IronPort-AV: E=Sophos;i="5.79,359,1602572400"; 
+   d="scan'208";a="243105324"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2021 18:56:44 -0800
+IronPort-SDR: 054cMV2fPfs4AHEfqJpd/TJx0x16OrndzTfihhHekhg2rmlre7gU7G+iSitMyDSqR97RmMfkVl
+ S2Tu2yhsswNQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,359,1602572400"; 
+   d="scan'208";a="402589859"
+Received: from fmsmsx605.amr.corp.intel.com ([10.18.126.85])
+  by fmsmga002.fm.intel.com with ESMTP; 19 Jan 2021 18:56:44 -0800
+Received: from shsmsx602.ccr.corp.intel.com (10.109.6.142) by
+ fmsmsx605.amr.corp.intel.com (10.18.126.85) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Tue, 19 Jan 2021 18:56:43 -0800
+Received: from shsmsx603.ccr.corp.intel.com (10.109.6.143) by
+ SHSMSX602.ccr.corp.intel.com (10.109.6.142) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Wed, 20 Jan 2021 10:56:41 +0800
+Received: from shsmsx603.ccr.corp.intel.com ([10.109.6.143]) by
+ SHSMSX603.ccr.corp.intel.com ([10.109.6.143]) with mapi id 15.01.1713.004;
+ Wed, 20 Jan 2021 10:56:41 +0800
+From:   "Zhang, Rui" <rui.zhang@intel.com>
+To:     Thara Gopinath <thara.gopinath@linaro.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "kvalo@codeaurora.org" <kvalo@codeaurora.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "kuba@kernel.org" <kuba@kernel.org>,
+        "Coelho, Luciano" <luciano.coelho@intel.com>
+CC:     "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "amitk@kernel.org" <amitk@kernel.org>,
+        "Errera, Nathan" <nathan.errera@intel.com>
+Subject: RE: [PATCH 0/2] thermal: Replace thermal_notify_framework with
+ thermal_zone_device_update
+Thread-Topic: [PATCH 0/2] thermal: Replace thermal_notify_framework with
+ thermal_zone_device_update
+Thread-Index: AQHW7myNyN+HFidWAkieGDM5y8leBqov0QOw
+Date:   Wed, 20 Jan 2021 02:56:41 +0000
+Message-ID: <fb5571b452f7495eb76396795eeec096@intel.com>
+References: <20210119140541.2453490-1-thara.gopinath@linaro.org>
+In-Reply-To: <20210119140541.2453490-1-thara.gopinath@linaro.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+dlp-product: dlpe-windows
+dlp-reaction: no-action
+dlp-version: 11.5.1.3
+x-originating-ip: [10.239.127.36]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DMCowAD3_8+3iwdg9iWYMw--.22870S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWruFyrur4DXF1rCFW8XF43Wrg_yoW3uFbE9a
-        yDurZ7WrW3W3Wj934Ykw1fZFy0kw1kZFyIqa1ktFZ3JFyUZw4DZ34DZ34IkF1DX3y7CFZ8
-        ua4vqF1Y9Fy8GjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU11CJtUUUUU==
-X-Originating-IP: [218.94.48.178]
-X-CM-SenderInfo: dgmqjjqx6rljoofrz/1tbiFhwg3V44O4rfRQAAs6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: dongjian <dongjian@yulong.com>
+Hi, Thara,
 
-Use kobj_to_dev() instead of open-coding it
+Thanks for the cleanup. I've proposed similar patches previously.
+https://patchwork.kernel.org/project/linux-pm/patch/20200430063229.6182-2-rui.zhang@intel.com/
+https://patchwork.kernel.org/project/linux-pm/patch/20200430063229.6182-3-rui.zhang@intel.com/
+can you please also address the comments in the previous discussion, like doc cleanup?
 
-Signed-off-by: dongjian <dongjian@yulong.com>
----
- drivers/power/supply/ds2760_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
+rui
 
-diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
-index 695bb67..5f50da5 100644
---- a/drivers/power/supply/ds2760_battery.c
-+++ b/drivers/power/supply/ds2760_battery.c
-@@ -198,7 +198,7 @@ static ssize_t w1_slave_read(struct file *filp, struct kobject *kobj,
- 			     struct bin_attribute *bin_attr, char *buf,
- 			     loff_t off, size_t count)
- {
--	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct device *dev = kobj_to_dev(kobj);
- 	return w1_ds2760_read(dev, buf, off, count);
- }
- 
--- 
-1.9.1
-
+> -----Original Message-----
+> From: Thara Gopinath <thara.gopinath@linaro.org>
+> Sent: Tuesday, January 19, 2021 10:06 PM
+> To: Zhang, Rui <rui.zhang@intel.com>; daniel.lezcano@linaro.org;
+> kvalo@codeaurora.org; davem@davemloft.net; kuba@kernel.org; Coelho,
+> Luciano <luciano.coelho@intel.com>
+> Cc: linux-wireless@vger.kernel.org; linux-kernel@vger.kernel.org;
+> netdev@vger.kernel.org; linux-pm@vger.kernel.org; amitk@kernel.org;
+> Errera, Nathan <nathan.errera@intel.com>
+> Subject: [PATCH 0/2] thermal: Replace thermal_notify_framework with
+> thermal_zone_device_update
+> Importance: High
+> 
+> thermal_notify_framework just updates for a single trip point where as
+> thermal_zone_device_update does other bookkeeping like updating the
+> temperature of the thermal zone, running through the list of trip points and
+> setting the next trip point etc. Since  the later is a more thorough version of
+> former, replace thermal_notify_framework with
+> thermal_zone_device_update.
+> 
+> Thara Gopinath (2):
+>   net: wireless: intel: iwlwifi: mvm: tt: Replace
+>     thermal_notify_framework
+>   drivers: thermal: Remove thermal_notify_framework
+> 
+>  drivers/net/wireless/intel/iwlwifi/mvm/tt.c |  4 ++--
+>  drivers/thermal/thermal_core.c              | 18 ------------------
+>  include/linux/thermal.h                     |  4 ----
+>  3 files changed, 2 insertions(+), 24 deletions(-)
+> 
+> --
+> 2.25.1
 
