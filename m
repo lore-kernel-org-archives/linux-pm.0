@@ -2,122 +2,139 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D769BC433E9
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 16:53:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C4A5C433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:15:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AEE23233EB
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 16:53:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 68E6F233E2
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 17:15:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391274AbhATQxN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 11:53:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52560 "EHLO
+        id S2388494AbhATRMB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 12:12:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391243AbhATQiY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 11:38:24 -0500
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1747EC061757
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 08:37:44 -0800 (PST)
-Received: by mail-pj1-x102f.google.com with SMTP id p15so2495071pjv.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 08:37:44 -0800 (PST)
+        with ESMTP id S2403811AbhATRK0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 12:10:26 -0500
+Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B924C0613C1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 09:09:46 -0800 (PST)
+Received: by mail-yb1-xb36.google.com with SMTP id w24so17885767ybi.7
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 09:09:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=F/DhG0PPxm0vKgWn3ZUodFL5gREX9ouvD4YqI6sx3m0=;
-        b=T5xizAhCUnokT5bbT4Dz2K7SWIx4lepR61GZQ3HYDfJVWkirqLoPYTENaBy0UESLVT
-         HQ9LdIC/+DMy6GeeZSgu5eQudCxPQfMFsGM4mcx9pxxZVjTwLGiiUrshA07jFyBRiOAj
-         J5aimP/fSm8b9zSInqaq7Q+U9hCGwgpkAv/MshMoGh05QKecI8RiOHvXEngqRru0WpUY
-         SPzdtNptVXkmPQaFHmMFBJAw+7c+Gq4nYiTgv7BETFlXp66C5H2wbwf1Sxx4NhyeY4HO
-         RQpf/I3APZggx/HkIAuajo/CoJVwxeptNzt4uikARVj87NRj6wROC3lJgqFmeyMx6/z1
-         wSAA==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=WPDT0PVm4/aPIbV0EAFgXlokPV1lvrypzi2ZcvT8T1I=;
+        b=rFRBi4r7OH8297hz1xcaXSPUbNFKEfIqzd2Rx6NTH6Y+ffjagOVvyD11mOjKIK6B0O
+         EnTvixK2CI5mbaIucjkharRIVAqkKZG5jXeLsZt8H/leQjyUZfpCU/YrMuoQYOs7zzkz
+         L3qyIDLjN5iwMYQDLHDxV5/WN03ot8PPm69Pjib6KSymHmyH+aT+P9pOLSe4amUP9zgH
+         CITfFpa4KGafOK3wMO9DHmi/sQr8tpA4uiCLdHLID2eCDdqnrsUfY98E2eqIgUP/aMEh
+         Fp/feg0UkH6IqjyNqHlfmOLP3AmpJpT9w9xsPjzaL1gKQTdRETZyG3AN8dWBD/XddnwN
+         0T7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=F/DhG0PPxm0vKgWn3ZUodFL5gREX9ouvD4YqI6sx3m0=;
-        b=SG+pZY0TkGC2wO8hL+BBWdv2CTt5IKc1eM8YxHTtv4omiDoth1bMXllIVQZDKKjqzl
-         hKgowh/AxcQFfG2Y/eU2AxkhuNnezsZm7dXYSVOMiLPtQrVtINlQGcSu+FXlaSCGREIL
-         Ivzsn442ilv88bxwgifwx3nt+3SrhF+sCyepFQYNrn32WEhV+XrUsLY55R/FS20XrAHN
-         TRIYGa+Bbf5nCrtGpM0UbqWnA1ohGm26brEoJIb6J3VlefXunj6rB27MkK7emmWZLZQI
-         Khqj1dPkWitsw2qdaY22wXIMd4dyzuPfLeChA1EfCmGEmEAq0uR4Y36YKSO/zhzIbbpV
-         IuwQ==
-X-Gm-Message-State: AOAM530ZkoMuZDdK+NM6mxgGpA+/9oFnPQcH+hV9Q/SOfxabdgoSK5pO
-        ZLUOoWsSgfBabEserISfR+yp
-X-Google-Smtp-Source: ABdhPJwYzAMEAtg9/JFbhiEuwp4XYSlhS8FCZoRDmYqnHbumm4A5Hob0ASGs5q1KrV8/8oB0j4+sVg==
-X-Received: by 2002:a17:90a:d913:: with SMTP id c19mr2267949pjv.19.1611160663340;
-        Wed, 20 Jan 2021 08:37:43 -0800 (PST)
-Received: from thinkpad ([2409:4072:409:c713:3d52:1d51:c724:155d])
-        by smtp.gmail.com with ESMTPSA id a9sm2889668pfn.178.2021.01.20.08.37.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Jan 2021 08:37:42 -0800 (PST)
-Date:   Wed, 20 Jan 2021 22:07:35 +0530
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     robh+dt@kernel.org, agross@kernel.org, bjorn.andersson@linaro.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        okukatla@codeaurora.org
-Subject: Re: [PATCH 2/2] interconnect: qcom: Add SDX55 interconnect provider
- driver
-Message-ID: <20210120163735.GC54606@thinkpad>
-References: <20210120080627.20784-1-manivannan.sadhasivam@linaro.org>
- <20210120080627.20784-3-manivannan.sadhasivam@linaro.org>
- <cb0f56b6-a75c-51a8-d640-08896d459a68@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=WPDT0PVm4/aPIbV0EAFgXlokPV1lvrypzi2ZcvT8T1I=;
+        b=Db2DT+5d6gbSDzT7JbXvNFPf0W/aUIEDC8LFhaveGgyMVvi5jIBVmfZn1VKs4Uyavd
+         nriLbYNVhmXDwJo1DKo4g68KjARWos/OsWDTTWTzHlhqyadhy8a52jQZHAGf12geUFiJ
+         rKcK0Z/qobHnvwIT+XoPAUWJcH2MgreaRHN5HPEhBIKZl1XYWaEWv1pJejJBN5RSJIxT
+         O1+VyqXcY7/t318d12LmKjRDhsHr7dK4joW5kdnIkkx+Wf4bp3Owo5a3Vn/SvsafONet
+         aW0c5Xo9wWga/NZ1kV36BOkEcjKPq2WFrqGUt6CaD+ssSKk/efAoVFZre3/euhRprZLZ
+         i+xw==
+X-Gm-Message-State: AOAM5309ldF15ZpPXntJxDn+E3GilRl2JC9MFJWW18rUQZQOU7p5mi82
+        dwqKuot2LejCIwx1itZn92olF1Zte6PawvAe9rHXhA==
+X-Google-Smtp-Source: ABdhPJwgt9Cxc/JcL4f7pl9d8H1GVMqWeXV7Rq5bFY8Gar7UAQgJ9hjlLUp5Y+jDcGNKkVZXb2EOADxVGcwvFJ6fju0=
+X-Received: by 2002:a25:3345:: with SMTP id z66mr7809991ybz.466.1611162585610;
+ Wed, 20 Jan 2021 09:09:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb0f56b6-a75c-51a8-d640-08896d459a68@linaro.org>
+References: <20210120142323.2203705-1-geert+renesas@glider.be>
+In-Reply-To: <20210120142323.2203705-1-geert+renesas@glider.be>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Wed, 20 Jan 2021 09:09:09 -0800
+Message-ID: <CAGETcx-ZcXB9Zw_RnMjA0G2oKAyeK3VfKgha=Mvqnn_dDREuOw@mail.gmail.com>
+Subject: Re: [PATCH/RFC] soc: renesas: rcar-sysc: Mark device node
+ OF_POPULATED after init
+To:     Geert Uytterhoeven <geert+renesas@glider.be>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Georgi,
-
-On Wed, Jan 20, 2021 at 04:59:31PM +0200, Georgi Djakov wrote:
-> Hi Mani,
-> 
-> Thanks for the patch!
-> 
-> On 1/20/21 10:06, Manivannan Sadhasivam wrote:
-> > Add driver for the Qualcomm interconnect buses found in SDX55 based
-> > platforms. The topology consists of several NoCs that are controlled by
-> > a remote processor that collects the aggregated bandwidth for each
-> > master-slave pairs.
-> > 
-> > Based on SM8250 driver and generated from downstream dts.
-> > 
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> > ---
-> >   drivers/interconnect/qcom/Kconfig  |  10 +
-> >   drivers/interconnect/qcom/Makefile |   2 +
-> >   drivers/interconnect/qcom/sdx55.c  | 356 +++++++++++++++++++++++++++++
-> >   drivers/interconnect/qcom/sdx55.h  |  70 ++++++
-> >   4 files changed, 438 insertions(+)
-> >   create mode 100644 drivers/interconnect/qcom/sdx55.c
-> >   create mode 100644 drivers/interconnect/qcom/sdx55.h
-> > 
-> > diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
-> > index a8f93ba265f8..6df7e2161a0a 100644
-> > --- a/drivers/interconnect/qcom/Kconfig
-> > +++ b/drivers/interconnect/qcom/Kconfig
-> > @@ -65,6 +65,16 @@ config INTERCONNECT_QCOM_SDM845
-> >   	  This is a driver for the Qualcomm Network-on-Chip on sdm845-based
-> >   	  platforms.
-> > +config INTERCONNECT_QCOM_SDX55
-> > +	tristate "Qualcomm SDX55 interconnect driver"
-> > +	depends on INTERCONNECT_QCOM
-> > +	depends on (QCOM_RPMH && QCOM_COMMAND_DB && OF) || COMPILE_TEST
-> 
-> Why not use depends on INTERCONNECT_QCOM_RPMH_POSSIBLE?
+On Wed, Jan 20, 2021 at 6:23 AM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 >
+> The R-Car System Controller (SYSC) driver registers PM domains from an
+> early_initcall().  It does not use a platform driver, as secondary CPU
+> startup on R-Car H1 needs to control the CPU power domains, before
+> initialization of the driver framework.
+>
+> As fw_devlink only considers platform devices,
 
-I just followed the same pattern as other RPMh based drivers. And I don't get
-what you are suggesting here! Can you please explain?
- 
-Thanks,
-Mani
+Correction. It only considers devices. As in, devices on all types of
+busses are supported.
+
+> it does not know that the
+> System Controller is ready.  Hence probing of on-chip devices that are
+> part of the SYSC PM domain fail:
+>
+>     probe deferral - supplier e6180000.system-controller not ready
+>
+> Fix this by setting the OF_POPULATED flag for the SYSC device node after
+> successful initialization.  This will make of_link_to_phandle() ignore
+> the SYSC device node as a dependency, and consumer devices will be
+> probed again.
+
+It'd still be nice if you could (maybe in a later patch), at least
+probe all the power domains that aren't really needed this early.
+Using the driver core framework (when it's possible), gives you nice
+things :)
+
++Rob. I know he hates people using OF_POPULATED, but I think this case
+is reasonable and want to make sure he's aware of this.
+
+Once you fix my commit nitpick, you can add:
+Reviewed-by: Saravana Kannan <saravanak@google.com>
+
+-Saravana
+
+>
+> Fixes: e590474768f1cc04 ("driver core: Set fw_devlink=on by default")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/soc/renesas/rcar-sysc.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+> index 9b235fc900273405..a00bb098e1fe7488 100644
+> --- a/drivers/soc/renesas/rcar-sysc.c
+> +++ b/drivers/soc/renesas/rcar-sysc.c
+> @@ -439,6 +439,8 @@ static int __init rcar_sysc_pd_init(void)
+>         }
+>
+>         error = of_genpd_add_provider_onecell(np, &domains->onecell_data);
+> +       if (!error)
+> +               of_node_set_flag(np, OF_POPULATED);
+>
+>  out_put:
+>         of_node_put(np);
+> --
+> 2.25.1
+>
