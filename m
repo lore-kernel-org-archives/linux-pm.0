@@ -2,168 +2,206 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,BIGNUM_EMAILS,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53053C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:37:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97F58C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 11:06:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 17ACA225AA
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:37:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 52DDF22227
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 11:06:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730763AbhATIhK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 03:37:10 -0500
-Received: from mga11.intel.com ([192.55.52.93]:28427 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731037AbhATIcq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 20 Jan 2021 03:32:46 -0500
-IronPort-SDR: vZUA+MwwUQ3XK4Lfoig9Y+p3jz0U8czDaMEC4LaEfCkIx2ywE6JGWUiXMcDtk2Jte1wzvlAKYc
- fiXWRuAhhseQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9869"; a="175563402"
-X-IronPort-AV: E=Sophos;i="5.79,360,1602572400"; 
-   d="scan'208";a="175563402"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jan 2021 00:32:01 -0800
-IronPort-SDR: Q/5gFqjj8WVHygQrcpWUC87/5ltNkSgngrJJb7HPNiLWDTzgTGSv7pg0hVix/fnY7666pKEEsF
- zK0sVbtv6rAw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,360,1602572400"; 
-   d="scan'208";a="366169984"
-Received: from lkp-server01.sh.intel.com (HELO 260eafd5ecd0) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 20 Jan 2021 00:31:59 -0800
-Received: from kbuild by 260eafd5ecd0 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1l28uF-0005hW-9m; Wed, 20 Jan 2021 08:31:59 +0000
-Date:   Wed, 20 Jan 2021 16:31:30 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- f2d717f48fb25785d65f740bf2425bb3ce5cce44
-Message-ID: <6007ea62.jSePxiLME1D20RPZ%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1730444AbhATLBh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 06:01:37 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:36166 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1731398AbhATJcN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 04:32:13 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1611135026;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=JBEHTu6Bu4ohAuOu7gRJBoClExSCGrjx9SGtkFNBopE=;
+        b=hJ6SfqejgT492mZ1YBx0gE3Mm+eX/0LEzSMXovridnCfHAfdFPKuZibPRqBjfFjI627oqD
+        8hEtJ5q5AEbi69Ku2XFT7e7sz9ehy4n9weccCl3WAU19w0QgYb9iQqBlC6zr7IGXVwOiNX
+        EgehTPl7buuKKYeyBwlFAzk3MDVLjbM=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-333-bnFzU7UkN0q9whIEGbKNaA-1; Wed, 20 Jan 2021 04:30:22 -0500
+X-MC-Unique: bnFzU7UkN0q9whIEGbKNaA-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 7CBB2107ACE4;
+        Wed, 20 Jan 2021 09:30:21 +0000 (UTC)
+Received: from localhost (ovpn-12-59.pek2.redhat.com [10.72.12.59])
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id D19406F99D;
+        Wed, 20 Jan 2021 09:30:17 +0000 (UTC)
+Date:   Wed, 20 Jan 2021 17:30:15 +0800
+From:   Baoquan He <bhe@redhat.com>
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     kernelfans@gmail.com, kexec@lists.infradead.org,
+        linux-pm@vger.kernel.org, dyoung@redhat.com
+Subject: Re: [bug report] PM / reboot: Eliminate race between reboot and
+ suspend
+Message-ID: <20210120093015.GE20161@MiWiFi-R3L-srv>
+References: <20201118185917.GA433776@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20201118185917.GA433776@mwanda>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: f2d717f48fb25785d65f740bf2425bb3ce5cce44  Merge branch 'pm-clk' into bleeding-edge
+Hi,
 
-elapsed time: 726m
+On 11/18/20 at 09:59pm, Dan Carpenter wrote:
+> Hello Pingfan Liu,
+> 
+> The patch 55f2503c3b69: "PM / reboot: Eliminate race between reboot
+> and suspend" from Jul 31, 2018, leads to the following static checker
+> warning:
+> 
+> 	kernel/power/main.c:27 lock_system_sleep()
+> 	warn: called with lock held.  '&system_transition_mutex'
 
-configs tested: 97
-configs skipped: 2
+This is a good finding. I think we can simply remove the lock/unlock
+pair of system_transition_mutex in kernel_kexec() function. The dead
+lock should be easily triggered, but it hasn't caused any failure report
+because the feature 'kexec jump' is almost not used by anyone as far as
+I know. We may need to find out who is using it and where it's used
+through an inquiry. Before that, we can just remove the lock operation
+inside CONFIG_KEXEC_JUMP ifdeffery scope. Thanks. 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                      pmac32_defconfig
-mips                           ci20_defconfig
-arm                           sunxi_defconfig
-mips                        bcm63xx_defconfig
-powerpc                  iss476-smp_defconfig
-mips                malta_kvm_guest_defconfig
-m68k                         amcore_defconfig
-mips                  decstation_64_defconfig
-ia64                            zx1_defconfig
-sh                              ul2_defconfig
-sh                           se7721_defconfig
-mips                     loongson1b_defconfig
-mips                           jazz_defconfig
-mips                        omega2p_defconfig
-powerpc                 canyonlands_defconfig
-nds32                            alldefconfig
-xtensa                    xip_kc705_defconfig
-sh                           se7724_defconfig
-arm                          pcm027_defconfig
-sh                   secureedge5410_defconfig
-mips                       lemote2f_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210120
-i386                 randconfig-a002-20210120
-i386                 randconfig-a004-20210120
-i386                 randconfig-a006-20210120
-i386                 randconfig-a005-20210120
-i386                 randconfig-a003-20210120
-x86_64               randconfig-a012-20210120
-x86_64               randconfig-a015-20210120
-x86_64               randconfig-a016-20210120
-x86_64               randconfig-a011-20210120
-x86_64               randconfig-a013-20210120
-x86_64               randconfig-a014-20210120
-i386                 randconfig-a013-20210120
-i386                 randconfig-a011-20210120
-i386                 randconfig-a012-20210120
-i386                 randconfig-a014-20210120
-i386                 randconfig-a015-20210120
-i386                 randconfig-a016-20210120
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+index 80905e5aa8ae..a0b6780740c8 100644
+--- a/kernel/kexec_core.c
++++ b/kernel/kexec_core.c
+@@ -1134,7 +1134,6 @@ int kernel_kexec(void)
+ 
+ #ifdef CONFIG_KEXEC_JUMP
+ 	if (kexec_image->preserve_context) {
+-		lock_system_sleep();
+ 		pm_prepare_console();
+ 		error = freeze_processes();
+ 		if (error) {
+@@ -1197,7 +1196,6 @@ int kernel_kexec(void)
+ 		thaw_processes();
+  Restore_console:
+ 		pm_restore_console();
+-		unlock_system_sleep();
+ 	}
+ #endif
+ 
 
-clang tested configs:
-x86_64               randconfig-a002-20210120
-x86_64               randconfig-a003-20210120
-x86_64               randconfig-a001-20210120
-x86_64               randconfig-a005-20210120
-x86_64               randconfig-a006-20210120
-x86_64               randconfig-a004-20210120
+> 
+> kernel/reboot.c
+>    345  
+>    346          mutex_lock(&system_transition_mutex);
+>                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> The patch changed the code to take this lock.
+> 
+>    347          switch (cmd) {
+>    348          case LINUX_REBOOT_CMD_RESTART:
+>    349                  kernel_restart(NULL);
+>    350                  break;
+>    351  
+>    352          case LINUX_REBOOT_CMD_CAD_ON:
+>    353                  C_A_D = 1;
+>    354                  break;
+>    355  
+>    356          case LINUX_REBOOT_CMD_CAD_OFF:
+>    357                  C_A_D = 0;
+>    358                  break;
+>    359  
+>    360          case LINUX_REBOOT_CMD_HALT:
+>    361                  kernel_halt();
+>    362                  do_exit(0);
+>    363                  panic("cannot halt");
+>    364  
+>    365          case LINUX_REBOOT_CMD_POWER_OFF:
+>    366                  kernel_power_off();
+>    367                  do_exit(0);
+>    368                  break;
+>    369  
+>    370          case LINUX_REBOOT_CMD_RESTART2:
+>    371                  ret = strncpy_from_user(&buffer[0], arg, sizeof(buffer) - 1);
+>    372                  if (ret < 0) {
+>    373                          ret = -EFAULT;
+>    374                          break;
+>    375                  }
+>    376                  buffer[sizeof(buffer) - 1] = '\0';
+>    377  
+>    378                  kernel_restart(buffer);
+>    379                  break;
+>    380  
+>    381  #ifdef CONFIG_KEXEC_CORE
+>    382          case LINUX_REBOOT_CMD_KEXEC:
+>    383                  ret = kernel_kexec();
+>                         ^^^^^^^^^^^^^^^^^^^^
+> Called with lock held.
+> 
+>    384                  break;
+>    385  #endif
+> 
+> But kernel_kexec() also tries to take the &system_transition_mutex so
+> it will dead lock.
+> 
+> kernel/kexec_core.c
+>   1125  int kernel_kexec(void)
+>   1126  {
+>   1127          int error = 0;
+>   1128  
+>   1129          if (!mutex_trylock(&kexec_mutex))
+>   1130                  return -EBUSY;
+>   1131          if (!kexec_image) {
+>   1132                  error = -EINVAL;
+>   1133                  goto Unlock;
+>   1134          }
+>   1135  
+>   1136  #ifdef CONFIG_KEXEC_JUMP
+>   1137          if (kexec_image->preserve_context) {
+>   1138                  lock_system_sleep();
+>                         ^^^^^^^^^^^^^^^^^^^
+> Here.
+> 
+>   1139                  pm_prepare_console();
+>   1140                  error = freeze_processes();
+>   1141                  if (error) {
+>   1142                          error = -EBUSY;
+>   1143                          goto Restore_console;
+>   1144                  }
+>   1145                  suspend_console();
+>   1146                  error = dpm_suspend_start(PMSG_FREEZE);
+>   1147                  if (error)
+>   1148                          goto Resume_console;
+>   1149                  /* At this point, dpm_suspend_start() has been called,
+>   1150                   * but *not* dpm_suspend_end(). We *must* call
+>   1151                   * dpm_suspend_end() now.  Otherwise, drivers for
+>   1152                   * some devices (e.g. interrupt controllers) become
+>   1153                   * desynchronized with the actual state of the
+>   1154                   * hardware at resume time, and evil weirdness ensues.
+>   1155                   */
+>   1156                  error = dpm_suspend_end(PMSG_FREEZE);
+>   1157                  if (error)
+>   1158                          goto Resume_devices;
+>   1159                  error = suspend_disable_secondary_cpus();
+>   1160                  if (error)
+> 
+> regards,
+> dan carpenter
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+> 
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
