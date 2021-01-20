@@ -2,99 +2,186 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8255C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 536D0C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:09:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8218023159
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:02:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 062F72313A
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Jan 2021 08:09:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729216AbhATIBr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 03:01:47 -0500
-Received: from mail-wm1-f47.google.com ([209.85.128.47]:52069 "EHLO
-        mail-wm1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730253AbhATH7s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 02:59:48 -0500
-Received: by mail-wm1-f47.google.com with SMTP id m2so1978310wmm.1;
-        Tue, 19 Jan 2021 23:59:31 -0800 (PST)
+        id S1730367AbhATIJo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 03:09:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55542 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730346AbhATIJV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2021 03:09:21 -0500
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6042C06179B
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:06:46 -0800 (PST)
+Received: by mail-pf1-x429.google.com with SMTP id o20so5603827pfu.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 00:06:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=CQk462ZrxRaZihzXHMR1S5iNVW4hb2empx8cTYl9lzo=;
+        b=qWxyo2K9mJcwrhPUU5T8c6zJFSw0JKvQa675Bk0ZCcBhbrkOeNIf1hbsvORP45je8Y
+         feqlsLVmPkxrfF4fLdFI+ctUexdYyi91pdg1j2VtswPk59UCegz8Lju4HvtTt+GFAPEu
+         AL5wuZmmXR3icqeNWlfpmskY6X0ayqa/vCcOp1FEs5iMJJt35613ehsBGMnZQvwoDW3i
+         WNxAdT6oKXyt3T8tZKgk9gZH2en3swsRjkx0M2kYFlTvbNQe44qXRHn5y93ww+9UmlNL
+         LN4wtoeTB7erl7TmajdZlXGrRb8kMlab9xGsCOvkPYHBxN3+DuNWwLa9XTnYEd4s+mzQ
+         PKBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition;
-        bh=T2Nxi0UAJrvG7QfcIV+5/q/cjGRwozwlTwF0B5esfbc=;
-        b=Rfr2tI195C+boZT9fQBqJ/SkWxEylbagQ8XfbghIfSK6lC16evvJ8H//QRRdSuXIkb
-         RwAwQ4RQ1advODC4OZM90ymrHvEPB1N1NH/8fsh0m/qNdOf5gF3xyqcdm0JycVtoE+UN
-         s0auMgSFokXdNjhNrQ7QXjlm9q8A4bo67BTYKnNQEz/C2doNdUuEffjsmOFsQ/wH69ry
-         fZp9qiOQwZqzWxKjGt8y686MAMpQi6vCk/IM0L0fxrVYVbDFQamh9utVKqtwwEbQepxL
-         9rhh5eePqZHDWEEoe3d8Abf/PfD0NfxQTAM7AQmxoozSeywnIgSBeHpsV/ybbNObpvfl
-         oYvA==
-X-Gm-Message-State: AOAM532mI6JKtS3lgk5Xm1XFStCHNeItyt7+UTBAk5rcTyrpcmIpL86R
-        8azMTU28o+4BPZ47uyjlONs=
-X-Google-Smtp-Source: ABdhPJwuoZx+7uPQvYpmVvSuwJYlxmIyZp4gj80Fm1xV/LqPgvhq9RJ1+mS9bs4zh22yQ0TDjyuX6g==
-X-Received: by 2002:a05:600c:2601:: with SMTP id h1mr3086639wma.31.1611129545414;
-        Tue, 19 Jan 2021 23:59:05 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id l8sm2355643wmi.8.2021.01.19.23.59.04
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=CQk462ZrxRaZihzXHMR1S5iNVW4hb2empx8cTYl9lzo=;
+        b=L/Tfeyztqw2U+NbS4yFhAXnW66Mx3d2jjBVGMhV+IcRaFLg4FQW3O68Y3oK8sWoiQN
+         /UdoOFoC59XXnJtgeBXsyYlRrtTwoHT/oznbzQCyG43Eid+P/MHCUXgglejECuy44YHY
+         z8ppDsFs0tqtZuQ5v2TcsJjTSqUA/h95vERQCP7Jl7+JuaUfGUDhvgWrwN6Eu9p9r6Q5
+         N+a8MxKM3D8qt1UHiukfbUj4oPiEjIjFkBne9Zf9c0cNs64OCCcfRSKwdt8ttV6kwNQF
+         Hf1i5wYqXUUe5Quh1+nFtpwJuohxIcD7LUubDiuK6dYHsipe7Pn4dM5U8IXoXGDIty4Z
+         638A==
+X-Gm-Message-State: AOAM533I5mM4JekuOYGptlET/FEP8fIMZaYcURYnNiuN4Wb0D9/5V6es
+        6CV2wH6GK9DvxWWP+B6lIgzu
+X-Google-Smtp-Source: ABdhPJxWrj2PNQO0qiPT6/pCF1p+En6aDmwk50Ux/SxZ9KvumJwPxnXut5JijxoQjFeymeK1C8La2A==
+X-Received: by 2002:a63:4d41:: with SMTP id n1mr8251304pgl.147.1611130006249;
+        Wed, 20 Jan 2021 00:06:46 -0800 (PST)
+Received: from localhost.localdomain ([2409:4072:6d85:48cc:b166:aab7:ff85:2769])
+        by smtp.gmail.com with ESMTPSA id y1sm1324040pff.17.2021.01.20.00.06.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Jan 2021 23:59:04 -0800 (PST)
-Date:   Wed, 20 Jan 2021 08:59:02 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [BUG] NULL pointer in dev_pm_opp_put_regulators
-Message-ID: <20210120075902.lfz6cw4jgqg6e7c3@kozik-lap>
+        Wed, 20 Jan 2021 00:06:45 -0800 (PST)
+From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To:     georgi.djakov@linaro.org, robh+dt@kernel.org
+Cc:     agross@kernel.org, bjorn.andersson@linaro.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        okukatla@codeaurora.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [PATCH 1/2] dt-bindings: interconnect: Add Qualcomm SDX55 DT bindings
+Date:   Wed, 20 Jan 2021 13:36:26 +0530
+Message-Id: <20210120080627.20784-2-manivannan.sadhasivam@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210120080627.20784-1-manivannan.sadhasivam@linaro.org>
+References: <20210120080627.20784-1-manivannan.sadhasivam@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+The Qualcomm SDX55 platform has several bus fabrics that could be
+controlled and tuned dynamically over RPMh according to the bandwidth
+demand.
 
-Today's next fails to boot on Exynos5422 Odroid HC1 board:
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+ .../bindings/interconnect/qcom,rpmh.yaml      |  4 +
+ include/dt-bindings/interconnect/qcom,sdx55.h | 76 +++++++++++++++++++
+ 2 files changed, 80 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdx55.h
 
-[    6.409023] Unable to handle kernel NULL pointer dereference at virtual address 00000004
-[    6.417199] pgd = (ptrval)
-[    6.419748] [00000004] *pgd=00000000
-[    6.423499] Internal error: Oops: 805 [#1] PREEMPT SMP ARM
-[    6.428724] Modules linked in:
-[    6.431752] CPU: 5 PID: 1 Comm: swapper/0 Not tainted 5.11.0-rc4-next-20210120 #2
-[    6.439209] Hardware name: Samsung Exynos (Flattened Device Tree)
-[    6.445273] PC is at dev_pm_opp_put_regulators+0xb4/0x114
-...
-[    6.680370] [<c086f51c>] (dev_pm_opp_put_regulators) from [<c08d5d48>] (exynos_bus_probe+0x45c/0x620)
-[    6.689556] [<c08d5d48>] (exynos_bus_probe) from [<c06b49a8>] (platform_probe+0x80/0xc0)
-[    6.697614] [<c06b49a8>] (platform_probe) from [<c06b1ab4>] (really_probe+0x1d4/0x500)
-[    6.705499] [<c06b1ab4>] (really_probe) from [<c06b1e58>] (driver_probe_device+0x78/0x1dc)
-[    6.713731] [<c06b1e58>] (driver_probe_device) from [<c06b236c>] (device_driver_attach+0x58/0x60)
-[    6.722571] [<c06b236c>] (device_driver_attach) from [<c06b2470>] (__driver_attach+0xfc/0x160)
-[    6.731149] [<c06b2470>] (__driver_attach) from [<c06af85c>] (bus_for_each_dev+0x68/0xb4)
-[    6.739294] [<c06af85c>] (bus_for_each_dev) from [<c06b0b5c>] (bus_add_driver+0x158/0x214)
-[    6.747526] [<c06b0b5c>] (bus_add_driver) from [<c06b3314>] (driver_register+0x78/0x110)
-[    6.755585] [<c06b3314>] (driver_register) from [<c0102464>] (do_one_initcall+0x8c/0x430)
-[    6.763731] [<c0102464>] (do_one_initcall) from [<c11010e4>] (kernel_init_freeable+0x190/0x1e0)
-[    6.772397] [<c11010e4>] (kernel_init_freeable) from [<c0b4fc50>] (kernel_init+0x8/0x120)
-[    6.780542] [<c0b4fc50>] (kernel_init) from [<c010011c>] (ret_from_fork+0x14/0x38)
-
-https://krzk.eu/#/builders/21/builds/2862/steps/15/logs/serial0
-
-I did not do a bisect but the last commit touching these parts was:
-
-commit 302c014726dbd9fcde852985528c139d2214a1f2
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Tue Jan 19 11:58:58 2021 +0530
-    opp: Prepare for ->set_opp() helper to work without regulators
-
-Maybe you have some idea of cause?
-
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+index 30c2a092d2d3..f9b150b817d8 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+@@ -45,6 +45,10 @@ properties:
+       - qcom,sdm845-mem-noc
+       - qcom,sdm845-mmss-noc
+       - qcom,sdm845-system-noc
++      - qcom,sdx55-ipa-virt
++      - qcom,sdx55-mc-virt
++      - qcom,sdx55-mem-noc
++      - qcom,sdx55-system-noc
+       - qcom,sm8150-aggre1-noc
+       - qcom,sm8150-aggre2-noc
+       - qcom,sm8150-camnoc-noc
+diff --git a/include/dt-bindings/interconnect/qcom,sdx55.h b/include/dt-bindings/interconnect/qcom,sdx55.h
+new file mode 100644
+index 000000000000..daa8cd4f21f6
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,sdx55.h
+@@ -0,0 +1,76 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Qualcomm SDX55 interconnect IDs
++ *
++ * Copyright (c) 2020, Linaro Ltd.
++ * Author: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDX55_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_SDX55_H
++
++#define MASTER_LLCC			0
++#define SLAVE_EBI_CH0			1
++
++#define MASTER_TCU_0			0
++#define MASTER_SNOC_GC_MEM_NOC		1
++#define MASTER_AMPSS_M0			2
++#define SLAVE_LLCC			3
++#define SLAVE_MEM_NOC_SNOC		4
++#define SLAVE_MEM_NOC_PCIE_SNOC		5
++
++#define MASTER_AUDIO			0
++#define MASTER_BLSP_1			1
++#define MASTER_QDSS_BAM			2
++#define MASTER_QPIC			3
++#define MASTER_SNOC_CFG			4
++#define MASTER_SPMI_FETCHER		5
++#define MASTER_ANOC_SNOC		6
++#define MASTER_IPA			7
++#define MASTER_MEM_NOC_SNOC		8
++#define MASTER_MEM_NOC_PCIE_SNOC	9
++#define MASTER_CRYPTO_CORE_0		10
++#define MASTER_EMAC			11
++#define MASTER_IPA_PCIE			12
++#define MASTER_PCIE			13
++#define MASTER_QDSS_ETR			14
++#define MASTER_SDCC_1			15
++#define MASTER_USB3			16
++#define SLAVE_AOP			17
++#define SLAVE_AOSS			18
++#define SLAVE_APPSS			19
++#define SLAVE_AUDIO			20
++#define SLAVE_BLSP_1			21
++#define SLAVE_CLK_CTL			22
++#define SLAVE_CRYPTO_0_CFG		23
++#define SLAVE_CNOC_DDRSS		24
++#define SLAVE_ECC_CFG			25
++#define SLAVE_EMAC_CFG			26
++#define SLAVE_IMEM_CFG			27
++#define SLAVE_IPA_CFG			28
++#define SLAVE_CNOC_MSS			29
++#define SLAVE_PCIE_PARF			30
++#define SLAVE_PDM			31
++#define SLAVE_PRNG			32
++#define SLAVE_QDSS_CFG			33
++#define SLAVE_QPIC			34
++#define SLAVE_SDCC_1			35
++#define SLAVE_SNOC_CFG			36
++#define SLAVE_SPMI_FETCHER		37
++#define SLAVE_SPMI_VGI_COEX		38
++#define SLAVE_TCSR			39
++#define SLAVE_TLMM			40
++#define SLAVE_USB3			41
++#define SLAVE_USB3_PHY_CFG		42
++#define SLAVE_ANOC_SNOC			43
++#define SLAVE_SNOC_MEM_NOC_GC		44
++#define SLAVE_OCIMEM			45
++#define SLAVE_SERVICE_SNOC		46
++#define SLAVE_PCIE_0			47
++#define SLAVE_QDSS_STM			48
++#define SLAVE_TCU			49
++
++#define MASTER_IPA_CORE			0
++#define SLAVE_IPA_CORE			1
++
++#endif
+-- 
+2.25.1
 
