@@ -2,84 +2,69 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EEF9C433E9
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 01:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 521B6C433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 01:14:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 200BB2388B
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 01:13:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1365D23888
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 01:14:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733263AbhAUBLK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Jan 2021 20:11:10 -0500
-Received: from mx2.suse.de ([195.135.220.15]:46172 "EHLO mx2.suse.de"
+        id S1729418AbhAUBLH convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Jan 2021 20:11:07 -0500
+Received: from mail.kernel.org ([198.145.29.99]:43956 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391847AbhAUBJ4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 20 Jan 2021 20:09:56 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 04A5EAC95;
-        Thu, 21 Jan 2021 01:09:15 +0000 (UTC)
-Message-ID: <1611191354.18842.7.camel@suse.cz>
-Subject: Re: [PATCH] x86,sched: On AMD EPYC set freq_max = max_boost in
- schedutil invariant formula
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Jon Grimm <Jon.Grimm@amd.com>,
-        Nathan Fontenot <Nathan.Fontenot@amd.com>,
-        Yazen Ghannam <Yazen.Ghannam@amd.com>,
-        Thomas Lendacky <Thomas.Lendacky@amd.com>,
-        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-acpi@vger.kernel.org
-Date:   Thu, 21 Jan 2021 02:09:14 +0100
-In-Reply-To: <20210121003550.20415-1-ggherdovich@suse.cz>
-References: <20210121003550.20415-1-ggherdovich@suse.cz>
+        id S2390979AbhAUBBj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Jan 2021 20:01:39 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPS id 69E3423602
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 01:00:52 +0000 (UTC)
+From:   bugzilla-daemon@bugzilla.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [Bug 211305] schedutil selects low P-States on AMD EPYC with
+ frequency invariance
+Date:   Thu, 21 Jan 2021 01:00:52 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: ggherdovich@suse.cz
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-211305-137361-FeNioyZB5a@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-211305-137361@https.bugzilla.kernel.org/>
+References: <bug-211305-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2021-01-21 at 01:35 +0100, Giovanni Gherdovich wrote:
-> Phoronix.com discovered a severe performance regression on AMD APYC
-> introduced on schedutil [see link 1] by the following commits from v5.11-rc1
-> 
->     commit 41ea667227ba ("x86, sched: Calculate frequency invariance for AMD systems")
->     commit 976df7e5730e ("x86, sched: Use midpoint of max_boost and max_P for frequency invariance on AMD EPYC")
-> 
-> Furthermore commit db865272d9c4 ("cpufreq: Avoid configuring old governors as
-> default with intel_pstate") from v5.10 made it extremely easy to default to
-> schedutil even if the preferred driver is acpi_cpufreq. Distros are likely to
-> build both intel_pstate and acpi_cpufreq on x86, and the presence of the
-> former removes ondemand from the defaults. This situation amplifies the
-> visibility of the bug we're addressing.
-> 
-> [link 1] https://www.phoronix.com/scan.php?page=article&item=linux511-amd-schedutil&num=1
-> 
-> 1. PROBLEM DESCRIPTION   : over-utilization and schedutil
-> 2. PROPOSED SOLUTION     : raise freq_max in schedutil formula
-> 3. DATA TABLE            : image processing benchmark
-> 4. ANALYSIS AND COMMENTS : with over-utilization, freq-invariance is lost
+https://bugzilla.kernel.org/show_bug.cgi?id=211305
 
-I've sent this patch twice by mistake, sorry about that.
+--- Comment #3 from Giovanni Gherdovich (ggherdovich@suse.cz) ---
+Created attachment 294795
+  --> https://bugzilla.kernel.org/attachment.cgi?id=294795&action=edit
+plot of frequency data from hardware feedback (APERF, MPERF)
 
-In case it is of interest, I've shared some plots made while studying this
-regression in a bugzilla entry:
+"cpupower monitor" shows that the bad kernel actually run at the minimum
+P-State.
 
-  https://bugzilla.kernel.org/show_bug.cgi?id=211305
+-- 
+You may reply to this email to add a comment.
 
-
-Thanks,
-Giovanni
+You are receiving this mail because:
+You are the assignee for the bug.
