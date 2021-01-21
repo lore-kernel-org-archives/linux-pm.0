@@ -7,66 +7,66 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7272DC433E6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:47:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEA76C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:48:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 275AD239A4
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:47:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5970B2395A
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:48:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730076AbhAULrd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 06:47:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39862 "EHLO
+        id S1729740AbhAULsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 06:48:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730071AbhAULVW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:21:22 -0500
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41D92C06179C
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:01 -0800 (PST)
-Received: by mail-pj1-x1031.google.com with SMTP id u4so1449253pjn.4
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:01 -0800 (PST)
+        with ESMTP id S1729851AbhAULVM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:21:12 -0500
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1549EC0617BA
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:22 -0800 (PST)
+Received: by mail-pj1-x1036.google.com with SMTP id g15so1461707pjd.2
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=xAKTZkyycba98JIw9o5yBKGTgq6RnpydF9Cba6DEkjM=;
-        b=IE5cB3XUcMOfllNnwGT/K8+FysNlnl6CN4kmfCqtdtbsK6nqdVZB37NlyY+ocle3C1
-         BJSbgqiGQ1RcwE/02b9qpjDCWn+//56RBxiUS9lahW8NTBSWgTBU14p8ehtxYGrcFw3J
-         m/iaGhrrFw77+W7wq4k/oNokc2iEHPCcYeFueag/GTYWb6dV+LWnlQ/5a/f/SvRNvuAa
-         3mjYP0rSx6c28PV2w4lAxljy/w3tDI4ULO6U74GbojEyPdXiDKRg6rLHLaz5qqU53StK
-         n7sGL3faxA9KaPvLiYX4EdAkbRVZqJB3aSLBngSk/QRb7gStOyskUpFzy1eTnLGF7TZj
-         /vew==
+        bh=tpbd5REqcbcRMd0xcpf9T6/Cw9coNwWGEmGNqj2MIho=;
+        b=cQ5rRy39r5+ufO+3BswxSSkFJ7+Jpm6N1g2Hni+fnN4oxrLV9pPReJ1frk5GKLuUml
+         f+U1YMG533Xe2z8g69+kCFjMwktlTruBmh0C3cLNfwpeEOXXKu5j6AvKTUX4JExQxbtp
+         IycMCPFvd8AB6R3DAEhE4y+LNhWYguX9xhl/bhiDNtGU+hPTm95rvzqFxoYTUl7ZArFg
+         xQqneH2veT3wjgjuoC5folDhjA+5nktphXldfMpVgci8UVrjbj0twVuNKYpnkOxc6p2n
+         ZODeYkUs9DjKiBV3Z+V9zOrDpDgz4n3CnatGQIqOezN3qBCn3geZ7pFlKDH83G2zIuov
+         Gdcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=xAKTZkyycba98JIw9o5yBKGTgq6RnpydF9Cba6DEkjM=;
-        b=U4LZHWSGg0QPPmiMPH87/2OkD9gqu/1r4bejSRcYu2uTNsGfG9tWaE1j1p5T2DlbEw
-         rxzpNdRyqz+KP5DoMuvuYNlWc6ug/2rSt0AzX4+1SXETojmL4n3KqDLy6JcJKHBMZacD
-         i0bLRb887KGIoynRFgGjHCn1IfkJrsWP8UPyRvMAU1XYFwe6zqnWhfzsRZOAoMWzWqqX
-         kTkEeP+uXaGJ/CKPpOMYSYKiloDmLkfhDHKGDhAqzzZiiHQgQX57jAliXs8x3OIrx8SK
-         S3m740Q4KOi9nwjKuzAKXFnVIkLc6LEzoyQBDoe24KwnS520U3AhHgVv0fof3xwYpqdT
-         qZvA==
-X-Gm-Message-State: AOAM533bILU421BQ1Fm2kr+g0P4ISIFxH6MST7haIv5bcW2YmWRJjUf3
-        Wf7is+NUzDWKt2O4ZggrJPWq4Q==
-X-Google-Smtp-Source: ABdhPJzh80hJitJKGsChrc0Eudj2IFABV8NGgEDM/wNUy0FrILeXFQbCYrIaBzthFQDqE04LoZxRUw==
-X-Received: by 2002:a17:90a:fd0b:: with SMTP id cv11mr11277904pjb.26.1611227940577;
-        Thu, 21 Jan 2021 03:19:00 -0800 (PST)
+        bh=tpbd5REqcbcRMd0xcpf9T6/Cw9coNwWGEmGNqj2MIho=;
+        b=h8n2E/YzKlgpKigSS47hNDjdjUGgDFCQEx7b6EF5c96u4V7ELdmnXSDvJc3HruJSUx
+         Ls68BPm4GZASjUrlAO7/2qxYiR8kiYx7udOdvQlB8ccrg5lIV61FZjh2oafde7EnLVqL
+         YhJywppGWIgsjjaJeoou1kC1xxmQnl0Pf9rgUfzvDzfqYXv8xHiQRXqlyqi4nv4eC0Ku
+         PAdXJiKyA5hs9krGHQbCKOmwJOQCTI0yJghRiarmmPQSAWpYYYwdQUUKIMevqE82Z32y
+         PMM2Ngg3ToIE+kG6gT2Wj/B2lnK9rlmfNDAgzyiKxd0cEhxzLi9l6VJwkON4jiPppeYa
+         OlJA==
+X-Gm-Message-State: AOAM532f0tAI53mKe7r8XgzH0FcFd83gOQ9PrpvZzTscXDK/7ih23F4Y
+        1m4krdyz33eHvhqvRKyg25tOEQ==
+X-Google-Smtp-Source: ABdhPJwFngayl7Kb87/6CN0WzGWc0iYnvTw6xgMXD3fCZ+Ox7Ja9cmNj8T9QjiUNNOF7BbJad6fLcA==
+X-Received: by 2002:a17:902:a412:b029:db:cf5a:8427 with SMTP id p18-20020a170902a412b02900dbcf5a8427mr14517166plq.48.1611227961615;
+        Thu, 21 Jan 2021 03:19:21 -0800 (PST)
 Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id l12sm2255450pjg.54.2021.01.21.03.18.59
+        by smtp.gmail.com with ESMTPSA id fs21sm5401300pjb.30.2021.01.21.03.19.20
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 21 Jan 2021 03:19:00 -0800 (PST)
+        Thu, 21 Jan 2021 03:19:21 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
         Sibi Sankar <sibis@codeaurora.org>,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 06/13] opp: Allow _generic_set_opp_regulator() to work for non-freq devices
-Date:   Thu, 21 Jan 2021 16:47:46 +0530
-Message-Id: <8f2d26305f38b52ebc46f2b0d4620e1e578fa2f2.1611227342.git.viresh.kumar@linaro.org>
+Subject: [PATCH 13/13] opp: Remove dev_pm_opp_set_bw()
+Date:   Thu, 21 Jan 2021 16:47:53 +0530
+Message-Id: <45684bf5b7b9004808d412f8d749c536970fe165.1611227342.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
 In-Reply-To: <cover.1611227342.git.viresh.kumar@linaro.org>
 References: <cover.1611227342.git.viresh.kumar@linaro.org>
@@ -76,87 +76,128 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The _generic_set_opp_regulator() helper will be used for devices which
-don't change frequency (like power domains, etc.) later on, prepare for
-that by not relying on frequency for making decisions here.
+All the users have migrated to dev_pm_opp_set_opp() now, get rid of the
+duplicate API, dev_pm_opp_set_bw(), which only performs a part of the new API.
 
-While at it, update its parameters to pass only what is necessary.
+While at it, remove the unnecessary parameter to _set_opp_bw().
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ drivers/opp/core.c     | 41 +++++------------------------------------
+ include/linux/pm_opp.h |  6 ------
+ 2 files changed, 5 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 64424dbd23c1..a96ffd9051b1 100644
+index 5a367ef02b92..d8ca15d96ce9 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -737,12 +737,12 @@ static inline int _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
+@@ -798,7 +798,7 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ }
  
- static int _generic_set_opp_regulator(struct opp_table *opp_table,
- 				      struct device *dev,
--				      unsigned long old_freq,
-+				      struct dev_pm_opp *opp,
- 				      unsigned long freq,
--				      struct dev_pm_opp_supply *old_supply,
--				      struct dev_pm_opp_supply *new_supply)
-+				      int scaling_down)
+ static int _set_opp_bw(const struct opp_table *opp_table,
+-		       struct dev_pm_opp *opp, struct device *dev, bool remove)
++		       struct dev_pm_opp *opp, struct device *dev)
  {
- 	struct regulator *reg = opp_table->regulators[0];
-+	struct dev_pm_opp *old_opp = opp_table->current_opp;
- 	int ret;
+ 	u32 avg, peak;
+ 	int i, ret;
+@@ -807,7 +807,7 @@ static int _set_opp_bw(const struct opp_table *opp_table,
+ 		return 0;
  
- 	/* This function only supports single regulator per device */
-@@ -752,8 +752,8 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ 	for (i = 0; i < opp_table->path_count; i++) {
+-		if (remove) {
++		if (!opp) {
+ 			avg = 0;
+ 			peak = 0;
+ 		} else {
+@@ -817,7 +817,7 @@ static int _set_opp_bw(const struct opp_table *opp_table,
+ 		ret = icc_set_bw(opp_table->paths[i], avg, peak);
+ 		if (ret) {
+ 			dev_err(dev, "Failed to %s bandwidth[%d]: %d\n",
+-				remove ? "remove" : "set", i, ret);
++				opp ? "set" : "remove", i, ret);
+ 			return ret;
+ 		}
  	}
- 
- 	/* Scaling up? Scale voltage before frequency */
--	if (freq >= old_freq) {
--		ret = _set_opp_voltage(dev, reg, new_supply);
-+	if (!scaling_down) {
-+		ret = _set_opp_voltage(dev, reg, opp->supplies);
- 		if (ret)
- 			goto restore_voltage;
- 	}
-@@ -764,8 +764,8 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
- 		goto restore_voltage;
- 
- 	/* Scaling down? Scale voltage after frequency */
--	if (freq < old_freq) {
--		ret = _set_opp_voltage(dev, reg, new_supply);
-+	if (scaling_down) {
-+		ret = _set_opp_voltage(dev, reg, opp->supplies);
- 		if (ret)
- 			goto restore_freq;
- 	}
-@@ -783,12 +783,12 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
- 	return 0;
- 
- restore_freq:
--	if (_generic_set_opp_clk_only(dev, opp_table->clk, old_freq))
-+	if (_generic_set_opp_clk_only(dev, opp_table->clk, old_opp->rate))
- 		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
--			__func__, old_freq);
-+			__func__, old_opp->rate);
- restore_voltage:
- 	/* This shouldn't harm even if the voltages weren't updated earlier */
--	_set_opp_voltage(dev, reg, old_supply);
-+	_set_opp_voltage(dev, reg, old_opp->supplies);
- 
+@@ -911,37 +911,6 @@ static int _set_required_opps(struct device *dev,
  	return ret;
  }
-@@ -1035,9 +1035,8 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
- 		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
- 				      old_opp->supplies, opp->supplies);
- 	} else if (opp_table->regulators) {
--		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
--						 old_opp->supplies,
--						 opp->supplies);
-+		ret = _generic_set_opp_regulator(opp_table, dev, opp, freq,
-+						 scaling_down);
- 	} else {
- 		/* Only frequency scaling */
- 		ret = _generic_set_opp_clk_only(dev, opp_table->clk, freq);
+ 
+-/**
+- * dev_pm_opp_set_bw() - sets bandwidth levels corresponding to an opp
+- * @dev:	device for which we do this operation
+- * @opp:	opp based on which the bandwidth levels are to be configured
+- *
+- * This configures the bandwidth to the levels specified by the OPP. However
+- * if the OPP specified is NULL the bandwidth levels are cleared out.
+- *
+- * Return: 0 on success or a negative error value.
+- */
+-int dev_pm_opp_set_bw(struct device *dev, struct dev_pm_opp *opp)
+-{
+-	struct opp_table *opp_table;
+-	int ret;
+-
+-	opp_table = _find_opp_table(dev);
+-	if (IS_ERR(opp_table)) {
+-		dev_err(dev, "%s: device opp table doesn't exist\n", __func__);
+-		return PTR_ERR(opp_table);
+-	}
+-
+-	if (opp)
+-		ret = _set_opp_bw(opp_table, opp, dev, false);
+-	else
+-		ret = _set_opp_bw(opp_table, NULL, dev, true);
+-
+-	dev_pm_opp_put_opp_table(opp_table);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(dev_pm_opp_set_bw);
+-
+ static void _find_current_opp(struct device *dev, struct opp_table *opp_table)
+ {
+ 	struct dev_pm_opp *opp = ERR_PTR(-ENODEV);
+@@ -982,7 +951,7 @@ static int _disable_opp_table(struct device *dev, struct opp_table *opp_table)
+ 	if (!_get_opp_count(opp_table))
+ 		return 0;
+ 
+-	ret = _set_opp_bw(opp_table, NULL, dev, true);
++	ret = _set_opp_bw(opp_table, NULL, dev);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1050,7 +1019,7 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
+ 	}
+ 
+ 	if (!ret) {
+-		ret = _set_opp_bw(opp_table, opp, dev, false);
++		ret = _set_opp_bw(opp_table, opp, dev);
+ 		if (!ret) {
+ 			opp_table->enabled = true;
+ 			dev_pm_opp_put(old_opp);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 2d8a706f8d00..891276b46e97 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -159,7 +159,6 @@ struct opp_table *devm_pm_opp_attach_genpd(struct device *dev, const char **name
+ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_opp(struct device *dev, struct dev_pm_opp *opp);
+-int dev_pm_opp_set_bw(struct device *dev, struct dev_pm_opp *opp);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+ void dev_pm_opp_remove_table(struct device *dev);
+@@ -382,11 +381,6 @@ static inline int dev_pm_opp_set_opp(struct device *dev, struct dev_pm_opp *opp)
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int dev_pm_opp_set_bw(struct device *dev, struct dev_pm_opp *opp)
+-{
+-	return -EOPNOTSUPP;
+-}
+-
+ static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask)
+ {
+ 	return -ENOTSUPP;
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
