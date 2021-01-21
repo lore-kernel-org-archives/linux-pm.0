@@ -2,124 +2,89 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08509C433E6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:41:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 437A7C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 16:21:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B1D7023A04
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:41:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DBF67212CC
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 16:21:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731830AbhAUPi7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 10:38:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39100 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733135AbhAUPhh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 10:37:37 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E7BDC0613D6
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 07:36:56 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id m187so1831276wme.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 07:36:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=JcVTg+smuk+JvjKNodQ46EIl4LUKQrz4MgqUhJc2c80=;
-        b=JiBVAej+mj5P09SDTOqy/z13p3dfmhJLUGqUlhdCTWBgsEh4vciDlpLWsRf8TL4lvi
-         sNqqBZluOfTslKoM48OG8EjkDvHT/8XFUcUCgycz+OvAN8p9j3lyD5HbXCldJSLwkzqK
-         JYjvMxQgkPIUGjMPRxzaF97kve0KuVZebypAlN8uJqY6G1HiUo8Is+OfXsjeBYgBQL3U
-         T88HHH7F4w5U819uM4sV8QWcHSbhGRsbACOP/kercgXBHMRsxcea6g5faDvCqUJqb6te
-         KOCp/cR0z4xjU0+OnWCfQmhTdEsWtgiD54SNU1h8bDxJk2n0BCCckVasXzLfIjSSwWs2
-         uL8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=JcVTg+smuk+JvjKNodQ46EIl4LUKQrz4MgqUhJc2c80=;
-        b=RBH4auZuFEcfgjoeSlaNRYILHG/z71LomkCE4X/PzHmhblm1qr9GJKdhpGPm9flTL0
-         6JZEWbjVob9Ewxcxy0G4lDzrmNE9L7V9Y/YwOYMrBUWPLbqnbXFeZlP479YfOHKbjMX3
-         5yAjtVMr4pZSbdS/B2AxEfMHAzURuti5a3sKeSafPz8OMoupvxlSdIY/WxP0iIrip9Xw
-         TTv9I7TiO0YM6GH7OE89WcaCXmwXORX0ie7jli0Ytb6S1ju3FQEtcjVTQaeIdXTjhXtE
-         b6ahjG3eInlKT7IfD1jiO6EnTB1/EDp3k5GKewbRcLe8/OdFtgAwDeYAbZkp6Q0w5oN0
-         ilnw==
-X-Gm-Message-State: AOAM5334piFsvn9JtodvdiMn8jF+pGoadxHcBnJS24m+o4BmtiLG8oIf
-        s+EuaxTVOLwiCHJ88CX2gwxRbw==
-X-Google-Smtp-Source: ABdhPJyfXqxxgqOmtoSnJpiF3iqSkYaC/yU+/103LNk7Ep1oDZ5J01CBAR32cmExYpf+0vSeN4/3KQ==
-X-Received: by 2002:a1c:608b:: with SMTP id u133mr9438737wmb.140.1611243415109;
-        Thu, 21 Jan 2021 07:36:55 -0800 (PST)
-Received: from ?IPv6:2a01:e34:ed2f:f020:1539:1c19:f5a3:71b8? ([2a01:e34:ed2f:f020:1539:1c19:f5a3:71b8])
-        by smtp.googlemail.com with ESMTPSA id p17sm8602926wmg.46.2021.01.21.07.36.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 Jan 2021 07:36:54 -0800 (PST)
-Subject: Re: [PATCH v12 0/5] qcom: pm8150: add support for thermal monitoring
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>
-References: <20210119054848.592329-1-dmitry.baryshkov@linaro.org>
- <078a7025-ce5c-a252-f8f4-694c56153b3a@linaro.org>
- <YAmedqs9/1oDSWvK@builder.lan>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <49eb2533-e6ba-9310-a4f8-5b633c7a0253@linaro.org>
-Date:   Thu, 21 Jan 2021 16:36:50 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1732981AbhAUQTw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 11:19:52 -0500
+Received: from pb-smtp21.pobox.com ([173.228.157.53]:64563 "EHLO
+        pb-smtp21.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732100AbhAUQTi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 11:19:38 -0500
+Received: from pb-smtp21.pobox.com (unknown [127.0.0.1])
+        by pb-smtp21.pobox.com (Postfix) with ESMTP id E28A1106769;
+        Thu, 21 Jan 2021 11:18:52 -0500 (EST)
+        (envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed; d=pobox.com; h=date:from:to
+        :cc:subject:in-reply-to:message-id:references:mime-version
+        :content-type; s=sasl; bh=xwglBKNBDOQa41zIQ1eVypVyscM=; b=dYOM9G
+        FYHGC97iyU6/IxQRN5Of9psoeePTQJOmHWgvn1zdAo8NtJrkw1PaCbHG10n+f5i2
+        lHwUwFW8wtHRc8AlalvHmVMnFfMryEeV8QgDuv4FMzKvLjtYzaduxcktcCVKcKYa
+        bbQHN5MI8upRWw1VVF9CIkKkoVWZoaeATF3dA=
+Received: from pb-smtp21.sea.icgroup.com (unknown [127.0.0.1])
+        by pb-smtp21.pobox.com (Postfix) with ESMTP id D99A9106765;
+        Thu, 21 Jan 2021 11:18:51 -0500 (EST)
+        (envelope-from nico@fluxnic.net)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=fluxnic.net;
+ h=date:from:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type; s=2016-12.pbsmtp; bh=5fBPzAB/LUGoYmsC4s4Q3GVI9ZCjSpshAfLaiXN9zLg=; b=Iha+EsdhQeI8Ki7aaPar41/MZhotmmhAYcR34Vm/RS2dry4qKAqsQtlQhZKV0Ek7B2gTcuZkSsF+zj14sE/pefEZ0KxehuMt3FLCJ+xZMfjB1nQW910K9iXBqhM00ZTuEIx5hB+vdwsqvTzbBU3BHWl7QTUQbDEr+8tRol/Tvmk=
+Received: from yoda.home (unknown [24.203.50.76])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by pb-smtp21.pobox.com (Postfix) with ESMTPSA id BC6CB10675B;
+        Thu, 21 Jan 2021 11:18:48 -0500 (EST)
+        (envelope-from nico@fluxnic.net)
+Received: from xanadu.home (xanadu.home [192.168.2.2])
+        by yoda.home (Postfix) with ESMTPSA id 14E2D2DA015D;
+        Thu, 21 Jan 2021 11:18:47 -0500 (EST)
+Date:   Thu, 21 Jan 2021 11:18:46 -0500 (EST)
+From:   Nicolas Pitre <nico@fluxnic.net>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+cc:     Naresh Kamboju <naresh.kamboju@linaro.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] PM / clk: make PM clock layer compatible with clocks
+ that must sleep
+In-Reply-To: <CAJZ5v0hFjpGp2GbV1Evi+BbUF7Am4ETY4Cm8VzTrvTJ=7=oyPQ@mail.gmail.com>
+Message-ID: <43p026p5-468-n892-4nss-6ro5s047qp9@syhkavp.arg>
+References: <17nqrn25-rp5s-4652-o5o1-72p2oprqpq90@onlyvoer.pbz> <CA+G9fYsyXsNSXGy6BWZ6mgpAP=+7r6Xy9jQ2xxb9mXyHdRoBCg@mail.gmail.com> <CAMuHMdULW4bnb0Jc0+ZaF9P2VNgnYsvEks7y8WYCk045BHqh7A@mail.gmail.com> <CA+G9fYvh0iSyEDQs7+0CX82FLPDCg5UmAt+1JuPsndmfmYF3kw@mail.gmail.com>
+ <CAJZ5v0hFjpGp2GbV1Evi+BbUF7Am4ETY4Cm8VzTrvTJ=7=oyPQ@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <YAmedqs9/1oDSWvK@builder.lan>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+X-Pobox-Relay-ID: 57D11538-5C04-11EB-9E8A-D609E328BF65-78420484!pb-smtp21.pobox.com
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21/01/2021 16:32, Bjorn Andersson wrote:
-> On Tue 19 Jan 14:57 CST 2021, Daniel Lezcano wrote:
+On Thu, 21 Jan 2021, Rafael J. Wysocki wrote:
+
+> On Thu, Jan 21, 2021 at 1:11 PM Naresh Kamboju
+> <naresh.kamboju@linaro.org> wrote:
+> >
+> > ref:
+> > https://builds.tuxbuild.com/1nN0vkpNP4qhvIuIJN12j7tTpQs/
 > 
->> On 19/01/2021 06:48, Dmitry Baryshkov wrote:
->>> This patch serie adds support for thermal monitoring block on Qualcomm's
->>> PMIC5 chips. PM8150{,b,l}, qrb5165-rb5 board and sm8250-mtp board device
->>> trees are extended to support thermal zones provided by this thermal
->>> monitoring block.  Unlike the rest of PMIC thermal senses, these thermal
->>> zones describe particular thermistors, which differ between from board
->>> to board.
->>>
->>> Dependencies: https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git/log/?h=ib-iio-thermal-5.11-rc1
->>
->> Shall I pick 3,4,5 also ?
->>
-> 
-> I believe I have some adjacent changes staged in these files, so I'll
-> prefer to pick them through the Qualcomm tree.
+> So I'm going to drop this patch from linux-next until the issue is
+> resolved, thanks!
 
-Ok, thanks
+No problem - I'm on it.
 
->> -- 
->> <http://www.linaro.org/> Linaro.org ??? Open source software for ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
+Thanks Naresh for reporting the issue.
 
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Nicolas
