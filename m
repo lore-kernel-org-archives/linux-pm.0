@@ -2,170 +2,150 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCBA2C433E6
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 06:27:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F189C433E6
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 09:12:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97F4E22248
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 06:27:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B967C2395A
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 09:12:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727018AbhAUG1G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 01:27:06 -0500
-Received: from mga06.intel.com ([134.134.136.31]:58483 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727035AbhAUG02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 21 Jan 2021 01:26:28 -0500
-IronPort-SDR: z0ynmDEXZTU89ZoL3ClzIwcX9z2vWNGvC6ootWMvhauWI798Kk1uItPLSOyhaAsyi50jAVHUYr
- lmtpShlp+haA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9870"; a="240764674"
-X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
-   d="scan'208";a="240764674"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jan 2021 22:25:46 -0800
-IronPort-SDR: YCSivWnmkbZ0e9A8AW3RrJNGJYH5aQykJ1/4YZV6IXTwbH564DyN1ToorCSixoFTBnSHwxdOxz
- J2BZr155h1ng==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
-   d="scan'208";a="467350049"
-Received: from lkp-server01.sh.intel.com (HELO 260eafd5ecd0) ([10.239.97.150])
-  by fmsmga001.fm.intel.com with ESMTP; 20 Jan 2021 22:25:44 -0800
-Received: from kbuild by 260eafd5ecd0 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1l2TPb-0006Lb-TM; Thu, 21 Jan 2021 06:25:43 +0000
-Date:   Thu, 21 Jan 2021 14:25:38 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS WITH WARNING
- 693e119601907f923bcf08aca03793a0d1cf4416
-Message-ID: <60091e62.ARJpxQVSwHfZKZ/b%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1728411AbhAUJMg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 04:12:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40234 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728419AbhAUJMF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 04:12:05 -0500
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80405C061795
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 01:11:15 -0800 (PST)
+Received: by mail-ed1-x531.google.com with SMTP id g24so1537258edw.9
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 01:11:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=WLXeWIIoAu3UvtfUefXR9qcSia3PjDVI/Fbc5zrav74=;
+        b=L0WyjqaHw0/lRmseCIJJbm0McdMQpzOm/7kVIAnPv9TUdDWiA0dMSeUtNdBHKJD+3t
+         r0JwbHmd5Z23dT9lioDVG2jgdlTOM1lnbmB4M7fNcvygWoRf8krfXnzPP0Bcz/z8YG9p
+         FoDZz5hLYSFh1bTyeIepXRlh+VS5k0TBAaqcd4YWIaptS0i7CTeFPH8AveyFs/enFj1P
+         OHCA72zAkf80LvVLIQqekwMPMD+DUJbmTNB00ALDKuauYkRB+TNZyk05sSSRqMcNgHrZ
+         C2u//DcTUii2Oca69dD2DvQW8RLLX0XHRjaWUJsF6j0FEFs8BxSteQAwpCOBtdqdti64
+         qMCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=WLXeWIIoAu3UvtfUefXR9qcSia3PjDVI/Fbc5zrav74=;
+        b=MbKFGcwsCxHLcHSQNAs4kdqPLHV8FOM3pOkkw4IhHoBxNDS1r73lDkQVNP6Q4RMTyI
+         wjQwnEAReYEuScxtIiHpTMDk+CztgNI/LqV2IKkcHLlY2DqbhhgrNrfts+Aks4MRnS3b
+         HnnSSDYJVaxNKfBVaHVhOZvjidc8l6TZc59dB7MCnUYzkOUgs8Y9g0uZWt31lVk0rkLz
+         JJxtDVgbL4zfRtyao7gNKybRinAV3kiudBRYR3+5QRpj7/w5to0m33U0IansU2/+5aaj
+         Ut6Y1ZKpI+edTtylfGXfYD822ghyR3GTgQ3IWdbJiTYdYD3shJ8+pdoLD57eP2DDL1O9
+         6mwg==
+X-Gm-Message-State: AOAM533R4s6vfv3taOf9/ShMJE/LkycRXLfRe3dvI+vZIiN3DYltpHy4
+        B2+qR4/6DF0LvtEAQozUcC/eCd4f7C9dRNK/JKscYQ==
+X-Google-Smtp-Source: ABdhPJzCxyeIcXGOlc4+TBm6gMHiw/i/Y7fx9SBhhCx7//bBXwiSd+CK8jbzA4TdALgfZUw3o+e89xwXFxeHzE+WiQA=
+X-Received: by 2002:aa7:c384:: with SMTP id k4mr10130943edq.23.1611220274094;
+ Thu, 21 Jan 2021 01:11:14 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <17nqrn25-rp5s-4652-o5o1-72p2oprqpq90@onlyvoer.pbz>
+In-Reply-To: <17nqrn25-rp5s-4652-o5o1-72p2oprqpq90@onlyvoer.pbz>
+From:   Naresh Kamboju <naresh.kamboju@linaro.org>
+Date:   Thu, 21 Jan 2021 14:41:02 +0530
+Message-ID: <CA+G9fYsyXsNSXGy6BWZ6mgpAP=+7r6Xy9jQ2xxb9mXyHdRoBCg@mail.gmail.com>
+Subject: Re: [PATCH] PM / clk: make PM clock layer compatible with clocks that
+ must sleep
+To:     Nicolas Pitre <npitre@baylibre.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Russell King <linux@armlinux.org.uk>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 693e119601907f923bcf08aca03793a0d1cf4416  Merge branch 'acpi-platform' into bleeding-edge
+Hi Nicolas,
 
-Warning ids grouped by kconfigs:
+On Tue, 5 Jan 2021 at 08:48, Nicolas Pitre <npitre@baylibre.com> wrote:
+>
+> The clock API splits its interface into sleepable ant atomic contexts:
+>
+> - clk_prepare/clk_unprepare for stuff that might sleep
+>
+> - clk_enable_clk_disable for anything that may be done in atomic context
+>
 
-gcc_recent_errors
-`-- i386-randconfig-s002-20210119
-    `-- include-linux-spinlock.h:sparse:sparse:context-imbalance-in-pm_clk_list_lock-wrong-count-at-exit
+<trim>
 
-elapsed time: 722m
+>
+> Signed-off-by: Nicolas Pitre <npitre@baylibre.com>
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index ced6863a16..a62fb0f9b1 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
 
-configs tested: 96
-configs skipped: 2
+<trim>
 
-gcc tested configs:
-arm64                            allyesconfig
-arm64                               defconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                        workpad_defconfig
-sh                                  defconfig
-arm                          gemini_defconfig
-mips                           jazz_defconfig
-arm                           spitz_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                     redwood_defconfig
-mips                          rm200_defconfig
-ia64                          tiger_defconfig
-m68k                       bvme6000_defconfig
-powerpc                    klondike_defconfig
-sh                            titan_defconfig
-powerpc                     rainier_defconfig
-powerpc                  storcenter_defconfig
-arm                         axm55xx_defconfig
-arm                           h3600_defconfig
-c6x                                 defconfig
-xtensa                       common_defconfig
-m68k                          multi_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210120
-i386                 randconfig-a002-20210120
-i386                 randconfig-a004-20210120
-i386                 randconfig-a006-20210120
-i386                 randconfig-a005-20210120
-i386                 randconfig-a003-20210120
-i386                 randconfig-a013-20210120
-i386                 randconfig-a011-20210120
-i386                 randconfig-a012-20210120
-i386                 randconfig-a014-20210120
-i386                 randconfig-a015-20210120
-i386                 randconfig-a016-20210120
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+> @@ -64,17 +166,20 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>                 ce->clk = clk_get(dev, ce->con_id);
+>         if (IS_ERR(ce->clk)) {
+>                 ce->status = PCE_STATUS_ERROR;
+> +               return;
+> +       } else if (clk_is_enabled_when_prepared(ce->clk)) {
 
-clang tested configs:
-x86_64               randconfig-a002-20210120
-x86_64               randconfig-a003-20210120
-x86_64               randconfig-a001-20210120
-x86_64               randconfig-a005-20210120
-x86_64               randconfig-a006-20210120
-x86_64               randconfig-a004-20210120
-x86_64               randconfig-a015-20210119
-x86_64               randconfig-a013-20210119
-x86_64               randconfig-a012-20210119
-x86_64               randconfig-a016-20210119
-x86_64               randconfig-a011-20210119
-x86_64               randconfig-a014-20210119
+arm-linux-gnueabihf-ld: drivers/base/power/clock_ops.o: in function
+`pm_clk_acquire':
+drivers/base/power/clock_ops.c:170: undefined reference to
+`clk_is_enabled_when_prepared'
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+
+This build error was noticed on arm architecture on linux next 20210121 tag.
+Following builds failed.
+ - arm (omap1_defconfig) with clang-10 - FAILED
+ - arm (omap1_defconfig) with clang-11 - FAILED
+
+ - arm (omap1_defconfig) with gcc-8 - FAILED
+ - arm (omap1_defconfig) with gcc-9 - FAILED
+ - arm (omap1_defconfig) with gcc-10 - FAILED
+
+Steps to reproduce:
+---------------------------
+1)
+
+# TuxMake is a command line tool and Python library that provides
+# portable and repeatable Linux kernel builds across a variety of
+# architectures, toolchains, kernel configurations, and make targets.
+#
+# TuxMake supports the concept of runtimes.
+# See https://docs.tuxmake.org/runtimes/, for that to work it requires
+# that you install podman or docker on your system.
+#
+# To install tuxmake on your system globally:
+# sudo pip3 install -U tuxmake
+#
+# See https://docs.tuxmake.org/ for complete documentation.
+
+tuxmake --runtime docker --target-arch arm --toolchain gcc-8 --kconfig
+omap1_defconfig
+
+2)
+tuxbuild build --git-repo
+https://gitlab.com/Linaro/lkft/mirrors/next/linux-next --git-sha
+bc085f8fc88fc16796c9f2364e2bfb3fef305cad --target-arch arm --toolchain
+gcc-8 --kconfig omap1_defconfig
+
+-- 
+Linaro LKFT
+https://lkft.linaro.org
