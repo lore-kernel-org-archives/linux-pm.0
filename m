@@ -2,112 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F78C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:35:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFF69C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:40:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B1B0423A1C
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:35:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3D7A23A04
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 15:40:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731897AbhAUPeb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 10:34:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38052 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732702AbhAUPcx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 10:32:53 -0500
-Received: from mail-oo1-xc30.google.com (mail-oo1-xc30.google.com [IPv6:2607:f8b0:4864:20::c30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FC03C061756
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 07:32:09 -0800 (PST)
-Received: by mail-oo1-xc30.google.com with SMTP id j8so594281oon.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 07:32:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=HrC/BtIGOSMmK8LojhA7HYYtVauAes9ugHyEOOmaStM=;
-        b=zsmsXfxPeN1c5q6BDDydKmojMbFwdYUFugqo1wUWW1HoXkSCQFm9y6uswYIqP3tTED
-         kYDlANpbvajQyu9x3lqlOHpBtwx0NzL4XL/RR781HzWDFzEyW6gj0yzhftTRYOPV/Wnu
-         pTDD1RUi183xe0Op5lF1MzDEZK+w9VEYTI1yeRLEk0R9BD/5ZAUzqgbPsv1wtXH5JcyB
-         dfTw+b//4KUx5OVqB5jhF1A3TokWKQaBoQK/ipVZQoxKvRmCd4WNs5Mbg1eaR4hF+q4e
-         6nr7IqWCQOT96DahxU6HiLUdZ5VyKXgIUMnVVgBJMCueASom2HIK7QG3oeGdkjhu61W/
-         G4Ng==
+        id S1732933AbhAUPkJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 10:40:09 -0500
+Received: from mail-oo1-f43.google.com ([209.85.161.43]:36366 "EHLO
+        mail-oo1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733243AbhAUPjs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 10:39:48 -0500
+Received: by mail-oo1-f43.google.com with SMTP id j8so600140oon.3;
+        Thu, 21 Jan 2021 07:39:16 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=HrC/BtIGOSMmK8LojhA7HYYtVauAes9ugHyEOOmaStM=;
-        b=Ug0/9AldErr+uO9wHVAYm9UFSbbBYoAz0hBLxfzgRRMe8nmU7JebAOkNHaO6sBnNfp
-         nl8q8U3ihQghVFdUue8aCacs9S6Ww6bOE9Af6KQDCmYZGj6Q6g9LywtL8oh2EBowHsdt
-         Ti7k6pme18aWXN9ZUCfGeGS9PO8ciANE61ZYqNgfhXu3YYDxEEbz9XkcB7uJw5+cNaIK
-         vXOyN+aSiB79f5ja7NZb4AW/taE20iHK0vMMTqNwq4UY0MqQqSdWBlwze7pc9SWdEVVO
-         sgG5pYTPRplATjxYZ0Brpq09qughmQtCMDqMlMRNLiemh4eggqMYoU5N0skhysv0ZPrX
-         WzWA==
-X-Gm-Message-State: AOAM530Z0bNCfHAD/gigUnM1Y18l5HeFbKiGcM+pXmTIjsEwJs1rqVna
-        /bc0J7cDf5PBvOTWK9bS5xNrog==
-X-Google-Smtp-Source: ABdhPJzRDqEsIBxCVlEnwYonZwjyr88XzHSrBOjAp45xooIVZZMHYE2AVKTNIKCNX1WxITcrXDFSSA==
-X-Received: by 2002:a4a:c692:: with SMTP id m18mr85815ooq.59.1611243128557;
-        Thu, 21 Jan 2021 07:32:08 -0800 (PST)
-Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
-        by smtp.gmail.com with ESMTPSA id y24sm1031116oos.44.2021.01.21.07.32.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 07:32:07 -0800 (PST)
-Date:   Thu, 21 Jan 2021 09:32:06 -0600
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>
-Subject: Re: [PATCH v12 0/5] qcom: pm8150: add support for thermal monitoring
-Message-ID: <YAmedqs9/1oDSWvK@builder.lan>
-References: <20210119054848.592329-1-dmitry.baryshkov@linaro.org>
- <078a7025-ce5c-a252-f8f4-694c56153b3a@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0R3/vn4OjBwMbm80SVwgo6ViJcCgYeuJbJTYwOEMXho=;
+        b=FaAxe0ztYmmDlexY5mGRDzmKb2lVBFnCvnJHpV1+ewthxB5t6g0thxRsXFeswBCnB8
+         5eUQDgGM2/Q+k/kuGT09vjNKxRHCIKuFbnrYWQYon58g90pVJ+Zlr2a7H0i6zZQ6eNnx
+         mK4BQRLmACvkoFM9DiRsjCk5MbmdCZC2Foe7WAJ+upyfi54xWNX/4avWmIesfGNGF5AQ
+         aDgxDyJ5xeJkOqAzk/wBmD5Lz4XPiBXk8gKZz26ZMipIylFMwCEAREYmaEevW6jjr50L
+         LHFDNSb8tyv1zRxdhPzd0p+ujD+sN4sySCtMoRMZqjad+mtdECkLIvO7x+YtORNNaTW7
+         Psow==
+X-Gm-Message-State: AOAM5321E2n1TMlqHoQrXv9CruAo6ZlThup+fVuMCDGUA+aNmN8JwyfT
+        PpN2dsIY8+e25FDkjt5tOVxDeoVJT5NtEcOH0JYJCaF9
+X-Google-Smtp-Source: ABdhPJyPp4o0v1chZHpawhDO/ZE7GYsY5Wdnka7U4wtIxMUDBXOJwl/XQxnwKaYrFAo6tvTDBufd8fPO824Jnc+3JAI=
+X-Received: by 2002:a4a:8353:: with SMTP id q19mr156184oog.40.1611243529514;
+ Thu, 21 Jan 2021 07:38:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <078a7025-ce5c-a252-f8f4-694c56153b3a@linaro.org>
+References: <20210120142323.2203705-1-geert+renesas@glider.be> <CAGETcx-ZcXB9Zw_RnMjA0G2oKAyeK3VfKgha=Mvqnn_dDREuOw@mail.gmail.com>
+In-Reply-To: <CAGETcx-ZcXB9Zw_RnMjA0G2oKAyeK3VfKgha=Mvqnn_dDREuOw@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 21 Jan 2021 16:38:38 +0100
+Message-ID: <CAMuHMdUfA2LgXxz1srbgQLiMw=oadrJ0ASMnwcvCO2xVXqWnUw@mail.gmail.com>
+Subject: Re: [PATCH/RFC] soc: renesas: rcar-sysc: Mark device node
+ OF_POPULATED after init
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue 19 Jan 14:57 CST 2021, Daniel Lezcano wrote:
+Hi Saravana,
 
-> On 19/01/2021 06:48, Dmitry Baryshkov wrote:
-> > This patch serie adds support for thermal monitoring block on Qualcomm's
-> > PMIC5 chips. PM8150{,b,l}, qrb5165-rb5 board and sm8250-mtp board device
-> > trees are extended to support thermal zones provided by this thermal
-> > monitoring block.  Unlike the rest of PMIC thermal senses, these thermal
-> > zones describe particular thermistors, which differ between from board
-> > to board.
-> > 
-> > Dependencies: https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git/log/?h=ib-iio-thermal-5.11-rc1
-> 
-> Shall I pick 3,4,5 also ?
-> 
+On Wed, Jan 20, 2021 at 6:09 PM Saravana Kannan <saravanak@google.com> wrote:
+> On Wed, Jan 20, 2021 at 6:23 AM Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+> > The R-Car System Controller (SYSC) driver registers PM domains from an
+> > early_initcall().  It does not use a platform driver, as secondary CPU
+> > startup on R-Car H1 needs to control the CPU power domains, before
+> > initialization of the driver framework.
+> >
+> > As fw_devlink only considers platform devices,
+>
+> Correction. It only considers devices. As in, devices on all types of
+> busses are supported.
 
-I believe I have some adjacent changes staged in these files, so I'll
-prefer to pick them through the Qualcomm tree.
+OK.
 
-Thank you,
-Bjorn
+> > it does not know that the
+> > System Controller is ready.  Hence probing of on-chip devices that are
+> > part of the SYSC PM domain fail:
+> >
+> >     probe deferral - supplier e6180000.system-controller not ready
+> >
+> > Fix this by setting the OF_POPULATED flag for the SYSC device node after
+> > successful initialization.  This will make of_link_to_phandle() ignore
+> > the SYSC device node as a dependency, and consumer devices will be
+> > probed again.
+>
+> It'd still be nice if you could (maybe in a later patch), at least
+> probe all the power domains that aren't really needed this early.
+> Using the driver core framework (when it's possible), gives you nice
+> things :)
 
-> 
-> -- 
-> <http://www.linaro.org/> Linaro.org ??? Open source software for ARM SoCs
-> 
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
+Which nice things are you thinking of? Making the driver modular?
+At least on R-Car H1, it needs to be built-in for SMP to work.
+
+> +Rob. I know he hates people using OF_POPULATED, but I think this case
+> is reasonable and want to make sure he's aware of this.
+>
+> Once you fix my commit nitpick, you can add:
+> Reviewed-by: Saravana Kannan <saravanak@google.com>
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
