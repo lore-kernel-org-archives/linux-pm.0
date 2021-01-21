@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E792EC433E9
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D68C43332
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A825523A5F
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F018523A60
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727362AbhAUTTB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 14:19:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58336 "EHLO
+        id S1726037AbhAUTSr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 14:18:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727088AbhAUTRT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:17:19 -0500
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC3CCC0613ED;
-        Thu, 21 Jan 2021 11:16:38 -0800 (PST)
-Received: by mail-pf1-x434.google.com with SMTP id m6so2098519pfm.6;
-        Thu, 21 Jan 2021 11:16:38 -0800 (PST)
+        with ESMTP id S1726919AbhAUTSK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:18:10 -0500
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAA59C06174A;
+        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
+Received: by mail-pl1-x62b.google.com with SMTP id be12so1842929plb.4;
+        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=9TJ+/IkMxCE3Me3OscF6ay8YRP3qL8IEtjgxoP99DSE=;
-        b=FK7MfMHf4SGJILR+sHK0PKOBbz5BrcJSqMkh5Xn57+xD8yXD4MR4CBRO15g37ChqOs
-         UpVFv13HjPHg8N1wO4QJ6ctTUwLuagBBlo51P0y/qCTdWeVcw3yGgmmedPtAjehDdqpJ
-         mOl53FsFj2CIKfqyei1p4qcrymafV2VfHBnFMPqq4MsPv05IIwhA8ZRD9VWkZWWCE3Bh
-         rlNoNGm3cjRTEbjzdZFZjotdFtak5Y2PMH5hDx+t81QQpOtAXV3jtDuKEVmjiXoNcdAK
-         Chv30FnZ6YNP9oOHiSVuM8DxqPFz7K28PfHQCCtnouU5AC9gDJrdjMOd2BVHM4ggkP4E
-         U5MQ==
+        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
+        b=DkGaRMymQU2Ti7nuGFAec88q4U8hFbvYLkGUOTfTAlcFxyZUCbmVhI4mSTcdoaPVdZ
+         ICZyZDieLP/RL9AtWHTrqkd4mPbl+4kdg1vq3OS7cUFg6HCdFnGclcX74Z383TZqCz+W
+         PV7qgySksE2aM21H6c/KVJRNe5kycUIW6UkofQahASMjwvKucvbgvjpnGF1YJn5h4SHz
+         NrRz2hpz7MINVO4xPpbXdugdIazeFgtm2h/V1pivr6CzL9uRIx3InRtM4rZyKb1Q95YZ
+         fC5FJSiLtY0UPFvWfrFEHDqyEZ8sxySanNli61fAEL2lmn/AVK3F/DGuS9Dlfz572XuE
+         kJVQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=9TJ+/IkMxCE3Me3OscF6ay8YRP3qL8IEtjgxoP99DSE=;
-        b=graIcfA7CXk8nNSvAVT2PrpLB6/tPxRafQ0obCnsJctM8eBdN6WUwU/7n+OkpQkWo3
-         yu6dEh9/4nBfN8R38gTgAnSzY4b0CBLCtcn1ev1H8UeUXR0hg9TGAdudJbw4nhmo3KMl
-         f5hiXKDFGpTV8QKkZcn1DYPXaz10f03THm/IIxOSAlrU25jhbe9mX6TLbolhhvBkbsaj
-         BiIOcJjsOdJaoqhRsq2nLlshR5nvD1r8ZczMJa36lmdEu6Sv0VxLq3NNtom4O+uDqJKf
-         OFukLqbY7ZgJb0mLVqMwoX/BZ6j7kq1c3tPxcNfG1KE0tHoFJrswaDiO8hw3/8vZROfQ
-         4lRQ==
-X-Gm-Message-State: AOAM531xBEVu3VrhHHE42aEPQwBF7RQzukjRDpAVWjNljRnB98ctdKPI
-        hTu0WWxdka9oBzopc2QMN3o=
-X-Google-Smtp-Source: ABdhPJyByj5OTVv1UZPdho8rMYmkQjVXKqm48U9EmhAalZM5DKwY17h3hKAyeZMyHT1xJcvOjsHYlQ==
-X-Received: by 2002:a65:68cb:: with SMTP id k11mr741755pgt.271.1611256598421;
-        Thu, 21 Jan 2021 11:16:38 -0800 (PST)
+        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
+        b=G1PKX5th2rm2CURi8zCmBrCKKFR0ZEwL10M0UtcnsxyDg0YBi5ej80tz1+m5ad6i04
+         cNeax8dQggxzy+SXJcVuTssGBylzx3Yv5xWyO5PZn+kCliYboUEOT3GdIUJl5J/2Bndq
+         hIO5PmwFJ99dVv0NQnxFKmswKt4deCxG8Uanq2ygbJYELRXYn8orwJYIsm+NniPBOFlL
+         HxGOFcVHfmLiz6/SDT6kj47yGlQLnlmFsSsIQv2xjPFOF9lM0snDvduPU7MGYsSIsNqo
+         JXWtWXpeLuK0/vDeltAO7ZKDcNdElb8LTXbuVkNY6Gr5AcuVFG2I/i/fv2/h6OdkRAM5
+         zybQ==
+X-Gm-Message-State: AOAM532VOqC7gYyw95k+G2lo4Na9szXIIecfDVUMDz1LKKpWRw0qbTTt
+        B9hoV5T5OmX7NegkJEZnN98=
+X-Google-Smtp-Source: ABdhPJwOllrF6r9nS/4JZsBr6uzAUBd/bZaDSP5ab3c243GAsdrBIkEGUkvzhlR3EtezfDyyOtMuFQ==
+X-Received: by 2002:a17:90a:e549:: with SMTP id ei9mr947844pjb.43.1611256639326;
+        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
 Received: from ansuel-xps20.localdomain (host-79-41-39-5.retail.telecomitalia.it. [79.41.39.5])
-        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.16.31
+        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.17.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 11:16:37 -0800 (PST)
+        Thu, 21 Jan 2021 11:17:18 -0800 (PST)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amitk@kernel.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -63,12 +63,12 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v8 2/8] drivers: thermal: tsens: Don't hardcode sensor slope
-Date:   Thu, 21 Jan 2021 20:15:54 +0100
-Message-Id: <20210121191601.14403-3-ansuelsmth@gmail.com>
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v8 7/8] drivers: thermal: tsens: Add support for ipq8064-tsens
+Date:   Thu, 21 Jan 2021 20:15:59 +0100
+Message-Id: <20210121191601.14403-8-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210121191601.14403-1-ansuelsmth@gmail.com>
 References: <20210121191601.14403-1-ansuelsmth@gmail.com>
@@ -78,30 +78,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Function compute_intercept_slope hardcode the sensor slope to
-SLOPE_DEFAULT. Change this and use the default value only if a slope is
-not defined. This is needed for tsens VER_0 that has a hardcoded slope
-table.
+Add support for tsens present in ipq806x SoCs based on generic msm8960
+tsens driver.
 
 Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
 ---
- drivers/thermal/qcom/tsens.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/qcom/tsens.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index eaeaa1d69d92..dd9b41157894 100644
+index dd9b41157894..586b90962605 100644
 --- a/drivers/thermal/qcom/tsens.c
 +++ b/drivers/thermal/qcom/tsens.c
-@@ -86,7 +86,8 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
- 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
- 			__func__, i, p1[i], p2[i]);
+@@ -1010,6 +1010,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
  
--		priv->sensor[i].slope = SLOPE_DEFAULT;
-+		if (!priv->sensor[i].slope)
-+			priv->sensor[i].slope = SLOPE_DEFAULT;
- 		if (mode == TWO_PT_CALIB) {
- 			/*
- 			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
+ static const struct of_device_id tsens_table[] = {
+ 	{
++		.compatible = "qcom,ipq8064-tsens",
++		.data = &data_8960,
++	}, {
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &data_8916,
+ 	}, {
 -- 
 2.29.2
 
