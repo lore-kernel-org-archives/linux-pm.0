@@ -2,116 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,BIGNUM_EMAILS,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B35BC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 09:14:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 885AAC433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:21:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FCF2238EC
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 09:14:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44554238E2
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:21:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728343AbhAUJOV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 04:14:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40052 "EHLO
+        id S1729177AbhAULUn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 06:20:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727080AbhAUJLI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 04:11:08 -0500
-Received: from mail-io1-xd35.google.com (mail-io1-xd35.google.com [IPv6:2607:f8b0:4864:20::d35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79040C0613CF
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 01:10:27 -0800 (PST)
-Received: by mail-io1-xd35.google.com with SMTP id z22so2570972ioh.9
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 01:10:27 -0800 (PST)
+        with ESMTP id S1726959AbhAULUk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:20:40 -0500
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72923C0613D6
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:18:45 -0800 (PST)
+Received: by mail-pg1-x535.google.com with SMTP id p18so1137020pgm.11
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:18:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Q1UC4Vr1q+5J2Uy7mwHTSdaridk3Fe0PBXsEt6dmNRU=;
-        b=ree/DxaNIueL4Wb6kkZs6kJ5zXE+SH4zAcjPqL1/hsWXn2ZqU/vGDNBHSWvnFijNrD
-         Fl230aS/YBgutE6QbjwGnkpfHi4+FAkw1KwALSs7YUSqoOFCQVHchqoAt6MVj/YkCtAi
-         wr9mE18EhUO96pxIFH3NHQBY37F1DspLqenv/q3p47KerzEwgCFjMQ3Mc9WsLsLhgkY3
-         YombjHiUlU4/GFdfCmpLlKYGOEESP7oaBk+yMFEM6XyxOFStruaxddt48Idt5XBTmHDL
-         TBlt8VvaLZmOHDUMMKw1Wf/BRLB1DuOtKqPTgpAgJqH48fjb5teqbnheJ+0CbTN95dkY
-         ckJQ==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=DAtjI7/BPs0IoV2iaS54lmWpFTE0HbF0Es/G22rWt3g=;
+        b=ZpmS5LN1rts74B7Ode0O1RTIMsoc8Gi0J/g/qdh4T4B+Pl5+6gDcpGtwEy3pxwaa1n
+         KJMIk8ywsFR4wtEZeD3cynSaQbttOpg++x8NwKSnz5NE2yMDL+xniSZ2kjT0faYRi5pL
+         M+Ww1NxEYcW6YGEkuuNHvtUhb0dRL8IgsIE9SQlSprdhSHMaSGscj1dOZ0pc7bkhMeRY
+         40VDRsunRhdrZp8VxhHfj0mrnlOz/vOMk0C1DUU9eLTtmhKiclL+GWz1UIm6g+zTmw1Y
+         u2QUTm7Kird1vwS6WBpw7kK7Uo1YQ75ztHo2FgLS8AEfwPTzQ4+ugUeRvnqx9lyoBgi/
+         jm/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Q1UC4Vr1q+5J2Uy7mwHTSdaridk3Fe0PBXsEt6dmNRU=;
-        b=qlIAz9MoOyE8IWYRQhgGuEZbeqI03BmSUqBQKtB9PlXgJYsoemyykvgIawHk8BqxZr
-         yNsqeUcLUZzlZ/fYGt6kIZjQDXc4+XIiRg213kx4gqn3ezc9XAE3a+xJxLatR9MtdhDZ
-         e+nBejSKi5Kx61e5yGDZlJH+z5c0/UHYlMHiSqRELaGhAy15PE0V9RQIbhVw/xAh9kTc
-         4vq2WrmsS17rBVYgCY6HD4ck9iWnxrk2g02CT6cqcLNOhQ5Inh/cMVZBLOzTuVX6NhXp
-         CBNrq0Px38OxZYHfXy4g+NlzGEHYHMgtAUTezDpLYgWogW2OeYSMwO8WFpvlLXcs+36S
-         8Ydw==
-X-Gm-Message-State: AOAM530bYnrpuX5We+UcV965kvYGmpq9voJEXqgaq3mqFka5H1MaoLSe
-        A7lu0IhKjmJ124UnUMXDUuOKrnXCTzgmlVOHWw==
-X-Google-Smtp-Source: ABdhPJyuv0Xn3ESQa+f0IRWD8fUFWmSY5VE2sBAv9nK2AX1huYa+6L4x3oUBZ8RxJqj26SwtzfXq10hEn0qLFiflMBY=
-X-Received: by 2002:a92:d107:: with SMTP id a7mr4101095ilb.45.1611220226882;
- Thu, 21 Jan 2021 01:10:26 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=DAtjI7/BPs0IoV2iaS54lmWpFTE0HbF0Es/G22rWt3g=;
+        b=ijPQyDlKQjPRtAGZnzgIeTPIuozm6GO4mI2J9X92BkLIDdDdLlzCOaQ6BQWi7cWXzC
+         XNM3ZTqQGBZClAXRtbHLn1e+RLpIp9I9jAdCuBhZxcMUTrJoNJVevwHrRKtc63jDFblX
+         AZ3+5O2Ae+lVVgzePcdtngyTsbw7EkSyLalYupFUioKU0VC1voNQOGwVpGF9V/3WQC4/
+         DekORWZbNus3CI4Ltw81qQnDzBctCQ3GPaUE0zWOSku5QgGv58iF1OUvsw1h/XQzBdzp
+         rLcQko8dXEAP8G6bQsi/J96VbZJtY/v/439ek1n+0GMtpmWniEY9RV6g6CDeXQPtihCx
+         0Grw==
+X-Gm-Message-State: AOAM531zfKpP3XsKZDc9Wl5WHKSftf8HQEX507m5bfbNRHycRqkPEJ60
+        ECxgRBIy9J65IAoHShmcBu4Arg==
+X-Google-Smtp-Source: ABdhPJyts296w7aWmAZLnK+2Ns297gN4vfmOwF34Q5MA6SM/rmkzGZINgd1d7pMVUGniT2QI9Kk1mQ==
+X-Received: by 2002:a05:6a00:a8d:b029:1ba:71d1:fe3c with SMTP id b13-20020a056a000a8db02901ba71d1fe3cmr9122927pfl.51.1611227909301;
+        Thu, 21 Jan 2021 03:18:29 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id u1sm5595280pjr.51.2021.01.21.03.18.28
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 21 Jan 2021 03:18:28 -0800 (PST)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 01/13] opp: Rename _opp_set_rate_zero()
+Date:   Thu, 21 Jan 2021 16:47:41 +0530
+Message-Id: <b55e4579ef70d47ceeec8e4b96108e8f3e0f1b81.1611227342.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <cover.1611227342.git.viresh.kumar@linaro.org>
+References: <cover.1611227342.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-References: <20201118185917.GA433776@mwanda> <20210120093015.GE20161@MiWiFi-R3L-srv>
-In-Reply-To: <20210120093015.GE20161@MiWiFi-R3L-srv>
-From:   Pingfan Liu <kernelfans@gmail.com>
-Date:   Thu, 21 Jan 2021 17:10:15 +0800
-Message-ID: <CAFgQCTubgqy3ANR_oPH9w_OZ1Mm0a0daWT7SAFhXx3QX+-vHBQ@mail.gmail.com>
-Subject: Re: [bug report] PM / reboot: Eliminate race between reboot and suspend
-To:     Baoquan He <bhe@redhat.com>
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Kexec Mailing List <kexec@lists.infradead.org>,
-        linux-pm@vger.kernel.org, Dave Young <dyoung@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jan 20, 2021 at 5:30 PM Baoquan He <bhe@redhat.com> wrote:
->
-> Hi,
->
-> On 11/18/20 at 09:59pm, Dan Carpenter wrote:
-> > Hello Pingfan Liu,
-> >
-> > The patch 55f2503c3b69: "PM / reboot: Eliminate race between reboot
-> > and suspend" from Jul 31, 2018, leads to the following static checker
-> > warning:
-> >
-> >       kernel/power/main.c:27 lock_system_sleep()
-> >       warn: called with lock held.  '&system_transition_mutex'
->
-> This is a good finding. I think we can simply remove the lock/unlock
-> pair of system_transition_mutex in kernel_kexec() function. The dead
-> lock should be easily triggered, but it hasn't caused any failure report
-> because the feature 'kexec jump' is almost not used by anyone as far as
-> I know. We may need to find out who is using it and where it's used
-> through an inquiry. Before that, we can just remove the lock operation
-> inside CONFIG_KEXEC_JUMP ifdeffery scope. Thanks.
->
->
-> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-> index 80905e5aa8ae..a0b6780740c8 100644
-> --- a/kernel/kexec_core.c
-> +++ b/kernel/kexec_core.c
-> @@ -1134,7 +1134,6 @@ int kernel_kexec(void)
->
->  #ifdef CONFIG_KEXEC_JUMP
->         if (kexec_image->preserve_context) {
-> -               lock_system_sleep();
->                 pm_prepare_console();
->                 error = freeze_processes();
->                 if (error) {
-> @@ -1197,7 +1196,6 @@ int kernel_kexec(void)
->                 thaw_processes();
->   Restore_console:
->                 pm_restore_console();
-> -               unlock_system_sleep();
+This routine has nothing to do with frequency, it just disables all the
+resources previously enabled. Rename it to match its purpose.
 
-This should work since the only caller syscall_reboot has already
-placed kernel_kexec() under the protection of system_transition_mutex.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks for the fix.
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index aea0b9d7203c..9ec8e42981d0 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -943,7 +943,7 @@ int dev_pm_opp_set_bw(struct device *dev, struct dev_pm_opp *opp)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_set_bw);
+ 
+-static int _opp_set_rate_zero(struct device *dev, struct opp_table *opp_table)
++static int _disable_opp_table(struct device *dev, struct opp_table *opp_table)
+ {
+ 	int ret;
+ 
+@@ -997,7 +997,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	}
+ 
+ 	if (unlikely(!target_freq)) {
+-		ret = _opp_set_rate_zero(dev, opp_table);
++		ret = _disable_opp_table(dev, opp_table);
+ 		goto put_opp_table;
+ 	}
+ 
+-- 
+2.25.0.rc1.19.g042ed3e048af
 
-Reviewed-by: Pingfan Liu <kernelfans@gmail.com>
