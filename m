@@ -2,186 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E36A0C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 05:43:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCBA2C433E6
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 06:27:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 898A52389B
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 05:43:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97F4E22248
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 06:27:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726489AbhAUFnb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 00:43:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49858 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726179AbhAUFeD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 00:34:03 -0500
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5868BC0613D6
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 21:33:17 -0800 (PST)
-Received: by mail-pf1-x42c.google.com with SMTP id o20so856245pfu.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 21:33:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=JdF7A3Srp9FLkQoF574fS1ByIlAhbXL+GvTymLUhq4o=;
-        b=j4j599fkmm1wQqO8pvw1ky6t5rl5pPGywKQfoUzLZzXDMmctv+jplGU/fAQd+nz3qm
-         Cf4UFV8ejFIJ6PHG2o45s1tgnJ/O02LglqKuO8jkxeun/Etf96orKxVaaT4HSXZ4IKdl
-         VpwanvepScn+cmjHW8NPwmWp2iwdVihMgS0zx7XyG36OeWp01gCa/XWOoo/16Qb3J+14
-         EvW90FsutZ2oKUGGeyA1WwX135wZDPFKe4S731ksArTdGxh4jBcderdx9qefIV6QQiQy
-         1mmzxJr9xN1ckYVLxdupqDLdx4L0v4sCSVgcf1Js9eH3jmOaeDnxq5iM290P9vHM/4SW
-         GSDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=JdF7A3Srp9FLkQoF574fS1ByIlAhbXL+GvTymLUhq4o=;
-        b=AfUai/KAmyXEPvbo/llpYcux7rnMIsj5Z/j2e3HEUea2So7SmOVJHIInPOfcNQSvuM
-         l0znOQ2vGkGwU3aB6non1ysUaqryOwzO01McHQvoS6S/dYuVyzMPALL36d9X7DDdUb0n
-         qPoCDzo9IBNizezAui/Hh2aPu9UJTriqrBVz2UHFm2qFV9dWk8/2S3OeUehXiTaOiSP5
-         CrVTWvzdSpbqFfkOrBUxO/ZmoyCANEcVFOZXAS8nloXkx2XcDahMB6fY7rZ+kNZEhrhj
-         y2wgw0U+Tac3o9CcNnvFa8zR2/OpmAPH3lBKbHO6X03/BeUu9T45mvdC2g6iVuglPEWR
-         5E/w==
-X-Gm-Message-State: AOAM533ds6V2GpnLiPi+dbdMMvyrFl5deI4xAWBGu2JuKAwuRl2pnvX3
-        a1/ta/hDf4hiN7jewVEcdyjr
-X-Google-Smtp-Source: ABdhPJwGnyS1uQRHUwQq0tA1ZBDNDz634WYemrQBU52WbHfAnZ+Turq03VGJ4rAAfPrHqVcWdOvuIA==
-X-Received: by 2002:a62:dd94:0:b029:19e:92ec:722a with SMTP id w142-20020a62dd940000b029019e92ec722amr12894309pff.50.1611207196781;
-        Wed, 20 Jan 2021 21:33:16 -0800 (PST)
-Received: from localhost.localdomain ([2409:4072:6182:23c4:4d5:e6d9:fc7e:c8e2])
-        by smtp.gmail.com with ESMTPSA id o14sm4332850pgr.44.2021.01.20.21.33.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Jan 2021 21:33:16 -0800 (PST)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     georgi.djakov@linaro.org, robh+dt@kernel.org
-Cc:     agross@kernel.org, bjorn.andersson@linaro.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        okukatla@codeaurora.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v2 1/2] dt-bindings: interconnect: Add Qualcomm SDX55 DT bindings
-Date:   Thu, 21 Jan 2021 11:02:53 +0530
-Message-Id: <20210121053254.8355-2-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210121053254.8355-1-manivannan.sadhasivam@linaro.org>
-References: <20210121053254.8355-1-manivannan.sadhasivam@linaro.org>
+        id S1727018AbhAUG1G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 01:27:06 -0500
+Received: from mga06.intel.com ([134.134.136.31]:58483 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727035AbhAUG02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 21 Jan 2021 01:26:28 -0500
+IronPort-SDR: z0ynmDEXZTU89ZoL3ClzIwcX9z2vWNGvC6ootWMvhauWI798Kk1uItPLSOyhaAsyi50jAVHUYr
+ lmtpShlp+haA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9870"; a="240764674"
+X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
+   d="scan'208";a="240764674"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jan 2021 22:25:46 -0800
+IronPort-SDR: YCSivWnmkbZ0e9A8AW3RrJNGJYH5aQykJ1/4YZV6IXTwbH564DyN1ToorCSixoFTBnSHwxdOxz
+ J2BZr155h1ng==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,363,1602572400"; 
+   d="scan'208";a="467350049"
+Received: from lkp-server01.sh.intel.com (HELO 260eafd5ecd0) ([10.239.97.150])
+  by fmsmga001.fm.intel.com with ESMTP; 20 Jan 2021 22:25:44 -0800
+Received: from kbuild by 260eafd5ecd0 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1l2TPb-0006Lb-TM; Thu, 21 Jan 2021 06:25:43 +0000
+Date:   Thu, 21 Jan 2021 14:25:38 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS WITH WARNING
+ 693e119601907f923bcf08aca03793a0d1cf4416
+Message-ID: <60091e62.ARJpxQVSwHfZKZ/b%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SDX55 platform has several bus fabrics that could be
-controlled and tuned dynamically over RPMh according to the bandwidth
-demand.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 693e119601907f923bcf08aca03793a0d1cf4416  Merge branch 'acpi-platform' into bleeding-edge
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- i386-randconfig-s002-20210119
+    `-- include-linux-spinlock.h:sparse:sparse:context-imbalance-in-pm_clk_list_lock-wrong-count-at-exit
+
+elapsed time: 722m
+
+configs tested: 96
+configs skipped: 2
+
+gcc tested configs:
+arm64                            allyesconfig
+arm64                               defconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                        workpad_defconfig
+sh                                  defconfig
+arm                          gemini_defconfig
+mips                           jazz_defconfig
+arm                           spitz_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                     redwood_defconfig
+mips                          rm200_defconfig
+ia64                          tiger_defconfig
+m68k                       bvme6000_defconfig
+powerpc                    klondike_defconfig
+sh                            titan_defconfig
+powerpc                     rainier_defconfig
+powerpc                  storcenter_defconfig
+arm                         axm55xx_defconfig
+arm                           h3600_defconfig
+c6x                                 defconfig
+xtensa                       common_defconfig
+m68k                          multi_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210120
+i386                 randconfig-a002-20210120
+i386                 randconfig-a004-20210120
+i386                 randconfig-a006-20210120
+i386                 randconfig-a005-20210120
+i386                 randconfig-a003-20210120
+i386                 randconfig-a013-20210120
+i386                 randconfig-a011-20210120
+i386                 randconfig-a012-20210120
+i386                 randconfig-a014-20210120
+i386                 randconfig-a015-20210120
+i386                 randconfig-a016-20210120
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a002-20210120
+x86_64               randconfig-a003-20210120
+x86_64               randconfig-a001-20210120
+x86_64               randconfig-a005-20210120
+x86_64               randconfig-a006-20210120
+x86_64               randconfig-a004-20210120
+x86_64               randconfig-a015-20210119
+x86_64               randconfig-a013-20210119
+x86_64               randconfig-a012-20210119
+x86_64               randconfig-a016-20210119
+x86_64               randconfig-a011-20210119
+x86_64               randconfig-a014-20210119
+
 ---
- .../bindings/interconnect/qcom,rpmh.yaml      |  4 +
- include/dt-bindings/interconnect/qcom,sdx55.h | 76 +++++++++++++++++++
- 2 files changed, 80 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/qcom,sdx55.h
-
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-index 30c2a092d2d3..f9b150b817d8 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
-@@ -45,6 +45,10 @@ properties:
-       - qcom,sdm845-mem-noc
-       - qcom,sdm845-mmss-noc
-       - qcom,sdm845-system-noc
-+      - qcom,sdx55-ipa-virt
-+      - qcom,sdx55-mc-virt
-+      - qcom,sdx55-mem-noc
-+      - qcom,sdx55-system-noc
-       - qcom,sm8150-aggre1-noc
-       - qcom,sm8150-aggre2-noc
-       - qcom,sm8150-camnoc-noc
-diff --git a/include/dt-bindings/interconnect/qcom,sdx55.h b/include/dt-bindings/interconnect/qcom,sdx55.h
-new file mode 100644
-index 000000000000..bfb6524a2d90
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,sdx55.h
-@@ -0,0 +1,76 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Qualcomm SDX55 interconnect IDs
-+ *
-+ * Copyright (c) 2021, Linaro Ltd.
-+ * Author: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SDX55_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_SDX55_H
-+
-+#define MASTER_LLCC			0
-+#define SLAVE_EBI_CH0			1
-+
-+#define MASTER_TCU_0			0
-+#define MASTER_SNOC_GC_MEM_NOC		1
-+#define MASTER_AMPSS_M0			2
-+#define SLAVE_LLCC			3
-+#define SLAVE_MEM_NOC_SNOC		4
-+#define SLAVE_MEM_NOC_PCIE_SNOC		5
-+
-+#define MASTER_AUDIO			0
-+#define MASTER_BLSP_1			1
-+#define MASTER_QDSS_BAM			2
-+#define MASTER_QPIC			3
-+#define MASTER_SNOC_CFG			4
-+#define MASTER_SPMI_FETCHER		5
-+#define MASTER_ANOC_SNOC		6
-+#define MASTER_IPA			7
-+#define MASTER_MEM_NOC_SNOC		8
-+#define MASTER_MEM_NOC_PCIE_SNOC	9
-+#define MASTER_CRYPTO_CORE_0		10
-+#define MASTER_EMAC			11
-+#define MASTER_IPA_PCIE			12
-+#define MASTER_PCIE			13
-+#define MASTER_QDSS_ETR			14
-+#define MASTER_SDCC_1			15
-+#define MASTER_USB3			16
-+#define SLAVE_AOP			17
-+#define SLAVE_AOSS			18
-+#define SLAVE_APPSS			19
-+#define SLAVE_AUDIO			20
-+#define SLAVE_BLSP_1			21
-+#define SLAVE_CLK_CTL			22
-+#define SLAVE_CRYPTO_0_CFG		23
-+#define SLAVE_CNOC_DDRSS		24
-+#define SLAVE_ECC_CFG			25
-+#define SLAVE_EMAC_CFG			26
-+#define SLAVE_IMEM_CFG			27
-+#define SLAVE_IPA_CFG			28
-+#define SLAVE_CNOC_MSS			29
-+#define SLAVE_PCIE_PARF			30
-+#define SLAVE_PDM			31
-+#define SLAVE_PRNG			32
-+#define SLAVE_QDSS_CFG			33
-+#define SLAVE_QPIC			34
-+#define SLAVE_SDCC_1			35
-+#define SLAVE_SNOC_CFG			36
-+#define SLAVE_SPMI_FETCHER		37
-+#define SLAVE_SPMI_VGI_COEX		38
-+#define SLAVE_TCSR			39
-+#define SLAVE_TLMM			40
-+#define SLAVE_USB3			41
-+#define SLAVE_USB3_PHY_CFG		42
-+#define SLAVE_ANOC_SNOC			43
-+#define SLAVE_SNOC_MEM_NOC_GC		44
-+#define SLAVE_OCIMEM			45
-+#define SLAVE_SERVICE_SNOC		46
-+#define SLAVE_PCIE_0			47
-+#define SLAVE_QDSS_STM			48
-+#define SLAVE_TCU			49
-+
-+#define MASTER_IPA_CORE			0
-+#define SLAVE_IPA_CORE			1
-+
-+#endif
--- 
-2.25.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
