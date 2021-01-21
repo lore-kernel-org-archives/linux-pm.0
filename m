@@ -2,127 +2,136 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59B21C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 20:37:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D385EC433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 20:52:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 179782389F
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 20:37:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BAAC23A5A
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 20:52:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726239AbhAUUhg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 15:37:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51202 "EHLO
+        id S1726411AbhAUUwK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 15:52:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50386 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727696AbhAUHv5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 02:51:57 -0500
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EC88C0613C1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 23:51:16 -0800 (PST)
-Received: by mail-pl1-x62f.google.com with SMTP id s15so812656plr.9
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2021 23:51:16 -0800 (PST)
+        with ESMTP id S1725779AbhAUUwE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 15:52:04 -0500
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6621EC06174A
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 12:51:23 -0800 (PST)
+Received: by mail-pl1-x634.google.com with SMTP id x18so1979052pln.6
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 12:51:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=ppYqWAyvNKiPd/LTBNFn0qouIP/3Y6Q1DfN9sV48VsY=;
-        b=h0lS53ZkB+GKey8kLUmj2tU59Up31sO8udeLACpcHlipl3iaRzEd9xz4Tv/Z+ccAfZ
-         t3Eq+Lxg37SMRZ2qawcCgkGJ0hUjNvDfDvspgvT+bQtC/dzVesYambsgW2E2cCBrOHWx
-         mWs7PlJT03dxD9QWqSie+h0AFX18eDZux1O1o20b8J2ETjQ7Sps3+34otgGpK1BEsH37
-         bAHGToZZTtNwcJj2lAp9s58WTAgnsIs9U9PtVvBO8DKtnMYFxjnXb73nqNh1qd4F2/On
-         XTDT8uBCYDkzrwZd+MVYZmSfjJ9J/LYjIWqNAjxQ3lrwz8EJevn+ZqyyhMhMt8Pvk0i5
-         gtGQ==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=y1kdWwW6tBm+eBFHi9McSUw7HB2Z9NLD4esehe0HXVo=;
+        b=V33k+DYfR0bCSw3m93JiYJnFA/hmCF7uYFPN2JWOear2k9GO2tCFFsnfqVDwxCK1ck
+         f2MFPGMCKTy2C4FdqSre1nhujQ7n2+lH7R6WlqsR5yUVsaT4wdxCsg6E0pvSUpEk3RMC
+         EfzKInqeRKpzHg5sYzd2uwUMPvK3BLI9N//v/HRDGVt1kGF2kXCn8HCuUvtsPg6JwF3t
+         BkyO8TI+TG/JTF2KgeIO3/JHhc5a6605PpZgvVo91xiZUpwfXxKO8FVesWodNxdvkUiu
+         laH94MyQEgEbjtQUYT2UDQyEUECTI4hcA1rZUejZ6S8K5QcYAsmYOjyiK1tA2AMVj7xO
+         qsew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=ppYqWAyvNKiPd/LTBNFn0qouIP/3Y6Q1DfN9sV48VsY=;
-        b=COuVF8YXUJ2Ltbfn4s+nozd7/3pTuheCvFnPiYQC7p2Q6eqdmXLnA0DJHXq0H0r7qo
-         2CWAovp+/eRhaulA6Hr+lit7r0Gdfrj030SSy+Kr9MuabNMsSwscGLnjn8DsosRXfnlx
-         EJF2fd5v1iX2o8DDB1RpcUiFggrwVzA0EYLZONgMBHjJ9v7yQCF/eQBygEvel/o/lyAb
-         LvhhxY24s7tmw2JIbbx89Ogv4li+GMUXSXWx0aWOYlRS36TKjA79X6QynaurBtkcWvod
-         A4pFkhtJ84nKMhBFHr2Ht0JwRfIAPTDfWvET/i1MPcAbhUmDMaHS+nSFpYzpqX8sf1zm
-         oeQA==
-X-Gm-Message-State: AOAM531V0p8UQXWMgCV7OEpxDKR2EWb6DSzu3fLjzWHuyBXoj2rUH9bs
-        pK4vTC58MDNMqx3oB5iVnCM+sw==
-X-Google-Smtp-Source: ABdhPJz4j4GCwZMviV8tI6NKJQDIU/+Lr0p38D4zIJnPc9Vz8ACUF0DFCZ7/MjjZjY2Ua9dxHsSv4A==
-X-Received: by 2002:a17:902:7684:b029:df:cfe4:6a06 with SMTP id m4-20020a1709027684b02900dfcfe46a06mr2194498pll.64.1611215475390;
-        Wed, 20 Jan 2021 23:51:15 -0800 (PST)
-Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id n3sm4853834pfq.19.2021.01.20.23.51.13
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 20 Jan 2021 23:51:14 -0800 (PST)
-Date:   Thu, 21 Jan 2021 13:21:12 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 00/12] OPP API fixes and improvements
-Message-ID: <20210121075112.jspo3klaewev6ger@vireshk-i7>
-References: <20210118005524.27787-1-digetx@gmail.com>
- <20210118114613.fzq7nkrdfm53upkr@vireshk-i7>
- <1d17901f-6341-d278-f517-33d9c7aadf42@gmail.com>
- <af1044be-263e-0aa2-7061-0b217f94197b@gmail.com>
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=y1kdWwW6tBm+eBFHi9McSUw7HB2Z9NLD4esehe0HXVo=;
+        b=kZ8po+z5KtgucKEyeupWu+nx9p5NxPYoze6WeNjnd4zMfsUqIswGhbCbWF5ktqKVUB
+         wkqhJnM6dXGagB4SevgHRQ117Znzs+jpMq7dHcWczwcaF92qkv602y3WJMSGGfxigPBz
+         LlvkVR1qGoHJLdfHB+fgu5DTToE9h15Mq2KGt9DLOOJjpzpInirRKo0VgH++KYsE7yEV
+         arZUXVGZfAey8npeb8bkhDru+dL9oTMIU1bzcS+GV2K/mR+wRCsoH47YfO6RyM+b5bgT
+         7UsWIydK8YoHi2jnv+8/YmgEZv5rmT20ydrYj4tOYhwf8K/xnRA5E1leTMTzYVSXzvUn
+         NJVA==
+X-Gm-Message-State: AOAM531sDJLSpbJsA+6hvcQj5j9uBjr9p5IN8syYvTvCPVgBUMpG/da2
+        leooghRdsMbeyCnIikwuJfHGBA==
+X-Google-Smtp-Source: ABdhPJzkFtqFOFpc873Ql/VuJ5plkgcvc4Qa2/xgiFL9tEJYpwL6+WmVenyqAxHp+SteKhcYGF/OkA==
+X-Received: by 2002:a17:90a:d3c7:: with SMTP id d7mr1310568pjw.169.1611262283040;
+        Thu, 21 Jan 2021 12:51:23 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id n2sm6085882pfu.42.2021.01.21.12.51.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Jan 2021 12:51:22 -0800 (PST)
+Message-ID: <6009e94a.1c69fb81.5ba7.e7b2@mx.google.com>
+Date:   Thu, 21 Jan 2021 12:51:22 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <af1044be-263e-0aa2-7061-0b217f94197b@gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: acpi-5.11-rc5-27-gd9ac95f54ba88
+Subject: pm/testing baseline: 63 runs,
+ 1 regressions (acpi-5.11-rc5-27-gd9ac95f54ba88)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20-01-21, 18:41, Dmitry Osipenko wrote:
-> 19.01.2021 20:35, Dmitry Osipenko пишет:
-> > 18.01.2021 14:46, Viresh Kumar пишет:
-> >> On 18-01-21, 03:55, Dmitry Osipenko wrote:
-> >>> Hi,
-> >>>
-> >>> This series fixes problems and adds features to OPP API that are required
-> >>> for implementation of a power domain driver for NVIDIA Tegra SoCs.
-> >>>
-> >>> It is a continuation of [1], where Viresh Kumar asked to factor OPP
-> >>> patches into a separate series. I factored out the patches into this
-> >>> series, addressed the previous review comments and re-based patches
-> >>> on top of [2], which replaced some of my patches that added resource-managed
-> >>> helpers.
-> >>>
-> >>> [1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
-> >>> [2] https://lore.kernel.org/linux-pm/20210101165507.19486-1-tiny.windzz@gmail.com/
-> >>
-> >> Hi Dmitry,
-> >>
-> >> I have applied 9 out of 12 patches already. Thanks.
-> >>
-> > 
-> > Thanks, I checked that everything is applied properly using today's
-> > linux-next.
-> > 
-> 
-> Turned out that one minor issue was actually introduced, the
-> devm_pm_opp_attach_genpd() lost the export. I'll make a patch to fix this.
+pm/testing baseline: 63 runs, 1 regressions (acpi-5.11-rc5-27-gd9ac95f54ba8=
+8)
 
-I have fixed the original patch for that.
+Regressions Summary
+-------------------
 
--- 
-viresh
+platform             | arch  | lab          | compiler | defconfig | regres=
+sions
+---------------------+-------+--------------+----------+-----------+-------=
+-----
+hifive-unleashed-a00 | riscv | lab-baylibre | gcc-8    | defconfig | 1     =
+     =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/acpi-5.1=
+1-rc5-27-gd9ac95f54ba88/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: acpi-5.11-rc5-27-gd9ac95f54ba88
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      d9ac95f54ba88454a0ff889028149b802118a89b =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform             | arch  | lab          | compiler | defconfig | regres=
+sions
+---------------------+-------+--------------+----------+-----------+-------=
+-----
+hifive-unleashed-a00 | riscv | lab-baylibre | gcc-8    | defconfig | 1     =
+     =
+
+
+  Details:     https://kernelci.org/test/plan/id/6009db0b9afc6fd14dbb5d15
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (riscv64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/acpi-5.11-rc5-27-gd=
+9ac95f54ba88/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a=
+00.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/acpi-5.11-rc5-27-gd=
+9ac95f54ba88/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a=
+00.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/riscv/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/6009db0b9afc6fd14dbb5=
+d16
+        failing since 56 days (last pass: pm-5.10-rc4-33-g52d108cd060d, fir=
+st fail: pm-5.10-rc6-75-g735f7fba25ec) =
+
+ =20
