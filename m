@@ -2,305 +2,379 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF1BEC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:17:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E315AC433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:17:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9F40C23A03
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:17:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 923B623A53
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:17:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727050AbhAUTQ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 14:16:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57814 "EHLO
+        id S1727110AbhAUTR2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 14:17:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58304 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727142AbhAUTOy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:14:54 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B981C061794;
-        Thu, 21 Jan 2021 11:01:45 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id o19so4073296lfo.1;
-        Thu, 21 Jan 2021 11:01:45 -0800 (PST)
+        with ESMTP id S1727104AbhAUTRL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:17:11 -0500
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2D21C061756;
+        Thu, 21 Jan 2021 11:16:30 -0800 (PST)
+Received: by mail-pj1-x102e.google.com with SMTP id md11so2275310pjb.0;
+        Thu, 21 Jan 2021 11:16:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=lHjyh7MnV6uiNlbgvZbHpAWHz87CVF0R+X82k3ji/PE=;
-        b=aJGmiz+oXm0EHRDMHp7kyCXIYMj/XuK7oa+3WZUSDModbG2ZFD8twjon54RLI0hqrZ
-         fYhv133PHtKcGaScG3POQ03Vm3Gj+HL9j0Eq/2U8hHXOr4R3bwDYeLIAtnJS7/v443qq
-         R7eLT7nnEYr4cIjTANpNbNEt6LWGKJTd8U3nKmB1C8PbQ/0VvJh0hvJFe+pWkZXJmiMg
-         gIT0bqcBMhpE4iHqTUFnJ9b31LSUJAfATEMJwALl0b3fx0GD1kCZ+kHjlu2WHr7onnpA
-         GIFovCWGBzLP2XwFY1WiZrDiZEiJL8/Yt5xN5Koiu61aQLRKU8JMrdirUpJCGiqwS1UK
-         kOUg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Ch8IKvo9eT0XCMxC8iMOyIdf1EBIrdJx0brQO9yCesY=;
+        b=iHwyu1oxQX2R7YXOWelDgTUdCqHCeI+EVCfRs0j0lP/OeWKeXciOhVDYg7t5owyPfp
+         Yoo+1ThAvduWXxLTm4A34tqk1Vzzq58YHSAhMQsfikamntDETKr63MLDTCjvJ8XBpfyR
+         mxeSFKstXApRP5GlAB+VcJ0kJYl9gatmTl531/Z11fF4AtP5dp3ek1wTbbBnbObyMMDm
+         0IzLh6IKWLYsHOYMGwYsaOBE7zsRGzwHBX0ONSnpzOcfr2OehoMqvYdl96P+JOv8y3gG
+         bcLh/as1hEBOnzfeYqaSEwWDKpaaK5UIo5AIktdoN1x7cqDu95JF8e93V+onK/EP7zdJ
+         StvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=lHjyh7MnV6uiNlbgvZbHpAWHz87CVF0R+X82k3ji/PE=;
-        b=Bg+1QQjlfRTcJfYphMa6ninJyTaP/m1PXrk38VnqsJN1Sxaf3K4uEOsTVcuNCUL9IK
-         jPWUnqjeLxRBgniwtYu2L74JW9Pv0UDMdgQYG6fwFWHDWVQXJb0fYt79bFjgry0qiKXg
-         QduZKW71eFnnJSRxF00ZmdVCBWkoVVR3ZMOsWCct0kAXkN2VwjVPdiCsntyLq8fxbkPj
-         yXdtbyez5qDg/Yl34iPD3B5egO1DqaxlyvfbNPsgIolFbJUTKQi4H8F/zLnH4CL1pJ2S
-         G/z2TL8dad3GV5wnMzBRWykdRByibXxPK6p4uWfJ/F5R5D3r8I9I8gQIHinYRy9NAhYh
-         zsHQ==
-X-Gm-Message-State: AOAM532BSXmPGuz8u5QU7xlVNhu0uc66oNBl3q/Q84Pa+zd6Cj01YoIN
-        cKdxS6mTeTJkklfj/HaDWoCPZisLbso=
-X-Google-Smtp-Source: ABdhPJxYwEA872CMBZJRO7q4DBvRTrDJ9hc8oEC2qss8oB4KLHvjih2rSRATBTP8y6hMDhPjU/z/sw==
-X-Received: by 2002:ac2:44ce:: with SMTP id d14mr300570lfm.146.1611255703954;
-        Thu, 21 Jan 2021 11:01:43 -0800 (PST)
-Received: from localhost.localdomain (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.gmail.com with ESMTPSA id a4sm654802ljp.14.2021.01.21.11.01.42
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Ch8IKvo9eT0XCMxC8iMOyIdf1EBIrdJx0brQO9yCesY=;
+        b=It6vuvKXDnUew24gvTvoiiiskGaRRaVRYVaGDJ0TtM3LiLEcSS5GC8W8NXtImPIQIT
+         FXxp6G377o57ol9SdSUoVkCx34wlYE8F7OL2SvfcYbU04JGgvGmca6qYcwjvpnKrYewL
+         eCDzG3w1ATsdA9/zG3q9l9nLZj2aKsPO46xIcwnZPU6cDcXO1l+lViRrElyBMnRB0bnJ
+         bEEI6rTVmWGM3vLzIZO0WjSgTRv7ikWFYOnmnA4qhOSUp3+jPT7t/XISJYoCoLbHJn2B
+         fvTWjnPCfRER6crUtDt4usRVDlq6FdG+lCyhDT0k5WilId5Yl+fymEJ9A99hBXUFp7fv
+         SAGQ==
+X-Gm-Message-State: AOAM530jB0OuHogkoa5SVyoiFllETvo9id6HGs1/OTz+O0c1tI4gU0Zd
+        reXPHgjG9L+ASvZQJ4clTPs=
+X-Google-Smtp-Source: ABdhPJwPlK5TMKpXrywn7/9Vvh2AaqogF7gPEfPbfFKvOF+BEGY8Z7F6n5fXK2m6gk7tYIPuK/UuVg==
+X-Received: by 2002:a17:90a:5318:: with SMTP id x24mr975204pjh.226.1611256590302;
+        Thu, 21 Jan 2021 11:16:30 -0800 (PST)
+Received: from ansuel-xps20.localdomain (host-79-41-39-5.retail.telecomitalia.it. [79.41.39.5])
+        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.16.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 11:01:43 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Matt Merhar <mattmerhar@protonmail.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v3] soc/tegra: Add devm_tegra_core_dev_init_opp_table()
-Date:   Thu, 21 Jan 2021 22:01:17 +0300
-Message-Id: <20210121190117.25235-1-digetx@gmail.com>
+        Thu, 21 Jan 2021 11:16:29 -0800 (PST)
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Amit Kucheria <amitk@kernel.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v8 1/8] drivers: thermal: tsens: Add VER_0 tsens version
+Date:   Thu, 21 Jan 2021 20:15:53 +0100
+Message-Id: <20210121191601.14403-2-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210121191601.14403-1-ansuelsmth@gmail.com>
+References: <20210121191601.14403-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add common helper which initializes OPP table for Tegra SoC core devices.
+VER_0 is used to describe device based on tsens version before v0.1.
+These device are devices based on msm8960 for example apq8064 or
+ipq806x.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Dmitry Osipenko <digetx@gmail.com> # A500 T20 and Nexus7 T30
-Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
-[tested on some other non-upstreamed-yet T20/30/114 devices as well]
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
 ---
+ drivers/thermal/qcom/tsens.c | 171 +++++++++++++++++++++++++++++------
+ drivers/thermal/qcom/tsens.h |   4 +-
+ 2 files changed, 147 insertions(+), 28 deletions(-)
 
-Changelog:
-
-v3: - This patch is factored out from [1] to ease merging of the patches
-      that will use the new helper. The goal is to get this new helper
-      into 5.12, this should remove dependency on this patch for a several
-      patchsets of a different subsystems (DRM, media, memory, etc) that
-      will target 5.13.
-
-      @Thierry/Jon, please review and apply this patch for 5.12!
-
-      [1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=221130
-
-    - The v3 got couple very minor cleanup improvements in comparison to [1],
-      like a removed unused variable and improved comments in the code.
-
- drivers/soc/tegra/common.c | 137 +++++++++++++++++++++++++++++++++++++
- include/soc/tegra/common.h |  30 ++++++++
- 2 files changed, 167 insertions(+)
-
-diff --git a/drivers/soc/tegra/common.c b/drivers/soc/tegra/common.c
-index 3dc54f59cafe..6b965471db30 100644
---- a/drivers/soc/tegra/common.c
-+++ b/drivers/soc/tegra/common.c
-@@ -3,9 +3,16 @@
-  * Copyright (C) 2014 NVIDIA CORPORATION.  All rights reserved.
-  */
- 
-+#define dev_fmt(fmt)	"tegra-soc: " fmt
-+
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/export.h>
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index d8ce3a687b80..eaeaa1d69d92 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -12,6 +12,7 @@
  #include <linux/of.h>
-+#include <linux/pm_opp.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/regmap.h>
+@@ -515,6 +516,15 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
+ 			dev_dbg(priv->dev, "[%u] %s: no violation:  %d\n",
+ 				hw_id, __func__, temp);
+ 		}
++
++		if (tsens_version(priv) < VER_0_1) {
++			/* Constraint: There is only 1 interrupt control register for all
++			 * 11 temperature sensor. So monitoring more than 1 sensor based
++			 * on interrupts will yield inconsistent result. To overcome this
++			 * issue we will monitor only sensor 0 which is the master sensor.
++			 */
++			break;
++		}
+ 	}
  
- #include <soc/tegra/common.h>
-+#include <soc/tegra/fuse.h>
+ 	return IRQ_HANDLED;
+@@ -530,6 +540,13 @@ static int tsens_set_trips(void *_sensor, int low, int high)
+ 	int high_val, low_val, cl_high, cl_low;
+ 	u32 hw_id = s->hw_id;
  
- static const struct of_device_id tegra_machine_match[] = {
- 	{ .compatible = "nvidia,tegra20", },
-@@ -31,3 +38,133 @@ bool soc_is_tegra(void)
++	if (tsens_version(priv) < VER_0_1) {
++		/* Pre v0.1 IP had a single register for each type of interrupt
++		 * and thresholds
++		 */
++		hw_id = 0;
++	}
++
+ 	dev_dbg(dev, "[%u] %s: proposed thresholds: (%d:%d)\n",
+ 		hw_id, __func__, low, high);
  
- 	return match != NULL;
+@@ -584,18 +601,21 @@ int get_temp_tsens_valid(const struct tsens_sensor *s, int *temp)
+ 	u32 valid;
+ 	int ret;
+ 
+-	ret = regmap_field_read(priv->rf[valid_idx], &valid);
+-	if (ret)
+-		return ret;
+-	while (!valid) {
+-		/* Valid bit is 0 for 6 AHB clock cycles.
+-		 * At 19.2MHz, 1 AHB clock is ~60ns.
+-		 * We should enter this loop very, very rarely.
+-		 */
+-		ndelay(400);
++	/* VER_0 doesn't have VALID bit */
++	if (tsens_version(priv) >= VER_0_1) {
+ 		ret = regmap_field_read(priv->rf[valid_idx], &valid);
+ 		if (ret)
+ 			return ret;
++		while (!valid) {
++			/* Valid bit is 0 for 6 AHB clock cycles.
++			 * At 19.2MHz, 1 AHB clock is ~60ns.
++			 * We should enter this loop very, very rarely.
++			 */
++			ndelay(400);
++			ret = regmap_field_read(priv->rf[valid_idx], &valid);
++			if (ret)
++				return ret;
++		}
+ 	}
+ 
+ 	/* Valid bit is set, OK to read the temperature */
+@@ -608,15 +628,29 @@ int get_temp_common(const struct tsens_sensor *s, int *temp)
+ {
+ 	struct tsens_priv *priv = s->priv;
+ 	int hw_id = s->hw_id;
+-	int last_temp = 0, ret;
++	int last_temp = 0, ret, trdy;
++	unsigned long timeout;
+ 
+-	ret = regmap_field_read(priv->rf[LAST_TEMP_0 + hw_id], &last_temp);
+-	if (ret)
+-		return ret;
++	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
++	do {
++		if (priv->rf[TRDY]) {
++			ret = regmap_field_read(priv->rf[TRDY], &trdy);
++			if (ret)
++				return ret;
++			if (!trdy)
++				continue;
++		}
++
++		ret = regmap_field_read(priv->rf[LAST_TEMP_0 + hw_id], &last_temp);
++		if (ret)
++			return ret;
+ 
+-	*temp = code_to_degc(last_temp, s) * 1000;
++		*temp = code_to_degc(last_temp, s) * 1000;
+ 
+-	return 0;
++		return 0;
++	} while (time_before(jiffies, timeout));
++
++	return -ETIMEDOUT;
  }
-+
-+static int tegra_core_dev_init_opp_state(struct device *dev)
-+{
-+	struct dev_pm_opp *opp;
-+	unsigned long rate;
-+	struct clk *clk;
-+	int err;
-+
-+	clk = devm_clk_get(dev, NULL);
-+	if (IS_ERR(clk)) {
-+		dev_err(dev, "failed to get clk: %pe\n", clk);
-+		return PTR_ERR(clk);
-+	}
-+
-+	/*
-+	 * If voltage regulator presents, then we could select the fastest
-+	 * clock rate, but driver doesn't support power management and
-+	 * frequency scaling yet, hence the top freq OPP will vote for a
-+	 * very high voltage that will produce lot's of heat.  Let's select
-+	 * OPP for the current/default rate for now.
-+	 *
-+	 * Clock rate should be pre-initialized (i.e. it's non-zero) either
-+	 * by clock driver or by assigned clocks in a device-tree.
-+	 */
-+	rate = clk_get_rate(clk);
-+	if (!rate) {
-+		dev_err(dev, "failed to get clk rate\n");
-+		return -EINVAL;
-+	}
-+
-+	/* find suitable OPP for the clock rate and supportable by hardware */
-+	opp = dev_pm_opp_find_freq_ceil(dev, &rate);
-+
-+	/*
-+	 * dev_pm_opp_set_rate() doesn't search for a floor clock rate and it
-+	 * will error out if default clock rate is too high, i.e. unsupported
-+	 * by a SoC hardware version.  Hence will find floor rate by ourselves.
-+	 */
-+	if (opp == ERR_PTR(-ERANGE))
-+		opp = dev_pm_opp_find_freq_floor(dev, &rate);
-+
-+	err = PTR_ERR_OR_ZERO(opp);
-+	if (err) {
-+		dev_err(dev, "failed to get OPP for %ld Hz: %d\n",
-+			rate, err);
-+		return err;
-+	}
-+
-+	dev_pm_opp_put(opp);
-+
-+	/*
-+	 * First dummy rate-set initializes voltage vote by setting voltage
-+	 * in accordance to the clock rate.  We need to do this because some
-+	 * drivers currently don't support power management and clock is
-+	 * permanently enabled.
-+	 */
-+	err = dev_pm_opp_set_rate(dev, rate);
-+	if (err) {
-+		dev_err(dev, "failed to initialize OPP clock: %d\n", err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * devm_tegra_core_dev_init_opp_table() - initialize OPP table
-+ * @cfg: pointer to the OPP table configuration
-+ *
-+ * This function will initialize OPP table and sync OPP state of a Tegra SoC
-+ * core device.
-+ *
-+ * Return: 0 on success or errorno.
-+ */
-+int devm_tegra_core_dev_init_opp_table(struct device *dev,
-+				       struct tegra_core_opp_params *params)
-+{
-+	struct opp_table *opp_table;
-+	u32 hw_version;
-+	int err;
-+
-+	opp_table = devm_pm_opp_set_clkname(dev, NULL);
-+	if (IS_ERR(opp_table)) {
-+		dev_err(dev, "failed to set OPP clk %pe\n", opp_table);
-+		return PTR_ERR(opp_table);
-+	}
-+
-+	/* Tegra114+ doesn't support OPP yet */
-+	if (!of_machine_is_compatible("nvidia,tegra20") &&
-+	    !of_machine_is_compatible("nvidia,tegra30"))
-+		return -ENODEV;
-+
-+	if (of_machine_is_compatible("nvidia,tegra20"))
-+		hw_version = BIT(tegra_sku_info.soc_process_id);
-+	else
-+		hw_version = BIT(tegra_sku_info.soc_speedo_id);
-+
-+	opp_table = devm_pm_opp_set_supported_hw(dev, &hw_version, 1);
-+	if (IS_ERR(opp_table)) {
-+		dev_err(dev, "failed to set OPP supported HW: %pe\n", opp_table);
-+		return PTR_ERR(opp_table);
-+	}
-+
-+	/*
-+	 * Older device-trees have an empty OPP table, hence we will get
-+	 * -ENODEV from devm_pm_opp_of_add_table() for the older DTBs.
-+	 *
-+	 * The OPP table presence also varies per-device and depending
-+	 * on a SoC generation, hence -ENODEV is expected to happen for
-+	 * the newer DTs as well.
-+	 */
-+	err = devm_pm_opp_of_add_table(dev);
-+	if (err) {
-+		if (err == -ENODEV)
-+			dev_err_once(dev, "OPP table not found, please update device-tree\n");
-+		else
-+			dev_err(dev, "failed to add OPP table: %d\n", err);
-+
-+		return err;
-+	}
-+
-+	if (params->init_state) {
-+		err = tegra_core_dev_init_opp_state(dev);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(devm_tegra_core_dev_init_opp_table);
-diff --git a/include/soc/tegra/common.h b/include/soc/tegra/common.h
-index 98027a76ce3d..18e562496f2a 100644
---- a/include/soc/tegra/common.h
-+++ b/include/soc/tegra/common.h
-@@ -6,6 +6,36 @@
- #ifndef __SOC_TEGRA_COMMON_H__
- #define __SOC_TEGRA_COMMON_H__
  
-+#include <linux/errno.h>
-+#include <linux/types.h>
-+
-+struct device;
-+
-+/**
-+ * Tegra SoC core device OPP table configuration
-+ *
-+ * @init_state: pre-initialize OPP state of a device
-+ */
-+struct tegra_core_opp_params {
-+	bool init_state;
-+};
-+
-+#ifdef CONFIG_ARCH_TEGRA
- bool soc_is_tegra(void);
-+int devm_tegra_core_dev_init_opp_table(struct device *dev,
-+				       struct tegra_core_opp_params *cfg);
-+#else
-+static inline bool soc_is_tegra(void)
-+{
-+	return false;
-+}
-+
-+static inline int
-+devm_tegra_core_dev_init_opp_table(struct device *dev,
-+				   struct tegra_core_opp_params *cfg)
-+{
-+	return -ENODEV;
-+}
-+#endif
+ #ifdef CONFIG_DEBUG_FS
+@@ -738,19 +772,31 @@ int __init init_common(struct tsens_priv *priv)
+ 		priv->tm_offset = 0x1000;
+ 	}
  
- #endif /* __SOC_TEGRA_COMMON_H__ */
+-	res = platform_get_resource(op, IORESOURCE_MEM, 0);
+-	tm_base = devm_ioremap_resource(dev, res);
+-	if (IS_ERR(tm_base)) {
+-		ret = PTR_ERR(tm_base);
+-		goto err_put_device;
++	if (tsens_version(priv) >= VER_0_1) {
++		res = platform_get_resource(op, IORESOURCE_MEM, 0);
++		tm_base = devm_ioremap_resource(dev, res);
++		if (IS_ERR(tm_base)) {
++			ret = PTR_ERR(tm_base);
++			goto err_put_device;
++		}
++
++		priv->tm_map = devm_regmap_init_mmio(dev, tm_base, &tsens_config);
++	} else { /* VER_0 share the same gcc regs using a syscon */
++		struct device *parent = priv->dev->parent;
++
++		if (parent)
++			priv->tm_map = syscon_node_to_regmap(parent->of_node);
+ 	}
+ 
+-	priv->tm_map = devm_regmap_init_mmio(dev, tm_base, &tsens_config);
+-	if (IS_ERR(priv->tm_map)) {
++	if (IS_ERR_OR_NULL(priv->tm_map)) {
+ 		ret = PTR_ERR(priv->tm_map);
+ 		goto err_put_device;
+ 	}
+ 
++	/* VER_0 have only tm_map */
++	if (!priv->srot_map)
++		priv->srot_map = priv->tm_map;
++
+ 	if (tsens_version(priv) > VER_0_1) {
+ 		for (i = VER_MAJOR; i <= VER_STEP; i++) {
+ 			priv->rf[i] = devm_regmap_field_alloc(dev, priv->srot_map,
+@@ -769,6 +815,10 @@ int __init init_common(struct tsens_priv *priv)
+ 		ret = PTR_ERR(priv->rf[TSENS_EN]);
+ 		goto err_put_device;
+ 	}
++	/* in VER_0 TSENS need to be explicitly enabled */
++	if (tsens_version(priv) == VER_0)
++		regmap_field_write(priv->rf[TSENS_EN], 1);
++
+ 	ret = regmap_field_read(priv->rf[TSENS_EN], &enabled);
+ 	if (ret)
+ 		goto err_put_device;
+@@ -791,6 +841,66 @@ int __init init_common(struct tsens_priv *priv)
+ 		goto err_put_device;
+ 	}
+ 
++	priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->tm_map,
++						     priv->fields[TSENS_EN]);
++	if (IS_ERR(priv->rf[TSENS_EN])) {
++		ret = PTR_ERR(priv->rf[TSENS_EN]);
++		goto err_put_device;
++	}
++
++	priv->rf[TSENS_SW_RST] = devm_regmap_field_alloc(
++		dev, priv->tm_map, priv->fields[TSENS_EN]);
++	if (IS_ERR(priv->rf[TSENS_EN])) {
++		ret = PTR_ERR(priv->rf[TSENS_EN]);
++		goto err_put_device;
++	}
++
++	priv->rf[LOW_INT_CLEAR_0] = devm_regmap_field_alloc(
++		dev, priv->tm_map, priv->fields[LOW_INT_CLEAR_0]);
++	if (IS_ERR(priv->rf[LOW_INT_CLEAR_0])) {
++		ret = PTR_ERR(priv->rf[LOW_INT_CLEAR_0]);
++		goto err_put_device;
++	}
++
++	priv->rf[UP_INT_CLEAR_0] = devm_regmap_field_alloc(
++		dev, priv->tm_map, priv->fields[UP_INT_CLEAR_0]);
++	if (IS_ERR(priv->rf[UP_INT_CLEAR_0])) {
++		ret = PTR_ERR(priv->rf[UP_INT_CLEAR_0]);
++		goto err_put_device;
++	}
++
++	/* VER_0 require to set MIN and MAX THRESH
++	 * These 2 regs are set using the:
++	 * - CRIT_THRESH_0 for MAX THRESH hardcoded to 120°C
++	 * - CRIT_THRESH_1 for MIN THRESH hardcoded to   0°C
++	 */
++	if (tsens_version(priv) < VER_0_1) {
++		priv->rf[CRIT_THRESH_0] = devm_regmap_field_alloc(
++			dev, priv->tm_map, priv->fields[CRIT_THRESH_0]);
++		if (IS_ERR(priv->rf[CRIT_THRESH_0])) {
++			ret = PTR_ERR(priv->rf[CRIT_THRESH_0]);
++			goto err_put_device;
++		}
++		regmap_field_write(priv->rf[CRIT_THRESH_0],
++				   tsens_mC_to_hw(priv->sensor, 120000));
++
++		priv->rf[CRIT_THRESH_1] = devm_regmap_field_alloc(
++			dev, priv->tm_map, priv->fields[CRIT_THRESH_1]);
++		if (IS_ERR(priv->rf[CRIT_THRESH_1])) {
++			ret = PTR_ERR(priv->rf[CRIT_THRESH_1]);
++			goto err_put_device;
++		}
++		regmap_field_write(priv->rf[CRIT_THRESH_1],
++				   tsens_mC_to_hw(priv->sensor, 0));
++	}
++
++	priv->rf[TRDY] =
++		devm_regmap_field_alloc(dev, priv->tm_map, priv->fields[TRDY]);
++	if (IS_ERR(priv->rf[TRDY])) {
++		ret = PTR_ERR(priv->rf[TRDY]);
++		goto err_put_device;
++	}
++
+ 	/* This loop might need changes if enum regfield_ids is reordered */
+ 	for (j = LAST_TEMP_0; j <= UP_THRESH_15; j += 16) {
+ 		for (i = 0; i < priv->feat->max_sensors; i++) {
+@@ -844,7 +954,11 @@ int __init init_common(struct tsens_priv *priv)
+ 	}
+ 
+ 	spin_lock_init(&priv->ul_lock);
+-	tsens_enable_irq(priv);
++
++	/* VER_0 interrupt doesn't need to be enabled */
++	if (tsens_version(priv) >= VER_0_1)
++		tsens_enable_irq(priv);
++
+ 	tsens_debug_init(op);
+ 
+ err_put_device:
+@@ -930,7 +1044,7 @@ static int tsens_register_irq(struct tsens_priv *priv, char *irqname,
+ 			      irq_handler_t thread_fn)
+ {
+ 	struct platform_device *pdev;
+-	int ret, irq;
++	int ret, irq, irq_type = IRQF_ONESHOT;
+ 
+ 	pdev = of_find_device_by_node(priv->dev->of_node);
+ 	if (!pdev)
+@@ -943,9 +1057,12 @@ static int tsens_register_irq(struct tsens_priv *priv, char *irqname,
+ 		if (irq == -ENXIO)
+ 			ret = 0;
+ 	} else {
+-		ret = devm_request_threaded_irq(&pdev->dev, irq,
+-						NULL, thread_fn,
+-						IRQF_ONESHOT,
++		/* VER_0 interrupt is TRIGGER_RISING, VER_0_1 and up is ONESHOT */
++		if (tsens_version(priv) == VER_0)
++			irq_type = IRQF_TRIGGER_RISING;
++
++		ret = devm_request_threaded_irq(&pdev->dev, irq, thread_fn,
++						NULL, irq_type,
+ 						dev_name(&pdev->dev), priv);
+ 		if (ret)
+ 			dev_err(&pdev->dev, "%s: failed to get irq\n",
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index f40b625f897e..8e6c1fd3ccf5 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -13,6 +13,7 @@
+ #define CAL_DEGC_PT2		120
+ #define SLOPE_FACTOR		1000
+ #define SLOPE_DEFAULT		3200
++#define TIMEOUT_US		100
+ #define THRESHOLD_MAX_ADC_CODE	0x3ff
+ #define THRESHOLD_MIN_ADC_CODE	0x0
+ 
+@@ -25,7 +26,8 @@ struct tsens_priv;
+ 
+ /* IP version numbers in ascending order */
+ enum tsens_ver {
+-	VER_0_1 = 0,
++	VER_0 = 0,
++	VER_0_1,
+ 	VER_1_X,
+ 	VER_2_X,
+ };
 -- 
 2.29.2
 
