@@ -2,123 +2,161 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5517AC433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7272DC433E6
 	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:47:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0126D2395A
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:47:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 275AD239A4
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:47:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730071AbhAULrm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 06:47:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39688 "EHLO
+        id S1730076AbhAULrd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 06:47:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39862 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728983AbhAULVU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:21:20 -0500
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F7D8C0613D3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:20:03 -0800 (PST)
-Received: by mail-pf1-x433.google.com with SMTP id t29so1292907pfg.11
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:20:03 -0800 (PST)
+        with ESMTP id S1730071AbhAULVW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:21:22 -0500
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41D92C06179C
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:01 -0800 (PST)
+Received: by mail-pj1-x1031.google.com with SMTP id u4so1449253pjn.4
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:19:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=UlV9SkLktbmadacAKGgdNG9Y2QsM6fa71yNEW4spCec=;
-        b=dV21di/SIMnV6UG3syoEA4dXCTmipisQDkMW2ufldO2KP0jSQItvJ3YkLtmXk/+JhE
-         7hmZ57fpHjt97X8PR5gXKmU1bgQz8d9clCagTI0XMnZpqP7mbO2Zh9iAagmu72olXVXj
-         CpvgynAYjmFNlOtru+P+SYxpt+iir3lFG9dv6lysvnZP2hLf/APuNd8AjgmKHKz2BNET
-         Q/B3hhhnbz+8xj6PhO4etIkonSNJevSre91l8KyekoUNJ+w0l4BvS0UDAMyBit0BFHnd
-         2TjKMVh5o1fOz3r3E2jv7XYpty6AqtiuILOhk63BTwf28a0P+EHbNvdsGS3BPWyxJAU3
-         Rplg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=xAKTZkyycba98JIw9o5yBKGTgq6RnpydF9Cba6DEkjM=;
+        b=IE5cB3XUcMOfllNnwGT/K8+FysNlnl6CN4kmfCqtdtbsK6nqdVZB37NlyY+ocle3C1
+         BJSbgqiGQ1RcwE/02b9qpjDCWn+//56RBxiUS9lahW8NTBSWgTBU14p8ehtxYGrcFw3J
+         m/iaGhrrFw77+W7wq4k/oNokc2iEHPCcYeFueag/GTYWb6dV+LWnlQ/5a/f/SvRNvuAa
+         3mjYP0rSx6c28PV2w4lAxljy/w3tDI4ULO6U74GbojEyPdXiDKRg6rLHLaz5qqU53StK
+         n7sGL3faxA9KaPvLiYX4EdAkbRVZqJB3aSLBngSk/QRb7gStOyskUpFzy1eTnLGF7TZj
+         /vew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=UlV9SkLktbmadacAKGgdNG9Y2QsM6fa71yNEW4spCec=;
-        b=RfOnxKUKZYp9osq+BxG8KLE0xecgVZH/75RqwtImCe3VIWRFAs77JDJXo5w3LerMoP
-         yxPJqPHeT0FDlSboOKHKBNGFXAszoTlIHg9Pwrfa35zDzzSw6u+Ekz+xDt8uFyz8Adnb
-         e1fqmzo1eLDjO2kqt34fFCwcNWn/0mehdaNhgCjZI4pO6o22C3y8v/uhhHqHsU19Ebpc
-         795ZFHalphreE/3pt778hX+P7zjmG1ywyGXkKjppU+aZxUItSNPeWyGBf6MANU2uNCYV
-         OlkxgnLYirekA6uu73vZyY7362e2tmgjwmwUfKU//PMlVUfFDxIF8CG7War53cWcZ7SQ
-         0h5A==
-X-Gm-Message-State: AOAM531/y5Kg8PF8gNZNXUQrjvTWdmLr6o/vRZ9B8COalIv4MBQJ6WCJ
-        tQc1HdfolL+IFyi2pUcAfzWiwQ==
-X-Google-Smtp-Source: ABdhPJyWSSNOh5sgHtD8hlBg7objnemuBrANhZgMxnAG9UmzBJYI+f5LE6kZ+jLn7AkBm1SA7BUzng==
-X-Received: by 2002:a63:455c:: with SMTP id u28mr506335pgk.142.1611228002718;
-        Thu, 21 Jan 2021 03:20:02 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=xAKTZkyycba98JIw9o5yBKGTgq6RnpydF9Cba6DEkjM=;
+        b=U4LZHWSGg0QPPmiMPH87/2OkD9gqu/1r4bejSRcYu2uTNsGfG9tWaE1j1p5T2DlbEw
+         rxzpNdRyqz+KP5DoMuvuYNlWc6ug/2rSt0AzX4+1SXETojmL4n3KqDLy6JcJKHBMZacD
+         i0bLRb887KGIoynRFgGjHCn1IfkJrsWP8UPyRvMAU1XYFwe6zqnWhfzsRZOAoMWzWqqX
+         kTkEeP+uXaGJ/CKPpOMYSYKiloDmLkfhDHKGDhAqzzZiiHQgQX57jAliXs8x3OIrx8SK
+         S3m740Q4KOi9nwjKuzAKXFnVIkLc6LEzoyQBDoe24KwnS520U3AhHgVv0fof3xwYpqdT
+         qZvA==
+X-Gm-Message-State: AOAM533bILU421BQ1Fm2kr+g0P4ISIFxH6MST7haIv5bcW2YmWRJjUf3
+        Wf7is+NUzDWKt2O4ZggrJPWq4Q==
+X-Google-Smtp-Source: ABdhPJzh80hJitJKGsChrc0Eudj2IFABV8NGgEDM/wNUy0FrILeXFQbCYrIaBzthFQDqE04LoZxRUw==
+X-Received: by 2002:a17:90a:fd0b:: with SMTP id cv11mr11277904pjb.26.1611227940577;
+        Thu, 21 Jan 2021 03:19:00 -0800 (PST)
 Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id gk2sm5831650pjb.6.2021.01.21.03.20.01
+        by smtp.gmail.com with ESMTPSA id l12sm2255450pjg.54.2021.01.21.03.18.59
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 21 Jan 2021 03:20:01 -0800 (PST)
-Date:   Thu, 21 Jan 2021 16:50:00 +0530
+        Thu, 21 Jan 2021 03:19:00 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 05/12] opp: Add dev_pm_opp_set_voltage()
-Message-ID: <20210121112000.rn6uvfsmgy2wyxwh@vireshk-i7>
-References: <20210118005524.27787-1-digetx@gmail.com>
- <20210118005524.27787-6-digetx@gmail.com>
- <20210118095256.tr2qgnrmokkc6ngf@vireshk-i7>
- <a48dca91-4264-e153-cefa-ccbcca1b1d9d@gmail.com>
- <16c7e096-5efd-2d0c-a2ac-c11133c29c30@gmail.com>
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 06/13] opp: Allow _generic_set_opp_regulator() to work for non-freq devices
+Date:   Thu, 21 Jan 2021 16:47:46 +0530
+Message-Id: <8f2d26305f38b52ebc46f2b0d4620e1e578fa2f2.1611227342.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <cover.1611227342.git.viresh.kumar@linaro.org>
+References: <cover.1611227342.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <16c7e096-5efd-2d0c-a2ac-c11133c29c30@gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21-01-21, 00:57, Dmitry Osipenko wrote:
-> 18.01.2021 22:14, Dmitry Osipenko пишет:
-> > Sounds like it could be a lot of code moving and some extra complexity
-> > will be added to the code. If nobody will ever need the universal
-> > dev_pm_opp_set_opp(), then it could become a wasted effort. I'd choose
-> > the easiest path, i.e. to defer the dev_pm_opp_set_opp() implementation
-> > until somebody will really need it.
-> > 
-> > But if it looks to you that it won't be a too much effort, then I'll
-> > appreciate if you could type the patch.
+The _generic_set_opp_regulator() helper will be used for devices which
+don't change frequency (like power domains, etc.) later on, prepare for
+that by not relying on frequency for making decisions here.
 
-Yes.
+While at it, update its parameters to pass only what is necessary.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c | 25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 64424dbd23c1..a96ffd9051b1 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -737,12 +737,12 @@ static inline int _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
  
-> Let's start with dev_pm_opp_set_voltage() for now. It shouldn't be a
-> problem at all to upgrade it to dev_pm_opp_set_opp() later on.
-> 
-> I'll make a v4 with the dev_pm_opp_set_voltage(), please let me know if
-> you have objections or more suggestions!
-
-Sorry about this, I have been working on this stuff for last 2 days. I
-didn't reply earlier as I thought I would be able to finish this
-earlier. Once you see the patches you will see it was a significant
-change :)
-
-I have cc'd you to the relevant patches now. Please see if they work
-fine for you or not.
-
+ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ 				      struct device *dev,
+-				      unsigned long old_freq,
++				      struct dev_pm_opp *opp,
+ 				      unsigned long freq,
+-				      struct dev_pm_opp_supply *old_supply,
+-				      struct dev_pm_opp_supply *new_supply)
++				      int scaling_down)
+ {
+ 	struct regulator *reg = opp_table->regulators[0];
++	struct dev_pm_opp *old_opp = opp_table->current_opp;
+ 	int ret;
+ 
+ 	/* This function only supports single regulator per device */
+@@ -752,8 +752,8 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ 	}
+ 
+ 	/* Scaling up? Scale voltage before frequency */
+-	if (freq >= old_freq) {
+-		ret = _set_opp_voltage(dev, reg, new_supply);
++	if (!scaling_down) {
++		ret = _set_opp_voltage(dev, reg, opp->supplies);
+ 		if (ret)
+ 			goto restore_voltage;
+ 	}
+@@ -764,8 +764,8 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ 		goto restore_voltage;
+ 
+ 	/* Scaling down? Scale voltage after frequency */
+-	if (freq < old_freq) {
+-		ret = _set_opp_voltage(dev, reg, new_supply);
++	if (scaling_down) {
++		ret = _set_opp_voltage(dev, reg, opp->supplies);
+ 		if (ret)
+ 			goto restore_freq;
+ 	}
+@@ -783,12 +783,12 @@ static int _generic_set_opp_regulator(struct opp_table *opp_table,
+ 	return 0;
+ 
+ restore_freq:
+-	if (_generic_set_opp_clk_only(dev, opp_table->clk, old_freq))
++	if (_generic_set_opp_clk_only(dev, opp_table->clk, old_opp->rate))
+ 		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+-			__func__, old_freq);
++			__func__, old_opp->rate);
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+-	_set_opp_voltage(dev, reg, old_supply);
++	_set_opp_voltage(dev, reg, old_opp->supplies);
+ 
+ 	return ret;
+ }
+@@ -1035,9 +1035,8 @@ static int _set_opp(struct device *dev, struct opp_table *opp_table,
+ 		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
+ 				      old_opp->supplies, opp->supplies);
+ 	} else if (opp_table->regulators) {
+-		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
+-						 old_opp->supplies,
+-						 opp->supplies);
++		ret = _generic_set_opp_regulator(opp_table, dev, opp, freq,
++						 scaling_down);
+ 	} else {
+ 		/* Only frequency scaling */
+ 		ret = _generic_set_opp_clk_only(dev, opp_table->clk, freq);
 -- 
-viresh
+2.25.0.rc1.19.g042ed3e048af
+
