@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACC3C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49E61C433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:20:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D65A23A03
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA5F223A53
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:20:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727369AbhAUTTD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 14:19:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58274 "EHLO
+        id S1726482AbhAUTTy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 14:19:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725880AbhAUTRC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:17:02 -0500
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0A07C06174A;
-        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
-Received: by mail-pg1-x52a.google.com with SMTP id c132so1995838pga.3;
-        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
+        with ESMTP id S1726998AbhAUTTv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:19:51 -0500
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8FABC06174A;
+        Thu, 21 Jan 2021 11:19:05 -0800 (PST)
+Received: by mail-pl1-x62b.google.com with SMTP id g3so1854412plp.2;
+        Thu, 21 Jan 2021 11:19:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=vyPUGE/jDluUMDwQB9kTEzv7e1ObGuQgvPfavYX545g=;
-        b=a8sLi5GOPnGD6SJXctyPqQWuN8VPI9qBuCaEt/d6bZdOvjVPzTe5+w9gQmD60Jot8n
-         uGdJBtvReuGDDqenN68MCP/ZrgHzXWELIkNbb6OkHuTC7QhGHj3vw5GO0eC2AWHl/VbF
-         DeitB+ESEKwVVID5h7YxjFKRlhN8Vxpi5ARoxACHiqVmDHv5/pKndkF9WGTTbhaApJB/
-         BHK7nIIlwzP7y0yaneBUEiS41J8K//baqdrXqBQbiKNjXgUKoA1GRb6qR+VnGKkM3cmK
-         PjJ2wN2evoQUJ4dF8cG6XgdiFE1PZ2tOXpHSzVCCoXIhtLANRiTe+tbrWvsLITOU0fAB
-         lYdg==
+        bh=OJPeUr95r7qe0zay9wgTNA4xYQ3SP/NdIq7pjxqRZ8w=;
+        b=HwPxn2l58r0mlOJ5V17hBBWQWQ8RWvyoGCk7idFJgDHwiHm4hU5bxPTKC9i5KpaySY
+         wmbxfKvRSxdRPpXH08VrqK66CZ2D8HtoDpv6YEJ2nsjKGLVRA0aU1sZMnBW1TPwdt22g
+         KBOA0k5SWkrL4FkgQyLwNWcsHe3rFDgJfHaDwhKCpeyViT2qA0FsbiyMJ+yBoaU9CPpI
+         0mTZNCGkyUxWOj1L0CNmtWtGcR7h8vW2lDewM3/EHv2rFK/AQNX6toLgVW7Vs7GjGyiV
+         MYoX1VbsJTfBoMWZiE6dy9SfaWuP5fbLTTdlTtUEwQ4xuTIhx7gUmF8KkV4DYhNq6rcA
+         2jgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=vyPUGE/jDluUMDwQB9kTEzv7e1ObGuQgvPfavYX545g=;
-        b=rl+tGVIQAI+fO52BWyf6iNtqzFYthgxCXzPdHJIZRnPp8L+RECxaXtJ+NiMAjoS9H2
-         /ldHGu6tw6hoxj3z1UZdgqfGhxG/EMCXCn9bGt7l0BZV9QKk0yV4IMJodYx9e8lgvwEz
-         NeD7FXwAHVWaKJ8bd3u0uDcwm1HCOyZFrCAFAs0jp+g/Zdb+MGrfAG1cGT9NO500J8wP
-         L8ro0bgv7N0k9+9T5nNAsfnM9uW59MP3Iu7P0wo9IqUxtj3mqAcFVBwRb6HTg9/+PqKU
-         cPpBEEgEVgFiqF5gBepzNsWrVpedz74stAdypFeBwtD9PFjC3Gt5daWijT6oqac/15ua
-         x8hg==
-X-Gm-Message-State: AOAM5314kIxYgzt4zloOzc3xZgsLkucFVG3wVyTTGLJMlQ0OyAeAiP0t
-        aoTc4d1w2tge4gLBPKDGSGA=
-X-Google-Smtp-Source: ABdhPJzM45jpZM3EhD0U26mloVLuAHBTwJ5vfTv3KU6HhTvmiA+9fmFyPT5uX+vk4reqKe+5gqzDFg==
-X-Received: by 2002:a63:d246:: with SMTP id t6mr743446pgi.283.1611256582215;
-        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
-Received: from ansuel-xps20.localdomain (host-79-41-39-5.retail.telecomitalia.it. [79.41.39.5])
-        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.16.14
+        bh=OJPeUr95r7qe0zay9wgTNA4xYQ3SP/NdIq7pjxqRZ8w=;
+        b=DiBpmwH+eY0Gl+kqwJJ25cz4g75osd3sWKMOPL8vjtD3Qe8UBFxhL4JsGIAPDBWjeU
+         eSgoqHSVDM6TnlN2IOrXvkF1+DFJht+v41r4R8IZjwD8FDC4LM3JeRSF8Rcfn5iGPWIr
+         CqlfWLumCruqhhqlIDO9t/t3dPFVP3cN4H59GoBT4wzHw5Dg8t9xN16nhQmhlBakfFHj
+         0hyRq6fRIX6ARS9TZj6xlhRcOizU5UMdww9ufAsejGmLbbgI1wJfvmbd8e4iBV1rGNx4
+         zpL0z1X8f61XASbR538+i+JhL00MwgIEk09PSGF2UCymGRNgeKu8Lw9Fn3GsPD7ERrxi
+         XiOA==
+X-Gm-Message-State: AOAM533InT5noqHhasxxtbogdOpaPSXKNJBug084A+zX8rN2Zy7I51pg
+        XFm8e5wRShNAz/LZnHjuiOg=
+X-Google-Smtp-Source: ABdhPJwYb7y1Ji+aONNbWB23QbRQS4m+r3yjm/gsBwxmFeyTtTWF580sv9zaKPvIsBRZ5dBPId7c5g==
+X-Received: by 2002:a17:902:724b:b029:de:229a:47f1 with SMTP id c11-20020a170902724bb02900de229a47f1mr915587pll.10.1611256745320;
+        Thu, 21 Jan 2021 11:19:05 -0800 (PST)
+Received: from ansuel-xps20.localdomain (host-80-182-172-197.pool80182.interbusiness.it. [80.182.172.197])
+        by smtp.googlemail.com with ESMTPSA id p9sm6559634pfq.136.2021.01.21.11.18.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 11:16:21 -0800 (PST)
+        Thu, 21 Jan 2021 11:19:04 -0800 (PST)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amitk@kernel.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -66,9 +66,9 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 0/8] Add support for ipq8064 tsens
-Date:   Thu, 21 Jan 2021 20:15:52 +0100
-Message-Id: <20210121191601.14403-1-ansuelsmth@gmail.com>
+Subject: [PATCH v8 8/8] dt-bindings: thermal: tsens: Document ipq8064 bindings
+Date:   Thu, 21 Jan 2021 20:18:53 +0100
+Message-Id: <20210121191853.14600-1-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -76,56 +76,131 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset convert msm8960 to reg_filed, use int_common instead 
-of a custom function and fix wrong tsens get_temp function for msm8960.
-Ipq8064 SoCs tsens driver is based on 8960 tsens driver. Ipq8064 needs
-to be registered as a gcc child as the tsens regs on this platform are
-shared with the controller.
-This is based on work and code here
-https://git.linaro.org/people/amit.kucheria/kernel.git/log/?h=wrk3/tsens-8960-breakage
+Document the use of bindings used for msm8960 tsens based devices.
+msm8960 use the same gcc regs and is set as a child of the qcom gcc.
 
-V8:
-* Drop MIN and MAX THRESH and use CRIT_THRESH instead
-* Fix broken documentation patch
-v7:
-* Rework calibrate function to use get_temp_common
-* Fix wrong required in the Documentation for ipq8064
-* Fix hardware bug in sensor enable function
-v6:
-* Fix spelling error (can't find the problem with variable misallignment)
-* Rework big if-else
-* Remove extra comments
-* Add description about different interrupts
-v5:
-* Conver driver to use reg_fiedl
-* Use init_common 
-* Drop custom set_trip and set_interrupt
-* Use common set_trip and set_interrupt
-* Fix bad get_temp function
-* Add missing hardcoded slope
-v4:
-* Fix compilation error and warning reported by the bot
-v3:
-* Change driver to register as child instead of use phandle
-v2:
-* Fix dt-bindings problems
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ .../bindings/thermal/qcom-tsens.yaml          | 75 ++++++++++++++++---
+ 1 file changed, 65 insertions(+), 10 deletions(-)
 
-Ansuel Smith (8):
-  drivers: thermal: tsens: Add VER_0 tsens version
-  drivers: thermal: tsens: Don't hardcode sensor slope
-  drivers: thermal: tsens: Convert msm8960 to reg_field
-  drivers: thermal: tsens: Use init_common for msm8960
-  drivers: thermal: tsens: Fix bug in sensor enable for msm8960
-  drivers: thermal: tsens: Use get_temp_common for msm8960
-  drivers: thermal: tsens: Add support for ipq8064-tsens
-  dt-bindings: thermal: tsens: Document ipq8064 bindings
-
- .../bindings/thermal/qcom-tsens.yaml          |  75 ++++++-
- drivers/thermal/qcom/tsens-8960.c             | 203 ++++++++++--------
- drivers/thermal/qcom/tsens.c                  | 177 ++++++++++++---
- drivers/thermal/qcom/tsens.h                  |   4 +-
- 4 files changed, 327 insertions(+), 132 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 95462e071ab4..11ce1d7da679 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -19,6 +19,11 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - description: msm9860 TSENS based
++        items:
++          - enum:
++            - qcom,ipq8064-tsens
++
+       - description: v0.1 of TSENS
+         items:
+           - enum:
+@@ -71,9 +76,6 @@ properties:
+   nvmem-cell-names:
+     minItems: 1
+     maxItems: 2
+-    items:
+-      - const: calib
+-      - const: calib_sel
+ 
+   "#qcom,sensors":
+     description:
+@@ -88,12 +90,40 @@ properties:
+       Number of cells required to uniquely identify the thermal sensors. Since
+       we have multiple sensors this is set to 1
+ 
++required:
++  - compatible
++  - interrupts
++  - interrupt-names
++  - "#thermal-sensor-cells"
++  - "#qcom,sensors"
++
+ allOf:
+   - if:
+       properties:
+         compatible:
+           contains:
+             enum:
++              - qcom,ipq8064-tsens
++    then:
++      properties:
++        nvmem-cell-names:
++          items:
++            - const: calib
++            - const: calib_backup
++
++    else:
++      properties:
++        nvmem-cell-names:
++          items:
++            - const: calib
++            - const: calib_sel
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,ipq8064-tsens
+               - qcom,msm8916-tsens
+               - qcom,msm8974-tsens
+               - qcom,msm8976-tsens
+@@ -114,17 +144,42 @@ allOf:
+         interrupt-names:
+           minItems: 2
+ 
+-required:
+-  - compatible
+-  - reg
+-  - "#qcom,sensors"
+-  - interrupts
+-  - interrupt-names
+-  - "#thermal-sensor-cells"
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,tsens-v0_1
++              - qcom,tsens-v1
++              - qcom,tsens-v2
++
++    then:
++      required:
++        - reg
+ 
+ additionalProperties: false
+ 
+ examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    // Example msm9860 based SoC (ipq8064):
++    gcc: clock-controller {
++
++           /* ... */
++
++           tsens: thermal-sensor {
++                compatible = "qcom,ipq8064-tsens";
++
++                 nvmem-cells = <&tsens_calib>, <&tsens_calib_backup>;
++                 nvmem-cell-names = "calib", "calib_backup";
++                 interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
++                 interrupt-names = "uplow";
++
++                 #qcom,sensors = <11>;
++                 #thermal-sensor-cells = <1>;
++          };
++    };
++
+   - |
+     #include <dt-bindings/interrupt-controller/arm-gic.h>
+     // Example 1 (legacy: for pre v1 IP):
 -- 
 2.29.2
 
