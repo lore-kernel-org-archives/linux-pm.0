@@ -2,160 +2,258 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63862C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:29:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C005C433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:37:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 18366238EC
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:29:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3155F2222B
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 11:37:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728419AbhAUL3g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 06:29:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41624 "EHLO
+        id S1730235AbhAULhM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 06:37:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726521AbhAUL33 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:29:29 -0500
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4B94C061757
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:28:48 -0800 (PST)
-Received: by mail-pf1-x42f.google.com with SMTP id m6so1337405pfk.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:28:48 -0800 (PST)
+        with ESMTP id S1726603AbhAULau (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 06:30:50 -0500
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25DCFC0613C1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:30:10 -0800 (PST)
+Received: by mail-pl1-x636.google.com with SMTP id u11so1092858plg.13
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 03:30:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=huY+KC/gEp573SNNBNWHPTaHjdoKETtT7Ro68K+8opY=;
-        b=MGR0m11onGFZ3r3ghkbbbbafSIuaMZIlX9t609QHVCmqOM9IrDgBVV+RnzWxZ9c8cM
-         l9DxSqjnLAkV02i/0SrvQFkarzl4z5EFCq8lVgYZGZfk2V+2x3marPii5hO6sZcrhEDE
-         IMmQzQKK3XCcsI08zKtaoVyohc4oEomnA3eZ0WwM89z3qSA/oJOVh9BD1ATcSWBPOY2b
-         j2EoqGNwSbCb6yMtQVxAh7TkBVo3QaVvXEtmMIlt30QvyD0boYqeqQofXptmxdKb7e/A
-         ZPj1xaXEtc2neQqwCB+PYdG5qz/nQW4DJSFfTo/IafeOV7K5yU6gzK58SbP6fe13a0Xu
-         f/Lw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=/s/91ANhuBaU4JbgzRnP0zjULLauKJWjuOxKOA8GyFY=;
+        b=MCRk9PgrPaREcmxQnnNY8Ha7rAKjS2CsbbcLa+jAD7KmcCvNrghlmO7KSAxeClWtYi
+         jbrGnFEVL6fyh9zk7kKHWgob4JdQksCNP0yvP7M/XMZZ6ES713eSic7NMJ/nsfVLWkLk
+         FNs5VrGmpCOFnpHhvcm+geOQrO5ZHiU50WhzV9Y1hhssDBW2GULJK4gLUXE5rPo4nQG6
+         0XkCJ7Zc904s4ZpvOtELSMPs+TsOXEHqFWgtbnl0hE/2xxQXalORL0QZHz0ccdA8C8/R
+         gEqZr88R1jExQ924FQPZsUxUqo2H0cSoiYiARKa7EgkemPMyVTePqmhwD/7wRsLRUAqT
+         5lkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=huY+KC/gEp573SNNBNWHPTaHjdoKETtT7Ro68K+8opY=;
-        b=W3pQtGt6PfjttB18t3ww3SMneaXUHRBBKJFzlljR3khjke7YIXln/jZAm8orEhOJhp
-         Ky8ngPqRwQcrkN/Uo9BR6MW520A0NMHfAA4RBb5v8w9JnGErqJld6BsZhOp+xIwS62sc
-         7CBHmR9xqJV+f1jVK1reMMiqWV8jDAeiyeNyqcW1gf+z0RN+buNCM47M0kv8XaPjjvx7
-         JIumBLBmQ4iXetdy912hX4ipncA7ztbXgpGrRbwjMnKVwS0QAFkgKv6FynQgJZSU2fc4
-         ibi0NByno7jhjbtLKM/GQyKpTlwcF32oSy5aRd4NUUUyl8qHmrjzU9SUz6wv9bRi2Hot
-         lGaQ==
-X-Gm-Message-State: AOAM532Oin6CBMSSSxhgJWsdjyRdi87FYGs386acD/ef5vz6pRgQkdmE
-        NL370RtkWjH0Fd7EMIJnDI/7AQ==
-X-Google-Smtp-Source: ABdhPJyZ9MJX8Kwm8tbNkiRPLk2ZzY0XdKZs5UhqqTMRIitX1Fef5dEki6ICReP6VfFb9ivRgaD8Zg==
-X-Received: by 2002:aa7:8b51:0:b029:1ae:687f:d39b with SMTP id i17-20020aa78b510000b02901ae687fd39bmr13557158pfd.50.1611228528086;
-        Thu, 21 Jan 2021 03:28:48 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=/s/91ANhuBaU4JbgzRnP0zjULLauKJWjuOxKOA8GyFY=;
+        b=nq8PuUHN1FRaNGrY/Hhx6axM+txm6eNWte+7kMhUOY2XODle3BbTBNGKHEnPkIZI7k
+         hyAOPyaUHzbd8DYCG0EOwlHLwB4Pb+gD3RRcSnum0M75VETFuoUJiBwrBjCet/CPUWgC
+         2IBTk73AXFTX/HyrHDpoV78hZFEQD2KiMcR1U0Ej+RjVqv18T3siYQ1BKBxPhHMNCgyF
+         h+4WLLCGnkKNELCh7DRzQnoRJOpLH41fJ/ob1yEaHKB5Z9fBKvfmz7yQ5BQCIAii4fB4
+         Q+Jecw7ScyC1NqIpBn9scRKQW78nDGNUeD2UdjORQj4QRsc0Jv+4DSU84PQHuHsghFs3
+         OjNw==
+X-Gm-Message-State: AOAM530B9XcyLrDKFodUTdUr6rWdVeG6Wla7ayIgZk0FxxhcLzeMkkCa
+        yfmRbATxBvFEw1H1SDqJN/ls6Q==
+X-Google-Smtp-Source: ABdhPJxfgn43DtBQWoOhDUkCM1Bi7wxbFoDlJCnv795IJgVUKgpgrIFgL8fN1qNE7lVCm6EKAgrKPw==
+X-Received: by 2002:a17:90a:df15:: with SMTP id gp21mr11113853pjb.63.1611228609548;
+        Thu, 21 Jan 2021 03:30:09 -0800 (PST)
 Received: from localhost ([122.172.59.240])
-        by smtp.gmail.com with ESMTPSA id y11sm3425797pfo.121.2021.01.21.03.28.47
+        by smtp.gmail.com with ESMTPSA id j14sm5685837pjl.35.2021.01.21.03.30.08
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 21 Jan 2021 03:28:47 -0800 (PST)
-Date:   Thu, 21 Jan 2021 16:58:45 +0530
+        Thu, 21 Jan 2021 03:30:08 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
         Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-pm@vger.kernel.org,
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] opp: Prepare for ->set_opp() helper to work without
- regulators
-Message-ID: <20210121112845.hq5ry6mdbvuglg6e@vireshk-i7>
+Subject: [PATCH V2] opp: Prepare for ->set_opp() helper to work without regulators
+Date:   Thu, 21 Jan 2021 17:00:05 +0530
+Message-Id: <d60bc79ed2ac3fd2f2911449ba994b4d55bd1bfd.1611228541.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <fb69353c-a35b-9b7c-46bc-d464c6dab6f5@gmail.com>
 References: <fb69353c-a35b-9b7c-46bc-d464c6dab6f5@gmail.com>
- <302c014726dbd9fcde852985528c139d2214a1f2.1611038066.git.viresh.kumar@linaro.org>
- <20210120080833.bw4c5bh2wntmiaqi@vireshk-i7>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210120080833.bw4c5bh2wntmiaqi@vireshk-i7>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20-01-21, 13:38, Viresh Kumar wrote:
-> On 19-01-21, 12:05, Viresh Kumar wrote:
-> > Until now the ->set_opp() helper (i.e. special implementation for
-> > setting the OPPs for platforms) was implemented only to take care of
-> > multiple regulators case, but going forward we would need that for other
-> > use cases as well.
-> > 
-> > This patch prepares for that by allocating the regulator specific part
-> > from dev_pm_opp_set_regulators() and the opp helper part from
-> > dev_pm_opp_register_set_opp_helper().
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > Dmitry,
-> > 
-> > I haven't tested this patch, can you please help with that ?
-> > 
-> >  drivers/opp/core.c | 81 ++++++++++++++++++++++++----------------------
-> >  drivers/opp/opp.h  |  2 ++
-> >  2 files changed, 45 insertions(+), 38 deletions(-)
-> 
-> Pushed with this diff.
-> 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 1ed673334565..1dc5ca3f6d26 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -1939,7 +1939,6 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
->                                             unsigned int count)
->  {
->         struct dev_pm_opp_supply *supplies;
-> -       struct dev_pm_set_opp_data *data;
->         struct opp_table *opp_table;
->         struct regulator *reg;
->         int ret, i;
-> @@ -1990,9 +1989,8 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
->         mutex_lock(&opp_table->lock);
->         opp_table->sod_supplies = supplies;
->         if (opp_table->set_opp_data) {
-> -               data = opp_table->set_opp_data;
-> -               data->old_opp.supplies = supplies;
-> -               data->new_opp.supplies = supplies + count;
-> +               opp_table->set_opp_data->old_opp.supplies = supplies;
-> +               opp_table->set_opp_data->new_opp.supplies = supplies + count;
->         }
->         mutex_unlock(&opp_table->lock);
->  
-> @@ -2038,7 +2036,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
->                 regulator_put(opp_table->regulators[i]);
->  
->         mutex_lock(&opp_table->lock);
-> -       if (opp_table->sod_supplies) {
-> +       if (opp_table->set_opp_data) {
->                 opp_table->set_opp_data->old_opp.supplies = NULL;
->                 opp_table->set_opp_data->new_opp.supplies = NULL;
->         }
+Until now the ->set_opp() helper (i.e. special implementation for
+setting the OPPs for platforms) was implemented only to take care of
+multiple regulators case, but going forward we would need that for other
+use cases as well.
 
-And some more as pointed out by Dmitry (I will resend it again
-properly).
+This patch prepares for that by allocating the regulator specific part
+from dev_pm_opp_set_regulators() and the opp helper part from
+dev_pm_opp_register_set_opp_helper().
 
-t a/drivers/opp/core.c b/drivers/opp/core.c
-index d8ca15d96ce9..747bdc4338f3 100644
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Dmitry Osipenko <digetx@gmail.com>
+---
+V2:
+- Fixed a bug where we accessed the wrong pointer
+- Add locks in dev_pm_opp_unregister_set_opp_helper()
+
+ drivers/opp/core.c | 83 +++++++++++++++++++++++++---------------------
+ drivers/opp/opp.h  |  2 ++
+ 2 files changed, 47 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 846390c9434a..dff939ed5118 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -2118,8 +2118,12 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
-        WARN_ON(!list_empty(&opp_table->opp_list));
+@@ -1817,38 +1817,6 @@ void dev_pm_opp_put_prop_name(struct opp_table *opp_table)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
  
-        opp_table->set_opp = NULL;
+-static int _allocate_set_opp_data(struct opp_table *opp_table)
+-{
+-	struct dev_pm_set_opp_data *data;
+-	int len, count = opp_table->regulator_count;
+-
+-	if (WARN_ON(!opp_table->regulators))
+-		return -EINVAL;
+-
+-	/* space for set_opp_data */
+-	len = sizeof(*data);
+-
+-	/* space for old_opp.supplies and new_opp.supplies */
+-	len += 2 * sizeof(struct dev_pm_opp_supply) * count;
+-
+-	data = kzalloc(len, GFP_KERNEL);
+-	if (!data)
+-		return -ENOMEM;
+-
+-	data->old_opp.supplies = (void *)(data + 1);
+-	data->new_opp.supplies = data->old_opp.supplies + count;
+-
+-	opp_table->set_opp_data = data;
+-
+-	return 0;
+-}
+-
+-static void _free_set_opp_data(struct opp_table *opp_table)
+-{
+-	kfree(opp_table->set_opp_data);
+-	opp_table->set_opp_data = NULL;
+-}
+-
+ /**
+  * dev_pm_opp_set_regulators() - Set regulator names for the device
+  * @dev: Device for which regulator name is being set.
+@@ -1865,6 +1833,7 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+ 					    const char * const names[],
+ 					    unsigned int count)
+ {
++	struct dev_pm_opp_supply *supplies;
+ 	struct opp_table *opp_table;
+ 	struct regulator *reg;
+ 	int ret, i;
+@@ -1906,10 +1875,19 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+ 
+ 	opp_table->regulator_count = count;
+ 
+-	/* Allocate block only once to pass to set_opp() routines */
+-	ret = _allocate_set_opp_data(opp_table);
+-	if (ret)
++	supplies = kmalloc_array(count * 2, sizeof(*supplies), GFP_KERNEL);
++	if (!supplies) {
++		ret = -ENOMEM;
+ 		goto free_regulators;
++	}
 +
-+       mutex_lock(&opp_table->lock);
-        kfree(opp_table->set_opp_data);
-        opp_table->set_opp_data = NULL;
-+       mutex_unlock(&opp_table->lock);
++	mutex_lock(&opp_table->lock);
++	opp_table->sod_supplies = supplies;
++	if (opp_table->set_opp_data) {
++		opp_table->set_opp_data->old_opp.supplies = supplies;
++		opp_table->set_opp_data->new_opp.supplies = supplies + count;
++	}
++	mutex_unlock(&opp_table->lock);
+ 
+ 	return opp_table;
+ 
+@@ -1952,9 +1930,16 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+ 	for (i = opp_table->regulator_count - 1; i >= 0; i--)
+ 		regulator_put(opp_table->regulators[i]);
+ 
+-	_free_set_opp_data(opp_table);
++	mutex_lock(&opp_table->lock);
++	if (opp_table->set_opp_data) {
++		opp_table->set_opp_data->old_opp.supplies = NULL;
++		opp_table->set_opp_data->new_opp.supplies = NULL;
++	}
++	mutex_unlock(&opp_table->lock);
+ 
++	kfree(opp_table->sod_supplies);
+ 	kfree(opp_table->regulators);
++	opp_table->sod_supplies = NULL;
+ 	opp_table->regulators = NULL;
+ 	opp_table->regulator_count = -1;
+ 
+@@ -2046,6 +2031,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_clkname);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 			int (*set_opp)(struct dev_pm_set_opp_data *data))
+ {
++	struct dev_pm_set_opp_data *data;
+ 	struct opp_table *opp_table;
+ 
+ 	if (!set_opp)
+@@ -2062,8 +2048,23 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 	}
+ 
+ 	/* Another CPU that shares the OPP table has set the helper ? */
+-	if (!opp_table->set_opp)
+-		opp_table->set_opp = set_opp;
++	if (opp_table->set_opp)
++		return opp_table;
 +
-        dev_pm_opp_put_opp_table(opp_table);
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_lock(&opp_table->lock);
++	opp_table->set_opp_data = data;
++	if (opp_table->sod_supplies) {
++		data->old_opp.supplies = opp_table->sod_supplies;
++		data->new_opp.supplies = opp_table->sod_supplies +
++					 opp_table->regulator_count;
++	}
++	mutex_unlock(&opp_table->lock);
++
++	opp_table->set_opp = set_opp;
+ 
+ 	return opp_table;
+ }
+@@ -2085,6 +2086,12 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+ 	WARN_ON(!list_empty(&opp_table->opp_list));
+ 
+ 	opp_table->set_opp = NULL;
++
++	mutex_lock(&opp_table->lock);
++	kfree(opp_table->set_opp_data);
++	opp_table->set_opp_data = NULL;
++	mutex_unlock(&opp_table->lock);
++
+ 	dev_pm_opp_put_opp_table(opp_table);
  }
  EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
-
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 4ced7ffa8158..4408cfcb0f31 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -155,6 +155,7 @@ enum opp_table_access {
+  * @genpd_performance_state: Device's power domain support performance state.
+  * @is_genpd: Marks if the OPP table belongs to a genpd.
+  * @set_opp: Platform specific set_opp callback
++ * @sod_supplies: Set opp data supplies
+  * @set_opp_data: Data to be passed to set_opp callback
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+@@ -202,6 +203,7 @@ struct opp_table {
+ 	bool is_genpd;
+ 
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
++	struct dev_pm_opp_supply *sod_supplies;
+ 	struct dev_pm_set_opp_data *set_opp_data;
+ 
+ #ifdef CONFIG_DEBUG_FS
 -- 
-viresh
+2.25.0.rc1.19.g042ed3e048af
+
