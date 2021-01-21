@@ -2,104 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D68C43332
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B5E9C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:54:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F018523A60
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:29:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E137023A54
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:54:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726037AbhAUTSr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 14:18:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58542 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726919AbhAUTSK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:18:10 -0500
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAA59C06174A;
-        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
-Received: by mail-pl1-x62b.google.com with SMTP id be12so1842929plb.4;
-        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
-        b=DkGaRMymQU2Ti7nuGFAec88q4U8hFbvYLkGUOTfTAlcFxyZUCbmVhI4mSTcdoaPVdZ
-         ICZyZDieLP/RL9AtWHTrqkd4mPbl+4kdg1vq3OS7cUFg6HCdFnGclcX74Z383TZqCz+W
-         PV7qgySksE2aM21H6c/KVJRNe5kycUIW6UkofQahASMjwvKucvbgvjpnGF1YJn5h4SHz
-         NrRz2hpz7MINVO4xPpbXdugdIazeFgtm2h/V1pivr6CzL9uRIx3InRtM4rZyKb1Q95YZ
-         fC5FJSiLtY0UPFvWfrFEHDqyEZ8sxySanNli61fAEL2lmn/AVK3F/DGuS9Dlfz572XuE
-         kJVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
-        b=G1PKX5th2rm2CURi8zCmBrCKKFR0ZEwL10M0UtcnsxyDg0YBi5ej80tz1+m5ad6i04
-         cNeax8dQggxzy+SXJcVuTssGBylzx3Yv5xWyO5PZn+kCliYboUEOT3GdIUJl5J/2Bndq
-         hIO5PmwFJ99dVv0NQnxFKmswKt4deCxG8Uanq2ygbJYELRXYn8orwJYIsm+NniPBOFlL
-         HxGOFcVHfmLiz6/SDT6kj47yGlQLnlmFsSsIQv2xjPFOF9lM0snDvduPU7MGYsSIsNqo
-         JXWtWXpeLuK0/vDeltAO7ZKDcNdElb8LTXbuVkNY6Gr5AcuVFG2I/i/fv2/h6OdkRAM5
-         zybQ==
-X-Gm-Message-State: AOAM532VOqC7gYyw95k+G2lo4Na9szXIIecfDVUMDz1LKKpWRw0qbTTt
-        B9hoV5T5OmX7NegkJEZnN98=
-X-Google-Smtp-Source: ABdhPJwOllrF6r9nS/4JZsBr6uzAUBd/bZaDSP5ab3c243GAsdrBIkEGUkvzhlR3EtezfDyyOtMuFQ==
-X-Received: by 2002:a17:90a:e549:: with SMTP id ei9mr947844pjb.43.1611256639326;
-        Thu, 21 Jan 2021 11:17:19 -0800 (PST)
-Received: from ansuel-xps20.localdomain (host-79-41-39-5.retail.telecomitalia.it. [79.41.39.5])
-        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.17.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 11:17:18 -0800 (PST)
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Amit Kucheria <amitk@kernel.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 7/8] drivers: thermal: tsens: Add support for ipq8064-tsens
-Date:   Thu, 21 Jan 2021 20:15:59 +0100
-Message-Id: <20210121191601.14403-8-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210121191601.14403-1-ansuelsmth@gmail.com>
-References: <20210121191601.14403-1-ansuelsmth@gmail.com>
+        id S1726463AbhAUTyW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 14:54:22 -0500
+Received: from relay07.th.seeweb.it ([5.144.164.168]:42833 "EHLO
+        relay07.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727000AbhAUTyS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:54:18 -0500
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id B2E023EEED;
+        Thu, 21 Jan 2021 20:52:54 +0100 (CET)
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+To:     viresh.kumar@linaro.org
+Cc:     bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
+        devicetree@vger.kernel.org, robh+dt@kernel.org,
+        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
+        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
+        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v5 6/7] cpufreq: qcom-hw: Allow getting the maximum transition latency for OPPs
+Date:   Thu, 21 Jan 2021 20:52:49 +0100
+Message-Id: <20210121195250.492500-7-angelogioacchino.delregno@somainline.org>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
+References: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for tsens present in ipq806x SoCs based on generic msm8960
-tsens driver.
+In order to fine-tune the frequency scaling from various governors,
+allow to set a maximum transition latency from OPPs, which may be
+different depending on the SoC.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index dd9b41157894..586b90962605 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -1010,6 +1010,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 9a213a3046bb..d2b913582197 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -1405,6 +1405,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 	void __iomem *base;
+ 	struct qcom_cpufreq_data *data;
+ 	const char *fdom_resname;
++	unsigned int transition_latency;
+ 	int cpu_count, index, ret;
  
- static const struct of_device_id tsens_table[] = {
- 	{
-+		.compatible = "qcom,ipq8064-tsens",
-+		.data = &data_8960,
-+	}, {
- 		.compatible = "qcom,msm8916-tsens",
- 		.data = &data_8916,
- 	}, {
+ 	cpu_dev = get_cpu_device(policy->cpu);
+@@ -1482,6 +1483,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 		goto error;
+ 	}
+ 
++	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
++	if (!transition_latency)
++		transition_latency = CPUFREQ_ETERNAL;
++
++	policy->cpuinfo.transition_latency = transition_latency;
++
+ 	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
+ 
+ 	return 0;
 -- 
-2.29.2
+2.30.0
 
