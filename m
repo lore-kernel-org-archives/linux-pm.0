@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5C98C4332D
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACC3C433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0461B23A58
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D65A23A03
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Jan 2021 19:19:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727353AbhAUTTA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 14:19:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58524 "EHLO
+        id S1727369AbhAUTTD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 14:19:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58274 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727142AbhAUTSG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:18:06 -0500
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 639BCC061797;
-        Thu, 21 Jan 2021 11:17:03 -0800 (PST)
-Received: by mail-pf1-x436.google.com with SMTP id q20so2091175pfu.8;
-        Thu, 21 Jan 2021 11:17:03 -0800 (PST)
+        with ESMTP id S1725880AbhAUTRC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 14:17:02 -0500
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0A07C06174A;
+        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
+Received: by mail-pg1-x52a.google.com with SMTP id c132so1995838pga.3;
+        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=//vxmImvEZezGNbMSIPWRQhGQeqxvlD68gBH9D1FgFg=;
-        b=R7KUiUJJWYSwWrD4WNNBgCrqmvJpxhNqd/c1X8Y/559czgj0X2KIIBjCGEgMqvX8PI
-         NyS0AQMJncdJ7ZhZvp9mSen31DtOtPAoL7YuOUsSvNk5dxI4yVHyF3hx29f7JSeeCOnl
-         bwVYikZrkvTzMYhtDMiWbsG4OAtamVTsyPlS8JfCMsEP/q6qhjiKRplj6Pu6/KkN/vbC
-         ikwq8HIj9Dvm87yZbSg9qsvmkJzHdNHdjXb7LfAnRgq1jSpNZYzrx+nncxNU80+c3FtU
-         tTYZ5b08d425cDnQaxWbJvA+LViVzKktoJIYmeVfpYEkHd8fHwOPxgwGXuOVHppjOkXp
-         jexg==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=vyPUGE/jDluUMDwQB9kTEzv7e1ObGuQgvPfavYX545g=;
+        b=a8sLi5GOPnGD6SJXctyPqQWuN8VPI9qBuCaEt/d6bZdOvjVPzTe5+w9gQmD60Jot8n
+         uGdJBtvReuGDDqenN68MCP/ZrgHzXWELIkNbb6OkHuTC7QhGHj3vw5GO0eC2AWHl/VbF
+         DeitB+ESEKwVVID5h7YxjFKRlhN8Vxpi5ARoxACHiqVmDHv5/pKndkF9WGTTbhaApJB/
+         BHK7nIIlwzP7y0yaneBUEiS41J8K//baqdrXqBQbiKNjXgUKoA1GRb6qR+VnGKkM3cmK
+         PjJ2wN2evoQUJ4dF8cG6XgdiFE1PZ2tOXpHSzVCCoXIhtLANRiTe+tbrWvsLITOU0fAB
+         lYdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=//vxmImvEZezGNbMSIPWRQhGQeqxvlD68gBH9D1FgFg=;
-        b=hKZjnaqWEVuZ/2Vooxs9A8MkL0pj2B8WVKgl93Zt3KnvIlaWtoqQogi7eWkRNpP0WB
-         50RTEk0xWbPf6f9fbgLvcz01TOnuSWkyY6ADfbCYVvMPzk+KUrIYZZCUwE7Iw4N3P97G
-         EVW0JXKMG3lCjIl7aIVB9QXerNAhaeXbwQh4qS+KlIAZyCHEDMlkZAztbVZAwlyw/QaG
-         Ixq2mVAq+tEZcQetvdWl/B3CsoAyVd4e8yfJNLh4fKkNGPbdYl78I5u7BwxcC8LWUVln
-         otBJpPvyCe+NPSIrWrR6kFklmBx2/tcZVCNd7GxKREVe8PLZdpbE/vj68DdOjgUSc6GO
-         ZloA==
-X-Gm-Message-State: AOAM5308oDpBt26/MufZ1xV3F/LHbhcQT5BEEwiS83RXQwrp7uND+/zI
-        IDA2Q0T2uPH7cwDvb54Dh0I=
-X-Google-Smtp-Source: ABdhPJzRBGVet/vJkDYEKMJ2TqwbMFDisP8AhdPlmYFcTEsFyHz7AQYOC3M+XNxnE/hvpzpLcDkzGg==
-X-Received: by 2002:aa7:87d9:0:b029:1b7:1c6c:56e0 with SMTP id i25-20020aa787d90000b02901b71c6c56e0mr914114pfo.25.1611256622929;
-        Thu, 21 Jan 2021 11:17:02 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=vyPUGE/jDluUMDwQB9kTEzv7e1ObGuQgvPfavYX545g=;
+        b=rl+tGVIQAI+fO52BWyf6iNtqzFYthgxCXzPdHJIZRnPp8L+RECxaXtJ+NiMAjoS9H2
+         /ldHGu6tw6hoxj3z1UZdgqfGhxG/EMCXCn9bGt7l0BZV9QKk0yV4IMJodYx9e8lgvwEz
+         NeD7FXwAHVWaKJ8bd3u0uDcwm1HCOyZFrCAFAs0jp+g/Zdb+MGrfAG1cGT9NO500J8wP
+         L8ro0bgv7N0k9+9T5nNAsfnM9uW59MP3Iu7P0wo9IqUxtj3mqAcFVBwRb6HTg9/+PqKU
+         cPpBEEgEVgFiqF5gBepzNsWrVpedz74stAdypFeBwtD9PFjC3Gt5daWijT6oqac/15ua
+         x8hg==
+X-Gm-Message-State: AOAM5314kIxYgzt4zloOzc3xZgsLkucFVG3wVyTTGLJMlQ0OyAeAiP0t
+        aoTc4d1w2tge4gLBPKDGSGA=
+X-Google-Smtp-Source: ABdhPJzM45jpZM3EhD0U26mloVLuAHBTwJ5vfTv3KU6HhTvmiA+9fmFyPT5uX+vk4reqKe+5gqzDFg==
+X-Received: by 2002:a63:d246:: with SMTP id t6mr743446pgi.283.1611256582215;
+        Thu, 21 Jan 2021 11:16:22 -0800 (PST)
 Received: from ansuel-xps20.localdomain (host-79-41-39-5.retail.telecomitalia.it. [79.41.39.5])
-        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.16.55
+        by smtp.googlemail.com with ESMTPSA id gg6sm11291013pjb.2.2021.01.21.11.16.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 11:17:02 -0800 (PST)
+        Thu, 21 Jan 2021 11:16:21 -0800 (PST)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amitk@kernel.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -63,73 +63,69 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v8 5/8] drivers: thermal: tsens: Fix bug in sensor enable for msm8960
-Date:   Thu, 21 Jan 2021 20:15:57 +0100
-Message-Id: <20210121191601.14403-6-ansuelsmth@gmail.com>
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v8 0/8] Add support for ipq8064 tsens
+Date:   Thu, 21 Jan 2021 20:15:52 +0100
+Message-Id: <20210121191601.14403-1-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210121191601.14403-1-ansuelsmth@gmail.com>
-References: <20210121191601.14403-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's present a hardware bug in tsens VER_0 where if sensors upper to id
-6 are enabled selectively, underfined results are expected. Fix this by
-enabling all the remaining sensor in one step.
+This patchset convert msm8960 to reg_filed, use int_common instead 
+of a custom function and fix wrong tsens get_temp function for msm8960.
+Ipq8064 SoCs tsens driver is based on 8960 tsens driver. Ipq8064 needs
+to be registered as a gcc child as the tsens regs on this platform are
+shared with the controller.
+This is based on work and code here
+https://git.linaro.org/people/amit.kucheria/kernel.git/log/?h=wrk3/tsens-8960-breakage
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
----
- drivers/thermal/qcom/tsens-8960.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+V8:
+* Drop MIN and MAX THRESH and use CRIT_THRESH instead
+* Fix broken documentation patch
+v7:
+* Rework calibrate function to use get_temp_common
+* Fix wrong required in the Documentation for ipq8064
+* Fix hardware bug in sensor enable function
+v6:
+* Fix spelling error (can't find the problem with variable misallignment)
+* Rework big if-else
+* Remove extra comments
+* Add description about different interrupts
+v5:
+* Conver driver to use reg_fiedl
+* Use init_common 
+* Drop custom set_trip and set_interrupt
+* Use common set_trip and set_interrupt
+* Fix bad get_temp function
+* Add missing hardcoded slope
+v4:
+* Fix compilation error and warning reported by the bot
+v3:
+* Change driver to register as child instead of use phandle
+v2:
+* Fix dt-bindings problems
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 86585f439985..248aaa65b5b0 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -27,9 +27,9 @@
- #define EN			BIT(0)
- #define SW_RST			BIT(1)
- #define SENSOR0_EN		BIT(3)
-+#define MEASURE_PERIOD		BIT(18)
- #define SLP_CLK_ENA		BIT(26)
- #define SLP_CLK_ENA_8660	BIT(24)
--#define MEASURE_PERIOD		1
- #define SENSOR0_SHIFT		3
- 
- /* INT_STATUS_ADDR bitmasks */
-@@ -132,11 +132,26 @@ static int enable_8960(struct tsens_priv *priv, int id)
- 	if (ret)
- 		return ret;
- 
--	mask = BIT(id + SENSOR0_SHIFT);
-+	/* HARDWARE BUG:
-+	 * On platform with more than 5 sensors, all the remaining
-+	 * sensors needs to be enabled all togheder or underfined
-+	 * results are expected. (Sensor 6-7 disabled, Sensor 3
-+	 * disabled...) In the original driver, all the sensors
-+	 * are enabled in one step hence this bug is not triggered.
-+	 */
-+	if (id > 5)
-+		mask = GENMASK(10, 6);
-+	else
-+		mask = BIT(id);
-+
-+	mask <<= SENSOR0_SHIFT;
-+
- 	ret = regmap_write(priv->tm_map, CNTL_ADDR, reg | SW_RST);
- 	if (ret)
- 		return ret;
- 
-+	reg |= MEASURE_PERIOD;
-+
- 	if (priv->num_sensors > 1)
- 		reg |= mask | SLP_CLK_ENA | EN;
- 	else
+Ansuel Smith (8):
+  drivers: thermal: tsens: Add VER_0 tsens version
+  drivers: thermal: tsens: Don't hardcode sensor slope
+  drivers: thermal: tsens: Convert msm8960 to reg_field
+  drivers: thermal: tsens: Use init_common for msm8960
+  drivers: thermal: tsens: Fix bug in sensor enable for msm8960
+  drivers: thermal: tsens: Use get_temp_common for msm8960
+  drivers: thermal: tsens: Add support for ipq8064-tsens
+  dt-bindings: thermal: tsens: Document ipq8064 bindings
+
+ .../bindings/thermal/qcom-tsens.yaml          |  75 ++++++-
+ drivers/thermal/qcom/tsens-8960.c             | 203 ++++++++++--------
+ drivers/thermal/qcom/tsens.c                  | 177 ++++++++++++---
+ drivers/thermal/qcom/tsens.h                  |   4 +-
+ 4 files changed, 327 insertions(+), 132 deletions(-)
+
 -- 
 2.29.2
 
