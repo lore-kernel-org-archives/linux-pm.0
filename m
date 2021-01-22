@@ -2,104 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-14.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA876C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 726B1C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:29:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A3FCC23AA3
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:28:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C3E423A84
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:29:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728911AbhAVP11 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 10:27:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58262 "EHLO
+        id S1729050AbhAVP3M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 10:29:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36696 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728999AbhAVO6c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 09:58:32 -0500
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6404C0617AA;
-        Fri, 22 Jan 2021 06:56:20 -0800 (PST)
-Received: by mail-wm1-x336.google.com with SMTP id j18so4572331wmi.3;
-        Fri, 22 Jan 2021 06:56:20 -0800 (PST)
+        with ESMTP id S1728697AbhAVP3B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 10:29:01 -0500
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B576AC061786;
+        Fri, 22 Jan 2021 07:28:20 -0800 (PST)
+Received: by mail-lf1-x131.google.com with SMTP id o10so8011695lfl.13;
+        Fri, 22 Jan 2021 07:28:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
-        b=L6Ygo3hK0BX1f3+JDGOMBtHh+qr8OWGp7hGmkGE3+w/e+knL6x+oTl2BV0sSqO+a5F
-         TA1tWDw43iMxVR5C10gDvsGnkOnWRspKb4tvCES3y6A5racbtxoZPkeroJpCkDBAS8MT
-         psGxTuIJ/jTzDVzkt4OBouoK9mfTJT2gta+kiaPxnH95J6Iw1qCqnM8xMFfY5vdWbrDg
-         vgE4njiu6DpSoWyTKXiCOZpnADC0rJjT1865LBH2CJZ0yJ+iCtD95gXs8Ifvoydywzx0
-         wGPRqQhQ3Dwq67kIvmI+/cpiu9IiQPWZ1tvyeQreqnM0kE5csocdQi/b825Z/dCmN7QA
-         9DNQ==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=ISQKWjgPbcA/Ev2c4Dpj7JuqMDl83n77M+ggmuFw+pg=;
+        b=dmzoTzYkZa7zRgygbr3mVegm7/sSaiMmR4RVw3M0mqAtfAoDB6XXewgJnlYDtkBuam
+         F9bWa423mWu4Wijewx2OnQDBOIZuy9V/4v673kVolbgAankkGZhMZdeR+BMlOdtGICe1
+         Eksl/DHbz7pG8KNfGc9Fh0o9IjVB3UwI6IECSx7Y1C3p1TH0bnwyGfw1ysNkTgmfnc8C
+         kNpIIrtnmEB/Ww/FDgjE10+JmGaNJawt2KpUfBdXgyrnZK1HnWpg9PJWBO360XYAdR+0
+         Cknwdaltai7YIbG2ojLtq1UrywWnOnd8c89KoKJBwt4OJlBoUsSmcHeARDvK5K5wDlBU
+         Nl1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=oRiSzjbPGSuciDDwZK/ZEDlRzVvbEgMvnG2EnKEi2b8=;
-        b=L11xWiaDQvOJCwEydJje4nd/k5o6HxPYDvx4XyDHDjd49XU38IjC0WybmnB4Cqs0in
-         6/3pezk0TyD4Sbm1BHRAqzn9wjobEjTw1wOwJux3E+Z27wQjcyYciZaITG84H7Ntm7j6
-         tvTs7vAdWVOdZUsUjuaUiFXnTjM9PunBkqWx72AI3Fp0vS1S8dLUbsEpl+zPtkQHd7jw
-         P/JWdaX2L3Qb70yffahKaJn6MfDr8YUPNLkwXrRCH1HZnxS1ogAg3iBOdz/6U4yGG8Ea
-         8v+UOU3r4BqL9vARIUN+lcEKvCT22jLuoP2rJeWjQ09MvRfY0Wg+x/rv21s3gl9izo80
-         pX0Q==
-X-Gm-Message-State: AOAM530czRtbmZKe1UEzssUSAjF2S+uxjrn49tz+TjSdWeLecQWzRLul
-        4CgEkzhbmh8g9cM3h2Gif24=
-X-Google-Smtp-Source: ABdhPJxFShSH4Koq6q9pe58TzCj1QaVOsfdgQV2tiwpaANLabv9sCSYTZGjenu2JNEr93hee4eE/qg==
-X-Received: by 2002:a1c:bcd4:: with SMTP id m203mr4318428wmf.120.1611327379576;
-        Fri, 22 Jan 2021 06:56:19 -0800 (PST)
-Received: from ansuel-xps20.localdomain (host-79-45-3-77.retail.telecomitalia.it. [79.45.3.77])
-        by smtp.googlemail.com with ESMTPSA id t67sm12061106wmt.28.2021.01.22.06.56.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Jan 2021 06:56:19 -0800 (PST)
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Amit Kucheria <amitk@kernel.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v9 7/8] drivers: thermal: tsens: Add support for ipq8064-tsens
-Date:   Fri, 22 Jan 2021 15:55:56 +0100
-Message-Id: <20210122145558.4982-8-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210122145558.4982-1-ansuelsmth@gmail.com>
-References: <20210122145558.4982-1-ansuelsmth@gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=ISQKWjgPbcA/Ev2c4Dpj7JuqMDl83n77M+ggmuFw+pg=;
+        b=bwaquGBytYcbDAy1izD3d4P8Rh+6cdyVg1SZ98A8X1hjmMJh5uEK0+C5cElYI3pBkX
+         L/yGPdX4xGShk5QnncnBcz919O/IkhRQX2DFLpdqes3PtB2xb5L03FOYGUilgPcHLwqt
+         CLEoyqLB/gc1wPa64MB1VFDIYKS1dWEWWPtn4DKKtjrq2TCs+yfdaXB9mRPJuL5hZSnr
+         2FXklmC7D7HmKQ/ay+tUe18uHV6DyrQ0dK6VpnwDk4wwIpYkd9F+ZsugCBJ2gncX4gCk
+         b3DycWOwuyKQ8oiNoum8MRnUlCbykLk8GKAF6nQ7Qw+8ggyI/97ktJgKOnRkcpjIRDxz
+         NDhw==
+X-Gm-Message-State: AOAM530cRZ2otYHCXOGXxH2w40ze7wVOu9PUjP/JelSpa8au/+DP1s71
+        QgWhXVYjpUDzT/rTXOanXzk1TZh5LtA=
+X-Google-Smtp-Source: ABdhPJzwGQlG1MHqbBIRIHds0kbrQeg1FOtQon6lZaFzU702grDxctXDFHfPTYD/1lhQxfZk3d3pqg==
+X-Received: by 2002:ac2:5e2a:: with SMTP id o10mr93571lfg.481.1611329299125;
+        Fri, 22 Jan 2021 07:28:19 -0800 (PST)
+Received: from [192.168.2.145] (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
+        by smtp.googlemail.com with ESMTPSA id a23sm920989lfm.125.2021.01.22.07.28.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 22 Jan 2021 07:28:18 -0800 (PST)
+Subject: Re: [PATCH 11/13] devfreq: tegra30: Migrate to dev_pm_opp_set_opp()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-tegra@vger.kernel.org
+References: <cover.1611227342.git.viresh.kumar@linaro.org>
+ <3345fd49f7987d022f4f61edb6c44f230f7354c4.1611227342.git.viresh.kumar@linaro.org>
+ <71451eb2-46b2-1ea0-efcc-0811568159a4@gmail.com>
+ <20210122062659.qss3hef4kltfgciu@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <f33334e7-bd28-af82-b557-681a2b4132da@gmail.com>
+Date:   Fri, 22 Jan 2021 18:28:16 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
 MIME-Version: 1.0
+In-Reply-To: <20210122062659.qss3hef4kltfgciu@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for tsens present in ipq806x SoCs based on generic msm8960
-tsens driver.
+22.01.2021 09:26, Viresh Kumar пишет:
+> On 22-01-21, 00:36, Dmitry Osipenko wrote:
+>> 21.01.2021 14:17, Viresh Kumar пишет:
+>>> dev_pm_opp_set_bw() is getting removed and dev_pm_opp_set_opp() should
+>>> be used instead. Migrate to the new API.
+>>>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>  drivers/devfreq/tegra30-devfreq.c | 2 +-
+>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+>>> index 117cad7968ab..d2477d7d1f66 100644
+>>> --- a/drivers/devfreq/tegra30-devfreq.c
+>>> +++ b/drivers/devfreq/tegra30-devfreq.c
+>>> @@ -647,7 +647,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>>>  		return PTR_ERR(opp);
+>>>  	}
+>>>  
+>>> -	ret = dev_pm_opp_set_bw(dev, opp);
+>>> +	ret = dev_pm_opp_set_opp(dev, opp);
+>>>  	dev_pm_opp_put(opp);
+>>>  
+>>>  	return ret;
+>>>
+>>
+>> This patch introduces a very serious change that needs to be fixed.
+>>
+>> Now dev_pm_opp_set_opp() changes both clock rate and bandwidth, this is
+>> unacceptable for this driver because it shall not touch the clock rate.
+>>
+>> I think dev_pm_opp_set_bw() can't be removed.
+> 
+> I am wondering here on what would be a better solution, do what you
+> said or introduce another helper like dev_pm_opp_clear_clk(), which
+> will make sure the OPP core doesn't play with device's clk.
+> 
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
----
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index dd9b41157894..586b90962605 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -1010,6 +1010,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
- 
- static const struct of_device_id tsens_table[] = {
- 	{
-+		.compatible = "qcom,ipq8064-tsens",
-+		.data = &data_8960,
-+	}, {
- 		.compatible = "qcom,msm8916-tsens",
- 		.data = &data_8916,
- 	}, {
--- 
-2.29.2
-
+Either way will work, but maybe keeping the dev_pm_opp_set_bw() is a bit
+more straightforward variant for now since it will avoid the code's
+changes and it's probably a bit more obvious variant for the OPP users.
