@@ -2,113 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5288FC433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:54:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F8B6C433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 23:44:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 17C3223AF8
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:54:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCD0323B4B
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 23:44:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728018AbhAVWyD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 17:54:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47918 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729292AbhAVWx1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 17:53:27 -0500
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED7ECC0613D6
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jan 2021 14:52:46 -0800 (PST)
-Received: by mail-pf1-x431.google.com with SMTP id q131so4773992pfq.10
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jan 2021 14:52:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=sJKac0a7OSKp1f0kvUdgdMfcoqobY0w2Qi4X2IElxuc=;
-        b=AnFnMxm7WfC1rua1IAn/BS6BSjggXvQNEVtQhO35dCfNT1aEkmSRuUWxnRufpUz/Ob
-         ceKZJdL20R0z6pVacalU66DpQmGxYUqfmTfdUH7WgYKoXccDChPAt9AdVvWrn77Y9uft
-         3Mn5lWJ4Ql3DMS65MwjK0+bqUMxoc7aEiGo7w=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=sJKac0a7OSKp1f0kvUdgdMfcoqobY0w2Qi4X2IElxuc=;
-        b=q1wSljwLYzNGpeAr2+chJboejYabi/RRRUUXJX4XOB5aGChPZDXupREAOfMdvly4r+
-         /KMbpEV9IhRcHDk/7mQhvuAXEEoYBIY6y+0fierUyNrhV8F1JOirGhyua5L29bO4Tykx
-         tIDXuMmIf15uNZgG1gTAc7jWizIjELTFA671NEnzGDY4ut8gL0a+yPZK+WiaeTfbidCN
-         PbZ44I31XbYviaGQFnV0U7v6PoT0vkgXoYGqLMqmSF8y3J1U2ic7EyN+4vx/yf1WCok8
-         VMa/MzsKYMnHBKEkZaXWDUPriBhFePHQsZZjEyGDMhEwJqMQaqnFmWc1EN8FBtFGZ7z8
-         wTrg==
-X-Gm-Message-State: AOAM5335tNctAofxikPPiNbSitKH6oat/wzALn9AxIAm74rt+jvarPQ5
-        zOt0HtfryzoG3tTA7G5Z/UTpTLMJpSP29Q==
-X-Google-Smtp-Source: ABdhPJzp8LHwexv71sLxZHS49wC3I1PVH82OCL8Tj5sxjcCCZgjzjMMzjq5XpCQh3zwKj3aJAov01Q==
-X-Received: by 2002:aa7:9192:0:b029:1bb:f763:3cac with SMTP id x18-20020aa791920000b02901bbf7633cacmr7223411pfa.72.1611355966312;
-        Fri, 22 Jan 2021 14:52:46 -0800 (PST)
-Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com. [209.85.215.170])
-        by smtp.gmail.com with ESMTPSA id 24sm2961696pgt.14.2021.01.22.14.52.46
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Jan 2021 14:52:46 -0800 (PST)
-Received: by mail-pg1-f170.google.com with SMTP id i7so4802666pgc.8
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jan 2021 14:52:46 -0800 (PST)
-X-Received: by 2002:a67:2ac6:: with SMTP id q189mr1198085vsq.49.1611355613860;
- Fri, 22 Jan 2021 14:46:53 -0800 (PST)
+        id S1726181AbhAVXoR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 18:44:17 -0500
+Received: from relay06.th.seeweb.it ([5.144.164.167]:39107 "EHLO
+        relay06.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726013AbhAVXoQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 18:44:16 -0500
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 47CC13EEDE;
+        Sat, 23 Jan 2021 00:43:18 +0100 (CET)
+Subject: Re: [PATCH v5 0/7] cpufreq-qcom-hw: Implement full OSM programming
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
+        devicetree@vger.kernel.org, robh+dt@kernel.org,
+        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
+        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
+        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com
+References: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
+ <20210122094646.35d6wrbj73jrhk7v@vireshk-i7>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Message-ID: <31a1ad25-30f5-8741-fa85-90b93f070f9d@somainline.org>
+Date:   Sat, 23 Jan 2021 00:43:18 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-References: <20210122215900.1168610-1-dnojiri@chromium.org>
-In-Reply-To: <20210122215900.1168610-1-dnojiri@chromium.org>
-From:   Doug Anderson <dianders@chromium.org>
-Date:   Fri, 22 Jan 2021 14:46:42 -0800
-X-Gmail-Original-Message-ID: <CAD=FV=XW5rodt0LdmzVwnzUgBgxe98zh1PshHa1G5=oUcg6aAA@mail.gmail.com>
-Message-ID: <CAD=FV=XW5rodt0LdmzVwnzUgBgxe98zh1PshHa1G5=oUcg6aAA@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] power: supply: PCHG: Peripheral device charger
-To:     Daisuke Nojiri <dnojiri@chromium.org>
-Cc:     Vincent Palatin <vpalatin@chromium.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Benson Leung <bleung@chromium.org>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        Guenter Roeck <groeck@chromium.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Prashant Malani <pmalani@chromium.org>,
-        Mark Brown <broonie@kernel.org>,
-        Pi-Hsun Shih <pihsun@chromium.org>,
-        Gwendal Grignou <gwendal@chromium.org>,
-        Yu-Hsuan Hsu <yuhsuan@chromium.org>,
-        Ching-Kang Yen <chingkang@chromium.org>,
-        Vijay Hiremath <vijay.p.hiremath@intel.com>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210122094646.35d6wrbj73jrhk7v@vireshk-i7>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Il 22/01/21 10:46, Viresh Kumar ha scritto:
+> On 21-01-21, 20:52, AngeloGioacchino Del Regno wrote:
+>>    **
+>>    ** NOTE: To "view the full picture", please look at the following
+>>    ** patch series:
+>>    ** https://patchwork.kernel.org/project/linux-arm-msm/list/?series=413355
+>>    **              This is a subset of that series.
+>>    **
+>>
+>> Changes in v5:
+>> - Fixed OPP table API abuse, in conjunction with the CPR3 driver
+>> - Some minor cleanups
+> 
+> Tanya had some comments about the driver in the previous version,
+> please let such discussions close before sending any new versions. I
+> haven't seen any reviews for the major driver changes until this
+> version and we are already on V5. Please wait for some time for people
+> to review the patches.
+> 
 
-On Fri, Jan 22, 2021 at 2:07 PM Daisuke Nojiri <dnojiri@chromium.org> wrote:
->
-> +static int cros_ec_notify(struct notifier_block *nb,
-> +                         unsigned long queued_during_suspend,
-> +                         void *data)
-> +{
-> +       struct cros_ec_device *ec_dev = (struct cros_ec_device *)data;
-> +       u32 host_event = cros_ec_get_host_event(ec_dev);
-> +       struct charger_data *charger =
-> +                       container_of(nb, struct charger_data, notifier);
-> +       u32 device_event_mask;
-> +
-> +       if (!host_event)
-> +               return NOTIFY_BAD;
+Well, okay... it's just that I didn't want reviewers to lose time with
+something that had to be fixed, as it wasn't working anymore on the
+newest RC, due to a commit that was (rightfully!) blocking the abuse of
+the OPP API.
 
-Drive-by bug report: the above should be NOTIFY_DONE.  By returning
-NOTIFY_BAD you're preventing other people on the call chain that come
-after you from receiving any events that aren't "host events".
-Specifically this includes keyboard events, switch events, etc.
+I know that it may be not practical to send a new version while a
+discussion is in progress, but this looked like being a critical fix
+for the driver that I'm sending.
 
-The patch <https://crrev.com/c/2645556> contains the fix.
+In any case, this time it is a "final" version and will not get any more
+changes unless requested by reviewers/maintainers.
 
--Doug
+-- Angelo
