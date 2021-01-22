@@ -2,141 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E00AC433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 02:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7508C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 03:05:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E9DD123136
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 02:39:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B02322C7D
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 03:05:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726672AbhAVCjs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Jan 2021 21:39:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39678 "EHLO
+        id S1726515AbhAVDFv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Jan 2021 22:05:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46182 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726689AbhAVCfa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 21:35:30 -0500
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42C65C061794
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 18:34:11 -0800 (PST)
-Received: by mail-qt1-x82f.google.com with SMTP id v3so3171281qtw.4
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 18:34:11 -0800 (PST)
+        with ESMTP id S1725283AbhAVDFt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2021 22:05:49 -0500
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD69FC061756
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 19:05:09 -0800 (PST)
+Received: by mail-pg1-x52a.google.com with SMTP id q7so2734708pgm.5
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2021 19:05:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=M04lwPBiKAp4mMR41FNkA1iddXx0RaVuGp7LGXqlLnc=;
-        b=bDB4nKPMr3JI0ap5q38vZVSJ14wExCJz9SNH/X+2DxUUBiCQEphMXiQ/+Q5plfN/a/
-         BRqdsQNq3x8M64V6i2po521+I5U2uhPnwxIA14D8Z9kWj7XEk1tbVJifdUuO8RLbvflp
-         o3Pz2Fm0U9M2HEqmMmBvdg9ONnoo5ziEoBP5Lanb1ekXKQ/xQVINycVeTPnCfPuJCWKT
-         Dgsp/peAdSQv/r5JXAYMieVOABbnwzJNEk8d485y2cgRzOBiZNwpDqs56DmIfMgsczMD
-         2Lm2Y+YnEVnLbscnaDdVLuR6VDgOolfejiH5jlzLtmnLUH/IKOUYBfUo+DPfVqpn89Go
-         moyA==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=7WAx2nccWmzEdsODAWKhq/59U7lfHX2jsurB6+JMLsw=;
+        b=D6djuXzODIlL7l5Rrgide9Ftif7VFzrKoRyAkzxylF8qkbQWhYBF6pANY2SZOcUitL
+         qvBAEjIE8z6kQP5cVCJvAMB7UQfHCniyMVBkHcLppClQfILYBaiHpIqh8rLNsNSj0ohJ
+         5Fdmdwhi7fR+/PonEa+4n4GqSxp0q9v2y8UDnxAwqLBnf0XQgYl129yfQ0yj4l8N7ANG
+         1G/gTF7WluXTDMXvLUAwEP3soUfq9I9l5+YrylLk4xnsMnpz/sZy4w5VRAT6qyFbpDec
+         Y9Z17Il7/gcIHMJfidXus7T6RCsWd7I6S6Tl/3+j5Fd/hFbD/hVuTmiCvHSdrjrE2LiL
+         okKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=M04lwPBiKAp4mMR41FNkA1iddXx0RaVuGp7LGXqlLnc=;
-        b=JHa6YlpN6pbR3Y/0g0yzjdRT1BlHyC+aT1+5RaBV950+Uz9Xv+c/A4m3onMfy+w/n7
-         yUupgUKt6zUmTIuEyUOHaut+8BnNbAYe2cdxAPX+DCX3gmWeTELEaQh6VJ/TqY8jl1Q5
-         1QF63CN316SSSfEcwnlSd/r7VbSKz2fAtEcoVpnptVb32DlkTVI/ljzVCrhH0uDhpDik
-         yvs58ADJQiDHEKQO1OZsQnl4dCbMNzlAUrZye7qiG32+gFiBb5LUB3K/xNxxSYlNUIq3
-         C/Q1MIIsfhq3qYfhdWvIYknLiA+xZk998tluu/MnICoxXJrvHqUDo1w0oX1Ej0otnd4H
-         HONw==
-X-Gm-Message-State: AOAM532XWY691ZS9kpJ8e/a0zcv0hXZ1V8Rbqta28ZehBxKEvLAnI7pf
-        X0GJONrS4yea7b8ZunJYGJZvwg==
-X-Google-Smtp-Source: ABdhPJyGMTyNlhw1AYJj2GnqfJcwESqKAcxUKfadap3XkrefLmIB5Hn1fXt0ZWtqcVM+1emGU08xSw==
-X-Received: by 2002:ac8:5385:: with SMTP id x5mr2565373qtp.321.1611282850525;
-        Thu, 21 Jan 2021 18:34:10 -0800 (PST)
-Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.googlemail.com with ESMTPSA id m13sm4846025qtu.93.2021.01.21.18.34.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Jan 2021 18:34:09 -0800 (PST)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        davem@davemloft.net, kuba@kernel.org, luciano.coelho@intel.com
-Cc:     linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-        netdev@vger.kernel.org, linux-pm@vger.kernel.org, amitk@kernel.org,
-        nathan.errera@intel.com
-Subject: [PATCH v2 2/3] drivers: thermal: Remove thermal_notify_framework
-Date:   Thu, 21 Jan 2021 21:34:05 -0500
-Message-Id: <20210122023406.3500424-3-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210122023406.3500424-1-thara.gopinath@linaro.org>
-References: <20210122023406.3500424-1-thara.gopinath@linaro.org>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=7WAx2nccWmzEdsODAWKhq/59U7lfHX2jsurB6+JMLsw=;
+        b=U6zg+ycNrEF3p3DhlArZzcJ8MUZOXREMjuo5UwWgtyB7W+rcrZlRxdCXC9/K4dZV7E
+         1xtixzuwW2fmvWpuI9kBwzQys67lURDTREjduLzGBB4CVJuza14EbEJqGxEXfI7RVxU4
+         Eth37OetRMmjo4wwFQjb8vL9MhBLtn+tN026COYHBKxtRUOvF2a+5OjMwy+8uVX4xpC6
+         11WROodH+9vaQ9Q1U4u/+3wGgw8a5DGi+8koitWOAIC9IBsXk4m4NF3x2GcCm2rUl/o5
+         8iG+mRDKl2Ey28KRHkwYbgZfz1d9/wvrHshAMa3Cyc3adOvzfirwPGuOwgCVNqT/VhOz
+         ONoA==
+X-Gm-Message-State: AOAM531hA4QytbSgFfprgTRHJ2TEZkvMJQKr1uZr3jIYzUtZEux0OM/W
+        5Mq5sCCxO8ausGoeXYa+c8FZPw==
+X-Google-Smtp-Source: ABdhPJwwP0WTirpf9k2orr9Eqi50BNfMsvjG7eZ/T9iQVn6XD12lzQGiFhDD3TDkLDrpO6grCa1rMw==
+X-Received: by 2002:a62:ee0c:0:b029:1a8:db14:927e with SMTP id e12-20020a62ee0c0000b02901a8db14927emr2642645pfi.14.1611284709245;
+        Thu, 21 Jan 2021 19:05:09 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id c17sm6433075pfi.88.2021.01.21.19.05.07
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 21 Jan 2021 19:05:08 -0800 (PST)
+Date:   Fri, 22 Jan 2021 08:35:06 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2] opp: Prepare for ->set_opp() helper to work without
+ regulators
+Message-ID: <20210122030506.zhfkk4angmp2a4hk@vireshk-i7>
+References: <fb69353c-a35b-9b7c-46bc-d464c6dab6f5@gmail.com>
+ <d60bc79ed2ac3fd2f2911449ba994b4d55bd1bfd.1611228541.git.viresh.kumar@linaro.org>
+ <58d15e20-8688-99be-b107-4350ff81e90a@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <58d15e20-8688-99be-b107-4350ff81e90a@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-thermal_notify_framework just updates for a single trip point where as
-thermal_zone_device_update does other bookkeeping like updating the
-temperature of the thermal zone and setting the next trip point. The only
-driver that was using thermal_notify_framework was updated in the previous
-patch to use thermal_zone_device_update instead. Since there are no users
-for thermal_notify_framework remove it.
+On 22-01-21, 00:02, Dmitry Osipenko wrote:
+> 21.01.2021 14:30, Viresh Kumar пишет:
+> > @@ -1952,9 +1930,16 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+> >  	for (i = opp_table->regulator_count - 1; i >= 0; i--)
+> >  		regulator_put(opp_table->regulators[i]);
+> >  
+> > -	_free_set_opp_data(opp_table);
+> > +	mutex_lock(&opp_table->lock);
+> > +	if (opp_table->set_opp_data) {
+> > +		opp_table->set_opp_data->old_opp.supplies = NULL;
+> > +		opp_table->set_opp_data->new_opp.supplies = NULL;
+> > +	}
+> > +	mutex_unlock(&opp_table->lock);
+> >  
+> > +	kfree(opp_table->sod_supplies);
+> >  	kfree(opp_table->regulators);
+> > +	opp_table->sod_supplies = NULL;
+> >  	opp_table->regulators = NULL;
+> >  	opp_table->regulator_count = -1;
+> 
+> The sod_supplies should be unset under the lock.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- drivers/thermal/thermal_core.c | 18 ------------------
- include/linux/thermal.h        |  4 ----
- 2 files changed, 22 deletions(-)
+Fixed, thanks.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4a291d205d5c..04f7581b70c5 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -575,24 +575,6 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
- 
--/**
-- * thermal_notify_framework - Sensor drivers use this API to notify framework
-- * @tz:		thermal zone device
-- * @trip:	indicates which trip point has been crossed
-- *
-- * This function handles the trip events from sensor drivers. It starts
-- * throttling the cooling devices according to the policy configured.
-- * For CRITICAL and HOT trip points, this notifies the respective drivers,
-- * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
-- * The throttling policy is based on the configured platform data; if no
-- * platform data is provided, this uses the step_wise throttling policy.
-- */
--void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
--{
--	handle_thermal_trip(tz, trip);
--}
--EXPORT_SYMBOL_GPL(thermal_notify_framework);
--
- static void thermal_zone_device_check(struct work_struct *work)
- {
- 	struct thermal_zone_device *tz = container_of(work, struct
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 31b84404f047..77a0b8d060a5 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -398,7 +398,6 @@ int thermal_zone_get_slope(struct thermal_zone_device *tz);
- int thermal_zone_get_offset(struct thermal_zone_device *tz);
- 
- void thermal_cdev_update(struct thermal_cooling_device *);
--void thermal_notify_framework(struct thermal_zone_device *, int);
- int thermal_zone_device_enable(struct thermal_zone_device *tz);
- int thermal_zone_device_disable(struct thermal_zone_device *tz);
- void thermal_zone_device_critical(struct thermal_zone_device *tz);
-@@ -446,9 +445,6 @@ static inline int thermal_zone_get_offset(
- 
- static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
- { }
--static inline void thermal_notify_framework(struct thermal_zone_device *tz,
--	int trip)
--{ }
- 
- static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
- { return -ENODEV; }
 -- 
-2.25.1
-
+viresh
