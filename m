@@ -2,117 +2,188 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C390EC433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A506C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:27:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97BC123A84
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:21:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3F4A223A84
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 15:27:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728996AbhAVPVF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 10:21:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34894 "EHLO
+        id S1728867AbhAVP0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 10:26:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726633AbhAVPUs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 10:20:48 -0500
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3384BC061786;
-        Fri, 22 Jan 2021 07:20:01 -0800 (PST)
-Received: by mail-wm1-x330.google.com with SMTP id y187so4654804wmd.3;
-        Fri, 22 Jan 2021 07:20:01 -0800 (PST)
+        with ESMTP id S1729015AbhAVO6g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 09:58:36 -0500
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6159C0617AB;
+        Fri, 22 Jan 2021 06:56:22 -0800 (PST)
+Received: by mail-wm1-x32e.google.com with SMTP id o10so6838214wmc.1;
+        Fri, 22 Jan 2021 06:56:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=to:references:from:subject:message-id:date:user-agent:mime-version
-         :in-reply-to:content-language:content-transfer-encoding;
-        bh=43Pf87vNh1BvVz9DEmjXXzc9gq+Qi8n2DU1ll5dE4h8=;
-        b=i5zdWF/damgIZSl6VfswKyzA/dRnZIaqifNgsR9dMVjZqVELlN4hN93a6oKLXdO1Te
-         alkAkf02l2i/Z/4nrfHUSptjpkEw2GCTxwn9XWQrpmg3elyP0AZcbK8PBLeqwd5f+x7F
-         uEunOoeZ/ETsB4X7b/nb2oEDi8M/hN9ZuAciVJY5aeCvqqCeEbtTuE95uRqgD10G81VJ
-         HMTXTN//l9r5e30Hp+KwBGbUffEPgc6u5uGkxePFDPUmdVvUI5h17OQ05kCYTQBbMkmv
-         iebT8idPfduCJxzYvkfQXZVL0Gt7pWeoHx+bFInFOpsrvj2gyOXV+DMIoivHwZGwneyE
-         hvYw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=B7EH7hNQ0zHbFUPaZhxibjy/gRki2XnmNMbonXYtYOI=;
+        b=sIESIdpSd7hwu8Ko1MbUFAXvXE1SUmmw12lygBcnZviJN/KjPQWGg75jvFEolD5wLa
+         MJIMJFW02nLX6CBEj0mh7lK+FQuiwAKMMbDfxuWw4Rna/CueS44ZYsKAcBVQ9iRpIAFj
+         WJO+By6WHksqkavTUVbHimMas+yOwaJ0xGGg/JJrit2KzefnbEHwmxSad9we9EAL2CgE
+         hy06PZ3n6kAsfKO5jO5h7aENu/1m+81xuRs16S+M47NDU/iQWJ9TfxoGyzFO1WhK99ug
+         QGxM6z4NgvmeB+nKguIn2Zi5OdrxseKZimBYhLRt06MlB74fh+FjhsLAi5zMuEqRyxkD
+         XZvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:to:references:from:subject:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=43Pf87vNh1BvVz9DEmjXXzc9gq+Qi8n2DU1ll5dE4h8=;
-        b=BsMqeXXCbBVrO+oTlkX/YwoUoCpB1OZuaKDZJ7McxJEAlmbi/QUZjziAQk756XtNVW
-         Xxw2k2MVkgx4YTiIRna+fRxQNhVk12ALn6ZQqeF+MZBF39ziXIUz5yasGfXj0dvmsSYL
-         z/SpEgCTllQddrrrWcPG0jJRuzvJlAL4NYai0Kdbk41bLKdEujYmi7IvWKgOREY3x2U/
-         RDJ/H99ebP+r22xPWxUcxWRXnPYl+jq9nMblTJaBCzaL3KAu/CxXtrKUfjgh5siy36hn
-         TaCsQCDZ1gu6dgd1VNeMf4fJQ1hNgxMeZLAAvYir7VpuIhMQGhoQN1vNsefwQfVjGpJH
-         tcFg==
-X-Gm-Message-State: AOAM531MfQGtz70vWKQEJ88NEDJDpqU4vkmlVnhNOu6952EbNo6q25cA
-        +IMoFJEuQoYdHsd753iGyyPfLjDVjOw=
-X-Google-Smtp-Source: ABdhPJzK+wfxaCGNbQHGVi1Lblygm7ZeaXOmpWcAQTDfVRSRyDmBR8SLGRHj+ALwnpzA+LiYVf0YQg==
-X-Received: by 2002:a1c:5686:: with SMTP id k128mr4459219wmb.189.1611328799500;
-        Fri, 22 Jan 2021 07:19:59 -0800 (PST)
-Received: from ?IPv6:2003:ea:8f06:5500:5c9d:dd78:3e40:95d? (p200300ea8f0655005c9ddd783e40095d.dip0.t-ipconnect.de. [2003:ea:8f06:5500:5c9d:dd78:3e40:95d])
-        by smtp.googlemail.com with ESMTPSA id d199sm11736696wmd.1.2021.01.22.07.19.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Jan 2021 07:19:59 -0800 (PST)
-To:     Laurent Badel <laurentbadel@eaton.com>, netdev@vger.kernel.org,
-        Andrew Lunn <andrew@lunn.ch>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>, linux-kernel@vger.kernel.org,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-References: <20210122143524.14516-1-laurentbadel@eaton.com>
-From:   Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH net 0/1] net: phy: Fix interrupt mask loss on resume from
- hibernation
-Message-ID: <32cbb60d-67f3-765a-d51e-48d74c0785d6@gmail.com>
-Date:   Fri, 22 Jan 2021 16:19:51 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=B7EH7hNQ0zHbFUPaZhxibjy/gRki2XnmNMbonXYtYOI=;
+        b=YPHEKCNE+snLftdPyw3bMss1xciOweiX7XOPN3S9SNrqwjbESPtyrApWHDcUf+Nt0m
+         I7dOH59IiusPSjOd7Fh+AssOydHRLUqhmfwVpZQQTwoy3I9O4XuD2gIoCcmYMeDmXXth
+         VWZ4D+xAUrRcH0oc5+XsLRjnoXvqjbUdSCHIOCJ8aOuxDzm+OijGArVGMe+vT8KL+ZYY
+         GqJNkm1TqLZw0CHo2L2AKZlOP3gdSinbThEph94Cs106GW4EfpZavILA5IhXTA2edP3g
+         b2Gr0ooGzZ0r9aT2s4PgLazypkC7LNzrBKKF/SniPwBVwLlVKFZvuUQ22jg5h1usbWTr
+         tZSQ==
+X-Gm-Message-State: AOAM531vVVGLPTSa6bHCz2+n9HN6TWWYvJ3Grg+5sji0PDf6idq74fwo
+        UguygfJBPAivLWuyS/f9ufQ=
+X-Google-Smtp-Source: ABdhPJznkSwyqoo2U/wWDUkykiCgx3b/7Y3zWLXo7VtZ8AeRrIMPIYsLaxuveBRIMEmKsp/3rAEh6w==
+X-Received: by 2002:a1c:1f83:: with SMTP id f125mr4415561wmf.82.1611327381526;
+        Fri, 22 Jan 2021 06:56:21 -0800 (PST)
+Received: from ansuel-xps20.localdomain (host-79-45-3-77.retail.telecomitalia.it. [79.45.3.77])
+        by smtp.googlemail.com with ESMTPSA id t67sm12061106wmt.28.2021.01.22.06.56.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Jan 2021 06:56:20 -0800 (PST)
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Amit Kucheria <amitk@kernel.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v9 8/8] dt-bindings: thermal: tsens: Document ipq8064 bindings
+Date:   Fri, 22 Jan 2021 15:55:57 +0100
+Message-Id: <20210122145558.4982-9-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210122145558.4982-1-ansuelsmth@gmail.com>
+References: <20210122145558.4982-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20210122143524.14516-1-laurentbadel@eaton.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22.01.2021 15:35, Laurent Badel wrote:
-> ﻿Some PHYs such as SMSC LAN87xx clear the interrupt mask register on
-> software reset. Since mdio_bus_phy_restore() calls phy_init_hw() which
-> does a software reset of the PHY, these PHYs will lose their interrupt 
-> mask configuration on resuming from hibernation.
+Document the use of bindings used for msm8960 tsens based devices.
+msm8960 use the same gcc regs and is set as a child of the qcom gcc.
 
-The (optional) software reset is done via soft_reset callback.
-So if the PHY in question needs special treatment after a soft reset,
-why not add it to the soft_reset callback?
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ .../bindings/thermal/qcom-tsens.yaml          | 56 ++++++++++++++++---
+ 1 file changed, 48 insertions(+), 8 deletions(-)
 
-> 
-> I initially reconfigured only the PHY interrupt mask using 
-> phydev->config_intr(), which worked fine with PM_DEBUG/test_resume, but
-> there seems to be an issue when resuming from a real hibernation, by which
-> the interrupt type is not set appropriately (in this case 
-> IRQ_TYPE_LEVEL_LOW). Calling irq_set_irq_type() directly from sysfs 
-
-This sounds to me like a lower level driver (e.g. for GPIO / interrupt
-controller) not resuming properly from hibernation. Supposedly things
-like edge/level high/low/both are stored per interrupt line in a register
-of the interrupt controller, and the controller would have to restore
-the register value on resume from hibernation. You may want to have
-a look at that driver.
-
-> restored the PHY functionality immediately suggesting that everything is
-> otherwise well configured. Therefore this patch suggests freeing and
-> re-requesting the interrupt, to guarantee proper interrupt configuration.
-> 
-> Laurent Badel (1):
->   net: phy: Reconfigure PHY interrupt in mdio_bus_phy_restore()
-> 
->  drivers/net/phy/phy_device.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 95462e071ab4..1785b1c75a3c 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -19,6 +19,11 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - description: msm9860 TSENS based
++        items:
++          - enum:
++              - qcom,ipq8064-tsens
++
+       - description: v0.1 of TSENS
+         items:
+           - enum:
+@@ -73,7 +78,9 @@ properties:
+     maxItems: 2
+     items:
+       - const: calib
+-      - const: calib_sel
++      - enum:
++          - calib_backup
++          - calib_sel
+ 
+   "#qcom,sensors":
+     description:
+@@ -88,12 +95,20 @@ properties:
+       Number of cells required to uniquely identify the thermal sensors. Since
+       we have multiple sensors this is set to 1
+ 
++required:
++  - compatible
++  - interrupts
++  - interrupt-names
++  - "#thermal-sensor-cells"
++  - "#qcom,sensors"
++
+ allOf:
+   - if:
+       properties:
+         compatible:
+           contains:
+             enum:
++              - qcom,ipq8064-tsens
+               - qcom,msm8916-tsens
+               - qcom,msm8974-tsens
+               - qcom,msm8976-tsens
+@@ -114,17 +129,42 @@ allOf:
+         interrupt-names:
+           minItems: 2
+ 
+-required:
+-  - compatible
+-  - reg
+-  - "#qcom,sensors"
+-  - interrupts
+-  - interrupt-names
+-  - "#thermal-sensor-cells"
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,tsens-v0_1
++              - qcom,tsens-v1
++              - qcom,tsens-v2
++
++    then:
++      required:
++        - reg
+ 
+ additionalProperties: false
+ 
+ examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    // Example msm9860 based SoC (ipq8064):
++    gcc: clock-controller {
++
++           /* ... */
++
++           tsens: thermal-sensor {
++                compatible = "qcom,ipq8064-tsens";
++
++                 nvmem-cells = <&tsens_calib>, <&tsens_calib_backup>;
++                 nvmem-cell-names = "calib", "calib_backup";
++                 interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
++                 interrupt-names = "uplow";
++
++                 #qcom,sensors = <11>;
++                 #thermal-sensor-cells = <1>;
++          };
++    };
++
+   - |
+     #include <dt-bindings/interrupt-controller/arm-gic.h>
+     // Example 1 (legacy: for pre v1 IP):
+-- 
+2.29.2
 
