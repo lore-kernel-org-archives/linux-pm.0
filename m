@@ -2,110 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A46AC433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 16:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26171C433E9
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:02:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DF4F23AA1
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 16:49:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E78F923ACA
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:02:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729491AbhAVQrn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 11:47:43 -0500
-Received: from mail.eaton.com ([192.104.67.6]:10400 "EHLO mail.eaton.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729599AbhAVQUf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Jan 2021 11:20:35 -0500
-Received: from mail.eaton.com (simtcimsva03.etn.com [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id E561AA40AD;
-        Fri, 22 Jan 2021 11:19:46 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=eaton.com;
-        s=eaton-s2020-01; t=1611332387;
-        bh=NXPnl/Y3FJq8m/0J4qPQ1JlhxEaQclaFLA2zzJv3CPg=; h=From:To:Date;
-        b=QIKIgm26Lxh6i2FVsUXUMW269CHeNKsuytJxrQKsKxKu0Ya5FPXwDCidzatcLz8pw
-         W5GMC2ecD/vWJWm0QKCbeZjKqGfNkLFP2DnXYCLy4Ts4YKM9P4X8I693wE4aVmXiIk
-         zB4paWEtiVvTQgl55wJ4K/z9YN7y4X6LipsB6yYlu2bNwBvbglPf+/iI8FZgsZshZK
-         IMMcCY7ok+yzDoJkOidJ/qqStop65IWkpHWuGRbhM9U4siks9Qvl3S3wMa9jFLA0iN
-         RC/kpPzGWQM0HjpEodATGKAKxbs2JD2Ha51tqkg+A2ww8+mm7kIaKJ0I/exXgVQ5Wu
-         FwnbjUUg/1GJA==
-Received: from mail.eaton.com (simtcimsva03.etn.com [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id D8DF4A4071;
-        Fri, 22 Jan 2021 11:19:46 -0500 (EST)
-Received: from LOUTCSGWY02.napa.ad.etn.com (loutcsgwy02.napa.ad.etn.com [151.110.126.85])
-        by mail.eaton.com (Postfix) with ESMTPS;
-        Fri, 22 Jan 2021 11:19:46 -0500 (EST)
-Received: from localhost (151.110.234.147) by LOUTCSGWY02.napa.ad.etn.com
- (151.110.126.205) with Microsoft SMTP Server id 14.3.487.0; Fri, 22 Jan 2021
- 11:19:45 -0500
-From:   Laurent Badel <laurentbadel@eaton.com>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, <linux-pm@vger.kernel.org>
-CC:     Laurent Badel <laurentbadel@eaton.com>
-Subject: [PATCH 1/1] PM: hibernate: flush swap writer after marking
-Date:   Fri, 22 Jan 2021 17:19:41 +0100
-Message-ID: <20210122161941.1080-2-laurentbadel@eaton.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210122161941.1080-1-laurentbadel@eaton.com>
-References: <20210122161941.1080-1-laurentbadel@eaton.com>
+        id S1729662AbhAVRCp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 12:02:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56830 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729550AbhAVRCX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 12:02:23 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D863C0613D6;
+        Fri, 22 Jan 2021 09:01:40 -0800 (PST)
+Date:   Fri, 22 Jan 2021 18:01:38 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1611334898;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=AEd+UZxbHmiF2tOBpSyRAlX6c0QcubXcj2vz5mCJSCs=;
+        b=Qyn5cXcXO5A+IF/D/KJPan/Tkqm/tyGUfqH6DdrbD5WVAXtfcAcXhzszYdlgEYhcWZyOU0
+        an6EwKQ3/aqPGsaeElDs2Q1PxfbqRtf0Pn2IPCiO/sQgJZhMSqJ81u7iOd+qXdI5uPmITn
+        nw5ZAH8RPCZV6Kcxc9ESMer4PPIoogpyeaI/RUV3lexFbE8KaOVYMILyrCRQRJYESdNkhK
+        2a0Xtuz3cg9tKKaxMlYmh6ixKVj4hyCAxKrlKUpxd1mepdBeY4pXF0/Kcb0LndD8r0Nhwo
+        xg8H6digGariQYVI8GMYiWwwv3z4bSMuToDcJiQYOqVmE/tYOW3XDuc9MR2zLg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1611334898;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=AEd+UZxbHmiF2tOBpSyRAlX6c0QcubXcj2vz5mCJSCs=;
+        b=YwIyiiSAqFHOBDhMwgZXNVI+JKhUbvbjqO9nNF4iiGDORemK7dBt7gP3tu2vRT0FBsseRg
+        iU6MhUDkbGsxtvCw==
+From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Stephen Berman <stephen.berman@gmx.net>
+Subject: Re: [PATCH] ACPI: thermal: Do not call acpi_thermal_check() directly
+Message-ID: <20210122170138.zflol3gohzgqw5zm@linutronix.de>
+References: <3391226.KRKnzuvfpg@kreacher>
+ <CAJZ5v0gB4B_Os0VQv-F2SdVcJ8_rUdjic6rOEjOd=ZWhGzdLdQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-X-EXCLAIMER-MD-CONFIG: 96b59d02-bc1a-4a40-8c96-611cac62bce9
-X-TM-SNTS-SMTP: 715C64F744E28E5A2948BB37267D5B377C467E3C98275D80EE16C0E2530A32AE2002:8
-X-TM-AS-GCONF: 00
-X-TM-AS-Product-Ver: IMSVA-9.1.0.1988-8.6.0.1013-25928.001
-X-TM-AS-Result: No--3.473-7.0-31-10
-X-imss-scan-details: No--3.473-7.0-31-10
-X-TMASE-Version: IMSVA-9.1.0.1988-8.6.1013-25928.001
-X-TMASE-Result: 10--3.472800-10.000000
-X-TMASE-MatchedRID: uc5cNCUKFYqYizZS4XBb31BHQbxjMzOFTq7p0H1d1uu6NZ1Y50LtWSPT
-        yo5Y6UW77Pogmtrmo9fULQp/uiPRelroFJ9oH6bIPwKTD1v8YV5MkOX0UoduuVVkJxysad/I0oQ
-        J+FjC5oYspcdwc8Msxy7sD033+LBef+zeSFi2bEodDctFr7spHAQzkAzkcS6b2bNx1HEv7HAqtq
-        5d3cxkNZdacNh8njm7bHRTANuSLj3DGsaJp9Q5c5GZW2ivGVlRI9B4eYpWy1yJMLGAigMWQ49Di
-        fSBN2vd4vyLjpN/V07Oxp7WEObs+fjl+LaaxyHgU/JCITmuhS7oZbNFHtbIdPl43iPWIJMPxwTT
-        797Vag8=
-X-TMASE-SNAP-Result: 1.821001.0001-0-1-12:0,22:0,33:0,34:0-0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gB4B_Os0VQv-F2SdVcJ8_rUdjic6rOEjOd=ZWhGzdLdQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-=EF=BB=BFFlush the swap writer after, not before, marking the files, to ens=
-ure the
-signature is properly written.=20
+On 2021-01-22 17:23:36 [+0100], Rafael J. Wysocki wrote:
+> 
+> Well, it's been over a week since this was posted.
 
-Signed-off-by: Laurent Badel <laurentbadel@eaton.com>
----
- kernel/power/swap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thank you for this ;)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index c73f2e295167..72e33054a2e1 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -497,10 +497,10 @@ static int swap_writer_finish(struct swap_map_handle =
-*handle,
- 		unsigned int flags, int error)
- {
- 	if (!error) {
--		flush_swap_writer(handle);
- 		pr_info("S");
- 		error =3D mark_swapfiles(handle, flags);
- 		pr_cont("|\n");
-+		flush_swap_writer(handle);
- 	}
-=20
- 	if (error)
---=20
-2.17.1
+> Does anyone have any comments?
 
+I looked over it and it makes sense, so
+  Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
+I didn't comment on it since a testing-by would be better ;)
 
------------------------------
-Eaton Industries Manufacturing GmbH ~ Registered place of business: Route d=
-e la Longeraie 7, 1110, Morges, Switzerland=20
+Could you please add a stable tag? I've seen a few "comments" in forums
+suggesting what I suggested to Stephen as a work around while I was
+searching for his motherboard so they are more people affected by the
+shutdown problem.
 
------------------------------
-
+Sebastian
