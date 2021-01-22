@@ -2,122 +2,159 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EA6CC433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 14:45:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32565C433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 14:46:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E5AB239D1
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 14:45:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0787923A5B
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 14:46:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728496AbhAVOp1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 09:45:27 -0500
-Received: from mail.eaton.com ([192.104.67.6]:10400 "EHLO mail.eaton.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728774AbhAVOo7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Jan 2021 09:44:59 -0500
-X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2021 09:44:57 EST
-Received: from mail.eaton.com (simtcimsva01.etn.com [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 28EDC960C3;
-        Fri, 22 Jan 2021 09:35:41 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=eaton.com;
-        s=eaton-s2020-01; t=1611326141;
-        bh=R2zHmX5/NiL6WCxfs6TaceDHiNspxfniXOh6eGlV4CQ=; h=From:To:Date;
-        b=KeIJAdRuXECjMpawxwr3DS7u6S3DVG6dkMhU9DAOuu3pYyvRn+DgRdQ/lEBOgAHzA
-         edSIhNG/9FD1C8CF5EqjzwEGcORpwMUaifBQFQze9n/rtB+34aSLIV+FHukp4vNeaP
-         RGcxNdsMB6VbHZuy1iB0lTb1hISIgZ/vNYAmCORMb8dHKhYloX+6Xas9fA/gs9nHnp
-         hNNVkN9NwtOc+Mz5eEqB39j4enJpVZHY83UPBTrDOznND5Ju1Z6BjRUN4gWXv6BpT0
-         QvsFmnG9G6D6GX7NpNZ+gKBnO1LukKNLse6eD4Xg/ANxckpOrsh7HJ0/MmiYZmXuQF
-         uy+zEdEANXiUw==
-Received: from mail.eaton.com (simtcimsva01.etn.com [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id AD403960BD;
-        Fri, 22 Jan 2021 09:35:38 -0500 (EST)
-Received: from SIMTCSGWY04.napa.ad.etn.com (simtcsgwy04.napa.ad.etn.com [151.110.126.121])
-        by mail.eaton.com (Postfix) with ESMTPS;
-        Fri, 22 Jan 2021 09:35:38 -0500 (EST)
-Received: from localhost (151.110.234.147) by SIMTCSGWY04.napa.ad.etn.com
- (151.110.126.205) with Microsoft SMTP Server id 14.3.487.0; Fri, 22 Jan 2021
- 09:35:37 -0500
-From:   Laurent Badel <laurentbadel@eaton.com>
-To:     <netdev@vger.kernel.org>, Andrew Lunn <andrew@lunn.ch>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, <linux-pm@vger.kernel.org>
-CC:     Laurent Badel <laurentbadel@eaton.com>
-Subject: [PATCH net 1/1] net: phy: Reconfigure PHY interrupt in mdio_bus_phy_restore()
-Date:   Fri, 22 Jan 2021 15:35:24 +0100
-Message-ID: <20210122143524.14516-2-laurentbadel@eaton.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210122143524.14516-1-laurentbadel@eaton.com>
-References: <20210122143524.14516-1-laurentbadel@eaton.com>
+        id S1728895AbhAVOpr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 09:45:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55488 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728906AbhAVOpn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 09:45:43 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C5C9C0613D6;
+        Fri, 22 Jan 2021 06:45:01 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id h7so7857334lfc.6;
+        Fri, 22 Jan 2021 06:45:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=NYuOyrBA3kXFTfAu9fsVq/4HwU5w715PStR0pet3new=;
+        b=smgHIiRtqAR4oFQybNgfFViCTJNEoL+9sLgCQsENKXurosOdtnYuwWORw8Ftp+axZ/
+         YwgHm4Olx0Sst5TfcQ/phN5F9jwtcey/jWcut/QAVPVoFwpJaMLeFVlGkacOCCZNSvXN
+         X5/lDsWAbRUNgcefIuiOa8V7gcWD+acLAO1ZRvWPV/9bkBybcYi+JD0ix2J1D/lbjqle
+         qt8A1DDaS/ofe3uId3raZZUjPintMF8JDncnU+OEQqcrPzluaS2mu4NuytmgqfGcAbGB
+         6zeiv2JlFL6zUhvCBDp/08x7IkS2u7j69LOttLYHa5fUGgIltN+8ZFEtaWN2Sc3ScqTk
+         radw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=NYuOyrBA3kXFTfAu9fsVq/4HwU5w715PStR0pet3new=;
+        b=dLNHZ+jkiLDFc6BYbWNCRQDSxDDl44STGcrMf5LWLct0iP5cFdsiB8QysfDaIVQRr5
+         6n4rb15iep31h9zUdluX5G9EckP581WDCaETUZv5EL3w7ZlTG8Vg6bKi1l/+WZ1dvsNP
+         pDGEU71oqTOv6anlD3ySGWTX+9yOYdCFiaU2/QDF7gdlCYHtwkb/osen0lr9aICJdn5U
+         sYX7m9w9SLg7w+xczKYoQEoJEjHWI2JQ+W/p2hMBSgZ3FfW6m9AFV6WVM1lMuy/0G1PL
+         LGWepSKomhZWCHuWCCGtO/HNlzbcveHgxkxj6Ub0VzGuVRbvnjPBaEYPfpP1Qpk2d+pr
+         sX2w==
+X-Gm-Message-State: AOAM531jreLavHgFXDAuz3a2zqkFnMBqWoc+g+RHtK+3QcwL5R4U7UL1
+        0JsDNjoodCWTbIsxmXLnCb9I10trdsw=
+X-Google-Smtp-Source: ABdhPJw8XtkbXMHQKa7wXDFyovXWAYZmF75FV6lprfRYIKEs2uxaT521qAxhGKiyoI1hB+nko5nZ2g==
+X-Received: by 2002:a19:589:: with SMTP id 131mr1541965lff.525.1611326695453;
+        Fri, 22 Jan 2021 06:44:55 -0800 (PST)
+Received: from [192.168.2.145] (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
+        by smtp.googlemail.com with ESMTPSA id u15sm153998lfl.267.2021.01.22.06.44.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 22 Jan 2021 06:44:54 -0800 (PST)
+Subject: Re: [PATCH v4 4/4] opp: Make _set_opp_custom() work without
+ regulators
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Mark Brown <broonie@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20210120222649.28149-1-digetx@gmail.com>
+ <20210120222649.28149-5-digetx@gmail.com>
+ <20210122072626.mlbthef43hjldnyr@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <688c9aea-62b3-b52b-fee0-0d78cb28443d@gmail.com>
+Date:   Fri, 22 Jan 2021 17:44:54 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-X-EXCLAIMER-MD-CONFIG: 96b59d02-bc1a-4a40-8c96-611cac62bce9
-X-TM-SNTS-SMTP: FE70FC713CB97F6DAD8BEDAB0A1D68EFAE1D5103F39DC3EE98EE31318D8342EB2002:8
-X-TM-AS-GCONF: 00
-X-TM-AS-Product-Ver: IMSVA-9.1.0.1988-8.6.0.1013-25928.000
-X-TM-AS-Result: No--2.003-7.0-31-10
-X-imss-scan-details: No--2.003-7.0-31-10
-X-TMASE-Version: IMSVA-9.1.0.1988-8.6.1013-25928.000
-X-TMASE-Result: 10--2.002600-10.000000
-X-TMASE-MatchedRID: VIW3LEg1l16YizZS4XBb3/RUId35VCIe+ahnrHhmAJRGM2uNXRqsUvsY
-        8bNjl3gGPMs0cdM/lphnRutsGMyuGPI1YbpS1+avqJSK+HSPY+9lRzZAkKRGDVIxScKXZnK0QBz
-        oPKhLasiPqQJ9fQR1zrcPaeb4aji83nEpDU+5f9ko19GoN4WoGEyWLwjUVKFuA8FfY2Fm0lMIyT
-        NFi0TCbVYJIpN1DYJ5vqEhop8TGnRYF3qW3Je6+19QXM0Jj/jaf1tdYMcH2nI1pZREe8ejp8uoR
-        xHHrkLVNN00X0JwCr1AKfTbEPjR+peTN2GaEP5Hz9DvVzrxOJm0hbFWy4EqU4pebMSk1UmKlmXP
-        gyQocYp5E1G2nFNyeETBf0diyKhk8g9TaEI7TXx+3BndfXUhXQ==
-X-TMASE-SNAP-Result: 1.821001.0001-0-1-12:0,22:0,33:0,34:0-0
+In-Reply-To: <20210122072626.mlbthef43hjldnyr@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-=EF=BB=BFSome PHY (e.g. SMSC LAN87xx) clear their interrupt mask on softwar=
-e
-reset. This breaks the ethernet interface on resuming from hibernation,
-if the PHY is running in interrupt mode, so reconfigure interrupts
-after the software reset in mdio_bus_phy_restore().
+22.01.2021 10:26, Viresh Kumar пишет:
+> On 21-01-21, 01:26, Dmitry Osipenko wrote:
+>> Check whether OPP table has regulators in _set_opp_custom() and set up
+>> dev_pm_set_opp_data accordingly. Now _set_opp_custom() works properly,
+>> i.e. it doesn't crash if OPP table doesn't have assigned regulators.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/opp/core.c | 26 +++++++++++++++++---------
+>>  1 file changed, 17 insertions(+), 9 deletions(-)
+> 
+> I have applied this instead:
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 32d653774adc..805fc2602808 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -828,24 +828,31 @@ static int _set_opp_custom(const struct opp_table *opp_table,
+>                            struct dev_pm_opp_supply *old_supply,
+>                            struct dev_pm_opp_supply *new_supply)
+>  {
+> -       struct dev_pm_set_opp_data *data;
+> +       struct dev_pm_set_opp_data *data = opp_table->set_opp_data;
+>         int size;
+>  
+> -       data = opp_table->set_opp_data;
+> +       /*
+> +        * We support this only if dev_pm_opp_set_regulators() was called
+> +        * earlier.
+> +        */
+> +       if (opp_table->sod_supplies) {
+> +               size = sizeof(*old_supply) * opp_table->regulator_count;
+> +               if (!old_supply)
+> +                       memset(data->old_opp.supplies, 0, size);
+> +               else
+> +                       memcpy(data->old_opp.supplies, old_supply, size);
+> +
+> +               memcpy(data->new_opp.supplies, new_supply, size);
+> +               data->regulator_count = opp_table->regulator_count;
+> +       } else {
+> +               data->regulator_count = 0;
+> +       }
+> +
+>         data->regulators = opp_table->regulators;
+> -       data->regulator_count = opp_table->regulator_count;
+>         data->clk = opp_table->clk;
+>         data->dev = dev;
+> -
+>         data->old_opp.rate = old_freq;
+> -       size = sizeof(*old_supply) * opp_table->regulator_count;
+> -       if (!old_supply)
+> -               memset(data->old_opp.supplies, 0, size);
+> -       else
+> -               memcpy(data->old_opp.supplies, old_supply, size);
+> -
+>         data->new_opp.rate = freq;
+> -       memcpy(data->new_opp.supplies, new_supply, size);
+>  
+>         return opp_table->set_opp(data);
+>  }
+> 
+> 
 
-Signed-off-by: Laurent Badel <laurentbadel@eaton.com>
----
- drivers/net/phy/phy_device.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 80c2e646c093..5070eed55447 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -324,6 +324,15 @@ static int mdio_bus_phy_restore(struct device *dev)
- 	if (ret < 0)
- 		return ret;
-=20
-+	if (phydev->drv->config_intr && phy_interrupt_is_valid(phydev))
-+	{
-+		/* Some PHYs (e.g. SMSC LAN8720) clear their
-+		 * interrupt mask on software reset.
-+		 */
-+		phy_free_interrupt(phydev);
-+		phy_request_interrupt(phydev);
-+	}
-+
- 	if (phydev->attached_dev && phydev->adjust_link)
- 		phy_start_machine(phydev);
-=20
---=20
-2.17.1
-
-
-
------------------------------
-Eaton Industries Manufacturing GmbH ~ Registered place of business: Route d=
-e la Longeraie 7, 1110, Morges, Switzerland=20
-
------------------------------
+I replied to the wrong email, but this also looks good :) Thanks!
 
