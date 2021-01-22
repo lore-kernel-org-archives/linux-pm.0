@@ -2,144 +2,141 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 718DBC433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E40CFC433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:49:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 356F423A84
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:38:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2D6823AA1
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 22:49:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728202AbhAVWio (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 17:38:44 -0500
-Received: from mail-mw2nam12on2082.outbound.protection.outlook.com ([40.107.244.82]:62720
-        "EHLO NAM12-MW2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728179AbhAVTro (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Jan 2021 14:47:44 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=eqx21UQbV0pFwmZf8zdahOaE6K6kmaU7Ee+F+EGXXUcaNJrqal4XT0cC610wt7LhbsWu50J2sxJC3KZFK0AE2GKVholFzp1zt7IF7YDivtDTody2MH/gQvhGdQ2EQGyER1ZPTryyGBfoU4as1BeLBg+k47Qpbdj1vp9MsLcBz2AZH/cDjFgL9zvJ86zHACKNHDRLvcQlaF/mMLvmsCP/pgyzQ4qiYJgxGxIwiKTgTMO6vfqBPPTAYM1qpkB3c8/8X3Pg9eV8bHbnLSgd4JWDdwi4PFk6rsTIriF3L86sDItiOwHwlB9BBKYS6feUomUY2+zaCs5Sng7t/q7Iq/sVwg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1MJmrtT+NPDroGPyYwLCxSzLJqCDAMHreiAnQ+sKdMg=;
- b=JkLgtKEJ9mZuOaSFUaDt1CpobMpXIxZdOQyOUGpo95IlQERbgS5gu8nNbk5BkKT70qItLBWQHPI0Jx/14UKEmTey0lMSItEUz8C4qXiwpAcc5tWzvqi0W6KB80cOyKd85zQKQ4LpUt6sp1jxhMjcZU0oyW14ainvKStovwR3jB0nx3QEviSuhETs+Cani+oT/LzXcTs4mDlmlWsn2RtWjDKgnMkDL7opUyDq0kkukVaZa+jDyMUEzQ4cQTGigtrtgFxRjiHseSZI6NGMuqSD5j+MLCofpn3Q/W1AQboVXp8OWBOD4bWKe4BaqobRbkipw01G+SrtbcwxWd9+IYMMKA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1MJmrtT+NPDroGPyYwLCxSzLJqCDAMHreiAnQ+sKdMg=;
- b=q/ULrGHTaj8/ST6SUM0tRYBamol5TssKwJbG5wvF0y0Ht7pBZwQVFt+oQKzBI0ANGuSiY3nchqSSMu7mHpLOmQasssOT/I7WnTu91KyjBlyvwjwvYoZuI1bhTzfpNFxtNDWbGGBOO4lA63PUkNJVaNdzIrhbrqa/gEGTC9TFl1o=
-Authentication-Results: amd.com; dkim=none (message not signed)
- header.d=none;amd.com; dmarc=none action=none header.from=amd.com;
-Received: from DM6PR12MB3657.namprd12.prod.outlook.com (2603:10b6:5:149::18)
- by DM6PR12MB4580.namprd12.prod.outlook.com (2603:10b6:5:2a8::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3784.12; Fri, 22 Jan
- 2021 19:46:15 +0000
-Received: from DM6PR12MB3657.namprd12.prod.outlook.com
- ([fe80::a8fa:3299:8c02:430e]) by DM6PR12MB3657.namprd12.prod.outlook.com
- ([fe80::a8fa:3299:8c02:430e%7]) with mapi id 15.20.3784.013; Fri, 22 Jan 2021
- 19:46:15 +0000
-Date:   Fri, 22 Jan 2021 20:46:07 +0100
-From:   Robert Richter <rrichter@amd.com>
-To:     Nathan Fontenot <nathan.fontenot@amd.com>
-Cc:     shuah@kernel.org, linux-kernel@vger.kernel.org, trenn@suse.com,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH 0/8] cpupower: Updates and cleanup to support AMD Family
- 0x19
-Message-ID: <YAsrf1Cv70wl/Suv@rric.localdomain>
-References: <161133705833.59625.6935511700675018185.stgit@ethanol01c7-host.amd.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <161133705833.59625.6935511700675018185.stgit@ethanol01c7-host.amd.com>
-X-Originating-IP: [31.208.27.44]
-X-ClientProxiedBy: HE1PR0402CA0033.eurprd04.prod.outlook.com
- (2603:10a6:7:7c::22) To DM6PR12MB3657.namprd12.prod.outlook.com
- (2603:10b6:5:149::18)
+        id S1728575AbhAVWsz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 17:48:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46752 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728882AbhAVWsI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 17:48:08 -0500
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB3C6C061788;
+        Fri, 22 Jan 2021 14:47:25 -0800 (PST)
+Received: by mail-oi1-x22b.google.com with SMTP id p5so7783548oif.7;
+        Fri, 22 Jan 2021 14:47:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:from:date:message-id:subject:to
+         :content-transfer-encoding;
+        bh=Q724GeiTZ+Om7tqqLffblQ1ndWRdcUnxMTkOY/r9LV0=;
+        b=j8K/vK8BkLu/zwpyBR/iOViwsj4WuRlN6z/AFKftqheEoL6P4Hec0aQ9XMV30hxj7T
+         AK00ssHVDIbiVsZwNo4+t/9lZ30eoqo5O6yghyYNCulQzZ5NIIqNK2Yep1Ga6PGxZBGp
+         yU6BADWYtFbpG+MHdq5syt0nTX9K7SbphvTTI1FkCqpTUb9HSmffNa37rjaTnAJzT0hC
+         rN37id4oLFvwR/A35WoLGkDmPS5289wwK8UoyK9M9KKOLyEDoFtmPPMr97c+RGvGjstV
+         GMhjpxquN6Io88wzxMTld2CCP6xO+J96dlHCWG7mqGh0Y7okTOo/OumNerE1AsjTPVQr
+         P4Yg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to
+         :content-transfer-encoding;
+        bh=Q724GeiTZ+Om7tqqLffblQ1ndWRdcUnxMTkOY/r9LV0=;
+        b=NvEYBGjHQX1iBxI33gmeGawNm9Lvn0lrqbDlD514X5zXtdhpZc2ETA39kzGgVh+NQr
+         mj2/wyasXoTygRuRovMAZMA1IRA7UUc2u9y29/yF4YauN9PO8lre8y4aqCte8Ss/vmAv
+         NI+Qmn0nzzugKwq6v1ziXYfA4pCZ6ZdWUolbv9I1ArP2iMPMlPI73hkhrwvz8Vnjsf01
+         3805W1o+g5NgfNOVi/5au3y9TMrbbTehShx0jLhO93CKrbYA8mhj1MlldSL45FYTwmiK
+         Hp9tfOK+pgyBhKmnvb/SiCYeRCKgVIwdNl0gLC1rrhG608qhz2B4uHgR36IF/OgK2rdx
+         1oTw==
+X-Gm-Message-State: AOAM532a1M3hkMEKcc2vrz+y62XuGVFW2gE6c8kaiVw1KTIfjL/nBcwX
+        P7NisM+E6hDmrD6L1XZhza+cgmdBhWtyh5e7ZT69zsNh0Iw=
+X-Google-Smtp-Source: ABdhPJywynaQDmXIEi1I44xi2hpkoAljmwB2nwmkzp9D4mgqsQTo0OHTrvq7nGhnp5LSTv3Yqfemt1FU8t9y9yiJSNA=
+X-Received: by 2002:aca:b755:: with SMTP id h82mr4598175oif.5.1611355645094;
+ Fri, 22 Jan 2021 14:47:25 -0800 (PST)
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from rric.localdomain (31.208.27.44) by HE1PR0402CA0033.eurprd04.prod.outlook.com (2603:10a6:7:7c::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3784.11 via Frontend Transport; Fri, 22 Jan 2021 19:46:13 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: d332d4b7-b1aa-4c22-6033-08d8bf0e60f6
-X-MS-TrafficTypeDiagnostic: DM6PR12MB4580:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM6PR12MB4580E6C76E530FA602C78A989CA09@DM6PR12MB4580.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: uAKkoETORaDiz2BuqUel3mvDv3oWH209KpYbhTsXcfwZLMj0ZqivgUkaIWyoZPuNjAFYWS+VILqKph/FjDsQlA+Nnd+Vy9/5+DUwQobMq++l3UeG0mUi+7+ofqr5oSS1LSdaMTLCzJlRfHfsU/MckqxksHqkxlKBwwpY1BPi/T+ZWZF9QRue0U7f364NLOw+l/F3RFMT06+lpCKz0oMSDTm6LmG0Nl8C2KdJJYMMVWeAqyc3KYMVgSKCQsMtVbXWNGV3uElP6EXj6JUY2mLCthMgj5oAl593naaQFnFPgqoZMTnnWDBwEhdT7U3uyrdJYnFOQfn0ydwlIWNGVUgNfwWWFIzDVJF519yqHjBZGsL2ft/fPoy/YPZniD5Rq1fl+B9dFrOqPEzeNYq1TRy4lA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR12MB3657.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(346002)(376002)(396003)(39860400002)(366004)(136003)(15650500001)(16526019)(6666004)(8676002)(2906002)(83380400001)(6506007)(956004)(6862004)(53546011)(6636002)(52116002)(5660300002)(4326008)(66946007)(66556008)(478600001)(66476007)(8936002)(316002)(26005)(186003)(55016002)(7696005)(9686003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?tObOle4btuUsOCC8fiFSFOR2wyPef1LSaUQre/IK/DI7sfD+IAaywrf/EiEQ?=
- =?us-ascii?Q?ZGdSxTkOXtWzJtpblN/xl4qK8oGEulsFSAucKn16mZoQu5JKIzgG3AqhbrAB?=
- =?us-ascii?Q?HNWF1fE7lQYs78MWH6Z7+z9yB1/w2ltKRnY1i75UxWDQO+bjytgTdEulIsQo?=
- =?us-ascii?Q?tO4xK5lAq5jcruG5+j9xf/veBaC4aJW2A6bnrjTr0cHYs873GeozgblZqVrL?=
- =?us-ascii?Q?bxaWpAv+fTYwNWGM9P4WcVd94d1P74s81BwPI1Vr6wLgmLVgqGZYgxLctaHu?=
- =?us-ascii?Q?qVKPpLOUtU0G5strZrZZP9IeojYx2JtzdzBPQ2Prd1gaM4l4Go6byEnjqS73?=
- =?us-ascii?Q?ftXS/34yLdIdJWFm1CS4eJ1mJjr2LGYx4WY6BeNshiCjF0L82vspSJd9ds1y?=
- =?us-ascii?Q?5M7qqZ59zOYtBL62w17EePs5lHCbeKpZdB82DsCK0X9aAxIPCz/CjEEVteq0?=
- =?us-ascii?Q?dhaqaFWvvUuCNiKTkkBDA5i34c2vCcy4P1aIjzZ+rLYvwVQ9YfdgvOfYAxN3?=
- =?us-ascii?Q?ewRloQz/yypKDnMrkGZfqmZTPshxYkeLYdfQGHf+Ha8aTfWUPwxe9gUSYfw0?=
- =?us-ascii?Q?/BN5wpZjlo7h/dR4HXvSf0BFyG/6bsSSyeGDyE38u4v4gE+GZ2P8a3lSJ9OO?=
- =?us-ascii?Q?xMe7CdIzWqQOpUMiuMdPfiPFQeubeSm9+dOEQaD6SJWHNNMJiBzxU6gjj3bU?=
- =?us-ascii?Q?sPXvqJLVxW5/wHtZs9abcw6YGTan2ZjUSLiBxy4SztP/MUmJblB8QnwVzvn9?=
- =?us-ascii?Q?7G8xg0TH47Fu4bZvG1/1ULU7mq6OJVT1zFH6JdT3QNtAY2f/IB1FR/4lOxSg?=
- =?us-ascii?Q?V1XhOzBK/X62Qjnlnojd8KS6VGrGBDC2YkqiM1TA1U0DaqSGScA5Wt4SgR6S?=
- =?us-ascii?Q?5x6uL4F+6N2Rux88ZLc3uEaw42E2dBJbJzm7rwZfbet8ZRjbZ2Y4D1+gZuxB?=
- =?us-ascii?Q?o0gkKAEj529pC4R7UjgfXep105QGBDQW4SSc0TUucNc8jB07HRcWLRyN98e/?=
- =?us-ascii?Q?mSHsvw2YgbDfPkXg1B4UlIiYU3dzOVNwX8bisvLW43amJXcH6y5RZn6/WAdF?=
- =?us-ascii?Q?aXoQC03q?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d332d4b7-b1aa-4c22-6033-08d8bf0e60f6
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR12MB3657.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jan 2021 19:46:15.1371
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uFfEJKZ3gJ2olDpkIutHViTD0VX3sPmQ3B+ej2Wwi1u7valem3q0jg5lwkCR+GRgufW9jRg6l4/dr8c5KWcj7g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4580
+From:   Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri, 22 Jan 2021 17:47:14 -0500
+Message-ID: <CADnq5_P7HbKxUC7BoVEhjA2F7puTT471bYZgiHHnkfP2UN9fPg@mail.gmail.com>
+Subject: Understanding DPM_FLAG_MAY_SKIP_RESUME and DPM_FLAG_SMART_SUSPEND flags
+To:     Linux PM <linux-pm@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22.01.21 11:38:28, Nathan Fontenot wrote:
-> Updates to the cpupower command to add support for AMD family 0x19
-> and cleanup the code to remove many of the family checks to hopefully
-> make any future family updates easier.
-> 
-> The first couple of patches are simple updates to rename the structs
-> in the msr_pstate union to better reflect current support and correcting
-> the name of the CPUPOWER_CAP_AMD_CPB cpuid cap flag.
-> 
-> Patches 3, 5, and 8 update the family checks to either replace
-> them with a new cpuid cap flag based off of cpuid checks or check for
-> family >= 0x17 where removing the direct family check isn't possible.
-> 
-> The reamianing patches are cleanups to remove unneeded extra enabled bit
-> checking, remove passing no longer used variables, and remove unused
-> variables in decode_pstates().
-> 
-> ---
-> 
-> Nathan Fontenot (7):
->       cpupower: Update msr_pstate union struct naming
->       cpupower: Add CPUPOWER_CAP_AMD_HW_PSTATE cpuid caps flag
->       cpupower: Remove unused pscur variable.
->       cpupower: Update family checks when decoding HW pstates
->       cpupower: Condense pstate enabled bit checks in decode_pstates()
->       cpupower: Remove family arg to decode_pstates()
->       cpupower: Add cpuid cap flag for MSR_AMD_HWCR support
-> 
-> Robert Richter (1):
->       cpupower: Correct macro name for CPB caps flag
+Hi, I'm trying to understand how these flags are supposed to work.
+What I'd like to do, is when my pcie device runtime suspends (d3cold),
+I would like it to stay off during system suspend and resume and on be
+turned on again if the user accesses the device which would cause it
+to be runtime resumed.  Runtime pm works fine on the devices, but they
+get resumed on system suspend and powered back up on system resume.
+The driver provides the following pm callbacks:
 
-For the whole series:
+static const struct dev_pm_ops amdgpu_pm_ops =3D {
+        .suspend =3D amdgpu_pmops_suspend,
+     .resume =3D amdgpu_pmops_resume,
+    .freeze =3D amdgpu_pmops_freeze,
+    .thaw =3D amdgpu_pmops_thaw,
+        .poweroff =3D amdgpu_pmops_poweroff,
+    .restore =3D amdgpu_pmops_restore,
+        .runtime_suspend =3D amdgpu_pmops_runtime_suspend,
+        .runtime_resume =3D amdgpu_pmops_runtime_resume,
+        .runtime_idle =3D amdgpu_pmops_runtime_idle,
+};
 
-Reviewed-by: Robert Richter <rrichter@amd.com>
+I'm having trouble parsing the last few paragraphs in the pm
+documentation (https://www.kernel.org/doc/html/latest/driver-api/pm/devices=
+.html).
+Ideally once the device is runtime suspended, it would not be powered
+up again until someone accesses the device and it runtime resumes with
+possibly multiple system suspend/resume cycles in between.
+
+"If that function returns true, the driver=E2=80=99s =E2=80=9Cnoirq=E2=80=
+=9D and =E2=80=9Cearly=E2=80=9D
+resume callbacks should be skipped and the device=E2=80=99s runtime PM stat=
+us
+will be set to =E2=80=9Csuspended=E2=80=9D by the PM core. Otherwise, if th=
+e device
+was runtime-suspended during the preceding system-wide suspend
+transition and its DPM_FLAG_SMART_SUSPEND is set, its runtime PM
+status will be set to =E2=80=9Cactive=E2=80=9D by the PM core. [Hence, the =
+drivers
+that do not set DPM_FLAG_SMART_SUSPEND should not expect the runtime
+PM status of their devices to be changed from =E2=80=9Csuspended=E2=80=9D t=
+o =E2=80=9Cactive=E2=80=9D
+by the PM core during system-wide resume-type transitions.]"
+
+The last sentence is confusing me.  Why would setting
+DPM_FLAG_SMART_SUSPEND change the status to active?  Wouldn't still be
+suspended?
+
+"Likewise, if DPM_FLAG_MAY_SKIP_RESUME is set for a device, its
+driver=E2=80=99s system-wide =E2=80=9Cnoirq=E2=80=9D and =E2=80=9Cearly=E2=
+=80=9D resume callbacks may be
+skipped while its =E2=80=9Clate=E2=80=9D and =E2=80=9Cnoirq=E2=80=9D suspen=
+d callbacks may have been
+executed (in principle, regardless of whether or not
+DPM_FLAG_SMART_SUSPEND is set). In that case, the driver needs to be
+able to cope with the invocation of its ->runtime_resume callback
+back-to-back with its =E2=80=9Clate=E2=80=9D and =E2=80=9Cnoirq=E2=80=9D su=
+spend ones. [For instance,
+that is not a concern if the driver sets both DPM_FLAG_SMART_SUSPEND
+and DPM_FLAG_MAY_SKIP_RESUME and uses the same pair of suspend/resume
+callback functions for runtime PM and system-wide suspend/resume.]"
+
+The last sentence here is confusing me again.  I'm not following why
+it matters if the callbacks are the same.  Why would the suspend and
+resume callbacks be called at all.  Wouldn't it just be the runtime
+variants?
+
+It's not clear what happens with the suspend and resume pm callbacks.
+The documentation only mentions the early/late and noirq callbacks.
+Is the idea that the driver should not use the suspend/resume
+callbacks in this case if they want to skip system suspend/resume in
+favor of the runtime variant?
+
+Thanks,
+
+Alex
