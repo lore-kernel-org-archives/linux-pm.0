@@ -3,220 +3,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F5DFC10F00
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4C1CC10F13
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:21:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6250123433
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:21:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 83223239D4
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Jan 2021 17:21:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729475AbhAVQqT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Jan 2021 11:46:19 -0500
-Received: from mail-oi1-f182.google.com ([209.85.167.182]:37246 "EHLO
-        mail-oi1-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729404AbhAVQns (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 11:43:48 -0500
-Received: by mail-oi1-f182.google.com with SMTP id r189so6616052oih.4;
-        Fri, 22 Jan 2021 08:43:36 -0800 (PST)
+        id S1729213AbhAVPtd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Jan 2021 10:49:33 -0500
+Received: from mail-oi1-f179.google.com ([209.85.167.179]:43645 "EHLO
+        mail-oi1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729201AbhAVPsO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2021 10:48:14 -0500
+Received: by mail-oi1-f179.google.com with SMTP id q25so6395368oij.10;
+        Fri, 22 Jan 2021 07:47:58 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=A53Fny55mdIWBsolGsXez4xo36IZS+ZOP3kW5TdEycE=;
-        b=tPMi4tzArgdJd9KyZsUo+mz+Qk91nY6j+vOwLnq+km/1YwLWW6PyXluharOoNeZCWj
-         BsNTNDyKvjnqlF69NtYiBOqIArIu+a/JOqc+ppN1qIYLAKPBuuX6rIHiexUefOA+4LGW
-         gAwYBcH0azWIa6k1IPM9mHEd159UxyZceCpUpgGiKP7ReAqTJmU9M19DWMc4LbcvNIQQ
-         l8lZzdd+IeEkYWwnS17TTTEdHm9F2Z32WBNnf+L6vP2EzOTUvILi9/Sx390v/0x5fzrm
-         9M+DA9ol+lbllaR8U6IhpqYeLOn4uma9SKErFeR6zlppfRZkWVzVSHj5K7aWSZb+A2Kk
-         gOzw==
-X-Gm-Message-State: AOAM532TLk/1BpAIWtwBs2JtG00qG/PpwVBfjErgf8C9k+/4yWy5vVmT
-        ouNjV2vhrMnrzeQvonf4ctF2tslVCn5bK2OLCA16rg4/
-X-Google-Smtp-Source: ABdhPJzW3RgLPOFzjMcDYg2pFb+cVuufNP3kJ8Oxp5z+yB46v0CuCZYTlb1ZA9ThloXn9euITEQGu4uJCluhw/MK1e4=
-X-Received: by 2002:aca:fc84:: with SMTP id a126mr3871328oii.71.1611333790631;
- Fri, 22 Jan 2021 08:43:10 -0800 (PST)
+        bh=obBVYWunD09RcWHjfPC7xYI+/1GTmUoKVdSiuh/HzBI=;
+        b=On7hGhCQPtAqhNrQSWhQK71qLEGOXatFLtqu5dY9pKtRUX0LgmowInp0W2CCnZSR9Y
+         EtIi+B+ZIM3znXbpnomSMOCKPlleTpGbRb/iLnjekUl3PSIwHmy+R24xFNXiQUC4QjNZ
+         289mfxHuPrjX58/1ykuCeyBYCbi4InONfNbSZeWrnfrM6URKy9A/g8DnK+Xh+mEpAS1r
+         A/ZSPMRXPPyy3cUZGFwwZKEXAoi1gWfrCWBA9vzI92S2Nus08oujw/vboeWK/FBKrOc8
+         oLPm+MV0qbHj95PBrFefAmq6djN4NR4d4gn2TciGhBqh4IRHl+ZJwiMoXtxS9wPwJQEH
+         JHDw==
+X-Gm-Message-State: AOAM532WWrkBIUQbjsukbzYsSxbQIZRBmqTaNDPLitGl/ZTXx+DhGAc/
+        rdW6qyhjVBbwcMgWEfFGRdV7HXvHwkhvFsKPUrkIMUaQ
+X-Google-Smtp-Source: ABdhPJzNVBnHBx92DN2o3Y2h2uF4nQ9US/6gE/boTMoYiSvhY3JzMd4mFwTnUDuKVsr5kPSW3sKN0QVDfkGFqoNVfgw=
+X-Received: by 2002:a05:6808:9a8:: with SMTP id e8mr3771099oig.157.1611330453485;
+ Fri, 22 Jan 2021 07:47:33 -0800 (PST)
 MIME-Version: 1.0
-References: <3391226.KRKnzuvfpg@kreacher> <CAJZ5v0gB4B_Os0VQv-F2SdVcJ8_rUdjic6rOEjOd=ZWhGzdLdQ@mail.gmail.com>
- <87tur9vscw.fsf@rub.de>
-In-Reply-To: <87tur9vscw.fsf@rub.de>
+References: <20210115235646.290819-1-trix@redhat.com>
+In-Reply-To: <20210115235646.290819-1-trix@redhat.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 22 Jan 2021 17:42:59 +0100
-Message-ID: <CAJZ5v0gQCxcxiFTtZ3Ea6gbY=WFt5oD4fq7vpQqvkJKqbg1=rA@mail.gmail.com>
-Subject: Re: [PATCH] ACPI: thermal: Do not call acpi_thermal_check() directly
-To:     Stephen Berman <stephen.berman@gmx.net>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
+Date:   Fri, 22 Jan 2021 16:47:22 +0100
+Message-ID: <CAJZ5v0gx=6dRPpv1Y+323JrjaBdsXPPoOgChxa93dhF4Q+BXyw@mail.gmail.com>
+Subject: Re: [PATCH] intel_idle: remove definition of DEBUG
+To:     Tom Rix <trix@redhat.com>
+Cc:     Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jan 22, 2021 at 5:39 PM Stephen Berman <stephen.berman@gmx.net> wrote:
+On Sat, Jan 16, 2021 at 12:58 AM <trix@redhat.com> wrote:
 >
-> On Fri, 22 Jan 2021 17:23:36 +0100 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+> From: Tom Rix <trix@redhat.com>
 >
-> > On Thu, Jan 14, 2021 at 7:35 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>
-> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>
-> >> Calling acpi_thermal_check() from acpi_thermal_notify() directly
-> >> is problematic if _TMP triggers Notify () on the thermal zone for
-> >> which it has been evaluated (which happens on some systems), because
-> >> it causes a new acpi_thermal_notify() invocation to be queued up
-> >> every time and if that takes place too often, an indefinite number of
-> >> pending work items may accumulate in kacpi_notify_wq over time.
-> >>
-> >> Besides, it is not really useful to queue up a new invocation of
-> >> acpi_thermal_check() if one of them is pending already.
-> >>
-> >> For these reasons, rework acpi_thermal_notify() to queue up a thermal
-> >> check instead of calling acpi_thermal_check() directly and only allow
-> >> one thermal check to be pending at a time.  Moreover, only allow one
-> >> acpi_thermal_check_fn() instance at a time to run
-> >> thermal_zone_device_update() for one thermal zone and make it return
-> >> early if it sees other instances running for the same thermal zone.
-> >>
-> >> While at it, fold acpi_thermal_check() into acpi_thermal_check_fn(),
-> >> as it is only called from there after the other changes made here.
-> >>
-> >> BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=208877
-> >> Reported-by: Stephen Berman <stephen.berman@gmx.net>
-> >> Diagnosed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Well, it's been over a week since this was posted.
-> >
-> > Does anyone have any comments?
+> Defining DEBUG should only be done in development.
+> So remove DEBUG.
 >
-> Sorry, I haven't been able to make time to test the patch yet, but I'll
-> try to do so this weekend.  Is it just the patch below that I should
-> apply, ignoring the previous patches you sent?
+> Signed-off-by: Tom Rix <trix@redhat.com>
+> ---
+>  drivers/idle/intel_idle.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 28f93b9aa51b..3273360f30f7 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -37,7 +37,7 @@
+>   */
+>
+>  /* un-comment DEBUG to enable pr_debug() statements */
+> -#define DEBUG
+> +/* #define DEBUG */
+>
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>
+> --
 
-Yes.
-
-> And can I apply it to the current mainline kernel?
-
-Yes, it should be applicable to the current mainline (at least as of 5.11-rc4).
-
-Thanks!
-
-> >> ---
-> >>  drivers/acpi/thermal.c |   46 +++++++++++++++++++++++++++++++++-------------
-> >>  1 file changed, 33 insertions(+), 13 deletions(-)
-> >>
-> >> Index: linux-pm/drivers/acpi/thermal.c
-> >> ===================================================================
-> >> --- linux-pm.orig/drivers/acpi/thermal.c
-> >> +++ linux-pm/drivers/acpi/thermal.c
-> >> @@ -174,6 +174,8 @@ struct acpi_thermal {
-> >>         struct thermal_zone_device *thermal_zone;
-> >>         int kelvin_offset;      /* in millidegrees */
-> >>         struct work_struct thermal_check_work;
-> >> +       struct mutex thermal_check_lock;
-> >> +       refcount_t thermal_check_count;
-> >>  };
-> >>
-> >>  /* --------------------------------------------------------------------------
-> >> @@ -495,14 +497,6 @@ static int acpi_thermal_get_trip_points(
-> >>         return 0;
-> >>  }
-> >>
-> >> -static void acpi_thermal_check(void *data)
-> >> -{
-> >> -       struct acpi_thermal *tz = data;
-> >> -
-> >> -       thermal_zone_device_update(tz->thermal_zone,
-> >> -                                  THERMAL_EVENT_UNSPECIFIED);
-> >> -}
-> >> -
-> >>  /* sys I/F for generic thermal sysfs support */
-> >>
-> >>  static int thermal_get_temp(struct thermal_zone_device *thermal, int *temp)
-> >> @@ -900,6 +894,12 @@ static void acpi_thermal_unregister_ther
-> >>                                   Driver Interface
-> >>     -------------------------------------------------------------------------- */
-> >>
-> >> +static void acpi_queue_thermal_check(struct acpi_thermal *tz)
-> >> +{
-> >> +       if (!work_pending(&tz->thermal_check_work))
-> >> +               queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
-> >> +}
-> >> +
-> >>  static void acpi_thermal_notify(struct acpi_device *device, u32 event)
-> >>  {
-> >>         struct acpi_thermal *tz = acpi_driver_data(device);
-> >> @@ -910,17 +910,17 @@ static void acpi_thermal_notify(struct a
-> >>
-> >>         switch (event) {
-> >>         case ACPI_THERMAL_NOTIFY_TEMPERATURE:
-> >> -               acpi_thermal_check(tz);
-> >> +               acpi_queue_thermal_check(tz);
-> >>                 break;
-> >>         case ACPI_THERMAL_NOTIFY_THRESHOLDS:
-> >>                 acpi_thermal_trips_update(tz, ACPI_TRIPS_REFRESH_THRESHOLDS);
-> >> -               acpi_thermal_check(tz);
-> >> +               acpi_queue_thermal_check(tz);
-> >>                 acpi_bus_generate_netlink_event(device->pnp.device_class,
-> >>                                                   dev_name(&device->dev), event, 0);
-> >>                 break;
-> >>         case ACPI_THERMAL_NOTIFY_DEVICES:
-> >>                 acpi_thermal_trips_update(tz, ACPI_TRIPS_REFRESH_DEVICES);
-> >> -               acpi_thermal_check(tz);
-> >> +               acpi_queue_thermal_check(tz);
-> >>                 acpi_bus_generate_netlink_event(device->pnp.device_class,
-> >>                                                   dev_name(&device->dev), event, 0);
-> >>                 break;
-> >> @@ -1020,7 +1020,25 @@ static void acpi_thermal_check_fn(struct
-> >>  {
-> >>         struct acpi_thermal *tz = container_of(work, struct acpi_thermal,
-> >>                                                thermal_check_work);
-> >> -       acpi_thermal_check(tz);
-> >> +
-> >> +       /*
-> >> +        * In general, it is not sufficient to check the pending bit, because
-> >> +        * subsequent instances of this function may be queued after one of them
-> >> +        * has started running (e.g. if _TMP sleeps).  Avoid bailing out if just
-> >> +        * one of them is running, though, because it may have done the actual
-> >> +        * check some time ago, so allow at least one of them to block on the
-> >> +        * mutex while another one is running the update.
-> >> +        */
-> >> +       if (!refcount_dec_not_one(&tz->thermal_check_count))
-> >> +               return;
-> >> +
-> >> +       mutex_lock(&tz->thermal_check_lock);
-> >> +
-> >> +       thermal_zone_device_update(tz->thermal_zone, THERMAL_EVENT_UNSPECIFIED);
-> >> +
-> >> +       refcount_inc(&tz->thermal_check_count);
-> >> +
-> >> +       mutex_unlock(&tz->thermal_check_lock);
-> >>  }
-> >>
-> >>  static int acpi_thermal_add(struct acpi_device *device)
-> >> @@ -1052,6 +1070,8 @@ static int acpi_thermal_add(struct acpi_
-> >>         if (result)
-> >>                 goto free_memory;
-> >>
-> >> +       refcount_set(&tz->thermal_check_count, 3);
-> >> +       mutex_init(&tz->thermal_check_lock);
-> >>         INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
-> >>
-> >>         pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
-> >> @@ -1117,7 +1137,7 @@ static int acpi_thermal_resume(struct de
-> >>                 tz->state.active |= tz->trips.active[i].flags.enabled;
-> >>         }
-> >>
-> >> -       queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
-> >> +       acpi_queue_thermal_check(tz);
-> >>
-> >>         return AE_OK;
-> >>  }
-> >>
-> >>
-> >>
+Applied as 5.12 material, thanks!
