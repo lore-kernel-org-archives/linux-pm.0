@@ -2,111 +2,193 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB9FCC433E6
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Jan 2021 17:37:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F38C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Jan 2021 17:38:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 75CD022C9E
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Jan 2021 17:37:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DFA82221E3
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Jan 2021 17:38:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731145AbhAYRg4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 Jan 2021 12:36:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57126 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731000AbhAYRgg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2021 12:36:36 -0500
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F031C061786;
-        Mon, 25 Jan 2021 09:35:42 -0800 (PST)
-Received: by mail-lj1-x22d.google.com with SMTP id p13so16347700ljg.2;
-        Mon, 25 Jan 2021 09:35:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=X83exQMOztH+V+6RKs+mLlDQ2mY3VBp/sSkBeCvqfIU=;
-        b=dLDEE8ucdkDxl02KcwK9VxrydqBs7/Gis+S8JTrtOAWFi/WQ2uKwoU9Q0n56+15h3r
-         aSmNSI9G8hFoxk3YQzFpVCI91y3DmPL9XgJIAq2g8j8j/jAbsIBrc+F7ulOCS37nbQYg
-         9eYqthPf3ryUCi+MAYFY95WB5+VwYW1jbRrEAws9sQqTSH0R7F02CWQUp49KY0XgmQ3r
-         PnohwYm4UdmIk6r+10eX+zdGXovwmpCQnmOlptiCJ3Q5Fz5PKe4GvpHik/geDbusdCzI
-         jgfu6fd5aN08FVFs61+LacwrLE9YKq2SdzhzNugkfes6z/UJsgyZ3fanyZlI/uWQ/A3c
-         fPjQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=X83exQMOztH+V+6RKs+mLlDQ2mY3VBp/sSkBeCvqfIU=;
-        b=KHLv4eXklo8yofY14uNMX8UhC4vzdDz1q9d+mVyM8cE51BVGPveGYDnrAEclvLxaEH
-         L+D1eKHGhpN3AxA7y1QQX3uUQekN2xQFkyo/mjmuBT+NVDGJ7oocoXmxZufKw6hb2TQX
-         B3O0+qU8sg0nuLh7Fcjg8coWZqJRsuPKycWvCfKg+ye7UYM5Hnh21R9W6dKEcRrgePiB
-         m4hWngYDsEljcrzCJQa94tflx3Vx2YJKn/Baz0WXBDvNYIrOqUf8ZNgjamb4DVk1AJZT
-         z/iI/c+7PjbZcyoDzlp4tqhNW9JuuMZnxOPsrbgUDpmfUOTPNMyFHMl/bkPavLbaobn+
-         u7hQ==
-X-Gm-Message-State: AOAM531HWbwwl2AYpBAvVolJNuUoyC+2PNy8mRHfN+rroU3D4PSgyGJp
-        NcGvL1VXBPEmbnbWUp7H4S0=
-X-Google-Smtp-Source: ABdhPJwrVRjKISUhGPG51fA4v6H3gH94RDNCwsh4GjGzdQwUIMcUpp8sUecuEHv6y7+L/VWT8pXIyA==
-X-Received: by 2002:a2e:8059:: with SMTP id p25mr682526ljg.155.1611596139799;
-        Mon, 25 Jan 2021 09:35:39 -0800 (PST)
-Received: from [192.168.2.145] (109-252-192-57.dynamic.spd-mgts.ru. [109.252.192.57])
-        by smtp.googlemail.com with ESMTPSA id j2sm2023879lfe.134.2021.01.25.09.35.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 Jan 2021 09:35:39 -0800 (PST)
-Subject: Re: [PATCH v12 4/5] drm/tegra: dc: Support memory bandwidth
- management
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <20201228154920.18846-1-digetx@gmail.com>
- <20201228154920.18846-5-digetx@gmail.com>
-Message-ID: <f19789d5-fdf2-8cae-9b54-db885873032a@gmail.com>
-Date:   Mon, 25 Jan 2021 20:35:38 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.2
+        id S1731025AbhAYRhz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 Jan 2021 12:37:55 -0500
+Received: from mail-bn8nam11on2041.outbound.protection.outlook.com ([40.107.236.41]:64288
+        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1731165AbhAYRhb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 25 Jan 2021 12:37:31 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=KQFlFlxWMIRWp9E60xmfUaIOQtDmoQQcOgvcMpSdWu4jWtApBI1AKa3GPWmMz6qxLgD8WgkSEGtINBxO+iqQVKWdV+keezl99nIv6spBkslNaxR08lZ9MLxoakwz07wyhK+I/JHvPVGYedJGlgTw7RiAe4u4eySFZaOJydJcwaxK7+u59Tu2N5TeHdKdf5gb6OqG7DJiVoyqybqLWLLfH+m+As6Zwt2Q1cppEJGU+v1R7GY44BRjxuLTu1lGbDFr1iqRda0ROpqurdV9o4hqWHDAuZ0H294WBw4hTwxkY6cydKQu3AMT6MD2zBsf6zV/DD7T8qxD1I0rTxbR45f1Vg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bNDm1aRoQ3tc9/79od1t+dZqam/WZcpmnoz3H8TSuR4=;
+ b=i5QWLEqnfnSJhz4T+K5NGfeXlyRjegkeQZPClJ2YQn2ZSy/OnYnLG6KRft/ZyWP124+2xkK10AN7eyufG6svUAlWfBorlcgqD9wEFT6yrkIVEnmtLMt+s/r4aN2A4Do3vJzZUF6NgERRrgUK+sl3j3WpvVi3HhoW3xgo2KQLuTQnHGawejTsVH67EEc5P5hYJjanChvCtAzh8/cSl4VwOTHzgntqs4NxRmh23GxTi+YWZZYf8bLIsy29EyMn9HlTkG9gMcrXmVvFo8LjyOEAkDNOPWSH5oQZxO5oM+Eh28GTPjYhFW1fst6F/+kFQu2EIsqn13z/0qoIkpEqtm26Rw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bNDm1aRoQ3tc9/79od1t+dZqam/WZcpmnoz3H8TSuR4=;
+ b=AE+tmfxbugAPWlFPBevCgg30PK2+GTFaNcjl7534WnB3Ro6RsPkVI2syjG+tOiJTfSdm+UxxBjxtuvi5ccMvf0SU3vlBFLO72aimk8RUaFKP3iSH4m0rREBbnk3sj4PJtj5PWIBrQ3DOI8QrsTOQrnl5w83YbrPjg26v0UotHZ4=
+Authentication-Results: amd.com; dkim=none (message not signed)
+ header.d=none;amd.com; dmarc=none action=none header.from=amd.com;
+Received: from SN6PR12MB4720.namprd12.prod.outlook.com (2603:10b6:805:e6::31)
+ by SN1PR12MB2576.namprd12.prod.outlook.com (2603:10b6:802:22::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3784.11; Mon, 25 Jan
+ 2021 17:36:20 +0000
+Received: from SN6PR12MB4720.namprd12.prod.outlook.com
+ ([fe80::71a3:7df5:647c:1665]) by SN6PR12MB4720.namprd12.prod.outlook.com
+ ([fe80::71a3:7df5:647c:1665%6]) with mapi id 15.20.3784.019; Mon, 25 Jan 2021
+ 17:36:20 +0000
+Subject: [PATCH v2 8/8] cpupower: Add cpuid cap flag for MSR_AMD_HWCR support
+From:   Nathan Fontenot <nathan.fontenot@amd.com>
+To:     rrichter@amd.com, shuah@kernel.org, linux-kernel@vger.kernel.org,
+        trenn@suse.com, linux-pm@vger.kernel.org
+Cc:     boris.ostrovsky@oracle.com, joao.m.martins@oracle.com,
+        konrad.wilk@oracle.com
+Date:   Mon, 25 Jan 2021 11:36:23 -0600
+Message-ID: <161159618336.68367.17545859893619697961.stgit@ethanol01c7-host.amd.com>
+In-Reply-To: <161159600371.68367.14890273216040482793.stgit@ethanol01c7-host.amd.com>
+References: <161159600371.68367.14890273216040482793.stgit@ethanol01c7-host.amd.com>
+User-Agent: StGit/0.17.1-dirty
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [165.204.78.2]
+X-ClientProxiedBy: SN6PR08CA0014.namprd08.prod.outlook.com
+ (2603:10b6:805:66::27) To SN6PR12MB4720.namprd12.prod.outlook.com
+ (2603:10b6:805:e6::31)
 MIME-Version: 1.0
-In-Reply-To: <20201228154920.18846-5-digetx@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from ethanol01c7-host.amd.com (165.204.78.2) by SN6PR08CA0014.namprd08.prod.outlook.com (2603:10b6:805:66::27) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3784.12 via Frontend Transport; Mon, 25 Jan 2021 17:36:20 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-Office365-Filtering-Correlation-Id: f7c64a63-8166-4bfb-2711-08d8c157ba5a
+X-MS-TrafficTypeDiagnostic: SN1PR12MB2576:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <SN1PR12MB25765AA5DBC2090AE438D644ECBD9@SN1PR12MB2576.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:6790;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: PZSgtZxUIG78YBT3ho+l69I+/VILYcbzXqV/tdrlCEUY+fgUsFxwhJakPfgLYDsE5A/m0pWP4uJdMkIVQ+z4xYnCLLwSPBJosgHRbzwRfoAYdrotF+1BsKsXnEyvuLlIdhP1tLMtz96E+GJNimO8vmc7gahuWCHlloh3ZcPzK96076fJl4llwYD4MVrr7C3TsW2+wXHh89HGlhfGImHUBh+AqTPv57KSxa7c/8VcW1dyxTx8Yss8hsODrzYxe6K7H8fuxOxOEVJ0Elnl8BpipxtJ9cXkV9pyg+S81HX1ctwhEUQpAaW9Cy4YbwNCItXAAoje7+XYC9yYKADvvOuL4RBChl2f1er/GYVT1iKWOrNkA/lCHfxJlXmaz7PhgLsTpBv9JP56rs3f2ebRHMKiNQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR12MB4720.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(39860400002)(346002)(376002)(366004)(396003)(136003)(66476007)(66946007)(66556008)(5660300002)(7696005)(52116002)(316002)(8676002)(956004)(4326008)(83380400001)(44832011)(2906002)(86362001)(8936002)(478600001)(26005)(186003)(16526019)(55016002)(103116003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?empoMFVGZ0Q5TXhTQUVjU245R3pmbXdtbU9ralZFWjBpTEVEckpHMzRVZjFK?=
+ =?utf-8?B?Y2ZMelMybW9WM3FhbjBvOE1jQ1NUb0ZCUkxBcklzaU5GbWM2SVAzRkZWVkE0?=
+ =?utf-8?B?U0ZSeVMvbko3WVJhNGZPdHRrU21CMGFtVDU2eEtNalpTSzgzblZPQi9rK3d2?=
+ =?utf-8?B?RGJ1OGNmYkhtL2tHcUlaTkYvdklVWnRTaVp0L2FyNjRKb2ZhYXJzbzNxNkhp?=
+ =?utf-8?B?Z0lJOXQxU0tVV3IybDhqRUVRaU83VWw3RnEwdWNFVHdZWVVTNDF0UnRJQ2kx?=
+ =?utf-8?B?Ykp0Qzl6NmE0Q1JOVG9QT2o1SW92YWFaM25sTE8zcFNDVkFzSUdiYU1tVDN2?=
+ =?utf-8?B?TmhGWFZiQ01ML1RjNmk4ZmVYOFg3bmlnVU14YlFhTnJ2RmR1NnBOcG1KOHNM?=
+ =?utf-8?B?eHVaMVlWcmVVUlBpNDNzdVZQbXhmZmNGQXNvR293c0RZL2tWbW5yZnZXeTVt?=
+ =?utf-8?B?MEhxSGhSWXFPMHFQdlM5aUFzci8zaEdXMTBZMjhtOU1iMXUweWoyTFI4eWx4?=
+ =?utf-8?B?RzF3eFg3SitESS8vcDFhV3FRMlZOWnA1aGVLTWQxcm5obEVlSlR2dVVVb3kz?=
+ =?utf-8?B?UlF6OFNiZkNkaVUvTi9KLzVaSkVybnJVeXdqVEZDc1lIaUFJR0MrZEtmOXli?=
+ =?utf-8?B?eHVZbVJiNjdJbGU1eDROSUNmSitWTjdXUU1jVFFnWSs1dEc0VFdhVld0WGZH?=
+ =?utf-8?B?aHd6TjBoWUdlWUtnanlvMnVBUTVqQ1h3VndRMC9IWk8xdUM1ZVY4Znlrd280?=
+ =?utf-8?B?amhaV1pZTms2MkEveDFjZUk5SkdMdDgwbkxaSDRsVzdCNU9ZbTFaUXdyT3lB?=
+ =?utf-8?B?ZWdCWUxRSmdIbUVwYytWMlY3dkx1a2RCZWllMGtISVhxN0ZEdjQwVzUwaHAz?=
+ =?utf-8?B?OHBkQ2VuaDB6Qm1sekZyVUhMd0N1S3dKNVI1bTF0c2hmNkVtdVdnMXBZRkpI?=
+ =?utf-8?B?MkpKWmpTdERlZlczUXlpdk1za014SjZMOVlYN0FHU01ubW1ZQkppVm9vQU5P?=
+ =?utf-8?B?L3NjbHlJSE1qSmYyQmt0WVZiOXRTKzBvSHVqYXBMQ3VtZm5Tc1BhV1p4NWFo?=
+ =?utf-8?B?VHlPTllhdXQyZk9jN3crTXJ3dkhyU0l1U0JIWE8reTlkaUZnYUJuUmZ3aHoz?=
+ =?utf-8?B?OGdUTkJneW5LVmFwZGdVS1g5MlE4YzBSdnBublJ3N3dkVWI0Z1JDVk1jSDZp?=
+ =?utf-8?B?ZXovSXN2b0Q4dFRITXJjSjJPbDJMdjVFc3dXNmgrenp3WWNZM1VrSm15L2V6?=
+ =?utf-8?B?SnpWanlIZ1NKa05WM0JtM3NUVVFUNjBKakF2N3lNYis1QVJUaFRvbzdYTDhX?=
+ =?utf-8?B?SU93QkRrQitpTVllUnZHUnF0cFpWdUdzdnBINkJlSTNrbE1jb2xjUFlDYzQx?=
+ =?utf-8?B?b0RWdmp4NnBUVEtLdituczUwNm5KVzB4cmVkUFlEOS8vdTF3bzNvQW9OVGRt?=
+ =?utf-8?Q?/ujVwnxb?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f7c64a63-8166-4bfb-2711-08d8c157ba5a
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR12MB4720.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jan 2021 17:36:20.6900
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: I4y7yHrb/0kzoVVSJsH8HaVHgbZK6s/Sd1tLDvzKbJG1T1RatT5+tMiQEtLqcMWCmnmoNAmBQvf4F3JHbwmnBA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN1PR12MB2576
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-28.12.2020 18:49, Dmitry Osipenko пишет:
-> Display controller (DC) performs isochronous memory transfers, and thus,
-> has a requirement for a minimum memory bandwidth that shall be fulfilled,
-> otherwise framebuffer data can't be fetched fast enough and this results
-> in a DC's data-FIFO underflow that follows by a visual corruption.
-> 
-> The Memory Controller drivers provide facility for memory bandwidth
-> management via interconnect API. Let's wire up the interconnect API
-> support to the DC driver in order to fix the distorted display output
-> on T30 Ouya, T124 TK1 and other Tegra devices.
-> 
-> Tested-by: Peter Geis <pgwipeout@gmail.com>
-> Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
+Remove the family check for accessing the MSR_AMD_HWCR MSR and replace
+it with a cpupower cap flag.
 
-Thierry, I'm looking forward to yours review. Only DRM patches are left
-unmerged yet in this series.
+This update also allows for the removal of the local cpupower_cpu_info
+variable in cpufreq_has_boost_support() since we no longer need it to
+check the family.
+
+Signed-off-by: Nathan Fontenot <nathan.fontenot@amd.com>
+---
+ tools/power/cpupower/utils/helpers/cpuid.c   |    6 +++++-
+ tools/power/cpupower/utils/helpers/helpers.h |    1 +
+ tools/power/cpupower/utils/helpers/misc.c    |    7 +------
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
+index db2e88ceb67b..72eb43593180 100644
+--- a/tools/power/cpupower/utils/helpers/cpuid.c
++++ b/tools/power/cpupower/utils/helpers/cpuid.c
+@@ -129,9 +129,13 @@ int get_cpu_info(struct cpupower_cpu_info *cpu_info)
+ 	if (cpu_info->vendor == X86_VENDOR_AMD ||
+ 	    cpu_info->vendor == X86_VENDOR_HYGON) {
+ 		if (ext_cpuid_level >= 0x80000007) {
+-			if (cpuid_edx(0x80000007) & (1 << 9))
++			if (cpuid_edx(0x80000007) & (1 << 9)) {
+ 				cpu_info->caps |= CPUPOWER_CAP_AMD_CPB;
+ 
++				if (cpu_info->family >= 0x17)
++					cpu_info->caps |= CPUPOWER_CAP_AMD_CPB_MSR;
++			}
++
+ 			if ((cpuid_edx(0x80000007) & (1 << 7)) &&
+ 			    cpu_info->family != 0x14) {
+ 				/* HW pstate was not implemented in family 0x14 */
+diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+index 8a0c11c6ec63..33ffacee7fcb 100644
+--- a/tools/power/cpupower/utils/helpers/helpers.h
++++ b/tools/power/cpupower/utils/helpers/helpers.h
+@@ -72,6 +72,7 @@ enum cpupower_cpu_vendor {X86_VENDOR_UNKNOWN = 0, X86_VENDOR_INTEL,
+ #define CPUPOWER_CAP_AMD_RDPRU		0x00000080
+ #define CPUPOWER_CAP_AMD_HW_PSTATE	0x00000100
+ #define CPUPOWER_CAP_AMD_PSTATEDEF	0x00000200
++#define CPUPOWER_CAP_AMD_CPB_MSR	0x00000400
+ 
+ #define CPUPOWER_AMD_CPBDIS		0x02000000
+ 
+diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
+index f9bcce9c72d5..fc6e34511721 100644
+--- a/tools/power/cpupower/utils/helpers/misc.c
++++ b/tools/power/cpupower/utils/helpers/misc.c
+@@ -16,16 +16,11 @@
+ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active,
+ 			int *states)
+ {
+-	struct cpupower_cpu_info cpu_info;
+ 	int ret;
+ 	unsigned long long val;
+ 
+ 	*support = *active = *states = 0;
+ 
+-	ret = get_cpu_info(&cpu_info);
+-	if (ret)
+-		return ret;
+-
+ 	if (cpupower_cpu_info.caps & CPUPOWER_CAP_AMD_CPB) {
+ 		*support = 1;
+ 
+@@ -34,7 +29,7 @@ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active,
+ 		 * has Hardware determined variable increments instead.
+ 		 */
+ 
+-		if (cpu_info.family == 0x17 || cpu_info.family == 0x18) {
++		if (cpupower_cpu_info.caps & CPUPOWER_CAP_AMD_CPB_MSR) {
+ 			if (!read_msr(cpu, MSR_AMD_HWCR, &val)) {
+ 				if (!(val & CPUPOWER_AMD_CPBDIS))
+ 					*active = 1;
+
