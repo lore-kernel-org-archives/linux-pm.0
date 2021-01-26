@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A3A6C4332B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B4A5C4332D
 	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12C3E22B45
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DEB29230FC
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389340AbhAZRTw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 12:19:52 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:37579 "EHLO
+        id S2390665AbhAZRT7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 12:19:59 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:37658 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S2387705AbhAZIHu (ORCPT
+        with ESMTP id S1732008AbhAZIHu (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 03:07:50 -0500
-X-UUID: 7f2ca6a5d0bc4d3f878b750f1da5e4c8-20210126
-X-UUID: 7f2ca6a5d0bc4d3f878b750f1da5e4c8-20210126
+X-UUID: f84fd27263b64f908ba0397cf2faa767-20210126
+X-UUID: f84fd27263b64f908ba0397cf2faa767-20210126
 Received: from mtkmrs01.mediatek.inc [(172.21.131.159)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 208323892; Tue, 26 Jan 2021 16:03:58 +0800
+        with ESMTP id 320729952; Tue, 26 Jan 2021 16:03:59 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Tue, 26 Jan 2021 16:03:55 +0800
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 26 Jan 2021 16:03:58 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 26 Jan 2021 16:03:56 +0800
+ Transport; Tue, 26 Jan 2021 16:03:58 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -47,44 +47,43 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V8 02/12] soc: mediatek: add header for mediatek SIP interface
-Date:   Tue, 26 Jan 2021 16:03:44 +0800
-Message-ID: <1611648234-15043-3-git-send-email-henryc.chen@mediatek.com>
+Subject: [PATCH V8 12/12] arm64: dts: mt8192: add dvfsrc regulator nodes
+Date:   Tue, 26 Jan 2021 16:03:54 +0800
+Message-ID: <1611648234-15043-13-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1611648234-15043-1-git-send-email-henryc.chen@mediatek.com>
 References: <1611648234-15043-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-SNTS-SMTP: C825707DBDCC0055E52F38712D9450CCA1C8EE77EC4BB6AAEA650C08745EC8082000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a header to collect SIPs and add one SIP call to initialize power
-management hardware for the SIP interface defined to access the SPM
-handling vcore voltage and ddr rate changes on mt8183 (and most likely
-later socs).
+Add dvfsrc regulator nodes which is for MT8192-based platforms
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
 ---
- include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
-index 082398e..079bbcb 100644
---- a/include/linux/soc/mediatek/mtk_sip_svc.h
-+++ b/include/linux/soc/mediatek/mtk_sip_svc.h
-@@ -22,4 +22,8 @@
- 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
- 			   ARM_SMCCC_OWNER_SIP, fn_id)
+diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+index 81d7d05..1cf91a4 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+@@ -470,6 +470,12 @@
+ 				     "mediatek,mt6873-dvfsrc";
+ 			reg = <0 0x10012000 0 0x1000>;
+ 			#interconnect-cells = <1>;
++			dvfsrc_vcore: dvfsrc-vcore {
++				regulator-name = "dvfsrc-vcore";
++				regulator-min-microvolt = <575000>;
++				regulator-max-microvolt = <725000>;
++				regulator-always-on;
++			};
+ 		};
  
-+/* VCOREFS */
-+#define MTK_SIP_VCOREFS_CONTROL \
-+	MTK_SIP_SMC_CMD(0x506)
-+
- #endif
+ 		systimer: timer@10017000 {
 -- 
 1.9.1
 
