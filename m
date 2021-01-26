@@ -2,86 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5924DC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:42:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56F83C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 13:26:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 116A723103
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:42:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2B20E20829
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 13:26:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404226AbhAZKml (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 05:42:41 -0500
-Received: from foss.arm.com ([217.140.110.172]:60876 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404262AbhAZKlJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Jan 2021 05:41:09 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7DF83D6E;
-        Tue, 26 Jan 2021 02:40:23 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.57.2.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CA2D83F66B;
-        Tue, 26 Jan 2021 02:40:20 -0800 (PST)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     vireshk@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
-        Dietmar.Eggemann@arm.com, lukasz.luba@arm.com, amitk@kernel.org,
-        rui.zhang@intel.com, cw00.choi@samsung.com,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [RFC][PATCH 0/3] New thermal interface allowing IPA to get max power
-Date:   Tue, 26 Jan 2021 10:39:58 +0000
-Message-Id: <20210126104001.20361-1-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
+        id S2391700AbhAZN0F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 08:26:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42516 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391751AbhAZJ5Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 04:57:24 -0500
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4622BC06178B;
+        Tue, 26 Jan 2021 01:56:13 -0800 (PST)
+Received: by mail-ej1-x62b.google.com with SMTP id gx5so22075689ejb.7;
+        Tue, 26 Jan 2021 01:56:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=/bLs6/jhlVV266f2Dse0B5k3M255RLfRErwO519Pwyo=;
+        b=CdSm0lR7j0E1W7kotMmRm0m30oDKrvEDpA/vsUBb9Vjd/rh6AcBrDfg9SRTIOgAbDE
+         2tGvrLbIwu/ukZX3Y3nM/xf7/0Ozv7wP3W2D+oS8wku+WZBI1l34wGHRxGU3/Djdat4Y
+         G+JFBEkqRhAhFBgln/TWdZ120yTsQzXs4BILu1WwD52gL1fjWlkBmf5cgsiBLw4CjbWz
+         KFzPSMNp0c/O73bQ31p94j8USDYNkwdyy3VjlUV0EE//U9h3sDnsROtSP/6li6wHcyrd
+         vcvGgp/zxxzkWBGEAgpJpf40nQdnGvz7is2NJf//xwqxK7jG4C48ykLhsp64Yi+Gq2kX
+         +VAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=/bLs6/jhlVV266f2Dse0B5k3M255RLfRErwO519Pwyo=;
+        b=J3lbEkyktrHDzYqxy98QQsB4TDy7N20KaLziTk7okO6HI5twgTThXtlzygSp1Ws7no
+         ZSHyESJIaKL46dWcmDuI9PyOKqYQc905+GOWHmsv4cVLufMINiHjP3djmaZ//q1YRY6f
+         yuC5CDHFO17+AKBWkBPxIF++WpXvmh3BaTeCuTcx0sE94cVFSXIEXHq0J3LxLCFe1PZ2
+         jjmK8LiVLBKx5Id66T6pq/NKNVBPkDUskUJrg5VhF3brkQtRSKjJ1mjx3tv9uktopPsN
+         BclSDaUq7dg/ZwxzXjws63mycYv1OYf9jsMtumPdU5kSYHaRrmrYBbV87or08ZnYLOOu
+         wsFA==
+X-Gm-Message-State: AOAM533YkrtfePZ+TOb37pkN4OBjqQQ6pXK5RfdDoQmWh69QEnyQ9KKp
+        16/xUpdR/VujjvkSxxV1ecI=
+X-Google-Smtp-Source: ABdhPJzQpRUkBDMGdAezh86+55sGvFZIpjRCP7vjBNcuPoj6XDxSgEIQ2V592B9En+BBUiNt0K2hyQ==
+X-Received: by 2002:a17:906:a082:: with SMTP id q2mr2919021ejy.483.1611654972084;
+        Tue, 26 Jan 2021 01:56:12 -0800 (PST)
+Received: from localhost.localdomain ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id h12sm11648310edb.16.2021.01.26.01.56.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 26 Jan 2021 01:56:11 -0800 (PST)
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v7 5/5] MAINTAINERS: Add entry for ATC260x PMIC
+Date:   Tue, 26 Jan 2021 11:56:01 +0200
+Message-Id: <715ac9a4a87dd8f85c57f9e65abfca9769e9e21c.1611653995.git.cristian.ciocaltea@gmail.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <cover.1611653995.git.cristian.ciocaltea@gmail.com>
+References: <cover.1611653995.git.cristian.ciocaltea@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 
-This patch set tries to add the missing feature in the Intelligent Power
-Allocation (IPA) governor which is: frequency limit set by user space.
-User can set max allowed frequency for a given device which has impact on
-max allowed power. In current design there is no mechanism to figure this
-out. IPA must know the maximum allowed power for every device. It is then
-used for proper power split and divvy-up. When the user limit for max
-frequency is not know, IPA assumes it is the highest possible frequency.
-It causes wrong power split across the devices.
+Add MAINTAINERS entry for ATC260x PMIC.
 
-This new mechanism provides the max allowed frequency to the thermal
-framework and then max allowed power to the IPA.
-The implementation is done in this way because currently there is no way
-to retrieve the limits from the PM QoS, without uncapping the local
-thermal limit and reading the next value. It would be a heavy way of
-doing these things, since it should be done every polling time (e.g. 50ms).
-Also, the value stored in PM QoS can be different than the real OPP 'rate'
-so still would need conversion into proper OPP for comparison with EM.
-Furthermore, uncapping the device in thermal just to check the user freq
-limit is not the safest way.
-Thus, this simple implementation moves the calculation of the proper
-frequency to the sysfs write code, since it's called less often. The value
-is then used as-is in the thermal framework without any hassle.
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+[cristian: change binding doc file path, add file patterns for onkey and
+           poweroff drivers, fix ordering, add myself as co-maintainer]
+Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+---
+Changes in v7:
+ - None
 
-As it's a RFC, it still misses the cpufreq sysfs implementation, but would
-be addressed if all agree.
+Changes in v6:
+ - None
 
-Regards,
-Lukasz Luba
+Changes in v5:
+ - None
 
-Lukasz Luba (3):
-  PM /devfreq: add user frequency limits into devfreq struct
-  thermal: devfreq_cooling: add new callback to get user limit for min
-    state
-  thermal: power_allocator: get proper max power limited by user
+Changes in v4:
+ - None
 
- drivers/devfreq/devfreq.c             | 41 ++++++++++++++++++++++++---
- drivers/thermal/devfreq_cooling.c     | 33 +++++++++++++++++++++
- drivers/thermal/gov_power_allocator.c | 17 +++++++++--
- include/linux/devfreq.h               |  4 +++
- include/linux/thermal.h               |  1 +
- 5 files changed, 90 insertions(+), 6 deletions(-)
+Changes in v3:
+ - Restored the authorship of the patch to Mani
 
+ MAINTAINERS | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cfb47554b951..32c16d13fe28 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2891,6 +2891,18 @@ W:	http://www.openaoe.org/
+ F:	Documentation/admin-guide/aoe/
+ F:	drivers/block/aoe/
+ 
++ATC260X PMIC MFD DRIVER
++M:	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++M:	Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
++L:	linux-actions@lists.infradead.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
++F:	drivers/input/misc/atc260x-onkey.c
++F:	drivers/mfd/atc260*
++F:	drivers/power/reset/atc260x-poweroff.c
++F:	drivers/regulator/atc260x-regulator.c
++F:	include/linux/mfd/atc260x/*
++
+ ATHEROS 71XX/9XXX GPIO DRIVER
+ M:	Alban Bedel <albeu@free.fr>
+ S:	Maintained
 -- 
-2.17.1
+2.30.0
 
