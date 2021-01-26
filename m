@@ -2,88 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96975C43381
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 17:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48F47C433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 18:43:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 732F22083E
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 17:20:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 153D422B37
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 18:43:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390714AbhAZRUJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 12:20:09 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:37579 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S2389699AbhAZIIf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 03:08:35 -0500
-X-UUID: bfc80a491e504906bba3384191591622-20210126
-X-UUID: bfc80a491e504906bba3384191591622-20210126
-Received: from mtkmrs01.mediatek.inc [(172.21.131.159)] by mailgw02.mediatek.com
-        (envelope-from <henryc.chen@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 402074991; Tue, 26 Jan 2021 16:03:59 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Tue, 26 Jan 2021 16:03:57 +0800
-Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 26 Jan 2021 16:03:57 +0800
-From:   Henry Chen <henryc.chen@mediatek.com>
-To:     Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Ryan Case <ryandcase@chromium.org>
-CC:     Mark Rutland <mark.rutland@arm.com>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Fan Chen <fan.chen@mediatek.com>,
-        James Liao <jamesjj.liao@mediatek.com>,
-        Arvin Wang <arvin.wang@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V8 11/12] arm64: dts: mt8183: add dvfsrc regulator nodes
-Date:   Tue, 26 Jan 2021 16:03:53 +0800
-Message-ID: <1611648234-15043-12-git-send-email-henryc.chen@mediatek.com>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1611648234-15043-1-git-send-email-henryc.chen@mediatek.com>
-References: <1611648234-15043-1-git-send-email-henryc.chen@mediatek.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+        id S2390740AbhAZRUM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 12:20:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48038 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2390906AbhAZJKO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Jan 2021 04:10:14 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 57DE5B254;
+        Tue, 26 Jan 2021 09:09:28 +0000 (UTC)
+Message-ID: <1611652167.11983.65.camel@suse.cz>
+Subject: Re: [PATCH v2 1/1] x86,sched: On AMD EPYC set freq_max = max_boost
+ in schedutil invariant formula
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Jon Grimm <Jon.Grimm@amd.com>,
+        Nathan Fontenot <Nathan.Fontenot@amd.com>,
+        Yazen Ghannam <Yazen.Ghannam@amd.com>,
+        Thomas Lendacky <Thomas.Lendacky@amd.com>,
+        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Michael Larabel <Michael@phoronix.com>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-acpi@vger.kernel.org
+Date:   Tue, 26 Jan 2021 10:09:27 +0100
+In-Reply-To: <YA6YEK4/rjtPLdkG@hirez.programming.kicks-ass.net>
+References: <20210122204038.3238-1-ggherdovich@suse.cz>
+         <20210122204038.3238-2-ggherdovich@suse.cz>
+         <YA6YEK4/rjtPLdkG@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add dvfsrc regulator nodes which is for MT8183-based platforms
+On Mon, 2021-01-25 at 11:06 +0100, Peter Zijlstra wrote:
+> On Fri, Jan 22, 2021 at 09:40:38PM +0100, Giovanni Gherdovich wrote:
+> > 1. PROBLEM DESCRIPTION (over-utilization and schedutil)
+> > 
+> > The problem happens on CPU-bound workloads spanning a large number of cores.
+> > In this case schedutil won't select the maximum P-State. Actually, it's
+> > likely that it will select the minimum one.
+> > 
+> > A CPU-bound workload puts the machine in a state generally called
+> > "over-utilization": an increase in CPU speed doesn't result in an increase of
+> > capacity. The fraction of time tasks spend on CPU becomes constant regardless
+> > of clock frequency (the tasks eat whatever we throw at them), and the PELT
+> > invariant util goes up and down with the frequency (i.e. it's not invariant
+> > anymore).
+> >                                       v5.10          v5.11-rc4
+> >                                       ~~~~~~~~~~~~~~~~~~~~~~~~
+> > CPU activity (mpstat)                 80-90%         80-90%
+> > schedutil requests (tracepoint)       always P0      mostly P2
+> > CPU frequency (HW feedback)           ~2.2 GHz       ~1.5 GHz
+> > PELT root rq util (tracepoint)        ~825           ~450
+> > 
+> > mpstat shows that the workload is CPU-bound and usage doesn't change with
+> 
+> So I'm having trouble with calling a 80%-90% workload CPU bound, because
+> clearly there's a ton of idle time.
 
-Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
----
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+Yes you're right. There is considerable idle time and calling it CPU-bound is
+a bit of a stretch.
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index e862078..9fefc5e 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -502,6 +502,12 @@
- 			compatible = "mediatek,mt8183-dvfsrc";
- 			reg = <0 0x10012000 0 0x1000>;
- 			#interconnect-cells = <1>;
-+			dvfsrc_vcore: dvfsrc-vcore {
-+				regulator-name = "dvfsrc-vcore";
-+				regulator-min-microvolt = <725000>;
-+				regulator-max-microvolt = <800000>;
-+				regulator-always-on;
-+			};
- 		};
- 
- 		pwrap: pwrap@1000d000 {
--- 
-1.9.1
+Yet I don't think I'm completely off the mark. The busy time is the same with
+the machine running at 1.5 GHz and at 2.2 GHz (it just takes longer to
+finish). To me it seems like the CPU is the bottleneck, with some overhead on
+top.
 
+I will confirm what causes the idle time.
+
+
+Giovanni
