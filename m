@@ -2,97 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59076C4361B
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 19:22:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F25AEC433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 00:38:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2EAEC22A84
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 19:22:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A332420679
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 00:38:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727829AbhAZFqx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 00:46:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33292 "EHLO
+        id S1726042AbhA0AhU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 19:37:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726021AbhAYJPX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2021 04:15:23 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FB27C06121C
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2021 00:44:54 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id i9so3439791wmq.1
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2021 00:44:54 -0800 (PST)
+        with ESMTP id S1730660AbhAZRIE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 12:08:04 -0500
+Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com [IPv6:2607:f8b0:4864:20::d31])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA062C0611BD
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2021 08:45:47 -0800 (PST)
+Received: by mail-io1-xd31.google.com with SMTP id p72so34830197iod.12
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2021 08:45:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=IFHl3bl4OZPJd0JoqwGAwIlNY7YxXKKQkfzZqr2Pg80=;
-        b=Ri1hXGuDzteU5OZGSXFpK4YybGw/wAHghQohkPBQQzxC8vg7LHhN0VPfV3WU5H8zD4
-         5VdkSpc/1R9/2yfniMDa550PfTZMRY47g6s8luxhlsgfce/1VVaJyLJpeO+LOL97nJHj
-         qitCcNSk2Jxr1z6mwFRMO/clgXYiRaiAFhyOl53yutU+4bsIF+WJIwR+qHJh156wr0GA
-         iayr0RBAEY04LpcdG1Jw7pj66lWVe0RwFKdd+euM3WYsKj12WG8f+LGD8EsibHzomv4O
-         T2t07mBMKAmxOZuLD8QdAj0/B3vEqr+K/Ip93TmBoD5exDE/T1+itiqGZAwXSiFQLcyE
-         iZsg==
+        d=linuxfoundation.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=BdN+glEVgeYhnUo2SFc/y+zPoJzWySqh9gKW4wQ+MUc=;
+        b=g2NzyrdO8qJc9gCmNX6MMT+uVx9heLOB8e6cxKjT4RRCRVRezEQsRZrty72bZ8jTbG
+         ePCn51fae/rChUFBImBy+iN7wS30ENu0xAo9KS1sojNC3/8dez9eHbWjCURFPdXyBPj6
+         zvsxX2Pl5YqHPLyWJ3N/f4gB6V10Ynpd0TmWg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=IFHl3bl4OZPJd0JoqwGAwIlNY7YxXKKQkfzZqr2Pg80=;
-        b=VTZrVCvwsrnZVDU0QFMiDvWFYJrS5G6yEGFiFTOCeJ8FWgla3Y6s/nkNm0zpO/wxlg
-         oQaF9NciFLukwHEaoGTv3JTL9GMbgmthphHnL0zZ1V6/PXI4D3OaApxI4lnwFmWTrc1Y
-         0q9ypK/0K0wJBKXKVs38UpzW3DTQJ86mjUMv6cznDhWjWhddyU4Y5yR3zrVrcBOr7a2A
-         kajInorUtQrwYsB3Pc/hEWtDM4XF5QSgGWbcnur08vsOzCmr9wZo+t22c1GDgzP91bYs
-         l7scXJ0KrHZgUNrOwTUq/Urn8VA2rWhKEKAe7S6MKwuxauosSWfFHyODxGEc2ywj1jUs
-         lliA==
-X-Gm-Message-State: AOAM5339JaEa3PDzFEDuwVlZwvyqnib/NSLbtgK0lfEahBzf6dDqlETv
-        IimODiiz7Gv+yLbZB7gU+t+zsg==
-X-Google-Smtp-Source: ABdhPJyFN5c/c6on04JHgiLXHPb9pHibi+YHGz3T4vhcHbVRUzR7zzOs94GoI04aeloeiIXl4eyiIw==
-X-Received: by 2002:a1c:e1d4:: with SMTP id y203mr1205877wmg.50.1611564293197;
-        Mon, 25 Jan 2021 00:44:53 -0800 (PST)
-Received: from dell ([91.110.221.194])
-        by smtp.gmail.com with ESMTPSA id z4sm966388wrw.38.2021.01.25.00.44.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Jan 2021 00:44:52 -0800 (PST)
-Date:   Mon, 25 Jan 2021 08:44:51 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Marcus Cooper <codekipper@gmail.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 04/10] power: supply: ab8500: Push data to power supply
- code
-Message-ID: <20210125084451.GV4903@dell>
-References: <20210123221908.2993388-1-linus.walleij@linaro.org>
- <20210123221908.2993388-5-linus.walleij@linaro.org>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=BdN+glEVgeYhnUo2SFc/y+zPoJzWySqh9gKW4wQ+MUc=;
+        b=bWq6ILITVgQG+83aKlHJwWTd7isUMNICeesQcoJ4Bme0b/f5RFFAsj6tUXXxcHPaWG
+         xFkEsCjnDtDoCzmmpvP8BJxlEIsrcEOfwrQlA6wFxu4uIdOF602+vOEh4gejP/kuZNap
+         FQHh3ZPgzTGbcS577722KOkpAX/rfw1wC9+MT8Z27Yul455rBg4FvrRgtN1iYfjCpB9W
+         qfFziHgVqHuEcS0Dh9Otl7aZ4a3FfPPW4X9bXF6CuhP2jz/PAqN5U+0jrScoL9Mkjqe9
+         /tHfjc54Ip/GwejBVd3SnsokCM/T0KdLdDjg9iELDgju+44C84FU0mvGoGW6NcSitzQ0
+         NwcA==
+X-Gm-Message-State: AOAM531c8APQNeE3y8HDSvU4ecvygW4E8H2D8h4ISmjl43XH3A7tQlxW
+        hmN0OxklMADh1UU4p934KSruSQ==
+X-Google-Smtp-Source: ABdhPJzoEfRlJfb2BxFmWyNOtUPG+bzH7lGmNi5OkZqiYHDR18+VfL7GrL6LHQreL1gGeAJ1cXyQ3w==
+X-Received: by 2002:a05:6e02:507:: with SMTP id d7mr5097817ils.133.1611679547103;
+        Tue, 26 Jan 2021 08:45:47 -0800 (PST)
+Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
+        by smtp.gmail.com with ESMTPSA id v2sm11205221ilj.19.2021.01.26.08.45.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Jan 2021 08:45:46 -0800 (PST)
+Subject: Re: [PATCH v2 0/8] cpupower: Updates and cleanup to support AMD
+ Family 0x19
+To:     Nathan Fontenot <nathan.fontenot@amd.com>, rrichter@amd.com,
+        shuah@kernel.org, linux-kernel@vger.kernel.org, trenn@suse.com,
+        linux-pm@vger.kernel.org
+Cc:     boris.ostrovsky@oracle.com, joao.m.martins@oracle.com,
+        konrad.wilk@oracle.com, Shuah Khan <skhan@linuxfoundation.org>
+References: <161159600371.68367.14890273216040482793.stgit@ethanol01c7-host.amd.com>
+From:   Shuah Khan <skhan@linuxfoundation.org>
+Message-ID: <bbc30a6a-de13-869a-f58e-cb98bb070d4e@linuxfoundation.org>
+Date:   Tue, 26 Jan 2021 09:45:45 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210123221908.2993388-5-linus.walleij@linaro.org>
+In-Reply-To: <161159600371.68367.14890273216040482793.stgit@ethanol01c7-host.amd.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 23 Jan 2021, Linus Walleij wrote:
-
-> There is a slew of defines, structs and enums and even a
-> function call only relevant for the charging code that
-> still lives in <linux/mfd/abx500.h>. Push it down to the
-> "ab8500-bm.h" header in the power supply subsystem where
-> it is actually used.
+On 1/25/21 10:34 AM, Nathan Fontenot wrote:
+> Updates to the cpupower command to add support for AMD family 0x19
+> and cleanup the code to remove many of the family checks to hopefully
+> make any future family updates easier.
 > 
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> The first couple of patches are simple updates to rename the structs
+> in the msr_pstate union to better reflect current support and correcting
+> the name of the CPUPOWER_CAP_AMD_CPB cpuid cap flag.
+> 
+> Patches 3, 5, and 8 update the family checks to either replace
+> them with a new cpuid cap flag based off of cpuid checks or check for
+> family >= 0x17 where removing the direct family check isn't possible.
+> 
+> The reamianing patches are cleanups to remove unneeded extra enabled bit
+> checking, remove passing no longer used variables, and remove unused
+> variables in decode_pstates().
 > ---
->  drivers/power/supply/ab8500-bm.h | 278 ++++++++++++++++++++++++++++++-
->  include/linux/mfd/abx500.h       | 276 ------------------------------
->  2 files changed, 274 insertions(+), 280 deletions(-)
+> 
+> Updates for v2:
+> - Patch 1/8: Add links to AMD PPR and BKDG to commit message.
+> - Patch 3/8: Update and add back removed comment.
+> 
+> ---
+> 
+> Nathan Fontenot (7):
+>        cpupower: Update msr_pstate union struct naming
+>        cpupower: Add CPUPOWER_CAP_AMD_HW_PSTATE cpuid caps flag
+>        cpupower: Remove unused pscur variable.
+>        cpupower: Update family checks when decoding HW pstates
+>        cpupower: Condense pstate enabled bit checks in decode_pstates()
+>        cpupower: Remove family arg to decode_pstates()
+>        cpupower: Add cpuid cap flag for MSR_AMD_HWCR support
+> 
+> Robert Richter (1):
+>        cpupower: Correct macro name for CPB caps flag
+> 
+> 
+>   tools/power/cpupower/utils/cpufreq-info.c    |    3 -
+>   tools/power/cpupower/utils/helpers/amd.c     |   65 ++++++++++++--------------
+>   tools/power/cpupower/utils/helpers/cpuid.c   |   20 +++++++-
+>   tools/power/cpupower/utils/helpers/helpers.h |   14 +++---
+>   tools/power/cpupower/utils/helpers/misc.c    |    9 +---
+>   5 files changed, 57 insertions(+), 54 deletions(-)
+> 
+> --
+> Nathan Fontenot
+> 
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
+Thank you. Applied now for 5.12-rc1
 
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+https://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux.git/log/?h=cpupower
+
+thanks,
+-- Shuah
