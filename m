@@ -7,33 +7,33 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6325BC433E9
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A10E5C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:42:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 233EE23108
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:41:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 45BEE23103
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:42:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404261AbhAZKlb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 05:41:31 -0500
-Received: from foss.arm.com ([217.140.110.172]:60888 "EHLO foss.arm.com"
+        id S2404282AbhAZKlj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 05:41:39 -0500
+Received: from foss.arm.com ([217.140.110.172]:60928 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732057AbhAZKlM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Jan 2021 05:41:12 -0500
+        id S2404267AbhAZKlS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Jan 2021 05:41:18 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C019D101E;
-        Tue, 26 Jan 2021 02:40:26 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 08040113E;
+        Tue, 26 Jan 2021 02:40:33 -0800 (PST)
 Received: from e123648.arm.com (unknown [10.57.2.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DBCAD3F66B;
-        Tue, 26 Jan 2021 02:40:23 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 55E0A3F66B;
+        Tue, 26 Jan 2021 02:40:30 -0800 (PST)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     vireshk@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
         Dietmar.Eggemann@arm.com, lukasz.luba@arm.com, amitk@kernel.org,
         rui.zhang@intel.com, cw00.choi@samsung.com,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [RFC][PATCH 1/3] PM /devfreq: add user frequency limits into devfreq struct
-Date:   Tue, 26 Jan 2021 10:39:59 +0000
-Message-Id: <20210126104001.20361-2-lukasz.luba@arm.com>
+Subject: [RFC][PATCH 3/3] thermal: power_allocator: get proper max power limited by user
+Date:   Tue, 26 Jan 2021 10:40:01 +0000
+Message-Id: <20210126104001.20361-4-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210126104001.20361-1-lukasz.luba@arm.com>
 References: <20210126104001.20361-1-lukasz.luba@arm.com>
@@ -41,124 +41,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The new fields inside devfreq struct allow to check the frequency limits
-set by the user via sysfs. These limits are important for thermal governor
-Intelligent Power Allocation (IPA) which needs to know the maximum allowed
-power consumption of the device.
+Use new API interface to get the maximum power of the cooling device. This
+is needed to properly allocate and split the total power budget. The
+allowed limit is taken from supported cooling device and then checked with
+limits set in DT. The final state value is used for asking for the related
+power value the cooling device.
 
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/devfreq/devfreq.c | 41 +++++++++++++++++++++++++++++++++++----
- include/linux/devfreq.h   |  4 ++++
- 2 files changed, 41 insertions(+), 4 deletions(-)
+ drivers/thermal/gov_power_allocator.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 94cc25fd68da..e985a76e5ff3 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -843,6 +843,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_dev;
- 	}
- 
-+	devfreq->user_min_freq = devfreq->scaling_min_freq;
-+	devfreq->user_max_freq = devfreq->scaling_max_freq;
-+
- 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
- 	atomic_set(&devfreq->suspend_count, 0);
- 
-@@ -1513,6 +1516,8 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
- {
- 	struct devfreq *df = to_devfreq(dev);
-+	struct device *pdev = df->dev.parent;
-+	struct dev_pm_opp *opp;
- 	unsigned long value;
- 	int ret;
- 
-@@ -1533,6 +1538,19 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- 	if (ret < 0)
- 		return ret;
- 
-+	if (!value)
-+		value = df->scaling_min_freq;
-+
-+	opp = dev_pm_opp_find_freq_ceil(pdev, &value);
-+	if (IS_ERR(opp))
-+		return count;
-+
-+	dev_pm_opp_put(opp);
-+
-+	mutex_lock(&df->lock);
-+	df->user_min_freq = value;
-+	mutex_unlock(&df->lock);
-+
- 	return count;
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 92acae53df49..ec33fba5a358 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -308,6 +308,20 @@ power_actor_set_power(struct thermal_cooling_device *cdev,
+ 	return 0;
  }
  
-@@ -1554,7 +1572,9 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
- {
- 	struct devfreq *df = to_devfreq(dev);
--	unsigned long value;
-+	struct device *pdev = df->dev.parent;
-+	unsigned long value, value_khz;
-+	struct dev_pm_opp *opp;
- 	int ret;
- 
- 	/*
-@@ -1579,14 +1599,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 	 * A value of zero means "no limit".
- 	 */
- 	if (value)
--		value = DIV_ROUND_UP(value, HZ_PER_KHZ);
-+		value_khz = DIV_ROUND_UP(value, HZ_PER_KHZ);
- 	else
--		value = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
-+		value_khz = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
- 
--	ret = dev_pm_qos_update_request(&df->user_max_freq_req, value);
-+	ret = dev_pm_qos_update_request(&df->user_max_freq_req, value_khz);
- 	if (ret < 0)
- 		return ret;
- 
-+	if (!value)
-+		value = df->scaling_max_freq;
++static int
++power_actor_get_max_power(struct thermal_cooling_device *cdev,
++			  struct thermal_instance *instance, u32 *max_power)
++{
++	unsigned long min_state = 0;
 +
-+	opp = dev_pm_opp_find_freq_floor(pdev, &value);
-+	if (IS_ERR(opp))
-+		return count;
++	if (cdev->ops->get_user_min_state)
++		cdev->ops->get_user_min_state(cdev, &min_state);
 +
-+	dev_pm_opp_put(opp);
++	min_state = max(instance->lower, min_state);
 +
-+	mutex_lock(&df->lock);
-+	df->user_max_freq = value;
-+	mutex_unlock(&df->lock);
++	return cdev->ops->state2power(cdev, min_state, max_power);
++}
 +
- 	return count;
- }
+ /**
+  * divvy_up_power() - divvy the allocated power between the actors
+  * @req_power:	each actor's requested power
+@@ -455,8 +469,7 @@ static int allocate_power(struct thermal_zone_device *tz,
  
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index b6d3bae1c74d..147a229056d2 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -147,6 +147,8 @@ struct devfreq_stats {
-  *		touch this.
-  * @user_min_freq_req:	PM QoS minimum frequency request from user (via sysfs)
-  * @user_max_freq_req:	PM QoS maximum frequency request from user (via sysfs)
-+ * @user_min_freq:	User's minimum frequency
-+ * @user_max_freq:	User's maximum frequency
-  * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
-  * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
-  * @stop_polling:	 devfreq polling status of a device.
-@@ -185,6 +187,8 @@ struct devfreq {
- 	struct dev_pm_qos_request user_max_freq_req;
- 	unsigned long scaling_min_freq;
- 	unsigned long scaling_max_freq;
-+	unsigned long user_min_freq;
-+	unsigned long user_max_freq;
- 	bool stop_polling;
+ 		weighted_req_power[i] = frac_to_int(weight * req_power[i]);
  
- 	unsigned long suspend_freq;
+-		if (cdev->ops->state2power(cdev, instance->lower,
+-					   &max_power[i]))
++		if (power_actor_get_max_power(cdev, instance, &max_power[i]))
+ 			continue;
+ 
+ 		total_req_power += req_power[i];
 -- 
 2.17.1
 
