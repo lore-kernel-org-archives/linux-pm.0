@@ -2,165 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7812C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:18:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22A07C433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:22:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9A2AE22573
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:18:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E612F21744
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Jan 2021 10:22:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391897AbhAZKRs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 05:17:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46618 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391676AbhAZKQW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 05:16:22 -0500
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 042A0C061573;
-        Tue, 26 Jan 2021 02:15:42 -0800 (PST)
-Received: by mail-ed1-x535.google.com with SMTP id b21so19042193edy.6;
-        Tue, 26 Jan 2021 02:15:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=/rct3g+soQkZfk4LEwZexkLFSPahpYR/2YSKQ5JilcY=;
-        b=pzIvfmjkT8KVjUuO0izY/r1FVdyMrORT5Z1F8W9NRLH+n4u2t4OZiUj7y1hQsBOQya
-         Szy1e+Rv+WzRWD+c4ebD8n+s4gaITnsfJv3woXVKSYZWYZxeie4aBY7U6/b8Xwl0zRTR
-         eHZE8OxOmFFJC4n740aYtRue57KYhdFVvfJyPKvRuQRuO/e0PZkHBbpzKLFwUGbzFaYT
-         4skZU0F+MI9j5ComzDmcdVEqveQUbSNpX4nDJhJ9UAGHE/KBipYxTL9d4V/TIT89wpmP
-         wBpd6sucjsTVFnK/m3GoUqgFvB1FiXauvo3Hff2cB00wYuNc6AXTY7rPHSxVmHTyaU/A
-         Wy2g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=/rct3g+soQkZfk4LEwZexkLFSPahpYR/2YSKQ5JilcY=;
-        b=IGVr98UqZE6V7yd0cGN/x1AEvtmH9QQWjCTq9RATumNU+9LFJTXdLqBRBVdZD1dIIV
-         dNuVIqQX2HzwCogjIZou4jXpaVQ/CSKytY0vOkZNoxK2a8hns0fP9PXkWX+BlrsPRsHd
-         glg1jQLsmImHlIsnhZzociGGhFkXtUCZeqT24MNdMDw501bxHQxDq5X005DBMQcO93x1
-         Xe7jX9EmqwJcomPIbNLD2ppCAsPrR3DawsoQzAkdn/8wzrzvICKBR0UVMqLVO0keBA2G
-         A1yWAINtH2JBHrZAZLsI+GKow2FZ+ikXN/sJ8wjCqahvJDiJWcz1A8tnn+CttYeCOmR0
-         qg0Q==
-X-Gm-Message-State: AOAM532fkuBjaqAk258pEv1DFmKT3u2nXnDgmSc4ZjoY4nsm3uZuyMws
-        YYl1fe3q5zUM4CjqpHb3yyY=
-X-Google-Smtp-Source: ABdhPJzXiP/L6TlYulI6WQYvMi/C3+rPzj3ZcqLihXWoiJ7jInOnxySpjFmOkMqjeDts0pMV3hQclg==
-X-Received: by 2002:a05:6402:1655:: with SMTP id s21mr3861428edx.360.1611656140787;
-        Tue, 26 Jan 2021 02:15:40 -0800 (PST)
-Received: from BV030612LT ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id br6sm7707782ejb.46.2021.01.26.02.15.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Jan 2021 02:15:40 -0800 (PST)
-Date:   Tue, 26 Jan 2021 12:15:37 +0200
-From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v6 3/7] mfd: Add MFD driver for ATC260x PMICs
-Message-ID: <20210126101537.GA1112736@BV030612LT>
-References: <cover.1611165200.git.cristian.ciocaltea@gmail.com>
- <4bc76f9e3dc7204d7f407af6ee61c9f193a789d3.1611165200.git.cristian.ciocaltea@gmail.com>
- <20210125142558.GA4903@dell>
- <20210125184715.GA1061394@BV030612LT>
- <20210126081535.GB4903@dell>
+        id S2391860AbhAZKWj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Jan 2021 05:22:39 -0500
+Received: from m12-18.163.com ([220.181.12.18]:34164 "EHLO m12-18.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2391657AbhAZKV3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Jan 2021 05:21:29 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=PgTMq
+        TZn7npXraokTycNIhlMSf+uj61Uk0lqhNzYuKY=; b=aKU4BSjw31sUQfWrUhc0L
+        JbmuCXTftdKu7dpY6VpIZ1tcmHyxv6q4pf84FvprEtC5SJRO0Jwsv0KgQ206mLxb
+        jPihZZKij7z6B7K0dDQ6lA7FyY96yY5r1i12UWmkjlNmEyAV+g3E6WXHmrnDrKdo
+        mxU/6iNMwk5KpyUAb09drc=
+Received: from COOL-20201210PM.ccdomain.com (unknown [218.94.48.178])
+        by smtp14 (Coremail) with SMTP id EsCowAAXHgry6A9goABtRA--.24561S2;
+        Tue, 26 Jan 2021 18:03:34 +0800 (CST)
+From:   zuoqilin1@163.com
+To:     sre@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        zuoqilin <zuoqilin@yulong.com>
+Subject: [PATCH] drivers/power/supply: fix typo
+Date:   Tue, 26 Jan 2021 18:03:26 +0800
+Message-Id: <20210126100326.869-1-zuoqilin1@163.com>
+X-Mailer: git-send-email 2.28.0.windows.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210126081535.GB4903@dell>
+X-CM-TRANSID: EsCowAAXHgry6A9goABtRA--.24561S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWruFy8KryxGFWkXF17GF47twb_yoW8Jr18pa
+        n2vFnrWw4jyFWUJa4DA3ya9FyYganakrWj9w4fG3WrZF43Xws3Wr15tF47Xr1IyryxXF4S
+        qasIyw4xtF1jkr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jESoXUUUUU=
+X-Originating-IP: [218.94.48.178]
+X-CM-SenderInfo: 52xr1xpolqiqqrwthudrp/1tbipRYmiVUMcELpTQAAsT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 26, 2021 at 08:15:35AM +0000, Lee Jones wrote:
-> On Mon, 25 Jan 2021, Cristian Ciocaltea wrote:
-> 
-> > Hi Lee,
-> > 
-> > On Mon, Jan 25, 2021 at 02:25:58PM +0000, Lee Jones wrote:
-> > > On Wed, 20 Jan 2021, Cristian Ciocaltea wrote:
-> > > 
-> > > > Add initial support for the Actions Semi ATC260x PMICs which integrates
-> > > > Audio Codec, Power management, Clock generation and GPIO controller
-> > > > blocks.
-> > > > 
-> > > > For the moment this driver only supports Regulator, Poweroff and Onkey
-> > > > functionalities for the ATC2603C and ATC2609A chip variants.
-> >  
-> > [...]
-> > 
-> > > > +static void regmap_lock_mutex(void *__mutex)
-> > > > +{
-> > > > +	struct mutex *mutex = __mutex;
-> > > > +
-> > > > +	/*
-> > > > +	 * Using regmap within an atomic context (e.g. accessing a PMIC when
-> > > > +	 * powering system down) is normally allowed only if the regmap type
-> > > > +	 * is MMIO and the regcache type is either REGCACHE_NONE or
-> > > > +	 * REGCACHE_FLAT. For slow buses like I2C and SPI, the regmap is
-> > > > +	 * internally protected by a mutex which is acquired non-atomically.
-> > > > +	 *
-> > > > +	 * Let's improve this by using a customized locking scheme inspired
-> > > > +	 * from I2C atomic transfer. See i2c_in_atomic_xfer_mode() for a
-> > > > +	 * starting point.
-> > > > +	 */
-> > > > +	if (system_state > SYSTEM_RUNNING && irqs_disabled())
-> > > > +		mutex_trylock(mutex);
-> > > > +	else
-> > > > +		mutex_lock(mutex);
-> > > > +}
-> > > 
-> > > Would this be useful to anyone else?
-> > 
-> > If you refer to the locking scheme, it is currently required by the
-> > power-off driver to handle atomic contexts.
-> 
-> Right, but would this be helpful to any non-Actions drivers?
-> 
-> If so, perhaps it should reside as a Regmap helper?
+From: zuoqilin <zuoqilin@yulong.com>
 
-I got it now, thanks for the suggestion. As a matter of fact this was
-my initial intention, but since I was not aware of any other use case
-I decided to keep it private for the moment.
+Change 'exeeds' to 'exceeds'.
 
-Most probably this hardware design is not specific to Actions only, so
-it might be helpful to other drivers as well. Therefore I am going to
-reconsider this and if/when it is accepted upstream, I will come back
-with a separate update patch for this driver.
+Signed-off-by: zuoqilin <zuoqilin@yulong.com>
+---
+ drivers/power/supply/charger-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> > > For my own reference (apply this as-is to your sign-off block):
-> > 
-> > Please note the patches "[4/7] regulator: ..." and "[5/7] power: ..."
-> > have been already picked up by Mark and Sebastian, respectively, while
-> > Dmitry suggested to merge "[6/7] input: ..." through MFD.
-> 
-> That's fine.
-> 
-> Please re-submit the patches which have not been applied already.
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 6fcebe4..731351d8 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -570,7 +570,7 @@ static int cm_get_target_status(struct charger_manager *cm)
+ 		return POWER_SUPPLY_STATUS_DISCHARGING;
+ 
+ 	if (cm_check_thermal_status(cm)) {
+-		/* Check if discharging duration exeeds limit. */
++		/* Check if discharging duration exceeds limit. */
+ 		if (check_charging_duration(cm))
+ 			goto charging_ok;
+ 		return POWER_SUPPLY_STATUS_NOT_CHARGING;
+@@ -578,7 +578,7 @@ static int cm_get_target_status(struct charger_manager *cm)
+ 
+ 	switch (cm->battery_status) {
+ 	case POWER_SUPPLY_STATUS_CHARGING:
+-		/* Check if charging duration exeeds limit. */
++		/* Check if charging duration exceeds limit. */
+ 		if (check_charging_duration(cm))
+ 			return POWER_SUPPLY_STATUS_FULL;
+ 		fallthrough;
+-- 
+1.9.1
 
-I have just submitted v7 with the two patches dropped.
 
-> > >   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-> > > 
-> > 
-> > Thanks,
-> > Cristi
-> 
-> -- 
-> Lee Jones [李琼斯]
-> Senior Technical Lead - Developer Services
-> Linaro.org │ Open source software for Arm SoCs
-> Follow Linaro: Facebook | Twitter | Blog
