@@ -2,115 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 644C1C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 16:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 263ADC433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:17:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BC1164D9D
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 16:33:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D54B764DA8
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:17:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343588AbhA0Qcx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Jan 2021 11:32:53 -0500
-Received: from m42-8.mailgun.net ([69.72.42.8]:19505 "EHLO m42-8.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1343578AbhA0Qch (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 27 Jan 2021 11:32:37 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1611765132; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
- Subject: Sender; bh=z5sITnYH+hKH5ob5jP7ZjC3SvuyrrXJFxVS7t/eQ6UM=; b=qhUSwjTo/WjoOdB2+syRtcyKUrngNRYHeXGOwDqlAG8Ql/ah3XtYm9NY4/FnxRCxs1gEhA2l
- wGLnXApJJrhgJ8wW0Aso5T9fKt55flXTszJjwdT8md2FLsJHayTMGILSaPB1WgccdgEivc49
- Vk5a0SnQZinava35e1jFkiz1MqY=
-X-Mailgun-Sending-Ip: 69.72.42.8
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n05.prod.us-east-1.postgun.com with SMTP id
- 6011954fbeacd1a252b67cbb (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 27 Jan 2021 16:31:11
- GMT
-Sender: akhilpo=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id A443CC43468; Wed, 27 Jan 2021 16:31:10 +0000 (UTC)
-Received: from [192.168.1.105] (unknown [61.1.225.58])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: akhilpo)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id D3407C433ED;
-        Wed, 27 Jan 2021 16:31:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org D3407C433ED
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=akhilpo@codeaurora.org
-Subject: Re: [PATCH 03/13] opp: Keep track of currently programmed OPP
-To:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Osipenko <digetx@gmail.com>
-Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <cover.1611227342.git.viresh.kumar@linaro.org>
- <96b57316a2a307a5cc5ff7302b3cd0084123a2ed.1611227342.git.viresh.kumar@linaro.org>
- <b634343a-8005-fc35-e38b-bfeaa7310a70@gmail.com>
- <20210122044532.pc7cpcgy3kjbqmls@vireshk-i7>
-From:   Akhil P Oommen <akhilpo@codeaurora.org>
-Message-ID: <d9808e5f-bb8e-0d5c-8432-d695f8049f85@codeaurora.org>
-Date:   Wed, 27 Jan 2021 22:01:03 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+        id S233787AbhA0SRN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jan 2021 13:17:13 -0500
+Received: from mail-ot1-f51.google.com ([209.85.210.51]:39896 "EHLO
+        mail-ot1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232218AbhA0SRN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 13:17:13 -0500
+Received: by mail-ot1-f51.google.com with SMTP id i30so2612790ota.6;
+        Wed, 27 Jan 2021 10:16:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=AbNQtcm/JkhzFHAnum+Be39q9Ie6ZgOQAYSSeu9fom8=;
+        b=pXQFTxUH4/SXqpTdGaUt6JfV0ZnBy+G3HDHk2NmdNwDxinbaSqQqO4y1FTekTdAEoh
+         0E++PerIyh9EBjDO9AtWitMhdvQh22cjAcSup9ujColcwYn5CZ+KhDCt4FVVezE7xQLL
+         KL/9d8ZEM1UTnYvxL5CWMu+ctkPttNsY/TZk67efvLFgS7XNILN0Te8VPwwAH4sg054s
+         8VI+YoYN/EpbEPEWoQFa12F0kGkmOnXFbH/9548C63P2SoFC5uDdQwWdACpZZYQHOg5r
+         p9Ta0YBtLv1P2+DQybP9UPRXW1Vgm6W8VRzKQWOjwb2WsfxuZfHos2OZwWa+lwcXJCFD
+         l6jg==
+X-Gm-Message-State: AOAM531mdbTJtElZ41Wjsi7MiM0j7aojGWQgcWwVDqP5csADcEdTso60
+        yH6Z9KVKI4nwys6W9FbWZYMtl54Di/FNRRNMakw=
+X-Google-Smtp-Source: ABdhPJyFdaT8YNU1wgDbJjvsPwemFycJ4Gk0IspheNLLpPxpwUVFcaUNJVpjRieRPLth5vI/cdtuYowBgW1dseW3Dkg=
+X-Received: by 2002:a05:6830:2313:: with SMTP id u19mr8783140ote.321.1611771392243;
+ Wed, 27 Jan 2021 10:16:32 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20210122044532.pc7cpcgy3kjbqmls@vireshk-i7>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+References: <20210125041828.20965-1-qiang.zhang@windriver.com>
+In-Reply-To: <20210125041828.20965-1-qiang.zhang@windriver.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 27 Jan 2021 19:16:21 +0100
+Message-ID: <CAJZ5v0j-JxkPPdbUMiG3oqRs7O-35a0G2ryEHHKy-PagczizGA@mail.gmail.com>
+Subject: Re: [PATCH] PM: remove PF_WQ_WORKER mask
+To:     qiang.zhang@windriver.com
+Cc:     Rafael Wysocki <rafael.j.wysocki@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 1/22/2021 10:15 AM, Viresh Kumar wrote:
-> On 22-01-21, 00:41, Dmitry Osipenko wrote:
->> 21.01.2021 14:17, Viresh Kumar пишет:
->>> @@ -1074,15 +1091,18 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->>>   
->>>   	if (!ret) {
->>>   		ret = _set_opp_bw(opp_table, opp, dev, false);
->>> -		if (!ret)
->>> +		if (!ret) {
->>>   			opp_table->enabled = true;
->>> +			dev_pm_opp_put(old_opp);
->>> +
->>> +			/* Make sure current_opp doesn't get freed */
->>> +			dev_pm_opp_get(opp);
->>> +			opp_table->current_opp = opp;
->>> +		}
->>>   	}
->>
->> I'm a bit surprised that _set_opp_bw() isn't used similarly to
->> _set_opp_voltage() in _generic_set_opp_regulator().
->>
->> I'd expect the BW requirement to be raised before the clock rate goes UP.
-> 
-> I remember discussing that earlier when this stuff came in, and this I
-> believe is the reason for that.
-> 
-> We need to scale regulators before/after frequency because when we
-> increase the frequency a regulator may _not_ be providing enough power
-> to sustain that (even for a short while) and this may have undesired
-> effects on the hardware and so it is important to prevent that
-> malfunction.
-> 
-> In case of bandwidth such issues will not happen (AFAIK) and doing it
-> just once is normally enough. It is just about allowing more data to
-> be transmitted, and won't make the hardware behave badly.
-> 
-I agree with Dmitry. BW is a shared resource in a lot of architectures. 
-Raising clk before increasing the bw can lead to a scenario where this 
-client saturate the entire BW for whatever small duration it may be. 
-This will impact the latency requirements of other clients.
+On Mon, Jan 25, 2021 at 5:01 AM <qiang.zhang@windriver.com> wrote:
+>
+> From: Zqiang <qiang.zhang@windriver.com>
+>
+> Due to kworker also is kernel thread, it's already included
+> PF_KTHREAD mask, so remove PF_WQ_WORKER mask.
 
--Akhil.
+So you are saying that all threads having PF_WQ_WORKER set must also
+have PF_KTHREAD set, right?
+
+That sounds correct, so I'm going to rewrite the changelog and apply
+the patch as 5.12 material, thanks!
+
+> Signed-off-by: Zqiang <qiang.zhang@windriver.com>
+> ---
+>  kernel/power/process.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 45b054b7b5ec..50cc63534486 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -235,7 +235,7 @@ void thaw_kernel_threads(void)
+>
+>         read_lock(&tasklist_lock);
+>         for_each_process_thread(g, p) {
+> -               if (p->flags & (PF_KTHREAD | PF_WQ_WORKER))
+> +               if (p->flags & PF_KTHREAD)
+>                         __thaw_task(p);
+>         }
+>         read_unlock(&tasklist_lock);
+> --
+> 2.17.1
+>
