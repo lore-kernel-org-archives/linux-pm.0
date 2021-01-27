@@ -2,130 +2,229 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93828C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:19:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62227C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:21:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 662CF64D9A
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:19:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 114C764DA5
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 18:21:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232218AbhA0STK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Jan 2021 13:19:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37670 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231215AbhA0STK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 13:19:10 -0500
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1395AC061573
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jan 2021 10:18:30 -0800 (PST)
-Received: by mail-pj1-x1029.google.com with SMTP id g15so1890304pjd.2
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jan 2021 10:18:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=Bwj01gKlHb+axgiSNe+6BbEjXmPX6Z52py8J/II9MKo=;
-        b=kM3lJLx8YAhMnYTIeWP5SMs/JAwRV/kwTgkOhgpXugO+i/Lb6sGNoF5RjeeOgPEEr5
-         1QfA0wqq6PSrxDRQqPnNsRtWGlps7BSvteeaOBFh7qrx6QVtA/bXsXrzDDsDzTdFW/ik
-         Pgg8yjCiUKSDqfgSZtV5iUG3RXxnj5c0iuFuGxWnkicfR5oUs2dRNtBUY4cLdi3tuHRF
-         silez0onwTJF8H2OpjA9VAjuAoh9OCp0SbMAgtyo9Emzz8vLKRV/CqiTEULUcRCioszb
-         Nhxt6hv7sSPLMzs/VJU4BP7LT7mTUvSnVnHYk3FjkLG2NhZab71DIg/PAYrXCyx92F+W
-         JyhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=Bwj01gKlHb+axgiSNe+6BbEjXmPX6Z52py8J/II9MKo=;
-        b=cTFC780MA2k+wiGVUYlQH5sAQiaMkq+Sm1DT2Kv4MEWE2eEqp42se4yxgC7Mj88/Ax
-         8jyH70d+htD345tMvZK09ZXILgBq+xfFP6bHjKxxdmnG6f386o8vCQIqkzZIJh5k2T3M
-         eLq6ih9YStc2esi/BWIveWmU+el9QZOJoqfljRL8cjb+rVFtR95HlD7qwRPbZZ6wlBzu
-         ZyvJBlBLvyX1VK3FTDy4wm2HctF4JcDU6k/4dynql5Q1DkNOdetwfdeQnNA5YggD55Qq
-         BghGWYhNcsMUnAW68HFgz7IS5Jb1HS7sunT7p8Ro2NWRdvQ40M5YWLi0GObhhl+0OM1L
-         QVHw==
-X-Gm-Message-State: AOAM530nV7vTzDm9e7ykge3xGSJ6MNATz5KRsHIm2n+MFfTCd1SbPRg+
-        pCtVV9kCktY8Vf+GQFao25OQbGjzeKyVBXEh
-X-Google-Smtp-Source: ABdhPJx14bTWHquYwAUR8CP1IUCdoW/fmamx61WqqLOgt3v06hcwCkF/JdUtJkSA92WO7oc85nrR9Q==
-X-Received: by 2002:a17:903:248f:b029:de:c703:9839 with SMTP id p15-20020a170903248fb02900dec7039839mr12540236plw.42.1611771509706;
-        Wed, 27 Jan 2021 10:18:29 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id 5sm2740823pjz.23.2021.01.27.10.18.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jan 2021 10:18:28 -0800 (PST)
-Message-ID: <6011ae74.1c69fb81.f2789.60b7@mx.google.com>
-Date:   Wed, 27 Jan 2021 10:18:28 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S234243AbhA0SVj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jan 2021 13:21:39 -0500
+Received: from relay01.th.seeweb.it ([5.144.164.162]:56671 "EHLO
+        relay01.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233909AbhA0SVh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 13:21:37 -0500
+X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jan 2021 13:21:36 EST
+Received: from localhost.localdomain (abaf219.neoplus.adsl.tpnet.pl [83.6.169.219])
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id 5FF9B200A5;
+        Wed, 27 Jan 2021 19:14:06 +0100 (CET)
+From:   Konrad Dybcio <konrad.dybcio@somainline.org>
+To:     phone-devel@vger.kernel.org
+Cc:     ~postmarketos/upstreaming@lists.sr.ht,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: qcom: tsens-v0_1: Add support for MDM9607
+Date:   Wed, 27 Jan 2021 19:14:00 +0100
+Message-Id: <20210127181400.44642-1-konrad.dybcio@somainline.org>
+X-Mailer: git-send-email 2.30.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.11-rc5-62-g93c3d4245f20
-X-Kernelci-Report-Type: build
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-Subject: pm/testing build: 7 builds: 0 failed,
- 7 passed (v5.11-rc5-62-g93c3d4245f20)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed (v5.11-rc5-62-g93c3d4245f20)
+MDM9607 TSENS IP is very similar to the one of MSM8916, with
+minor adjustments to various tuning values.
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-11-rc5-62-g93c3d4245f20/
-
-Tree: pm
-Branch: testing
-Git Describe: v5.11-rc5-62-g93c3d4245f20
-Git Commit: 93c3d4245f208b925982f9e9bef346f47dff0157
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
+Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
-For more info write to <info@kernelci.org>
+ .../bindings/thermal/qcom-tsens.yaml          |   2 +
+ drivers/thermal/qcom/tsens-v0_1.c             | 100 +++++++++++++++++-
+ drivers/thermal/qcom/tsens.c                  |   3 +
+ drivers/thermal/qcom/tsens.h                  |   2 +-
+ 4 files changed, 105 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 95462e071ab4..8ad9dc139c23 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -22,6 +22,7 @@ properties:
+       - description: v0.1 of TSENS
+         items:
+           - enum:
++              - qcom,mdm9607-tsens
+               - qcom,msm8916-tsens
+               - qcom,msm8939-tsens
+               - qcom,msm8974-tsens
+@@ -94,6 +95,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,mdm9607-tsens
+               - qcom,msm8916-tsens
+               - qcom,msm8974-tsens
+               - qcom,msm8976-tsens
+diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+index 4ffa2e2c0145..8efe925b860f 100644
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -126,6 +126,39 @@
+ #define CAL_SEL_SHIFT		30
+ #define CAL_SEL_SHIFT_2		28
+ 
++/* eeprom layout data for mdm9607 */
++#define MDM9607_BASE0_MASK	0x000000ff
++#define MDM9607_BASE1_MASK	0x000ff000
++#define MDM9607_BASE0_SHIFT	0
++#define MDM9607_BASE1_SHIFT	12
++
++#define MDM9607_S0_P1_MASK	0x00003f00
++#define MDM9607_S1_P1_MASK	0x03f00000
++#define MDM9607_S2_P1_MASK	0x0000003f
++#define MDM9607_S3_P1_MASK	0x0003f000
++#define MDM9607_S4_P1_MASK	0x0000003f
++
++#define MDM9607_S0_P2_MASK	0x000fc000
++#define MDM9607_S1_P2_MASK	0xfc000000
++#define MDM9607_S2_P2_MASK	0x00000fc0
++#define MDM9607_S3_P2_MASK	0x00fc0000
++#define MDM9607_S4_P2_MASK	0x00000fc0
++
++#define MDM9607_S0_P1_SHIFT	8
++#define MDM9607_S1_P1_SHIFT	20
++#define MDM9607_S2_P1_SHIFT	0
++#define MDM9607_S3_P1_SHIFT	12
++#define MDM9607_S4_P1_SHIFT	0
++
++#define MDM9607_S0_P2_SHIFT	14
++#define MDM9607_S1_P2_SHIFT	26
++#define MDM9607_S2_P2_SHIFT	6
++#define MDM9607_S3_P2_SHIFT	18
++#define MDM9607_S4_P2_SHIFT	6
++
++#define MDM9607_CAL_SEL_MASK	0x00700000
++#define MDM9607_CAL_SEL_SHIFT	20
++
+ #define S0_P1_SHIFT		8
+ #define S1_P1_SHIFT		14
+ #define S2_P1_SHIFT		20
+@@ -452,7 +485,57 @@ static int calibrate_8974(struct tsens_priv *priv)
+ 	return 0;
+ }
+ 
+-/* v0.1: 8916, 8939, 8974 */
++static int calibrate_9607(struct tsens_priv *priv)
++{
++	int base0 = 0, base1 = 0, i;
++	u32 p1[5], p2[5];
++	int mode = 0;
++	u32 *qfprom_cdata, *qfprom_csel;
++
++	qfprom_cdata = (u32 *)qfprom_read(priv->dev, "calib");
++	if (IS_ERR(qfprom_cdata))
++		return PTR_ERR(qfprom_cdata);
++
++	mode = (qfprom_cdata[2] & MDM9607_CAL_SEL_MASK) >> MDM9607_CAL_SEL_SHIFT;
++	dev_dbg(priv->dev, "calibration mode is %d\n", mode);
++
++	switch (mode) {
++	case TWO_PT_CALIB:
++		base1 = (qfprom_cdata[2] & MDM9607_BASE1_MASK) >> MDM9607_BASE1_SHIFT;
++		p2[0] = (qfprom_cdata[0] & MDM9607_S0_P2_MASK) >> MDM9607_S0_P2_SHIFT;
++		p2[1] = (qfprom_cdata[0] & MDM9607_S1_P2_MASK) >> MDM9607_S1_P2_SHIFT;
++		p2[2] = (qfprom_cdata[1] & MDM9607_S2_P2_MASK) >> MDM9607_S2_P2_SHIFT;
++		p2[3] = (qfprom_cdata[1] & MDM9607_S3_P2_MASK) >> MDM9607_S3_P2_SHIFT;
++		p2[4] = (qfprom_cdata[2] & MDM9607_S4_P2_MASK) >> MDM9607_S4_P2_SHIFT;
++		for (i = 0; i < priv->num_sensors; i++)
++			p2[i] = ((base1 + p2[i]) << 2);
++		fallthrough;
++	case ONE_PT_CALIB2:
++		base0 = (qfprom_cdata[0] & MDM9607_BASE0_MASK);
++		p1[0] = (qfprom_cdata[0] & MDM9607_S0_P1_MASK) >> MDM9607_S0_P1_SHIFT;
++		p1[1] = (qfprom_cdata[0] & MDM9607_S1_P1_MASK) >> MDM9607_S1_P1_SHIFT;
++		p1[2] = (qfprom_cdata[1] & MDM9607_S2_P1_MASK) >> MDM9607_S2_P1_SHIFT;
++		p1[3] = (qfprom_cdata[1] & MDM9607_S3_P1_MASK) >> MDM9607_S3_P1_SHIFT;
++		p1[4] = (qfprom_cdata[2] & MDM9607_S4_P1_MASK) >> MDM9607_S4_P1_SHIFT;
++		for (i = 0; i < priv->num_sensors; i++)
++			p1[i] = (((base0) + p1[i]) << 2);
++		break;
++	default:
++		for (i = 0; i < priv->num_sensors; i++) {
++			p1[i] = 500;
++			p2[i] = 780;
++		}
++		break;
++	}
++
++	compute_intercept_slope(priv, p1, p2, mode);
++	kfree(qfprom_cdata);
++	kfree(qfprom_csel);
++
++	return 0;
++}
++
++/* v0.1: 8916, 8939, 8974, 9607 */
+ 
+ static struct tsens_features tsens_v0_1_feat = {
+ 	.ver_major	= VER_0_1,
+@@ -540,3 +623,18 @@ struct tsens_plat_data data_8974 = {
+ 	.feat		= &tsens_v0_1_feat,
+ 	.fields	= tsens_v0_1_regfields,
+ };
++
++static const struct tsens_ops ops_9607 = {
++	.init		= init_common,
++	.calibrate	= calibrate_9607,
++	.get_temp	= get_temp_common,
++};
++
++struct tsens_plat_data data_9607 = {
++	.num_sensors	= 5,
++	.ops		= &ops_9607,
++	.hw_ids		= (unsigned int []){ 0, 1, 2, 3, 4 },
++
++	.feat		= &tsens_v0_1_feat,
++	.fields	= tsens_v0_1_regfields,
++};
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index d8ce3a687b80..51c36b9e8e69 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -895,6 +895,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+ 
+ static const struct of_device_id tsens_table[] = {
+ 	{
++		.compatible = "qcom,mdm9607-tsens",
++		.data = &data_9607,
++	}, {
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &data_8916,
+ 	}, {
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index f40b625f897e..cba64c33b4f9 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -585,7 +585,7 @@ int get_temp_common(const struct tsens_sensor *s, int *temp);
+ extern struct tsens_plat_data data_8960;
+ 
+ /* TSENS v0.1 targets */
+-extern struct tsens_plat_data data_8916, data_8939, data_8974;
++extern struct tsens_plat_data data_8916, data_8939, data_8974, data_9607;
+ 
+ /* TSENS v1 targets */
+ extern struct tsens_plat_data data_tsens_v1, data_8976;
+-- 
+2.30.0
+
