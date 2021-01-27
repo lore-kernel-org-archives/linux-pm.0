@@ -2,160 +2,67 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC501C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 07:26:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EE5FC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 08:45:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 521882070A
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 07:26:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D986920754
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Jan 2021 08:45:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S317115AbhA0AkB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Jan 2021 19:40:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39122 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728603AbhAZUb5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2021 15:31:57 -0500
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C922BC061574
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2021 12:31:11 -0800 (PST)
-Received: by mail-pf1-x42f.google.com with SMTP id j12so11117325pfj.12
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2021 12:31:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=Du/6ZC4zcHjk+Vweff8Gq4LYgkSdWILSBs6zwCUlsvo=;
-        b=lluJi+FTfQGUX5JGuDPl1HrtKp9gphukPz0ELvp6FnrTcguMnO2J1Vez/MaqgHygQ6
-         JiauairKZXAUIzd6D57lE3g6RfEqrZERmkltlTzINSVXhbyew015QjS0tzP0YfTx3ygb
-         sFGaWuEV5mktnP4oqJqDCv9jdBrlyKAFh25SHk+tooXr8aQwi9pRDXUYbX2OYF6dUPSc
-         MG3YhSspuVi64O5GOZGtSHF32TtpjBKpe7LhcqslyHnIO33tYTYrXdisBbkt+fuiQztb
-         Hq0lB91+1737X3KkI8EFzsQl4n1SoVTXVJwaZlWVY+8OnRGW8FEuFOTQZriHyTXnRvzG
-         8efA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=Du/6ZC4zcHjk+Vweff8Gq4LYgkSdWILSBs6zwCUlsvo=;
-        b=nkofFa9HLvV021vwkRiK7bvInCDWmSHSh1MxdcJIOCHBtguzVu+dvqrJEPFiu7YR/a
-         2BSGSp7/OhIX39KujzMtvqxaDbPrELZkF2X52iqDaEwP9giKxt8iqj/UiK1vYzgl56+j
-         IYzerJQtLH2a2sP9wCBirgCsLhxThZYLrZnki/6017slioeeNr3SOKmukU0gYD+fML1W
-         zsuH/fXdPosvhbz+VxKQNdAH+xSzbU776SNf1X5i6R6yAla6vyEb9d9eGV5ynV4A2Ku1
-         4NHUEXO2S40s3ZTcyxEjY4zKP3YZGDW+FrM5ZUE+Eb0rSkVvBWrIAqT9WGyQoVhbiTFD
-         Sfvw==
-X-Gm-Message-State: AOAM530XNlXYWLvi5CD8yHKJeMBtY/FjlzQE9e0p2/efNRzalvu4iBxc
-        dl2/PHxuG/8VLSGg7p3P7fB/rg==
-X-Google-Smtp-Source: ABdhPJzmwQhQMJrxoKgCdUGqbQLGKDFKAdy4evCi/mxX/PxNxV7Q6yzgfbELwTU1Sf1jz4jh8YNGeQ==
-X-Received: by 2002:a65:56cb:: with SMTP id w11mr7547881pgs.88.1611693071410;
-        Tue, 26 Jan 2021 12:31:11 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id a2sm5621061pgq.94.2021.01.26.12.31.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Jan 2021 12:31:10 -0800 (PST)
-Message-ID: <60107c0e.1c69fb81.ac986.eb93@mx.google.com>
-Date:   Tue, 26 Jan 2021 12:31:10 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.11-rc5-48-gfeb0d85db3fd2
-X-Kernelci-Report-Type: test
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-Subject: pm/testing sleep: 3 runs, 3 regressions (v5.11-rc5-48-gfeb0d85db3fd2)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+        id S231430AbhA0IpG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jan 2021 03:45:06 -0500
+Received: from out30-43.freemail.mail.aliyun.com ([115.124.30.43]:57673 "EHLO
+        out30-43.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231228AbhA0Im4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 03:42:56 -0500
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R181e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04426;MF=abaci-bugfix@linux.alibaba.com;NM=1;PH=DS;RN=9;SR=0;TI=SMTPD_---0UN1xQ0z_1611736927;
+Received: from j63c13417.sqa.eu95.tbsite.net(mailfrom:abaci-bugfix@linux.alibaba.com fp:SMTPD_---0UN1xQ0z_1611736927)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Wed, 27 Jan 2021 16:42:10 +0800
+From:   Abaci Team <abaci-bugfix@linux.alibaba.com>
+To:     rjw@rjwysocki.net
+Cc:     khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com,
+        pavel@ucw.cz, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Abaci Team <abaci-bugfix@linux.alibaba.com>
+Subject: [PATCH] PM: domains: Simplify the calculation of variables
+Date:   Wed, 27 Jan 2021 16:42:05 +0800
+Message-Id: <1611736925-32547-1-git-send-email-abaci-bugfix@linux.alibaba.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 3 runs, 3 regressions (v5.11-rc5-48-gfeb0d85db3fd2)
+Fix the following coccicheck warnings:
 
-Regressions Summary
--------------------
+./drivers/base/power/domain.c:938:31-33: WARNING !A || A && B is
+equivalent to !A || B.
 
-platform            | arch | lab           | compiler | defconfig          =
-| regressions
---------------------+------+---------------+----------+--------------------=
-+------------
-rk3288-rock2-square | arm  | lab-collabora | gcc-8    | multi_v7_defconfig =
-| 3          =
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Suggested-by: Jiapeng Zhong <oswb@linux.alibaba.com>
+Signed-off-by: Abaci Team <abaci-bugfix@linux.alibaba.com>
+---
+ drivers/base/power/domain.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 9a14eed..e689710 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -934,8 +934,7 @@ static int genpd_runtime_resume(struct device *dev)
+ err_stop:
+ 	genpd_stop_dev(genpd, dev);
+ err_poweroff:
+-	if (!pm_runtime_is_irq_safe(dev) ||
+-		(pm_runtime_is_irq_safe(dev) && genpd_is_irq_safe(genpd))) {
++	if (!pm_runtime_is_irq_safe(dev) || genpd_is_irq_safe(genpd)) {
+ 		genpd_lock(genpd);
+ 		genpd_power_off(genpd, true, 0);
+ 		genpd_unlock(genpd);
+-- 
+1.8.3.1
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.11-rc=
-5-48-gfeb0d85db3fd2/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.11-rc5-48-gfeb0d85db3fd2
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      feb0d85db3fd2da4a4a0d9f09eece2a3e111ebdc =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform            | arch | lab           | compiler | defconfig          =
-| regressions
---------------------+------+---------------+----------+--------------------=
-+------------
-rk3288-rock2-square | arm  | lab-collabora | gcc-8    | multi_v7_defconfig =
-| 3          =
-
-
-  Details:     https://kernelci.org/test/plan/id/60106f54c6824c7083d3dfd4
-
-  Results:     2 PASS, 13 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.11-rc5-48-gfeb0d=
-85db3fd2/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squa=
-re.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.11-rc5-48-gfeb0d=
-85db3fd2/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squa=
-re.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
-0125.1/armhf/rootfs.cpio.gz =
-
-
-
-  * sleep.rtcwake-mem-1: https://kernelci.org/test/case/id/60106f54c6824c70=
-83d3dfd7
-        new failure (last pass: acpi-5.11-rc5-27-gad758c58a703)
-
-    2021-01-26 19:36:47.744000+00:00  rtcwake: read rtc time failed: I<4>[ =
-  20.040378] rtc-hym8563 0-0051: no valid clock/calendar values available
-    2021-01-26 19:36:47.744000+00:00  nvalid argument
-    2021-01-26 19:36:47.745000+00:00  rtcwake: assuming RTC uses UTC ...
-    2021-01-26 19:36:47.746000+00:00  rtcwake: rea<4>[   20.057590] rtc-hym=
-8563 0-0051: no valid clock/calendar values available
-    2021-01-26 19:36:47.746000+00:00  d rtc time failed: Invalid argument   =
-
-
-  * sleep.rtcwake-mem-2: https://kernelci.org/test/case/id/60106f54c6824c70=
-83d3dfd8
-        new failure (last pass: acpi-5.11-rc5-27-gad758c58a703) =
-
-
-  * sleep.rtcwake-mem-3: https://kernelci.org/test/case/id/60106f54c6824c70=
-83d3dfd9
-        new failure (last pass: acpi-5.11-rc5-27-gad758c58a703)
-
-    2021-01-26 19:36:47.748000+00:00  TC ...
-    2021-01-26 19:36:47.792000+00:00  rtcwake: read rtc time failed: Invali=
-d argument
-    2021-01-26 19:36:47.793000+00:00  rtcwake:<4>[   20.098241] rtc-hym8563=
- 0-0051: no valid clock/calendar values available
-    2021-01-26 19:36:47.793000+00:00   assuming RTC uses UTC ...
-    2021-01-26 19:36:47.794000+00:00  rtcwake: read rtc time failed: Invali=
-d argument   =
-
- =20
