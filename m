@@ -2,116 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9365BC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jan 2021 00:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2CFEC433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jan 2021 00:13:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 653E164DBD
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Jan 2021 00:09:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 937AE64DCE
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Jan 2021 00:13:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231300AbhA1AIs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Jan 2021 19:08:48 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:36298 "EHLO
+        id S231452AbhA1AM4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Jan 2021 19:12:56 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:36306 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231331AbhA1AIa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 19:08:30 -0500
+        with ESMTP id S231732AbhA1ALv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2021 19:11:51 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id A13081F4560D
+        with ESMTPSA id D5F161F4560D
 Received: by earth.universe (Postfix, from userid 1000)
-        id 8E85D3C0C97; Thu, 28 Jan 2021 01:07:36 +0100 (CET)
-Date:   Thu, 28 Jan 2021 01:07:36 +0100
+        id 7A29E3C0C97; Thu, 28 Jan 2021 01:10:57 +0100 (CET)
+Date:   Thu, 28 Jan 2021 01:10:57 +0100
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Linus Walleij <linus.walleij@linaro.org>
 Cc:     Lee Jones <lee.jones@linaro.org>,
         Marcus Cooper <codekipper@gmail.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 10/10] power: supply: ab8500_bmdata: Use standard phandle
-Message-ID: <20210128000736.ov6f7wm26mwkxuds@earth.universe>
+Subject: Re: [PATCH 05/10] power: supply: ab8500: Move to componentized
+ binding
+Message-ID: <20210128001057.urzxmx6f53qrek4o@earth.universe>
 References: <20210123221908.2993388-1-linus.walleij@linaro.org>
- <20210123221908.2993388-11-linus.walleij@linaro.org>
+ <20210123221908.2993388-6-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="xq54y5avbloajvjg"
+        protocol="application/pgp-signature"; boundary="hn2idq3ef4spysyr"
 Content-Disposition: inline
-In-Reply-To: <20210123221908.2993388-11-linus.walleij@linaro.org>
+In-Reply-To: <20210123221908.2993388-6-linus.walleij@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---xq54y5avbloajvjg
+--hn2idq3ef4spysyr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Jan 23, 2021 at 11:19:08PM +0100, Linus Walleij wrote:
-> Look up the battery using the "monitored-battery" phandle
-> as is nowadays a standard DT binding. The actual bindings
-> for these charger elements are not upstream so let's sort
-> out this mess by conforming to the standard.
+On Sat, Jan 23, 2021 at 11:19:03PM +0100, Linus Walleij wrote:
+> The driver has problems with the different components of
+> the charging code racing with each other to probe().
+>=20
+> This results in all four subdrivers populating battery
+> information to ascertain that it is populated for their
+> own needs for example.
+>=20
+> Fix this by using component probing and thus expressing
+> to the kernel that these are dependent components.
+> The probes can happen in any order and will only acquire
+> resources such as state container, regulators and
+> interrupts and initialize the data structures, but no
+> execution happens until the .bind() callback is called.
+>=20
+> The charging driver is the main component and binds
+> first, then bind in order the three subcomponents:
+> ab8500-fg, ab8500-btemp and ab8500-chargalg.
+>=20
+> Do some housekeeping while we are moving the code around.
+> Like use devm_* for IRQs so as to cut down on some
+> boilerplate.
+>=20
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
 
-Am I missing something? I see binding documentation in
+[...]
 
-Documentation/devicetree/bindings/power/supply/ab8500
+> +	ret =3D component_bind_all(dev, di);
+> +        if (ret) {
 
-and 'battery' property being used by
+^^^ typo (prefixed with space)
 
-arm/boot/dts/ste-ab8500.dtsi
-arm/boot/dts/ste-ab8505.dtsi
+> +		dev_err(dev, "can't bind component devices\n");
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
 
-(would be nice if we can switch to standard infrastructure
-of course)
+[...]
+
+> +	mutex_lock(&di->charger_attached_mutex);
+> =20
+> -	/* Register interrupts */
+> -	for (i =3D 0; i < ARRAY_SIZE(ab8500_charger_irq); i++) {
+> -		irq =3D platform_get_irq_byname(pdev, ab8500_charger_irq[i].name);
+> -		if (irq < 0) {
+> -			ret =3D irq;
+> -			goto free_irq;
+> -		}
+> +	mutex_unlock(&di->charger_attached_mutex);
+
+what's the purpose of this empty mutex lock/unlock?
 
 -- Sebastian
 
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  drivers/power/supply/ab8500_bmdata.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/power/supply/ab8500_bmdata.c b/drivers/power/supply/=
-ab8500_bmdata.c
-> index c2b8c0bb77e2..258f399eaf37 100644
-> --- a/drivers/power/supply/ab8500_bmdata.c
-> +++ b/drivers/power/supply/ab8500_bmdata.c
-> @@ -499,8 +499,7 @@ int ab8500_bm_of_probe(struct device *dev,
->  	const char *btech;
->  	int i;
-> =20
-> -	/* get phandle to 'battery-info' node */
-> -	battery_node =3D of_parse_phandle(np, "battery", 0);
-> +	battery_node =3D of_parse_phandle(np, "monitored-battery", 0);
->  	if (!battery_node) {
->  		dev_err(dev, "battery node or reference missing\n");
->  		return -EINVAL;
-> --=20
-> 2.29.2
->=20
-
---xq54y5avbloajvjg
+--hn2idq3ef4spysyr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmASAEIACgkQ2O7X88g7
-+pqJPw//YqAoZKpZgPU4aXWPE/mbvS7Om9cSCyrlJY6Tp9KNt0yGvWtI54CpeRFE
-05hO+HtQJ2lbQeFazyHZPbmQtjsjU+Lpypo17jR8G3MvtBKcNo+PeRHYHswfHr2P
-vSi5rXsR6jV3fRwxLWPAUsVOXk4587hOY1ptvJDLzeEPdODIri9rqooaAAa8XpRE
-Px++vFZi+eFkoWUaccWc0DPLsMRxN9ewcwsxtfte3aCvJYOpc4QLpx1LuidKe42X
-MpvUCBzZfGSIBg/Ugk+Vgn1KYyeBzyFhoUZg4kkIpEx3Mx9pinFFlXtmvq/4tmrQ
-Wt48TmIfeIZCTVaYhV+ZC16KsQAd/ROquGDbmt1hYxbfyTvnVBKQWIP/cf21NVem
-zEq1zxouxRLWs+RjLQ83aJVyOt3bd657BhnPkELvzTfxiCVKNvS5mkK0VjZjtGsW
-Nh4nh72FM6i9yTpgN0mHc/RMjrFQWHy1G+BTIEMOCS85jVWJCrzkTjGBqD49pI6B
-tTwSpwcCzF9P9JlKOfmlwNR96f/M8ylDFUanjsdhAo8t4+UioduAn3ocl8amYXof
-qUK3vGUQo7bVhg7G4HLDlPjaG8KaJs94DTSyC7qFrfu7WUx6QQ6aQIALZ0GSuPrb
-X9dc/pcX945aY2EmfXLFSq1+pGvXOzWrVxE0ezUYlAA9EvAMQ08=
-=m6lB
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmASAREACgkQ2O7X88g7
++ppelxAAnijnHh+bolHeRIY1iqsV8I0FEb/CiiUJbUD6JA1XZerq+NIF859DRR5O
+CR6AnMrMmKIOr2FhZ3aVJsdwwDEyB4tBK6sPBpj9ukEzRcXgeL8lk04A1Db7DIkz
+ImMN/tg9MTee6B9gcHG8lyVDWjlsYyPxGhDiIgOJVOhMyCyKX/4b9j/NcD9uIO6e
+YFZVYlkRxoxocGJQDRc7JgGZB0TnGBTLI5bXVJkDZ2LkQE55uhCFRyGdJHu8aPxE
+nWSCK+dudVTKmP/D8o7DDdjRgpuQ84R10T08njrMzmPHvCbSolzcb+bj8DgFGDn4
+HgBoEiG7aR9jQtEHiW1A+yof8iwfuoGVTQzAQNCIfm5jomPCz8hcFnzKf9+VS72G
+DUoFOYMKYgyQa2KfrrDUn7n3KkKAUEl6cdwGSiMygX9j24Y2qRq24VJ5z9XO+G6N
+GItjpBhu/teFCUPDZr7JhB1hrw3ZqZNEoq34gdbT6zmQb3SWs86Q6BMeNHr29zJq
+CilDfHkGChPi6+3/xR5VaAasAJo0fKn920pX0pmq5Q63ZGBkWjYu0jrVjgj9SSbF
+Tqvvx/71RUXS0a07tvHj0Ifikb4eXFpwtMl+nz1KUdVil1WHaFdjC9AT63+3UYtR
+AZk7XxCraovNqxCMJ0IKGLbIewoABJ20y5NGqJUypvK5apfg2RE=
+=vQiT
 -----END PGP SIGNATURE-----
 
---xq54y5avbloajvjg--
+--hn2idq3ef4spysyr--
