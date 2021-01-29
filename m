@@ -2,126 +2,64 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B677AC433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 21:05:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21C21C4332B
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 22:13:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 640D164E0A
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 21:05:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C652264DE9
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 22:13:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233272AbhA2VFW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Jan 2021 16:05:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41106 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232918AbhA2VFU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Jan 2021 16:05:20 -0500
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11F60C061574
-        for <linux-pm@vger.kernel.org>; Fri, 29 Jan 2021 13:04:40 -0800 (PST)
-Received: by mail-pf1-x433.google.com with SMTP id t29so6991738pfg.11
-        for <linux-pm@vger.kernel.org>; Fri, 29 Jan 2021 13:04:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=GM8IjY54RAU+IQvFDoE1xqChtRnocFRdlIODav8FmxQ=;
-        b=av1LbYeND/FQI/mRoP6gMLFSnxEYzmZ0mXhGuRh8t/THc6ldJdzkdCXEqbKLS7wvLd
-         8eQkCJaKX//gTjb/ETAFTfpZJTd2u5BasnFZlRmQeSx9hyU8CeXC0lqrGsTVsoA9IzTz
-         a8HMfk50omoI35YedOdGelMg9d+nsN6Ol1bIkmcBYZX+WEwdfZbaHDFylJZ5L+Dq6QbI
-         pyApd3y96PMmHtjxujaEC2708RpVOSf3kniPg35zZkqFMF3kMRpGxp7ZdY4Zkbg+fTYm
-         qcx4wOOC7qugjFewsGhV8cXTevaqZ+wZI+46zBX3wTUh0uzGZkDRe1elRzSSF3b1ADcN
-         wkwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=GM8IjY54RAU+IQvFDoE1xqChtRnocFRdlIODav8FmxQ=;
-        b=kjG/B+ai464E7P0fxohDaLMkI7YQTjZPkMG/N1dE+9Twr2sNHo6V8YggHDoDvL8pii
-         jtKENXSzvWmEQSyU1QGrqeKWzxJTtf1zZY4oFIFcH0cyT2HkJxPNJ1hbDIgG5NqRkagX
-         pPMUCF7QPATnNUYvOU+lV1524n1fV/QavdUtyElthyQp3hGjjowooRma8LsJKy2r3T4N
-         VwRlReT+Wuca4OI65dVZc1Qf3JXu0NqqmGqdHgLnYbeeG/oUqAYCaASeTeZzhZOwi95m
-         IaDq7nlr9GrwzxwhFW4+aMPrzTvxhRQ+bUNDqM3gL3Kii/TE60ICTBLrFqbBTahzx2IC
-         bgfw==
-X-Gm-Message-State: AOAM531axB9AuAkANXH55ZCCLnBSWx6EQD26goMXAaq2C/QQz4NvdegI
-        rN5b3gQ8q+3B9DlaWplfRhH5OA==
-X-Google-Smtp-Source: ABdhPJy+klum2NejEQf1c+OhxU4KHAYB0biUuawq7tx+ZOJgis0yq6pj/VNzBPoc+pjrTs5USpUkvQ==
-X-Received: by 2002:a62:8ccc:0:b029:1cb:1c6f:b77d with SMTP id m195-20020a628ccc0000b02901cb1c6fb77dmr716594pfd.74.1611954279651;
-        Fri, 29 Jan 2021 13:04:39 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id z11sm10552000pfk.97.2021.01.29.13.04.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 Jan 2021 13:04:39 -0800 (PST)
-Message-ID: <60147867.1c69fb81.2a769.9dea@mx.google.com>
-Date:   Fri, 29 Jan 2021 13:04:39 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: pm-5.11-rc6-71-ge86d494782b7e
-X-Kernelci-Report-Type: test
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-Subject: pm/testing sleep: 5 runs,
- 1 regressions (pm-5.11-rc6-71-ge86d494782b7e)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+        id S233552AbhA2WNI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Jan 2021 17:13:08 -0500
+Received: from mail.kernel.org ([198.145.29.99]:57218 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233543AbhA2WM7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 29 Jan 2021 17:12:59 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPS id 4245864DE9;
+        Fri, 29 Jan 2021 22:12:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1611958338;
+        bh=PbDZBnoISy8/0Is+Exrh6bUScaPJeGfAdG42sjtUgxQ=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=EfUMU7kl9BAl97Rqwrt5oilgy6oOAnhvGx+h4b1t/1VRRLD8sAy+OUoN0AsURmgfx
+         EznyS0vGMFuNtusameeHcJUqPLlMQJQPEnA9By23ntxcQU26zUVhBjISbIf/9EaB02
+         nTMdUbmj9gA9W4otahAEMuNoJ3KsoCSeNJr52ZQkcJsXzsm0zuzk31I6ILCYdf8BBP
+         B78iL1b/j4j7gOWXddQiRHEZUt9/Hz89nm0Wa5LXFLmdEw0AW4breEeOo4Wfjdvp7z
+         KaFCk5c35XypzcI5M5sm7JacoDdOP0V6xR7US9Q0gIxWAoP+rJ8KiAEVQGUMGumHmt
+         f0+7ZO0Ks9ATg==
+Subject: Re: [GIT PULL] Power management fixes for v5.11-rc6
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0ip25AwMxWuwQMTbqQ3BSKoqLazh-Eso5SqNrHyjP3bHw@mail.gmail.com>
+References: <CAJZ5v0ip25AwMxWuwQMTbqQ3BSKoqLazh-Eso5SqNrHyjP3bHw@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0ip25AwMxWuwQMTbqQ3BSKoqLazh-Eso5SqNrHyjP3bHw@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.11-rc6
+X-PR-Tracked-Commit-Id: fef9c8d28e28a808274a18fbd8cc2685817fd62a
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 32b0c410cda19df9f0e88edcae126d0a660cf8b9
+Message-Id: <161195833831.1476.8059677816127282521.pr-tracker-bot@kernel.org>
+Date:   Fri, 29 Jan 2021 22:12:18 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 5 runs, 1 regressions (pm-5.11-rc6-71-ge86d494782b7e)
+The pull request you sent on Fri, 29 Jan 2021 17:26:04 +0100:
 
-Regressions Summary
--------------------
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.11-rc6
 
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/32b0c410cda19df9f0e88edcae126d0a660cf8b9
 
+Thank you!
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/pm-5.11-=
-rc6-71-ge86d494782b7e/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: pm-5.11-rc6-71-ge86d494782b7e
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      e86d494782b7e43504b343d37b88c5c1d7af9ff6 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/60146c44ff3c248031d3e03b
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.11-rc6-71-ge86=
-d494782b7e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.11-rc6-71-ge86=
-d494782b7e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
-0125.1/arm64/rootfs.cpio.gz =
-
-
-
-  * sleep.login: https://kernelci.org/test/case/id/60146c44ff3c248031d3e03c
-        failing since 163 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
-il: v5.9-rc1-4-g1f08d51cd57f) =
-
- =20
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
