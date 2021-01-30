@@ -2,66 +2,375 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1148BC433E9
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 22:13:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56006C433E6
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Jan 2021 09:41:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CACC564DA1
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Jan 2021 22:13:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 272E764E04
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Jan 2021 09:41:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233484AbhA2WNo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Jan 2021 17:13:44 -0500
-Received: from mail.kernel.org ([198.145.29.99]:57196 "EHLO mail.kernel.org"
+        id S231432AbhA3Jli (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Jan 2021 04:41:38 -0500
+Received: from foss.arm.com ([217.140.110.172]:34122 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232902AbhA2WM7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 29 Jan 2021 17:12:59 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPS id E471C64DDC;
-        Fri, 29 Jan 2021 22:12:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1611958336;
-        bh=/SVJ+uL1rQaD4F5YhrrFT/Fd13xIvTRb0HXNGjSwgsY=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=civvN1fF50R3FxfDWc/uJKetHhydGscWCBj89j2e2WKmBrrR6LXLrC7LNBtrvgSDz
-         6jsUOA8tlG8WFTTe8/pdEijBe+J5zZl7K0VVPLpCV52Ef1AchXEzZtVbgFY6giM6UB
-         JRzr3ISreWj3cnsisDqNGRMYN0Pl8bLrTgp2rPJn0TkGpNzVBtCjxTS23UQ7Vs3x5L
-         BPbiA4VvthFw+iqiJfJVIPd3Ymvb71SDfTN/astRV85EMaU8tgAb75QeFGHa9PtZqR
-         dSj8eOMuRDhu/D0HnL4G3OuIBrb/vqxRinPo2tN7Vd04yJLELA+RhmHH+6oIjXfKFh
-         30V8g6lVfxgsg==
-Subject: Re: [GIT PULL][Resend] ACPI fixes for v5.11-rc6
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0is8qQ91Nx_hhMgc3Ga8NgFbE-JAu03=M-L9sCpf8pVmQ@mail.gmail.com>
-References: <CAJZ5v0is8qQ91Nx_hhMgc3Ga8NgFbE-JAu03=M-L9sCpf8pVmQ@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-acpi.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0is8qQ91Nx_hhMgc3Ga8NgFbE-JAu03=M-L9sCpf8pVmQ@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.11-rc6
-X-PR-Tracked-Commit-Id: b584b7e9630acc65a4d01ff5f9090d1a0fb3bbb6
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 016decc0d836b746faac03de5e1ac976c53a3958
-Message-Id: <161195833682.1476.6884925231244087533.pr-tracker-bot@kernel.org>
-Date:   Fri, 29 Jan 2021 22:12:16 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+        id S231901AbhA3JlW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 30 Jan 2021 04:41:22 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 71D6B113E;
+        Sat, 30 Jan 2021 01:40:30 -0800 (PST)
+Received: from [10.57.44.129] (unknown [10.57.44.129])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EE0423F885;
+        Sat, 30 Jan 2021 01:40:28 -0800 (PST)
+Subject: Re: [PATCH v6 2/4] scmi-cpufreq: Move CPU initialisation to probe
+To:     Cristian Marussi <cristian.marussi@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, sudeep.holla@arm.com, rjw@rjwysocki.net,
+        vireshk@kernel.org, morten.rasmussen@arm.com, chris.redpath@arm.com
+References: <20210111154524.20196-1-nicola.mazzucato@arm.com>
+ <20210111154524.20196-3-nicola.mazzucato@arm.com>
+ <20210114165427.GC46841@e120937-lin>
+From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
+Message-ID: <5a4c82bb-093c-3953-c762-835e38be5d31@arm.com>
+Date:   Sat, 30 Jan 2021 09:43:08 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
+MIME-Version: 1.0
+In-Reply-To: <20210114165427.GC46841@e120937-lin>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Fri, 29 Jan 2021 19:11:17 +0100:
+Hi Cristian,
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.11-rc6
+sorry for my late reply.
+Thanks for looking into this.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/016decc0d836b746faac03de5e1ac976c53a3958
+I am preparing a v7 with suggestions proposed by Viresh which, hopefully, should
+remove some unclear parts and resolve your comments.
+I had left behind some dealloc, so thanks for spotting!
 
-Thank you!
+Many thanks,
+Nicola
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+On 1/14/21 4:54 PM, Cristian Marussi wrote:
+> Hi Nicola,
+> 
+> a few remarks down below.
+> 
+> On Mon, Jan 11, 2021 at 03:45:22PM +0000, Nicola Mazzucato wrote:
+>> Some of the cpu related initialisation can be done at probe stage.
+>> This patch moves those initialisations from the ->init callback to the
+>> probe stage.
+>>
+>> This is done in preparation for adding support to retrieve additional
+>> information from DT (CPUs sharing v/f lines).
+>>
+>> Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
+>> ---
+>>  drivers/cpufreq/scmi-cpufreq.c | 180 ++++++++++++++++++++++++---------
+>>  1 file changed, 135 insertions(+), 45 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+>> index 15b213ed78fa..4aa97cdc5997 100644
+>> --- a/drivers/cpufreq/scmi-cpufreq.c
+>> +++ b/drivers/cpufreq/scmi-cpufreq.c
+>> @@ -25,6 +25,14 @@ struct scmi_data {
+>>  	struct device *cpu_dev;
+>>  };
+>>  
+>> +/* Per-CPU storage for runtime management */
+>> +struct scmi_cpudata {
+>> +	cpumask_var_t scmi_shared_cpus;
+>> +	struct cpufreq_frequency_table *freq_table;
+>> +};
+>> +
+>> +static struct scmi_cpudata *cpudata_table;
+>> +
+>>  static const struct scmi_handle *handle;
+>>  
+>>  static unsigned int scmi_cpufreq_get_rate(unsigned int cpu)
+>> @@ -120,13 +128,10 @@ scmi_get_cpu_power(unsigned long *power, unsigned long *KHz,
+>>  
+>>  static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>>  {
+>> -	int ret, nr_opp;
+>> +	int ret;
+>>  	unsigned int latency;
+>>  	struct device *cpu_dev;
+>>  	struct scmi_data *priv;
+>> -	struct cpufreq_frequency_table *freq_table;
+>> -	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
+>> -	bool power_scale_mw;
+>>  
+>>  	cpu_dev = get_cpu_device(policy->cpu);
+>>  	if (!cpu_dev) {
+>> @@ -134,42 +139,19 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>>  		return -ENODEV;
+>>  	}
+>>  
+>> -	ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
+>> -	if (ret) {
+>> -		dev_warn(cpu_dev, "failed to add opps to the device\n");
+>> -		return ret;
+>> -	}
+>> -
+>> -	ret = scmi_get_sharing_cpus(cpu_dev, policy->cpus);
+>> -	if (ret) {
+>> -		dev_warn(cpu_dev, "failed to get sharing cpumask\n");
+>> -		return ret;
+>> -	}
+>> -
+>> -	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+>> -	if (ret) {
+>> -		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
+>> -			__func__, ret);
+>> -		return ret;
+>> -	}
+>> -
+>>  	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+>>  	if (!priv) {
+>>  		ret = -ENOMEM;
+>>  		goto out_free_opp;
+>>  	}
+>>  
+>> -	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+>> -	if (ret) {
+>> -		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+>> -		goto out_free_priv;
+>> -	}
+>> +	cpumask_copy(policy->cpus, cpudata_table[policy->cpu].scmi_shared_cpus);
+>>  
+>>  	priv->cpu_dev = cpu_dev;
+>>  	priv->domain_id = handle->perf_ops->device_domain_id(cpu_dev);
+>>  
+>>  	policy->driver_data = priv;
+>> -	policy->freq_table = freq_table;
+>> +	policy->freq_table = cpudata_table[policy->cpu].freq_table;
+>>  
+>>  	/* SCMI allows DVFS request for any domain from any CPU */
+>>  	policy->dvfs_possible_from_any_cpu = true;
+>> @@ -183,23 +165,8 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>>  	policy->fast_switch_possible =
+>>  		handle->perf_ops->fast_switch_possible(handle, cpu_dev);
+>>  
+>> -	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+>> -	if (nr_opp <= 0) {
+>> -		dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
+>> -			__func__, ret);
+>> -
+>> -		ret = -ENODEV;
+>> -		goto out_free_priv;
+>> -	}
+>> -
+>> -	power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
+>> -	em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb, policy->cpus,
+>> -				    power_scale_mw);
+>> -
+>>  	return 0;
+>>  
+>> -out_free_priv:
+>> -	kfree(priv);
+>>  out_free_opp:
+>>  	dev_pm_opp_remove_all_dynamic(cpu_dev);
+>>  
+> 
+> My understanding (but I could be wrong given my limited familiarity with
+> CPUFREQ ... so bear with me) is that dev_pm_opp_remove_all_dynamic() is
+> meant to clean dynamic OPPs added by dev_pm_opp_add() which in turn in
+> this driver is folded inside the handle->perf_ops->device_opps_add() call,
+> so is not that this call should be added also on the error path inside
+> the new scmi_init_device() ? (this was already faulty this way in the
+> original code to be honest...if faulty at all :D)
+> 
+> I added a few such invocations down below as rough untested example of
+> what I mean.
+> 
+>> @@ -210,7 +177,6 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+>>  {
+>>  	struct scmi_data *priv = policy->driver_data;
+>>  
+>> -	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+>>  	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
+>>  	kfree(priv);
+>>  
+>> @@ -231,10 +197,102 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
+>>  	.exit	= scmi_cpufreq_exit,
+>>  };
+>>  
+>> +static int scmi_init_cpudata(void)
+>> +{
+>> +	int cpu;
+>> +	unsigned int ncpus = num_possible_cpus();
+>> +
+>> +	cpudata_table = kzalloc(sizeof(*cpudata_table) * ncpus, GFP_KERNEL);
+> Shouldn/t this be a kcalloc() given it's an array allocation, checkpatch
+> complains too.
+> 
+>> +	if (!cpudata_table)
+>> +		return -ENOMEM;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		if (!zalloc_cpumask_var(&cpudata_table[cpu].scmi_shared_cpus,
+>> +					GFP_KERNEL))
+>> +			goto out;
+>> +	}
+>> +
+>> +	return 0;
+>> +
+>> +out:
+>> +	kfree(cpudata_table);
+>> +	return -ENOMEM;
+>> +}
+>> +
+>> +static int scmi_init_device(const struct scmi_handle *handle, int cpu)
+>> +{
+>> +	struct device *cpu_dev;
+>> +	int ret, nr_opp;
+>> +	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
+>> +	bool power_scale_mw;
+>> +	cpumask_var_t scmi_cpus;
+>> +
+>> +	if (!zalloc_cpumask_var(&scmi_cpus, GFP_KERNEL))
+>> +		return -ENOMEM;
+>> +
+>> +	cpumask_set_cpu(cpu, scmi_cpus);
+>> +
+>> +	cpu_dev = get_cpu_device(cpu);
+>> +
+>> +	ret = scmi_get_sharing_cpus(cpu_dev, scmi_cpus);
+>> +	if (ret) {
+>> +		dev_warn(cpu_dev, "failed to get sharing cpumask\n");
+>> +		goto free_cpumask;
+>> +	}
+>> +
+>> +	/*
+>> +	 * We get here for each CPU. Add OPPs only on those CPUs for which we
+>> +	 * haven't already done so, or set their OPPs as shared.
+>> +	 */
+>> +	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+>> +	if (nr_opp <= 0) {
+>> +		ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
+>> +		if (ret) {
+>> +			dev_warn(cpu_dev, "failed to add opps to the device\n");
+>> +			goto free_cpumask;
+>> +		}
+>> +
+>> +		ret = dev_pm_opp_set_sharing_cpus(cpu_dev, scmi_cpus);
+>> +		if (ret) {
+>> +			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
+>> +				__func__, ret);
+> 			goto free_dynamic_opps;
+>> +		}
+>> +
+>> +		nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+>> +		if (nr_opp <= 0) {
+>> +			dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
+>> +				__func__, ret);
+>> +
+>> +			ret = -ENODEV;
+> 			goto free_dynamic_opps;
+>> +		}
+>> +
+>> +		power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
+>> +		em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb, scmi_cpus,
+>> +					    power_scale_mw);
+>> +	}
+>> +
+>> +	ret = dev_pm_opp_init_cpufreq_table(cpu_dev,
+>> +					    &cpudata_table[cpu].freq_table);
+>> +	if (ret) {
+>> +		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+> 		goto free_dynamic_opps;
+>> +	}
+>> +
+>> +	cpumask_copy(cpudata_table[cpu].scmi_shared_cpus, scmi_cpus);
+>> +
+>    free_dynamic_opps:
+> 	   dev_pm_opp_remove_all_dynamic(cpu_dev);
+>> +free_cpumask:
+>> +	free_cpumask_var(scmi_cpus);
+>> +	return ret;
+>> +}
+>> +
+>>  static int scmi_cpufreq_probe(struct scmi_device *sdev)
+>>  {
+>>  	int ret;
+>>  	struct device *dev = &sdev->dev;
+>> +	int cpu;
+>> +	struct device *cpu_dev;
+>>  
+>>  	handle = sdev->handle;
+>>  
+>> @@ -247,6 +305,24 @@ static int scmi_cpufreq_probe(struct scmi_device *sdev)
+>>  		devm_of_clk_add_hw_provider(dev, of_clk_hw_simple_get, NULL);
+>>  #endif
+>>  
+>> +	ret = scmi_init_cpudata();
+>> +	if (ret) {
+>> +		pr_err("%s: init cpu data failed\n", __func__);
+>> +		return ret;
+>> +	}
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		cpu_dev = get_cpu_device(cpu);
+>> +
+>> +		ret = scmi_init_device(handle, cpu);
+>> +		if (ret) {
+>> +			dev_err(cpu_dev, "%s: init device failed\n",
+>> +				__func__);
+>> +
+> 			goto clean;
+>> +		}
+>> +	}
+>> +
+>>  	ret = cpufreq_register_driver(&scmi_cpufreq_driver);
+>>  	if (ret) {
+>>  		dev_err(dev, "%s: registering cpufreq failed, err: %d\n",
+> 
+> 	/* clean any dynamic OPPs already set */
+> clean:
+> 	for_each_possible_cpu(cpu) {
+> 		cpu_dev = get_cpu_device(cpu);
+> 
+> 		dev_pm_opp_remove_all_dynamic(cpu_dev);
+> 	}
+> 
+> 	return ret;
+> }
+> 
+> 
+> Thanks
+> 
+> Cristian
+> 
+>> @@ -258,6 +334,20 @@ static int scmi_cpufreq_probe(struct scmi_device *sdev)
+>>  
+>>  static void scmi_cpufreq_remove(struct scmi_device *sdev)
+>>  {
+>> +	int cpu;
+>> +	struct device *cpu_dev;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		cpu_dev = get_cpu_device(cpu);
+>> +
+>> +		dev_pm_opp_free_cpufreq_table(cpu_dev,
+>> +					      &cpudata_table[cpu].freq_table);
+>> +
+>> +		free_cpumask_var(cpudata_table[cpu].scmi_shared_cpus);
+>> +	}
+>> +
+>> +	kfree(cpudata_table);
+>> +
+>>  	cpufreq_unregister_driver(&scmi_cpufreq_driver);
+>>  }
+>>  
+>> -- 
+>> 2.27.0
+>>
