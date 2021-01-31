@@ -2,106 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 502C0C433E9
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Jan 2021 17:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEDB1C433E0
+	for <linux-pm@archiver.kernel.org>; Sun, 31 Jan 2021 20:15:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 24A5D64DE1
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Jan 2021 17:31:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 86FA564E25
+	for <linux-pm@archiver.kernel.org>; Sun, 31 Jan 2021 20:15:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232002AbhA3RbI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 30 Jan 2021 12:31:08 -0500
-Received: from mail-40136.protonmail.ch ([185.70.40.136]:54199 "EHLO
-        mail-40136.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231519AbhA3RbE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Jan 2021 12:31:04 -0500
-Date:   Sat, 30 Jan 2021 17:30:14 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1612027817;
-        bh=oQy4RevNDWFClH37MnwytBl8YcA2kgCeFHUG6CufrzE=;
-        h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=RyCG1sqmI4l0wPx1P5Qgj3Zu5LJqGikvt9h7HNMPTiRdk0Zg91K07J8dwktAtCZMR
-         yQtNtj+aBRVs1md5Kd28/+p11tIJym2pbHhA5BvG2NJyA3qWSpFLLJmJrxVUSZjlwr
-         JVRahuP3RPLPKTs3fsLeIHG/D87jly/ZQbQzbYW0=
-To:     Liam Girdwood <lgirdwood@gmail.com>,
+        id S231631AbhAaUNq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 31 Jan 2021 15:13:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40082 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230298AbhAaTfo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jan 2021 14:35:44 -0500
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE01FC061788;
+        Sun, 31 Jan 2021 09:28:45 -0800 (PST)
+Received: by mail-ej1-x62f.google.com with SMTP id b9so1081763ejy.12;
+        Sun, 31 Jan 2021 09:28:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Gd1kwiYZVZqHxGZ4QrLOcLWC/Yc7tIB41MFJH1DjrOE=;
+        b=QKzEiLQ6NzOtXTY2GxWnm1OdzuV/+KIMM/bxqzcl6AWarRDPmlWsg5XZL634VlvtFk
+         dd0MlMtSNlXnR8BWUFra+7oftF4sCQ/GJOimxqAGa+q2pnfQwAlmIcedzH+B4CrOZ6rH
+         IkbRaW7sGUAmRnPz5KD09KHhUTVl259sUtA1e9LxKU/Ax+rGivv+Mh0QTmLiVWfRiBT8
+         LAiCLoe59/4adve4f9340PyPFbscXnQ2OmBY96w9kwsEGVxlmcibAvM84HoRut599jmL
+         hHdOZZ0XN6ZS3f/hmzJQ484+qTzMtIXqYygLDvuI9S2ybTUgjWcuK0IvNhomx5kfpvpF
+         HqaA==
+X-Gm-Message-State: AOAM5324J7qqm+F/v8dRWbl+jWpZFR9WPNEVdoQ4zsf7SlWHRVCWdzLS
+        1GEZc9L0j9gbzPgLAuW7m50=
+X-Google-Smtp-Source: ABdhPJz+pSN0UgQq9d30A0QB6sxrw8CN2kA2ipY6zlnjIn+rBf6kLJaK1Mc4wolK/V1jCHU+t7Yg1w==
+X-Received: by 2002:a17:906:f144:: with SMTP id gw4mr14257685ejb.189.1612114123011;
+        Sun, 31 Jan 2021 09:28:43 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id u23sm7486937edt.87.2021.01.31.09.28.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 31 Jan 2021 09:28:41 -0800 (PST)
+Date:   Sun, 31 Jan 2021 18:28:40 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Timon Baetz <timon.baetz@protonmail.com>
+Cc:     Liam Girdwood <lgirdwood@gmail.com>,
         Mark Brown <broonie@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
-From:   Timon Baetz <timon.baetz@protonmail.com>
-Cc:     linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        Timon Baetz <timon.baetz@protonmail.com>
-Reply-To: Timon Baetz <timon.baetz@protonmail.com>
-Subject: [PATCH 3/3] power: supply: max8997_charger: Switch to new binding
-Message-ID: <20210130172747.2022977-4-timon.baetz@protonmail.com>
-In-Reply-To: <20210130172747.2022977-1-timon.baetz@protonmail.com>
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 3/3] power: supply: max8997_charger: Switch to new binding
+Message-ID: <20210131172840.fxaadhhsafa4aeex@kozik-lap>
 References: <20210130172747.2022977-1-timon.baetz@protonmail.com>
+ <20210130172747.2022977-4-timon.baetz@protonmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <20210130172747.2022977-4-timon.baetz@protonmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Get regulator from parent device's node and extcon by name.
+On Sat, Jan 30, 2021 at 05:30:14PM +0000, Timon Baetz wrote:
+> Get regulator from parent device's node and extcon by name.
+> 
+> Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
+> ---
+>  drivers/power/supply/max8997_charger.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/supply/max8997_charger.c
+> index 321bd6b8ee41..625d8cc4312a 100644
+> --- a/drivers/power/supply/max8997_charger.c
+> +++ b/drivers/power/supply/max8997_charger.c
+> @@ -168,6 +168,7 @@ static int max8997_battery_probe(struct platform_device *pdev)
+>  	int ret = 0;
+>  	struct charger_data *charger;
+>  	struct max8997_dev *iodev = dev_get_drvdata(pdev->dev.parent);
+> +	struct device_node *np = pdev->dev.of_node;
+>  	struct i2c_client *i2c = iodev->i2c;
+>  	struct max8997_platform_data *pdata = iodev->pdata;
+>  	struct power_supply_config psy_cfg = {};
+> @@ -237,20 +238,23 @@ static int max8997_battery_probe(struct platform_device *pdev)
+>  		return PTR_ERR(charger->battery);
+>  	}
+>  
+> +	// grab regulator from parent device's node
+> +	pdev->dev.of_node = iodev->dev->of_node;
+>  	charger->reg = devm_regulator_get_optional(&pdev->dev, "charger");
+> +	pdev->dev.of_node = np;
 
-Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
----
- drivers/power/supply/max8997_charger.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+I think the device does not have its own node anymore. Or did I miss
+something?
 
-diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/supply/=
-max8997_charger.c
-index 321bd6b8ee41..625d8cc4312a 100644
---- a/drivers/power/supply/max8997_charger.c
-+++ b/drivers/power/supply/max8997_charger.c
-@@ -168,6 +168,7 @@ static int max8997_battery_probe(struct platform_device=
- *pdev)
- =09int ret =3D 0;
- =09struct charger_data *charger;
- =09struct max8997_dev *iodev =3D dev_get_drvdata(pdev->dev.parent);
-+=09struct device_node *np =3D pdev->dev.of_node;
- =09struct i2c_client *i2c =3D iodev->i2c;
- =09struct max8997_platform_data *pdata =3D iodev->pdata;
- =09struct power_supply_config psy_cfg =3D {};
-@@ -237,20 +238,23 @@ static int max8997_battery_probe(struct platform_devi=
-ce *pdev)
- =09=09return PTR_ERR(charger->battery);
- =09}
-=20
-+=09// grab regulator from parent device's node
-+=09pdev->dev.of_node =3D iodev->dev->of_node;
- =09charger->reg =3D devm_regulator_get_optional(&pdev->dev, "charger");
-+=09pdev->dev.of_node =3D np;
- =09if (IS_ERR(charger->reg)) {
- =09=09if (PTR_ERR(charger->reg) =3D=3D -EPROBE_DEFER)
- =09=09=09return -EPROBE_DEFER;
- =09=09dev_info(&pdev->dev, "couldn't get charger regulator\n");
- =09}
--=09charger->edev =3D extcon_get_edev_by_phandle(&pdev->dev, 0);
--=09if (IS_ERR(charger->edev)) {
--=09=09if (PTR_ERR(charger->edev) =3D=3D -EPROBE_DEFER)
-+=09charger->edev =3D extcon_get_extcon_dev("max8997-muic");
-+=09if (IS_ERR_OR_NULL(charger->edev)) {
-+=09=09if (!charger->edev)
- =09=09=09return -EPROBE_DEFER;
- =09=09dev_info(charger->dev, "couldn't get extcon device\n");
- =09}
-=20
--=09if (!IS_ERR(charger->reg) && !IS_ERR(charger->edev)) {
-+=09if (!IS_ERR(charger->reg) && !IS_ERR_OR_NULL(charger->edev)) {
- =09=09INIT_WORK(&charger->extcon_work, max8997_battery_extcon_evt_worker);
- =09=09ret =3D devm_add_action(&pdev->dev, max8997_battery_extcon_evt_stop_=
-work, charger);
- =09=09if (ret) {
---=20
-2.25.1
+>  	if (IS_ERR(charger->reg)) {
+>  		if (PTR_ERR(charger->reg) == -EPROBE_DEFER)
+>  			return -EPROBE_DEFER;
+>  		dev_info(&pdev->dev, "couldn't get charger regulator\n");
+>  	}
+> -	charger->edev = extcon_get_edev_by_phandle(&pdev->dev, 0);
+> -	if (IS_ERR(charger->edev)) {
+> -		if (PTR_ERR(charger->edev) == -EPROBE_DEFER)
+> +	charger->edev = extcon_get_extcon_dev("max8997-muic");
+> +	if (IS_ERR_OR_NULL(charger->edev)) {
+> +		if (!charger->edev)
+
+Isn't NULL returned when there is simply no extcon? It's different than
+deferred probe. Returning here EPROBE_DEFER might lead to infinite probe
+tries (on every new device probe) instead of just failing it.
+
+Best regards,
+Krzysztof
 
 
+>  			return -EPROBE_DEFER;
+>  		dev_info(charger->dev, "couldn't get extcon device\n");
+>  	}
+>  
+> -	if (!IS_ERR(charger->reg) && !IS_ERR(charger->edev)) {
+> +	if (!IS_ERR(charger->reg) && !IS_ERR_OR_NULL(charger->edev)) {
+>  		INIT_WORK(&charger->extcon_work, max8997_battery_extcon_evt_worker);
+>  		ret = devm_add_action(&pdev->dev, max8997_battery_extcon_evt_stop_work, charger);
+>  		if (ret) {
+> -- 
+> 2.25.1
+> 
+> 
