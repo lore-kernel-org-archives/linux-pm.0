@@ -2,134 +2,136 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 997A0C433DB
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Feb 2021 18:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8A5AC433E6
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Feb 2021 18:24:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 572AE64EA5
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Feb 2021 18:04:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 694A664EA1
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Feb 2021 18:24:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230127AbhBASEX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Feb 2021 13:04:23 -0500
-Received: from mail-wr1-f54.google.com ([209.85.221.54]:36674 "EHLO
-        mail-wr1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230110AbhBASEV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2021 13:04:21 -0500
-Received: by mail-wr1-f54.google.com with SMTP id 6so17627825wri.3;
-        Mon, 01 Feb 2021 10:04:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=fKxZfOhT/DW7ng3x2hQg+/AugT9c3F61tbpfJY+S9fg=;
-        b=o0ja68jjfo0vxAZuQK1dJm18nv709vSsKmLfIwnUOxB/tO4pA0T7vf1atU+1tlx0zO
-         3EZaev+FtG0p32/dhSFuWVfF8ySvs6dz+gOsNZ4IuH514agCQHDWwbYv1gV3v33Ca7pV
-         khvqZPcr+1qAE4opjFbHmue3U9DIPV4X3eAmymoM5E7DTB03Ul5Qs0tCWpGbjhwrFgFa
-         ooWhIlZdTHQsmn4mIv7o/sWQeMuDQwFcaxQY5V3aWabb6UCmcGV/OiRGBP4MV35S78ZA
-         MDLMNiQFwhQ3BUSJ0PJKxu7/e1YNTwD7K6S+irIBhpFt9ESL+ldeX00M/eRkCt/Bjyfv
-         xEOw==
-X-Gm-Message-State: AOAM530b6sfj7V5vBEToDA36W8IPbwp1yh0B83praLVcMg9VX3/RT7o4
-        I2IHukhV52dUTmPKv7PxW74=
-X-Google-Smtp-Source: ABdhPJwL6YHDCvYoDuQCnzLFd63X1o28rVOo0eX5DFDlJKIewDByM/euMbQI7hRpkiGev2a9nEBpbg==
-X-Received: by 2002:adf:d4ce:: with SMTP id w14mr18936280wrk.89.1612202619004;
-        Mon, 01 Feb 2021 10:03:39 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id t17sm42062wmi.46.2021.02.01.10.03.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Feb 2021 10:03:37 -0800 (PST)
-Date:   Mon, 1 Feb 2021 19:03:35 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Timon Baetz <timon.baetz@protonmail.com>
-Cc:     Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 3/3] power: supply: max8997_charger: Switch to new binding
-Message-ID: <20210201180335.rrsqfvbcmxvx64gf@kozik-lap>
-References: <20210130172747.2022977-1-timon.baetz@protonmail.com>
- <20210130172747.2022977-4-timon.baetz@protonmail.com>
- <20210131172840.fxaadhhsafa4aeex@kozik-lap>
- <20210201083128.18499ffd.timon.baetz@protonmail.com>
+        id S231359AbhBASYP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Feb 2021 13:24:15 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:42114 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232769AbhBASVz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2021 13:21:55 -0500
+Received: from 89-64-80-124.dynamic.chello.pl (89.64.80.124) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
+ id e62bb841359b88c5; Mon, 1 Feb 2021 19:20:28 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Erik Kaneda <erik.kaneda@intel.com>,
+        Joe Perches <joe@perches.com>
+Subject: [PATCH v1 1/5] ACPI: AC: Clean up printing messages
+Date:   Mon, 01 Feb 2021 19:15:31 +0100
+Message-ID: <1712686.ktuFUgcqXO@kreacher>
+In-Reply-To: <2367702.B5bJTmGzJm@kreacher>
+References: <2367702.B5bJTmGzJm@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20210201083128.18499ffd.timon.baetz@protonmail.com>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 01, 2021 at 09:26:42AM +0000, Timon Baetz wrote:
-> On Sun, 31 Jan 2021 18:28:40 +0100, Krzysztof Kozlowski wrote:
-> > On Sat, Jan 30, 2021 at 05:30:14PM +0000, Timon Baetz wrote:
-> > > Get regulator from parent device's node and extcon by name.
-> > >
-> > > Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
-> > > ---
-> > >  drivers/power/supply/max8997_charger.c | 12 ++++++++----
-> > >  1 file changed, 8 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/supply/max8997_charger.c
-> > > index 321bd6b8ee41..625d8cc4312a 100644
-> > > --- a/drivers/power/supply/max8997_charger.c
-> > > +++ b/drivers/power/supply/max8997_charger.c
-> > > @@ -168,6 +168,7 @@ static int max8997_battery_probe(struct platform_device *pdev)
-> > >  	int ret = 0;
-> > >  	struct charger_data *charger;
-> > >  	struct max8997_dev *iodev = dev_get_drvdata(pdev->dev.parent);
-> > > +	struct device_node *np = pdev->dev.of_node;
-> > >  	struct i2c_client *i2c = iodev->i2c;
-> > >  	struct max8997_platform_data *pdata = iodev->pdata;
-> > >  	struct power_supply_config psy_cfg = {};
-> > > @@ -237,20 +238,23 @@ static int max8997_battery_probe(struct platform_device *pdev)
-> > >  		return PTR_ERR(charger->battery);
-> > >  	}
-> > >
-> > > +	// grab regulator from parent device's node
-> > > +	pdev->dev.of_node = iodev->dev->of_node;
-> > >  	charger->reg = devm_regulator_get_optional(&pdev->dev, "charger");
-> > > +	pdev->dev.of_node = np;  
-> > 
-> > I think the device does not have its own node anymore. Or did I miss
-> > something?
-> 
-> The idea is to reset of_node to whatever it was before (NULL) and basically 
-> leave the device unchanged. Probe might run again because of deferral.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Good point.
+Replace the ACPI_DEBUG_PRINT() and ACPI_EXCEPTION() instances
+in ac.c with acpi_handle_debug() and acpi_handle_info() calls,
+respectively, drop the _COMPONENT and ACPI_MODULE_NAME() definitions
+that are not used any more, drop the no longer needed ACPI_AC_COMPONENT
+definition from the headers and update the documentation accordingly.
 
-> 
-> > >  	if (IS_ERR(charger->reg)) {
-> > >  		if (PTR_ERR(charger->reg) == -EPROBE_DEFER)
-> > >  			return -EPROBE_DEFER;
-> > >  		dev_info(&pdev->dev, "couldn't get charger regulator\n");
-> > >  	}
-> > > -	charger->edev = extcon_get_edev_by_phandle(&pdev->dev, 0);
-> > > -	if (IS_ERR(charger->edev)) {
-> > > -		if (PTR_ERR(charger->edev) == -EPROBE_DEFER)
-> > > +	charger->edev = extcon_get_extcon_dev("max8997-muic");
-> > > +	if (IS_ERR_OR_NULL(charger->edev)) {
-> > > +		if (!charger->edev)  
-> > 
-> > Isn't NULL returned when there is simply no extcon? It's different than
-> > deferred probe. Returning here EPROBE_DEFER might lead to infinite probe
-> > tries (on every new device probe) instead of just failing it.
-> 
-> extcon_get_extcon_dev() just loops through all registered extcon devices
-> and compared names. It will return NULL when "max8997-muic" isn't
-> registered yet. extcon_get_extcon_dev() never returns EPROBE_DEFER so
-> checking for NULL seems to be the only way. Other drivers using that
-> function also do NULL check and return EPROBE_DEFER.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/firmware-guide/acpi/debug.rst |    1 -
+ drivers/acpi/ac.c                           |   12 +++++-------
+ drivers/acpi/sysfs.c                        |    1 -
+ include/acpi/acpi_drivers.h                 |    1 -
+ 4 files changed, 5 insertions(+), 10 deletions(-)
 
-Indeed, thanks for clarification. Looks good:
+Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
+===================================================================
+--- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
++++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
+@@ -52,7 +52,6 @@ shows the supported mask values, current
+     ACPI_CA_DISASSEMBLER            0x00000800
+     ACPI_COMPILER                   0x00001000
+     ACPI_TOOLS                      0x00002000
+-    ACPI_AC_COMPONENT               0x00020000
+     ACPI_BATTERY_COMPONENT          0x00040000
+     ACPI_BUTTON_COMPONENT           0x00080000
+     ACPI_SBS_COMPONENT              0x00100000
+Index: linux-pm/drivers/acpi/ac.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ac.c
++++ linux-pm/drivers/acpi/ac.c
+@@ -28,9 +28,6 @@
+ #define ACPI_AC_STATUS_ONLINE		0x01
+ #define ACPI_AC_STATUS_UNKNOWN		0xFF
+ 
+-#define _COMPONENT		ACPI_AC_COMPONENT
+-ACPI_MODULE_NAME("ac");
+-
+ MODULE_AUTHOR("Paul Diefenbaugh");
+ MODULE_DESCRIPTION("ACPI AC Adapter Driver");
+ MODULE_LICENSE("GPL");
+@@ -102,8 +99,9 @@ static int acpi_ac_get_state(struct acpi
+ 	status = acpi_evaluate_integer(ac->device->handle, "_PSR", NULL,
+ 				       &ac->state);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status,
+-				"Error reading AC Adapter state"));
++		acpi_handle_info(ac->device->handle,
++				"Error reading AC Adapter state: %s\n",
++				acpi_format_exception(status));
+ 		ac->state = ACPI_AC_STATUS_UNKNOWN;
+ 		return -ENODEV;
+ 	}
+@@ -153,8 +151,8 @@ static void acpi_ac_notify(struct acpi_d
+ 
+ 	switch (event) {
+ 	default:
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-				  "Unsupported event [0x%x]\n", event));
++		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
++				  event);
+ 		fallthrough;
+ 	case ACPI_AC_NOTIFY_STATUS:
+ 	case ACPI_NOTIFY_BUS_CHECK:
+Index: linux-pm/drivers/acpi/sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sysfs.c
++++ linux-pm/drivers/acpi/sysfs.c
+@@ -52,7 +52,6 @@ static const struct acpi_dlayer acpi_deb
+ 	ACPI_DEBUG_INIT(ACPI_COMPILER),
+ 	ACPI_DEBUG_INIT(ACPI_TOOLS),
+ 
+-	ACPI_DEBUG_INIT(ACPI_AC_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_BATTERY_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_BUTTON_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_SBS_COMPONENT),
+Index: linux-pm/include/acpi/acpi_drivers.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_drivers.h
++++ linux-pm/include/acpi/acpi_drivers.h
+@@ -15,7 +15,6 @@
+  * Please update drivers/acpi/debug.c and Documentation/firmware-guide/acpi/debug.rst
+  * if you add to this list.
+  */
+-#define ACPI_AC_COMPONENT		0x00020000
+ #define ACPI_BATTERY_COMPONENT		0x00040000
+ #define ACPI_BUTTON_COMPONENT		0x00080000
+ #define ACPI_SBS_COMPONENT		0x00100000
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Best regards,
-Krzysztof
 
