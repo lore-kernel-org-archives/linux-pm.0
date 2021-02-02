@@ -2,90 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D6EC433E9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7044C4332E
 	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 09:11:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 417FB64D87
+	by mail.kernel.org (Postfix) with ESMTP id BF10F64E2B
 	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 09:11:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231406AbhBBJK5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Feb 2021 04:10:57 -0500
-Received: from jabberwock.ucw.cz ([46.255.230.98]:49832 "EHLO
-        jabberwock.ucw.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232728AbhBBJFx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 04:05:53 -0500
-Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
-        id B645B1C0B76; Tue,  2 Feb 2021 10:04:52 +0100 (CET)
-Date:   Tue, 2 Feb 2021 10:04:52 +0100
-From:   Pavel Machek <pavel@ucw.cz>
-To:     Abel Wu <abel.w@icloud.com>
-Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, hewenliang4@huawei.com,
-        wuyun.wu@huawei.com
-Subject: Re: [PATCH] PM: hibernate: add sanity check on power_kobj
-Message-ID: <20210202090451.GA27619@amd>
-References: <20210201075041.1201-1-abel.w@icloud.com>
- <20210201105243.GA23135@duo.ucw.cz>
- <F87648CF-E5D6-41C7-9F4E-87A4BA2A4786@icloud.com>
+        id S232764AbhBBJLo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Feb 2021 04:11:44 -0500
+Received: from mail-ed1-f44.google.com ([209.85.208.44]:42171 "EHLO
+        mail-ed1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232987AbhBBJJJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 04:09:09 -0500
+Received: by mail-ed1-f44.google.com with SMTP id z22so22014466edb.9;
+        Tue, 02 Feb 2021 01:08:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=aCPu/w+IzPBi1cp2MLabRKXq3jYLkdwyiLqfIg+o07Q=;
+        b=JkbJo7ZDS1rETS5SyLb4cyt3ixz3FL+ThP+LIzex0DJp7Mcqwc3YEgSJRKyJpPEA8y
+         em+EttPCo0viEDkPlKCZGjGOF3SQCIEGbeJO22mTHHKmlDmU/VsQvmTfXIY5QUNWl/jW
+         yZ/dPC8PX5uB8CkXfn9Xh9HFowrBWbPl0eD6HMpCGn0XZELTrG8YaRVkR/oMLobg7ha5
+         8D/BygaE0rM2kn+gVuZa89oDUEpYtuNznTa8jHiM5SoYYZ5WMgLo235BecGIn88hmAAt
+         7IAUnt7qz/rcr5/DRT5JzcLUD8MoyDsQKwjidsGEMlI4GmJ1x9SbIPx0l6q+8DOmIfFO
+         Ne9g==
+X-Gm-Message-State: AOAM533l1mJG/tUtcCwFc4V0nNMoX1Ypnue5HfVPhmaW4s6PzuUC2w7n
+        2Y6t9ULwvyap0CXRFUz3wyxVYiAMhJI=
+X-Google-Smtp-Source: ABdhPJwhzXn8rH0/fR08Us7twWk1IEt6G0/IlugvE6AS5UUdjSTQmfS+KWcjEigTr2tprPKeCSE/Ug==
+X-Received: by 2002:a05:6402:1914:: with SMTP id e20mr22638409edz.89.1612256906112;
+        Tue, 02 Feb 2021 01:08:26 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id j27sm9175249ejb.102.2021.02.02.01.08.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Feb 2021 01:08:24 -0800 (PST)
+Date:   Tue, 2 Feb 2021 10:08:23 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+Cc:     sre@kernel.org, robh+dt@kernel.org, dmurphy@ti.com,
+        pali@kernel.org, afd@ti.com, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        grygorii.tertychnyi@leica-geosystems.com,
+        andrey.zhizhikin@leica-geosystems.com
+Subject: Re: [PATCH V2 2/2] dt-bindings: power: bq27xxx: add bq78z10
+Message-ID: <20210202090823.rgah5hxoegsueu54@kozik-lap>
+References: <20210202084858.2944-1-Qing-wu.Li@leica-geosystems.com.cn>
+ <20210202084858.2944-3-Qing-wu.Li@leica-geosystems.com.cn>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <F87648CF-E5D6-41C7-9F4E-87A4BA2A4786@icloud.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+In-Reply-To: <20210202084858.2944-3-Qing-wu.Li@leica-geosystems.com.cn>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Tue, Feb 02, 2021 at 08:48:58AM +0000, LI Qingwu wrote:
+> Add bindings for TI BQ78Z100. An I2C interface gas gauge.
+> It provides a fully integrated safety protection,
+> and authentication for 1 to 2-series cell Li-Ion and
 
---pf9I7BMVVzbSWLtt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No comma before "and".
 
-On Tue 2021-02-02 09:59:11, Abel Wu wrote:
->=20
->=20
-> > On Feb 1, 2021, at 6:52 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >=20
-> > On Mon 2021-02-01 02:50:41, Abel Wu wrote:
-> >> The @power_kobj is initialized in pm_init() which is the same
-> >> initcall level as pm_disk_init(). Although this dependency is
-> >> guaranteed based on the current initcall serial execution model,
-> >> it would still be better do a cost-less sanity check to avoid
-> >> oops once the dependency is broken.
-> >=20
-> > I don't believe this is good idea. If the dependency is ever broken,
-> > this will make failure more subtle and harder to debug.
->=20
-> Thanks for reviewing. I think the cmdline parameter initcall_debug will
-> help in this case.
-> Actually we are trying to make initcalls being called asynchronously to
-> reduce boot time which is crucial to our cloud-native business. And we
-> resolve this kind of dependencies by retrying failed initcalls.
+What does it mean authentication?
 
-And this patch is okay if that gets mainlined, but not before.
+In the future, please send the bindings as first patch. The checkpatch
+should point this - did you run it?
 
 Best regards,
-							Pavel
-						=09
---=20
-http://www.livejournal.com/~pavelmachek
+Krzysztof
 
---pf9I7BMVVzbSWLtt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAmAZFbMACgkQMOfwapXb+vKMsACfemy1Qj83ceejJNSRQ4aSJqaC
-aO0An2VkofaLO9/WlKkHvZWeT5mGsj//
-=nUX3
------END PGP SIGNATURE-----
-
---pf9I7BMVVzbSWLtt--
+> Li-Polymer battery packs.
+> 
+> Signed-off-by: LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+> ---
+>  Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 +
