@@ -2,109 +2,400 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 543DCC433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 465FEC4332E
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:17:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 18F8B64F96
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:07:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C25D64F68
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:17:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238123AbhBBSGz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Feb 2021 13:06:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45660 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238211AbhBBSEs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 13:04:48 -0500
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21C7CC061573;
-        Tue,  2 Feb 2021 10:04:08 -0800 (PST)
-Received: by mail-lj1-x22d.google.com with SMTP id a25so25056613ljn.0;
-        Tue, 02 Feb 2021 10:04:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=iGm957EAqC35f2tVXf0aXXYAaAN+/zd5ezyK81HFpGA=;
-        b=o3/CHju6eXYlhS9XmSqXGD5swbvx7AxG46g1fhG4aOuuW5XGug/MbxG1xLvYmBoeuq
-         L0lqJxV/8Ns4cgt+hEBpJvtOZlXIW8yYcI+ABSStHqzwJrrZql0UL/+XQ4fO1f0zpqUg
-         gU9FxKwIHCkmsu0YJ/ffQU2eebGRHnVc/8211oi9xupIKOg6SnoVW1O7VBxpagFt0W4B
-         v88Ab1J2d5PAUUm+AVVOO3W3m8FMtd5DR7Nu0gAvqi0JV44prZgMN7mRC+McPRc85pGr
-         2xmWEhYxFEIlv+op6PeQOVTeFDcVsz0ipOgMnEsLrwXBEynaoYvRrZYAVbFUMB/sFA/m
-         ww3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=iGm957EAqC35f2tVXf0aXXYAaAN+/zd5ezyK81HFpGA=;
-        b=VoHrC3I+/KnfwvSQy1xntrPYOotGAoEfSu21M6VYGgpLOZYBgFkEmceCnhsZ/Y+RAT
-         +d04r3RDu/SsOAFTZ7RNLrdpjGJSDqUCJRrcRfTR7BS+j+q3US675DEM6RrbiCthRao9
-         Gx2iEIqPLliKFxML0cFMnfLOxOX1i9q9KFYQs6FMRmiCxxdB8nm0cK3FejcNl7tcp8es
-         2tmxVAu8YZ594uXbJcVSC6Kp6k9AAL6lJ5bziLlSG0VwQhiPXi/1epJjNiQ24q1pdnSA
-         g9qeUfbgwA7tGnSa4G3WSBABToxSTxM/M0i7HcnHrjKiuLvk7HS/V8p78InkXF2DjnTP
-         Kl7g==
-X-Gm-Message-State: AOAM533O6sIlDJ/CzNeQIJO7T5hwqnDMlQYOABqSylBjPdDBSFc+fEPE
-        CRavjRYpPR5T/Yi3KHGUN+IjsIBzkLY=
-X-Google-Smtp-Source: ABdhPJwys5lTkySfyVwjPPEYacW6mYA7R8a015g4MOjY03STT16mDTfzTx5ZKZGYop5WvU+9M6OLCw==
-X-Received: by 2002:a2e:b4b1:: with SMTP id q17mr14380485ljm.267.1612289046116;
-        Tue, 02 Feb 2021 10:04:06 -0800 (PST)
-Received: from ?IPv6:2a00:1370:814d:ea25:a10:76ff:fe69:21b6? ([2a00:1370:814d:ea25:a10:76ff:fe69:21b6])
-        by smtp.googlemail.com with ESMTPSA id w13sm4413923ljw.115.2021.02.02.10.04.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 02 Feb 2021 10:04:05 -0800 (PST)
-Subject: Re: [PATCH V2 3/3] opp: Add dev_pm_opp_of_add_table_noclk()
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org
-References: <1b58a72fa4d6aadc9542a66f8150150534752d81.1611817096.git.viresh.kumar@linaro.org>
- <a251d7a7245a2ded97b282b8dfda95359698bf22.1611817096.git.viresh.kumar@linaro.org>
- <72a546c5-8a7b-af8c-43aa-5344073f8623@gmail.com>
- <20210202050230.g7xxo6373stfvzbi@vireshk-i7>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <5130bbcf-2531-a5d4-4f30-315bbf485711@gmail.com>
-Date:   Tue, 2 Feb 2021 21:04:04 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.2
+        id S238427AbhBBSRJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Feb 2021 13:17:09 -0500
+Received: from mga17.intel.com ([192.55.52.151]:23797 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S238174AbhBBSO7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 2 Feb 2021 13:14:59 -0500
+IronPort-SDR: nO3MWi2c5HpepWAFit8WMkE1kKPHrNg9WXTR8kc4kl20vIjInEIQlo6C5+olsK+jaBFhNnenX5
+ 4Gdwu7kYn6cQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9883"; a="160667871"
+X-IronPort-AV: E=Sophos;i="5.79,396,1602572400"; 
+   d="scan'208";a="160667871"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2021 10:13:09 -0800
+IronPort-SDR: xfs5Ukx/8WliZhVsiqfCjS9bS9YlsYP7xrXvZDKEgyUVZt/jXQBq8JnhVWs48VxTdxvc60l3uv
+ sWKnZmD28cAg==
+X-IronPort-AV: E=Sophos;i="5.79,396,1602572400"; 
+   d="scan'208";a="433028733"
+Received: from spandruv-mobl.amr.corp.intel.com ([10.212.187.200])
+  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2021 10:13:08 -0800
+Message-ID: <1c596a66407fc56ef5e079f9b47d58dc80af4bf2.camel@linux.intel.com>
+Subject: Re: [PATCH v3 2/2] thermal: Move therm_throt there from x86/mce
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Borislav Petkov <bp@alien8.de>
+Cc:     X86 ML <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Tony Luck <tony.luck@intel.com>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Date:   Tue, 02 Feb 2021 10:13:08 -0800
+In-Reply-To: <20210202121003.GD18075@zn.tnic>
+References: <20210201142704.12495-1-bp@alien8.de>
+         <20210201142704.12495-3-bp@alien8.de>
+         <bcf48ba877acf7ae003672d5b7cf2effe004ca0e.camel@linux.intel.com>
+         <20210202121003.GD18075@zn.tnic>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
 MIME-Version: 1.0
-In-Reply-To: <20210202050230.g7xxo6373stfvzbi@vireshk-i7>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-02.02.2021 08:02, Viresh Kumar пишет:
-> On 01-02-21, 23:00, Dmitry Osipenko wrote:
->> 28.01.2021 10:00, Viresh Kumar пишет:
->>> A few drivers have device's clk but they don't want the OPP core to
->>> handle that. Add a new helper for them, dev_pm_opp_of_add_table_noclk().
->>>
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>> V2:
->>> - Split this into a separate patch.
->>>
->>>  drivers/opp/of.c       | 18 ++++++++++++++++++
->>>  include/linux/pm_opp.h |  6 ++++++
->>>  2 files changed, 24 insertions(+)
->>
->> For the all current/latest OPP patches:
->>
->> Tested-by: Dmitry Osipenko <digetx@gmail.com>
+On Tue, 2021-02-02 at 13:10 +0100, Borislav Petkov wrote:
+> On Mon, Feb 01, 2021 at 11:10:29AM -0800, Srinivas Pandruvada wrote:
+> > Only user of the above interface is in drivers/thermal/intel.
+> > So why can't we move these to
+> > drivers/thermal/intel/thermal_interrupt.h
+> > or similar?
 > 
-> Hmm, I have now added your Tested-by to all the patches that we worked
-> together on.. 
+> Sure, see below.
 > 
-> Thanks.
+Thanks.
+
+Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+> ---
+> From: Borislav Petkov <bp@suse.de>
+> Date: Thu, 7 Jan 2021 13:29:05 +0100
+> Subject: [PATCH] thermal: Move therm_throt there from x86/mce
+> 
+> This functionality has nothing to do with MCE, move it to the thermal
+> framework and untangle it from MCE.
+> 
+> Requested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> ---
+>  arch/x86/Kconfig                              |  4 ---
+>  arch/x86/include/asm/mce.h                    | 16 ----------
+>  arch/x86/include/asm/thermal.h                | 13 ++++++++
+>  arch/x86/kernel/cpu/intel.c                   |  3 ++
+>  arch/x86/kernel/cpu/mce/Makefile              |  2 --
+>  arch/x86/kernel/cpu/mce/intel.c               |  1 -
+>  arch/x86/kernel/irq.c                         | 21 ++++++++++++
+>  drivers/thermal/intel/Kconfig                 |  4 +++
+>  drivers/thermal/intel/Makefile                |  1 +
+>  .../thermal/intel}/therm_throt.c              | 32 ++++++-----------
+> --
+>  drivers/thermal/intel/thermal_interrupt.h     | 15 +++++++++
+>  drivers/thermal/intel/x86_pkg_temp_thermal.c  |  4 ++-
+>  12 files changed, 69 insertions(+), 47 deletions(-)
+>  create mode 100644 arch/x86/include/asm/thermal.h
+>  rename {arch/x86/kernel/cpu/mce =>
+> drivers/thermal/intel}/therm_throt.c (97%)
+>  create mode 100644 drivers/thermal/intel/thermal_interrupt.h
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 21f851179ff0..9989db3a9bf5 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1158,10 +1158,6 @@ config X86_MCE_INJECT
+>  	  If you don't know what a machine check is and you don't do
+> kernel
+>  	  QA it is safe to say n.
+>  
+> -config X86_THERMAL_VECTOR
+> -	def_bool y
+> -	depends on X86_MCE_INTEL
+> -
+>  source "arch/x86/events/Kconfig"
+>  
+>  config X86_LEGACY_VM86
+> diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+> index def9aa5e1fa4..ddfb3cad8dff 100644
+> --- a/arch/x86/include/asm/mce.h
+> +++ b/arch/x86/include/asm/mce.h
+> @@ -288,22 +288,6 @@ extern void (*mce_threshold_vector)(void);
+>  /* Deferred error interrupt handler */
+>  extern void (*deferred_error_int_vector)(void);
+>  
+> -/*
+> - * Thermal handler
+> - */
+> -
+> -void intel_init_thermal(struct cpuinfo_x86 *c);
+> -
+> -/* Interrupt Handler for core thermal thresholds */
+> -extern int (*platform_thermal_notify)(__u64 msr_val);
+> -
+> -/* Interrupt Handler for package thermal thresholds */
+> -extern int (*platform_thermal_package_notify)(__u64 msr_val);
+> -
+> -/* Callback support of rate control, return true, if
+> - * callback has rate control */
+> -extern bool (*platform_thermal_package_rate_control)(void);
+> -
+>  /*
+>   * Used by APEI to report memory error via /dev/mcelog
+>   */
+> diff --git a/arch/x86/include/asm/thermal.h
+> b/arch/x86/include/asm/thermal.h
+> new file mode 100644
+> index 000000000000..ddbdefd5b94f
+> --- /dev/null
+> +++ b/arch/x86/include/asm/thermal.h
+> @@ -0,0 +1,13 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_X86_THERMAL_H
+> +#define _ASM_X86_THERMAL_H
+> +
+> +#ifdef CONFIG_X86_THERMAL_VECTOR
+> +void intel_init_thermal(struct cpuinfo_x86 *c);
+> +bool x86_thermal_enabled(void);
+> +void intel_thermal_interrupt(void);
+> +#else
+> +static inline void intel_init_thermal(struct cpuinfo_x86 *c) { }
+> +#endif
+> +
+> +#endif /* _ASM_X86_THERMAL_H */
+> diff --git a/arch/x86/kernel/cpu/intel.c
+> b/arch/x86/kernel/cpu/intel.c
+> index 59a1e3ce3f14..71221af87cb1 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -24,6 +24,7 @@
+>  #include <asm/traps.h>
+>  #include <asm/resctrl.h>
+>  #include <asm/numa.h>
+> +#include <asm/thermal.h>
+>  
+>  #ifdef CONFIG_X86_64
+>  #include <linux/topology.h>
+> @@ -719,6 +720,8 @@ static void init_intel(struct cpuinfo_x86 *c)
+>  		tsx_disable();
+>  
+>  	split_lock_init();
+> +
+> +	intel_init_thermal(c);
+>  }
+>  
+>  #ifdef CONFIG_X86_32
+> diff --git a/arch/x86/kernel/cpu/mce/Makefile
+> b/arch/x86/kernel/cpu/mce/Makefile
+> index 9f020c994154..015856abdbb1 100644
+> --- a/arch/x86/kernel/cpu/mce/Makefile
+> +++ b/arch/x86/kernel/cpu/mce/Makefile
+> @@ -9,8 +9,6 @@ obj-$(CONFIG_X86_MCE_THRESHOLD) += threshold.o
+>  mce-inject-y			:= inject.o
+>  obj-$(CONFIG_X86_MCE_INJECT)	+= mce-inject.o
+>  
+> -obj-$(CONFIG_X86_THERMAL_VECTOR) += therm_throt.o
+> -
+>  obj-$(CONFIG_ACPI_APEI)		+= apei.o
+>  
+>  obj-$(CONFIG_X86_MCELOG_LEGACY)	+= dev-mcelog.o
+> diff --git a/arch/x86/kernel/cpu/mce/intel.c
+> b/arch/x86/kernel/cpu/mce/intel.c
+> index c2476fe0682e..e309476743b7 100644
+> --- a/arch/x86/kernel/cpu/mce/intel.c
+> +++ b/arch/x86/kernel/cpu/mce/intel.c
+> @@ -531,7 +531,6 @@ static void intel_imc_init(struct cpuinfo_x86 *c)
+>  
+>  void mce_intel_feature_init(struct cpuinfo_x86 *c)
+>  {
+> -	intel_init_thermal(c);
+>  	intel_init_cmci();
+>  	intel_init_lmce();
+>  	intel_ppin_init(c);
+> diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+> index c5dd50369e2f..d4ad344e80bf 100644
+> --- a/arch/x86/kernel/irq.c
+> +++ b/arch/x86/kernel/irq.c
+> @@ -21,6 +21,7 @@
+>  #include <asm/hw_irq.h>
+>  #include <asm/desc.h>
+>  #include <asm/traps.h>
+> +#include <asm/thermal.h>
+>  
+>  #define CREATE_TRACE_POINTS
+>  #include <asm/trace/irq_vectors.h>
+> @@ -374,3 +375,23 @@ void fixup_irqs(void)
+>  	}
+>  }
+>  #endif
+> +
+> +#ifdef CONFIG_X86_THERMAL_VECTOR
+> +static void smp_thermal_vector(void)
+> +{
+> +	if (x86_thermal_enabled())
+> +		intel_thermal_interrupt();
+> +	else
+> +		pr_err("CPU%d: Unexpected LVT thermal interrupt!\n",
+> +		       smp_processor_id());
+> +}
+> +
+> +DEFINE_IDTENTRY_SYSVEC(sysvec_thermal)
+> +{
+> +	trace_thermal_apic_entry(THERMAL_APIC_VECTOR);
+> +	inc_irq_stat(irq_thermal_count);
+> +	smp_thermal_vector();
+> +	trace_thermal_apic_exit(THERMAL_APIC_VECTOR);
+> +	ack_APIC_irq();
+> +}
+> +#endif
+> diff --git a/drivers/thermal/intel/Kconfig
+> b/drivers/thermal/intel/Kconfig
+> index 8025b21f43fa..ce4f59213c7a 100644
+> --- a/drivers/thermal/intel/Kconfig
+> +++ b/drivers/thermal/intel/Kconfig
+> @@ -8,6 +8,10 @@ config INTEL_POWERCLAMP
+>  	  enforce idle time which results in more package C-state
+> residency. The
+>  	  user interface is exposed via generic thermal framework.
+>  
+> +config X86_THERMAL_VECTOR
+> +	def_bool y
+> +	depends on X86 && CPU_SUP_INTEL && X86_LOCAL_APIC
+> +
+>  config X86_PKG_TEMP_THERMAL
+>  	tristate "X86 package temperature thermal driver"
+>  	depends on X86_THERMAL_VECTOR
+> diff --git a/drivers/thermal/intel/Makefile
+> b/drivers/thermal/intel/Makefile
+> index 0d9736ced5d4..ff2ad30ef397 100644
+> --- a/drivers/thermal/intel/Makefile
+> +++ b/drivers/thermal/intel/Makefile
+> @@ -10,3 +10,4 @@ obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+=
+> intel_quark_dts_thermal.o
+>  obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+>  obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) += intel_bxt_pmic_thermal.o
+>  obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+> +obj-$(CONFIG_X86_THERMAL_VECTOR) += therm_throt.o
+> diff --git a/arch/x86/kernel/cpu/mce/therm_throt.c
+> b/drivers/thermal/intel/therm_throt.c
+> similarity index 97%
+> rename from arch/x86/kernel/cpu/mce/therm_throt.c
+> rename to drivers/thermal/intel/therm_throt.c
+> index 5b15d7cef1d1..f8e882592ba5 100644
+> --- a/arch/x86/kernel/cpu/mce/therm_throt.c
+> +++ b/drivers/thermal/intel/therm_throt.c
+> @@ -26,13 +26,13 @@
+>  #include <linux/cpu.h>
+>  
+>  #include <asm/processor.h>
+> +#include <asm/thermal.h>
+>  #include <asm/traps.h>
+>  #include <asm/apic.h>
+> -#include <asm/mce.h>
+> +#include <asm/irq.h>
+>  #include <asm/msr.h>
+> -#include <asm/trace/irq_vectors.h>
+>  
+> -#include "internal.h"
+> +#include "thermal_interrupt.h"
+>  
+>  /* How long to wait between reporting thermal events */
+>  #define CHECK_INTERVAL		(300 * HZ)
+> @@ -570,7 +570,7 @@ static void notify_thresholds(__u64 msr_val)
+>  }
+>  
+>  /* Thermal transition interrupt handler */
+> -static void intel_thermal_interrupt(void)
+> +void intel_thermal_interrupt(void)
+>  {
+>  	__u64 msr_val;
+>  
+> @@ -606,23 +606,6 @@ static void intel_thermal_interrupt(void)
+>  	}
+>  }
+>  
+> -static void unexpected_thermal_interrupt(void)
+> -{
+> -	pr_err("CPU%d: Unexpected LVT thermal interrupt!\n",
+> -		smp_processor_id());
+> -}
+> -
+> -static void (*smp_thermal_vector)(void) =
+> unexpected_thermal_interrupt;
+> -
+> -DEFINE_IDTENTRY_SYSVEC(sysvec_thermal)
+> -{
+> -	trace_thermal_apic_entry(THERMAL_APIC_VECTOR);
+> -	inc_irq_stat(irq_thermal_count);
+> -	smp_thermal_vector();
+> -	trace_thermal_apic_exit(THERMAL_APIC_VECTOR);
+> -	ack_APIC_irq();
+> -}
+> -
+>  /* Thermal monitoring depends on APIC, ACPI and clock modulation */
+>  static int intel_thermal_supported(struct cpuinfo_x86 *c)
+>  {
+> @@ -633,6 +616,11 @@ static int intel_thermal_supported(struct
+> cpuinfo_x86 *c)
+>  	return 1;
+>  }
+>  
+> +bool x86_thermal_enabled(void)
+> +{
+> +	return atomic_read(&therm_throt_en);
+> +}
+> +
+>  void intel_init_thermal(struct cpuinfo_x86 *c)
+>  {
+>  	unsigned int cpu = smp_processor_id();
+> @@ -719,8 +707,6 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
+>  				| PACKAGE_THERM_INT_HIGH_ENABLE), h);
+>  	}
+>  
+> -	smp_thermal_vector = intel_thermal_interrupt;
+> -
+>  	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+>  	wrmsr(MSR_IA32_MISC_ENABLE, l | MSR_IA32_MISC_ENABLE_TM1, h);
+>  
+> diff --git a/drivers/thermal/intel/thermal_interrupt.h
+> b/drivers/thermal/intel/thermal_interrupt.h
+> new file mode 100644
+> index 000000000000..53f427bb58dc
+> --- /dev/null
+> +++ b/drivers/thermal/intel/thermal_interrupt.h
+> @@ -0,0 +1,15 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _INTEL_THERMAL_INTERRUPT_H
+> +#define _INTEL_THERMAL_INTERRUPT_H
+> +
+> +/* Interrupt Handler for package thermal thresholds */
+> +extern int (*platform_thermal_package_notify)(__u64 msr_val);
+> +
+> +/* Interrupt Handler for core thermal thresholds */
+> +extern int (*platform_thermal_notify)(__u64 msr_val);
+> +
+> +/* Callback support of rate control, return true, if
+> + * callback has rate control */
+> +extern bool (*platform_thermal_package_rate_control)(void);
+> +
+> +#endif /* _INTEL_THERMAL_INTERRUPT_H */
+> diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> index b81c33202f41..295742e83960 100644
+> --- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> +++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+> @@ -17,8 +17,10 @@
+>  #include <linux/pm.h>
+>  #include <linux/thermal.h>
+>  #include <linux/debugfs.h>
+> +
+>  #include <asm/cpu_device_id.h>
+> -#include <asm/mce.h>
+> +
+> +#include "thermal_interrupt.h"
+>  
+>  /*
+>  * Rate control delay: Idea is to introduce denounce effect
+> -- 
+> 2.29.2
 > 
 
-That's exactly what I meant, thank you.
