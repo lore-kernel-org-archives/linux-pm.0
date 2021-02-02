@@ -2,108 +2,180 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30699C433DB
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 02:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66E56C433DB
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 02:18:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D845764EBD
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 02:00:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1B6D964EE8
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 02:18:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229543AbhBBCAQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Feb 2021 21:00:16 -0500
-Received: from pv50p00im-ztbu10011701.me.com ([17.58.6.53]:59983 "EHLO
-        pv50p00im-ztbu10011701.me.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229527AbhBBCAQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2021 21:00:16 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com;
-        s=1a1hai; t=1612231160;
-        bh=rGl5/iosVM/5pN5iya5pmf6fh8L6VxYZ78FobWeoRvk=;
-        h=Content-Type:Mime-Version:Subject:From:Date:Message-Id:To;
-        b=mEWdeyPUHIQXfuu3//mKjmjXXvCjOkyEth0dBwJEQ0fv+SHpSnyFXmnF5F0F6U4QI
-         ELTiBQuDdPGrgN7p2RNT/blAPeTYiqx9Yti0sdogKAW78QWmt06bGMldYIA6l5JYkT
-         Gb2ujFoyvOFT8ZvMPyU8cK4BohWiUvLeq7gFUtil6xLt/I+cczbcxDO3FTERBm4OFz
-         5UkMSUTORkI62VSfhs5iLAWapTmp/u80LruMr1z0MlwAf8z7Q8kLT9SdgPdkgk3XkT
-         RMUclNRvYqiZAwdNyHS+QfpDth7kapx0x8+v0SHVmnOiPwqttKhIEvLUENhZtZdGZo
-         a3EqYrzjzHSzA==
-Received: from [11.240.15.70] (unknown [119.3.119.19])
-        by pv50p00im-ztbu10011701.me.com (Postfix) with ESMTPSA id 3C4218A0551;
-        Tue,  2 Feb 2021 01:59:17 +0000 (UTC)
-Content-Type: text/plain;
-        charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.40.0.2.32\))
-Subject: Re: [PATCH] PM: hibernate: add sanity check on power_kobj
-From:   Abel Wu <abel.w@icloud.com>
-In-Reply-To: <20210201105243.GA23135@duo.ucw.cz>
-Date:   Tue, 2 Feb 2021 09:59:11 +0800
-Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, hewenliang4@huawei.com,
-        wuyun.wu@huawei.com
-Content-Transfer-Encoding: 7bit
-Message-Id: <F87648CF-E5D6-41C7-9F4E-87A4BA2A4786@icloud.com>
-References: <20210201075041.1201-1-abel.w@icloud.com>
- <20210201105243.GA23135@duo.ucw.cz>
-To:     Pavel Machek <pavel@ucw.cz>
-X-Mailer: Apple Mail (2.3654.40.0.2.32)
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369,18.0.737
- definitions=2021-02-01_14:2021-01-29,2021-02-01 signatures=0
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-2006250000 definitions=main-2102020012
+        id S229603AbhBBCSm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Feb 2021 21:18:42 -0500
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:43080 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229973AbhBBCSl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2021 21:18:41 -0500
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 1122HmEi048971;
+        Mon, 1 Feb 2021 20:17:48 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1612232268;
+        bh=Piv6SAhmZ+9ZIfCN+toMF2WEzwxmxh617k2Fa/s+JJw=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=TByc13dLqey+hnnhEeYs/bCyzSAs9jVmJ0QVmuMgl0Qn17VIxb6NZpTYexjQfHxgF
+         fbhLbxpC8QLMxUcx07yXAAHEY4fZrJJ/3poybBOsvw1o4rd9qh3RQxI78LUM20kUoG
+         0sa4TWfVgmZfSsVN/WnzflgGVIKMDB9rd79i8bEA=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 1122Hm7O102413
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 1 Feb 2021 20:17:48 -0600
+Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 1 Feb
+ 2021 20:17:48 -0600
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE101.ent.ti.com
+ (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Mon, 1 Feb 2021 20:17:48 -0600
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 1122HmSY050842;
+        Mon, 1 Feb 2021 20:17:48 -0600
+From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     <dmurphy@ti.com>, Rob Herring <robh@kernel.org>,
+        Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Subject: [PATCH v5 1/2] dt-bindings: power: Add the bq25790 dt bindings
+Date:   Mon, 1 Feb 2021 20:17:46 -0600
+Message-ID: <20210202021747.717-2-r-rivera-matos@ti.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210202021747.717-1-r-rivera-matos@ti.com>
+References: <20210202021747.717-1-r-rivera-matos@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Dan Murphy <dmurphy@ti.com>
 
+Add the bindings for the bq25790.
 
-> On Feb 1, 2021, at 6:52 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> On Mon 2021-02-01 02:50:41, Abel Wu wrote:
->> The @power_kobj is initialized in pm_init() which is the same
->> initcall level as pm_disk_init(). Although this dependency is
->> guaranteed based on the current initcall serial execution model,
->> it would still be better do a cost-less sanity check to avoid
->> oops once the dependency is broken.
-> 
-> I don't believe this is good idea. If the dependency is ever broken,
-> this will make failure more subtle and harder to debug.
+Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Signed-off-by: Dan Murphy <dmurphy@ti.com>
+---
+ .../bindings/power/supply/bq25790.yaml        | 95 +++++++++++++++++++
+ 1 file changed, 95 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq25790.yaml
 
-Thanks for reviewing. I think the cmdline parameter initcall_debug will
-help in this case.
-Actually we are trying to make initcalls being called asynchronously to
-reduce boot time which is crucial to our cloud-native business. And we
-resolve this kind of dependencies by retrying failed initcalls.
-
-Best regards,
-	Abel
-> 
->> Signed-off-by: Abel Wu <abel.w@icloud.com>
->> ---
->> kernel/power/hibernate.c | 3 +++
->> 1 file changed, 3 insertions(+)
->> 
->> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
->> index da0b41914177..060089cc261d 100644
->> --- a/kernel/power/hibernate.c
->> +++ b/kernel/power/hibernate.c
->> @@ -1262,6 +1262,9 @@ static const struct attribute_group attr_group = {
->> 
->> static int __init pm_disk_init(void)
->> {
->> +	if (!power_kobj)
->> +		return -EINVAL;
->> +
->> 	return sysfs_create_group(power_kobj, &attr_group);
->> }
->> 
->> -- 
->> 2.27.0
-> 
-> -- 
-> http://www.livejournal.com/~pavelmachek
+diff --git a/Documentation/devicetree/bindings/power/supply/bq25790.yaml b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
+new file mode 100644
+index 000000000000..6d9178ce5a2b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
+@@ -0,0 +1,95 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2020 Texas Instruments Incorporated
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/bq25790.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: TI BQ25790 Switch Mode Buck-Boost Charger
++
++maintainers:
++  - Dan Murphy <dmurphy@ti.com>
++
++description: |
++  BQ25790 is a highly integrated switch-mode buck-boost charger for 1-4 cell
++  Li-ion batteries and Li-polymer batteries. The device charges a battery from a
++  wide range of input sources including legacy USB adapters to high voltage USB
++  PD adapters and traditional barrel adapters.
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - ti,bq25790
++      - ti,bq25792
++
++  reg:
++    maxItems: 1
++
++  ti,watchdog-timeout-ms:
++    default: 0
++    description: |
++      Watchdog timer in milli seconds. 0 (default) disables the watchdog.
++    minimum: 0
++    maximum: 160000
++    enum: [ 0, 500, 1000, 2000, 20000, 40000, 80000, 160000]
++
++  input-voltage-limit-microvolt:
++    description: |
++      Minimum input voltage limit in micro volts with a 100000 micro volt step.
++    minimum: 3600000
++    maximum: 22000000
++
++  input-current-limit-microamp:
++    description: |
++      Maximum input current limit in micro amps with a 100000 micro amp step.
++    minimum: 100000
++    maximum: 3300000
++
++  monitored-battery:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to the battery node being monitored
++
++  interrupts:
++    maxItems: 1
++    description: |
++      Interrupt sends an active low, 256 μs pulse to host to report the charger
++      device status and faults.
++
++required:
++  - compatible
++  - reg
++  - monitored-battery
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    bat: battery {
++      compatible = "simple-battery";
++      constant-charge-current-max-microamp = <2000000>;
++      constant-charge-voltage-max-microvolt = <4200000>;
++      precharge-current-microamp = <160000>;
++      charge-term-current-microamp = <160000>;
++    };
++    #include <dt-bindings/gpio/gpio.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      bq25790: charger@6b {
++          compatible = "ti,bq25790";
++          reg = <0x6b>;
++          interrupt-parent = <&gpio1>;
++          interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
++          ti,watchdog-timeout-ms = <2000>;
++          input-current-limit-microamp = <3000000>;
++          input-voltage-limit-microvolt = <4500000>;
++          monitored-battery = <&bat>;
++      };
++    };
++
++...
+-- 
+2.30.0
 
