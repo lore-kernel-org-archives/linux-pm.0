@@ -2,168 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08759C433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:26:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44DC7C433E6
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:31:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B6ADE64F6A
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:26:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 073C364FAB
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 18:31:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238099AbhBBS0B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Feb 2021 13:26:01 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:42712 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238416AbhBBSVV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 13:21:21 -0500
-Received: from 89-64-80-193.dynamic.chello.pl (89.64.80.193) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
- id fab37a9a5eea78eb; Tue, 2 Feb 2021 19:19:54 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Erik Kaneda <erik.kaneda@intel.com>,
-        Joe Perches <joe@perches.com>
-Subject: [PATCH v2 3/5] ACPI: button: Clean up printing messages
-Date:   Tue, 02 Feb 2021 19:17:01 +0100
-Message-ID: <1735040.lGk2htMl04@kreacher>
-In-Reply-To: <1991501.dpTHplkurC@kreacher>
-References: <2367702.B5bJTmGzJm@kreacher> <1991501.dpTHplkurC@kreacher>
+        id S238512AbhBBSbb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Feb 2021 13:31:31 -0500
+Received: from mail-ot1-f42.google.com ([209.85.210.42]:38443 "EHLO
+        mail-ot1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238252AbhBBS36 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 13:29:58 -0500
+Received: by mail-ot1-f42.google.com with SMTP id t25so10684481otc.5;
+        Tue, 02 Feb 2021 10:29:43 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=p2VpDNxsMmLKvVqvFk/iIWO0mth/SOHLInguuBcwD2k=;
+        b=db6E9MgJQKMt5fb13mhJwfHWFz3k8qQYI+OtAHdlHxl9rM6eTMzkELUmz392rtwHT9
+         rUstyNw0Of3eNbDbXyXn0DsWGHeYu7iAXzcUYewz5YEDPzJ3ORWcXR5TTvGOOsBtaTHZ
+         gwj3Y/3+6UDLN7WI8u+8EGJktFmbBeCPyTT2ESGUQ4zxXIxetJ50hi25D6I7CdRmH4Kc
+         Oj37Q755YikC3hojs6GdqJM2cOVFxzuMCj8e9WvziveDGmJbtXDyEPkJuOs8qYmZu5g5
+         0eEuFi81bOdkSWN7fXGchWoxJHvpgjcdgMQ0mfiXNKoFIVdRHh8fKPk7gdF44mnkY16z
+         gW7A==
+X-Gm-Message-State: AOAM532ZqMIR2gZiEsip0T0bY2jb+eABBM80cUzdu7srDUAjCYqULfkQ
+        3I++YDMoNGf/u1w1Z891JJxuHlNDK5F2x08rMk0=
+X-Google-Smtp-Source: ABdhPJwOwjbIFSLf33wNC1qg3hmqCYjGgWgzlE7pRdQ5hJBkhW1ErIvoqJ5+tGCycJFpeY5VW8WX47KR95WvdjjenV0=
+X-Received: by 2002:a9d:6acf:: with SMTP id m15mr16272261otq.260.1612290557815;
+ Tue, 02 Feb 2021 10:29:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+References: <20210122204038.3238-1-ggherdovich@suse.cz> <20210122204038.3238-2-ggherdovich@suse.cz>
+ <YA6YEK4/rjtPLdkG@hirez.programming.kicks-ass.net> <1611652167.11983.65.camel@suse.cz>
+ <20210126093140.GB3592@techsingularity.net> <YA/pYrvvjf8AxPEv@hirez.programming.kicks-ass.net>
+ <1611933781.15858.48.camel@suse.cz> <1612275425.27785.70.camel@suse.cz> <YBmYFnZuezAIlEhw@hirez.programming.kicks-ass.net>
+In-Reply-To: <YBmYFnZuezAIlEhw@hirez.programming.kicks-ass.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 2 Feb 2021 19:29:06 +0100
+Message-ID: <CAJZ5v0gnu1DjPKEDWAf_hHku61rBdHfEL0pon+t-NwZXPzSEOQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] x86,sched: On AMD EPYC set freq_max = max_boost in
+ schedutil invariant formula
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Jon Grimm <Jon.Grimm@amd.com>,
+        Nathan Fontenot <Nathan.Fontenot@amd.com>,
+        Yazen Ghannam <Yazen.Ghannam@amd.com>,
+        Thomas Lendacky <Thomas.Lendacky@amd.com>,
+        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
+        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Michael Larabel <Michael@phoronix.com>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Feb 2, 2021 at 7:24 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Tue, Feb 02, 2021 at 03:17:05PM +0100, Giovanni Gherdovich wrote:
+> > Hello Rafael,
+> >
+> > you haven't replied to this patch, which was written aiming at v5.11.
+>
+> I've tentatively queued this for x86/urgent, but ideally this goes
+> through a cpufreq tree. Rafael, Viresh?
 
-Replace the ACPI_DEBUG_PRINT() instance in button.c with an
-acpi_handle_debug() call, drop the _COMPONENT and ACPI_MODULE_NAME()
-definitions that are not used any more, drop the no longer needed
-ACPI_BUTTON_COMPONENT definition from the headers and update the
-documentation accordingly.
+I've missed it, sorry.
 
-While at it, replace the direct printk() invocations with pr_info()
-(that changes the excessive log level for some of them too) and drop
-the unneeded PREFIX sybmbol definition from battery.c.
+I can queue it up tomorrow if all goes well.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v1 -> v2: No changes
-
----
- Documentation/firmware-guide/acpi/debug.rst |    1 -
- drivers/acpi/button.c                       |   15 +++++----------
- drivers/acpi/sysfs.c                        |    1 -
- include/acpi/acpi_drivers.h                 |    1 -
- 4 files changed, 5 insertions(+), 13 deletions(-)
-
-Index: linux-pm/drivers/acpi/button.c
-===================================================================
---- linux-pm.orig/drivers/acpi/button.c
-+++ linux-pm/drivers/acpi/button.c
-@@ -21,8 +21,6 @@
- #include <linux/dmi.h>
- #include <acpi/button.h>
- 
--#define PREFIX "ACPI: "
--
- #define ACPI_BUTTON_CLASS		"button"
- #define ACPI_BUTTON_FILE_STATE		"state"
- #define ACPI_BUTTON_TYPE_UNKNOWN	0x00
-@@ -54,9 +52,6 @@ static const char * const lid_init_state
- 	[ACPI_BUTTON_LID_INIT_DISABLED]		= "disabled",
- };
- 
--#define _COMPONENT		ACPI_BUTTON_COMPONENT
--ACPI_MODULE_NAME("button");
--
- MODULE_AUTHOR("Paul Diefenbaugh");
- MODULE_DESCRIPTION("ACPI Button Driver");
- MODULE_LICENSE("GPL");
-@@ -285,7 +280,7 @@ static int acpi_button_add_fs(struct acp
- 		return 0;
- 
- 	if (acpi_button_dir || acpi_lid_dir) {
--		printk(KERN_ERR PREFIX "More than one Lid device found!\n");
-+		pr_info("More than one Lid device found!\n");
- 		return -EEXIST;
- 	}
- 
-@@ -434,8 +429,8 @@ static void acpi_button_notify(struct ac
- 		}
- 		break;
- 	default:
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--				  "Unsupported event [0x%x]\n", event));
-+		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
-+				  event);
- 		break;
- 	}
- }
-@@ -523,7 +518,7 @@ static int acpi_button_add(struct acpi_d
- 			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_LID);
- 		input->open = acpi_lid_input_open;
- 	} else {
--		printk(KERN_ERR PREFIX "Unsupported hid [%s]\n", hid);
-+		pr_info("Unsupported hid [%s]\n", hid);
- 		error = -ENODEV;
- 		goto err_free_input;
- 	}
-@@ -567,7 +562,7 @@ static int acpi_button_add(struct acpi_d
- 	}
- 
- 	device_init_wakeup(&device->dev, true);
--	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
-+	pr_info("%s [%s]\n", name, acpi_device_bid(device));
- 	return 0;
- 
-  err_remove_fs:
-Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
-===================================================================
---- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
-+++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
-@@ -52,7 +52,6 @@ shows the supported mask values, current
-     ACPI_CA_DISASSEMBLER            0x00000800
-     ACPI_COMPILER                   0x00001000
-     ACPI_TOOLS                      0x00002000
--    ACPI_BUTTON_COMPONENT           0x00080000
-     ACPI_SBS_COMPONENT              0x00100000
-     ACPI_FAN_COMPONENT              0x00200000
-     ACPI_PCI_COMPONENT              0x00400000
-Index: linux-pm/drivers/acpi/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sysfs.c
-+++ linux-pm/drivers/acpi/sysfs.c
-@@ -52,7 +52,6 @@ static const struct acpi_dlayer acpi_deb
- 	ACPI_DEBUG_INIT(ACPI_COMPILER),
- 	ACPI_DEBUG_INIT(ACPI_TOOLS),
- 
--	ACPI_DEBUG_INIT(ACPI_BUTTON_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_SBS_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_FAN_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_PCI_COMPONENT),
-Index: linux-pm/include/acpi/acpi_drivers.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_drivers.h
-+++ linux-pm/include/acpi/acpi_drivers.h
-@@ -15,7 +15,6 @@
-  * Please update drivers/acpi/debug.c and Documentation/firmware-guide/acpi/debug.rst
-  * if you add to this list.
-  */
--#define ACPI_BUTTON_COMPONENT		0x00080000
- #define ACPI_SBS_COMPONENT		0x00100000
- #define ACPI_FAN_COMPONENT		0x00200000
- #define ACPI_PCI_COMPONENT		0x00400000
-
-
-
+Cheers!
