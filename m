@@ -2,63 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70221C433DB
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 19:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20C1DC433E6
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 19:29:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 209B064E46
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 19:16:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D5BD764E49
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Feb 2021 19:29:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239584AbhBBTQT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Feb 2021 14:16:19 -0500
-Received: from mail-ot1-f43.google.com ([209.85.210.43]:45106 "EHLO
-        mail-ot1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234558AbhBBTBo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 14:01:44 -0500
-Received: by mail-ot1-f43.google.com with SMTP id n42so20873357ota.12;
-        Tue, 02 Feb 2021 11:01:28 -0800 (PST)
+        id S239797AbhBBT3O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Feb 2021 14:29:14 -0500
+Received: from mail-oi1-f179.google.com ([209.85.167.179]:38687 "EHLO
+        mail-oi1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239702AbhBBT1J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2021 14:27:09 -0500
+Received: by mail-oi1-f179.google.com with SMTP id h6so24015199oie.5;
+        Tue, 02 Feb 2021 11:26:53 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=7c/SpUzGMJvfhT9d/3bvqW/cNh7KiE+wRFD8OSEwEkY=;
-        b=jOWrSbW4ly0EtWDF/GJsQov47PlqxgTMOLzvpoqnNzb87uH8ZI6J0fLzlwA9AYWM+T
-         FNtjXsrquuOOj8pemksh3F83zYygDjws9n/W8zrma+u+JPFfx5QNXoRDgULUXR+6U8Hc
-         BF2UfEUb32AUsA64DYdfnbdZxVr7dxTJuxDfzWXZbOCwbsU/pKNPfUmQDFc2k5/fOfrH
-         iIP/q8+QGoqVi9kl6Uh+dYPdO/VlPv4EO5JNVC6fKnFTjA33kOzdvsBbpReUlHbPbVVY
-         tIrXXdtsS3vk5BZ9ajZT4Wc/k7RgJv16DxeCrVzhOE1VAVUTkP3Yrw1iz8jvJDmpiYAS
-         wRrw==
-X-Gm-Message-State: AOAM530npFrb9/6RqzQcT0nA4IFzQFJxVJ618VOM+2MyqFxA3Wcg4VrQ
-        IX+cpJXtLOdRAUR+dw6jyFdYAaIx4hP6Ld53SHg=
-X-Google-Smtp-Source: ABdhPJy5y3o42Ck2CXfv6vfBWEhbmbAhOSfOyQebNjSEq4QtbYxDypppaqQtG6BwjJKjOJWJ0GAHEhSlIHPu8L8yNZs=
-X-Received: by 2002:a05:6830:2313:: with SMTP id u19mr16961711ote.321.1612292460714;
- Tue, 02 Feb 2021 11:01:00 -0800 (PST)
+        bh=PL823AeoOnocWqbQIyVntk39u9KZJqQxqiL1WnA09Sg=;
+        b=QAcIWKCaEmMVCuLUqeV/dcFlxAshI6uttm0bKMUpf9B0ruSi3HFE8dmfCLqzo2xr2C
+         X5SlQvPiorTVGMVSlDmyXSTXsWD2PT+6N3apbZu44w5v4cGBFLhHhF0R75tD6xuSWcYn
+         iSoXx++JJy8rIELObkqtBcKuuFcEcfNrtyEv4VEm50nxcC1nPAWucQZCTVpkfv2iuGyJ
+         cw6dFTvna5qvA/7ZCaDHXg8s9IfMHfu/KJr3xZPmp87DY/h1M5hkBQMJixET+xCGmgkp
+         0gAY+ciewXpToYqTTI/Mo8hlR3cqefx7FYKzoVsRwWemI69Uhy/4ogiaiwELB45dC+rY
+         ZHOQ==
+X-Gm-Message-State: AOAM530BnhddBR44tKMjXfV8I5Pecf6Wf3RE8/XOCjNS/73yhwMlLHlt
+        jemlfuMn1F+ppAZ/LsmN72Ah5kZCGsEVQ6TNHfXiaZR8
+X-Google-Smtp-Source: ABdhPJw8RpA/f4W1jBVnbwWVEPVxyIJO/CICSQu1l8/b4aOfxPM+pRbMQdkYN/xOqpBAcmgFQ4+sQ3OmdkdTt3t0sHU=
+X-Received: by 2002:aca:fc84:: with SMTP id a126mr3912900oii.71.1612293988009;
+ Tue, 02 Feb 2021 11:26:28 -0800 (PST)
 MIME-Version: 1.0
 References: <20210122204038.3238-1-ggherdovich@suse.cz> <20210122204038.3238-2-ggherdovich@suse.cz>
- <YA6YEK4/rjtPLdkG@hirez.programming.kicks-ass.net> <1611652167.11983.65.camel@suse.cz>
- <20210126093140.GB3592@techsingularity.net> <YA/pYrvvjf8AxPEv@hirez.programming.kicks-ass.net>
- <1611933781.15858.48.camel@suse.cz> <1612275425.27785.70.camel@suse.cz>
- <YBmYFnZuezAIlEhw@hirez.programming.kicks-ass.net> <CAJZ5v0gnu1DjPKEDWAf_hHku61rBdHfEL0pon+t-NwZXPzSEOQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gnu1DjPKEDWAf_hHku61rBdHfEL0pon+t-NwZXPzSEOQ@mail.gmail.com>
+ <CAJZ5v0hQ_r3th5upo-X5fNBG0tUNbLbhQN-cqmDd1FGwhGx4dg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hQ_r3th5upo-X5fNBG0tUNbLbhQN-cqmDd1FGwhGx4dg@mail.gmail.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 2 Feb 2021 20:00:49 +0100
-Message-ID: <CAJZ5v0jkOvr6-UQmoQuFx7dPsoP_WJBqAyUsebBFTyzf2+7MCA@mail.gmail.com>
+Date:   Tue, 2 Feb 2021 20:26:16 +0100
+Message-ID: <CAJZ5v0jsF-_8GzQgqZH10bf0oUTmALiT1kVcjDqYgGPqx9iKZg@mail.gmail.com>
 Subject: Re: [PATCH v2 1/1] x86,sched: On AMD EPYC set freq_max = max_boost in
  schedutil invariant formula
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
+To:     Giovanni Gherdovich <ggherdovich@suse.cz>
+Cc:     Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
         "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Jon Grimm <Jon.Grimm@amd.com>,
         Nathan Fontenot <Nathan.Fontenot@amd.com>,
         Yazen Ghannam <Yazen.Ghannam@amd.com>,
         Thomas Lendacky <Thomas.Lendacky@amd.com>,
         Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
+        Mel Gorman <mgorman@techsingularity.net>,
         Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Dietmar Eggemann <dietmar.eggemann@arm.com>,
@@ -72,22 +69,195 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Feb 2, 2021 at 7:29 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Tue, Feb 2, 2021 at 7:59 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
 >
-> On Tue, Feb 2, 2021 at 7:24 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, Jan 22, 2021 at 9:47 PM Giovanni Gherdovich <ggherdovich@suse.cz> wrote:
 > >
-> > On Tue, Feb 02, 2021 at 03:17:05PM +0100, Giovanni Gherdovich wrote:
-> > > Hello Rafael,
-> > >
-> > > you haven't replied to this patch, which was written aiming at v5.11.
+>
+> [cut]
+>
 > >
-> > I've tentatively queued this for x86/urgent, but ideally this goes
-> > through a cpufreq tree. Rafael, Viresh?
+> > Fixes: 41ea667227ba ("x86, sched: Calculate frequency invariance for AMD systems")
+> > Fixes: 976df7e5730e ("x86, sched: Use midpoint of max_boost and max_P for frequency invariance on AMD EPYC")
+> > Reported-by: Michael Larabel <Michael@phoronix.com>
+> > Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+> > ---
+> >  drivers/cpufreq/acpi-cpufreq.c   | 64 +++++++++++++++++++++++++++++++-
+> >  drivers/cpufreq/cpufreq.c        |  3 ++
+> >  include/linux/cpufreq.h          |  5 +++
+> >  kernel/sched/cpufreq_schedutil.c |  8 +++-
+> >  4 files changed, 76 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> > index 1e4fbb002a31..2378bc1bf2c4 100644
+> > --- a/drivers/cpufreq/acpi-cpufreq.c
+> > +++ b/drivers/cpufreq/acpi-cpufreq.c
+> > @@ -27,6 +27,10 @@
+> >
+> >  #include <acpi/processor.h>
+> >
+> > +#ifdef CONFIG_ACPI_CPPC_LIB
 >
-> I've missed it, sorry.
+> Why is the #ifdef needed here?
 >
-> I can queue it up tomorrow if all goes well.
+> > +#include <acpi/cppc_acpi.h>
+> > +#endif
+> > +
+> >  #include <asm/msr.h>
+> >  #include <asm/processor.h>
+> >  #include <asm/cpufeature.h>
+> > @@ -628,11 +632,57 @@ static int acpi_cpufreq_blacklist(struct cpuinfo_x86 *c)
+> >  }
+> >  #endif
+> >
+> > +#ifdef CONFIG_ACPI_CPPC_LIB
+> > +static bool amd_max_boost(unsigned int max_freq,
+> > +                         unsigned int *max_boost)
+> > +{
+> > +       struct cppc_perf_caps perf_caps;
+> > +       u64 highest_perf, nominal_perf, perf_ratio;
+> > +       int ret;
+> > +
+> > +       ret = cppc_get_perf_caps(0, &perf_caps);
+> > +       if (ret) {
+> > +               pr_debug("Could not retrieve perf counters (%d)\n", ret);
+> > +               return false;
+> > +       }
+> > +
+> > +       highest_perf = perf_caps.highest_perf;
+> > +       nominal_perf = perf_caps.nominal_perf;
+> > +
+> > +       if (!highest_perf || !nominal_perf) {
+> > +               pr_debug("Could not retrieve highest or nominal performance\n");
+> > +               return false;
+> > +       }
+> > +
+> > +       perf_ratio = div_u64(highest_perf * SCHED_CAPACITY_SCALE, nominal_perf);
+> > +       if (perf_ratio <= SCHED_CAPACITY_SCALE) {
+> > +               pr_debug("Either perf_ratio is 0, or nominal >= highest performance\n");
+> > +               return false;
+> > +       }
+> > +
+> > +       *max_boost = max_freq * perf_ratio >> SCHED_CAPACITY_SHIFT;
+> > +       if (!*max_boost) {
+> > +               pr_debug("max_boost seems to be zero\n");
+> > +               return false;
+> > +       }
+> > +
+> > +       return true;
+> > +}
+> > +#else
+> > +static bool amd_max_boost(unsigned int max_freq,
+> > +                         unsigned int *max_boost)
+> > +{
+> > +       return false;
+> > +}
+> > +#endif
+> > +
+> >  static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >  {
+> >         unsigned int i;
+> >         unsigned int valid_states = 0;
+> >         unsigned int cpu = policy->cpu;
+> > +       unsigned int freq, max_freq = 0;
+> > +       unsigned int max_boost;
+> >         struct acpi_cpufreq_data *data;
+> >         unsigned int result = 0;
+> >         struct cpuinfo_x86 *c = &cpu_data(policy->cpu);
+> > @@ -779,15 +829,25 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >                     freq_table[valid_states-1].frequency / 1000)
+> >                         continue;
+> >
+> > +               freq = perf->states[i].core_frequency * 1000;
+> >                 freq_table[valid_states].driver_data = i;
+> > -               freq_table[valid_states].frequency =
+> > -                   perf->states[i].core_frequency * 1000;
+> > +               freq_table[valid_states].frequency = freq;
+> > +
+> > +               if (freq > max_freq)
+> > +                       max_freq = freq;
+> > +
+> >                 valid_states++;
+> >         }
+> >         freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
+> >         policy->freq_table = freq_table;
+> >         perf->state = 0;
+> >
+> > +       if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+> > +           amd_max_boost(max_freq, &max_boost)) {
+> > +               policy->cpuinfo.max_boost = max_boost;
+>
+> Why not to set max_freq to max_boost instead?
 
-So actually I'm not sure about it.
+I mean, would setting the frequency in the last table entry to max_boost work?
 
-Looks overly complicated to me.
+Alternatively, one more (artificial) entry with the frequency equal to
+max_boost could be added.
+
+> This value is set once at the init time anyway and schedutil would use
+> max_boost instead of max_freq anyway.
+>
+> Also notice that the static branch is global and the max_boost value
+> for different CPUs may be different, at least in theory.
+>
+> > +               static_branch_enable(&cpufreq_amd_max_boost);
+> > +       }
+> > +
+> >         switch (perf->control_register.space_id) {
+> >         case ACPI_ADR_SPACE_SYSTEM_IO:
+> >                 /*
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index d0a3525ce27f..b96677f6b57e 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -2721,6 +2721,9 @@ int cpufreq_boost_enabled(void)
+> >  }
+> >  EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+> >
+> > +DEFINE_STATIC_KEY_FALSE(cpufreq_amd_max_boost);
+> > +EXPORT_SYMBOL_GPL(cpufreq_amd_max_boost);
+> > +
+> >  /*********************************************************************
+> >   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
+> >   *********************************************************************/
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index 9c8b7437b6cd..341cac76d254 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -40,9 +40,14 @@ enum cpufreq_table_sorting {
+> >         CPUFREQ_TABLE_SORTED_DESCENDING
+> >  };
+> >
+> > +DECLARE_STATIC_KEY_FALSE(cpufreq_amd_max_boost);
+> > +
+> > +#define cpufreq_driver_has_max_boost() static_branch_unlikely(&cpufreq_amd_max_boost)
+> > +
+> >  struct cpufreq_cpuinfo {
+> >         unsigned int            max_freq;
+> >         unsigned int            min_freq;
+> > +       unsigned int            max_boost;
+> >
+> >         /* in 10^(-9) s = nanoseconds */
+> >         unsigned int            transition_latency;
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 6931f0cdeb80..541f3db3f576 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -159,8 +159,12 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+> >                                   unsigned long util, unsigned long max)
+> >  {
+> >         struct cpufreq_policy *policy = sg_policy->policy;
+> > -       unsigned int freq = arch_scale_freq_invariant() ?
+> > -                               policy->cpuinfo.max_freq : policy->cur;
+> > +       unsigned int freq, max_freq;
+> > +
+> > +       max_freq = cpufreq_driver_has_max_boost() ?
+> > +                       policy->cpuinfo.max_boost : policy->cpuinfo.max_freq;
+> > +
+> > +       freq = arch_scale_freq_invariant() ? max_freq : policy->cur;
+> >
+> >         freq = map_util_freq(util, freq, max);
+> >
+> > --
+> > 2.26.2
+> >
