@@ -2,93 +2,123 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0B8EC433E6
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 09:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEF17C433DB
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 10:22:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47CFB64E2A
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 09:57:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F39064F76
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 10:22:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233645AbhBCJ5H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Feb 2021 04:57:07 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40616 "EHLO mx2.suse.de"
+        id S233555AbhBCKWl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Feb 2021 05:22:41 -0500
+Received: from foss.arm.com ([217.140.110.172]:37324 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233614AbhBCJ47 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Feb 2021 04:56:59 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 65A0BAF4C;
-        Wed,  3 Feb 2021 09:56:17 +0000 (UTC)
-Message-ID: <1612346175.3640.32.camel@suse.cz>
-Subject: Re: [PATCH v2 1/1] x86,sched: On AMD EPYC set freq_max = max_boost
- in schedutil invariant formula
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Peter Zijlstra <peterz@infradead.org>,
-        Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jon Grimm <Jon.Grimm@amd.com>,
-        Nathan Fontenot <Nathan.Fontenot@amd.com>,
-        Yazen Ghannam <Yazen.Ghannam@amd.com>,
-        Thomas Lendacky <Thomas.Lendacky@amd.com>,
-        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Michael Larabel <Michael@phoronix.com>,
-        the arch/x86 maintainers <x86@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Date:   Wed, 03 Feb 2021 10:56:15 +0100
-In-Reply-To: <CAJZ5v0icG4V5o8p1fAQY1Ne2vCe0CBq2YfSajSxkCE3VbuY_Ow@mail.gmail.com>
-References: <20210122204038.3238-1-ggherdovich@suse.cz>
-         <20210122204038.3238-2-ggherdovich@suse.cz>
-         <YA6XmO2nuivdpE8M@hirez.programming.kicks-ass.net>
-         <1611653310.11983.66.camel@suse.cz>
-         <CAJZ5v0jbw2X_Wk6We-uYOh9rMCrTTSSb32NFcYaFrtK+bMXMJQ@mail.gmail.com>
-         <CAJZ5v0icG4V5o8p1fAQY1Ne2vCe0CBq2YfSajSxkCE3VbuY_Ow@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
+        id S233405AbhBCKWl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Feb 2021 05:22:41 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EEE7BD6E;
+        Wed,  3 Feb 2021 02:21:49 -0800 (PST)
+Received: from [10.57.13.36] (unknown [10.57.13.36])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7A47C3F719;
+        Wed,  3 Feb 2021 02:21:47 -0800 (PST)
+Subject: Re: [RFC][PATCH 1/3] PM /devfreq: add user frequency limits into
+ devfreq struct
+To:     Chanwoo Choi <cw00.choi@samsung.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        vireshk@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
+        Dietmar.Eggemann@arm.com, amitk@kernel.org, rui.zhang@intel.com,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+References: <20210126104001.20361-1-lukasz.luba@arm.com>
+ <CGME20210126104217epcas1p349c717ccf0ea4f964153040b48c72352@epcas1p3.samsung.com>
+ <20210126104001.20361-2-lukasz.luba@arm.com>
+ <ea409e2f-f3ca-437f-d787-7ba793a2c226@samsung.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <5bd13e13-202f-d059-da29-f82806c33a38@arm.com>
+Date:   Wed, 3 Feb 2021 10:21:45 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <ea409e2f-f3ca-437f-d787-7ba793a2c226@samsung.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2021-02-02 at 20:11 +0100, Rafael J. Wysocki wrote:
-> On Tue, Feb 2, 2021 at 7:45 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > 
-> > On Tue, Jan 26, 2021 at 5:19 PM Giovanni Gherdovich <ggherdovich@suse.cz> wrote:
-> > > 
-> > >
-> > > cpufreq core asks the driver what's the f_max. What's the answer?
-> > > 
-> > > intel_pstate says: 1C
-> > 
-> > Yes, unless turbo is disabled, in which case it is P0.
+Hi Chanwoo,
+
+Thank you for looking at this.
+
+On 2/3/21 10:11 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
 > 
-> BTW, and that actually is quite important, the max_freq reported by
-> intel_pstate doesn't matter for schedutil after the new ->adjust_perf
-> callback has been added, because that doesn't even use the frequency.
+> When accessing the max_freq and min_freq at devfreq-cooling.c,
+> even if can access 'user_max_freq' and 'lock' by using the 'devfreq' instance,
+> I think that the direct access of variables (lock/user_max_freq/user_min_freq)
+> of struct devfreq are not good.
 > 
-> So, as a long-term remedy, it may just be better to implement
-> ->adjust_perf in acpi_cpufreq().
+> Instead, how about using the 'DEVFREQ_TRANSITION_NOTIFIER'
+> notification with following changes of 'struct devfreq_freq'?
 
-Thanks for pointing this out.
+I like the idea with devfreq notification. I will have to go through the
+code to check that possibility.
 
-I agree that in the long term adding ->adjust_perf to acpi_cpufreq is
-the best solution.
+> Also, need to add codes into devfreq_set_target() for initializing
+> 'new_max_freq' and 'new_min_freq' before sending the DEVFREQ_POSTCHANGE
+> notification.
+> 
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index 147a229056d2..d5726592d362 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -207,6 +207,8 @@ struct devfreq {
+>   struct devfreq_freqs {
+>          unsigned long old;
+>          unsigned long new;
+> +       unsigned long new_max_freq;
+> +       unsigned long new_min_freq;
+>   };
+> 
+> 
+> And I think that new 'user_min_freq'/'user_max_freq' are not necessary.
+> You can get the current max_freq/min_freq by using the following steps:
+> 
+> 	get_freq_range(devfreq, &min_freq, &max_freq);
+> 	dev_pm_opp_find_freq_floor(pdev, &min_freq);
+> 	dev_pm_opp_find_freq_floor(pdev, &max_freq);
+> 
+> So that you can get the 'max_freq/min_freq' and then
+> initialize the 'freqs.new_max_freq and freqs.new_min_freq'
+> with them as following:
+> 
+> in devfreq_set_target()
+> 	get_freq_range(devfreq, &min_freq, &max_freq);
+> 	dev_pm_opp_find_freq_floor(pdev, &min_freq);
+> 	dev_pm_opp_find_freq_floor(pdev, &max_freq);
+> 	freqs.new_max_freq = min_freq;
+> 	freqs.new_max_freq = max_freq;
+> 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
 
-Yet for this submission, considering it's late in the 5.11 cycle,
-the patch I propose is a reasonable candidate: the footprint is small and
-it's gone through a fair amount of testing.
+I will plumb it in and check that option. My concern is that function
+get_freq_range() would give me the max_freq value from PM QoS, which
+might be my thermal limit - lower that user_max_freq. Then I still
+need
 
+I've been playing with PM QoS notifications because I thought it would
+be possible to be notified in thermal for all new set values - even from
+devfreq sysfs user max_freq write, which has value higher that the
+current limit set by thermal governor. Unfortunately PM QoS doesn't
+send that information by design. PM QoS also by desing won't allow
+me to check first two limits in the plist - which would be thermal
+and user sysfs max_freq.
 
-Thanks,
-Giovanni
+I will experiment with this notifications and share the results.
+That you for your comments.
+
+Regards,
+Lukasz
