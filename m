@@ -2,226 +2,166 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B199BC433E6
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 07:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E43E1C433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 08:40:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 670F364F59
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 07:34:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9342A64E46
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 08:40:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231929AbhBCHdu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Feb 2021 02:33:50 -0500
-Received: from mga17.intel.com ([192.55.52.151]:51375 "EHLO mga17.intel.com"
+        id S232491AbhBCIkf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Feb 2021 03:40:35 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48040 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231560AbhBCHdt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Feb 2021 02:33:49 -0500
-IronPort-SDR: eSnG9c4sE5fJjUvuJlB0t99hEfhgV1loxXFDQalgztxWJa11+hXeGId2oHYtxSV0cxlZlQQSFX
- e0wnec8s8f4A==
-X-IronPort-AV: E=McAfee;i="6000,8403,9883"; a="160760594"
-X-IronPort-AV: E=Sophos;i="5.79,397,1602572400"; 
-   d="scan'208";a="160760594"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2021 23:33:06 -0800
-IronPort-SDR: myPpU4KpGAAi2oJxA6jCNviYva/KF4ik+5VbI/NWOTj1BzC0PsZDI+2XwJX4rqqcAhOjJCab6U
- xMV1UoCYrCpw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,397,1602572400"; 
-   d="scan'208";a="372281236"
-Received: from lkp-server02.sh.intel.com (HELO 8b832f01bb9c) ([10.239.97.151])
-  by orsmga002.jf.intel.com with ESMTP; 02 Feb 2021 23:33:03 -0800
-Received: from kbuild by 8b832f01bb9c with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1l7Cer-00009K-30; Wed, 03 Feb 2021 07:33:01 +0000
-Date:   Wed, 03 Feb 2021 15:31:58 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- c42187278fc107ad17fdaa2def70c451bcfdb6be
-Message-ID: <601a516e.9kydFKsx8s1Ahqhn%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        id S232978AbhBCIkH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Feb 2021 03:40:07 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 6B919AC9B;
+        Wed,  3 Feb 2021 08:39:25 +0000 (UTC)
+Message-ID: <1612341564.3640.14.camel@suse.cz>
+Subject: Re: [PATCH v2 1/1] x86,sched: On AMD EPYC set freq_max = max_boost
+ in schedutil invariant formula
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Jon Grimm <Jon.Grimm@amd.com>,
+        Nathan Fontenot <Nathan.Fontenot@amd.com>,
+        Yazen Ghannam <Yazen.Ghannam@amd.com>,
+        Thomas Lendacky <Thomas.Lendacky@amd.com>,
+        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Michael Larabel <Michael@phoronix.com>,
+        the arch/x86 maintainers <x86@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Date:   Wed, 03 Feb 2021 09:39:24 +0100
+In-Reply-To: <CAJZ5v0jsF-_8GzQgqZH10bf0oUTmALiT1kVcjDqYgGPqx9iKZg@mail.gmail.com>
+References: <20210122204038.3238-1-ggherdovich@suse.cz>
+         <20210122204038.3238-2-ggherdovich@suse.cz>
+         <CAJZ5v0hQ_r3th5upo-X5fNBG0tUNbLbhQN-cqmDd1FGwhGx4dg@mail.gmail.com>
+         <CAJZ5v0jsF-_8GzQgqZH10bf0oUTmALiT1kVcjDqYgGPqx9iKZg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: c42187278fc107ad17fdaa2def70c451bcfdb6be  Merge branch 'pm-domains' into linux-next
+Hello,
 
-elapsed time: 726m
+both Rafael and Viresh make a similar remark: why adding a new "max_boost"
+variable, since "max_freq" is already available and could be used instead.
 
-configs tested: 155
-configs skipped: 3
+Replying here to both.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+On Tue, 2021-02-02 at 20:26 +0100, Rafael J. Wysocki wrote:
+> On Tue, Feb 2, 2021 at 7:59 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > 
+> > On Fri, Jan 22, 2021 at 9:47 PM Giovanni Gherdovich <ggherdovich@suse.cz> wrote:
+> > 
+> > [cut]
+> > > @@ -779,15 +829,25 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> > >                     freq_table[valid_states-1].frequency / 1000)
+> > >                         continue;
+> > > 
+> > > +               freq = perf->states[i].core_frequency * 1000;
+> > >                 freq_table[valid_states].driver_data = i;
+> > > -               freq_table[valid_states].frequency =
+> > > -                   perf->states[i].core_frequency * 1000;
+> > > +               freq_table[valid_states].frequency = freq;
+> > > +
+> > > +               if (freq > max_freq)
+> > > +                       max_freq = freq;
+> > > +
+> > >                 valid_states++;
+> > >         }
+> > >         freq_table[valid_states].frequency = CPUFREQ_TABLE_END;
+> > >         policy->freq_table = freq_table;
+> > >         perf->state = 0;
+> > > 
+> > > +       if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+> > > +           amd_max_boost(max_freq, &max_boost)) {
+> > > +               policy->cpuinfo.max_boost = max_boost;
+> > 
+> > Why not to set max_freq to max_boost instead?
+> 
+> I mean, would setting the frequency in the last table entry to max_boost work?
+> 
+> Alternatively, one more (artificial) entry with the frequency equal to
+> max_boost could be added.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                       omap2plus_defconfig
-h8300                     edosk2674_defconfig
-arm                          ep93xx_defconfig
-h8300                               defconfig
-arm                           viper_defconfig
-c6x                        evmc6457_defconfig
-powerpc                      mgcoge_defconfig
-mips                        qi_lb60_defconfig
-mips                        nlm_xlr_defconfig
-powerpc                     kilauea_defconfig
-arm                         socfpga_defconfig
-mips                      malta_kvm_defconfig
-powerpc                    klondike_defconfig
-powerpc                     ep8248e_defconfig
-parisc                generic-32bit_defconfig
-riscv                               defconfig
-powerpc                     mpc5200_defconfig
-arm                             pxa_defconfig
-powerpc                      acadia_defconfig
-m68k                        m5272c3_defconfig
-arm                        neponset_defconfig
-mips                     loongson1c_defconfig
-mips                          malta_defconfig
-sh                        apsh4ad0a_defconfig
-alpha                            allyesconfig
-powerpc                    ge_imp3a_defconfig
-xtensa                    xip_kc705_defconfig
-m68k                        mvme16x_defconfig
-arm                          collie_defconfig
-arm                         cm_x300_defconfig
-sh                           se7206_defconfig
-powerpc                     pq2fads_defconfig
-mips                             allyesconfig
-arm                      integrator_defconfig
-mips                        bcm63xx_defconfig
-sh                          landisk_defconfig
-m68k                            q40_defconfig
-arc                    vdk_hs38_smp_defconfig
-arc                           tb10x_defconfig
-c6x                        evmc6474_defconfig
-powerpc                    adder875_defconfig
-powerpc                 mpc8313_rdb_defconfig
-mips                           mtx1_defconfig
-riscv                            allyesconfig
-arm                        keystone_defconfig
-powerpc                 mpc85xx_cds_defconfig
-m68k                       m5208evb_defconfig
-powerpc                        warp_defconfig
-xtensa                  audio_kc705_defconfig
-sh                     magicpanelr2_defconfig
-sh                         ap325rxa_defconfig
-arc                         haps_hs_defconfig
-powerpc                      katmai_defconfig
-arm                           h5000_defconfig
-arm                        multi_v7_defconfig
-powerpc                     tqm8560_defconfig
-nios2                         3c120_defconfig
-arm                            pleb_defconfig
-sh                           se7343_defconfig
-arm                          badge4_defconfig
-sh                             espt_defconfig
-arm                           stm32_defconfig
-powerpc                     tqm8555_defconfig
-c6x                        evmc6472_defconfig
-c6x                              alldefconfig
-microblaze                      mmu_defconfig
-m68k                          hp300_defconfig
-powerpc                      pasemi_defconfig
-m68k                          amiga_defconfig
-arm                          pcm027_defconfig
-sh                   secureedge5410_defconfig
-um                             i386_defconfig
-powerpc                  storcenter_defconfig
-mips                    maltaup_xpa_defconfig
-mips                       lemote2f_defconfig
-mips                      bmips_stb_defconfig
-powerpc                      cm5200_defconfig
-powerpc                     skiroot_defconfig
-microblaze                          defconfig
-powerpc                          allyesconfig
-powerpc                 mpc832x_rdb_defconfig
-powerpc                        fsp2_defconfig
-powerpc                      ppc40x_defconfig
-sh                            migor_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allmodconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210202
-i386                 randconfig-a005-20210202
-i386                 randconfig-a003-20210202
-i386                 randconfig-a006-20210202
-i386                 randconfig-a002-20210202
-i386                 randconfig-a004-20210202
-x86_64               randconfig-a013-20210202
-x86_64               randconfig-a014-20210202
-x86_64               randconfig-a015-20210202
-x86_64               randconfig-a016-20210202
-x86_64               randconfig-a011-20210202
-x86_64               randconfig-a012-20210202
-i386                 randconfig-a013-20210202
-i386                 randconfig-a016-20210202
-i386                 randconfig-a014-20210202
-i386                 randconfig-a012-20210202
-i386                 randconfig-a015-20210202
-i386                 randconfig-a011-20210202
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+On Wed, 2021-02-03 at 11:34 +0530, Viresh Kumar wrote:
+> [cut]
+> 
+> On 22-01-21, 21:40, Giovanni Gherdovich wrote:
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 6931f0cdeb80..541f3db3f576 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -159,8 +159,12 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+> >  				  unsigned long util, unsigned long max)
+> >  {
+> >  	struct cpufreq_policy *policy = sg_policy->policy;
+> > -	unsigned int freq = arch_scale_freq_invariant() ?
+> > -				policy->cpuinfo.max_freq : policy->cur;
+> > +	unsigned int freq, max_freq;
+> > +
+> > +	max_freq = cpufreq_driver_has_max_boost() ?
+> > +			policy->cpuinfo.max_boost : policy->cpuinfo.max_freq;
+> 
+> Also, can't we update max_freq itself from the cpufreq driver? What
+> troubles will it cost ?
 
-clang tested configs:
-x86_64               randconfig-a006-20210202
-x86_64               randconfig-a001-20210202
-x86_64               randconfig-a005-20210202
-x86_64               randconfig-a002-20210202
-x86_64               randconfig-a004-20210202
-x86_64               randconfig-a003-20210202
+I could add the max boost frequency to the frequency table (and
+policy->cpuinfo.max_freq would follow), yes, but that would trigger the
+following warning from acpi-cpufreq.c:
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+static void acpi_cpufreq_cpu_ready(struct cpufreq_policy *policy)
+{
+        struct acpi_processor_performance *perf = per_cpu_ptr(acpi_perf_data,
+                                                              policy->cpu);
+
+        if (perf->states[0].core_frequency * 1000 != policy->cpuinfo.max_freq)
+                pr_warn(FW_WARN "P-state 0 is not max freq\n");
+}
+
+so I thought that to stay out of troubles I'd supply a different variable,
+max_boost, to be used only in the schedutil formula. After schedutil
+figures out a desired next_freq then the usual comparison with the
+firmware-supplied frequency table could take place.
+
+Altering the frequency table seemed more invasive because once a freq value is
+in there, it's going to be actually requested by the driver to the platform. I
+only want my max_boost to stretch the range of schedutil's next_freq.
+
+On Tue, 2021-02-02 at 19:59 +0100, Rafael J. Wysocki wrote:
+> 
+> [cut]
+> Also notice that the static branch is global and the max_boost value
+> for different CPUs may be different, at least in theory.
+
+In theory yes, but I'm guarding the code with two conditions:
+
+* vendor is X86_VENDOR_AMD
+* cppc_get_perf_caps() returns success
+
+this identifies AMD EPYC cpus with model 7xx2 and later, where max_boost is
+the same on all cores. I may have added synchronization so that only one cpu
+sets the value, but I didn't in the interest of simplicity for an -rc patch
+(I'd have to consider hotplug, the maxcpus= command line param, ecc).
+
+
+Giovanni
