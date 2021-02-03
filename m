@@ -2,184 +2,226 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CD14C433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 06:56:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B199BC433E6
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 07:34:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CF1CF64F61
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 06:56:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 670F364F59
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 07:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231248AbhBCG4f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Feb 2021 01:56:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42208 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230193AbhBCG4f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2021 01:56:35 -0500
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1866C061573
-        for <linux-pm@vger.kernel.org>; Tue,  2 Feb 2021 22:55:54 -0800 (PST)
-Received: by mail-ej1-x62b.google.com with SMTP id f14so9644410ejc.8
-        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2021 22:55:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=J+1btNhoC7XQ9M1i+p2yxgqSKnNhpctzXaXRCEoe3UQ=;
-        b=lzBDi07t5XsaZVnawZuxnwablA+/iXeTR4X4AJqHTCWbOOgVHgnGhs3awZHKD0qikm
-         brpHynUs0Ywv3d4s3MvvELuH58UGsI00KVbx3L3qMIFEOVCmTssevX26qQavu+gyasjH
-         /GtGMMmlo22DzQo3awoCiSECb+YTvzkCIP/foUDGvP3iE0ykfaML5v3s4Qu8HS39yiwZ
-         HALmPaUiuJz/9ZYlgz4dLlblqHVbh2wad+dOkelrGDJYHu3T5TEQuL+fuoj0G8Z7zqvv
-         ZQYbrhayE1e/qbyWBrp2/29m6wF//4eBcEaPilRM5YmB+cBCpion2Oci0taf3/25BfCv
-         nQEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=J+1btNhoC7XQ9M1i+p2yxgqSKnNhpctzXaXRCEoe3UQ=;
-        b=hZ5oHmbnj8SiLDUORRrlyH3Or7cWYOTK4WIIxelwgn1tmjU8WVJpRCrH70dDI0AEcD
-         s0L7vRMNRfVhB55bdMu0qnDhv94a/G9wM/ao40JNKTAsSJctBR6ljTUgduB2t28LQMwb
-         7vK2UWrtYtqVQWxwARp7kqs6Gs8vtcUJE7mxCTVdOofwf7GLqh+G8/mtRgvhlbuNNkWY
-         3Ej4nV0P8yvxnLNfzkJPgU9s6hF00bXfmuoND0F7GgvFfTWQSVi9bGohBYSrDdp8+q73
-         dBoNUBU6cFeM41Y9Envi60UfrMnQFHVME8d0zWd9r3KQBLm0T8ucUZxZA169A9c/OX/R
-         zsfQ==
-X-Gm-Message-State: AOAM532zhX41JcyQom3DR955xFHfmyf8bC5AaqkHYhvx3QXxFsnYkT63
-        74tl8bMgjjdklLc6m713xRUVqXeYJmi4+DvjWR5HQnymiA==
-X-Google-Smtp-Source: ABdhPJzMgv+swzpijFBwr2uTz3jx9p0w/Y9C6eumMY1aOk8McbfjbMOqrJ9KDw7h5DYwP3kXg2K4Zvbil/OfW73WANQ=
-X-Received: by 2002:a17:906:c455:: with SMTP id ck21mr1824976ejb.354.1612335353186;
- Tue, 02 Feb 2021 22:55:53 -0800 (PST)
+        id S231929AbhBCHdu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Feb 2021 02:33:50 -0500
+Received: from mga17.intel.com ([192.55.52.151]:51375 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231560AbhBCHdt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Feb 2021 02:33:49 -0500
+IronPort-SDR: eSnG9c4sE5fJjUvuJlB0t99hEfhgV1loxXFDQalgztxWJa11+hXeGId2oHYtxSV0cxlZlQQSFX
+ e0wnec8s8f4A==
+X-IronPort-AV: E=McAfee;i="6000,8403,9883"; a="160760594"
+X-IronPort-AV: E=Sophos;i="5.79,397,1602572400"; 
+   d="scan'208";a="160760594"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2021 23:33:06 -0800
+IronPort-SDR: myPpU4KpGAAi2oJxA6jCNviYva/KF4ik+5VbI/NWOTj1BzC0PsZDI+2XwJX4rqqcAhOjJCab6U
+ xMV1UoCYrCpw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.79,397,1602572400"; 
+   d="scan'208";a="372281236"
+Received: from lkp-server02.sh.intel.com (HELO 8b832f01bb9c) ([10.239.97.151])
+  by orsmga002.jf.intel.com with ESMTP; 02 Feb 2021 23:33:03 -0800
+Received: from kbuild by 8b832f01bb9c with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1l7Cer-00009K-30; Wed, 03 Feb 2021 07:33:01 +0000
+Date:   Wed, 03 Feb 2021 15:31:58 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ c42187278fc107ad17fdaa2def70c451bcfdb6be
+Message-ID: <601a516e.9kydFKsx8s1Ahqhn%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-References: <20201207222829.13676-1-ma.czerski@gmail.com> <20210116150413.gqsodziwjv6g6bvd@earth.universe>
-In-Reply-To: <20210116150413.gqsodziwjv6g6bvd@earth.universe>
-From:   Marek Czerski <ma.czerski@gmail.com>
-Date:   Wed, 3 Feb 2021 07:55:42 +0100
-Message-ID: <CAOOgLvq4_qSy3KAo9bjH4j5qdTL5nweRJ+KtdO--LZ0_LvQCKg@mail.gmail.com>
-Subject: Re: [PATCH] power: reset: ltc2952: make trigger delay configurable
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: c42187278fc107ad17fdaa2def70c451bcfdb6be  Merge branch 'pm-domains' into linux-next
 
-Thanks for the review. I will send fixed patch as v2 to the correct
-list of recipients afer I test it on my hardware this week.
+elapsed time: 726m
 
-Best regards,
-Marek Czerski.
+configs tested: 155
+configs skipped: 3
 
-sob., 16 sty 2021 o 16:04 Sebastian Reichel <sre@kernel.org> napisa=C5=82(a=
-):
->
-> Hi,
->
-> On Mon, Dec 07, 2020 at 11:28:29PM +0100, Marek Czerski wrote:
-> > Make trigger delay configurable through device tree with
-> > trigger-delay-ms property.
-> >
-> > Trigger delay is the time to wait before starting shutdown
-> > sequence after trigger line assertion.
-> > Trigger delay must take into account the OFFT time configured
-> > with the capacitor connected to OFFT pin of the LTC2952 chip.
-> > Basically, the higher the capacitance connected to OFFT pin,
-> > the larger trigger delay must be.
-> >
-> > Signed-off-by: Marek Czerski <ma.czerski@gmail.com>
-> > ---
-> >  .../devicetree/bindings/power/reset/ltc2952-poweroff.txt  | 4 ++++
-> >  drivers/power/reset/ltc2952-poweroff.c                    | 8 ++++++++
-> >  2 files changed, 12 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/reset/ltc2952-powe=
-roff.txt b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.t=
-xt
-> > index cd2d7f58a..881f15a78 100644
-> > --- a/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.tx=
-t
-> > +++ b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.tx=
-t
->
-> Please additionally Cc DT binding maintainer:
->
-> OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
-> M:      Rob Herring <robh+dt@kernel.org>
-> L:      devicetree@vger.kernel.org
->
-> > @@ -17,6 +17,9 @@ Optional properties:
-> >                       chip's trigger line. If this property is not set,=
- the
-> >                       trigger function is ignored and the chip is kept =
-alive
-> >                       until an explicit kill signal is received
-> > +- trigger-delay-ms   The number of milliseconds to wait after trigger =
-line
-> > +                     assertion before executing shut down procedure.
-> > +                     The default is 2500ms.
-> >
-> >  Example:
-> >
-> > @@ -24,6 +27,7 @@ ltc2952 {
-> >       compatible =3D "lltc,ltc2952";
-> >
-> >       trigger-gpios =3D <&gpio0 1 GPIO_ACTIVE_LOW>;
-> > +        trigger-delay-ms =3D <2000>;
->
-> please use tab instead of spaces
->
-> >       watchdog-gpios =3D <&gpio1 2 GPIO_ACTIVE_HIGH>;
-> >       kill-gpios =3D <&gpio0 2 GPIO_ACTIVE_LOW>;
-> >  };
-> > diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/res=
-et/ltc2952-poweroff.c
-> > index 318927938..243811541 100644
-> > --- a/drivers/power/reset/ltc2952-poweroff.c
-> > +++ b/drivers/power/reset/ltc2952-poweroff.c
-> > @@ -55,6 +55,7 @@
-> >  #include <linux/mod_devicetable.h>
-> >  #include <linux/gpio/consumer.h>
-> >  #include <linux/reboot.h>
-> > +#include <linux/of.h>
-> >
-> >  struct ltc2952_poweroff {
-> >       struct hrtimer timer_trigger;
-> > @@ -172,10 +173,17 @@ static void ltc2952_poweroff_default(struct ltc29=
-52_poweroff *data)
-> >  static int ltc2952_poweroff_init(struct platform_device *pdev)
-> >  {
-> >       int ret;
-> > +     u32 trigger_delay_ms;
-> >       struct ltc2952_poweroff *data =3D platform_get_drvdata(pdev);
-> >
-> >       ltc2952_poweroff_default(data);
-> >
-> > +     if (!of_property_read_u32(pdev->dev.of_node, "trigger-delay-ms",
-> > +                               &trigger_delay_ms)) {
->
-> please use device_property_read_u32() from <linux/property.h>.
->
-> > +             data->trigger_delay =3D ktime_set(trigger_delay_ms / MSEC=
-_PER_SEC,
-> > +                     (trigger_delay_ms % MSEC_PER_SEC) * NSEC_PER_MSEC=
-);
-> > +     }
-> > +
-> >       data->gpio_watchdog =3D devm_gpiod_get(&pdev->dev, "watchdog",
-> >                                            GPIOD_OUT_LOW);
-> >       if (IS_ERR(data->gpio_watchdog)) {
->
-> Thanks and sorry for delayed response,
->
-> -- Sebastian
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                       omap2plus_defconfig
+h8300                     edosk2674_defconfig
+arm                          ep93xx_defconfig
+h8300                               defconfig
+arm                           viper_defconfig
+c6x                        evmc6457_defconfig
+powerpc                      mgcoge_defconfig
+mips                        qi_lb60_defconfig
+mips                        nlm_xlr_defconfig
+powerpc                     kilauea_defconfig
+arm                         socfpga_defconfig
+mips                      malta_kvm_defconfig
+powerpc                    klondike_defconfig
+powerpc                     ep8248e_defconfig
+parisc                generic-32bit_defconfig
+riscv                               defconfig
+powerpc                     mpc5200_defconfig
+arm                             pxa_defconfig
+powerpc                      acadia_defconfig
+m68k                        m5272c3_defconfig
+arm                        neponset_defconfig
+mips                     loongson1c_defconfig
+mips                          malta_defconfig
+sh                        apsh4ad0a_defconfig
+alpha                            allyesconfig
+powerpc                    ge_imp3a_defconfig
+xtensa                    xip_kc705_defconfig
+m68k                        mvme16x_defconfig
+arm                          collie_defconfig
+arm                         cm_x300_defconfig
+sh                           se7206_defconfig
+powerpc                     pq2fads_defconfig
+mips                             allyesconfig
+arm                      integrator_defconfig
+mips                        bcm63xx_defconfig
+sh                          landisk_defconfig
+m68k                            q40_defconfig
+arc                    vdk_hs38_smp_defconfig
+arc                           tb10x_defconfig
+c6x                        evmc6474_defconfig
+powerpc                    adder875_defconfig
+powerpc                 mpc8313_rdb_defconfig
+mips                           mtx1_defconfig
+riscv                            allyesconfig
+arm                        keystone_defconfig
+powerpc                 mpc85xx_cds_defconfig
+m68k                       m5208evb_defconfig
+powerpc                        warp_defconfig
+xtensa                  audio_kc705_defconfig
+sh                     magicpanelr2_defconfig
+sh                         ap325rxa_defconfig
+arc                         haps_hs_defconfig
+powerpc                      katmai_defconfig
+arm                           h5000_defconfig
+arm                        multi_v7_defconfig
+powerpc                     tqm8560_defconfig
+nios2                         3c120_defconfig
+arm                            pleb_defconfig
+sh                           se7343_defconfig
+arm                          badge4_defconfig
+sh                             espt_defconfig
+arm                           stm32_defconfig
+powerpc                     tqm8555_defconfig
+c6x                        evmc6472_defconfig
+c6x                              alldefconfig
+microblaze                      mmu_defconfig
+m68k                          hp300_defconfig
+powerpc                      pasemi_defconfig
+m68k                          amiga_defconfig
+arm                          pcm027_defconfig
+sh                   secureedge5410_defconfig
+um                             i386_defconfig
+powerpc                  storcenter_defconfig
+mips                    maltaup_xpa_defconfig
+mips                       lemote2f_defconfig
+mips                      bmips_stb_defconfig
+powerpc                      cm5200_defconfig
+powerpc                     skiroot_defconfig
+microblaze                          defconfig
+powerpc                          allyesconfig
+powerpc                 mpc832x_rdb_defconfig
+powerpc                        fsp2_defconfig
+powerpc                      ppc40x_defconfig
+sh                            migor_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210202
+i386                 randconfig-a005-20210202
+i386                 randconfig-a003-20210202
+i386                 randconfig-a006-20210202
+i386                 randconfig-a002-20210202
+i386                 randconfig-a004-20210202
+x86_64               randconfig-a013-20210202
+x86_64               randconfig-a014-20210202
+x86_64               randconfig-a015-20210202
+x86_64               randconfig-a016-20210202
+x86_64               randconfig-a011-20210202
+x86_64               randconfig-a012-20210202
+i386                 randconfig-a013-20210202
+i386                 randconfig-a016-20210202
+i386                 randconfig-a014-20210202
+i386                 randconfig-a012-20210202
+i386                 randconfig-a015-20210202
+i386                 randconfig-a011-20210202
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
+clang tested configs:
+x86_64               randconfig-a006-20210202
+x86_64               randconfig-a001-20210202
+x86_64               randconfig-a005-20210202
+x86_64               randconfig-a002-20210202
+x86_64               randconfig-a004-20210202
+x86_64               randconfig-a003-20210202
 
---=20
-mgr in=C5=BC. Marek Czerski
-+48 696 842 686
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
