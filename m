@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B15BC433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 18:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FDB4C433E9
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 18:52:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2CB9964F61
+	by mail.kernel.org (Postfix) with ESMTP id BB62164F87
 	for <linux-pm@archiver.kernel.org>; Wed,  3 Feb 2021 18:52:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231220AbhBCSwG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Feb 2021 13:52:06 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:46594 "EHLO
+        id S232947AbhBCSwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Feb 2021 13:52:18 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:56092 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232530AbhBCSwB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2021 13:52:01 -0500
+        with ESMTP id S232650AbhBCSwF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2021 13:52:05 -0500
 Received: from 89-64-80-249.dynamic.chello.pl (89.64.80.249) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.537)
- id 403957b0e42b8183; Wed, 3 Feb 2021 19:51:17 +0100
+ id 438ba9a2e3b12916; Wed, 3 Feb 2021 19:51:20 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -32,9 +32,9 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Erik Kaneda <erik.kaneda@intel.com>,
         Joe Perches <joe@perches.com>,
         Hanjun Guo <guohanjun@huawei.com>
-Subject: [PATCH v3 3/5] ACPI: button: Clean up printing messages
-Date:   Wed, 03 Feb 2021 19:46:14 +0100
-Message-ID: <5061782.uJCyLE8JBt@kreacher>
+Subject: [PATCH v3 1/5] ACPI: AC: Clean up printing messages
+Date:   Wed, 03 Feb 2021 19:43:17 +0100
+Message-ID: <15677254.uJehtQVoeh@kreacher>
 In-Reply-To: <1961054.9MKZ8ejxOh@kreacher>
 References: <2367702.B5bJTmGzJm@kreacher> <1991501.dpTHplkurC@kreacher> <1961054.9MKZ8ejxOh@kreacher>
 MIME-Version: 1.0
@@ -46,92 +46,35 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Replace the ACPI_DEBUG_PRINT() instance in button.c with an
-acpi_handle_debug() call, drop the _COMPONENT and ACPI_MODULE_NAME()
-definitions that are not used any more, drop the no longer needed
-ACPI_BUTTON_COMPONENT definition from the headers and update the
-documentation accordingly.
+Replace the ACPI_DEBUG_PRINT() and ACPI_EXCEPTION() instances
+in ac.c with acpi_handle_debug() and acpi_handle_info() calls,
+respectively, which among other things causes the excessive log
+level of the messages previously printed via ACPI_EXCEPTION() to
+be increased.
 
-While at it, replace the direct printk() invocations with pr_info()
-(that changes the excessive log level for some of them too) and drop
-the unneeded PREFIX sybmbol definition from battery.c.
+Drop the _COMPONENT and ACPI_MODULE_NAME() definitions that are not
+used any more, drop the no longer needed ACPI_AC_COMPONENT definition
+from the headers and update the documentation accordingly.
+
+While at it, replace the direct printk() invocation with pr_info(),
+add a pr_fmt() definition to ac.c and drop the unneeded PREFIX
+symbol definition from there.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Hanjun Guo <guohanjun@huawei.com>
 ---
 
-v2 -> v3: Add R-by tag.
+v2 -> v3: Also add a pr_fmt() definition to ac.c and replace direct
+          printk() with pr_info (no log level change).
 
 v1 -> v2: Changelog update.
 
 ---
  Documentation/firmware-guide/acpi/debug.rst |    1 -
- drivers/acpi/button.c                       |   15 +++++----------
+ drivers/acpi/ac.c                           |   23 ++++++++++-------------
  drivers/acpi/sysfs.c                        |    1 -
  include/acpi/acpi_drivers.h                 |    1 -
- 4 files changed, 5 insertions(+), 13 deletions(-)
+ 4 files changed, 10 insertions(+), 16 deletions(-)
 
-Index: linux-pm/drivers/acpi/button.c
-===================================================================
---- linux-pm.orig/drivers/acpi/button.c
-+++ linux-pm/drivers/acpi/button.c
-@@ -21,8 +21,6 @@
- #include <linux/dmi.h>
- #include <acpi/button.h>
- 
--#define PREFIX "ACPI: "
--
- #define ACPI_BUTTON_CLASS		"button"
- #define ACPI_BUTTON_FILE_STATE		"state"
- #define ACPI_BUTTON_TYPE_UNKNOWN	0x00
-@@ -54,9 +52,6 @@ static const char * const lid_init_state
- 	[ACPI_BUTTON_LID_INIT_DISABLED]		= "disabled",
- };
- 
--#define _COMPONENT		ACPI_BUTTON_COMPONENT
--ACPI_MODULE_NAME("button");
--
- MODULE_AUTHOR("Paul Diefenbaugh");
- MODULE_DESCRIPTION("ACPI Button Driver");
- MODULE_LICENSE("GPL");
-@@ -285,7 +280,7 @@ static int acpi_button_add_fs(struct acp
- 		return 0;
- 
- 	if (acpi_button_dir || acpi_lid_dir) {
--		printk(KERN_ERR PREFIX "More than one Lid device found!\n");
-+		pr_info("More than one Lid device found!\n");
- 		return -EEXIST;
- 	}
- 
-@@ -434,8 +429,8 @@ static void acpi_button_notify(struct ac
- 		}
- 		break;
- 	default:
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--				  "Unsupported event [0x%x]\n", event));
-+		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
-+				  event);
- 		break;
- 	}
- }
-@@ -523,7 +518,7 @@ static int acpi_button_add(struct acpi_d
- 			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_LID);
- 		input->open = acpi_lid_input_open;
- 	} else {
--		printk(KERN_ERR PREFIX "Unsupported hid [%s]\n", hid);
-+		pr_info("Unsupported hid [%s]\n", hid);
- 		error = -ENODEV;
- 		goto err_free_input;
- 	}
-@@ -567,7 +562,7 @@ static int acpi_button_add(struct acpi_d
- 	}
- 
- 	device_init_wakeup(&device->dev, true);
--	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
-+	pr_info("%s [%s]\n", name, acpi_device_bid(device));
- 	return 0;
- 
-  err_remove_fs:
 Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
 ===================================================================
 --- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
@@ -140,10 +83,86 @@ Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
      ACPI_CA_DISASSEMBLER            0x00000800
      ACPI_COMPILER                   0x00001000
      ACPI_TOOLS                      0x00002000
--    ACPI_BUTTON_COMPONENT           0x00080000
+-    ACPI_AC_COMPONENT               0x00020000
+     ACPI_BATTERY_COMPONENT          0x00040000
+     ACPI_BUTTON_COMPONENT           0x00080000
      ACPI_SBS_COMPONENT              0x00100000
-     ACPI_FAN_COMPONENT              0x00200000
-     ACPI_PCI_COMPONENT              0x00400000
+Index: linux-pm/drivers/acpi/ac.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ac.c
++++ linux-pm/drivers/acpi/ac.c
+@@ -6,6 +6,8 @@
+  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
+  */
+ 
++#define pr_fmt(fmt) "ACPI: AC: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+@@ -18,8 +20,6 @@
+ #include <linux/acpi.h>
+ #include <acpi/battery.h>
+ 
+-#define PREFIX "ACPI: "
+-
+ #define ACPI_AC_CLASS			"ac_adapter"
+ #define ACPI_AC_DEVICE_NAME		"AC Adapter"
+ #define ACPI_AC_FILE_STATE		"state"
+@@ -28,9 +28,6 @@
+ #define ACPI_AC_STATUS_ONLINE		0x01
+ #define ACPI_AC_STATUS_UNKNOWN		0xFF
+ 
+-#define _COMPONENT		ACPI_AC_COMPONENT
+-ACPI_MODULE_NAME("ac");
+-
+ MODULE_AUTHOR("Paul Diefenbaugh");
+ MODULE_DESCRIPTION("ACPI AC Adapter Driver");
+ MODULE_LICENSE("GPL");
+@@ -102,8 +99,9 @@ static int acpi_ac_get_state(struct acpi
+ 	status = acpi_evaluate_integer(ac->device->handle, "_PSR", NULL,
+ 				       &ac->state);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status,
+-				"Error reading AC Adapter state"));
++		acpi_handle_info(ac->device->handle,
++				"Error reading AC Adapter state: %s\n",
++				acpi_format_exception(status));
+ 		ac->state = ACPI_AC_STATUS_UNKNOWN;
+ 		return -ENODEV;
+ 	}
+@@ -153,8 +151,8 @@ static void acpi_ac_notify(struct acpi_d
+ 
+ 	switch (event) {
+ 	default:
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-				  "Unsupported event [0x%x]\n", event));
++		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
++				  event);
+ 		fallthrough;
+ 	case ACPI_AC_NOTIFY_STATUS:
+ 	case ACPI_NOTIFY_BUS_CHECK:
+@@ -278,9 +276,8 @@ static int acpi_ac_add(struct acpi_devic
+ 		goto end;
+ 	}
+ 
+-	printk(KERN_INFO PREFIX "%s [%s] (%s)\n",
+-	       acpi_device_name(device), acpi_device_bid(device),
+-	       ac->state ? "on-line" : "off-line");
++	pr_info("%s [%s] (%s)\n", acpi_device_name(device),
++		acpi_device_bid(device), ac->state ? "on-line" : "off-line");
+ 
+ 	ac->battery_nb.notifier_call = acpi_ac_battery_notify;
+ 	register_acpi_notifier(&ac->battery_nb);
+@@ -348,7 +345,7 @@ static int __init acpi_ac_init(void)
+ 		for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
+ 			if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
+ 					     acpi_ac_blacklist[i].hrv)) {
+-				pr_info(PREFIX "AC: found native %s PMIC, not loading\n",
++				pr_info("found native %s PMIC, not loading\n",
+ 					acpi_ac_blacklist[i].hid);
+ 				return -ENODEV;
+ 			}
 Index: linux-pm/drivers/acpi/sysfs.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/sysfs.c
@@ -152,10 +171,10 @@ Index: linux-pm/drivers/acpi/sysfs.c
  	ACPI_DEBUG_INIT(ACPI_COMPILER),
  	ACPI_DEBUG_INIT(ACPI_TOOLS),
  
--	ACPI_DEBUG_INIT(ACPI_BUTTON_COMPONENT),
+-	ACPI_DEBUG_INIT(ACPI_AC_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_BATTERY_COMPONENT),
+ 	ACPI_DEBUG_INIT(ACPI_BUTTON_COMPONENT),
  	ACPI_DEBUG_INIT(ACPI_SBS_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_FAN_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_PCI_COMPONENT),
 Index: linux-pm/include/acpi/acpi_drivers.h
 ===================================================================
 --- linux-pm.orig/include/acpi/acpi_drivers.h
@@ -164,10 +183,10 @@ Index: linux-pm/include/acpi/acpi_drivers.h
   * Please update drivers/acpi/debug.c and Documentation/firmware-guide/acpi/debug.rst
   * if you add to this list.
   */
--#define ACPI_BUTTON_COMPONENT		0x00080000
+-#define ACPI_AC_COMPONENT		0x00020000
+ #define ACPI_BATTERY_COMPONENT		0x00040000
+ #define ACPI_BUTTON_COMPONENT		0x00080000
  #define ACPI_SBS_COMPONENT		0x00100000
- #define ACPI_FAN_COMPONENT		0x00200000
- #define ACPI_PCI_COMPONENT		0x00400000
 
 
 
