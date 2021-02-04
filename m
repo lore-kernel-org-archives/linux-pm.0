@@ -2,479 +2,151 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69F84C433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 19:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3929C433E0
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 23:05:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 293D864F10
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 19:22:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E48264DF2
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 23:05:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239719AbhBDTVu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 14:21:50 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:55465 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S238907AbhBDSfF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 13:35:05 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1612463615;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=dKrOz7FAs3tJoHyGXBNrG1BWtJMXb7u2kkdGtqwvLV8=;
-        b=gHwt0chJ6QlqM7nWZwrMwt7Wxbmkz7Gnt44L3cUUzWZYRFwmY/yji7ehcqulso1Er6lyRe
-        +pVE6/Ev/rXMj97SDFy4CjeDFEPhoIVnU0MlZAaYouB4ILql0BUGnh7UryLVPFolmRaq7e
-        rK5PW29keHNwJwM8+q2qZS+jCeeiOTc=
-Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
- [209.85.218.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-321-MDodK8mLNHSrzg_LOPHHCw-1; Thu, 04 Feb 2021 13:33:33 -0500
-X-MC-Unique: MDodK8mLNHSrzg_LOPHHCw-1
-Received: by mail-ej1-f70.google.com with SMTP id k3so3358219ejr.16
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 10:33:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=dKrOz7FAs3tJoHyGXBNrG1BWtJMXb7u2kkdGtqwvLV8=;
-        b=AbWY+YpkWJXAnfuaLZa7gkHDxCa2V7T0zh5Jwv7/G7ZkLiMhdQckfYunLEA3+hZ+1V
-         n5mYI3QtkX4Dx3W/nmQKQVTaTB8gXBycULfPyDnLdntbbMiys+P/HZwsD+wHFNV4AWUz
-         mI0BNSL7YNzg3rSVgwI9q9HyQ1TqvwC3d5tcUg78dKa+/o5CW7l5/W+QJ9k3ePgdy/Ua
-         FXW5+s1tqrTzV1+tWKxIXC5V7XkIO4b8fgeJqqmS3h9R/O8hj/Va9MFHXOwfB1/rPISf
-         mor8NKYY76JHBLh3InPiRHHADXKIHRt2gNRghWZUJ7uS8ittVeE4nmKsO7OFu1IS/lBj
-         f0gw==
-X-Gm-Message-State: AOAM532cvzAM+9mAJKePYlWsHUPbfo9RJy/eB/hxpNCTyUCd/xO1gqpX
-        V9uOyceDsPC++c+cNczE//iDfqoK3FgeASF/ES9hwh4iyevl338q/iXAJW+KtChsJ9aAP5UXRl2
-        uFrcjFcThXGTilfBjrXw=
-X-Received: by 2002:a17:906:69c2:: with SMTP id g2mr389158ejs.249.1612463612099;
-        Thu, 04 Feb 2021 10:33:32 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwI8tZuMkp0s3kgIPgKAX8NrZicJU/N+6+o/Y4gR3AXjZ6IKYn4nargW7ZnRxYDkHzp6c90Wg==
-X-Received: by 2002:a17:906:69c2:: with SMTP id g2mr388812ejs.249.1612463607793;
-        Thu, 04 Feb 2021 10:33:27 -0800 (PST)
-Received: from x1.localdomain (2001-1c00-0c1e-bf00-37a3-353b-be90-1238.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:37a3:353b:be90:1238])
-        by smtp.gmail.com with ESMTPSA id k22sm2987184edv.33.2021.02.04.10.33.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 04 Feb 2021 10:33:26 -0800 (PST)
-Subject: Re: [PATCH v3 4/5] ACPI: video: Clean up printing messages
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Erik Kaneda <erik.kaneda@intel.com>,
-        Joe Perches <joe@perches.com>,
-        Hanjun Guo <guohanjun@huawei.com>
-References: <2367702.B5bJTmGzJm@kreacher> <1991501.dpTHplkurC@kreacher>
- <1961054.9MKZ8ejxOh@kreacher> <1924490.ZvBDFke9FE@kreacher>
-From:   Hans de Goede <hdegoede@redhat.com>
-Message-ID: <fc92bf0f-b770-a4d5-7c0f-0936a4a35a38@redhat.com>
-Date:   Thu, 4 Feb 2021 19:33:25 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+        id S229823AbhBDXF0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Feb 2021 18:05:26 -0500
+Received: from rome.phoronix.com ([192.211.48.82]:20914 "EHLO
+        rome.phoronix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229787AbhBDXF0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 18:05:26 -0500
+Received: from c-73-176-63-28.hsd1.il.comcast.net ([73.176.63.28]:36468 helo=[192.168.86.21])
+        by rome.phoronix.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.93)
+        (envelope-from <Michael@phoronix.com>)
+        id 1l7nfl-0004Ug-4n; Thu, 04 Feb 2021 18:04:25 -0500
+Subject: Re: [PATCH v3 1/1] x86,sched: On AMD EPYC set freq_max = max_boost in
+ schedutil invariant formula
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Borislav Petkov <bp@alien8.de>, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Jon Grimm <Jon.Grimm@amd.com>,
+        Nathan Fontenot <Nathan.Fontenot@amd.com>,
+        Yazen Ghannam <Yazen.Ghannam@amd.com>,
+        Thomas Lendacky <Thomas.Lendacky@amd.com>,
+        Suthikulpanit Suravee <Suravee.Suthikulpanit@amd.com>,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Pu Wen <puwen@hygon.cn>, Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        the arch/x86 maintainers <x86@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <20210203135321.12253-1-ggherdovich@suse.cz>
+ <20210203135321.12253-2-ggherdovich@suse.cz>
+ <CAJZ5v0g1SWRnV1QfZG3o+hvBg9akakhDMomGCFjwERyG2ENKww@mail.gmail.com>
+ <5470319.60Xv9dOaFs@kreacher>
+ <563fec57-6417-e875-1788-3773cbfb34be@phoronix.com>
+ <CAJZ5v0jzhVJ-8iVfhkFHBdJf1pYAMtC=1JhuTn14vWtZUwJoAg@mail.gmail.com>
+From:   Michael Larabel <Michael@phoronix.com>
+Message-ID: <5ea06dbe-255c-3d22-b9bd-6e627c5f94af@phoronix.com>
+Date:   Thu, 4 Feb 2021 17:04:23 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <1924490.ZvBDFke9FE@kreacher>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0jzhVJ-8iVfhkFHBdJf1pYAMtC=1JhuTn14vWtZUwJoAg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - rome.phoronix.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - phoronix.com
+X-Get-Message-Sender-Via: rome.phoronix.com: authenticated_id: michael@phoronix.com
+X-Authenticated-Sender: rome.phoronix.com: michael@phoronix.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On 2/4/21 7:40 AM, Rafael J. Wysocki wrote:
+> On Thu, Feb 4, 2021 at 12:36 AM Michael Larabel <Michael@phoronix.com> wrote:
+>> On 2/3/21 12:25 PM, Rafael J. Wysocki wrote:
+>>> On Wednesday, February 3, 2021 3:11:37 PM CET Rafael J. Wysocki wrote:
+>>>> On Wed, Feb 3, 2021 at 2:53 PM Giovanni Gherdovich <ggherdovich@suse.cz> wrote:
+>>>> [cut]
+>>>>
+>>>>> Fixes: 41ea667227ba ("x86, sched: Calculate frequency invariance for AMD systems")
+>>>>> Fixes: 976df7e5730e ("x86, sched: Use midpoint of max_boost and max_P for frequency invariance on AMD EPYC")
+>>>>> Reported-by: Michael Larabel <Michael@phoronix.com>
+>>>>> Tested-by: Michael Larabel <Michael@phoronix.com>
+>>>>> Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+>>>>> ---
+>>>>>    drivers/cpufreq/acpi-cpufreq.c   | 61 ++++++++++++++++++++++++++++++--
+>>>>>    drivers/cpufreq/cpufreq.c        |  3 ++
+>>>>>    include/linux/cpufreq.h          |  5 +++
+>>>>>    kernel/sched/cpufreq_schedutil.c |  8 +++--
+>>>> I don't really think that it is necessary to modify schedutil to
+>>>> address this issue.
+>>> So below is a prototype of an alternative fix for the issue at hand.
+>>>
+>>> I can't really test it here, because there's no _CPC in the ACPI tables of my
+>>> test machines, so testing it would be appreciated.  However, AFAICS these
+>>> machines are affected by the performance issue related to the scale-invariance
+>>> when they are running acpi-cpufreq, so what we are doing here is not entirely
+>>> sufficient.
+>>
+>> I have benchmarks running on several Ryzen and EPYC systems with this
+>> patch. The full batch of tests won't be done until tomorrow, but in
+>> looking at the data so far from an AMD EPYC 7F72 2P server over the past
+>> few hours, this patch does provide fairly comparable numbers to
+>> Giovanni's patch. There were a few outliers so far but waiting to see
+>> with the complete set of results. At the very least it's clear enough
+>> already this new patch is at least an improvement over the current 5.11
+>> upstream state with schedutil on AMD.
+> Thanks for the feedback, much appreciated!
+>
+> Let me submit the patch properly, then.
 
-On 2/3/21 7:48 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Replace the ACPI_DEBUG_PRINT() instances in acpi_video.c with
-> acpi_handle_debug() calls and the ACPI_EXCEPTION()/ACPI_ERROR()/
-> ACPI_WARNING() instances in there with acpi_handle_info() calls,
-> which among other things causes the excessive log levels of those
-> messages to be increased.
-> 
-> Drop the _COMPONENT and ACPI_MODULE_NAME() definitions that are not
-> used any more from acpi_video.c, drop the no longer needed
-> ACPI_VIDEO_COMPONENT definition from the headers and update the
-> documentation accordingly.
-> 
-> While at it, add a pr_fmt() definition to acpi_video.c, replace the
-> direct printk() invocations in there with acpi_handle_info() or
-> pr_info() (and reduce the excessive log level where applicable) and
-> drop the PREFIX sybmbol definition which is not necessary any more
-> from acpi_video.c.
-> 
-> Also make unrelated janitorial changes to fix up white space and
-> use ACPI_FAILURE() instead of negating ACPI_SUCCESS().
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks, patch looks good to me:
+Everything continues looking good in running this patch on a variety of 
+AMD Zen2/Zen3 systems.
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+As Giovanni has been focusing on EPYC testing, I have been running 
+several Ryzen laptops/desktop for more exposure and there it's looking 
+very good. On a Ryzen 9 5900X[1] when looking at this latest patch 
+against current 5.11 Git and 5.10, the performance is recovered and in 
+some cases better off now than 5.10 with Schedutil. No anomalies there 
+and with other Zen 2/3 desktops and Zen 2 notebook the performance 
+relative to 5.10 is comparable or in some cases better while all 
+indications point to the 5.11 regression being addressed. Some of the 
+slower systems still finishing up but no unexpected results yet and 
+likely just redundant testing at this point.
 
-Regards,
+Tests on EPYC hardware has also been looking good. With some 44 tests on 
+an EPYC 7F72 2P setup[2] when taking the geometric mean of all the data 
+finding it rightly in line with the prior patch from Giovanni. EPYC 7702 
+and EPYC 7F52 1P performance similarly showing no regression any longer 
+with the patched kernel. This patch also seemed to help CPUFreq ondemand 
+performance improve as well in some cases.
 
-Hans
+Will advise if hitting anything unexpected with the remainder of the 
+testing but all is looking solid at this point and a definite 
+improvement over the current 5.11 Git state.
 
+Tested-by: Michael Larabel <Michael@phoronix.com>
 
-> ---
-> 
-> v2 -> v3: Replace more !ACPI_SUCCESS() instances with ACPI_FAILURE().
-> 
-> v1 -> v2: Changelog update.
-> 
-> ---
->  Documentation/firmware-guide/acpi/debug.rst |    1 
->  drivers/acpi/acpi_video.c                   |   99 ++++++++++++++--------------
->  drivers/acpi/sysfs.c                        |    1 
->  include/acpi/acpi_drivers.h                 |    1 
->  4 files changed, 51 insertions(+), 51 deletions(-)
-> 
-> Index: linux-pm/drivers/acpi/acpi_video.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/acpi_video.c
-> +++ linux-pm/drivers/acpi/acpi_video.c
-> @@ -7,6 +7,8 @@
->   *  Copyright (C) 2006 Thomas Tuttle <linux-kernel@ttuttle.net>
->   */
->  
-> +#define pr_fmt(fmt) "ACPI: video: " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/init.h>
-> @@ -26,16 +28,11 @@
->  #include <acpi/video.h>
->  #include <linux/uaccess.h>
->  
-> -#define PREFIX "ACPI: "
-> -
->  #define ACPI_VIDEO_BUS_NAME		"Video Bus"
->  #define ACPI_VIDEO_DEVICE_NAME		"Video Device"
->  
->  #define MAX_NAME_LEN	20
->  
-> -#define _COMPONENT		ACPI_VIDEO_COMPONENT
-> -ACPI_MODULE_NAME("video");
-> -
->  MODULE_AUTHOR("Bruno Ducrot");
->  MODULE_DESCRIPTION("ACPI Video Driver");
->  MODULE_LICENSE("GPL");
-> @@ -326,11 +323,11 @@ acpi_video_device_lcd_query_levels(acpi_
->  	*levels = NULL;
->  
->  	status = acpi_evaluate_object(handle, "_BCL", NULL, &buffer);
-> -	if (!ACPI_SUCCESS(status))
-> +	if (ACPI_FAILURE(status))
->  		return status;
->  	obj = (union acpi_object *)buffer.pointer;
->  	if (!obj || (obj->type != ACPI_TYPE_PACKAGE)) {
-> -		printk(KERN_ERR PREFIX "Invalid _BCL data\n");
-> +		acpi_handle_info(handle, "Invalid _BCL data\n");
->  		status = -EFAULT;
->  		goto err;
->  	}
-> @@ -354,7 +351,7 @@ acpi_video_device_lcd_set_level(struct a
->  	status = acpi_execute_simple_method(device->dev->handle,
->  					    "_BCM", level);
->  	if (ACPI_FAILURE(status)) {
-> -		ACPI_ERROR((AE_INFO, "Evaluating _BCM failed"));
-> +		acpi_handle_info(device->dev->handle, "_BCM evaluation failed\n");
->  		return -EIO;
->  	}
->  
-> @@ -368,7 +365,7 @@ acpi_video_device_lcd_set_level(struct a
->  			return 0;
->  		}
->  
-> -	ACPI_ERROR((AE_INFO, "Current brightness invalid"));
-> +	acpi_handle_info(device->dev->handle, "Current brightness invalid\n");
->  	return -EINVAL;
->  }
->  
-> @@ -622,9 +619,8 @@ acpi_video_device_lcd_get_level_current(
->  			 * BQC returned an invalid level.
->  			 * Stop using it.
->  			 */
-> -			ACPI_WARNING((AE_INFO,
-> -				      "%s returned an invalid level",
-> -				      buf));
-> +			acpi_handle_info(device->dev->handle,
-> +					 "%s returned an invalid level", buf);
->  			device->cap._BQC = device->cap._BCQ = 0;
->  		} else {
->  			/*
-> @@ -635,7 +631,8 @@ acpi_video_device_lcd_get_level_current(
->  			 * ACPI video backlight still works w/ buggy _BQC.
->  			 * http://bugzilla.kernel.org/show_bug.cgi?id=12233
->  			 */
-> -			ACPI_WARNING((AE_INFO, "Evaluating %s failed", buf));
-> +			acpi_handle_info(device->dev->handle,
-> +					 "%s evaluation failed", buf);
->  			device->cap._BQC = device->cap._BCQ = 0;
->  		}
->  	}
-> @@ -675,7 +672,7 @@ acpi_video_device_EDID(struct acpi_video
->  	if (obj && obj->type == ACPI_TYPE_BUFFER)
->  		*edid = obj;
->  	else {
-> -		printk(KERN_ERR PREFIX "Invalid _DDC data\n");
-> +		acpi_handle_info(device->dev->handle, "Invalid _DDC data\n");
->  		status = -EFAULT;
->  		kfree(obj);
->  	}
-> @@ -827,10 +824,9 @@ int acpi_video_get_levels(struct acpi_de
->  	int result = 0;
->  	u32 value;
->  
-> -	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device->handle,
-> -								&obj))) {
-> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
-> -						"LCD brightness level\n"));
-> +	if (ACPI_FAILURE(acpi_video_device_lcd_query_levels(device->handle, &obj))) {
-> +		acpi_handle_debug(device->handle,
-> +				  "Could not query available LCD brightness level\n");
->  		result = -ENODEV;
->  		goto out;
->  	}
-> @@ -842,7 +838,6 @@ int acpi_video_get_levels(struct acpi_de
->  
->  	br = kzalloc(sizeof(*br), GFP_KERNEL);
->  	if (!br) {
-> -		printk(KERN_ERR "can't allocate memory\n");
->  		result = -ENOMEM;
->  		goto out;
->  	}
-> @@ -863,7 +858,7 @@ int acpi_video_get_levels(struct acpi_de
->  	for (i = 0; i < obj->package.count; i++) {
->  		o = (union acpi_object *)&obj->package.elements[i];
->  		if (o->type != ACPI_TYPE_INTEGER) {
-> -			printk(KERN_ERR PREFIX "Invalid data\n");
-> +			acpi_handle_info(device->handle, "Invalid data\n");
->  			continue;
->  		}
->  		value = (u32) o->integer.value;
-> @@ -900,7 +895,8 @@ int acpi_video_get_levels(struct acpi_de
->  			br->levels[i] = br->levels[i - level_ac_battery];
->  		count += level_ac_battery;
->  	} else if (level_ac_battery > ACPI_VIDEO_FIRST_LEVEL)
-> -		ACPI_ERROR((AE_INFO, "Too many duplicates in _BCL package"));
-> +		acpi_handle_info(device->handle,
-> +				 "Too many duplicates in _BCL package");
->  
->  	/* Check if the _BCL package is in a reversed order */
->  	if (max_level == br->levels[ACPI_VIDEO_FIRST_LEVEL]) {
-> @@ -910,8 +906,8 @@ int acpi_video_get_levels(struct acpi_de
->  		     sizeof(br->levels[ACPI_VIDEO_FIRST_LEVEL]),
->  		     acpi_video_cmp_level, NULL);
->  	} else if (max_level != br->levels[count - 1])
-> -		ACPI_ERROR((AE_INFO,
-> -			    "Found unordered _BCL package"));
-> +		acpi_handle_info(device->handle,
-> +				 "Found unordered _BCL package");
->  
->  	br->count = count;
->  	*dev_br = br;
-> @@ -989,9 +985,9 @@ set_level:
->  	if (result)
->  		goto out_free_levels;
->  
-> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> -			  "found %d brightness levels\n",
-> -			  br->count - ACPI_VIDEO_FIRST_LEVEL));
-> +	acpi_handle_debug(device->dev->handle, "found %d brightness levels\n",
-> +			  br->count - ACPI_VIDEO_FIRST_LEVEL);
-> +
->  	return 0;
->  
->  out_free_levels:
-> @@ -1023,7 +1019,8 @@ static void acpi_video_device_find_cap(s
->  	if (acpi_has_method(device->dev->handle, "_BQC")) {
->  		device->cap._BQC = 1;
->  	} else if (acpi_has_method(device->dev->handle, "_BCQ")) {
-> -		printk(KERN_WARNING FW_BUG "_BCQ is used instead of _BQC\n");
-> +		acpi_handle_info(device->dev->handle,
-> +				 "_BCQ is used instead of _BQC\n");
->  		device->cap._BCQ = 1;
->  	}
->  
-> @@ -1083,8 +1080,7 @@ static int acpi_video_bus_check(struct a
->  	/* Does this device support video switching? */
->  	if (video->cap._DOS || video->cap._DOD) {
->  		if (!video->cap._DOS) {
-> -			printk(KERN_WARNING FW_BUG
-> -				"ACPI(%s) defines _DOD but not _DOS\n",
-> +			pr_info(FW_BUG "ACPI(%s) defines _DOD but not _DOS\n",
->  				acpi_device_bid(video->device));
->  		}
->  		video->flags.multihead = 1;
-> @@ -1272,7 +1268,8 @@ acpi_video_device_bind(struct acpi_video
->  		ids = &video->attached_array[i];
->  		if (device->device_id == (ids->value.int_val & 0xffff)) {
->  			ids->bind_info = device;
-> -			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "device_bind %d\n", i));
-> +			acpi_handle_debug(video->device->handle, "%s: %d\n",
-> +					  __func__, i);
->  		}
->  	}
->  }
-> @@ -1324,20 +1321,22 @@ static int acpi_video_device_enumerate(s
->  		return AE_NOT_EXIST;
->  
->  	status = acpi_evaluate_object(video->device->handle, "_DOD", NULL, &buffer);
-> -	if (!ACPI_SUCCESS(status)) {
-> -		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _DOD"));
-> +	if (ACPI_FAILURE(status)) {
-> +		acpi_handle_info(video->device->handle,
-> +				 "_DOD evaluation failed: %s\n",
-> +				 acpi_format_exception(status));
->  		return status;
->  	}
->  
->  	dod = buffer.pointer;
->  	if (!dod || (dod->type != ACPI_TYPE_PACKAGE)) {
-> -		ACPI_EXCEPTION((AE_INFO, status, "Invalid _DOD data"));
-> +		acpi_handle_info(video->device->handle, "Invalid _DOD data\n");
->  		status = -EFAULT;
->  		goto out;
->  	}
->  
-> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Found %d video heads in _DOD\n",
-> -			  dod->package.count));
-> +	acpi_handle_debug(video->device->handle, "Found %d video heads in _DOD\n",
-> +			  dod->package.count);
->  
->  	active_list = kcalloc(1 + dod->package.count,
->  			      sizeof(struct acpi_video_enumerated_device),
-> @@ -1352,15 +1351,18 @@ static int acpi_video_device_enumerate(s
->  		obj = &dod->package.elements[i];
->  
->  		if (obj->type != ACPI_TYPE_INTEGER) {
-> -			printk(KERN_ERR PREFIX
-> -				"Invalid _DOD data in element %d\n", i);
-> +			acpi_handle_info(video->device->handle,
-> +					 "Invalid _DOD data in element %d\n", i);
->  			continue;
->  		}
->  
->  		active_list[count].value.int_val = obj->integer.value;
->  		active_list[count].bind_info = NULL;
-> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "dod element[%d] = %d\n", i,
-> -				  (int)obj->integer.value));
-> +
-> +		acpi_handle_debug(video->device->handle,
-> +				  "_DOD element[%d] = %d\n", i,
-> +				  (int)obj->integer.value);
-> +
->  		count++;
->  	}
->  
-> @@ -1451,7 +1453,8 @@ acpi_video_switch_brightness(struct work
->  
->  out:
->  	if (result)
-> -		printk(KERN_ERR PREFIX "Failed to switch the brightness\n");
-> +		acpi_handle_info(device->dev->handle,
-> +				 "Failed to switch brightness\n");
->  }
->  
->  int acpi_video_get_edid(struct acpi_device *device, int type, int device_id,
-> @@ -1601,8 +1604,8 @@ static void acpi_video_bus_notify(struct
->  		break;
->  
->  	default:
-> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> -				  "Unsupported event [0x%x]\n", event));
-> +		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
-> +				  event);
->  		break;
->  	}
->  
-> @@ -1675,8 +1678,7 @@ static void acpi_video_device_notify(acp
->  		keycode = KEY_DISPLAY_OFF;
->  		break;
->  	default:
-> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> -				  "Unsupported event [0x%x]\n", event));
-> +		acpi_handle_debug(handle, "Unsupported event [0x%x]\n", event);
->  		break;
->  	}
->  
-> @@ -1812,11 +1814,12 @@ static void acpi_video_dev_register_back
->  			&device->cooling_dev->device.kobj,
->  			"thermal_cooling");
->  	if (result)
-> -		printk(KERN_ERR PREFIX "Create sysfs link\n");
-> +		pr_info("sysfs link creation failed\n");
-> +
->  	result = sysfs_create_link(&device->cooling_dev->device.kobj,
->  			&device->dev->dev.kobj, "device");
->  	if (result)
-> -		printk(KERN_ERR PREFIX "Create sysfs link\n");
-> +		pr_info("Reverse sysfs link creation failed\n");
->  }
->  
->  static void acpi_video_run_bcl_for_osi(struct acpi_video_bus *video)
-> @@ -2030,7 +2033,7 @@ static int acpi_video_bus_add(struct acp
->  				acpi_video_bus_match, NULL,
->  				device, NULL);
->  	if (status == AE_ALREADY_EXISTS) {
-> -		printk(KERN_WARNING FW_BUG
-> +		pr_info(FW_BUG
->  			"Duplicate ACPI video bus devices for the"
->  			" same VGA controller, please try module "
->  			"parameter \"video.allow_duplicates=1\""
-> @@ -2073,7 +2076,7 @@ static int acpi_video_bus_add(struct acp
->  	if (error)
->  		goto err_put_video;
->  
-> -	printk(KERN_INFO PREFIX "%s [%s] (multi-head: %s  rom: %s  post: %s)\n",
-> +	pr_info("%s [%s] (multi-head: %s  rom: %s  post: %s)\n",
->  	       ACPI_VIDEO_DEVICE_NAME, acpi_device_bid(device),
->  	       video->flags.multihead ? "yes" : "no",
->  	       video->flags.rom ? "yes" : "no",
-> Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
-> ===================================================================
-> --- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
-> +++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
-> @@ -59,7 +59,6 @@ shows the supported mask values, current
->      ACPI_SYSTEM_COMPONENT           0x02000000
->      ACPI_THERMAL_COMPONENT          0x04000000
->      ACPI_MEMORY_DEVICE_COMPONENT    0x08000000
-> -    ACPI_VIDEO_COMPONENT            0x10000000
->      ACPI_PROCESSOR_COMPONENT        0x20000000
->  
->  debug_level
-> Index: linux-pm/drivers/acpi/sysfs.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/sysfs.c
-> +++ linux-pm/drivers/acpi/sysfs.c
-> @@ -59,7 +59,6 @@ static const struct acpi_dlayer acpi_deb
->  	ACPI_DEBUG_INIT(ACPI_SYSTEM_COMPONENT),
->  	ACPI_DEBUG_INIT(ACPI_THERMAL_COMPONENT),
->  	ACPI_DEBUG_INIT(ACPI_MEMORY_DEVICE_COMPONENT),
-> -	ACPI_DEBUG_INIT(ACPI_VIDEO_COMPONENT),
->  	ACPI_DEBUG_INIT(ACPI_PROCESSOR_COMPONENT),
->  };
->  
-> Index: linux-pm/include/acpi/acpi_drivers.h
-> ===================================================================
-> --- linux-pm.orig/include/acpi/acpi_drivers.h
-> +++ linux-pm/include/acpi/acpi_drivers.h
-> @@ -22,7 +22,6 @@
->  #define ACPI_SYSTEM_COMPONENT		0x02000000
->  #define ACPI_THERMAL_COMPONENT		0x04000000
->  #define ACPI_MEMORY_DEVICE_COMPONENT	0x08000000
-> -#define ACPI_VIDEO_COMPONENT		0x10000000
->  #define ACPI_PROCESSOR_COMPONENT	0x20000000
->  
->  /*
-> 
-> 
-> 
+[1] https://openbenchmarking.org/result/2102048-PTS-RYZEN95920 (5.10 
+stable vs. 5.11 Git vs. patched.)
+[2] https://openbenchmarking.org/result/2102048-HA-AMDEPYC7F37 
+(Giovanni's earlier patch against this new patch, compared to unpatched 
+Linux 5.11 Git and then Linux 5.11 with CPUfreq performance governor.)
+
+Michael
 
