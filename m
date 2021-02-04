@@ -7,145 +7,131 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F59CC433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1543C433E9
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:41:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4733064E42
+	by mail.kernel.org (Postfix) with ESMTP id 64EDB614A5
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:41:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234748AbhBDHla (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 02:41:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51420 "EHLO
+        id S234702AbhBDHli (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Feb 2021 02:41:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234751AbhBDHl1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 02:41:27 -0500
+        with ESMTP id S234750AbhBDHl2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 02:41:28 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 590FBC0613D6
-        for <linux-pm@vger.kernel.org>; Wed,  3 Feb 2021 23:40:47 -0800 (PST)
-Date:   Thu, 04 Feb 2021 07:40:44 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01CD2C0613ED
+        for <linux-pm@vger.kernel.org>; Wed,  3 Feb 2021 23:40:48 -0800 (PST)
+Date:   Thu, 04 Feb 2021 07:40:45 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1612424445;
+        s=2020; t=1612424446;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=CArLlvBHilk+zsvJN01PGWTU2LdI0ISGbaAOrzgbQ/g=;
-        b=x7uvqlJFhvoP2f5zwKzqofoJ3vvpTqH8QByPqHdNq+1YObNMQd5Ha0Wlqbwt9cCVWuWalZ
-        o+G6cvRJSzTS6TpVNDscECKxe6w0W94b5rfPq8DSY2O6siaaf12GlyHhpnWpk9xb/yM9KH
-        DfVJzbc5mbOKq4LSHDa9LCqr5s8BKi31BTAiKI55gRJBDFUMrEAWVvANGl73vy0qOhXzdy
-        8iTUBGQbKjyuKbY6mSRNxHe5CSHpO0x+It7mgYqf6nOxBTUrwFdJmAtF2eu4HW67LeQAtD
-        oiZj6zbS0BVigIuBxOSaw5sI+tN4FcWP0l8ggYB8YaPzcW84CNMzvZgwRoVCmg==
+        bh=1lh6uaHQifMDtHh9mupc8ntP1hfl8K2baZn6QMWvSDE=;
+        b=ualkLkvwC2gXrWNDLdYYLpfvwE2yzKkQsr3OLl2oz4Cq3uqg8d2AJ7KJFhLri4q625p6iW
+        SUYi7PoQtavfE/P9utpwZr4DO9OB3ghr+5g64jDh8pEpmK64Nh9TGXCO1FrlA7j/N4mjs4
+        QlIjPYtB1G7wEhUDJVOdYkRVRG8+rWHUZg91JL+jC8v6PG7ia39oBbCuMtwXAidpS2/e3N
+        7A/OYvxeSvTro+fCcRc6JCaG+qqGVryuX5m+cFg1MHjupQiK78C3UY2/URI0gmo8mJdJtH
+        HxTV+A3dM6yswkJYMjlqZmplomTWwH6amrQ7eIo7bLnAZqAdJSG3Oy2mTM+T1g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1612424445;
+        s=2020e; t=1612424446;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=CArLlvBHilk+zsvJN01PGWTU2LdI0ISGbaAOrzgbQ/g=;
-        b=lwykZnvk9rEuyeiEmw60Cnxsy0/+tpz4RLPBnktjEErokCXHnxG3rq3jOHWY1xwIjY0CHW
-        e2c4+g2SXr1SkbCw==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=1lh6uaHQifMDtHh9mupc8ntP1hfl8K2baZn6QMWvSDE=;
+        b=6AfRgGd/R7EM6CVbP4vneM3xZqjM+NxZ9ke1YVuMJV405FGCVJ0pv2HirAwTNvWCPpyV8s
+        v0w3W94jxturMlDg==
+From:   "thermal-bot for Kai-Heng Feng" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: power allocator: fail binding for
- non-power actor devices
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] thermal: int340x: Fix unexpected shutdown at
+ critical temperature
+Cc:     "Kai-Heng Feng" <kai.heng.feng@canonical.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210119114126.19480-1-lukasz.luba@arm.com>
-References: <20210119114126.19480-1-lukasz.luba@arm.com>
+In-Reply-To: <20201221172345.36976-1-kai.heng.feng@canonical.com>
+References: <20201221172345.36976-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
-Message-ID: <161242444480.23325.11302648327159355536.tip-bot2@tip-bot2>
+Message-ID: <161242444551.23325.8894385262578414322.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     7a583405f24bffdd9f696a8e1b2f02c297245f4d
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7a583405f24bffdd9f696a8e1b2f02c297245f4d
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Tue, 19 Jan 2021 11:41:26 
+Commit-ID:     dd47366aaa9b93ac3d97cb4ee7641d38a28a771e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//dd47366aaa9b93ac3d97cb4ee7641d38a28a771e
+Author:        Kai-Heng Feng <kai.heng.feng@canonical.com>
+AuthorDate:    Tue, 22 Dec 2020 01:23:43 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 19 Jan 2021 22:31:10 +01:00
+CommitterDate: Tue, 19 Jan 2021 22:30:25 +01:00
 
-thermal: power allocator: fail binding for non-power actor devices
+thermal: int340x: Fix unexpected shutdown at critical temperature
 
-The thermal zone can have cooling devices which are missing power actor
-API. This could be due to missing Energy Model for devfreq or cpufreq
-cooling device. In this case it is safe to fail the binding rather than
-trying to workaround and control the temperature in such thermal zone.
+We are seeing thermal shutdown on Intel based mobile workstations, the
+shutdown happens during the first trip handle in
+thermal_zone_device_register():
+kernel: thermal thermal_zone15: critical temperature reached (101 C), shuttin=
+g down
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+However, we shouldn't do a thermal shutdown here, since
+1) We may want to use a dedicated daemon, Intel's thermald in this case,
+to handle thermal shutdown.
+
+2) For ACPI based system, _CRT doesn't mean shutdown unless it's inside
+ThermalZone namespace. ACPI Spec, 11.4.4 _CRT (Critical Temperature):
+"... If this object it present under a device, the device=E2=80=99s driver
+evaluates this object to determine the device=E2=80=99s critical cooling
+temperature trip point. This value may then be used by the device=E2=80=99s
+driver to program an internal device temperature sensor trip point."
+
+So a "critical trip" here merely means we should take a more aggressive
+cooling method.
+
+As int340x device isn't present under ACPI ThermalZone, override the
+default .critical callback to prevent surprising thermal shutdown.
+
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210119114126.19480-1-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20201221172345.36976-1-kai.heng.feng@canonica=
+l.com
 ---
- drivers/thermal/gov_power_allocator.c | 35 +++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+ drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index f8c3d1e..92acae5 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -590,13 +590,42 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/d=
+rivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+index 6e479de..d1248ba 100644
+--- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -146,12 +146,18 @@ static int int340x_thermal_get_trip_hyst(struct thermal=
+_zone_device *zone,
+ 	return 0;
  }
- 
- /**
-+ * check_power_actors() - Check all cooling devices and warn when they are
-+ *			not power actors
-+ * @tz:		thermal zone to operate on
-+ *
-+ * Check all cooling devices in the @tz and warn every time they are missing
-+ * power actor API. The warning should help to investigate the issue, which
-+ * could be e.g. lack of Energy Model for a given device.
-+ *
-+ * Return: 0 on success, -EINVAL if any cooling device does not implement
-+ * the power actor API.
-+ */
-+static int check_power_actors(struct thermal_zone_device *tz)
+=20
++static void int340x_thermal_critical(struct thermal_zone_device *zone)
 +{
-+	struct thermal_instance *instance;
-+	int ret = 0;
-+
-+	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-+		if (!cdev_is_power_actor(instance->cdev)) {
-+			dev_warn(&tz->device, "power_allocator: %s is not a power actor\n",
-+				 instance->cdev->type);
-+			ret = -EINVAL;
-+		}
-+	}
-+
-+	return ret;
++	dev_dbg(&zone->device, "%s: critical temperature reached\n", zone->type);
 +}
 +
-+/**
-  * power_allocator_bind() - bind the power_allocator governor to a thermal zone
-  * @tz:	thermal zone to bind it to
-  *
-  * Initialize the PID controller parameters and bind it to the thermal
-  * zone.
-  *
-- * Return: 0 on success, or -ENOMEM if we ran out of memory.
-+ * Return: 0 on success, or -ENOMEM if we ran out of memory, or -EINVAL
-+ * when there are unsupported cooling devices in the @tz.
-  */
- static int power_allocator_bind(struct thermal_zone_device *tz)
- {
-@@ -604,6 +633,10 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	struct power_allocator_params *params;
- 	int control_temp;
- 
-+	ret = check_power_actors(tz);
-+	if (ret)
-+		return ret;
-+
- 	params = kzalloc(sizeof(*params), GFP_KERNEL);
- 	if (!params)
- 		return -ENOMEM;
+ static struct thermal_zone_device_ops int340x_thermal_zone_ops =3D {
+ 	.get_temp       =3D int340x_thermal_get_zone_temp,
+ 	.get_trip_temp	=3D int340x_thermal_get_trip_temp,
+ 	.get_trip_type	=3D int340x_thermal_get_trip_type,
+ 	.set_trip_temp	=3D int340x_thermal_set_trip_temp,
+ 	.get_trip_hyst =3D  int340x_thermal_get_trip_hyst,
++	.critical	=3D int340x_thermal_critical,
+ };
+=20
+ static int int340x_thermal_get_trip_config(acpi_handle handle, char *name,
