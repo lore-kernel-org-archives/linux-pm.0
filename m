@@ -8,60 +8,59 @@ X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB6ACC433E6
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 18:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A4C5C433E9
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 19:14:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8A3EB64E49
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 18:33:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E2D0164F6A
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 19:14:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239173AbhBDSdZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 13:33:25 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:38068 "EHLO
+        id S239659AbhBDTOC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Feb 2021 14:14:02 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:37858 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S239170AbhBDSdP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 13:33:15 -0500
+        by vger.kernel.org with ESMTP id S239165AbhBDShw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 13:37:52 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1612463507;
+        s=mimecast20190719; t=1612463784;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cw6yNBHOi0gV1ybYwsZTPvMb8Nk42GJP0B50G947cPI=;
-        b=MvFQOJKjLXRmu+uMp/BDfnwtqGiPWG9YbAcO9Kn2qvHRhaH/r6RmVZ6JJb1kEYrFkEBHFV
-        vDoDB4c5zyNrig3HCRcRoFvElELFDkvs5RFFUxgiDRqddY3ujQpTMA+kHNqAWlKZ2rZliH
-        6y2kPZKBin6SOccOrRIUSxml2IlHZeg=
-Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
- [209.85.218.69]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-579-cGgrqzRVM22KhGAvaIyTNw-1; Thu, 04 Feb 2021 13:31:44 -0500
-X-MC-Unique: cGgrqzRVM22KhGAvaIyTNw-1
-Received: by mail-ej1-f69.google.com with SMTP id bx12so3350665ejc.15
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 10:31:44 -0800 (PST)
+        bh=rFCB+eQV0Cz663cYe4lsN4DVwBDWcktodsnern4svBI=;
+        b=c+3X2NHchjGSws9CBm9PXHiMAxfPh0bvhuR2MMDNuszoZqbiV0dFqH985pA9k4UusLAi/a
+        Dn0kXwBFMBVpQyNvT5RI7xjYvZO7fDPatmZsrlkez5rlnH3InHA1j3K3gXCtOhDu2ROC5U
+        Ta91vrCdGApVFcj/br/RO7wnzpez4as=
+Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
+ [209.85.208.71]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-442-flYq66aIPY-7DBheQwEtXg-1; Thu, 04 Feb 2021 13:36:23 -0500
+X-MC-Unique: flYq66aIPY-7DBheQwEtXg-1
+Received: by mail-ed1-f71.google.com with SMTP id u19so3713783edr.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 10:36:22 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=cw6yNBHOi0gV1ybYwsZTPvMb8Nk42GJP0B50G947cPI=;
-        b=eAkk9FUh+Alo/ENdqYprW0YEHr/XRjF6YjwMMvWLEZAACnCO/CBQN3IqBSxlOGuYzA
-         vwbZbeIWAjqOBgLfB+vlqimcSkIoLmrktmjiildhztFoE8xx2uFjSUxPNmKwY6gb8HUk
-         9AwXf6+F2PqKwIQYOKOjI1Ev/AYgA8APUl18eG/qU2vJVYzDFWbUsSENNQMpAIr7477W
-         ouBfDfiELSaf4E7QBP5VogLObkz2tcnbtwc6Iv7HfHooZk3Ddp87GtYUcV89uqWHT4kT
-         sb06MAq4/TGYv0sh3u1/RsJ9LlMGlr+g62uZp0idwiDju+YsOuaFJzeCsxzaN1nwDA/2
-         GqRw==
-X-Gm-Message-State: AOAM530FaJl3G31OvkNwvp4kVzAARulpAdFoiiXIbCbl91R44I7qoY2t
-        x8RCBvlvLwWdcKwf21owpZMF15EeF0EG5uplIYDCuNFHOMRJq0kbLGdlPN3M4ndU9ki2sSftTly
-        TM6U/8+PH+dCmnYelt84=
-X-Received: by 2002:aa7:c94c:: with SMTP id h12mr328559edt.40.1612463503629;
-        Thu, 04 Feb 2021 10:31:43 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwbYgYZaJKMYeumdOWnVdGLbGKEebTgojFuPzk62ylvgOplomfQSo9d8Ys/fCPdGVCoRwsiXw==
-X-Received: by 2002:aa7:c94c:: with SMTP id h12mr328539edt.40.1612463503417;
-        Thu, 04 Feb 2021 10:31:43 -0800 (PST)
+        bh=rFCB+eQV0Cz663cYe4lsN4DVwBDWcktodsnern4svBI=;
+        b=VU9vot0L5YmXf+lgGR9Ab/VcvHsQuCIFIDPAmfS/UUXwaSx3xkjvGrIR7msYiaafJH
+         lh0anLK5aDtt60aCqKPF+eW4O9ZYAKOw00t/Yf9AXOCLiSUvk1YlJCVVLx6IpRoUi2Mx
+         cY2/5wdEpabT+rTyz99zo0rcY5jr7Xd4PlOvjhgoWypR3PspLW/WDFlZoMs0nKOlKVQv
+         iwBtFE+Qed50UQlQzNPpm82p1x3kUFszg/t4Ph60A6HJCt5y0Mz2nHgHyof2I17Xjo2F
+         WGjAgz8dPaZUbRk+AP5hZ9J7KJjGf2Q/WLVsbS3onnuLCjkRLFNSY/rLuLXt4K2kjK/J
+         g5cw==
+X-Gm-Message-State: AOAM530qRtm0ENyBiB5F2tu49FQt2k9T0bXlzCLbveOlhJhAnWJHr6AH
+        /30HhmrO8a6gAREOqVI21KCWsFzkx9O9Xfp+A5s8ZWBJkqjDHIKZolBpM3jNQ+8aW5b4oPsmitI
+        4qmX2vfM5uby1EknRn3M=
+X-Received: by 2002:a17:906:1f45:: with SMTP id d5mr484218ejk.76.1612463781750;
+        Thu, 04 Feb 2021 10:36:21 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJw7M30qXzxnTymsFcvVhe9U1CWKFzgIz1xybWPX+bzJmLfecWsSnEYps5Icab6BhCMT2QZUIg==
+X-Received: by 2002:a17:906:1f45:: with SMTP id d5mr484197ejk.76.1612463781419;
+        Thu, 04 Feb 2021 10:36:21 -0800 (PST)
 Received: from x1.localdomain (2001-1c00-0c1e-bf00-37a3-353b-be90-1238.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:37a3:353b:be90:1238])
-        by smtp.gmail.com with ESMTPSA id bo24sm2845011edb.51.2021.02.04.10.31.42
+        by smtp.gmail.com with ESMTPSA id lo26sm2815854ejb.106.2021.02.04.10.36.20
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 04 Feb 2021 10:31:42 -0800 (PST)
-Subject: Re: [PATCH v3 2/5] ACPI: battery: Clean up printing messages
-From:   Hans de Goede <hdegoede@redhat.com>
+        Thu, 04 Feb 2021 10:36:20 -0800 (PST)
+Subject: Re: [PATCH v3 5/5] ACPI: thermal: Clean up printing messages
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -72,14 +71,14 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Joe Perches <joe@perches.com>,
         Hanjun Guo <guohanjun@huawei.com>
 References: <2367702.B5bJTmGzJm@kreacher> <1991501.dpTHplkurC@kreacher>
- <1961054.9MKZ8ejxOh@kreacher> <1731128.lCOlkKr4QW@kreacher>
- <3ca5dcaa-094a-9f4f-a802-81c54a681c96@redhat.com>
-Message-ID: <16884c35-811a-b095-27f2-f43394f3efc2@redhat.com>
-Date:   Thu, 4 Feb 2021 19:31:41 +0100
+ <1961054.9MKZ8ejxOh@kreacher> <1775685.AT6DldZj4Y@kreacher>
+From:   Hans de Goede <hdegoede@redhat.com>
+Message-ID: <0ca38ccc-eb45-f2eb-c264-d2669e9015f7@redhat.com>
+Date:   Thu, 4 Feb 2021 19:36:20 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.6.1
 MIME-Version: 1.0
-In-Reply-To: <3ca5dcaa-094a-9f4f-a802-81c54a681c96@redhat.com>
+In-Reply-To: <1775685.AT6DldZj4Y@kreacher>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -89,206 +88,343 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Hi,
 
-On 2/4/21 7:27 PM, Hans de Goede wrote:
-> Hi,
+On 2/3/21 7:49 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> On 2/3/21 7:44 PM, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Replace the ACPI_DEBUG_PRINT() and ACPI_EXCEPTION() instances
->> in battery.c with acpi_handle_debug() and acpi_handle_info() calls,
->> respectively, which among other things causes the excessive log
->> level of the messages previously printed via ACPI_EXCEPTION() to
->> be increased.
->>
->> Drop the _COMPONENT and ACPI_MODULE_NAME() definitions that are not
->> used any more, drop the no longer needed ACPI_BATTERY_COMPONENT
->> definition from the headers and update the documentation accordingly.
->>
->> While at it, update the pr_fmt() definition and drop the unneeded
->> PREFIX sybmbol definition from battery.c.  Also adapt the existing
->> pr_info() calls to the new pr_fmt() definition.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> v2 -> v3: Also adapt the existing pr_info() calls to the new pr_fmt()
->>           definition.
->>
->> v1 -> v2: Changelog update.
->>
->> ---
->>  Documentation/firmware-guide/acpi/debug.rst |    1 
->>  drivers/acpi/battery.c                      |   33 +++++++++++++---------------
->>  drivers/acpi/sysfs.c                        |    1 
->>  include/acpi/acpi_drivers.h                 |    1 
->>  4 files changed, 16 insertions(+), 20 deletions(-)
->>
->> Index: linux-pm/drivers/acpi/battery.c
->> ===================================================================
->> --- linux-pm.orig/drivers/acpi/battery.c
->> +++ linux-pm/drivers/acpi/battery.c
->> @@ -8,7 +8,7 @@
->>   *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
->>   */
->>  
->> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->> +#define pr_fmt(fmt) "ACPI: battery: " fmt
->>  
->>  #include <linux/async.h>
->>  #include <linux/delay.h>
->> @@ -29,8 +29,6 @@
->>  
->>  #include <acpi/battery.h>
->>  
->> -#define PREFIX "ACPI: "
->> -
->>  #define ACPI_BATTERY_VALUE_UNKNOWN 0xFFFFFFFF
->>  #define ACPI_BATTERY_CAPACITY_VALID(capacity) \
->>  	((capacity) != 0 && (capacity) != ACPI_BATTERY_VALUE_UNKNOWN)
->> @@ -44,10 +42,6 @@
->>  #define ACPI_BATTERY_STATE_CHARGING	0x2
->>  #define ACPI_BATTERY_STATE_CRITICAL	0x4
->>  
->> -#define _COMPONENT		ACPI_BATTERY_COMPONENT
->> -
->> -ACPI_MODULE_NAME("battery");
->> -
->>  MODULE_AUTHOR("Paul Diefenbaugh");
->>  MODULE_AUTHOR("Alexey Starikovskiy <astarikovskiy@suse.de>");
->>  MODULE_DESCRIPTION("ACPI Battery Driver");
->> @@ -466,7 +460,8 @@ static int extract_package(struct acpi_b
->>  static int acpi_battery_get_status(struct acpi_battery *battery)
->>  {
->>  	if (acpi_bus_get_status(battery->device)) {
->> -		ACPI_EXCEPTION((AE_INFO, AE_ERROR, "Evaluating _STA"));
->> +		acpi_handle_info(battery->device->handle,
->> +				 "_STA evaluation failed\n");
+> Replace the ACPI_DEBUG_PRINT() instances in thermal.c with
+> acpi_handle_debug() calls and modify the ACPI_THERMAL_TRIPS_EXCEPTION()
+> macro in there to use acpi_handle_info() internally,  which among other
+> things causes the excessive log level of the messages printed by it to
+> be increased.
 > 
-> Missing ": %s", acpi_format_exception(status), or is that intentional
-> (I did not see this mentioned in the commit msg) ?
+> Drop the _COMPONENT and ACPI_MODULE_NAME() definitions that are not
+> used any more from thermal.c, drop the no longer needed
+> ACPI_THERMAL_COMPONENT definition from the headers and update the
+> documentation accordingly.
+> 
+> While at it, add a pr_fmt() definition to thermal.c, drop the PREFIX
+> definition from there and replace some pr_warn() calls with pr_info()
+> or acpi_handle_info() to reduce the excessive log level and (in the
+> latter case) facilitate easier identification of the message source.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Reviewed-by: Hanjun Guo <guohanjun@huawei.com>
 
-Ah, after noticing that you did the same thing in patch 4/5 and there
-the passed in status was bogus, I now notice that the status here
-was hard-coded to AE_ERROR, so not meaningful.
-
-That answers my own question, so this is:
+Thanks, patch looks good to me:
 
 Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-
-As is.
 
 Regards,
 
 Hans
 
 
-
-
->>  		return -ENODEV;
->>  	}
->>  	return 0;
->> @@ -535,8 +530,10 @@ static int acpi_battery_get_info(struct
->>  		mutex_unlock(&battery->lock);
->>  
->>  		if (ACPI_FAILURE(status)) {
->> -			ACPI_EXCEPTION((AE_INFO, status, "Evaluating %s",
->> -					use_bix ? "_BIX":"_BIF"));
->> +			acpi_handle_info(battery->device->handle,
->> +					 "%s evaluation failed: %s\n",
->> +					 use_bix ?"_BIX":"_BIF",
->> +				         acpi_format_exception(status));
->>  		} else {
->>  			result = extract_battery_info(use_bix,
->>  						      battery,
->> @@ -573,7 +570,9 @@ static int acpi_battery_get_state(struct
->>  	mutex_unlock(&battery->lock);
->>  
->>  	if (ACPI_FAILURE(status)) {
->> -		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _BST"));
->> +		acpi_handle_info(battery->device->handle,
->> +				 "_BST evaluation failed: %s",
->> +				 acpi_format_exception(status));
->>  		return -ENODEV;
->>  	}
->>  
->> @@ -590,7 +589,7 @@ static int acpi_battery_get_state(struct
->>  		battery->rate_now != ACPI_BATTERY_VALUE_UNKNOWN &&
->>  		(s16)(battery->rate_now) < 0) {
->>  		battery->rate_now = abs((s16)battery->rate_now);
->> -		pr_warn_once(FW_BUG "battery: (dis)charge rate invalid.\n");
->> +		pr_warn_once(FW_BUG "(dis)charge rate invalid.\n");
->>  	}
->>  
->>  	if (test_bit(ACPI_BATTERY_QUIRK_PERCENTAGE_CAPACITY, &battery->flags)
->> @@ -625,7 +624,9 @@ static int acpi_battery_set_alarm(struct
->>  	if (ACPI_FAILURE(status))
->>  		return -ENODEV;
->>  
->> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Alarm set to %d\n", battery->alarm));
->> +	acpi_handle_debug(battery->device->handle, "Alarm set to %d\n",
->> +			  battery->alarm);
->> +
->>  	return 0;
->>  }
->>  
->> @@ -1201,8 +1202,7 @@ static int acpi_battery_add(struct acpi_
->>  	if (result)
->>  		goto fail;
->>  
->> -	pr_info(PREFIX "%s Slot [%s] (battery %s)\n",
->> -		ACPI_BATTERY_DEVICE_NAME, acpi_device_bid(device),
->> +	pr_info("Slot [%s] (battery %s)\n", acpi_device_bid(device),
->>  		device->status.battery_present ? "present" : "absent");
->>  
->>  	battery->pm_nb.notifier_call = battery_notify;
->> @@ -1282,8 +1282,7 @@ static void __init acpi_battery_init_asy
->>  	if (battery_check_pmic) {
->>  		for (i = 0; i < ARRAY_SIZE(acpi_battery_blacklist); i++)
->>  			if (acpi_dev_present(acpi_battery_blacklist[i], "1", -1)) {
->> -				pr_info(PREFIX ACPI_BATTERY_DEVICE_NAME
->> -					": found native %s PMIC, not loading\n",
->> +				pr_info("found native %s PMIC, not loading\n",
->>  					acpi_battery_blacklist[i]);
->>  				return;
->>  			}
->> Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
->> ===================================================================
->> --- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
->> +++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
->> @@ -52,7 +52,6 @@ shows the supported mask values, current
->>      ACPI_CA_DISASSEMBLER            0x00000800
->>      ACPI_COMPILER                   0x00001000
->>      ACPI_TOOLS                      0x00002000
->> -    ACPI_BATTERY_COMPONENT          0x00040000
->>      ACPI_BUTTON_COMPONENT           0x00080000
->>      ACPI_SBS_COMPONENT              0x00100000
->>      ACPI_FAN_COMPONENT              0x00200000
->> Index: linux-pm/drivers/acpi/sysfs.c
->> ===================================================================
->> --- linux-pm.orig/drivers/acpi/sysfs.c
->> +++ linux-pm/drivers/acpi/sysfs.c
->> @@ -52,7 +52,6 @@ static const struct acpi_dlayer acpi_deb
->>  	ACPI_DEBUG_INIT(ACPI_COMPILER),
->>  	ACPI_DEBUG_INIT(ACPI_TOOLS),
->>  
->> -	ACPI_DEBUG_INIT(ACPI_BATTERY_COMPONENT),
->>  	ACPI_DEBUG_INIT(ACPI_BUTTON_COMPONENT),
->>  	ACPI_DEBUG_INIT(ACPI_SBS_COMPONENT),
->>  	ACPI_DEBUG_INIT(ACPI_FAN_COMPONENT),
->> Index: linux-pm/include/acpi/acpi_drivers.h
->> ===================================================================
->> --- linux-pm.orig/include/acpi/acpi_drivers.h
->> +++ linux-pm/include/acpi/acpi_drivers.h
->> @@ -15,7 +15,6 @@
->>   * Please update drivers/acpi/debug.c and Documentation/firmware-guide/acpi/debug.rst
->>   * if you add to this list.
->>   */
->> -#define ACPI_BATTERY_COMPONENT		0x00040000
->>  #define ACPI_BUTTON_COMPONENT		0x00080000
->>  #define ACPI_SBS_COMPONENT		0x00100000
->>  #define ACPI_FAN_COMPONENT		0x00200000
->>
->>
->>
+> ---
+> 
+> v2 -> v3: Add R-by tag.
+> 
+> v1 -> v2: Changelog update.
+> 
+> ---
+>  Documentation/firmware-guide/acpi/debug.rst |    1 
+>  drivers/acpi/sysfs.c                        |    1 
+>  drivers/acpi/thermal.c                      |   87 +++++++++++++---------------
+>  include/acpi/acpi_drivers.h                 |    1 
+>  4 files changed, 43 insertions(+), 47 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/thermal.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/thermal.c
+> +++ linux-pm/drivers/acpi/thermal.c
+> @@ -13,6 +13,8 @@
+>   *          concepts of 'multiple limiters', upper/lower limits, etc.
+>   */
+>  
+> +#define pr_fmt(fmt) "ACPI: thermal: " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/dmi.h>
+> @@ -29,8 +31,6 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/units.h>
+>  
+> -#define PREFIX "ACPI: "
+> -
+>  #define ACPI_THERMAL_CLASS		"thermal_zone"
+>  #define ACPI_THERMAL_DEVICE_NAME	"Thermal Zone"
+>  #define ACPI_THERMAL_NOTIFY_TEMPERATURE	0x80
+> @@ -43,9 +43,6 @@
+>  #define ACPI_THERMAL_MAX_ACTIVE	10
+>  #define ACPI_THERMAL_MAX_LIMIT_STR_LEN 65
+>  
+> -#define _COMPONENT		ACPI_THERMAL_COMPONENT
+> -ACPI_MODULE_NAME("thermal");
+> -
+>  MODULE_AUTHOR("Paul Diefenbaugh");
+>  MODULE_DESCRIPTION("ACPI Thermal Zone Driver");
+>  MODULE_LICENSE("GPL");
+> @@ -197,8 +194,9 @@ static int acpi_thermal_get_temperature(
+>  		return -ENODEV;
+>  
+>  	tz->temperature = tmp;
+> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Temperature is %lu dK\n",
+> -			  tz->temperature));
+> +
+> +	acpi_handle_debug(tz->device->handle, "Temperature is %lu dK\n",
+> +			  tz->temperature);
+>  
+>  	return 0;
+>  }
+> @@ -216,8 +214,8 @@ static int acpi_thermal_get_polling_freq
+>  		return -ENODEV;
+>  
+>  	tz->polling_frequency = tmp;
+> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Polling frequency is %lu dS\n",
+> -			  tz->polling_frequency));
+> +	acpi_handle_debug(tz->device->handle, "Polling frequency is %lu dS\n",
+> +			  tz->polling_frequency);
+>  
+>  	return 0;
+>  }
+> @@ -254,12 +252,12 @@ static int acpi_thermal_set_cooling_mode
+>   * 2.TODO: Devices listed in _PSL, _ALx, _TZD may change.
+>   *   We need to re-bind the cooling devices of a thermal zone when this occurs.
+>   */
+> -#define ACPI_THERMAL_TRIPS_EXCEPTION(flags, str)	\
+> +#define ACPI_THERMAL_TRIPS_EXCEPTION(flags, tz, str)	\
+>  do {	\
+>  	if (flags != ACPI_TRIPS_INIT)	\
+> -		ACPI_EXCEPTION((AE_INFO, AE_ERROR,	\
+> +		acpi_handle_info(tz->device->handle,	\
+>  		"ACPI thermal trip point %s changed\n"	\
+> -		"Please send acpidump to linux-acpi@vger.kernel.org", str)); \
+> +		"Please report to linux-acpi@vger.kernel.org\n", str); \
+>  } while (0)
+>  
+>  static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+> @@ -283,17 +281,17 @@ static int acpi_thermal_trips_update(str
+>  		 */
+>  		if (ACPI_FAILURE(status)) {
+>  			tz->trips.critical.flags.valid = 0;
+> -			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> -					  "No critical threshold\n"));
+> +			acpi_handle_debug(tz->device->handle,
+> +					  "No critical threshold\n");
+>  		} else if (tmp <= 2732) {
+> -			pr_warn(FW_BUG "Invalid critical threshold (%llu)\n",
+> +			pr_info(FW_BUG "Invalid critical threshold (%llu)\n",
+>  				tmp);
+>  			tz->trips.critical.flags.valid = 0;
+>  		} else {
+>  			tz->trips.critical.flags.valid = 1;
+> -			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> +			acpi_handle_debug(tz->device->handle,
+>  					  "Found critical threshold [%lu]\n",
+> -					  tz->trips.critical.temperature));
+> +					  tz->trips.critical.temperature);
+>  		}
+>  		if (tz->trips.critical.flags.valid == 1) {
+>  			if (crt == -1) {
+> @@ -305,8 +303,8 @@ static int acpi_thermal_trips_update(str
+>  				 * Allow override critical threshold
+>  				 */
+>  				if (crt_k > tz->trips.critical.temperature)
+> -					pr_warn(PREFIX "Critical threshold %d C\n",
+> -						crt);
+> +					pr_info("Critical threshold %d C\n", crt);
+> +
+>  				tz->trips.critical.temperature = crt_k;
+>  			}
+>  		}
+> @@ -318,14 +316,14 @@ static int acpi_thermal_trips_update(str
+>  				"_HOT", NULL, &tmp);
+>  		if (ACPI_FAILURE(status)) {
+>  			tz->trips.hot.flags.valid = 0;
+> -			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> -					"No hot threshold\n"));
+> +			acpi_handle_debug(tz->device->handle,
+> +					  "No hot threshold\n");
+>  		} else {
+>  			tz->trips.hot.temperature = tmp;
+>  			tz->trips.hot.flags.valid = 1;
+> -			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> -					"Found hot threshold [%lu]\n",
+> -					tz->trips.hot.temperature));
+> +			acpi_handle_debug(tz->device->handle,
+> +					  "Found hot threshold [%lu]\n",
+> +					  tz->trips.hot.temperature);
+>  		}
+>  	}
+>  
+> @@ -378,7 +376,8 @@ static int acpi_thermal_trips_update(str
+>  		status = acpi_evaluate_reference(tz->device->handle, "_PSL",
+>  							NULL, &devices);
+>  		if (ACPI_FAILURE(status)) {
+> -			pr_warn(PREFIX "Invalid passive threshold\n");
+> +			acpi_handle_info(tz->device->handle,
+> +					 "Invalid passive threshold\n");
+>  			tz->trips.passive.flags.valid = 0;
+>  		}
+>  		else
+> @@ -388,12 +387,12 @@ static int acpi_thermal_trips_update(str
+>  				sizeof(struct acpi_handle_list))) {
+>  			memcpy(&tz->trips.passive.devices, &devices,
+>  				sizeof(struct acpi_handle_list));
+> -			ACPI_THERMAL_TRIPS_EXCEPTION(flag, "device");
+> +			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
+>  		}
+>  	}
+>  	if ((flag & ACPI_TRIPS_PASSIVE) || (flag & ACPI_TRIPS_DEVICES)) {
+>  		if (valid != tz->trips.passive.flags.valid)
+> -				ACPI_THERMAL_TRIPS_EXCEPTION(flag, "state");
+> +				ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "state");
+>  	}
+>  
+>  	/* Active (optional) */
+> @@ -440,8 +439,8 @@ static int acpi_thermal_trips_update(str
+>  			status = acpi_evaluate_reference(tz->device->handle,
+>  						name, NULL, &devices);
+>  			if (ACPI_FAILURE(status)) {
+> -				pr_warn(PREFIX "Invalid active%d threshold\n",
+> -					i);
+> +				acpi_handle_info(tz->device->handle,
+> +						 "Invalid active%d threshold\n", i);
+>  				tz->trips.active[i].flags.valid = 0;
+>  			}
+>  			else
+> @@ -451,12 +450,12 @@ static int acpi_thermal_trips_update(str
+>  					sizeof(struct acpi_handle_list))) {
+>  				memcpy(&tz->trips.active[i].devices, &devices,
+>  					sizeof(struct acpi_handle_list));
+> -				ACPI_THERMAL_TRIPS_EXCEPTION(flag, "device");
+> +				ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
+>  			}
+>  		}
+>  		if ((flag & ACPI_TRIPS_ACTIVE) || (flag & ACPI_TRIPS_DEVICES))
+>  			if (valid != tz->trips.active[i].flags.valid)
+> -				ACPI_THERMAL_TRIPS_EXCEPTION(flag, "state");
+> +				ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "state");
+>  
+>  		if (!tz->trips.active[i].flags.valid)
+>  			break;
+> @@ -469,7 +468,7 @@ static int acpi_thermal_trips_update(str
+>  		if (ACPI_SUCCESS(status)
+>  		    && memcmp(&tz->devices, &devices, sizeof(devices))) {
+>  			tz->devices = devices;
+> -			ACPI_THERMAL_TRIPS_EXCEPTION(flag, "device");
+> +			ACPI_THERMAL_TRIPS_EXCEPTION(flag, tz, "device");
+>  		}
+>  	}
+>  
+> @@ -925,8 +924,8 @@ static void acpi_thermal_notify(struct a
+>  						  dev_name(&device->dev), event, 0);
+>  		break;
+>  	default:
+> -		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> -				  "Unsupported event [0x%x]\n", event));
+> +		acpi_handle_debug(device->handle, "Unsupported event [0x%x]\n",
+> +				  event);
+>  		break;
+>  	}
+>  }
+> @@ -1074,7 +1073,7 @@ static int acpi_thermal_add(struct acpi_
+>  	mutex_init(&tz->thermal_check_lock);
+>  	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
+>  
+> -	pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
+> +	pr_info("%s [%s] (%ld C)\n", acpi_device_name(device),
+>  		acpi_device_bid(device), deci_kelvin_to_celsius(tz->temperature));
+>  	goto end;
+>  
+> @@ -1146,24 +1145,24 @@ static int acpi_thermal_resume(struct de
+>  static int thermal_act(const struct dmi_system_id *d) {
+>  
+>  	if (act == 0) {
+> -		pr_notice(PREFIX "%s detected: "
+> -			  "disabling all active thermal trip points\n", d->ident);
+> +		pr_notice("%s detected: disabling all active thermal trip points\n",
+> +			  d->ident);
+>  		act = -1;
+>  	}
+>  	return 0;
+>  }
+>  static int thermal_nocrt(const struct dmi_system_id *d) {
+>  
+> -	pr_notice(PREFIX "%s detected: "
+> -		  "disabling all critical thermal trip point actions.\n", d->ident);
+> +	pr_notice("%s detected: disabling all critical thermal trip point actions.\n",
+> +		  d->ident);
+>  	nocrt = 1;
+>  	return 0;
+>  }
+>  static int thermal_tzp(const struct dmi_system_id *d) {
+>  
+>  	if (tzp == 0) {
+> -		pr_notice(PREFIX "%s detected: "
+> -			  "enabling thermal zone polling\n", d->ident);
+> +		pr_notice("%s detected: enabling thermal zone polling\n",
+> +			  d->ident);
+>  		tzp = 300;	/* 300 dS = 30 Seconds */
+>  	}
+>  	return 0;
+> @@ -1171,8 +1170,8 @@ static int thermal_tzp(const struct dmi_
+>  static int thermal_psv(const struct dmi_system_id *d) {
+>  
+>  	if (psv == 0) {
+> -		pr_notice(PREFIX "%s detected: "
+> -			  "disabling all passive thermal trip points\n", d->ident);
+> +		pr_notice("%s detected: disabling all passive thermal trip points\n",
+> +			  d->ident);
+>  		psv = -1;
+>  	}
+>  	return 0;
+> @@ -1225,7 +1224,7 @@ static int __init acpi_thermal_init(void
+>  	dmi_check_system(thermal_dmi_table);
+>  
+>  	if (off) {
+> -		pr_notice(PREFIX "thermal control disabled\n");
+> +		pr_notice("thermal control disabled\n");
+>  		return -ENODEV;
+>  	}
+>  
+> Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
+> ===================================================================
+> --- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
+> +++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
+> @@ -57,7 +57,6 @@ shows the supported mask values, current
+>      ACPI_PCI_COMPONENT              0x00400000
+>      ACPI_CONTAINER_COMPONENT        0x01000000
+>      ACPI_SYSTEM_COMPONENT           0x02000000
+> -    ACPI_THERMAL_COMPONENT          0x04000000
+>      ACPI_MEMORY_DEVICE_COMPONENT    0x08000000
+>      ACPI_PROCESSOR_COMPONENT        0x20000000
+>  
+> Index: linux-pm/drivers/acpi/sysfs.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/sysfs.c
+> +++ linux-pm/drivers/acpi/sysfs.c
+> @@ -57,7 +57,6 @@ static const struct acpi_dlayer acpi_deb
+>  	ACPI_DEBUG_INIT(ACPI_PCI_COMPONENT),
+>  	ACPI_DEBUG_INIT(ACPI_CONTAINER_COMPONENT),
+>  	ACPI_DEBUG_INIT(ACPI_SYSTEM_COMPONENT),
+> -	ACPI_DEBUG_INIT(ACPI_THERMAL_COMPONENT),
+>  	ACPI_DEBUG_INIT(ACPI_MEMORY_DEVICE_COMPONENT),
+>  	ACPI_DEBUG_INIT(ACPI_PROCESSOR_COMPONENT),
+>  };
+> Index: linux-pm/include/acpi/acpi_drivers.h
+> ===================================================================
+> --- linux-pm.orig/include/acpi/acpi_drivers.h
+> +++ linux-pm/include/acpi/acpi_drivers.h
+> @@ -20,7 +20,6 @@
+>  #define ACPI_PCI_COMPONENT		0x00400000
+>  #define ACPI_CONTAINER_COMPONENT	0x01000000
+>  #define ACPI_SYSTEM_COMPONENT		0x02000000
+> -#define ACPI_THERMAL_COMPONENT		0x04000000
+>  #define ACPI_MEMORY_DEVICE_COMPONENT	0x08000000
+>  #define ACPI_PROCESSOR_COMPONENT	0x20000000
+>  
+> 
+> 
+> 
 
