@@ -2,166 +2,154 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65B27C433E6
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63161C433E6
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:41:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FBFC64F4E
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:35:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 21AD364DFF
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 07:41:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234520AbhBDHe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 02:34:58 -0500
-Received: from mga07.intel.com ([134.134.136.100]:39008 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234521AbhBDHe5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 Feb 2021 02:34:57 -0500
-IronPort-SDR: SdAGlXHwMNdkvJBaxDgDOXRFlVPAO4Ny0SpcIC6yQfL+YiURjWvwPMDsN1+8W8Cqbydj40DNGr
- 3ZpIUCSRDVLw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9884"; a="245261638"
-X-IronPort-AV: E=Sophos;i="5.79,400,1602572400"; 
-   d="scan'208";a="245261638"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Feb 2021 23:34:14 -0800
-IronPort-SDR: tuQBFfMGQL7Xgm+mxxMJvT42Elb3QZ331n87q9q6vZQxYBLTXN9Hi3DWTxnZ4oDEl98Q0kEmSd
- piTJvsGWGNeQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.79,400,1602572400"; 
-   d="scan'208";a="576198674"
-Received: from lkp-server02.sh.intel.com (HELO 8b832f01bb9c) ([10.239.97.151])
-  by orsmga005.jf.intel.com with ESMTP; 03 Feb 2021 23:34:12 -0800
-Received: from kbuild by 8b832f01bb9c with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1l7Z9X-0000pE-Uy; Thu, 04 Feb 2021 07:34:11 +0000
-Date:   Thu, 04 Feb 2021 15:33:38 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- d0df27d78279aaa73c22e54f0b97d5f3f508f27e
-Message-ID: <601ba352.VfF+oLpzGWFpeVB1%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S234328AbhBDHl3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Feb 2021 02:41:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51418 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234748AbhBDHl1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 02:41:27 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5193EC061573
+        for <linux-pm@vger.kernel.org>; Wed,  3 Feb 2021 23:40:47 -0800 (PST)
+Date:   Thu, 04 Feb 2021 07:40:45 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1612424445;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=hrS5oia4ethNl2nxGmHWQSOKeZBtHqrIzOhnekH39IE=;
+        b=MSNcSWn0yL6uQ3t+Rua/jM0LG0/KZLbteg08+7fyNNZNC16hi9FV/uPuWePAxGARNRQ96i
+        HgKa7u3lelYTrtCEvg/P9kMaPoOcPnmpLT295v4f94oqn8oCGOr8hJbmX47d0jRdcPuQQN
+        Im+Whn+MecoM0pe01QHOhYTPT27c6vKd0KM/iqpTKeXZkj6w+8M+n6dp052r7sdIdDRiH2
+        +ti+nWhpXSz3gpP6sqwzRbxrk2uV1TGW9Dk9TdRbQdUYV2Zs6Cf64nSI28SayAufUcVr0N
+        PSLi1dG57hkLDSunrkNMBommJMVVGewdj+jgJ5mPVH49Ci8vRgUzjvnRlaPgqw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1612424445;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=hrS5oia4ethNl2nxGmHWQSOKeZBtHqrIzOhnekH39IE=;
+        b=caqwKte7B/d0uKAbHV+aj6CjBRWclRaRjd2jGI5J/48lLH9vK+6yrzZd0qPDOQcHIXYsQv
+        JWJQZ7qIAEEMnuBg==
+From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] thermal/core: Make cooling device state
+ change private
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Zhang Rui <rui.zhang@intel.com>, amitk@kernel.org
+In-Reply-To: <20210118173824.9970-1-daniel.lezcano@linaro.org>
+References: <20210118173824.9970-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <161242444507.23325.10160721886826811281.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: d0df27d78279aaa73c22e54f0b97d5f3f508f27e  Merge branch 'sfi-removal' into bleeding-edge
+The following commit has been merged into the thermal/next branch of thermal:
 
-elapsed time: 723m
+Commit-ID:     23ff8529ee207c634ce2e170c353938db7aa98a9
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//23ff8529ee207c634ce2e170c353938db7aa98a9
+Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
+AuthorDate:    Mon, 18 Jan 2021 18:38:24 +01:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Tue, 19 Jan 2021 22:31:10 +01:00
 
-configs tested: 95
-configs skipped: 2
+thermal/core: Make cooling device state change private
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The change of the cooling device state should be used by the governor
+or at least by the core code, not by the drivers themselves.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                         cm_x300_defconfig
-sh                          urquell_defconfig
-arm                        spear6xx_defconfig
-sh                ecovec24-romimage_defconfig
-c6x                        evmc6472_defconfig
-arc                      axs103_smp_defconfig
-arc                            hsdk_defconfig
-arc                        nsim_700_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                     tqm8548_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                    socrates_defconfig
-sh                          sdk7780_defconfig
-sh                         microdev_defconfig
-arm                          pxa168_defconfig
-arc                          axs103_defconfig
-s390                          debug_defconfig
-mips                         bigsur_defconfig
-arm                          lpd270_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210203
-i386                 randconfig-a005-20210203
-i386                 randconfig-a003-20210203
-i386                 randconfig-a006-20210203
-i386                 randconfig-a002-20210203
-i386                 randconfig-a004-20210203
-x86_64               randconfig-a013-20210202
-x86_64               randconfig-a014-20210202
-x86_64               randconfig-a015-20210202
-x86_64               randconfig-a016-20210202
-x86_64               randconfig-a011-20210202
-x86_64               randconfig-a012-20210202
-i386                 randconfig-a013-20210202
-i386                 randconfig-a016-20210202
-i386                 randconfig-a014-20210202
-i386                 randconfig-a012-20210202
-i386                 randconfig-a015-20210202
-i386                 randconfig-a011-20210202
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Remove the API usage and move the function declaration to the internal
+headers.
 
-clang tested configs:
-x86_64               randconfig-a006-20210202
-x86_64               randconfig-a001-20210202
-x86_64               randconfig-a005-20210202
-x86_64               randconfig-a002-20210202
-x86_64               randconfig-a004-20210202
-x86_64               randconfig-a003-20210202
-
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Link: https://lore.kernel.org/r/20210118173824.9970-1-daniel.lezcano@linaro.org
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/hwmon/pwm-fan.c          | 1 -
+ drivers/thermal/khadas_mcu_fan.c | 1 -
+ drivers/thermal/thermal_core.h   | 2 ++
+ include/linux/thermal.h          | 3 ---
+ 4 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 777439f..c8a1597 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -422,7 +422,6 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 			return ret;
+ 		}
+ 		ctx->cdev = cdev;
+-		thermal_cdev_update(cdev);
+ 	}
+ 
+ 	return 0;
+diff --git a/drivers/thermal/khadas_mcu_fan.c b/drivers/thermal/khadas_mcu_fan.c
+index 9eadd2d..d35e531 100644
+--- a/drivers/thermal/khadas_mcu_fan.c
++++ b/drivers/thermal/khadas_mcu_fan.c
+@@ -100,7 +100,6 @@ static int khadas_mcu_fan_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 	ctx->cdev = cdev;
+-	thermal_cdev_update(cdev);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 90f9a80..86b8cef 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -65,6 +65,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+ 		cdev->ops->power2state;
+ }
+ 
++void thermal_cdev_update(struct thermal_cooling_device *);
++
+ /**
+  * struct thermal_trip - representation of a point in temperature domain
+  * @np: pointer to struct device_node that this trip point was created from
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 1e68640..6ac7bb1 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -390,7 +390,6 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+ int thermal_zone_get_slope(struct thermal_zone_device *tz);
+ int thermal_zone_get_offset(struct thermal_zone_device *tz);
+ 
+-void thermal_cdev_update(struct thermal_cooling_device *);
+ void thermal_notify_framework(struct thermal_zone_device *, int);
+ int thermal_zone_device_enable(struct thermal_zone_device *tz);
+ int thermal_zone_device_disable(struct thermal_zone_device *tz);
+@@ -437,8 +436,6 @@ static inline int thermal_zone_get_offset(
+ 		struct thermal_zone_device *tz)
+ { return -ENODEV; }
+ 
+-static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
+-{ }
+ static inline void thermal_notify_framework(struct thermal_zone_device *tz,
+ 	int trip)
+ { }
