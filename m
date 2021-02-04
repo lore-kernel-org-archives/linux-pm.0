@@ -8,51 +8,51 @@ X-Spam-Status: No, score=-19.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E680C433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B899DC433E6
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 08:15:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2872564F55
+	by mail.kernel.org (Postfix) with ESMTP id 72E2C64F64
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Feb 2021 08:15:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234889AbhBDIPf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 03:15:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58654 "EHLO
+        id S234902AbhBDIPw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Feb 2021 03:15:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234861AbhBDIPM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 03:15:12 -0500
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1309FC061788
-        for <linux-pm@vger.kernel.org>; Thu,  4 Feb 2021 00:14:32 -0800 (PST)
-Received: by mail-pl1-x62d.google.com with SMTP id 8so1333224plc.10
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 00:14:32 -0800 (PST)
+        with ESMTP id S234881AbhBDIPv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 03:15:51 -0500
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 650C9C06178C
+        for <linux-pm@vger.kernel.org>; Thu,  4 Feb 2021 00:14:36 -0800 (PST)
+Received: by mail-pj1-x102f.google.com with SMTP id s24so1259777pjp.5
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 00:14:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=x5CYaMWQw/4Wx6VXz67FQpkoWBucz0YJ72zvXGes1Ck=;
-        b=QZvelL5k11SF4Dg/A6++a6KsE/vSckTzOkNENbQWJCmUC4yyMS/Mb6rz/WKA32rxjc
-         cGnd7sDUuvE+F/qbVYvFQqoRzxsWNQeagz56NbQnnFecUqBdKwcIRfBzgtOn9bz35R3z
-         +AosgC/5C0oTMMyk052i2IqSqShkwb4b6Q+JM=
+        bh=x7hwBm1kKlbRCUXjrjQz7CyPjQNfq9+xKEIyZstLmMQ=;
+        b=oXRtwD8S3IU7qmYkvuuwuGjjF13/SrDBBFsIC6RDA0gMdOXw2QlM6hRE3SJZ6mFLSv
+         KomcMdg4+2/7ctxnxSPcDtRdN2BKk7mkig3dr04m8kr9u/wvPbYYjwJJK4Vah3PODknL
+         z3Cp83gtMyMIbB+iJdtMRV2t2pH8SNBKpsrE4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=x5CYaMWQw/4Wx6VXz67FQpkoWBucz0YJ72zvXGes1Ck=;
-        b=ezTlEUkT/r+OmnPuD5fLl4hngc2B0+A/g6C1rdobs5xSo5xgHbZTpGzV7abP3nWyYZ
-         jIMqN8vJCXDJFH8OfJE1IUZ1BmHPYh1EAnAuibMW492TxefF+LzEsfhWKkyaVWp5I0Ph
-         PrgZ8MjdXTjOR5xLyzcusxjNgemwzhuoK7q3k8orTbNWKRg6FOAtAM71HVzmN/cMjvEz
-         hey67elYes0TlUk1VN7PF067FPp1Y0tIBALsUrNaqatwdbUeFOmoBxT6zoqj5FhmBsrM
-         +59NJrc76QPHNogiZBZNmHcTse0ja7qw/kAATFClKsRpR4npqTqIR79h1qjX6SqcrRb7
-         p69A==
-X-Gm-Message-State: AOAM533frSRSz/7jl3Q5WI97MMM+mpvcEAKKfFjoJ+esantV2RRYqCfm
-        pea+2RmxtdiiGv3DsebDay8Zv4ntNMjTHg==
-X-Google-Smtp-Source: ABdhPJztsSY/dpx9ZsIbkOQnPw+LFxN23y4ugBHxtV0o8MUFdQB7zo18NhIUL+2TBYQXmxc2b2kyXQ==
-X-Received: by 2002:a17:902:d2c1:b029:de:7c38:f86a with SMTP id n1-20020a170902d2c1b02900de7c38f86amr7102021plc.83.1612426471523;
-        Thu, 04 Feb 2021 00:14:31 -0800 (PST)
+        bh=x7hwBm1kKlbRCUXjrjQz7CyPjQNfq9+xKEIyZstLmMQ=;
+        b=r9mzRRzbfJIH+LtWoto/JaD2W7N5a3uKZtywXlQ6Fbh8gkoOJhpKD6GQE5V0hdFrw8
+         5k6+/KqQtaeoqQG9Q376IGyAQ/kEtquDc8WOALFHK7Flmt8ZBQOJcdyPlpOG4ch1pxRe
+         dsD69RK0arzHEZvkydojiqV8mIveJrQVlYLsfSjW3K+I7XKM9lziM+nJ/8CmySLSIUvk
+         cSQaEW1Z19l146XGz/639Vtu3yz0MDafx91Z5jZOnvkRdHwxVDfHU+iUI4tl+xkgCB9x
+         VP7Cv9TDMfJwXXQkLIad5Q/o1rOhExkVe2kP/6Z05TgD0jiRbdk8guC9BVElhH0BnkGF
+         54aA==
+X-Gm-Message-State: AOAM5336UOV0n1+bzmJUlXM4S8/73AEdYtwuoRflkTnlLXI7yHWTsLwl
+        C1xxcaaSPGFIpsIqiWEwxtLnHQ==
+X-Google-Smtp-Source: ABdhPJzuP6Azc8rztVE7Z5XDU8FeG4n072jg5T/rqE92DsgySeKm6X8FsaL9Jr4p6Jrn0x4xmz7pXQ==
+X-Received: by 2002:a17:90a:701:: with SMTP id l1mr7313673pjl.154.1612426475966;
+        Thu, 04 Feb 2021 00:14:35 -0800 (PST)
 Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:ed70:6d43:9c6a:2e22])
-        by smtp.gmail.com with ESMTPSA id e3sm5091258pgs.60.2021.02.04.00.14.29
+        by smtp.gmail.com with ESMTPSA id e3sm5091258pgs.60.2021.02.04.00.14.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Feb 2021 00:14:31 -0800 (PST)
+        Thu, 04 Feb 2021 00:14:35 -0800 (PST)
 From:   Hsin-Yi Wang <hsinyi@chromium.org>
 To:     Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org
 Cc:     Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
@@ -62,9 +62,9 @@ Cc:     Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
         Kyungmin Park <kyungmin.park@samsung.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Saravana Kannan <saravanak@google.com>
-Subject: [PATCH v6 1/3] OPP: Add function to look up required OPP's for a given OPP
-Date:   Thu,  4 Feb 2021 16:14:22 +0800
-Message-Id: <20210204081424.2219311-2-hsinyi@chromium.org>
+Subject: [PATCH v6 3/3] PM / devfreq: Add required OPPs support to passive governor
+Date:   Thu,  4 Feb 2021 16:14:24 +0800
+Message-Id: <20210204081424.2219311-4-hsinyi@chromium.org>
 X-Mailer: git-send-email 2.30.0.365.g02bc693789-goog
 In-Reply-To: <20210204081424.2219311-1-hsinyi@chromium.org>
 References: <20210204081424.2219311-1-hsinyi@chromium.org>
@@ -76,111 +76,78 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Saravana Kannan <saravanak@google.com>
 
-Add a function that allows looking up required OPPs given a source OPP
-table, destination OPP table and the source OPP.
+Look at the required OPPs of the "parent" device to determine the OPP that
+is required from the slave device managed by the passive governor. This
+allows having mappings between a parent device and a slave device even when
+they don't have the same number of OPPs.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
 ---
- drivers/opp/core.c     | 59 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h |  7 +++++
- 2 files changed, 66 insertions(+)
+ drivers/devfreq/governor_passive.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index dc95d29e94c1b..fba67ae40aefc 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2398,6 +2398,65 @@ devm_pm_opp_attach_genpd(struct device *dev, const char **names,
- }
- EXPORT_SYMBOL_GPL(devm_pm_opp_attach_genpd);
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+index 63332e4a65ae8..8fd51cc9b991a 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -19,7 +19,7 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 			= (struct devfreq_passive_data *)devfreq->data;
+ 	struct devfreq *parent_devfreq = (struct devfreq *)p_data->parent;
+ 	unsigned long child_freq = ULONG_MAX;
+-	struct dev_pm_opp *opp;
++	struct dev_pm_opp *opp, *p_opp = ERR_PTR(-ENODEV);
+ 	int i, count, ret = 0;
  
-+/**
-+ * dev_pm_opp_xlate_required_opp() - Find required OPP for @src_table OPP.
-+ * @src_table: OPP table which has @dst_table as one of its required OPP table.
-+ * @dst_table: Required OPP table of the @src_table.
-+ *
-+ * This function returns the OPP (present in @dst_table) pointed out by the
-+ * "required-opps" property of the OPP (present in @src_table).
-+ *
-+ * The callers are required to call dev_pm_opp_put() for the returned OPP after
-+ * use.
-+ *
-+ * Return: destination table OPP on success, otherwise -EINVAL or -ENODEV based
-+ * on errors.
-+ */
-+struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
-+						 struct opp_table *dst_table,
-+						 struct dev_pm_opp *src_opp)
-+{
-+	struct dev_pm_opp *opp, *dest_opp = ERR_PTR(-EINVAL);
-+	int i;
-+
-+	if (!src_table || !dst_table || !src_opp ||
-+	    !src_table->required_opp_tables)
-+		return ERR_PTR(-EINVAL);
-+
-+	/* required-opps not fully initialized yet */
-+	if (lazy_linking_pending(src_table))
-+		return ERR_PTR(-EINVAL);
-+
-+	for (i = 0; i < src_table->required_opp_count; i++) {
-+		if (src_table->required_opp_tables[i] == dst_table)
-+			break;
+ 	/*
+@@ -29,7 +29,7 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	 */
+ 	if (p_data->get_target_freq) {
+ 		ret = p_data->get_target_freq(devfreq, freq);
+-		goto out;
++		return ret;
+ 	}
+ 
+ 	/*
+@@ -56,13 +56,22 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	 * list of parent device. Because in this case, *freq is temporary
+ 	 * value which is decided by ondemand governor.
+ 	 */
+-	opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
+-	if (IS_ERR(opp)) {
+-		ret = PTR_ERR(opp);
+-		goto out;
++	p_opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
++	if (IS_ERR(p_opp)) {
++		ret = PTR_ERR(p_opp);
++		return ret;
+ 	}
+ 
+-	dev_pm_opp_put(opp);
++	if (devfreq->opp_table && parent_devfreq->opp_table) {
++		opp = dev_pm_opp_xlate_required_opp(parent_devfreq->opp_table,
++						    devfreq->opp_table, p_opp);
++		if (!IS_ERR(opp)) {
++			*freq = dev_pm_opp_get_freq(opp);
++			dev_pm_opp_put(opp);
++		} else
++			ret = PTR_ERR(opp);
++		goto out;
 +	}
+ 
+ 	/*
+ 	 * Get the OPP table's index of decided freqeuncy by governor
+@@ -89,6 +98,8 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	*freq = child_freq;
+ 
+ out:
++	dev_pm_opp_put(p_opp);
 +
-+	if (unlikely(i == src_table->required_opp_count)) {
-+		pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
-+		       __func__, src_table, dst_table);
-+		return ERR_PTR(-ENODEV);
-+	}
-+
-+	mutex_lock(&src_table->lock);
-+
-+	list_for_each_entry(opp, &src_table->opp_list, node) {
-+		if (opp == src_opp) {
-+			dest_opp = opp->required_opps[i];
-+			dev_pm_opp_get(dest_opp);
-+			goto unlock;
-+		}
-+	}
-+
-+	pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
-+	       dst_table);
-+
-+unlock:
-+	mutex_unlock(&src_table->lock);
-+
-+	return dest_opp;
-+}
-+
- /**
-  * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
-  * @src_table: OPP table which has dst_table as one of its required OPP table.
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index ab1d15ce559db..c0371efa4a0f2 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -156,6 +156,7 @@ struct opp_table *devm_pm_opp_register_set_opp_helper(struct device *dev, int (*
- struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names, struct device ***virt_devs);
- void dev_pm_opp_detach_genpd(struct opp_table *opp_table);
- struct opp_table *devm_pm_opp_attach_genpd(struct device *dev, const char **names, struct device ***virt_devs);
-+struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table, struct opp_table *dst_table, struct dev_pm_opp *src_opp);
- int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- int dev_pm_opp_set_opp(struct device *dev, struct dev_pm_opp *opp);
-@@ -367,6 +368,12 @@ static inline struct opp_table *devm_pm_opp_attach_genpd(struct device *dev,
- 	return ERR_PTR(-EOPNOTSUPP);
+ 	return ret;
  }
  
-+static inline struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
-+				struct opp_table *dst_table, struct dev_pm_opp *src_opp)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
- static inline int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
- {
- 	return -EOPNOTSUPP;
 -- 
 2.30.0.365.g02bc693789-goog
 
