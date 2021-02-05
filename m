@@ -2,171 +2,186 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.6 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF835C433E6
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68C9EC433DB
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:43:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8474C64EEC
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:20:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3725564FB5
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:43:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231743AbhBFDUV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 22:20:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39902 "EHLO
+        id S231891AbhBFDnB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 22:43:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231459AbhBFCpi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 21:45:38 -0500
-Received: from relay08.th.seeweb.it (relay08.th.seeweb.it [IPv6:2001:4b7a:2000:18::169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7057BC0698CB;
-        Fri,  5 Feb 2021 14:23:15 -0800 (PST)
-Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id E16573F290;
-        Fri,  5 Feb 2021 23:23:13 +0100 (CET)
-Subject: Re: [PATCH v5 7/7] dt-bindings: cpufreq: qcom-hw: Add bindings for
- 8998
-To:     Rob Herring <robh@kernel.org>
-Cc:     viresh.kumar@linaro.org, bjorn.andersson@linaro.org,
-        agross@kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org,
-        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
-        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
-        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com
-References: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
- <20210121195250.492500-8-angelogioacchino.delregno@somainline.org>
- <20210205215125.GA3810714@robh.at.kernel.org>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Message-ID: <8e7efd35-791c-da49-c9db-bc8a94021c42@somainline.org>
-Date:   Fri, 5 Feb 2021 23:23:13 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
-MIME-Version: 1.0
-In-Reply-To: <20210205215125.GA3810714@robh.at.kernel.org>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+        with ESMTP id S230296AbhBFDlb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 22:41:31 -0500
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2C64C08E86F
+        for <linux-pm@vger.kernel.org>; Fri,  5 Feb 2021 14:27:02 -0800 (PST)
+Received: by mail-yb1-xb49.google.com with SMTP id n81so8657628ybg.20
+        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2021 14:27:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=sender:date:in-reply-to:message-id:mime-version:references:subject
+         :from:to:cc;
+        bh=nTYZSPOjkc18IliuMfnfRh5H/pVF22NJbjiTgx5RAVQ=;
+        b=Mm6nmK+U9sWgdy5Kl5FWR72rOFcOPFvROrGTmdoXRpZIiuZV62ELOWH/ANFl9FZv48
+         WKXxbas72ewJwQSAlM+tuQ5oro9iQc2J6lQg3Fj4ZGY95z4hvdDMslQ/xFUCHGw9JTQW
+         ozCrQLXZ4ZZwk460RT8jQymPqzGWnn6RzLezbUwlZbxeN6sZ9i9EFrxpHIMJXDCZ+GtS
+         ZxX35V5B8D7JFLk2l9CMndHRKsILANotrh6ov6yUqsjE4ZkLpQq/qs+6ILuymjBzW/t3
+         lfMT6f+nRYfVGGUpAXuGaHE3M4iW6zmvvcop6V9w3pEKg6VttIn53oZg6LRjtoP47yQC
+         LIaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=nTYZSPOjkc18IliuMfnfRh5H/pVF22NJbjiTgx5RAVQ=;
+        b=aFsyAl5Q7E9lAxGFJwKkt1D3p4afF5aJPsb6/rJyVe5UxALoBHY2+iXwo61kD+U2rG
+         H94YgZnVA9owoHgAOH5djOZYXa2oeZ+zOjRZTssGbv2FfE+CZTuYATgTwyaBlIhS4E5T
+         a0QuyePPJoX4lSeOA8Rb+k5e4cRGydAUd62cMSN6ebufsC9INvNsRzkx7X/tqDLqMgQK
+         l+2MeaxHYnuRRvFZgJoI/c6RvFHlyPTBwP2KN5PKurwaQM3dALjG2v2SaSamw2NvKcKr
+         tgaDW4ws2Td6GtMpm/PJaj2YTqIduGDi5v5Po1FRPkjMYbQ65XzOj6+wXDZGmXyo07Mq
+         4xHg==
+X-Gm-Message-State: AOAM5315Lv5mTocgWpulO/aHVOqMfQJwz9MDX8EhffHiQa1hcBnxkzpp
+        WSqebTaqDLYkoLFS2A2wZrPskQq3aJ1YddE=
+X-Google-Smtp-Source: ABdhPJyW1m9SbXAqH09239WynVsuVFpGwpuvcunwzfCPoBBzTTIBp5GlOy/wl0ZJFwtPTfMh78OkuipnUZY/zB8=
+Sender: "saravanak via sendgmr" <saravanak@saravanak.san.corp.google.com>
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:6d36:b798:55d7:f5c5])
+ (user=saravanak job=sendgmr) by 2002:a25:3104:: with SMTP id
+ x4mr9895088ybx.141.1612564022147; Fri, 05 Feb 2021 14:27:02 -0800 (PST)
+Date:   Fri,  5 Feb 2021 14:26:41 -0800
+In-Reply-To: <20210205222644.2357303-1-saravanak@google.com>
+Message-Id: <20210205222644.2357303-6-saravanak@google.com>
+Mime-Version: 1.0
+References: <20210205222644.2357303-1-saravanak@google.com>
+X-Mailer: git-send-email 2.30.0.478.g8a0d178c01-goog
+Subject: [PATCH v4 5/8] driver core: fw_devlink: Handle suppliers that don't
+ use driver core
+From:   Saravana Kannan <saravanak@google.com>
+To:     Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Marc Zyngier <maz@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>
+Cc:     Saravana Kannan <saravanak@google.com>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-acpi@vger.kernel.org,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        kernel-team@android.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 05/02/21 22:51, Rob Herring ha scritto:
-> On Thu, Jan 21, 2021 at 08:52:50PM +0100, AngeloGioacchino Del Regno wrote:
->> The OSM programming addition has been done under the
->> qcom,cpufreq-hw-8998 compatible name: specify the requirement
->> of two additional register spaces for this functionality.
->> This implementation, with the same compatible, has been
->> tested on MSM8998 and SDM630.
->>
->> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
->> ---
->>   .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 66 +++++++++++++++----
->>   1 file changed, 52 insertions(+), 14 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
->> index bc81b6203e27..17fd6a6cefb0 100644
->> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
->> @@ -18,6 +18,10 @@ description: |
->>   properties:
->>     compatible:
->>       oneOf:
->> +      - description: Non-secure v1 of CPUFREQ HW
->> +        items:
->> +          - const: qcom,cpufreq-hw-8998
->> +
->>         - description: v1 of CPUFREQ HW
->>           items:
->>             - const: qcom,cpufreq-hw
->> @@ -28,21 +32,9 @@ properties:
->>                 - qcom,sm8250-cpufreq-epss
->>             - const: qcom,cpufreq-epss
->>   
->> -  reg:
->> -    minItems: 2
->> -    maxItems: 3
->> -    items:
->> -      - description: Frequency domain 0 register region
->> -      - description: Frequency domain 1 register region
->> -      - description: Frequency domain 2 register region
->> +  reg: {}
->>   
->> -  reg-names:
->> -    minItems: 2
->> -    maxItems: 3
->> -    items:
->> -      - const: freq-domain0
->> -      - const: freq-domain1
->> -      - const: freq-domain2
->> +  reg-names: {}
->>   
->>     clocks:
->>       items:
->> @@ -57,6 +49,52 @@ properties:
->>     '#freq-domain-cells':
->>       const: 1
->>   
->> +if:
->> +  properties:
->> +    compatible:
->> +      contains:
->> +        const: qcom,cpufreq-hw-8998
->> +then:
->> +  properties:
->> +    reg:
->> +      minItems: 2
->> +      maxItems: 6
->> +      items:
->> +        - description: Frequency domain 0 register region
->> +        - description: Operating State Manager domain 0 register region
->> +        - description: Frequency domain 1 register region
->> +        - description: Operating State Manager domain 1 register region
->> +        - description: PLL ACD domain 0 register region (if ACD programming required)
->> +        - description: PLL ACD domain 1 register region (if ACD programming required)
->> +
->> +    reg-names:
->> +      minItems: 2
->> +      maxItems: 6
->> +      items:
->> +        - const: "osm-domain0"
->> +        - const: "freq-domain0"
->> +        - const: "osm-domain1"
->> +        - const: "freq-domain1"
->> +        - const: "osm-acd0"
->> +        - const: "osm-acd1"
-> 
-> Don't need quotes.
-> 
+Device links only work between devices that use the driver core to match
+and bind a driver to a device. So, add an API for frameworks to let the
+driver core know that a fwnode has been initialized by a driver without
+using the driver core.
 
-Ack
+Then use this information to make sure that fw_devlink doesn't make the
+consumers wait indefinitely on suppliers that'll never bind to a driver.
 
->> +
->> +else:
->> +  properties:
->> +    reg:
->> +      minItems: 2
->> +      maxItems: 3
->> +      items:
->> +        - description: Frequency domain 0 register region
->> +        - description: Frequency domain 1 register region
->> +        - description: Frequency domain 2 register region
->> +    reg-names:
->> +      minItems: 2
->> +      maxItems: 3
->> +      items:
->> +        - const: "freq-domain0"
->> +        - const: "freq-domain1"
->> +        - const: "freq-domain2"
->> +
->>   required:
->>     - compatible
->>     - reg
->> -- 
->> 2.30.0
->>
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ drivers/base/core.c    | 15 +++++++++++++++
+ include/linux/fwnode.h | 19 +++++++++++++++++--
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index f466ab4f1c35..ea710b33bda6 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1636,6 +1636,17 @@ static int fw_devlink_create_devlink(struct device *con,
+ 
+ 	sup_dev = get_dev_from_fwnode(sup_handle);
+ 	if (sup_dev) {
++		/*
++		 * If it's one of those drivers that don't actually bind to
++		 * their device using driver core, then don't wait on this
++		 * supplier device indefinitely.
++		 */
++		if (sup_dev->links.status == DL_DEV_NO_DRIVER &&
++		    sup_handle->flags & FWNODE_FLAG_INITIALIZED) {
++			ret = -EINVAL;
++			goto out;
++		}
++
+ 		/*
+ 		 * If this fails, it is due to cycles in device links.  Just
+ 		 * give up on this link and treat it as invalid.
+@@ -1655,6 +1666,10 @@ static int fw_devlink_create_devlink(struct device *con,
+ 		goto out;
+ 	}
+ 
++	/* Supplier that's already initialized without a struct device. */
++	if (sup_handle->flags & FWNODE_FLAG_INITIALIZED)
++		return -EINVAL;
++
+ 	/*
+ 	 * DL_FLAG_SYNC_STATE_ONLY doesn't block probing and supports
+ 	 * cycles. So cycle detection isn't necessary and shouldn't be
+diff --git a/include/linux/fwnode.h b/include/linux/fwnode.h
+index d5caefe39d93..dfefd43a737c 100644
+--- a/include/linux/fwnode.h
++++ b/include/linux/fwnode.h
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/list.h>
++#include <linux/err.h>
+ 
+ struct fwnode_operations;
+ struct device;
+@@ -18,11 +19,13 @@ struct device;
+ /*
+  * fwnode link flags
+  *
+- * LINKS_ADDED: The fwnode has already be parsed to add fwnode links.
+- * NOT_DEVICE: The fwnode will never be populated as a struct device.
++ * LINKS_ADDED:	The fwnode has already be parsed to add fwnode links.
++ * NOT_DEVICE:	The fwnode will never be populated as a struct device.
++ * INITIALIZED: The hardware corresponding to fwnode has been initialized.
+  */
+ #define FWNODE_FLAG_LINKS_ADDED		BIT(0)
+ #define FWNODE_FLAG_NOT_DEVICE		BIT(1)
++#define FWNODE_FLAG_INITIALIZED		BIT(2)
+ 
+ struct fwnode_handle {
+ 	struct fwnode_handle *secondary;
+@@ -161,6 +164,18 @@ static inline void fwnode_init(struct fwnode_handle *fwnode,
+ 	INIT_LIST_HEAD(&fwnode->suppliers);
+ }
+ 
++static inline void fwnode_dev_initialized(struct fwnode_handle *fwnode,
++					  bool initialized)
++{
++	if (IS_ERR_OR_NULL(fwnode))
++		return;
++
++	if (initialized)
++		fwnode->flags |= FWNODE_FLAG_INITIALIZED;
++	else
++		fwnode->flags &= ~FWNODE_FLAG_INITIALIZED;
++}
++
+ extern u32 fw_devlink_get_flags(void);
+ extern bool fw_devlink_is_strict(void);
+ int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup);
+-- 
+2.30.0.478.g8a0d178c01-goog
 
