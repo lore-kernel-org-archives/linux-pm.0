@@ -2,116 +2,160 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.6 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9137DC433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2D0AC433E6
 	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 02:54:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4B26C64FBC
+	by mail.kernel.org (Postfix) with ESMTP id 71C6E64F51
 	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 02:54:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230035AbhBFCxb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 21:53:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38880 "EHLO
+        id S232179AbhBFCxj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 21:53:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41402 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231634AbhBFClL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 21:41:11 -0500
-Received: from relay05.th.seeweb.it (relay05.th.seeweb.it [IPv6:2001:4b7a:2000:18::166])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A059C0698CA;
-        Fri,  5 Feb 2021 14:23:01 -0800 (PST)
-Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 9D6E13F290;
-        Fri,  5 Feb 2021 23:22:56 +0100 (CET)
-Subject: Re: [PATCH v5 3/7] dt-bindings: arm: cpus: Document
- 'qcom,freq-domain' property
-To:     Rob Herring <robh@kernel.org>
-Cc:     viresh.kumar@linaro.org, bjorn.andersson@linaro.org,
-        agross@kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org,
-        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
-        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
-        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-References: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
- <20210121195250.492500-4-angelogioacchino.delregno@somainline.org>
- <20210205214641.GA3802952@robh.at.kernel.org>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Message-ID: <65135511-1360-c094-9eaf-fec75f9ab53a@somainline.org>
-Date:   Fri, 5 Feb 2021 23:22:56 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
-MIME-Version: 1.0
-In-Reply-To: <20210205214641.GA3802952@robh.at.kernel.org>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+        with ESMTP id S232045AbhBFCuX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 21:50:23 -0500
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 539A3C0698FE
+        for <linux-pm@vger.kernel.org>; Fri,  5 Feb 2021 14:26:57 -0800 (PST)
+Received: by mail-yb1-xb4a.google.com with SMTP id b125so8783276ybg.10
+        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2021 14:26:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=sender:date:in-reply-to:message-id:mime-version:references:subject
+         :from:to:cc;
+        bh=b4KyYLVrTLECRx+jmWSgUnKVrTsTSqPSowT6HXuVPvs=;
+        b=OHW6wSTP29Ue99rfiI7cWlnG+iIdDrF/RFLn7uoMGaydP+0SO7iq4Wq4d3/eqO21ya
+         KLmXP2JX5TSvNzDYoK5EV6DL9JdJSYMFn/F1Hp7y6d44BhceOCszy5fv7mkcI/x3YxAh
+         xifCY/lhRuqpYU9xhi89Nys/lnLzdiyzix5IWrtJ/UWGBQrClmZRfFVt91VbD8X7eoQI
+         2Png0NqhsXQZ7vz6M4N1fZn/vcqGhrLWGbEWE5mv2GRT3g9PI82H9hTXw4D2uizG5j9B
+         ZxcCTRk1HSgG6v0SC8Wo+iqzvg2U5sjEO1EbK7JZfh6t3yDpITS6bKeEhMEzd8jVwfLv
+         0Egg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=b4KyYLVrTLECRx+jmWSgUnKVrTsTSqPSowT6HXuVPvs=;
+        b=o2neR0aeuSR87DdBKhJXmlxgyx/YE75WzNW2MeVtLTgyjW06kzzAy4sqEVsDw3s1/g
+         tVV5JKoqBudZRTAXISvRlnGoiPzB3+r7RVYEkRyhuX3/JFbUKhFfBLKaoLMNoDWCfsWS
+         sHAwbaVYYkFxj1O/6C7TnO9zuMgC1y5TRDCoSOq70pmnlyyGi0lDdf0OB8bH/22Mitmr
+         Z1On1VZ19hWkJYM1rOB8bdPy4sk/tYWIsGegYzptavkSWQ0I0rJQUkvuyur3W7juDcgB
+         kR2GMPerExVatjDPsWHYj39/L3z3GuMxPGkEqTCU/8ePqndfyH50y+vpL4AKY/lNT+sc
+         n43A==
+X-Gm-Message-State: AOAM530NYV3FdCjBiokN+CH+5mWWEyym9niHFhPS0LYGnf61VV2eBT2c
+        +a+7NnLhNjDTQd/kcFCZ36eilddYtMEtRR0=
+X-Google-Smtp-Source: ABdhPJw60eK9Ayb2Dfnm6izl3OAD/ZSexeT7MabEdfxzu+ks3+x2ogPf1BgHRmP6XVGyEvP6jtupQy7fiaM7V/g=
+Sender: "saravanak via sendgmr" <saravanak@saravanak.san.corp.google.com>
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:6d36:b798:55d7:f5c5])
+ (user=saravanak job=sendgmr) by 2002:a25:1188:: with SMTP id
+ 130mr9154088ybr.138.1612564016624; Fri, 05 Feb 2021 14:26:56 -0800 (PST)
+Date:   Fri,  5 Feb 2021 14:26:39 -0800
+In-Reply-To: <20210205222644.2357303-1-saravanak@google.com>
+Message-Id: <20210205222644.2357303-4-saravanak@google.com>
+Mime-Version: 1.0
+References: <20210205222644.2357303-1-saravanak@google.com>
+X-Mailer: git-send-email 2.30.0.478.g8a0d178c01-goog
+Subject: [PATCH v4 3/8] driver core: Add fw_devlink.strict kernel param
+From:   Saravana Kannan <saravanak@google.com>
+To:     Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Marc Zyngier <maz@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>
+Cc:     Saravana Kannan <saravanak@google.com>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-acpi@vger.kernel.org,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        kernel-team@android.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Il 05/02/21 22:46, Rob Herring ha scritto:
-> On Thu, Jan 21, 2021 at 08:52:46PM +0100, AngeloGioacchino Del Regno wrote:
->> From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
->>
->> Add devicetree documentation for 'qcom,freq-domain' property specific
->> to Qualcomm CPUs. This property is used to reference the CPUFREQ node
->> along with Domain ID (0/1).
->>
->> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
->> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
->> ---
->>   Documentation/devicetree/bindings/arm/cpus.yaml | 6 ++++++
->>   1 file changed, 6 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
->> index 14cd727d3c4b..1d60975df23a 100644
->> --- a/Documentation/devicetree/bindings/arm/cpus.yaml
->> +++ b/Documentation/devicetree/bindings/arm/cpus.yaml
->> @@ -290,6 +290,12 @@ properties:
->>   
->>         * arm/msm/qcom,kpss-acc.txt
->>   
->> +  qcom,freq-domain:
-> 
-> What happened to having a standard property here? There were 1 or 2
-> other cases of doing the same thing.
-> 
+This param allows forcing all dependencies to be treated as mandatory.
+This will be useful for boards in which all optional dependencies like
+IOMMUs and DMAs need to be treated as mandatory dependencies.
 
-The original discussion didn't have any more replies, so I thought to
-bring it back on the table.
-I have no idea about what are the other cases, but if you can suggest
-a different property name (just "frequency-domain"?) I can send a new
-one with the suggested one!
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ Documentation/admin-guide/kernel-parameters.txt |  5 +++++
+ drivers/base/core.c                             | 12 ++++++++++++
+ include/linux/fwnode.h                          |  1 +
+ 3 files changed, 18 insertions(+)
 
-Though, since I don't know about other cases, how would this get
-described?
-
-frequency-domain:
-"CPUs supporting frequency-domain must set this property with phandle
-  to the appropriate [domain node or cpufreq node?] followed by the
-  Domain ID"
-
-Would this be fine?
-
-Thanks,
-- Angelo
-
->> +    $ref: '/schemas/types.yaml#/definitions/phandle-array'
->> +    description: |
->> +      CPUs supporting freq-domain must set their "qcom,freq-domain" property
->> +      with phandle to a cpufreq_hw node followed by the Domain ID(0/1).
->> +
->>     rockchip,pmu:
->>       $ref: '/schemas/types.yaml#/definitions/phandle'
->>       description: |
->> -- 
->> 2.30.0
->>
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index a10b545c2070..692b63644133 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1433,6 +1433,11 @@
+ 				to enforce probe and suspend/resume ordering.
+ 			rpm --	Like "on", but also use to order runtime PM.
+ 
++	fw_devlink.strict=<bool>
++			[KNL] Treat all inferred dependencies as mandatory
++			dependencies. This only applies for fw_devlink=on|rpm.
++			Format: <bool>
++
+ 	gamecon.map[2|3]=
+ 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
+ 			support via parallel port (up to 5 devices per port)
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index c95b1daabac7..f466ab4f1c35 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1521,6 +1521,13 @@ static int __init fw_devlink_setup(char *arg)
+ }
+ early_param("fw_devlink", fw_devlink_setup);
+ 
++static bool fw_devlink_strict;
++static int __init fw_devlink_strict_setup(char *arg)
++{
++	return strtobool(arg, &fw_devlink_strict);
++}
++early_param("fw_devlink.strict", fw_devlink_strict_setup);
++
+ u32 fw_devlink_get_flags(void)
+ {
+ 	return fw_devlink_flags;
+@@ -1531,6 +1538,11 @@ static bool fw_devlink_is_permissive(void)
+ 	return fw_devlink_flags == FW_DEVLINK_FLAGS_PERMISSIVE;
+ }
+ 
++bool fw_devlink_is_strict(void)
++{
++	return fw_devlink_strict && !fw_devlink_is_permissive();
++}
++
+ static void fw_devlink_parse_fwnode(struct fwnode_handle *fwnode)
+ {
+ 	if (fwnode->flags & FWNODE_FLAG_LINKS_ADDED)
+diff --git a/include/linux/fwnode.h b/include/linux/fwnode.h
+index 21082f11473f..d5caefe39d93 100644
+--- a/include/linux/fwnode.h
++++ b/include/linux/fwnode.h
+@@ -162,6 +162,7 @@ static inline void fwnode_init(struct fwnode_handle *fwnode,
+ }
+ 
+ extern u32 fw_devlink_get_flags(void);
++extern bool fw_devlink_is_strict(void);
+ int fwnode_link_add(struct fwnode_handle *con, struct fwnode_handle *sup);
+ void fwnode_links_purge(struct fwnode_handle *fwnode);
+ 
+-- 
+2.30.0.478.g8a0d178c01-goog
 
