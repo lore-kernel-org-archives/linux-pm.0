@@ -2,152 +2,171 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.6 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C3E5C433E0
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF835C433E6
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:20:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4E34464F8C
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:03:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8474C64EEC
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Feb 2021 03:20:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231708AbhBFDC4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 22:02:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42196 "EHLO
+        id S231743AbhBFDUV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 22:20:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39902 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229721AbhBFC6U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 21:58:20 -0500
-Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E5BEC061A32
-        for <linux-pm@vger.kernel.org>; Fri,  5 Feb 2021 18:45:58 -0800 (PST)
-Received: by mail-yb1-xb36.google.com with SMTP id k4so8703215ybp.6
-        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2021 18:45:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=oeZT1Ar4/x7iejk6TCKZJw9nmldyPb7Q9CQuMN8dXaw=;
-        b=AFhS6ATY/Y9NYutPrE19KVJ8QEJaF2PGTuOgrz9Gy3OYD8T3nfEM6tCPc4DQDe+cmT
-         gGbLVifQsQtzUiF3X4dGA4SNwVI3LH7qwxl1vZhz3YR9Cp0qiGY/3jeh+rr5qm3r6IY7
-         7hxHxK00mdEOHcIzgnBPiTqPV6L0vljvrfDvcDix7+8XPR81Lvup9F+WfsCimBB6dz24
-         J+btxbs8E6J54C44KCAuZnUKGV86hdX+MuPzB7x2eyZrfnvisXKRD/0QNEtfhqDIpVGA
-         Umt5XZHpqcC8bLOtBUQYJkjuYUyDhcO+rJXg9bilCjQKjRIdxzmsD4JoNfGKr5VvY1w/
-         v/NQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=oeZT1Ar4/x7iejk6TCKZJw9nmldyPb7Q9CQuMN8dXaw=;
-        b=sotO/W9Kf84BW0hWpmaNi/lyubYfruN7EeDoVESk6PaDLRtS+uyPGwZuq4vDMdiwkN
-         wKRh3Odyg2qwM3gaJ1bvoMuRvGsdyIBAXtHELo6epbYhuTA/4+6frzXeAHqBygQggTnR
-         rGayjr62ehut4PjgYupl0bhX9Cq5n7g2zqD63y0qUM5uHYY7TiVBaxqTww0/6BCowS0N
-         4GfHsFhkAXDGhvPpR3e5MRQyMFwPLQxfzIAxqUqr2GLiz4tiGs+RELk1Vvfcf01YDqqU
-         W2jwqV9s48KBHEoQqm24tPzTfdN0e/WnRmasLiIqUcM3ZznFCt7raLNMBv0I4FmTrKJB
-         3mCg==
-X-Gm-Message-State: AOAM533gewjNHXNurNGu59vIaiRD39zR2yy9cYVbIDCFb223xBmm3RRp
-        NJzA7nGbEQ5FAlZLXyub52B9c3VAtgD7c3117BaMSg==
-X-Google-Smtp-Source: ABdhPJy11Z5i7gStQAF/aV2cWsIZWC4t0l/3YBj3YIJdn7KvpZm4nPNRQyA7a/+WGcaogoso5SndN/JmnOvk57r9ybc=
-X-Received: by 2002:a25:af0b:: with SMTP id a11mr4263580ybh.228.1612579557241;
- Fri, 05 Feb 2021 18:45:57 -0800 (PST)
+        with ESMTP id S231459AbhBFCpi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 21:45:38 -0500
+Received: from relay08.th.seeweb.it (relay08.th.seeweb.it [IPv6:2001:4b7a:2000:18::169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7057BC0698CB;
+        Fri,  5 Feb 2021 14:23:15 -0800 (PST)
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id E16573F290;
+        Fri,  5 Feb 2021 23:23:13 +0100 (CET)
+Subject: Re: [PATCH v5 7/7] dt-bindings: cpufreq: qcom-hw: Add bindings for
+ 8998
+To:     Rob Herring <robh@kernel.org>
+Cc:     viresh.kumar@linaro.org, bjorn.andersson@linaro.org,
+        agross@kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org,
+        amit.kucheria@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org,
+        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
+        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com
+References: <20210121195250.492500-1-angelogioacchino.delregno@somainline.org>
+ <20210121195250.492500-8-angelogioacchino.delregno@somainline.org>
+ <20210205215125.GA3810714@robh.at.kernel.org>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Message-ID: <8e7efd35-791c-da49-c9db-bc8a94021c42@somainline.org>
+Date:   Fri, 5 Feb 2021 23:23:13 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.0
 MIME-Version: 1.0
-References: <20210205222644.2357303-1-saravanak@google.com>
-In-Reply-To: <20210205222644.2357303-1-saravanak@google.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Fri, 5 Feb 2021 18:45:21 -0800
-Message-ID: <CAGETcx_f7BEbkOFtw_6_4fMcgGOWkujbqXhDbDcNstOxgvcPfA@mail.gmail.com>
-Subject: Re: [PATCH v4 0/8] Make fw_devlink=on more forgiving
-To:     Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
-        Marc Zyngier <maz@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>
-Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Android Kernel Team <kernel-team@android.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210205215125.GA3810714@robh.at.kernel.org>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 5, 2021 at 2:26 PM Saravana Kannan <saravanak@google.com> wrote:
->
-> There are a lot of devices/drivers where they never have a struct device
-> created for them or the driver initializes the hardware without ever
-> binding to the struct device.
->
-> This series is intended to avoid any boot regressions due to such
-> devices/drivers when fw_devlink=on and also address the handling of
-> optional suppliers.
->
-> Patch 1 and 2 addresses the issue of firmware nodes that look like
-> they'll have struct devices created for them, but will never actually
-> have struct devices added for them. For example, DT nodes with a
-> compatible property that don't have devices added for them.
->
-> Patch 3 and 4 allow for handling optional DT bindings.
->
-> Patch 5 sets up a generic API to handle drivers that never bind with
-> their devices.
->
-> Patch 6 through 8 update different frameworks to use the new API.
->
-> Thanks,
-> Saravana
->
+Il 05/02/21 22:51, Rob Herring ha scritto:
+> On Thu, Jan 21, 2021 at 08:52:50PM +0100, AngeloGioacchino Del Regno wrote:
+>> The OSM programming addition has been done under the
+>> qcom,cpufreq-hw-8998 compatible name: specify the requirement
+>> of two additional register spaces for this functionality.
+>> This implementation, with the same compatible, has been
+>> tested on MSM8998 and SDM630.
+>>
+>> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+>> ---
+>>   .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 66 +++++++++++++++----
+>>   1 file changed, 52 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+>> index bc81b6203e27..17fd6a6cefb0 100644
+>> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+>> @@ -18,6 +18,10 @@ description: |
+>>   properties:
+>>     compatible:
+>>       oneOf:
+>> +      - description: Non-secure v1 of CPUFREQ HW
+>> +        items:
+>> +          - const: qcom,cpufreq-hw-8998
+>> +
+>>         - description: v1 of CPUFREQ HW
+>>           items:
+>>             - const: qcom,cpufreq-hw
+>> @@ -28,21 +32,9 @@ properties:
+>>                 - qcom,sm8250-cpufreq-epss
+>>             - const: qcom,cpufreq-epss
+>>   
+>> -  reg:
+>> -    minItems: 2
+>> -    maxItems: 3
+>> -    items:
+>> -      - description: Frequency domain 0 register region
+>> -      - description: Frequency domain 1 register region
+>> -      - description: Frequency domain 2 register region
+>> +  reg: {}
+>>   
+>> -  reg-names:
+>> -    minItems: 2
+>> -    maxItems: 3
+>> -    items:
+>> -      - const: freq-domain0
+>> -      - const: freq-domain1
+>> -      - const: freq-domain2
+>> +  reg-names: {}
+>>   
+>>     clocks:
+>>       items:
+>> @@ -57,6 +49,52 @@ properties:
+>>     '#freq-domain-cells':
+>>       const: 1
+>>   
+>> +if:
+>> +  properties:
+>> +    compatible:
+>> +      contains:
+>> +        const: qcom,cpufreq-hw-8998
+>> +then:
+>> +  properties:
+>> +    reg:
+>> +      minItems: 2
+>> +      maxItems: 6
+>> +      items:
+>> +        - description: Frequency domain 0 register region
+>> +        - description: Operating State Manager domain 0 register region
+>> +        - description: Frequency domain 1 register region
+>> +        - description: Operating State Manager domain 1 register region
+>> +        - description: PLL ACD domain 0 register region (if ACD programming required)
+>> +        - description: PLL ACD domain 1 register region (if ACD programming required)
+>> +
+>> +    reg-names:
+>> +      minItems: 2
+>> +      maxItems: 6
+>> +      items:
+>> +        - const: "osm-domain0"
+>> +        - const: "freq-domain0"
+>> +        - const: "osm-domain1"
+>> +        - const: "freq-domain1"
+>> +        - const: "osm-acd0"
+>> +        - const: "osm-acd1"
+> 
+> Don't need quotes.
+> 
 
-Forgot to add version history:
+Ack
 
-v1 -> v2:
-Patch 1: Added a flag to fwnodes that aren't devices.
-Patch 3: New patch to ise the flag set in patch 1 to not create bad links.
+>> +
+>> +else:
+>> +  properties:
+>> +    reg:
+>> +      minItems: 2
+>> +      maxItems: 3
+>> +      items:
+>> +        - description: Frequency domain 0 register region
+>> +        - description: Frequency domain 1 register region
+>> +        - description: Frequency domain 2 register region
+>> +    reg-names:
+>> +      minItems: 2
+>> +      maxItems: 3
+>> +      items:
+>> +        - const: "freq-domain0"
+>> +        - const: "freq-domain1"
+>> +        - const: "freq-domain2"
+>> +
+>>   required:
+>>     - compatible
+>>     - reg
+>> -- 
+>> 2.30.0
+>>
 
-v2 -> v3:
-- Patch 1: Added Rafael's Ack
-- New patches 3 and 4
-
-v3 -> v4:
-- No changes to patches 1-4.
-- New patches 5-8.
-
--Saravana
-
-> Saravana Kannan (8):
->   driver core: fw_devlink: Detect supplier devices that will never be
->     added
->   of: property: Don't add links to absent suppliers
->   driver core: Add fw_devlink.strict kernel param
->   of: property: Add fw_devlink support for optional properties
->   driver core: fw_devlink: Handle suppliers that don't use driver core
->   irqdomain: Mark fwnodes when their irqdomain is added/removed
->   PM: domains: Mark fwnodes when their powerdomain is added/removed
->   clk: Mark fwnodes when their clock provider is added/removed
->
->  .../admin-guide/kernel-parameters.txt         |  5 ++
->  drivers/base/core.c                           | 58 ++++++++++++++++++-
->  drivers/base/power/domain.c                   |  2 +
->  drivers/clk/clk.c                             |  3 +
->  drivers/of/property.c                         | 16 +++--
->  include/linux/fwnode.h                        | 20 ++++++-
->  kernel/irq/irqdomain.c                        |  2 +
->  7 files changed, 98 insertions(+), 8 deletions(-)
->
-> --
-> 2.30.0.478.g8a0d178c01-goog
->
