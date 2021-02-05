@@ -2,113 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-16.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE12CC433E6
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 19:40:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EDB6C433E0
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 20:10:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 98DC864FB7
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 19:40:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1885264FBA
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 20:10:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233280AbhBER55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 12:57:57 -0500
-Received: from mga11.intel.com ([192.55.52.93]:3071 "EHLO mga11.intel.com"
+        id S229864AbhBES1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 13:27:34 -0500
+Received: from mail.kernel.org ([198.145.29.99]:34770 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233238AbhBEP1Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Feb 2021 10:27:16 -0500
-IronPort-SDR: DBWi9nnisSoA8Cdvker+OvShWDgaPtMv0Jwpi8AQhzj/Ly7SSvlMl+ZAOuOsdgSEWN4CXgQMPU
- Ep1HDkmi/vRQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9885"; a="177955330"
-X-IronPort-AV: E=Sophos;i="5.81,155,1610438400"; 
-   d="scan'208";a="177955330"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2021 09:07:37 -0800
-IronPort-SDR: mGPnbtVPmJJg3NoDEko5zdYAU1Mj7/ClAx+9ByIq3ztejbmWSU/Op+By5NXQ/Xnnb32UcH1EmV
- HSs71W5HB+0g==
-X-IronPort-AV: E=Sophos;i="5.81,155,1610438400"; 
-   d="scan'208";a="393939598"
-Received: from mjwilkin-mobl.amr.corp.intel.com ([10.212.80.131])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2021 09:07:36 -0800
-Message-ID: <0f63aaa63cb4217f772aa702fac5c44a3ac110b6.camel@linux.intel.com>
-Subject: Re: [PATCH 1/2] powercap/intel_rapl: Use topology interface in
- rapl_add_package()
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Yunfeng Ye <yeyunfeng@huawei.com>,
-        "Zhang, Rui" <rui.zhang@intel.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        hushiyuan@huawei.com, hewenliang4@huawei.com, caihongda@huawei.com
-Date:   Fri, 05 Feb 2021 09:07:28 -0800
-In-Reply-To: <CAJZ5v0hNryYqKfTZfRjN+KJVgw973G+vi9SrT4mGTPz_TTT2ng@mail.gmail.com>
-References: <20210123100608.2349629-1-yeyunfeng@huawei.com>
-         <CAJZ5v0hNryYqKfTZfRjN+KJVgw973G+vi9SrT4mGTPz_TTT2ng@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+        id S233706AbhBES1S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Feb 2021 13:27:18 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id EC17364FBA;
+        Fri,  5 Feb 2021 20:09:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1612555742;
+        bh=beiP1QVTcTtnz/28je3Db2hFbKVGRBpJgYPrzRQ3FJY=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=HiHatxkiTqo19TZ7agC6KDqUsgXV67Li8ly2L0wqDAIgO/TnRxAG2RsEVs5oqP6c+
+         UaOzHqagc4QJeLih2kXFAEt5d7GhSEhvjlhL3gH10/QCgaTVU1AQai8Mn1NFjTiezP
+         i1wgd9CTA84LgzCyhkwn5/kx2hr1+O0JvExsTupHij3anIzI/f4gsgHmz14r0nXCYL
+         l0+YcKZuoB+EBsv5ijeTNTCycIDJJ3bqKmtNaMYKKxf/lWGat0JwJxc2r6hSYJ80aS
+         IrqB6hXBSMagUQ342uqUdCGIfPNEt/aJJPrbGL+JfG1RPWW1Icry7tJhu+BlO9Wj7x
+         cGUyryDyXIy7Q==
+Date:   Fri, 5 Feb 2021 14:08:59 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Yicong Yang <yangyicong@hisilicon.com>, gregkh@linuxfoundation.org,
+        jdelvare@suse.com, giometti@enneenne.com, abbotti@mev.co.uk,
+        hsweeten@visionengravers.com, kw@linux.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, devel@driverdev.osuosl.org,
+        linux-kbuild@vger.kernel.org, masahiroy@kernel.org,
+        michal.lkml@markovi.net, prime.zeng@huawei.com,
+        linuxarm@openeuler.org
+Subject: Re: [PATCH 2/4] hwmon: Use subdir-ccflags-* to inherit debug flag
+Message-ID: <20210205200859.GA193526@bjorn-Precision-5520>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210205182832.GA186268@roeck-us.net>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 2021-02-05 at 13:45 +0100, Rafael J. Wysocki wrote:
-> On Sat, Jan 23, 2021 at 11:07 AM Yunfeng Ye <yeyunfeng@huawei.com>
-> wrote:
-> > It's not a good way to access phys_proc_id and cpu_die_id directly.
-> > So using topology_physical_package_id(cpu) and topology_die_id(cpu)
-> > instead.
+On Fri, Feb 05, 2021 at 10:28:32AM -0800, Guenter Roeck wrote:
+> On Fri, Feb 05, 2021 at 05:44:13PM +0800, Yicong Yang wrote:
+> > From: Junhao He <hejunhao2@hisilicon.com>
 > > 
-> > Signed-off-by: Yunfeng Ye <yeyunfeng@huawei.com>
+> > Use subdir-ccflags-* instead of ccflags-* to inherit the debug
+> > settings from Kconfig when traversing subdirectories.
+> > 
+> > Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+> > Signed-off-by: Junhao He <hejunhao2@hisilicon.com>
+> > Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
 > 
-> Srinivas, Rui, any concerns?
-Looks good.
+> What problem does this fix ? Maybe I am missing it, but I don't see
+> DEBUG being used in a subdirectory of drivers/hwmon.
 
-Thanks,
-Srinivas
+It's my fault for raising this question [1].  Yicong fixed a real
+problem in drivers/pci, where we are currently using
 
-> 
+  ccflags-$(CONFIG_PCI_DEBUG) := -DDEBUG
+
+so CONFIG_PCI_DEBUG=y turns on debug in drivers/pci, but not in the
+subdirectories.  That's surprising to users.
+
+So my question was whether we should default to using subdir-ccflags
+for -DDEBUG in general, and only use ccflags when we have
+subdirectories that have their own debug options, e.g.,
+
+  drivers/i2c/Makefile:ccflags-$(CONFIG_I2C_DEBUG_CORE) := -DDEBUG
+  drivers/i2c/algos/Makefile:ccflags-$(CONFIG_I2C_DEBUG_ALGO) := -DDEBUG
+  drivers/i2c/busses/Makefile:ccflags-$(CONFIG_I2C_DEBUG_BUS) := -DDEBUG
+  drivers/i2c/muxes/Makefile:ccflags-$(CONFIG_I2C_DEBUG_BUS) := -DDEBUG
+
+I mentioned drivers/hwmon along with a few others that have
+subdirectories, do not have per-subdirectory debug options, and use
+ccflags.  I didn't try to determine whether those subdirectories
+currently use -DDEBUG.
+
+In the case of drivers/hwmon, several drivers do use pr_debug(),
+and CONFIG_HWMON_DEBUG_CHIP=y turns those on.  But if somebody
+were to add pr_debug() to drivers/hwmon/occ/common.c, for example,
+CONFIG_HWMON_DEBUG_CHIP=y would *not* turn it on.  That sounds
+surprising to me, but if that's what you intend, that's totally fine.
+
+[1] https://lore.kernel.org/r/20210204161048.GA68790@bjorn-Precision-5520
+
 > > ---
-> >  drivers/powercap/intel_rapl_common.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >  drivers/hwmon/Makefile | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > > 
-> > diff --git a/drivers/powercap/intel_rapl_common.c
-> > b/drivers/powercap/intel_rapl_common.c
-> > index c9e57237d778..5f3d39b8212a 100644
-> > --- a/drivers/powercap/intel_rapl_common.c
-> > +++ b/drivers/powercap/intel_rapl_common.c
-> > @@ -1309,7 +1309,6 @@ struct rapl_package *rapl_add_package(int
-> > cpu, struct rapl_if_priv *priv)
-> >  {
-> >         int id = topology_logical_die_id(cpu);
-> >         struct rapl_package *rp;
-> > -       struct cpuinfo_x86 *c = &cpu_data(cpu);
-> >         int ret;
+> > diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+> > index 09a86c5..1c0c089 100644
+> > --- a/drivers/hwmon/Makefile
+> > +++ b/drivers/hwmon/Makefile
+> > @@ -201,5 +201,5 @@ obj-$(CONFIG_SENSORS_XGENE)	+= xgene-hwmon.o
+> >  obj-$(CONFIG_SENSORS_OCC)	+= occ/
+> >  obj-$(CONFIG_PMBUS)		+= pmbus/
+> >  
+> > -ccflags-$(CONFIG_HWMON_DEBUG_CHIP) := -DDEBUG
+> > +subdir-ccflags-$(CONFIG_HWMON_DEBUG_CHIP) := -DDEBUG
+> >  
+> > -- 
+> > 2.8.1
 > > 
-> >         if (!rapl_defaults)
-> > @@ -1326,10 +1325,11 @@ struct rapl_package *rapl_add_package(int
-> > cpu, struct rapl_if_priv *priv)
-> > 
-> >         if (topology_max_die_per_package() > 1)
-> >                 snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH,
-> > -                        "package-%d-die-%d", c->phys_proc_id, c-
-> > >cpu_die_id);
-> > +                        "package-%d-die-%d",
-> > +                        topology_physical_package_id(cpu),
-> > topology_die_id(cpu));
-> >         else
-> >                 snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH,
-> > "package-%d",
-> > -                        c->phys_proc_id);
-> > +                        topology_physical_package_id(cpu));
-> > 
-> >         /* check if the package contains valid domains */
-> >         if (rapl_detect_domains(rp, cpu) || rapl_defaults-
-> > >check_unit(rp, cpu)) {
-> > --
-> > 2.27.0
-> > 
-
