@@ -2,103 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91AE2C433E6
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 03:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76D69C433DB
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:08:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3DB8264FB5
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 03:04:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D23E64FB2
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:08:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229822AbhBEDET (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Feb 2021 22:04:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47440 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229703AbhBEDES (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2021 22:04:18 -0500
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F8C7C061786
-        for <linux-pm@vger.kernel.org>; Thu,  4 Feb 2021 19:03:38 -0800 (PST)
-Received: by mail-ej1-x62e.google.com with SMTP id f14so9302588ejc.8
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2021 19:03:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=HdD5j9j3cDfjeYVvH0pZjtrZ1PN33V1eaKUOEOiYAwA=;
-        b=MCMgQ3BYFsf9mhagcx4mgzpXPagKjbvtJ0+E0wsfHfLu/UZ/cI1ftqJOZnqmhhBf79
-         0YZ2LAxqGE8ftu53EGD3mVgkOQprDB591lZYinaLo4uPXB7e1Ebby2muI7HoP0T7zSQr
-         G6vIvNdyz41RhUUpBXVLJX+sZCkKTLvHJ0BuwjGmJEwxw5PmvrBTVt2H57GEUZIS9Upx
-         gaZA8u5FVEeck1Esp5wRI3RND1hFJA69Fw1Cy6x9g7A3v69vddDJYUtF/uSD7V4P4pjX
-         IuSPk6h6og6kpLQN4o+YMhTMI4u5aUIXFzhj0GHUMq328asHle5Ne2gNpFUFUOYPBLc7
-         o5gg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=HdD5j9j3cDfjeYVvH0pZjtrZ1PN33V1eaKUOEOiYAwA=;
-        b=hQcbXD03gY1FQUfcmxsBbmkBVpUS/iS/dWgFi+Pr3WcAIdGvwpE+K/A8xsJZU/yNXN
-         ocsoZKDNetGbbTrR0lpQd2i4CccUOQKCN62VHuY2GJYroOccXtrqyKqZBdVTOdkdy3Cz
-         BqzsK06GuT6gWGvcI0fUa3NukCIE0s1wNNpMOoc6yg7swlGL5hY64kCEnzWlR4PGeGqo
-         KZm9qb7hzpiBLwa8G+dK7/Mu0I2S89P1PtlDv/fuyHSGXDOLowV2H508cLB+U1aUnlpz
-         ghABk+7NwJv3/RfRzYzUBCFPHx646RsLtuCs6yeHm5OqnyQgkgcq3BhrGhBRzciTjW+r
-         B5IQ==
-X-Gm-Message-State: AOAM532UFR8G7V1NqPtkwKEcO5tgJRBuyOJ7U06YtZPcavZPaseKafsg
-        WOUOeXQnq8k4uN8592DEWtlEocc+/ExU3SKFjRNzAA==
-X-Google-Smtp-Source: ABdhPJw0PU39HJiajGWKqQ+imH+UHqp7b05QK93dctO7TbXzblEzR/b6gXLoEwUEYGmAkDwAg94gyHIUfp5CyvY9OCk=
-X-Received: by 2002:a17:906:5846:: with SMTP id h6mr1992980ejs.521.1612494217144;
- Thu, 04 Feb 2021 19:03:37 -0800 (PST)
-MIME-Version: 1.0
-References: <20210205015205.22947-1-benl@squareup.com>
-In-Reply-To: <20210205015205.22947-1-benl@squareup.com>
-From:   Jun Nie <jun.nie@linaro.org>
-Date:   Fri, 5 Feb 2021 11:03:26 +0800
-Message-ID: <CABymUCNfCZT5bkCeHOf6SEw1aStCNcXraen5pEiKSpcXc16z2Q@mail.gmail.com>
-Subject: Re: [PATCH v2 0/2] Clean up MSM8939 interconnect driver
-To:     Benjamin Li <benl@squareup.com>
-Cc:     Georgi Djakov <georgi.djakov@linaro.org>, kernel@squareup.com,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S231280AbhBEHHM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 02:07:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:41348 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231230AbhBEHHI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Feb 2021 02:07:08 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 48858B038;
+        Fri,  5 Feb 2021 07:06:26 +0000 (UTC)
+Message-ID: <1612508785.19825.6.camel@suse.cz>
+Subject: Re: [PATCH v1 1/2] cpufreq: ACPI: Extend frequency tables to cover
+ boost frequencies
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Michael Larabel <Michael@phoronix.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Fri, 05 Feb 2021 08:06:25 +0100
+In-Reply-To: <8467867.3EdU9UaQ17@kreacher>
+References: <13690581.X0sz4iL7V8@kreacher> <8467867.3EdU9UaQ17@kreacher>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Benjamin Li <benl@squareup.com> =E4=BA=8E2021=E5=B9=B42=E6=9C=885=E6=97=A5=
-=E5=91=A8=E4=BA=94 =E4=B8=8A=E5=8D=889:52=E5=86=99=E9=81=93=EF=BC=9A
->
-> Following up on a review comment on commit 6c6fe5d3dc5e ("interconnect: q=
-com:
-> Add MSM8939 interconnect provider driver") to clean up some log pollution=
-.
->
-> This is based on icc-next (which appears to contain a refactor commonizin=
-g
-> functions into icc-rpm.c).
->
-> v2:
-> - Update commit message to add a full explanation, rather than referencin=
-g a
->   previous commit.
->
-> Benjamin Li (2):
->   interconnect: qcom: icc-rpm: record slave RPM id in error log
->   interconnect: qcom: msm8939: remove rpm-ids from non-RPM nodes
->
->  drivers/interconnect/qcom/icc-rpm.c |  4 ++--
->  drivers/interconnect/qcom/msm8939.c | 16 ++++++++--------
->  2 files changed, 10 insertions(+), 10 deletions(-)
->
-> --
-> 2.17.1
->
+On Thu, 2021-02-04 at 18:25 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> A severe performance regression on AMD EPYC processors when using
+> the schedutil scaling governor was discovered by Phoronix.com and
+> attributed to the following commits:
+> 
+>     41ea667227ba ("x86, sched: Calculate frequency invariance for
+>     AMD systems")
+> 
+>     976df7e5730e ("x86, sched: Use midpoint of max_boost and max_P
+>     for frequency invariance on AMD EPYC")
+> 
+> [snip]
+> 
+> Fixes: 41ea667227ba ("x86, sched: Calculate frequency invariance for AMD systems")
+> Fixes: 976df7e5730e ("x86, sched: Use midpoint of max_boost and max_P for frequency invariance on AMD EPYC")
+> Fixes: db865272d9c4 ("cpufreq: Avoid configuring old governors as default with intel_pstate")
+> Link: https://www.phoronix.com/scan.php?page=article&item=linux511-amd-schedutil&num=1
+> Link: https://lore.kernel.org/linux-pm/20210203135321.12253-2-ggherdovich@suse.cz/
+> Reported-by: Michael Larabel <Michael@phoronix.com>
+> Diagnosed-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |  107 ++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 95 insertions(+), 12 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
+> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> [...]
 
-For 2 patches:
-Reviewed-by: Jun Nie <jun.nie@linaro.org>
+Tested-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+Reviewed-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+
+Note there is also the Tested-by: Michael, from the other thread
+https://lore.kernel.org/lkml/5ea06dbe-255c-3d22-b9bd-6e627c5f94af@phoronix.com/
+
+I tested this patch with the "NASA Parallel Benchmarks" from [link below], the
+results confirms that the 5.10 performance is recovered:
+
+
+Ratios of completion times, lower is better (5.10 is the baseline)
+
+                              5.10     5.11-rc6 5.11-rc6-ggherdov 5.11-rc6-rafael
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Integer Sort              1.00        1.21        0.91           0.93
+    Embarrassingly Parallel   1.00        1.60        1.00           1.00
+    Discrete FFT              1.00        1.68        0.67           0.67
+
+
+    CPU     : MODEL            : 2x AMD EPYC 7742
+              FREQUENCY TABLE  : P2: 1.50 GHz
+                                 P1: 2.00 GHz
+                                 P0: 2.25 GHz
+              MAX BOOST        :     3.40 GHz
+
+[link] https://www.nas.nasa.gov/publications/npb.html
+
+Thanks,
+Giovanni
