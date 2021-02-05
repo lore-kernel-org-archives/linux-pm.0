@@ -2,110 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3897C43381
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 22:42:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC130C433E9
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 23:01:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ABF2564FF5
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 22:42:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F9A964E43
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 23:01:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230515AbhBEWmW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 17:42:22 -0500
-Received: from muru.com ([72.249.23.125]:57682 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230315AbhBENqb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Feb 2021 08:46:31 -0500
-Received: from hillo.muru.com (localhost [127.0.0.1])
-        by muru.com (Postfix) with ESMTP id 46EE181BD;
-        Fri,  5 Feb 2021 13:46:02 +0000 (UTC)
-From:   Tony Lindgren <tony@atomide.com>
-To:     Amit Kucheria <amitk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, Adam Ford <aford173@gmail.com>,
-        Carl Philipp Klemm <philipp@uvos.xyz>,
-        "H . Nikolaus Schaller" <hns@goldelico.com>,
-        Merlijn Wajer <merlijn@wizzup.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH 4/4] thermal: ti-soc-thermal: Use non-inverted define for omap4
-Date:   Fri,  5 Feb 2021 15:45:34 +0200
-Message-Id: <20210205134534.49200-5-tony@atomide.com>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210205134534.49200-1-tony@atomide.com>
-References: <20210205134534.49200-1-tony@atomide.com>
+        id S232006AbhBEXAU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 18:00:20 -0500
+Received: from mail-ot1-f49.google.com ([209.85.210.49]:35113 "EHLO
+        mail-ot1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232287AbhBEMqK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2021 07:46:10 -0500
+Received: by mail-ot1-f49.google.com with SMTP id k10so4385057otl.2;
+        Fri, 05 Feb 2021 04:45:54 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=If0TqL6CkLzrzIa4DvHyDQweVwa1J6gEoFE5T6p/Q9o=;
+        b=UJh1NENF9Oq51TrfKhC+OIxyoH9PXT5lNG0zLAhzNcZlGtUYdMqQ8xC7EayhpeLFpD
+         4W+J5zWXE65lAc1fxzu8rMoAhU7Cwa+I+l1fgUCLuwKYNTsTv768gHMwxTS8NCfiQK4/
+         mT+PGLGhPZPYM2e2Tw0adfxKzV3ndFEwY7YcRvnq1t4niO0iToAsBf12FTpVnINnpoLq
+         Sih2uwkUYVoViWAqrTh0eik56Gws2NHRvEFUjM06Lv5LHW7ahfJCR/wNUtatN/fqbpEG
+         o0cWubyuhmh0V9gdsuyhzXjOvQ4Oc9Xa/uzvihmGyN9Llj7g1+CumNK+oPDt5OQl9cvW
+         qr/Q==
+X-Gm-Message-State: AOAM532hx9cOd2TVr3dN+xwqsUJ7fxRoV8c0mgNolqF9w/EzyMEYVZoY
+        X7tqgc9QsCTxYvDBboMItKKt/WdQ0fhXFTxWDaUWWs0j
+X-Google-Smtp-Source: ABdhPJx0i2b/7r9ho85ytMSr2vJhkUTXpVWmOvabhY0LvB6NHl700f8pifQXxdsgC2URtsK/qZRbRIiFLJhH305vxoo=
+X-Received: by 2002:a9d:6acf:: with SMTP id m15mr3237379otq.260.1612529129228;
+ Fri, 05 Feb 2021 04:45:29 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20210123100608.2349629-1-yeyunfeng@huawei.com>
+In-Reply-To: <20210123100608.2349629-1-yeyunfeng@huawei.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 5 Feb 2021 13:45:15 +0100
+Message-ID: <CAJZ5v0hNryYqKfTZfRjN+KJVgw973G+vi9SrT4mGTPz_TTT2ng@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powercap/intel_rapl: Use topology interface in rapl_add_package()
+To:     Yunfeng Ye <yeyunfeng@huawei.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Zhang, Rui" <rui.zhang@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        hushiyuan@huawei.com, hewenliang4@huawei.com, caihongda@huawei.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When we set bit 10 high we use continuous mode and not single
-mode. Let's correct this to avoid confusion. No functional
-changes here, the code does the right thing with bit 10.
+On Sat, Jan 23, 2021 at 11:07 AM Yunfeng Ye <yeyunfeng@huawei.com> wrote:
+>
+> It's not a good way to access phys_proc_id and cpu_die_id directly.
+> So using topology_physical_package_id(cpu) and topology_die_id(cpu)
+> instead.
+>
+> Signed-off-by: Yunfeng Ye <yeyunfeng@huawei.com>
 
-Cc: Adam Ford <aford173@gmail.com>
-Cc: Carl Philipp Klemm <philipp@uvos.xyz>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: H. Nikolaus Schaller <hns@goldelico.com>
-Cc: Merlijn Wajer <merlijn@wizzup.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Ujfalusi <peter.ujfalusi@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/thermal/ti-soc-thermal/omap4-thermal-data.c | 4 ++--
- drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h   | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Srinivas, Rui, any concerns?
 
-diff --git a/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c b/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
---- a/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
-+++ b/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
-@@ -24,7 +24,7 @@ omap4430_mpu_temp_sensor_registers = {
- 	.bgap_dtemp_mask = OMAP4430_BGAP_TEMP_SENSOR_DTEMP_MASK,
- 
- 	.bgap_mode_ctrl = OMAP4430_TEMP_SENSOR_CTRL_OFFSET,
--	.mode_ctrl_mask = OMAP4430_SINGLE_MODE_MASK,
-+	.mode_ctrl_mask = OMAP4430_CONTINUOUS_MODE_MASK,
- 
- 	.bgap_efuse = OMAP4430_FUSE_OPP_BGAP,
- };
-@@ -97,7 +97,7 @@ omap4460_mpu_temp_sensor_registers = {
- 	.mask_cold_mask = OMAP4460_MASK_COLD_MASK,
- 
- 	.bgap_mode_ctrl = OMAP4460_BGAP_CTRL_OFFSET,
--	.mode_ctrl_mask = OMAP4460_SINGLE_MODE_MASK,
-+	.mode_ctrl_mask = OMAP4460_CONTINUOUS_MODE_MASK,
- 
- 	.bgap_counter = OMAP4460_BGAP_COUNTER_OFFSET,
- 	.counter_mask = OMAP4460_COUNTER_MASK,
-diff --git a/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h b/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
---- a/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
-+++ b/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
-@@ -40,7 +40,7 @@
- /* OMAP4430.TEMP_SENSOR bits */
- #define OMAP4430_BGAP_TEMPSOFF_MASK			BIT(12)
- #define OMAP4430_BGAP_TSHUT_MASK			BIT(11)
--#define OMAP4430_SINGLE_MODE_MASK			BIT(10)
-+#define OMAP4430_CONTINUOUS_MODE_MASK			BIT(10)
- #define OMAP4430_BGAP_TEMP_SENSOR_SOC_MASK		BIT(9)
- #define OMAP4430_BGAP_TEMP_SENSOR_EOCZ_MASK		BIT(8)
- #define OMAP4430_BGAP_TEMP_SENSOR_DTEMP_MASK		(0xff << 0)
-@@ -113,7 +113,7 @@
- #define OMAP4460_BGAP_TEMP_SENSOR_DTEMP_MASK		(0x3ff << 0)
- 
- /* OMAP4460.BANDGAP_CTRL bits */
--#define OMAP4460_SINGLE_MODE_MASK			BIT(31)
-+#define OMAP4460_CONTINUOUS_MODE_MASK			BIT(31)
- #define OMAP4460_MASK_HOT_MASK				BIT(1)
- #define OMAP4460_MASK_COLD_MASK				BIT(0)
- 
--- 
-2.30.0
+> ---
+>  drivers/powercap/intel_rapl_common.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+> index c9e57237d778..5f3d39b8212a 100644
+> --- a/drivers/powercap/intel_rapl_common.c
+> +++ b/drivers/powercap/intel_rapl_common.c
+> @@ -1309,7 +1309,6 @@ struct rapl_package *rapl_add_package(int cpu, struct rapl_if_priv *priv)
+>  {
+>         int id = topology_logical_die_id(cpu);
+>         struct rapl_package *rp;
+> -       struct cpuinfo_x86 *c = &cpu_data(cpu);
+>         int ret;
+>
+>         if (!rapl_defaults)
+> @@ -1326,10 +1325,11 @@ struct rapl_package *rapl_add_package(int cpu, struct rapl_if_priv *priv)
+>
+>         if (topology_max_die_per_package() > 1)
+>                 snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH,
+> -                        "package-%d-die-%d", c->phys_proc_id, c->cpu_die_id);
+> +                        "package-%d-die-%d",
+> +                        topology_physical_package_id(cpu), topology_die_id(cpu));
+>         else
+>                 snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH, "package-%d",
+> -                        c->phys_proc_id);
+> +                        topology_physical_package_id(cpu));
+>
+>         /* check if the package contains valid domains */
+>         if (rapl_detect_domains(rp, cpu) || rapl_defaults->check_unit(rp, cpu)) {
+> --
+> 2.27.0
+>
