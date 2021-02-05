@@ -2,127 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96DF7C433E0
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A31C433E0
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:11:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 608D664FBE
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:08:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A01B64FB7
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Feb 2021 07:11:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231168AbhBEHIZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Feb 2021 02:08:25 -0500
-Received: from mx2.suse.de ([195.135.220.15]:41556 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230516AbhBEHIU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Feb 2021 02:08:20 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 2D16EACBA;
-        Fri,  5 Feb 2021 07:07:38 +0000 (UTC)
-Message-ID: <1612508857.19825.7.camel@suse.cz>
-Subject: Re: [PATCH v1 2/2] cpufreq: ACPI: Update arch scale-invariance max
- perf ratio if CPPC is not there
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Michael Larabel <Michael@phoronix.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Fri, 05 Feb 2021 08:07:37 +0100
-In-Reply-To: <9510730.kuOQ4KzHjt@kreacher>
-References: <13690581.X0sz4iL7V8@kreacher> <9510730.kuOQ4KzHjt@kreacher>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+        id S231458AbhBEHLP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Feb 2021 02:11:15 -0500
+Received: from mail-eopbgr10096.outbound.protection.outlook.com ([40.107.1.96]:5477
+        "EHLO EUR02-HE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231337AbhBEHLC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Feb 2021 02:11:02 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=oD85To/HyAWFR4hsOGWLDzs+pqTagG/NJLGiYPLNLKvXJ2sZyeOZm/B9bP9efO/TPRL6mCA1W5ISL3oSUgC3P9MhvnvGTLLeKGP/lz5Z/cPuym36uxOtOPkIYZs55MvSSvHxxfIIKWhv9Qh+W57NPe/Lx/Pqf0S/xEM7wet94tKJSigOPEES1BT20SAT2F49X3Vgyp9jhShnXs4H1ldbC5zEk9bMpK+1MGMk5H4UmzqKU4TUH0ygCm2KpSqALzf4qGyqX1TD0rH4jyqLbowaOqc92IFczsI3jM/NFShJ9CRlwNDSLAykNT1J7hpzGsws2tVoOJWuVn6BO5zDUc6+GQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qE9+g9hN2IiubGClb8wgUDvHoI3ElbQWxxdk/CDCKaU=;
+ b=FN0MmYaSS8I6zX8XFJgRqYOeYVOFVxeTyuu9ebO9dy0wEYXi/ZLwjBRvmjz8Pip3vmPbaXujzj6GklNi9+MAWoKP03Xpbxz7sTCjxENE+JMogFax43yuiXLHHTzS0Xsqy98vQdISrXoy0eKkEfJxY68YNTBNqiOGFlUwkng8UTGIP0jLijYy+3sorEn+435Ztv5GhxfmM6MXFGs0CTAH5CTMFpgue0jSEaVogyL2nBriJ8ndTZ2T2qi/JVI107r3D/ujWX9XYjZQyi+XS7NmFEJyPm7wqC3c5jrbOEd4Nk/CT5PdNZp7OdHe+/VntfSlDpW/ydwvIWe9j4DUHZf5wQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 193.8.40.99) smtp.rcpttodomain=kernel.org
+ smtp.mailfrom=leica-geosystems.com.cn; dmarc=pass (p=quarantine sp=quarantine
+ pct=100) action=none header.from=leica-geosystems.com.cn; dkim=none (message
+ not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=leica-geosystems.com.cn; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=qE9+g9hN2IiubGClb8wgUDvHoI3ElbQWxxdk/CDCKaU=;
+ b=MOEAx3MfjUKruCmjkm8Ba4f92VploBObmI2CiZq7PSgyHeTOegujAtsRsXGQLB9I6hntTLa2s0eIE3i+FVXEIfkhdb+I5pz0l4zBjAmzs/Y5nafikwUHE7xJfQHQOdOkVFaQ/GoIXEsy7ATQ2LXICTWmoOeHVCzHVZBVyiUg6MQ=
+Received: from AM6P194CA0078.EURP194.PROD.OUTLOOK.COM (2603:10a6:209:8f::19)
+ by AM6PR06MB5745.eurprd06.prod.outlook.com (2603:10a6:20b:36::27) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3825.19; Fri, 5 Feb
+ 2021 07:10:12 +0000
+Received: from AM5EUR02FT033.eop-EUR02.prod.protection.outlook.com
+ (2603:10a6:209:8f:cafe::c0) by AM6P194CA0078.outlook.office365.com
+ (2603:10a6:209:8f::19) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3825.17 via Frontend
+ Transport; Fri, 5 Feb 2021 07:10:12 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 193.8.40.99)
+ smtp.mailfrom=leica-geosystems.com.cn; kernel.org; dkim=none (message not
+ signed) header.d=none;kernel.org; dmarc=pass action=none
+ header.from=leica-geosystems.com.cn;
+Received-SPF: Pass (protection.outlook.com: domain of leica-geosystems.com.cn
+ designates 193.8.40.99 as permitted sender) receiver=protection.outlook.com;
+ client-ip=193.8.40.99; helo=aherlnxbspsrv01.lgs-net.com;
+Received: from aherlnxbspsrv01.lgs-net.com (193.8.40.99) by
+ AM5EUR02FT033.mail.protection.outlook.com (10.152.8.86) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.3784.11 via Frontend Transport; Fri, 5 Feb 2021 07:10:11 +0000
+From:   LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+To:     sre@kernel.org, robh+dt@kernel.org, dmurphy@ti.com,
+        pali@kernel.org, krzk@kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     grygorii.tertychnyi@leica-geosystems.com,
+        andrey.zhizhikin@leica-geosystems.com,
+        LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+Subject: [PATCH V4 1/2] dt-bindings: power: bq27xxx: add bq78z100
+Date:   Fri,  5 Feb 2021 07:10:03 +0000
+Message-Id: <20210205071004.26317-2-Qing-wu.Li@leica-geosystems.com.cn>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210205071004.26317-1-Qing-wu.Li@leica-geosystems.com.cn>
+References: <20210205071004.26317-1-Qing-wu.Li@leica-geosystems.com.cn>
+X-EOPAttributedMessage: 0
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-PublicTrafficType: Email
+MIME-Version: 1.0
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 2d35f5b9-e89f-4b01-6f42-08d8c9a5143b
+X-MS-TrafficTypeDiagnostic: AM6PR06MB5745:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <AM6PR06MB5745EDF907A085CEE6AB9EAAD7B29@AM6PR06MB5745.eurprd06.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:1388;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: wUcDQ0LUbUCh24Hx8pcfzUPg8LGYj3Q8CN5EXXgZNZAHwODUcAhT2C/FS76fdGbMV0gLtU8homEpIzbEFeuiuBZkAuw8yC9tYiqhne/7UjRwcmIi7DxCUwyxVjlRSNJTGIAcc0dfigbcSfdHjX9WgXln6ws0ScVPY14DO74khzgedkoDMCxU7lT/qTN+4gjS9bja9kEvr9eqj42vf9tQjFv3HOSz3stuOMsgcfTfTVd5w8FZF9yJApoeyJ0yqdhbLSjXCyIbPrG1sJH4VIU0B9/OCLP+ntUqegK182YIP6jkVENH55AgWikIST+cufR8rqheMf4IWq3WDP5KIw1xnUbxuW8NCJyfUkcsAe559MIb+cVVMpI8B+s3j6x1WTUkXSCBBlNavcCZSvZHTz2C07zwSIux/mCs1vckIP8AbWCyvyUS/3+JpGnhHdxoDiKr/mLsuT4W3QhjPeoUMiOA6c57f7HVFWXd1WjATbXCfq3EwGlXNHlhg1Va857d0BQ6FQWUsxBz1K3Qr0QiGCaVOui6NYqdNsOD+wW0J/7YBjqp++fZaidtGIsM8vR3Jbr4kJ3L/X5pVngZHtaTkUb2IvE96qeaJVOD8vwUGfcnApX82KKOLErsg20lePH7f6rSjDCaRBKAPhvSawI2RxrUW0fykLP/Row8uzRC0BucKbpZzxPKXPz8twAgGE9DjKKQ1hb4X4NG7NKEXrhgCFFCmg==
+X-Forefront-Antispam-Report: CIP:193.8.40.99;CTRY:CH;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:aherlnxbspsrv01.lgs-net.com;PTR:ahersrvdom51.leica-geosystems.com;CAT:NONE;SFS:(4636009)(376002)(346002)(136003)(396003)(39860400002)(46966006)(36840700001)(4326008)(6512007)(118246002)(6506007)(47076005)(5660300002)(1076003)(336012)(316002)(107886003)(36860700001)(86362001)(4744005)(26005)(6486002)(2616005)(34020700004)(2906002)(478600001)(956004)(186003)(36756003)(356005)(70206006)(8676002)(82740400003)(36736006)(6666004)(82310400003)(70586007)(81166007)(8936002)(138113003);DIR:OUT;SFP:1102;
+X-OriginatorOrg: leica-geosystems.com.cn
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Feb 2021 07:10:11.6972
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2d35f5b9-e89f-4b01-6f42-08d8c9a5143b
+X-MS-Exchange-CrossTenant-Id: 1b16ab3e-b8f6-4fe3-9f3e-2db7fe549f6a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=1b16ab3e-b8f6-4fe3-9f3e-2db7fe549f6a;Ip=[193.8.40.99];Helo=[aherlnxbspsrv01.lgs-net.com]
+X-MS-Exchange-CrossTenant-AuthSource: AM5EUR02FT033.eop-EUR02.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR06MB5745
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2021-02-04 at 18:34 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If the maximum performance level taken for computing the
-> arch_max_freq_ratio value used in the x86 scale-invariance code is
-> higher than the one corresponding to the cpuinfo.max_freq value
-> coming from the acpi_cpufreq driver, the scale-invariant utilization
-> falls below 100% even if the CPU runs at cpuinfo.max_freq or slightly
-> faster, which causes the schedutil governor to select a frequency
-> below cpuinfo.max_freq.  That frequency corresponds to a frequency
-> table entry below the maximum performance level necessary to get to
-> the "boost" range of CPU frequencies which prevents "boost"
-> frequencies from being used in some workloads.
-> 
-> While this issue is related to scale-invariance, it may be amplified
-> by commit db865272d9c4 ("cpufreq: Avoid configuring old governors as
-> default with intel_pstate") from the 5.10 development cycle which
-> made it extremely easy to default to schedutil even if the preferred
-> driver is acpi_cpufreq as long as intel_pstate is built too, because
-> the mere presence of the latter effectively removes the ondemand
-> governor from the defaults.  Distro kernels are likely to include
-> both intel_pstate and acpi_cpufreq on x86, so their users who cannot
-> use intel_pstate or choose to use acpi_cpufreq may easily be
-> affectecd by this issue.
-> 
-> If CPPC is available, it can be used to address this issue by
-> extending the frequency tables created by acpi_cpufreq to cover the
-> entire available frequency range (including "boost" frequencies) for
-> each CPU, but if CPPC is not there, acpi_cpufreq has no idea what
-> the maximum "boost" frequency is and the frequency tables created by
-> it cannot be extended in a meaningful way, so in that case make it
-> ask the arch scale-invariance code to to use the "nominal" performance
-> level for CPU utilization scaling in order to avoid the issue at hand.
-> 
-> Fixes: db865272d9c4 ("cpufreq: Avoid configuring old governors as default with intel_pstate")
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/kernel/smpboot.c      |    1 +
->  drivers/cpufreq/acpi-cpufreq.c |    8 ++++++++
->  2 files changed, 9 insertions(+)
-> 
-> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> @@ -806,6 +806,14 @@ static int acpi_cpufreq_cpu_init(struct
->  		state_count++;
->  		valid_states++;
->  		data->first_perf_state = valid_states;
-> +	} else {
-> +		/*
-> +		 * If the maximum "boost" frequency is unknown, ask the arch
-> +		 * scale-invariance code to use the "nominal" performance for
-> +		 * CPU utilization scaling so as to prevent the schedutil
-> +		 * governor from selecting inadequate CPU frequencies.
-> +		 */
-> +		arch_set_max_freq_ratio(true);
->  	}
->  
->  	freq_table = kcalloc(state_count, sizeof(*freq_table), GFP_KERNEL);
-> Index: linux-pm/arch/x86/kernel/smpboot.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/kernel/smpboot.c
-> +++ linux-pm/arch/x86/kernel/smpboot.c
-> @@ -1833,6 +1833,7 @@ void arch_set_max_freq_ratio(bool turbo_
->  	arch_max_freq_ratio = turbo_disabled ? SCHED_CAPACITY_SCALE :
->  					arch_turbo_freq_ratio;
->  }
-> +EXPORT_SYMBOL_GPL(arch_set_max_freq_ratio);
->  
->  static bool turbo_disabled(void)
->  {
+Add bindings for TI BQ78Z100. An I2C interface gas gauge.
+It provides a fully integrated safety protection
+and authentication for 1 to 2-series cell Li-Ion and
+Li-Polymer battery packs.
 
-Reviewed-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+---
+ Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Giovanni
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+index 45beefccf31a..712e974b28b6 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+@@ -52,6 +52,7 @@ properties:
+       - ti,bq27z561
+       - ti,bq28z610
+       - ti,bq34z100
++      - ti,bq78z100
+ 
+   reg:
+     maxItems: 1
+-- 
+2.17.1
+
