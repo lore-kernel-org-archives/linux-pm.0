@@ -2,78 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B420C433E0
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Feb 2021 12:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0503C433E6
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Feb 2021 13:10:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1449B64E29
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Feb 2021 12:22:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A5D7364E7A
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Feb 2021 13:10:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229759AbhBHMVz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Feb 2021 07:21:55 -0500
-Received: from 4.mo2.mail-out.ovh.net ([87.98.172.75]:52253 "EHLO
-        4.mo2.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231580AbhBHMUM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2021 07:20:12 -0500
-X-Greylist: delayed 12024 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2021 07:20:07 EST
-Received: from player737.ha.ovh.net (unknown [10.108.20.107])
-        by mo2.mail-out.ovh.net (Postfix) with ESMTP id CF72F1FBA7F
-        for <linux-pm@vger.kernel.org>; Mon,  8 Feb 2021 09:42:37 +0100 (CET)
-Received: from RCM-web9.webmail.mail.ovh.net (ip-194-187-74-233.konfederacka.maverick.com.pl [194.187.74.233])
-        (Authenticated sender: rafal@milecki.pl)
-        by player737.ha.ovh.net (Postfix) with ESMTPSA id 42C2F115B410D;
-        Mon,  8 Feb 2021 08:42:28 +0000 (UTC)
+        id S229766AbhBHNKU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Feb 2021 08:10:20 -0500
+Received: from szxga04-in.huawei.com ([45.249.212.190]:12599 "EHLO
+        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229848AbhBHNKS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2021 08:10:18 -0500
+Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.58])
+        by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4DZ5tN1XMdz164TN;
+        Mon,  8 Feb 2021 21:08:12 +0800 (CST)
+Received: from [127.0.0.1] (10.69.38.196) by DGGEMS404-HUB.china.huawei.com
+ (10.3.19.204) with Microsoft SMTP Server id 14.3.498.0; Mon, 8 Feb 2021
+ 21:09:29 +0800
+Subject: Re: [PATCH 1/4] driver core: Use subdir-ccflags-* to inherit debug
+ flag
+To:     Greg KH <gregkh@linuxfoundation.org>
+CC:     <jdelvare@suse.com>, <linux@roeck-us.net>, <giometti@enneenne.com>,
+        <abbotti@mev.co.uk>, <hsweeten@visionengravers.com>,
+        <kw@linux.com>, <helgaas@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-hwmon@vger.kernel.org>, <devel@driverdev.osuosl.org>,
+        <linux-kbuild@vger.kernel.org>, <masahiroy@kernel.org>,
+        <michal.lkml@markovi.net>, <linuxarm@openeuler.org>,
+        <prime.zeng@huawei.com>
+References: <1612518255-23052-1-git-send-email-yangyicong@hisilicon.com>
+ <1612518255-23052-2-git-send-email-yangyicong@hisilicon.com>
+ <YB0Vk6ERJ3lFc3WD@kroah.com>
+ <08017751-a1be-ea07-50de-73d14ab6d57e@hisilicon.com>
+ <YCEWtxYgbRPET4Sr@kroah.com>
+From:   Yicong Yang <yangyicong@hisilicon.com>
+Message-ID: <1f0b2f37-db56-c220-dfe1-8c376031404f@hisilicon.com>
+Date:   Mon, 8 Feb 2021 21:09:20 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.1
 MIME-Version: 1.0
-Date:   Mon, 08 Feb 2021 09:42:28 +0100
-From:   =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
-To:     Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Cc:     Florian Fainelli <f.fainelli@gmail.com>,
-        bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Ralf Ramsauer <ralf.ramsauer@oth-regensburg.de>,
-        Pia Eichinger <pia.eichinger@st.oth-regensburg.de>,
-        Joe Perches <joe@perches.com>, kernel-janitors@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: rectify BROADCOM PMB (POWER MANAGEMENT BUS)
- DRIVER
-In-Reply-To: <20210208071619.3234-1-lukas.bulwahn@gmail.com>
-References: <20210208071619.3234-1-lukas.bulwahn@gmail.com>
-User-Agent: Roundcube Webmail/1.4.10
-Message-ID: <883902e16721c9a439a7caaa897a317b@milecki.pl>
-X-Sender: rafal@milecki.pl
-X-Originating-IP: 194.187.74.233
-X-Webmail-UserID: rafal@milecki.pl
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 17977525290287992534
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrhedvgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepggffhffvufgjfhgfkfigihgtgfesthekjhdttderjeenucfhrhhomheptfgrfhgrlhgpofhilhgvtghkihcuoehrrghfrghlsehmihhlvggtkhhirdhplheqnecuggftrfgrthhtvghrnhepjeffudffgfejgfdvieegudekffefveehjeeuieekheduieduhedvieefudetheeinecukfhppedtrddtrddtrddtpdduleegrddukeejrdejgedrvdeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejfeejrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheprhgrfhgrlhesmhhilhgvtghkihdrphhlpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+In-Reply-To: <YCEWtxYgbRPET4Sr@kroah.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.69.38.196]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2021-02-08 08:16, Lukas Bulwahn wrote:
-> Commit 8bcac4011ebe ("soc: bcm: add PM driver for Broadcom's PMB") 
-> includes
-> a new MAINTAINERS section BROADCOM PMB (POWER MANAGEMENT BUS) DRIVER 
-> with
-> 'drivers/soc/bcm/bcm-pmb.c', but the file was actually added at
-> 'drivers/soc/bcm/bcm63xx/bcm-pmb.c'.
+On 2021/2/8 18:47, Greg KH wrote:
+> On Mon, Feb 08, 2021 at 06:44:52PM +0800, Yicong Yang wrote:
+>> Hi Greg,
+>>
+>> On 2021/2/5 17:53, Greg KH wrote:
+>>> On Fri, Feb 05, 2021 at 05:44:12PM +0800, Yicong Yang wrote:
+>>>> From: Junhao He <hejunhao2@hisilicon.com>
+>>>>
+>>>> Use subdir-ccflags-* instead of ccflags-* to inherit the debug
+>>>> settings from Kconfig when traversing subdirectories.
+>>>
+>>> That says what you do, but not _why_ you are doing it.
+>>
+>> i'll illustrate the reason and reword the commit.
+>>
+>>>
+>>> What does this offer in benefit of the existing way?  What is it fixing?
+>>> Why do this "churn"?
+>>
+>> currently we have added ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG in the Makefile
+>> of driver/base and driver/base/power, but not in the subdirectory
+>> driver/base/firmware_loader. we cannot turn the debug on for subdirectory
+>> firmware_loader if we config DEBUG_DRIVER and there is no kconfig option
+>> for the it.
 > 
-> Hence, ./scripts/get_maintainer.pl --self-test=patterns complains:
-> 
->   warning: no file matches  F:    drivers/soc/bcm/bcm-pmb.c
-> 
-> Point the file entry to the right location.
-> 
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> Is that necessary?  Does that directory need it?
 
-Thanks!
+there are several debug prints in firmware_loader/main.c:
 
-Acked-by: Rafał Miłecki <rafal@milecki.pl>
+./main.c:207:   pr_debug("%s: fw-%s fw_priv=%p\n", __func__, fw_name, fw_priv);
+./main.c:245:                   pr_debug("batched request - sharing the same struct fw_priv and lookup for multiple requests\n");
+./main.c:269:   pr_debug("%s: fw-%s fw_priv=%p data=%p size=%u\n",
+./main.c:594:   pr_debug("%s: fw-%s fw_priv=%p data=%p size=%u\n",
+./main.c:605:           pr_debug("%s: fw_name-%s devm-%p released\n",
+./main.c:1175:  pr_debug("%s: %s\n", __func__, fw_name);
+./main.c:1181:  pr_debug("%s: %s ret=%d\n", __func__, fw_name, ret);
+./main.c:1214:  pr_debug("%s: %s\n", __func__, fw_name);
+./main.c:1272:          pr_debug("%s: fw: %s\n", __func__, name);
+./main.c:1389:  pr_debug("%s\n", __func__);
+./main.c:1415:  pr_debug("%s\n", __func__);
+
+
+> 
+> thanks,
+> 
+> greg k-h
+> 
+> .
+> 
+
