@@ -2,29 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFF06C433E6
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49A84C433E0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F66664E79
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E92A64E7C
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229959AbhBILOB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 06:14:01 -0500
-Received: from szxga06-in.huawei.com ([45.249.212.32]:12901 "EHLO
-        szxga06-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232306AbhBILLx (ORCPT
+        id S231294AbhBILOE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 06:14:04 -0500
+Received: from szxga07-in.huawei.com ([45.249.212.35]:12882 "EHLO
+        szxga07-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229984AbhBILLx (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 06:11:53 -0500
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.58])
-        by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4DZgCX59DdzjKJZ;
-        Tue,  9 Feb 2021 19:10:00 +0800 (CST)
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.59])
+        by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4DZgC819fdz7jJr;
+        Tue,  9 Feb 2021 19:09:40 +0800 (CST)
 Received: from localhost.localdomain (10.67.165.24) by
  DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.498.0; Tue, 9 Feb 2021 19:10:58 +0800
+ 14.3.498.0; Tue, 9 Feb 2021 19:10:57 +0800
 From:   Yicong Yang <yangyicong@hisilicon.com>
 To:     <gregkh@linuxfoundation.org>, <jdelvare@suse.com>,
         <linux@roeck-us.net>, <giometti@enneenne.com>, <abbotti@mev.co.uk>,
@@ -35,12 +34,10 @@ To:     <gregkh@linuxfoundation.org>, <jdelvare@suse.com>,
         <masahiroy@kernel.org>, <michal.lkml@markovi.net>
 CC:     <prime.zeng@huawei.com>, <yangyicong@hisilicon.com>,
         <linuxarm@openeuler.org>
-Subject: [PATCH v2 3/4] pps: Use subdir-ccflags-* to inherit debug flag
-Date:   Tue, 9 Feb 2021 19:08:18 +0800
-Message-ID: <1612868899-9185-4-git-send-email-yangyicong@hisilicon.com>
+Subject: [PATCH v2 0/4] Use subdir-ccflags-* to inherit debug flag
+Date:   Tue, 9 Feb 2021 19:08:15 +0800
+Message-ID: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
 X-Mailer: git-send-email 2.8.1
-In-Reply-To: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
-References: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.67.165.24]
@@ -49,34 +46,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Junhao He <hejunhao2@hisilicon.com>
+Few drivers use ccflags-* in their top directory to enable
+-DDEBUG, but don't have config options to enable debug
+in the sub-directories, or they use per subdirectory
+ccflags-* to have DEBUG with the same kconfig option.
 
-We use ccflags-$(CONFIG_PPS_DEBUG) for the debug
-message in drivers/pps, but the DEBUG flag will not pass to
-the subdirectory.
+Considering they intends to enable debug for all the files
+under the directory with the same kconfig option, it will
+be clearer to use subdir-ccflags-* instead of ccflags-*
+to inherit the debug settings from Kconfig when traversing
+subdirectories.
 
-Considering CONFIG_HWMON_DEBUG_CHIP intends to turn on debug
-recursively under driver/pps, so it will be clearer to use
-subdir-ccflags-* instead of ccflags-* to inherit
-the debug settings from Kconfig when traversing subdirectories.
+We primarily find this issue when debugging PCIe and thought
+other drivers may also have this issues. Previous discussion
+can be find at
+https://lore.kernel.org/linux-pci/1612438215-33105-1-git-send-email-yangyicong@hisilicon.com/
 
-Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Junhao He <hejunhao2@hisilicon.com>
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
----
- drivers/pps/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Change since v1:
+- reword the commits to illustrate the reasons of the change and the benefits.
+v1: https://lore.kernel.org/lkml/1612518255-23052-1-git-send-email-yangyicong@hisilicon.com/
 
-diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
-index ceaf65c..7a2d3f7 100644
---- a/drivers/pps/Makefile
-+++ b/drivers/pps/Makefile
-@@ -8,4 +8,4 @@ pps_core-$(CONFIG_NTP_PPS)	+= kc.o
- obj-$(CONFIG_PPS)		:= pps_core.o
- obj-y				+= clients/ generators/
- 
--ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
-+subdir-ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
+Junhao He (4):
+  driver core: Use subdir-ccflags-* to inherit debug flag
+  hwmon: Use subdir-ccflags-* to inherit debug flag
+  pps: Use subdir-ccflags-* to inherit debug flag
+  staging: comedi: Use subdir-ccflags-* to inherit debug flag
+
+ drivers/base/Makefile                         | 2 +-
+ drivers/base/power/Makefile                   | 2 --
+ drivers/hwmon/Makefile                        | 2 +-
+ drivers/pps/Makefile                          | 2 +-
+ drivers/staging/comedi/Makefile               | 2 +-
+ drivers/staging/comedi/drivers/Makefile       | 1 -
+ drivers/staging/comedi/drivers/tests/Makefile | 2 --
+ drivers/staging/comedi/kcomedilib/Makefile    | 2 --
+ 8 files changed, 4 insertions(+), 11 deletions(-)
+
 -- 
 2.8.1
 
