@@ -7,70 +7,75 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 463BAC433E6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78C57C433E0
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:58:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EA1EA64E26
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:58:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 20F2C64EB9
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:58:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231892AbhBIK6L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 05:58:11 -0500
-Received: from foss.arm.com ([217.140.110.172]:49620 "EHLO foss.arm.com"
+        id S232110AbhBIK6Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 05:58:16 -0500
+Received: from foss.arm.com ([217.140.110.172]:49632 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232035AbhBIKzx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Feb 2021 05:55:53 -0500
+        id S232069AbhBIKz5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Feb 2021 05:55:57 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AA17CED1;
-        Tue,  9 Feb 2021 02:55:07 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 48BF11042;
+        Tue,  9 Feb 2021 02:55:12 -0800 (PST)
 Received: from e123648.arm.com (unknown [10.57.15.170])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8942B3F73B;
-        Tue,  9 Feb 2021 02:55:05 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 21A083F73B;
+        Tue,  9 Feb 2021 02:55:09 -0800 (PST)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
         linux-pm@vger.kernel.org
 Cc:     len.brown@intel.com, pavel@ucw.cz, lukasz.luba@arm.com,
         dietmar.eggemann@arm.com, greg@kroah.com
-Subject: [PATCH 1/2] PM / EM: update Kconfig description and drop "default n" option
-Date:   Tue,  9 Feb 2021 10:54:34 +0000
-Message-Id: <20210209105435.21036-1-lukasz.luba@arm.com>
+Subject: [PATCH 2/2] PM / Kconfig: remove unneeded "default n" options
+Date:   Tue,  9 Feb 2021 10:54:35 +0000
+Message-Id: <20210209105435.21036-2-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210209105435.21036-1-lukasz.luba@arm.com>
+References: <20210209105435.21036-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Energy Model supports now other devices like GPUs, DSPs, not only CPUs.
-Thus, update the description in the config option. Remove also unneeded
-"default n". If the "default" line is removed, it defaults to 'n'.
+Remove "default n" options. If the "default" line is removed, it
+defaults to 'n'.
 
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- kernel/power/Kconfig | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ kernel/power/Kconfig | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index a7320f07689d..56dbc2616d5c 100644
+index 56dbc2616d5c..6bfe3ead10ad 100644
 --- a/kernel/power/Kconfig
 +++ b/kernel/power/Kconfig
-@@ -322,15 +322,14 @@ config CPU_PM
- 	bool
- 
- config ENERGY_MODEL
--	bool "Energy Model for CPUs"
-+	bool "Energy Model for devices with DVFS (CPUs, GPUs, etc)"
- 	depends on SMP
- 	depends on CPU_FREQ
+@@ -139,7 +139,6 @@ config PM_SLEEP_SMP_NONZERO_CPU
+ config PM_AUTOSLEEP
+ 	bool "Opportunistic sleep"
+ 	depends on PM_SLEEP
 -	default n
  	help
- 	  Several subsystems (thermal and/or the task scheduler for example)
--	  can leverage information about the energy consumed by CPUs to make
--	  smarter decisions. This config option enables the framework from
--	  which subsystems can access the energy models.
-+	  can leverage information about the energy consumed by devices to
-+	  make smarter decisions. This config option enables the framework
-+	  from which subsystems can access the energy models.
- 
- 	  The exact usage of the energy model is subsystem-dependent.
- 
+ 	Allow the kernel to trigger a system transition into a global sleep
+ 	state automatically whenever there are no active wakeup sources.
+@@ -147,7 +146,6 @@ config PM_AUTOSLEEP
+ config PM_WAKELOCKS
+ 	bool "User space wakeup sources interface"
+ 	depends on PM_SLEEP
+-	default n
+ 	help
+ 	Allow user space to create, activate and deactivate wakeup source
+ 	objects with the help of a sysfs-based interface.
+@@ -293,7 +291,6 @@ config PM_GENERIC_DOMAINS
+ config WQ_POWER_EFFICIENT_DEFAULT
+ 	bool "Enable workqueue power-efficient mode by default"
+ 	depends on PM
+-	default n
+ 	help
+ 	  Per-cpu workqueues are generally preferred because they show
+ 	  better performance thanks to cache locality; unfortunately,
 -- 
 2.17.1
 
