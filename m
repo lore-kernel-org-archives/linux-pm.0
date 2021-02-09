@@ -2,148 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2432C433E9
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:05:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F282C433DB
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B162764E30
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:05:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3822264E79
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232262AbhBILFA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 06:05:00 -0500
-Received: from esa.microchip.iphmx.com ([68.232.154.123]:60449 "EHLO
-        esa.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232322AbhBILDA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 06:03:00 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1612868579; x=1644404579;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=W9uQIBmMbhOJI5EB5t0XL0RgU8AIWyZX4YDNWFP3Br4=;
-  b=Dsd2a74E2/LKAgCeJ/BYrL8vYxyo1/Bk9tqf22kULvLOtXDAxF6DoaIN
-   2/9x0aXzJ2hfZMcAoeOsOxWJjDgGJ6m0akmjpc4X1NZbt1WBtzGsOqS3S
-   AzTeQsJB1kIRuDpG0NvTTHt/fNSjiNbmo45swW2Oc23FS6Rypfwj1sDUJ
-   9saLzOTL2NBvw3+tX3fAOgqxDwxaMEka3kxR2/NpwKyCs/aGeMObmP7dn
-   vm38SKF4D789MTE+mOwOndDe80Y95DQSE/Z+JlZMynS6kEOl2pEKKAFqc
-   5ABKQO4fW8sQt8PVbyRpxYogWEGyof/vGQ7P/tuVP85WkuQY759tLOJi+
-   A==;
-IronPort-SDR: vV5/rJCZXvsBr1YtRxaK2d5GX2y09KEhs46aIHJFKUfM5olZXcpqPGjc2vmfX0kg+Ifer557wP
- /f6g+yX92+4BDmI67vA4W+gzol6NSYPyU0MrmY1Mv9YsLVMeWCqWWl8XWNunpFrvXezjYe8vda
- hKes3RxgysrwwxybcO4nJ8PFejY4NIE11dxp9pSJw2nYodjnPZuT/dLUF4+YCmsb29r91+EhV9
- A5Atw1kfTLbZIr68PlqEheGc5O2qC0gy6NHtraXu463DfS8yRrkLoNvzNTIIp89mV3Hg56TEBe
- ZOc=
-X-IronPort-AV: E=Sophos;i="5.81,164,1610434800"; 
-   d="scan'208";a="105958094"
-Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 09 Feb 2021 04:01:43 -0700
-Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1979.3; Tue, 9 Feb 2021 04:01:43 -0700
-Received: from m18063-ThinkPad-T460p.mchp-main.com (10.10.115.15) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.1979.3 via Frontend Transport; Tue, 9 Feb 2021 04:01:23 -0700
-From:   Claudiu Beznea <claudiu.beznea@microchip.com>
-To:     <sre@kernel.org>, <nicolas.ferre@microchip.com>,
-        <alexandre.belloni@bootlin.com>, <ludovic.desroches@microchip.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        kernel test robot <lkp@intel.com>,
-        "Dan Carpenter" <dan.carpenter@oracle.com>
-Subject: [PATCH] power: reset: at91-reset: free resources on exit path
-Date:   Tue, 9 Feb 2021 13:01:09 +0200
-Message-ID: <20210209110109.906034-1-claudiu.beznea@microchip.com>
-X-Mailer: git-send-email 2.25.1
+        id S230295AbhBILN4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 06:13:56 -0500
+Received: from szxga06-in.huawei.com ([45.249.212.32]:12902 "EHLO
+        szxga06-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232367AbhBILLz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 06:11:55 -0500
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.58])
+        by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4DZgCX5gBPzjKK8;
+        Tue,  9 Feb 2021 19:10:00 +0800 (CST)
+Received: from localhost.localdomain (10.67.165.24) by
+ DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
+ 14.3.498.0; Tue, 9 Feb 2021 19:10:58 +0800
+From:   Yicong Yang <yangyicong@hisilicon.com>
+To:     <gregkh@linuxfoundation.org>, <jdelvare@suse.com>,
+        <linux@roeck-us.net>, <giometti@enneenne.com>, <abbotti@mev.co.uk>,
+        <hsweeten@visionengravers.com>, <kw@linux.com>,
+        <helgaas@kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-hwmon@vger.kernel.org>,
+        <devel@driverdev.osuosl.org>, <linux-kbuild@vger.kernel.org>,
+        <masahiroy@kernel.org>, <michal.lkml@markovi.net>
+CC:     <prime.zeng@huawei.com>, <yangyicong@hisilicon.com>,
+        <linuxarm@openeuler.org>
+Subject: [PATCH v2 4/4] staging: comedi: Use subdir-ccflags-* to inherit debug flag
+Date:   Tue, 9 Feb 2021 19:08:19 +0800
+Message-ID: <1612868899-9185-5-git-send-email-yangyicong@hisilicon.com>
+X-Mailer: git-send-email 2.8.1
+In-Reply-To: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
+References: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
+X-Originating-IP: [10.67.165.24]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Free resources on exit path (failure path of probe and remove).
+From: Junhao He <hejunhao2@hisilicon.com>
 
-Reported-by: kernel test robot <lkp@intel.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+As CONFIG_COMEDI_DEBUG intends to have the DEBUG flag
+recursively under drivers/staging/comedi, use
+subdir-ccflags-* instead of ccflags-* will make it
+clearer as the DEBUG flag will be inherited when
+traversing subdirectories.
+
+Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Junhao He <hejunhao2@hisilicon.com>
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
 ---
- drivers/power/reset/at91-reset.c | 25 ++++++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
+ drivers/staging/comedi/Makefile               | 2 +-
+ drivers/staging/comedi/drivers/Makefile       | 1 -
+ drivers/staging/comedi/drivers/tests/Makefile | 2 --
+ drivers/staging/comedi/kcomedilib/Makefile    | 2 --
+ 4 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 3ff9d93a5226..2ff7833153b6 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -206,7 +206,8 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 			if (!reset->ramc_base[idx]) {
- 				dev_err(&pdev->dev, "Could not map ram controller address\n");
- 				of_node_put(np);
--				return -ENODEV;
-+				ret = -ENODEV;
-+				goto unmap;
- 			}
- 			idx++;
- 		}
-@@ -218,13 +219,15 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 	reset->args = (u32)match->data;
+diff --git a/drivers/staging/comedi/Makefile b/drivers/staging/comedi/Makefile
+index 072ed83..f51cc14 100644
+--- a/drivers/staging/comedi/Makefile
++++ b/drivers/staging/comedi/Makefile
+@@ -1,5 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+-ccflags-$(CONFIG_COMEDI_DEBUG)		:= -DDEBUG
++subdir-ccflags-$(CONFIG_COMEDI_DEBUG)	:= -DDEBUG
  
- 	reset->sclk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(reset->sclk))
--		return PTR_ERR(reset->sclk);
-+	if (IS_ERR(reset->sclk)) {
-+		ret = PTR_ERR(reset->sclk);
-+		goto unmap;
-+	}
+ comedi-y				:= comedi_fops.o range.o drivers.o \
+ 					   comedi_buf.o
+diff --git a/drivers/staging/comedi/drivers/Makefile b/drivers/staging/comedi/drivers/Makefile
+index b24ac00..7cafc36 100644
+--- a/drivers/staging/comedi/drivers/Makefile
++++ b/drivers/staging/comedi/drivers/Makefile
+@@ -1,7 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # Makefile for individual comedi drivers
+ #
+-ccflags-$(CONFIG_COMEDI_DEBUG)		:= -DDEBUG
  
- 	ret = clk_prepare_enable(reset->sclk);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Could not enable slow clock\n");
--		return ret;
-+		goto unmap;
- 	}
+ # Comedi "helper" modules
+ obj-$(CONFIG_COMEDI_8254)		+= comedi_8254.o
+diff --git a/drivers/staging/comedi/drivers/tests/Makefile b/drivers/staging/comedi/drivers/tests/Makefile
+index b5d8e13..44ac13d 100644
+--- a/drivers/staging/comedi/drivers/tests/Makefile
++++ b/drivers/staging/comedi/drivers/tests/Makefile
+@@ -1,7 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # Makefile for comedi drivers unit tests
+ #
+-ccflags-$(CONFIG_COMEDI_DEBUG)		:= -DDEBUG
+-
+ obj-$(CONFIG_COMEDI_TESTS)		+= example_test.o ni_routes_test.o
+ CFLAGS_ni_routes_test.o			:= -DDEBUG
+diff --git a/drivers/staging/comedi/kcomedilib/Makefile b/drivers/staging/comedi/kcomedilib/Makefile
+index 8031142..9f20318 100644
+--- a/drivers/staging/comedi/kcomedilib/Makefile
++++ b/drivers/staging/comedi/kcomedilib/Makefile
+@@ -1,6 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+-ccflags-$(CONFIG_COMEDI_DEBUG)		:= -DDEBUG
+-
+ obj-$(CONFIG_COMEDI_KCOMEDILIB)	+= kcomedilib.o
  
- 	platform_set_drvdata(pdev, reset);
-@@ -239,21 +242,33 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 	ret = register_restart_handler(&reset->nb);
- 	if (ret) {
- 		clk_disable_unprepare(reset->sclk);
--		return ret;
-+		goto unmap;
- 	}
- 
- 	at91_reset_status(pdev, reset->rstc_base);
- 
- 	return 0;
-+
-+unmap:
-+	iounmap(reset->rstc_base);
-+	for (idx = 0; idx < ARRAY_SIZE(reset->ramc_base); idx++)
-+		iounmap(reset->ramc_base[idx]);
-+
-+	return ret;
- }
- 
- static int __exit at91_reset_remove(struct platform_device *pdev)
- {
- 	struct at91_reset *reset = platform_get_drvdata(pdev);
-+	int idx;
- 
- 	unregister_restart_handler(&reset->nb);
- 	clk_disable_unprepare(reset->sclk);
- 
-+	iounmap(reset->rstc_base);
-+	for (idx = 0; idx < ARRAY_SIZE(reset->ramc_base); idx++)
-+		iounmap(reset->ramc_base[idx]);
-+
- 	return 0;
- }
- 
+ kcomedilib-objs := kcomedilib_main.o
 -- 
-2.25.1
+2.8.1
 
