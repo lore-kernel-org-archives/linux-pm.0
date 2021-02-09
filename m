@@ -2,59 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC86EC433DB
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:19:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECF1FC433E6
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:56:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 68D7E64E77
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:19:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B790D64E4F
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 10:56:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231288AbhBIKTP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 05:19:15 -0500
-Received: from mx2.suse.de ([195.135.220.15]:54266 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231483AbhBIKRL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Feb 2021 05:17:11 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 866D1AD24;
-        Tue,  9 Feb 2021 10:16:27 +0000 (UTC)
-Date:   Tue, 9 Feb 2021 11:16:22 +0100
-From:   Borislav Petkov <bp@suse.de>
-To:     Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc:     Peter Zijlstra <peterz@infradead.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        X86 ML <x86@kernel.org>
-Subject: Re: [PATCH v2 2/2] thermal: Move therm_throt there from x86/mce
-Message-ID: <20210209101622.GA15909@zn.tnic>
-References: <YCHzLQewQIylgyUj@jagdpanzerIV.localdomain>
+        id S232197AbhBIK4F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 05:56:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51468 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232183AbhBIKyC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 05:54:02 -0500
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF56FC061794
+        for <linux-pm@vger.kernel.org>; Tue,  9 Feb 2021 02:53:20 -0800 (PST)
+Received: by mail-wr1-x436.google.com with SMTP id h12so4769480wrw.6
+        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2021 02:53:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=3tgfIWWSNsMJyV0k5Lpc0gdOlm8W65FCoKDdWIZ0Y2s=;
+        b=PvkiBWedmJOGy6M63JOOzwOhvsrhB9pf/ZukrYKMSSNsa5v0FhhTB1LIK8ktSjizY0
+         /9c5ib95omWBpUlzChqr/UVK+wlgt9E9LvTx6bAi/W54fhKenc3Nxaz8VP3Ea2nMKJ4/
+         bntGoP7eGJmo2Jw0I339fOQjCPOUc8TYA2tvSKsShOM58wjRb6YWVKqSN4beU6pO6q5h
+         BejnMg60fKoEfHtxFN4yZqmr4/PtWO+A9vHYxIZOFbjysfYynX4oaPYwSpl9THoXiJE6
+         xpsEd+IcQLkmH9ZorD9pgYObAa5f7QSLyQdUZAl2ARxjQEpWC0Ydo8Vb/LGbbBfUbNzG
+         QvUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=3tgfIWWSNsMJyV0k5Lpc0gdOlm8W65FCoKDdWIZ0Y2s=;
+        b=a65PGpMgcCWWbLcuFASWWZfcrBZbehPX7ygRQfVF4daFj5NBzc8/M1ZYZyf+PblmbE
+         gRHcXPFRV2Qxfj+oF/7R2cZoMJs4mkoOB602mYhfK3YXQP8F03egxcuW7XkqlQ1Ri/eI
+         c4R4PMp67XO1NfwcD9oWwAGYjUKb/C6t7VbI7g7eX9/uSuctNAVWKVbq7Sq1ikhi7Qz8
+         coQhUkSBXixOy2vZQCJUc6srK2xxeZnSGF5JAuuES5uBuY1MtUScQaGD96TZrhWc+dbw
+         fZkPOOLsDvDsSUAlQm7fK6FlQiaaXLNvFn0uy26Qu0jz6FfqwA0gslUGfRFd9g0R0xOI
+         g7ng==
+X-Gm-Message-State: AOAM532m35mKxE87GFouKEPoGqF0cCg2k0OQncjXV8ZE67Aa+0EGHFW3
+        RW1XmUsIi0FW+ZLmpjO6dROztA==
+X-Google-Smtp-Source: ABdhPJw1mC6tVz3m3/HGZ9D9MhWlOJ16dhgADK3EpUH00Wj+E9WTLBicbYjMVzYlj2rgMNXgGwZj2Q==
+X-Received: by 2002:a5d:6c66:: with SMTP id r6mr24248657wrz.86.1612867999336;
+        Tue, 09 Feb 2021 02:53:19 -0800 (PST)
+Received: from MacBook-Pro.local ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id z63sm4147635wme.8.2021.02.09.02.53.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 09 Feb 2021 02:53:18 -0800 (PST)
+Subject: Re: [PATCH v4 2/2] interconnect: qcom: Add SDM660 interconnect
+ provider driver
+To:     Konrad Dybcio <konrad.dybcio@somainline.org>,
+        AngeloGioacchino Del Regno <kholk11@gmail.com>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>, marijns95@gmail.com,
+        martin.botka1@gmail.com, MSM <linux-arm-msm@vger.kernel.org>,
+        phone-devel@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel <linux-kernel@vger.kernel.org>
+References: <20201017133718.31327-1-kholk11@gmail.com>
+ <20201017133718.31327-3-kholk11@gmail.com>
+ <24ad51dd-ff54-35af-a7bc-92d8cfa30c48@linaro.org>
+ <CAK7fi1ZC8F57WmDg57tAS=b++ewjPcMhBXmeuM7Cjqkp-5Zu9Q@mail.gmail.com>
+ <55f89461-607a-8864-ff31-77d16448128c@somainline.org>
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+Message-ID: <d25e4301-a2b5-e212-9c88-a4c66936f4ee@linaro.org>
+Date:   Tue, 9 Feb 2021 12:53:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <YCHzLQewQIylgyUj@jagdpanzerIV.localdomain>
+In-Reply-To: <55f89461-607a-8864-ff31-77d16448128c@somainline.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On 9.02.21 0:09, Konrad Dybcio wrote:
+> MMCC got merged via the clk-next tree, so.. since this driver was
+> technically in, say for the dt-bindings conflict.. can we get it
+> merged again? :)
 
-On Tue, Feb 09, 2021 at 11:27:57AM +0900, Sergey Senozhatsky wrote:
-> Seems that the patch triggers some WARNs on my laptop.
+Thanks for the update! I'll take it for v5.13.
 
-yeah, that one is replaced with a better variant now and it should land
-in the next linux-next, the one after next-20210208 :)
-
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-SUSE Software Solutions Germany GmbH, GF: Felix Imendörffer, HRB 36809, AG Nürnberg
+Cheers,
+Georgi
