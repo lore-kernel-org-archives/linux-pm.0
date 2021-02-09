@@ -2,116 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-19.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4885C433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 23:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCC42C433DB
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 23:51:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A039364DEC
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 23:50:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9A1A064E4E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 23:51:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234113AbhBIXtq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 18:49:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55594 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233655AbhBIWHM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 17:07:12 -0500
-Received: from mail-yb1-xb2f.google.com (mail-yb1-xb2f.google.com [IPv6:2607:f8b0:4864:20::b2f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0826AC08EB30
-        for <linux-pm@vger.kernel.org>; Tue,  9 Feb 2021 13:55:30 -0800 (PST)
-Received: by mail-yb1-xb2f.google.com with SMTP id d184so8381188ybf.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2021 13:55:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=/PGZ6373hwX21uII2yTNlUq0BGVrzE4VOh9IUqL/yOY=;
-        b=QMbKQ/jadoFRzkunArX38Q12u3yrUElD5NaALMt6Gr5sASFNErzU750CisBVhEKxbZ
-         BKsBL/FAnK6bP4RsSApVhEr6Anv9KwZcAzCeS1G5UxYly2GzVAHU4nj+zBK7fQzg9KWS
-         hkfl7KFyNbN8Fd9hOTVkK+MlD2a++rRtv0rbzXsbf6CmGOD5Z55NCopVLSQg80Mu4oam
-         hJAOgavYCPe0Z0AGKoON1zf9X5fDwPt+LVwlbW0+8R9wFlkxS77ze0Dn3fWBZ9FdZdEz
-         0aa6qtJavWGV6X8bmsNRzFp7OLc33PfIGmHAIOrdFBs0JOWb5NOoqY193QJVgrCECaYu
-         /f3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=/PGZ6373hwX21uII2yTNlUq0BGVrzE4VOh9IUqL/yOY=;
-        b=FGgibH1JpkdXHETBa5TPbumIIVfzhwuHrhZfl2BHnI0XwxjYBpcY9rEe0GgUlX+ha+
-         V64CimW7pjTc21PE+h4XkQiN+xFAfvkJF3AIIkEINokZekKBEsOp1zO+o9bwALzVOktL
-         qEs4JMLj6zCVPDixQ3mvxJSclWdif2C4uFcXTdjGMnJgXTk+DpMg+xliw1bBUOVRc5Gk
-         ntxyKzKFkJFruEkc4u9Q4yFuNhtUgG4dIQi5T6/+kAq8V+k1h18rdWp+a0eq/cgKlueK
-         Jp8LWKB+wGUDdFw2aiBhSj8otibkqqj5oJ5w8Spj8JcZK3IHMRdm4y5sHKaTDROAcUJX
-         G/Zw==
-X-Gm-Message-State: AOAM5300GSdX067Z8YQlwJGN1/0dXWvOfi/5Cz1Xs7qpOGvWN6W36jLx
-        VEqU5P5bXNnaumXvf7+V5USqwRjj0upts7GlJQn4Kg==
-X-Google-Smtp-Source: ABdhPJyj1xOOpj4onlG2/WW3umTyJvCVg8fQGOPytjYVlJXvUchM6BAlnaXUWge9bvj0zPdNDJIpSnxTV2zaYfiH3IQ=
-X-Received: by 2002:a25:b74c:: with SMTP id e12mr37996841ybm.20.1612907728418;
- Tue, 09 Feb 2021 13:55:28 -0800 (PST)
+        id S233411AbhBIXue (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 18:50:34 -0500
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:59020 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234748AbhBIXI6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 18:08:58 -0500
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 119N5jkk085795;
+        Tue, 9 Feb 2021 17:05:45 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1612911945;
+        bh=qU877wM+24hVWpXuypQ2pX4RaadwVT/D3XrUZ7E+Jqw=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=Jyc0tZC8sStoITibAXiVSZ4wIwD10etZz8fPb74lNT7pQ9ioBB7xrxbxtsGD+CqHT
+         oX2JrcYnyWsZbWflU+oj3TCv3G31F55q40iHCsBh5kpE0pc6qIOL4jI6kinAGzJrCN
+         nOmsCszFIgxx/Xf8kmuV7YMNy8pDHSxzZ1ttCDhc=
+Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 119N5jTB050120
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Tue, 9 Feb 2021 17:05:45 -0600
+Received: from DLEE102.ent.ti.com (157.170.170.32) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 9 Feb
+ 2021 17:05:45 -0600
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE102.ent.ti.com
+ (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Tue, 9 Feb 2021 17:05:44 -0600
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 119N5iDT072550;
+        Tue, 9 Feb 2021 17:05:44 -0600
+From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Subject: [PATCH 2/2] power: supply: bq25980: Moves properties from battery node 
+Date:   Tue, 9 Feb 2021 17:05:27 -0600
+Message-ID: <20210209230527.26712-2-r-rivera-matos@ti.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210209230527.26712-1-r-rivera-matos@ti.com>
+References: <20210209230527.26712-1-r-rivera-matos@ti.com>
 MIME-Version: 1.0
-References: <20210205222644.2357303-1-saravanak@google.com>
- <20210205222644.2357303-5-saravanak@google.com> <20210209213320.GA219007@robh.at.kernel.org>
-In-Reply-To: <20210209213320.GA219007@robh.at.kernel.org>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Tue, 9 Feb 2021 13:54:52 -0800
-Message-ID: <CAGETcx_gHRd9UYHvSsHX_=NFF+HEJkamJp3JcpojuJob_a8_DA@mail.gmail.com>
-Subject: Re: [PATCH v4 4/8] of: property: Add fw_devlink support for optional properties
-To:     Rob Herring <robh@kernel.org>
-Cc:     Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
-        Marc Zyngier <maz@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Android Kernel Team <kernel-team@android.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Feb 9, 2021 at 1:33 PM Rob Herring <robh@kernel.org> wrote:
->
-> On Fri, Feb 05, 2021 at 02:26:40PM -0800, Saravana Kannan wrote:
-> > Not all DT bindings are mandatory bindings. Add support for optional DT
-> > bindings and mark iommus, iommu-map, dmas as optional DT bindings.
->
-> I don't think we can say these are optional or not. It's got to be a
-> driver decision somehow.
+fix: exposes POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT on the
 
-Right, so maybe the word "optional" isn't a good name for it. I can
-change that if you want.
+charger node
 
-The point being, fw_devlink can't block the probe of this driver based
-on iommu property. We let the driver decide if it wants to
--EPROBE_DEFER or not or however it wants to handle this.
+fix: exposes POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE on the
 
-> For example, if IOMMU is optional, what happens with this sequence:
->
-> driver probes without IOMMU
-> driver calls dma_map_?()
-> IOMMU driver probes
-> h/w accesses DMA buffer --> BOOM!
+charger node
 
-Right. But how is this really related to fw_devlink? AFAICT, this is
-an issue even today. If the driver needs the IOMMU, then it needs to
-make sure the IOMMU has probed? What am I missing?
+fix: eliminates unnecessary set_property for the battery node
 
--Saravana
+Fixes: 5069185fc18e ("power: supply: bq25980: Add support for the BQ259xx family")
+Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+---
+ drivers/power/supply/bq25980_charger.c | 40 ++++++++------------------
+ 1 file changed, 12 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
+index 7c489a9e8877..ac73e2c19238 100644
+--- a/drivers/power/supply/bq25980_charger.c
++++ b/drivers/power/supply/bq25980_charger.c
+@@ -641,33 +641,6 @@ static int bq25980_get_state(struct bq25980_device *bq,
+ 	return 0;
+ }
+ 
+-static int bq25980_set_battery_property(struct power_supply *psy,
+-				enum power_supply_property psp,
+-				const union power_supply_propval *val)
+-{
+-	struct bq25980_device *bq = power_supply_get_drvdata(psy);
+-	int ret = 0;
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+-		ret = bq25980_set_const_charge_curr(bq, val->intval);
+-		if (ret)
+-			return ret;
+-		break;
+-
+-	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+-		ret = bq25980_set_const_charge_volt(bq, val->intval);
+-		if (ret)
+-			return ret;
+-		break;
+-
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return ret;
+-}
+-
+ static int bq25980_get_battery_property(struct power_supply *psy,
+ 				enum power_supply_property psp,
+ 				union power_supply_propval *val)
+@@ -736,6 +709,18 @@ static int bq25980_set_charger_property(struct power_supply *psy,
+ 			return ret;
+ 		break;
+ 
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++		ret = bq25980_set_const_charge_curr(bq, val->intval);
++		if (ret)
++			return ret;
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		ret = bq25980_set_const_charge_volt(bq, val->intval);
++		if (ret)
++			return ret;
++		break;
++
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -957,7 +942,6 @@ static struct power_supply_desc bq25980_battery_desc = {
+ 	.name			= "bq25980-battery",
+ 	.type			= POWER_SUPPLY_TYPE_BATTERY,
+ 	.get_property		= bq25980_get_battery_property,
+-	.set_property		= bq25980_set_battery_property,
+ 	.properties		= bq25980_battery_props,
+ 	.num_properties		= ARRAY_SIZE(bq25980_battery_props),
+ 	.property_is_writeable	= bq25980_property_is_writeable,
+-- 
+2.30.0
+
