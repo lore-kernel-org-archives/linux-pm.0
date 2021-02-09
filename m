@@ -2,97 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A388EC433E6
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AC1BC433E0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6092B64E7C
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CF2A164E79
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Feb 2021 11:14:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231666AbhBILOH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Feb 2021 06:14:07 -0500
-Received: from szxga07-in.huawei.com ([45.249.212.35]:12883 "EHLO
-        szxga07-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231567AbhBILLy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 06:11:54 -0500
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.59])
-        by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4DZgC80hJcz7jJn;
-        Tue,  9 Feb 2021 19:09:40 +0800 (CST)
-Received: from localhost.localdomain (10.67.165.24) by
- DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.498.0; Tue, 9 Feb 2021 19:10:57 +0800
-From:   Yicong Yang <yangyicong@hisilicon.com>
-To:     <gregkh@linuxfoundation.org>, <jdelvare@suse.com>,
-        <linux@roeck-us.net>, <giometti@enneenne.com>, <abbotti@mev.co.uk>,
-        <hsweeten@visionengravers.com>, <kw@linux.com>,
-        <helgaas@kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-hwmon@vger.kernel.org>,
-        <devel@driverdev.osuosl.org>, <linux-kbuild@vger.kernel.org>,
-        <masahiroy@kernel.org>, <michal.lkml@markovi.net>
-CC:     <prime.zeng@huawei.com>, <yangyicong@hisilicon.com>,
-        <linuxarm@openeuler.org>
-Subject: [PATCH v2 1/4] driver core: Use subdir-ccflags-* to inherit debug flag
-Date:   Tue, 9 Feb 2021 19:08:16 +0800
-Message-ID: <1612868899-9185-2-git-send-email-yangyicong@hisilicon.com>
-X-Mailer: git-send-email 2.8.1
-In-Reply-To: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
-References: <1612868899-9185-1-git-send-email-yangyicong@hisilicon.com>
+        id S230098AbhBILOQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Feb 2021 06:14:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55366 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229916AbhBILMH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2021 06:12:07 -0500
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E013DC061786
+        for <linux-pm@vger.kernel.org>; Tue,  9 Feb 2021 03:11:26 -0800 (PST)
+Received: by mail-pj1-x1029.google.com with SMTP id cv23so1355132pjb.5
+        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2021 03:11:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=1gfRAu+EF22TJgGrs/thl2AAOrMdVzWuE7892b9S/rs=;
+        b=gMlqXT8rWIpJyD5epCoxTSOMoDQeGgVe/OYZzHq885OM3Eec7ej1Ha+es9Qi5ghM0n
+         Qzia5l+bxr4acSJhvwVqZ5kdPAcK41l24tLJWRsP+f71m7t51KZPx7C+XhDJYLv4hJBG
+         fRuoLRfO+ARlgG4HF1L3wVXCp68Mpf5XYEbN+AG2dq8Gzc+DHZgM/9yi3oP73hTraLLi
+         3OAMArWW73mLCyjy9/EuMjm3+H3tAQWtvTpNV7t42N+dnC0FZKly0Xh9cphxwhtN9wap
+         WGjEBfkZzSQmNbn8Vw0tgsTwxhq0IjLH00SzIBxf6A9tQ0ZSZSTmpWFOSu48DcJ88nA1
+         ueog==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=1gfRAu+EF22TJgGrs/thl2AAOrMdVzWuE7892b9S/rs=;
+        b=hqxjhVMMqUID46I53FP645Adc0tjRgTVGAFKdQPVMuMgv/v8JltWQzcwqUtDxfjRMh
+         8IITUFBGgXBvK+GS6JHFY9umFgqAwBhyfV6DSbdghkJbHj0asR1D1tEGL/hAiBp3Dj0S
+         VRlMlb3W4A0S+6dhfEXovQdyhpnr3kHfdam+w1+QsPA2rHyi4YOzMub3cmuVbYHUV2Gs
+         VC0wUr9HGYbRGOfIlUFdn3/Dj2FUZRa9jYzH/Z04faB28jkPLSnZrT15XsKpJyWnKtCu
+         oU2qnCSULrurZ8TVeAfoW3IKfze2ROPgOh/ooSyPvNkFSFa0PXIaI67Z3s/KTtD3relt
+         FpoQ==
+X-Gm-Message-State: AOAM531yok2G8oQ6Xci/8NqR0LC2HY9htvP8C5v5BjxlX2PXVA9ZFGVz
+        p9zfJatFfvSgGdJOPdsF2n/3qA==
+X-Google-Smtp-Source: ABdhPJzb6OwNr5h9uGAFWKExAYZiQLT3W8yNvzEfekNQUpET/UHm0MoH1Vt9vf374J4PuOEMD42siA==
+X-Received: by 2002:a17:90b:33d1:: with SMTP id lk17mr3582252pjb.102.1612869086445;
+        Tue, 09 Feb 2021 03:11:26 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id ep14sm2268423pjb.53.2021.02.09.03.11.25
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 09 Feb 2021 03:11:25 -0800 (PST)
+Date:   Tue, 9 Feb 2021 16:41:23 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Yue Hu <zbestahu@gmail.com>
+Cc:     rjw@rjwysocki.net, rafael.j.wysocki@intel.com, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        bristot@redhat.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, huyue2@yulong.com, zbestahu@163.com,
+        zhangwen@yulong.com
+Subject: Re: [PATCH] cpufreq: schedutil: Don't use the limits_changed flag
+ any more
+Message-ID: <20210209111123.kzx36ghdac4rpfuh@vireshk-i7>
+References: <20210208030723.781-1-zbestahu@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.67.165.24]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210208030723.781-1-zbestahu@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Junhao He <hejunhao2@hisilicon.com>
+On 08-02-21, 11:07, Yue Hu wrote:
+> From: Yue Hu <huyue2@yulong.com>
+> 
+> The limits_changed flag was introduced by commit 600f5badb78c
+> ("cpufreq: schedutil: Don't skip freq update when limits change") due
+> to race condition where need_freq_update is cleared in get_next_freq()
+> which causes reducing the CPU frequency is ineffective while busy.
+> 
+> But now, the race condition above is gone because get_next_freq()
+> doesn't clear the flag any more after commit 23a881852f3e ("cpufreq:
+> schedutil: Don't skip freq update if need_freq_update is set").
+> 
+> Moreover, need_freq_update currently will be set to true only in
+> sugov_should_update_freq() if CPUFREQ_NEED_UPDATE_LIMITS is not set
+> for the driver. However, limits may have changed at any time. And
+> subsequent frequence update is depending on need_freq_update. So, we
+> may skip this update.
+> 
+> Hence, let's remove it to avoid above issue and make code more simple.
+> 
+> Signed-off-by: Yue Hu <huyue2@yulong.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 11 +++--------
+>  1 file changed, 3 insertions(+), 8 deletions(-)
 
-Currently we can turn on the debug message in the top directory
-driver/base and subdirectory driver/base/power with kconfig
-option CONFIG_DEBUG_DRIVER. But the DEBUG flags will not
-pass to subdirectory drvier/base/firmware_loader which
-the ccflags-$(CONFIG_DEBUG_DRIVER) is missing and there is
-no kconfig option to turn on the debug message for it.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Use subdir-ccflags-* for the DEBUG flag in the top directory
-will fix this. Considering CONFIG_DEBUG_DRIVER intends
-to turn on the debug recursively, use subdir-cclags-* will
-be clearer and avoid omittance of DEBUG define
-in the subdirectory.
-
-Suggested-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Junhao He <hejunhao2@hisilicon.com>
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
----
- drivers/base/Makefile       | 2 +-
- drivers/base/power/Makefile | 2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/base/Makefile b/drivers/base/Makefile
-index 5e7bf96..c6bdf19 100644
---- a/drivers/base/Makefile
-+++ b/drivers/base/Makefile
-@@ -27,5 +27,5 @@ obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
- 
- obj-y			+= test/
- 
--ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-+subdir-ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
- 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 8fdd007..2990167 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -5,5 +5,3 @@ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
- obj-$(CONFIG_PM_QOS_KUNIT_TEST) += qos-test.o
--
--ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
 -- 
-2.8.1
-
+viresh
