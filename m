@@ -2,87 +2,132 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFF7DC433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 17:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27BA7C43381
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 19:15:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BCCB564DCF
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 17:48:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F30E664E76
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 19:15:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233070AbhBJRsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Feb 2021 12:48:16 -0500
-Received: from mail-wr1-f52.google.com ([209.85.221.52]:40229 "EHLO
-        mail-wr1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233446AbhBJRr5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 12:47:57 -0500
-Received: by mail-wr1-f52.google.com with SMTP id v14so3541011wro.7;
-        Wed, 10 Feb 2021 09:47:41 -0800 (PST)
+        id S234552AbhBJTOu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Feb 2021 14:14:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46432 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234544AbhBJTOg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 14:14:36 -0500
+Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3E5BC061574
+        for <linux-pm@vger.kernel.org>; Wed, 10 Feb 2021 11:13:56 -0800 (PST)
+Received: by mail-yb1-xb36.google.com with SMTP id p186so3132320ybg.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Feb 2021 11:13:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=9tOqcLFPGtBJA35TM92FKNxWnaOl6vWWHEx3bmxeU4c=;
+        b=XFODFH/7aQvtIfr1O4SP9Wqe5MlKRy2+5dSSHkXHfVH+R+9OU/TOZ09pDYnsl2vv6f
+         7cEH0Z6UoELRKGzsUtNvmrtDQBC7r/G6Qbtc6/JSVfpXccP4PLau8NMeL9A/OubRwHB1
+         VcQgYnA99MaEy+19EMwjObrtrLHqOsWNZCG7glqOH4z70X5XE+yqXhvDlsdiAQ/u3YSN
+         Knm1TcpqnE53hNrSXGIaZ1BOedUnzxDSf5jrLpOiLeIOK5pwSMexOYyGY2xjXBi3ngV8
+         8z+ArJgCyMQcwrbbGYQ++ExEvF/KSID9fcTT6i+zsJoDK7PfrUfv724oQwAHLyzfxRpH
+         jSMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=xS94Nmt7CZoKfe/ooNogCsxo74+nRHCXmzdXYf9v/zo=;
-        b=T96m2rqN4xv3nL0zaowVWqjOrNnHGa7Zy2eSJ4Tya0/S/SEVZ6hDkLZgIJOzUbFgTi
-         dM5lTBPvZJUDJz5m8LHCgehCzKZPeyL8b8i4/R08aNTKyBdvP9vQ4aG2vKw4Ln7ZK+Nb
-         63EJPZO+j0/35gL0JP0Dq3jDJg544B+6xszItK43Z9ydmkOiGiTo7SPJuGlSqbFQGN0u
-         sfFwUdoLtS8RjYYPL3+w9aKaQW3sCrJ/v1V7YkxmCQwHx9xgYfwVE8n6Ooj9KluUqw0+
-         aAUlTwU70/RbfOx5ebEcXkwgJ/Q9hAbdUBnMsMMrDQEg1Ji3yczPjvKmeZ/8qT0O/X5K
-         TV/A==
-X-Gm-Message-State: AOAM530l4cUqe4vbO5qiDSmw/eE+otMP85qq/y6qWCvU9DUXikyutxfT
-        zFcaSrh338M/fxdtRjgWInoMYx/tPczLnU2+sBQ=
-X-Google-Smtp-Source: ABdhPJygX1Cr8XmSICtNKIcQTAl+inc+NuAmMYpiUutZOsZfRcInJ6mA0q/Ex0blppw3kd4dipVPjcMUA2Fs31iGDSw=
-X-Received: by 2002:adf:f7c5:: with SMTP id a5mr4965509wrq.243.1612979235397;
- Wed, 10 Feb 2021 09:47:15 -0800 (PST)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9tOqcLFPGtBJA35TM92FKNxWnaOl6vWWHEx3bmxeU4c=;
+        b=WJtsEWRCO+i5MCouJP3Ddi8tsal7etJmv/AaxKp6Fsr+QS3jwAqVmIla1Ln7eUMUyP
+         2+9rh/OE6N6zW6THuvyb9DcYe8QHNkJDDewCyJ4MvpCb8PPyedxvRMUl1XtAr6If/8rT
+         +QAIx3oOElG61YlNwYqZbZiNuuXpYIliZXrgGBZFnJF5tNJxETSWgzmLJZlpfaXVJ/7j
+         SC6JBLY3705cOwDaogONV0K5tqmJv8HQCdyLkDAUaQJEsUj92zzwzoUNFyJaZ8yvFL+F
+         5M3xBUntWVgYheKn/JuIsHV9FDpj+OI7NyPmDmt/njXyoZSNqcz1QKo3E4xLrqHVx3QQ
+         jgPA==
+X-Gm-Message-State: AOAM532gyB74/0F0ACeS5gdB1rNDdIPfNWp4pPjyh6nz9l32uETRcg8J
+        Jap7IoZ9h6G3TQHp0iIiJm/Sl8WUH74i/VhsDBaigQ==
+X-Google-Smtp-Source: ABdhPJyWPzmY+tyazkCwj4t0k4KGhEheNTDTa4+Z3XmMbe8kh4uk1AUlS/mwh8JLpJB4vJDlgZWe56Y+dIqi6GwmOz8=
+X-Received: by 2002:a05:6902:1025:: with SMTP id x5mr6466442ybt.96.1612984436001;
+ Wed, 10 Feb 2021 11:13:56 -0800 (PST)
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 10 Feb 2021 18:47:04 +0100
-Message-ID: <CAJZ5v0iEwAvR3EyQp0Qy=7ehQyufrUvMPR4CyCUdVd=qE-5OAg@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v5.11-rc8
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
+References: <20210205222644.2357303-9-saravanak@google.com> <20210210114435.122242-1-tudor.ambarus@microchip.com>
+In-Reply-To: <20210210114435.122242-1-tudor.ambarus@microchip.com>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Wed, 10 Feb 2021 11:13:19 -0800
+Message-ID: <CAGETcx-aztut-RkZTjyGfzBGYLBQQDnaVFRQMMVTMPMA7Xs3Hg@mail.gmail.com>
+Subject: Re: [PATCH] clk: Mark fwnodes when their clock provider is added
+To:     Tudor Ambarus <tudor.ambarus@microchip.com>
+Cc:     Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Brown, Len" <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Marc Zyngier <maz@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>,
+        Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
         ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Android Kernel Team <kernel-team@android.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Wed, Feb 10, 2021 at 3:44 AM Tudor Ambarus
+<tudor.ambarus@microchip.com> wrote:
+>
+> This is a follow-up for:
+> commit 3c9ea42802a1 ("clk: Mark fwnodes when their clock provider is added/removed")
+>
+> The above commit updated the deprecated of_clk_add_provider(),
+> but missed to update the preferred of_clk_add_hw_provider().
+> Update it now.
 
-Please pull from the tag
+Thanks Tudor! Good catch!
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.11-rc8
+I checked to make sure the deregistration path undoes this one. So, it
+looks good to me.
 
-with top-most commit d11a1d08a082a7dc0ada423d2b2e26e9b6f2525c
+Reviewed-by: Saravana Kannan <saravanak@google.com>
 
- cpufreq: ACPI: Update arch scale-invariance max perf ratio if CPPC is not there
+-Saravana
 
-on top of commit 92bf22614b21a2706f4993b278017e437f7785b3
-
- Linux 5.11-rc7
-
-to receive power management fixes for 5.11-rc8.
-
-These address a performance regression related to scale-invariance on
-x86 that may prevent turbo CPU frequencies from being used in certain
-workloads on systems using acpi-cpufreq as the CPU performance
-scaling driver and schedutil as the scaling governor.
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (2):
-      cpufreq: ACPI: Extend frequency tables to cover boost frequencies
-      cpufreq: ACPI: Update arch scale-invariance max perf ratio if
-CPPC is not there
-
----------------
-
- arch/x86/kernel/smpboot.c      |   1 +
- drivers/cpufreq/acpi-cpufreq.c | 115 ++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 104 insertions(+), 12 deletions(-)
+>
+> Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
+> ---
+>  drivers/clk/clk.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 27ff90eacb1f..9370e4dfecae 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -4594,6 +4594,8 @@ int of_clk_add_hw_provider(struct device_node *np,
+>         if (ret < 0)
+>                 of_clk_del_provider(np);
+>
+> +       fwnode_dev_initialized(&np->fwnode, true);
+> +
+>         return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(of_clk_add_hw_provider);
+> --
+> 2.25.1
+>
