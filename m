@@ -2,78 +2,149 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4ACEC433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01CDCC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:58:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D0A364EE9
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:04:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A195564DD6
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:58:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232097AbhBJWE6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Feb 2021 17:04:58 -0500
-Received: from mail-ot1-f44.google.com ([209.85.210.44]:43493 "EHLO
-        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232045AbhBJWE4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 17:04:56 -0500
-Received: by mail-ot1-f44.google.com with SMTP id l23so3322003otn.10;
-        Wed, 10 Feb 2021 14:04:40 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=RQ7cu9MfHe6aCf9OAL5eEgdmgHeTz7eoNLzlsX/XljQ=;
-        b=sExBhcYum/qA9fLvw/H/yz/dLt+Ux5wIeOYP/CgSSmkkXxvvBVS3yhc9RV6ODBYLIe
-         HNzY0+cl10x8sgrv9+TOUpA/xrk6WGhoNmnK0rhBcpPlO309IbRQ12rkr5Ne5Z0O734j
-         1tGiJOE7qzX+g6eUKdhnpq3EZNQTOfMOl0CfSymOhxZNhPgnX4Vv1dRFWEpgj6i/mqT/
-         ChMMY8VSKPmhPDyJWC8wgdjGgl8ynayQ00AflTLjYrx5c6qxzPT4CRMM0t1obawf8jgu
-         H3fWz2cFFUw1XYVRD+IWW0Ioawjju6bRlKQjv5jxeomY9wNLBnvnhVKdolR55rK0ZvTM
-         Bbow==
-X-Gm-Message-State: AOAM533XjRn5aRhgNjFJxITaPvcE7pNmkpw+V8LbsjvyWUbUBeEb/21w
-        E6sR6uShbtm58jWg08ylQw==
-X-Google-Smtp-Source: ABdhPJwvaI4R3EJJTYNHhZsZgdSFd9OUgJOtk/ez6XnGX6c1KGRuS1jPfUij87XTNeV/TSeyjyldqw==
-X-Received: by 2002:a05:6830:4121:: with SMTP id w33mr3529003ott.361.1612994655493;
-        Wed, 10 Feb 2021 14:04:15 -0800 (PST)
-Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id e19sm631440otp.31.2021.02.10.14.04.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Feb 2021 14:04:14 -0800 (PST)
-Received: (nullmailer pid 2878384 invoked by uid 1000);
-        Wed, 10 Feb 2021 22:04:13 -0000
-Date:   Wed, 10 Feb 2021 16:04:13 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Marek Czerski <ma.czerski@gmail.com>
-Cc:     devicetree@vger.kernel.org, robh+dt@kernel.org,
-        linux-pm@vger.kernel.org, sre@kernel.org
-Subject: Re: [PATCH v2] power: reset: ltc2952: make trigger delay configurable
-Message-ID: <20210210220413.GA2878331@robh.at.kernel.org>
-References: <20210203214900.71677-1-ma.czerski@gmail.com>
+        id S232633AbhBJW6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Feb 2021 17:58:40 -0500
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:55238 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232578AbhBJW6i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 17:58:38 -0500
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 11AMv20f070192;
+        Wed, 10 Feb 2021 16:57:02 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1612997822;
+        bh=LzGwa7Vg5Ce7q3QZRv3zzST8vDoG+tg5dsnxojQoMpo=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=fVsI28zcMOK1AsUR3+mWaUPgZ3mbohw12JazKdKUVhhFmZVofPSYP6N4hRUuuBn4T
+         W56P/mn6f/RIdSg6v5++J/61ZmA/dRCJ60/VHxrDcIpR/R0zO4URywJ6eX4lKBxjT5
+         TU2EpHol0dBnmt8UV0zVtUVnYtYVCWFLutQbqL1k=
+Received: from DLEE110.ent.ti.com (dlee110.ent.ti.com [157.170.170.21])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 11AMv1NH123365
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 10 Feb 2021 16:57:01 -0600
+Received: from DLEE110.ent.ti.com (157.170.170.21) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 10
+ Feb 2021 16:57:01 -0600
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE110.ent.ti.com
+ (157.170.170.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Wed, 10 Feb 2021 16:57:01 -0600
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 11AMv177090501;
+        Wed, 10 Feb 2021 16:57:01 -0600
+From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+To:     <sre@kernel.org>, <krzk@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Subject: [PATCH v2 2/2] power: supply: bq25980: Move props from battery node
+Date:   Wed, 10 Feb 2021 16:56:46 -0600
+Message-ID: <20210210225646.10055-2-r-rivera-matos@ti.com>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210210225646.10055-1-r-rivera-matos@ti.com>
+References: <20210210225646.10055-1-r-rivera-matos@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210203214900.71677-1-ma.czerski@gmail.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 03 Feb 2021 22:49:00 +0100, Marek Czerski wrote:
-> Make trigger delay configurable through device tree with
-> trigger-delay-ms property.
-> 
-> Trigger delay is the time to wait before starting shutdown
-> sequence after trigger line assertion.
-> Trigger delay must take into account the OFFT time configured
-> with the capacitor connected to OFFT pin of the LTC2952 chip.
-> Basically, the higher the capacitance connected to OFFT pin,
-> the larger trigger delay must be.
-> 
-> Signed-off-by: Marek Czerski <ma.czerski@gmail.com>
-> ---
->  .../devicetree/bindings/power/reset/ltc2952-poweroff.txt  | 4 ++++
->  drivers/power/reset/ltc2952-poweroff.c                    | 8 ++++++++
->  2 files changed, 12 insertions(+)
-> 
+Currently POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT and
 
-Acked-by: Rob Herring <robh@kernel.org>
+POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE are exposed on the battery node
+
+and this is incorrect.
+
+This patch exposes POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT and
+
+POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE on the charger node rather
+
+than the battery node.
+
+Fixes: 5069185fc18e ("power: supply: bq25980: Add support for the BQ259xx family")
+Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+---
+ drivers/power/supply/bq25980_charger.c | 40 ++++++++------------------
+ 1 file changed, 12 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
+index 7c489a9e8877..ac73e2c19238 100644
+--- a/drivers/power/supply/bq25980_charger.c
++++ b/drivers/power/supply/bq25980_charger.c
+@@ -641,33 +641,6 @@ static int bq25980_get_state(struct bq25980_device *bq,
+ 	return 0;
+ }
+ 
+-static int bq25980_set_battery_property(struct power_supply *psy,
+-				enum power_supply_property psp,
+-				const union power_supply_propval *val)
+-{
+-	struct bq25980_device *bq = power_supply_get_drvdata(psy);
+-	int ret = 0;
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+-		ret = bq25980_set_const_charge_curr(bq, val->intval);
+-		if (ret)
+-			return ret;
+-		break;
+-
+-	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+-		ret = bq25980_set_const_charge_volt(bq, val->intval);
+-		if (ret)
+-			return ret;
+-		break;
+-
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return ret;
+-}
+-
+ static int bq25980_get_battery_property(struct power_supply *psy,
+ 				enum power_supply_property psp,
+ 				union power_supply_propval *val)
+@@ -736,6 +709,18 @@ static int bq25980_set_charger_property(struct power_supply *psy,
+ 			return ret;
+ 		break;
+ 
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++		ret = bq25980_set_const_charge_curr(bq, val->intval);
++		if (ret)
++			return ret;
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		ret = bq25980_set_const_charge_volt(bq, val->intval);
++		if (ret)
++			return ret;
++		break;
++
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -957,7 +942,6 @@ static struct power_supply_desc bq25980_battery_desc = {
+ 	.name			= "bq25980-battery",
+ 	.type			= POWER_SUPPLY_TYPE_BATTERY,
+ 	.get_property		= bq25980_get_battery_property,
+-	.set_property		= bq25980_set_battery_property,
+ 	.properties		= bq25980_battery_props,
+ 	.num_properties		= ARRAY_SIZE(bq25980_battery_props),
+ 	.property_is_writeable	= bq25980_property_is_writeable,
+-- 
+2.30.0
+
