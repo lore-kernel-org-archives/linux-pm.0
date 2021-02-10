@@ -2,517 +2,178 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C96C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D1BDC433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 23:00:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CB1CD64EBB
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 22:58:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B7A064EBB
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Feb 2021 23:00:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233728AbhBJW6l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Feb 2021 17:58:41 -0500
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:57988 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232500AbhBJW6k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 17:58:40 -0500
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 11AMv1pq091851;
-        Wed, 10 Feb 2021 16:57:01 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1612997821;
-        bh=44gwfpQFsM2WxAxccYZd7bB38YLImCqSBN2xUc6Qvys=;
-        h=From:To:CC:Subject:Date;
-        b=urYELEmgftDzAVPa67uyUi6Npw2PKMwL96NBXDcz+uL9lu+LH5s/AW+b2Vmv7ZOe8
-         hbBymRZ64YJhRTZ7XQYwWR0dlLbPEt+kBgnukpkDeVYUXjR9SwfyUBaQxJi+JUb0dD
-         CGcCDxzzPkqS0PI1Sf+zl+LXnA05MevXUNyzLEAk=
-Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 11AMv1qq003876
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 10 Feb 2021 16:57:01 -0600
-Received: from DFLE110.ent.ti.com (10.64.6.31) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 10
- Feb 2021 16:57:01 -0600
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE110.ent.ti.com
- (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Wed, 10 Feb 2021 16:57:01 -0600
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 11AMv1oJ068179;
-        Wed, 10 Feb 2021 16:57:01 -0600
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <krzk@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: [PATCH v2 1/2] power: supply: bq25980 Apply datasheet revision changes
-Date:   Wed, 10 Feb 2021 16:56:45 -0600
-Message-ID: <20210210225646.10055-1-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.30.0
+        id S231897AbhBJXAg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Feb 2021 18:00:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38754 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233412AbhBJXAe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2021 18:00:34 -0500
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1F3CC061756;
+        Wed, 10 Feb 2021 14:59:53 -0800 (PST)
+Received: by mail-pf1-x42e.google.com with SMTP id d26so2298721pfn.5;
+        Wed, 10 Feb 2021 14:59:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=KT1/+q26UpMTGY5hez+ykySBsh/GlZRPF35yJMtlWVA=;
+        b=R2zvjlRWz47+CI6PwBa5mA9+zEsWKdASVNkzwaFRkBS0MshqfBzI/RuZHgtGGL20+K
+         /8Q2orswd8eEHES2Ygt5FWwhnV7pBR7ZckC77wOC3hI+hUgs8AQUVtK7yRdCiqw4p8Pm
+         M84+FlLhtZqfrS5nn5qPg/qj54CMzqe7+ULm5rcc2Mrkx0dkNiK5BcyybXy+Ul6g/1lm
+         RdML9KVwjl5B8ZGg1lHCOpe79jvNir/j8ZgKz7FnQeiuvDj1TvelBdPa9MCzqV0j7dhN
+         98Whn3vOygAhHm7uNVBgsgczjPK2h1YJStQzuw2B1y6VTZLU9p6qblm5wLFoKRV0IZ5S
+         /cOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=KT1/+q26UpMTGY5hez+ykySBsh/GlZRPF35yJMtlWVA=;
+        b=T8M7TtFf7umA03u3dbz1qGd4Frxc7T2soEWgiPDgKOlmdT9CvPpV/p4QqGn6EtwyMI
+         gYvkm6PivV/9v3Msv0lp7F6qgsMdtOFp0ngNE0zRUIYzNwlOzLY4m0yutFDY36KrNHCT
+         djWhgz0YvUooHodKpUKd7Y1UlencUAA5Qb4GaluB6EE7gqyrqBHusOVtaehxzZgHVRib
+         hEB8iKx05YliWp1Tm6ifD7qPScZdMoyRqJBlsE+Dan0HKf3jgp9MRArzaxC2P4VBu50j
+         OtyI3NMzE4e+DMXjQlEu/vKW9VtnKbLeNLd+R6mFihJ6DTs0q/XduZUf8S4KgQ9O2/j4
+         y6bg==
+X-Gm-Message-State: AOAM532wP4whd++MyNwb0Ew5sSMe5rCgcZYOWoJTRZehkQwQGBZRDjls
+        hYDqXZg85bcGGIl4TEBYmZdoEQVAosI=
+X-Google-Smtp-Source: ABdhPJxaG/M0B4A/sBmPVP7xbuAxvBMYhH7GqnHxNk2UDcS4vU4spH22S2zKwEwDv1cIe/xBd/+vtw==
+X-Received: by 2002:a63:eb05:: with SMTP id t5mr5086534pgh.389.1612997992978;
+        Wed, 10 Feb 2021 14:59:52 -0800 (PST)
+Received: from [10.230.29.30] ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id y67sm3395360pfb.71.2021.02.10.14.59.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 10 Feb 2021 14:59:52 -0800 (PST)
+Subject: Re: bcm2711_thermal: Kernel panic - not syncing: Asynchronous SError
+ Interrupt
+To:     Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Juerg Haefliger <juerg.haefliger@canonical.com>,
+        stefan.wahren@i2se.com, Florian Fainelli <f.fainelli@gmail.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Robin Murphy <robin.murphy@arm.con>
+Cc:     bcm-kernel-feedback-list@broadcom.com,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+References: <20210210114829.2915de78@gollum>
+ <6d9ca41b4ad2225db102da654d38bc61f6c1c111.camel@suse.de>
+ <35e17dc9-c88d-582f-607d-1d90b20868fa@arm.com>
+ <c6774af169854dc1d4efa272b439e80cea8cd8ff.camel@suse.de>
+From:   Florian Fainelli <f.fainelli@gmail.com>
+Message-ID: <6612b35f-86bb-bb1e-bae8-188366495dbe@gmail.com>
+Date:   Wed, 10 Feb 2021 14:59:45 -0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Firefox/78.0 Thunderbird/78.7.1
 MIME-Version: 1.0
+In-Reply-To: <c6774af169854dc1d4efa272b439e80cea8cd8ff.camel@suse.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The latest datasheet revision for BQ25980, BQ25975, and BQ25960 changed
 
-various register step sizes and offset values. 
 
-This patch changes the following header file
+On 2/10/2021 8:55 AM, Nicolas Saenz Julienne wrote:
+> Hi Robin,
+> 
+> On Wed, 2021-02-10 at 16:25 +0000, Robin Murphy wrote:
+>> On 2021-02-10 13:15, Nicolas Saenz Julienne wrote:
+>>> [ Add Robin, Catalin and Florian in case they want to chime in ]
+>>>
+>>> Hi Juerg, thanks for the report!
+>>>
+>>> On Wed, 2021-02-10 at 11:48 +0100, Juerg Haefliger wrote:
+>>>> Trying to dump the BCM2711 registers kills the kernel:
+>>>>
+>>>> # cat /sys/kernel/debug/regmap/dummy-avs-monitor\@fd5d2000/range
+>>>> 0-efc
+>>>> # cat /sys/kernel/debug/regmap/dummy-avs-monitor\@fd5d2000/registers
+>>>>
+>>>> [   62.857661] SError Interrupt on CPU1, code 0xbf000002 -- SError
+>>>
+>>> So ESR's IDS (bit 24) is set, which means it's an 'Implementation Defined
+>>> SError,' hence IIUC the rest of the error code is meaningless to anyone outside
+>>> of Broadcom/RPi.
+>>
+>> It's imp-def from the architecture's PoV, but the implementation in this 
+>> case is Cortex-A72, where 0x000002 means an attributable, containable 
+>> Slave Error:
+>>
+>> https://developer.arm.com/documentation/100095/0003/system-control/aarch64-register-descriptions/exception-syndrome-register--el1-and-el3?lang=en
+>>
+>> In other words, the thing at the other end of an interconnect 
+>> transaction said "no" :)
+>>
+>> (The fact that Cortex-A72 gets too far ahead of itself to take it as a 
+>> synchronous external abort is a mild annoyance, but hey...)
+> 
+> Thanks for both your clarifications! Reading arm documentation is a skill on
+> its own.
 
-values for POWER_SUPPLY_PROP_CURRENT_NOW, 
+Yes it is.
 
-POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+> 
+>>> The regmap is created through the following syscon device:
+>>>
+>>> 	avs_monitor: avs-monitor@7d5d2000 {
+>>> 		compatible = "brcm,bcm2711-avs-monitor",
+>>> 			     "syscon", "simple-mfd";
+>>> 		reg = <0x7d5d2000 0xf00>;
+>>>
+>>> 		thermal: thermal {
+>>> 			compatible = "brcm,bcm2711-thermal";
+>>> 			#thermal-sensor-cells = <0>;
+>>> 		};
+>>> 	};
+>>>
+>>> I've done some tests with devmem, and the whole <0x7d5d2000 0xf00> range is
+>>> full of addresses that trigger this same error. Also note that as per Florian's
+>>> comments[1]: "AVS_RO_REGISTERS_0: 0x7d5d2200 - 0x7d5d22e3." But from what I can
+>>> tell, at least 0x7d5d22b0 seems to be faulty too.
+>>>
+>>> Any ideas/comments? My guess is that those addresses are marked somehow as
+>>> secure, and only for VC4 to access (VC4 is RPi4's co-processor). Ultimately,
+>>> the solution is to narrow the register range exposed by avs-monitor to whatever
+>>> bcm2711-thermal needs (which is ATM a single 32bit register).
+>>
+>> When a peripheral decodes a region of address space, nobody says it has 
+>> to accept accesses to *every* address in that space; registers may be 
+>> sparsely populated, and although some devices might be "nice" and make 
+>> unused areas behave as RAZ/WI, others may throw slave errors if you poke 
+>> at the wrong places. As you note, in a TrustZone-aware device some 
+>> registers may only exist in one or other of the Secure/Non-Secure 
+>> address spaces.
+>>
+>> Even when there is a defined register at a given address, it still 
+>> doesn't necessarily accept all possible types of access; it wouldn't be 
+>> particularly friendly, but a device *could* have, say, some registers 
+>> that support 32-bit accesses and others that only support 16-bit 
+>> accesses, and thus throw slave errors if you do the wrong thing in the 
+>> wrong place.
+>>
+>> It really all depends on the device itself.
+> 
+> All in all, assuming there is no special device quirk to apply, the feeling I'm
+> getting is to just let the error be. As you hint, firmware has no blame here,
+> and debugfs is a 'best effort, zero guarantees' interface after all.
 
-POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-
-POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-
-POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT, and POWER_SUPPLY_PROP_VOLTAGE_NOW.
-
-Additionally, this patch adjusts bq25980_get_input_curr_lim(),
-
-bq25980_set_input_curr_lim(), bq25980_get_const_charge_curr(), and
-
-bq25980_set_const_charge_curr() to perform the get/set math correctly.
-
-Fixes: 5069185fc18e ("power: supply: bq25980: Add support for the BQ259xx family")
-Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
----
- drivers/power/supply/bq25980_charger.c | 141 ++++++++++++++++++++-----
- drivers/power/supply/bq25980_charger.h |  77 ++++++++++----
- 2 files changed, 173 insertions(+), 45 deletions(-)
-
-diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
-index 530ff4025b31..7c489a9e8877 100644
---- a/drivers/power/supply/bq25980_charger.c
-+++ b/drivers/power/supply/bq25980_charger.c
-@@ -52,6 +52,10 @@ struct bq25980_chip_info {
- 	int busocp_byp_max;
- 	int busocp_sc_min;
- 	int busocp_byp_min;
-+	int busocp_sc_step;
-+	int busocp_byp_step;
-+	int busocp_sc_offset;
-+	int busocp_byp_offset;
- 
- 	int busovp_sc_def;
- 	int busovp_byp_def;
-@@ -73,6 +77,20 @@ struct bq25980_chip_info {
- 
- 	int batocp_def;
- 	int batocp_max;
-+	int batocp_min;
-+	int batocp_step;
-+
-+	int vbus_adc_step;
-+	int vbus_adc_offset;
-+
-+	int ibus_adc_step;
-+	int ibus_adc_offset;
-+
-+	int vbat_adc_step;
-+	int vbat_adc_offset;
-+
-+	int ibat_adc_step;
-+	int ibat_adc_offset;
- };
- 
- struct bq25980_init_data {
-@@ -275,13 +293,22 @@ static int bq25980_watchdog_time[BQ25980_NUM_WD_VAL] = {5000, 10000, 50000,
- static int bq25980_get_input_curr_lim(struct bq25980_device *bq)
- {
- 	unsigned int busocp_reg_code;
-+	int offset, step;
- 	int ret;
- 
-+	if (bq->state.bypass) {
-+		step = bq->chip_info->busocp_byp_step;
-+		offset = bq->chip_info->busocp_byp_offset;
-+	} else {
-+		step = bq->chip_info->busocp_sc_step;
-+		offset = bq->chip_info->busocp_sc_offset;
-+	}
-+
- 	ret = regmap_read(bq->regmap, BQ25980_BUSOCP, &busocp_reg_code);
- 	if (ret)
- 		return ret;
- 
--	return (busocp_reg_code * BQ25980_BUSOCP_STEP_uA) + BQ25980_BUSOCP_OFFSET_uA;
-+	return (busocp_reg_code * step) + offset;
- }
- 
- static int bq25980_set_hiz(struct bq25980_device *bq, int setting)
-@@ -293,6 +320,7 @@ static int bq25980_set_hiz(struct bq25980_device *bq, int setting)
- static int bq25980_set_input_curr_lim(struct bq25980_device *bq, int busocp)
- {
- 	unsigned int busocp_reg_code;
-+	int step, offset;
- 	int ret;
- 
- 	if (!busocp)
-@@ -303,13 +331,17 @@ static int bq25980_set_input_curr_lim(struct bq25980_device *bq, int busocp)
- 	if (busocp < BQ25980_BUSOCP_MIN_uA)
- 		busocp = BQ25980_BUSOCP_MIN_uA;
- 
--	if (bq->state.bypass)
-+	if (bq->state.bypass) {
- 		busocp = min(busocp, bq->chip_info->busocp_sc_max);
--	else
-+		step = bq->chip_info->busocp_byp_step;
-+		offset = bq->chip_info->busocp_byp_offset;
-+	} else {
- 		busocp = min(busocp, bq->chip_info->busocp_byp_max);
-+		step = bq->chip_info->busocp_sc_step;
-+		offset = bq->chip_info->busocp_sc_offset;
-+	}
- 
--	busocp_reg_code = (busocp - BQ25980_BUSOCP_OFFSET_uA)
--						/ BQ25980_BUSOCP_STEP_uA;
-+	busocp_reg_code = (busocp - offset) / step;
- 
- 	ret = regmap_write(bq->regmap, BQ25980_BUSOCP, busocp_reg_code);
- 	if (ret)
-@@ -374,6 +406,7 @@ static int bq25980_set_input_volt_lim(struct bq25980_device *bq, int busovp)
- 
- static int bq25980_get_const_charge_curr(struct bq25980_device *bq)
- {
-+	int step = bq->chip_info->batocp_step;
- 	unsigned int batocp_reg_code;
- 	int ret;
- 
-@@ -381,19 +414,20 @@ static int bq25980_get_const_charge_curr(struct bq25980_device *bq)
- 	if (ret)
- 		return ret;
- 
--	return (batocp_reg_code & BQ25980_BATOCP_MASK) *
--						BQ25980_BATOCP_STEP_uA;
-+	return (batocp_reg_code & BQ25980_BATOCP_MASK) * step;
- }
- 
- static int bq25980_set_const_charge_curr(struct bq25980_device *bq, int batocp)
- {
-+	int step = bq->chip_info->batocp_step;
-+	int max = bq->chip_info->batocp_max;
-+	int min = bq->chip_info->batocp_min;
- 	unsigned int batocp_reg_code;
- 	int ret;
- 
--	batocp = max(batocp, BQ25980_BATOCP_MIN_uA);
--	batocp = min(batocp, bq->chip_info->batocp_max);
-+	batocp = clamp(batocp, min, max);
- 
--	batocp_reg_code = batocp / BQ25980_BATOCP_STEP_uA;
-+	batocp_reg_code = batocp / step;
- 
- 	ret = regmap_update_bits(bq->regmap, BQ25980_BATOCP,
- 				BQ25980_BATOCP_MASK, batocp_reg_code);
-@@ -490,10 +524,8 @@ static int bq25980_get_adc_ibus(struct bq25980_device *bq)
- 
- 	ibus_adc = (ibus_adc_msb << 8) | ibus_adc_lsb;
- 
--	if (ibus_adc_msb & BQ25980_ADC_POLARITY_BIT)
--		return ((ibus_adc ^ 0xffff) + 1) * BQ25980_ADC_CURR_STEP_uA;
--
--	return ibus_adc * BQ25980_ADC_CURR_STEP_uA;
-+	return (ibus_adc * bq->chip_info->ibus_adc_step) +
-+					bq->chip_info->ibus_adc_offset;
- }
- 
- static int bq25980_get_adc_vbus(struct bq25980_device *bq)
-@@ -512,7 +544,8 @@ static int bq25980_get_adc_vbus(struct bq25980_device *bq)
- 
- 	vbus_adc = (vbus_adc_msb << 8) | vbus_adc_lsb;
- 
--	return vbus_adc * BQ25980_ADC_VOLT_STEP_uV;
-+	return (vbus_adc * bq->chip_info->vbus_adc_step) +
-+					bq->chip_info->vbus_adc_offset;
- }
- 
- static int bq25980_get_ibat_adc(struct bq25980_device *bq)
-@@ -531,29 +564,31 @@ static int bq25980_get_ibat_adc(struct bq25980_device *bq)
- 
- 	ibat_adc = (ibat_adc_msb << 8) | ibat_adc_lsb;
- 
--	if (ibat_adc_msb & BQ25980_ADC_POLARITY_BIT)
--		return ((ibat_adc ^ 0xffff) + 1) * BQ25980_ADC_CURR_STEP_uA;
-+	ibat_adc = clamp(ibat_adc, BQ25960_ADC_IBAT_MIN_CODE,
-+					BQ25960_ADC_IBAT_MAX_CODE);
- 
--	return ibat_adc * BQ25980_ADC_CURR_STEP_uA;
-+	return (ibat_adc * bq->chip_info->ibat_adc_step) +
-+					bq->chip_info->ibat_adc_offset;
- }
- 
- static int bq25980_get_adc_vbat(struct bq25980_device *bq)
- {
--	int vsys_adc_lsb, vsys_adc_msb;
--	u16 vsys_adc;
-+	int vbat_adc_lsb, vbat_adc_msb;
-+	u16 vbat_adc;
- 	int ret;
- 
--	ret = regmap_read(bq->regmap, BQ25980_VBAT_ADC_MSB, &vsys_adc_msb);
-+	ret = regmap_read(bq->regmap, BQ25980_VBAT_ADC_MSB, &vbat_adc_msb);
- 	if (ret)
- 		return ret;
- 
--	ret = regmap_read(bq->regmap, BQ25980_VBAT_ADC_LSB, &vsys_adc_lsb);
-+	ret = regmap_read(bq->regmap, BQ25980_VBAT_ADC_LSB, &vbat_adc_lsb);
- 	if (ret)
- 		return ret;
- 
--	vsys_adc = (vsys_adc_msb << 8) | vsys_adc_lsb;
-+	vbat_adc = (vbat_adc_msb << 8) | vbat_adc_lsb;
- 
--	return vsys_adc * BQ25980_ADC_VOLT_STEP_uV;
-+	return (vbat_adc * bq->chip_info->vbat_adc_step) +
-+					bq->chip_info->vbat_adc_offset;
- }
- 
- static int bq25980_get_state(struct bq25980_device *bq,
-@@ -984,6 +1019,10 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 		.busocp_sc_max = BQ25980_BUSOCP_SC_MAX_uA,
- 		.busocp_byp_max = BQ25980_BUSOCP_BYP_MAX_uA,
- 		.busocp_byp_min = BQ25980_BUSOCP_MIN_uA,
-+		.busocp_sc_step = BQ25980_BUSOCP_STEP_uA,
-+		.busocp_byp_step = BQ25980_BUSOCP_STEP_uA,
-+		.busocp_sc_offset = BQ25980_BUSOCP_OFFSET_uA,
-+		.busocp_byp_offset = BQ25980_BUSOCP_OFFSET_uA,
- 
- 		.busovp_sc_def = BQ25980_BUSOVP_DFLT_uV,
- 		.busovp_byp_def = BQ25980_BUSOVP_BYPASS_DFLT_uV,
-@@ -1004,6 +1043,20 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 
- 		.batocp_def = BQ25980_BATOCP_DFLT_uA,
- 		.batocp_max = BQ25980_BATOCP_MAX_uA,
-+		.batocp_min = BQ25980_BATOCP_MIN_uA,
-+		.batocp_step = BQ25980_BATOCP_STEP_uA,
-+
-+		.vbus_adc_step = BQ25980_ADC_VBUS_STEP_uV,
-+		.vbus_adc_offset = BQ25980_ADC_VBUS_OFFSET_uV,
-+
-+		.ibus_adc_step = BQ25980_ADC_IBUS_STEP_uA,
-+		.ibus_adc_offset = BQ25980_ADC_IBUS_OFFSET_uA,
-+
-+		.vbat_adc_step = BQ25980_ADC_VBAT_STEP_uV,
-+		.vbat_adc_offset = BQ25980_ADC_VBAT_OFFSET_uV,
-+
-+		.ibat_adc_step = BQ25980_ADC_IBAT_STEP_uA,
-+		.ibat_adc_offset = BQ25980_ADC_IBAT_OFFSET_uA,
- 	},
- 
- 	[BQ25975] = {
-@@ -1015,6 +1068,10 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 		.busocp_sc_max = BQ25975_BUSOCP_SC_MAX_uA,
- 		.busocp_byp_min = BQ25980_BUSOCP_MIN_uA,
- 		.busocp_byp_max = BQ25975_BUSOCP_BYP_MAX_uA,
-+		.busocp_sc_step = BQ25980_BUSOCP_STEP_uA,
-+		.busocp_byp_step = BQ25980_BUSOCP_STEP_uA,
-+		.busocp_sc_offset = BQ25980_BUSOCP_OFFSET_uA,
-+		.busocp_byp_offset = BQ25980_BUSOCP_OFFSET_uA,
- 
- 		.busovp_sc_def = BQ25975_BUSOVP_DFLT_uV,
- 		.busovp_byp_def = BQ25975_BUSOVP_BYPASS_DFLT_uV,
-@@ -1035,6 +1092,20 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 
- 		.batocp_def = BQ25980_BATOCP_DFLT_uA,
- 		.batocp_max = BQ25980_BATOCP_MAX_uA,
-+		.batocp_min = BQ25980_BATOCP_MIN_uA,
-+		.batocp_step = BQ25980_BATOCP_STEP_uA,
-+
-+		.vbus_adc_step = BQ25975_ADC_VBUS_STEP_uV,
-+		.vbus_adc_offset = BQ25975_ADC_VBUS_OFFSET_uV,
-+
-+		.ibus_adc_step = BQ25975_ADC_IBUS_STEP_uA,
-+		.ibus_adc_offset = BQ25975_ADC_IBUS_OFFSET_uA,
-+
-+		.vbat_adc_step = BQ25975_ADC_VBAT_STEP_uV,
-+		.vbat_adc_offset = BQ25975_ADC_VBAT_OFFSET_uV,
-+
-+		.ibat_adc_step = BQ25975_ADC_IBAT_STEP_uA,
-+		.ibat_adc_offset = BQ25975_ADC_IBAT_OFFSET_uA,
- 	},
- 
- 	[BQ25960] = {
-@@ -1042,10 +1113,14 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 		.regmap_config = &bq25960_regmap_config,
- 
- 		.busocp_def = BQ25960_BUSOCP_DFLT_uA,
--		.busocp_sc_min = BQ25960_BUSOCP_SC_MAX_uA,
-+		.busocp_sc_min = BQ25960_BUSOCP_SC_MIN_uA,
- 		.busocp_sc_max = BQ25960_BUSOCP_SC_MAX_uA,
--		.busocp_byp_min = BQ25960_BUSOCP_SC_MAX_uA,
-+		.busocp_byp_min = BQ25960_BUSOCP_BYP_MIN_uA,
- 		.busocp_byp_max = BQ25960_BUSOCP_BYP_MAX_uA,
-+		.busocp_sc_step = BQ25960_BUSOCP_SC_STEP_uA,
-+		.busocp_byp_step = BQ25960_BUSOCP_BYP_STEP_uA,
-+		.busocp_sc_offset = BQ25960_BUSOCP_SC_OFFSET_uA,
-+		.busocp_byp_offset = BQ25960_BUSOCP_BYP_OFFSET_uA,
- 
- 		.busovp_sc_def = BQ25975_BUSOVP_DFLT_uV,
- 		.busovp_byp_def = BQ25975_BUSOVP_BYPASS_DFLT_uV,
-@@ -1066,6 +1141,20 @@ static const struct bq25980_chip_info bq25980_chip_info_tbl[] = {
- 
- 		.batocp_def = BQ25960_BATOCP_DFLT_uA,
- 		.batocp_max = BQ25960_BATOCP_MAX_uA,
-+		.batocp_min = BQ25960_BATOCP_MIN_uA,
-+		.batocp_step = BQ25960_BATOCP_STEP_uA,
-+
-+		.vbus_adc_step = BQ25960_ADC_VBUS_STEP_uV,
-+		.vbus_adc_offset = BQ25960_ADC_VBUS_OFFSET_uV,
-+
-+		.ibus_adc_step = BQ25960_ADC_IBUS_STEP_uA,
-+		.ibus_adc_offset = BQ25960_ADC_IBUS_OFFSET_uA,
-+
-+		.vbat_adc_step = BQ25960_ADC_VBAT_STEP_uV,
-+		.vbat_adc_offset = BQ25960_ADC_VBAT_OFFSET_uV,
-+
-+		.ibat_adc_step = BQ25960_ADC_IBAT_STEP_uA,
-+		.ibat_adc_offset = BQ25960_ADC_IBAT_OFFSET_uA,
- 	},
- };
- 
-diff --git a/drivers/power/supply/bq25980_charger.h b/drivers/power/supply/bq25980_charger.h
-index 39f94eba5f6c..7394bd9d7263 100644
---- a/drivers/power/supply/bq25980_charger.h
-+++ b/drivers/power/supply/bq25980_charger.h
-@@ -66,22 +66,29 @@
- #define BQ25980_DEGLITCH_TIME		0x39
- #define BQ25980_CHRGR_CTRL_6	0x3A
- 
--#define BQ25980_BUSOCP_STEP_uA		250000
--#define BQ25980_BUSOCP_OFFSET_uA	1000000
-+#define BQ25980_BUSOCP_STEP_uA		262500
-+#define BQ25980_BUSOCP_OFFSET_uA	1050000
- 
--#define BQ25980_BUSOCP_DFLT_uA		4250000
--#define BQ25975_BUSOCP_DFLT_uA		4250000
-+#define BQ25960_BUSOCP_SC_STEP_uA	254375
-+#define BQ25960_BUSOCP_SC_OFFSET_uA	1017500
-+#define BQ25960_BUSOCP_BYP_STEP_uA	261875
-+#define BQ25960_BUSOCP_BYP_OFFSET_uA	1047500
-+
-+#define BQ25980_BUSOCP_DFLT_uA		4462500
-+#define BQ25975_BUSOCP_DFLT_uA		4462500
- #define BQ25960_BUSOCP_DFLT_uA		3250000
- 
--#define BQ25980_BUSOCP_MIN_uA		1000000
-+#define BQ25980_BUSOCP_MIN_uA		1050000
-+#define BQ25960_BUSOCP_SC_MIN_uA	1017500
-+#define BQ25960_BUSOCP_BYP_MIN_uA	1047500
- 
--#define BQ25980_BUSOCP_SC_MAX_uA	5750000
--#define BQ25975_BUSOCP_SC_MAX_uA	5750000
--#define BQ25960_BUSOCP_SC_MAX_uA	3750000
-+#define BQ25980_BUSOCP_SC_MAX_uA	6037500
-+#define BQ25975_BUSOCP_SC_MAX_uA	6037500
-+#define BQ25960_BUSOCP_SC_MAX_uA	4578750
- 
--#define BQ25980_BUSOCP_BYP_MAX_uA	8500000
--#define BQ25975_BUSOCP_BYP_MAX_uA	8500000
--#define BQ25960_BUSOCP_BYP_MAX_uA	5750000
-+#define BQ25980_BUSOCP_BYP_MAX_uA	8925000
-+#define BQ25975_BUSOCP_BYP_MAX_uA	8925000
-+#define BQ25960_BUSOCP_BYP_MAX_uA	6808750
- 
- #define BQ25980_BUSOVP_SC_STEP_uV	100000
- #define BQ25975_BUSOVP_SC_STEP_uV	50000
-@@ -120,11 +127,11 @@
- 
- #define BQ25980_BATOVP_STEP_uV		20000
- #define BQ25975_BATOVP_STEP_uV		10000
--#define BQ25960_BATOVP_STEP_uV		10000
-+#define BQ25960_BATOVP_STEP_uV		9985
- 
- #define BQ25980_BATOVP_OFFSET_uV	7000000
- #define BQ25975_BATOVP_OFFSET_uV	3500000
--#define BQ25960_BATOVP_OFFSET_uV	3500000
-+#define BQ25960_BATOVP_OFFSET_uV	3491000
- 
- #define BQ25980_BATOVP_DFLT_uV		14000000
- #define BQ25975_BATOVP_DFLT_uV		8900000
-@@ -132,24 +139,26 @@
- 
- #define BQ25980_BATOVP_MIN_uV		7000000
- #define BQ25975_BATOVP_MIN_uV		3500000
--#define BQ25960_BATOVP_MIN_uV		3500000
-+#define BQ25960_BATOVP_MIN_uV		3491000
- 
- #define BQ25980_BATOVP_MAX_uV		9540000
- #define BQ25975_BATOVP_MAX_uV		4770000
--#define BQ25960_BATOVP_MAX_uV		4770000
-+#define BQ25960_BATOVP_MAX_uV		4759000
- 
- #define BQ25980_BATOCP_STEP_uA		100000
-+#define BQ25960_BATOCP_STEP_uA		102500
- 
- #define BQ25980_BATOCP_MASK		GENMASK(6, 0)
- 
- #define BQ25980_BATOCP_DFLT_uA		8100000
--#define BQ25960_BATOCP_DFLT_uA		6100000
-+#define BQ25960_BATOCP_DFLT_uA		7277500
- 
- #define BQ25980_BATOCP_MIN_uA		2000000
-+#define BQ25960_BATOCP_MIN_uA		2050000
- 
- #define BQ25980_BATOCP_MAX_uA		11000000
- #define BQ25975_BATOCP_MAX_uA		11000000
--#define BQ25960_BATOCP_MAX_uA		7000000
-+#define BQ25960_BATOCP_MAX_uA		8712500
- 
- #define BQ25980_ENABLE_HIZ		0xff
- #define BQ25980_DISABLE_HIZ		0x0
-@@ -165,10 +174,40 @@
- #define BQ25980_EN_HIZ			BIT(6)
- #define BQ25980_ADC_EN			BIT(7)
- 
--#define BQ25980_ADC_VOLT_STEP_uV        1000
--#define BQ25980_ADC_CURR_STEP_uA        1000
- #define BQ25980_ADC_POLARITY_BIT	BIT(7)
- 
-+#define BQ25980_ADC_IBUS_STEP_uA	1070
-+#define BQ25980_ADC_IBUS_OFFSET_uA	0
-+#define BQ25980_ADC_VBUS_STEP_uV	1007
-+#define BQ25980_ADC_VBUS_OFFSET_uV	-60000
-+
-+#define BQ25980_ADC_IBAT_STEP_uA	1000
-+#define BQ25980_ADC_IBAT_OFFSET_uA	0
-+#define BQ25980_ADC_VBAT_STEP_uV	1006
-+#define BQ25980_ADC_VBAT_OFFSET_uV	0
-+
-+#define BQ25975_ADC_IBUS_STEP_uA	1070
-+#define BQ25975_ADC_IBUS_OFFSET_uA	0
-+#define BQ25975_ADC_VBUS_STEP_uV	1003
-+#define BQ25975_ADC_VBUS_OFFSET_uV	-40000
-+
-+#define BQ25975_ADC_IBAT_STEP_uA	1000
-+#define BQ25975_ADC_IBAT_OFFSET_uA	12000
-+#define BQ25975_ADC_VBAT_STEP_uV	1001
-+#define BQ25975_ADC_VBAT_OFFSET_uV	10000
-+
-+#define BQ25960_ADC_IBUS_STEP_uA	1000
-+#define BQ25960_ADC_IBUS_OFFSET_uA	65000
-+#define BQ25960_ADC_VBUS_STEP_uV	1002
-+#define BQ25960_ADC_VBUS_OFFSET_uV	0
-+
-+#define BQ25960_ADC_IBAT_STEP_uA	999
-+#define BQ25960_ADC_IBAT_OFFSET_uA	-150
-+#define BQ25960_ADC_IBAT_MIN_CODE	0x96
-+#define BQ25960_ADC_IBAT_MAX_CODE	0x2ee0
-+#define BQ25960_ADC_VBAT_STEP_uV	1017
-+#define BQ25960_ADC_VBAT_OFFSET_uV	1000
-+
- #define BQ25980_WATCHDOG_MASK	GENMASK(4, 3)
- #define BQ25980_WATCHDOG_DIS	BIT(2)
- #define BQ25980_WATCHDOG_MAX	300000
+We should probably fill a regmap_access_table to deny reading registers
+for which there is no address decoding and possibly another one to deny
+writing to the read-only registers.
 -- 
-2.30.0
-
+Florian
