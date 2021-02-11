@@ -5,47 +5,44 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF63EC433E9
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 13:53:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFE8CC433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 14:06:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 76DEA64E92
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 13:53:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A694B64E9C
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 14:06:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231907AbhBKNwR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Feb 2021 08:52:17 -0500
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:43052 "EHLO
-        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232187AbhBKNuJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2021 08:50:09 -0500
-Received: from pps.filterd (m0045851.ppops.net [127.0.0.1])
-        by mx0b-0016f401.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 11BDj23R023969;
-        Thu, 11 Feb 2021 05:49:05 -0800
+        id S232144AbhBKOGG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Feb 2021 09:06:06 -0500
+Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:61936 "EHLO
+        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S231494AbhBKODv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2021 09:03:51 -0500
+Received: from pps.filterd (m0045849.ppops.net [127.0.0.1])
+        by mx0a-0016f401.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 11BE0SUU000573;
+        Thu, 11 Feb 2021 06:02:52 -0800
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marvell.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type; s=pfpt0220; bh=eFDjoveljCQQJKcxDvUtCMV2TbXj5Ak0PinCMDmx6Uk=;
- b=GaQ315zkeEQWu2L/hgLgeEsMfZqWARQNc0WGu7Xraj9eG+IbJyySTIjodvLW8ZjHOJ0E
- 6UsMaX5tqCl12b7tfZrVZm2psvl/TUnhE0WF/FjOen8Sv+kTvje118ngtmnZhi26OB4H
- VL64UVQXj3YOKr1Cg78V0aUoffkOZl9RCVp5ZeU/mlkuyz+qziyLac+ixkKphotdDNV1
- OChi+XMiGrH9la2JgvX1qWnM6XRezHuKWbusY8NeNZBjFAZCpevelXIv3fE1nk4pzyGT
- vkmxqI3RRj7Xz2KcYQ5bLzUQv9Ftt9VLsNmXRRytd1P1I4ULbVoeWMD7cCnFQ/3Y6pwz EA== 
-Received: from dc5-exch02.marvell.com ([199.233.59.182])
-        by mx0b-0016f401.pphosted.com with ESMTP id 36hugqev4x-2
+ b=HF9mPfiDzk/I91+PItagFKf15LS1okm+oERdDpDSvgOztpsyzm1ee0SGfmzklCEr7+WL
+ Ycz3+0ZzFVZ7nbNz4+oiLT9SlkWJSHKzj06fMj76xd4w6cMDTWXLBLTyrvxthfTr9wsF
+ GnV2xIbQ2hF11rj5QCoire6vi8rfeo5oU1NJvUTdMt8DvkG6PLLSCIK2XVKNrBu9Nqms
+ RoD9H5zacBqVJ3nHf1X7P57r5DFP3zaMMIFORI8U6dbpf9IGfda9SW9YqYGMp6lCGwrq
+ szhv05dFiKik3Vrn0Ue0ImuOQNPcACULq/PWCOBMHSDwmKvMvNjv7fuUe+sr6FZ1OQYj Jw== 
+Received: from dc5-exch01.marvell.com ([199.233.59.181])
+        by mx0a-0016f401.pphosted.com with ESMTP id 36hsbrq6k3-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NOT);
-        Thu, 11 Feb 2021 05:49:05 -0800
-Received: from SC-EXCH03.marvell.com (10.93.176.83) by DC5-EXCH02.marvell.com
- (10.69.176.39) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 11 Feb
- 2021 05:49:02 -0800
-Received: from DC5-EXCH01.marvell.com (10.69.176.38) by SC-EXCH03.marvell.com
- (10.93.176.83) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 11 Feb
- 2021 05:49:02 -0800
+        Thu, 11 Feb 2021 06:02:52 -0800
+Received: from DC5-EXCH01.marvell.com (10.69.176.38) by DC5-EXCH01.marvell.com
+ (10.69.176.38) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 11 Feb
+ 2021 06:02:50 -0800
 Received: from maili.marvell.com (10.69.176.80) by DC5-EXCH01.marvell.com
  (10.69.176.38) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 11 Feb 2021 05:49:02 -0800
+ Transport; Thu, 11 Feb 2021 06:02:50 -0800
 Received: from octopus.marvell.com (octopus.marvell.com [10.5.24.3])
-        by maili.marvell.com (Postfix) with ESMTP id C52CC3F7040;
-        Thu, 11 Feb 2021 05:48:58 -0800 (PST)
+        by maili.marvell.com (Postfix) with ESMTP id 8E83F3F7040;
+        Thu, 11 Feb 2021 06:02:47 -0800 (PST)
 From:   <kostap@marvell.com>
 To:     <linux-pm@vger.kernel.org>, <linux-clk@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
@@ -55,12 +52,12 @@ CC:     <Julia.Lawall@inria.fr>, <amitk@kernel.org>,
         <mturquette@baylibre.com>, <mw@semihalf.com>, <jaz@semihalf.com>,
         <nadavh@marvell.com>, <stefanc@marvell.com>, <bpeled@marvell.com>,
         "Konstantin Porotchkin" <kostap@marvell.com>
-Subject: [PATCH 1/2] thermal: armada: ap806: use firmware SiP services for thermal operations
-Date:   Thu, 11 Feb 2021 15:48:51 +0200
-Message-ID: <20210211134852.23648-2-kostap@marvell.com>
+Subject: [PATCH v3 1/2] thermal: armada: ap806: use firmware SiP services for thermal operations
+Date:   Thu, 11 Feb 2021 16:02:39 +0200
+Message-ID: <20210211140240.23778-2-kostap@marvell.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210211134852.23648-1-kostap@marvell.com>
-References: <20210211134852.23648-1-kostap@marvell.com>
+In-Reply-To: <20210211140240.23778-1-kostap@marvell.com>
+References: <20210211140240.23778-1-kostap@marvell.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369,18.0.737
