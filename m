@@ -2,137 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D23BC433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 12:40:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61CE9C4332D
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 13:04:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ED9DB64E23
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 12:40:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3480564E79
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Feb 2021 13:04:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231396AbhBKMkd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Feb 2021 07:40:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44150 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231406AbhBKMhF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2021 07:37:05 -0500
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8236C061574;
-        Thu, 11 Feb 2021 04:36:24 -0800 (PST)
-Received: by mail-wm1-x332.google.com with SMTP id n10so3710402wmq.0;
-        Thu, 11 Feb 2021 04:36:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=to:cc:references:from:subject:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=wvId9QB5MA8DN7Z/Wwn99KHW4uDuXdx8aL5nWnOvqUI=;
-        b=KWhn7mo93wQSGNpPerkogAeENqdhj/Jet54/l8HJ9cnyHNJoun/Itg4shkO9w6bbO9
-         AYTTuNp8NJbNHMJt0wK2qScEnSjM+rkNgck/SoibYkFKX+yutXwZWpIN7Z3EQaCE6wAh
-         xTs36xzMGtlIRCYLZA+ADwd0BBWH3md3eozN/aDxSqfDtKIG7zDLm3dLIJaN5fNunFMm
-         66gBFbaXnbHGFsIWEuRiwEjHLbVwuhmfgl2WyP1ld5/DCkMqYhE5sw8klLSZCWsbBl6O
-         /T6keqTEASsJ4VKX7Se6Mi/bGFmHsC/fpU3qC/LDtTOOHJJs3K/Ky4Z6G1zUsfSwQCAu
-         46eA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:to:cc:references:from:subject:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=wvId9QB5MA8DN7Z/Wwn99KHW4uDuXdx8aL5nWnOvqUI=;
-        b=t2zqzdBEtNr7WPav7RamrpsK7lIMNZOwgwfSlRiEgmGk3xArCbiQ9wsoa5AAvIY+N7
-         yRtuVjV0ushnSzmgJgb5VtF7NhUm49VrNkTrv4MMsfeEoPkFFZm+8s5vi1NvU6dsIPek
-         7WjbkH09nua6D1Hte6vAhZSGIvlFkwVCXUrD0GJfnWOWAW3zHlbdip8HYaYzxJ5uORGT
-         QKaNLvC1WFfy0tdhHXv3LlToIRu+IvjKOGx6PPR6U17J1LmXAq2RSTZ5zqcmAuIcbQzl
-         zkh/uQvMZjx8inH+D78mT7RJ5O/kyWNSpJb+uYRdOjnwYErEFS6LMbTV93Ok1L1xZGnq
-         0AwA==
-X-Gm-Message-State: AOAM530In2h5mIAYLOA48GgS9sYZLRFFy1R5I245018d1lKnDyUyoqgZ
-        NcKGt4a+Zugkzf5ub5MbRqW46A8wlB1tsg==
-X-Google-Smtp-Source: ABdhPJx8T464XDkRhixA0ExWSElblHccGwg/e0x7g0npu1eXjQzPj58qbi9uNN18U0FArKY6ORwT0w==
-X-Received: by 2002:a1c:6002:: with SMTP id u2mr4868870wmb.83.1613046983117;
-        Thu, 11 Feb 2021 04:36:23 -0800 (PST)
-Received: from ?IPv6:2003:ea:8f1f:ad00:60ca:853:df03:450e? (p200300ea8f1fad0060ca0853df03450e.dip0.t-ipconnect.de. [2003:ea:8f1f:ad00:60ca:853:df03:450e])
-        by smtp.googlemail.com with ESMTPSA id u3sm5228983wre.54.2021.02.11.04.36.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 11 Feb 2021 04:36:22 -0800 (PST)
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     Claudiu.Beznea@microchip.com, linux@armlinux.org.uk,
-        andrew@lunn.ch, davem@davemloft.net, kuba@kernel.org,
-        rjw@rjwysocki.net, netdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <1610120754-14331-1-git-send-email-claudiu.beznea@microchip.com>
- <25ec943f-ddfc-9bcd-ef30-d0baf3c6b2a2@gmail.com>
- <ce20d4f3-3e43-154a-0f57-2c2d42752597@microchip.com>
- <ee0fd287-c737-faa5-eee1-99ffa120540a@gmail.com>
- <ae4e73e9-109f-fdb9-382c-e33513109d1c@microchip.com>
- <7976f7df-c22f-d444-c910-b0462b3d7f61@gmail.com>
- <d9fcf8da-c0b0-0f18-48e9-a7534948bc93@microchip.com>
- <20210114102508.GO1551@shell.armlinux.org.uk>
- <fe4c31a0-b807-0eb2-1223-c07d7580e1fc@microchip.com>
- <56366231-4a1f-48c3-bc29-6421ed834bdf@gmail.com> <20210211121701.GA31708@amd>
-From:   Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH] net: phy: micrel: reconfigure the phy on resume
-Message-ID: <0ac6414e-b785-1f82-94a2-9aa26b357d02@gmail.com>
-Date:   Thu, 11 Feb 2021 13:36:16 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        id S231764AbhBKNEC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Feb 2021 08:04:02 -0500
+Received: from mail.kernel.org ([198.145.29.99]:58538 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230445AbhBKNBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 11 Feb 2021 08:01:34 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4C44664E2F;
+        Thu, 11 Feb 2021 13:00:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1613048453;
+        bh=R1wXfHp/mtHayjhLTRFV8J+RaQB8xzJF+ECpMM3qItM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=T87s8o56OYCjh7+2IySoSf6EQzX/8ghjZ9UEoEO8tL3PT5O/iMYBB6llgADANOEcv
+         veO7DEsSwUQ+cciKl7+wJvOIp7q/FXfpIOgVYudhHYxDo8UX+BV0KUoN1JWCKSmoiY
+         w5GN1sGoLrMTXKprbTvrp9IuvP4D6QUg646ZKY8w=
+Date:   Thu, 11 Feb 2021 14:00:51 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Tudor Ambarus <tudor.ambarus@microchip.com>
+Cc:     corbet@lwn.net, rafael@kernel.org, khilman@kernel.org,
+        ulf.hansson@linaro.org, len.brown@intel.com, lenb@kernel.org,
+        pavel@ucw.cz, mturquette@baylibre.com, sboyd@kernel.org,
+        robh+dt@kernel.org, frowand.list@gmail.com, maz@kernel.org,
+        tglx@linutronix.de, saravanak@google.com,
+        nicolas.ferre@microchip.com, claudiu.beznea@microchip.com,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-acpi@vger.kernel.org,
+        m.szyprowski@samsung.com, geert@linux-m68k.org,
+        kernel-team@android.com
+Subject: Re: [PATCH] clk: Mark fwnodes when their clock provider is added
+Message-ID: <YCUqgwrCREvPqEz+@kroah.com>
+References: <20210205222644.2357303-9-saravanak@google.com>
+ <20210210114435.122242-1-tudor.ambarus@microchip.com>
+ <20210210114435.122242-2-tudor.ambarus@microchip.com>
 MIME-Version: 1.0
-In-Reply-To: <20210211121701.GA31708@amd>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210210114435.122242-2-tudor.ambarus@microchip.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11.02.2021 13:17, Pavel Machek wrote:
-> On Thu 2021-01-14 12:05:21, Heiner Kallweit wrote:
->> On 14.01.2021 11:41, Claudiu.Beznea@microchip.com wrote:
->>>
->>>
->>> On 14.01.2021 12:25, Russell King - ARM Linux admin wrote:
->>>>
->>>> As I've said, if phylib/PHY driver is not restoring the state of the
->>>> PHY on resume from suspend-to-ram, then that's an issue with phylib
->>>> and/or the phy driver.
->>>
->>> In the patch I proposed in this thread the restoring is done in PHY driver.
->>> Do you think I should continue the investigation and check if something
->>> should be done from the phylib itself?
->>>
->> It was the right move to approach the PM maintainers to clarify whether
->> the resume PM callback has to assume that power had been cut off and
->> it has to completely reconfigure the device. If they confirm this
->> understanding, then:
+On Wed, Feb 10, 2021 at 01:44:35PM +0200, Tudor Ambarus wrote:
+> This is a follow-up for:
+> commit 3c9ea42802a1 ("clk: Mark fwnodes when their clock provider is added/removed")
 > 
-> Power to some devices can be cut during s2ram, yes.
+> The above commit updated the deprecated of_clk_add_provider(),
+> but missed to update the preferred of_clk_add_hw_provider().
+> Update it now.
 > 
-Thanks for the confirmation.
-
->> - the general question remains why there's separate resume and restore
->>   callbacks, and what restore is supposed to do that resume doesn't
->>   have to do
+> Signed-off-by: Tudor Ambarus <tudor.ambarus@microchip.com>
+> ---
+>  drivers/clk/clk.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> You'll often have same implementation, yes.
-> 
-
-If resume and restore both have to assume that power was cut off,
-then they have to fully re-initialize the device. Therefore it's still
-not clear to me when you would have differing implementations for both
-callbacks.
-
->> - it should be sufficient to use mdio_bus_phy_restore also as resume
->>   callback (instead of changing each and every PHY driver's resume),
->>   because we can expect that somebody cutting off power to the PHY
->>   properly suspends the MDIO bus before
-> 
-> If restore works with power cut and power not cut then yes, you should
-> get away with that.
-> 
-> Best regards,
-> 								Pavel
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 27ff90eacb1f..9370e4dfecae 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -4594,6 +4594,8 @@ int of_clk_add_hw_provider(struct device_node *np,
+>  	if (ret < 0)
+>  		of_clk_del_provider(np);
+>  
+> +	fwnode_dev_initialized(&np->fwnode, true);
+> +
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(of_clk_add_hw_provider);
+> -- 
+> 2.25.1
 > 
 
-Heiner
+Any objection for me taking this in my tree as well?
+
+thanks,
+
+greg k-h
