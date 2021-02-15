@@ -2,112 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD8BC433E0
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Feb 2021 21:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B583C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Feb 2021 06:31:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 719D164E29
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Feb 2021 21:17:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C0C9464E61
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Feb 2021 06:31:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230026AbhBNVRp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 14 Feb 2021 16:17:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59766 "EHLO
+        id S229747AbhBOGax (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Feb 2021 01:30:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230020AbhBNVRp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Feb 2021 16:17:45 -0500
-Received: from mail-yb1-xb30.google.com (mail-yb1-xb30.google.com [IPv6:2607:f8b0:4864:20::b30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA5C5C06178A
-        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2021 13:16:24 -0800 (PST)
-Received: by mail-yb1-xb30.google.com with SMTP id m188so5222871yba.13
-        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2021 13:16:24 -0800 (PST)
+        with ESMTP id S229591AbhBOGaw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2021 01:30:52 -0500
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9BE3C061756
+        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2021 22:30:11 -0800 (PST)
+Received: by mail-pj1-x1036.google.com with SMTP id nm1so3132862pjb.3
+        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2021 22:30:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=phdV8WYNd3IGThDsn8i4M24CobH7ljSVjSrnflRr3qU=;
-        b=RWR4roQbM83TfOeedHSPPpdMu2Nrv1ah6uwnFW7JAwYCOunQAZ8ts3tL6Uzai09gGa
-         LT56JMZcLhRHUVb7BIv9a9Fgcj/aqSsFk5h0+/P35/WMudzT1DP3ZIJaoMUE7V9Kw5bf
-         1KY4nwyux5ymiaNyvoH7myw304kgkIsPme80xuiZ/8oJ6irIzBSN7B5TA5C6wHYHKGer
-         AsFY/uKt4Typt7Sfa3f1Pqmue/ogKAp9PKQKvOKZHJ0u6Xx2gFMwIC2wLn2ox9t4XNJZ
-         t69rSTJuJWKZmRkDhDUvmUixL5yCEpgZXNVyuR0eMeqwaewN6d1CYsAtITkIvU+yV34N
-         0hJw==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=zrrEJXp5mV7UerRAeRKG8eH9oggn9kYScOtYlCg1RtE=;
+        b=c8g5I91zu7IKDPWRVPgs/cED8NOhfy+V9BA2gFo06lfye2pSAvDAkGRhhTmEnlzw5B
+         iTSU2NuOPWQYxgSUQ52oGuyUaGQelQpU3wt851sbECfNqYZMeqyDFT0FSqtnbyE1wxBx
+         HtWsOszmdOnFkKq5Do2Db0vtr9W6Ep2QcKKeqS+h+rN6QLQPyRhRGg5KrzA74AE3ZHQK
+         No9QT1nHtmV1lziAKaQ+wxdZNUGiB/0al++tnnbRo6gdkwtbMS9+mXrFWVOBziFxcTcU
+         /kRGQo2pP7ia+AyXJyutfnWOgoRM+QufF/ERsq4tAEtxy5qS7xD2uAyH0vbQP3E5dtlu
+         /f5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=phdV8WYNd3IGThDsn8i4M24CobH7ljSVjSrnflRr3qU=;
-        b=huXJCuxLgQhXHFL2L3nmasZZtpyPWAoEDVWr5390vZZZGibSjPT1x6TLELEpPFCa9P
-         jrbJ7xqene6Nf6crX/5FJBfOcIt8jNiofUA3/uBaZqipkLo577pl317CEI22WFf/ti1R
-         VaQvsS7YVtPVEMZs0B8kQNxx4HRFj2Zjt4zQRD0qvHG7tEZJ4AAhzetllvpD7FdhiACK
-         bLTofU9glz3pf7WZN/msEkmgA9QbFRqrzVyzTBPaVKaHQqpoRQHAPDAtmhc//DiJ0j74
-         poGU9g8UxsCfORrLjjk7eRBA0AmvAJic98zQCUa+pBQX3xXqcomSsiPbNE6rAOSlsRXJ
-         LDxg==
-X-Gm-Message-State: AOAM532oO6SEeXbyddfBstGUkP14e5uvqJDqsSGEEpRM0iToAeOn3Ijb
-        1XZgIq0F0N0Vc8oXD688U/P2KCcP5CIQ00wnOLJ/Pg==
-X-Google-Smtp-Source: ABdhPJwKlOywjb9o1r0z+/aEElhBXr3muf5MaDtLIwSmnIybpMmvKkrG398c3xt84cwnEWzqUgzwx2tz3LZ7RBGCdE0=
-X-Received: by 2002:a25:718b:: with SMTP id m133mr19551522ybc.412.1613337383889;
- Sun, 14 Feb 2021 13:16:23 -0800 (PST)
-MIME-Version: 1.0
-References: <20210205222644.2357303-1-saravanak@google.com>
- <20210205222644.2357303-9-saravanak@google.com> <161317679292.1254594.15797939257637374295@swboyd.mtv.corp.google.com>
-In-Reply-To: <161317679292.1254594.15797939257637374295@swboyd.mtv.corp.google.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Sun, 14 Feb 2021 13:15:48 -0800
-Message-ID: <CAGETcx_vTSGgmYVHPgi1uqHEGU9y4ZDd_=Z3Xg-Nbrsu-r5Tog@mail.gmail.com>
-Subject: Re: [PATCH v4 8/8] clk: Mark fwnodes when their clock provider is added/removed
-To:     Stephen Boyd <sboyd@kernel.org>
-Cc:     Frank Rowand <frowand.list@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=zrrEJXp5mV7UerRAeRKG8eH9oggn9kYScOtYlCg1RtE=;
+        b=Ymv35d5PQPF1io9KanRs+g7yuDgXE7w/6ImKwE9LVUohsARgDXWjzLX6AhKsIL/yP4
+         gVrNbcapxELbsDwDy6rq1/eDp9WkC2IaqpGbEnT64/VeSQ0wL3dqEfqvM/8taF2oi0Ip
+         OEbig8rNeLUsw4Hu+bODZgms1/yx6UWwJtCJNp4TKhsDGH0969o7duY/c7VR78oAh7sn
+         x1KLfRrc6Kj++uDkrrwIV6gNjpP8MnS7gADU/0Zxoopr3BiTfAF/Tg1qViSlf1K35Jur
+         TFVORpB5nfg78rNH5qXHq8haiUgZEwIEbSGTKko/7Ebqqs0P5VjWRqa20dDAur8au2ru
+         zXxw==
+X-Gm-Message-State: AOAM531yWT6vaCFj4gYuRNxDXEr2bUWX93JpjiIbm6Cyu6YLM1+TldAt
+        nl+hhRaTV2tW+WFWXl2InOs3Yg==
+X-Google-Smtp-Source: ABdhPJzGTe48lxsGoiG5BQ2cUhs0YpVQdWcNZ1OnRBhDVBxUsDeJC5QSFVAut2zzMiSJhUPfzhz6Kg==
+X-Received: by 2002:a17:90a:8e83:: with SMTP id f3mr15278354pjo.70.1613370611311;
+        Sun, 14 Feb 2021 22:30:11 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id h8sm15462226pfv.154.2021.02.14.22.30.09
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 14 Feb 2021 22:30:10 -0800 (PST)
+Date:   Mon, 15 Feb 2021 12:00:08 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Yue Hu <zbestahu@163.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Yue Hu <zbestahu@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Rafael Wysocki <rafael.j.wysocki@intel.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Benjamin Segall <bsegall@google.com>,
+        Mel Gorman <mgorman@suse.de>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
         Linux PM <linux-pm@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Android Kernel Team <kernel-team@android.com>
-Content-Type: text/plain; charset="UTF-8"
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Yue Hu <huyue2@yulong.com>, zhangwen@yulong.com
+Subject: Re: [PATCH] cpufreq: schedutil: Don't use the limits_changed flag
+ any more
+Message-ID: <20210215063008.hsdkrs4bw7wt3wye@vireshk-i7>
+References: <20210208030723.781-1-zbestahu@gmail.com>
+ <CAJZ5v0hmgQp--uhRMZbqZnOvQPy9zLfQx_u=xAewmV=LgT6rPA@mail.gmail.com>
+ <20210214114421.00000550.zbestahu@163.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210214114421.00000550.zbestahu@163.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 12, 2021 at 4:39 PM Stephen Boyd <sboyd@kernel.org> wrote:
->
-> Quoting Saravana Kannan (2021-02-05 14:26:44)
-> > This allows fw_devlink to recognize clock provider drivers that don't
-> > use the device-driver model to initialize the device. fw_devlink will
-> > use this information to make sure consumers of such clock providers
-> > aren't indefinitely blocked from probing, waiting for the power domain
-> > device to appear and bind to a driver.
->
-> The "power domain" part of this commit text doesn't make any sense. Is
-> it copy/pasted from some other patch? Should probably say "waiting for
-> the clk providing device"?
+On 14-02-21, 11:44, Yue Hu wrote:
+> On Fri, 12 Feb 2021 17:14:03 +0100
+> "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+> > This may be running in parallel with sugov_update_next_freq() on a
+> > different CPU, so the latter may clear need_freq_update right after it
+> > has been set here unless I'm overlooking something.
+> 
+> Whether this logic is also happening for limits_changed in
+> sugo_should_update_freq() or not?
 
-Yeah, copy-pasta.
+It is but it shouldn't have any side effects as we calculate the next
+frequency after cleaning the limits_changed flag. Your patch would
+have been fine, but it is not anymore because of commit 23a881852f3e
+("cpufreq: schedutil: Don't skip freq update if need_freq_update is
+set").
 
->
-> >
-> > Signed-off-by: Saravana Kannan <saravanak@google.com>
-> > ---
->
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
+It made a considerable change after which your patch adds a bug. With
+23a881852f3e, need_freq_update is updated/cleared after the next
+frequency is calculated, while earlier it was cleared before it. And
+so even with the race condition taking place, there were no issues.
 
-Thanks,
-Saravana
+-- 
+viresh
