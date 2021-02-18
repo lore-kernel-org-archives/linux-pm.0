@@ -7,33 +7,33 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8391C4332B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 22:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1523AC433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 22:21:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9F0D66186A
+	by mail.kernel.org (Postfix) with ESMTP id CA3C064EBA
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 22:21:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230018AbhBRWVX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 17:21:23 -0500
-Received: from foss.arm.com ([217.140.110.172]:56294 "EHLO foss.arm.com"
+        id S230036AbhBRWVY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 17:21:24 -0500
+Received: from foss.arm.com ([217.140.110.172]:56314 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229983AbhBRWVT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Feb 2021 17:21:19 -0500
+        id S229994AbhBRWVV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Feb 2021 17:21:21 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ECFE71042;
-        Thu, 18 Feb 2021 14:20:29 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 07FE6113E;
+        Thu, 18 Feb 2021 14:20:36 -0800 (PST)
 Received: from ubuntu.arm.com (unknown [10.57.43.160])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DE8623F73D;
-        Thu, 18 Feb 2021 14:20:27 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 301403F73D;
+        Thu, 18 Feb 2021 14:20:34 -0800 (PST)
 From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org, sudeep.holla@arm.com, rjw@rjwysocki.net,
         vireshk@kernel.org, cristian.marussi@arm.com
 Cc:     morten.rasmussen@arm.com, chris.redpath@arm.com,
         ionela.voinescu@arm.com, nicola.mazzucato@arm.com
-Subject: [PATCH v8 1/3] scmi-cpufreq: Remove deferred probe
-Date:   Thu, 18 Feb 2021 22:23:24 +0000
-Message-Id: <20210218222326.15788-2-nicola.mazzucato@arm.com>
+Subject: [PATCH v8 3/3] cpufreq: blacklist Arm Vexpress platforms in cpufreq-dt-platdev
+Date:   Thu, 18 Feb 2021 22:23:26 +0000
+Message-Id: <20210218222326.15788-4-nicola.mazzucato@arm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20210218222326.15788-1-nicola.mazzucato@arm.com>
 References: <20210218222326.15788-1-nicola.mazzucato@arm.com>
@@ -43,32 +43,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current implementation of the scmi_cpufreq_init() function returns
--EPROBE_DEFER when the OPP table is not populated. In practice the
-cpufreq core cannot handle this error code.
-Therefore, fix the return value and clarify the error message.
+From: Sudeep Holla <sudeep.holla@arm.com>
 
-Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
+Add "arm,vexpress" to cpufreq-dt-platdev blacklist since the actual
+scaling is handled by the firmware cpufreq drivers(scpi, scmi and
+vexpress-spc).
+
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/scmi-cpufreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index 491a0a24fb1e..c0345120a7d5 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -155,8 +155,10 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index bd2db0188cbb..91e6a0c10dbf 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -103,6 +103,8 @@ static const struct of_device_id whitelist[] __initconst = {
+ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "allwinner,sun50i-h6", },
  
- 	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
- 	if (nr_opp <= 0) {
--		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
--		ret = -EPROBE_DEFER;
-+		dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
-+			__func__, ret);
++	{ .compatible = "arm,vexpress", },
 +
-+		ret = -ENODEV;
- 		goto out_free_opp;
- 	}
+ 	{ .compatible = "calxeda,highbank", },
+ 	{ .compatible = "calxeda,ecx-2000", },
  
 -- 
 2.27.0
