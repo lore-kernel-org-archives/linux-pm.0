@@ -7,56 +7,62 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25724C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D695BC433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C187464E4B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8624F64ECA
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230212AbhBRUlu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 15:41:50 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:54048 "EHLO
+        id S231298AbhBRUmF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 15:42:05 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:54152 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231136AbhBRUkY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:24 -0500
+        with ESMTP id S231340AbhBRUk0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:26 -0500
 Date:   Thu, 18 Feb 2021 20:39:41 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1613680781;
+        s=2020; t=1613680782;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=xJN1w8o9Col1zqkzzSHndI7bCnc8ME56/HclYFA3XOg=;
-        b=xP47Gyq+GVzVTYZXzO4wHFzERxQ5nvCt55rcRNVbkml0vYMiSlv9w1N0jFUMIdYXt8YWXo
-        WekGpjtuBvab0jfYtin6CkjdzBgTxjrAUaSGECA/Rv1HpYhuK8bDj3SK7Bpx/oNwM4vy+W
-        YOgI1n+H9nakDAVKFrMSxxRh4lDDLktJF4JsK+xQz0IR2Oa+8UwZ7e58VRJyQmjkNRlVxw
-        PwU6ck1klBXjydkfFs7UmCB2Xi6+MIRvnfbnQAaMvspKckIDZLjl00808EDVCYv2vPpQ0Q
-        6WMgTpbacIL5MkqzWzM6nH2jeSa6Gg8Q0YtxYzqowz+IllEQ1O1BUV8jlQoOjA==
+        bh=gQxa8DH6sDsExZ5+tXfTO9Uaj5cx92H5Sfey3KD0yLM=;
+        b=TGDE4+gkioKyhjlz6bK/qxN+v1ElIhxDES3Kl7poBJ5VQPEa2ELndcKVvzvXGKZ25DnN8i
+        ebYywSfesEQoDIy6um8Kc+Am1uyMLAPtWNwO6jWY2+lR9RPJEYRmor4M2B/Acj/I1bf5Cx
+        2GOSx2LbkVCiSWcqH3TAf5dfO6RZ/s0wXRee5bTIDe5GUzk6nCFLMbFZ18j1NC2l/Wqtqg
+        QL2r1NoN4XwJ7taoIZ4pSFZd28RR/BIxC5Iu8+nw5QugqhINL7MxlwHVAwWWaeHPOeb7FH
+        CrKAKWzg+ZHniuJklNbxs55D4O9TdfBK81GH+7kpBGrBB7KavCTcun+E5Ul4bg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1613680781;
+        s=2020e; t=1613680782;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=xJN1w8o9Col1zqkzzSHndI7bCnc8ME56/HclYFA3XOg=;
-        b=kKVm+4jSaTzQ9HMnYZvk2xIIJVLgS5upVMhXMTqN0SdgoiwW1VQB0ndt6VFZrvw0ZM6foG
-        ks0lg0lnrRccVWAA==
-From:   "thermal-bot for Dmitry Baryshkov" <tip-bot2@linutronix.de>
+        bh=gQxa8DH6sDsExZ5+tXfTO9Uaj5cx92H5Sfey3KD0yLM=;
+        b=e7iXSIKeFiCwNeZdJeXQ8gNE4BR3N88NT6xhVLn32hHR2ZOpZDfsRFNYBRSPJxW639OBhr
+        kxdJIx3yX/4v64Aw==
+From:   "thermal-bot for Tony Lindgren" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: qcom: add adc-thermal
- monitor bindings
-Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] thermal: ti-soc-thermal: Simplify polling with iopoll
+Cc:     Adam Ford <aford173@gmail.com>,
+        Carl Philipp Klemm <philipp@uvos.xyz>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        "H. Nikolaus Schaller" <hns@goldelico.com>,
+        Merlijn Wajer <merlijn@wizzup.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210205000118.493610-2-dmitry.baryshkov@linaro.org>
-References: <20210205000118.493610-2-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20210205134534.49200-4-tony@atomide.com>
+References: <20210205134534.49200-4-tony@atomide.com>
 MIME-Version: 1.0
-Message-ID: <161368078118.20312.11402332349615976799.tip-bot2@tip-bot2>
+Message-ID: <161368078166.20312.4958055839767865943.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -67,183 +73,104 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     e8ffd6c0756bd81f069dd67ea47e6908c791e742
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e8ffd6c0756bd81f069dd67ea47e6908c791e742
-Author:        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-AuthorDate:    Fri, 05 Feb 2021 03:01:17 +03:00
+Commit-ID:     514cbabb01422d501d533a6495b924e4c22d4822
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//514cbabb01422d501d533a6495b924e4c22d4822
+Author:        Tony Lindgren <tony@atomide.com>
+AuthorDate:    Fri, 05 Feb 2021 15:45:33 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 15 Feb 2021 21:28:52 +01:00
+CommitterDate: Mon, 15 Feb 2021 21:19:23 +01:00
 
-dt-bindings: thermal: qcom: add adc-thermal monitor bindings
+thermal: ti-soc-thermal: Simplify polling with iopoll
 
-Add bindings for thermal monitor, part of Qualcomm PMIC5 chips. It is a
-close counterpart of VADC part of those PMICs.
+We can use iopoll for checking the EOCZ (end of conversion) bit. And with
+this we now also want to handle the timeout errors properly.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
+For omap3, we need about 1.2ms for the single mode sampling to wait for
+EOCZ down, so let's use 1.5ms timeout there. Waiting for sampling to start
+is faster and we can use 1ms timeout.
+
+Cc: Adam Ford <aford173@gmail.com>
+Cc: Carl Philipp Klemm <philipp@uvos.xyz>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: H. Nikolaus Schaller <hns@goldelico.com>
+Cc: Merlijn Wajer <merlijn@wizzup.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Ujfalusi <peter.ujfalusi@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Tested-by: Adam Ford <aford173@gmail.com> #logicpd-torpedo-37xx-devkit
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210205000118.493610-2-dmitry.baryshkov@linaro.org
+Link: https://lore.kernel.org/r/20210205134534.49200-4-tony@atomide.com
 ---
- Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml | 153 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 153 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 30 +++++++++-----------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-new file mode 100644
-index 0000000..7cd3644
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-@@ -0,0 +1,153 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom-spmi-adc-tm5.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm's SPMI PMIC ADC Thermal Monitoring
-+maintainers:
-+  - Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-+
-+properties:
-+  compatible:
-+    const: qcom,spmi-adc-tm5
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+    description:
-+      Number of cells required to uniquely identify the thermal sensors. Since
-+      we have multiple sensors this is set to 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+  qcom,avg-samples:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Number of samples to be used for measurement.
-+    enum:
-+      - 1
-+      - 2
-+      - 4
-+      - 8
-+      - 16
-+    default: 1
-+
-+  qcom,decimation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: This parameter is used to decrease ADC sampling rate.
-+            Quicker measurements can be made by reducing decimation ratio.
-+    enum:
-+      - 250
-+      - 420
-+      - 840
-+    default: 840
-+
-+patternProperties:
-+  "^([-a-z0-9]*)@[0-7]$":
-+    type: object
-+    description:
-+      Represent one thermal sensor.
-+
-+    properties:
-+      reg:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Specify the sensor channel. There are 8 channels in PMIC5's ADC TM
-+        minimum: 0
-+        maximum: 7
-+
-+      io-channels:
-+        description:
-+          From common IIO binding. Used to pipe PMIC ADC channel to thermal monitor
-+
-+      qcom,ratiometric:
-+        $ref: /schemas/types.yaml#/definitions/flag
-+        description:
-+          Channel calibration type.
-+          If this property is specified VADC will use the VDD reference
-+          (1.875V) and GND for channel calibration. If property is not found,
-+          channel will be calibrated with 0V and 1.25V reference channels,
-+          also known as absolute calibration.
-+
-+      qcom,hw-settle-time-us:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Time between AMUX getting configured and the ADC starting conversion.
-+        enum: [15, 100, 200, 300, 400, 500, 600, 700, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000]
-+
-+      qcom,pre-scaling:
-+        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        description: Used for scaling the channel input signal before the
-+          signal is fed to VADC. The configuration for this node is to know the
-+          pre-determined ratio and use it for post scaling. It is a pair of
-+          integers, denoting the numerator and denominator of the fraction by
-+          which input signal is multiplied. For example, <1 3> indicates the
-+          signal is scaled down to 1/3 of its value before ADC measurement.  If
-+          property is not found default value depending on chip will be used.
-+        items:
-+          - const: 1
-+          - enum: [ 1, 3, 4, 6, 20, 8, 10 ]
-+
-+    required:
-+      - reg
-+      - io-channels
-+
-+    additionalProperties:
-+      false
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - "#address-cells"
-+  - "#size-cells"
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/iio/qcom,spmi-vadc.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    spmi_bus {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        pm8150b_adc: adc@3100 {
-+            reg = <0x3100>;
-+            compatible = "qcom,spmi-adc5";
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+            #io-channel-cells = <1>;
-+
-+            /* Other propreties are omitted */
-+            conn-therm@4f {
-+                reg = <ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time = <200>;
-+            };
-+        };
-+
-+        pm8150b_adc_tm: adc-tm@3500 {
-+            compatible = "qcom,spmi-adc-tm5";
-+            reg = <0x3500>;
-+            interrupts = <0x2 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
-+            #thermal-sensor-cells = <1>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            conn-therm@0 {
-+                reg = <0>;
-+                io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time-us = <200>;
-+            };
-+        };
-+    };
-+...
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 6e92551..8a3646e 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -15,7 +15,6 @@
+ #include <linux/kernel.h>
+ #include <linux/interrupt.h>
+ #include <linux/clk.h>
+-#include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/err.h>
+@@ -27,6 +26,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/of_irq.h>
+ #include <linux/io.h>
++#include <linux/iopoll.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/device.h>
+ #include <linux/pm_runtime.h>
+@@ -604,7 +604,9 @@ static int
+ ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id)
+ {
+ 	struct temp_sensor_registers *tsr = bgp->conf->sensors[id].registers;
+-	u32 counter;
++	void __iomem *temp_sensor_ctrl = bgp->base + tsr->temp_sensor_ctrl;
++	int error;
++	u32 val;
+ 
+ 	/* Select continuous or single conversion mode */
+ 	if (TI_BANDGAP_HAS(bgp, MODE_CONFIG)) {
+@@ -619,26 +621,22 @@ ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id)
+ 		RMW_BITS(bgp, id, temp_sensor_ctrl, bgap_soc_mask, 1);
+ 
+ 		/* Wait for EOCZ going up */
+-		counter = 1000;
+-		while (--counter) {
+-			if (ti_bandgap_readl(bgp, tsr->temp_sensor_ctrl) &
+-			    tsr->bgap_eocz_mask)
+-				break;
+-			udelay(1);
+-		}
++		error = readl_poll_timeout_atomic(temp_sensor_ctrl, val,
++						  val & tsr->bgap_eocz_mask,
++						  1, 1000);
++		if (error)
++			dev_warn(bgp->dev, "eocz timed out waiting high\n");
+ 
+ 		/* Clear Start of Conversion if available */
+ 		RMW_BITS(bgp, id, temp_sensor_ctrl, bgap_soc_mask, 0);
+ 	}
+ 
+ 	/* Wait for EOCZ going down, always needed even if no bgap_soc_mask */
+-	counter = 1000;
+-	while (--counter) {
+-		if (!(ti_bandgap_readl(bgp, tsr->temp_sensor_ctrl) &
+-		      tsr->bgap_eocz_mask))
+-			break;
+-		udelay(1);
+-	}
++	error = readl_poll_timeout_atomic(temp_sensor_ctrl, val,
++					  !(val & tsr->bgap_eocz_mask),
++					  1, 1500);
++	if (error)
++		dev_warn(bgp->dev, "eocz timed out waiting low\n");
+ 
+ 	return 0;
+ }
