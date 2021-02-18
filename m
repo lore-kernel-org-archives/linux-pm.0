@@ -2,115 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 933ACC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC69C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:50:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4055864E4B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:44:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 054CA64EB1
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:50:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230196AbhBRUob (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 15:44:31 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:54274 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230234AbhBRUm2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:42:28 -0500
-Date:   Thu, 18 Feb 2021 20:39:45 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1613680786;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=xXe4Puvm1SzVNXmDJ2TMQ3Upxr+oT47T0QIA9wskgp8=;
-        b=qMYxmi5OiXqxivg/W9Emc9LKKYNUTxCMm3Pz3eQL914wVn0zuu4m2/fs1tZETkuxgfqKBm
-        vq3opIywn3I7kUfQMNxWP8xjeOp3sI4bR1bnQTWZW7HdvFKolPnAXGkohmDuwaJjlCXR6X
-        FBnejwdYCFeXLBJEelFXuLKNiyrXDhhu4xj7xvNGiUW9ktszmngW+geUEDvRarWO3gDD2T
-        fCJ6iuWG8NFoaYrDs2a3fa6bnIpoaqJzlMjlhtQ4JaIopEP7QM8aBxeR0f0uOt4XAsl0+J
-        iZ5YXH7DjGn0Glfjswve4uYbNp1o9z84NpYY3elIYY536Kir4OwrRkFYa41pKw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1613680786;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=xXe4Puvm1SzVNXmDJ2TMQ3Upxr+oT47T0QIA9wskgp8=;
-        b=wilMxjPsao2BpQSPhw1dQxxbF06BlUuGx83kgJGoQVMk7eAdvzZdbu/+eQ9w99zWMNUhg+
-        7MSZvw1jmvRA/EBA==
-From:   "thermal-bot for Craig Tatlor" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] fixp-arith: add a linear interpolation function
-Cc:     Craig Tatlor <ctatlor97@gmail.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20201204025509.1075506-3-dmitry.baryshkov@linaro.org>
-References: <20201204025509.1075506-3-dmitry.baryshkov@linaro.org>
-MIME-Version: 1.0
-Message-ID: <161368078553.20312.6637382819010915923.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+        id S229907AbhBRUuW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 15:50:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43166 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229919AbhBRUuU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:50:20 -0500
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DAFFC061574
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 12:49:35 -0800 (PST)
+Received: by mail-pf1-x42c.google.com with SMTP id u143so2117175pfc.7
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 12:49:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=vIk0opq3f6mdI/klVfBeTYk18n/l04gucnF20AVhiTA=;
+        b=Dl3XrzyKDmcZsSeB6gh2y24pAuwdxoH7HMjYVqzxwdmfo24GA39JwJjt06zrx9Ov3a
+         h9gP8jYc4zmDxUUEMSZHZoHDAijloXabAeLogsRiqHFSynNodXwpS78zX8l4i8UYv81r
+         /aWB8lOwZ7QC0xBaNQDc/VMEFEdHX0Xadqaue96mhBRhCdQB0vOCiK03NNZO5H8U+5t9
+         9EI/Cv6fQB8iEPXdlpsvsx9ADQC8ifNR9VC1F3VNMcMrwGSuzkJECb+N/F/AmuTaG3zi
+         eDkhW38Hw9jHydf6CZsyZd7jt0LaEAe24VDxwPfc8ewiNB4JAqTYXkcuFzWgNo6PIn+G
+         hg4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=vIk0opq3f6mdI/klVfBeTYk18n/l04gucnF20AVhiTA=;
+        b=r5rjoREL+J00ksGiChXMrbng+1+Fkaxn3Q1iwc77+tIrO7eu5NYFYLRmbgrf0FxPKn
+         Q0HlnmEv9L7vNBpIafJ/k2jOKyk5ziWD/W8UyNiX9iHJWqYOUGPHoAt2sc5FxYnmsKWK
+         4UCikBlU/cRkvmU+YYXAOZcx8Hky3cPcmeRLpr4glFiyuQoKQyFDRJrWYCNSDFNp8Jd6
+         qJBDoBZAa5h3MAP7yntEenl1aq3M0w0f7XoB9MvVxJwsSj02V7gHsVpy9k4pmulIupkT
+         WEjo5nz00J7sE7msKi1obmJIcAlfrGpZrOk3L2bvoiyYxx6UU9xm2bESyluYDyAROTKo
+         yHTw==
+X-Gm-Message-State: AOAM530LP83TbhzOEEMTcXncwrWFIuYYiEa2NPscEKs1I9syXMzXLeGR
+        VsthLc/u4Ccj8na6Fj9EHdTPiVwP8zPeRA==
+X-Google-Smtp-Source: ABdhPJzkRyLrMeYUrEXT6ctg5Lyvt87eSy/UqOKAQCqhqR3gwsPdNdSJcane9TP9Zu0bq6pNz/qvXg==
+X-Received: by 2002:a63:504e:: with SMTP id q14mr5482947pgl.306.1613681375125;
+        Thu, 18 Feb 2021 12:49:35 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id a5sm6517364pgh.15.2021.02.18.12.49.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 18 Feb 2021 12:49:34 -0800 (PST)
+Message-ID: <602ed2de.1c69fb81.7fe1f.e40c@mx.google.com>
+Date:   Thu, 18 Feb 2021 12:49:34 -0800 (PST)
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Kernel: pm-5.11-rc8-201-g8b72d3aa065c
+X-Kernelci-Report-Type: test
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+Subject: pm/testing baseline: 62 runs,
+ 1 regressions (pm-5.11-rc8-201-g8b72d3aa065c)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the thermal/next branch of thermal:
+pm/testing baseline: 62 runs, 1 regressions (pm-5.11-rc8-201-g8b72d3aa065c)
 
-Commit-ID:     8d502ef682fdbe0ddf2274dae903b07baf1140e0
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8d502ef682fdbe0ddf2274dae903b07baf1140e0
-Author:        Craig Tatlor <ctatlor97@gmail.com>
-AuthorDate:    Fri, 04 Dec 2020 05:54:56 +03:00
-Committer:     Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CommitterDate: Sat, 16 Jan 2021 18:14:53 
+Regressions Summary
+-------------------
 
-fixp-arith: add a linear interpolation function
+platform             | arch  | lab          | compiler | defconfig | regres=
+sions
+---------------------+-------+--------------+----------+-----------+-------=
+-----
+hifive-unleashed-a00 | riscv | lab-baylibre | gcc-8    | defconfig | 1     =
+     =
 
-Adds a function to interpolate against two points,
-this is carried arount as a helper function by tons of drivers.
 
-Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Link: https://lore.kernel.org/r/20201204025509.1075506-3-dmitry.baryshkov@linaro.org
-Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- include/linux/fixp-arith.h | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/pm-5.11-=
+rc8-201-g8b72d3aa065c/plan/baseline/
 
-diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
-index 8396013..281cb4f 100644
---- a/include/linux/fixp-arith.h
-+++ b/include/linux/fixp-arith.h
-@@ -141,4 +141,23 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
- #define fixp_cos32_rad(rad, twopi)	\
- 	fixp_sin32_rad(rad + twopi / 4, twopi)
- 
-+/**
-+ * fixp_linear_interpolate() - interpolates a value from two known points
-+ *
-+ * @x0: x value of point 0
-+ * @y0: y value of point 0
-+ * @x1: x value of point 1
-+ * @y1: y value of point 1
-+ * @x: the linear interpolant
-+ */
-+static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
-+{
-+	if (y0 == y1 || x == x0)
-+		return y0;
-+	if (x1 == x0 || x == x1)
-+		return y1;
-+
-+	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
-+}
-+
- #endif
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: pm-5.11-rc8-201-g8b72d3aa065c
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      8b72d3aa065ce33df4f042840078542b1e5d2c45 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform             | arch  | lab          | compiler | defconfig | regres=
+sions
+---------------------+-------+--------------+----------+-----------+-------=
+-----
+hifive-unleashed-a00 | riscv | lab-baylibre | gcc-8    | defconfig | 1     =
+     =
+
+
+  Details:     https://kernelci.org/test/plan/id/602ec4dec781979777addcb1
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (riscv64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.11-rc8-201-g8b=
+72d3aa065c/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a00=
+.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.11-rc8-201-g8b=
+72d3aa065c/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a00=
+.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/riscv/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/602ec4dec781979777add=
+cb2
+        failing since 84 days (last pass: pm-5.10-rc4-33-g52d108cd060d, fir=
+st fail: pm-5.10-rc6-75-g735f7fba25ec) =
+
+ =20
