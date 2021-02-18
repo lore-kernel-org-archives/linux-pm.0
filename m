@@ -2,128 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4695C433DB
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 09:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67C92C433DB
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 09:24:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5404164D73
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 09:23:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0BAD764E68
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 09:24:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231495AbhBRJXN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 04:23:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35002 "EHLO
+        id S231603AbhBRJXp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 04:23:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231588AbhBRJNo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 04:13:44 -0500
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7069C061574
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 01:03:07 -0800 (PST)
-Received: by mail-pl1-x636.google.com with SMTP id a9so888748plh.8
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 01:03:07 -0800 (PST)
+        with ESMTP id S231694AbhBRJUD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 04:20:03 -0500
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF7F3C061574
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 01:18:52 -0800 (PST)
+Received: by mail-pl1-x633.google.com with SMTP id z7so911132plk.7
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 01:18:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=p5z9B2u088uQ+CohgqkwMdMY/blM4RoQ7vFqpPfdVHw=;
-        b=OtcLmuWCNewhWmnrjUzb3RNC15cdO7NSP19GGnxWEfRsuj2kgxfLKa7fTsrqPNCIVT
-         iaPJ3dU0vMTv0ws3fcfiT/JepGFXYefDdupU8Pjch/2bsHLquagq41dCXMR26xAt3o3K
-         ER+kDfVrHaUc9GTmn/1uGO27ObxQp72xBVeUMXAxEFTLxAZscRntwqyGbnxrzEJ2X/A6
-         XoDh5d02czk08ZrvmLFEOaTllXjTKJMMtQKP70IjBp9rqK+6xzLXeWNb/VmmQJJ/Mriu
-         Tyhqdq40BXBJREDnFgKC9hXuhV8U1kp6GE67piS2bz45oxgiRJEwlRWC7thgBS9amVju
-         Hr6w==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+         :user-agent;
+        bh=ZfrYdTwVhl0qfLNFPC0R+RH2gzkng0p7ghdQ/UiF9U0=;
+        b=QT0+ucAdL/VqkeP+AFXTamPpid8J3w8Z28c1yrNS4fRPPakmtEAsRRFEYGRwmS/MMd
+         5SxKv7lx7c7yZMieFywn+VP6vmA9wK9GbOKyaYjs0ZeiVWsb8cii/FIvMhmtl3ij/52N
+         qmm2Y223ET31f/NaHwzvebYvWnn0qUpl2JM5hbqdx40L9psppC4k78Tu9fCTvvm4OZmy
+         ImGQKEUm70aiI0ZJddzTh/lg96+F+V00nd3GaAm8FNmZKtgr3tTQ7xsgoK8ZEUvWnNZV
+         Er36HcN4j+8mHNXNjUyMyKVPxQBrAlvgj3TMyUCq4CPNAUB6lRuaJiPQbeVXdDYVgEu2
+         N+0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=p5z9B2u088uQ+CohgqkwMdMY/blM4RoQ7vFqpPfdVHw=;
-        b=ayHN0Hp8NUbMmw/k9fBiOV0vpmdJqsIhFR2ywB3MgPrD78VSMJDhWDLZlpmLZ2MCs/
-         M5De9pXvTAHMdibqjaSo0/VcTWB6+MBWDfynCIeUE3NBubywDNZf9p3RMe1W38bjkNZP
-         b5MBV9OqgMzfTfWfiuzgjNH5C6Djxf+XgDH7UR5v8+sOxV4yw/KSU/PofXG60K7Iqxt5
-         Jb/XA1XDrfN2/LTQq6zV6rsUvPjENr/tnsuaIOLL7wJXC5ZmTPByNKzw2ogGN0+3hySq
-         MX7U6uMkfrlwWfxITxw/cnam+hrpXx6mzGgToI62eAEQhzdI2XV16G0J2KNk/9PWTcba
-         wl2A==
-X-Gm-Message-State: AOAM532+Da2qFObsaAtumFWhIgA4zxeWKUudgOxFSgsgP1iT4rwZD1+l
-        4OGJA8k3n0AWI4fKDLqjJwc=
-X-Google-Smtp-Source: ABdhPJyeHjmLysdmjZH+HJxKFAApGSoiEbnYRpns+wnU0ycyr78E8IoDcU5LGQn/Uop8PblDQaXRgg==
-X-Received: by 2002:a17:90a:eb02:: with SMTP id j2mr3196790pjz.226.1613638987498;
-        Thu, 18 Feb 2021 01:03:07 -0800 (PST)
-Received: from tj.ccdomain.com ([103.220.76.197])
-        by smtp.gmail.com with ESMTPSA id 14sm5335540pfy.55.2021.02.18.01.03.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Feb 2021 01:03:06 -0800 (PST)
-From:   Yue Hu <zbestahu@gmail.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org
-Cc:     dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, linux-pm@vger.kernel.org,
-        huyue2@yulong.com, zbestahu@163.com
-Subject: [PATCH] cpufreq: schedutil: Remove the needless sg_policy parameter to ignore_dl_rate_limit()
-Date:   Thu, 18 Feb 2021 17:01:32 +0800
-Message-Id: <20210218090132.1556-1-zbestahu@gmail.com>
-X-Mailer: git-send-email 2.29.2.windows.3
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:user-agent;
+        bh=ZfrYdTwVhl0qfLNFPC0R+RH2gzkng0p7ghdQ/UiF9U0=;
+        b=TJbK8T8XAc5Z4boZ13Y9P+iORqXRa9a3H2b8vj32og9D1s31Sv9c3x5IJG1UsRkcaw
+         76AcehGp7j+Jr4C0Zui/Eijsuc9eDCU1vKIZ15vr7TDG69fBIQ4czFFky7bPg4OEYAQ/
+         WpiF7hOhJgkJT/HvG/ou7bRoVCbl19o9TncqV7Bp/JulPH5e70rvPZDzBQ2UNw04v/Qf
+         HTJMx2Dk2jaGugeQCdR0HP2VICqb7Q+wuzhwovzPUtMBbJ62b/bJEo8QWfJM4elDwgEl
+         kBJgmCo5lH7FxrheX7lQt9yIRYlZ2gSN0s1+3w9OSjYrtYC25j99S+EAI0iKt8I14hgi
+         1Bew==
+X-Gm-Message-State: AOAM531g2YtQNAGh806KtoJ6MOzcmRkCRPnePcVfROhZ6kf8bWNufpIv
+        aGlPXWhlXCJAOu9L5AhnRvoUCA==
+X-Google-Smtp-Source: ABdhPJx52OLje2eMiNo+eoG4Hc/c+68bZ7JlWsyCiWVmjo6qfIs0Am1kxAbOZSVftHzg0LnA9yGZwA==
+X-Received: by 2002:a17:90a:8e83:: with SMTP id f3mr3373250pjo.70.1613639931853;
+        Thu, 18 Feb 2021 01:18:51 -0800 (PST)
+Received: from localhost ([122.172.59.240])
+        by smtp.gmail.com with ESMTPSA id y7sm4942926pfl.127.2021.02.18.01.18.50
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 18 Feb 2021 01:18:51 -0800 (PST)
+Date:   Thu, 18 Feb 2021 14:48:49 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Subject: [GIT PULL] cpufreq/arm fixes for 5.12
+Message-ID: <20210218091849.6lem2iaags3dsrz3@vireshk-i7>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yue Hu <huyue2@yulong.com>
+Hi Rafael,
 
-Since sg_policy is a member of struct sugov_cpu. Also remove the local
-variable in sugov_update_single_common() to make the code more clean.
+This pull request contains a single patch to fix issue with cpu hotplug and
+policy recreation for qcom-cpufreq-hw driver..
 
-Signed-off-by: Yue Hu <huyue2@yulong.com>
----
- kernel/sched/cpufreq_schedutil.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+Thanks.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 5906ae5..add8081 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -320,23 +320,21 @@ static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
-  * Make sugov_should_update_freq() ignore the rate limit when DL
-  * has increased the utilization.
-  */
--static inline void ignore_dl_rate_limit(struct sugov_cpu *sg_cpu, struct sugov_policy *sg_policy)
-+static inline void ignore_dl_rate_limit(struct sugov_cpu *sg_cpu)
- {
- 	if (cpu_bw_dl(cpu_rq(sg_cpu->cpu)) > sg_cpu->bw_dl)
--		sg_policy->limits_changed = true;
-+		sg_cpu->sg_policy->limits_changed = true;
- }
- 
- static inline bool sugov_update_single_common(struct sugov_cpu *sg_cpu,
- 					      u64 time, unsigned int flags)
- {
--	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
--
- 	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	ignore_dl_rate_limit(sg_cpu, sg_policy);
-+	ignore_dl_rate_limit(sg_cpu);
- 
--	if (!sugov_should_update_freq(sg_policy, time))
-+	if (!sugov_should_update_freq(sg_cpu->sg_policy, time))
- 		return false;
- 
- 	sugov_get_util(sg_cpu);
-@@ -452,7 +450,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
- 	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	ignore_dl_rate_limit(sg_cpu, sg_policy);
-+	ignore_dl_rate_limit(sg_cpu);
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
- 		next_f = sugov_next_freq_shared(sg_cpu, time);
--- 
-1.9.1
+--
+Viresh
 
+-------------------------8<-------------------------
+
+The following changes since commit 7114ebffd330bfc5a95b9832a70b6bd857d26fd8:
+
+  cpufreq: remove tango driver (2021-01-21 09:34:46 +0530)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/arm/linux-next
+
+for you to fetch changes up to 67fc209b527d023db4d087c68e44e9790aa089ef:
+
+  cpufreq: qcom-hw: drop devm_xxx() calls from init/exit hooks (2021-02-18 14:35:18 +0530)
+
+----------------------------------------------------------------
+Shawn Guo (1):
+      cpufreq: qcom-hw: drop devm_xxx() calls from init/exit hooks
+
+ drivers/cpufreq/qcom-cpufreq-hw.c | 40 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 32 insertions(+), 8 deletions(-)
