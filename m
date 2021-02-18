@@ -5,63 +5,68 @@ X-Spam-Level:
 X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E2E9C433E6
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4928FC43381
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FBE964EBA
+	by mail.kernel.org (Postfix) with ESMTP id F001E64E5F
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:42:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230334AbhBRUlq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 15:41:46 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:54028 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230212AbhBRUkX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:23 -0500
-Date:   Thu, 18 Feb 2021 20:39:40 -0000
+        id S230282AbhBRUlv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 15:41:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41032 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231162AbhBRUkY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:24 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E516BC061574
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 12:39:43 -0800 (PST)
+Date:   Thu, 18 Feb 2021 20:39:41 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1613680781;
+        s=2020; t=1613680782;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=f7uhS9/H1Kq5DnXviFTbVDNSgBtybxd6It87sw9+bfE=;
-        b=lnrUuAIphfQKTIrM+BhIJ9iuOYUm6HANiu3p6l2/eyMEsAt+q4KmCHRL8RabIVyJ1IYg1r
-        Mw8Oi9o0rdow3pw5E168uOlLUC/gV9xU8BzPE4ZAgc1f+lM9GStME947mbvAvDEgDyiy4r
-        TPe2s9YbpL5piidrqNtrbZgCeGjXs9nJpwUSvpFoCNtKyTNTTLDkTGEAGnVpGCNfC7PKYr
-        IhW63x5/g+MlTk2VoR0sY95+4WsPrqRMEer0BNeyNKJFF3/yRFSrr3la7cVoSZie5aPDfs
-        yCktITi8QiQKPzz6oappvSVk5isdzyUR6uoY+y8TUsyq5XtWR59yTreIYEnzJg==
+        bh=YbnYxrVRA87c8ujCov1Q3Q910IxjptEboQBlSbF/iJM=;
+        b=TsvaY0qEfH5j59joyZhHmJ4lBbsMompxt62fBZps3ZM/w71JeROfG3Bmj/y3O1nC98OAIc
+        mTSKuRWYfdUHUrywEyXdfHrtFUOV1KGmsXXfWqv8RkNKWtaD0b1HREPTWm/UNHKnsLy7RF
+        vgrzogPK8+6erIoq8NCnKBhGEP6rgF3HbMOwS0OJTqpqaabU0DFYIYYd8jEVhyTwmYuprK
+        fjNsTqEqiaTF4LiUP3cC/jb+jXkG03Dd+lQqUjxb6IfwzSYbcr1FvyL7HFb6hw5vGK0V4M
+        ri+Rd7YRwNhbs/SPOFEm+2W4sUMi2BJydi/b6goNpj8ux+P1CQ7SXV0lPRyuWg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1613680781;
+        s=2020e; t=1613680782;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=f7uhS9/H1Kq5DnXviFTbVDNSgBtybxd6It87sw9+bfE=;
-        b=86iYd0wYmYZQq/lVoHACrgJaSwQZXQAm6CTpvqUY3MNilkxzIdEqgnePX7xbRGn/MQhYNq
-        Rcu1Tq+1lh1G9lAw==
-From:   "thermal-bot for Viresh Kumar" <tip-bot2@linutronix.de>
+        bh=YbnYxrVRA87c8ujCov1Q3Q910IxjptEboQBlSbF/iJM=;
+        b=lJIvjv3+EmZIGTEOfWLuBLGVy5XnfLMkdgLcDFAGSrwX96e8eN1bzuqlI/q6UhPqv+mu7z
+        JIrnHI/TwJ/DEzDg==
+From:   "thermal-bot for Tony Lindgren" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: cpufreq_cooling:
- freq_qos_update_request() returns < 0 on error
-Cc:     "v5.7+" <stable@vger.kernel.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+Subject: [thermal: thermal/next] thermal: ti-soc-thermal: Use non-inverted
+ define for omap4
+Cc:     Adam Ford <aford173@gmail.com>,
+        Carl Philipp Klemm <philipp@uvos.xyz>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        "H. Nikolaus Schaller" <hns@goldelico.com>,
+        Merlijn Wajer <merlijn@wizzup.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: =?utf-8?q?=3Cb2b7e84944937390256669df5a48ce5abba0c1ef=2E16135?=
- =?utf-8?q?40713=2Egit=2Eviresh=2Ekumar=40linaro=2Eorg=3E?=
-References: =?utf-8?q?=3Cb2b7e84944937390256669df5a48ce5abba0c1ef=2E161354?=
- =?utf-8?q?0713=2Egit=2Eviresh=2Ekumar=40linaro=2Eorg=3E?=
+In-Reply-To: <20210205134534.49200-5-tony@atomide.com>
+References: <20210205134534.49200-5-tony@atomide.com>
 MIME-Version: 1.0
-Message-ID: <161368078026.20312.13727207651031195020.tip-bot2@tip-bot2>
+Message-ID: <161368078142.20312.12715367795685959954.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -72,55 +77,78 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     a51afb13311cd85b2f638c691b2734622277d8f5
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//a51afb13311cd85b2f638c691b2734622277d8f5
-Author:        Viresh Kumar <viresh.kumar@linaro.org>
-AuthorDate:    Wed, 17 Feb 2021 11:18:58 +05:30
+Commit-ID:     c13636babc80db2092ec1c2fc4167ea6f62cd80e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c13636babc80db2092ec1c2fc4167ea6f62cd80e
+Author:        Tony Lindgren <tony@atomide.com>
+AuthorDate:    Fri, 05 Feb 2021 15:45:34 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 17 Feb 2021 18:53:19 +01:00
+CommitterDate: Mon, 15 Feb 2021 21:19:32 +01:00
 
-thermal: cpufreq_cooling: freq_qos_update_request() returns < 0 on error
+thermal: ti-soc-thermal: Use non-inverted define for omap4
 
-freq_qos_update_request() returns 1 if the effective constraint value
-has changed, 0 if the effective constraint value has not changed, or a
-negative error code on failures.
+When we set bit 10 high we use continuous mode and not single
+mode. Let's correct this to avoid confusion. No functional
+changes here, the code does the right thing with bit 10.
 
-The frequency constraints for CPUs can be set by different parts of the
-kernel. If the maximum frequency constraint set by other parts of the
-kernel are set at a lower value than the one corresponding to cooling
-state 0, then we will never be able to cool down the system as
-freq_qos_update_request() will keep on returning 0 and we will skip
-updating cpufreq_state and thermal pressure.
-
-Fix that by doing the updates even in the case where
-freq_qos_update_request() returns 0, as we have effectively set the
-constraint to a new value even if the consolidated value of the
-actual constraint is unchanged because of external factors.
-
-Cc: v5.7+ <stable@vger.kernel.org> # v5.7+
-Reported-by: Thara Gopinath <thara.gopinath@linaro.org>
-Fixes: f12e4f66ab6a ("thermal/cpu-cooling: Update thermal pressure in case of a maximum frequency capping")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Tested-by: Lukasz Luba <lukasz.luba@arm.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Tested-by: Thara Gopinath<thara.gopinath@linaro.org>
+Cc: Adam Ford <aford173@gmail.com>
+Cc: Carl Philipp Klemm <philipp@uvos.xyz>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: H. Nikolaus Schaller <hns@goldelico.com>
+Cc: Merlijn Wajer <merlijn@wizzup.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Ujfalusi <peter.ujfalusi@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Tested-by: Adam Ford <aford173@gmail.com> #logicpd-torpedo-37xx-devkit
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/b2b7e84944937390256669df5a48ce5abba0c1ef.1613540713.git.viresh.kumar@linaro.org
+Link: https://lore.kernel.org/r/20210205134534.49200-5-tony@atomide.com
 ---
- drivers/thermal/cpufreq_cooling.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/ti-soc-thermal/omap4-thermal-data.c | 4 ++--
+ drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h   | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index 612f063..ddc166e 100644
---- a/drivers/thermal/cpufreq_cooling.c
-+++ b/drivers/thermal/cpufreq_cooling.c
-@@ -441,7 +441,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	frequency = get_state_freq(cpufreq_cdev, state);
+diff --git a/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c b/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
+index 80c051a..b4ef734 100644
+--- a/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
++++ b/drivers/thermal/ti-soc-thermal/omap4-thermal-data.c
+@@ -24,7 +24,7 @@ omap4430_mpu_temp_sensor_registers = {
+ 	.bgap_dtemp_mask = OMAP4430_BGAP_TEMP_SENSOR_DTEMP_MASK,
  
- 	ret = freq_qos_update_request(&cpufreq_cdev->qos_req, frequency);
--	if (ret > 0) {
-+	if (ret >= 0) {
- 		cpufreq_cdev->cpufreq_state = state;
- 		cpus = cpufreq_cdev->policy->cpus;
- 		max_capacity = arch_scale_cpu_capacity(cpumask_first(cpus));
+ 	.bgap_mode_ctrl = OMAP4430_TEMP_SENSOR_CTRL_OFFSET,
+-	.mode_ctrl_mask = OMAP4430_SINGLE_MODE_MASK,
++	.mode_ctrl_mask = OMAP4430_CONTINUOUS_MODE_MASK,
+ 
+ 	.bgap_efuse = OMAP4430_FUSE_OPP_BGAP,
+ };
+@@ -97,7 +97,7 @@ omap4460_mpu_temp_sensor_registers = {
+ 	.mask_cold_mask = OMAP4460_MASK_COLD_MASK,
+ 
+ 	.bgap_mode_ctrl = OMAP4460_BGAP_CTRL_OFFSET,
+-	.mode_ctrl_mask = OMAP4460_SINGLE_MODE_MASK,
++	.mode_ctrl_mask = OMAP4460_CONTINUOUS_MODE_MASK,
+ 
+ 	.bgap_counter = OMAP4460_BGAP_COUNTER_OFFSET,
+ 	.counter_mask = OMAP4460_COUNTER_MASK,
+diff --git a/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h b/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
+index 9a3955c..c63f439 100644
+--- a/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
++++ b/drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h
+@@ -40,7 +40,7 @@
+ /* OMAP4430.TEMP_SENSOR bits */
+ #define OMAP4430_BGAP_TEMPSOFF_MASK			BIT(12)
+ #define OMAP4430_BGAP_TSHUT_MASK			BIT(11)
+-#define OMAP4430_SINGLE_MODE_MASK			BIT(10)
++#define OMAP4430_CONTINUOUS_MODE_MASK			BIT(10)
+ #define OMAP4430_BGAP_TEMP_SENSOR_SOC_MASK		BIT(9)
+ #define OMAP4430_BGAP_TEMP_SENSOR_EOCZ_MASK		BIT(8)
+ #define OMAP4430_BGAP_TEMP_SENSOR_DTEMP_MASK		(0xff << 0)
+@@ -113,7 +113,7 @@
+ #define OMAP4460_BGAP_TEMP_SENSOR_DTEMP_MASK		(0x3ff << 0)
+ 
+ /* OMAP4460.BANDGAP_CTRL bits */
+-#define OMAP4460_SINGLE_MODE_MASK			BIT(31)
++#define OMAP4460_CONTINUOUS_MODE_MASK			BIT(31)
+ #define OMAP4460_MASK_HOT_MASK				BIT(1)
+ #define OMAP4460_MASK_COLD_MASK				BIT(0)
+ 
