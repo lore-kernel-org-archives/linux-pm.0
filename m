@@ -7,58 +7,56 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DE1DC43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B81ACC4332E
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:43:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0FC0864E76
+	by mail.kernel.org (Postfix) with ESMTP id 7314864ECD
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:43:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231482AbhBRUmc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 15:42:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41074 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231401AbhBRUkd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:33 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C2FBC061794
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2021 12:39:52 -0800 (PST)
-Date:   Thu, 18 Feb 2021 20:39:43 -0000
+        id S230184AbhBRUmy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 15:42:54 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:54256 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231395AbhBRUke (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:34 -0500
+Date:   Thu, 18 Feb 2021 20:39:44 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1613680784;
+        s=2020; t=1613680785;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=KhlgRm2ZTsIj8vRVrqUP0tTeBkXtaYHqRyOnd0IDKbs=;
-        b=S9gXYu4sS/fo3VJabqEx5TDXt3yn/qKm9mJndeTAu9QE2lyhi1IdS9O/G4nkXxP6eqM6sE
-        vcYL0mYvjfUmTfNVYMLvOsjQGGp9fLHB2RwbcgpKeaQ2FxYw4hd2Xufh6x20M+ImdQkv40
-        VUEGvDFDmhW7dGxJt0pGL/Vcxd9iw/4EGtDqek9IpNgDVDkhw3w1HihX9lZSLLsoazL+fZ
-        Wh0Z9GmFdK7hQ0d8dfVDHzEF0N+Hqrb1Wl2Q9i4/GCcWu3mrJ+ihK7dOtWddx3xjdXd06h
-        GOvhyQWvHWV1BCt+Grm86Tuv1+JvUTRPAp1X1OZPlLn5HeS31mOoVgiMxROryw==
+        bh=sv1Fe5+3l57ioTxy5z7ztyDUivTqMCx6qk9tnardmDQ=;
+        b=g0XzXAL3Q24Qo0k6JumE/C9ebQBTvLQcrWd4qdWWLiC/mCxM3L2CTHAKBaSJQG7pEXlMlM
+        guX6pxUfAWgmL44fhykUyAIMK/Xgg7Wng+yDcr9e1xg97k8ESFb9KuJA0p1/H5hZFhG+Et
+        0UGtpSdpEVzzl+cH3zgg1sfgJ99dtt0oxLGMuV2Sgc58TUsx+qyvtfYK2/Ht9Fras0VB64
+        Gj+8QaPyRQHWpyWBO29ataBgGY/qcWN1YN0WeZkHsRwmeB1zVDKmEkw0kMYh/za+H5b971
+        r7zjYO1BffV2pXoehbB+BYuJADupt+czTG49011afh5CviDrbel1AB2iNMdBDA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1613680784;
+        s=2020e; t=1613680785;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=KhlgRm2ZTsIj8vRVrqUP0tTeBkXtaYHqRyOnd0IDKbs=;
-        b=mS1WDBKZ9okFKGmFXWWsppPyfNmMLe7G9rUJVXeGk3lxZCvQifXSPGmgvLNLviM87Q+gSg
-        FZ8RLuOrzx8lkzCA==
+        bh=sv1Fe5+3l57ioTxy5z7ztyDUivTqMCx6qk9tnardmDQ=;
+        b=ymZRZLDwPsal4lvKq0bmCiYhzQwlTQF62h2yWCNcqiiKjVDhGd7GPPDay6HHg5hOrThSrB
+        9/kaZnF8l58F+1Cw==
 From:   "thermal-bot for Dmitry Baryshkov" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] iio: adc: move vadc_map_pt from header to the
- source file
+Subject: [thermal: thermal/next] iio: adc: qcom-spmi-adc5: use
+ of_device_get_match_data
 Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20201204025509.1075506-9-dmitry.baryshkov@linaro.org>
-References: <20201204025509.1075506-9-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20201204025509.1075506-7-dmitry.baryshkov@linaro.org>
+References: <20201204025509.1075506-7-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161368078396.20312.10276329811528002669.tip-bot2@tip-bot2>
+Message-ID: <161368078450.20312.1322605717861281489.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,67 +67,74 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     bb01e263743293d37148f1fa00e3ea04dca416a5
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//bb01e263743293d37148f1fa00e3ea04dca416a5
+Commit-ID:     9695a2a52c8304902e1fc315990f3f7f89a28a39
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//9695a2a52c8304902e1fc315990f3f7f89a28a39
 Author:        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-AuthorDate:    Fri, 04 Dec 2020 05:55:02 +03:00
+AuthorDate:    Fri, 04 Dec 2020 05:55:00 +03:00
 Committer:     Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CommitterDate: Sat, 16 Jan 2021 18:28:18 
+CommitterDate: Sat, 16 Jan 2021 18:23:36 
 
-iio: adc: move vadc_map_pt from header to the source file
+iio: adc: qcom-spmi-adc5: use of_device_get_match_data
 
-struct vadc_map_pt is not used outside of qcom-vadc-common.c, so move it
-there from the global header file.
+Use of_device_get_match_data() instead of hand-coding it manually.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Link: https://lore.kernel.org/r/20201204025509.1075506-9-dmitry.baryshkov@linaro.org
+Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Link: https://lore.kernel.org/r/20201204025509.1075506-7-dmitry.baryshkov@linaro.org
 Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/iio/adc/qcom-vadc-common.c       | 11 +++++++++++
- include/linux/iio/adc/qcom-vadc-common.h | 11 -----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/iio/adc/qcom-spmi-adc5.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index ee94774..45a3860 100644
---- a/drivers/iio/adc/qcom-vadc-common.c
-+++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -10,6 +10,17 @@
+diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
+index b10a0fc..87438d1 100644
+--- a/drivers/iio/adc/qcom-spmi-adc5.c
++++ b/drivers/iio/adc/qcom-spmi-adc5.c
+@@ -15,6 +15,7 @@
+ #include <linux/math64.h>
  #include <linux/module.h>
- #include <linux/units.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+@@ -807,8 +808,6 @@ static int adc5_get_dt_data(struct adc5_chip *adc, struct device_node *node)
+ 	struct adc5_channel_prop prop, *chan_props;
+ 	struct device_node *child;
+ 	unsigned int index = 0;
+-	const struct of_device_id *id;
+-	const struct adc5_data *data;
+ 	int ret;
  
-+/**
-+ * struct vadc_map_pt - Map the graph representation for ADC channel
-+ * @x: Represent the ADC digitized code.
-+ * @y: Represent the physical data which can be temperature, voltage,
-+ *     resistance.
-+ */
-+struct vadc_map_pt {
-+	s32 x;
-+	s32 y;
-+};
-+
- /* Voltage to temperature */
- static const struct vadc_map_pt adcmap_100k_104ef_104fb[] = {
- 	{1758,	-40},
-diff --git a/include/linux/iio/adc/qcom-vadc-common.h b/include/linux/iio/adc/qcom-vadc-common.h
-index 03a9119..1d337dd 100644
---- a/include/linux/iio/adc/qcom-vadc-common.h
-+++ b/include/linux/iio/adc/qcom-vadc-common.h
-@@ -59,17 +59,6 @@
- #define DIE_TEMP_ADC7_SCALE_FACTOR		1000
- #define DIE_TEMP_ADC7_MAX			160000
+ 	adc->nchannels = of_get_available_child_count(node);
+@@ -827,24 +826,21 @@ static int adc5_get_dt_data(struct adc5_chip *adc, struct device_node *node)
  
--/**
-- * struct vadc_map_pt - Map the graph representation for ADC channel
-- * @x: Represent the ADC digitized code.
-- * @y: Represent the physical data which can be temperature, voltage,
-- *     resistance.
-- */
--struct vadc_map_pt {
--	s32 x;
--	s32 y;
--};
--
- /*
-  * VADC_CALIB_ABSOLUTE: uses the 625mV and 1.25V as reference channels.
-  * VADC_CALIB_RATIOMETRIC: uses the reference voltage (1.8V) and GND for
+ 	chan_props = adc->chan_props;
+ 	iio_chan = adc->iio_chans;
+-	id = of_match_node(adc5_match_table, node);
+-	if (id)
+-		data = id->data;
+-	else
+-		data = &adc5_data_pmic;
+-	adc->data = data;
++	adc->data = of_device_get_match_data(adc->dev);
++	if (!adc->data)
++		adc->data = &adc5_data_pmic;
+ 
+ 	for_each_available_child_of_node(node, child) {
+-		ret = adc5_get_dt_channel_data(adc, &prop, child, data);
++		ret = adc5_get_dt_channel_data(adc, &prop, child, adc->data);
+ 		if (ret) {
+ 			of_node_put(child);
+ 			return ret;
+ 		}
+ 
+ 		prop.scale_fn_type =
+-			data->adc_chans[prop.channel].scale_fn_type;
++			adc->data->adc_chans[prop.channel].scale_fn_type;
+ 		*chan_props = prop;
+-		adc_chan = &data->adc_chans[prop.channel];
++		adc_chan = &adc->data->adc_chans[prop.channel];
+ 
+ 		iio_chan->channel = prop.channel;
+ 		iio_chan->datasheet_name = prop.datasheet_name;
