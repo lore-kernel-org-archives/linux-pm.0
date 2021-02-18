@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C156DC4332B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E71EDC43332
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:43:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 979F964E76
+	by mail.kernel.org (Postfix) with ESMTP id BAC5C64EC0
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 20:43:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230472AbhBRUnB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 15:43:01 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:54242 "EHLO
+        id S229763AbhBRUnG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 15:43:06 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:54260 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231392AbhBRUke (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:34 -0500
-Date:   Thu, 18 Feb 2021 20:39:44 -0000
+        with ESMTP id S231435AbhBRUkf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 15:40:35 -0500
+Date:   Thu, 18 Feb 2021 20:39:45 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1613680784;
+        s=2020; t=1613680785;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/lnWp7FKh0B75nGnXeYCJaOCT0/GNUeE4ABRVO4qcRQ=;
-        b=Yfe1bSVWigDGBeMZV3VaYuRZUMhDBe3M5cYJv76fXccFV5htRuW2vjBMa0V7MaoB9AdbEJ
-        WM3ujzYn2FnZKN6e3JL8urXiRTss9b5OdRWQTf5wqn8hNwCKzzhDqyNQLd11xPXvcMomtk
-        h0F2ac8sk94ra/9KWYzlFCFVBtj/0o+8ynFsOLbyO/x7gAU/OigYVYuUIq/AR7BC38VrUU
-        wLY1CgKQXQG6f3W2r9iS21xftnvOz564S/MbqBnfYi+Wdp/dF/ueiPRVpnuT60kYWOMc7D
-        2RdArhsFVfQfkxkbF5ldg8w5Vdr3cDxNtg/ELjU5vj5ExqQZQOLOvAnznAF39g==
+        bh=R1+ZWAOfxOiBnQvWVeeMG6BMAKunmNmhMd9d4+ubPdo=;
+        b=19lwhqcNtQTWRWFO4iXkpHjEyWsZKs+Aj1/KGmaRoERXCdfR76eu+I5SDKaR4o443AyqoO
+        8ClCfqLNx1+XPfsXRNQzM+2502fCH7AgfkJXXx5cAFVSsV4HEep0WLkLSo94PaiLVbppwy
+        Qksi0tiR0TVqF+IeqI+oDFP5WXavHPoTBbX8nR6GDg4caJ+gHxSqE0lEXR7KnMhqlTXN6G
+        M9t+2qlVICX0fzpR+VjGrfA1K63DkE2PGPCj/N+eu+lLtIjTvqPcQKsALLdW+MYB6KROrf
+        cWUDkSvJeP3enYOffWW/GqhVwSBjPeCZHpXKk+qtY3HT8LjykaakdNEv7N5uOQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1613680784;
+        s=2020e; t=1613680785;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/lnWp7FKh0B75nGnXeYCJaOCT0/GNUeE4ABRVO4qcRQ=;
-        b=h6DIYg2d+X347a22H6osSD+GqsW2lfeAhmH5MvrPFNKUYtifV/S+7PyuR9X3JrrQm9v5Bq
-        sLucWyz4vJHgAgAw==
+        bh=R1+ZWAOfxOiBnQvWVeeMG6BMAKunmNmhMd9d4+ubPdo=;
+        b=I/5volElgg4uSw/+B/YskFRoISX65HpQxmdrEx16+Jha4DKQbh9R4bFO4PDveAO9iTMn5s
+        DgL7oeii6nTTa5AQ==
 From:   "thermal-bot for Dmitry Baryshkov" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] iio: provide of_iio_channel_get_by_name() and
- devm_ version it
+Subject: [thermal: thermal/next] iio: adc: qcom-vadc-common: use
+ fixp_linear_interpolate
 Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-In-Reply-To: <20201204025509.1075506-8-dmitry.baryshkov@linaro.org>
-References: <20201204025509.1075506-8-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20201204025509.1075506-5-dmitry.baryshkov@linaro.org>
+References: <20201204025509.1075506-5-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161368078423.20312.15393574883602604651.tip-bot2@tip-bot2>
+Message-ID: <161368078501.20312.9950089385562714464.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,144 +66,48 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     6e39b145cef7577cd6b550e633155e5fc1e5838e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//6e39b145cef7577cd6b550e633155e5fc1e5838e
+Commit-ID:     e2621acd6d9af5b3d5584ddf0fd7994472d6199e
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e2621acd6d9af5b3d5584ddf0fd7994472d6199e
 Author:        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-AuthorDate:    Fri, 04 Dec 2020 05:55:01 +03:00
+AuthorDate:    Fri, 04 Dec 2020 05:54:58 +03:00
 Committer:     Jonathan Cameron <Jonathan.Cameron@huawei.com>
-CommitterDate: Sat, 16 Jan 2021 18:27:51 
+CommitterDate: Sat, 16 Jan 2021 18:19:00 
 
-iio: provide of_iio_channel_get_by_name() and devm_ version it
+iio: adc: qcom-vadc-common: use fixp_linear_interpolate
 
-There might be cases when the IIO channel is attached to the device
-subnode instead of being attached to the main device node. Allow drivers
-to query IIO channels by using device tree nodes.
+Use new function fixp_linear_interpolate() instead of hand-coding the
+linear interpolation.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Link: https://lore.kernel.org/r/20201204025509.1075506-8-dmitry.baryshkov@linaro.org
+Link: https://lore.kernel.org/r/20201204025509.1075506-5-dmitry.baryshkov@linaro.org
 Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/iio/inkern.c         | 34 +++++++++++++++++++++++++--------
- include/linux/iio/consumer.h | 36 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 62 insertions(+), 8 deletions(-)
+ drivers/iio/adc/qcom-vadc-common.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
-index fe30bcb..db77a2d 100644
---- a/drivers/iio/inkern.c
-+++ b/drivers/iio/inkern.c
-@@ -191,8 +191,8 @@ err_free_channel:
- 	return ERR_PTR(err);
- }
+diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
+index d11f334..40d77b3 100644
+--- a/drivers/iio/adc/qcom-vadc-common.c
++++ b/drivers/iio/adc/qcom-vadc-common.c
+@@ -2,6 +2,7 @@
+ #include <linux/bug.h>
+ #include <linux/kernel.h>
+ #include <linux/bitops.h>
++#include <linux/fixp-arith.h>
+ #include <linux/math64.h>
+ #include <linux/log2.h>
+ #include <linux/err.h>
+@@ -368,10 +369,9 @@ static int qcom_vadc_map_voltage_temp(const struct vadc_map_pt *pts,
+ 	} else {
+ 		/* result is between search_index and search_index-1 */
+ 		/* interpolate linearly */
+-		*output = (((s32)((pts[i].y - pts[i - 1].y) *
+-			(input - pts[i - 1].x)) /
+-			(pts[i].x - pts[i - 1].x)) +
+-			pts[i - 1].y);
++		*output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
++						  pts[i].x, pts[i].y,
++						  input);
+ 	}
  
--static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
--						      const char *name)
-+struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
-+					       const char *name)
- {
- 	struct iio_channel *chan = NULL;
- 
-@@ -230,6 +230,7 @@ static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
- 
- 	return chan;
- }
-+EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name);
- 
- static struct iio_channel *of_iio_channel_get_all(struct device *dev)
- {
-@@ -272,12 +273,6 @@ error_free_chans:
- 
- #else /* CONFIG_OF */
- 
--static inline struct iio_channel *
--of_iio_channel_get_by_name(struct device_node *np, const char *name)
--{
--	return NULL;
--}
--
- static inline struct iio_channel *of_iio_channel_get_all(struct device *dev)
- {
- 	return NULL;
-@@ -393,6 +388,29 @@ struct iio_channel *devm_iio_channel_get(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(devm_iio_channel_get);
- 
-+struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
-+						    struct device_node *np,
-+						    const char *channel_name)
-+{
-+	struct iio_channel **ptr, *channel;
-+
-+	ptr = devres_alloc(devm_iio_channel_free, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return ERR_PTR(-ENOMEM);
-+
-+	channel = of_iio_channel_get_by_name(np, channel_name);
-+	if (IS_ERR(channel)) {
-+		devres_free(ptr);
-+		return channel;
-+	}
-+
-+	*ptr = channel;
-+	devres_add(dev, ptr);
-+
-+	return channel;
-+}
-+EXPORT_SYMBOL_GPL(devm_of_iio_channel_get_by_name);
-+
- struct iio_channel *iio_channel_get_all(struct device *dev)
- {
- 	const char *name;
-diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
-index c4118dc..0a90ba8 100644
---- a/include/linux/iio/consumer.h
-+++ b/include/linux/iio/consumer.h
-@@ -13,6 +13,7 @@
- struct iio_dev;
- struct iio_chan_spec;
- struct device;
-+struct device_node;
- 
- /**
-  * struct iio_channel - everything needed for a consumer to use a channel
-@@ -97,6 +98,41 @@ void iio_channel_release_all(struct iio_channel *chan);
-  */
- struct iio_channel *devm_iio_channel_get_all(struct device *dev);
- 
-+/**
-+ * of_iio_channel_get_by_name() - get description of all that is needed to access channel.
-+ * @np:			Pointer to consumer device tree node
-+ * @consumer_channel:	Unique name to identify the channel on the consumer
-+ *			side. This typically describes the channels use within
-+ *			the consumer. E.g. 'battery_voltage'
-+ */
-+#ifdef CONFIG_OF
-+struct iio_channel *of_iio_channel_get_by_name(struct device_node *np, const char *name);
-+#else
-+static inline struct iio_channel *
-+of_iio_channel_get_by_name(struct device_node *np, const char *name)
-+{
-+	return NULL;
-+}
-+#endif
-+
-+/**
-+ * devm_of_iio_channel_get_by_name() - Resource managed version of of_iio_channel_get_by_name().
-+ * @dev:		Pointer to consumer device.
-+ * @np:			Pointer to consumer device tree node
-+ * @consumer_channel:	Unique name to identify the channel on the consumer
-+ *			side. This typically describes the channels use within
-+ *			the consumer. E.g. 'battery_voltage'
-+ *
-+ * Returns a pointer to negative errno if it is not able to get the iio channel
-+ * otherwise returns valid pointer for iio channel.
-+ *
-+ * The allocated iio channel is automatically released when the device is
-+ * unbound.
-+ */
-+struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
-+						    struct device_node *np,
-+						    const char *consumer_channel);
-+
- struct iio_cb_buffer;
- /**
-  * iio_channel_get_all_cb() - register callback for triggered capture
+ 	return 0;
