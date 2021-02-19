@@ -2,184 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD310C43381
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 22:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E91DC433DB
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Feb 2021 03:39:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7055464EC0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Feb 2021 22:21:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1B5F164ECE
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Feb 2021 03:39:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229990AbhBRWVU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Feb 2021 17:21:20 -0500
-Received: from foss.arm.com ([217.140.110.172]:56304 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229970AbhBRWVT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Feb 2021 17:21:19 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 017FC106F;
-        Thu, 18 Feb 2021 14:20:33 -0800 (PST)
-Received: from ubuntu.arm.com (unknown [10.57.43.160])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 287AA3F73D;
-        Thu, 18 Feb 2021 14:20:31 -0800 (PST)
-From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, sudeep.holla@arm.com, rjw@rjwysocki.net,
-        vireshk@kernel.org, cristian.marussi@arm.com
-Cc:     morten.rasmussen@arm.com, chris.redpath@arm.com,
-        ionela.voinescu@arm.com, nicola.mazzucato@arm.com
-Subject: [PATCH v8 2/3] scmi-cpufreq: Get opp_shared_cpus from opp-v2 for EM
-Date:   Thu, 18 Feb 2021 22:23:25 +0000
-Message-Id: <20210218222326.15788-3-nicola.mazzucato@arm.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210218222326.15788-1-nicola.mazzucato@arm.com>
-References: <20210218222326.15788-1-nicola.mazzucato@arm.com>
+        id S229623AbhBSDiy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Feb 2021 22:38:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45428 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229471AbhBSDix (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2021 22:38:53 -0500
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0905EC061574;
+        Thu, 18 Feb 2021 19:38:13 -0800 (PST)
+Received: by mail-pg1-x535.google.com with SMTP id 75so2694490pgf.13;
+        Thu, 18 Feb 2021 19:38:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=vW7QGTkoOi2XDxjLsMalRoDFkj6U8fLmlA2rW//tPic=;
+        b=iNZLEKSK2EAXZ9oiD8ZvJX6H3vFs2uRjvJRz4yr3+BvIcQokun6mPSO/V8L9ioxUO2
+         jA7u7RgRt/fCYxj04TNY7nLW+3kkzBp6M9wB6E25mBBumoAv9bIFmnoWnjZhDmYZQPwB
+         x1ogLvfmdwHmwDP3591E9prOv/zXKV7wotgkMclYmIDXjzHVK3ntv1eoW9uLYHOY5IDz
+         8ZRV5GLPC0Fy3jC9/S0sVC+R/GjBN0yXT8XcGbYsd4C2Qh7ckl1yUGrJk5eLE0uCod9o
+         UBS/xM4O6zLL0ebKjAOcE5IUZXHiPw+sXzi86C44c7YiGuXRjd0dmgZ1x65g71fMO9Bc
+         A3Cw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=vW7QGTkoOi2XDxjLsMalRoDFkj6U8fLmlA2rW//tPic=;
+        b=GXW/f/4nNm9Nfpuwi3jzg9cB/v9rZ6NAaoVCCuS88QCPrrCmBhRevhz5uLCYFI0Bus
+         uYuG5826XQJx9ru+Ok+uUttVsb2zzgXYc7FciuNW2FL28W9lnNJZ/IDJthb7+8rhQkdI
+         aI+p0dmvFT/CgqdUC9kWA3MJ8RCMOi4DV5kutgoJXM9rb06IOR5dWMTkpQ9eap89bkqT
+         yxAzvvLIticqCgQFl/OPsi6HpQdYI3dwd7bsiBYi3C00FHHjV+umnaxMlVOykWg62CbF
+         mV7o3m5qF2uFwpIc1GtIr55H7NvQElFrbeqychF9e58a0onRr85KPBx+RNDmeoN2oqYH
+         QdbQ==
+X-Gm-Message-State: AOAM531N7ZOQtpn275HGtRpmQWIAAupz+WrhnZkLc2rRRGTUI7d60xc4
+        He+oMhbiFOTYShYOmLol9UM=
+X-Google-Smtp-Source: ABdhPJyShZ5ikxNDWbl4CJBezHrxoWlOLVPxABwg6LdDteEMS2sr/OT8tqrf1PzB/2Sb1TVop1nGFw==
+X-Received: by 2002:aa7:9e90:0:b029:1dd:3cd6:9dde with SMTP id p16-20020aa79e900000b02901dd3cd69ddemr7268618pfq.57.1613705892622;
+        Thu, 18 Feb 2021 19:38:12 -0800 (PST)
+Received: from localhost ([103.220.76.197])
+        by smtp.gmail.com with ESMTPSA id e17sm6609267pjh.39.2021.02.18.19.38.09
+        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 18 Feb 2021 19:38:12 -0800 (PST)
+Date:   Fri, 19 Feb 2021 11:38:04 +0800
+From:   Yue Hu <zbestahu@gmail.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     rjw@rjwysocki.net, mingo@redhat.com, peterz@infradead.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        huyue2@yulong.com, zbestahu@163.com
+Subject: Re: [PATCH] cpufreq: schedutil: Don't consider freq reduction to
+ busy CPU if need_freq_update is set
+Message-ID: <20210219113804.00004a7e.zbestahu@gmail.com>
+In-Reply-To: <20210218102029.syj6vkltlbtoxsig@vireshk-i7>
+References: <20210218082514.1437-1-zbestahu@gmail.com>
+        <20210218102029.syj6vkltlbtoxsig@vireshk-i7>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; i686-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By design, SCMI performance domains define the granularity of
-performance controls, they do not describe any underlying hardware
-dependencies (although they may match in many cases).
+On Thu, 18 Feb 2021 15:50:29 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-It is therefore possible to have some platforms where hardware may have
-the ability to control CPU performance at different granularity and choose
-to describe fine-grained performance control through SCMI.
+> On 18-02-21, 16:25, Yue Hu wrote:
+> > From: Yue Hu <huyue2@yulong.com>
+> > 
+> > For busy CPU case, we do not need to avoid freq reduction if limits
+> > change since commit 600f5badb78c ("cpufreq: schedutil: Don't skip
+> > freq update when limits change").
+> > 
+> > Later, commit 23a881852f3e ("cpufreq: schedutil: Don't skip freq
+> > update if need_freq_update is set") discarded the need_freq_update
+> > check for special case of busy CPU because we won't abort a
+> > frequency update anymore if need_freq_update is set.
+> > 
+> > That is nonlogical since we will not reduce the freq for busy CPU
+> > if the computed next_f is really reduced when limits change.  
+> 
+> Schedutil governor will probably ask for a higher frequency than
+> allowed, but cpufreq core will clamp the request between policy
+> min/max before updating the frequency here.
+> 
+> We added the check in 600f5badb78c here earlier as there were chances
+> that we will abort the operation without reaching to cpufreq core,
+> which won't happen now.
+> 
 
-In such situations, the energy model would be provided with inaccurate
-information based on controls, while it still needs to know the
-performance boundaries.
+There's a possibility: we will use the previous freq to update if next_f
+is reduced for busy CPU if need_freq_update is set in
+sugov_update_next_freq(). This possibility would happen now? And this
+update is what we want if it happens? This is related to another
+possible patch ready to send.
 
-To restore correct functionality, retrieve information of CPUs under the
-same performance domain from operating-points-v2 in DT, and pass it on to
-EM.
-
-Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
----
- drivers/cpufreq/scmi-cpufreq.c | 74 +++++++++++++++++++++++++---------
- 1 file changed, 54 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index c0345120a7d5..5415ed52b53a 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -126,6 +126,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
- 	struct scmi_data *priv;
- 	struct cpufreq_frequency_table *freq_table;
- 	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
-+	cpumask_var_t opp_shared_cpus;
- 	bool power_scale_mw;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
-@@ -134,32 +135,64 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
- 		return -ENODEV;
- 	}
- 
--	ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
--	if (ret) {
--		dev_warn(cpu_dev, "failed to add opps to the device\n");
--		return ret;
--	}
-+	if (!zalloc_cpumask_var(&opp_shared_cpus, GFP_KERNEL))
-+		ret = -ENOMEM;
- 
-+	/* Obtain CPUs that share SCMI performance controls */
- 	ret = scmi_get_sharing_cpus(cpu_dev, policy->cpus);
- 	if (ret) {
- 		dev_warn(cpu_dev, "failed to get sharing cpumask\n");
--		return ret;
-+		goto out_free_cpumask;
- 	}
- 
--	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
--	if (ret) {
--		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
--			__func__, ret);
--		return ret;
-+	/*
-+	 * Obtain CPUs that share performance levels.
-+	 * The OPP 'sharing cpus' info may come from DT through an empty opp
-+	 * table and opp-shared.
-+	 */
-+	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, opp_shared_cpus);
-+	if (ret || !cpumask_weight(opp_shared_cpus)) {
-+		/*
-+		 * Either opp-table is not set or no opp-shared was found.
-+		 * Use the CPU mask from SCMI to designate CPUs sharing an OPP
-+		 * table.
-+		 */
-+		cpumask_copy(opp_shared_cpus, policy->cpus);
- 	}
- 
-+	 /*
-+	  * A previous CPU may have marked OPPs as shared for a few CPUs, based on
-+	  * what OPP core provided. If the current CPU is part of those few, then
-+	  * there is no need to add OPPs again.
-+	  */
- 	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
- 	if (nr_opp <= 0) {
--		dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
--			__func__, ret);
--
--		ret = -ENODEV;
--		goto out_free_opp;
-+		ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
-+		if (ret) {
-+			dev_warn(cpu_dev, "failed to add opps to the device\n");
-+			goto out_free_cpumask;
-+		}
-+
-+		nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
-+		if (nr_opp <= 0) {
-+			dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
-+				__func__, ret);
-+
-+			ret = -ENODEV;
-+			goto out_free_opp;
-+		}
-+
-+		ret = dev_pm_opp_set_sharing_cpus(cpu_dev, opp_shared_cpus);
-+		if (ret) {
-+			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
-+				__func__, ret);
-+
-+			goto out_free_opp;
-+		}
-+
-+		power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
-+		em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb,
-+					    opp_shared_cpus, power_scale_mw);
- 	}
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-@@ -192,17 +225,18 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
- 	policy->fast_switch_possible =
- 		handle->perf_ops->fast_switch_possible(handle, cpu_dev);
- 
--	power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
--	em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb, policy->cpus,
--				    power_scale_mw);
--
-+	free_cpumask_var(opp_shared_cpus);
- 	return 0;
- 
- out_free_priv:
- 	kfree(priv);
-+
- out_free_opp:
- 	dev_pm_opp_remove_all_dynamic(cpu_dev);
- 
-+out_free_cpumask:
-+	free_cpumask_var(opp_shared_cpus);
-+
- 	return ret;
- }
- 
--- 
-2.27.0
-
+Thank you.
