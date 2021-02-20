@@ -8,60 +8,61 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D5DEC433E9
-	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:34:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D5E1C433E6
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:35:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 280DA64EE9
-	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:34:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 519FB64E77
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:35:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229889AbhBTBea (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Feb 2021 20:34:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44180 "EHLO
+        id S229961AbhBTBey (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Feb 2021 20:34:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229868AbhBTBe2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2021 20:34:28 -0500
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59AFFC0617A9
-        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:10 -0800 (PST)
-Received: by mail-yb1-xb4a.google.com with SMTP id v196so8820602ybv.3
-        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:10 -0800 (PST)
+        with ESMTP id S229934AbhBTBeo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2021 20:34:44 -0500
+Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com [IPv6:2607:f8b0:4864:20::849])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08D64C061225
+        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:15 -0800 (PST)
+Received: by mail-qt1-x849.google.com with SMTP id l63so4435664qtd.12
+        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=sender:date:in-reply-to:message-id:mime-version:references:subject
          :from:to:cc;
-        bh=y0augfXTryPPckNIjyG37nVNdhig6ZbrGk3G+Se0bhk=;
-        b=RAnSVHS6Smj0l3LTFE/vx6JcAMiDFRCoCBnWUB8vImivgo1DTitkKgcGHqMjwAJw/O
-         txIgPqjTqa5i4y7plNhFKxAOjXZ8FqAPcnC1jxvxhEqDXMk3kcqnC0fP9TLI25gVJUXK
-         ddHY50qffEoya6LEsxV2vjOe6YrzC22XhdLQxxrKho7+T0KrN7kp1rjJhsyKoU/cKfYb
-         TEn1URRMkGXIyknaMegtLk6tmlOfKyVP5pr7+ftAFXeT0hi4EscWeLB1AHcTBFFNiuzt
-         LWSmztlO4C9ylDtqEpai3Jw11CILCmSXimM0qGQkwtnWxlfXul5qzttJBxAyTWmez48Z
-         zDyQ==
+        bh=5s65rAUyafrnqP9PDtk4qfuDVzKOqtCy9uXyzty++eY=;
+        b=ckXns8cEP+qoyBNXWqxZ/Pqz+1OzcyHa3rdo4kRUVo4uBYz2UPFHEl2UxhqLMHs44p
+         SwCDNE39L1kZJAH0CwNAQuu6tKwNayENEqa5thHOiM1J3Voe6eSp81WNW43w4QqXp4ZS
+         I6Mh8gcaQULV4BpLo5K27QD67/gr71IWSpXAojezrc7f2PXUet5rYCWvycSc3mR7/IB1
+         qA6isMB7s0Fxq76r7o7lY6pzocQiWmYDWhIQG4wJ/bH6L8YRjkJviJXx7kQdlxvBMsyp
+         QaRkEb9Hy7UA9cSNBd6HWY6t4cV6SeE2VYRiuBw8BKsfRp++GlV62foOQK1zoqhWee/t
+         qOGA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=y0augfXTryPPckNIjyG37nVNdhig6ZbrGk3G+Se0bhk=;
-        b=IjxFF0ekjhXYLdXDLRC0mVMGaDrC9Tiu8bjn+qHRGuM+lQfxiuKq+EvWwpqyWnLQi2
-         Bz8iwqKyL5YahyArmAtfYHejSq1APtkt+6fROUHRYFUCZTlWhF3oZ7dlDpazH041+SqP
-         v0y+5m1gyYXbRqJguAvywR5fishHjNDrHD7rb3jFdhJJIR0L2VJZpsx1bFfMDQem3KKD
-         mNM5FH8i9aV98zJmOE752AjfKSD/rkc13U1ig4XOgQNaMq2w9fJB3hqp12k68fdZ7wJr
-         O0nM8HPqJOaTul2jTMlvbFQ85yQRpGUFuIPHWq9pvBrd+ZqJdV/UjbGP50wY5k9Dw6mA
-         z32g==
-X-Gm-Message-State: AOAM532ITcrNs5X1HPO6NkL5g9EfkI9kipMcyT1vhxbC1TXaFMw3i76b
-        vM2LgJwjaJU6Hd2fk1esO/L9bW9H37FrIlOy71/ibg==
-X-Google-Smtp-Source: ABdhPJytRkNN3Yr0iLNpnA3MzM1hsHO7gs7Uv3eNdAOwxj6Y/9Z3hSrHrL2ZuhfAoEO1BriPoncl5gzOqTYtEKVrKpRP2A==
+        bh=5s65rAUyafrnqP9PDtk4qfuDVzKOqtCy9uXyzty++eY=;
+        b=o9CC9RJTKgVGYhZkjYJgCbd1bifmPh1wEIaJq2mF42OsuE6DldkWtfIBjP5Dk1zWv2
+         W7bac35gVl4VgEZrk7QGH4nEjEi7HrL5uYY1C0yoYHpy6ha3KjcpOIlspO5SU/M2gYUg
+         T2tutJViWavMxqCGLb3XGuZjPoxSCL/s7LW95GgdwC0EtCS/yXtaZDcXQvW9HUkqujdk
+         knCi35oaqM424gRibhy4On1ZBTRU4JdoNyb8XJOUSl4iL4FgOsibcHo2xUJcgUS45/ZY
+         Nr5/sDW3fOCscVpe+daFobExI/qizHmtQQfvVZRGv1PcW+HwUFuiOmfStRunPmw+lKvq
+         l8bA==
+X-Gm-Message-State: AOAM531hakAHZIWm5HFkNOzBIRDefAGC/Kt0GzkExtbK9O08I0tosCjR
+        eBvpWSRsqQCGTpgdYaVWWsGcV+VR2RTCwyMufOCk6w==
+X-Google-Smtp-Source: ABdhPJxe0tcmAT4r+GJm84m4ZI8dalvzV9xz8hB5vIXENWytlqBxGoK9QHBaPGrOIOkjE3sq0edeDJIlSBq6GZPZhGFw4g==
 Sender: "matthewgarrett via sendgmr" 
         <matthewgarrett@matthewgarrett-tmp.c.googlers.com>
 X-Received: from matthewgarrett-tmp.c.googlers.com ([fda3:e722:ac3:10:7f:e700:c0a8:1081])
- (user=matthewgarrett job=sendgmr) by 2002:a25:9383:: with SMTP id
- a3mr17879351ybm.215.1613784789563; Fri, 19 Feb 2021 17:33:09 -0800 (PST)
-Date:   Sat, 20 Feb 2021 01:32:48 +0000
+ (user=matthewgarrett job=sendgmr) by 2002:a0c:ed4f:: with SMTP id
+ v15mr4210810qvq.55.1613784794251; Fri, 19 Feb 2021 17:33:14 -0800 (PST)
+Date:   Sat, 20 Feb 2021 01:32:51 +0000
 In-Reply-To: <20210220013255.1083202-1-matthewgarrett@google.com>
-Message-Id: <20210220013255.1083202-3-matthewgarrett@google.com>
+Message-Id: <20210220013255.1083202-6-matthewgarrett@google.com>
 Mime-Version: 1.0
 References: <20210220013255.1083202-1-matthewgarrett@google.com>
 X-Mailer: git-send-email 2.30.0.617.g56c4b15f3c-goog
-Subject: [PATCH 2/9] tpm: Allow PCR 23 to be restricted to kernel-only use
+Subject: [PATCH 5/9] security: keys: trusted: Allow storage of PCR values in
+ creation data
 From:   Matthew Garrett <matthewgarrett@google.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     linux-integrity@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -74,189 +75,126 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Under certain circumstances it might be desirable to enable the creation
-of TPM-backed secrets that are only accessible to the kernel. In an
-ideal world this could be achieved by using TPM localities, but these
-don't appear to be available on consumer systems. An alternative is to
-simply block userland from modifying one of the resettable PCRs, leaving
-it available to the kernel. If the kernel ensures that no userland can
-access the TPM while it is carrying out work, it can reset PCR 23,
-extend it to an arbitrary value, create or load a secret, and then reset
-the PCR again. Even if userland somehow obtains the sealed material, it
-will be unable to unseal it since PCR 23 will never be in the
-appropriate state.
+When TPMs generate keys, they can also generate some information
+describing the state of the PCRs at creation time. This data can then
+later be certified by the TPM, allowing verification of the PCR values.
+This allows us to determine the state of the system at the time a key
+was generated. Add an additional argument to the trusted key creation
+options, allowing the user to provide the set of PCRs that should have
+their values incorporated into the creation data.
 
 Signed-off-by: Matthew Garrett <mjg59@google.com>
 ---
- drivers/char/tpm/Kconfig          | 10 +++++++++
- drivers/char/tpm/tpm-dev-common.c |  8 +++++++
- drivers/char/tpm/tpm.h            | 21 +++++++++++++++++++
- drivers/char/tpm/tpm1-cmd.c       | 35 +++++++++++++++++++++++++++++++
- drivers/char/tpm/tpm2-cmd.c       | 22 +++++++++++++++++++
- drivers/char/tpm/tpm2-space.c     |  2 +-
- 6 files changed, 97 insertions(+), 1 deletion(-)
+ .../security/keys/trusted-encrypted.rst       |  4 +++
+ include/keys/trusted-type.h                   |  1 +
+ security/keys/trusted-keys/trusted_tpm1.c     |  9 +++++++
+ security/keys/trusted-keys/trusted_tpm2.c     | 25 +++++++++++++++++--
+ 4 files changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
-index a18c314da211..bba30fb16a2e 100644
---- a/drivers/char/tpm/Kconfig
-+++ b/drivers/char/tpm/Kconfig
-@@ -190,4 +190,14 @@ config TCG_FTPM_TEE
- 	  This driver proxies for firmware TPM running in TEE.
+diff --git a/Documentation/security/keys/trusted-encrypted.rst b/Documentation/security/keys/trusted-encrypted.rst
+index 1da879a68640..27bc43463ec8 100644
+--- a/Documentation/security/keys/trusted-encrypted.rst
++++ b/Documentation/security/keys/trusted-encrypted.rst
+@@ -72,6 +72,10 @@ Usage::
+        policyhandle= handle to an authorization policy session that defines the
+                      same policy and with the same hash algorithm as was used to
+                      seal the key.
++       creationpcrs= hex integer representing the set of PCR values to be
++                     included in the PCR creation data. The bit corresponding
++		     to each PCR should be 1 to be included, 0 to be ignored.
++		     TPM2 only.
  
- source "drivers/char/tpm/st33zp24/Kconfig"
-+
-+config TCG_TPM_RESTRICT_PCR
-+	bool "Restrict userland access to PCR 23"
-+	depends on TCG_TPM
-+	help
-+	  If set, block userland from extending or resetting PCR 23. This
-+	  allows it to be restricted to in-kernel use, preventing userland
-+	  from being able to make use of data sealed to the TPM by the kernel.
-+	  This is required for secure hibernation support, but should be left
-+	  disabled if any userland may require access to PCR23.
- endif # TCG_TPM
-diff --git a/drivers/char/tpm/tpm-dev-common.c b/drivers/char/tpm/tpm-dev-common.c
-index 1784530b8387..d3db4fd76257 100644
---- a/drivers/char/tpm/tpm-dev-common.c
-+++ b/drivers/char/tpm/tpm-dev-common.c
-@@ -193,6 +193,14 @@ ssize_t tpm_common_write(struct file *file, const char __user *buf,
- 	priv->response_read = false;
- 	*off = 0;
+ "keyctl print" returns an ascii hex copy of the sealed key, which is in standard
+ TPM_STORED_DATA format.  The key length for new keys are always in bytes.
+diff --git a/include/keys/trusted-type.h b/include/keys/trusted-type.h
+index 154d8a1769c3..875e05f33b84 100644
+--- a/include/keys/trusted-type.h
++++ b/include/keys/trusted-type.h
+@@ -47,6 +47,7 @@ struct trusted_key_options {
+ 	uint32_t policydigest_len;
+ 	unsigned char policydigest[MAX_DIGEST_SIZE];
+ 	uint32_t policyhandle;
++	uint32_t creation_pcrs;
+ };
  
-+	if (priv->chip->flags & TPM_CHIP_FLAG_TPM2)
-+		ret = tpm2_cmd_restricted(priv->chip, priv->data_buffer, size);
-+	else
-+		ret = tpm1_cmd_restricted(priv->chip, priv->data_buffer, size);
-+
-+	if (ret)
-+		goto out;
-+
- 	/*
- 	 * If in nonblocking mode schedule an async job to send
- 	 * the command return the size.
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index 746f7696bdc0..8eed5016d733 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -232,6 +232,8 @@ void tpm2_shutdown(struct tpm_chip *chip, u16 shutdown_type);
- unsigned long tpm2_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
- int tpm2_probe(struct tpm_chip *chip);
- int tpm2_get_cc_attrs_tbl(struct tpm_chip *chip);
-+int tpm_find_and_validate_cc(struct tpm_chip *chip, struct tpm_space *space,
-+			     const void *buf, size_t bufsiz);
- int tpm2_find_cc(struct tpm_chip *chip, u32 cc);
- int tpm2_init_space(struct tpm_space *space, unsigned int buf_size);
- void tpm2_del_space(struct tpm_chip *chip, struct tpm_space *space);
-@@ -245,4 +247,23 @@ void tpm_bios_log_setup(struct tpm_chip *chip);
- void tpm_bios_log_teardown(struct tpm_chip *chip);
- int tpm_dev_common_init(void);
- void tpm_dev_common_exit(void);
-+
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+#define TPM_RESTRICTED_PCR 23
-+
-+int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-+int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size);
-+#else
-+static inline int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-+				      size_t size)
-+{
-+	return 0;
-+}
-+
-+static inline int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer,
-+				      size_t size)
-+{
-+	return 0;
-+}
-+#endif
- #endif
-diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
-index 36990e9d2dc1..2dab1647d89c 100644
---- a/drivers/char/tpm/tpm1-cmd.c
-+++ b/drivers/char/tpm/tpm1-cmd.c
-@@ -840,3 +840,38 @@ int tpm1_get_pcr_allocation(struct tpm_chip *chip)
+ extern struct key_type key_type_trusted;
+diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/trusted-keys/trusted_tpm1.c
+index 74d82093cbaa..3d371ab3441f 100644
+--- a/security/keys/trusted-keys/trusted_tpm1.c
++++ b/security/keys/trusted-keys/trusted_tpm1.c
+@@ -709,6 +709,7 @@ enum {
+ 	Opt_hash,
+ 	Opt_policydigest,
+ 	Opt_policyhandle,
++	Opt_creationpcrs,
+ };
  
- 	return 0;
- }
-+
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+int tpm1_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-+{
-+	struct tpm_header *header = (struct tpm_header *)buffer;
-+	char len, offset;
-+	u32 *pcr;
-+	int pos;
-+
-+	switch (be32_to_cpu(header->ordinal)) {
-+	case TPM_ORD_PCR_EXTEND:
-+		if (size < (TPM_HEADER_SIZE + sizeof(u32)))
-+			return -EINVAL;
-+		pcr = (u32 *)&buffer[TPM_HEADER_SIZE];
-+		if (be32_to_cpu(*pcr) == TPM_RESTRICTED_PCR)
-+			return -EPERM;
-+		break;
-+	case TPM_ORD_PCR_RESET:
-+		if (size < (TPM_HEADER_SIZE + 1))
-+			return -EINVAL;
-+		len = buffer[TPM_HEADER_SIZE];
-+		if (size < (TPM_HEADER_SIZE + 1 + len))
-+			return -EINVAL;
-+		offset = TPM_RESTRICTED_PCR/3;
-+		if (len < offset)
+ static const match_table_t key_tokens = {
+@@ -724,6 +725,7 @@ static const match_table_t key_tokens = {
+ 	{Opt_hash, "hash=%s"},
+ 	{Opt_policydigest, "policydigest=%s"},
+ 	{Opt_policyhandle, "policyhandle=%s"},
++	{Opt_creationpcrs, "creationpcrs=%s"},
+ 	{Opt_err, NULL}
+ };
+ 
+@@ -834,6 +836,13 @@ static int getoptions(char *c, struct trusted_key_payload *pay,
+ 				return -EINVAL;
+ 			opt->policyhandle = handle;
+ 			break;
++		case Opt_creationpcrs:
++			if (!tpm2)
++				return -EINVAL;
++			res = kstrtoint(args[0].from, 16, &opt->creation_pcrs);
++			if (res < 0)
++				return -EINVAL;
 +			break;
-+		pos = TPM_HEADER_SIZE + 1 + offset;
-+		if (buffer[pos] & (1 << (TPM_RESTRICTED_PCR - 2 * offset)))
-+			return -EPERM;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+#endif
-diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
-index 9609ae8086c6..7dbd4590dee8 100644
---- a/drivers/char/tpm/tpm2-cmd.c
-+++ b/drivers/char/tpm/tpm2-cmd.c
-@@ -795,3 +795,25 @@ int tpm2_find_cc(struct tpm_chip *chip, u32 cc)
+ 		default:
+ 			return -EINVAL;
+ 		}
+diff --git a/security/keys/trusted-keys/trusted_tpm2.c b/security/keys/trusted-keys/trusted_tpm2.c
+index a3673fffd834..282f956ad610 100644
+--- a/security/keys/trusted-keys/trusted_tpm2.c
++++ b/security/keys/trusted-keys/trusted_tpm2.c
+@@ -124,7 +124,7 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
+ 	unsigned int offset;
+ 	struct tpm_buf buf;
+ 	u32 hash;
+-	int i;
++	int i, j;
+ 	int rc;
  
- 	return -1;
- }
-+
-+#ifdef CONFIG_TCG_TPM_RESTRICT_PCR
-+int tpm2_cmd_restricted(struct tpm_chip *chip, u8 *buffer, size_t size)
-+{
-+	int cc = tpm_find_and_validate_cc(chip, NULL, buffer, size);
-+	u32 *handle;
-+
-+	switch (cc) {
-+	case TPM2_CC_PCR_EXTEND:
-+	case TPM2_CC_PCR_RESET:
-+		if (size < (TPM_HEADER_SIZE + sizeof(u32)))
-+			return -EINVAL;
-+
-+		handle = (u32 *)&buffer[TPM_HEADER_SIZE];
-+		if (be32_to_cpu(*handle) == TPM_RESTRICTED_PCR)
-+			return -EPERM;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+#endif
-diff --git a/drivers/char/tpm/tpm2-space.c b/drivers/char/tpm/tpm2-space.c
-index 784b8b3cb903..76a993492962 100644
---- a/drivers/char/tpm/tpm2-space.c
-+++ b/drivers/char/tpm/tpm2-space.c
-@@ -262,7 +262,7 @@ static int tpm2_map_command(struct tpm_chip *chip, u32 cc, u8 *cmd)
- 	return 0;
- }
+ 	for (i = 0; i < ARRAY_SIZE(tpm2_hash_map); i++) {
+@@ -181,7 +181,28 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
+ 	tpm_buf_append_u16(&buf, 0);
  
--static int tpm_find_and_validate_cc(struct tpm_chip *chip,
-+int tpm_find_and_validate_cc(struct tpm_chip *chip,
- 				    struct tpm_space *space,
- 				    const void *cmd, size_t len)
- {
+ 	/* creation PCR */
+-	tpm_buf_append_u32(&buf, 0);
++	if (options->creation_pcrs) {
++		/* One bank */
++		tpm_buf_append_u32(&buf, 1);
++		/* Which bank to use */
++		tpm_buf_append_u16(&buf, hash);
++		/* Length of the PCR bitmask */
++		tpm_buf_append_u8(&buf, 3);
++		/* PCR bitmask */
++		for (i = 0; i < 3; i++) {
++			char tmp = 0;
++
++			for (j = 0; j < 8; j++) {
++				char bit = (i * 8) + j;
++
++				if (options->creation_pcrs & (1 << bit))
++					tmp |= (1 << j);
++			}
++			tpm_buf_append_u8(&buf, tmp);
++		}
++	} else {
++		tpm_buf_append_u32(&buf, 0);
++	}
+ 
+ 	if (buf.flags & TPM_BUF_OVERFLOW) {
+ 		rc = -E2BIG;
 -- 
 2.30.0.617.g56c4b15f3c-goog
 
