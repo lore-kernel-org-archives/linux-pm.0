@@ -2,103 +2,261 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 125CFC433E9
-	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 02:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 384D8C433E6
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 02:53:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D427D6023C
-	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 02:21:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EEB7060234
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 02:53:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229725AbhBTCVJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Feb 2021 21:21:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54116 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229700AbhBTCVI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2021 21:21:08 -0500
-Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47FBBC061574;
-        Fri, 19 Feb 2021 18:20:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description;
-        bh=vkHct5nZ9eo2GX6kg3o550luk7j4MmaPBgMkq/hkd9k=; b=svpg8ZecDW5spllYjvOFHvISS6
-        lqXen/Xmy3JT1u52u0xFPmZxmZdfzmPqSmaGmNof4WwY6rwjS9TKXbYB5GVWGfLdKP9KuXLOaoxhi
-        ihhhrUiDCgwzeh4vLfItkNNk1ql5BlYrAHVB8+bv/qHSE00eHtIcDW1wP82Rtse6n7+N3A+kHHNMW
-        tOU9Tx1WXQzgRev/EUMEuLNimJxsmJReUD32fiPI+aM8TOJXQwA4WuxxSPVSSi3054Bn5diizYZBh
-        roB+iwkSHGYLL+jErZRVCItdXROC6kkw3m0L8F1EJlqzRnUTcpzZgP+OU7JeR0SslIm1lionRolKy
-        JPqNdLlg==;
-Received: from [2601:1c0:6280:3f0::d05b]
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1lDHsZ-0001CX-1i; Sat, 20 Feb 2021 02:20:19 +0000
-Subject: Re: [PATCH 7/9] pm: hibernate: Optionally use TPM-backed keys to
- protect image integrity
-To:     Matthew Garrett <matthewgarrett@google.com>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-integrity@vger.kernel.org, linux-pm@vger.kernel.org,
-        keyrings@vger.kernel.org, zohar@linux.ibm.com, jejb@linux.ibm.com,
-        jarkko@kernel.org, corbet@lwn.net, rjw@rjwysocki.net,
-        Matthew Garrett <mjg59@google.com>
+        id S229974AbhBTCxN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Feb 2021 21:53:13 -0500
+Received: from mail.kernel.org ([198.145.29.99]:43760 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229907AbhBTCxM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Feb 2021 21:53:12 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id DB5B464E57;
+        Sat, 20 Feb 2021 02:52:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1613789551;
+        bh=IshvD1skejssrDWILgPwdyGSe2QXYmwraex7kk2PWWo=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=jKZ/hSuPXbX3XnVzse86yJWGCGjGz68vEB9aq80fY1QQU6k3oKZIMyRDpNY+7wR/d
+         mDQsyJ1WVWDKR6EfdhRWXM+nhOruy2E+b9JF23yuxSw/zNjzncbjmk7BeD9AckCA45
+         0xNUeFwG/CGp+BNxFynDqLwFKd3MoJFIi783ajwRKf1YMgJlzOa3srFF5CNLUzEPEQ
+         WFa3UqjTALUaMURqTn8bPc9qIkvGJkADp54vRbv5HErw5CG3bhtX/tClUiVVRxtkD3
+         fQ0+0/NwT32Jh7BY+rTMEVLxgcBJOAHwTfN++7f0A5ZBmtqtkH7LcJoa2XwCYIb5h4
+         X8kopTsOnqHIQ==
+Date:   Sat, 20 Feb 2021 04:52:15 +0200
+From:   Jarkko Sakkinen <jarkko@kernel.org>
+To:     Matthew Garrett <matthewgarrett@google.com>
+Cc:     linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org,
+        linux-pm@vger.kernel.org, keyrings@vger.kernel.org,
+        zohar@linux.ibm.com, jejb@linux.ibm.com, corbet@lwn.net,
+        rjw@rjwysocki.net, Matthew Garrett <mjg59@google.com>
+Subject: Re: [PATCH 1/9] tpm: Add support for in-kernel resetting of PCRs
+Message-ID: <YDB5X9mUiIso3gnr@kernel.org>
 References: <20210220013255.1083202-1-matthewgarrett@google.com>
- <20210220013255.1083202-8-matthewgarrett@google.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <4c265e1d-0a02-207a-cc10-9a49b4fc5169@infradead.org>
-Date:   Fri, 19 Feb 2021 18:20:13 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
+ <20210220013255.1083202-2-matthewgarrett@google.com>
 MIME-Version: 1.0
-In-Reply-To: <20210220013255.1083202-8-matthewgarrett@google.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210220013255.1083202-2-matthewgarrett@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi--
+On Sat, Feb 20, 2021 at 01:32:47AM +0000, Matthew Garrett wrote:
 
-On 2/19/21 5:32 PM, Matthew Garrett wrote:
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index a7320f07689d..0279cc10f319 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -92,6 +92,21 @@ config HIBERNATION_SNAPSHOT_DEV
+Perhaps, prepend with a paragraph elaborating the background just a bit:
+
+"When entering to hibernation, PCR 23 will be used to store a known value.
+This value defines a policy for the decryption of the key used to encrypt
+the hibernate image."
+
+At minimum that. You can of course edit this however you see fit.
+
+> Add an internal command for resetting a PCR.
+> 
+> Signed-off-by: Matthew Garrett <mjg59@google.com>
+> ---
+>  drivers/char/tpm/tpm-interface.c | 28 +++++++++++++++++++++++++
+>  drivers/char/tpm/tpm.h           |  2 ++
+>  drivers/char/tpm/tpm1-cmd.c      | 34 ++++++++++++++++++++++++++++++
+>  drivers/char/tpm/tpm2-cmd.c      | 36 ++++++++++++++++++++++++++++++++
+>  include/linux/tpm.h              |  7 +++++++
+>  5 files changed, 107 insertions(+)
+> 
+> diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
+> index 1621ce818705..17b8643ee109 100644
+> --- a/drivers/char/tpm/tpm-interface.c
+> +++ b/drivers/char/tpm/tpm-interface.c
+> @@ -342,6 +342,34 @@ int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+>  }
+>  EXPORT_SYMBOL_GPL(tpm_pcr_extend);
 >  
->  	  If in doubt, say Y.
+> +/**
+> + * tpm_pcr_reset - reset the specified PCR
+> + * @chip:	a &struct tpm_chip instance, %NULL for the default chip
+> + * @pcr_idx:	the PCR to be reset
+> + *
+> + * Return: same as with tpm_transmit_cmd()
+> + */
+> +int tpm_pcr_reset(struct tpm_chip *chip, u32 pcr_idx)
+> +{
+> +	int rc;
+> +
+> +	chip = tpm_find_get_ops(chip);
+> +	if (!chip)
+> +		return -ENODEV;
+> +
+> +	if (chip->flags & TPM_CHIP_FLAG_TPM2) {
+> +		rc = tpm2_pcr_reset(chip, pcr_idx);
+> +		goto out;
+> +	}
+> +
+> +	rc = tpm1_pcr_reset(chip, pcr_idx, "attempting to reset a PCR");
+> +
+> +out:
+> +	tpm_put_ops(chip);
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(tpm_pcr_reset);
+> +
+>  /**
+>   * tpm_send - send a TPM command
+>   * @chip:	a &struct tpm_chip instance, %NULL for the default chip
+> diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+> index 947d1db0a5cc..746f7696bdc0 100644
+> --- a/drivers/char/tpm/tpm.h
+> +++ b/drivers/char/tpm/tpm.h
+> @@ -176,6 +176,7 @@ int tpm1_get_timeouts(struct tpm_chip *chip);
+>  unsigned long tpm1_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
+>  int tpm1_pcr_extend(struct tpm_chip *chip, u32 pcr_idx, const u8 *hash,
+>  		    const char *log_msg);
+> +int tpm1_pcr_reset(struct tpm_chip *chip, u32 pcr_idx, const char *log_msg);
+>  int tpm1_pcr_read(struct tpm_chip *chip, u32 pcr_idx, u8 *res_buf);
+>  ssize_t tpm1_getcap(struct tpm_chip *chip, u32 subcap_id, cap_t *cap,
+>  		    const char *desc, size_t min_cap_length);
+> @@ -220,6 +221,7 @@ int tpm2_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
+>  		  struct tpm_digest *digest, u16 *digest_size_ptr);
+>  int tpm2_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+>  		    struct tpm_digest *digests);
+> +int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx);
+>  int tpm2_get_random(struct tpm_chip *chip, u8 *dest, size_t max);
+>  ssize_t tpm2_get_tpm_pt(struct tpm_chip *chip, u32 property_id,
+>  			u32 *value, const char *desc);
+> diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
+> index ca7158fa6e6c..36990e9d2dc1 100644
+> --- a/drivers/char/tpm/tpm1-cmd.c
+> +++ b/drivers/char/tpm/tpm1-cmd.c
+> @@ -478,6 +478,40 @@ int tpm1_pcr_extend(struct tpm_chip *chip, u32 pcr_idx, const u8 *hash,
+>  	return rc;
+>  }
 >  
-> +config SECURE_HIBERNATION
-> +       bool "Implement secure hibernation support"
-> +       depends on HIBERNATION && TCG_TPM
-> +       select KEYS
-> +       select TRUSTED_KEYS
-> +       select CRYPTO
-> +       select CRYPTO_SHA256
-> +       select CRYPTO_AES
-> +       select TCG_TPM_RESTRICT_PCR
-> +       help
-> +         Use a TPM-backed key to securely determine whether a hibernation
-> +	 image was written out by the kernel and has not been tampered with.
-> +	 This requires a TCG-compliant TPM2 device, which is present on most
-> +	 modern hardware.
+> +struct tpm_pcr_selection {
+> +	u16 size_of_select;
+> +	u8  pcr_select[3];
+> +} __packed;
+> +
+> +#define TPM_ORD_PCR_RESET 200
+> +int tpm1_pcr_reset(struct tpm_chip *chip, u32 pcr_idx, const char *log_msg)
+> +{
+> +	struct tpm_pcr_selection selection;
+> +	struct tpm_buf buf;
+> +	int i, rc;
+> +	char tmp;
+> +
+> +	rc = tpm_buf_init(&buf, TPM_TAG_RQU_COMMAND, TPM_ORD_PCR_RESET);
+> +	if (rc)
+> +		return rc;
+> +
+> +	selection.size_of_select = 3;
+> +
+> +	for (i = 0; i < selection.size_of_select; i++) {
+> +		tmp = 0;
+> +		if (pcr_idx / 3 == i) {
+> +			pcr_idx -= i * 8;
+> +			tmp |= 1 << pcr_idx;
+> +		}
+> +		selection.pcr_select[i] = tmp;
+> +	}
+> +	tpm_buf_append(&buf, (u8 *)&selection, sizeof(selection));
+> +
+> +	rc = tpm_transmit_cmd(chip, &buf, sizeof(selection), log_msg);
+> +	tpm_buf_destroy(&buf);
+> +	return rc;
+> +}
+> +
+>  #define TPM_ORD_GET_CAP 101
+>  ssize_t tpm1_getcap(struct tpm_chip *chip, u32 subcap_id, cap_t *cap,
+>  		    const char *desc, size_t min_cap_length)
+> diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
+> index eff1f12d981a..9609ae8086c6 100644
+> --- a/drivers/char/tpm/tpm2-cmd.c
+> +++ b/drivers/char/tpm/tpm2-cmd.c
+> @@ -269,6 +269,42 @@ int tpm2_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+>  	return rc;
+>  }
+>  
+> +/**
+> + * tpm2_pcr_reset() - reset a PCR
+> + *
+> + * @chip:	TPM chip to use.
+> + * @pcr_idx:	index of the PCR.
+> + *
+> + * Return: Same as with tpm_transmit_cmd.
+> + */
+> +int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx)
+> +{
+> +	struct tpm_buf buf;
+> +	struct tpm2_null_auth_area auth_area;
+> +	int rc;
+> +
+> +	rc = tpm_buf_init(&buf, TPM2_ST_SESSIONS, TPM2_CC_PCR_RESET);
+> +	if (rc)
+> +		return rc;
+> +
+> +	tpm_buf_append_u32(&buf, pcr_idx);
+> +
+> +	auth_area.handle = cpu_to_be32(TPM2_RS_PW);
+> +	auth_area.nonce_size = 0;
+> +	auth_area.attributes = 0;
+> +	auth_area.auth_size = 0;
+> +
+> +	tpm_buf_append_u32(&buf, sizeof(struct tpm2_null_auth_area));
+> +	tpm_buf_append(&buf, (const unsigned char *)&auth_area,
+> +		       sizeof(auth_area));
+> +
+> +	rc = tpm_transmit_cmd(chip, &buf, 0, "attempting to reset a PCR");
+> +
+> +	tpm_buf_destroy(&buf);
+> +
+> +	return rc;
+> +}
+> +
+>  struct tpm2_get_random_out {
+>  	__be16 size;
+>  	u8 buffer[TPM_MAX_RNG_DATA];
+> diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+> index 8f4ff39f51e7..e2075e2242a0 100644
+> --- a/include/linux/tpm.h
+> +++ b/include/linux/tpm.h
+> @@ -211,6 +211,7 @@ enum tpm2_command_codes {
+>  	TPM2_CC_HIERARCHY_CONTROL       = 0x0121,
+>  	TPM2_CC_HIERARCHY_CHANGE_AUTH   = 0x0129,
+>  	TPM2_CC_CREATE_PRIMARY          = 0x0131,
+> +	TPM2_CC_PCR_RESET		= 0x013D,
+>  	TPM2_CC_SEQUENCE_COMPLETE       = 0x013E,
+>  	TPM2_CC_SELF_TEST	        = 0x0143,
+>  	TPM2_CC_STARTUP		        = 0x0144,
+> @@ -399,6 +400,7 @@ static inline u32 tpm2_rc_value(u32 rc)
+>  extern int tpm_is_tpm2(struct tpm_chip *chip);
+>  extern int tpm_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
+>  			struct tpm_digest *digest);
+> +extern int tpm_pcr_reset(struct tpm_chip *chip, u32 pcr_idx);
+>  extern int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+>  			  struct tpm_digest *digests);
+>  extern int tpm_send(struct tpm_chip *chip, void *cmd, size_t buflen);
+> @@ -417,6 +419,11 @@ static inline int tpm_pcr_read(struct tpm_chip *chip, int pcr_idx,
+>  	return -ENODEV;
+>  }
+>  
+> +static inline int tpm_pcr_reset(struct tpm_chip *chip, int pcr_idx)
+> +{
+> +	return -ENODEV;
+> +}
+> +
+>  static inline int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+>  				 struct tpm_digest *digests)
+>  {
+> -- 
+> 2.30.0.617.g56c4b15f3c-goog
+> 
+> 
 
-Please follow coding-style for Kconfig files:
-
-from Documentation/process/coding-style.rst, section 10):
-
-  For all of the Kconfig* configuration files throughout the source tree,
-  the indentation is somewhat different.  Lines under a ``config`` definition
-  are indented with one tab, while help text is indented an additional two
-  spaces.
-
-
-Also, one feature should not be responsible for enabling other "subsystems,"
-such as KEYS and CRYPTO. They should instead be listed as dependencies.
-
-
--- 
-~Randy
-
+/Jarkko
