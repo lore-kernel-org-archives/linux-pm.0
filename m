@@ -8,60 +8,60 @@ X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F025BC43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B746EC433E9
 	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:35:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D81CF64E77
+	by mail.kernel.org (Postfix) with ESMTP id 81D4464E77
 	for <linux-pm@archiver.kernel.org>; Sat, 20 Feb 2021 01:35:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230019AbhBTBfh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Feb 2021 20:35:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44362 "EHLO
+        id S230049AbhBTBfc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Feb 2021 20:35:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230021AbhBTBfM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2021 20:35:12 -0500
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3322AC061A2B
-        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:20 -0800 (PST)
-Received: by mail-yb1-xb49.google.com with SMTP id u1so8818051ybu.14
-        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:20 -0800 (PST)
+        with ESMTP id S230017AbhBTBfK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2021 20:35:10 -0500
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2CA8C0611C3
+        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:16 -0800 (PST)
+Received: by mail-yb1-xb4a.google.com with SMTP id l10so8921119ybt.6
+        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2021 17:33:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=sender:date:in-reply-to:message-id:mime-version:references:subject
          :from:to:cc;
-        bh=Le2xy86M2g7vFjnuX/RXj2Z9OeFij6CrkPXndbL+3YM=;
-        b=mUmzPMLQ2EhM5ohqQmvRX3zzjTI4HWgSEU8OF6ChUOqqCnyRmUWuS7Fg85iVRVC6D0
-         tlS1Qf9auwUtImh2HiRyyIF9zKTBlptAOolf0FoHdiiUmi0OW/MbiiVc5aFxLp0Ixvg1
-         cFeCJz9zZMvDoZq8E4OJNEyCKW06WEsbbi1WGGYwxmWGValJTlOySL2JTQ+lyT9DZEcG
-         H2uY8kjDRo7fTGbtIHU0o77/si0NRfV4D/hT8to4ifU0A4zu8NUO1F1mRowKzzBwornS
-         TsK6HQUR5c3H2o4BOGqBx1XATTaJyYRtgg6nD/nS2R0cTSOvXH5a/+N4HO8Uwo08O0Ik
-         vzfQ==
+        bh=yAS0db83NOvwvM9lfRGQuy1QnGkOfJS/tz8Vl+zvFMk=;
+        b=vNMYaLsjV2HvgP0sU96BmGUNkZ6giTH4K10g080lTn/Ugb7UbVG1ZlvV4WQUuihihT
+         m/Of1WZXYlY3a9WXvW/e100aspdOcBBqvCWyQknfjbya4DeoWSqRZ4LLM2Dkn6EmyC9M
+         NaisJ7C7DWPUWaz2i36fHHI7GDLnMmuX5U1qZUQWPwxfAKKJvt0mrhhWNV5bu5x99ECh
+         NlVzJIRL/7TgBsTBiPS5iSXAx/IpWGiFyQ2lpnAHVJQuwdLLLFUBDS71XaRG5bAwTiQk
+         q7n6YgdBj2RTdLkeGuagVsRkvL+GT9ojM6M8/2RIpGYRLIVlxL6fSJBzwex/anhYPN5y
+         iJQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=Le2xy86M2g7vFjnuX/RXj2Z9OeFij6CrkPXndbL+3YM=;
-        b=AXFxqVMiKwkYjCDMRZlntzXN91aUjaZhniGUHf9yY5jBoUSOESvYzOpkp2/zQ7/a3M
-         1kF4A/IXevN02R7m5DlTDFc2hRl5STBfvZMnYMyDIBRqtyToF3yuU/V90BwyW0mEi7dV
-         wr6nstSdZ/nMrnhsKRpfSh4CA1nzEuy4k8+fIfYZ6mCQlwxTE844+kmSmUAM5awsjpUU
-         wTLngfAfdZ96NT+J2dzt9y638YvxYq4k6xJzg2IlzaStkuCxRo2phl+qxfXq1n/pqvkd
-         Zdp4hl+ychII5ebh5DjDC3apKMqwbNy8B4ba1zimeSCfY1kTgwyIIXO7pnYo0VacRYt4
-         PhXg==
-X-Gm-Message-State: AOAM530RtBkJtVUC+iHbBYb+ehd9VtXopR1Z8H+oYsZvrYxkdNz/a8oK
-        hloaLqSQJlLqpS0nIV3czQwb11yY1uRs4YXdhBX+HQ==
-X-Google-Smtp-Source: ABdhPJz+znzmydksCXNSz0qRUgqJOeUsiHxIZRQcS35YoWwljFjdXh5jNWJo2zOzCx4tGEmcAtw9+Y046tcbzA8xOA1QIg==
+        bh=yAS0db83NOvwvM9lfRGQuy1QnGkOfJS/tz8Vl+zvFMk=;
+        b=G23EuTl64sZaTPlxqAVKNBnY7yKCntRR4UIS3S4HnI2H5t5j5IrVsUu/yGPLXABtZo
+         569k4h8VLcBKAQtUcwzIaKKtZF8PKcy03OlR/rymsJ2kl1CB5lEVbI5AEsNu9dgGu9WK
+         9Ryx5KBdab0rI5UxyKMM0FXIh686ru12agig12K7viXElsA/r9iWR8+Io/qR5fCXc32L
+         wG8GC4QjKYhq9tbZ0P+NTugErPRk+L6/yVkJp4NrGDl/KLnGguFEjCSNkArheDFRjZJG
+         K5b6gbFR/GAsm3inLbluOte2mHd3ZrEnSw/8043TX9sQ0IemqpLNq2gRcmROO4OSZEa6
+         MHow==
+X-Gm-Message-State: AOAM5304zWPxFT7YGEqQ0gu1ZL77k7JdyZYMAX0QyMXn2dlIPF9aBg8D
+        qeVi5wYS6iUmedm0PRW4thFVz3gcUYYlOkLN8Wcykg==
+X-Google-Smtp-Source: ABdhPJylvuxVey2oMDy3Y+4tyu3KCIe8082QL0jCnfFGtWVDdwBQo9cOVp5MYVFW43mTvmmgfPXtg9tpiDL2UBytgJbjpA==
 Sender: "matthewgarrett via sendgmr" 
         <matthewgarrett@matthewgarrett-tmp.c.googlers.com>
 X-Received: from matthewgarrett-tmp.c.googlers.com ([fda3:e722:ac3:10:7f:e700:c0a8:1081])
- (user=matthewgarrett job=sendgmr) by 2002:a25:a0c9:: with SMTP id
- i9mr15696415ybm.479.1613784799467; Fri, 19 Feb 2021 17:33:19 -0800 (PST)
-Date:   Sat, 20 Feb 2021 01:32:54 +0000
+ (user=matthewgarrett job=sendgmr) by 2002:a25:dad2:: with SMTP id
+ n201mr16502549ybf.470.1613784796094; Fri, 19 Feb 2021 17:33:16 -0800 (PST)
+Date:   Sat, 20 Feb 2021 01:32:52 +0000
 In-Reply-To: <20210220013255.1083202-1-matthewgarrett@google.com>
-Message-Id: <20210220013255.1083202-9-matthewgarrett@google.com>
+Message-Id: <20210220013255.1083202-7-matthewgarrett@google.com>
 Mime-Version: 1.0
 References: <20210220013255.1083202-1-matthewgarrett@google.com>
 X-Mailer: git-send-email 2.30.0.617.g56c4b15f3c-goog
-Subject: [PATCH 8/9] pm: hibernate: Verify the digest encryption key
+Subject: [PATCH 6/9] pm: hibernate: Optionally store and verify a hash of the image
 From:   Matthew Garrett <matthewgarrett@google.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     linux-integrity@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -74,239 +74,375 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We want to ensure that the key used to encrypt the digest was created by
-the kernel during hibernation. To do this we request that the TPM include
-information about the value of PCR 23 at the time of key creation in the
-sealed blob. On resume, we can ask the TPM to certify that the creation
-data is accurate and then make sure that the PCR information in the blob
-corresponds to the expected value. Since only the kernel can touch PCR
-23, if an attacker generates a key themselves the value of PCR 23 will
-have been different, allowing us to reject the key and boot normally
-instead of resuming.
+Calculate and store a cryptographically secure hash of the hibernation
+image if SF_VERIFY_IMAGE is set in the hibernation flags. This allows
+detection of a corrupt image, but has the disadvantage that it requires
+the blocks be read in in linear order.
 
 Signed-off-by: Matthew Garrett <mjg59@google.com>
 ---
- include/linux/tpm.h |   1 +
- kernel/power/tpm.c  | 150 +++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 148 insertions(+), 3 deletions(-)
+ kernel/power/power.h |   1 +
+ kernel/power/swap.c  | 131 +++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 110 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-index e2075e2242a0..f6970986b097 100644
---- a/include/linux/tpm.h
-+++ b/include/linux/tpm.h
-@@ -216,6 +216,7 @@ enum tpm2_command_codes {
- 	TPM2_CC_SELF_TEST	        = 0x0143,
- 	TPM2_CC_STARTUP		        = 0x0144,
- 	TPM2_CC_SHUTDOWN	        = 0x0145,
-+	TPM2_CC_CERTIFYCREATION	        = 0x014A,
- 	TPM2_CC_NV_READ                 = 0x014E,
- 	TPM2_CC_CREATE		        = 0x0153,
- 	TPM2_CC_LOAD		        = 0x0157,
-diff --git a/kernel/power/tpm.c b/kernel/power/tpm.c
-index 953dcbdc56d8..34e6cfb98ce4 100644
---- a/kernel/power/tpm.c
-+++ b/kernel/power/tpm.c
-@@ -14,6 +14,12 @@ static struct tpm_digest digest = { .alg_id = TPM_ALG_SHA256,
- 		   0xf1, 0x22, 0x38, 0x6c, 0x33, 0xb1, 0x14, 0xb7, 0xec, 0x05,
- 		   0x5f, 0x49}};
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 778bf431ec02..b8e00b9dcee8 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -168,6 +168,7 @@ extern int swsusp_swap_in_use(void);
+ #define SF_PLATFORM_MODE	1
+ #define SF_NOCOMPRESS_MODE	2
+ #define SF_CRC32_MODE	        4
++#define SF_VERIFY_IMAGE         8
  
-+/* sha256(sha256(empty_pcr | digest)) */
-+static char expected_digest[] = {0x2f, 0x96, 0xf2, 0x1b, 0x70, 0xa9, 0xe8,
-+	0x42, 0x25, 0x8e, 0x66, 0x07, 0xbe, 0xbc, 0xe3, 0x1f, 0x2c, 0x84, 0x4a,
-+	0x3f, 0x85, 0x17, 0x31, 0x47, 0x9a, 0xa5, 0x53, 0xbb, 0x23, 0x0c, 0x32,
-+	0xf3};
-+
- struct skcipher_def {
- 	struct scatterlist sg;
- 	struct crypto_skcipher *tfm;
-@@ -21,6 +27,39 @@ struct skcipher_def {
- 	struct crypto_wait wait;
+ /* kernel/power/hibernate.c */
+ extern int swsusp_check(void);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 72e33054a2e1..a13241a20567 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -31,6 +31,8 @@
+ #include <linux/kthread.h>
+ #include <linux/crc32.h>
+ #include <linux/ktime.h>
++#include <crypto/hash.h>
++#include <crypto/sha2.h>
+ 
+ #include "power.h"
+ 
+@@ -95,17 +97,20 @@ struct swap_map_page_list {
+ struct swap_map_handle {
+ 	struct swap_map_page *cur;
+ 	struct swap_map_page_list *maps;
++	struct shash_desc *desc;
+ 	sector_t cur_swap;
+ 	sector_t first_sector;
+ 	unsigned int k;
+ 	unsigned long reqd_free_pages;
+ 	u32 crc32;
++	u8 digest[SHA256_DIGEST_SIZE];
  };
  
-+static int sha256_data(char *buf, int size, char *output)
-+{
+ struct swsusp_header {
+ 	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int) -
+-	              sizeof(u32)];
++		      sizeof(u32) - SHA256_DIGEST_SIZE];
+ 	u32	crc32;
++	u8	digest[SHA256_DIGEST_SIZE];
+ 	sector_t image;
+ 	unsigned int flags;	/* Flags to pass to the "boot" kernel */
+ 	char	orig_sig[10];
+@@ -305,6 +310,9 @@ static blk_status_t hib_wait_io(struct hib_bio_batch *hb)
+ 	 * We are relying on the behavior of blk_plug that a thread with
+ 	 * a plug will flush the plug list before sleeping.
+ 	 */
++	if (!hb)
++		return 0;
++
+ 	wait_event(hb->wait, atomic_read(&hb->count) == 0);
+ 	return blk_status_to_errno(hb->error);
+ }
+@@ -327,6 +335,8 @@ static int mark_swapfiles(struct swap_map_handle *handle, unsigned int flags)
+ 		swsusp_header->flags = flags;
+ 		if (flags & SF_CRC32_MODE)
+ 			swsusp_header->crc32 = handle->crc32;
++		memcpy(swsusp_header->digest, handle->digest,
++		       SHA256_DIGEST_SIZE);
+ 		error = hib_submit_io(REQ_OP_WRITE, REQ_SYNC,
+ 				      swsusp_resume_block, swsusp_header, NULL);
+ 	} else {
+@@ -417,6 +427,7 @@ static void release_swap_writer(struct swap_map_handle *handle)
+ static int get_swap_writer(struct swap_map_handle *handle)
+ {
+ 	int ret;
 +	struct crypto_shash *tfm;
-+	struct shash_desc *desc;
-+	int ret;
+ 
+ 	ret = swsusp_swap_check();
+ 	if (ret) {
+@@ -437,7 +448,28 @@ static int get_swap_writer(struct swap_map_handle *handle)
+ 	handle->k = 0;
+ 	handle->reqd_free_pages = reqd_free_pages();
+ 	handle->first_sector = handle->cur_swap;
 +
 +	tfm = crypto_alloc_shash("sha256", 0, 0);
-+	if (IS_ERR(tfm))
-+		return PTR_ERR(tfm);
-+
-+	desc = kmalloc(sizeof(struct shash_desc) +
++	if (IS_ERR(tfm)) {
++		ret = -EINVAL;
++		goto err_rel;
++	}
++	handle->desc = kmalloc(sizeof(struct shash_desc) +
 +			       crypto_shash_descsize(tfm), GFP_KERNEL);
-+	if (!desc) {
-+		crypto_free_shash(tfm);
-+		return -ENOMEM;
++	if (!handle->desc) {
++		ret = -ENOMEM;
++		goto err_rel;
 +	}
 +
-+	desc->tfm = tfm;
-+	ret = crypto_shash_init(desc);
-+	if (ret != 0) {
-+		crypto_free_shash(tfm);
-+		kfree(desc);
-+		return ret;
-+	}
++	handle->desc->tfm = tfm;
 +
-+	crypto_shash_update(desc, buf, size);
-+	crypto_shash_final(desc, output);
-+	crypto_free_shash(desc->tfm);
-+	kfree(desc);
++	ret = crypto_shash_init(handle->desc);
++	if (ret != 0)
++		goto err_free;
 +
-+	return 0;
-+}
-+
- static int swsusp_enc_dec(struct trusted_key_payload *payload, char *buf,
- 			  int enc)
- {
-@@ -86,6 +125,58 @@ static int swsusp_enc_dec(struct trusted_key_payload *payload, char *buf,
- 	return ret;
+ 	return 0;
++err_free:
++	kfree(handle->desc);
+ err_rel:
+ 	release_swap_writer(handle);
+ err_close:
+@@ -446,7 +478,7 @@ static int get_swap_writer(struct swap_map_handle *handle)
  }
  
-+static int tpm_certify_creationdata(struct tpm_chip *chip,
-+				    struct trusted_key_payload *payload)
-+{
-+	struct tpm_header *head;
-+	struct tpm_buf buf;
-+	int rc;
-+
-+	rc = tpm_buf_init(&buf, TPM2_ST_SESSIONS, TPM2_CC_CERTIFYCREATION);
-+	if (rc)
-+		return rc;
-+
-+	/* Use TPM_RH_NULL for signHandle */
-+	tpm_buf_append_u32(&buf, 0x40000007);
-+
-+	/* Object handle */
-+	tpm_buf_append_u32(&buf, payload->blob_handle);
-+
-+	/* Auth */
-+	tpm_buf_append_u32(&buf, 9);
-+	tpm_buf_append_u32(&buf, TPM2_RS_PW);
-+	tpm_buf_append_u16(&buf, 0);
-+	tpm_buf_append_u8(&buf, 0);
-+	tpm_buf_append_u16(&buf, 0);
-+
-+	/* Qualifying data */
-+	tpm_buf_append_u16(&buf, 0);
-+
-+	/* Creation data hash */
-+	tpm_buf_append_u16(&buf, payload->creation_hash_len);
-+	tpm_buf_append(&buf, payload->creation_hash,
-+		       payload->creation_hash_len);
-+
-+	/* signature scheme */
-+	tpm_buf_append_u16(&buf, TPM_ALG_NULL);
-+
-+	/* creation ticket */
-+	tpm_buf_append(&buf, payload->tk, payload->tk_len);
-+
-+	rc = tpm_send(chip, buf.data, tpm_buf_length(&buf));
-+	if (rc)
-+		goto out;
-+
-+	head = (struct tpm_header *)buf.data;
-+
-+	if (head->return_code != 0)
-+		rc = -EINVAL;
-+out:
-+	tpm_buf_destroy(&buf);
-+
-+	return rc;
-+}
-+
- int swsusp_encrypt_digest(struct swsusp_header *header)
+ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+-		struct hib_bio_batch *hb)
++			   struct hib_bio_batch *hb, bool hash)
  {
- 	const struct cred *cred = current_cred();
-@@ -95,7 +186,7 @@ int swsusp_encrypt_digest(struct swsusp_header *header)
- 	struct key *key;
- 	int ret, i;
+ 	int error = 0;
+ 	sector_t offset;
+@@ -454,6 +486,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+ 	if (!handle->cur)
+ 		return -EINVAL;
+ 	offset = alloc_swapdev_block(root_swap);
++	crypto_shash_update(handle->desc, buf, PAGE_SIZE);
+ 	error = write_page(buf, offset, hb);
+ 	if (error)
+ 		return error;
+@@ -496,6 +529,7 @@ static int flush_swap_writer(struct swap_map_handle *handle)
+ static int swap_writer_finish(struct swap_map_handle *handle,
+ 		unsigned int flags, int error)
+ {
++	crypto_shash_final(handle->desc, handle->digest);
+ 	if (!error) {
+ 		pr_info("S");
+ 		error = mark_swapfiles(handle, flags);
+@@ -560,7 +594,7 @@ static int save_image(struct swap_map_handle *handle,
+ 		ret = snapshot_read_next(snapshot);
+ 		if (ret <= 0)
+ 			break;
+-		ret = swap_write_page(handle, data_of(*snapshot), &hb);
++		ret = swap_write_page(handle, data_of(*snapshot), &hb, true);
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+@@ -844,7 +878,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 			     off += PAGE_SIZE) {
+ 				memcpy(page, data[thr].cmp + off, PAGE_SIZE);
  
--	char *keyinfo = "new\t32\tkeyhandle=0x81000001";
-+	char *keyinfo = "new\t32\tkeyhandle=0x81000001\tcreationpcrs=0x00800000";
+-				ret = swap_write_page(handle, page, &hb);
++				ret = swap_write_page(handle, page, &hb, true);
+ 				if (ret)
+ 					goto out_finish;
+ 			}
+@@ -938,7 +972,7 @@ int swsusp_write(unsigned int flags)
+ 		goto out_finish;
+ 	}
+ 	header = (struct swsusp_info *)data_of(snapshot);
+-	error = swap_write_page(&handle, header, NULL);
++	error = swap_write_page(&handle, header, NULL, false);
+ 	if (!error) {
+ 		error = (flags & SF_NOCOMPRESS_MODE) ?
+ 			save_image(&handle, &snapshot, pages - 1) :
+@@ -974,6 +1008,7 @@ static int get_swap_reader(struct swap_map_handle *handle,
+ 	int error;
+ 	struct swap_map_page_list *tmp, *last;
+ 	sector_t offset;
++	struct crypto_shash *tfm;
  
- 	chip = tpm_default_chip();
+ 	*flags_p = swsusp_header->flags;
  
-@@ -164,6 +255,7 @@ int swsusp_decrypt_digest(struct swsusp_header *header)
- 	char *keytemplate = "load\t%s\tkeyhandle=0x81000001";
- 	struct trusted_key_payload *payload;
- 	struct tpm_digest *digests = NULL;
-+	char certhash[SHA256_DIGEST_SIZE];
- 	char *blobstring = NULL;
- 	char *keyinfo = NULL;
- 	struct tpm_chip *chip;
-@@ -184,8 +276,10 @@ int swsusp_decrypt_digest(struct swsusp_header *header)
- 
- 	digests = kcalloc(chip->nr_allocated_banks, sizeof(struct tpm_digest),
- 			  GFP_KERNEL);
--	if (!digests)
-+	if (!digests) {
-+		ret = -ENOMEM;
- 		goto reset;
+@@ -1011,11 +1046,34 @@ static int get_swap_reader(struct swap_map_handle *handle,
+ 	}
+ 	handle->k = 0;
+ 	handle->cur = handle->maps->map;
++
++	tfm = crypto_alloc_shash("sha256", 0, 0);
++	if (IS_ERR(tfm)) {
++		error = -EINVAL;
++		goto err_rel;
 +	}
- 
- 	for (i = 0; i <= chip->nr_allocated_banks; i++) {
- 		digests[i].alg_id = chip->allocated_banks[i].alg_id;
-@@ -227,8 +321,58 @@ int swsusp_decrypt_digest(struct swsusp_header *header)
- 
- 	payload = key->payload.data[0];
- 
--	ret = swsusp_enc_dec(payload, header->digest, 0);
-+	ret = sha256_data(payload->creation, payload->creation_len, certhash);
-+	if (ret < 0)
-+		goto out;
-+
-+	if (memcmp(payload->creation_hash, certhash, SHA256_DIGEST_SIZE) != 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = tpm_certify_creationdata(chip, payload);
-+	if (ret != 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* We now know that the creation data is authentic - parse it */
-+
-+	/* TPML_PCR_SELECTION.count */
-+	if (be32_to_cpu(*(int *)payload->creation) != 1) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (be16_to_cpu(*(u16 *)&payload->creation[4]) != TPM_ALG_SHA256) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (*(char *)&payload->creation[6] != 3) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* PCR 23 selected */
-+	if (be32_to_cpu(*(int *)&payload->creation[6]) != 0x03000080) {
-+		ret = -EINVAL;
-+		goto out;
++	handle->desc = kmalloc(sizeof(struct shash_desc) +
++			       crypto_shash_descsize(tfm), GFP_KERNEL);
++	if (!handle->desc) {
++		error = -ENOMEM;
++		goto err_rel;
 +	}
 +
-+	if (be16_to_cpu(*(u16 *)&payload->creation[10]) !=
-+	    SHA256_DIGEST_SIZE) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
++	handle->desc->tfm = tfm;
++
++	error = crypto_shash_init(handle->desc);
++	if (error != 0)
++		goto err_free;
+ 	return 0;
++err_free:
++	kfree(handle->desc);
++err_rel:
++	release_swap_reader(handle);
++	return error;
+ }
  
-+	if (memcmp(&payload->creation[12], expected_digest,
+ static int swap_read_page(struct swap_map_handle *handle, void *buf,
+-		struct hib_bio_batch *hb)
++			  struct hib_bio_batch *hb, bool hash)
+ {
+ 	sector_t offset;
+ 	int error;
+@@ -1029,6 +1087,7 @@ static int swap_read_page(struct swap_map_handle *handle, void *buf,
+ 	error = hib_submit_io(REQ_OP_READ, 0, offset, buf, hb);
+ 	if (error)
+ 		return error;
++	crypto_shash_update(handle->desc, buf, PAGE_SIZE);
+ 	if (++handle->k >= MAP_PAGE_ENTRIES) {
+ 		handle->k = 0;
+ 		free_page((unsigned long)handle->maps->map);
+@@ -1043,11 +1102,21 @@ static int swap_read_page(struct swap_map_handle *handle, void *buf,
+ 	return error;
+ }
+ 
+-static int swap_reader_finish(struct swap_map_handle *handle)
++static int swap_reader_finish(struct swap_map_handle *handle,
++			      struct swsusp_info *header)
+ {
++	int ret = 0;
++
++	crypto_shash_final(handle->desc, handle->digest);
++	if (memcmp(handle->digest, swsusp_header->digest,
 +		   SHA256_DIGEST_SIZE) != 0) {
-+		ret = -EINVAL;
-+		goto out;
++		pr_err("Image digest doesn't match header digest\n");
++		ret = -ENODATA;
 +	}
 +
-+	ret = swsusp_enc_dec(payload, header->digest, 0);
- out:
- 	key_revoke(key);
- 	key_put(key);
+ 	release_swap_reader(handle);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -1064,11 +1133,20 @@ static int load_image(struct swap_map_handle *handle,
+ 	int ret = 0;
+ 	ktime_t start;
+ 	ktime_t stop;
+-	struct hib_bio_batch hb;
++	struct hib_bio_batch *hb, real_hb;
+ 	int err2;
+ 	unsigned nr_pages;
+ 
+-	hib_init_batch(&hb);
++	/*
++	 * If we're calculating the SHA256 of the image, we need the blocks
++	 * to be read in in order
++	 */
++	if (swsusp_header->flags & SF_VERIFY_IMAGE) {
++		hb = NULL;
++	} else {
++		hib_init_batch(&real_hb);
++		hb = &real_hb;
++	}
+ 
+ 	clean_pages_on_read = true;
+ 	pr_info("Loading image data pages (%u pages)...\n", nr_to_read);
+@@ -1081,11 +1159,11 @@ static int load_image(struct swap_map_handle *handle,
+ 		ret = snapshot_write_next(snapshot);
+ 		if (ret <= 0)
+ 			break;
+-		ret = swap_read_page(handle, data_of(*snapshot), &hb);
++		ret = swap_read_page(handle, data_of(*snapshot), hb, true);
+ 		if (ret)
+ 			break;
+ 		if (snapshot->sync_read)
+-			ret = hib_wait_io(&hb);
++			ret = hib_wait_io(hb);
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+@@ -1093,8 +1171,8 @@ static int load_image(struct swap_map_handle *handle,
+ 				nr_pages / m * 10);
+ 		nr_pages++;
+ 	}
+-	err2 = hib_wait_io(&hb);
+-	hib_finish_batch(&hb);
++	err2 = hib_wait_io(hb);
++	hib_finish_batch(hb);
+ 	stop = ktime_get();
+ 	if (!ret)
+ 		ret = err2;
+@@ -1169,7 +1247,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	unsigned int m;
+ 	int ret = 0;
+ 	int eof = 0;
+-	struct hib_bio_batch hb;
++	struct hib_bio_batch *hb, real_hb;
+ 	ktime_t start;
+ 	ktime_t stop;
+ 	unsigned nr_pages;
+@@ -1182,7 +1260,16 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	struct dec_data *data = NULL;
+ 	struct crc_data *crc = NULL;
+ 
+-	hib_init_batch(&hb);
++	/*
++	 * If we're calculating the SHA256 of the image, we need the blocks
++	 * to be read in in order
++	 */
++	if (swsusp_header->flags & SF_VERIFY_IMAGE) {
++		hb = NULL;
++	} else {
++		hib_init_batch(&real_hb);
++		hb = &real_hb;
++	}
+ 
+ 	/*
+ 	 * We'll limit the number of threads for decompression to limit memory
+@@ -1301,7 +1388,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 
+ 	for(;;) {
+ 		for (i = 0; !eof && i < want; i++) {
+-			ret = swap_read_page(handle, page[ring], &hb);
++			ret = swap_read_page(handle, page[ring], hb, true);
+ 			if (ret) {
+ 				/*
+ 				 * On real read error, finish. On end of data,
+@@ -1328,7 +1415,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 			if (!asked)
+ 				break;
+ 
+-			ret = hib_wait_io(&hb);
++			ret = hib_wait_io(hb);
+ 			if (ret)
+ 				goto out_finish;
+ 			have += asked;
+@@ -1382,7 +1469,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 		 * Wait for more data while we are decompressing.
+ 		 */
+ 		if (have < LZO_CMP_PAGES && asked) {
+-			ret = hib_wait_io(&hb);
++			ret = hib_wait_io(hb);
+ 			if (ret)
+ 				goto out_finish;
+ 			have += asked;
+@@ -1458,7 +1545,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	}
+ 	swsusp_show_speed(start, stop, nr_to_read, "Read");
+ out_clean:
+-	hib_finish_batch(&hb);
++	hib_finish_batch(hb);
+ 	for (i = 0; i < ring_size; i++)
+ 		free_page((unsigned long)page[i]);
+ 	if (crc) {
+@@ -1499,13 +1586,13 @@ int swsusp_read(unsigned int *flags_p)
+ 	if (error)
+ 		goto end;
+ 	if (!error)
+-		error = swap_read_page(&handle, header, NULL);
++		error = swap_read_page(&handle, header, NULL, false);
+ 	if (!error) {
+ 		error = (*flags_p & SF_NOCOMPRESS_MODE) ?
+ 			load_image(&handle, &snapshot, header->pages - 1) :
+ 			load_image_lzo(&handle, &snapshot, header->pages - 1);
+ 	}
+-	swap_reader_finish(&handle);
++	error = swap_reader_finish(&handle, header);
+ end:
+ 	if (!error)
+ 		pr_debug("Image successfully loaded\n");
 -- 
 2.30.0.617.g56c4b15f3c-goog
 
