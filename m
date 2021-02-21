@@ -2,72 +2,71 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-21.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E5E9C43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 419F6C433E6
 	for <linux-pm@archiver.kernel.org>; Sun, 21 Feb 2021 09:40:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2E70364E5C
+	by mail.kernel.org (Postfix) with ESMTP id 1A57F64F0E
 	for <linux-pm@archiver.kernel.org>; Sun, 21 Feb 2021 09:40:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229902AbhBUJkZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 21 Feb 2021 04:40:25 -0500
-Received: from esa5.hgst.iphmx.com ([216.71.153.144]:55621 "EHLO
-        esa5.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229932AbhBUJkX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2021 04:40:23 -0500
+        id S229945AbhBUJkX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 21 Feb 2021 04:40:23 -0500
+Received: from esa6.hgst.iphmx.com ([216.71.154.45]:6875 "EHLO
+        esa6.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229926AbhBUJkW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2021 04:40:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
   t=1613900422; x=1645436422;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:content-transfer-encoding:mime-version;
-  bh=k/cO0iEyh7I4iX+p9B2vfPafNS1lDlXAuiIz0Z62R7Y=;
-  b=epjgKvF22Wr9LIzN+smZW9O89CWl3aCm9LyIT6Mfjuvm5oORnP21H9Cw
-   A2BaWJ0jeepH0MLBK568Df1xi/crn8lmPdFiP+xIkceBjwX6DxzO1yzrZ
-   4pAQHqucVoIWaInl8kKxE153Vf2OiExorHZW2Bmmu7+5INgAoNQvrWbha
-   ZEg8iBslqEcp0s0JYYUDhqMkj0CDjwwtydUfc6n6wCNukq41lpVH7tnmf
-   +A8w3l3wvOvXbuuPTF++jjUNxDXIKaI9zhYWoLu5QOJP76nN6VxfuWNaK
-   muIx09ZpAvS+4sRfE0lp8J5BMpgSpilmCcaiyZiWLP9sYUlkLnDJZrqs6
-   g==;
-IronPort-SDR: PSxBnzkTsWVu80u+0DaWRFZ8p5Igg/Fdm+veUka6bxyD5B1YUf8Fh+LkoR4CBK6fr+hz9+eXLM
- 3P/qOBuvlEltxt8946Z6hHr2iu8eoUNcYmZX4dIv8G8j6waHXP98cnv3ELyid1JZIJcXiKUnSW
- 97d3zya55TLiOtcCjCQTLUQAM78eeNH/iZb2xuysQdbbnJdXkWIoePEm+YpSGNAtEhaNBt8IGz
- EvxKznIOVukZEbmefgiyT5Bs4nTk6wfolsP+NyBrGnHIPQ4ySpfbdqkvr4upRNpkzOuOq7hucx
- Zv0=
+  bh=KCo5bCppzleLXYj4Ltwcw+vF0Pd7VQ9e1VcaI2J3aHY=;
+  b=KtXzhhHVj52Zo5BeSuizkdPsFy4driuRa7jixxpW+ITvZ7BIwIJQB8bn
+   VNYxjXWGz+pA5HBoKT0Xhy6F2XJlXnthtKsxpg37c/ikSzBOJP84T1dZX
+   9+DobNPHRyEc3OkW3HCYpu9DkQkVolySxrEJSCbcbyju/JWAxbD6WaJdR
+   NPpt8lOAtMiklVXMhlcyxEAL3qDgLCm0mT12caT3x0cBYx1aS9dK4cMpP
+   hOLOfgRdmyEOWUdAtH/P28vgU7BQBAWgGGwb80CsaAlFGucTafTolYoKG
+   WMN5TSmb5HBHId86DSoHbmgxLR9u0rkttiRzS7VyZV8b2WJxY9nu8LxEX
+   Q==;
+IronPort-SDR: DvlDx94+6w4RRAVR+NMOr2FpdtYovQPgTf0ilusZDPR6XMycmd1VBncHfeXpfiTmo7uhB05d3E
+ RTpxCyQYz1j9PFM3Dl2HK5wJNoBVBi7tNbUcr5enfrQOIYNQ2yDb/KDDc886aqKpWVGnlFrn/v
+ xboQSC9D3P9VJPtvZGfe67lp1LQQsI8EWJfxI58HZQ3LBNtmNvT6ZHnOIfxSzXAt2V7KagB6HO
+ onhtc93PvuHEvqVyIC+QhognjEFdnfr1Mjg1SZqQP4vLFPxbP3IR5h9TPvWNKS2HhsxFdp7gMt
+ C6A=
 X-IronPort-AV: E=Sophos;i="5.81,194,1610380800"; 
-   d="scan'208";a="160448198"
-Received: from mail-bn8nam11lp2177.outbound.protection.outlook.com (HELO NAM11-BN8-obe.outbound.protection.outlook.com) ([104.47.58.177])
-  by ob1.hgst.iphmx.com with ESMTP; 21 Feb 2021 17:39:14 +0800
+   d="scan'208";a="161607386"
+Received: from mail-bn8nam11lp2170.outbound.protection.outlook.com (HELO NAM11-BN8-obe.outbound.protection.outlook.com) ([104.47.58.170])
+  by ob1.hgst.iphmx.com with ESMTP; 21 Feb 2021 17:38:52 +0800
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=dHmkpAP59JurNa4VtcZlq2q5jipk+FKODgQpXbKzQUPKXsu3H+fjNYJZhnNHY9fhGtKT9U5N+psMw0L6It/eoEqcwO5EIORSQacKrf736uGYjgi1LZWyQ6bjRIwaxHxYv+N4AInXJdwhVV4mj2UedTC4UkY7RPnpBBEQm4KQrHn+SKBpc1GEByxgTyBZ/mnQtYPjJ6KqSa8d3pW//y76vt12QWuaaBCr0Qv3ZPoc6QWUXgECkZEAYPCMVshqWMOBXH5MzTUmt5p9+yPBODnK99cOP1ocqZrPIt2hBv79OGSqeHixr0cixflTQapUJF4112vhjRCbeHHRz5oTlu0xkw==
+ b=bnrG0mfFIWAu9/0sVTaOEAdGWqWk+CE55gXbRRjL/oXWfod6+jGS6la/GQz/1gKs8RayJlbRMaCOemZdeSIA28nMtoYqiz2VY7hwaiqBuAG1Eb5IrpBBmZYmCY6N+kn5kVTWiovPR6CDeQigevkAzDO/+vhahIyf5vtddcv3BSV9GlEypxO+OKhvq4MKRtyjFAz4UKjjZ0/c7AHc9+/9Vfy0KLMJxobruIhBBocIyhAWlCmSsU03ogteWbHW94qldcAM1oddZCzu9csqM6tPKVC6+W74gciHKE4HnEFg9W3Smp54XhG+xkeYIQWw7sR4pig9lYqvydbbSmLK/vouaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dxTOW4blC+Teedi8HxIWsAGjAFDkJQSf44pZ3zfmJEg=;
- b=GGdCF83gixwkm3oQhVHWhzkqMH34YhIxpLnDSbhkBPeWO79LewE6HCwWbD7YOvqT3SgrK2q73alL/A0wvCbV4cB44D9RkdtFx+qIre3Ah8N7MYrUbuLDP8D1n7OjlOxxsP6P/+6luJM7OE2spekzaUA01s/jJH8W4Q6w8VpfJ4n0LAkLrSskGVcecbzA1N6ycYvtrI4xiDTIOqLH5dcId/xXfNcB2Rw+SQLYfuyB7piH8MU5nABD+NguW3sklKU4gsWEqhwvG29fNSmQ8WeVDDoHV/H58y4vHB7qXdJtt3AqVD57LMBYfYA8nvyeEUOTTgpUeAR5Aywj9ScKIottEQ==
+ bh=EOys0KUzThBGFKirZQw23uhlWWYQo/RXXrT2Aj1ZyZg=;
+ b=ctBrIwwTGTQlcRpVMERZwWux39s0pQVX0oWeUEB8V8S1R/NsTn4XZGWXLjLSGu9Siz/CgNmc8Px2tb2jDIu5lSB+s6+Jvc817xovwv2YPN+3uHoQNDpPXaqxeWjbjaTA4a/eT5odW/ztsV5EzLMoDp7DV66PpgSnI+g9lS9eFP6r8n43JUFkCwriMaujMS3Vvaw1VQ1ERDJCpT/zhTCKnr1ui+BmQhS9tkTDj1M7L+JA6M/KuGqz7PMoJkuUbXdugbn3ancd96RH7RbmI7mc+ld/dd8z4t2T7rIRJMiL3U1sWpC+TrhiN1XbdDdoNzGHmOQxRgCLiYt/gdM6MFYHLg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
  header.d=wdc.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dxTOW4blC+Teedi8HxIWsAGjAFDkJQSf44pZ3zfmJEg=;
- b=QI2OVwpV5qbGNZDiiiUtu0GnWyePY79OrZgG/JSNrnZBGbrQIzUg/0q0Kaqo9w7G/3Ydl5343esQEF4NTUJVmbIMvNfSO4UVL+KNjL3rZZExX//G26fkm7iigmdhDpGWd8rPfqVtroTBxfLaqNnpvIIlesFc5id0kYGf3iJ7a/s=
+ bh=EOys0KUzThBGFKirZQw23uhlWWYQo/RXXrT2Aj1ZyZg=;
+ b=j8iepW9mC2PNQ8yV9xIulQLK/BKQ4M/ASi0Ya1xREDZVSWxGELRx73D4PmHM1KjcUdyprb1IS1UKcBy3N5r4cjkie1BKSlebWikKeeWTi486Y+GiyqfSQZ/MI4iGlY/eF4vmMDnUNxkpUTvbT0v6XNc2zfIkItlNhIQvEEgJZv4=
 Authentication-Results: dabbelt.com; dkim=none (message not signed)
  header.d=none;dabbelt.com; dmarc=none action=none header.from=wdc.com;
 Received: from DM6PR04MB6201.namprd04.prod.outlook.com (2603:10b6:5:127::32)
  by DM5PR04MB0459.namprd04.prod.outlook.com (2603:10b6:3:9d::14) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.25; Sun, 21 Feb
- 2021 09:39:12 +0000
+ 2021 09:38:48 +0000
 Received: from DM6PR04MB6201.namprd04.prod.outlook.com
  ([fe80::38c0:cc46:192b:1868]) by DM6PR04MB6201.namprd04.prod.outlook.com
  ([fe80::38c0:cc46:192b:1868%7]) with mapi id 15.20.3868.029; Sun, 21 Feb 2021
- 09:39:12 +0000
+ 09:38:48 +0000
 From:   Anup Patel <anup.patel@wdc.com>
 To:     Palmer Dabbelt <palmer@dabbelt.com>,
         Palmer Dabbelt <palmerdabbelt@google.com>,
@@ -85,9 +84,9 @@ Cc:     Sandeep Tripathy <milun.tripathy@gmail.com>,
         linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         Anup Patel <anup.patel@wdc.com>
-Subject: [RFC PATCH 7/8] dt-bindings: Add bindings documentation for RISC-V idle states
-Date:   Sun, 21 Feb 2021 15:07:57 +0530
-Message-Id: <20210221093758.210981-8-anup.patel@wdc.com>
+Subject: [RFC PATCH 3/8] RISC-V: Add arch functions for non-retentive suspend entry/exit
+Date:   Sun, 21 Feb 2021 15:07:53 +0530
+Message-Id: <20210221093758.210981-4-anup.patel@wdc.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210221093758.210981-1-anup.patel@wdc.com>
 References: <20210221093758.210981-1-anup.patel@wdc.com>
@@ -99,324 +98,364 @@ X-ClientProxiedBy: MA1PR0101CA0009.INDPRD01.PROD.OUTLOOK.COM
  (2603:10b6:5:127::32)
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from wdc.com (122.171.171.12) by MA1PR0101CA0009.INDPRD01.PROD.OUTLOOK.COM (2603:1096:a00:21::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27 via Frontend Transport; Sun, 21 Feb 2021 09:39:06 +0000
+Received: from wdc.com (122.171.171.12) by MA1PR0101CA0009.INDPRD01.PROD.OUTLOOK.COM (2603:1096:a00:21::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3868.27 via Frontend Transport; Sun, 21 Feb 2021 09:38:42 +0000
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: a003a7d3-3049-43ee-a06d-08d8d64c8baf
+X-MS-Office365-Filtering-Correlation-Id: 6bc29b22-c57a-46ef-b957-08d8d64c7d61
 X-MS-TrafficTypeDiagnostic: DM5PR04MB0459:
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM5PR04MB04597BC8C7287132ED8FC4BF8D829@DM5PR04MB0459.namprd04.prod.outlook.com>
+X-Microsoft-Antispam-PRVS: <DM5PR04MB0459D2DCD544D40BD1CF8CA28D829@DM5PR04MB0459.namprd04.prod.outlook.com>
 WDCIPOUTBOUND: EOP-TRUE
-X-MS-Oob-TLC-OOBClassifiers: OLM:8273;
+X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: CqvOyqEceHG8HPxvjhTFNgStTIHAsy11LT7jo35kmNFNx64EW/gy0ZtEqio3g4c9Iv97xmiNMWDdyTwLvlgtDwlEFGKABrVkSEecnEZsmjUjDHfkUtacO+KMFMcGtqm6q60eFGiAYMdkUMGyPVEP37uN1/uqCge4BQM+zCb7QyORIS+qpAuF11ajFsY+X14DX/fz9vaUkp3uw23jJCgU+yQrOPd7un0nzbe9YD+q1Z7tRXiDa0KbQPcbTwu/SH2WrLPogr1EYBB4Izy4kES3DUbjka5A6wA7JU9wlSzP0ox1VUEB3D5WTgHfL4QB8+NL8Od8RbtYmby1/QC6tU7Lov0F7DtrHJig7Z1kt/rmQD0+WxKWo+gmrddnNNGMHgDEfvIJO6rgCcyVQa/n5IwdmoKfWtL0yaBM7dPZi9zNbR49UHSe+AVs3WslY+SKrAAKb6V0ddwNS2jxWrOBzULulhCwKCX3IpIao5sAz5edvfBljzAYbqf6Sb76mPNehOlcgUZ8mH7CgOxn5I92RIWkI5LqL9HKy7iKOmAquPObEDXuqcYoa17ZlenaUlCma1D8PpLGp6vwosL7r0wmJn31Xg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR04MB6201.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(376002)(396003)(346002)(39860400002)(136003)(55016002)(44832011)(66556008)(8676002)(2616005)(6666004)(16526019)(7696005)(5660300002)(54906003)(110136005)(966005)(4326008)(66476007)(36756003)(83380400001)(478600001)(1076003)(956004)(8886007)(316002)(2906002)(66946007)(86362001)(52116002)(7416002)(8936002)(26005)(186003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?jGL5RoVvYa7mAQxgtWh7QjiUUB8cPVAbCv+ykOUukIvzOdNFBa6+rUrP//De?=
- =?us-ascii?Q?VkxMqsHp6NRchZPJgSWc8g0V3n8xlzHNUeFRHA0Y7yPgUVmhSzl3xOdqn5iy?=
- =?us-ascii?Q?aGY+WGwpctDpsMZHfn8vLUbPr9K/xN6u3LuUImQ9YIVW9yX5YJnRYlIY/QlH?=
- =?us-ascii?Q?JQa6+57s548z260coYBG7o3D4yhEPIHZgMwTQtEVYU8vgexLd90PNqFIYsXd?=
- =?us-ascii?Q?tllWI7Dqn/5U0r5+W2jLAUJ4CERgSpUU8gzZYLdCkTrp9ujBlVzMxm2WCu6b?=
- =?us-ascii?Q?Jhrqk4ySlbnRhuvX7PkJYNOlUY5wtz6mJGXec8HzYHTnRqtnXosuC09O7tH7?=
- =?us-ascii?Q?dZSonEFQKVDsoEjrLN+OAi9Hx63i7+Ravsd3XhIvtxoq5Wdt41OrtvkNdHhf?=
- =?us-ascii?Q?SNUZVYg2O4XwNr/7CSbK1cHaCbLVoDGxyECwJojC/0Nz+l8PHaE6f1tExqNF?=
- =?us-ascii?Q?IiGuKuHJEdI5nwBWul0ehYFRlCR9Ykg/F6t3IYrUjCjk83qumLjy0WQyQKPx?=
- =?us-ascii?Q?y+Ton6TwuS4+sueP9WbOvDY1NWxIqszuJpBt7fHCh4U98vJNjajT2wIoEiQ7?=
- =?us-ascii?Q?2n+r7bwDYZlsWbZsAoe9Jwkr0YHGwAi+Vs2yiSlzIsN+2dr5bJK2ZS/M3rzq?=
- =?us-ascii?Q?AJ+TeEIrvnq2+FFRojfonIzMy7RLXrRZ6QDsz8F1rgQekf4Euqo/zX3DRgle?=
- =?us-ascii?Q?eV2PyLRdFi9omjUugMdbvdGKrTz79XSsyDSrfkPf2KOPl/pTyTe4UKjAfubl?=
- =?us-ascii?Q?4kwVQ54cwFxd4Q2xxdpcuaO8sCOwiyjvVRwzv2NCnGeWBfVG5QzCpaPrEEaE?=
- =?us-ascii?Q?Fm7KVjaKqUyvA3r6AwmJM6QsR+CjQWEWS7yaFe4H/sCcl/7qP/eAk1C6FwSm?=
- =?us-ascii?Q?xUdpI6xRtlFE3GNX2DggikOFU+NauOyJVZiLvISxEsaA21nwGX25mkKewo5R?=
- =?us-ascii?Q?dBUo3iq+nGQ9lL9HkUQPppIlABXkNUkntFjZWlC7QmeHuiwDR0XNaN1hAnOa?=
- =?us-ascii?Q?zMACRR3lq6mB+czEg+yxacrvHOhvLktB+jCywMjyg9zKfG7OW6izZu0M1+hM?=
- =?us-ascii?Q?jhaODQx4fQ58J7oDkMei4qPlA8uNEiHgo6mqmS01+ygZE9CLVWz3He+JRsEL?=
- =?us-ascii?Q?8ElJHjomNuqWSSIRE6DDcVGTcKoKjv+Ck1kHdn+PQimhwKywIz1a4BC92T9F?=
- =?us-ascii?Q?PXaYA9VZ0AWzne2cUMyGEp8f2q9FCVFbj5Mbg0P22VwelYQ6/1dFWLSsTWyM?=
- =?us-ascii?Q?tMTEk87MBGaIyFahTVuDg/ux14uMf7uBbBVXgQkGbny1gnAA96Sik0BeZ6C5?=
- =?us-ascii?Q?w5tSSWwEM2pCaf9oNlDG69P/?=
+X-Microsoft-Antispam-Message-Info: TLiNgF9/xMoOQ50kFAPBQbvoaj6BtoTD87eYcPed6T+QFG9bleEWP085JkSlo1nYCOiIsiwEhKTHM3CxaLNi25oxnZeKed4W+52Q3vU9Ku9hOcFkoD4Su9VYh5Mgkgzyk7IpdmbgabCwGWF9+I4GPjVZxOZu4xh09scCAqc4Kg34uvgtHCvHp3pYHa+WHb4m9ij6iifAGoosWGxu6UTpff+frKl0b+NjWL94of72rk5mUfNHtLST6rQUbyzF5+UP0+g4w2QE7NaVuUDE2flQdWJI4005Hgwq5ETr9xyognclX5ej8o1QE2dJJwAV4uTc5uJe7RzXYzZoM0MK3Y0Fmf+tpaWlot0GISFAP12m6u4z0zjeB7xj6Rq7GeyRe4n8x8mOfSrKAL/TKPlBKR2jNDgH5tc4mW2ZtTDnabQgYKFcxXYok5nLrkcIC9Ozhl54EnYV24AxBJ2tnF9Tv/Pf6Y2LFTpOyinF8BTClU5m8jzAsweS0M/K2YfMac+/7I45g5V40/InOZTJE7p3fDt2Bg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR04MB6201.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(376002)(396003)(346002)(39860400002)(136003)(55016002)(44832011)(66556008)(8676002)(2616005)(6666004)(16526019)(7696005)(15650500001)(5660300002)(54906003)(110136005)(4326008)(66476007)(36756003)(83380400001)(478600001)(1076003)(956004)(8886007)(316002)(2906002)(66946007)(86362001)(52116002)(7416002)(8936002)(26005)(186003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?USW9rQgAefcG0B1w1Hopr/oRVAgUnBTlLFUZQ0hclWlJ0v9QpesZ+JDsufz2?=
+ =?us-ascii?Q?GUcZyz+X5hE2Tm/TR3QuegYs/cF5Hgko1WswoCBeVwUtHz7g9gEx+xC1MVDm?=
+ =?us-ascii?Q?CvJ1oBn9RwITH9IA8ZqhQAxErIz6EdgT8YXCUXQM7T7VDciGFwd+TzY407xp?=
+ =?us-ascii?Q?ydC2bK4V779552ARWd3IbhrZlD34dYAmmTPuKhNva5iRDEh+lV3ZW3eo5DEk?=
+ =?us-ascii?Q?eTEftZYpjQbihzD+44/lS//E6ky3Wd0RD59B7ApSqgfAUizmPKSzDXthOs/d?=
+ =?us-ascii?Q?YKIHcpA2lAHO/J0kLjUesp9IaREtitCssJdm3k5yX+e3nzJAeqbmhq957mko?=
+ =?us-ascii?Q?4h4Hw5Vz+yFd3qKx8tQpYs6c7A9mo4CpsNkPEDS4mwUWtC/DPBLmfUUA8BGg?=
+ =?us-ascii?Q?IwY+M5yHYoutL2/TZWc/HD7lySERb/nGUjCxztaqrBVmSM5lvbYhYr6ZJw20?=
+ =?us-ascii?Q?HfarY4ikNuAjBJy4O8zgj7rYYaBhr4RC9F0NRCXHeEhHLB4g3/tYZW7cmD1p?=
+ =?us-ascii?Q?gMFnmbN1upiShJI5f5svBudD4jJh4QcM+loTKfvofKqBthiepaWDKArX4/Ke?=
+ =?us-ascii?Q?AUz6DBp5ZbaIaBMJuQ5aEtU/1YGY7RWjHQSxYliKfreF3BaHtHbqfdF/OejR?=
+ =?us-ascii?Q?zuj+2jMfnTsNuQpM3asD+a/IqTn8ol6tgBDnIA0qK6e8UbtCb2wWMq7DMS3f?=
+ =?us-ascii?Q?siAr+1ayIiXGBJivI/sN9Pbc12H0A62oToQmrc1j+qAoD68WiKGi5BhRWJ4g?=
+ =?us-ascii?Q?STkDTO9RnxWMhp5FEK0/eHOw5KuwNhDa16/rhOr4+baxS0OaKxF6z5aaAo8+?=
+ =?us-ascii?Q?SPBilf8254gqKfEoxqmXF1DWUBzdhcdUCZ1XeUjpAMURFo45+TncSlDLJI4T?=
+ =?us-ascii?Q?w3rxDBXniYiS9qiVNYYrkBpJn7xdCK6AOFfIeyF6BXq6j4TGw8vxFriYGAgR?=
+ =?us-ascii?Q?DZ8z4QDQyKaw9WC+sxd4qzj54vlbO5yZ8NS2JFVL7P9GUzdO16JT7usa3zV7?=
+ =?us-ascii?Q?DNlqZhTGwjXZijhLjZ91I1YAu3ZCLwna50Qii/wyuEFi9G4kWezMn1qHsESr?=
+ =?us-ascii?Q?FeWu93Uy+DrVBBGy/R/u2E9zEKzBIetbtm9Abh9NBnkFRpIELRHba8ja025L?=
+ =?us-ascii?Q?Ml1d73kjT9xAeCILRu9a4kNDlAEw6mR+xQEmxZwblhRpeJ+EbcbNTK3Tn2hv?=
+ =?us-ascii?Q?NcHwvHnNI1IuPkpS/t3ikNQAV7ZBdGRqakZhg8RcyKtbvoB/B3HnSwUUbhrX?=
+ =?us-ascii?Q?aYHobR/CYTcEL9HwmI2C5ZxYD3MEhs5koMsMJgU5acusD+HtEQlUaAUmKNgN?=
+ =?us-ascii?Q?3aGwaneoMJymMMsdYB8CyJ7i?=
 X-OriginatorOrg: wdc.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a003a7d3-3049-43ee-a06d-08d8d64c8baf
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6bc29b22-c57a-46ef-b957-08d8d64c7d61
 X-MS-Exchange-CrossTenant-AuthSource: DM6PR04MB6201.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Feb 2021 09:39:12.4095
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Feb 2021 09:38:48.4788
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: b61c8803-16f3-4c35-9b17-6f65f441df86
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: pcP1tl2zSRJTiqHvl/lbE6IEIHh0fyZVVXnnJyBGXMFTbIxDbLXuqii4iL+baYGrJMBTfl2M/mCqAHhxkbI3+Q==
+X-MS-Exchange-CrossTenant-UserPrincipalName: Cu9uR5X5As4L1rdaegNwX7HH2T9rfRVDMoNpO16CRHh8Zbjt5c+Wl5ATdPPPI7EFPd7cuHJKUEOW2bV642jj5g==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR04MB0459
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The RISC-V CPU idle states will be described in DT under the
-/cpus/riscv-idle-states DT node. This patch adds the bindings
-documentation for riscv-idle-states DT nodes and idle state DT
-nodes under it.
+The hart registers and CSRs are not preserved in non-retentative
+suspend state so we provide arch specific helper functions which
+will save/restore hart context upon entry/exit to non-retentive
+suspend state. These helper functions can be used by cpuidle
+drivers for non-retentive suspend entry/exit.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- .../bindings/riscv/idle-states.yaml           | 250 ++++++++++++++++++
- 1 file changed, 250 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/riscv/idle-states.yaml
+ arch/riscv/include/asm/suspend.h  |  35 +++++++++
+ arch/riscv/kernel/Makefile        |   2 +
+ arch/riscv/kernel/asm-offsets.c   |   3 +
+ arch/riscv/kernel/suspend.c       |  86 ++++++++++++++++++++++
+ arch/riscv/kernel/suspend_entry.S | 116 ++++++++++++++++++++++++++++++
+ 5 files changed, 242 insertions(+)
+ create mode 100644 arch/riscv/include/asm/suspend.h
+ create mode 100644 arch/riscv/kernel/suspend.c
+ create mode 100644 arch/riscv/kernel/suspend_entry.S
 
-diff --git a/Documentation/devicetree/bindings/riscv/idle-states.yaml b/Documentation/devicetree/bindings/riscv/idle-states.yaml
+diff --git a/arch/riscv/include/asm/suspend.h b/arch/riscv/include/asm/suspend.h
 new file mode 100644
-index 000000000000..3eff763fed23
+index 000000000000..63e9f434fb89
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/riscv/idle-states.yaml
-@@ -0,0 +1,250 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/riscv/idle-states.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/arch/riscv/include/asm/suspend.h
+@@ -0,0 +1,35 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
++ */
 +
-+title: RISC-V idle states binding description
++#ifndef _ASM_RISCV_SUSPEND_H
++#define _ASM_RISCV_SUSPEND_H
 +
-+maintainers:
-+  - Anup Patel <anup.patel@wdc.com>
++#include <asm/ptrace.h>
 +
-+description: |+
-+  RISC-V systems can manage power consumption dynamically, where HARTs
-+  (or CPUs) [1] can be put in different platform specific suspend (or
-+  idle) states (ranging from simple WFI, power gating, etc). The RISC-V
-+  SBI [2] hart state management extension provides a standard mechanism
-+  for OSes to request HART state transitions.
++struct suspend_context {
++	/* Saved and restored by low-level functions */
++	struct pt_regs regs;
++	/* Saved and restored by high-level functions */
++	unsigned long scratch;
++	unsigned long tvec;
++	unsigned long ie;
++#ifdef CONFIG_MMU
++	unsigned long satp;
++#endif
++};
 +
-+  The platform specific suspend (or idle) states of a hart can be either
-+  retentive or non-rententive in nature. A retentive suspend state will
-+  preserve hart register and CSR values for all privilege modes whereas
-+  a non-retentive suspend state will not preserve hart register and CSR
-+  values. The suspend (or idle) state entered by executing the WFI
-+  instruction is considered standard on all RISC-V systems and therefore
-+  must not be listed in device tree.
++/* Low-level CPU suspend entry function */
++int __cpu_suspend_enter(struct suspend_context *context);
 +
-+  The device tree binding definition for RISC-V idle states described
-+  in this document is quite similar to the ARM idle states [3].
++/* High-level CPU suspend which will save context and call finish() */
++int cpu_suspend(unsigned long arg,
++		int (*finish)(unsigned long arg,
++			      unsigned long entry,
++			      unsigned long context));
 +
-+  References
++/* Low-level CPU resume entry function */
++int __cpu_resume_enter(unsigned long hartid, unsigned long context);
 +
-+  [1] RISC-V Linux Kernel documentation - CPUs bindings
-+      Documentation/devicetree/bindings/riscv/cpus.yaml
++#endif
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index f6caf4d9ca15..d83038bf93b2 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -40,6 +40,8 @@ obj-$(CONFIG_SMP)		+= cpu_ops_spinwait.o
+ obj-$(CONFIG_MODULES)		+= module.o
+ obj-$(CONFIG_MODULE_SECTIONS)	+= module-sections.o
+ 
++obj-$(CONFIG_CPU_PM)		+= suspend_entry.o suspend.o
 +
-+  [2] RISC-V Supervisor Binary Interface (SBI)
-+      http://github.com/riscv/riscv-sbi-doc/riscv-sbi.adoc
+ obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o ftrace.o
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= mcount-dyn.o
+ 
+diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
+index b79ffa3561fd..8259f5f16da8 100644
+--- a/arch/riscv/kernel/asm-offsets.c
++++ b/arch/riscv/kernel/asm-offsets.c
+@@ -10,6 +10,7 @@
+ #include <linux/sched.h>
+ #include <asm/thread_info.h>
+ #include <asm/ptrace.h>
++#include <asm/suspend.h>
+ 
+ void asm_offsets(void);
+ 
+@@ -108,6 +109,8 @@ void asm_offsets(void)
+ 	OFFSET(PT_BADADDR, pt_regs, badaddr);
+ 	OFFSET(PT_CAUSE, pt_regs, cause);
+ 
++	OFFSET(SUSPEND_CONTEXT_REGS, suspend_context, regs);
 +
-+  [3] ARM idle states binding description - Idle states bindings
-+      Documentation/devicetree/bindings/arm/idle-states.yaml
+ 	/*
+ 	 * THREAD_{F,X}* might be larger than a S-type offset can handle, but
+ 	 * these are used in performance-sensitive assembly so we can't resort
+diff --git a/arch/riscv/kernel/suspend.c b/arch/riscv/kernel/suspend.c
+new file mode 100644
+index 000000000000..49dddec30e99
+--- /dev/null
++++ b/arch/riscv/kernel/suspend.c
+@@ -0,0 +1,86 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
++ */
 +
-+properties:
-+  $nodename:
-+    const: riscv-idle-states
++#include <linux/ftrace.h>
++#include <asm/csr.h>
++#include <asm/suspend.h>
 +
-+patternProperties:
-+  "^(cpu|cluster)-":
-+    type: object
-+    description: |
-+      Each state node represents an idle state description and must be
-+      defined as follows.
++static void suspend_save_csrs(struct suspend_context *context)
++{
++	context->scratch = csr_read(CSR_SCRATCH);
++	context->tvec = csr_read(CSR_TVEC);
++	context->ie = csr_read(CSR_IE);
 +
-+    properties:
-+      compatible:
-+        const: riscv,idle-state
++	/*
++	 * No need to save/restore IP CSR (i.e. MIP or SIP) because:
++	 *
++	 * 1. For no-MMU (M-mode) kernel, the bits in MIP are set by
++	 *    external devices (such as interrupt controller, timer, etc).
++	 * 2. For MMU (S-mode) kernel, the bits in SIP are set by
++	 *    M-mode firmware and external devices (such as interrupt
++	 *    controller, etc).
++	 */
 +
-+      local-timer-stop:
-+        description:
-+          If present the CPU local timer control logic is lost on state
-+          entry, otherwise it is retained.
-+        type: boolean
++#ifdef CONFIG_MMU
++	context->satp = csr_read(CSR_SATP);
++#endif
++}
 +
-+      entry-latency-us:
-+        description:
-+          Worst case latency in microseconds required to enter the idle state.
++static void suspend_restore_csrs(struct suspend_context *context)
++{
++	csr_write(CSR_SCRATCH, context->scratch);
++	csr_write(CSR_TVEC, context->tvec);
++	csr_write(CSR_IE, context->ie);
 +
-+      exit-latency-us:
-+        description:
-+          Worst case latency in microseconds required to exit the idle state.
-+          The exit-latency-us duration may be guaranteed only after
-+          entry-latency-us has passed.
++#ifdef CONFIG_MMU
++	csr_write(CSR_SATP, context->satp);
++#endif
++}
 +
-+      min-residency-us:
-+        description:
-+          Minimum residency duration in microseconds, inclusive of preparation
-+          and entry, for this idle state to be considered worthwhile energy
-+          wise (refer to section 2 of this document for a complete description).
++int cpu_suspend(unsigned long arg,
++		int (*finish)(unsigned long arg,
++			      unsigned long entry,
++			      unsigned long context))
++{
++	int rc = 0;
++	struct suspend_context context = { 0 };
 +
-+      wakeup-latency-us:
-+        description: |
-+          Maximum delay between the signaling of a wake-up event and the CPU
-+          being able to execute normal code again. If omitted, this is assumed
-+          to be equal to:
++	/* Finisher should be non-NULL */
++	if (!finish)
++		return -EINVAL;
 +
-+            entry-latency-us + exit-latency-us
++	/* Save additional CSRs*/
++	suspend_save_csrs(&context);
 +
-+          It is important to supply this value on systems where the duration
-+          of PREP phase (see diagram 1, section 2) is non-neglibigle. In such
-+          systems entry-latency-us + exit-latency-us will exceed
-+          wakeup-latency-us by this duration.
++	/*
++	 * Function graph tracer state gets incosistent when the kernel
++	 * calls functions that never return (aka finishers) hence disable
++	 * graph tracing during their execution.
++	 */
++	pause_graph_tracing();
 +
-+      idle-state-name:
-+        $ref: /schemas/types.yaml#/definitions/string
-+        description:
-+          A string used as a descriptive name for the idle state.
++	/* Save context on stack */
++	if (__cpu_suspend_enter(&context)) {
++		/* Call the finisher */
++		rc = finish(arg, __pa_symbol(__cpu_resume_enter),
++			    (ulong)&context);
 +
-+    required:
-+      - compatible
-+      - entry-latency-us
-+      - exit-latency-us
-+      - min-residency-us
++		/*
++		 * Should never reach here, unless the suspend finisher
++		 * fails. Successful cpu_suspend() should return from
++		 * __cpu_resume_entry()
++		 */
++		if (!rc)
++			rc = -EOPNOTSUPP;
++	}
 +
-+additionalProperties: false
++	/* Enable function graph tracer */
++	unpause_graph_tracing();
 +
-+examples:
-+  - |
++	/* Restore additional CSRs */
++	suspend_restore_csrs(&context);
 +
-+    cpus {
-+        #size-cells = <0>;
-+        #address-cells = <1>;
++	return rc;
++}
+diff --git a/arch/riscv/kernel/suspend_entry.S b/arch/riscv/kernel/suspend_entry.S
+new file mode 100644
+index 000000000000..dee85c86e177
+--- /dev/null
++++ b/arch/riscv/kernel/suspend_entry.S
+@@ -0,0 +1,116 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
++ */
 +
-+        cpu@0 {
-+            device_type = "cpu";
-+            compatible = "riscv";
-+            reg = <0x0>;
-+            riscv,isa = "rv64imafdc";
-+            mmu-type = "riscv,sv48";
-+            cpu-idle-states = <&CPU_RET_0_0 &CPU_NONRET_0_0
-+                            &CLUSTER_RET_0 &CLUSTER_NONRET_0>;
++#include <linux/linkage.h>
++#include <asm/asm.h>
++#include <asm/asm-offsets.h>
++#include <asm/csr.h>
 +
-+            cpu_intc0: interrupt-controller {
-+                #interrupt-cells = <1>;
-+                compatible = "riscv,cpu-intc";
-+                interrupt-controller;
-+            };
-+        };
++	.text
++	.altmacro
++	.option norelax
 +
-+        cpu@1 {
-+            device_type = "cpu";
-+            compatible = "riscv";
-+            reg = <0x1>;
-+            riscv,isa = "rv64imafdc";
-+            mmu-type = "riscv,sv48";
-+            cpu-idle-states = <&CPU_RET_0_0 &CPU_NONRET_0_0
-+                            &CLUSTER_RET_0 &CLUSTER_NONRET_0>;
++ENTRY(__cpu_suspend_enter)
++	/* Save registers (except A0 and T0-T6) */
++	REG_S	ra, (SUSPEND_CONTEXT_REGS + PT_RA)(a0)
++	REG_S	sp, (SUSPEND_CONTEXT_REGS + PT_SP)(a0)
++	REG_S	gp, (SUSPEND_CONTEXT_REGS + PT_GP)(a0)
++	REG_S	tp, (SUSPEND_CONTEXT_REGS + PT_TP)(a0)
++	REG_S	s0, (SUSPEND_CONTEXT_REGS + PT_S0)(a0)
++	REG_S	s1, (SUSPEND_CONTEXT_REGS + PT_S1)(a0)
++	REG_S	a1, (SUSPEND_CONTEXT_REGS + PT_A1)(a0)
++	REG_S	a2, (SUSPEND_CONTEXT_REGS + PT_A2)(a0)
++	REG_S	a3, (SUSPEND_CONTEXT_REGS + PT_A3)(a0)
++	REG_S	a4, (SUSPEND_CONTEXT_REGS + PT_A4)(a0)
++	REG_S	a5, (SUSPEND_CONTEXT_REGS + PT_A5)(a0)
++	REG_S	a6, (SUSPEND_CONTEXT_REGS + PT_A6)(a0)
++	REG_S	a7, (SUSPEND_CONTEXT_REGS + PT_A7)(a0)
++	REG_S	s2, (SUSPEND_CONTEXT_REGS + PT_S2)(a0)
++	REG_S	s3, (SUSPEND_CONTEXT_REGS + PT_S3)(a0)
++	REG_S	s4, (SUSPEND_CONTEXT_REGS + PT_S4)(a0)
++	REG_S	s5, (SUSPEND_CONTEXT_REGS + PT_S5)(a0)
++	REG_S	s6, (SUSPEND_CONTEXT_REGS + PT_S6)(a0)
++	REG_S	s7, (SUSPEND_CONTEXT_REGS + PT_S7)(a0)
++	REG_S	s8, (SUSPEND_CONTEXT_REGS + PT_S8)(a0)
++	REG_S	s9, (SUSPEND_CONTEXT_REGS + PT_S9)(a0)
++	REG_S	s10, (SUSPEND_CONTEXT_REGS + PT_S10)(a0)
++	REG_S	s11, (SUSPEND_CONTEXT_REGS + PT_S11)(a0)
 +
-+            cpu_intc1: interrupt-controller {
-+                #interrupt-cells = <1>;
-+                compatible = "riscv,cpu-intc";
-+                interrupt-controller;
-+            };
-+        };
++	/* Save CSRs */
++	csrr	t0, CSR_EPC
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_EPC)(a0)
++	csrr	t0, CSR_STATUS
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_STATUS)(a0)
++	csrr	t0, CSR_TVAL
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_BADADDR)(a0)
++	csrr	t0, CSR_CAUSE
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_CAUSE)(a0)
 +
-+        cpu@10 {
-+            device_type = "cpu";
-+            compatible = "riscv";
-+            reg = <0x10>;
-+            riscv,isa = "rv64imafdc";
-+            mmu-type = "riscv,sv48";
-+            cpu-idle-states = <&CPU_RET_1_0 &CPU_NONRET_1_0
-+                            &CLUSTER_RET_1 &CLUSTER_NONRET_1>;
++	/* Return non-zero value */
++	li	a0, 1
 +
-+            cpu_intc10: interrupt-controller {
-+                #interrupt-cells = <1>;
-+                compatible = "riscv,cpu-intc";
-+                interrupt-controller;
-+            };
-+        };
++	/* Return to C code */
++	ret
++END(__cpu_suspend_enter)
 +
-+        cpu@11 {
-+            device_type = "cpu";
-+            compatible = "riscv";
-+            reg = <0x11>;
-+            riscv,isa = "rv64imafdc";
-+            mmu-type = "riscv,sv48";
-+            cpu-idle-states = <&CPU_RET_1_0 &CPU_NONRET_1_0
-+                            &CLUSTER_RET_1 &CLUSTER_NONRET_1>;
++ENTRY(__cpu_resume_enter)
++#ifdef CONFIG_MMU
++	/* Save A0 and A1 */
++	add	t0, a0, zero
++	add	t1, a1, zero
 +
-+            cpu_intc11: interrupt-controller {
-+                #interrupt-cells = <1>;
-+                compatible = "riscv,cpu-intc";
-+                interrupt-controller;
-+            };
-+        };
++	/* Enable MMU */
++	la	a0, swapper_pg_dir
++	call	relocate_enable_mmu
 +
-+        riscv-idle-states {
-+            CPU_RET_0_0: cpu-retentive-0-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x10000000>;
-+                entry-latency-us = <20>;
-+                exit-latency-us = <40>;
-+                min-residency-us = <80>;
-+            };
++	/* Restore A0 and A1 */
++	add	a0, t0, zero
++	add	a1, t1, zero
++#endif
 +
-+            CPU_NONRET_0_0: cpu-nonretentive-0-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x90000000>;
-+                entry-latency-us = <250>;
-+                exit-latency-us = <500>;
-+                min-residency-us = <950>;
-+            };
++	/* Make A0 point to suspend context */
++	add	a0, a1, zero
 +
-+            CLUSTER_RET_0: cluster-retentive-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x11000000>;
-+                local-timer-stop;
-+                entry-latency-us = <50>;
-+                exit-latency-us = <100>;
-+                min-residency-us = <250>;
-+                wakeup-latency-us = <130>;
-+            };
++	/* Restore CSRs */
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_EPC)(a0)
++	csrw	CSR_EPC, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_STATUS)(a0)
++	csrw	CSR_STATUS, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_BADADDR)(a0)
++	csrw	CSR_TVAL, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_CAUSE)(a0)
++	csrw	CSR_CAUSE, t0
 +
-+            CLUSTER_NONRET_0: cluster-nonretentive-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x91000000>;
-+                local-timer-stop;
-+                entry-latency-us = <600>;
-+                exit-latency-us = <1100>;
-+                min-residency-us = <2700>;
-+                wakeup-latency-us = <1500>;
-+            };
++	/* Restore registers (except A0 and T0-T6) */
++	REG_L	ra, (SUSPEND_CONTEXT_REGS + PT_RA)(a0)
++	REG_L	sp, (SUSPEND_CONTEXT_REGS + PT_SP)(a0)
++	REG_L	gp, (SUSPEND_CONTEXT_REGS + PT_GP)(a0)
++	REG_L	tp, (SUSPEND_CONTEXT_REGS + PT_TP)(a0)
++	REG_L	s0, (SUSPEND_CONTEXT_REGS + PT_S0)(a0)
++	REG_L	s1, (SUSPEND_CONTEXT_REGS + PT_S1)(a0)
++	REG_L	a1, (SUSPEND_CONTEXT_REGS + PT_A1)(a0)
++	REG_L	a2, (SUSPEND_CONTEXT_REGS + PT_A2)(a0)
++	REG_L	a3, (SUSPEND_CONTEXT_REGS + PT_A3)(a0)
++	REG_L	a4, (SUSPEND_CONTEXT_REGS + PT_A4)(a0)
++	REG_L	a5, (SUSPEND_CONTEXT_REGS + PT_A5)(a0)
++	REG_L	a6, (SUSPEND_CONTEXT_REGS + PT_A6)(a0)
++	REG_L	a7, (SUSPEND_CONTEXT_REGS + PT_A7)(a0)
++	REG_L	s2, (SUSPEND_CONTEXT_REGS + PT_S2)(a0)
++	REG_L	s3, (SUSPEND_CONTEXT_REGS + PT_S3)(a0)
++	REG_L	s4, (SUSPEND_CONTEXT_REGS + PT_S4)(a0)
++	REG_L	s5, (SUSPEND_CONTEXT_REGS + PT_S5)(a0)
++	REG_L	s6, (SUSPEND_CONTEXT_REGS + PT_S6)(a0)
++	REG_L	s7, (SUSPEND_CONTEXT_REGS + PT_S7)(a0)
++	REG_L	s8, (SUSPEND_CONTEXT_REGS + PT_S8)(a0)
++	REG_L	s9, (SUSPEND_CONTEXT_REGS + PT_S9)(a0)
++	REG_L	s10, (SUSPEND_CONTEXT_REGS + PT_S10)(a0)
++	REG_L	s11, (SUSPEND_CONTEXT_REGS + PT_S11)(a0)
 +
-+            CPU_RET_1_0: cpu-retentive-1-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x10000010>;
-+                entry-latency-us = <20>;
-+                exit-latency-us = <40>;
-+                min-residency-us = <80>;
-+            };
++	/* Return zero value */
++	add	a0, zero, zero
 +
-+            CPU_NONRET_1_0: cpu-nonretentive-1-0 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x90000010>;
-+                entry-latency-us = <250>;
-+                exit-latency-us = <500>;
-+                min-residency-us = <950>;
-+            };
-+
-+            CLUSTER_RET_1: cluster-retentive-1 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x11000010>;
-+                local-timer-stop;
-+                entry-latency-us = <50>;
-+                exit-latency-us = <100>;
-+                min-residency-us = <250>;
-+                wakeup-latency-us = <130>;
-+            };
-+
-+            CLUSTER_NONRET_1: cluster-nonretentive-1 {
-+                compatible = "riscv,idle-state";
-+                riscv,sbi-suspend-param = <0x91000010>;
-+                local-timer-stop;
-+                entry-latency-us = <600>;
-+                exit-latency-us = <1100>;
-+                min-residency-us = <2700>;
-+                wakeup-latency-us = <1500>;
-+            };
-+        };
-+    };
-+
-+...
++	/* Return to C code */
++	ret
++END(__cpu_resume_enter)
 -- 
 2.25.1
 
