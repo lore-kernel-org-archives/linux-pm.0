@@ -2,71 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F52C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 17:46:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECFD9C433E9
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 18:13:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E5F5A64D9C
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 17:46:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B039164FCA
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 18:13:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231716AbhBVRqO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Feb 2021 12:46:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44834 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231702AbhBVRqN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2021 12:46:13 -0500
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D50CDC061786
-        for <linux-pm@vger.kernel.org>; Mon, 22 Feb 2021 09:45:11 -0800 (PST)
-Received: by mail-lj1-x235.google.com with SMTP id e8so21111686ljj.5
-        for <linux-pm@vger.kernel.org>; Mon, 22 Feb 2021 09:45:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=iZNyTfd7nEmv+pShZaPJz7a0abWIzHWs8Ubs4x96pL0=;
-        b=Qmddt36uLRlJvP0NWVHc7Q1qsFp7aZYSa6RpBiY+6gzP1pNbGUfOor+3oTyHVV2CJU
-         OeBIML9y9Npk6n9ttYD5G/VcljRzknXMC2S/W4ZEG4lzquP8r5A5qevSDimdNgvg2f+H
-         uyvWz9zOVCyQBhBslydfDfhMBMeCebD6cX6kY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=iZNyTfd7nEmv+pShZaPJz7a0abWIzHWs8Ubs4x96pL0=;
-        b=ZPRxsXVV+Z9CA9dLqMO6ZyNLGEz1nUck2Shw3kMKlzooCatgFpP5/sqNg0NO7gcIoo
-         UyYBFyOOwXkadpFcGIs5T3iTfhFsmoMJe+GeFcK0vw5b+WPcvpLrDawc+CgOKAF4NHsh
-         HytUzXp9IxYfhJUkhCp46qu89bmrMQpo0ZKO+EzJFxOW/4lh/EDIPG9GA7BjgC4elGL8
-         TTZnHB95vzt6tiRCmVVfct6Kvo61TSnZ2XMmM8dw1AUi1gXkR6iJfwhnA9Q4Y8lGs/tG
-         mYtgqtol5R1Xw4An8epUs40e8kmHCwANhQOTBeW0J73wqGXXuADf88KiPporQMXDvkLp
-         nygQ==
-X-Gm-Message-State: AOAM532jPqS9ZCuP4kPcQS9giWcEX6SmR54eq/gHPrN+8Jv+sS1D/Ua2
-        9HC1nLK/9bJZvffM61himCiHK4oT45HBIA==
-X-Google-Smtp-Source: ABdhPJxsvvNtpHolhePwxfK9cyIxGTnKyyrHDfe02S8x8MeA1Xhnkm3d8xFHm0oVRKHcoTo4FEKndA==
-X-Received: by 2002:a2e:a404:: with SMTP id p4mr9203157ljn.286.1614015910074;
-        Mon, 22 Feb 2021 09:45:10 -0800 (PST)
-Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com. [209.85.208.179])
-        by smtp.gmail.com with ESMTPSA id v3sm921118lji.104.2021.02.22.09.45.09
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Feb 2021 09:45:09 -0800 (PST)
-Received: by mail-lj1-f179.google.com with SMTP id g1so53995894ljj.13
-        for <linux-pm@vger.kernel.org>; Mon, 22 Feb 2021 09:45:09 -0800 (PST)
-X-Received: by 2002:a05:651c:112:: with SMTP id a18mr15068444ljb.465.1614015908831;
- Mon, 22 Feb 2021 09:45:08 -0800 (PST)
-MIME-Version: 1.0
-References: <ace202cb-b9bc-c43a-8023-9c45946af3bf@linaro.org>
-In-Reply-To: <ace202cb-b9bc-c43a-8023-9c45946af3bf@linaro.org>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon, 22 Feb 2021 09:44:52 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wiaespvE0HmhpJhcNsJXob6WJCH0BdD5XuvBJP7KF_EFg@mail.gmail.com>
-Message-ID: <CAHk-=wiaespvE0HmhpJhcNsJXob6WJCH0BdD5XuvBJP7KF_EFg@mail.gmail.com>
+        id S230071AbhBVSMq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Feb 2021 13:12:46 -0500
+Received: from mail.kernel.org ([198.145.29.99]:37400 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230492AbhBVSMh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Feb 2021 13:12:37 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPS id 4570C64E32;
+        Mon, 22 Feb 2021 18:11:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1614017517;
+        bh=ecaAtDgT0Pq9QF1AZduzhrxyDXeqnS5UHmvDX+et+kQ=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=SXSQMtCXnuEkXYuQFwnc3MRwVbxf94EvVQJBthWDIdFOwH43ftThTRUzxljMmmJKk
+         MbxViMOMlaU05rOggXI0A3yAw9UaIsMcGJ+D2TO+YLPUWYmhPKizFoheQVFvpEsuW1
+         JaRh6sGikyc5dk786tl8i+OgCUJHwsUaKN3bY+9ea/lPSYvOOLKsY0oLj/Zg94fc9y
+         DTx4Rk/EjdVM1IjNKyi4SYw4LApnudMrD92I6VhviFqyWiiVFEX7UfxLDJppsZr2Vn
+         0SsrrGyt7v2k0WjTZZPqFDhPXEiHsvx5JPd9gtBVVNl9/+hktfSXGxd8Q+l9BbLC4z
+         09JHIDC/8kkew==
 Subject: Re: [GIT PULL] thermal for v5.12-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <ace202cb-b9bc-c43a-8023-9c45946af3bf@linaro.org>
+References: <ace202cb-b9bc-c43a-8023-9c45946af3bf@linaro.org>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <ace202cb-b9bc-c43a-8023-9c45946af3bf@linaro.org>
+X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git tags/thermal-v5.12-rc1
+X-PR-Tracked-Commit-Id: a51afb13311cd85b2f638c691b2734622277d8f5
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 5d26c176d58bc3f9380b18ba2f51a1d863c6a5a0
+Message-Id: <161401751724.943.8084454317778200832.pr-tracker-bot@kernel.org>
+Date:   Mon, 22 Feb 2021 18:11:57 +0000
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Lukasz Luba <Lukasz.Luba@arm.com>,
         Arnd Bergmann <arnd@kernel.org>,
@@ -76,37 +56,19 @@ Cc:     Zhang Rui <rui.zhang@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM mailing list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 19, 2021 at 3:54 AM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
-> Note a set of changes for the qcom adc driver rely on an immutable
-> branch from the iio tree:
+The pull request you sent on Fri, 19 Feb 2021 12:54:53 +0100:
 
-That part is fine, but what _isn't_ great is the merge commit message.
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git tags/thermal-v5.12-rc1
 
-This is the message in its entirety:
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/5d26c176d58bc3f9380b18ba2f51a1d863c6a5a0
 
-   "Merge remote-tracking branch
-'iio-thermal-5.11-rc1/ib-iio-thermal-5.11-rc1' into testing"
+Thank you!
 
-Notice how it doesn't say _anything_ useful.
-
-Merges are commits, and they should have commit messages with
-*explanation* the same way all regular commits should. In fact, they
-generally should have *more* explanation, since they are fundamentally
-more interesting and subtle than some one-liner obvious bug-fix.
-
-So this all looks otherwise fine, and I like how you were clearly
-aware of the whole cross-tree merge, and how you let me kn0ow about
-it. I appreciate that part, and I've pulled your branch.
-
-But I wanted to really take this moment to point out that merge
-commits really should have messages explaining *why* and *what* got
-merged. Not just the technical "I merged that tree".
-
-           Linus
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
