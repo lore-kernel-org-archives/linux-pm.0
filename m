@@ -2,122 +2,57 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B44BC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 19:04:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10B65C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 19:05:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 43B2564E04
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 19:04:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3A7560295
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 19:05:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232654AbhBVTEU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Feb 2021 14:04:20 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:65068 "EHLO
+        id S232593AbhBVTEv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Feb 2021 14:04:51 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:59520 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232490AbhBVTDY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2021 14:03:24 -0500
+        with ESMTP id S232340AbhBVTD1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2021 14:03:27 -0500
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_smtp) via UNIX with SMTP (IdeaSmtpServer 0.83.537)
- id c3e939bef3a53db2; Mon, 22 Feb 2021 20:02:21 +0100
+ id c1635a3c089529bd; Mon, 22 Feb 2021 20:02:24 +0100
 Received: from kreacher.localnet (89-64-81-242.dynamic.chello.pl [89.64.81.242])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 3ECD6662057;
-        Mon, 22 Feb 2021 20:02:21 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id CD822662057;
+        Mon, 22 Feb 2021 20:02:23 +0100 (CET)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Hanjun Guo <guohanjun@huawei.com>
-Subject: [PATCH v1 2/4] ACPI: sysfs: Get rid of ACPICA message printing
-Date:   Mon, 22 Feb 2021 19:59:54 +0100
-Message-ID: <4357646.0lvgoTfV33@kreacher>
-In-Reply-To: <5138173.kHyPcihzTF@kreacher>
-References: <5138173.kHyPcihzTF@kreacher>
+Subject: [PATCH v1 0/4] ACPI: Get rid of ACPICA message printing from core
+Date:   Mon, 22 Feb 2021 19:57:57 +0100
+Message-ID: <5138173.kHyPcihzTF@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrkeefgdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtvdenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpefgleehfffhtefflefhleetjeffteettefgteekjedvhfeffedtueefveegveeiveenucfkphepkeelrdeigedrkedurddvgedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedurddvgedvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepghhuohhhrghnjhhunheshhhurgifvghirdgtohhm
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrkeefgdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkggfgtgesthfuredttddtvdenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeevudefgfeguedtjedvhfetveegleduveeuvedvjeekleefhfduhfefheekffefveenucfkphepkeelrdeigedrkedurddvgedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedurddvgedvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepghhuohhhrghnjhhunheshhhurgifvghirdgtohhm
 X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Replace the only ACPI_EXCEPTION() instance in sysfs.c with a
-pr_warn() call, drop the _COMPONENT and ACPI_MODULE_NAME()
-definitions that are not used any more and drop the
-ACPI_SYSTEM_COMPONENT definition that would not be used any
-more in a meaningful way after the above changes.
+This series replaces ACPI_DEBUG_PRINT() and ACPI_EXCEPTION() in the ACPI
+processor driver and sysfs code and drops definitions of related symbols
+that are not used for anything meaningful any more.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/firmware-guide/acpi/debug.rst |    1 -
- drivers/acpi/sysfs.c                        |    7 +------
- include/acpi/acpi_drivers.h                 |    1 -
- 3 files changed, 1 insertion(+), 8 deletions(-)
+Please refer to the patch changelogs for details.
 
-Index: linux-pm/drivers/acpi/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sysfs.c
-+++ linux-pm/drivers/acpi/sysfs.c
-@@ -12,9 +12,6 @@
- 
- #include "internal.h"
- 
--#define _COMPONENT		ACPI_SYSTEM_COMPONENT
--ACPI_MODULE_NAME("sysfs");
--
- #ifdef CONFIG_ACPI_DEBUG
- /*
-  * ACPI debug sysfs I/F, including:
-@@ -55,7 +52,6 @@ static const struct acpi_dlayer acpi_deb
- 	ACPI_DEBUG_INIT(ACPI_SBS_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_FAN_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_CONTAINER_COMPONENT),
--	ACPI_DEBUG_INIT(ACPI_SYSTEM_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_MEMORY_DEVICE_COMPONENT),
- };
- 
-@@ -650,8 +646,7 @@ static int get_status(u32 index, acpi_ev
- 	if (index < num_gpes) {
- 		status = acpi_get_gpe_device(index, handle);
- 		if (ACPI_FAILURE(status)) {
--			ACPI_EXCEPTION((AE_INFO, AE_NOT_FOUND,
--					"Invalid GPE 0x%x", index));
-+			pr_warn("Invalid GPE 0x%x", index);
- 			return -ENXIO;
- 		}
- 		status = acpi_get_gpe_status(*handle, index, ret);
-Index: linux-pm/Documentation/firmware-guide/acpi/debug.rst
-===================================================================
---- linux-pm.orig/Documentation/firmware-guide/acpi/debug.rst
-+++ linux-pm/Documentation/firmware-guide/acpi/debug.rst
-@@ -55,7 +55,6 @@ shows the supported mask values, current
-     ACPI_SBS_COMPONENT              0x00100000
-     ACPI_FAN_COMPONENT              0x00200000
-     ACPI_CONTAINER_COMPONENT        0x01000000
--    ACPI_SYSTEM_COMPONENT           0x02000000
-     ACPI_MEMORY_DEVICE_COMPONENT    0x08000000
- 
- debug_level
-Index: linux-pm/include/acpi/acpi_drivers.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_drivers.h
-+++ linux-pm/include/acpi/acpi_drivers.h
-@@ -18,7 +18,6 @@
- #define ACPI_SBS_COMPONENT		0x00100000
- #define ACPI_FAN_COMPONENT		0x00200000
- #define ACPI_CONTAINER_COMPONENT	0x01000000
--#define ACPI_SYSTEM_COMPONENT		0x02000000
- #define ACPI_MEMORY_DEVICE_COMPONENT	0x08000000
- 
- /*
+Thanks!
 
 
 
