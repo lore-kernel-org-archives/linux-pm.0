@@ -2,74 +2,61 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2854DC433DB
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 06:22:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01727C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 07:42:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E162D64E76
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 06:22:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B0BC364DDC
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Feb 2021 07:42:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229728AbhBVGWG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Feb 2021 01:22:06 -0500
-Received: from cmccmta1.chinamobile.com ([221.176.66.79]:43155 "EHLO
-        cmccmta1.chinamobile.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229532AbhBVGV7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2021 01:21:59 -0500
-X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Feb 2021 01:21:55 EST
-Received: from spf.mail.chinamobile.com (unknown[172.16.121.9]) by rmmx-syy-dmz-app01-12001 (RichMail) with SMTP id 2ee160334ad88ef-da1cd; Mon, 22 Feb 2021 14:10:32 +0800 (CST)
-X-RM-TRANSID: 2ee160334ad88ef-da1cd
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG: 00000000
-Received: from localhost.localdomain (unknown[223.112.105.130])
-        by rmsmtp-syy-appsvr05-12005 (RichMail) with SMTP id 2ee560334ad53d8-bb2a8;
-        Mon, 22 Feb 2021 14:10:32 +0800 (CST)
-X-RM-TRANSID: 2ee560334ad53d8-bb2a8
-From:   Tang Bin <tangbin@cmss.chinamobile.com>
-To:     glaroque@baylibre.com, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
-        linux-kernel@vger.kernel.org,
-        Tang Bin <tangbin@cmss.chinamobile.com>
-Subject: [PATCH] thermal: amlogic: Omit superfluous error message in amlogic_thermal_probe()
-Date:   Mon, 22 Feb 2021 14:11:05 +0800
-Message-Id: <20210222061105.6008-1-tangbin@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.20.1.windows.1
+        id S230225AbhBVHml (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Feb 2021 02:42:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56416 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230081AbhBVHmd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2021 02:42:33 -0500
+X-Greylist: delayed 280 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 21 Feb 2021 23:41:53 PST
+Received: from cavan.codon.org.uk (cavan.codon.org.uk [IPv6:2a00:1098:84:22e::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34810C061574;
+        Sun, 21 Feb 2021 23:41:53 -0800 (PST)
+Received: by cavan.codon.org.uk (Postfix, from userid 1000)
+        id 1E37C40A30; Mon, 22 Feb 2021 07:41:52 +0000 (UTC)
+Date:   Mon, 22 Feb 2021 07:41:52 +0000
+From:   Matthew Garrett <mjg59@srcf.ucam.org>
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     Matthew Garrett <matthewgarrett@google.com>,
+        linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org,
+        linux-pm@vger.kernel.org, keyrings@vger.kernel.org,
+        zohar@linux.ibm.com, jejb@linux.ibm.com, jarkko@kernel.org,
+        corbet@lwn.net, rjw@rjwysocki.net,
+        Matthew Garrett <mjg59@google.com>
+Subject: Re: [PATCH 7/9] pm: hibernate: Optionally use TPM-backed keys to
+ protect image integrity
+Message-ID: <20210222074152.GD30403@codon.org.uk>
+References: <20210220013255.1083202-1-matthewgarrett@google.com>
+ <20210220013255.1083202-8-matthewgarrett@google.com>
+ <4c265e1d-0a02-207a-cc10-9a49b4fc5169@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4c265e1d-0a02-207a-cc10-9a49b4fc5169@infradead.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The function devm_platform_ioremap_resource has already contains error
-message, so remove the redundant dev_err here.
+On Fri, Feb 19, 2021 at 06:20:13PM -0800, Randy Dunlap wrote:
+>   For all of the Kconfig* configuration files throughout the source tree,
+>   the indentation is somewhat different.  Lines under a ``config`` definition
+>   are indented with one tab, while help text is indented an additional two
+>   spaces.
 
-Signed-off-by: Tang Bin <tangbin@cmss.chinamobile.com>
----
- drivers/thermal/amlogic_thermal.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
-index ccb1fe18e..bba9f3b14 100644
---- a/drivers/thermal/amlogic_thermal.c
-+++ b/drivers/thermal/amlogic_thermal.c
-@@ -253,10 +253,8 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, pdata);
+Whoops, I've no idea how I screwed that up. I'll fix for V2, thanks!
  
- 	base = devm_platform_ioremap_resource(pdev, 0);
--	if (IS_ERR(base)) {
--		dev_err(dev, "failed to get io address\n");
-+	if (IS_ERR(base))
- 		return PTR_ERR(base);
--	}
- 
- 	pdata->regmap = devm_regmap_init_mmio(dev, base,
- 					      pdata->data->regmap_config);
--- 
-2.20.1.windows.1
+> Also, one feature should not be responsible for enabling other "subsystems,"
+> such as KEYS and CRYPTO. They should instead be listed as dependencies.
 
-
-
+ACK.
