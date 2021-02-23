@@ -2,67 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 392ECC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Feb 2021 11:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20B6FC433E6
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Feb 2021 14:22:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E73CA64E4B
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Feb 2021 11:51:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E20CF64DE9
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Feb 2021 14:22:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232313AbhBWLvO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Feb 2021 06:51:14 -0500
-Received: from szxga04-in.huawei.com ([45.249.212.190]:12200 "EHLO
-        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232217AbhBWLvN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Feb 2021 06:51:13 -0500
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.60])
-        by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4DlHPV4GyfzlNJW;
-        Tue, 23 Feb 2021 19:48:30 +0800 (CST)
-Received: from [10.174.178.147] (10.174.178.147) by
- DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
- 14.3.498.0; Tue, 23 Feb 2021 19:50:25 +0800
-Subject: Re: [PATCH v1 0/4] ACPI: Get rid of ACPICA message printing from core
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-CC:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-References: <5138173.kHyPcihzTF@kreacher>
-From:   Hanjun Guo <guohanjun@huawei.com>
-Message-ID: <daadf47e-dac2-93a8-3070-9e9cbc0dae50@huawei.com>
-Date:   Tue, 23 Feb 2021 19:50:25 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
-MIME-Version: 1.0
-In-Reply-To: <5138173.kHyPcihzTF@kreacher>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.178.147]
-X-CFilter-Loop: Reflected
+        id S232917AbhBWOWJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Feb 2021 09:22:09 -0500
+Received: from mx1.tq-group.com ([93.104.207.81]:51339 "EHLO mx1.tq-group.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232372AbhBWOWD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Feb 2021 09:22:03 -0500
+X-Greylist: delayed 553 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Feb 2021 09:22:00 EST
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1614090122; x=1645626122;
+  h=from:to:cc:subject:date:message-id;
+  bh=2fp/h+MFy4C94ZBy2aHYmsFqKEX/f1YM6UAUvV3YSYo=;
+  b=XpIiwwsfms8Bq3JeUp79MBLM/YWThsqjAq70mKowDA2bcgQmIxz0VQX0
+   rsWXOuvkoqeD3+En570Of9xj4H0zMRbO4clTLoImKBhKzTn6ZhqW4hq7A
+   r87Pmg7AsEBawephKOcnOvUUIYJ4yswYb3+VQkg7LbSOvRqD6+XCuaTJw
+   i5dzJLbl0a68ARfdoYPsWEq4t6qQlJzvwZXlg1YKmZNbht/mGNEaD3UuO
+   7ZyCicyuX2/9vlDoNBHH2NecXura0220PAXKfQoMWC8lRwND1dsMk1/u6
+   /Gdos0nuTAcq3U99a1FcWl7khEmWSgNAMTvqZY/vcRtNh0eXbvxKnyeQB
+   g==;
+IronPort-SDR: oCBYHjBgw25+TMhwbpZ/YBi7ACG7FpjjKIRXkH002gLmwynxEpxzuCPnvg2ms1z76QJ92MCFV0
+ Tl//hqWd5AeymTSubJCy4fh6lduh0CC8Am7L/hukVmerlg+GZ09QnAYi3rn4wK/Y9TRTxAW/kI
+ 2HxLXcJTDeIJQMmratUlVGopIPy1evDCcbqB2Wu66fIT9s7RVx541sgsDXeagdxKRoWXImU+Bt
+ /e5SMnfiqbdwIZnHNI39gu+kMPApDIfHwtkyZpdvMuAMYfRs58tARoILJh22GFPPgk92i3tGku
+ xng=
+X-IronPort-AV: E=Sophos;i="5.81,200,1610406000"; 
+   d="scan'208";a="16125540"
+Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
+  by mx1-pgp.tq-group.com with ESMTP; 23 Feb 2021 15:12:04 +0100
+Received: from mx1.tq-group.com ([192.168.6.7])
+  by tq-pgp-pr1.tq-net.de (PGP Universal service);
+  Tue, 23 Feb 2021 15:12:04 +0100
+X-PGP-Universal: processed;
+        by tq-pgp-pr1.tq-net.de on Tue, 23 Feb 2021 15:12:04 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1614089524; x=1645625524;
+  h=from:to:cc:subject:date:message-id;
+  bh=2fp/h+MFy4C94ZBy2aHYmsFqKEX/f1YM6UAUvV3YSYo=;
+  b=UjE7DYIiyrdvncNx7vto7fP8Y1WH6ZLiNS1UhS5r3sHFmKeQ7JnpcgDR
+   aYWxdzp0YFEE7DYHkXtACp7fu4dBvnZDX4mMuj3nVw3wF5P3bVbIFUanc
+   Mc72+JtPsvJwWrhvT3FtJJB7VEFfMgd/U61AdzCo51yzOc/1zYNoHJLAZ
+   hXpTuPUmAi1N943P4RD7I6Qe0U8zjdxYshtx4wsspty0VWqBCkdSPk+8p
+   gg0LIhgL5ihxcFYNPEgDJXhI8dsw46nXOharl+zkaRX0D/lwT7r+YMXeo
+   Ao6ymAmdFD/yznS6mjMc37m8Xd5Gu9WivtyoiQ6vpJvTQwkpEJa/aukTX
+   w==;
+IronPort-SDR: 8tnXJ4h3EdfEFzdjsuzZ448E/V+k5LhiTO0OH4Xsfql+BP+tWkte+sa80HMI+KADGdep8PTwMY
+ TR+1SOEMqtDblhyO1Wvg5w4QzDjpHEIFjkO5Z3iA0MKWmmPmWHpKHb+geSF0g6JcV9gfhfxDvj
+ DheZJQd63SxO64AozQmqS4KQrx9/T0jzg5DYf2SqAIJ2QM7P8Jw8bMtwNRYXsLPM1T/L8g3jKO
+ Gk/IGmnuaqCLJWPNJ7Zeyfnv10RRNR6+6yIuGeiTSFnKvnpXdIqrhQgiJhCFUmcVzy7Ne8zX5J
+ 1VE=
+X-IronPort-AV: E=Sophos;i="5.81,200,1610406000"; 
+   d="scan'208";a="16125539"
+Received: from vtuxmail01.tq-net.de ([10.115.0.20])
+  by mx1.tq-group.com with ESMTP; 23 Feb 2021 15:12:04 +0100
+Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
+        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 8DE40280070;
+        Tue, 23 Feb 2021 15:12:04 +0100 (CET)
+X-CheckPoint: {60350D2A-41-8E0BEC96-E002885D}
+X-MAIL-CPID: A7A44E8E2DA0280225A603E4669CA7E3_4
+X-Control-Analysis: str=0001.0A782F1B.60350D34.00E7,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
+From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+To:     Dan Murphy <dmurphy@ti.com>,
+        =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+Subject: [PATCH 1/3] power: supply: bq27xxx: fix sign of current_now for newer ICs
+Date:   Tue, 23 Feb 2021 15:11:20 +0100
+Message-Id: <20210223141122.9574-1-matthias.schiffer@ew.tq-group.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2021/2/23 2:57, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> This series replaces ACPI_DEBUG_PRINT() and ACPI_EXCEPTION() in the ACPI
-> processor driver and sysfs code and drops definitions of related symbols
-> that are not used for anything meaningful any more.
-> 
-> Please refer to the patch changelogs for details.
+Commit cd060b4d0868 ("power: supply: bq27xxx: fix polarity of current_now")
+changed the sign of current_now for all bq27xxx variants, but on BQ28Z610
+I'm now seeing negated values *with* that patch.
 
-Except patch 1/4, others are looking good to me. some
-legacy printk(PRIFIX ...) are still there, but we can
-clean up them later.
+The GTA04/Openmoko device that was used for testing uses a BQ27000 or
+BQ27010 IC, so I assume only the BQ27XXX_O_ZERO code path was incorrect.
+Revert the behaviour for newer ICs.
 
-Feel feel to add my review tag with minor issue addressed.
+Fixes: cd060b4d0868 "power: supply: bq27xxx: fix polarity of current_now"
+Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+---
 
-Reviewed-by: Hanjun Guo <guohanjun@huawei.com>
+@Andreas Kemnade: It would be great to get a confirmation that the
+Openmoko battery indeed uses BQ27000/BQ27010 - I was having some trouble
+finding that information.
 
-Thanks
-Hanjun
+
+ drivers/power/supply/bq27xxx_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 4c4a7b1c64c5..cb6ebd2f905e 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1827,7 +1827,7 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
+ 		val->intval = curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+ 	} else {
+ 		/* Other gauges return signed value */
+-		val->intval = -(int)((s16)curr) * 1000;
++		val->intval = (int)((s16)curr) * 1000;
+ 	}
+ 
+ 	return 0;
+-- 
+2.17.1
+
