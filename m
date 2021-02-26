@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5135FC28CC0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 065BAC282E5
 	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:11:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0088D64F1B
+	by mail.kernel.org (Postfix) with ESMTP id CC3E964F1F
 	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:11:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230206AbhBZULA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Feb 2021 15:11:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39140 "EHLO
+        id S230357AbhBZULQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Feb 2021 15:11:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230440AbhBZUKu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:10:50 -0500
-Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01F8BC061A2E;
-        Fri, 26 Feb 2021 12:06:21 -0800 (PST)
+        with ESMTP id S230432AbhBZULK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:11:10 -0500
+Received: from relay02.th.seeweb.it (relay02.th.seeweb.it [IPv6:2001:4b7a:2000:18::163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DFFDC0698C5;
+        Fri, 26 Feb 2021 12:07:26 -0800 (PST)
 Received: from localhost.localdomain (abab236.neoplus.adsl.tpnet.pl [83.6.165.236])
-        by m-r1.th.seeweb.it (Postfix) with ESMTPA id AD7B01FC51;
-        Fri, 26 Feb 2021 21:06:18 +0100 (CET)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id F2BBB1F63C;
+        Fri, 26 Feb 2021 21:07:23 +0100 (CET)
 From:   Konrad Dybcio <konrad.dybcio@somainline.org>
 To:     phone-devel@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
@@ -39,9 +39,9 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 23/41] arm64: dts: qcom: pm660l: Support SPMI regulators on PMIC sid 3
-Date:   Fri, 26 Feb 2021 21:03:53 +0100
-Message-Id: <20210226200414.167762-24-konrad.dybcio@somainline.org>
+Subject: [PATCH 38/41] arm64: dts: qcom: sdm630-nile: Enable uSD card slot
+Date:   Fri, 26 Feb 2021 21:04:08 +0100
+Message-Id: <20210226200414.167762-39-konrad.dybcio@somainline.org>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210226200414.167762-1-konrad.dybcio@somainline.org>
 References: <20210226200414.167762-1-konrad.dybcio@somainline.org>
@@ -51,31 +51,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-
-The PM660L PMIC has SPMI regulators on the PMIC SID 3: let's add
-the compatible in order to probe them.
-
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
- arch/arm64/boot/dts/qcom/pm660l.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm64/boot/dts/qcom/sdm630-sony-xperia-nile.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/pm660l.dtsi b/arch/arm64/boot/dts/qcom/pm660l.dtsi
-index 83cc92ba441d..64a8e9b9afbe 100644
---- a/arch/arm64/boot/dts/qcom/pm660l.dtsi
-+++ b/arch/arm64/boot/dts/qcom/pm660l.dtsi
-@@ -48,6 +48,10 @@ pm660l_wled: leds@d800 {
- 
- 			status = "disabled";
- 		};
-+
-+		pm660l_spmi_regulators: pm660l-regulators {
-+			compatible = "qcom,pm660l-regulators";
-+		};
- 	};
+diff --git a/arch/arm64/boot/dts/qcom/sdm630-sony-xperia-nile.dtsi b/arch/arm64/boot/dts/qcom/sdm630-sony-xperia-nile.dtsi
+index 433cfed574f1..ff74a8b24150 100644
+--- a/arch/arm64/boot/dts/qcom/sdm630-sony-xperia-nile.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm630-sony-xperia-nile.dtsi
+@@ -575,6 +575,13 @@ &sdhc_1 {
+ 	vqmmc-supply = <&vreg_l8a_1p8>;
  };
+ 
++&sdhc_2 {
++	status = "okay";
++
++	vmmc-supply = <&vreg_l5b_29p5>;
++	vqmmc-supply = <&vreg_l2b_2p95>;
++};
++
+ &tlmm {
+ 	gpio-reserved-ranges = <8 4>;
  
 -- 
 2.30.1
