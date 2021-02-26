@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEB0C4332B
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C522C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:13:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 42A3464F30
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:13:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F18E864EFA
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:13:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230508AbhBZUMf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Feb 2021 15:12:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39928 "EHLO
+        id S229571AbhBZUNP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Feb 2021 15:13:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40274 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230493AbhBZUMJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:12:09 -0500
-Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73F0EC0698CD;
-        Fri, 26 Feb 2021 12:09:40 -0800 (PST)
+        with ESMTP id S230225AbhBZUMS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:12:18 -0500
+Received: from relay04.th.seeweb.it (relay04.th.seeweb.it [IPv6:2001:4b7a:2000:18::165])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D96CC0698C8
+        for <linux-pm@vger.kernel.org>; Fri, 26 Feb 2021 12:09:23 -0800 (PST)
 Received: from localhost.localdomain (abab236.neoplus.adsl.tpnet.pl [83.6.165.236])
-        by m-r1.th.seeweb.it (Postfix) with ESMTPA id 035C61F87C;
-        Fri, 26 Feb 2021 21:06:40 +0100 (CET)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id 6C11F1F69E;
+        Fri, 26 Feb 2021 21:07:37 +0100 (CET)
 From:   Konrad Dybcio <konrad.dybcio@somainline.org>
 To:     phone-devel@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
@@ -39,9 +39,9 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 28/41] arm64: dts: qcom: sdm630: Configure the camera subsystem
-Date:   Fri, 26 Feb 2021 21:03:58 +0100
-Message-Id: <20210226200414.167762-29-konrad.dybcio@somainline.org>
+Subject: [PATCH 41/41] arm64: dts: qcom: sdm630: Add DMA to I2C hosts
+Date:   Fri, 26 Feb 2021 21:04:11 +0100
+Message-Id: <20210226200414.167762-42-konrad.dybcio@somainline.org>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210226200414.167762-1-konrad.dybcio@somainline.org>
 References: <20210226200414.167762-1-konrad.dybcio@somainline.org>
@@ -51,250 +51,89 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+Add DMA properties to I2C hosts to allow for DMA transfers.
 
-Add nodes for camss, cci and its pinctrl in order to bring up
-camera functionality.
-
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
- arch/arm64/boot/dts/qcom/sdm630.dtsi | 215 +++++++++++++++++++++++++++
- 1 file changed, 215 insertions(+)
+ arch/arm64/boot/dts/qcom/sdm630.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/qcom/sdm630.dtsi b/arch/arm64/boot/dts/qcom/sdm630.dtsi
-index c74423474884..a5a06afc2c94 100644
+index fccfc4e9f69d..0ec070fea034 100644
 --- a/arch/arm64/boot/dts/qcom/sdm630.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sdm630.dtsi
-@@ -1035,6 +1035,32 @@ i2c8_sleep: i2c8-sleep {
- 				bias-pull-up;
- 			};
+@@ -1805,6 +1805,8 @@ blsp_i2c1: i2c@c175000 {
+ 					<&gcc GCC_BLSP1_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp1_dma 4>, <&blsp1_dma 5>;
++			dma-names = "tx", "rx";
  
-+			cci0_default: cci0_default {
-+				pinmux {
-+					pins = "gpio36","gpio37";
-+					function = "cci_i2c";
-+				};
-+
-+				pinconf {
-+					pins = "gpio36","gpio37";
-+					bias-pull-up;
-+					drive-strength = <2>;
-+				};
-+			};
-+
-+			cci1_default: cci1_default {
-+				pinmux {
-+					pins = "gpio38","gpio39";
-+					function = "cci_i2c";
-+				};
-+
-+				pinconf {
-+					pins = "gpio38","gpio39";
-+					bias-pull-up;
-+					drive-strength = <2>;
-+				};
-+			};
-+
- 			sdc1_state_on: sdc1-on {
- 				pinconf-clk {
- 					pins = "sdc1_clk";
-@@ -1941,6 +1967,195 @@ pil-reloc@94c {
- 			};
- 		};
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c1_default>;
+@@ -1823,6 +1825,8 @@ blsp_i2c2: i2c@c176000 {
+ 				 <&gcc GCC_BLSP1_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp1_dma 6>, <&blsp1_dma 7>;
++			dma-names = "tx", "rx";
  
-+		camss: camss@ca00000 {
-+			compatible = "qcom,sdm660-camss";
-+			reg = <0x0c824000 0x1000>,
-+			      <0x0ca00120 0x4>,
-+			      <0x0c825000 0x1000>,
-+			      <0x0ca00124 0x4>,
-+			      <0x0c826000 0x1000>,
-+			      <0x0ca00128 0x4>,
-+			      <0x0ca30000 0x100>,
-+			      <0x0ca30400 0x100>,
-+			      <0x0ca30800 0x100>,
-+			      <0x0ca30c00 0x100>,
-+			      <0x0ca31000 0x500>,
-+			      <0x0ca00020 0x10>,
-+			      <0x0ca10000 0x1000>,
-+			      <0x0ca14000 0x1000>;
-+			reg-names = "csiphy0",
-+				    "csiphy0_clk_mux",
-+				    "csiphy1",
-+				    "csiphy1_clk_mux",
-+				    "csiphy2",
-+				    "csiphy2_clk_mux",
-+				    "csid0",
-+				    "csid1",
-+				    "csid2",
-+				    "csid3",
-+				    "ispif",
-+				    "csi_clk_mux",
-+				    "vfe0",
-+				    "vfe1";
-+			interrupts = <GIC_SPI 78 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 79 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 80 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 296 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 297 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 298 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 299 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 309 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 314 IRQ_TYPE_EDGE_RISING>,
-+				     <GIC_SPI 315 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "csiphy0",
-+					  "csiphy1",
-+					  "csiphy2",
-+					  "csid0",
-+					  "csid1",
-+					  "csid2",
-+					  "csid3",
-+					  "ispif",
-+					  "vfe0",
-+					  "vfe1";
-+			clocks = <&mmcc CAMSS_TOP_AHB_CLK>,
-+				<&mmcc THROTTLE_CAMSS_AXI_CLK>,
-+				<&mmcc CAMSS_ISPIF_AHB_CLK>,
-+				<&mmcc CAMSS_CSI0PHYTIMER_CLK>,
-+				<&mmcc CAMSS_CSI1PHYTIMER_CLK>,
-+				<&mmcc CAMSS_CSI2PHYTIMER_CLK>,
-+				<&mmcc CAMSS_CSI0_AHB_CLK>,
-+				<&mmcc CAMSS_CSI0_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID0_CLK>,
-+				<&mmcc CAMSS_CSI0PIX_CLK>,
-+				<&mmcc CAMSS_CSI0RDI_CLK>,
-+				<&mmcc CAMSS_CSI1_AHB_CLK>,
-+				<&mmcc CAMSS_CSI1_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID1_CLK>,
-+				<&mmcc CAMSS_CSI1PIX_CLK>,
-+				<&mmcc CAMSS_CSI1RDI_CLK>,
-+				<&mmcc CAMSS_CSI2_AHB_CLK>,
-+				<&mmcc CAMSS_CSI2_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID2_CLK>,
-+				<&mmcc CAMSS_CSI2PIX_CLK>,
-+				<&mmcc CAMSS_CSI2RDI_CLK>,
-+				<&mmcc CAMSS_CSI3_AHB_CLK>,
-+				<&mmcc CAMSS_CSI3_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID3_CLK>,
-+				<&mmcc CAMSS_CSI3PIX_CLK>,
-+				<&mmcc CAMSS_CSI3RDI_CLK>,
-+				<&mmcc CAMSS_AHB_CLK>,
-+				<&mmcc CAMSS_VFE0_CLK>,
-+				<&mmcc CAMSS_CSI_VFE0_CLK>,
-+				<&mmcc CAMSS_VFE0_AHB_CLK>,
-+				<&mmcc CAMSS_VFE0_STREAM_CLK>,
-+				<&mmcc CAMSS_VFE1_CLK>,
-+				<&mmcc CAMSS_CSI_VFE1_CLK>,
-+				<&mmcc CAMSS_VFE1_AHB_CLK>,
-+				<&mmcc CAMSS_VFE1_STREAM_CLK>,
-+				<&mmcc CAMSS_VFE_VBIF_AHB_CLK>,
-+				<&mmcc CAMSS_VFE_VBIF_AXI_CLK>,
-+				<&mmcc CSIPHY_AHB2CRIF_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID0_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID1_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID2_CLK>,
-+				<&mmcc CAMSS_CPHY_CSID3_CLK>;
-+			clock-names = "top_ahb",
-+				"throttle_axi",
-+				"ispif_ahb",
-+				"csiphy0_timer",
-+				"csiphy1_timer",
-+				"csiphy2_timer",
-+				"csi0_ahb",
-+				"csi0",
-+				"csi0_phy",
-+				"csi0_pix",
-+				"csi0_rdi",
-+				"csi1_ahb",
-+				"csi1",
-+				"csi1_phy",
-+				"csi1_pix",
-+				"csi1_rdi",
-+				"csi2_ahb",
-+				"csi2",
-+				"csi2_phy",
-+				"csi2_pix",
-+				"csi2_rdi",
-+				"csi3_ahb",
-+				"csi3",
-+				"csi3_phy",
-+				"csi3_pix",
-+				"csi3_rdi",
-+				"ahb",
-+				"vfe0",
-+				"csi_vfe0",
-+				"vfe0_ahb",
-+				"vfe0_stream",
-+				"vfe1",
-+				"csi_vfe1",
-+				"vfe1_ahb",
-+				"vfe1_stream",
-+				"vfe_ahb",
-+				"vfe_axi",
-+				"csiphy_ahb2crif",
-+				"cphy_csid0",
-+				"cphy_csid1",
-+				"cphy_csid2",
-+				"cphy_csid3";
-+			interconnects = <&mnoc 5 &bimc 5>;
-+			interconnect-names = "vfe-mem";
-+			iommus = <&mmss_smmu 0xc00>,
-+				 <&mmss_smmu 0xc01>,
-+				 <&mmss_smmu 0xc02>,
-+				 <&mmss_smmu 0xc03>;
-+			power-domains = <&mmcc CAMSS_VFE0_GDSC>,
-+					<&mmcc CAMSS_VFE1_GDSC>;
-+			status = "disabled";
-+
-+			ports {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
-+		};
-+
-+		cci: cci@ca0c000 {
-+			compatible = "qcom,msm8996-cci";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x0ca0c000 0x1000>;
-+			interrupts = <GIC_SPI 295 IRQ_TYPE_EDGE_RISING>;
-+
-+			assigned-clocks = <&mmcc CAMSS_CCI_AHB_CLK>,
-+					  <&mmcc CAMSS_CCI_CLK>;
-+			assigned-clock-rates = <80800000>, <37500000>;
-+			clocks = <&mmcc CAMSS_TOP_AHB_CLK>,
-+				 <&mmcc CAMSS_CCI_AHB_CLK>,
-+				 <&mmcc CAMSS_CCI_CLK>,
-+				 <&mmcc CAMSS_AHB_CLK>;
-+			clock-names = "camss_top_ahb",
-+				      "cci_ahb",
-+				      "cci",
-+				      "camss_ahb";
-+
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&cci0_default &cci1_default>;
-+			power-domains = <&mmcc CAMSS_TOP_GDSC>;
-+			status = "disabled";
-+
-+			cci_i2c0: i2c-bus@0 {
-+				reg = <0>;
-+				clock-frequency = <400000>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
-+
-+			cci_i2c1: i2c-bus@1 {
-+				reg = <1>;
-+				clock-frequency = <400000>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
-+		};
-+
- 		mmss_smmu: iommu@cd00000 {
- 			compatible = "qcom,sdm630-smmu-v2", "qcom,smmu-v2";
- 			reg = <0x0cd00000 0x40000>;
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c2_default>;
+@@ -1841,6 +1845,8 @@ blsp_i2c3: i2c@c177000 {
+ 				 <&gcc GCC_BLSP1_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp1_dma 8>, <&blsp1_dma 9>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c3_default>;
+@@ -1859,6 +1865,8 @@ blsp_i2c4: i2c@c178000 {
+ 				 <&gcc GCC_BLSP1_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp1_dma 10>, <&blsp1_dma 11>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c4_default>;
+@@ -1905,6 +1913,8 @@ blsp_i2c5: i2c@c1b5000 {
+ 				 <&gcc GCC_BLSP2_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp2_dma 4>, <&blsp2_dma 5>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c5_default>;
+@@ -1923,6 +1933,8 @@ blsp_i2c6: i2c@c1b6000 {
+ 				 <&gcc GCC_BLSP2_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp2_dma 6>, <&blsp2_dma 7>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c6_default>;
+@@ -1941,6 +1953,8 @@ blsp_i2c7: i2c@c1b7000 {
+ 				 <&gcc GCC_BLSP2_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp2_dma 8>, <&blsp2_dma 9>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c7_default>;
+@@ -1959,6 +1973,8 @@ blsp_i2c8: i2c@c1b8000 {
+ 				 <&gcc GCC_BLSP2_AHB_CLK>;
+ 			clock-names = "core", "iface";
+ 			clock-frequency = <400000>;
++			dmas = <&blsp2_dma 10>, <&blsp2_dma 11>;
++			dma-names = "tx", "rx";
+ 
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2c8_default>;
 -- 
 2.30.1
 
