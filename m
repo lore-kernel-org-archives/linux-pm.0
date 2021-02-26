@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45268C4332B
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EB5FC433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:09:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 138A764F1B
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:09:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2FEFD64ECE
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Feb 2021 20:09:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230324AbhBZUI4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Feb 2021 15:08:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39162 "EHLO
+        id S230199AbhBZUJE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Feb 2021 15:09:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230199AbhBZUIr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:08:47 -0500
-Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78EE4C061794;
-        Fri, 26 Feb 2021 12:05:48 -0800 (PST)
+        with ESMTP id S230270AbhBZUI5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2021 15:08:57 -0500
+Received: from relay04.th.seeweb.it (relay04.th.seeweb.it [IPv6:2001:4b7a:2000:18::165])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58F12C0611C0;
+        Fri, 26 Feb 2021 12:05:44 -0800 (PST)
 Received: from localhost.localdomain (abab236.neoplus.adsl.tpnet.pl [83.6.165.236])
-        by m-r1.th.seeweb.it (Postfix) with ESMTPA id DC2211FAB7;
-        Fri, 26 Feb 2021 21:05:45 +0100 (CET)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id 971B91FAB6;
+        Fri, 26 Feb 2021 21:05:41 +0100 (CET)
 From:   Konrad Dybcio <konrad.dybcio@somainline.org>
 To:     phone-devel@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
@@ -39,9 +39,9 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 16/41] arm64: dts: qcom: sdm630: Add modem/ADSP SMP2P nodes
-Date:   Fri, 26 Feb 2021 21:03:46 +0100
-Message-Id: <20210226200414.167762-17-konrad.dybcio@somainline.org>
+Subject: [PATCH 15/41] arm64: dts: qcom: sdm630: Add TSENS node
+Date:   Fri, 26 Feb 2021 21:03:45 +0100
+Message-Id: <20210226200414.167762-16-konrad.dybcio@somainline.org>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210226200414.167762-1-konrad.dybcio@somainline.org>
 References: <20210226200414.167762-1-konrad.dybcio@somainline.org>
@@ -51,64 +51,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add SMP2P nodes that are required for ADSP and modem bringup.
+This will enable temperature reporting for various SoC
+components.
 
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
- arch/arm64/boot/dts/qcom/sdm630.dtsi | 40 ++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ .../devicetree/bindings/thermal/qcom-tsens.yaml       |  1 +
+ arch/arm64/boot/dts/qcom/sdm630.dtsi                  | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 95462e071ab4..cdc2ab662436 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -40,6 +40,7 @@ properties:
+               - qcom,msm8996-tsens
+               - qcom,msm8998-tsens
+               - qcom,sc7180-tsens
++              - qcom,sdm630-tsens
+               - qcom,sdm845-tsens
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
 diff --git a/arch/arm64/boot/dts/qcom/sdm630.dtsi b/arch/arm64/boot/dts/qcom/sdm630.dtsi
-index 2f35415cefed..ffc18d0dee9e 100644
+index deeb1237e67a..2f35415cefed 100644
 --- a/arch/arm64/boot/dts/qcom/sdm630.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sdm630.dtsi
-@@ -481,6 +481,46 @@ smem: smem {
- 		hwlocks = <&tcsr_mutex 3>;
- 	};
+@@ -627,6 +627,17 @@ mnoc: interconnect@1745000 {
+ 				 <&mmcc AHB_CLK_SRC>;
+ 		};
  
-+	smp2p-adsp {
-+		compatible = "qcom,smp2p";
-+		qcom,smem = <443>, <429>;
-+		interrupts = <GIC_SPI 158 IRQ_TYPE_EDGE_RISING>;
-+		mboxes = <&apcs_glb 10>;
-+		qcom,local-pid = <0>;
-+		qcom,remote-pid = <2>;
-+
-+		adsp_smp2p_out: master-kernel {
-+			qcom,entry-name = "master-kernel";
-+			#qcom,smem-state-cells = <1>;
++		tsens: thermal-sensor@10ae000 {
++			compatible = "qcom,sdm630-tsens", "qcom,tsens-v2";
++			reg = <0x010ae000 0x1000>, /* TM */
++				  <0x010ad000 0x1000>; /* SROT */
++			#qcom,sensors = <12>;
++			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 430 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "uplow", "critical";
++			#thermal-sensor-cells = <1>;
 +		};
 +
-+		adsp_smp2p_in: slave-kernel {
-+			qcom,entry-name = "slave-kernel";
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
-+	smp2p-mpss {
-+		compatible = "qcom,smp2p";
-+		qcom,smem = <435>, <428>;
-+		interrupts = <GIC_SPI 451 IRQ_TYPE_EDGE_RISING>;
-+		mboxes = <&apcs_glb 14>;
-+		qcom,local-pid = <0>;
-+		qcom,remote-pid = <1>;
-+
-+		modem_smp2p_out: master-kernel {
-+			qcom,entry-name = "master-kernel";
-+			#qcom,smem-state-cells = <1>;
-+		};
-+
-+		modem_smp2p_in: slave-kernel {
-+			qcom,entry-name = "slave-kernel";
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+	};
-+
- 	soc {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
+ 		tcsr_mutex_regs: syscon@1f40000 {
+ 			compatible = "syscon";
+ 			reg = <0x01f40000 0x20000>;
 -- 
 2.30.1
 
