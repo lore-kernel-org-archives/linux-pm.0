@@ -2,374 +2,123 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AED16C28D17
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B73DC4361B
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7593464E7C
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0461664E12
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352504AbhCCDuZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 22:50:25 -0500
-Received: from mail.kernel.org ([198.145.29.99]:45972 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1348819AbhCBPqm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 Mar 2021 10:46:42 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8EEC461494;
-        Tue,  2 Mar 2021 15:44:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614699848;
-        bh=kHh3vq7lXBrXpC5+L7VOymgpayq/gSHEkCNJqpjL0WM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=khmnX+gBT2IjBaAK0PKFxGg5zqj9rnpIEZ3ThpL4vv7x7+b4l/vCl8k8bQPYTNBhB
-         LRDmvyGaocgMN6j3rRqh0jYFqOyOB16rmktaulSoA2WchBsTM1Nqmji4BhA4wTa34F
-         TEUdIEXZmp8V8b8OSTzEfQ/BjcBGKwtFE45B2JRbgwRiXGrmicS6hedVlY67q0lcVY
-         3eA9C3yrPpxZrO9hUBODi6KaAdGuWPhB8x0Cvd4AglFep+hFJ9lXT7UBEQgA2Qhlvy
-         cZS/78yFSgw8URBZpPNVL1I6PkjVZYgc6XySSFzilp102kGcD1IYn/jII+6d4sCHYS
-         YpeOUlY9HGrRg==
-Received: by earth.universe (Postfix, from userid 1000)
-        id 6C8813C0C96; Tue,  2 Mar 2021 16:44:06 +0100 (CET)
-Date:   Tue, 2 Mar 2021 16:44:06 +0100
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Geert Uytterhoeven <geert+renesas@glider.be>
-Cc:     Magnus Damm <magnus.damm@gmail.com>,
-        Saravana Kannan <saravanak@google.com>,
-        linux-renesas-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] soc: renesas: rmobile-sysc: Set OF_POPULATED and absorb
- reset handling
-Message-ID: <20210302154406.n4d6euiruwan4pm5@earth.universe>
-References: <20210205133319.1921108-1-geert+renesas@glider.be>
+        id S1352468AbhCCDt0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 22:49:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55672 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1447518AbhCBNl1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 08:41:27 -0500
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85C0CC061756;
+        Tue,  2 Mar 2021 05:40:38 -0800 (PST)
+Received: by mail-lf1-x129.google.com with SMTP id q25so11076955lfc.8;
+        Tue, 02 Mar 2021 05:40:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:from:to:cc:references:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=sy2937whkD36NnxmnEnOHu/2WmMpJHhESVIp923Q2ms=;
+        b=WR417b2TXL4XluWU3Q62QUJQT2KHPwbcPUhvSl9ZQVrVxjti1bnY0rVY28lskvQOQ9
+         Wd4ONpWLQsrq2U9ZfDpZJ9FfQ0enFUDeq957Rh8PhHNklfHjRCfh4w3CGHcGpKedn3JL
+         JU325/yJb/LyWrSRbGakExDJSSgUVg+qczoU+PFZZ2dZHklZkgt4nYBqwUHa/sX6A7Vq
+         KcMVXJKg88SR6oBSveZT8yEuJBNqlxOaa9sbDxhpRkGsJXaBT3wgy8o8QOEuUJEnZHii
+         cNSLUqZnaK/Zmp1Gtp5hNnFenxB8+j+e6Auapc+QBS0WcKBPGyzm5C2dO3+rub2odxvy
+         Guzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=sy2937whkD36NnxmnEnOHu/2WmMpJHhESVIp923Q2ms=;
+        b=EhoMuAQ7DKnyEuzgvbgptxDcLLMmpunXnYHxlPxyQYlBX0OjfsollGtZPKjopFc4Lg
+         40uNKjaP3JVWNk8+DhBnFwh+LBgGeIjsGt1KOGWWPQ6QdlGquhp9IGcyncV8+zJ9+2f5
+         G8iTj7VRvZcK7Q2lH57ZD6t4xt7SuCdvGwj+LwntDW857ylrcIbL/0VPpgQHQjkEYJta
+         5Lo7y4tW9K19X3AOCHs7IMsOarZG9apGXTnCmJi+bn106t5rMpMZinFyvug+/mNeArqF
+         njguiz5NpnMpZqLrAVnYeMA/vQhlwJ7Ba2xQkbipd1eT1OAM52UoQc7J32a3skK9648c
+         92eQ==
+X-Gm-Message-State: AOAM531ECC0QCVft70Sjj/KRUzLAwuj20RwAe+0fj/VW89xsh5eOzvau
+        65n4IeFIMCeoXganNFUiRbwUBmbuuUo=
+X-Google-Smtp-Source: ABdhPJxRPWPVr1JuoC8bNRBtDqyUDprT1LYGiwQlldtoe/FBCoxaKt0EfpMAr+/aLHyNPv+Ih4vpaQ==
+X-Received: by 2002:ac2:4ecd:: with SMTP id p13mr5165188lfr.421.1614692436754;
+        Tue, 02 Mar 2021 05:40:36 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
+        by smtp.googlemail.com with ESMTPSA id 192sm2462749ljj.95.2021.03.02.05.40.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Mar 2021 05:40:36 -0800 (PST)
+Subject: Re: [PATCH 00/31] Introduce devm_pm_opp_* API
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com, cw00.choi@samsung.com, krzk@kernel.org,
+        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
+        festevam@gmail.com, linux-imx@nxp.com, thierry.reding@gmail.com,
+        jonathanh@nvidia.com, yuq825@gmail.com, airlied@linux.ie,
+        daniel@ffwll.ch, robdclark@gmail.com, sean@poorly.run,
+        robh@kernel.org, tomeu.vizoso@collabora.com, steven.price@arm.com,
+        alyssa.rosenzweig@collabora.com, stanimir.varbanov@linaro.org,
+        agross@kernel.org, bjorn.andersson@linaro.org, mchehab@kernel.org,
+        lukasz.luba@arm.com, adrian.hunter@intel.com,
+        ulf.hansson@linaro.org, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, broonie@kernel.org, gregkh@linuxfoundation.org,
+        jirislaby@kernel.org, rjw@rjwysocki.net, jcrouse@codeaurora.org,
+        hoegsberg@google.com, eric@anholt.net, tzimmermann@suse.de,
+        marijn.suijten@somainline.org, gustavoars@kernel.org,
+        emil.velikov@collabora.com, jonathan@marek.ca,
+        akhilpo@codeaurora.org, smasetty@codeaurora.org,
+        airlied@redhat.com, masneyb@onstation.org, kalyan_t@codeaurora.org,
+        tanmay@codeaurora.org, ddavenport@chromium.org,
+        jsanka@codeaurora.org, rnayak@codeaurora.org,
+        tongtiangen@huawei.com, miaoqinglang@huawei.com,
+        khsieh@codeaurora.org, abhinavk@codeaurora.org,
+        chandanu@codeaurora.org, groeck@chromium.org, varar@codeaurora.org,
+        mka@chromium.org, harigovi@codeaurora.org,
+        rikard.falkeborn@gmail.com, natechancellor@gmail.com,
+        georgi.djakov@linaro.org, akashast@codeaurora.org,
+        parashar@codeaurora.org, dianders@chromium.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
+        linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
+        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org
+References: <20210101165507.19486-1-tiny.windzz@gmail.com>
+ <6bd6730c-6f4e-df93-65cd-93fa4785a8d8@gmail.com>
+Message-ID: <c7a246a4-ab25-a193-f74a-98351780135e@gmail.com>
+Date:   Tue, 2 Mar 2021 16:40:34 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="pmkfhcgpktx5bhsd"
-Content-Disposition: inline
-In-Reply-To: <20210205133319.1921108-1-geert+renesas@glider.be>
+In-Reply-To: <6bd6730c-6f4e-df93-65cd-93fa4785a8d8@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+20.01.2021 19:01, Dmitry Osipenko пишет:
+> 01.01.2021 19:54, Yangtao Li пишет:
+>> Hi,
+>>
+>> This patchset add devm_pm_opp_set_clkname, devm_pm_opp_put_clkname,
+>> devm_pm_opp_set_regulators, devm_pm_opp_put_regulators,
+>> devm_pm_opp_set_supported_hw, devm_pm_opp_of_add_table and
+>> devm_pm_opp_register_notifier.
+> 
+> Hello Yangtao,
+> 
+> Thank you for your effort, looking forward to v2!
 
---pmkfhcgpktx5bhsd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Fri, Feb 05, 2021 at 02:33:19PM +0100, Geert Uytterhoeven wrote:
-> Currently, there are two drivers binding to the R-Mobile System
-> Controller (SYSC):
->   - The rmobile-sysc driver registers PM domains from a core_initcall(),
->     and does not use a platform driver,
->   - The rmobile-reset driver registers a reset handler, and does use a
->     platform driver.
->=20
-> As fw_devlink only considers devices, it does not know that the
-> rmobile-sysc driver is ready.  Hence if fw_devlink is enabled, probing
-> of on-chip devices that are part of the SYSC PM domain is deferred until
-> the optional rmobile-reset has been bound, which may happen too late
-> (for e.g. the system timer on SoCs lacking an ARM architectured or
-> global timer), or not at all, leading to complete system boot failures.
->=20
-> Fix this by:
->   1. Setting the OF_POPULATED flag for the SYSC device node after
->      successful initialization.
->      This will make of_link_to_phandle() ignore the SYSC device node as
->      a dependency, making consumer devices probe again.
->   2. Move reset handling from its own driver into the rmobile-sysc
->      driver.
->      This is needed because setting OF_POPULATED prevents the
->      rmobile-reset driver from binding against the same device.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> To be queued in renesas-devel for v5.13.
-
-Acked-by: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
->=20
-> Tested on:
->   - SH-Mobile AG5 (KZM-A9-GT),
->   - R-Mobile APE6 (APE6-EVM),
->   - R-Mobile A1 (Armadillo-800 EVA).
->=20
->  drivers/power/reset/Kconfig         |  7 ---
->  drivers/power/reset/Makefile        |  1 -
->  drivers/power/reset/rmobile-reset.c | 88 -----------------------------
->  drivers/soc/renesas/rmobile-sysc.c  | 65 ++++++++++++++++++++-
->  4 files changed, 64 insertions(+), 97 deletions(-)
->  delete mode 100644 drivers/power/reset/rmobile-reset.c
->=20
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index 1737e227b16e5136..417b112be3f660de 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -251,13 +251,6 @@ config POWER_RESET_SYSCON_POWEROFF
->  	help
->  	  Poweroff support for generic SYSCON mapped register poweroff.
-> =20
-> -config POWER_RESET_RMOBILE
-> -	tristate "Renesas R-Mobile reset driver"
-> -	depends on ARCH_RMOBILE || COMPILE_TEST
-> -	depends on HAS_IOMEM
-> -	help
-> -	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
-> -
->  config POWER_RESET_ZX
->  	tristate "ZTE SoCs reset driver"
->  	depends on ARCH_ZX || COMPILE_TEST
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index b4601c0a96ed26c7..77a57ca8e5300d60 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -29,7 +29,6 @@ obj-$(CONFIG_POWER_RESET_XGENE) +=3D xgene-reboot.o
->  obj-$(CONFIG_POWER_RESET_KEYSTONE) +=3D keystone-reset.o
->  obj-$(CONFIG_POWER_RESET_SYSCON) +=3D syscon-reboot.o
->  obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) +=3D syscon-poweroff.o
-> -obj-$(CONFIG_POWER_RESET_RMOBILE) +=3D rmobile-reset.o
->  obj-$(CONFIG_POWER_RESET_ZX) +=3D zx-reboot.o
->  obj-$(CONFIG_REBOOT_MODE) +=3D reboot-mode.o
->  obj-$(CONFIG_SYSCON_REBOOT_MODE) +=3D syscon-reboot-mode.o
-> diff --git a/drivers/power/reset/rmobile-reset.c b/drivers/power/reset/rm=
-obile-reset.c
-> deleted file mode 100644
-> index bd3b396558e0df8c..0000000000000000
-> --- a/drivers/power/reset/rmobile-reset.c
-> +++ /dev/null
-> @@ -1,88 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0
-> -/*
-> - * Renesas R-Mobile Reset Driver
-> - *
-> - * Copyright (C) 2014 Glider bvba
-> - */
-> -
-> -#include <linux/io.h>
-> -#include <linux/module.h>
-> -#include <linux/notifier.h>
-> -#include <linux/of_address.h>
-> -#include <linux/platform_device.h>
-> -#include <linux/printk.h>
-> -#include <linux/reboot.h>
-> -
-> -/* SYSC Register Bank 2 */
-> -#define RESCNT2		0x20		/* Reset Control Register 2 */
-> -
-> -/* Reset Control Register 2 */
-> -#define RESCNT2_PRES	0x80000000	/* Soft power-on reset */
-> -
-> -static void __iomem *sysc_base2;
-> -
-> -static int rmobile_reset_handler(struct notifier_block *this,
-> -				 unsigned long mode, void *cmd)
-> -{
-> -	pr_debug("%s %lu\n", __func__, mode);
-> -
-> -	/* Let's assume we have acquired the HPB semaphore */
-> -	writel(RESCNT2_PRES, sysc_base2 + RESCNT2);
-> -
-> -	return NOTIFY_DONE;
-> -}
-> -
-> -static struct notifier_block rmobile_reset_nb =3D {
-> -	.notifier_call =3D rmobile_reset_handler,
-> -	.priority =3D 192,
-> -};
-> -
-> -static int rmobile_reset_probe(struct platform_device *pdev)
-> -{
-> -	int error;
-> -
-> -	sysc_base2 =3D of_iomap(pdev->dev.of_node, 1);
-> -	if (!sysc_base2)
-> -		return -ENODEV;
-> -
-> -	error =3D register_restart_handler(&rmobile_reset_nb);
-> -	if (error) {
-> -		dev_err(&pdev->dev,
-> -			"cannot register restart handler (err=3D%d)\n", error);
-> -		goto fail_unmap;
-> -	}
-> -
-> -	return 0;
-> -
-> -fail_unmap:
-> -	iounmap(sysc_base2);
-> -	return error;
-> -}
-> -
-> -static int rmobile_reset_remove(struct platform_device *pdev)
-> -{
-> -	unregister_restart_handler(&rmobile_reset_nb);
-> -	iounmap(sysc_base2);
-> -	return 0;
-> -}
-> -
-> -static const struct of_device_id rmobile_reset_of_match[] =3D {
-> -	{ .compatible =3D "renesas,sysc-rmobile", },
-> -	{ /* sentinel */ }
-> -};
-> -MODULE_DEVICE_TABLE(of, rmobile_reset_of_match);
-> -
-> -static struct platform_driver rmobile_reset_driver =3D {
-> -	.probe =3D rmobile_reset_probe,
-> -	.remove =3D rmobile_reset_remove,
-> -	.driver =3D {
-> -		.name =3D "rmobile_reset",
-> -		.of_match_table =3D rmobile_reset_of_match,
-> -	},
-> -};
-> -
-> -module_platform_driver(rmobile_reset_driver);
-> -
-> -MODULE_DESCRIPTION("Renesas R-Mobile Reset Driver");
-> -MODULE_AUTHOR("Geert Uytterhoeven <geert+renesas@glider.be>");
-> -MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/soc/renesas/rmobile-sysc.c b/drivers/soc/renesas/rmo=
-bile-sysc.c
-> index bf64d052f9245db5..a8d85d111924d9ee 100644
-> --- a/drivers/soc/renesas/rmobile-sysc.c
-> +++ b/drivers/soc/renesas/rmobile-sysc.c
-> @@ -1,10 +1,11 @@
->  // SPDX-License-Identifier: GPL-2.0
->  /*
-> - * rmobile power management support
-> + * R-Mobile power management and reset support
->   *
->   * Copyright (C) 2012  Renesas Solutions Corp.
->   * Copyright (C) 2012  Kuninori Morimoto <kuninori.morimoto.gx@renesas.c=
-om>
->   * Copyright (C) 2014  Glider bvba
-> + * Copyright (C) 2021  Glider bv
->   *
->   * based on pm-sh7372.c
->   *  Copyright (C) 2011 Magnus Damm
-> @@ -12,11 +13,13 @@
->  #include <linux/clk/renesas.h>
->  #include <linux/console.h>
->  #include <linux/delay.h>
-> +#include <linux/notifier.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
->  #include <linux/pm.h>
->  #include <linux/pm_clock.h>
->  #include <linux/pm_domain.h>
-> +#include <linux/reboot.h>
->  #include <linux/slab.h>
-> =20
->  #include <asm/io.h>
-> @@ -29,6 +32,11 @@
->  #define PSTR_RETRIES	100
->  #define PSTR_DELAY_US	10
-> =20
-> +/* SYSC Register Bank 2 */
-> +#define RESCNT2		0x20	/* Reset Control Register 2 */
-> +
-> +#define RESCNT2_PRES	BIT(31)	/* Soft power-on reset */
-> +
->  struct rmobile_pm_domain {
->  	struct generic_pm_domain genpd;
->  	struct dev_power_governor *gov;
-> @@ -309,6 +317,54 @@ static int __init rmobile_add_pm_domains(void __iome=
-m *base,
->  	return 0;
->  }
-> =20
-> +struct rmobile_reset {
-> +	void __iomem *base;
-> +	struct notifier_block nb;
-> +};
-> +
-> +static int rmobile_reset_handler(struct notifier_block *this,
-> +				 unsigned long mode, void *cmd)
-> +{
-> +	struct rmobile_reset *reset =3D container_of(this, struct rmobile_reset,
-> +						   nb);
-> +
-> +	pr_debug("%s %lu\n", __func__, mode);
-> +
-> +	/* Let's assume we have acquired the HPB semaphore */
-> +	writel(RESCNT2_PRES, reset->base + RESCNT2);
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int rmobile_reset_setup(struct device_node *np)
-> +{
-> +	struct rmobile_reset *reset;
-> +	int error;
-> +
-> +	reset =3D kzalloc(sizeof(*reset), GFP_KERNEL);
-> +	if (!reset)
-> +		return -ENOMEM;
-> +
-> +	reset->base =3D of_iomap(np, 1);
-> +	if (!reset->base)
-> +		goto fail_free;
-> +
-> +	reset->nb.notifier_call =3D rmobile_reset_handler;
-> +	reset->nb.priority =3D 192;
-> +
-> +	error =3D register_restart_handler(&reset->nb);
-> +	if (error)
-> +		goto fail_unmap;
-> +
-> +	return 0;
-> +
-> +fail_unmap:
-> +	iounmap(reset->base);
-> +fail_free:
-> +	kfree(reset);
-> +	return error;
-> +}
-> +
->  static int __init rmobile_init_pm_domains(void)
->  {
->  	struct device_node *np, *pmd;
-> @@ -342,6 +398,13 @@ static int __init rmobile_init_pm_domains(void)
->  			of_node_put(np);
->  			break;
->  		}
-> +
-> +		of_node_set_flag(np, OF_POPULATED);
-> +
-> +		ret =3D rmobile_reset_setup(np);
-> +		if (ret)
-> +			pr_err("%pOF: cannot register restart handler (%d)\n",
-> +			       np, ret);
->  	}
-> =20
->  	put_special_pds();
-> --=20
-> 2.25.1
->=20
-
---pmkfhcgpktx5bhsd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmA+XTcACgkQ2O7X88g7
-+ppCxA/+PoNIBxewxHZ00pMfN9/jD1SdXekNy7mpX2kieENnfOT/y+MnWgJVxI8k
-gvtJBDy8DywwKAEpDLisQ01zx6u+7B6OkFG3JX3thtUukvEdmqMZFLTT2Owr0HNJ
-cf74JdmbYG1n9cztoazhSVy6Uy/eadohKActXpHpxaZPXLpgivTzJZs7zZJpC+ve
-+nvWEZrRWcVYRF2ZyTjeAJ1Cbtd5XSnWzQCYMbvU0HcPw1ir1cnZvthJDjPivKGI
-ODc62Spk5T+pbyqvOxSQ8TyufeGWusM6j+QUVWD1yYnFdrwUFBQLsU/WG5AwRADo
-k1/7jPKkht4DGyRAf8I6FRebhizPwlDSVdXyl3ZO8xeQKvQoQkWolkSQaoeSW2aV
-hXAV7uNhF4T19O7ihiIZO+hzk/lTaEUnok1762QGeKAWawm6Ldx7HmFq1SSgT3u0
-m3UJPlDyMo3znbaZ37Z2zIuh5NqKL5zCxn6U2+tiF0j7VTE/Zr/wSiTRNGP0du/e
-+7UFmIeOJTz735UOs71vEmkTBLbz95BYi0fmO8F885yPbdLlln652dzD1bmjl0qO
-n25TOpBZ/TVAkME4kkxTF9qXZZNjli+aaTsi9kHV2G7422PlfyxSvGKW52K8j14A
-eDhn2Yx54U0URgIUsJH9EmWwvcy7c0367969rqRGU+s0rEoqGOQ=
-=DzE0
------END PGP SIGNATURE-----
-
---pmkfhcgpktx5bhsd--
+Yangtao, could you please let me know what is the status of this series?
+Will you be able to make a v2 anytime soon?
