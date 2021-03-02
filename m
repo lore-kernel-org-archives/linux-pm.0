@@ -2,79 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB223C4161F
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E3D5C28CC5
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A240A64DE4
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF79E64D9C
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376840AbhCBINZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 03:13:25 -0500
-Received: from spam01.hygon.cn ([110.188.70.11]:51578 "EHLO spam2.hygon.cn"
-        rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-        id S241409AbhCBCGn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 Mar 2021 21:06:43 -0500
-Received: from MK-FE.hygon.cn ([172.23.18.61])
-        by spam2.hygon.cn with ESMTP id 122259uY080528;
-        Tue, 2 Mar 2021 10:05:09 +0800 (GMT-8)
-        (envelope-from puwen@hygon.cn)
-Received: from cncheex01.Hygon.cn ([172.23.18.10])
-        by MK-FE.hygon.cn with ESMTP id 122258QG080640;
-        Tue, 2 Mar 2021 10:05:08 +0800 (GMT-8)
-        (envelope-from puwen@hygon.cn)
-Received: from cncheex01.Hygon.cn (172.23.18.10) by cncheex01.Hygon.cn
- (172.23.18.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1466.3; Tue, 2 Mar 2021
- 10:04:53 +0800
-Received: from cncheex01.Hygon.cn ([172.23.18.10]) by cncheex01.Hygon.cn
- ([172.23.18.10]) with mapi id 15.01.1466.003; Tue, 2 Mar 2021 10:04:53 +0800
-From:   Wen Pu <puwen@hygon.cn>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-CC:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "bp@alien8.de" <bp@alien8.de>,
-        "victording@google.com" <victording@google.com>,
-        "kim.phillips@amd.com" <kim.phillips@amd.com>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH] powercap: Add Hygon Fam18h RAPL support
-Thread-Topic: [RFC PATCH] powercap: Add Hygon Fam18h RAPL support
-Thread-Index: AQHXC3ZtcHkxrsdXYk+yZ96EVY24VKptM5qAgACxH4CAAMpAAIAAxNsA
-Date:   Tue, 2 Mar 2021 02:04:53 +0000
-Message-ID: <0994b1d7-3439-b513-7a87-c1463e04d311@hygon.cn>
-References: <20210225130129.21512-1-puwen@hygon.cn>
- <0a8f11cfbc761767b7a994f724af3dac124184c9.camel@linux.intel.com>
- <6543a335-e84c-29ea-e20b-c56bdd60d1c6@hygon.cn>
- <CAJZ5v0jyHywkUhF87sNHXMtG=QBmO23LwAFW0aHQMJsFSr1y+g@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jyHywkUhF87sNHXMtG=QBmO23LwAFW0aHQMJsFSr1y+g@mail.gmail.com>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [172.23.18.44]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <73347C359B143A4F84310334CBA43A37@Hygon.cn>
-Content-Transfer-Encoding: base64
+        id S1376845AbhCBIOT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 03:14:19 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:40860 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1574550AbhCBDrs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Mar 2021 22:47:48 -0500
+X-UUID: c5d5a35a05be4214b41375b702fd77cc-20210302
+X-UUID: c5d5a35a05be4214b41375b702fd77cc-20210302
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+        (envelope-from <henryc.chen@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 425737218; Tue, 02 Mar 2021 11:47:45 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 2 Mar 2021 11:47:44 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 2 Mar 2021 11:47:44 +0800
+From:   Henry Chen <henryc.chen@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Fan Chen <fan.chen@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V9 02/12] soc: mediatek: add header for mediatek SIP interface
+Date:   Tue, 2 Mar 2021 11:47:33 +0800
+Message-ID: <1614656863-8530-3-git-send-email-henryc.chen@mediatek.com>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
+References: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
-X-MAIL: spam2.hygon.cn 122259uY080528
-X-DNSRBL: 
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-T24gMjAyMS8zLzEgMjI6MjAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOg0KPiBPbiBNb24sIE1h
-ciAxLCAyMDIxIGF0IDM6MTggQU0gV2VuIFB1IDxwdXdlbkBoeWdvbi5jbj4gd3JvdGU6DQo+Pg0K
-Pj4gT24gMjAyMS8yLzI4IDIzOjQyLCBTcmluaXZhcyBQYW5kcnV2YWRhIHdyb3RlOg0KPj4+IE9u
-IFRodSwgMjAyMS0wMi0yNSBhdCAyMTowMSArMDgwMCwgUHUgV2VuIHdyb3RlOg0KPj4+PiBFbmFi
-bGUgSHlnb24gRmFtMThoIFJBUEwgc3VwcG9ydCBmb3IgdGhlIHBvd2VyIGNhcHBpbmcgZnJhbWV3
-b3JrLg0KPj4+Pg0KPj4+IElmIHRoaXMgcGF0Y2ggaXMgdGVzdGVkIGFuZCB3b3JrcyBvbiB0aGlz
-IHByb2Nlc3Nvciwgbm90IHN1cmUgd2h5IHRoaXMNCj4+PiBpcyBSRkM/DQo+Pg0KPj4gVGhpcyBw
-YXRjaCBpcyB0ZXN0ZWQgYW5kIHdvcmtzIG9uIEh5Z29uIHByb2Nlc3Nvci4gVGhlICdSRkMnIGlz
-IGF1dG9tYXRlZA0KPj4gZ2VuZXJhdGVkIGJ5IG15IHNjcmlwdCA7KQ0KPiANCj4gV2VsbCwgY2Fy
-ZSB0byByZXNlbmQgYXMgbm9uLVJGQywgdGhlbj8NCg0KT0ssIGFscmVhZHkgcmVzZW5kLiBUaGFu
-a3MhDQoNCi0tIA0KUmVnYXJkcywNClB1IFdlbg==
+Add a header to collect SIPs and add one SIP call to initialize power
+management hardware for the SIP interface defined to access the SPM
+handling vcore voltage and ddr rate changes on mt8183 (and most likely
+later socs).
+
+Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
+Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
+---
+ include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+index 082398e..079bbcb 100644
+--- a/include/linux/soc/mediatek/mtk_sip_svc.h
++++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+@@ -22,4 +22,8 @@
+ 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+ 			   ARM_SMCCC_OWNER_SIP, fn_id)
+ 
++/* VCOREFS */
++#define MTK_SIP_VCOREFS_CONTROL \
++	MTK_SIP_SMC_CMD(0x506)
++
+ #endif
+-- 
+1.9.1
+
