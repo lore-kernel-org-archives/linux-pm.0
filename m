@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D07BC28CFA
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E43AC433E6
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BA1664DE4
+	by mail.kernel.org (Postfix) with ESMTP id E591264DE8
 	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376852AbhCBIPk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 03:15:40 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:41032 "EHLO
+        id S1376864AbhCBIQW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 03:16:22 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:41011 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1574553AbhCBDrt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Mar 2021 22:47:49 -0500
-X-UUID: af1f8da6480c4134a3f641f1d6ad1bdf-20210302
-X-UUID: af1f8da6480c4134a3f641f1d6ad1bdf-20210302
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+        with ESMTP id S1574625AbhCBDs1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Mar 2021 22:48:27 -0500
+X-UUID: 60c410a24b8d422ca5f4f60971135c51-20210302
+X-UUID: 60c410a24b8d422ca5f4f60971135c51-20210302
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <henryc.chen@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1901152504; Tue, 02 Mar 2021 11:47:46 +0800
+        with ESMTP id 1082872483; Tue, 02 Mar 2021 11:47:45 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Tue, 2 Mar 2021 11:47:45 +0800
+ mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 2 Mar 2021 11:47:44 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Tue, 2 Mar 2021 11:47:45 +0800
+ Transport; Tue, 2 Mar 2021 11:47:44 +0800
 From:   Henry Chen <henryc.chen@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -45,76 +45,109 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <devicetree@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V9 07/12] dt-bindings: interconnect: add MT6873 interconnect dt-bindings
-Date:   Tue, 2 Mar 2021 11:47:38 +0800
-Message-ID: <1614656863-8530-8-git-send-email-henryc.chen@mediatek.com>
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH V9 00/13] Add driver for dvfsrc, support for interconnect
+Date:   Tue, 2 Mar 2021 11:47:31 +0800
+Message-ID: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
 X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
-References: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+X-TM-SNTS-SMTP: A7F0D9978F26DE918312832130BCDB060CB041E6DFAAC02AB858325300E579412000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interconnect provider dt-bindings for MT6873.
+This series is based on v5.11-rc1.
 
-Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
----
- include/dt-bindings/interconnect/mtk,mt6873-emi.h | 41 +++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/mtk,mt6873-emi.h
+The patchsets add support for MediaTek hardware module named DVFSRC
+(dynamic voltage and frequency scaling resource collector). The DVFSRC is
+a HW module which is used to collect all the requests from both software
+and hardware and turn into the decision of minimum operating voltage and
+minimum DRAM frequency to fulfill those requests.
 
-diff --git a/include/dt-bindings/interconnect/mtk,mt6873-emi.h b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
-new file mode 100644
-index 0000000..0b20011
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
-@@ -0,0 +1,41 @@
-+/* SPDX-License-Identifier: GPL-2.0
-+ *
-+ * Copyright (c) 2021 MediaTek Inc.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
-+
-+#define MT6873_SLAVE_DDR_EMI		0
-+#define MT6873_MASTER_MCUSYS		1
-+#define MT6873_MASTER_GPUSYS		2
-+#define MT6873_MASTER_MMSYS		3
-+#define MT6873_MASTER_MM_VPU		4
-+#define MT6873_MASTER_MM_DISP		5
-+#define MT6873_MASTER_MM_VDEC		6
-+#define MT6873_MASTER_MM_VENC		7
-+#define MT6873_MASTER_MM_CAM		8
-+#define MT6873_MASTER_MM_IMG		9
-+#define MT6873_MASTER_MM_MDP		10
-+#define MT6873_MASTER_VPUSYS		11
-+#define MT6873_MASTER_VPU_0		12
-+#define MT6873_MASTER_VPU_1		13
-+#define MT6873_MASTER_MDLASYS		14
-+#define MT6873_MASTER_MDLA_0		15
-+#define MT6873_MASTER_UFS		16
-+#define MT6873_MASTER_PCIE		17
-+#define MT6873_MASTER_USB		18
-+#define MT6873_MASTER_DBGIF		19
-+#define MT6873_SLAVE_HRT_DDR_EMI	20
-+#define MT6873_MASTER_HRT_MMSYS		21
-+#define MT6873_MASTER_HRT_MM_DISP	22
-+#define MT6873_MASTER_HRT_MM_VDEC	23
-+#define MT6873_MASTER_HRT_MM_VENC	24
-+#define MT6873_MASTER_HRT_MM_CAM	25
-+#define MT6873_MASTER_HRT_MM_IMG	26
-+#define MT6873_MASTER_HRT_MM_MDP	27
-+#define MT6873_MASTER_HRT_DBGIF		28
-+#define MT6873_MASTER_WIFI		29
-+#define MT6873_MASTER_BT		30
-+#define MT6873_MASTER_NETSYS		31
-+#endif
--- 
-1.9.1
+So, This series is to implement the dvfsrc driver to collect all the
+requests of operating voltage or DRAM bandwidth from other device drivers
+likes GPU/Camera through 3 frameworks basically:
+
+1. interconnect framework: to aggregate the bandwidth
+   requirements from different clients
+
+[1] https://patchwork.kernel.org/cover/10766329/
+
+There has a hw module "DRAM scheduler", which used to control the throughput.
+The DVFSRC will collect forecast data of dram bandwidth from
+SW consumers(camera/gpu...), and according the forecast to change the DRAM
+frequency
+
+2. Regualtor framework: to handle the operating voltage requirement from user or
+   cosumer which not belong any power domain
+
+Changes in V9:
+* modify the cnfiguration of dvfsrc.yaml. (Rob)
+
+Changes in V8:
+* Fixed the dt_binding_check error of dvfsrc.yaml. (Rob)
+* Remove Kconfig dependency of DVFSRC
+
+Changes in V7:
+* Fixed the dt_binding_check error of dvfsrc.yaml. (Rob)
+* Fixed the checkpatch complains of "Signed-off-by: email name mismatch". (Georgi)
+* Fixed coding style of interconnect driver. (Georgi)
+* Upate comment of the years to 2021. (Georgi)
+
+Changes in V6:
+* Remove the performace state support, because the request from consumer can be
+replaced by using interconnect and regulator framework.
+* Update the DT patches and convert them to DT schema. (Georgi)
+* Modify the comment format and coding style. (Mark)
+
+Changes in V5:
+* Support more platform mt6873/mt8192
+* Drop the compatible and interconnect provider node and make the parent node an
+interconnect provider. (Rob/Georgi)
+* Make modification of interconnect driver from coding suggestion. (Georgi)
+* Move interconnect diagram into the commit text of patch. (Georgi)
+* Register the interconnect provider as a platform sub-device. (Georgi)
+
+Changes in V4:
+* Add acked TAG on dt-bindings patches. (Rob)
+* Declaration of emi_icc_aggregate since the prototype of aggregate function
+has changed meanwhile. (Georgi)
+* Used emi_icc_remove instead of icc_provider_del on probe. (Georgi)
+* Add dvfsrc regulator driver into series.
+* Bug fixed of mt8183_get_current_level.
+* Add mutex protection for pstate operation on dvfsrc_set_performance.
+
+Changes in V3:
+* Remove RFC from the subject prefix of the series
+* Combine dt-binding patch and move interconnect dt-binding document into
+dvfsrc. (Rob)
+* Remove unused header, add unit descirption to the bandwidth, rename compatible
+name on interconnect driver. (Georgi)
+* Fixed some coding style: check flow, naming, used readx_poll_timeout
+on dvfsrc driver. (Ryan)
+* Rename interconnect driver mt8183.c to mtk-emi.c
+* Rename interconnect header mtk,mt8183.h to mtk,emi.h
+* mtk-scpsys.c: Add opp table check first to avoid OF runtime parse failed
+
+Changes in RFC V2:
+* Remove the DT property dram_type. (Rob)
+* Used generic dts property 'opp-level' to get the performace state. (Stephen)
+* Remove unecessary dependency config on Kconfig. (Stephen)
+* Remove unused header file, fixed some coding style issue, typo,
+error handling on dvfsrc driver. (Nicolas/Stephen)
+* Remove irq handler on dvfsrc driver. (Stephen)
+* Remove init table on dvfsrc driver, combine hw init on trustzone.
+* Add interconnect support of mt8183 to aggregate the emi bandwidth.
+(Georgi)
+
+V8: https://patchwork.kernel.org/project/linux-mediatek/list/?series=421713
+V7: https://patchwork.kernel.org/project/linux-mediatek/list/?series=411057
+V6: https://patchwork.kernel.org/project/linux-mediatek/list/?series=406077
+V5: https://patchwork.kernel.org/project/linux-mediatek/list/?series=348065
+V4: https://lore.kernel.org/patchwork/cover/1209284/
+V3: https://patchwork.kernel.org/cover/11118867/
+RFC V2: https://lore.kernel.org/patchwork/patch/1068113/
+RFC V1: https://lore.kernel.org/patchwork/cover/1028535/
 
