@@ -2,101 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5FE6C43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EF1CC433E6
 	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:56:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8771F64E75
+	by mail.kernel.org (Postfix) with ESMTP id 645A664E6F
 	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:56:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352514AbhCCDui (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 22:50:38 -0500
-Received: from mail.kernel.org ([198.145.29.99]:44162 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1579442AbhCBQ61 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 Mar 2021 11:58:27 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6491C64F1B;
-        Tue,  2 Mar 2021 16:32:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614702762;
-        bh=DvfHPt3qgERw1Tx3HMUyjao2cas8sxMi68hfOaXTFEM=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=FE3nWeAUhM3mbih1ijdn8Dos+tRqMDIbrNwaASaXx1nAXfDYE+1jrPrUPCkllEL4v
-         qDVuNRR10fVxzqQgOE8NIbGMku2P1sh56O5AIUx8wfwiATCKisjo8FUZK3qUNDW2oF
-         AgG/PEFx43+uzKOc2plpsAa5LfYTJFk9JBxfZXNSj6UycfERXMMSfTZHiw/VWYkkeb
-         n6CaTRmiZlA46mmHdckOpXP5XU3FMod/moTUz1tV0YuE0TR9M/+VHjkfr6AE9SKIeg
-         liwuliQFQcb8PbRqH8FQ96Gpfzia3FkzZpyPexj/dqu4tfghYBcGy1wqm6ob/Wy09z
-         ALowwH8ExvYEQ==
-Date:   Tue, 2 Mar 2021 10:32:40 -0600
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Loic Poulain <loic.poulain@linaro.org>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-        Dave Airlie <airlied@redhat.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        "open list:QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096" 
-        <linux-pm@vger.kernel.org>
-Subject: Re: PME while runtime suspend
-Message-ID: <20210302163240.GA422825@bjorn-Precision-5520>
+        id S1352507AbhCCDu2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 22:50:28 -0500
+Received: from mail-ot1-f46.google.com ([209.85.210.46]:46577 "EHLO
+        mail-ot1-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1572968AbhCBQ3c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 11:29:32 -0500
+Received: by mail-ot1-f46.google.com with SMTP id u3so2315938otg.13;
+        Tue, 02 Mar 2021 08:29:03 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Gl4hjiHKJy1s/pa5uHe5bdioR5LZI5TvDUElq6VVCEY=;
+        b=glLUhpbxldWg1Mk4yKFx+f2YZsyeZTAtQsMPETV9WWp4+vU2hwLl+C/ttJjONsFk9j
+         m5C3Tf2sOXEJM7mIMWuYqW01gvpGSXOSvI8tZ190k6WWNDIw/HlxCzN5en0OolyfWkI1
+         jmERVHnRDe7JdJNeQ5z0S+iTOID83AVgUzM8TO86rR78rp5RNFN4y9GleXTBEOGsVUmE
+         Tfgno+FsJX3CJZhBiU3K4hgqUIGQZmP0b+aN+IEQVK0RR4iWHk7V3Uv1S/9jcCY2Pcij
+         s2ECNq+WaHFOO2q6Ypqd4hbhYYv8ogYkFz9p0rspjrQWW91I0AS7I/XjXXmgEsGf2tbu
+         93UQ==
+X-Gm-Message-State: AOAM530tedjkR2teesHRwn10mye7GxvuTp4y8ZgYebtaC/KEftk3Kaio
+        IYqIV7cnpJh+X3MFkFF+7KrK/wzUL3TKSjMspC92PYy8rEs=
+X-Google-Smtp-Source: ABdhPJztTHMzuXcHCjGbmrjI4AMUu6Glc/djgNvb8fellR0BArfBNLJ9CkYs0e26C4oxiYqrdEI+hfRZbyAumBmTNSE=
+X-Received: by 2002:ab0:60b8:: with SMTP id f24mr12507685uam.58.1614701912455;
+ Tue, 02 Mar 2021 08:18:32 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMZdPi-mmwYa4CqTtaNW3X8RrMzE8F0QchzqkB4SQ0QHCQvPVg@mail.gmail.com>
+References: <20210205133319.1921108-1-geert+renesas@glider.be> <20210302154406.n4d6euiruwan4pm5@earth.universe>
+In-Reply-To: <20210302154406.n4d6euiruwan4pm5@earth.universe>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 2 Mar 2021 17:18:21 +0100
+Message-ID: <CAMuHMdULLDcRFhOQrGXuRxTcMeX5bc3fi-CkSSmrejSP6JUKWA@mail.gmail.com>
+Subject: Re: [PATCH] soc: renesas: rmobile-sysc: Set OF_POPULATED and absorb
+ reset handling
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Magnus Damm <magnus.damm@gmail.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 02, 2021 at 03:52:05PM +0100, Loic Poulain wrote:
-> Hi Bjorn,
-> 
-> On Fri, 26 Feb 2021 at 23:22, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> >
-> > [+cc Rafael, Dave (author of 42eca2302146), Vaibhav, linux-pm]
-> >
-> > On Fri, Feb 26, 2021 at 11:37:12AM +0100, Loic Poulain wrote:
-> > > Hi Bjorn,
-> > >
-> > > Trying to support runtime suspend in a driver, which puts the device
-> > > in D3hot and wait either for host/driver initiated resume
-> > > (runtime_get), or device initiated resume (PME).
-> > >
-> > > But, given that old change: 42eca2302146 ("PCI: Don't touch card regs
-> > > after runtime suspend D3")
-> > >
-> > > PME that was enabled from pci_finish_runtime_suspend() is not enabled
-> > > anymore for almost all drivers in case of runtime-suspend. The only
-> > > way to enable this is by calling pci_wake_from_d3() from the PCI device
-> > > driver's runtime_suspend() callback, but this function fails if the
-> > > device wake_up is not enabled, which makes sense since it targets
-> > > system-wide sleep wake-up (and wake-up is user/distro policy).
-> > >
-> > > So is there a proper way to allow PME while the device is runtime
-> > > suspended, without having to tell the user to enabled 'unrelated' wake_up
-> > > capability?
-> >
-> > pci_pm_runtime_suspend() calls pci_finish_runtime_suspend(), which
-> > enables wake-up, unless "pci_dev->state_saved".  IIUC we should be
-> > enabling wake-up unless the driver has called pci_save_state() itself.
-> >
-> > So I infer that your driver does call pci_save_state() and the PCI
-> > core does not enable wake-up.  Right?
-> 
-> Right.
-> 
-> > Why does your driver call pci_save_state()?  In most cases I don't
-> > think drivers should need to do that themselves because the PCI core
-> > will do it for them.  E.g., see Vaibhav's recent eb6779d4c505 ("e1000:
-> > use generic power management") [1]
-> 
-> Thanks for the pointer, I was storing the PCI state in order to
-> restore it when the device is crashing and lose its PCI context. But I
-> can do that one time once the device is initialized. I've applied the
-> same changes as you pointed, and it works as expected.
+Hi Sebastian,
 
-Great, thanks for letting us know!  It's always nice when you can
-*remove* code and things work better!
+On Tue, Mar 2, 2021 at 4:44 PM Sebastian Reichel <sre@kernel.org> wrote:
+> On Fri, Feb 05, 2021 at 02:33:19PM +0100, Geert Uytterhoeven wrote:
+> > Currently, there are two drivers binding to the R-Mobile System
+> > Controller (SYSC):
+> >   - The rmobile-sysc driver registers PM domains from a core_initcall(),
+> >     and does not use a platform driver,
+> >   - The rmobile-reset driver registers a reset handler, and does use a
+> >     platform driver.
+> >
+> > As fw_devlink only considers devices, it does not know that the
+> > rmobile-sysc driver is ready.  Hence if fw_devlink is enabled, probing
+> > of on-chip devices that are part of the SYSC PM domain is deferred until
+> > the optional rmobile-reset has been bound, which may happen too late
+> > (for e.g. the system timer on SoCs lacking an ARM architectured or
+> > global timer), or not at all, leading to complete system boot failures.
+> >
+> > Fix this by:
+> >   1. Setting the OF_POPULATED flag for the SYSC device node after
+> >      successful initialization.
+> >      This will make of_link_to_phandle() ignore the SYSC device node as
+> >      a dependency, making consumer devices probe again.
+> >   2. Move reset handling from its own driver into the rmobile-sysc
+> >      driver.
+> >      This is needed because setting OF_POPULATED prevents the
+> >      rmobile-reset driver from binding against the same device.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > To be queued in renesas-devel for v5.13.
+>
+> Acked-by: Sebastian Reichel <sre@kernel.org>
 
-Bjorn
+In the meantime, this has method been abandoned, and this patch was
+superseded by "[PATCH v2] soc: renesas: rmobile-sysc: Mark fwnode when
+PM domain is added"
+https://lore.kernel.org/linux-arm-kernel/20210216123958.3180014-1-geert+renesas@glider.be/
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
