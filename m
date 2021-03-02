@@ -2,122 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FCB5C28E80
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D0B6C43603
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1A7F964E7C
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E2B264E12
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352500AbhCCDuX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 22:50:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47974 "EHLO
+        id S1352463AbhCCDsf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 22:48:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1574433AbhCBPQn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 10:16:43 -0500
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32FC7C06121D
-        for <linux-pm@vger.kernel.org>; Tue,  2 Mar 2021 06:44:25 -0800 (PST)
-Received: by mail-pl1-x62f.google.com with SMTP id d11so12148620plo.8
-        for <linux-pm@vger.kernel.org>; Tue, 02 Mar 2021 06:44:25 -0800 (PST)
+        with ESMTP id S1447343AbhCBMw2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 07:52:28 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 555F9C061356;
+        Tue,  2 Mar 2021 04:51:47 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id k9so11165357lfo.12;
+        Tue, 02 Mar 2021 04:51:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=LN47YQRLXAfp8nIdMqhDzM0X4bI1obU+R6IhTtEL2Io=;
-        b=a+pZDevbRMBzVHeyVrUO9js4WTarj30oxeztG1eQ/JH7bSHlNTEgfumDapN+L1xUBd
-         thkX0uJmPfv4AiDasKw99D5O4jWj3bMshkghODPCVcqXhd1EUV3Hn2/ilJEmrKZDPehA
-         T/xbhdm0wr8I2T4sf1xq1KGxy10gCsMDfr2mbmlqUX2ySIOYC5sTV1IpYP38qB2LVytv
-         efRwChaOd7/aLOzypxV2f8N0GGdxCGuWsbOcyiO8KVtIF39B68Y3Z10gqihSZiyW+tBh
-         3nh1ppaJC+A63UdxcgA66Cb1usc+ut9KZ9FINzV4iEW0gksDjtUXhSUskbVbHMrl7zER
-         eIog==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=CG/5QlNuJ1KNPPhd8D/4ac7gmQv2YGcSkIDPjvGHLKY=;
+        b=f6IBe6p3Lk5pn7nTThtsyM5m0MTzaHE2c1Ij32oGe/DdyKymToP05XSJY1oZne+M/V
+         YHE+fXxy//S8rsD4J7WmgrHd2/CVvZO04trwVHGSOJRzWkmV8aYVQs6lSVFIh/EkooL4
+         v6l027dFKlhLSdzuesSKmot1xagBK1ozLjKMtYqY/r5rmbnuKbXw3JJIdlGYdBJM5gP+
+         FWn9zNOEpdon0BerfRl1L9DqP8DDmEFG4WP2rW2hHytXhwPf3aAiT0az/2k9HEyuiXtQ
+         OJbStF3biO1BrD2A0aUCd6PsuNcG/Zdwb30YI7BAIrlfsmoTvAAtnERYS/YwvL5XcUII
+         ZLNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=LN47YQRLXAfp8nIdMqhDzM0X4bI1obU+R6IhTtEL2Io=;
-        b=l+37ly574k3+0XWbn5RW7yfsnQSfibhvkJnlC9+u3pXshQYmnXrsfpMip5OsTZQkn2
-         nxuIWlnDA6tUTYVDq1Nbi5s3HcK+Y679CESHJTSOLPWdxKJn8FJ95yAz3Hb/6Vc8RnBp
-         uy1kwG+wbEWfp0UPzhyaM5B98KruK7Jrz0HtFTy9Ljq1rTrjEEXBr9NEEboagLJnvMoe
-         X+ythtbAeC38acWOZAsihkZG43D6sf0bFOJPrCBpPEr1lUoxZ/BoiUajSE8FEh8m1AtB
-         fbZ+yRHgYyZ3iWtSCMzDn43AyA2L9QS3wupiRbzUWLlxuklv3tQS+Xt4iRuwI/ryDjQz
-         o1xQ==
-X-Gm-Message-State: AOAM533CaoYUnzNNVW9zXQ4wY/eybFZUmtVY6RFxCv9js4IdAjJW7J5O
-        m7R9BZHYQW3RhlzN+nwU7bS0nAMqwq5LgQAgN5CLNA==
-X-Google-Smtp-Source: ABdhPJx4KB3uDOfcVX2aHG/MRoxaLduQ1Apbymam8qtnXkHoi83pWR8tDMhX7mZ+LUCn3l7asUrDrvx4IQV7v1XDe8M=
-X-Received: by 2002:a17:90a:1463:: with SMTP id j90mr3963527pja.205.1614696264461;
- Tue, 02 Mar 2021 06:44:24 -0800 (PST)
-MIME-Version: 1.0
-References: <CAMZdPi9PGWcPOHKk3cNU3Nw+hdVOsivLeXzqyd2FQ7nn8dDfvg@mail.gmail.com>
- <20210226222225.GA164608@bjorn-Precision-5520>
-In-Reply-To: <20210226222225.GA164608@bjorn-Precision-5520>
-From:   Loic Poulain <loic.poulain@linaro.org>
-Date:   Tue, 2 Mar 2021 15:52:05 +0100
-Message-ID: <CAMZdPi-mmwYa4CqTtaNW3X8RrMzE8F0QchzqkB4SQ0QHCQvPVg@mail.gmail.com>
-Subject: Re: PME while runtime suspend
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-        Dave Airlie <airlied@redhat.com>,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=CG/5QlNuJ1KNPPhd8D/4ac7gmQv2YGcSkIDPjvGHLKY=;
+        b=asJuAZ4ZXQoZ8J60KHTb+Hprq06yEO2eUsxzyj+npqYTuzUw54NTPJdV003U21EM+6
+         wqWqv9YSG/kKia02yLxMZ3OUH1A3JZCDjuuuMBlkoJHlEdVphcM9tanXcCCU2FUHodcB
+         o9ElCwUOfDaAG7P1o51KP2o/ZpFTa1b+VW0MlGGf1KZl6PZOVh276Iwu0Xey03tLEncf
+         hXZ1Fc0iBfwEjkDJMpQsKeCjsdKqfH6+6/tm0yD1L16Tm26mKBE7Y5SLOBcYn+LutaAj
+         QdQBDK9OpLK7joU5I5BPIJJIwJD2xgxr1M+1rI9tLP3HsGzWTFmvW0SGYSbc7F/cVY9j
+         7rgA==
+X-Gm-Message-State: AOAM531pa3pqjAFfq48bSb/5gXVelmJ0kPYYBHtdyxyya/bD9wy4JZGB
+        VutLfsETCyKoaVHlpc/6ttxBDAJSor4=
+X-Google-Smtp-Source: ABdhPJx+iK7c9zLSYUtGA/nvc3RU8int9Y5ss7FRNYjlRREgm+2lybcDRG75VVWriAQj/maa2FVhDw==
+X-Received: by 2002:a05:6512:2206:: with SMTP id h6mr12230604lfu.239.1614689505664;
+        Tue, 02 Mar 2021 04:51:45 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
+        by smtp.googlemail.com with ESMTPSA id s24sm2818690ljg.26.2021.03.02.04.51.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Mar 2021 04:51:45 -0800 (PST)
+Subject: Re: [PATCH RESEND v2 2/2] cpuidle: tegra: Remove do_idle firmware
+ call
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        "open list:QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096" 
-        <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Anton Bambura <jenneron@protonmail.com>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        Peter Geis <pgwipeout@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+References: <20210302095405.28453-1-digetx@gmail.com>
+ <20210302095405.28453-2-digetx@gmail.com>
+ <dd5cff9e-b86b-7fea-c88b-c32b5c428705@linaro.org>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <1da82ae3-6b23-2aa0-3275-309ffd8738d0@gmail.com>
+Date:   Tue, 2 Mar 2021 15:51:44 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <dd5cff9e-b86b-7fea-c88b-c32b5c428705@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Bjorn,
+02.03.2021 15:45, Daniel Lezcano пишет:
+> On 02/03/2021 10:54, Dmitry Osipenko wrote:
+>> The do_idle firmware call is unused by all Tegra SoCs, hence remove it in
+>> order to keep driver's code clean.
+>>
+>> Tested-by: Anton Bambura <jenneron@protonmail.com> # TF701 T114
+>> Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
+>> Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>
+>> Changelog:
+>>
+>> v2: - No changes. V1 got no attention, hence re-sending.
+>>
+>>  drivers/cpuidle/cpuidle-tegra.c | 13 +------------
+>>  1 file changed, 1 insertion(+), 12 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
+>> index 29c5e83500d3..508bd9f23792 100644
+>> --- a/drivers/cpuidle/cpuidle-tegra.c
+>> +++ b/drivers/cpuidle/cpuidle-tegra.c
+>> @@ -48,11 +48,6 @@ enum tegra_state {
+>>  static atomic_t tegra_idle_barrier;
+>>  static atomic_t tegra_abort_flag;
+>>  
+>> -static inline bool tegra_cpuidle_using_firmware(void)
+>> -{
+>> -	return firmware_ops->prepare_idle && firmware_ops->do_idle;
+>> -}
+>> -
+>>  static void tegra_cpuidle_report_cpus_state(void)
+>>  {
+>>  	unsigned long cpu, lcpu, csr;
+>> @@ -139,10 +134,6 @@ static int tegra_cpuidle_c7_enter(void)
+>>  	if (err && err != -ENOSYS)
+>>  		return err;
+>>  
+>> -	err = call_firmware_op(do_idle, 0);
+>> -	if (err != -ENOSYS)
+>> -		return err;
+>> -
+>>  	return cpu_suspend(0, tegra30_pm_secondary_cpu_suspend);
+>>  }
+>>  
+>> @@ -356,9 +347,7 @@ static int tegra_cpuidle_probe(struct platform_device *pdev)
+>>  	 * is disabled.
+>>  	 */
+>>  	if (!IS_ENABLED(CONFIG_PM_SLEEP)) {
+>> -		if (!tegra_cpuidle_using_firmware())
+>> -			tegra_cpuidle_disable_state(TEGRA_C7);
+> 
+> So firmware_ops->do_idle is always NULL, thus
+> tegra_cpuidle_using_firmware() is always false and
+> tegra_cpuidle_disable_state() always called, right ?
 
-On Fri, 26 Feb 2021 at 23:22, Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> [+cc Rafael, Dave (author of 42eca2302146), Vaibhav, linux-pm]
->
-> On Fri, Feb 26, 2021 at 11:37:12AM +0100, Loic Poulain wrote:
-> > Hi Bjorn,
-> >
-> > Trying to support runtime suspend in a driver, which puts the device
-> > in D3hot and wait either for host/driver initiated resume
-> > (runtime_get), or device initiated resume (PME).
-> >
-> > But, given that old change: 42eca2302146 ("PCI: Don't touch card regs
-> > after runtime suspend D3")
-> >
-> > PME that was enabled from pci_finish_runtime_suspend() is not enabled
-> > anymore for almost all drivers in case of runtime-suspend. The only
-> > way to enable this is by calling pci_wake_from_d3() from the PCI device
-> > driver's runtime_suspend() callback, but this function fails if the
-> > device wake_up is not enabled, which makes sense since it targets
-> > system-wide sleep wake-up (and wake-up is user/distro policy).
-> >
-> > So is there a proper way to allow PME while the device is runtime
-> > suspended, without having to tell the user to enabled 'unrelated' wake_up
-> > capability?
->
-> pci_pm_runtime_suspend() calls pci_finish_runtime_suspend(), which
-> enables wake-up, unless "pci_dev->state_saved".  IIUC we should be
-> enabling wake-up unless the driver has called pci_save_state() itself.
->
-> So I infer that your driver does call pci_save_state() and the PCI
-> core does not enable wake-up.  Right?
-
-Right.
-
-
-
->
-> Why does your driver call pci_save_state()?  In most cases I don't
-> think drivers should need to do that themselves because the PCI core
-> will do it for them.  E.g., see Vaibhav's recent eb6779d4c505 ("e1000:
-> use generic power management") [1]
-
-Thanks for the pointer, I was storing the PCI state in order to
-restore it when the device is crashing and lose its PCI context. But I
-can do that one time once the device is initialized. I've applied the
-same changes as you pointed, and it works as expected.
-
-Thanks,
-Loic
+Yes, the tegra_cpuidle_disable_state(TEGRA_C7) is always
+called if CONFIG_PM_SLEEP is disabled in kernel config.
