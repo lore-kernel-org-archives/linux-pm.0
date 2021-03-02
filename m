@@ -4,87 +4,172 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FF0AC28CC4
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39BD5C433E9
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72AD661494
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E804E61494
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Mar 2021 08:39:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376818AbhCBIMA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 03:12:00 -0500
-Received: from spam01.hygon.cn ([110.188.70.11]:29918 "EHLO spam1.hygon.cn"
-        rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-        id S234624AbhCBCCw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 Mar 2021 21:02:52 -0500
-Received: from MK-FE.hygon.cn ([172.23.18.61])
-        by spam1.hygon.cn with ESMTP id 12221h9q081973;
-        Tue, 2 Mar 2021 10:01:43 +0800 (GMT-8)
-        (envelope-from puwen@hygon.cn)
-Received: from cncheex01.Hygon.cn ([172.23.18.10])
-        by MK-FE.hygon.cn with ESMTP id 12221gOb080418;
-        Tue, 2 Mar 2021 10:01:42 +0800 (GMT-8)
-        (envelope-from puwen@hygon.cn)
-Received: from ubuntu1604-2.higon.com (172.23.18.44) by cncheex01.Hygon.cn
- (172.23.18.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1466.3; Tue, 2 Mar 2021
- 10:01:27 +0800
-From:   Pu Wen <puwen@hygon.cn>
-To:     <linux-kernel@vger.kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <rjw@rjwysocki.net>,
-        <rafael@kernel.org>, <bp@alien8.de>, <victording@google.com>,
-        <kim.phillips@amd.com>, <rui.zhang@intel.com>,
-        <srinivas.pandruvada@linux.intel.com>, Pu Wen <puwen@hygon.cn>
-Subject: [PATCH] powercap: Add Hygon Fam18h RAPL support
-Date:   Tue, 2 Mar 2021 10:01:08 +0800
-Message-ID: <20210302020108.1777-1-puwen@hygon.cn>
-X-Mailer: git-send-email 2.23.0
+        id S1376848AbhCBIOz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 03:14:55 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:40922 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1574551AbhCBDrt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Mar 2021 22:47:49 -0500
+X-UUID: 7f6f4ea22477436f92926f211e7c5d15-20210302
+X-UUID: 7f6f4ea22477436f92926f211e7c5d15-20210302
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <henryc.chen@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1494284475; Tue, 02 Mar 2021 11:47:45 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 2 Mar 2021 11:47:44 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 2 Mar 2021 11:47:44 +0800
+From:   Henry Chen <henryc.chen@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Fan Chen <fan.chen@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V9 01/12] dt-bindings: soc: Add dvfsrc driver bindings
+Date:   Tue, 2 Mar 2021 11:47:32 +0800
+Message-ID: <1614656863-8530-2-git-send-email-henryc.chen@mediatek.com>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
+References: <1614656863-8530-1-git-send-email-henryc.chen@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [172.23.18.44]
-X-ClientProxiedBy: cncheex01.Hygon.cn (172.23.18.10) To cncheex01.Hygon.cn
- (172.23.18.10)
-X-MAIL: spam1.hygon.cn 12221h9q081973
-X-DNSRBL: 
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable Hygon Fam18h RAPL support for the power capping framework.
+Document the binding for enabling dvfsrc on MediaTek SoC.
 
-Signed-off-by: Pu Wen <puwen@hygon.cn>
+Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- drivers/powercap/intel_rapl_common.c | 1 +
- drivers/powercap/intel_rapl_msr.c    | 1 +
- 2 files changed, 2 insertions(+)
+ .../devicetree/bindings/soc/mediatek/dvfsrc.yaml   | 67 ++++++++++++++++++++++
+ include/dt-bindings/interconnect/mtk,mt8183-emi.h  | 21 +++++++
+ 2 files changed, 88 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+ create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index fdda2a737186..73cf68af9770 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1069,6 +1069,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 
- 	X86_MATCH_VENDOR_FAM(AMD, 0x17, &rapl_defaults_amd),
- 	X86_MATCH_VENDOR_FAM(AMD, 0x19, &rapl_defaults_amd),
-+	X86_MATCH_VENDOR_FAM(HYGON, 0x18, &rapl_defaults_amd),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-index 78213d4b5b16..cc3b22881bfe 100644
---- a/drivers/powercap/intel_rapl_msr.c
-+++ b/drivers/powercap/intel_rapl_msr.c
-@@ -150,6 +150,7 @@ static int rapl_msr_probe(struct platform_device *pdev)
- 	case X86_VENDOR_INTEL:
- 		rapl_msr_priv = &rapl_msr_priv_intel;
- 		break;
-+	case X86_VENDOR_HYGON:
- 	case X86_VENDOR_AMD:
- 		rapl_msr_priv = &rapl_msr_priv_amd;
- 		break;
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+new file mode 100644
+index 0000000..f2b67b9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+@@ -0,0 +1,67 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/soc/mediatek/dvfsrc.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: MediaTek dynamic voltage and frequency scaling resource collector (DVFSRC)
++
++description: |
++  The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
++  HW module which is used to collect all the requests from both software and
++  hardware and turn into the decision of minimum operating voltage and minimum
++  DRAM frequency to fulfill those requests.
++
++maintainers:
++  - henryc.chen <henryc.chen@mediatek.com>
++
++properties:
++  reg:
++    maxItems: 1
++    description: DVFSRC common register address and length.
++
++  compatible:
++    enum:
++      - mediatek,mt6873-dvfsrc
++      - mediatek,mt8183-dvfsrc
++      - mediatek,mt8192-dvfsrc
++
++  '#interconnect-cells':
++    const: 1
++
++  dvfsrc-vcore:
++    type: object
++    description:
++      The DVFSRC regulator is modelled as a subdevice of the DVFSRC.
++      Because DVFSRC can request power directly via register read/write, likes
++      vcore which is a core power of mt8183. As such, the DVFSRC regulator
++      requires that DVFSRC nodes be present.
++    $ref: /schemas/regulator/regulator.yaml#
++
++required:
++  - compatible
++  - reg
++  - "#interconnect-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interconnect/mtk,mt8183-emi.h>
++
++    soc {
++        #address-cells = <2>;
++        #size-cells = <2>;
++
++        dvfsrc@10012000 {
++            compatible = "mediatek,mt8183-dvfsrc";
++            reg = <0 0x10012000 0 0x1000>;
++            #interconnect-cells = <1>;
++            dvfsrc_vcore: dvfsrc-vcore {
++                    regulator-name = "dvfsrc-vcore";
++                    regulator-min-microvolt = <725000>;
++                    regulator-max-microvolt = <800000>;
++                    regulator-always-on;
++            };
++        };
++    };
+diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
+new file mode 100644
+index 0000000..dfd143f
+--- /dev/null
++++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0
++ *
++ * Copyright (c) 2021 MediaTek Inc.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
++#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
++
++#define MT8183_SLAVE_DDR_EMI			0
++#define MT8183_MASTER_MCUSYS			1
++#define MT8183_MASTER_GPU			2
++#define MT8183_MASTER_MMSYS			3
++#define MT8183_MASTER_MM_VPU			4
++#define MT8183_MASTER_MM_DISP			5
++#define MT8183_MASTER_MM_VDEC			6
++#define MT8183_MASTER_MM_VENC			7
++#define MT8183_MASTER_MM_CAM			8
++#define MT8183_MASTER_MM_IMG			9
++#define MT8183_MASTER_MM_MDP			10
++
++#endif
 -- 
-2.23.0
+1.9.1
 
