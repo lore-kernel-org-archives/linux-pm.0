@@ -8,119 +8,95 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25F3DC433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15580C4332E
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C77F864E84
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDFBF64E7C
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Mar 2021 03:55:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235368AbhCCDmq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Mar 2021 22:42:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35190 "EHLO
+        id S1352422AbhCCDp6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Mar 2021 22:45:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1577819AbhCBJzX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 04:55:23 -0500
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5F99C061788;
-        Tue,  2 Mar 2021 01:54:41 -0800 (PST)
-Received: by mail-lj1-x229.google.com with SMTP id y12so10217385ljj.12;
-        Tue, 02 Mar 2021 01:54:41 -0800 (PST)
+        with ESMTP id S1379914AbhCBKL4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 05:11:56 -0500
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F1C3C061788;
+        Tue,  2 Mar 2021 02:10:40 -0800 (PST)
+Received: by mail-lf1-x12f.google.com with SMTP id 18so21821166lff.6;
+        Tue, 02 Mar 2021 02:10:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=IjEBUk2Yo9yzSMN/siG4OfzfOZCC1KPOlvofjcM1PCE=;
-        b=NP3M9/Gjok7e32SgvQIhO7aPojvZStlELiulysU+JGJtAuSlCHa0wuWsVFGyxWyjJs
-         fUnuL3LOabTm5yS09LXxWtAzAGfCK8RXkD19r4vOYeNHMvODZBl3zlMfWfI6/wuRUhvK
-         oRZJgriugXl2EfdbL9pO3weJzIMd7Z69Y911OJYc37L32A3WHbAaa2Vd8nimmWceYyXv
-         vpDcfnBkn7Scd5O9Y2rpCdRUJoPgpmOGUy6TZFa126NtiJ2fYmPEasO3slG2Wub71Q0F
-         W7lrIUYRdFtP2BKuD5JKAneX+22O8Wzxd7AzcTf4cki2Kn/0Geqj2nP303AH86PXfQxT
-         G9iw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=yCsFHJ11jeCeG9OEz0Pdb1yteRXMTBLqS2b+YDxwST4=;
+        b=o1Ysj7I+rI06anT9mhbxdL0d+M8/rvb03atQ1fIAjT5HTRD/A64NToXrlzf38JCm2D
+         ZAcBfyQIT8YEIlsV0LPZ9KnBZlf0ZTCHXBl/yVaUSifUqzbPH17zTla1cjUQXq/hElUb
+         rjwJuttdUqiP4Ng5Oe7EuS5ceIhxxYGNQVA+EXznCWq0bGl7dC5Kg4TO5b1BtnkmSjUg
+         3OLhJ4+CY0BoCoaMm9hxW9A0129So5NI4EsEv14AqAg6U+c0wltNLn83e3sgvFdKnxhI
+         qmIC72Paz5wPrbS+6PoTUhUfBl6dwclCkbyPTtInrIJj0nj0dVjmQtDG274OUf2u3+Cf
+         c/ZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=IjEBUk2Yo9yzSMN/siG4OfzfOZCC1KPOlvofjcM1PCE=;
-        b=mzAPtkf+ykwdIYnHq9lAIFWE9omUp99bxn2ZXB8vwOlbUU7a89wFEIi9qsgpCnBPSA
-         6e5WY069miuf0T1P0uZLFFQvvqIF4uXoyw/UZuvVXwDlT9OL6bcmAqIGgH0NagCLaMEc
-         H+qbqyxCeBuwfb8mCx3ttMX1DgRFZ1/0MyYwlGERaoEsALESUNyj14WkIMJaYUQF74ru
-         e5HJ7gucRKRKALGzuN/dn8vo9KRuKFbzFPBtpuB5HrrIvYVc2pKQzAcfQfUuFrwA5E8P
-         UIp2U3iwEHOn/4dftGpRHbR2zTSjqiv6hOVg/YSel72x20+/w+1YTFgcH0cc5C0NhZIL
-         /utw==
-X-Gm-Message-State: AOAM5311i5eGBwn0DQHWx7fg0sqbWNiWLprj99Jv0UAIrRkebXSgxS0e
-        HXaDmVhW9MbLIYSdmw+fxNPzblvtL0U=
-X-Google-Smtp-Source: ABdhPJyDEQEayqTWPWdpFEkalUr46xUob9kwVIHASWllkKN4v22CYf9cnzvyUvLT0WOwLeJdNciTEg==
-X-Received: by 2002:a2e:998d:: with SMTP id w13mr5673321lji.424.1614678880404;
-        Tue, 02 Mar 2021 01:54:40 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=yCsFHJ11jeCeG9OEz0Pdb1yteRXMTBLqS2b+YDxwST4=;
+        b=B/oo+IHmsvWrboerEi+/Fjgc4U68zw2Uq+9s9jRTkvzV4CX9MNptDUBl/ROB1WvVh6
+         xvj3BJp6j131t3656jvcf9z3dIDMVMB/Wo3t2dpucPIiKf/Uxb63KNGUVwb2yHoy3BW/
+         3xQjLhkq9zykPM56/1MEimGNO1oTdodAwqAiinyWRD4/926QXobM2LSEbJSB1BCVuTRr
+         dkTVLZtBsHFaAcjoujel3tQeW0MmgMAbOLAZ9+buv2f5l8MB4jZdaf4ACVGYPS115m+a
+         soBrJYbLZrlRZcL1/L7xqgeB8+rhtAZikIKV/ZcUgTlWal0ilWc3ZnmIUrQVTgg3wpof
+         YkMw==
+X-Gm-Message-State: AOAM531gk5rNmMR542J5WLWGWd4NFwOSTKEvQEZ5b0vKDyQAT29B01K8
+        aUjSNjzvkZ6DrpvLhJYszIU=
+X-Google-Smtp-Source: ABdhPJzY6UGBGPfd6CI/QgJaSmEpo7dC9wb0UfkpuRgOS+l4TGm2M8h81N3tme2YjEaNlN3p4oB0IQ==
+X-Received: by 2002:a19:ec1a:: with SMTP id b26mr11334102lfa.610.1614679839124;
+        Tue, 02 Mar 2021 02:10:39 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
-        by smtp.gmail.com with ESMTPSA id y16sm2783451ljg.83.2021.03.02.01.54.39
+        by smtp.gmail.com with ESMTPSA id c16sm2571001lfb.36.2021.03.02.02.10.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Mar 2021 01:54:39 -0800 (PST)
+        Tue, 02 Mar 2021 02:10:38 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Anton Bambura <jenneron@protonmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        Peter Geis <pgwipeout@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH RESEND v2 1/2] cpuidle: tegra: Fix C7 idling state on Tegra114
-Date:   Tue,  2 Mar 2021 12:54:04 +0300
-Message-Id: <20210302095405.28453-1-digetx@gmail.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v1 2/2] power: supply: smb347-charger: Clean up whitespaces in the code
+Date:   Tue,  2 Mar 2021 13:10:27 +0300
+Message-Id: <20210302101027.4505-2-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210302101027.4505-1-digetx@gmail.com>
+References: <20210302101027.4505-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Trusted Foundation firmware doesn't implement the do_idle call and in
-this case suspending should fall back to the common suspend path. In order
-to fix this issue we will unconditionally set the NOFLUSH_L2 mode via
-firmware call, which is a NO-OP on Tegra30/124, and then proceed to the
-C7 idling, like it was done by the older Tegra114 cpuidle driver.
+Improve formatting of the code by removing unnecessary whitespaces.
 
-Fixes: 14e086baca50 ("cpuidle: tegra: Squash Tegra114 driver into the common driver")
-Cc: stable@vger.kernel.org # 5.7+
-Reported-by: Anton Bambura <jenneron@protonmail.com> # TF701 T114
-Tested-by: Anton Bambura <jenneron@protonmail.com> # TF701 T114
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
+ drivers/power/supply/smb347-charger.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Changelog:
-
-v2: - No changes. V1 got no attention, hence re-sending.
-
- drivers/cpuidle/cpuidle-tegra.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index 191966dc8d02..29c5e83500d3 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -135,13 +135,13 @@ static int tegra_cpuidle_c7_enter(void)
- {
- 	int err;
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index ee13cd5d2b04..3376f42d46c3 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -1401,11 +1401,10 @@ static struct i2c_driver smb347_driver = {
+ 		.name = "smb347",
+ 		.of_match_table = smb3xx_of_match,
+ 	},
+-	.probe        = smb347_probe,
+-	.remove       = smb347_remove,
+-	.id_table     = smb347_id,
++	.probe = smb347_probe,
++	.remove = smb347_remove,
++	.id_table = smb347_id,
+ };
+-
+ module_i2c_driver(smb347_driver);
  
--	if (tegra_cpuidle_using_firmware()) {
--		err = call_firmware_op(prepare_idle, TF_PM_MODE_LP2_NOFLUSH_L2);
--		if (err)
--			return err;
-+	err = call_firmware_op(prepare_idle, TF_PM_MODE_LP2_NOFLUSH_L2);
-+	if (err && err != -ENOSYS)
-+		return err;
- 
--		return call_firmware_op(do_idle, 0);
--	}
-+	err = call_firmware_op(do_idle, 0);
-+	if (err != -ENOSYS)
-+		return err;
- 
- 	return cpu_suspend(0, tegra30_pm_secondary_cpu_suspend);
- }
+ MODULE_AUTHOR("Bruce E. Robertson <bruce.e.robertson@intel.com>");
 -- 
 2.29.2
 
