@@ -2,94 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C670FC43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BC23C433E9
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9930264ECF
+	by mail.kernel.org (Postfix) with ESMTP id 1544664F69
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237219AbhCDAAO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Mar 2021 19:00:14 -0500
-Received: from mail-ed1-f42.google.com ([209.85.208.42]:33531 "EHLO
-        mail-ed1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244018AbhCCSmb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Mar 2021 13:42:31 -0500
-Received: by mail-ed1-f42.google.com with SMTP id c6so31446669ede.0;
-        Wed, 03 Mar 2021 10:41:12 -0800 (PST)
+        id S231282AbhCDAAP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Mar 2021 19:00:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33538 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1386827AbhCCSqt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Mar 2021 13:46:49 -0500
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C16E7C061756
+        for <linux-pm@vger.kernel.org>; Wed,  3 Mar 2021 10:46:09 -0800 (PST)
+Received: by mail-pl1-x62a.google.com with SMTP id a24so14523410plm.11
+        for <linux-pm@vger.kernel.org>; Wed, 03 Mar 2021 10:46:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=3Ts1DlkKkIPjxARQzKQq3ZIsAsrWGQiHbxIH4vOCboo=;
+        b=FRYzN+Wt2t0RzOJd3OGcBHNWSVWG9hHAC+EvG8C7b9+UfsO2F9x2xdOLTmIUbmISKs
+         SwQaZGaNgqtjhqOdg/MIz37xHtmg/si6XOJ+AYg1GhAnkuT0N44P8Csd6G3jxzkmEdnj
+         XzxYLcl4JEsBSSPLl2R14BjFmAMNMmvxyun6N9b2+rQyEm0RWPaC/6RPanjSUXYLVbWY
+         fCye7fbZ2k1stJrFU08mLpL98CFW4BnZrLNf49tspyrv/KeUHHXwqmXi9RhIsHCLvT1h
+         t4Jgnw+xPis/+rp7IHomrmnuylrgXPgSNDKTls/0cRnYHYE5Vd9Xs2dkZIwMH2gdDkVi
+         wIXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=i+wsmGB3nPUNErG75HhRRgO2R+I8z7au1VtRNGbI3kU=;
-        b=USTmclFUCtO+GoKg8ArxNL9oWlx7aRioRC08snJnSxPNBZqPhGsyaFh1iSPCry7Fi7
-         0vOKdY/jK6CYzS9xj9d1PFkaNoJh9fYBcqWvQka0+BcgcS1pfj4mnTevIwoGWT9zzheu
-         YGQWdXy3bvvkQsPJNEOBRIZ5P5xzHgp+mTbuss+WlBX9Xhk1ATXZxby71E+G9aoF2NhQ
-         XHXjXrhZBgrRi2PdeHgnmjuCVuzW2WmoQXH5ubR6/G+UraDr/YaErGLj6kbJQTK5/5Cr
-         VvMF87ZEeAmLek1cEAux26YYSxNtoGSWPinIWFI+ei88vDBMWEr/jgWcM88pZ3n5+2mo
-         bzUg==
-X-Gm-Message-State: AOAM532HsOujRyieeXaH9xP4Z3LWfCO5ko90HSgFiMJnSqtuKxWxqU9w
-        n0EFDX8c2ZS/yFHyEnLH+l/D6NMWzCs=
-X-Google-Smtp-Source: ABdhPJzXlIPSof8TuEU/xmd9uwKvcnqjSaqVZ9KBEX0z0xFsdcZ3JuEcemsbVzh06mpoU6nkjncGFQ==
-X-Received: by 2002:adf:c40b:: with SMTP id v11mr28144512wrf.320.1614795584154;
-        Wed, 03 Mar 2021 10:19:44 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id m14sm6511797wmi.27.2021.03.03.10.19.42
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=3Ts1DlkKkIPjxARQzKQq3ZIsAsrWGQiHbxIH4vOCboo=;
+        b=A8YbZw3+AW6QJ6zG4GNoL9um+nLUzdFEP7EKkjCb4Yj+hkNK9kwDQ0d2DU91SXr2gg
+         F+3xSzWYmAyY6tZPFgtORNBfZlf+weHM3ETY7lvbi2GkxeHSwujWjlYgnf8uvr2Nt6yW
+         NaPD0k5Ls4qTYcVK+r/cQef/RBubtv5YhZCXQ2lkvC7q+1LkmAtMhCVGaSxm8txiy+Ov
+         Ldzuft/xFUBBcUtUQ2E3Xyqtu7EE8xHNC2zWpHD9DGP+dCzA4Ycea64K4QdmkR2mOTxf
+         66nFjAiqpnH0xkCGTM6AVIeLEXc+we/BkOCdJ0HKng7Jt3BnMfMdUE9zbx3MQBoYz39I
+         /VOA==
+X-Gm-Message-State: AOAM531WYKz6R8z+oH9DeOX4D/IYEYcHSemEXOLeLC4604CsRf7KZD7q
+        V2hqR8DfD8Os5if+sII7B73yYQ==
+X-Google-Smtp-Source: ABdhPJyfWwEnkuLSt1nKR8Od/IcMnjDhys6Wmaz+3a2KhI1zaHSqBIHNO0JZz/3banm7YifCWP31NQ==
+X-Received: by 2002:a17:90a:2a41:: with SMTP id d1mr482511pjg.164.1614797169366;
+        Wed, 03 Mar 2021 10:46:09 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id 192sm22871756pfx.193.2021.03.03.10.46.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Mar 2021 10:19:43 -0800 (PST)
-Date:   Wed, 3 Mar 2021 19:19:41 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-rtc@vger.kernel.org
-Cc:     Iskren Chernev <iskren.chernev@gmail.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Angus Ainslie <angus@akkea.ca>,
-        Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 01/18] ARM: dts: exynos: correct fuel gauge interrupt
- trigger level on GT-I9100
-Message-ID: <20210303181941.yercebdxswdetf3q@kozik-lap>
-References: <20201210212534.216197-1-krzk@kernel.org>
+        Wed, 03 Mar 2021 10:46:09 -0800 (PST)
+Message-ID: <603fd971.1c69fb81.8709c.4c03@mx.google.com>
+Date:   Wed, 03 Mar 2021 10:46:09 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20201210212534.216197-1-krzk@kernel.org>
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Kernel: v5.12-rc1-5-g51165d52eceb9
+X-Kernelci-Report-Type: test
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+Subject: pm/testing sleep: 4 runs, 1 regressions (v5.12-rc1-5-g51165d52eceb9)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 10, 2020 at 10:25:17PM +0100, Krzysztof Kozlowski wrote:
-> The Maxim fuel gauge datasheets describe the interrupt line as active
-> low with a requirement of acknowledge from the CPU.  The falling edge
-> interrupt will mostly work but it's not correct.
-> 
-> Fixes: 8620cc2f99b7 ("ARM: dts: exynos: Add devicetree file for the Galaxy S2")
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  arch/arm/boot/dts/exynos4210-i9100.dts | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
+pm/testing sleep: 4 runs, 1 regressions (v5.12-rc1-5-g51165d52eceb9)
 
-Applied 1-10 (Exynos and S5P dts patches).
+Regressions Summary
+-------------------
 
-Best regards,
-Krzysztof
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.12-rc=
+1-5-g51165d52eceb9/plan/sleep/
+
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.12-rc1-5-g51165d52eceb9
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      51165d52eceb9a6a227e39c9b369b4f437e4e620 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/603fcc60152083ee5caddccf
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.12-rc1-5-g51165d=
+52eceb9/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.12-rc1-5-g51165d=
+52eceb9/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
+0301.0/arm64/rootfs.cpio.gz =
+
+
+
+  * sleep.login: https://kernelci.org/test/case/id/603fcc60152083ee5caddcd0
+        failing since 195 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
+il: v5.9-rc1-4-g1f08d51cd57f) =
+
+ =20
