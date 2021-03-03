@@ -2,170 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C31B1C433DB
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1321FC43381
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8D96464F37
+	by mail.kernel.org (Postfix) with ESMTP id E446164F37
 	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348128AbhCDAAI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Mar 2021 19:00:08 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:59888 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1356705AbhCCKsJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Mar 2021 05:48:09 -0500
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7E602004CE;
-        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 972D12004BC;
-        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
-Received: from localhost (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 815FA20308;
-        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
-Date:   Wed, 3 Mar 2021 12:47:19 +0200
-From:   Abel Vesa <abel.vesa@nxp.com>
-To:     Mike Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Adam Ford <aford173@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Rob Herring <robh@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <kernel@pengutronix.de>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Anson Huang <anson.huang@nxp.com>,
-        Jacky Bai <ping.bai@nxp.com>, Peng Fan <peng.fan@nxp.com>,
-        Dong Aisheng <aisheng.dong@nxp.com>, pete.zhang@nxp.com,
-        marex@denx.de
-Cc:     NXP Linux Team <linux-imx@nxp.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 00/14] Add BLK_CTL support for i.MX8MP
-Message-ID: <20210303104719.74guq4bfm75dyzvj@fsr-ub1664-175>
-References: <1604402306-5348-1-git-send-email-abel.vesa@nxp.com>
+        id S1345548AbhCDAAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Mar 2021 19:00:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37992 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1843004AbhCCKXq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Mar 2021 05:23:46 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69C8DC06121E;
+        Wed,  3 Mar 2021 00:31:43 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id v9so17989081lfa.1;
+        Wed, 03 Mar 2021 00:31:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=dA8KKHZiMQ0M1dMyQ+8WM+bKH9WXXF3VYD9qxoBSYVM=;
+        b=Q2BL7+lc+ylMlu+ydH2KPz1PqTODp5OqgVZiHR9jqO4OZm50aqIxSjjmz78JiiooFH
+         i7YC35lXSOUX9yg/ckanbCMcDnIlEnFIWaLOgdtj+UDXrH5hO9M8tW0d4lY0F73Zgtv0
+         EP4JLr8ALm6ZBEyiThejlCrrfIVjY9pIOHj19FhIOTMenDf39h9gGiIWXvyNDLGkM5mo
+         m/2nGyP009dWktprR8h6cgF5Vdo4NdkfBfb3BDPwDqJkwoi523txy9Y1R+1aHRYDxFMU
+         pbUa9veKiX8fC3Qy7J68bxgQZFZPn42rhUh6PUmrP6NqhAMjEwXXM5pQ+2lI5jRGc3fG
+         Miaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=dA8KKHZiMQ0M1dMyQ+8WM+bKH9WXXF3VYD9qxoBSYVM=;
+        b=f6ZSIMX8nAv5AFjL21Ejo5Bv3NJ3Rp8ijmSTbsKlQYt6Ekl94iKE9TQIHIFyeDf+eT
+         4U32HV13v5mTABQ3WNlZOivEzWGS1py9zHDoZZ6zFdY3g3+sfbqcspgY/f8SK3sTER5N
+         09uXG0t5uD2JUyWzIs0kA838rkFolPnrW+qjLsRR4EdvOGDZQ5dt0oiXEWGDRqNCc1vf
+         6YIgnCjMyKJCssoimM7iGriqww+KbKAaP3idu40E9el3QnDkQ7mdUdKnvVq+pDFA2i35
+         6uVUiZofGRHsrGdBUzcyXf31pXUoMJCHfRBq9hRRhjNCuNChYx9NHWqj2Ba6DxCP+7Ix
+         0Bww==
+X-Gm-Message-State: AOAM530n4Tohk0m88Dm8GcAfvRhgv+oALZsuZxkYrxBffq71r+aHyhk5
+        D6rUONzoAxuMVY/19AH/6iXMbEuXb0s=
+X-Google-Smtp-Source: ABdhPJyVYXtuCpQJixD14PrCS9E2RYkwzmpI6ancOTzzhejj1erUKOBHDXNJht8WUd/TI7wGU6pDCw==
+X-Received: by 2002:a05:6512:110b:: with SMTP id l11mr15110220lfg.468.1614760301712;
+        Wed, 03 Mar 2021 00:31:41 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
+        by smtp.googlemail.com with ESMTPSA id 192sm2767251ljj.95.2021.03.03.00.31.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 03 Mar 2021 00:31:41 -0800 (PST)
+Subject: Re: [PATCH 00/31] Introduce devm_pm_opp_* API
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com, cw00.choi@samsung.com, krzk@kernel.org,
+        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
+        festevam@gmail.com, linux-imx@nxp.com, thierry.reding@gmail.com,
+        jonathanh@nvidia.com, yuq825@gmail.com, airlied@linux.ie,
+        daniel@ffwll.ch, robdclark@gmail.com, sean@poorly.run,
+        robh@kernel.org, tomeu.vizoso@collabora.com, steven.price@arm.com,
+        alyssa.rosenzweig@collabora.com, stanimir.varbanov@linaro.org,
+        agross@kernel.org, bjorn.andersson@linaro.org, mchehab@kernel.org,
+        lukasz.luba@arm.com, adrian.hunter@intel.com,
+        ulf.hansson@linaro.org, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, broonie@kernel.org, gregkh@linuxfoundation.org,
+        jirislaby@kernel.org, rjw@rjwysocki.net, jcrouse@codeaurora.org,
+        hoegsberg@google.com, eric@anholt.net, tzimmermann@suse.de,
+        marijn.suijten@somainline.org, gustavoars@kernel.org,
+        emil.velikov@collabora.com, jonathan@marek.ca,
+        akhilpo@codeaurora.org, smasetty@codeaurora.org,
+        airlied@redhat.com, masneyb@onstation.org, kalyan_t@codeaurora.org,
+        tanmay@codeaurora.org, ddavenport@chromium.org,
+        jsanka@codeaurora.org, rnayak@codeaurora.org,
+        tongtiangen@huawei.com, miaoqinglang@huawei.com,
+        khsieh@codeaurora.org, abhinavk@codeaurora.org,
+        chandanu@codeaurora.org, groeck@chromium.org, varar@codeaurora.org,
+        mka@chromium.org, harigovi@codeaurora.org,
+        rikard.falkeborn@gmail.com, natechancellor@gmail.com,
+        georgi.djakov@linaro.org, akashast@codeaurora.org,
+        parashar@codeaurora.org, dianders@chromium.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
+        linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
+        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org
+References: <20210101165507.19486-1-tiny.windzz@gmail.com>
+ <6bd6730c-6f4e-df93-65cd-93fa4785a8d8@gmail.com>
+ <c7a246a4-ab25-a193-f74a-98351780135e@gmail.com>
+ <20210303040119.hpeybankxph4fyuj@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <9e5edc16-abfa-632b-97e9-1367c24ef8bc@gmail.com>
+Date:   Wed, 3 Mar 2021 11:31:37 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1604402306-5348-1-git-send-email-abel.vesa@nxp.com>
-User-Agent: NeoMutt/20180622
-X-Virus-Scanned: ClamAV using ClamSMTP
+In-Reply-To: <20210303040119.hpeybankxph4fyuj@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20-11-03 13:18:12, Abel Vesa wrote:
-> The BLK_CTL according to HW design is basically the wrapper of the entire
-> function specific group of IPs and holds GPRs that usually cannot be placed
-> into one specific IP from that group. Some of these GPRs are used to control
-> some clocks, other some resets, others some very specific function that does
-> not fit into clocks or resets. Since the clocks are registered using the i.MX
-> clock subsystem API, the driver is placed into the clock subsystem, but it
-> also registers the resets. For the other functionalities that other GPRs might
-> have, the syscon is used.
+03.03.2021 07:01, Viresh Kumar пишет:
+> On 02-03-21, 16:40, Dmitry Osipenko wrote:
+>> 20.01.2021 19:01, Dmitry Osipenko пишет:
+>>> 01.01.2021 19:54, Yangtao Li пишет:
+>>>> Hi,
+>>>>
+>>>> This patchset add devm_pm_opp_set_clkname, devm_pm_opp_put_clkname,
+>>>> devm_pm_opp_set_regulators, devm_pm_opp_put_regulators,
+>>>> devm_pm_opp_set_supported_hw, devm_pm_opp_of_add_table and
+>>>> devm_pm_opp_register_notifier.
+>>>
+>>> Hello Yangtao,
+>>>
+>>> Thank you for your effort, looking forward to v2!
+>>
+>> Yangtao, could you please let me know what is the status of this series?
+>> Will you be able to make a v2 anytime soon?
+> 
+> Dmitry, if Yangtao doesn't reply back this week with a proposal, please go ahead
+> and respin the patches yourself. Thanks.
 > 
 
-This approach seems to be introducing a possible ABBA deadlock due to
-the core clock and genpd locking. Here is a backtrace I got from Pete
-Zhang (he reported the issue on the internal mailing list):
-
-[   11.667711][  T108] -> #1 (&genpd->mlock){+.+.}-{3:3}:
-[   11.675041][  T108]        __lock_acquire+0xae4/0xef8
-[   11.680093][  T108]        lock_acquire+0xfc/0x2f8
-[   11.684888][  T108]        __mutex_lock+0x90/0x870
-[   11.689685][  T108]        mutex_lock_nested+0x44/0x50
-[   11.694826][  T108]        genpd_lock_mtx+0x18/0x24
-[   11.699706][  T108]        genpd_runtime_resume+0x90/0x214 (hold genpd->mlock)
-[   11.705194][  T108]        __rpm_callback+0x80/0x2c0
-[   11.710160][  T108]        rpm_resume+0x468/0x650
-[   11.714866][  T108]        __pm_runtime_resume+0x60/0x88
-[   11.720180][  T108]        clk_pm_runtime_get+0x28/0x9c
-[   11.725410][  T108]        clk_disable_unused_subtree+0x8c/0x144
-[   11.731420][  T108]        clk_disable_unused_subtree+0x124/0x144
-[   11.737518][  T108]        clk_disable_unused+0xa4/0x11c (hold prepare_lock)
-[   11.742833][  T108]        do_one_initcall+0x98/0x178
-[   11.747888][  T108]        do_initcall_level+0x9c/0xb8
-[   11.753028][  T108]        do_initcalls+0x54/0x94
-[   11.757736][  T108]        do_basic_setup+0x24/0x30
-[   11.762614][  T108]        kernel_init_freeable+0x70/0xa4
-[   11.768014][  T108]        kernel_init+0x14/0x18c
-[   11.772722][  T108]        ret_from_fork+0x10/0x18
-
-[   11.777512][  T108] -> #0 (prepare_lock){+.+.}-{3:3}:
-[   11.784749][  T108]        check_noncircular+0x134/0x13c
-[   11.790064][  T108]        validate_chain+0x590/0x2a04
-[   11.795204][  T108]        __lock_acquire+0xae4/0xef8
-[   11.800258][  T108]        lock_acquire+0xfc/0x2f8
-[   11.805050][  T108]        __mutex_lock+0x90/0x870
-[   11.809841][  T108]        mutex_lock_nested+0x44/0x50
-[   11.814983][  T108]        clk_unprepare+0x5c/0x100 ((hold prepare_lock))
-[   11.819864][  T108]        imx8m_pd_power_off+0xac/0x110
-[   11.825179][  T108]        genpd_power_off+0x1b4/0x2dc
-[   11.830318][  T108]        genpd_power_off_work_fn+0x38/0x58 (hold genpd->mlock)
-[   11.835981][  T108]        process_one_work+0x270/0x444
-[   11.841208][  T108]        worker_thread+0x280/0x4e4
-[   11.846176][  T108]        kthread+0x13c/0x14
-[   11.850621][  T108]        ret_from_fork+0x10/0x18
-
-Now, this has been reproduced only on the NXP internal tree, but I think
-it is pretty obvious this could happen in upstream too, with this
-patchset applied.
-
-First, my thought was to change the prepare_lock/enable_lock in clock
-core, from a global approach to a per clock basis. But that doesn't
-actually fix the issue.
-
-The usecase seen above is due to clk_disable_unused, but the same could
-happen when a clock consumer calls prepare/unprepare on a clock.
-
-I guess the conclusion is that the current state of the clock core and
-genpd implementation does not support a usecase where a clock controller
-has a PD which in turn uses another clock (from another clock controller).
-
-Jacky, Pete, did I miss anything here ?
-
-> Changes since v4:
->  * added back the bus_blk_clk in the imx8mp blk_ctl driver (media_blk_ctl)
->  * added the R-b tag from Rob to the documentation patch
-> 
-> Abel Vesa (14):
->   dt-bindings: clocks: imx8mp: Rename audiomix ids clocks to
->     audio_blk_ctl
->   dt-bindings: reset: imx8mp: Add audio blk_ctl reset IDs
->   dt-bindings: clock: imx8mp: Add ids for the audio shared gate
->   dt-bindings: clock: imx8mp: Add media blk_ctl clock IDs
->   dt-bindings: reset: imx8mp: Add media blk_ctl reset IDs
->   dt-bindings: clock: imx8mp: Add hdmi blk_ctl clock IDs
->   dt-bindings: reset: imx8mp: Add hdmi blk_ctl reset IDs
->   clk: imx8mp: Add audio shared gate
->   Documentation: bindings: clk: Add bindings for i.MX BLK_CTL
->   clk: imx: Add generic blk-ctl driver
->   clk: imx: Add blk-ctl driver for i.MX8MP
->   arm64: dts: imx8mp: Add audio_blk_ctl node
->   arm64: dts: imx8mp: Add media_blk_ctl node
->   arm64: dts: imx8mp: Add hdmi_blk_ctl node
-> 
->  .../devicetree/bindings/clock/fsl,imx-blk-ctl.yaml |  60 ++++
->  arch/arm64/boot/dts/freescale/imx8mp.dtsi          |  37 +++
->  drivers/clk/imx/Makefile                           |   2 +-
->  drivers/clk/imx/clk-blk-ctl-imx8mp.c               | 317 +++++++++++++++++++++
->  drivers/clk/imx/clk-blk-ctl.c                      | 302 ++++++++++++++++++++
->  drivers/clk/imx/clk-blk-ctl.h                      |  80 ++++++
->  drivers/clk/imx/clk-imx8mp.c                       |  12 +-
->  include/dt-bindings/clock/imx8mp-clock.h           | 200 +++++++++----
->  include/dt-bindings/reset/imx8mp-reset.h           |  45 +++
->  9 files changed, 992 insertions(+), 63 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/clock/fsl,imx-blk-ctl.yaml
->  create mode 100644 drivers/clk/imx/clk-blk-ctl-imx8mp.c
->  create mode 100644 drivers/clk/imx/clk-blk-ctl.c
->  create mode 100644 drivers/clk/imx/clk-blk-ctl.h
-> 
-> -- 
-> 2.7.4
-> 
+Alright!
