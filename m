@@ -2,132 +2,261 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A031C4332B
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3EEFC433E6
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE5B464F1A
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CFB4A64F42
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345234AbhCDAAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1347102AbhCDAAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 3 Mar 2021 19:00:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43158 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1449668AbhCCEBk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Mar 2021 23:01:40 -0500
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B095C061756
-        for <linux-pm@vger.kernel.org>; Tue,  2 Mar 2021 20:01:25 -0800 (PST)
-Received: by mail-pf1-x433.google.com with SMTP id q20so15315368pfu.8
-        for <linux-pm@vger.kernel.org>; Tue, 02 Mar 2021 20:01:25 -0800 (PST)
+Received: from mx1.tq-group.com ([93.104.207.81]:57782 "EHLO mx1.tq-group.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1351218AbhCCKrU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Mar 2021 05:47:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=Sf0sHmQlDAnRMVroNklxTV9sD5YAM/nZAMHjs+CyJB4=;
-        b=DqjN4DryIrwYkAZERDCNYsxYTCg/FgOx9g1tN3t7SP5NtBAhKPdo3lCnaiNnrvavBj
-         ydQv0eborD4BkC3Y+XzqoGy8aiCKnHRP/JylIcwHTxxvnmHfiNck3OubW7XBEGVgwM/E
-         eyPJ8aPDHdCm58TuvDHH1oXt8LBXlpvuzLeu0uEQYnF2tpIuFpM9aTgmkMnNPRxOhiUp
-         6urTlvt4r1gJIWV2+KwsuriqRhtODU56xJwHEbD5X45GvkFali3XUBHAsbusiBqISTAG
-         QjqQrRgogRk0iqTBD5b5SIRJMgViOx9k1dBWLNi6KV3Q8WtSrwTaeC9YwaQEP5fqZsTD
-         H6ag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=Sf0sHmQlDAnRMVroNklxTV9sD5YAM/nZAMHjs+CyJB4=;
-        b=Z1k/QimIgBj/cwHI0/czQeGheaLKF0EjlNW8lNK1iUaV/gzFzm96O4E48p1meoE+p0
-         8+txxuaPZUnxqKyy3Fadr0TY5nYj4wsEPuG8gdd9z3e/tvKsALA6DgUf9JeiLibpaWZ4
-         sGLkQXimhLwEVmrDbXB6p16DjTr3tbch4/XET8WpKMIvDGlgHzpSy1xzWAv/lfJa6am8
-         kNM+i1SCGpLk9bEcTkst5jW17BxBCvpGIjhFY1nAr8rvADXxm84IARo+Lik0GctYWU91
-         pH22FsKl41I5WGNnOL/qurIrXpXvunaEOunmYSBo4c1Pe1XjwCWLtRZ3W2pE/1N9YPaq
-         N0+w==
-X-Gm-Message-State: AOAM531s1mlYW2AGVhMIgc+Rwsyvp5qzPQnZ4vV6mu70EJjeAudXwa8N
-        EUYWGwfUwW1Pt4oMiSPeZ8bmnw==
-X-Google-Smtp-Source: ABdhPJyoXDxfKpU/1wXB2PIFN0nnkGXEo3xzDutxggeVYQFsmIzt54/Cnp3VafjpSiT43J+plIUXXQ==
-X-Received: by 2002:a63:4a44:: with SMTP id j4mr20987404pgl.199.1614744084943;
-        Tue, 02 Mar 2021 20:01:24 -0800 (PST)
-Received: from localhost ([122.171.124.15])
-        by smtp.gmail.com with ESMTPSA id e1sm4992656pjt.10.2021.03.02.20.01.23
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 02 Mar 2021 20:01:24 -0800 (PST)
-Date:   Wed, 3 Mar 2021 09:31:19 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com, cw00.choi@samsung.com, krzk@kernel.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-        festevam@gmail.com, linux-imx@nxp.com, thierry.reding@gmail.com,
-        jonathanh@nvidia.com, yuq825@gmail.com, airlied@linux.ie,
-        daniel@ffwll.ch, robdclark@gmail.com, sean@poorly.run,
-        robh@kernel.org, tomeu.vizoso@collabora.com, steven.price@arm.com,
-        alyssa.rosenzweig@collabora.com, stanimir.varbanov@linaro.org,
-        agross@kernel.org, bjorn.andersson@linaro.org, mchehab@kernel.org,
-        lukasz.luba@arm.com, adrian.hunter@intel.com,
-        ulf.hansson@linaro.org, vireshk@kernel.org, nm@ti.com,
-        sboyd@kernel.org, broonie@kernel.org, gregkh@linuxfoundation.org,
-        jirislaby@kernel.org, rjw@rjwysocki.net, jcrouse@codeaurora.org,
-        hoegsberg@google.com, eric@anholt.net, tzimmermann@suse.de,
-        marijn.suijten@somainline.org, gustavoars@kernel.org,
-        emil.velikov@collabora.com, jonathan@marek.ca,
-        akhilpo@codeaurora.org, smasetty@codeaurora.org,
-        airlied@redhat.com, masneyb@onstation.org, kalyan_t@codeaurora.org,
-        tanmay@codeaurora.org, ddavenport@chromium.org,
-        jsanka@codeaurora.org, rnayak@codeaurora.org,
-        tongtiangen@huawei.com, miaoqinglang@huawei.com,
-        khsieh@codeaurora.org, abhinavk@codeaurora.org,
-        chandanu@codeaurora.org, groeck@chromium.org, varar@codeaurora.org,
-        mka@chromium.org, harigovi@codeaurora.org,
-        rikard.falkeborn@gmail.com, natechancellor@gmail.com,
-        georgi.djakov@linaro.org, akashast@codeaurora.org,
-        parashar@codeaurora.org, dianders@chromium.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
-        linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
-        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH 00/31] Introduce devm_pm_opp_* API
-Message-ID: <20210303040119.hpeybankxph4fyuj@vireshk-i7>
-References: <20210101165507.19486-1-tiny.windzz@gmail.com>
- <6bd6730c-6f4e-df93-65cd-93fa4785a8d8@gmail.com>
- <c7a246a4-ab25-a193-f74a-98351780135e@gmail.com>
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1614768438; x=1646304438;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=T/eBxFNvHkWfvpD/x1JUCWE9AtSrYkLy7jW7mmfiJ+Q=;
+  b=BezmD5wx/Sp7RF8F+/GWdLEquPN6AsnaXyWqdvR8AlWdBC+DKZOi0Ell
+   35WepEJT2HN0Xuuk4H+9XKpE9D6MI8lz47a/fFQ941coWQBljkU/7UpLk
+   zeG/H0TYLrrT02IQhAyBJVMXzUQKf2IZJoC0m/BZwaxa/SXhhquTkI4IA
+   gxy/hbI/+FkHFm9t1+K51zDf59z2ursV0iO5g21Ay/h25+2AsDUB0YdSQ
+   VQ6d7A4itDUjyof+Tmaugppb2AHKBAsNeC/sYxKDDSxn7HyCroGzV0ANA
+   6lLSU/a8eBev1iyDyr6CJ3q0w9GGbQJGV4Icisa0Y1LRIEfSzOHqObpPr
+   A==;
+IronPort-SDR: HJUV1r9+560nIN+napc/LNEX4rqGHnr7R3eseFh8knHX/E2L5Uc+mne05SaXn34mP4QEuFaxb3
+ REHstigocbt3ePkH8AFgX0ij1MABQ6gWYUQJ/006igtRObccuV4/uROtT0SUIkuE8nb3DsQxQR
+ chG9cs1TrqOXCAL/9Iz50zTaZ+a1UCOE0IcH/Nc/UBg7BzwuQbWFGMlTt+OM15iwFi69jtnr3w
+ SrVXSwTKgNDmbZzSRjbhB131yt0wp3LRnLJbGhuXclTSpEB0qRQbuRZiDn+JiVMt3muKr/0Kyi
+ OKU=
+X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
+   d="scan'208";a="16258535"
+Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
+  by mx1-pgp.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
+Received: from mx1.tq-group.com ([192.168.6.7])
+  by tq-pgp-pr1.tq-net.de (PGP Universal service);
+  Wed, 03 Mar 2021 10:54:40 +0100
+X-PGP-Universal: processed;
+        by tq-pgp-pr1.tq-net.de on Wed, 03 Mar 2021 10:54:40 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1614765280; x=1646301280;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=T/eBxFNvHkWfvpD/x1JUCWE9AtSrYkLy7jW7mmfiJ+Q=;
+  b=XbT1OYa5/Kju5b14y69fCDuulFR/uGZTbMxbVst4wSFn3eVaolUmnL80
+   zCd1kd3tJSnPfhTnI0TwCNT3LLSCsR9tLH8ULm5WWsDUl24wcCUf5FiSm
+   lEvI4Q6F6JSWc5vVpZ+rB8jHkgzwHf+VTAPDKAUZS4zRs2NKSqZeFJ9+V
+   ETwOFnKxwMv1jy+SFX5cKi4HwgaDYzNPTLjJ8ulX/5dP3IXCIIq1e8spT
+   xzLNygPNNyYM7DUnE1nNPWrwYnNlfZY6FC5F7eUNDKlKXE26CAkjOdnyb
+   hzE82hqF8hefxv97IZWOkeeG4O6ttYalU7U8cgfxqQ4xtuMnD4EJmW1Yq
+   w==;
+IronPort-SDR: 7Thl3oQlb4EyH44AZq+pVX3hdsQIVB9QhQbf6mhgqEWltKWq1FTLIjjkaig3HfoXd5kFrRZTHL
+ X/p3jGvd3oeA51RkZ+0g8uQlpzlbQW1iqs0F1n59l71vzf7qQN/n6redZKVElptrUvTftefu6p
+ QLVV1/KfCAOMBkHiy/WHWlowWzEQzZ+Qv9vIc/GR982o6j0LoyofPycTTtUiZ+TNSge35GcBSm
+ hK/Ie+uPTAcLM0E9QQWttGuyhhnYeeUkzpwVn32GYGHlb+SBPQ/MeTNNeinltkExrPM6rKVHMS
+ G2U=
+X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
+   d="scan'208";a="16258534"
+Received: from vtuxmail01.tq-net.de ([10.115.0.20])
+  by mx1.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
+Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
+        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 78377280070;
+        Wed,  3 Mar 2021 10:54:40 +0100 (CET)
+X-CheckPoint: {603F5CDC-2-6615631E-D10D9432}
+X-MAIL-CPID: 4A5C15D4C25CD22AB3AB32338ED60BA4_2
+X-Control-Analysis: str=0001.0A782F1F.603F5CE0.00CA,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
+From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+Subject: [PATCH v2 3/3] power: supply: bq27xxx: make status more robust
+Date:   Wed,  3 Mar 2021 10:54:20 +0100
+Message-Id: <20210303095420.29054-3-matthias.schiffer@ew.tq-group.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
+References: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <c7a246a4-ab25-a193-f74a-98351780135e@gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02-03-21, 16:40, Dmitry Osipenko wrote:
-> 20.01.2021 19:01, Dmitry Osipenko пишет:
-> > 01.01.2021 19:54, Yangtao Li пишет:
-> >> Hi,
-> >>
-> >> This patchset add devm_pm_opp_set_clkname, devm_pm_opp_put_clkname,
-> >> devm_pm_opp_set_regulators, devm_pm_opp_put_regulators,
-> >> devm_pm_opp_set_supported_hw, devm_pm_opp_of_add_table and
-> >> devm_pm_opp_register_notifier.
-> > 
-> > Hello Yangtao,
-> > 
-> > Thank you for your effort, looking forward to v2!
-> 
-> Yangtao, could you please let me know what is the status of this series?
-> Will you be able to make a v2 anytime soon?
+There are multiple issues in bq27xxx_battery_status():
 
-Dmitry, if Yangtao doesn't reply back this week with a proposal, please go ahead
-and respin the patches yourself. Thanks.
+- On BQ28Q610 is was observed that the "full" flag may be set even while
+  the battery is charging or discharging. With the current logic to make
+  "full" override everything else, it look a very long time (>20min) for
+  the status to change from "full" to "discharging" after unplugging the
+  supply on a device with low power consumption
+- The POWER_SUPPLY_STATUS_NOT_CHARGING check depends on
+  power_supply_am_i_supplied(), which will not work when the supply
+  doesn't exist as a separate device known to Linux
 
+We can solve both issues by deriving the status from the current instead
+of the flags field. The flags are now only used to distinguish "full"
+from "not charging", and to determine the sign of the current on
+BQ27XXX_O_ZERO devices.
+
+Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+---
+
+v2: no changes
+
+ drivers/power/supply/bq27xxx_battery.c | 88 +++++++++++++-------------
+ 1 file changed, 43 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 20e1dc8a87cf..b62a8cfd9d09 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1777,14 +1777,27 @@ static void bq27xxx_battery_poll(struct work_struct *work)
+ 		schedule_delayed_work(&di->work, poll_interval * HZ);
+ }
+ 
++static bool bq27xxx_battery_is_full(struct bq27xxx_device_info *di, int flags)
++{
++	if (di->opts & BQ27XXX_O_ZERO)
++		return (flags & BQ27000_FLAG_FC);
++	else if (di->opts & BQ27Z561_O_BITS)
++		return (flags & BQ27Z561_FLAG_FC);
++	else
++		return (flags & BQ27XXX_FLAG_FC);
++}
++
+ /*
+- * Return the battery average current in µA
++ * Return the battery average current in µA and the status
+  * Note that current can be negative signed as well
+  * Or 0 if something fails.
+  */
+-static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
+-				   union power_supply_propval *val)
++static int bq27xxx_battery_current_and_status(
++	struct bq27xxx_device_info *di,
++	union power_supply_propval *val_curr,
++	union power_supply_propval *val_status)
+ {
++	bool single_flags = (di->opts & BQ27XXX_O_ZERO);
+ 	int curr;
+ 	int flags;
+ 
+@@ -1794,17 +1807,39 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
+ 		return curr;
+ 	}
+ 
++	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, single_flags);
++	if (flags < 0) {
++		dev_err(di->dev, "error reading flags\n");
++		return flags;
++	}
++
+ 	if (di->opts & BQ27XXX_O_ZERO) {
+-		flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
+ 		if (!(flags & BQ27000_FLAG_CHGS)) {
+ 			dev_dbg(di->dev, "negative current!\n");
+ 			curr = -curr;
+ 		}
+ 
+-		val->intval = curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
++		curr = curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+ 	} else {
+ 		/* Other gauges return signed value */
+-		val->intval = (int)((s16)curr) * 1000;
++		curr = (int)((s16)curr) * 1000;
++	}
++
++	if (val_curr)
++		val_curr->intval = curr;
++
++	if (val_status) {
++		if (curr > 0) {
++			val_status->intval = POWER_SUPPLY_STATUS_CHARGING;
++		} else if (curr < 0) {
++			val_status->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++		} else {
++			if (bq27xxx_battery_is_full(di, flags))
++				val_status->intval = POWER_SUPPLY_STATUS_FULL;
++			else
++				val_status->intval =
++					POWER_SUPPLY_STATUS_NOT_CHARGING;
++		}
+ 	}
+ 
+ 	return 0;
+@@ -1836,43 +1871,6 @@ static int bq27xxx_battery_pwr_avg(struct bq27xxx_device_info *di,
+ 	return 0;
+ }
+ 
+-static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
+-				  union power_supply_propval *val)
+-{
+-	int status;
+-
+-	if (di->opts & BQ27XXX_O_ZERO) {
+-		if (di->cache.flags & BQ27000_FLAG_FC)
+-			status = POWER_SUPPLY_STATUS_FULL;
+-		else if (di->cache.flags & BQ27000_FLAG_CHGS)
+-			status = POWER_SUPPLY_STATUS_CHARGING;
+-		else
+-			status = POWER_SUPPLY_STATUS_DISCHARGING;
+-	} else if (di->opts & BQ27Z561_O_BITS) {
+-		if (di->cache.flags & BQ27Z561_FLAG_FC)
+-			status = POWER_SUPPLY_STATUS_FULL;
+-		else if (di->cache.flags & BQ27Z561_FLAG_DIS_CH)
+-			status = POWER_SUPPLY_STATUS_DISCHARGING;
+-		else
+-			status = POWER_SUPPLY_STATUS_CHARGING;
+-	} else {
+-		if (di->cache.flags & BQ27XXX_FLAG_FC)
+-			status = POWER_SUPPLY_STATUS_FULL;
+-		else if (di->cache.flags & BQ27XXX_FLAG_DSC)
+-			status = POWER_SUPPLY_STATUS_DISCHARGING;
+-		else
+-			status = POWER_SUPPLY_STATUS_CHARGING;
+-	}
+-
+-	if ((status == POWER_SUPPLY_STATUS_DISCHARGING) &&
+-	    (power_supply_am_i_supplied(di->bat) > 0))
+-		status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-
+-	val->intval = status;
+-
+-	return 0;
+-}
+-
+ static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
+ 					  union power_supply_propval *val)
+ {
+@@ -1960,7 +1958,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+-		ret = bq27xxx_battery_status(di, val);
++		ret = bq27xxx_battery_current_and_status(di, NULL, val);
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+ 		ret = bq27xxx_battery_voltage(di, val);
+@@ -1969,7 +1967,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+ 		val->intval = di->cache.flags < 0 ? 0 : 1;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+-		ret = bq27xxx_battery_current(di, val);
++		ret = bq27xxx_battery_current_and_status(di, val, NULL);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret = bq27xxx_simple_value(di->cache.capacity, val);
 -- 
-viresh
+2.17.1
+
