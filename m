@@ -7,65 +7,65 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D08E2C43332
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1304AC4321A
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C40664F4B
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E705264ECF
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233551AbhCDAAN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Mar 2021 19:00:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58580 "EHLO
+        id S229574AbhCDAAK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Mar 2021 19:00:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49452 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1579674AbhCCSbu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Mar 2021 13:31:50 -0500
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 905CAC061760
-        for <linux-pm@vger.kernel.org>; Wed,  3 Mar 2021 10:31:09 -0800 (PST)
-Received: by mail-pl1-x62f.google.com with SMTP id z7so14512335plk.7
-        for <linux-pm@vger.kernel.org>; Wed, 03 Mar 2021 10:31:09 -0800 (PST)
+        with ESMTP id S1577592AbhCCRs6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Mar 2021 12:48:58 -0500
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01CB6C061756
+        for <linux-pm@vger.kernel.org>; Wed,  3 Mar 2021 09:48:17 -0800 (PST)
+Received: by mail-pf1-x433.google.com with SMTP id 18so1931319pfo.6
+        for <linux-pm@vger.kernel.org>; Wed, 03 Mar 2021 09:48:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=kernelci-org.20150623.gappssmtp.com; s=20150623;
         h=message-id:date:mime-version:content-transfer-encoding:subject:to
          :from;
-        bh=iy1L/5eJG9qtH0tddKxsUXdX4+LADViJrjw3YU7Le98=;
-        b=f3sI/LW3UizyZqe/yATKVmovbfIF/6CxuJp7Uu6lYltNBASks3PV4MdQHf6agoXuj0
-         y/2tMLCnu3hyXbgd95fQvP5nvvNA8d8OiAeUIbVM3Z2+UColeQmWDeLTsnsaKlh3cn5n
-         fE1dmwnea0VprLPYKH/jp0SBHHKVqM3X9fL3CVp0GVJs9cY/jb+memF+QDOvvv9+2Dt1
-         wKV9RES6+oPmwLaLNrOXekiwDD+3YPDNn/bf+RMyJVO0jjDGDjNlMhmZLYbiAdKH5CEy
-         OZs7z1QwtFR57uBHbALD/PSCt9vOxaEzxDYwkvb5deJBielOxuy45Z6OWSW5BQBDz8Sg
-         WXxQ==
+        bh=DQdGOAiJkqTPyzLoXEVeKPh/2PQ5YOKkFlSaLqof2c4=;
+        b=Xar6N691lsdKt4mB4K1pmdFP0hYMk+z6cleRmjDPcv6ROFLf1frFC2TCsbfavDhY2G
+         yX6RG2o529u8kLclmtH31NZ5HuJ/RaxKFSAnthm74cG6AP0w6MXBwHCdBpqpyTKC5NhS
+         POr6GwGHxCmpcIKSw3ZdEDp2Oh8R+11bV+2mNXZMK7DqYzuDYu51su4DxgTxIiINEWRc
+         FKha5Pg55sUpmuIDh8b+VtOt4m0rren5oMJGprKa4lSNuWqhq+uU04cRTdRvgg1HqClf
+         nmBGITdAOOKxkI8Tk90aJiRtKJDZa11oRzipbKxyImA7miDUHZGPrWklh9PmT/IgcUJ2
+         suhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:message-id:date:mime-version
          :content-transfer-encoding:subject:to:from;
-        bh=iy1L/5eJG9qtH0tddKxsUXdX4+LADViJrjw3YU7Le98=;
-        b=Zl8vvtS+toaAFN1GltZguhWoO/gTapATXzjbfAPjGOT/xgLU7ZD4SbnqBseFPwKTFW
-         7qZDp2DB1YW5ndFIuKUVRfsCy5s2A+8PGYOCiqQesom24kf4AbUgoAMJig2DyrDEWhBj
-         gQtq8zkt4HZC0bIhHr8alq4CO5CsjZs4dlyDhzwmJJK+6/JtbqC/t8grSxrJEqxGHXlV
-         K43bWNa9iBKwxqwl75JIP32dlIZUtR/1lueuBAogKLYco9hZ1xV96HaLW9w3SIQ6bXF/
-         wogQdZj15bnN2X7iZLqeOHkKiAd9cgEF24uX1YYR3+fa2nkndHvJxfAP6kQVGCMvLspZ
-         ooOw==
-X-Gm-Message-State: AOAM5316RfL90rIssbTzB4F3TGEFEmO0gOjPq/rU84emODIwOxX/AEmb
-        twugdeeIoWbPlopgo0hJmzYEtQ==
-X-Google-Smtp-Source: ABdhPJyfVNkW9EBcc87yWD1Yu8QQ1y0hCusYEalIz9FqeL43vF3xv0q8qDoOCm0CkBEP2HJ58DPdIw==
-X-Received: by 2002:a17:902:9795:b029:e4:888f:7390 with SMTP id q21-20020a1709029795b02900e4888f7390mr499297plp.26.1614796269087;
-        Wed, 03 Mar 2021 10:31:09 -0800 (PST)
+        bh=DQdGOAiJkqTPyzLoXEVeKPh/2PQ5YOKkFlSaLqof2c4=;
+        b=LRoeyxwdFTiknngrhMnhYOi2iXlDD10aUv4O7svbX8wW9xSboUAcnuwQYy2PKbJCsh
+         2RQkG84A+5/YGqGSxhfTfy3i6kHGEJcogJSmtuIFCAD2EWllzn2jBNUf24/xqbL1T6wZ
+         7NAH0Thg5bGccuJspt2tk2jgb9j+H71gaiUN9rT7iDXxF54VNgEGQP6hGV1c2n8aPfof
+         Vx8jbG95U894jTpbQRAC9qcLyoiTX/yuNehiBBRC4lf894YpQBm2uwzlW1I+BwPF3Dz7
+         SfW1SrPUwBrssVxRX57KWuPX1UkCDKNirG9Ycmbiewp9+gkQsl/CJAHtISlxlO5Ke8FD
+         an8A==
+X-Gm-Message-State: AOAM532K3A8KiiShUSqvNsrRAxeb5zQ9SxMe/tfW9WFjbKUs4wwUKv16
+        Vz1s09Hf++JMe1fEIOHUrDY5kKYLD7e8IUPx
+X-Google-Smtp-Source: ABdhPJzQX4vxXnERUQT8OdGxbjODd6z7+rUSw+EC1mBoAUs9a3C0AGxH5xqZEXRMgNQSQ/k1aL2m6Q==
+X-Received: by 2002:a62:d454:0:b029:1ed:a6d6:539d with SMTP id u20-20020a62d4540000b02901eda6d6539dmr4062720pfl.63.1614793697499;
+        Wed, 03 Mar 2021 09:48:17 -0800 (PST)
 Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id r4sm7466940pjl.15.2021.03.03.10.31.08
+        by smtp.gmail.com with ESMTPSA id j35sm10925221pgj.45.2021.03.03.09.48.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Mar 2021 10:31:08 -0800 (PST)
-Message-ID: <603fd5ec.1c69fb81.d48b4.04ba@mx.google.com>
-Date:   Wed, 03 Mar 2021 10:31:08 -0800 (PST)
+        Wed, 03 Mar 2021 09:48:17 -0800 (PST)
+Message-ID: <603fcbe1.1c69fb81.891bd.7ec6@mx.google.com>
+Date:   Wed, 03 Mar 2021 09:48:17 -0800 (PST)
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-Kernelci-Kernel: v5.12-rc1-5-g51165d52eceb9
-X-Kernelci-Report-Type: test
+X-Kernelci-Report-Type: build
 X-Kernelci-Tree: pm
 X-Kernelci-Branch: testing
-Subject: pm/testing baseline: 49 runs,
- 1 regressions (v5.12-rc1-5-g51165d52eceb9)
+Subject: pm/testing build: 7 builds: 0 failed,
+ 7 passed (v5.12-rc1-5-g51165d52eceb9)
 To:     rafael@kernel.org, linux-pm@vger.kernel.org,
         kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
 From:   "kernelci.org bot" <bot@kernelci.org>
@@ -73,56 +73,59 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 49 runs, 1 regressions (v5.12-rc1-5-g51165d52eceb9)
+pm/testing build: 7 builds: 0 failed, 7 passed (v5.12-rc1-5-g51165d52eceb9)
 
-Regressions Summary
--------------------
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+12-rc1-5-g51165d52eceb9/
 
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+Tree: pm
+Branch: testing
+Git Describe: v5.12-rc1-5-g51165d52eceb9
+Git Commit: 51165d52eceb9a6a227e39c9b369b4f437e4e620
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.12-rc=
-1-5-g51165d52eceb9/plan/baseline/
+Detailed per-defconfig build reports:
 
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.12-rc1-5-g51165d52eceb9
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      51165d52eceb9a6a227e39c9b369b4f437e4e620 =
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
 
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
 
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
 
-Test Regressions
----------------- =
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
 
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
 
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
+tion mismatches
 
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
 
-
-  Details:     https://kernelci.org/test/plan/id/603fcc30820ab15128addd07
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.12-rc1-5-g51165d=
-52eceb9/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.12-rc1-5-g51165d=
-52eceb9/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
-.05-4-g97706c5d9567/arm64/baseline/rootfs.cpio.gz =
-
-
-
-  * baseline.login: https://kernelci.org/test/case/id/603fcc30820ab15128add=
-d08
-        failing since 11 days (last pass: pm-5.11-rc8-201-g8b72d3aa065c, fi=
-rst fail: pm-5.11-rc8-205-g4475f0291af9) =
-
- =20
+---
+For more info write to <info@kernelci.org>
