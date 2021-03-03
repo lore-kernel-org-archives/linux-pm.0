@@ -2,217 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3759DC433DB
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C31B1C433DB
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0A60164ECF
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8D96464F37
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238628AbhCDAAI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1348128AbhCDAAI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 3 Mar 2021 19:00:08 -0500
-Received: from mx1.tq-group.com ([93.104.207.81]:51857 "EHLO mx1.tq-group.com"
+Received: from inva021.nxp.com ([92.121.34.21]:59888 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1383153AbhCCKup (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Mar 2021 05:50:45 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1614768644; x=1646304644;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=azaHBPdSR9XsrLsOMXDwZKPKYOZDJigPiRl/x4XRuFM=;
-  b=NJRquCgNTgcNXWwbc8qm4eqI9RTA3OAHwPfjkD2rPJUYXaItSkAm7SFZ
-   +XKiwwqMpzZkFQERGfJnQLyK/+CvPRWCG6syVfD9Pkylu4w5DspFA9Qaq
-   nIEXmsZiZE7OVUNzKmUUXy2pyYi/ER6rzZLa4/4aHH8cEhlkzfYJNDxYi
-   Q9hUFnCH64m56wrRk29+WAVxHzCp0B6ZkkcCtGw6TSl31J2+5WRVZQtby
-   7jxavMXK/yeOiaJWoH0z3OqUD05onJlBNKn464kWgsl0yFpJ6docv//I2
-   jSvxvhEzwutv+4ysCORKIrrhUxgBNZGpwhnLB8BAZVX69ujGFbYS0Y13+
-   A==;
-IronPort-SDR: VO0feVYiRybg8IECmie+7Y9CWolSST1NmmL/dYIK9BwEvB4TKWmfnLUEMdZbGhLKfkIB3vp8A4
- r1/Yk6j8pvFGu7SMuVE4covXglpwiQBtNx7AqmqjsF7L4Xnb/lFuDuXfwZI0G8uw3Tj0f0A42/
- FiUO4/BpphPcCNIU1oALXi3D+1R/oyzXNlYUkNRAGBZHUsbOYH41mtC95n329SVExhinVCpO6L
- nKOqUjJk5vS25nxdesOONBKnuLL60xISzuUKMBKCxm8D3iKA1hstvvBVAsQNMA7IgGhI0/4Ifv
- oDI=
-X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
-   d="scan'208";a="16258532"
-Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
-  by mx1-pgp.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
-Received: from mx1.tq-group.com ([192.168.6.7])
-  by tq-pgp-pr1.tq-net.de (PGP Universal service);
-  Wed, 03 Mar 2021 10:54:40 +0100
-X-PGP-Universal: processed;
-        by tq-pgp-pr1.tq-net.de on Wed, 03 Mar 2021 10:54:40 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1614765280; x=1646301280;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=azaHBPdSR9XsrLsOMXDwZKPKYOZDJigPiRl/x4XRuFM=;
-  b=Nfa/KDXXjUONFWIKNXMGGGLxtVjFgFfTD6FDwCXqvulLdJ0TUUreGFwp
-   akhp25sCbvTByTVm7s6rTslWTYW62edNW5hlzjZOu/x04h/aLRySzhUaR
-   +tK7m4NnmfUi3JSWur4kGTuxZHZVaWk8unGG5phWW+LZs5PxpJAgQSWav
-   SkpsEvz01XOuKIMZUJN8TzMVNElpn+muVeHAyfYMYZqT2YssCFY+juZry
-   jfo8UralPIBndkDC+Yx0hzmZUlrcOOKNVONeAEvvRieG92hMxpDA6aDBg
-   eRApX9SJlfS7oq67lKLCHt6EbE0Zp2SEbhmzQbqRZnuP8ePD9CWOSmkcG
-   Q==;
-IronPort-SDR: VrKeYljV+ZZqi+bj2IU5XhV6CR5yM6jlsFPQQ7KOqlGVX8bGLrL4WxdrFhPheW3ByuBBsSanY2
- sGZC9n291x/JjQhEjk9dRFvlB3zZr2oSUnyIJzeUWcKsZCkKbeg3FqMuvTKXX5U+zYfx0VRW/5
- 0kueHW0gYEW+ItCK4O0GnL+XgQqmFntPiO/wvoDNbHIHJt1PzdE9lUNP2NEmuMdO9BmNNyp3qk
- SFkZ68RyBVuv0XTnul1PfKTssRDAVaSKbdiHx6ZPCjAwd1zhDIkcw7AITi4AvWv38EGLIMFMmY
- Isw=
-X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
-   d="scan'208";a="16258531"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
-Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 2C8AB280075;
-        Wed,  3 Mar 2021 10:54:40 +0100 (CET)
-X-CheckPoint: {603F5CDC-2-6615631E-D10D9432}
-X-MAIL-CPID: 4033F11163CC2B32C94DA1ED6F29E7FF_2
-X-Control-Analysis: str=0001.0A782F1F.603F5CE0.006F,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
-From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-Subject: [PATCH v2 2/3] power: supply: bq27xxx: fix power_avg for newer ICs
-Date:   Wed,  3 Mar 2021 10:54:19 +0100
-Message-Id: <20210303095420.29054-2-matthias.schiffer@ew.tq-group.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
-References: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
+        id S1356705AbhCCKsJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Mar 2021 05:48:09 -0500
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7E602004CE;
+        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 972D12004BC;
+        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
+Received: from localhost (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 815FA20308;
+        Wed,  3 Mar 2021 11:47:19 +0100 (CET)
+Date:   Wed, 3 Mar 2021 12:47:19 +0200
+From:   Abel Vesa <abel.vesa@nxp.com>
+To:     Mike Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Adam Ford <aford173@gmail.com>,
+        Marek Vasut <marek.vasut@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Rob Herring <robh@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <kernel@pengutronix.de>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Anson Huang <anson.huang@nxp.com>,
+        Jacky Bai <ping.bai@nxp.com>, Peng Fan <peng.fan@nxp.com>,
+        Dong Aisheng <aisheng.dong@nxp.com>, pete.zhang@nxp.com,
+        marex@denx.de
+Cc:     NXP Linux Team <linux-imx@nxp.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 00/14] Add BLK_CTL support for i.MX8MP
+Message-ID: <20210303104719.74guq4bfm75dyzvj@fsr-ub1664-175>
+References: <1604402306-5348-1-git-send-email-abel.vesa@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1604402306-5348-1-git-send-email-abel.vesa@nxp.com>
+User-Agent: NeoMutt/20180622
+X-Virus-Scanned: ClamAV using ClamSMTP
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On all newer bq27xxx ICs, the AveragePower register contains a signed
-value; in addition to handling the raw value as unsigned, the driver
-code also didn't convert it to µW as expected.
+On 20-11-03 13:18:12, Abel Vesa wrote:
+> The BLK_CTL according to HW design is basically the wrapper of the entire
+> function specific group of IPs and holds GPRs that usually cannot be placed
+> into one specific IP from that group. Some of these GPRs are used to control
+> some clocks, other some resets, others some very specific function that does
+> not fit into clocks or resets. Since the clocks are registered using the i.MX
+> clock subsystem API, the driver is placed into the clock subsystem, but it
+> also registers the resets. For the other functionalities that other GPRs might
+> have, the syscon is used.
+> 
 
-At least for the BQ28Z610, the reference manual incorrectly states that
-the value is in units of 1mW and not 10mW. I have no way of knowing
-whether the manuals of other supported ICs contain the same error, or if
-there are models that actually use 1mW. At least, the new code shouldn't
-be *less* correct than the old version for any device.
+This approach seems to be introducing a possible ABBA deadlock due to
+the core clock and genpd locking. Here is a backtrace I got from Pete
+Zhang (he reported the issue on the internal mailing list):
 
-power_avg is removed from the cache structure, se we don't have to
-extend it to store both a signed value and an error code. Always getting
-an up-to-date value may be desirable anyways, as it avoids inconsistent
-current and power readings when switching between charging and
-discharging.
+[   11.667711][  T108] -> #1 (&genpd->mlock){+.+.}-{3:3}:
+[   11.675041][  T108]        __lock_acquire+0xae4/0xef8
+[   11.680093][  T108]        lock_acquire+0xfc/0x2f8
+[   11.684888][  T108]        __mutex_lock+0x90/0x870
+[   11.689685][  T108]        mutex_lock_nested+0x44/0x50
+[   11.694826][  T108]        genpd_lock_mtx+0x18/0x24
+[   11.699706][  T108]        genpd_runtime_resume+0x90/0x214 (hold genpd->mlock)
+[   11.705194][  T108]        __rpm_callback+0x80/0x2c0
+[   11.710160][  T108]        rpm_resume+0x468/0x650
+[   11.714866][  T108]        __pm_runtime_resume+0x60/0x88
+[   11.720180][  T108]        clk_pm_runtime_get+0x28/0x9c
+[   11.725410][  T108]        clk_disable_unused_subtree+0x8c/0x144
+[   11.731420][  T108]        clk_disable_unused_subtree+0x124/0x144
+[   11.737518][  T108]        clk_disable_unused+0xa4/0x11c (hold prepare_lock)
+[   11.742833][  T108]        do_one_initcall+0x98/0x178
+[   11.747888][  T108]        do_initcall_level+0x9c/0xb8
+[   11.753028][  T108]        do_initcalls+0x54/0x94
+[   11.757736][  T108]        do_basic_setup+0x24/0x30
+[   11.762614][  T108]        kernel_init_freeable+0x70/0xa4
+[   11.768014][  T108]        kernel_init+0x14/0x18c
+[   11.772722][  T108]        ret_from_fork+0x10/0x18
 
-Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
----
+[   11.777512][  T108] -> #0 (prepare_lock){+.+.}-{3:3}:
+[   11.784749][  T108]        check_noncircular+0x134/0x13c
+[   11.790064][  T108]        validate_chain+0x590/0x2a04
+[   11.795204][  T108]        __lock_acquire+0xae4/0xef8
+[   11.800258][  T108]        lock_acquire+0xfc/0x2f8
+[   11.805050][  T108]        __mutex_lock+0x90/0x870
+[   11.809841][  T108]        mutex_lock_nested+0x44/0x50
+[   11.814983][  T108]        clk_unprepare+0x5c/0x100 ((hold prepare_lock))
+[   11.819864][  T108]        imx8m_pd_power_off+0xac/0x110
+[   11.825179][  T108]        genpd_power_off+0x1b4/0x2dc
+[   11.830318][  T108]        genpd_power_off_work_fn+0x38/0x58 (hold genpd->mlock)
+[   11.835981][  T108]        process_one_work+0x270/0x444
+[   11.841208][  T108]        worker_thread+0x280/0x4e4
+[   11.846176][  T108]        kthread+0x13c/0x14
+[   11.850621][  T108]        ret_from_fork+0x10/0x18
 
-v2: fixed units in commit message
+Now, this has been reproduced only on the NXP internal tree, but I think
+it is pretty obvious this could happen in upstream too, with this
+patchset applied.
 
- drivers/power/supply/bq27xxx_battery.c | 51 ++++++++++++++------------
- include/linux/power/bq27xxx_battery.h  |  1 -
- 2 files changed, 27 insertions(+), 25 deletions(-)
+First, my thought was to change the prepare_lock/enable_lock in clock
+core, from a global approach to a per clock basis. But that doesn't
+actually fix the issue.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index cb6ebd2f905e..20e1dc8a87cf 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1661,27 +1661,6 @@ static int bq27xxx_battery_read_time(struct bq27xxx_device_info *di, u8 reg)
- 	return tval * 60;
- }
- 
--/*
-- * Read an average power register.
-- * Return < 0 if something fails.
-- */
--static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di)
--{
--	int tval;
--
--	tval = bq27xxx_read(di, BQ27XXX_REG_AP, false);
--	if (tval < 0) {
--		dev_err(di->dev, "error reading average power register  %02x: %d\n",
--			BQ27XXX_REG_AP, tval);
--		return tval;
--	}
--
--	if (di->opts & BQ27XXX_O_ZERO)
--		return (tval * BQ27XXX_POWER_CONSTANT) / BQ27XXX_RS;
--	else
--		return tval;
--}
--
- /*
-  * Returns true if a battery over temperature condition is detected
-  */
-@@ -1769,8 +1748,6 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 		}
- 		if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
- 			cache.cycle_count = bq27xxx_battery_read_cyct(di);
--		if (di->regs[BQ27XXX_REG_AP] != INVALID_REG_ADDR)
--			cache.power_avg = bq27xxx_battery_read_pwr_avg(di);
- 
- 		/* We only have to read charge design full once */
- 		if (di->charge_design_full <= 0)
-@@ -1833,6 +1810,32 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
- 	return 0;
- }
- 
-+/*
-+ * Get the average power in µW
-+ * Return < 0 if something fails.
-+ */
-+static int bq27xxx_battery_pwr_avg(struct bq27xxx_device_info *di,
-+				   union power_supply_propval *val)
-+{
-+	int power;
-+
-+	power = bq27xxx_read(di, BQ27XXX_REG_AP, false);
-+	if (power < 0) {
-+		dev_err(di->dev,
-+			"error reading average power register %02x: %d\n",
-+			BQ27XXX_REG_AP, power);
-+		return power;
-+	}
-+
-+	if (di->opts & BQ27XXX_O_ZERO)
-+		val->intval = (power * BQ27XXX_POWER_CONSTANT) / BQ27XXX_RS;
-+	else
-+		/* Other gauges return a signed value in units of 10mW */
-+		val->intval = (int)((s16)power) * 10000;
-+
-+	return 0;
-+}
-+
- static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
- 				  union power_supply_propval *val)
- {
-@@ -2020,7 +2023,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 		ret = bq27xxx_simple_value(di->cache.energy, val);
- 		break;
- 	case POWER_SUPPLY_PROP_POWER_AVG:
--		ret = bq27xxx_simple_value(di->cache.power_avg, val);
-+		ret = bq27xxx_battery_pwr_avg(di, val);
- 		break;
- 	case POWER_SUPPLY_PROP_HEALTH:
- 		ret = bq27xxx_simple_value(di->cache.health, val);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 111a40d0d3d5..8d5f4f40fb41 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -53,7 +53,6 @@ struct bq27xxx_reg_cache {
- 	int capacity;
- 	int energy;
- 	int flags;
--	int power_avg;
- 	int health;
- };
- 
--- 
-2.17.1
+The usecase seen above is due to clk_disable_unused, but the same could
+happen when a clock consumer calls prepare/unprepare on a clock.
 
+I guess the conclusion is that the current state of the clock core and
+genpd implementation does not support a usecase where a clock controller
+has a PD which in turn uses another clock (from another clock controller).
+
+Jacky, Pete, did I miss anything here ?
+
+> Changes since v4:
+>  * added back the bus_blk_clk in the imx8mp blk_ctl driver (media_blk_ctl)
+>  * added the R-b tag from Rob to the documentation patch
+> 
+> Abel Vesa (14):
+>   dt-bindings: clocks: imx8mp: Rename audiomix ids clocks to
+>     audio_blk_ctl
+>   dt-bindings: reset: imx8mp: Add audio blk_ctl reset IDs
+>   dt-bindings: clock: imx8mp: Add ids for the audio shared gate
+>   dt-bindings: clock: imx8mp: Add media blk_ctl clock IDs
+>   dt-bindings: reset: imx8mp: Add media blk_ctl reset IDs
+>   dt-bindings: clock: imx8mp: Add hdmi blk_ctl clock IDs
+>   dt-bindings: reset: imx8mp: Add hdmi blk_ctl reset IDs
+>   clk: imx8mp: Add audio shared gate
+>   Documentation: bindings: clk: Add bindings for i.MX BLK_CTL
+>   clk: imx: Add generic blk-ctl driver
+>   clk: imx: Add blk-ctl driver for i.MX8MP
+>   arm64: dts: imx8mp: Add audio_blk_ctl node
+>   arm64: dts: imx8mp: Add media_blk_ctl node
+>   arm64: dts: imx8mp: Add hdmi_blk_ctl node
+> 
+>  .../devicetree/bindings/clock/fsl,imx-blk-ctl.yaml |  60 ++++
+>  arch/arm64/boot/dts/freescale/imx8mp.dtsi          |  37 +++
+>  drivers/clk/imx/Makefile                           |   2 +-
+>  drivers/clk/imx/clk-blk-ctl-imx8mp.c               | 317 +++++++++++++++++++++
+>  drivers/clk/imx/clk-blk-ctl.c                      | 302 ++++++++++++++++++++
+>  drivers/clk/imx/clk-blk-ctl.h                      |  80 ++++++
+>  drivers/clk/imx/clk-imx8mp.c                       |  12 +-
+>  include/dt-bindings/clock/imx8mp-clock.h           | 200 +++++++++----
+>  include/dt-bindings/reset/imx8mp-reset.h           |  45 +++
+>  9 files changed, 992 insertions(+), 63 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/clock/fsl,imx-blk-ctl.yaml
+>  create mode 100644 drivers/clk/imx/clk-blk-ctl-imx8mp.c
+>  create mode 100644 drivers/clk/imx/clk-blk-ctl.c
+>  create mode 100644 drivers/clk/imx/clk-blk-ctl.h
+> 
+> -- 
+> 2.7.4
+> 
