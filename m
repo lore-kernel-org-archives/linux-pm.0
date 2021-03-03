@@ -2,261 +2,217 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3EEFC433E6
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BAAFC433E6
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 01:35:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CFB4A64F42
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 00:03:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 530286523D
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Mar 2021 01:35:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347102AbhCDAAH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Mar 2021 19:00:07 -0500
-Received: from mx1.tq-group.com ([93.104.207.81]:57782 "EHLO mx1.tq-group.com"
+        id S231460AbhCDBfj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Mar 2021 20:35:39 -0500
+Received: from rere.qmqm.pl ([91.227.64.183]:26956 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1351218AbhCCKrU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Mar 2021 05:47:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1614768438; x=1646304438;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=T/eBxFNvHkWfvpD/x1JUCWE9AtSrYkLy7jW7mmfiJ+Q=;
-  b=BezmD5wx/Sp7RF8F+/GWdLEquPN6AsnaXyWqdvR8AlWdBC+DKZOi0Ell
-   35WepEJT2HN0Xuuk4H+9XKpE9D6MI8lz47a/fFQ941coWQBljkU/7UpLk
-   zeG/H0TYLrrT02IQhAyBJVMXzUQKf2IZJoC0m/BZwaxa/SXhhquTkI4IA
-   gxy/hbI/+FkHFm9t1+K51zDf59z2ursV0iO5g21Ay/h25+2AsDUB0YdSQ
-   VQ6d7A4itDUjyof+Tmaugppb2AHKBAsNeC/sYxKDDSxn7HyCroGzV0ANA
-   6lLSU/a8eBev1iyDyr6CJ3q0w9GGbQJGV4Icisa0Y1LRIEfSzOHqObpPr
-   A==;
-IronPort-SDR: HJUV1r9+560nIN+napc/LNEX4rqGHnr7R3eseFh8knHX/E2L5Uc+mne05SaXn34mP4QEuFaxb3
- REHstigocbt3ePkH8AFgX0ij1MABQ6gWYUQJ/006igtRObccuV4/uROtT0SUIkuE8nb3DsQxQR
- chG9cs1TrqOXCAL/9Iz50zTaZ+a1UCOE0IcH/Nc/UBg7BzwuQbWFGMlTt+OM15iwFi69jtnr3w
- SrVXSwTKgNDmbZzSRjbhB131yt0wp3LRnLJbGhuXclTSpEB0qRQbuRZiDn+JiVMt3muKr/0Kyi
- OKU=
-X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
-   d="scan'208";a="16258535"
-Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
-  by mx1-pgp.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
-Received: from mx1.tq-group.com ([192.168.6.7])
-  by tq-pgp-pr1.tq-net.de (PGP Universal service);
-  Wed, 03 Mar 2021 10:54:40 +0100
-X-PGP-Universal: processed;
-        by tq-pgp-pr1.tq-net.de on Wed, 03 Mar 2021 10:54:40 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1614765280; x=1646301280;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=T/eBxFNvHkWfvpD/x1JUCWE9AtSrYkLy7jW7mmfiJ+Q=;
-  b=XbT1OYa5/Kju5b14y69fCDuulFR/uGZTbMxbVst4wSFn3eVaolUmnL80
-   zCd1kd3tJSnPfhTnI0TwCNT3LLSCsR9tLH8ULm5WWsDUl24wcCUf5FiSm
-   lEvI4Q6F6JSWc5vVpZ+rB8jHkgzwHf+VTAPDKAUZS4zRs2NKSqZeFJ9+V
-   ETwOFnKxwMv1jy+SFX5cKi4HwgaDYzNPTLjJ8ulX/5dP3IXCIIq1e8spT
-   xzLNygPNNyYM7DUnE1nNPWrwYnNlfZY6FC5F7eUNDKlKXE26CAkjOdnyb
-   hzE82hqF8hefxv97IZWOkeeG4O6ttYalU7U8cgfxqQ4xtuMnD4EJmW1Yq
-   w==;
-IronPort-SDR: 7Thl3oQlb4EyH44AZq+pVX3hdsQIVB9QhQbf6mhgqEWltKWq1FTLIjjkaig3HfoXd5kFrRZTHL
- X/p3jGvd3oeA51RkZ+0g8uQlpzlbQW1iqs0F1n59l71vzf7qQN/n6redZKVElptrUvTftefu6p
- QLVV1/KfCAOMBkHiy/WHWlowWzEQzZ+Qv9vIc/GR982o6j0LoyofPycTTtUiZ+TNSge35GcBSm
- hK/Ie+uPTAcLM0E9QQWttGuyhhnYeeUkzpwVn32GYGHlb+SBPQ/MeTNNeinltkExrPM6rKVHMS
- G2U=
-X-IronPort-AV: E=Sophos;i="5.81,219,1610406000"; 
-   d="scan'208";a="16258534"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 03 Mar 2021 10:54:40 +0100
-Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 78377280070;
-        Wed,  3 Mar 2021 10:54:40 +0100 (CET)
-X-CheckPoint: {603F5CDC-2-6615631E-D10D9432}
-X-MAIL-CPID: 4A5C15D4C25CD22AB3AB32338ED60BA4_2
-X-Control-Analysis: str=0001.0A782F1F.603F5CE0.00CA,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
-From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
-Cc:     Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-Subject: [PATCH v2 3/3] power: supply: bq27xxx: make status more robust
-Date:   Wed,  3 Mar 2021 10:54:20 +0100
-Message-Id: <20210303095420.29054-3-matthias.schiffer@ew.tq-group.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
-References: <20210303095420.29054-1-matthias.schiffer@ew.tq-group.com>
+        id S231423AbhCDBff (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Mar 2021 20:35:35 -0500
+X-Greylist: delayed 4197 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Mar 2021 20:35:35 EST
+Received: from remote.user (localhost [127.0.0.1])
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 4DrV6W3F73z2d;
+        Thu,  4 Mar 2021 00:08:35 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+        t=1614812916; bh=NqS2aRIA5DCDhNKC+JPOLs07Qcg/kZwTJzmJdtbxEIs=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=l/a2+aZQduaWPdlwfSOEzClBurO0AgayGKavZuhQ7R0/hvVNEYpf1Dia53gS7D0uw
+         hlXLrbjH2yFZzrmpk0AN5aazcIGButIzuSyMbTiIRqRUzFiDKgundWlYc4WSqN2bNI
+         3Lc3/ui52sY44DiQ9pax2BrAd9+dDrYBDcTf8PUszu3RSHlJGBqFJ2e4NmKs9Y6JcG
+         Hq9LA1hsdBR/5yKMfcYNHsX+rYnB3p9aYfW0rO6mgbR/aEsnviofdT9Le8W/nCMIUT
+         rFg/D2Zzc0fhSsAHy0QDNbIF5VruL/488ZCYLx6k/VeZbaIFexJY9UoZbp7Jad35SR
+         W/x4X+WFpCthQ==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.102.4 at mail
+Date:   Thu, 4 Mar 2021 00:08:27 +0100
+From:   =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v13 1/2] drm/tegra: dc: Support memory bandwidth
+ management
+Message-ID: <20210303230827.GA22628@qmqm.qmqm.pl>
+References: <20210302124445.29444-1-digetx@gmail.com>
+ <20210302124445.29444-2-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210302124445.29444-2-digetx@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are multiple issues in bq27xxx_battery_status():
+On Tue, Mar 02, 2021 at 03:44:44PM +0300, Dmitry Osipenko wrote:
+> Display controller (DC) performs isochronous memory transfers, and thus,
+> has a requirement for a minimum memory bandwidth that shall be fulfilled,
+> otherwise framebuffer data can't be fetched fast enough and this results
+> in a DC's data-FIFO underflow that follows by a visual corruption.
+> 
+> The Memory Controller drivers provide facility for memory bandwidth
+> management via interconnect API. Let's wire up the interconnect API
+> support to the DC driver in order to fix the distorted display output
+> on T30 Ouya, T124 TK1 and other Tegra devices.
 
-- On BQ28Q610 is was observed that the "full" flag may be set even while
-  the battery is charging or discharging. With the current logic to make
-  "full" override everything else, it look a very long time (>20min) for
-  the status to change from "full" to "discharging" after unplugging the
-  supply on a device with low power consumption
-- The POWER_SUPPLY_STATUS_NOT_CHARGING check depends on
-  power_supply_am_i_supplied(), which will not work when the supply
-  doesn't exist as a separate device known to Linux
+I did a read on the code. I have put some thoughts and nits inbetween the
+diff, but here are more general questions about the patch:
 
-We can solve both issues by deriving the status from the current instead
-of the flags field. The flags are now only used to distinguish "full"
-from "not charging", and to determine the sign of the current on
-BQ27XXX_O_ZERO devices.
+Is there a reason why the bandwidth is allocated per plane instead of just
+using one peak and average for the whole configuration? Or is there a need
+to expose all the planes as interconnect channels and allocate their
+bandwidth individually?
 
-Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
----
+From algorithmic part I see that the plane overlaps are calculated twice
+(A vs B and later B vs A). The cursor plane is ignored, but nevertheless
+its overlap mask is calculated before being thrown away. The bandwidths
+are also calculated twice: once for pre-commit and then again for
+post-commit.  Is setting bandwidth for an interconnect expensive when
+re-setting a value that was already set? The code seems to avoid this
+case, but maybe unnecessarily?
 
-v2: no changes
+[...cut the big and interesting part...]
 
- drivers/power/supply/bq27xxx_battery.c | 88 +++++++++++++-------------
- 1 file changed, 43 insertions(+), 45 deletions(-)
+[...]
+> @@ -65,7 +75,9 @@ struct tegra_dc_soc_info {
+>  	unsigned int num_overlay_formats;
+>  	const u64 *modifiers;
+>  	bool has_win_a_without_filters;
+> +	bool has_win_b_vfilter_mem_client;
+>  	bool has_win_c_without_vert_filter;
+> +	unsigned int plane_tiled_memory_bandwidth_x2;
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 20e1dc8a87cf..b62a8cfd9d09 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1777,14 +1777,27 @@ static void bq27xxx_battery_poll(struct work_struct *work)
- 		schedule_delayed_work(&di->work, poll_interval * HZ);
- }
- 
-+static bool bq27xxx_battery_is_full(struct bq27xxx_device_info *di, int flags)
-+{
-+	if (di->opts & BQ27XXX_O_ZERO)
-+		return (flags & BQ27000_FLAG_FC);
-+	else if (di->opts & BQ27Z561_O_BITS)
-+		return (flags & BQ27Z561_FLAG_FC);
-+	else
-+		return (flags & BQ27XXX_FLAG_FC);
-+}
-+
- /*
-- * Return the battery average current in ÂµA
-+ * Return the battery average current in ÂµA and the status
-  * Note that current can be negative signed as well
-  * Or 0 if something fails.
-  */
--static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
--				   union power_supply_propval *val)
-+static int bq27xxx_battery_current_and_status(
-+	struct bq27xxx_device_info *di,
-+	union power_supply_propval *val_curr,
-+	union power_supply_propval *val_status)
- {
-+	bool single_flags = (di->opts & BQ27XXX_O_ZERO);
- 	int curr;
- 	int flags;
- 
-@@ -1794,17 +1807,39 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
- 		return curr;
- 	}
- 
-+	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, single_flags);
-+	if (flags < 0) {
-+		dev_err(di->dev, "error reading flags\n");
-+		return flags;
-+	}
-+
- 	if (di->opts & BQ27XXX_O_ZERO) {
--		flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
- 		if (!(flags & BQ27000_FLAG_CHGS)) {
- 			dev_dbg(di->dev, "negative current!\n");
- 			curr = -curr;
- 		}
- 
--		val->intval = curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
-+		curr = curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
- 	} else {
- 		/* Other gauges return signed value */
--		val->intval = (int)((s16)curr) * 1000;
-+		curr = (int)((s16)curr) * 1000;
-+	}
-+
-+	if (val_curr)
-+		val_curr->intval = curr;
-+
-+	if (val_status) {
-+		if (curr > 0) {
-+			val_status->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		} else if (curr < 0) {
-+			val_status->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+		} else {
-+			if (bq27xxx_battery_is_full(di, flags))
-+				val_status->intval = POWER_SUPPLY_STATUS_FULL;
-+			else
-+				val_status->intval =
-+					POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		}
- 	}
- 
- 	return 0;
-@@ -1836,43 +1871,6 @@ static int bq27xxx_battery_pwr_avg(struct bq27xxx_device_info *di,
- 	return 0;
- }
- 
--static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
--				  union power_supply_propval *val)
--{
--	int status;
--
--	if (di->opts & BQ27XXX_O_ZERO) {
--		if (di->cache.flags & BQ27000_FLAG_FC)
--			status = POWER_SUPPLY_STATUS_FULL;
--		else if (di->cache.flags & BQ27000_FLAG_CHGS)
--			status = POWER_SUPPLY_STATUS_CHARGING;
--		else
--			status = POWER_SUPPLY_STATUS_DISCHARGING;
--	} else if (di->opts & BQ27Z561_O_BITS) {
--		if (di->cache.flags & BQ27Z561_FLAG_FC)
--			status = POWER_SUPPLY_STATUS_FULL;
--		else if (di->cache.flags & BQ27Z561_FLAG_DIS_CH)
--			status = POWER_SUPPLY_STATUS_DISCHARGING;
--		else
--			status = POWER_SUPPLY_STATUS_CHARGING;
--	} else {
--		if (di->cache.flags & BQ27XXX_FLAG_FC)
--			status = POWER_SUPPLY_STATUS_FULL;
--		else if (di->cache.flags & BQ27XXX_FLAG_DSC)
--			status = POWER_SUPPLY_STATUS_DISCHARGING;
--		else
--			status = POWER_SUPPLY_STATUS_CHARGING;
--	}
--
--	if ((status == POWER_SUPPLY_STATUS_DISCHARGING) &&
--	    (power_supply_am_i_supplied(di->bat) > 0))
--		status = POWER_SUPPLY_STATUS_NOT_CHARGING;
--
--	val->intval = status;
--
--	return 0;
--}
--
- static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
- 					  union power_supply_propval *val)
- {
-@@ -1960,7 +1958,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		ret = bq27xxx_battery_status(di, val);
-+		ret = bq27xxx_battery_current_and_status(di, NULL, val);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		ret = bq27xxx_battery_voltage(di, val);
-@@ -1969,7 +1967,7 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 		val->intval = di->cache.flags < 0 ? 0 : 1;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
--		ret = bq27xxx_battery_current(di, val);
-+		ret = bq27xxx_battery_current_and_status(di, val, NULL);
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		ret = bq27xxx_simple_value(di->cache.capacity, val);
--- 
-2.17.1
+This looks more like bool in the code using it.
 
+[...]
+> --- a/drivers/gpu/drm/tegra/plane.c
+> +++ b/drivers/gpu/drm/tegra/plane.c
+[...]
+> +static int tegra_plane_check_memory_bandwidth(struct drm_plane_state *state)
+
+The function's body looks more like 'update' or 'recalculate' rather
+than 'check' the memory bandwidth.
+
+> +	struct tegra_plane_state *tegra_state = to_tegra_plane_state(state);
+> +	unsigned int i, bpp, bpp_plane, dst_w, src_w, src_h, mul;
+> +	const struct tegra_dc_soc_info *soc;
+> +	const struct drm_format_info *fmt;
+> +	struct drm_crtc_state *crtc_state;
+> +	u32 avg_bandwidth, peak_bandwidth;
+> +
+> +	if (!state->visible)
+> +		return 0;
+> +
+> +	crtc_state = drm_atomic_get_new_crtc_state(state->state, state->crtc);
+> +	if (!crtc_state)
+> +		return -EINVAL;
+> +
+> +	src_w = drm_rect_width(&state->src) >> 16;
+> +	src_h = drm_rect_height(&state->src) >> 16;
+> +	dst_w = drm_rect_width(&state->dst);
+> +
+> +	fmt = state->fb->format;
+> +	soc = to_tegra_dc(state->crtc)->soc;
+> +
+> +	/*
+> +	 * Note that real memory bandwidth vary depending on format and
+> +	 * memory layout, we are not taking that into account because small
+> +	 * estimation error isn't important since bandwidth is rounded up
+> +	 * anyway.
+> +	 */
+> +	for (i = 0, bpp = 0; i < fmt->num_planes; i++) {
+> +		bpp_plane = fmt->cpp[i] * 8;
+
+Nit: you could declare the bpp_plane here.
+
+> +		/*
+> +		 * Sub-sampling is relevant for chroma planes only and vertical
+> +		 * readouts are not cached, hence only horizontal sub-sampling
+> +		 * matters.
+> +		 */
+> +		if (i > 0)
+> +			bpp_plane /= fmt->hsub;
+> +
+> +		bpp += bpp_plane;
+> +	}
+> +
+> +	/*
+> +	 * Horizontal downscale takes extra bandwidth which roughly depends
+> +	 * on the scaled width.
+> +	 */
+> +	if (src_w > dst_w)
+> +		mul = (src_w - dst_w) * bpp / 2048 + 1;
+> +	else
+> +		mul = 1;
+
+Does it really need more bandwidth to scale down? Does it read the same
+data multiple times just to throw it away?
+
+> +	/* average bandwidth in bytes/s */
+> +	avg_bandwidth  = src_w * src_h * bpp / 8 * mul;
+> +	avg_bandwidth *= drm_mode_vrefresh(&crtc_state->mode);
+> +
+> +	/* mode.clock in kHz, peak bandwidth in kbit/s */
+> +	peak_bandwidth = crtc_state->mode.clock * bpp * mul;
+
+I would guess that (src_w * bpp / 8) needs rounding up unless the plane
+is continuous. Or you could just add the max rounding error here and
+get a safe overestimated value. Maybe this would be better done when
+summing per-plane widths.
+
+> +	/* ICC bandwidth in kbyte/s */
+> +	peak_bandwidth = kbps_to_icc(peak_bandwidth);
+> +	avg_bandwidth  = Bps_to_icc(avg_bandwidth);
+
+This could be merged with the assignments after the following 'if' block.
+
+> +	/*
+> +	 * Tegra30/114 Memory Controller can't interleave DC memory requests
+> +	 * and DC uses 16-bytes atom for the tiled windows, while DDR3 uses 32
+> +	 * bytes atom. Hence there is x2 memory overfetch for tiled framebuffer
+> +	 * and DDR3 on older SoCs.
+> +	 */
+> +	if (soc->plane_tiled_memory_bandwidth_x2 &&
+> +	    tegra_state->tiling.mode == TEGRA_BO_TILING_MODE_TILED) {
+> +		peak_bandwidth *= 2;
+> +		avg_bandwidth *= 2;
+> +	}
+> +
+> +	tegra_state->peak_memory_bandwidth = peak_bandwidth;
+> +	tegra_state->avg_memory_bandwidth = avg_bandwidth;
+> +
+> +	return 0;
+> +}
+
+[...]
+> +static const char * const tegra_plane_icc_names[] = {
+> +	"wina", "winb", "winc", "", "", "", "cursor",
+> +};
+> +
+> +int tegra_plane_interconnect_init(struct tegra_plane *plane)
+> +{
+> +	const char *icc_name = tegra_plane_icc_names[plane->index];
+
+Is plane->index guaranteed to be <= 6? I would guess so, but maybe
+BUILD_BUG_ON(sizeof(icc_names)==TEGRA_DC_LEGACY_PLANES_NUM) or some
+other check could document this?
+
+[...]
+
+Best Regards
+Micha³ Miros³aw
