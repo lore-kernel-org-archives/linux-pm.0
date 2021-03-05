@@ -2,131 +2,176 @@ Return-Path: <SRS0=9RRv=ID=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B9DAC433DB
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 18:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 270DAC43381
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 18:45:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D64365059
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 18:26:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F1DAD650A5
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 18:45:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229693AbhCES0W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Mar 2021 13:26:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57092 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229651AbhCES0C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Mar 2021 13:26:02 -0500
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2B65C061574
-        for <linux-pm@vger.kernel.org>; Fri,  5 Mar 2021 10:26:01 -0800 (PST)
-Received: by mail-pf1-x42b.google.com with SMTP id t29so2605677pfg.11
-        for <linux-pm@vger.kernel.org>; Fri, 05 Mar 2021 10:26:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=b+6US9S2Mo/fA8cxA8PbORoFM9bf1HT3GRemrhIH+Wk=;
-        b=nS92C71VP6fKmc1z4Xia5Kszzq+MM3kIGz0hi8yicaoHQVeiysirqegk+h05Ad0Wr2
-         72bvSRExMwt8lF1HWqmIB45DN/U2n+1u7oye4RGhcaWSQ6Ly+vwZHJ+Tm/7Vy/kXw4Sa
-         nyy1hbX8QVKpU7rgm002WBwZWDgqnHRLXw3zx/5HZaKIpmSoBokOQ7EZuvF2mS2pTH9m
-         XSIjX5u5wzrMaH+PAg8x1C+eN/+UcZP52TDMOMLw7M1q57Bfl+Vw6TNw4q7y1oLoC9Q2
-         I+ClL+4nYdMl1xTP8wr8o52r8KdU9xhzRehnNq4MvwFTEBPVcRQjNdQo3utLziJXBzyz
-         znjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=b+6US9S2Mo/fA8cxA8PbORoFM9bf1HT3GRemrhIH+Wk=;
-        b=qs+vVZ3Qta8jveKN7JYhaHKD4TCqgU87hPVKipMUWsHCI9jtiaAyEbDAXLVoOHcYMX
-         Z7GQH8EXVvYfs9sdPIkRPNlHKySLsYUtCPZ6k15YlQZ1j+673eKhEW+2TbjNTv7OevPu
-         l5JH2Mc1i/r0ryka6b3MDW110goArJZoarkeEyVyogsDdkehqKy+zsMxe8I99ugNv3Wx
-         ooR04eiiFcZtHNY+m7AsGb/WSyL7SvV298/5nI43WqzbUBTyQvsI9AMjpjt3YtCanQV2
-         6UEPL+Pf3TWPffwLRBBemDjTXip92SZwNy3uBisCNbmaNeR/9dtD4k/hw4aejQWZtrpl
-         +y9g==
-X-Gm-Message-State: AOAM532kju4f02q8ZK10nII/aJkTNneWomeYw2qzOpxb/PDfltrYXEby
-        0RrPkrDKndvotZlyd/8iS4qbrA==
-X-Google-Smtp-Source: ABdhPJz9llIhPzUZiYF/KplyRwCVLCHhoCKvhb7Q1wliYHDG7YziuxnpItrwj3tIbZnosnHKVXmIrg==
-X-Received: by 2002:a63:5a0c:: with SMTP id o12mr9776037pgb.76.1614968761500;
-        Fri, 05 Mar 2021 10:26:01 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id e185sm3199612pfe.117.2021.03.05.10.26.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Mar 2021 10:26:01 -0800 (PST)
-Message-ID: <604277b9.1c69fb81.fc654.8801@mx.google.com>
-Date:   Fri, 05 Mar 2021 10:26:01 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S229992AbhCESoi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Mar 2021 13:44:38 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:45674 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229730AbhCESoe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Mar 2021 13:44:34 -0500
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 0.83.537)
+ id bbf02adda70a6deb; Fri, 5 Mar 2021 19:44:32 +0100
+Received: from kreacher.localnet (89-64-81-9.dynamic.chello.pl [89.64.81.9])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id B8C91663EA1;
+        Fri,  5 Mar 2021 19:44:30 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        linux-iio@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org
+Subject: [PATCH v1 4/4] hwmon: acpi_power_meter: Get rid of ACPICA message printing
+Date:   Fri, 05 Mar 2021 19:43:54 +0100
+Message-ID: <1890478.AxU35vj7Mz@kreacher>
+In-Reply-To: <2775419.haJ69vZeI0@kreacher>
+References: <2775419.haJ69vZeI0@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: acpi-5.12-rc2-19-g5c476073a9df
-X-Kernelci-Report-Type: build
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-Subject: pm/testing build: 7 builds: 0 failed,
- 7 passed (acpi-5.12-rc2-19-g5c476073a9df)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledruddtiedguddtjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttddvnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepgfelheffhfetffelhfelteejffetteetgfetkeejvdfhfeeftdeufeevgeevieevnecukfhppeekledrieegrdekuddrleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeekledrieegrdekuddrledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtohepjhhitgdvfeeskhgvrhhnvghlrdhorhhgpdhrtghp
+ thhtoheplhgrrhhssehmvghtrghfohhordguvgdprhgtphhtthhopehpmhgvvghrfiesphhmvggvrhifrdhnvghtpdhrtghpthhtoheplhhinhhugidqihhiohesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehjuggvlhhvrghrvgesshhushgvrdgtohhmpdhrtghpthhtoheplhhinhhugiesrhhovggtkhdquhhsrdhnvghtpdhrtghpthhtoheplhhinhhugidqhhifmhhonhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=11 Fuz1=11 Fuz2=11
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed (acpi-5.12-rc2-19-g5c476073a=
-9df)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/acp=
-i-5.12-rc2-19-g5c476073a9df/
+Use acpi_evaluation_failure_warn() introduced previously instead of
+the ACPICA-specific ACPI_EXCEPTION() macro to log warning messages
+regarding ACPI object evaluation failures and use dev_err() instead
+of ACPI_EXCEPTION() to log _PMC package parsing failures, which is
+consistent with the other messages printed by the code in question.
 
-Tree: pm
-Branch: testing
-Git Describe: acpi-5.12-rc2-19-g5c476073a9df
-Git Commit: 5c476073a9df062a501edf9ea7b11ccc53c27bf7
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+Next, drop the ACPI_MODULE_NAME() definition only used by the ACPICA
+message printing macro.
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-For more info write to <info@kernelci.org>
+ drivers/hwmon/acpi_power_meter.c |   29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
+
+Index: linux-pm/drivers/hwmon/acpi_power_meter.c
+===================================================================
+--- linux-pm.orig/drivers/hwmon/acpi_power_meter.c
++++ linux-pm/drivers/hwmon/acpi_power_meter.c
+@@ -20,7 +20,6 @@
+ #include <linux/acpi.h>
+ 
+ #define ACPI_POWER_METER_NAME		"power_meter"
+-ACPI_MODULE_NAME(ACPI_POWER_METER_NAME);
+ #define ACPI_POWER_METER_DEVICE_NAME	"Power Meter"
+ #define ACPI_POWER_METER_CLASS		"pwr_meter_resource"
+ 
+@@ -114,7 +113,8 @@ static int update_avg_interval(struct ac
+ 	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_GAI",
+ 				       NULL, &data);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _GAI"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_GAI",
++					     status);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -166,7 +166,8 @@ static ssize_t set_avg_interval(struct d
+ 	mutex_unlock(&resource->lock);
+ 
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PAI"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_PAI",
++					     status);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -186,7 +187,8 @@ static int update_cap(struct acpi_power_
+ 	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_GHL",
+ 				       NULL, &data);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _GHL"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_GHL",
++					     status);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -237,7 +239,8 @@ static ssize_t set_cap(struct device *de
+ 	mutex_unlock(&resource->lock);
+ 
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _SHL"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_SHL",
++					     status);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -270,7 +273,8 @@ static int set_acpi_trip(struct acpi_pow
+ 	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_PTP",
+ 				       &args, &data);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PTP"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_PTP",
++					     status);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -322,7 +326,8 @@ static int update_meter(struct acpi_powe
+ 	status = acpi_evaluate_integer(resource->acpi_dev->handle, "_PMM",
+ 				       NULL, &data);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PMM"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_PMM",
++					     status);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -549,7 +554,8 @@ static int read_domain_devices(struct ac
+ 	status = acpi_evaluate_object(resource->acpi_dev->handle, "_PMD", NULL,
+ 				      &buffer);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PMD"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_PMD",
++					     status);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -745,7 +751,8 @@ static int read_capabilities(struct acpi
+ 	status = acpi_evaluate_object(resource->acpi_dev->handle, "_PMC", NULL,
+ 				      &buffer);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Evaluating _PMC"));
++		acpi_evaluation_failure_warn(resource->acpi_dev->handle, "_PMC",
++					     status);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -765,7 +772,9 @@ static int read_capabilities(struct acpi
+ 
+ 	status = acpi_extract_package(pss, &format, &state);
+ 	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status, "Invalid data"));
++		dev_err(&resource->acpi_dev->dev, ACPI_POWER_METER_NAME
++			"_PMC package parsing failed: %s\n",
++			acpi_format_exception(status));
+ 		res = -EFAULT;
+ 		goto end;
+ 	}
+
+
+
