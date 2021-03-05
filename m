@@ -2,148 +2,119 @@ Return-Path: <SRS0=9RRv=ID=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1B2DC433E9
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 17:04:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E93D5C433E0
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 17:25:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A6FF64F51
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 17:04:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B4FFA650A5
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Mar 2021 17:25:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231390AbhCEREH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Mar 2021 12:04:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39336 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231377AbhCERDz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Mar 2021 12:03:55 -0500
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49209C061574
-        for <linux-pm@vger.kernel.org>; Fri,  5 Mar 2021 09:03:55 -0800 (PST)
-Received: by mail-wr1-x42e.google.com with SMTP id w11so2837778wrr.10
-        for <linux-pm@vger.kernel.org>; Fri, 05 Mar 2021 09:03:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=oNEKdz6xPt7rWWlY08YTlqJ+lKrJjFhTuySIUMQ0e+4R72ftmlHWkmFwbJE/yj/0L9
-         KQMDY7H55bE4DUmCGgWXZyl+eFIMBmfgbneFavsgAAhHFKhJqgZ0E2SRJFr8EYlYdBX3
-         HLYPLXCO66AqeADhGbMjohltUr1f+KTc3M9FN9QB1IMSKfgOS5XfD/kaKEdd5SRqmln3
-         ckKfK0l4tR15SPjWq+QWJuU49+H+lNH4Fuxx/IhwJfx6LBmYllz+9uOYVE1kgQg8wMgQ
-         DUzBop11GMlwrMWg2owHd0e46fK8c8XFG/ErkGfIy15tj6hntwGkhRBFjr1eyuGxUJT6
-         9Pjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=NU2bGq0JGMB7LgPgZFB98kqtotrzlip2GyJboB+AHhUxMA2LKNXzxIQvWSf+HqPsbO
-         8TfBWVwg7ss+zMN8g+AeuD2j8ohZAhLaQIhX0KOute7ksOw5FoBH4TkXjrH3/xjW4hR8
-         z0sxQzbGUL+L/5tq/K74CdKLYsod/TQhpVjt1gSuEWe0Kus1q0v2Mv2HNK6k2vKTzjvC
-         FBRfUprWe8rW6H152mGFT+tmDGUQ4EHtFJB6bDob1FBLpHDtVfxd+Id0g0efe1MGA96t
-         1HfN7AUBDoI/EQaYkGWRmcEOCS0bB2AwFw2WEohF0ZYaUH3P6J1xm8W8HR0mOujYQ59i
-         n+kA==
-X-Gm-Message-State: AOAM532z59WCOTZRSg7vFo4vbCxDtQ/uwqgaSKgePGqh7hGJ3rTkndN4
-        hbJaMl4eHZF0qvcJsvFMZLOhKA==
-X-Google-Smtp-Source: ABdhPJydYEppXPz3sewV0+dccHxbmeBJKVjPuVHQAf0k543BYpWsmppZxZNmbBiyB1toc0Djs2GAuA==
-X-Received: by 2002:a5d:68cd:: with SMTP id p13mr10821095wrw.247.1614963833977;
-        Fri, 05 Mar 2021 09:03:53 -0800 (PST)
-Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
-        by smtp.gmail.com with ESMTPSA id p17sm4760934wmq.47.2021.03.05.09.03.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Mar 2021 09:03:53 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     cwchoi00@gmail.com
-Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, steven.price@arm.com,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        linux-arm-msm@vger.kernel.org (open list:DRM DRIVER FOR MSM ADRENO GPU),
-        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU),
-        freedreno@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU)
-Subject: [PATCH v2 3/4] devfreq/drivers/msm: Use devfreq cooling device registration
-Date:   Fri,  5 Mar 2021 18:03:36 +0100
-Message-Id: <20210305170338.13647-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210305170338.13647-1-daniel.lezcano@linaro.org>
-References: <20210305170338.13647-1-daniel.lezcano@linaro.org>
+        id S229551AbhCERYb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Mar 2021 12:24:31 -0500
+Received: from m42-2.mailgun.net ([69.72.42.2]:35945 "EHLO m42-2.mailgun.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229493AbhCERYU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Mar 2021 12:24:20 -0500
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1614965060; h=Message-ID: References: In-Reply-To: Subject:
+ Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
+ MIME-Version: Sender; bh=4NIisY4w811oIA/VcR62rR+yydbAx2ISOLfSurqEVg8=;
+ b=iYmezbiEGkphh+tI362GvzDEo+jAimPDMMIOpC/RoFPpxToUyPFLRFBULSKX9d4S53aKOzEK
+ 1JOvFB/C3SylDamkc6YGhe2dmhEPC2xvN4wJX3XmOxPZxzMlr9uDgRgA/LYnneyJxyx/lFpG
+ WTB3AgiV3iEgYupPbP9nE10dowE=
+X-Mailgun-Sending-Ip: 69.72.42.2
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n01.prod.us-east-1.postgun.com with SMTP id
+ 604269351a5c93533f2f7fce (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 05 Mar 2021 17:24:05
+ GMT
+Sender: manafm=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id E4088C43461; Fri,  5 Mar 2021 17:24:04 +0000 (UTC)
+Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: manafm)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 2A61EC433CA;
+        Fri,  5 Mar 2021 17:24:04 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Fri, 05 Mar 2021 22:54:04 +0530
+From:   manafm@codeaurora.org
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Ram Chandrasekar <rkumbako@codeaurora.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] drivers: thermal: Add NULL pointer check before using
+ cooling device stats
+In-Reply-To: <1607367181-24589-1-git-send-email-manafm@codeaurora.org>
+References: <1607367181-24589-1-git-send-email-manafm@codeaurora.org>
+Message-ID: <483eabf92d011964d58c2321c9344ed2@codeaurora.org>
+X-Sender: manafm@codeaurora.org
+User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The devfreq core code is able to register the devfreq device as a
-cooling device if the 'is_cooling_device' flag is set in the profile.
+On 2020-12-08 00:23, Manaf Meethalavalappu Pallikunhi wrote:
 
-Use this flag and remove the cooling device registering code.
+Gentle reminder..
 
-Tested on dragonboard 845c
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/gpu/drm/msm/msm_gpu.c | 12 +-----------
- drivers/gpu/drm/msm/msm_gpu.h |  2 --
- 2 files changed, 1 insertion(+), 13 deletions(-)
-
-diff --git a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
-index ab7c167b0623..eade94271a60 100644
---- a/drivers/gpu/drm/msm/msm_gpu.c
-+++ b/drivers/gpu/drm/msm/msm_gpu.c
-@@ -14,7 +14,6 @@
- #include <generated/utsrelease.h>
- #include <linux/string_helpers.h>
- #include <linux/devfreq.h>
--#include <linux/devfreq_cooling.h>
- #include <linux/devcoredump.h>
- #include <linux/sched/task.h>
- 
-@@ -82,6 +81,7 @@ static struct devfreq_dev_profile msm_devfreq_profile = {
- 	.target = msm_devfreq_target,
- 	.get_dev_status = msm_devfreq_get_dev_status,
- 	.get_cur_freq = msm_devfreq_get_cur_freq,
-+	.is_cooling_device = true,
- };
- 
- static void msm_devfreq_init(struct msm_gpu *gpu)
-@@ -112,14 +112,6 @@ static void msm_devfreq_init(struct msm_gpu *gpu)
- 	}
- 
- 	devfreq_suspend_device(gpu->devfreq.devfreq);
--
--	gpu->cooling = of_devfreq_cooling_register(gpu->pdev->dev.of_node,
--			gpu->devfreq.devfreq);
--	if (IS_ERR(gpu->cooling)) {
--		DRM_DEV_ERROR(&gpu->pdev->dev,
--				"Couldn't register GPU cooling device\n");
--		gpu->cooling = NULL;
--	}
- }
- 
- static int enable_pwrrail(struct msm_gpu *gpu)
-@@ -1056,6 +1048,4 @@ void msm_gpu_cleanup(struct msm_gpu *gpu)
- 	if (gpu->worker) {
- 		kthread_destroy_worker(gpu->worker);
- 	}
--
--	devfreq_cooling_unregister(gpu->cooling);
- }
-diff --git a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
-index d7cd02cd2109..93419368bac8 100644
---- a/drivers/gpu/drm/msm/msm_gpu.h
-+++ b/drivers/gpu/drm/msm/msm_gpu.h
-@@ -155,8 +155,6 @@ struct msm_gpu {
- 	struct msm_gpu_state *crashstate;
- 	/* True if the hardware supports expanded apriv (a650 and newer) */
- 	bool hw_apriv;
--
--	struct thermal_cooling_device *cooling;
- };
- 
- static inline struct msm_gpu *dev_to_gpu(struct device *dev)
--- 
-2.17.1
-
+> There is a possible chance that some cooling device stats buffer
+> allocation fails due to very high cooling device max state value.
+> Later cooling device update sysfs can try to access stats data
+> for the same cooling device. It will lead to NULL pointer
+> dereference issue.
+> 
+> Add a NULL pointer check before accessing thermal cooling device
+> stats data. It fixes the following bug
+> 
+> [ 26.812833] Unable to handle kernel NULL pointer dereference at
+> virtual address 0000000000000004
+> [ 27.122960] Call trace:
+> [ 27.122963] do_raw_spin_lock+0x18/0xe8
+> [ 27.122966] _raw_spin_lock+0x24/0x30
+> [ 27.128157] thermal_cooling_device_stats_update+0x24/0x98
+> [ 27.128162] cur_state_store+0x88/0xb8
+> [ 27.128166] dev_attr_store+0x40/0x58
+> [ 27.128169] sysfs_kf_write+0x50/0x68
+> [ 27.133358] kernfs_fop_write+0x12c/0x1c8
+> [ 27.133362] __vfs_write+0x54/0x160
+> [ 27.152297] vfs_write+0xcc/0x188
+> [ 27.157132] ksys_write+0x78/0x108
+> [ 27.162050] ksys_write+0xf8/0x108
+> [ 27.166968] __arm_smccc_hvc+0x158/0x4b0
+> [ 27.166973] __arm_smccc_hvc+0x9c/0x4b0
+> [ 27.186005] el0_svc+0x8/0xc
+> 
+> Signed-off-by: Manaf Meethalavalappu Pallikunhi <manafm@codeaurora.org>
+> ---
+>  drivers/thermal/thermal_sysfs.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/thermal/thermal_sysfs.c 
+> b/drivers/thermal/thermal_sysfs.c
+> index 473449b..10ca4f5 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -827,6 +827,9 @@ void thermal_cooling_device_stats_update(struct
+> thermal_cooling_device *cdev,
+>  {
+>  	struct cooling_dev_stats *stats = cdev->stats;
+> 
+> +	if (!stats)
+> +		return;
+> +
+>  	spin_lock(&stats->lock);
+> 
+>  	if (stats->state == new_state)
