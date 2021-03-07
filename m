@@ -2,148 +2,90 @@ Return-Path: <SRS0=tJoZ=IF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DCB7C4332B
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 09:46:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA4C2C433E0
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 13:53:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2593965139
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 09:46:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 795DA65109
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 13:53:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231368AbhCGJpu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Mar 2021 04:45:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53422 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231129AbhCGJpi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Mar 2021 04:45:38 -0500
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A948CC061760
-        for <linux-pm@vger.kernel.org>; Sun,  7 Mar 2021 01:45:37 -0800 (PST)
-Received: by mail-wr1-x433.google.com with SMTP id u14so8128250wri.3
-        for <linux-pm@vger.kernel.org>; Sun, 07 Mar 2021 01:45:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=cEZv1N9MT1tvcp5XXBU/gC/3IF30iDxLCSKZoGWnZBDvfMPIl/dDWocdAT518rBLib
-         z9GfFnD7Vw4DdcLo6XWQ69SwwDSUG75kHjUnPLaR9OU6WdnNycO7Y8roscN1sMew0W9T
-         n8yaXirXJTt640L5dqM2zyhVlDKbypVDKJQaCWeDlzBGnB0Kgf9RSTU5UjKuiLHebEyY
-         ks0eFoAg7C0H4/gHHMtVmELgLhiqLCw6imgeP39zDlV+mzjWx5brsNRbSimT+hhXNZbn
-         eXtGNYNgtSSGjIQJgD4xKtTyeRERc0I4pQTAdASh53z2pnWyPnR0IeaLzGxLmbuU9/CF
-         jyqw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=Zs45CP5LOfOJ1Csk6Jc75g2Rr/75xg4H62XF+8UTIucgI1klrdo7chZ/yrEGRutbYN
-         8KV2Bg13NmTaWRCYpf5fRmH/nzv3+2FRjuVt9QrpTc4TXYIgj6TIZhI7d6I94NjzJF/r
-         965dbXfJrTsogJ7Hbmjn5UXP2Cx7rVWLG2CnqNSGUCpYN2D7XpiCi7+z/UebgjvVPPiy
-         FgU+t3SNf5hMf1/GOwRAAspvBNCXgvq3xmzUhiPzN7hRbqCJ5KcW01G8hBqbBl1AJwrS
-         M2jd/Z2ptQzjLZvjoi3ST8DcUhl5BpL1ID9CU4dvFcsplvBPnsx/e9YP5wrTlV0ZpLvz
-         rKdA==
-X-Gm-Message-State: AOAM532GbrQfFzG4K5YtiBsk44vHG5GBwHou9sn2b0iO86aD/mSL1gRM
-        qVI26duzWBJ271Is5woWmuDBpQ==
-X-Google-Smtp-Source: ABdhPJwXs/r34f0ulXMj7OuQIK3/3Xk18RKjsq+HUnzr5igiGn4bAPSoScW19dqf/oqDuniL3Vtm2Q==
-X-Received: by 2002:adf:a59a:: with SMTP id g26mr17670383wrc.271.1615110336310;
-        Sun, 07 Mar 2021 01:45:36 -0800 (PST)
-Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
-        by smtp.gmail.com with ESMTPSA id z7sm12790737wrt.70.2021.03.07.01.45.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Mar 2021 01:45:35 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     cwchoi00@gmail.com
-Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, steven.price@arm.com,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        linux-arm-msm@vger.kernel.org (open list:DRM DRIVER FOR MSM ADRENO GPU),
-        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU),
-        freedreno@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU)
-Subject: [PATCH v3 2/4] devfreq/drivers/msm: Use devfreq cooling device registration
-Date:   Sun,  7 Mar 2021 10:45:16 +0100
-Message-Id: <20210307094519.9032-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210307094519.9032-1-daniel.lezcano@linaro.org>
-References: <20210307094519.9032-1-daniel.lezcano@linaro.org>
+        id S231495AbhCGNxL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Mar 2021 08:53:11 -0500
+Received: from mga11.intel.com ([192.55.52.93]:58325 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231574AbhCGNxL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 7 Mar 2021 08:53:11 -0500
+IronPort-SDR: oYy4JL65nmFKxKb1A2jQk/xpJzD9NlwuAT2IkL31W2ubc/MR0wRMw68AjJEHcsQysxczAjBjfp
+ epqtmq+atupQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9915"; a="184528540"
+X-IronPort-AV: E=Sophos;i="5.81,230,1610438400"; 
+   d="scan'208";a="184528540"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Mar 2021 05:53:10 -0800
+IronPort-SDR: 969AsZV7czI1jFMGhhPU2uhgUFrhXAdcn2h+r4h4IL2A3N82c2jDOh7fkno8g3a3FvPXh+wLoO
+ 9xT8MscgFtMg==
+X-IronPort-AV: E=Sophos;i="5.81,230,1610438400"; 
+   d="scan'208";a="601818915"
+Received: from txu4-mobl.ccr.corp.intel.com ([10.255.30.172])
+  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Mar 2021 05:53:09 -0800
+Message-ID: <357ec08b83bef385162c23f37b4efa439a120947.camel@intel.com>
+Subject: Re: driver notification when switching between battery vs AC power?
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Christoph Hellwig <hch@lst.de>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Date:   Sun, 07 Mar 2021 21:53:06 +0800
+In-Reply-To: <CAJZ5v0gjO24-Gb-8ejTCkS2z6MFR7ZVAbYveVPkW1B_71u-LsQ@mail.gmail.com>
+References: <20210305080748.GA17954@lst.de>
+         <CAJZ5v0gjO24-Gb-8ejTCkS2z6MFR7ZVAbYveVPkW1B_71u-LsQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The devfreq core code is able to register the devfreq device as a
-cooling device if the 'is_cooling_device' flag is set in the profile.
+On Fri, 2021-03-05 at 16:18 +0100, Rafael J. Wysocki wrote:
+> Hi Christoph,
+> 
+> On Fri, Mar 5, 2021 at 9:07 AM Christoph Hellwig <hch@lst.de> wrote:
+> > 
+> > Hi Rafael,
+> > 
+> > do we have infrastructure that notifies the driver when a system is
+> > switching from batter to AC power?
+> 
+> On systems with ACPI that can be done through an ACPI notifier, see
+> amdgpu_acpi_event() for one example.
+> 
+> Adding Rui who's likely to be more familiar with this topic than I
+> am.
 
-Use this flag and remove the cooling device registering code.
+Thanks for adding me in the loop.
 
-Tested on dragonboard 845c
+Yes, an ACPI notifier callback should be sufficient for this purpose.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/gpu/drm/msm/msm_gpu.c | 12 +-----------
- drivers/gpu/drm/msm/msm_gpu.h |  2 --
- 2 files changed, 1 insertion(+), 13 deletions(-)
+Usually, we get an ACPI notification upon AC plug/unplug, so what we
+need in the NVMe driver is to get the notification and then get the
+status of AC adapter. As ACPI AC driver always sends the AC events to
+acpi notifier chain, what we need is 
+a) define a notifier callback, and in the notifier callback
+   1. ignore non-AC devices,
+   2. get AC status, you can refer to acpi_ac_get_state()
+b) register the notifier cb to ACPI notifier chain, by invoking
+   register_acpi_notifier()
 
-diff --git a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
-index ab7c167b0623..eade94271a60 100644
---- a/drivers/gpu/drm/msm/msm_gpu.c
-+++ b/drivers/gpu/drm/msm/msm_gpu.c
-@@ -14,7 +14,6 @@
- #include <generated/utsrelease.h>
- #include <linux/string_helpers.h>
- #include <linux/devfreq.h>
--#include <linux/devfreq_cooling.h>
- #include <linux/devcoredump.h>
- #include <linux/sched/task.h>
- 
-@@ -82,6 +81,7 @@ static struct devfreq_dev_profile msm_devfreq_profile = {
- 	.target = msm_devfreq_target,
- 	.get_dev_status = msm_devfreq_get_dev_status,
- 	.get_cur_freq = msm_devfreq_get_cur_freq,
-+	.is_cooling_device = true,
- };
- 
- static void msm_devfreq_init(struct msm_gpu *gpu)
-@@ -112,14 +112,6 @@ static void msm_devfreq_init(struct msm_gpu *gpu)
- 	}
- 
- 	devfreq_suspend_device(gpu->devfreq.devfreq);
--
--	gpu->cooling = of_devfreq_cooling_register(gpu->pdev->dev.of_node,
--			gpu->devfreq.devfreq);
--	if (IS_ERR(gpu->cooling)) {
--		DRM_DEV_ERROR(&gpu->pdev->dev,
--				"Couldn't register GPU cooling device\n");
--		gpu->cooling = NULL;
--	}
- }
- 
- static int enable_pwrrail(struct msm_gpu *gpu)
-@@ -1056,6 +1048,4 @@ void msm_gpu_cleanup(struct msm_gpu *gpu)
- 	if (gpu->worker) {
- 		kthread_destroy_worker(gpu->worker);
- 	}
--
--	devfreq_cooling_unregister(gpu->cooling);
- }
-diff --git a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
-index d7cd02cd2109..93419368bac8 100644
---- a/drivers/gpu/drm/msm/msm_gpu.h
-+++ b/drivers/gpu/drm/msm/msm_gpu.h
-@@ -155,8 +155,6 @@ struct msm_gpu {
- 	struct msm_gpu_state *crashstate;
- 	/* True if the hardware supports expanded apriv (a650 and newer) */
- 	bool hw_apriv;
--
--	struct thermal_cooling_device *cooling;
- };
- 
- static inline struct msm_gpu *dev_to_gpu(struct device *dev)
--- 
-2.17.1
+thanks,
+rui
+> 
+> > There is a proposal to make the
+> > Linux NVMe driver power management match the policy used by the
+> > Windows driver more closely, which does this and we'd like to
+> > prototype
+> > that to check what difference the policy makes.
 
