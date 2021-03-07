@@ -1,150 +1,182 @@
-Return-Path: <SRS0=ny9D=IE=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=tJoZ=IF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07440C43381
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Mar 2021 16:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1089C433DB
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 09:46:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ABE616502B
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Mar 2021 16:16:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE9E665015
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 09:46:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231203AbhCFQQ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 Mar 2021 11:16:26 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:47767 "HELO
-        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with SMTP id S230521AbhCFQQT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 Mar 2021 11:16:19 -0500
-Received: (qmail 74844 invoked by uid 1000); 6 Mar 2021 11:16:16 -0500
-Date:   Sat, 6 Mar 2021 11:16:16 -0500
-From:   Alan Stern <stern@rowland.harvard.edu>
-To:     "Asutosh Das \(asd\)" <asutoshd@codeaurora.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Adrian Hunter <adrian.hunter@intel.com>, cang@codeaurora.org,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        Bart Van Assche <bvanassche@acm.org>,
-        linux-arm-msm@vger.kernel.org,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Avri Altman <avri.altman@wdc.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Pedro Sousa <pedrom.sousa@synopsys.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Stanley Chu <stanley.chu@mediatek.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Kiwoong Kim <kwmad.kim@samsung.com>,
-        Bean Huo <beanhuo@micron.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Wei Yongjun <weiyongjun1@huawei.com>,
-        Dinghao Liu <dinghao.liu@zju.edu.cn>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Tomas Winkler <tomas.winkler@intel.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        Satya Tangirala <satyat@google.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "open list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
-        <linux-samsung-soc@vger.kernel.org>,
-        "moderated list:UNIVERSAL FLASH STORAGE HOST CONTROLLER DRIVER..." 
-        <linux-mediatek@lists.infradead.org>,
-        Linux-PM mailing list <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v10 1/2] scsi: ufs: Enable power management for wlun
-Message-ID: <20210306161616.GC74411@rowland.harvard.edu>
-References: <cover.1614725302.git.asutoshd@codeaurora.org>
- <0576d6eae15486740c25767e2d8805f7e94eb79d.1614725302.git.asutoshd@codeaurora.org>
- <85086647-7292-b0a2-d842-290818bd2858@intel.com>
- <6e98724d-2e75-d1fe-188f-a7010f86c509@codeaurora.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6e98724d-2e75-d1fe-188f-a7010f86c509@codeaurora.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+        id S230155AbhCGJpt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Mar 2021 04:45:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53414 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230252AbhCGJpg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Mar 2021 04:45:36 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46C4AC06175F
+        for <linux-pm@vger.kernel.org>; Sun,  7 Mar 2021 01:45:36 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id w7so4271226wmb.5
+        for <linux-pm@vger.kernel.org>; Sun, 07 Mar 2021 01:45:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=ihXVSbxv7FyslBFnvseGR/NddNzkR/mnLj93t8UIBfA=;
+        b=frwiDO8DtUKisLLH799ud1Ejtd7sw4X9i5GlRkez3twBY2FxIK/uv5WQWL+Ze1MWS+
+         n75Q6jepcRGJ0FEJ6YtjZJef2k5MWqipp3ezxDbDpcfO9q1oOL2na1qZAtej/GGOMqnn
+         66GgsQfHzt1iUbd1nkbhdR1HquKPCWXIS++kMaBOVFVtfUThedQyt2grF/pV7JIGvA9C
+         JaxGgVf0ydByvZEB9P1Tc7w6rSkKxwCrC42h9gjlGHFXi/tZMTdveU/jEEGUms2FWwKP
+         qtRBf2Wsh5BQKqFW1Frx5eZHd5BFWp20kSm/OWLlShp5UBbiMiOnmGkXBwKTEUDRzWqD
+         gpoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=ihXVSbxv7FyslBFnvseGR/NddNzkR/mnLj93t8UIBfA=;
+        b=Y8UxnluB3GZYJV05NfQsk/KniX+G+byHNIG3H14U5M0EPNvx/edVAI8jMAVQm9EwIf
+         +JZSJzTrbUXIWkbiJlHXKVfqbOjaxw5tP92TTDqIFZL5sdq7aBicX08YfHJPIeXagbtc
+         JmRaCEadIIn14QvB8eTZQ4MnQdqKXeV8pFMvc8vNAtVAR8/mLdEiy/xVDzHL/tPH9oNl
+         H8Q6B+LeC5ewsv+mE86pgw5SVqJYLExlJowIgq4a4fU1l2egafDjgQlRpvUAbxVGWGK+
+         mEO11s1NK5LgW2LqvmFsUhJTeoXbNEvREw+CstEPf1B44WCe/s7bqXT/AZAkq3rbx1LO
+         TqOw==
+X-Gm-Message-State: AOAM5308CQX7nh2hTuhHY33CGAYb2oc0mBAyhUECeP4yqu8dwpnKfae2
+        Zx8EPkSXAZpDu8uUAnHaLCeq2g==
+X-Google-Smtp-Source: ABdhPJzVSOQa4Phv0ix4jaHgr3ku+JaaJeayAUbJcZ6dWw8adrQXMtWi1HzFoW4EbMloA9Gurv+48Q==
+X-Received: by 2002:a1c:1dd4:: with SMTP id d203mr16885107wmd.83.1615110334754;
+        Sun, 07 Mar 2021 01:45:34 -0800 (PST)
+Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
+        by smtp.gmail.com with ESMTPSA id z7sm12790737wrt.70.2021.03.07.01.45.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 07 Mar 2021 01:45:34 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     cwchoi00@gmail.com
+Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, steven.price@arm.com,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v3 1/4] devfreq: Register devfreq as a cooling device on demand
+Date:   Sun,  7 Mar 2021 10:45:15 +0100
+Message-Id: <20210307094519.9032-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Mar 05, 2021 at 06:54:24PM -0800, Asutosh Das (asd) wrote:
+Currently the default behavior is to manually having the devfreq
+backend to register themselves as a devfreq cooling device.
 
-> Now during my testing I see a weird issue sometimes (1 in 7).
-> Scenario - bootups
-> 
-> Issue:
-> The supplier 'ufs_device_wlun 0:0:0:49488' goes into runtime suspend even
-> when one/more of its consumers are in RPM_ACTIVE state.
-> 
-> *Log:
-> [   10.056379][  T206] sd 0:0:0:1: [sdb] Synchronizing SCSI cache
-> [   10.062497][  T113] sd 0:0:0:5: [sdf] Synchronizing SCSI cache
-> [   10.356600][   T32] sd 0:0:0:7: [sdh] Synchronizing SCSI cache
-> [   10.362944][  T174] sd 0:0:0:3: [sdd] Synchronizing SCSI cache
-> [   10.696627][   T83] sd 0:0:0:2: [sdc] Synchronizing SCSI cache
-> [   10.704562][  T170] sd 0:0:0:6: [sdg] Synchronizing SCSI cache
-> [   10.980602][    T5] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> 
-> /** Printing all the consumer nodes of supplier **/
-> [   10.987327][    T5] ufs_device_wlun 0:0:0:49488: usage-count @ suspend: 0
-> <-- this is the usage_count
-> [   10.994440][    T5] ufs_rpmb_wlun 0:0:0:49476: PM state - 2
-> [   11.000402][    T5] scsi 0:0:0:49456: PM state - 2
-> [   11.005453][    T5] sd 0:0:0:0: PM state - 2
-> [   11.009958][    T5] sd 0:0:0:1: PM state - 2
-> [   11.014469][    T5] sd 0:0:0:2: PM state - 2
-> [   11.019072][    T5] sd 0:0:0:3: PM state - 2
-> [   11.023595][    T5] sd 0:0:0:4: PM state - 0 << RPM_ACTIVE
-> [   11.353298][    T5] sd 0:0:0:5: PM state - 2
-> [   11.357726][    T5] sd 0:0:0:6: PM state - 2
-> [   11.362155][    T5] sd 0:0:0:7: PM state - 2
-> [   11.366584][    T5] ufshcd-qcom 1d84000.ufshc: __ufshcd_wl_suspend - 8709
-> [   11.374366][    T5] ufs_device_wlun 0:0:0:49488: __ufshcd_wl_suspend -
-> (0) has rpm_active flags
-> [   11.383376][    T5] ufs_device_wlun 0:0:0:49488:
-> ufshcd_wl_runtime_suspend <-- Supplier suspends fine.
-> [   12.977318][  T174] sd 0:0:0:4: [sde] Synchronizing SCSI cache
-> 
-> And the the suspend of sde is stuck now:
-> schedule+0x9c/0xe0
-> schedule_timeout+0x40/0x128
-> io_schedule_timeout+0x44/0x68
-> wait_for_common_io+0x7c/0x100
-> wait_for_completion_io+0x14/0x20
-> blk_execute_rq+0x90/0xcc
-> __scsi_execute+0x104/0x1c4
-> sd_sync_cache+0xf8/0x2a0
-> sd_suspend_common+0x74/0x11c
-> sd_suspend_runtime+0x14/0x20
-> scsi_runtime_suspend+0x64/0x94
-> __rpm_callback+0x80/0x2a4
-> rpm_suspend+0x308/0x614
-> pm_runtime_work+0x98/0xa8
-> 
-> I added 'DL_FLAG_RPM_ACTIVE' while creating links.
->       if (hba->sdev_ufs_device) {
->               link = device_link_add(&sdev->sdev_gendev,
->                                   &hba->sdev_ufs_device->sdev_gendev,
->                                  DL_FLAG_PM_RUNTIME|DL_FLAG_RPM_ACTIVE);
-> I didn't expect this to resolve the issue anyway and it didn't.
-> 
-> Another interesting point here is when I resume any of the above suspended
-> consumers, it all goes back to normal, which is kind of expected. I tried
-> resuming the consumer and the supplier is resumed and the supplier is
-> suspended when all the consumers are suspended.
-> 
-> Any pointers on this issue please?
-> 
-> @Bart/@Alan - Do you've any pointers please?
+Instead of adding the code in the drivers for the thermal cooling
+device registering, let's provide a flag in the devfreq's profile to
+tell the common devfreq code to register the newly created devfreq as
+a cooling device.
 
-It's very noticeable that although you seem to have isolated a bug in
-the power management subsystem (supplier goes into runtime suspend
-even when one of its consumers is still active), you did not CC the
-power management maintainer or mailing list.
+Suggested-by: Chanwoo Choi <cwchoi00@gmail.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ V3:
+   - Rebased on linux-pm branch without units.h
+   - Set the cdev to NULL in case of error
+   - Added description for the cdev field in the devfreq structure
+ V2:
+   - Added is_cooling_device boolean in profile structure
+   - Register cooling device when the is_cooling_device boolean is set
+   - Remove devfreq cooling device registration in the backend drivers
+ V1:
+   - Register devfreq as a cooling device unconditionnally
+---
+ drivers/devfreq/devfreq.c | 13 +++++++++++++
+ include/linux/devfreq.h   |  8 ++++++++
+ 2 files changed, 21 insertions(+)
 
-I have added the appropriate CC's.
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index bf3047896e41..cf64aeec468f 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -11,6 +11,7 @@
+ #include <linux/kmod.h>
+ #include <linux/sched.h>
+ #include <linux/debugfs.h>
++#include <linux/devfreq_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+@@ -26,6 +27,7 @@
+ #include <linux/hrtimer.h>
+ #include <linux/of.h>
+ #include <linux/pm_qos.h>
++#include <linux/thermal.h>
+ #include "governor.h"
+ 
+ #define CREATE_TRACE_POINTS
+@@ -935,6 +937,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 
+ 	mutex_unlock(&devfreq_list_lock);
+ 
++	if (devfreq->profile->is_cooling_device) {
++		devfreq->cdev = devfreq_cooling_em_register(devfreq, NULL);
++		if (IS_ERR(devfreq->cdev)) {
++			dev_info(dev, "Failed to register devfreq "
++				 "cooling device\n");
++			devfreq->cdev = NULL;
++		}
++	}
++
+ 	return devfreq;
+ 
+ err_init:
+@@ -960,6 +971,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
+ 	if (!devfreq)
+ 		return -EINVAL;
+ 
++	thermal_cooling_device_unregister(devfreq->cdev);
++
+ 	if (devfreq->governor) {
+ 		devfreq->governor->event_handler(devfreq,
+ 						 DEVFREQ_GOV_STOP, NULL);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 26ea0850be9b..aba7ace11b72 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -98,11 +98,15 @@ struct devfreq_dev_status {
+  * @freq_table:		Optional list of frequencies to support statistics
+  *			and freq_table must be generated in ascending order.
+  * @max_state:		The size of freq_table.
++ *
++ * @is_cooling_device: A self-explanatory boolean giving the device a
++ *                     cooling effect property.
+  */
+ struct devfreq_dev_profile {
+ 	unsigned long initial_freq;
+ 	unsigned int polling_ms;
+ 	enum devfreq_timer timer;
++	bool is_cooling_device;
+ 
+ 	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
+ 	int (*get_dev_status)(struct device *dev,
+@@ -156,6 +160,7 @@ struct devfreq_stats {
+  * @suspend_count:	 suspend requests counter for a device.
+  * @stats:	Statistics of devfreq device behavior
+  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
++ * @cdev:	Cooling device pointer if the devfreq has cooling property
+  * @nb_min:		Notifier block for DEV_PM_QOS_MIN_FREQUENCY
+  * @nb_max:		Notifier block for DEV_PM_QOS_MAX_FREQUENCY
+  *
+@@ -198,6 +203,9 @@ struct devfreq {
+ 
+ 	struct srcu_notifier_head transition_notifier_list;
+ 
++	/* Pointer to the cooling device if used for thermal mitigation */
++	struct thermal_cooling_device *cdev;
++
+ 	struct notifier_block nb_min;
+ 	struct notifier_block nb_max;
+ };
+-- 
+2.17.1
 
-Alan Stern
