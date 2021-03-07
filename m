@@ -2,103 +2,148 @@ Return-Path: <SRS0=tJoZ=IF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 912E1C433DB
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 15:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB5F3C433DB
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 18:56:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4ECFF650FA
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 15:17:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A325165177
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Mar 2021 18:56:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229797AbhCGPRO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Mar 2021 10:17:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40902 "EHLO
+        id S231562AbhCGSwJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Mar 2021 13:52:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230472AbhCGPQ4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Mar 2021 10:16:56 -0500
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03F5FC06175F
-        for <linux-pm@vger.kernel.org>; Sun,  7 Mar 2021 07:16:55 -0800 (PST)
-Received: by mail-wr1-x434.google.com with SMTP id w11so8714803wrr.10
-        for <linux-pm@vger.kernel.org>; Sun, 07 Mar 2021 07:16:55 -0800 (PST)
+        with ESMTP id S231575AbhCGSvo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Mar 2021 13:51:44 -0500
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43A62C06174A
+        for <linux-pm@vger.kernel.org>; Sun,  7 Mar 2021 10:51:44 -0800 (PST)
+Received: by mail-wm1-x32e.google.com with SMTP id l22so4758232wme.1
+        for <linux-pm@vger.kernel.org>; Sun, 07 Mar 2021 10:51:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Scv4zOxnnaBWjmmeFnXouZuxffp8iOuoaC+fdqy3lIY=;
-        b=ItW9oetdiV0wMrdC06hYWVYy2gpAZTrLucIo11WuKMMD/YsXG1Tlbh9Nk+0Nb4M7DR
-         5dPpMvaGObcv72eDcM27XwOnmymUfmp9IwPHzeIBpossxUx3kANeS06o/vcuZSlZPoCu
-         9whHTk6jMLwDdeFvCDh76EXSn3mZgcDFbzxaRIXPACzqErJUvMrPjnghdSLq5Zt5iRgF
-         l1FTTMN9zQd2Q5WnFt7xSer5IhiEQDEUq4iWHOjYA9jiZQBmyvPThW01jCnd4iWot9Bs
-         XiMQ82jzvmShHVNpfMrIutV3955tuUkhc59Ta2aTIwhqsT2mW0YQfGpagOXiicehcYtd
-         Rasw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
+        b=oWBnZ4aSczd7y5RxPFRzRlQVEwdtlC9a7PJ+FC4zThsk6IkpQmng+VE49/LomHtJMo
+         KTXaLq3/6N4DkZfdmxylKLJBC9GmFaqke08d4pIGBWKxDWIz/16PL5zXFXcrBhi85x92
+         KrSgTVisjIQZRkKc6FnfU2NqKTyPV1RI4VtdCr9bhiIEBCv4u+OkZ4UEG7SyIhN22L7D
+         2InRHmS/NTCjCJ+uNOEcNKLnTrUYdn4vei5v2JFTFA6c0mJYcFPj/TUQgaJ6bc2cMxf7
+         bnrIhRfc8/EG7XJOp+tmPoVNBtn7WvepMRAfMS/xyy34bbLze1EvaURKwm++PtpDcIcS
+         O6Ag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Scv4zOxnnaBWjmmeFnXouZuxffp8iOuoaC+fdqy3lIY=;
-        b=UoZcJWmNaYkCzRgarYpR+qsSJAmvOAd16TjmB8JWVVm5bfwu4zA18xxq+0C7Ns/HSU
-         KRd6LGZ2gPZxrI/7/9mFGwilfufubY0xZ0br6q4D+MlK0aONI61rFTz1gdB5WQ8t2ECI
-         DoGRLQbMfeUU629WzfBkf9yRte3bePYS0qivBR4MsKewYl9SwYPaELyN4nkzsp/aQ7PY
-         mIkbE6sNogRRWL1NSXrSbbkm2kocS9C4PnchGiFDBqxsuIHMy97Or3d7qQH5JFvu9UNj
-         auoR4VKBmVl6yzxY/ghXQjjICKLUkCuJ839usaRvVQd/y/MJYVjvNpd1qiXhWhxtTBRk
-         QVkQ==
-X-Gm-Message-State: AOAM532jOJPUopkRqTy4cr9mavL9btgymmEBqaqTohYN2Yi0T0v6o9oc
-        a9lWakkvi7t8dxUB2XuJ4jpCwXyCERk3Sw==
-X-Google-Smtp-Source: ABdhPJy4/Gv6hoeTSP5rG9IcgL5vO+gB0zbIhPU7httEX/JsGYIX9KI3EIrBztYAj7uFswp3kksIAg==
-X-Received: by 2002:a5d:67cf:: with SMTP id n15mr18407451wrw.95.1615130214477;
-        Sun, 07 Mar 2021 07:16:54 -0800 (PST)
-Received: from ?IPv6:2a01:e34:ed2f:f020:b087:286:c426:25b5? ([2a01:e34:ed2f:f020:b087:286:c426:25b5])
-        by smtp.googlemail.com with ESMTPSA id a17sm13939652wmj.9.2021.03.07.07.16.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 07 Mar 2021 07:16:54 -0800 (PST)
-Subject: Re: [PATCH v3 1/4] devfreq: Register devfreq as a cooling device on
- demand
-To:     Chanwoo Choi <cwchoi00@gmail.com>
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Steven Price <steven.price@arm.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-References: <20210307094519.9032-1-daniel.lezcano@linaro.org>
- <CAGTfZH3jFJ8CaJ1Yg=oxhVSYVDULWr83iPokL+tut8mKgSufFA@mail.gmail.com>
- <76b5b6bc-952b-aa7c-025b-3eeb2ca23c79@linaro.org>
- <587ae86e-158d-8ffa-319c-66f397f5a218@gmail.com>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
+        b=I+NSEq5fF1uJCfoeTJMJ97R0FvSqwhg8+KWeos9e/B+XcV0NXe0oow7qYLks8uMbIo
+         TAqyF+E/4nyTFDNMQVNwsDbTbfgGExtH5MOeEIt4ZUgZ59E1kELG7zcUDGqUPXdXvhlq
+         9KLw2ndiZqmGLRTsCUOqF2t2VF5AUyMQ0py8ffBWaSDZ00jA95O8k88Jp39jSulnULG2
+         Map6qHRu1WHJcIMMEJUw0FNsoiM0DfCnxrEgKh4UkfB9wDgsbqt1UipiNEtx42GgPYhf
+         nsQRmiPiT7G8rsE69+WWtDCFcWWdJ3+gbLb2lZsbyZ9Oojd0ksPTcAW6vEyzgHLGhnUD
+         tl4Q==
+X-Gm-Message-State: AOAM530O66JEG1Pihpb7AQ7FGpNP36BMrkxDWr5ikysEw/okIZDy+EH7
+        DVwmLEmPF/IQiH1J15wRsBy7HA==
+X-Google-Smtp-Source: ABdhPJyiWxW4LLC9cR5FfZEHHAga+VfDDG2o+o5y28Fnu6rWugw1VUFr3FMW44bTF7Odac0y9zFPjw==
+X-Received: by 2002:a1c:66c4:: with SMTP id a187mr18790206wmc.164.1615143102905;
+        Sun, 07 Mar 2021 10:51:42 -0800 (PST)
+Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
+        by smtp.gmail.com with ESMTPSA id v5sm14842965wmh.2.2021.03.07.10.51.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 07 Mar 2021 10:51:42 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <5bedc08e-8f46-925a-4840-dafbacd6cd39@linaro.org>
-Date:   Sun, 7 Mar 2021 16:16:52 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
-MIME-Version: 1.0
-In-Reply-To: <587ae86e-158d-8ffa-319c-66f397f5a218@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+To:     cwchoi00@gmail.com
+Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, steven.price@arm.com,
+        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        linux-arm-msm@vger.kernel.org (open list:DRM DRIVER FOR MSM ADRENO GPU),
+        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
+        GPU),
+        freedreno@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
+        GPU)
+Subject: [PATCH v4 2/4] devfreq/drivers/msm: Use devfreq cooling device registration
+Date:   Sun,  7 Mar 2021 19:51:35 +0100
+Message-Id: <20210307185137.24925-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210307185137.24925-1-daniel.lezcano@linaro.org>
+References: <20210307185137.24925-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/03/2021 16:14, Chanwoo Choi wrote:
-> On 21. 3. 7. 오후 11:28, Daniel Lezcano wrote:
+The devfreq core code is able to register the devfreq device as a
+cooling device if the 'is_cooling_device' flag is set in the profile.
 
-[ ... ]
+Use this flag and remove the cooling device registering code.
 
-> Thanks. And, please add 'PM /' prefix for patch in order to
-> keep the consistent patch title format.
-> 
-> PM / devfreq: Register devfreq as a cooling device on demand
+Tested on dragonboard 845c
 
-Sure, thanks
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/gpu/drm/msm/msm_gpu.c | 12 +-----------
+ drivers/gpu/drm/msm/msm_gpu.h |  2 --
+ 2 files changed, 1 insertion(+), 13 deletions(-)
 
+diff --git a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
+index ab7c167b0623..eade94271a60 100644
+--- a/drivers/gpu/drm/msm/msm_gpu.c
++++ b/drivers/gpu/drm/msm/msm_gpu.c
+@@ -14,7 +14,6 @@
+ #include <generated/utsrelease.h>
+ #include <linux/string_helpers.h>
+ #include <linux/devfreq.h>
+-#include <linux/devfreq_cooling.h>
+ #include <linux/devcoredump.h>
+ #include <linux/sched/task.h>
+ 
+@@ -82,6 +81,7 @@ static struct devfreq_dev_profile msm_devfreq_profile = {
+ 	.target = msm_devfreq_target,
+ 	.get_dev_status = msm_devfreq_get_dev_status,
+ 	.get_cur_freq = msm_devfreq_get_cur_freq,
++	.is_cooling_device = true,
+ };
+ 
+ static void msm_devfreq_init(struct msm_gpu *gpu)
+@@ -112,14 +112,6 @@ static void msm_devfreq_init(struct msm_gpu *gpu)
+ 	}
+ 
+ 	devfreq_suspend_device(gpu->devfreq.devfreq);
+-
+-	gpu->cooling = of_devfreq_cooling_register(gpu->pdev->dev.of_node,
+-			gpu->devfreq.devfreq);
+-	if (IS_ERR(gpu->cooling)) {
+-		DRM_DEV_ERROR(&gpu->pdev->dev,
+-				"Couldn't register GPU cooling device\n");
+-		gpu->cooling = NULL;
+-	}
+ }
+ 
+ static int enable_pwrrail(struct msm_gpu *gpu)
+@@ -1056,6 +1048,4 @@ void msm_gpu_cleanup(struct msm_gpu *gpu)
+ 	if (gpu->worker) {
+ 		kthread_destroy_worker(gpu->worker);
+ 	}
+-
+-	devfreq_cooling_unregister(gpu->cooling);
+ }
+diff --git a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
+index d7cd02cd2109..93419368bac8 100644
+--- a/drivers/gpu/drm/msm/msm_gpu.h
++++ b/drivers/gpu/drm/msm/msm_gpu.h
+@@ -155,8 +155,6 @@ struct msm_gpu {
+ 	struct msm_gpu_state *crashstate;
+ 	/* True if the hardware supports expanded apriv (a650 and newer) */
+ 	bool hw_apriv;
+-
+-	struct thermal_cooling_device *cooling;
+ };
+ 
+ static inline struct msm_gpu *dev_to_gpu(struct device *dev)
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.17.1
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
