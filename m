@@ -2,92 +2,110 @@ Return-Path: <SRS0=Mo7e=IG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C56B0C433DB
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 12:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2648C433E0
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:32:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 75C9464D92
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 12:05:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD692651CC
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:32:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229528AbhCHMEc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Mar 2021 07:04:32 -0500
-Received: from foss.arm.com ([217.140.110.172]:36840 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229965AbhCHMET (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 Mar 2021 07:04:19 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AC600D6E;
-        Mon,  8 Mar 2021 04:04:18 -0800 (PST)
-Received: from [10.57.19.192] (unknown [10.57.19.192])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CCB353F70D;
-        Mon,  8 Mar 2021 04:04:16 -0800 (PST)
-Subject: Re: [PATCH v5 1/4] PM / devfreq: Register devfreq as a cooling device
- on demand
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     cwchoi00@gmail.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, steven.price@arm.com,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-References: <20210308091646.28096-1-daniel.lezcano@linaro.org>
- <c6d6781a-759c-0361-aaaa-28a625e4809b@arm.com>
- <bd6c8e7f-e626-b6f4-65b9-f7ea96098677@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <c33ea5f5-1f0e-d081-5f8d-9319536ca215@arm.com>
-Date:   Mon, 8 Mar 2021 12:04:14 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
-MIME-Version: 1.0
-In-Reply-To: <bd6c8e7f-e626-b6f4-65b9-f7ea96098677@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        id S229701AbhCHNc0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Mar 2021 08:32:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44444 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230126AbhCHNby (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:31:54 -0500
+Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2204AC06174A
+        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:31:53 -0800 (PST)
+Received: by mail-pj1-x104a.google.com with SMTP id q10so11319318pjd.0
+        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:31:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=sender:date:message-id:mime-version:subject:from:to:cc;
+        bh=ncmPR+Ul4hj/YevEkIcgWGYc6btFpweVo1v4X4ckn/w=;
+        b=s3bAwjOaaVp63nrCFLpokW/AIOBoAXKXIUD+VkFsKXhOsvJvnN2MX5nNTolPwYaBDq
+         wphZjSNYPtKEwn3z5oobkYYaRs9w5BVOTv7fmKTZC6/gu+MGWjAbvpPGV8QHH15ekVHt
+         CEpg/0WhupzyWn4AKZG85ygECGbseVTYz3UwjsSwi7b03MN7C5Xe2ovXMCcbGy/Ykd32
+         4WlXAJBgzmyHb9+5aSMsniS3rhqVohOeFNP6BbPhyskNiikIrV3nLaVWx2WNjoxAn9Dr
+         D84WGJCk6sTsi7WICt5F6tCHr3zVViwGD+uNr2x+RpGIf84S1WVqVUY3TSWtBsJ34ZMy
+         7J/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
+         :to:cc;
+        bh=ncmPR+Ul4hj/YevEkIcgWGYc6btFpweVo1v4X4ckn/w=;
+        b=jhrvERIVf+t6F89HKkyWG0CD+znH9qS6x3FtBHFDDoxegmgE0hiJfWU0I2EtnDgW0d
+         ARx7a8d8CndC1RaEz1EM0mYKO/wM7kUbrbd7cgbjcBjqeR6OIPaMW7LFoM7SAjX/AlQn
+         uyTZnoWrgkyptraVJMlCaUqXfMZ8u//j2gdrQrCYIlefCl6W6W+K+aWqVubzqSf3HrQg
+         SUe6RhbjzYYnnFwgXfRNNm+THBxY0St7O2QI+PUU3RL+UGJ3sm2cuES2Z/cTqqTx8Z3C
+         uptQhzv4+WTADiZdWC4mZmZP47i5yKGk4zmKgirjRGhq07DIQti5qI3j86jHaOm38OcM
+         PW+w==
+X-Gm-Message-State: AOAM531D6SrCp2mzgOEeGkAhPC9NRwcIoRpp0bFAkCPTUX/DCJfK6zGR
+        9QihHsimRLvcjhVgsTO2oRnFJxgG5wc=
+X-Google-Smtp-Source: ABdhPJwvlFzosiB9AUVEYirfgYxKLuuHfbO0Hrn7Eg9GmchJhm9FdQ1yPs738gLDE/LMYBXaa6N2wlLsamg=
+Sender: "raychi via sendgmr" <raychi@raychi.tao.corp.google.com>
+X-Received: from raychi.tao.corp.google.com ([2401:fa00:fc:202:b0d0:d9f:e729:2209])
+ (user=raychi job=sendgmr) by 2002:a62:2b0d:0:b029:1ed:55cc:25d9 with SMTP id
+ r13-20020a622b0d0000b02901ed55cc25d9mr21893016pfr.54.1615210312591; Mon, 08
+ Mar 2021 05:31:52 -0800 (PST)
+Date:   Mon,  8 Mar 2021 21:31:46 +0800
+Message-Id: <20210308133146.3168995-1-raychi@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.30.1.766.gb4fecdf3b7-goog
+Subject: [PATCH] usb: dwc3: fix build error when POWER_SUPPLY is not enabled
+From:   Ray Chi <raychi@google.com>
+To:     sre@kernel.org, gregkh@linuxfoundation.org,
+        naresh.kamboju@linaro.org
+Cc:     kyletso@google.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Ray Chi <raychi@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Fix build error when CONFIG_POWER_SUPPLY is not enabled.
 
+The build error occurs in mips (cavium_octeon_defconfig).
 
-On 3/8/21 12:00 PM, Daniel Lezcano wrote:
-> On 08/03/2021 10:53, Lukasz Luba wrote:
->> Hi Daniel,
->>
->> In general the approach is good. If there is a special GPU driver, which
->> would like to provide 'struct devfreq_cooling_power *' it would leave
->> 'is_cooling_device=false' and register manually:
->> devfreq_cooling_em_register(df, dfc_power);
->>
->> Please find only a few minor comments below.
->>
->>
->> On 3/8/21 9:16 AM, Daniel Lezcano wrote:
->>> Currently the default behavior is to manually having the devfreq
->>> backend to register themselves as a devfreq cooling device.
->>>
->>> Instead of adding the code in the drivers for the thermal cooling
->>> device registering, let's provide a flag in the devfreq's profile to
->>> tell the common devfreq code to register the newly created devfreq as
->>> a cooling device.
->>>
->>> Suggested-by: Chanwoo Choi <cwchoi00@gmail.com>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> ---
-> 
-> [ ... ]
-> 
->>> +    struct thermal_cooling_device *cdev;
->>
->> The linux/thermal.h for 'cdev' would be needed in this header.
-> 
-> May be just a forward declaration ?
-> 
-> struct thermal_cooling_device;
+mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_remove':
+drivers/usb/dwc3/core.c:1657: undefined reference to `power_supply_put'
+mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_get_properties':
+drivers/usb/dwc3/core.c:1270: undefined reference to `power_supply_get_by_name'
+mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_probe':
+drivers/usb/dwc3/core.c:1632: undefined reference to `power_supply_put'
 
-Make sense
+Fixes: 59fa3def35de ("usb: dwc3: add a power supply for current control")
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+Signed-off-by: Ray Chi <raychi@google.com>
+---
+ include/linux/power_supply.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Regards,
-Lukasz
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 81a55e974feb..6e776be5bfa0 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -381,8 +381,14 @@ struct power_supply_battery_info {
+ extern struct atomic_notifier_head power_supply_notifier;
+ extern int power_supply_reg_notifier(struct notifier_block *nb);
+ extern void power_supply_unreg_notifier(struct notifier_block *nb);
++#if IS_ENABLED(CONFIG_POWER_SUPPLY)
+ extern struct power_supply *power_supply_get_by_name(const char *name);
+ extern void power_supply_put(struct power_supply *psy);
++#else
++static inline void power_supply_put(struct power_supply *psy) {}
++static inline struct power_supply *power_supply_get_by_name(const char *name)
++{ return NULL; }
++#endif
+ #ifdef CONFIG_OF
+ extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
+ 							const char *property);
+-- 
+2.30.1.766.gb4fecdf3b7-goog
+
