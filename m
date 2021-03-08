@@ -5,186 +5,156 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 498F2C433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AB2DC43381
 	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 169B165100
+	by mail.kernel.org (Postfix) with ESMTP id 7F86B65208
 	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230050AbhCHNda (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Mar 2021 08:33:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44710 "EHLO
+        id S229575AbhCHNdc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Mar 2021 08:33:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44742 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230212AbhCHNdG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:33:06 -0500
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B008C06175F
-        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:33:06 -0800 (PST)
-Received: by mail-wr1-x42d.google.com with SMTP id l12so11470493wry.2
-        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:33:06 -0800 (PST)
+        with ESMTP id S230300AbhCHNdL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:33:11 -0500
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAB28C06175F
+        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:33:10 -0800 (PST)
+Received: by mail-wm1-x32e.google.com with SMTP id n22so6059691wmc.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:33:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=J0pMDMLQYonh2LUAb2dlhU8EbvFz9XpgingsiOtgtMc=;
-        b=aznnqh2T3Zo/ye0wQxu4uu7WkI9p4Fo1vM45a+PbzzUbGXmV+uoFVC65GRcNOuebGg
-         E5BvHVz/7mdWhAYj9loL7956OKzGXqDNPdqWlcqjE91NNGT3ZXHdSXmIEc2+8eGCoWYY
-         kjqdsdoqhpmZ8Snkd43BgFzLBL33N6nAvimZYEXy/m3UJ/JGdY0kkHmK626VA58wnLkM
-         K7H9bMbVItZS2QRjUgy5IHyHXs1EDmg1giqbaqfNgcRclQfgvwCYDATqHTBewo7C6lsw
-         AClNtA0GF0e6NkU8HulZDKP1uzL7DF33tucki9I/OZquVvMdCuxIAZvn87IKJoAkITTi
-         7WCw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=lZkNk3yYW/8ijhrD082tSx7qBCi8O3cbnVc/FrlwdlU=;
+        b=M/AD+I7vDYIzgXiPb3lGfvD8fpS3TPgKXz/BSkCm+skoOnnl/gAtfI1w4j+QJsWeFl
+         ePthrlbIuh1GdQT/WEhUZODbL3oaBbUcItYBvmMNxcx2U/xnwJ0ssS9zDlLI6XCdK2iS
+         Xtu2+cSnY83dPBhyU02NiIxl7LffDP3pqfxmBmBf0tPEWRca4ZXonoE/eC+gVZ21axiP
+         TpxTmVLhB9rbiHstnBOxXTi1J+7o9JtBNnpIyGJINsD14apy1O7HWiBb4ZlzMvCHS9kw
+         6Ex1kW75fTtzaOND2JUJYKL84jVK1THIDMTkWHfXgkrmA3swY24Ldfp3hkVO/dOPyYiU
+         U7Yw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=J0pMDMLQYonh2LUAb2dlhU8EbvFz9XpgingsiOtgtMc=;
-        b=uCx1YjHXe4BW9bYsgHJa1nsIcN/laIwnVkORH0bArHM0eF914k4VM5iXuvgKvwb9jf
-         zLyMPOXRG600jCjdN/509ivi7qXIrZLrZvrVHcoLFkmPaUfVvhlU5Gft7ffg3SQEktsX
-         8TKpSX9PsPCBcU06v6dC1d+NqXeJ/Y24d8T/+j5JWnB598fVuFlnPtH6NcPXy7PzQiwd
-         jRNNqE7ctfYaDuXDu196zl0v0KP+QVxOSSV8W9WBJS/Wl9fNijbKVzMj56wH6awgw4JH
-         TA148fRkvRXk3jCHBnl+/d7e5hu9Smnu0AGgsS4JTNm+YJmj7s6Mip/NGm6x1NSo2+7f
-         osxA==
-X-Gm-Message-State: AOAM533GV0SEHn6u3E8zJXeipmF/p9jLz84kWYYnMZLV5d9b8i7IU/6J
-        aOj1eBPoX4/Gw5q3ho6JsnNcTQ==
-X-Google-Smtp-Source: ABdhPJzP+tBg7x/TF2MoluQB+vkl2Pe4y4GFj8UWHQo9uVl68VMk6NHFuFiSqg+ZOzM03r4vF13hDA==
-X-Received: by 2002:adf:8545:: with SMTP id 63mr22485301wrh.128.1615210384711;
-        Mon, 08 Mar 2021 05:33:04 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=lZkNk3yYW/8ijhrD082tSx7qBCi8O3cbnVc/FrlwdlU=;
+        b=UWI3M8vaO/8lMn3Dz4kyB9E8Cy39IR3LQ6ylkQb6WHXELIIuYVwn7ElS9+q/fGXXVc
+         /dNNnhUp5TRRDkwxZAIAO/OLSxH3chm8QBnQ6Ev4N7C/Bt9N3ruW2KzhWbD9APV+Kai5
+         RNpSoGEnqdozjQCH2OOz7j/wIBKfP8shmChGZms6erukEroMzi2vKgpB9QTYd26hcoCU
+         LcBn4Ww1lXYwbvWZM1hptQdOLd+mfvgss5TgXcfgrGPngb0cNlueDUb1kFHORw6pPv5u
+         XJV9y8daz+cNjfKG1spqMQwdgArJeJ9MmASzw4zVFGvXU6a0noxqZjNCxuTxEpf/AmL7
+         Z2bw==
+X-Gm-Message-State: AOAM532I4+wS5iqNeCGW0aCanpOSp7hSSxsTNqLoq7NCM5JBRyIIGSY6
+        BL5ql+Wh9DQd5lPeDdqAUbH6xw==
+X-Google-Smtp-Source: ABdhPJwnioQkiEp3+z6Qv31ROIXRxQ4ReAnXp3xN6rJWgiz/US1JMbhImjsoxKyasPz/cuJFA1YWnw==
+X-Received: by 2002:a05:600c:210a:: with SMTP id u10mr14186060wml.147.1615210389361;
+        Mon, 08 Mar 2021 05:33:09 -0800 (PST)
 Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
-        by smtp.gmail.com with ESMTPSA id m11sm18942665wrz.40.2021.03.08.05.33.03
+        by smtp.gmail.com with ESMTPSA id m11sm18942665wrz.40.2021.03.08.05.33.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Mar 2021 05:33:04 -0800 (PST)
+        Mon, 08 Mar 2021 05:33:09 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     cwchoi00@gmail.com
 Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, steven.price@arm.com,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v6 1/4] PM / devfreq: Register devfreq as a cooling device on demand
-Date:   Mon,  8 Mar 2021 14:30:37 +0100
-Message-Id: <20210308133041.10516-1-daniel.lezcano@linaro.org>
+        Qiang Yu <yuq825@gmail.com>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org (open list:DRM DRIVERS FOR LIMA),
+        lima@lists.freedesktop.org (moderated list:DRM DRIVERS FOR LIMA)
+Subject: [PATCH v6 4/4] PM / devfreq: lima: Use devfreq cooling device registration
+Date:   Mon,  8 Mar 2021 14:30:40 +0100
+Message-Id: <20210308133041.10516-4-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210308133041.10516-1-daniel.lezcano@linaro.org>
+References: <20210308133041.10516-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently the default behavior is to manually having the devfreq
-backend to register themselves as a devfreq cooling device.
+The devfreq core code is able to register the devfreq device as a
+cooling device if the 'is_cooling_device' flag is set in the profile.
 
-Instead of adding the code in the drivers for the thermal cooling
-device registering, let's provide a flag in the devfreq's profile to
-tell the common devfreq code to register the newly created devfreq as
-a cooling device.
+Use this flag and remove the cooling device registering code.
 
-Suggested-by: Chanwoo Choi <cwchoi00@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Steven Price <steven.price@arm.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- V6:
-   - Did one line string instead of multiline
-   - Removed thermal.h header inclusion as it is in devfreq_cooling.h
-   - Added forward declaration for thermal_cooling_device pointer in devfreq.h
- V5:
-   - Changed subject prefix by:  PM / devfreq
- V4:
-   - Replaced thermal_cooling_device_unregister() by
-     devfreq_cooling_unregister()
- V3:
-   - Rebased on linux-pm branch without units.h
-   - Set the cdev to NULL in case of error
-   - Added description for the cdev field in the devfreq structure
- V2:
-   - Added is_cooling_device boolean in profile structure
-   - Register cooling device when the is_cooling_device boolean is set
-   - Remove devfreq cooling device registration in the backend drivers
- V1:
-   - Register devfreq as a cooling device unconditionnally
----
- drivers/devfreq/devfreq.c | 9 +++++++++
- include/linux/devfreq.h   | 9 +++++++++
- 2 files changed, 18 insertions(+)
+ drivers/gpu/drm/lima/lima_devfreq.c | 14 +-------------
+ drivers/gpu/drm/lima/lima_devfreq.h |  2 --
+ 2 files changed, 1 insertion(+), 15 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index bf3047896e41..b6d3e7db0b09 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -11,6 +11,7 @@
- #include <linux/kmod.h>
- #include <linux/sched.h>
- #include <linux/debugfs.h>
-+#include <linux/devfreq_cooling.h>
- #include <linux/errno.h>
- #include <linux/err.h>
- #include <linux/init.h>
-@@ -935,6 +936,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
+diff --git a/drivers/gpu/drm/lima/lima_devfreq.c b/drivers/gpu/drm/lima/lima_devfreq.c
+index 5686ad4aaf7c..86aea1bdc4f4 100644
+--- a/drivers/gpu/drm/lima/lima_devfreq.c
++++ b/drivers/gpu/drm/lima/lima_devfreq.c
+@@ -7,7 +7,6 @@
+  */
+ #include <linux/clk.h>
+ #include <linux/devfreq.h>
+-#include <linux/devfreq_cooling.h>
+ #include <linux/device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+@@ -84,17 +83,13 @@ static struct devfreq_dev_profile lima_devfreq_profile = {
+ 	.polling_ms = 50, /* ~3 frames */
+ 	.target = lima_devfreq_target,
+ 	.get_dev_status = lima_devfreq_get_dev_status,
++	.is_cooling_device = true,
+ };
  
- 	mutex_unlock(&devfreq_list_lock);
+ void lima_devfreq_fini(struct lima_device *ldev)
+ {
+ 	struct lima_devfreq *devfreq = &ldev->devfreq;
  
-+	if (devfreq->profile->is_cooling_device) {
-+		devfreq->cdev = devfreq_cooling_em_register(devfreq, NULL);
-+		if (IS_ERR(devfreq->cdev))
-+			devfreq->cdev = NULL;
-+	}
-+
- 	return devfreq;
+-	if (devfreq->cooling) {
+-		devfreq_cooling_unregister(devfreq->cooling);
+-		devfreq->cooling = NULL;
+-	}
+-
+ 	if (devfreq->devfreq) {
+ 		devm_devfreq_remove_device(ldev->dev, devfreq->devfreq);
+ 		devfreq->devfreq = NULL;
+@@ -110,7 +105,6 @@ void lima_devfreq_fini(struct lima_device *ldev)
  
- err_init:
-@@ -960,6 +967,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 	if (!devfreq)
- 		return -EINVAL;
+ int lima_devfreq_init(struct lima_device *ldev)
+ {
+-	struct thermal_cooling_device *cooling;
+ 	struct device *dev = ldev->dev;
+ 	struct opp_table *opp_table;
+ 	struct devfreq *devfreq;
+@@ -173,12 +167,6 @@ int lima_devfreq_init(struct lima_device *ldev)
  
-+	devfreq_cooling_unregister(devfreq->cdev);
-+
- 	if (devfreq->governor) {
- 		devfreq->governor->event_handler(devfreq,
- 						 DEVFREQ_GOV_STOP, NULL);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 26ea0850be9b..142474b4af96 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -38,6 +38,7 @@ enum devfreq_timer {
+ 	ldevfreq->devfreq = devfreq;
+ 
+-	cooling = of_devfreq_cooling_register(dev->of_node, devfreq);
+-	if (IS_ERR(cooling))
+-		dev_info(dev, "Failed to register cooling device\n");
+-	else
+-		ldevfreq->cooling = cooling;
+-
+ 	return 0;
+ 
+ err_fini:
+diff --git a/drivers/gpu/drm/lima/lima_devfreq.h b/drivers/gpu/drm/lima/lima_devfreq.h
+index 2d9b3008ce77..c43a2069e5d3 100644
+--- a/drivers/gpu/drm/lima/lima_devfreq.h
++++ b/drivers/gpu/drm/lima/lima_devfreq.h
+@@ -9,7 +9,6 @@
  
  struct devfreq;
- struct devfreq_governor;
-+struct thermal_cooling_device;
+ struct opp_table;
+-struct thermal_cooling_device;
  
- /**
-  * struct devfreq_dev_status - Data given from devfreq user device to
-@@ -98,11 +99,15 @@ struct devfreq_dev_status {
-  * @freq_table:		Optional list of frequencies to support statistics
-  *			and freq_table must be generated in ascending order.
-  * @max_state:		The size of freq_table.
-+ *
-+ * @is_cooling_device: A self-explanatory boolean giving the device a
-+ *                     cooling effect property.
-  */
- struct devfreq_dev_profile {
- 	unsigned long initial_freq;
- 	unsigned int polling_ms;
- 	enum devfreq_timer timer;
-+	bool is_cooling_device;
+ struct lima_device;
  
- 	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
- 	int (*get_dev_status)(struct device *dev,
-@@ -156,6 +161,7 @@ struct devfreq_stats {
-  * @suspend_count:	 suspend requests counter for a device.
-  * @stats:	Statistics of devfreq device behavior
-  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
-+ * @cdev:	Cooling device pointer if the devfreq has cooling property
-  * @nb_min:		Notifier block for DEV_PM_QOS_MIN_FREQUENCY
-  * @nb_max:		Notifier block for DEV_PM_QOS_MAX_FREQUENCY
-  *
-@@ -198,6 +204,9 @@ struct devfreq {
+@@ -17,7 +16,6 @@ struct lima_devfreq {
+ 	struct devfreq *devfreq;
+ 	struct opp_table *clkname_opp_table;
+ 	struct opp_table *regulators_opp_table;
+-	struct thermal_cooling_device *cooling;
  
- 	struct srcu_notifier_head transition_notifier_list;
- 
-+	/* Pointer to the cooling device if used for thermal mitigation */
-+	struct thermal_cooling_device *cdev;
-+
- 	struct notifier_block nb_min;
- 	struct notifier_block nb_max;
- };
+ 	ktime_t busy_time;
+ 	ktime_t idle_time;
 -- 
 2.17.1
 
