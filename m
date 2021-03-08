@@ -2,148 +2,126 @@ Return-Path: <SRS0=Mo7e=IG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8B74C4332D
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2DC3C433E6
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 14:21:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9031465100
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A6558651DE
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 14:21:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230116AbhCHNdb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Mar 2021 08:33:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44724 "EHLO
+        id S229701AbhCHOVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Mar 2021 09:21:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230231AbhCHNdI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:33:08 -0500
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AECE7C061760
-        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:33:07 -0800 (PST)
-Received: by mail-wr1-x433.google.com with SMTP id u14so11487917wri.3
-        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:33:07 -0800 (PST)
+        with ESMTP id S230521AbhCHOU5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 09:20:57 -0500
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D67BC06174A;
+        Mon,  8 Mar 2021 06:20:57 -0800 (PST)
+Received: by mail-lf1-x136.google.com with SMTP id v2so8239346lft.9;
+        Mon, 08 Mar 2021 06:20:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=lWgaqsU8BQOwg9ws+DhQ/BWpAGGUh8wAnGaIk1lwDEofYiLOAhnUDvwTgdcltFd/Uf
-         YsZHPTY6e6kNXalk/rmRj1JzpwNfZBxiP6yn6cwPmGg0Dph1wbF4d3Ul5NSoB4s8GwYD
-         nlH4qfp6V1l53JUThiQx/V0USq4Gt1khL5dGlV8juzFC9xCtxFPTHoTRadWc7zznJ8qw
-         s+gy9jH9Xoq/gFjjgsSjZvcFBW1f1akBVwlFUVL2FLsro5Kb7d78Np120TBRReONbPnQ
-         fZlJimyI9CR1S0CynZOBmLY9R54Zyoa3bAPsezbfw/RyxXar3+qr6KMWSKS7m523eMAW
-         OgUg==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=0qSqLyKBzw4nb8j17jU5SupuAgYw/Y4EGFPBpUKaihs=;
+        b=H1L0Z5d54+bKkv1NMZjlGMdv2lvvIaogWTE4at+h3hahV4w7UFyPR7pcmfObjw2SQQ
+         9K0qL4nLHig0eSQpmZzm6K5Vy2/VwG39JxGa29NIRBlEsRLCeTGHsO9OFpq6RiQ9++7l
+         eoJ5nB1iV47JAXv2LLW0YwiqsqvtVmypkSXlG6MNAQzSomEJZJCIdc+vh1rVQ62JL/2y
+         dWv+qMyUjBhA6MH8CJpwAJ35KwXVjBgR3KKtSTVD6LCRIlRiwz5UcYEich/+TuZybcs2
+         T27tgfeWT9FtKn+gMEKmMx5zg2LkuKixR50cY9tkIloCU6c4H+3oFTFcGzNYAMF9xq4f
+         8+vQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=RsjSwA8oB0o8PW0ry99uhxTdXQdH9BOaf5mimdTgeO0=;
-        b=aFpslysQdgUoJPT79JxDr29cB5DimFYdVNmWH13kswpEoRt2BEF/oMGH7AoTRVkgTB
-         JjzWJhLP0ouw6ZmlgyWYjjQUuYgO8FI3UVOyIkodjrjMVq7BIGegq77Gm/q3isqQjBLP
-         OOeOvUUNHuuDN7tPulmc0SrYZnvw2hkKdzk2+/rODh8S7uAN1FJYIevDVc1reXRmhcBa
-         CaLYUb7rE5fNcFC1LBEsMg/57aUqz7Q4WYqhalvNt0cp2KUMxRev7FyA5oVLe0b6cXWk
-         g4t9ThYxZuX8vICguVsZDH0vlHJbZfX8xHBNYnplivneunziejoXU/wjrjEto975UF42
-         QULw==
-X-Gm-Message-State: AOAM530up558w4FeZJl+z0/ryrjzPhVHBgo+b9JSiZOtsfp2ALdelQIo
-        KFy+5qu507YEwmg/s95rQEoCzQ==
-X-Google-Smtp-Source: ABdhPJw3x/ONzAujdJQrvrdWPrHpTxgLjwa+71+eZDx0LcFQ+0Bvu7wMMD+q/fjcOPEFvjgfd2vEMw==
-X-Received: by 2002:adf:b609:: with SMTP id f9mr22017714wre.223.1615210386308;
-        Mon, 08 Mar 2021 05:33:06 -0800 (PST)
-Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
-        by smtp.gmail.com with ESMTPSA id m11sm18942665wrz.40.2021.03.08.05.33.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Mar 2021 05:33:05 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     cwchoi00@gmail.com
-Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, steven.price@arm.com,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        linux-arm-msm@vger.kernel.org (open list:DRM DRIVER FOR MSM ADRENO GPU),
-        dri-devel@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU),
-        freedreno@lists.freedesktop.org (open list:DRM DRIVER FOR MSM ADRENO
-        GPU)
-Subject: [PATCH v6 2/4] PM / devfreq: msm: Use devfreq cooling device registration
-Date:   Mon,  8 Mar 2021 14:30:38 +0100
-Message-Id: <20210308133041.10516-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210308133041.10516-1-daniel.lezcano@linaro.org>
-References: <20210308133041.10516-1-daniel.lezcano@linaro.org>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=0qSqLyKBzw4nb8j17jU5SupuAgYw/Y4EGFPBpUKaihs=;
+        b=XR9bHxy/gOo0qrNOI+3HWxW8sMT387hHuEHy6+b4pv5r91Vr0M95ND9pVK9bLqlDE5
+         BnCxgbvcdInceuRkNFp/xO2iZ35jTOIR7INKSltSU4PsQusLY+zCsscZy9cUMgRHggDP
+         8pzVhpyLwg3VQ430O49cEKLGC5Z+FaGxi2ZMt+/6324WZa2Vdo1QGOqrR6T28MJSKa8r
+         PC/GzdSr3h8qymB+8ZncRCwqNi9rLKxkq+Azk3NGPl+9LLSL+IHT8rhHkWZ6e3XB7B6l
+         JfkCBrGYqZs9ZNOJwGGfxfnwkdWReLyrDjypzMaYeULqeufR8Mw5K9BE0xBBPVHowaU0
+         d2Og==
+X-Gm-Message-State: AOAM531tylGJStEkX0Z97aR5AM1MqsISh9sAwPJCe/8FObB5eRSJFDPL
+        Ii+mzQnO/ohwPHEc1ST7aX0=
+X-Google-Smtp-Source: ABdhPJznNPgojN/nObRq+gs8Ca5XApc8sug9k/GrLjNKYrfLSpPuBe0IYA6WM0BuWX8Ci3xWPlXlhQ==
+X-Received: by 2002:a19:ac42:: with SMTP id r2mr5176532lfc.548.1615213255627;
+        Mon, 08 Mar 2021 06:20:55 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
+        by smtp.googlemail.com with ESMTPSA id v10sm1367316lfb.238.2021.03.08.06.20.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 08 Mar 2021 06:20:54 -0800 (PST)
+Subject: Re: [PATCH v13 1/2] drm/tegra: dc: Support memory bandwidth
+ management
+To:     =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20210302124445.29444-1-digetx@gmail.com>
+ <20210302124445.29444-2-digetx@gmail.com>
+ <20210303230827.GA22628@qmqm.qmqm.pl>
+ <1b352c7e-cc72-ba08-32ba-08c05cc3aa03@gmail.com>
+ <20210305230222.GA28867@qmqm.qmqm.pl>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <5cc7aaa9-1168-64ba-f311-2f27038dcf4a@gmail.com>
+Date:   Mon, 8 Mar 2021 17:20:54 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <20210305230222.GA28867@qmqm.qmqm.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The devfreq core code is able to register the devfreq device as a
-cooling device if the 'is_cooling_device' flag is set in the profile.
+06.03.2021 02:02, Michał Mirosław пишет:
+> On Fri, Mar 05, 2021 at 12:45:51AM +0300, Dmitry Osipenko wrote:
+>> 04.03.2021 02:08, Michał Mirosław пишет:
+>>> On Tue, Mar 02, 2021 at 03:44:44PM +0300, Dmitry Osipenko wrote:
+>>>> Display controller (DC) performs isochronous memory transfers, and thus,
+>>>> has a requirement for a minimum memory bandwidth that shall be fulfilled,
+>>>> otherwise framebuffer data can't be fetched fast enough and this results
+>>>> in a DC's data-FIFO underflow that follows by a visual corruption.
+> [...]
+>>>> +	/*
+>>>> +	 * Horizontal downscale takes extra bandwidth which roughly depends
+>>>> +	 * on the scaled width.
+>>>> +	 */
+>>>> +	if (src_w > dst_w)
+>>>> +		mul = (src_w - dst_w) * bpp / 2048 + 1;
+>>>> +	else
+>>>> +		mul = 1;
+>>>
+>>> Does it really need more bandwidth to scale down? Does it read the same
+>>> data multiple times just to throw it away?
+>> The hardware isn't optimized for downscale, it indeed takes more
+>> bandwidth. You'll witness a severe underflow of plane's memory FIFO
+>> buffer on trying to downscale 1080p plane to 50x50.
+> [...]
+> 
+> In your example, does it really need 16x the bandwidth compared to
+> no scaling case?  The naive way to implement downscaling would be to read
+> all the pixels and only take every N-th.  Maybe the problem is that in
+> downscaling mode the latency requirements are tighter?  Why would bandwidth
+> required be proportional to a difference between the widths (instead e.g.
+> to src/dst or dst*cacheline_size)?
 
-Use this flag and remove the cooling device registering code.
+Seems you're right, it's actually not the bandwidth. Recently I added
+memory client statistics gathering support to grate-kernel for Tegra20
+and it shows that the consumed bandwidth is actually lower when plane is
+downscaled.
 
-Tested on dragonboard 845c
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/gpu/drm/msm/msm_gpu.c | 12 +-----------
- drivers/gpu/drm/msm/msm_gpu.h |  2 --
- 2 files changed, 1 insertion(+), 13 deletions(-)
-
-diff --git a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
-index ab7c167b0623..eade94271a60 100644
---- a/drivers/gpu/drm/msm/msm_gpu.c
-+++ b/drivers/gpu/drm/msm/msm_gpu.c
-@@ -14,7 +14,6 @@
- #include <generated/utsrelease.h>
- #include <linux/string_helpers.h>
- #include <linux/devfreq.h>
--#include <linux/devfreq_cooling.h>
- #include <linux/devcoredump.h>
- #include <linux/sched/task.h>
- 
-@@ -82,6 +81,7 @@ static struct devfreq_dev_profile msm_devfreq_profile = {
- 	.target = msm_devfreq_target,
- 	.get_dev_status = msm_devfreq_get_dev_status,
- 	.get_cur_freq = msm_devfreq_get_cur_freq,
-+	.is_cooling_device = true,
- };
- 
- static void msm_devfreq_init(struct msm_gpu *gpu)
-@@ -112,14 +112,6 @@ static void msm_devfreq_init(struct msm_gpu *gpu)
- 	}
- 
- 	devfreq_suspend_device(gpu->devfreq.devfreq);
--
--	gpu->cooling = of_devfreq_cooling_register(gpu->pdev->dev.of_node,
--			gpu->devfreq.devfreq);
--	if (IS_ERR(gpu->cooling)) {
--		DRM_DEV_ERROR(&gpu->pdev->dev,
--				"Couldn't register GPU cooling device\n");
--		gpu->cooling = NULL;
--	}
- }
- 
- static int enable_pwrrail(struct msm_gpu *gpu)
-@@ -1056,6 +1048,4 @@ void msm_gpu_cleanup(struct msm_gpu *gpu)
- 	if (gpu->worker) {
- 		kthread_destroy_worker(gpu->worker);
- 	}
--
--	devfreq_cooling_unregister(gpu->cooling);
- }
-diff --git a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
-index d7cd02cd2109..93419368bac8 100644
---- a/drivers/gpu/drm/msm/msm_gpu.h
-+++ b/drivers/gpu/drm/msm/msm_gpu.h
-@@ -155,8 +155,6 @@ struct msm_gpu {
- 	struct msm_gpu_state *crashstate;
- 	/* True if the hardware supports expanded apriv (a650 and newer) */
- 	bool hw_apriv;
--
--	struct thermal_cooling_device *cooling;
- };
- 
- static inline struct msm_gpu *dev_to_gpu(struct device *dev)
--- 
-2.17.1
-
+So it should be the latency, which depends on memory frequency, and
+thus, on bandwidth. I'll try to improve comment to the code in the next
+version, thanks.
