@@ -2,110 +2,189 @@ Return-Path: <SRS0=Mo7e=IG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-26.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2648C433E0
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:32:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 498F2C433DB
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BD692651CC
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:32:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 169B165100
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Mar 2021 13:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229701AbhCHNc0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Mar 2021 08:32:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44444 "EHLO
+        id S230050AbhCHNda (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Mar 2021 08:33:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230126AbhCHNby (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:31:54 -0500
-Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2204AC06174A
-        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:31:53 -0800 (PST)
-Received: by mail-pj1-x104a.google.com with SMTP id q10so11319318pjd.0
-        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:31:53 -0800 (PST)
+        with ESMTP id S230212AbhCHNdG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Mar 2021 08:33:06 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B008C06175F
+        for <linux-pm@vger.kernel.org>; Mon,  8 Mar 2021 05:33:06 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id l12so11470493wry.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Mar 2021 05:33:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=sender:date:message-id:mime-version:subject:from:to:cc;
-        bh=ncmPR+Ul4hj/YevEkIcgWGYc6btFpweVo1v4X4ckn/w=;
-        b=s3bAwjOaaVp63nrCFLpokW/AIOBoAXKXIUD+VkFsKXhOsvJvnN2MX5nNTolPwYaBDq
-         wphZjSNYPtKEwn3z5oobkYYaRs9w5BVOTv7fmKTZC6/gu+MGWjAbvpPGV8QHH15ekVHt
-         CEpg/0WhupzyWn4AKZG85ygECGbseVTYz3UwjsSwi7b03MN7C5Xe2ovXMCcbGy/Ykd32
-         4WlXAJBgzmyHb9+5aSMsniS3rhqVohOeFNP6BbPhyskNiikIrV3nLaVWx2WNjoxAn9Dr
-         D84WGJCk6sTsi7WICt5F6tCHr3zVViwGD+uNr2x+RpGIf84S1WVqVUY3TSWtBsJ34ZMy
-         7J/Q==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=J0pMDMLQYonh2LUAb2dlhU8EbvFz9XpgingsiOtgtMc=;
+        b=aznnqh2T3Zo/ye0wQxu4uu7WkI9p4Fo1vM45a+PbzzUbGXmV+uoFVC65GRcNOuebGg
+         E5BvHVz/7mdWhAYj9loL7956OKzGXqDNPdqWlcqjE91NNGT3ZXHdSXmIEc2+8eGCoWYY
+         kjqdsdoqhpmZ8Snkd43BgFzLBL33N6nAvimZYEXy/m3UJ/JGdY0kkHmK626VA58wnLkM
+         K7H9bMbVItZS2QRjUgy5IHyHXs1EDmg1giqbaqfNgcRclQfgvwCYDATqHTBewo7C6lsw
+         AClNtA0GF0e6NkU8HulZDKP1uzL7DF33tucki9I/OZquVvMdCuxIAZvn87IKJoAkITTi
+         7WCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
-         :to:cc;
-        bh=ncmPR+Ul4hj/YevEkIcgWGYc6btFpweVo1v4X4ckn/w=;
-        b=jhrvERIVf+t6F89HKkyWG0CD+znH9qS6x3FtBHFDDoxegmgE0hiJfWU0I2EtnDgW0d
-         ARx7a8d8CndC1RaEz1EM0mYKO/wM7kUbrbd7cgbjcBjqeR6OIPaMW7LFoM7SAjX/AlQn
-         uyTZnoWrgkyptraVJMlCaUqXfMZ8u//j2gdrQrCYIlefCl6W6W+K+aWqVubzqSf3HrQg
-         SUe6RhbjzYYnnFwgXfRNNm+THBxY0St7O2QI+PUU3RL+UGJ3sm2cuES2Z/cTqqTx8Z3C
-         uptQhzv4+WTADiZdWC4mZmZP47i5yKGk4zmKgirjRGhq07DIQti5qI3j86jHaOm38OcM
-         PW+w==
-X-Gm-Message-State: AOAM531D6SrCp2mzgOEeGkAhPC9NRwcIoRpp0bFAkCPTUX/DCJfK6zGR
-        9QihHsimRLvcjhVgsTO2oRnFJxgG5wc=
-X-Google-Smtp-Source: ABdhPJwvlFzosiB9AUVEYirfgYxKLuuHfbO0Hrn7Eg9GmchJhm9FdQ1yPs738gLDE/LMYBXaa6N2wlLsamg=
-Sender: "raychi via sendgmr" <raychi@raychi.tao.corp.google.com>
-X-Received: from raychi.tao.corp.google.com ([2401:fa00:fc:202:b0d0:d9f:e729:2209])
- (user=raychi job=sendgmr) by 2002:a62:2b0d:0:b029:1ed:55cc:25d9 with SMTP id
- r13-20020a622b0d0000b02901ed55cc25d9mr21893016pfr.54.1615210312591; Mon, 08
- Mar 2021 05:31:52 -0800 (PST)
-Date:   Mon,  8 Mar 2021 21:31:46 +0800
-Message-Id: <20210308133146.3168995-1-raychi@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.30.1.766.gb4fecdf3b7-goog
-Subject: [PATCH] usb: dwc3: fix build error when POWER_SUPPLY is not enabled
-From:   Ray Chi <raychi@google.com>
-To:     sre@kernel.org, gregkh@linuxfoundation.org,
-        naresh.kamboju@linaro.org
-Cc:     kyletso@google.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Ray Chi <raychi@google.com>
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=J0pMDMLQYonh2LUAb2dlhU8EbvFz9XpgingsiOtgtMc=;
+        b=uCx1YjHXe4BW9bYsgHJa1nsIcN/laIwnVkORH0bArHM0eF914k4VM5iXuvgKvwb9jf
+         zLyMPOXRG600jCjdN/509ivi7qXIrZLrZvrVHcoLFkmPaUfVvhlU5Gft7ffg3SQEktsX
+         8TKpSX9PsPCBcU06v6dC1d+NqXeJ/Y24d8T/+j5JWnB598fVuFlnPtH6NcPXy7PzQiwd
+         jRNNqE7ctfYaDuXDu196zl0v0KP+QVxOSSV8W9WBJS/Wl9fNijbKVzMj56wH6awgw4JH
+         TA148fRkvRXk3jCHBnl+/d7e5hu9Smnu0AGgsS4JTNm+YJmj7s6Mip/NGm6x1NSo2+7f
+         osxA==
+X-Gm-Message-State: AOAM533GV0SEHn6u3E8zJXeipmF/p9jLz84kWYYnMZLV5d9b8i7IU/6J
+        aOj1eBPoX4/Gw5q3ho6JsnNcTQ==
+X-Google-Smtp-Source: ABdhPJzP+tBg7x/TF2MoluQB+vkl2Pe4y4GFj8UWHQo9uVl68VMk6NHFuFiSqg+ZOzM03r4vF13hDA==
+X-Received: by 2002:adf:8545:: with SMTP id 63mr22485301wrh.128.1615210384711;
+        Mon, 08 Mar 2021 05:33:04 -0800 (PST)
+Received: from localhost.localdomain (lns-bzn-59-82-252-141-80.adsl.proxad.net. [82.252.141.80])
+        by smtp.gmail.com with ESMTPSA id m11sm18942665wrz.40.2021.03.08.05.33.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Mar 2021 05:33:04 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     cwchoi00@gmail.com
+Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, steven.price@arm.com,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v6 1/4] PM / devfreq: Register devfreq as a cooling device on demand
+Date:   Mon,  8 Mar 2021 14:30:37 +0100
+Message-Id: <20210308133041.10516-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix build error when CONFIG_POWER_SUPPLY is not enabled.
+Currently the default behavior is to manually having the devfreq
+backend to register themselves as a devfreq cooling device.
 
-The build error occurs in mips (cavium_octeon_defconfig).
+Instead of adding the code in the drivers for the thermal cooling
+device registering, let's provide a flag in the devfreq's profile to
+tell the common devfreq code to register the newly created devfreq as
+a cooling device.
 
-mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_remove':
-drivers/usb/dwc3/core.c:1657: undefined reference to `power_supply_put'
-mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_get_properties':
-drivers/usb/dwc3/core.c:1270: undefined reference to `power_supply_get_by_name'
-mips-linux-gnu-ld: drivers/usb/dwc3/core.o: in function `dwc3_probe':
-drivers/usb/dwc3/core.c:1632: undefined reference to `power_supply_put'
-
-Fixes: 59fa3def35de ("usb: dwc3: add a power supply for current control")
-Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
-Signed-off-by: Ray Chi <raychi@google.com>
+Suggested-by: Chanwoo Choi <cwchoi00@gmail.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Steven Price <steven.price@arm.com>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- include/linux/power_supply.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+ V6:
+   - Did one line string instead of multiline
+   - Removed thermal.h header inclusion as it is in devfreq_cooling.h
+   - Added forward declaration for thermal_cooling_device pointer in devfreq.h
+ V5:
+   - Changed subject prefix by:  PM / devfreq
+ V4:
+   - Replaced thermal_cooling_device_unregister() by
+     devfreq_cooling_unregister()
+ V3:
+   - Rebased on linux-pm branch without units.h
+   - Set the cdev to NULL in case of error
+   - Added description for the cdev field in the devfreq structure
+ V2:
+   - Added is_cooling_device boolean in profile structure
+   - Register cooling device when the is_cooling_device boolean is set
+   - Remove devfreq cooling device registration in the backend drivers
+ V1:
+   - Register devfreq as a cooling device unconditionnally
+---
+ drivers/devfreq/devfreq.c | 9 +++++++++
+ include/linux/devfreq.h   | 9 +++++++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 81a55e974feb..6e776be5bfa0 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -381,8 +381,14 @@ struct power_supply_battery_info {
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
-+#if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern struct power_supply *power_supply_get_by_name(const char *name);
- extern void power_supply_put(struct power_supply *psy);
-+#else
-+static inline void power_supply_put(struct power_supply *psy) {}
-+static inline struct power_supply *power_supply_get_by_name(const char *name)
-+{ return NULL; }
-+#endif
- #ifdef CONFIG_OF
- extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
- 							const char *property);
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index bf3047896e41..b6d3e7db0b09 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -11,6 +11,7 @@
+ #include <linux/kmod.h>
+ #include <linux/sched.h>
+ #include <linux/debugfs.h>
++#include <linux/devfreq_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+@@ -935,6 +936,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 
+ 	mutex_unlock(&devfreq_list_lock);
+ 
++	if (devfreq->profile->is_cooling_device) {
++		devfreq->cdev = devfreq_cooling_em_register(devfreq, NULL);
++		if (IS_ERR(devfreq->cdev))
++			devfreq->cdev = NULL;
++	}
++
+ 	return devfreq;
+ 
+ err_init:
+@@ -960,6 +967,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
+ 	if (!devfreq)
+ 		return -EINVAL;
+ 
++	devfreq_cooling_unregister(devfreq->cdev);
++
+ 	if (devfreq->governor) {
+ 		devfreq->governor->event_handler(devfreq,
+ 						 DEVFREQ_GOV_STOP, NULL);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 26ea0850be9b..142474b4af96 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -38,6 +38,7 @@ enum devfreq_timer {
+ 
+ struct devfreq;
+ struct devfreq_governor;
++struct thermal_cooling_device;
+ 
+ /**
+  * struct devfreq_dev_status - Data given from devfreq user device to
+@@ -98,11 +99,15 @@ struct devfreq_dev_status {
+  * @freq_table:		Optional list of frequencies to support statistics
+  *			and freq_table must be generated in ascending order.
+  * @max_state:		The size of freq_table.
++ *
++ * @is_cooling_device: A self-explanatory boolean giving the device a
++ *                     cooling effect property.
+  */
+ struct devfreq_dev_profile {
+ 	unsigned long initial_freq;
+ 	unsigned int polling_ms;
+ 	enum devfreq_timer timer;
++	bool is_cooling_device;
+ 
+ 	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
+ 	int (*get_dev_status)(struct device *dev,
+@@ -156,6 +161,7 @@ struct devfreq_stats {
+  * @suspend_count:	 suspend requests counter for a device.
+  * @stats:	Statistics of devfreq device behavior
+  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
++ * @cdev:	Cooling device pointer if the devfreq has cooling property
+  * @nb_min:		Notifier block for DEV_PM_QOS_MIN_FREQUENCY
+  * @nb_max:		Notifier block for DEV_PM_QOS_MAX_FREQUENCY
+  *
+@@ -198,6 +204,9 @@ struct devfreq {
+ 
+ 	struct srcu_notifier_head transition_notifier_list;
+ 
++	/* Pointer to the cooling device if used for thermal mitigation */
++	struct thermal_cooling_device *cdev;
++
+ 	struct notifier_block nb_min;
+ 	struct notifier_block nb_max;
+ };
 -- 
-2.30.1.766.gb4fecdf3b7-goog
+2.17.1
 
