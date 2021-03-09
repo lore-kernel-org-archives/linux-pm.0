@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5802C433E9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D74A4C43381
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D94B6525D
+	by mail.kernel.org (Postfix) with ESMTP id 89FC26527B
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231161AbhCINMy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231149AbhCINMy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 9 Mar 2021 08:12:54 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:46760 "EHLO inva020.nxp.com"
+Received: from inva020.nxp.com ([92.121.34.13]:46700 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229544AbhCINMY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S229688AbhCINMY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 9 Mar 2021 08:12:24 -0500
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7C71A1A1011;
-        Tue,  9 Mar 2021 14:12:22 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E1C171A1009;
+        Tue,  9 Mar 2021 14:12:20 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 45F191A0FFF;
-        Tue,  9 Mar 2021 14:12:16 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id AE4271A100C;
+        Tue,  9 Mar 2021 14:12:14 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 2CB22402E9;
-        Tue,  9 Mar 2021 14:12:08 +0100 (CET)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 929C8402AD;
+        Tue,  9 Mar 2021 14:12:06 +0100 (CET)
 From:   Dong Aisheng <aisheng.dong@nxp.com>
 To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
@@ -35,9 +35,9 @@ Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         cw00.choi@samsung.com, abel.vesa@nxp.com,
         Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 02/11] PM / devfreq: remove the invalid description for get_target_freq
-Date:   Tue,  9 Mar 2021 20:58:32 +0800
-Message-Id: <1615294733-22761-3-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 01/11] doc: ABI: devfreq: remove invalid central_polling description
+Date:   Tue,  9 Mar 2021 20:58:31 +0800
+Message-Id: <1615294733-22761-2-git-send-email-aisheng.dong@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
 References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
@@ -46,32 +46,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-First of all, no_central_polling was removed since
+no_central_polling has been removed since
 commit 7e6fdd4bad03 ("PM / devfreq: Core updates to support devices
 which can idle")
-Secondly, get_target_freq() is not only called only with update_devfreq()
-notified by OPP now, but also min/max freq qos notifier.
-
-So remove this invalid description now to avoid confusing.
 
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/devfreq/governor.h | 2 --
- 1 file changed, 2 deletions(-)
+ Documentation/ABI/testing/sysfs-class-devfreq | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index 70f44b3ca42e..5cee3f64fe2b 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -57,8 +57,6 @@
-  *			Basically, get_target_freq will run
-  *			devfreq_dev_profile.get_dev_status() to get the
-  *			status of the device (load = busy_time / total_time).
-- *			If no_central_polling is set, this callback is called
-- *			only with update_devfreq() notified by OPP.
-  * @event_handler:      Callback for devfreq core framework to notify events
-  *                      to governors. Events include per device governor
-  *                      init and exit, opp changes out of devfreq, suspend
+diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
+index 386bc230a33d..5e6b74f30406 100644
+--- a/Documentation/ABI/testing/sysfs-class-devfreq
++++ b/Documentation/ABI/testing/sysfs-class-devfreq
+@@ -97,10 +97,7 @@ Description:
+ 		object. The values are represented in ms. If the value is
+ 		less than 1 jiffy, it is considered to be 0, which means
+ 		no polling. This value is meaningless if the governor is
+-		not polling; thus. If the governor is not using
+-		devfreq-provided central polling
+-		(/sys/class/devfreq/.../central_polling is 0), this value
+-		may be useless.
++		not polling.
+ 
+ 		A list of governors that support the node:
+ 		- simple_ondmenad
 -- 
 2.25.1
 
