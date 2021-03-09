@@ -4,74 +4,114 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12862C433DB
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8169CC433E0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 18:05:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D130B60202
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:31:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48372652B3
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 18:05:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230242AbhCIQax (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 11:30:53 -0500
-Received: from bin-mail-out-05.binero.net ([195.74.38.228]:15597 "EHLO
-        bin-mail-out-05.binero.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230075AbhCIQat (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 11:30:49 -0500
-X-Halon-ID: f2346468-80f3-11eb-a542-005056917a89
-Authorized-sender: niklas.soderlund@fsdn.se
-Received: from bismarck.berto.se (p54ac5521.dip0.t-ipconnect.de [84.172.85.33])
-        by bin-vsp-out-01.atm.binero.net (Halon) with ESMTPA
-        id f2346468-80f3-11eb-a542-005056917a89;
-        Tue, 09 Mar 2021 17:24:45 +0100 (CET)
-From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     linux-renesas-soc@vger.kernel.org,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH] thermal: rcar_gen3_thermal: Add support for up to five TSC nodes
-Date:   Tue,  9 Mar 2021 17:24:19 +0100
-Message-Id: <20210309162419.2621359-1-niklas.soderlund+renesas@ragnatech.se>
+        id S231522AbhCISEl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 13:04:41 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:35224 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231776AbhCISEQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 13:04:16 -0500
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id F18881F457F7
+Received: by jupiter.universe (Postfix, from userid 1000)
+        id AD4A14800C6; Tue,  9 Mar 2021 19:04:12 +0100 (CET)
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@collabora.com,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCH 1/7] power: supply: sbs-battery: use dev_err_probe
+Date:   Tue,  9 Mar 2021 19:04:01 +0100
+Message-Id: <20210309180407.650943-2-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210309180407.650943-1-sebastian.reichel@collabora.com>
+References: <20210309180407.650943-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for up to five TSC nodes. The new THCODE values are taken
-from the example in the datasheet.
+Introduce usage of dev_err_probe in probe routine, which
+makes the code slightly more readable and removes some
+lines of code. It also removes PROBE_DEFER errors being
+logged by default, which are common when the battery is
+waiting for the charger driver to be registered.
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+This also cleans up a useless goto and instead returns
+directly.
+
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/power/supply/sbs-battery.c | 28 +++++++++-------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 75c69fe6e9553f25..e1e412348076b2ff 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -60,7 +60,7 @@
- #define MCELSIUS(temp)	((temp) * 1000)
- #define GEN3_FUSE_MASK	0xFFF
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index b6a538ebb378..4bf92831cb06 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -1123,11 +1123,9 @@ static int sbs_probe(struct i2c_client *client)
  
--#define TSC_MAX_NUM	4
-+#define TSC_MAX_NUM	5
+ 	chip->gpio_detect = devm_gpiod_get_optional(&client->dev,
+ 			"sbs,battery-detect", GPIOD_IN);
+-	if (IS_ERR(chip->gpio_detect)) {
+-		dev_err(&client->dev, "Failed to get gpio: %ld\n",
+-			PTR_ERR(chip->gpio_detect));
+-		return PTR_ERR(chip->gpio_detect);
+-	}
++	if (IS_ERR(chip->gpio_detect))
++		return dev_err_probe(&client->dev, PTR_ERR(chip->gpio_detect),
++				     "Failed to get gpio\n");
  
- /* default THCODE values if FUSEs are missing */
- static const int thcodes[TSC_MAX_NUM][3] = {
-@@ -68,6 +68,7 @@ static const int thcodes[TSC_MAX_NUM][3] = {
- 	{ 3393, 2795, 2216 },
- 	{ 3389, 2805, 2237 },
- 	{ 3415, 2694, 2195 },
-+	{ 3356, 2724, 2244 },
- };
+ 	i2c_set_clientdata(client, chip);
  
- /* Structure for thermal temperature calculation */
+@@ -1158,31 +1156,23 @@ static int sbs_probe(struct i2c_client *client)
+ 
+ 		rc = sbs_get_battery_presence_and_health(
+ 				client, POWER_SUPPLY_PROP_PRESENT, &val);
+-		if (rc < 0 || !val.intval) {
+-			dev_err(&client->dev, "Failed to get present status\n");
+-			rc = -ENODEV;
+-			goto exit_psupply;
+-		}
++		if (rc < 0 || !val.intval)
++			return dev_err_probe(&client->dev, -ENODEV,
++					     "Failed to get present status\n");
+ 	}
+ 
+ 	INIT_DELAYED_WORK(&chip->work, sbs_delayed_work);
+ 
+ 	chip->power_supply = devm_power_supply_register(&client->dev, sbs_desc,
+ 						   &psy_cfg);
+-	if (IS_ERR(chip->power_supply)) {
+-		dev_err(&client->dev,
+-			"%s: Failed to register power supply\n", __func__);
+-		rc = PTR_ERR(chip->power_supply);
+-		goto exit_psupply;
+-	}
++	if (IS_ERR(chip->power_supply))
++		return dev_err_probe(&client->dev, PTR_ERR(chip->power_supply),
++				     "Failed to register power supply\n");
+ 
+ 	dev_info(&client->dev,
+ 		"%s: battery gas gauge device registered\n", client->name);
+ 
+ 	return 0;
+-
+-exit_psupply:
+-	return rc;
+ }
+ 
+ static int sbs_remove(struct i2c_client *client)
 -- 
 2.30.1
 
