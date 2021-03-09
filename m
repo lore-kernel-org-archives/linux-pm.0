@@ -8,57 +8,56 @@ X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34044C433DB
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AA0EC433E9
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:23:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E8D0364FE3
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:22:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2487565238
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:23:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229799AbhCIQWS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 11:22:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55050 "EHLO
+        id S230269AbhCIQXX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 11:23:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55274 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229553AbhCIQWL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 11:22:11 -0500
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D0A0C06174A;
-        Tue,  9 Mar 2021 08:22:11 -0800 (PST)
-Received: by mail-pg1-x534.google.com with SMTP id p21so9100414pgl.12;
-        Tue, 09 Mar 2021 08:22:11 -0800 (PST)
+        with ESMTP id S230173AbhCIQXN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 11:23:13 -0500
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67E11C06174A;
+        Tue,  9 Mar 2021 08:23:13 -0800 (PST)
+Received: by mail-pl1-x631.google.com with SMTP id ba1so6844410plb.1;
+        Tue, 09 Mar 2021 08:23:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=epYXOj0a23UYo6KGluvXPsddDr0IApQn+if8TyHD91k=;
-        b=YddDgNJhrfBHRzG5hYh/0UXdt+pd/+kaeF0T98l7yB+mZSAFlbtZTkMVkPd36SDyDd
-         RKxOuX3j4HFR6HktPOUZD8AE503zePz3RjNSH7YV5XaBCCAH5KjEXoT95S0l9c1D2E8d
-         O9QCUa/uh2kDJpyGuNL+05YmTRofZ2T/R22ez9pg5my3AI3Tk8aUfh6GJwaYJJtZBJMw
-         ePcZoqNdhVy+XURydgrcr/V4UdHaiWsguCl4W7zjMgw5fbLL7RsD58khH52NpS3mNjZa
-         Ts4TOGdcD62/iaStWlGHsz94DUXE/hFyPQy5tJRiGmqFQUPCTp+BKoLLXZC3KqttfiP1
-         F6vg==
+        bh=spUY8lyLrO5xdVbAHEgZwfYUMMR7eoWtx3a0hWF14KY=;
+        b=sRkVb8sM0kdiaK+Pgzbm64V8G2smL5F6eKgu2SfEqARNDY7oPuOEZIAlOhBX/5xvKT
+         +qfvsuc0YGxH3aXUuXOA4iVD2Aum/kd00Rquct/oBweu3o7yhcO7iKKp3Qw1MgkF7iDc
+         PAk737R/m0l4ujLF/s61g/qcPhZbPGuszbbsAT+hsSoJWVHoyeLe/Yu3N7vba/+JK1Y7
+         /T+47SC8XCxbzF6KjwKUXbPVHqLS4RTZPQgU4N2YQ2MuLzxh1T3tQGEa7FKa5+sWxsAs
+         kJOnzj7T94eSxU6IExaFgLcjDIR9Rsg3o53Yz/AHkCFUA5uSGQBL7UNUryJFAuNK6TF+
+         i0Mg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=epYXOj0a23UYo6KGluvXPsddDr0IApQn+if8TyHD91k=;
-        b=iIb5jxQDSw5HF9CYlzfFpNIBy34Frni2A7XPngGSQKGPAWHRUSN6NQuY/b1k27OB2h
-         n+/T5OHpQPGuLsFDayPwUT5jTcBD2evH8MAGVb67CIQDRMSd91o5vPQt6F/zjD3L9UWK
-         TlekjtHri0EpK5+7ftIgUtVsI508+KS3ZC62OwXlCMG6PkCJQmYqWzNiiphIGVD4dJ6Y
-         ODPSYvQSAbMmYv40JaxF/MxRCobZWZc0BpryFAhJTe2n9huDZYAzh1fIZp0HQ5aSyLMQ
-         1YFaVNNuz1Sl8iRWt7Rd+iYCmuftLn89XvuNS/7DpMBLeBPUFJthaxg+2gTDdxaZ9nD+
-         tv4g==
-X-Gm-Message-State: AOAM530i1EmnaB5B/Xyvv0xRWmSXPjSwru3lx2HHdUSpIGkpZxAftpu6
-        plJmaMshQw4TGSCUGj6dmBs=
-X-Google-Smtp-Source: ABdhPJxeTrvswxWvrzQ7oBpiWNyUbs1yrmJ0I9YLUzN/2YpQP/QgoLsjJj8TBUzbmbiXOJty1ARI8g==
-X-Received: by 2002:aa7:9f52:0:b029:1ee:db83:dac6 with SMTP id h18-20020aa79f520000b02901eedb83dac6mr4070793pfr.45.1615306930807;
-        Tue, 09 Mar 2021 08:22:10 -0800 (PST)
+        bh=spUY8lyLrO5xdVbAHEgZwfYUMMR7eoWtx3a0hWF14KY=;
+        b=E8wWlYKlTly90rzftal7kAxJUQP04BNZeyHP1C3YvCYk0WSJBxakpAgyhEPM/sfzWP
+         gZyQthpuREchN/MZ0f+7gIpe0p2tHguhgtOc+/RImHFBgEFV2B8hhQJAvb3Hyd1XG/Or
+         Oc28+gZZFan0RRFhuGIJTgvsh9ADuMyOYxhw7GLqqoLPIce/4bPrpOFQFd/8H9KKcPej
+         xrHyS+a8BM/Fq7AukXKOVxpxOXuO61cx30E/tmA44K0rNr9N8/1HOyulOCwJssSzxwf/
+         AsgN1QcNpTSoY3CHb1NCNsL6y3/KC7S5BvxjLp0bNP1/YrYUvETgE3lal+sg4m2EQWGW
+         qWKg==
+X-Gm-Message-State: AOAM532KxD8H+UYXsUbIQz8ERoc4XMh9Sh7XJ99V0ZBsxNC/iT1uwkpA
+        N1mSQCp6JMA3NqcXBRkBk24=
+X-Google-Smtp-Source: ABdhPJxngpt9MZlizCIEUN4dMgj6xsEBIcgOzK/B95vpNyZtwVDhi4bz41KFp7v0yST4Q7hem8/7Jg==
+X-Received: by 2002:a17:903:31c4:b029:e1:8840:8ab9 with SMTP id v4-20020a17090331c4b02900e188408ab9mr4547205ple.70.1615306992982;
+        Tue, 09 Mar 2021 08:23:12 -0800 (PST)
 Received: from [172.30.1.19] ([14.32.163.5])
-        by smtp.gmail.com with ESMTPSA id j23sm10017380pfn.94.2021.03.09.08.22.07
+        by smtp.gmail.com with ESMTPSA id i20sm13127547pgg.65.2021.03.09.08.23.08
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 09 Mar 2021 08:22:10 -0800 (PST)
-Subject: Re: [PATCH 10/11] PM / devfreq: imx8m-ddrc: remove
- imx8m_ddrc_get_dev_status
+        Tue, 09 Mar 2021 08:23:12 -0800 (PST)
+Subject: Re: [PATCH 11/11] PM / devfreq: imx8m-ddrc: drop polling_ms
 To:     Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
 Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
@@ -66,14 +65,14 @@ Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         cw00.choi@samsung.com, abel.vesa@nxp.com
 References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
- <1615294733-22761-11-git-send-email-aisheng.dong@nxp.com>
+ <1615294733-22761-12-git-send-email-aisheng.dong@nxp.com>
 From:   Chanwoo Choi <cwchoi00@gmail.com>
-Message-ID: <ece39c80-a398-a9e4-6922-5805aba5254a@gmail.com>
-Date:   Wed, 10 Mar 2021 01:22:05 +0900
+Message-ID: <89ce7e90-55d9-872a-59d3-48c3dcadfc9d@gmail.com>
+Date:   Wed, 10 Mar 2021 01:23:06 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.7.1
 MIME-Version: 1.0
-In-Reply-To: <1615294733-22761-11-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1615294733-22761-12-git-send-email-aisheng.dong@nxp.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -82,53 +81,30 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On 21. 3. 9. 오후 9:58, Dong Aisheng wrote:
-> Current driver actually does not support simple ondemand governor
-> as it's unable to provide device load information. So removing
-> the unnecessary callback to avoid confusing.
-> Right now the driver is using userspace governor by default.
+> polling_ms is only used by simple ondemand governor which
+> this driver can't support. Drop it to avoid confusing.
 > 
 > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 > ---
->   drivers/devfreq/imx8m-ddrc.c | 13 -------------
->   1 file changed, 13 deletions(-)
+>   drivers/devfreq/imx8m-ddrc.c | 1 -
+>   1 file changed, 1 deletion(-)
 > 
 > diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-> index bc82d3653bff..0a6b7a1c829d 100644
+> index 0a6b7a1c829d..ecb9375aa877 100644
 > --- a/drivers/devfreq/imx8m-ddrc.c
 > +++ b/drivers/devfreq/imx8m-ddrc.c
-> @@ -280,18 +280,6 @@ static int imx8m_ddrc_get_cur_freq(struct device *dev, unsigned long *freq)
->   	return 0;
->   }
+> @@ -417,7 +417,6 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
+>   	if (ret < 0)
+>   		goto err;
 >   
-> -static int imx8m_ddrc_get_dev_status(struct device *dev,
-> -				     struct devfreq_dev_status *stat)
-> -{
-> -	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
-> -
-> -	stat->busy_time = 0;
-> -	stat->total_time = 0;
-> -	stat->current_frequency = clk_get_rate(priv->dram_core);
-> -
-> -	return 0;
-> -}
-> -
->   static int imx8m_ddrc_init_freq_info(struct device *dev)
->   {
->   	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
-> @@ -431,7 +419,6 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
->   
->   	priv->profile.polling_ms = 1000;
+> -	priv->profile.polling_ms = 1000;
 >   	priv->profile.target = imx8m_ddrc_target;
-> -	priv->profile.get_dev_status = imx8m_ddrc_get_dev_status;
 >   	priv->profile.exit = imx8m_ddrc_exit;
 >   	priv->profile.get_cur_freq = imx8m_ddrc_get_cur_freq;
->   	priv->profile.initial_freq = clk_get_rate(priv->dram_core);
 > 
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-Will merge this patch after finishing the discussion of
-prev patch related to.get_dev_status.
+You can squash this patch with patch10 because polling_ms
+is related to .get_dev_status.
 
 -- 
 Best Regards,
