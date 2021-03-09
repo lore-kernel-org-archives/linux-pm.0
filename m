@@ -2,32 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06CCCC4332D
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D96DAC4321A
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B0D366528A
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B145B6528C
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231197AbhCINMz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 08:12:55 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:46896 "EHLO inva020.nxp.com"
+        id S231264AbhCINM6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 08:12:58 -0500
+Received: from inva020.nxp.com ([92.121.34.13]:47088 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229900AbhCINM3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Mar 2021 08:12:29 -0500
+        id S230425AbhCINMh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Mar 2021 08:12:37 -0500
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E0AC1A100D;
-        Tue,  9 Mar 2021 14:12:28 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8FDD51A1013;
+        Tue,  9 Mar 2021 14:12:36 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 388151A1005;
-        Tue,  9 Mar 2021 14:12:22 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 67E7A1A1012;
+        Tue,  9 Mar 2021 14:12:30 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6873440310;
-        Tue,  9 Mar 2021 14:12:11 +0100 (CET)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id AA1F5402E9;
+        Tue,  9 Mar 2021 14:12:22 +0100 (CET)
 From:   Dong Aisheng <aisheng.dong@nxp.com>
 To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
@@ -35,9 +34,9 @@ Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         cw00.choi@samsung.com, abel.vesa@nxp.com,
         Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 04/11] PM / devfreq: bail out early if no freq changes in devfreq_set_target
-Date:   Tue,  9 Mar 2021 20:58:34 +0800
-Message-Id: <1615294733-22761-5-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 00/11] PM / devfreq: a few small fixes and improvements
+Date:   Tue,  9 Mar 2021 20:58:42 +0800
+Message-Id: <1615294733-22761-13-git-send-email-aisheng.dong@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
 References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
@@ -46,36 +45,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's unnecessary to set the same freq again and run notifier calls.
+A few small fixes and improvements
 
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- drivers/devfreq/devfreq.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Dong Aisheng (11):
+  doc: ABI: devfreq: remove invalid central_polling description
+  PM / devfreq: remove the invalid description for get_target_freq
+  PM / devfreq: fix the wrong set_freq path for userspace governor
+  PM / devfreq: bail out early if no freq changes in devfreq_set_target
+  PM / devfreq: use more accurate returned new_freq as resume_freq
+  PM / devfreq: drop the unnecessary low variable initialization
+  PM / devfreq: check get_dev_status before start monitor
+  PM / devfreq: check get_dev_status in devfreq_update_stats
+  PM / devfreq: governor: optimize simpleondemand get_target_freq
+  PM / devfreq: imx8m-ddrc: remove imx8m_ddrc_get_dev_status
+  PM / devfreq: imx8m-ddrc: drop polling_ms
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index bf3047896e41..6e80bf70e7b3 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -358,6 +358,9 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
- 	else
- 		cur_freq = devfreq->previous_freq;
- 
-+	if (new_freq == cur_freq)
-+		return 0;
-+
- 	freqs.old = cur_freq;
- 	freqs.new = new_freq;
- 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
-@@ -374,7 +377,7 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
- 	 * and DEVFREQ_POSTCHANGE because for showing the correct frequency
- 	 * change order of between devfreq device and passive devfreq device.
- 	 */
--	if (trace_devfreq_frequency_enabled() && new_freq != cur_freq)
-+	if (trace_devfreq_frequency_enabled())
- 		trace_devfreq_frequency(devfreq, new_freq, cur_freq);
- 
- 	freqs.new = new_freq;
+ Documentation/ABI/testing/sysfs-class-devfreq |  5 +-
+ drivers/devfreq/Kconfig                       |  2 +-
+ drivers/devfreq/devfreq.c                     | 21 +++++---
+ drivers/devfreq/governor.h                    |  7 +--
+ drivers/devfreq/governor_simpleondemand.c     | 53 ++++++++++++-------
+ drivers/devfreq/imx8m-ddrc.c                  | 14 -----
+ 6 files changed, 55 insertions(+), 47 deletions(-)
+
 -- 
 2.25.1
 
