@@ -6,59 +6,59 @@ X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06728C433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 15:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C10B2C433DB
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 15:03:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C0AF2650DF
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 15:02:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C96565020
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 15:03:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230504AbhCIPBo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 10:01:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37364 "EHLO
+        id S231831AbhCIPCt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 10:02:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231800AbhCIPBl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 10:01:41 -0500
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2047FC06174A;
-        Tue,  9 Mar 2021 07:01:41 -0800 (PST)
-Received: by mail-pg1-x52e.google.com with SMTP id o10so8942130pgg.4;
-        Tue, 09 Mar 2021 07:01:41 -0800 (PST)
+        with ESMTP id S231239AbhCIPCY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 10:02:24 -0500
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FEEEC06174A;
+        Tue,  9 Mar 2021 07:02:24 -0800 (PST)
+Received: by mail-pg1-x52c.google.com with SMTP id t26so8936301pgv.3;
+        Tue, 09 Mar 2021 07:02:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=jAGZ5sEf9vaYX8UZALNAacoRO32XNt4raNXvQGYcoqw=;
-        b=BAeVdF0ggY6MFhuY0il82N0QgZBqVJQxa02yXf0JLGGBOD4H9mFeosmfilW969zPWw
-         q/a6PqK2QLmteL4lMmHPWujpMwnm8pU6y/2zdmnxbVYvKZ4P9k0BIrAGM1X3eAW+2q6H
-         8pQoodsrOqwGFwE7sGITtJ4rBRwFlimJtyE+R/3QkzOJ6IyqaSfSFMPgzWTLBSxQvvBJ
-         gJ15O1Rlz1VaJdjWYATB3HuhRSra1DAu/g15IfPXl4wGC1FW0o8kbTworcumjiDyXHvC
-         C7tLz5+URY+xVNqYno0+7U+SgzWhOC5h6hQxz8YGIQGjhN/ybOQ9orSYdMC3PhLFwuR7
-         6LwQ==
+        bh=qwojpGqH1mYXH3RBXLlIpKaJqGztkkGelysn19yz+W0=;
+        b=EpNlX9oomJ4yB0MFbGVhvXl1DA+S3t4PZXeIJQU8mlerXSvvcgzpHtwIbukjxa2UQx
+         dDO6bIWHpMTp2IpiiMY1PkskPhpXuy9mf4rL2l5uwMlEIqHio8xK2bl029hGFRAhUH6H
+         HVASmZ70p784VtF9/mKd2MYE1+SvRWAFRmKuEiiJKrNvpYFowJCef8eYAbuV1xeH9Ak9
+         bb2NRss/9NClkVMixLvBCjO9ZBu6HuCnN455Wr9vAIem4MlVN/xQFzAxL9a09IMkYzml
+         QLrOoBvUnWpPQtbFLhA7nvhhL3F41sAuhfSLJSQlL6CLZnWnpfJUnS4pRD9IDBYAk7ss
+         j4cA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=jAGZ5sEf9vaYX8UZALNAacoRO32XNt4raNXvQGYcoqw=;
-        b=U1GSk/op2xFZlMvHHTluZAHktzhDk/TJnvYTKeVlKdk570cW7MC2Wl8FLbjCTa/Fp6
-         4Kyi7XDCTVgfos0u20RgGFLhpExw1iFQqZtrHCYbs7V9PPwmw4Oyk9ZQIeaMVd1H/FK+
-         5prE1f/TgzdeKGtqMZZLS8GRCxqE7AwawU/lxn9DkGFmLSdl3bCLLo26cJyOr/qI4oSu
-         NtDdVtwNjpuXf6QfnN4aZW3HTJn+FM8E2CSuqXM4T9Tk3mwwULLcxFqbn864+aGasWWP
-         7Ffuxnc0KkoM1s9HkL4rE96EDcDg9AknUInEXRsz6YS45MH8CuOQd40u+0IEBEHF+t+d
-         TkLQ==
-X-Gm-Message-State: AOAM533T7fkDqG0vFbW/XVm4XoSGfs8UoP+R54UFpMSKeyV1YbKC4Bdc
-        SdzYi9BjnPVbD9dDjyhLQC4BUzHD2CkosQ==
-X-Google-Smtp-Source: ABdhPJzziSkX26uMomwOJRocq0aYfXVr4paTilcHUy11X5fkxnfR76Lecxq526mnr7nLgsEWnRzYIg==
-X-Received: by 2002:a65:458e:: with SMTP id o14mr10647697pgq.415.1615302100607;
-        Tue, 09 Mar 2021 07:01:40 -0800 (PST)
+        bh=qwojpGqH1mYXH3RBXLlIpKaJqGztkkGelysn19yz+W0=;
+        b=RjJZoI4rn+agbWvyZPuSsL66lqwg6m8B1XE1hrDm1yPFUF2YLi96qt6DTxJI15jEEa
+         162l5xcSdH8SV34uwFQu6JCS4y9v/RVi4pkL1XpquRAKZxMumV1UeW+g9xCv3lNbZ4rs
+         ifQN5JMcszCbwoj1O9YvYYtHkiGHePLdpLPo0wbwrLfB4T3rhAJTS0XYArLPSNc4phY5
+         Z42kRtNU49l/wx/G4io3//VWShHxxjcWjmuTSwh66s1HOuTznWx96HlRhbtpuwIUBgAv
+         GOpAeVFafm97DUPKIXyc5IeTsWxvovjcsWOAb7xKwSwaXWrJk1WSegFj7nAE13Yjv550
+         RVhg==
+X-Gm-Message-State: AOAM532Tvl2hE0JtXf1Bl/CVODvfA9A2ZPtz4hTDtsiPh48rTnTc4kLz
+        qhL3mdG0d9t9h1ZUWi90mko=
+X-Google-Smtp-Source: ABdhPJwZal/julGImampUwynUA0bXzGBPfS1KJrWbKivC0UAyI4Pw9jUORQ0DdW1IT8xanUghezcnA==
+X-Received: by 2002:a63:b60b:: with SMTP id j11mr16786499pgf.19.1615302143537;
+        Tue, 09 Mar 2021 07:02:23 -0800 (PST)
 Received: from [172.30.1.19] ([14.32.163.5])
-        by smtp.gmail.com with ESMTPSA id l6sm2227956pja.16.2021.03.09.07.01.36
+        by smtp.gmail.com with ESMTPSA id g72sm6304139pfb.189.2021.03.09.07.02.19
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 09 Mar 2021 07:01:39 -0800 (PST)
-Subject: Re: [PATCH 01/11] doc: ABI: devfreq: remove invalid central_polling
- description
+        Tue, 09 Mar 2021 07:02:22 -0800 (PST)
+Subject: Re: [PATCH 02/11] PM / devfreq: remove the invalid description for
+ get_target_freq
 To:     Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
 Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
@@ -66,14 +66,14 @@ Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         cw00.choi@samsung.com, abel.vesa@nxp.com
 References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
- <1615294733-22761-2-git-send-email-aisheng.dong@nxp.com>
+ <1615294733-22761-3-git-send-email-aisheng.dong@nxp.com>
 From:   Chanwoo Choi <cwchoi00@gmail.com>
-Message-ID: <c8289e3a-8aca-7cbd-ffb6-de2a5a69f8ef@gmail.com>
-Date:   Wed, 10 Mar 2021 00:01:34 +0900
+Message-ID: <c5f27c46-f1a0-cd19-3bec-3dd8800b2cae@gmail.com>
+Date:   Wed, 10 Mar 2021 00:02:18 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.7.1
 MIME-Version: 1.0
-In-Reply-To: <1615294733-22761-2-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1615294733-22761-3-git-send-email-aisheng.dong@nxp.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -82,35 +82,35 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On 21. 3. 9. 오후 9:58, Dong Aisheng wrote:
-> no_central_polling has been removed since
+> First of all, no_central_polling was removed since
 > commit 7e6fdd4bad03 ("PM / devfreq: Core updates to support devices
 > which can idle")
+> Secondly, get_target_freq() is not only called only with update_devfreq()
+> notified by OPP now, but also min/max freq qos notifier.
+> 
+> So remove this invalid description now to avoid confusing.
 > 
 > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 > ---
->   Documentation/ABI/testing/sysfs-class-devfreq | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
+>   drivers/devfreq/governor.h | 2 --
+>   1 file changed, 2 deletions(-)
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
-> index 386bc230a33d..5e6b74f30406 100644
-> --- a/Documentation/ABI/testing/sysfs-class-devfreq
-> +++ b/Documentation/ABI/testing/sysfs-class-devfreq
-> @@ -97,10 +97,7 @@ Description:
->   		object. The values are represented in ms. If the value is
->   		less than 1 jiffy, it is considered to be 0, which means
->   		no polling. This value is meaningless if the governor is
-> -		not polling; thus. If the governor is not using
-> -		devfreq-provided central polling
-> -		(/sys/class/devfreq/.../central_polling is 0), this value
-> -		may be useless.
-> +		not polling.
->   
->   		A list of governors that support the node:
->   		- simple_ondmenad
+> diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+> index 70f44b3ca42e..5cee3f64fe2b 100644
+> --- a/drivers/devfreq/governor.h
+> +++ b/drivers/devfreq/governor.h
+> @@ -57,8 +57,6 @@
+>    *			Basically, get_target_freq will run
+>    *			devfreq_dev_profile.get_dev_status() to get the
+>    *			status of the device (load = busy_time / total_time).
+> - *			If no_central_polling is set, this callback is called
+> - *			only with update_devfreq() notified by OPP.
+>    * @event_handler:      Callback for devfreq core framework to notify events
+>    *                      to governors. Events include per device governor
+>    *                      init and exit, opp changes out of devfreq, suspend
 > 
 
-Looks good. But, you better to make one patch with patch1/2 by
-squashing.
+As I replied from patch1, I recommend that squash it with patch1.
 
 -- 
 Best Regards,
