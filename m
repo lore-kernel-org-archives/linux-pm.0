@@ -2,148 +2,175 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E000C433E0
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 20:45:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82772C433E0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 22:43:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3E3326523B
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 20:45:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 49E0865020
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 22:43:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231226AbhCIUog (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 15:44:36 -0500
-Received: from foss.arm.com ([217.140.110.172]:59886 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231510AbhCIUoV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Mar 2021 15:44:21 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0360A1FB;
-        Tue,  9 Mar 2021 12:44:21 -0800 (PST)
-Received: from [10.57.15.199] (unknown [10.57.15.199])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ED06E3F73C;
-        Tue,  9 Mar 2021 12:44:19 -0800 (PST)
-Subject: Re: [PATCH 5/5] powercap/drivers/dtpm: Scale the power with the load
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rafael@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20210301212149.22877-1-daniel.lezcano@linaro.org>
- <20210301212149.22877-5-daniel.lezcano@linaro.org>
- <c30701f5-c1f8-cb5c-8791-f4068fb1bc14@arm.com>
- <e1dac038-2100-abdb-2ffe-d0d93952ca21@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <a9275548-1555-ce96-51c8-67942d757119@arm.com>
-Date:   Tue, 9 Mar 2021 20:44:17 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
-MIME-Version: 1.0
-In-Reply-To: <e1dac038-2100-abdb-2ffe-d0d93952ca21@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        id S232187AbhCIWnC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 17:43:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53044 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230215AbhCIWm4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 17:42:56 -0500
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13807C06174A
+        for <linux-pm@vger.kernel.org>; Tue,  9 Mar 2021 14:42:56 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id d15so19103647wrv.5
+        for <linux-pm@vger.kernel.org>; Tue, 09 Mar 2021 14:42:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=MUZ+0f1MMpnUEJ4a2J6EdFMV+wQUIe9TSPtGUldR/hk=;
+        b=s822vc9+x/Dq+3b8vhn5JB+q6n/TaZFZTgy5tpUU+Ly/AMYvK9PjZDZ+UOucjXSTxG
+         gahynK+1hhzvPDnPurnEUaU4lqdVWA+TpooeaFJptOOvxGHEPs3UqG1hELM/WkndTM3K
+         AlqG9RhLBSUp06dp1/FOYM4b5d8v7IJ9I9tm1fReqgcjofWK3jJq9S9SliQLwtSJAys/
+         m59+G8HYrdD5XFmbpnpQ8ByJV41BNhChGbi/R6nBLP/h/L4QDKf5USrnPjR0UAo8rapD
+         jdYM4Wss+MSFYs4Wbbr87mRQXXzt6aE40AHv8kXxdBCxeeqMqCATuK/fjo2NrPpuQsjt
+         5hjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=MUZ+0f1MMpnUEJ4a2J6EdFMV+wQUIe9TSPtGUldR/hk=;
+        b=Tkdnkq/OVSiTm+bvAt82335RQnPGEZedBF9zhLrT67Mjm6AjvHkqFw+SciueIeGpNJ
+         3o2fREKjhP7aIDNJ39tdd5IGJQit4VKApQ+1DYFiEx9iXyE5fAZFx0Mk1w+1Ah2E6J2s
+         7aubM1uA/hqqEx8hVQFKgdXJ2RLuOs1R7p+Hp/quc6Ol+VZH5tRmE1x010KusMAFC5Q1
+         NXkY2s7QOksnZn2O6TcKkX+ahukXZ1hxqNd3Rtq8dYC7r3fAc6NQFK0V8rY9T0s8kO0k
+         6jInYgGpQ8aVTLFh0S+xmvsvakQppZmH3m8TB7ewN/j4yvF8p8Z6Z0pi/7pK23VekXfu
+         nOZA==
+X-Gm-Message-State: AOAM530NPfkSq3u/OefyIjAjvBeJXJhzWpP82oUmlVYQ+YJ9TqxguHbp
+        kdN0EYcGwUU1LFfyZLK5s1GmRg==
+X-Google-Smtp-Source: ABdhPJzUyV6I1QijS8Ko0ei9rDgjs/1XxzRU35MtbjUtjHeyZrSHnsjlQEaisXWTscLgowYi6RsmRQ==
+X-Received: by 2002:adf:f148:: with SMTP id y8mr128607wro.107.1615329774764;
+        Tue, 09 Mar 2021 14:42:54 -0800 (PST)
+Received: from localhost.localdomain ([82.142.0.212])
+        by smtp.gmail.com with ESMTPSA id p16sm30352179wrt.54.2021.03.09.14.42.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 09 Mar 2021 14:42:54 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rafael@kernel.org
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        lukasz.luba@arm.com
+Subject: [PATCH v2 3/5] powercap/drivers/dtpm: Simplify the dtpm table
+Date:   Tue,  9 Mar 2021 23:42:42 +0100
+Message-Id: <20210309224244.27225-3-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210309224244.27225-1-daniel.lezcano@linaro.org>
+References: <20210309224244.27225-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The dtpm table is an array of pointers, that forces the user of the
+table to define initdata along with the declaration of the table
+entry. It is more efficient to create an array of dtpm structure, so
+the declaration of the table entry can be done by initializing the
+different fields.
 
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/powercap/dtpm.c     |  4 ++--
+ drivers/powercap/dtpm_cpu.c |  4 +++-
+ include/linux/dtpm.h        | 22 +++++++++-------------
+ 3 files changed, 14 insertions(+), 16 deletions(-)
 
-On 3/9/21 7:03 PM, Daniel Lezcano wrote:
-> 
-> Hi Lukasz,
-> 
-> thanks for your comments, one question below.
-> 
-> On 09/03/2021 11:01, Lukasz Luba wrote:
-> 
-> [ ... ]
-> 
->>>    +static u64 scale_pd_power_uw(struct cpumask *cpus, u64 power)
->>
->> renamed 'cpus' into 'pd_mask', see below
->>
->>> +{
->>> +    unsigned long max, util;
->>> +    int cpu, load = 0;
->>
->> IMHO 'int load' looks odd when used with 'util' and 'max'.
->> I would put in the line above to have them all the same type and
->> renamed to 'sum_util'.
->>
->>> +
->>> +    for_each_cpu(cpu, cpus) {
->>
->> I would avoid the temporary CPU mask in the get_pd_power_uw()
->> with this modified loop:
->>
->> for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
->>
->>
->>> +        max = arch_scale_cpu_capacity(cpu);
->>> +        util = sched_cpu_util(cpu, max);
->>> +        load += ((util * 100) / max);
->>
->> Below you can find 3 optimizations. Since we are not in the hot
->> path here, it's up to if you would like to use all/some of them
->> or just ignore.
->>
->> 1st optimization.
->> If we use 'load += (util << 10) / max' in the loop, then
->> we could avoid div by 100 and use a right shift:
->> (power * load) >> 10
->>
->> 2nd optimization.
->> Since we use EM CPU mask, which span all CPUs with the same
->> arch_scale_cpu_capacity(), you can avoid N divs inside the loop
->> and do it once, below the loop.
->>
->> 3rd optimization.
->> If we just simply add all 'util' into 'sum_util' (no mul or div in
->> the loop), then we might just have simple macro
->>
->> #define CALC_POWER_USAGE(power, sum_util, max) \
->>      (((power * (sum_util << 10)) / max) >> 10)
-> 
-> I don't understand the 'max' division, I was expecting here something
-> like: ((sum_util << 10) / sum_max) >> 10)
-> 
-> no ?
-> 
-
-No, it should be single 'max', which is in range 0..1024.
-We would like to calculate the power for the whole perf domain, e.g.
-4 CPUs almost fully utilized would have util ~1000, then total power
-should be around ~4 * EM_table[i].power. This '~4' is coming from
-4 utils divided by one max util
-4000 / 1024
-
-
-The 'max' in the equation can be put before the bracket, as well as
-'power'.
-
-If we had floating point number, simple power for cpu1, cpu2, cpuN
-would be just:
-power_1 = power * util_1 / max
-power_2 = power * util_2 / max
-power_N = power * util_N / max
-(since they have the same 'max' capacity and the same EM 'power')
-
-The total domain power would be:
-total_power = power_1 + power_2 + ... + power_N
-which is:
-total_power = (power * util_1 / max) + (power * util_2 / max) + ... +
-               + (power * util_N / max)
-
-put the 'power' and 'max' before the bracket:
-total_power = power * (util_1 + util_2 + ... + util_N) * (1/max)
-
-introduce the 'sum_util':
-sum_util = util_1 + util_2 + ... + util_N
-then:
-total_power = power * sum_util / max
-
-Unfortunately, we don't use floating point, so temporary fixed point
-tricks, thus the '<< 10' and '>> 10' avoid some errors
-
-
+diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+index d00f55f0ee30..74d9603bd42a 100644
+--- a/drivers/powercap/dtpm.c
++++ b/drivers/powercap/dtpm.c
+@@ -610,7 +610,7 @@ int dtpm_create(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 
+ static int __init dtpm_init(void)
+ {
+-	struct dtpm_descr **dtpm_descr;
++	struct dtpm_descr *dtpm_descr;
+ 
+ 	pct = powercap_register_control_type(NULL, "dtpm", NULL);
+ 	if (IS_ERR(pct)) {
+@@ -619,7 +619,7 @@ static int __init dtpm_init(void)
+ 	}
+ 
+ 	for_each_dtpm_table(dtpm_descr)
+-		(*dtpm_descr)->init(*dtpm_descr);
++		dtpm_descr->init();
+ 
+ 	return 0;
+ }
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index 628d4d6d83a6..983f1ca27dc3 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	return ret;
+ }
+ 
+-int dtpm_register_cpu(struct dtpm *parent)
++static int __init dtpm_cpu_init(void)
+ {
+ 	int ret;
+ 
+@@ -241,3 +241,5 @@ int dtpm_register_cpu(struct dtpm *parent)
+ 
+ 	return 0;
+ }
++
++DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init);
+diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
+index d724c5a7b2f4..5f71ddc18ee9 100644
+--- a/include/linux/dtpm.h
++++ b/include/linux/dtpm.h
+@@ -34,25 +34,23 @@ struct dtpm_ops {
+ 	void (*release)(struct dtpm *);
+ };
+ 
+-struct dtpm_descr;
+-
+-typedef int (*dtpm_init_t)(struct dtpm_descr *);
++typedef int (*dtpm_init_t)(void);
+ 
+ struct dtpm_descr {
+-	struct dtpm *parent;
+-	const char *name;
+ 	dtpm_init_t init;
+ };
+ 
+ /* Init section thermal table */
+-extern struct dtpm_descr *__dtpm_table[];
+-extern struct dtpm_descr *__dtpm_table_end[];
++extern struct dtpm_descr __dtpm_table[];
++extern struct dtpm_descr __dtpm_table_end[];
+ 
+-#define DTPM_TABLE_ENTRY(name)			\
+-	static typeof(name) *__dtpm_table_entry_##name	\
+-	__used __section("__dtpm_table") = &name
++#define DTPM_TABLE_ENTRY(name, __init)				\
++	static struct dtpm_descr __dtpm_table_entry_##name	\
++	__used __section("__dtpm_table") = {			\
++		.init = __init,					\
++	}
+ 
+-#define DTPM_DECLARE(name)	DTPM_TABLE_ENTRY(name)
++#define DTPM_DECLARE(name, init)	DTPM_TABLE_ENTRY(name, init)
+ 
+ #define for_each_dtpm_table(__dtpm)	\
+ 	for (__dtpm = __dtpm_table;	\
+@@ -74,8 +72,6 @@ void dtpm_destroy(struct dtpm *dtpm);
+ 
+ int dtpm_create(const char *name, struct dtpm *dtpm, struct dtpm *parent);
+ 
+-int dtpm_register_cpu(struct dtpm *parent);
+-
+ int dtpm_register(const char *name, struct dtpm *dtpm);
+ 
+ void dtpm_unregister(const char *name);
+-- 
+2.17.1
 
