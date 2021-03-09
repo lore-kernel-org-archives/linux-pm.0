@@ -2,111 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AA0EC433E9
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:23:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16812C433DB
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:29:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2487565238
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:23:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D1EA265243
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 16:29:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230269AbhCIQXX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 11:23:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55274 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230173AbhCIQXN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 11:23:13 -0500
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67E11C06174A;
-        Tue,  9 Mar 2021 08:23:13 -0800 (PST)
-Received: by mail-pl1-x631.google.com with SMTP id ba1so6844410plb.1;
-        Tue, 09 Mar 2021 08:23:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=spUY8lyLrO5xdVbAHEgZwfYUMMR7eoWtx3a0hWF14KY=;
-        b=sRkVb8sM0kdiaK+Pgzbm64V8G2smL5F6eKgu2SfEqARNDY7oPuOEZIAlOhBX/5xvKT
-         +qfvsuc0YGxH3aXUuXOA4iVD2Aum/kd00Rquct/oBweu3o7yhcO7iKKp3Qw1MgkF7iDc
-         PAk737R/m0l4ujLF/s61g/qcPhZbPGuszbbsAT+hsSoJWVHoyeLe/Yu3N7vba/+JK1Y7
-         /T+47SC8XCxbzF6KjwKUXbPVHqLS4RTZPQgU4N2YQ2MuLzxh1T3tQGEa7FKa5+sWxsAs
-         kJOnzj7T94eSxU6IExaFgLcjDIR9Rsg3o53Yz/AHkCFUA5uSGQBL7UNUryJFAuNK6TF+
-         i0Mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=spUY8lyLrO5xdVbAHEgZwfYUMMR7eoWtx3a0hWF14KY=;
-        b=E8wWlYKlTly90rzftal7kAxJUQP04BNZeyHP1C3YvCYk0WSJBxakpAgyhEPM/sfzWP
-         gZyQthpuREchN/MZ0f+7gIpe0p2tHguhgtOc+/RImHFBgEFV2B8hhQJAvb3Hyd1XG/Or
-         Oc28+gZZFan0RRFhuGIJTgvsh9ADuMyOYxhw7GLqqoLPIce/4bPrpOFQFd/8H9KKcPej
-         xrHyS+a8BM/Fq7AukXKOVxpxOXuO61cx30E/tmA44K0rNr9N8/1HOyulOCwJssSzxwf/
-         AsgN1QcNpTSoY3CHb1NCNsL6y3/KC7S5BvxjLp0bNP1/YrYUvETgE3lal+sg4m2EQWGW
-         qWKg==
-X-Gm-Message-State: AOAM532KxD8H+UYXsUbIQz8ERoc4XMh9Sh7XJ99V0ZBsxNC/iT1uwkpA
-        N1mSQCp6JMA3NqcXBRkBk24=
-X-Google-Smtp-Source: ABdhPJxngpt9MZlizCIEUN4dMgj6xsEBIcgOzK/B95vpNyZtwVDhi4bz41KFp7v0yST4Q7hem8/7Jg==
-X-Received: by 2002:a17:903:31c4:b029:e1:8840:8ab9 with SMTP id v4-20020a17090331c4b02900e188408ab9mr4547205ple.70.1615306992982;
-        Tue, 09 Mar 2021 08:23:12 -0800 (PST)
-Received: from [172.30.1.19] ([14.32.163.5])
-        by smtp.gmail.com with ESMTPSA id i20sm13127547pgg.65.2021.03.09.08.23.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 09 Mar 2021 08:23:12 -0800 (PST)
-Subject: Re: [PATCH 11/11] PM / devfreq: imx8m-ddrc: drop polling_ms
-To:     Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
-        linux-imx@nxp.com, linux-kernel@vger.kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com, abel.vesa@nxp.com
-References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
- <1615294733-22761-12-git-send-email-aisheng.dong@nxp.com>
-From:   Chanwoo Choi <cwchoi00@gmail.com>
-Message-ID: <89ce7e90-55d9-872a-59d3-48c3dcadfc9d@gmail.com>
-Date:   Wed, 10 Mar 2021 01:23:06 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        id S231245AbhCIQ2n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 11:28:43 -0500
+Received: from bin-mail-out-06.binero.net ([195.74.38.229]:54274 "EHLO
+        bin-mail-out-06.binero.net" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230173AbhCIQ2j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 11:28:39 -0500
+X-Greylist: delayed 362 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Mar 2021 11:28:39 EST
+X-Halon-ID: a6342bee-80f3-11eb-a542-005056917a89
+Authorized-sender: niklas.soderlund@fsdn.se
+Received: from bismarck.berto.se (p54ac5521.dip0.t-ipconnect.de [84.172.85.33])
+        by bin-vsp-out-01.atm.binero.net (Halon) with ESMTPA
+        id a6342bee-80f3-11eb-a542-005056917a89;
+        Tue, 09 Mar 2021 17:22:35 +0100 (CET)
+From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc:     linux-renesas-soc@vger.kernel.org,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH] dt-bindings: thermal: rcar-gen3-thermal: Support five TSC nodes on r8a779a0
+Date:   Tue,  9 Mar 2021 17:22:05 +0100
+Message-Id: <20210309162205.2619943-1-niklas.soderlund+renesas@ragnatech.se>
+X-Mailer: git-send-email 2.30.1
 MIME-Version: 1.0
-In-Reply-To: <1615294733-22761-12-git-send-email-aisheng.dong@nxp.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21. 3. 9. 오후 9:58, Dong Aisheng wrote:
-> polling_ms is only used by simple ondemand governor which
-> this driver can't support. Drop it to avoid confusing.
-> 
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
->   drivers/devfreq/imx8m-ddrc.c | 1 -
->   1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-> index 0a6b7a1c829d..ecb9375aa877 100644
-> --- a/drivers/devfreq/imx8m-ddrc.c
-> +++ b/drivers/devfreq/imx8m-ddrc.c
-> @@ -417,7 +417,6 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
->   	if (ret < 0)
->   		goto err;
->   
-> -	priv->profile.polling_ms = 1000;
->   	priv->profile.target = imx8m_ddrc_target;
->   	priv->profile.exit = imx8m_ddrc_exit;
->   	priv->profile.get_cur_freq = imx8m_ddrc_get_cur_freq;
-> 
+When adding support for V3U (r8a779a0) it was incorrectly recorded it
+supports four nodes, while in fact it supports five. The fifth node is
+named TSC0 and breaks the existing naming schema starting at 1. Work
+around this by separately defining the reg property for V3U and others.
 
-You can squash this patch with patch10 because polling_ms
-is related to .get_dev_status.
+Restore the maximum number of nodes to three for other compatibles as
+it was before erroneously increasing it for V3U.
 
+Fixes: d7fdfb6541f3be88 ("dt-bindings: thermal: rcar-gen3-thermal: Add r8a779a0 support")
+Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+---
+ .../bindings/thermal/rcar-gen3-thermal.yaml   | 43 +++++++++++++++----
+ 1 file changed, 35 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
+index b33a76eeac4e4fed..4e51afcc42f21165 100644
+--- a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
+@@ -28,14 +28,7 @@ properties:
+       - renesas,r8a77980-thermal # R-Car V3H
+       - renesas,r8a779a0-thermal # R-Car V3U
+ 
+-  reg:
+-    minItems: 2
+-    maxItems: 4
+-    items:
+-      - description: TSC1 registers
+-      - description: TSC2 registers
+-      - description: TSC3 registers
+-      - description: TSC4 registers
++  reg: true
+ 
+   interrupts:
+     items:
+@@ -71,8 +64,25 @@ if:
+           enum:
+             - renesas,r8a779a0-thermal
+ then:
++  properties:
++    reg:
++      minItems: 2
++      maxItems: 3
++      items:
++        - description: TSC1 registers
++        - description: TSC2 registers
++        - description: TSC3 registers
+   required:
+     - interrupts
++else:
++  properties:
++    reg:
++      items:
++        - description: TSC0 registers
++        - description: TSC1 registers
++        - description: TSC2 registers
++        - description: TSC3 registers
++        - description: TSC4 registers
+ 
+ additionalProperties: false
+ 
+@@ -111,3 +121,20 @@ examples:
+                     };
+             };
+     };
++  - |
++    #include <dt-bindings/clock/r8a779a0-cpg-mssr.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/power/r8a779a0-sysc.h>
++
++    tsc_r8a779a0: thermal@e6190000 {
++            compatible = "renesas,r8a779a0-thermal";
++            reg = <0xe6190000 0x100>,
++                  <0xe6198000 0x100>,
++                  <0xe61a0000 0x100>,
++                  <0xe61a8000 0x100>,
++                  <0xe61b8000 0x100>;
++            clocks = <&cpg CPG_MOD 919>;
++            power-domains = <&sysc R8A779A0_PD_ALWAYS_ON>;
++            resets = <&cpg 919>;
++            #thermal-sensor-cells = <1>;
++    };
 -- 
-Best Regards,
-Samsung Electronics
-Chanwoo Choi
+2.30.1
+
