@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18613C4332B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06CCCC4332D
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CEE846525D
+	by mail.kernel.org (Postfix) with ESMTP id B0D366528A
 	for <linux-pm@archiver.kernel.org>; Tue,  9 Mar 2021 13:13:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229546AbhCINMz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231197AbhCINMz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 9 Mar 2021 08:12:55 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:46912 "EHLO inva020.nxp.com"
+Received: from inva020.nxp.com ([92.121.34.13]:46896 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229916AbhCINM3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S229900AbhCINM3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 9 Mar 2021 08:12:29 -0500
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 789AB1A09B2;
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E0AC1A100D;
         Tue,  9 Mar 2021 14:12:28 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 4D7F41A1018;
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 388151A1005;
         Tue,  9 Mar 2021 14:12:22 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id EAFBF4031B;
-        Tue,  9 Mar 2021 14:12:12 +0100 (CET)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6873440310;
+        Tue,  9 Mar 2021 14:12:11 +0100 (CET)
 From:   Dong Aisheng <aisheng.dong@nxp.com>
 To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
@@ -35,9 +35,9 @@ Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         cw00.choi@samsung.com, abel.vesa@nxp.com,
         Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 05/11] PM / devfreq: use more accurate returned new_freq as resume_freq
-Date:   Tue,  9 Mar 2021 20:58:35 +0800
-Message-Id: <1615294733-22761-6-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 04/11] PM / devfreq: bail out early if no freq changes in devfreq_set_target
+Date:   Tue,  9 Mar 2021 20:58:34 +0800
+Message-Id: <1615294733-22761-5-git-send-email-aisheng.dong@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
 References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
@@ -46,27 +46,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the more accurate returned new_freq as resume_freq.
-It's the same as how devfreq->previous_freq was updated.
+It's unnecessary to set the same freq again and run notifier calls.
 
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/devfreq/devfreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/devfreq.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 6e80bf70e7b3..ce569bd9adfa 100644
+index bf3047896e41..6e80bf70e7b3 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -390,7 +390,7 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
- 	devfreq->previous_freq = new_freq;
+@@ -358,6 +358,9 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 	else
+ 		cur_freq = devfreq->previous_freq;
  
- 	if (devfreq->suspend_freq)
--		devfreq->resume_freq = cur_freq;
-+		devfreq->resume_freq = new_freq;
++	if (new_freq == cur_freq)
++		return 0;
++
+ 	freqs.old = cur_freq;
+ 	freqs.new = new_freq;
+ 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+@@ -374,7 +377,7 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 	 * and DEVFREQ_POSTCHANGE because for showing the correct frequency
+ 	 * change order of between devfreq device and passive devfreq device.
+ 	 */
+-	if (trace_devfreq_frequency_enabled() && new_freq != cur_freq)
++	if (trace_devfreq_frequency_enabled())
+ 		trace_devfreq_frequency(devfreq, new_freq, cur_freq);
  
- 	return err;
- }
+ 	freqs.new = new_freq;
 -- 
 2.25.1
 
