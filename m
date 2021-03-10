@@ -2,168 +2,186 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D2C8C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 11:24:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1540C433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 11:47:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BAAA64FE1
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 11:24:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6F15764F16
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 11:47:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232425AbhCJLWh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Mar 2021 06:22:37 -0500
-Received: from foss.arm.com ([217.140.110.172]:44402 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232598AbhCJLWT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Mar 2021 06:22:19 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3AAA41FB;
-        Wed, 10 Mar 2021 03:22:19 -0800 (PST)
-Received: from [10.57.15.210] (unknown [10.57.15.210])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 577B83F85F;
-        Wed, 10 Mar 2021 03:22:15 -0800 (PST)
-Subject: Re: [PATCH v3 5/5] powercap/drivers/dtpm: Scale the power with the
- load
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rafael@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20210310110212.26512-1-daniel.lezcano@linaro.org>
- <20210310110212.26512-5-daniel.lezcano@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <d2a57633-074a-f0c3-25dc-7ebdf8455d2f@arm.com>
-Date:   Wed, 10 Mar 2021 11:22:10 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
-MIME-Version: 1.0
-In-Reply-To: <20210310110212.26512-5-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+        id S231397AbhCJLqn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Mar 2021 06:46:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52704 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231139AbhCJLqZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Mar 2021 06:46:25 -0500
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40DCAC06174A
+        for <linux-pm@vger.kernel.org>; Wed, 10 Mar 2021 03:46:25 -0800 (PST)
+Received: by mail-wr1-x42e.google.com with SMTP id j2so22951611wrx.9
+        for <linux-pm@vger.kernel.org>; Wed, 10 Mar 2021 03:46:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=LvlruMaCLBIyF4bqWN8JBBR1UbyF6IvONx4LBcx3yHE=;
+        b=pNawfMqaAG/zuHUmVubbWIU6RERPhmUscbJ7tzU6EaRl3Pm3U4PK2ZY/XwvPdAckBb
+         8dywq6SltsGp7ya34cWvnM1wG9Th5sLJWMDrXia1Z8tgAo+iT7w3KDLwkWVu9e46JQUP
+         i7VKQWAn3pOw/lTdUqNCwwcDUBM0fTbMSt2rDYwwahGBE8nIbh/dwiR7qLox8frshMnQ
+         TpMVNc+79/Qy5Bjh/k71lvk/dMv9+s2GU20gDKueU+ru8VyKZmPbg9zTOIRoenJ4HO0f
+         dXcqPfRU4RRmq7z1HUv3WYGYltjc5f1f6zFV8j5P5lEERSslB/ZtV8e+Qd1JnoXcNOTS
+         hj/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=LvlruMaCLBIyF4bqWN8JBBR1UbyF6IvONx4LBcx3yHE=;
+        b=sn1E5PwTEEyLwjmY8twNmg3rQej0WB1pXNlCa2muWQki5+msTKW0VdAKHFLL+fg0dk
+         /iz+k4BxQGTIf+Mv63LfHWVoYcq1JyDGdBTcki3mmbPE3wSfyczkhIxs24Cp5vWq9A29
+         5JdeoHJN85S0KZ27IYX+BO1r0YlgB4aTnI+jucDDx3lrsRco0OMvkjxIO1yG6YcMp7pk
+         4AkMYxYN9h0BBl6D5VIUheFPi1QT/uUDQwMWlsX47z4CKx3S1ioKSkcJn7jVNNjHqBRF
+         zj/sFAGpfTjug9248UP2Ta+jap8Q7ZX7tZPWyCu3RAWqKh4i4YcVfRvBoWJQoy61ucKy
+         Zh4w==
+X-Gm-Message-State: AOAM532aSBhkR7O+8t2g6HmP8x3oLZcx+BZyywOQ9rFuhSNUYT2L680/
+        IAk/xrqKhNixBwg7FHN+uEBuhA==
+X-Google-Smtp-Source: ABdhPJxVk/OwZANT/24F9BZUPSimf4ICwwnh+EBRhteoqtZ7OaMR4FqRgNXRlhokWxVAIJAncZHIeA==
+X-Received: by 2002:a05:6000:c7:: with SMTP id q7mr3148842wrx.356.1615376783902;
+        Wed, 10 Mar 2021 03:46:23 -0800 (PST)
+Received: from localhost.localdomain ([82.142.0.212])
+        by smtp.gmail.com with ESMTPSA id h10sm30368165wrp.22.2021.03.10.03.46.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Mar 2021 03:46:23 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
+Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Javi Merino <javi.merino@kernel.org>,
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 3/3] thermal/drivers/cpuidle_cooling: Use device name instead of auto-numbering
+Date:   Wed, 10 Mar 2021 12:46:00 +0100
+Message-Id: <20210310114600.27178-3-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210310114600.27178-1-daniel.lezcano@linaro.org>
+References: <20210310114600.27178-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Currently the naming of a cooling device is just a cooling technique
+followed by a number. When there are multiple cooling devices using
+the same technique, it is impossible to clearly identify the related
+device as this one is just a number.
 
+For instance:
 
-On 3/10/21 11:02 AM, Daniel Lezcano wrote:
-> Currently the power consumption is based on the current OPP power
-> assuming the entire performance domain is fully loaded.
-> 
-> That gives very gross power estimation and we can do much better by
-> using the load to scale the power consumption.
-> 
-> Use the utilization to normalize and scale the power usage over the
-> max possible power.
-> 
-> Tested on a rock960 with 2 big CPUS, the power consumption estimation
-> conforms with the expected one.
-> 
-> Before this change:
-> 
-> ~$ ~/dhrystone -t 1 -l 10000&
-> ~$ cat /sys/devices/virtual/powercap/dtpm/dtpm:0/dtpm:0:1/constraint_0_max_power_uw
-> 2260000
-> 
-> After this change:
-> 
-> ~$ ~/dhrystone -t 1 -l 10000&
-> ~$ cat /sys/devices/virtual/powercap/dtpm/dtpm:0/dtpm:0:1/constraint_0_max_power_uw
-> 1130000
-> 
-> ~$ ~/dhrystone -t 2 -l 10000&
-> ~$ cat /sys/devices/virtual/powercap/dtpm/dtpm:0/dtpm:0:1/constraint_0_max_power_uw
-> 2260000
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
-> 
-> V3:
->    - Fixed uninitialized 'cpu' in scaled_power_uw()
-> V2:
->    - Replaced cpumask by em_span_cpus
->    - Changed 'util' metrics variable types
->    - Optimized utilization scaling power computation
->    - Renamed parameter name for scale_pd_power_uw()
-> ---
->   drivers/powercap/dtpm_cpu.c | 46 +++++++++++++++++++++++++++++++------
->   1 file changed, 39 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-> index ac7f2e7e262f..47854923d958 100644
-> --- a/drivers/powercap/dtpm_cpu.c
-> +++ b/drivers/powercap/dtpm_cpu.c
-> @@ -68,27 +68,59 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
->   	return power_limit;
->   }
->   
-> +static u64 scale_pd_power_uw(struct cpumask *pd_mask, u64 power)
-> +{
-> +	unsigned long max = 0, sum_util = 0;
-> +	int cpu;
-> +
-> +	for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
-> +
-> +		/*
-> +		 * The capacity is the same for all CPUs belonging to
-> +		 * the same perf domain, so a single call to
-> +		 * arch_scale_cpu_capacity() is enough. However, we
-> +		 * need the CPU parameter to be initialized by the
-> +		 * loop, so the call ends up in this block.
-> +		 *
-> +		 * We can initialize 'max' with a cpumask_first() call
-> +		 * before the loop but the bits computation is not
-> +		 * worth given the arch_scale_cpu_capacity() just
-> +		 * returns a value where the resulting assembly code
-> +		 * will be optimized by the compiler.
-> +		 */
-> +		max = arch_scale_cpu_capacity(cpu);
-> +		sum_util += sched_cpu_util(cpu, max);
-> +	}
-> +
-> +	/*
-> +	 * In the improbable case where all the CPUs of the perf
-> +	 * domain are offline, 'max' will be zero and will lead to an
-> +	 * illegal operation with a zero division.
-> +	 */
-> +	return max ? (power * ((sum_util << 10) / max)) >> 10 : 0;
-> +}
-> +
->   static u64 get_pd_power_uw(struct dtpm *dtpm)
->   {
->   	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
->   	struct em_perf_domain *pd;
-> -	struct cpumask cpus;
-> +	struct cpumask *pd_mask;
->   	unsigned long freq;
-> -	int i, nr_cpus;
-> +	int i;
->   
->   	pd = em_cpu_get(dtpm_cpu->cpu);
-> -	freq = cpufreq_quick_get(dtpm_cpu->cpu);
->   
-> -	cpumask_and(&cpus, cpu_online_mask, to_cpumask(pd->cpus));
-> -	nr_cpus = cpumask_weight(&cpus);
-> +	pd_mask = em_span_cpus(pd);
-> +
-> +	freq = cpufreq_quick_get(dtpm_cpu->cpu);
->   
->   	for (i = 0; i < pd->nr_perf_states; i++) {
->   
->   		if (pd->table[i].frequency < freq)
->   			continue;
->   
-> -		return pd->table[i].power *
-> -			MICROWATT_PER_MILLIWATT * nr_cpus;
-> +		return scale_pd_power_uw(pd_mask, pd->table[i].power *
-> +					 MICROWATT_PER_MILLIWATT);
->   	}
->   
->   	return 0;
-> 
+ thermal-idle-0
+ thermal-idle-1
+ thermal-idle-2
+ thermal-idle-3
+ etc ...
 
-LGTM
+The 'thermal' prefix is redundant with the subsystem namespace. This
+patch removes the 'thermal prefix and changes the number by the device
+name. So the naming above becomes:
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+ idle-cpu0
+ idle-cpu1
+ idle-cpu2
+ idle-cpu3
+ etc ...
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/cpuidle_cooling.c | 26 ++++++++++----------------
+ 1 file changed, 10 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
+index 7ecab4b16b29..8bc0a9b46358 100644
+--- a/drivers/thermal/cpuidle_cooling.c
++++ b/drivers/thermal/cpuidle_cooling.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/cpu_cooling.h>
+ #include <linux/cpuidle.h>
++#include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/idle_inject.h>
+ #include <linux/idr.h>
+@@ -26,8 +27,6 @@ struct cpuidle_cooling_device {
+ 	unsigned long state;
+ };
+ 
+-static DEFINE_IDA(cpuidle_ida);
+-
+ /**
+  * cpuidle_cooling_runtime - Running time computation
+  * @idle_duration_us: CPU idle time to inject in microseconds
+@@ -174,10 +173,11 @@ static int __cpuidle_cooling_register(struct device_node *np,
+ 	struct idle_inject_device *ii_dev;
+ 	struct cpuidle_cooling_device *idle_cdev;
+ 	struct thermal_cooling_device *cdev;
++	struct device *dev;
+ 	unsigned int idle_duration_us = TICK_USEC;
+ 	unsigned int latency_us = UINT_MAX;
+-	char dev_name[THERMAL_NAME_LENGTH];
+-	int id, ret;
++	char name[THERMAL_NAME_LENGTH];
++	int ret;
+ 
+ 	idle_cdev = kzalloc(sizeof(*idle_cdev), GFP_KERNEL);
+ 	if (!idle_cdev) {
+@@ -185,16 +185,10 @@ static int __cpuidle_cooling_register(struct device_node *np,
+ 		goto out;
+ 	}
+ 
+-	id = ida_simple_get(&cpuidle_ida, 0, 0, GFP_KERNEL);
+-	if (id < 0) {
+-		ret = id;
+-		goto out_kfree;
+-	}
+-
+ 	ii_dev = idle_inject_register(drv->cpumask);
+ 	if (!ii_dev) {
+ 		ret = -EINVAL;
+-		goto out_id;
++		goto out_kfree;
+ 	}
+ 
+ 	of_property_read_u32(np, "duration-us", &idle_duration_us);
+@@ -205,9 +199,11 @@ static int __cpuidle_cooling_register(struct device_node *np,
+ 
+ 	idle_cdev->ii_dev = ii_dev;
+ 
+-	snprintf(dev_name, sizeof(dev_name), "thermal-idle-%d", id);
++	dev = get_cpu_device(cpumask_first(drv->cpumask));
++
++	snprintf(name, sizeof(name), "idle-%s", dev_name(dev));
+ 
+-	cdev = thermal_of_cooling_device_register(np, dev_name, idle_cdev,
++	cdev = thermal_of_cooling_device_register(np, name, idle_cdev,
+ 						  &cpuidle_cooling_ops);
+ 	if (IS_ERR(cdev)) {
+ 		ret = PTR_ERR(cdev);
+@@ -215,14 +211,12 @@ static int __cpuidle_cooling_register(struct device_node *np,
+ 	}
+ 
+ 	pr_debug("%s: Idle injection set with idle duration=%u, latency=%u\n",
+-		 dev_name, idle_duration_us, latency_us);
++		 name, idle_duration_us, latency_us);
+ 
+ 	return 0;
+ 
+ out_unregister:
+ 	idle_inject_unregister(ii_dev);
+-out_id:
+-	ida_simple_remove(&cpuidle_ida, id);
+ out_kfree:
+ 	kfree(idle_cdev);
+ out:
+-- 
+2.17.1
+
