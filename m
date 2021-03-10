@@ -7,66 +7,68 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1EA9C433E6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D86F6C4332D
 	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 05:24:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 91A0C64FFF
+	by mail.kernel.org (Postfix) with ESMTP id B34E264FF7
 	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 05:24:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229624AbhCJFYH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Mar 2021 00:24:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54338 "EHLO
+        id S229483AbhCJFYG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Mar 2021 00:24:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54308 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229712AbhCJFXu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Mar 2021 00:23:50 -0500
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42C09C061760
-        for <linux-pm@vger.kernel.org>; Tue,  9 Mar 2021 21:23:50 -0800 (PST)
-Received: by mail-pj1-x1033.google.com with SMTP id q6-20020a17090a4306b02900c42a012202so6829258pjg.5
-        for <linux-pm@vger.kernel.org>; Tue, 09 Mar 2021 21:23:50 -0800 (PST)
+        with ESMTP id S229557AbhCJFXo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Mar 2021 00:23:44 -0500
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62E9AC061760
+        for <linux-pm@vger.kernel.org>; Tue,  9 Mar 2021 21:23:44 -0800 (PST)
+Received: by mail-pl1-x629.google.com with SMTP id d23so4689094plq.2
+        for <linux-pm@vger.kernel.org>; Tue, 09 Mar 2021 21:23:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=w6wCPUb8jc+iccj9hgb1LHjwvC5J45cqXfco5MhHDUE=;
-        b=GcDUVEmOuOLJi1qjvT3xY70Q/VduglDQg/3OhVeOvPvJ9qfFdveFwVIIfQjIT/XdBW
-         tM9lMLOWZDnsVZvmUUx9+A6PgmSp3B7LdL4z6GqjsUcM4UBcdeL8q1Tl0/2gEUoemmG4
-         ECwBW+gzKTcWu4h17TLRON6jDRvwVTmkEB3NmVxBxq986TvJFpebyjMs7PisM1mtablQ
-         y1TSdRSZ2m9URtC8qbht97oXOdmfmNwma0+CC0moeRV6dRc0rXpcJSogODML5hwMfW4j
-         l9WayPudva/pFfzQlUf563yEkNeBgSjUn0+TcsKy/liKV6Z11cYKRAMT2KtqhdtjFM5J
-         rojQ==
+        bh=gXPftVm0Zz9RXWAlvb9njkCnptfxOnMIFmu/ocdebw0=;
+        b=h5+1uQxetPSjw8PACHK4t2Hd7vuH90JC6wRZq6oSAr8QycfGdMjzlfDxYz7UPNs3fE
+         aDipwaizdLvcrXJmgIwgVsPbDXRHBrjM2Ffxw7BTeYHyahm/g90kElvQ3d9rj4KC7NhV
+         BuNDfIjuhXTcKFLFyB3fQV7Sfaaq6AEOIWiZ/ExmDnVp6FdYreeMALKRdw0GJ379k504
+         Ln6D2d+eN45oJSVdvHjS70ZNp1uAmrJ5IijFqhJ/jluNKdWGPelt/+E+MyN7U9lz6X5R
+         AGVcCgiYFeBhgNSUgcXaphlisYiaf6y2AyeoRYehUEEnZtySl24rGgSo21c3iSNRu5cR
+         2Qzg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=w6wCPUb8jc+iccj9hgb1LHjwvC5J45cqXfco5MhHDUE=;
-        b=TPcQigxBi7flNtqRmmLUwfIH/0UO5vM5bUSwc/HtqaHQLPPwVWWVcmsobsk37MwMpT
-         zGJf91GDiv82xnpSpJKjimhUlu5o3O5knug7lwyg7J9npuFaKzclWJGVFob1iRC82AyS
-         XAa7FbjpJ7LkKFT8qqLZeBkawdy8B4w0wf0Dsigkbx0Wy+ylArlyQd5S2x++S4ggpvv0
-         mDwU5ojmc4f6OcElIjy8wBP3eg2Kms3LgfTzLrb15hagtAluQhr3C7Q80fA394ihKKa7
-         6XaiwlRw4ebxSoZbJl4hi70H9iZX7F0kFf2WxbXmySbklMnoY9gclN2o9sYAZfM0FGFC
-         b33A==
-X-Gm-Message-State: AOAM532zFg5RnQfcEhYuh/kcmcvKYnllQbw7kMlXY5W7RKX39HNDsQpm
-        1YbQhQGmyDlNlZbuODn3pO7GNg==
-X-Google-Smtp-Source: ABdhPJyCu/IJBazpcBzfHCKv5XISNe2XsVhsyMt7Keo6wwEF75q/J2xoclJuEMx1afLBb9iq7pplCg==
-X-Received: by 2002:a17:90a:d78e:: with SMTP id z14mr1644954pju.221.1615353829821;
-        Tue, 09 Mar 2021 21:23:49 -0800 (PST)
+        bh=gXPftVm0Zz9RXWAlvb9njkCnptfxOnMIFmu/ocdebw0=;
+        b=VbP6Q9Jt7JYxFtFk5ZxwDvceyhd0S8U3odl48x3LFd4X79vFpWUg5J46sQLCdfprc6
+         kjJsblQDgwZNXgf/yjr7iriXiDFEmvi6PoYUKaDIvMSaxwQmuszoowUjUGTQeKwUU3aa
+         ceV4P+mCmQEmgXgWAClfpxFXWgzujP8OUBrk9Y3ly09wSMFBmo3ZzXjHGQW0LpCZV8DA
+         rM3bija7Or7ixS1v4ph0BuhhkOFV46U5Ttb3LzfhZ+eYucOWiMRrJc5vYS72COw8KSqG
+         Sd5YB4o+cBc6iLseypEM2xaxLTDJE4NjUup+GnZUw0wpybMDI3mTRiS+k3RLJ8Y8rueo
+         EA5Q==
+X-Gm-Message-State: AOAM533HqdDaHQadIjhd9pUSby/zemLozwHvXTZQIt4fkHu16KUUKClp
+        W0Z3Ts1bbgY69CGFwWMrCufRJw==
+X-Google-Smtp-Source: ABdhPJyYc3eM5HErG3TJ/XnSdlxUI2pE0MOSw0tUndBQqhlzSXWkXpMxCGbJcweVKRMmrJAypgJ2Iw==
+X-Received: by 2002:a17:90b:2307:: with SMTP id mt7mr1736715pjb.37.1615353823991;
+        Tue, 09 Mar 2021 21:23:43 -0800 (PST)
 Received: from localhost ([122.171.124.15])
-        by smtp.gmail.com with ESMTPSA id z9sm8755996pgs.32.2021.03.09.21.23.49
+        by smtp.gmail.com with ESMTPSA id u15sm14361469pfk.128.2021.03.09.21.23.43
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 09 Mar 2021 21:23:49 -0800 (PST)
+        Tue, 09 Mar 2021 21:23:43 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
         Sudeep Holla <sudeep.holla@arm.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Ionela Voinescu <ionela.voinescu@arm.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH V6 3/4] arch_topology: Export arch_freq_scale and helpers
-Date:   Wed, 10 Mar 2021 10:53:25 +0530
-Message-Id: <1b5c83549720da480b1e23e542f44b1edb2e4157.1615351622.git.viresh.kumar@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V6 1/4] arch_topology: Rename freq_scale as arch_freq_scale
+Date:   Wed, 10 Mar 2021 10:53:23 +0530
+Message-Id: <2dd2c60c0268550f566c3c83d06b651b4f0e9e4e.1615351622.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
 In-Reply-To: <cover.1615351622.git.viresh.kumar@linaro.org>
 References: <cover.1615351622.git.viresh.kumar@linaro.org>
@@ -76,49 +78,82 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It is possible now for other parts of the kernel to provide their own
-implementation of sched_freq_tick() and they can very well be modules
-themselves (like CPPC cpufreq driver, which is going to use these in a
-later commit).
+Rename freq_scale to a less generic name, as it will get exported soon
+for modules. Since x86 already names its own implementation of this as
+arch_freq_scale, lets stick to that.
 
-Export arch_freq_scale and topology_{set|clear}_scale_freq_source().
-
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Tested-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Tested-by: Vincent Guittot <vincent.guittot@linaro.org>
+Suggested-by: Will Deacon <will@kernel.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/arch_topology.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm64/kernel/topology.c  | 6 +++---
+ drivers/base/arch_topology.c  | 4 ++--
+ include/linux/arch_topology.h | 4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index e08a4126453a..aa8d893619ed 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -256,8 +256,8 @@ static int init_amu_fie_callback(struct notifier_block *nb, unsigned long val,
+ 	 * initialized AMU support and enabled invariance. The AMU counters will
+ 	 * keep on working just fine in the absence of the cpufreq driver, and
+ 	 * for the CPUs for which there are no counters available, the last set
+-	 * value of freq_scale will remain valid as that is the frequency those
+-	 * CPUs are running at.
++	 * value of arch_freq_scale will remain valid as that is the frequency
++	 * those CPUs are running at.
+ 	 */
+ 
+ 	return 0;
+@@ -327,7 +327,7 @@ void topology_scale_freq_tick(void)
+ 			  const_cnt - prev_const_cnt);
+ 
+ 	scale = min_t(unsigned long, scale, SCHED_CAPACITY_SCALE);
+-	this_cpu_write(freq_scale, (unsigned long)scale);
++	this_cpu_write(arch_freq_scale, (unsigned long)scale);
+ }
+ 
+ #ifdef CONFIG_ACPI_CPPC_LIB
 diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index ebcd2ea3091f..995e52b9eca4 100644
+index de8587cc119e..2a1cecbde0a4 100644
 --- a/drivers/base/arch_topology.c
 +++ b/drivers/base/arch_topology.c
-@@ -78,6 +78,7 @@ void topology_set_scale_freq_source(struct scale_freq_data *data,
- 
- 	update_scale_freq_invariant(true);
- }
-+EXPORT_SYMBOL_GPL(topology_set_scale_freq_source);
- 
- void topology_clear_scale_freq_source(enum scale_freq_source source,
- 				      const struct cpumask *cpus)
-@@ -96,6 +97,7 @@ void topology_clear_scale_freq_source(enum scale_freq_source source,
- 
- 	update_scale_freq_invariant(false);
- }
-+EXPORT_SYMBOL_GPL(topology_clear_scale_freq_source);
- 
- void topology_scale_freq_tick(void)
+@@ -31,7 +31,7 @@ __weak bool arch_freq_counters_available(const struct cpumask *cpus)
  {
-@@ -106,6 +108,7 @@ void topology_scale_freq_tick(void)
+ 	return false;
  }
- 
- DEFINE_PER_CPU(unsigned long, arch_freq_scale) = SCHED_CAPACITY_SCALE;
-+EXPORT_SYMBOL_GPL(arch_freq_scale);
+-DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
++DEFINE_PER_CPU(unsigned long, arch_freq_scale) = SCHED_CAPACITY_SCALE;
  
  void topology_set_freq_scale(const struct cpumask *cpus, unsigned long cur_freq,
  			     unsigned long max_freq)
+@@ -53,7 +53,7 @@ void topology_set_freq_scale(const struct cpumask *cpus, unsigned long cur_freq,
+ 	scale = (cur_freq << SCHED_CAPACITY_SHIFT) / max_freq;
+ 
+ 	for_each_cpu(i, cpus)
+-		per_cpu(freq_scale, i) = scale;
++		per_cpu(arch_freq_scale, i) = scale;
+ }
+ 
+ DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index 0f6cd6b73a61..583af517f123 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -23,11 +23,11 @@ static inline unsigned long topology_get_cpu_scale(int cpu)
+ 
+ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+ 
+-DECLARE_PER_CPU(unsigned long, freq_scale);
++DECLARE_PER_CPU(unsigned long, arch_freq_scale);
+ 
+ static inline unsigned long topology_get_freq_scale(int cpu)
+ {
+-	return per_cpu(freq_scale, cpu);
++	return per_cpu(arch_freq_scale, cpu);
+ }
+ 
+ void topology_set_freq_scale(const struct cpumask *cpus, unsigned long cur_freq,
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
