@@ -2,364 +2,261 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C42D7C433DB
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 03:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C924BC433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 03:09:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9241864FED
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 03:05:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9AD5864FE9
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 03:09:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232273AbhCJDFC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Mar 2021 22:05:02 -0500
-Received: from z11.mailgun.us ([104.130.96.11]:54829 "EHLO z11.mailgun.us"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232281AbhCJDEm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Mar 2021 22:04:42 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1615345482; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: References: Cc: To: From:
- Subject: Sender; bh=c8TPvkuC6D3HD+AHTD1J8XQ9WFs/eIyayuhYOYnv5cI=; b=rajvJVeuyl3/TUV6PhwFhIwZULMurAoNcMCRc127rhJ4WgFU7mfZyGcrLK742neUUBMCAxQp
- VTkOSlQygp+ccJl2WS+wLkZCCnYDS6AH/rNeeEgSj/BwTku5X8mfcrFyEiX4HBs5x7ALyzPc
- QQLdX3i7qxGyA8EtVoL+ytPh0wI=
-X-Mailgun-Sending-Ip: 104.130.96.11
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n01.prod.us-west-2.postgun.com with SMTP id
- 60483749fa6ebd85e8c51d87 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 10 Mar 2021 03:04:41
- GMT
-Sender: asutoshd=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 7E4C1C4346D; Wed, 10 Mar 2021 03:04:40 +0000 (UTC)
-Received: from [192.168.8.168] (cpe-70-95-149-85.san.res.rr.com [70.95.149.85])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: asutoshd)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 1D77BC433CA;
-        Wed, 10 Mar 2021 03:04:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 1D77BC433CA
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=asutoshd@codeaurora.org
-Subject: Re: [PATCH v10 1/2] scsi: ufs: Enable power management for wlun
-From:   "Asutosh Das (asd)" <asutoshd@codeaurora.org>
-To:     Alan Stern <stern@rowland.harvard.edu>,
-        Bart Van Assche <bvanassche@acm.org>,
-        Adrian Hunter <adrian.hunter@intel.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, cang@codeaurora.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        "open list:TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Avri Altman <avri.altman@wdc.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Stanley Chu <stanley.chu@mediatek.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Kiwoong Kim <kwmad.kim@samsung.com>,
-        Bean Huo <beanhuo@micron.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Wei Yongjun <weiyongjun1@huawei.com>,
-        Dinghao Liu <dinghao.liu@zju.edu.cn>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Tomas Winkler <tomas.winkler@intel.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        Satya Tangirala <satyat@google.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
+        id S232013AbhCJDJT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Mar 2021 22:09:19 -0500
+Received: from mailout1.samsung.com ([203.254.224.24]:14144 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230490AbhCJDI4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Mar 2021 22:08:56 -0500
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20210310030854epoutp01cf6c8c4e68e7605d731b30db04bd92ac~q3GMq1-N11172111721epoutp01c
+        for <linux-pm@vger.kernel.org>; Wed, 10 Mar 2021 03:08:54 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20210310030854epoutp01cf6c8c4e68e7605d731b30db04bd92ac~q3GMq1-N11172111721epoutp01c
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1615345734;
+        bh=u6LWVhklORJCQniApS2trCO6hM0Uulf6xgJQQBG6QmY=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=Nf5Ch+ZtJmc6OGzr4htcpwdx2T8z4k1rtq4vM9hIV5klv+pdIhRRygcLNFo52blnh
+         1KHrwxheDWvnINVCk+25YBUlRbdQQdbrzGxt2WFwSRLI7OyIpGv/DAjJmuEDdBjzcg
+         Cy7P5b1g5v2Ai2ZQD4ZkZ0CCeLdQhr+UjetJlMr8=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20210310030853epcas1p1b75f93310a3e58e6e56007546422ffb7~q3GLfC9d92679026790epcas1p1D;
+        Wed, 10 Mar 2021 03:08:53 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.155]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4DwH8y5KLqz4x9Pv; Wed, 10 Mar
+        2021 03:08:50 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        71.FA.59147.24838406; Wed, 10 Mar 2021 12:08:50 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20210310030849epcas1p14d94cf79d0879a82784373ed1fafed4b~q3GHtrkix2679026790epcas1p19;
+        Wed, 10 Mar 2021 03:08:49 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20210310030849epsmtrp2070d50a4d94739a54ab6efcd0abbeb3a~q3GHs0nNR2333523335epsmtrp2i;
+        Wed, 10 Mar 2021 03:08:49 +0000 (GMT)
+X-AuditID: b6c32a38-e53ff7000000e70b-84-6048384202e8
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        B2.A8.13470.14838406; Wed, 10 Mar 2021 12:08:49 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20210310030849epsmtip11bf9c5b37c25b12799c3753d13e2337e~q3GHaUE4V2646326463epsmtip1v;
+        Wed, 10 Mar 2021 03:08:49 +0000 (GMT)
+Subject: Re: [PATCH 07/11] PM / devfreq: check get_dev_status before start
+ monitor
+To:     Dong Aisheng <dongas86@gmail.com>,
+        Chanwoo Choi <cwchoi00@gmail.com>
+Cc:     Dong Aisheng <aisheng.dong@nxp.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
         <linux-arm-kernel@lists.infradead.org>,
-        "open list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
-        <linux-samsung-soc@vger.kernel.org>,
-        "moderated list:UNIVERSAL FLASH STORAGE HOST CONTROLLER DRIVER..." 
-        <linux-mediatek@lists.infradead.org>,
-        Linux-PM mailing list <linux-pm@vger.kernel.org>
-References: <cover.1614725302.git.asutoshd@codeaurora.org>
- <0576d6eae15486740c25767e2d8805f7e94eb79d.1614725302.git.asutoshd@codeaurora.org>
- <85086647-7292-b0a2-d842-290818bd2858@intel.com>
- <6e98724d-2e75-d1fe-188f-a7010f86c509@codeaurora.org>
- <20210306161616.GC74411@rowland.harvard.edu>
- <CAJZ5v0ihJe8rNjWRwNic_BQUvKbALNcjx8iiPAh5nxLhOV9duw@mail.gmail.com>
- <CAJZ5v0iJ4yqRTt=mTCC930HULNFNTgvO4f9ToVO6pNz53kxFkw@mail.gmail.com>
- <f1e9b21d-1722-d20b-4bae-df7e6ce50bbc@codeaurora.org>
-Message-ID: <2bd90336-18a9-9acd-5abb-5b52b27fc535@codeaurora.org>
-Date:   Tue, 9 Mar 2021 19:04:34 -0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
+        Sascha Hauer <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        open list <linux-kernel@vger.kernel.org>,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        Abel Vesa <abel.vesa@nxp.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <31be2267-8988-f162-f5a6-6e6389bbf1fb@samsung.com>
+Date:   Wed, 10 Mar 2021 12:25:31 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-In-Reply-To: <f1e9b21d-1722-d20b-4bae-df7e6ce50bbc@codeaurora.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <CAA+hA=QZbxE-aFh2UnH6wHBUStj8SAtW8C4SEZtGcxQwsOO=Aw@mail.gmail.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrGJsWRmVeSWpSXmKPExsWy7bCmvq6ThUeCwaFXGhbLLh1ltPgydRez
+        xbOj2hZ/N09ns1g1dSeLxdmmN+wWmx5fY7Xo+rWS2eLyrjlsFp97jzBa3G5cwWbxYou4A4/H
+        zll32T02repk89i8pN5j47sdTB79fw08+rasYvT4vEkugD0q2yYjNTEltUghNS85PyUzL91W
+        yTs43jne1MzAUNfQ0sJcSSEvMTfVVsnFJ0DXLTMH6EolhbLEnFKgUEBicbGSvp1NUX5pSapC
+        Rn5xia1SakFKToFlgV5xYm5xaV66XnJ+rpWhgYGRKVBhQnbGigU7WQpmqlRs7bvI2sDYLtvF
+        yMkhIWAiMeP8edYuRi4OIYEdjBJbeiezgiSEBD4xStw9JAKR+MYo8fnsLiaYjjfbW6E69jJK
+        /D25mhnCec8ocbjrIViVsECIxOTTf5lBbBEBD4lL06ewgRQxCyxklvi85xELSIJNQEti/4sb
+        bCA2v4CixNUfjxlBbF4BO4nHX1eANbMIqErM7N/IDmKLCoRJnNzWAlUjKHFy5hOwOZwCgRKz
+        py8Eq2cWEJe49WQ+E4QtL9G8dTbYdRICZzgkFn3YBeSwAzkuEs8EIL4Rlnh1fAs7hC0l8fnd
+        XjYIu1pi5ckjbBCtHcBw2X+BFSJhLLF/6WSg+RxA8zUl1u/ShwgrSuz8PZcRYi2fxLuvPawg
+        JRICvBIdbUIQJcoSlx/chQaipMTi9k62CYxKs5A8MwvJA7OQPDALYdkCRpZVjGKpBcW56anF
+        hgUmyJG9iRGcgLUsdjDOfftB7xAjEwfjIUYJDmYlEV6/424JQrwpiZVVqUX58UWlOanFhxhN
+        gcE7kVlKNDkfmAPySuINTY2MjY0tTAzNTA0NlcR5kwwexAsJpCeWpGanphakFsH0MXFwSjUw
+        lbLFcD6z2Pl7O1vni3TPvoVz2pI7DjAc0WznbOB24BVUOS3M7v5t/3wlvzV+/B1Mj1W2prHG
+        KCnNuLvw2ZKPtXezMu/+vGcoJphwp27np4/Hl+/3iDkwm0t96hrmpZGGf2evi41tvnnp6NvL
+        fYz3Zsq9Clv1PVJxYp6U7uTAU5f3FKmcfNfWIW6nEJ/T1Hfh1IFjEyVW57j+WWt3k8NOofc1
+        25S6T7Na1l+3kb4YevSq3sTu7fL3asz11y9y/pJy+9iLTfyH8qWP5TAvjm79kytcb/8uce/U
+        p3nKhYtuPeys+7zqMEf7rUlWbFM2tqYuclrqOM3YomXZNsYv/7Pkue7mHcya0VcVxufoflR1
+        shJLcUaioRZzUXEiADRMs1xJBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsWy7bCSnK6jhUeCwZT74hbLLh1ltPgydRez
+        xbOj2hZ/N09ns1g1dSeLxdmmN+wWmx5fY7Xo+rWS2eLyrjlsFp97jzBa3G5cwWbxYou4A4/H
+        zll32T02repk89i8pN5j47sdTB79fw08+rasYvT4vEkugD2KyyYlNSezLLVI3y6BK2PFgp0s
+        BTNVKrb2XWRtYGyX7WLk5JAQMJF4s72VtYuRi0NIYDejxMbdfWwQCUmJaRePMncxcgDZwhKH
+        DxdD1LxllHh9bjVYjbBAiMTk03+ZQWwRAQ+JS9OnsIEUMQssZJZYuHcFM0RHA7PE3pfXmECq
+        2AS0JPa/uAHWzS+gKHH1x2NGEJtXwE7i8dcVYJNYBFQlZvZvZAexRQXCJHYuecwEUSMocXLm
+        ExYQm1MgUGL29IVg9cwC6hJ/5l2CssUlbj2ZzwRhy0s0b53NPIFReBaS9llIWmYhaZmFpGUB
+        I8sqRsnUguLc9NxiwwLDvNRyveLE3OLSvHS95PzcTYzgeNTS3MG4fdUHvUOMTByMhxglOJiV
+        RHj9jrslCPGmJFZWpRblxxeV5qQWH2KU5mBREue90HUyXkggPbEkNTs1tSC1CCbLxMEp1cDU
+        ZbTPcfP27jOhFReMDrCdksqIvVebseS/8jO9+Ifurmbu1X7pC4SsTV6sy9kjrxZ6gInDSWxZ
+        ilxcY/tZi4KrH0Wf8X3Z6CxQKHqq/hDnouSpZvlhnw96Z/6MfPinJvhu1XeGRrMLRVeFo3tS
+        70WczE63qUn6zDuf6U/C9G0bI26WXv4oK63FzJp47fjNnp49U7X7mbYr8m36riW0gfnR1xD7
+        eI3EA78u/Bb87m2tksZwcX9w29edjJ/PScydPeW3DnPjXzeTI81uzvv+pOd5Zq2+o2RwlVHr
+        6arvr2/9+lr01dP4Tf3hReu5T3y9WCmdrPyxo7p1qmvx+eXujDZXqvr/mkw+HesdfE1niaUS
+        S3FGoqEWc1FxIgB+ZENmNgMAAA==
+X-CMS-MailID: 20210310030849epcas1p14d94cf79d0879a82784373ed1fafed4b
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20210310025703epcas1p10fdb324cc7ce1accfdc8f66315e8a93e
+References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
+        <1615294733-22761-8-git-send-email-aisheng.dong@nxp.com>
+        <de25cd22-7f17-5902-21d3-881e3128dd31@gmail.com>
+        <a546248b-3946-c781-94a9-30f0c92f88d2@gmail.com>
+        <CGME20210310025703epcas1p10fdb324cc7ce1accfdc8f66315e8a93e@epcas1p1.samsung.com>
+        <CAA+hA=QZbxE-aFh2UnH6wHBUStj8SAtW8C4SEZtGcxQwsOO=Aw@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 3/9/2021 7:56 AM, Asutosh Das (asd) wrote:
-> On 3/8/2021 9:17 AM, Rafael J. Wysocki wrote:
->> On Mon, Mar 8, 2021 at 5:21 PM Rafael J. Wysocki <rafael@kernel.org> 
->> wrote:
->>>
->>> On Sat, Mar 6, 2021 at 5:17 PM Alan Stern <stern@rowland.harvard.edu> 
->>> wrote:
->>>>
->>>> On Fri, Mar 05, 2021 at 06:54:24PM -0800, Asutosh Das (asd) wrote:
->>>>
->>>>> Now during my testing I see a weird issue sometimes (1 in 7).
->>>>> Scenario - bootups
->>>>>
->>>>> Issue:
->>>>> The supplier 'ufs_device_wlun 0:0:0:49488' goes into runtime 
->>>>> suspend even
->>>>> when one/more of its consumers are in RPM_ACTIVE state.
->>>>>
->>>>> *Log:
->>>>> [   10.056379][  T206] sd 0:0:0:1: [sdb] Synchronizing SCSI cache
->>>>> [   10.062497][  T113] sd 0:0:0:5: [sdf] Synchronizing SCSI cache
->>>>> [   10.356600][   T32] sd 0:0:0:7: [sdh] Synchronizing SCSI cache
->>>>> [   10.362944][  T174] sd 0:0:0:3: [sdd] Synchronizing SCSI cache
->>>>> [   10.696627][   T83] sd 0:0:0:2: [sdc] Synchronizing SCSI cache
->>>>> [   10.704562][  T170] sd 0:0:0:6: [sdg] Synchronizing SCSI cache
->>>>> [   10.980602][    T5] sd 0:0:0:0: [sda] Synchronizing SCSI cache
->>>>>
->>>>> /** Printing all the consumer nodes of supplier **/
->>>>> [   10.987327][    T5] ufs_device_wlun 0:0:0:49488: usage-count @ 
->>>>> suspend: 0
->>>>> <-- this is the usage_count
->>>>> [   10.994440][    T5] ufs_rpmb_wlun 0:0:0:49476: PM state - 2
->>>>> [   11.000402][    T5] scsi 0:0:0:49456: PM state - 2
->>>>> [   11.005453][    T5] sd 0:0:0:0: PM state - 2
->>>>> [   11.009958][    T5] sd 0:0:0:1: PM state - 2
->>>>> [   11.014469][    T5] sd 0:0:0:2: PM state - 2
->>>>> [   11.019072][    T5] sd 0:0:0:3: PM state - 2
->>>>> [   11.023595][    T5] sd 0:0:0:4: PM state - 0 << RPM_ACTIVE
->>>>> [   11.353298][    T5] sd 0:0:0:5: PM state - 2
->>>>> [   11.357726][    T5] sd 0:0:0:6: PM state - 2
->>>>> [   11.362155][    T5] sd 0:0:0:7: PM state - 2
->>>>> [   11.366584][    T5] ufshcd-qcom 1d84000.ufshc: 
->>>>> __ufshcd_wl_suspend - 8709
->>>>> [   11.374366][    T5] ufs_device_wlun 0:0:0:49488: 
->>>>> __ufshcd_wl_suspend -
->>>>> (0) has rpm_active flags
->>>
->>> Do you mean that rpm_active of the link between the consumer and the
->>> supplier is greater than 0 at this point and the consumer is
+On 3/10/21 11:56 AM, Dong Aisheng wrote:
+> On Wed, Mar 10, 2021 at 12:12 AM Chanwoo Choi <cwchoi00@gmail.com> wrote:
 >>
->> I mean is rpm_active of the link greater than 1 (because 1 means "no
->> active references to the supplier")?
-> Hi Rafael:
-> No - it is not greater than 1.
-> 
-> I'm trying to understand what's going on in it; will update when I've 
-> something.
-> 
+>> On 21. 3. 10. 오전 12:58, Chanwoo Choi wrote:
+>>> On 21. 3. 9. 오후 9:58, Dong Aisheng wrote:
+>>>> The devfreq monitor depends on the device to provide load information
+>>>> by .get_dev_status() to calculate the next target freq.
+>>>>
+>>>> And this will cause changing governor to simple ondemand fail
+>>>> if device can't support.
+>>>>
+>>>> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+>>>> ---
+>>>>   drivers/devfreq/devfreq.c                 | 10 +++++++---
+>>>>   drivers/devfreq/governor.h                |  2 +-
+>>>>   drivers/devfreq/governor_simpleondemand.c |  3 +--
+>>>>   3 files changed, 9 insertions(+), 6 deletions(-)
+>>>>
+>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>> index 7231fe6862a2..d1787b6c7d7c 100644
+>>>> --- a/drivers/devfreq/devfreq.c
+>>>> +++ b/drivers/devfreq/devfreq.c
+>>>> @@ -482,10 +482,13 @@ static void devfreq_monitor(struct work_struct
+>>>> *work)
+>>>>    * to be called from governor in response to DEVFREQ_GOV_START
+>>>>    * event when device is added to devfreq framework.
+>>>>    */
+>>>> -void devfreq_monitor_start(struct devfreq *devfreq)
+>>>> +int devfreq_monitor_start(struct devfreq *devfreq)
+>>>>   {
+>>>>       if (IS_SUPPORTED_FLAG(devfreq->governor->flags, IRQ_DRIVEN))
+>>>> -        return;
+>>>> +        return 0;
+>>>> +
+>>>> +    if (!devfreq->profile->get_dev_status)
+>>>> +        return -EINVAL;
 >>
->>> RPM_ACTIVE, but the supplier suspends successfully nevertheless?
->>>
->>>>> [   11.383376][    T5] ufs_device_wlun 0:0:0:49488:
->>>>> ufshcd_wl_runtime_suspend <-- Supplier suspends fine.
->>>>> [   12.977318][  T174] sd 0:0:0:4: [sde] Synchronizing SCSI cache
->>>>>
->>>>> And the the suspend of sde is stuck now:
->>>>> schedule+0x9c/0xe0
->>>>> schedule_timeout+0x40/0x128
->>>>> io_schedule_timeout+0x44/0x68
->>>>> wait_for_common_io+0x7c/0x100
->>>>> wait_for_completion_io+0x14/0x20
->>>>> blk_execute_rq+0x90/0xcc
->>>>> __scsi_execute+0x104/0x1c4
->>>>> sd_sync_cache+0xf8/0x2a0
->>>>> sd_suspend_common+0x74/0x11c
->>>>> sd_suspend_runtime+0x14/0x20
->>>>> scsi_runtime_suspend+0x64/0x94
->>>>> __rpm_callback+0x80/0x2a4
->>>>> rpm_suspend+0x308/0x614
->>>>> pm_runtime_work+0x98/0xa8
->>>>>
->>>>> I added 'DL_FLAG_RPM_ACTIVE' while creating links.
->>>>>        if (hba->sdev_ufs_device) {
->>>>>                link = device_link_add(&sdev->sdev_gendev,
->>>>>                                    &hba->sdev_ufs_device->sdev_gendev,
->>>>>                                   
->>>>> DL_FLAG_PM_RUNTIME|DL_FLAG_RPM_ACTIVE);
->>>>> I didn't expect this to resolve the issue anyway and it didn't.
->>>>>
->>>>> Another interesting point here is when I resume any of the above 
->>>>> suspended
->>>>> consumers, it all goes back to normal, which is kind of expected. I 
->>>>> tried
->>>>> resuming the consumer and the supplier is resumed and the supplier is
->>>>> suspended when all the consumers are suspended.
->>>>>
->>>>> Any pointers on this issue please?
->>>>>
->>>>> @Bart/@Alan - Do you've any pointers please?
+>> Again, I think that get_dev_status is not used for all governors.
+>> So that it cause the governor start fail. Don't check whether
+>> .get_dev_status is NULL or not.
+>>
+> 
+> I'm not quite understand your point.
+> it is used by governor_simpleondemand.c and tegra_devfreq_governor.
+> get_target_freq -> devfreq_update_stats -> get_dev_status
+
+The devfreq can add the new governor by anyone.
+So these functions like devfreq_monitor_* have to support 
+the governors and also must support the governor to be added
+in the future.
+
+> 
+> Without checking, device can switch to ondemand governor if it does not support.
+> 
+> Am i missed something?
+> 
+> Regards
+> Aisheng
+> 
+>>>>       switch (devfreq->profile->timer) {
+>>>>       case DEVFREQ_TIMER_DEFERRABLE:
+>>>> @@ -495,12 +498,13 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+>>>>           INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
+>>>>           break;
+>>>>       default:
+>>>> -        return;
+>>>> +        return -EINVAL;
+>>>>       }
+>>>>       if (devfreq->profile->polling_ms)
+>>>>           queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>>               msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>> +    return 0;
+>>>>   }
+>>>>   EXPORT_SYMBOL(devfreq_monitor_start);
+>>>> diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+>>>> index 5cee3f64fe2b..31af6d072a10 100644
+>>>> --- a/drivers/devfreq/governor.h
+>>>> +++ b/drivers/devfreq/governor.h
+>>>> @@ -75,7 +75,7 @@ struct devfreq_governor {
+>>>>                   unsigned int event, void *data);
+>>>>   };
+>>>> -void devfreq_monitor_start(struct devfreq *devfreq);
+>>>> +int devfreq_monitor_start(struct devfreq *devfreq);
+>>>>   void devfreq_monitor_stop(struct devfreq *devfreq);
+>>>>   void devfreq_monitor_suspend(struct devfreq *devfreq);
+>>>>   void devfreq_monitor_resume(struct devfreq *devfreq);
+>>>> diff --git a/drivers/devfreq/governor_simpleondemand.c
+>>>> b/drivers/devfreq/governor_simpleondemand.c
+>>>> index d57b82a2b570..ea287b57cbf3 100644
+>>>> --- a/drivers/devfreq/governor_simpleondemand.c
+>>>> +++ b/drivers/devfreq/governor_simpleondemand.c
+>>>> @@ -89,8 +89,7 @@ static int devfreq_simple_ondemand_handler(struct
+>>>> devfreq *devfreq,
+>>>>   {
+>>>>       switch (event) {
+>>>>       case DEVFREQ_GOV_START:
+>>>> -        devfreq_monitor_start(devfreq);
+>>>> -        break;
+>>>> +        return devfreq_monitor_start(devfreq);
+>>>>       case DEVFREQ_GOV_STOP:
+>>>>           devfreq_monitor_stop(devfreq);
 >>>>
->>>> It's very noticeable that although you seem to have isolated a bug in
->>>> the power management subsystem (supplier goes into runtime suspend
->>>> even when one of its consumers is still active), you did not CC the
->>>> power management maintainer or mailing list.
->>>>
->>>> I have added the appropriate CC's.
 >>>
->>> Thanks Alan!
+>>> Need to handle the all points of devfreq_monitor_start() usage.
+>>> please check the tegra30-devfreq.c for this update.
+>>>
+>>> $ grep -rn "devfreq_monitor_start" drivers/
+>>> drivers/devfreq/governor_simpleondemand.c:92:
+>>> devfreq_monitor_start(devfreq);
+>>> drivers/devfreq/tegra30-devfreq.c:744:
+>>> devfreq_monitor_start(devfreq);
+>>> ......
+>>>
+>>
+>>
+>> --
+>> Best Regards,
+>> Samsung Electronics
+>> Chanwoo Choi
 > 
 > 
 
-Hello
-I & Can (thanks CanG) debugged this further:
-
-Looks like this issue can occur if the sd probe is asynchronous.
-
-Essentially, the sd_probe() is done asynchronously and 
-driver_probe_device() invokes pm_runtime_get_suppliers() before invoking 
-sd_probe().
-
-But scsi_probe_and_add_lun() runs in a separate context.
-So the scsi_autopm_put_device() invoked from scsi_scan_host() context 
-reduces the link->rpm_active to 1. And sd_probe() invokes 
-scsi_autopm_put_device() and starts a timer. And then 
-driver_probe_device() invoked from __device_attach_async_helper context 
-reduces the link->rpm_active to 1 thus enabling the supplier to suspend 
-before the consumer suspends.
-
-So if:
-Context T1:
-[1] scsi_probe_and_add_lun()
-[2]	|- scsi_autopm_put_device() - reduce the link->rpm_active to 1
-
-Context T2:
-__device_attach_async_helper()
-	|- driver_probe_device()
-		|- sd_probe()
-In between [1] and [2] say, driver_probe_device() -> sd_probe() is 
-invoked in a separate context from __device_attach_async_helper().
-The driver_probe_device() -> pm_runtime_get_suppliers() but [2] would 
-reduce link->rpm_active to 1.
-Then sd_probe() would invoke rpm_resume() and proceed as is.
-When sd_probe() invokes scsi_autopm_put_device() it'd start a timer, 
-dev->power.timer_autosuspends = 1.
-
-Now then, pm_runtime_put_suppliers() is invoked from 
-driver_probe_device() and that makes the link->rpm_active = 1.
-But by now, the corresponding 'sd dev' (consumer) usage_count = 0, state 
-= RPM_ACTIVE and link->rpm_active = 1.
-At this point of time, all other 'sd dev' (consumers) _may_ be suspended 
-or active but would have the link->rpm_active = 1.
-
-Since the supplier has 0 auto-suspend delay, it now suspends!
-
-
-Context [T1]
-Call trace:
-dump_backtrace+0x0/0x1d4
-show_stack+0x18/0x24
-dump_stack+0xc4/0x144
-__pm_runtime_idle+0xb4/0x184
-scsi_autopm_put_device+0x18/0x24
-scsi_sysfs_add_sdev+0x26c/0x278
-scsi_probe_and_add_lun+0xbac/0xd48
-__scsi_scan_target+0x38c/0x510
-scsi_scan_host_selected+0x14c/0x1e4
-scsi_scan_host+0x1e0/0x228
-ufshcd_async_scan+0x39c/0x408
-async_run_entry_fn+0x48/0x128
-process_one_work+0x1f0/0x470
-worker_thread+0x26c/0x4c8
-kthread+0x13c/0x320
-ret_from_fork+0x10/0x18
-
-
-Context [T2]
-Call trace:
-dump_backtrace+0x0/0x1d4
-show_stack+0x18/0x24
-dump_stack+0xc4/0x144
-rpm_get_suppliers+0x48/0x1ac
-__rpm_callback+0x58/0x12c
-rpm_resume+0x3a4/0x618
-__pm_runtime_resume+0x50/0x80
-scsi_autopm_get_device+0x20/0x54
-sd_probe+0x40/0x3d0
-really_probe+0x1bc/0x4a0
-driver_probe_device+0x84/0xf0
-__device_attach_driver+0x114/0x138
-bus_for_each_drv+0x84/0xd0
-__device_attach_async_helper+0x7c/0xf0
-async_run_entry_fn+0x48/0x128
-process_one_work+0x1f0/0x470
-worker_thread+0x26c/0x4c8
-kthread+0x13c/0x320
-ret_from_fork+0x10/0x18
-
-Below prints show how link->rpm_active becomes 1 for sd 0:0:0:4
-[    7.574654][  T212] Call trace:
-[    7.574657][  T212]  dump_backtrace+0x0/0x1d4
-[    7.574661][  T212]  show_stack+0x18/0x24
-[    7.574665][  T212]  dump_stack+0xc4/0x144
-[    7.574668][  T212]  __pm_runtime_idle+0xb4/0x184
-[    7.574671][  T212]  scsi_autopm_put_device+0x18/0x24
-[    7.574675][  T212]  sd_probe+0x314/0x3d0
-[    7.574677][  T212]  really_probe+0x1bc/0x4a0
-[    7.574680][  T212]  driver_probe_device+0x84/0xf0
-[    7.574683][  T212]  __device_attach_driver+0x114/0x138
-[    7.574686][  T212]  bus_for_each_drv+0x84/0xd0
-[    7.574689][  T212]  __device_attach_async_helper+0x7c/0xf0
-[    7.574692][  T212]  async_run_entry_fn+0x48/0x128
-[    7.574695][  T212]  process_one_work+0x1f0/0x470
-[    7.574698][  T212]  worker_thread+0x26c/0x4c8
-[    7.574700][  T212]  kthread+0x13c/0x320
-[    7.574703][  T212]  ret_from_fork+0x10/0x18
-[    7.574706][  T212] sd 0:0:0:4: scsi_runtime_idle
-[    7.574712][  T212] sd 0:0:0:4: __pm_runtime_idle: aft: [UFSDBG]: 
-pwr.timer_autosuspends: 1 pwr.request_pending: 0 retval: -16 
-pwr.request: 0 usage_count: 0 rpm_status: 0 link-rpm_active:2
-[    7.574715][  T212] sd 0:0:0:4: sd_probe: [UFSDBG]: Exit
-[    7.574738][  T212] sd 0:0:0:4: __pm_runtime_idle: b4: [UFSDBG]: 
-pwr.request: 0 usage_count: 0 rpm_status: 0 link-rpm_active:2
-
-[    7.574752][  T212] Workqueue: events_unbound async_run_entry_fn
-[    7.574754][  T212] Call trace:
-[    7.574758][  T212]  dump_backtrace+0x0/0x1d4
-[    7.574761][  T212]  show_stack+0x18/0x24
-[    7.574765][  T212]  dump_stack+0xc4/0x144
-[    7.574767][  T212]  __pm_runtime_idle+0xb4/0x184
-[    7.574770][  T212]  driver_probe_device+0x94/0xf0
-[    7.574773][  T212]  __device_attach_driver+0x114/0x138
-[    7.574775][  T212]  bus_for_each_drv+0x84/0xd0
-[    7.574778][  T212]  __device_attach_async_helper+0x7c/0xf0
-[    7.574781][  T212]  async_run_entry_fn+0x48/0x128
-[    7.574783][  T212]  process_one_work+0x1f0/0x470
-[    7.574786][  T212]  worker_thread+0x26c/0x4c8
-[    7.574788][  T212]  kthread+0x13c/0x320
-[    7.574791][  T212]  ret_from_fork+0x10/0x18
-[    7.574848][   T80] sd 0:0:0:4: scsi_runtime_idle
-[    7.574858][  T212] sd 0:0:0:4: __pm_runtime_idle: aft: [UFSDBG]: 
-pwr.timer_autosuspends: 1 pwr.request_pending: 0 retval: 0 pwr.request: 
-0 usage_count: 0 rpm_status: 0 link-rpm_active:2
-[    7.574863][  T212] sd 0:0:0:4: pm_runtime_put_suppliers: [UFSDBG]: 
-rpm_status: 0 link-rpm_active:1
-[    7.574866][  T212] sd 0:0:0:4: async probe completed
-[    7.574870][  T212] sd 0:0:0:4: __pm_runtime_idle: b4: [UFSDBG]: 
-pwr.request: 0 usage_count: 0 rpm_status: 0 link-rpm_active:1
-
-
-So, from the above it looks like when async probe is enabled this is a 
-possibility.
-
-I don't see a way around this. Please let me know if you 
-(@Alan/@Bart/@Adrian) have any thoughts on this.
-
-Thanks,
--asd
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-Linux Foundation Collaborative Project
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
