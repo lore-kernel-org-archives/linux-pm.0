@@ -2,164 +2,123 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 826CAC433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1EA9C433E6
 	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 05:24:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B85164FEE
+	by mail.kernel.org (Postfix) with ESMTP id 91A0C64FFF
 	for <linux-pm@archiver.kernel.org>; Wed, 10 Mar 2021 05:24:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229470AbhCJFYF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Mar 2021 00:24:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54290 "EHLO
+        id S229624AbhCJFYH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Mar 2021 00:24:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229483AbhCJFXl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Mar 2021 00:23:41 -0500
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E50C9C061761
-        for <linux-pm@vger.kernel.org>; Tue,  9 Mar 2021 21:23:40 -0800 (PST)
-Received: by mail-pj1-x1036.google.com with SMTP id gb6so924895pjb.0
-        for <linux-pm@vger.kernel.org>; Tue, 09 Mar 2021 21:23:40 -0800 (PST)
+        with ESMTP id S229712AbhCJFXu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Mar 2021 00:23:50 -0500
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42C09C061760
+        for <linux-pm@vger.kernel.org>; Tue,  9 Mar 2021 21:23:50 -0800 (PST)
+Received: by mail-pj1-x1033.google.com with SMTP id q6-20020a17090a4306b02900c42a012202so6829258pjg.5
+        for <linux-pm@vger.kernel.org>; Tue, 09 Mar 2021 21:23:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=kzNfsTKHRqikZKDJpk3ZLLd8WdOKtskH70hYikTl5M4=;
-        b=lYvgYuHQ+43IDf50Nw1EmBSIyL7fXfv4Nr3KnquWOQck0aXiXI0d4TTDuMmJ5K/8ls
-         gT2RRp5DI35ogBnizM4GiIE/LF4cTmFh9/3vyHwU/OaX8HMhGlxkAVxy1T54sBYbTy7o
-         uPcjlLO8QPgoLl/3mh2tZyVwEkY3TqgtZYFMvOiF+IXDX10DQzE5Qm4rRrG+evkDYR+q
-         2Dgt9UNJ1m59MfPiMwGxHFxKJrR1bR1r0I6NU0W7JkXfXOPBXpbb9xfuWTzx4qTy/U4z
-         g7lQ27S/9Ae58/q69oDcKy25XqJmIBTx0/sR3R8JjbDF/+LL7c620nyyEirBH4a9Tzl4
-         0kVg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=w6wCPUb8jc+iccj9hgb1LHjwvC5J45cqXfco5MhHDUE=;
+        b=GcDUVEmOuOLJi1qjvT3xY70Q/VduglDQg/3OhVeOvPvJ9qfFdveFwVIIfQjIT/XdBW
+         tM9lMLOWZDnsVZvmUUx9+A6PgmSp3B7LdL4z6GqjsUcM4UBcdeL8q1Tl0/2gEUoemmG4
+         ECwBW+gzKTcWu4h17TLRON6jDRvwVTmkEB3NmVxBxq986TvJFpebyjMs7PisM1mtablQ
+         y1TSdRSZ2m9URtC8qbht97oXOdmfmNwma0+CC0moeRV6dRc0rXpcJSogODML5hwMfW4j
+         l9WayPudva/pFfzQlUf563yEkNeBgSjUn0+TcsKy/liKV6Z11cYKRAMT2KtqhdtjFM5J
+         rojQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=kzNfsTKHRqikZKDJpk3ZLLd8WdOKtskH70hYikTl5M4=;
-        b=dwhQXWS5vRc3pkdz7W0vc5execKv5TJXa+RfdcFkCRukFcmgWkhpcXFfd9pWc5CTuT
-         ZKTQsAKFDx9pjUggtTKDI5rjC3c15udbPSJnextP4a1TYQEgArXrW9X7A0EKj3IkahZE
-         YSzu26iMlc6LsUiu17A7MrIZXHzFOAHkJozwcGXnBY6stKvpkuIW8b6JE1pv7fb0MWK0
-         k+qHLgHjOmxk8smHB8JClLkKKgnNuwd01EKM4LVxFuwx6HJPc9FUKj/sK2hpFPXrdJ6n
-         4FOwS8ue3XpM8BM4O6C0rQVL4XH5hIB1PJLPYHgMLvpHWQ88qMNgJJyOIRXpgyrMpujR
-         q9dA==
-X-Gm-Message-State: AOAM530BjSS8aN1fi4MwmHL/7I4MZ2nKrHalV9Mj/pmvkO3Wonf1463z
-        uB7+lsbg7M7+OSUZhVHmUiHeFg==
-X-Google-Smtp-Source: ABdhPJzuL00Zp+tBMXN7pBV0GvYvFgNsl98h+A5+Yaf3P8yLznthV781A8esUxFwRezpcnDhfzruig==
-X-Received: by 2002:a17:902:b08b:b029:e4:deb:69a9 with SMTP id p11-20020a170902b08bb02900e40deb69a9mr1241127plr.35.1615353820285;
-        Tue, 09 Mar 2021 21:23:40 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=w6wCPUb8jc+iccj9hgb1LHjwvC5J45cqXfco5MhHDUE=;
+        b=TPcQigxBi7flNtqRmmLUwfIH/0UO5vM5bUSwc/HtqaHQLPPwVWWVcmsobsk37MwMpT
+         zGJf91GDiv82xnpSpJKjimhUlu5o3O5knug7lwyg7J9npuFaKzclWJGVFob1iRC82AyS
+         XAa7FbjpJ7LkKFT8qqLZeBkawdy8B4w0wf0Dsigkbx0Wy+ylArlyQd5S2x++S4ggpvv0
+         mDwU5ojmc4f6OcElIjy8wBP3eg2Kms3LgfTzLrb15hagtAluQhr3C7Q80fA394ihKKa7
+         6XaiwlRw4ebxSoZbJl4hi70H9iZX7F0kFf2WxbXmySbklMnoY9gclN2o9sYAZfM0FGFC
+         b33A==
+X-Gm-Message-State: AOAM532zFg5RnQfcEhYuh/kcmcvKYnllQbw7kMlXY5W7RKX39HNDsQpm
+        1YbQhQGmyDlNlZbuODn3pO7GNg==
+X-Google-Smtp-Source: ABdhPJyCu/IJBazpcBzfHCKv5XISNe2XsVhsyMt7Keo6wwEF75q/J2xoclJuEMx1afLBb9iq7pplCg==
+X-Received: by 2002:a17:90a:d78e:: with SMTP id z14mr1644954pju.221.1615353829821;
+        Tue, 09 Mar 2021 21:23:49 -0800 (PST)
 Received: from localhost ([122.171.124.15])
-        by smtp.gmail.com with ESMTPSA id u9sm14776075pgc.59.2021.03.09.21.23.39
+        by smtp.gmail.com with ESMTPSA id z9sm8755996pgs.32.2021.03.09.21.23.49
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 09 Mar 2021 21:23:39 -0800 (PST)
+        Tue, 09 Mar 2021 21:23:49 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Ben Segall <bsegall@google.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Mel Gorman <mgorman@suse.de>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
         Sudeep Holla <sudeep.holla@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Will Deacon <will@kernel.org>
-Cc:     linux-pm@vger.kernel.org,
         Ionela Voinescu <ionela.voinescu@arm.com>,
-        linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V6 0/4] cpufreq: cppc: Add support for frequency invariance
-Date:   Wed, 10 Mar 2021 10:53:22 +0530
-Message-Id: <cover.1615351622.git.viresh.kumar@linaro.org>
+Subject: [PATCH V6 3/4] arch_topology: Export arch_freq_scale and helpers
+Date:   Wed, 10 Mar 2021 10:53:25 +0530
+Message-Id: <1b5c83549720da480b1e23e542f44b1edb2e4157.1615351622.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <cover.1615351622.git.viresh.kumar@linaro.org>
+References: <cover.1615351622.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+It is possible now for other parts of the kernel to provide their own
+implementation of sched_freq_tick() and they can very well be modules
+themselves (like CPPC cpufreq driver, which is going to use these in a
+later commit).
 
-CPPC cpufreq driver is used for ARM servers and this patch series tries
-to provide counter-based frequency invariance support for them in the
-absence for architecture specific counters (like AMUs).
+Export arch_freq_scale and topology_{set|clear}_scale_freq_source().
 
-This is tested by:
-- Vincent Guittot on ThunderX2.
-- Ionela Voinescu on Juno R2.
-- /me with hacks on Hikey, as I don't have access to the right hardware.
+Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
+Tested-by: Ionela Voinescu <ionela.voinescu@arm.com>
+Tested-by: Vincent Guittot <vincent.guittot@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/arch_topology.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-This is based of 5.12-rc2. I will merge these via the arm-cpufreq tree
-directly.
-
-Changes since V5:
-- New patch to rename freq_scale to arch_freq_scale (Will Deacon).
-- Separate patch to export arch_freq_scale and helpers (Will Deacon).
-- Some improvements in the last patch like commit log, moving more stuff
-  to policy init, new fie_disabled flag, etc. (Ionela Voinescu).
-- Added Reviewed/Acked/Tested-by tags.
-
-Changes since V4:
-- Move some code to policy specific initialization for cppc driver.
-- Initialize kthread specific stuff only once in cppc driver.
-- Added a kerneldoc comment in cppc driver and improved changelog as
-  well.
-
-Changes since V3:
-- rebuild_sched_domains_energy() stuff moved from arm64 to drivers/base.
-- Added Reviewed/Tested-by Ionela for the first patch.
-- Remove unused max_freq field from structure in cppc driver.
-- s/cppc_f_i/cppc_freq_inv.
-- Fix an per-cpu access, there was a bug in earlier version.
-- Create a single kthread which can run on any CPU and takes care of
-  work from all the CPUs.
-- Do the whole FIE thing under a new CONFIG option for cppc driver.
-- Few minor improvements.
-
-Changes since V2:
-- Not sending as an RFC anymore.
-- Several renames, reordering of code in 1/2 based on Ionela's comments.
-- Several rebase changes for 2/2.
-- The freq_scale calculations are optimized a bit.
-- Better overall commenting and commit logs.
-
-Changes since V1:
-- The interface for setting the callbacks is improved, so different
-  parts looking to provide their callbacks don't need to think about
-  each other.
-
-- Moved to per-cpu storage for storing the callback related data, AMU
-  counters have higher priority with this.
-
---
-Viresh
-
-Viresh Kumar (4):
-  arch_topology: Rename freq_scale as arch_freq_scale
-  arch_topology: Allow multiple entities to provide sched_freq_tick()
-    callback
-  arch_topology: Export arch_freq_scale and helpers
-  cpufreq: CPPC: Add support for frequency invariance
-
- arch/arm64/include/asm/topology.h |  10 +-
- arch/arm64/kernel/topology.c      | 109 +++++--------
- drivers/base/arch_topology.c      |  89 ++++++++++-
- drivers/cpufreq/Kconfig.arm       |  10 ++
- drivers/cpufreq/cppc_cpufreq.c    | 245 ++++++++++++++++++++++++++++--
- include/linux/arch_topology.h     |  19 ++-
- kernel/sched/core.c               |   1 +
- 7 files changed, 385 insertions(+), 98 deletions(-)
-
-
-base-commit: a38fd8748464831584a19438cbb3082b5a2dab15
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index ebcd2ea3091f..995e52b9eca4 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -78,6 +78,7 @@ void topology_set_scale_freq_source(struct scale_freq_data *data,
+ 
+ 	update_scale_freq_invariant(true);
+ }
++EXPORT_SYMBOL_GPL(topology_set_scale_freq_source);
+ 
+ void topology_clear_scale_freq_source(enum scale_freq_source source,
+ 				      const struct cpumask *cpus)
+@@ -96,6 +97,7 @@ void topology_clear_scale_freq_source(enum scale_freq_source source,
+ 
+ 	update_scale_freq_invariant(false);
+ }
++EXPORT_SYMBOL_GPL(topology_clear_scale_freq_source);
+ 
+ void topology_scale_freq_tick(void)
+ {
+@@ -106,6 +108,7 @@ void topology_scale_freq_tick(void)
+ }
+ 
+ DEFINE_PER_CPU(unsigned long, arch_freq_scale) = SCHED_CAPACITY_SCALE;
++EXPORT_SYMBOL_GPL(arch_freq_scale);
+ 
+ void topology_set_freq_scale(const struct cpumask *cpus, unsigned long cur_freq,
+ 			     unsigned long max_freq)
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
