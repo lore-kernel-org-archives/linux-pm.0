@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D74AFC43333
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D002C4321A
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8ECBB64F11
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3906964F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230476AbhCKTWI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Mar 2021 14:22:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38072 "EHLO
+        id S230426AbhCKTWG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Mar 2021 14:22:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38044 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230094AbhCKTVs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 14:21:48 -0500
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7C40C061574;
-        Thu, 11 Mar 2021 11:21:47 -0800 (PST)
-Received: by mail-lf1-x12f.google.com with SMTP id x4so34935887lfu.7;
-        Thu, 11 Mar 2021 11:21:47 -0800 (PST)
+        with ESMTP id S230047AbhCKTVm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 14:21:42 -0500
+Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4687C061574;
+        Thu, 11 Mar 2021 11:21:41 -0800 (PST)
+Received: by mail-lj1-x234.google.com with SMTP id f16so3612465ljm.1;
+        Thu, 11 Mar 2021 11:21:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=r0YTDRKEg68ROrVXaToU8Wcjr+vVydQlVmQ/OWyjWgg=;
-        b=dGAL4j4BsV5QyzEnqra3RC8Xbo9QxrUVyW20WZKTu5fZB8PcaLd6Q0dZfKCdvFFtGY
-         ul0GrV226fObFyvFxQHdsMNbIofDBoWGFC/IrhPs5wnHg5gucqUusBLd7Y1rl3JiD7U+
-         JfdvYKLKFmLHovCjDXyIZmbwMjZUW872AXXAZXScP0rtMTDL7ip7cViDIq9YBchS8pia
-         vEy7cJ9JEDlA7hRLOJ8mB76vzymSptU7r4MgVPfw7koPVSZifFvV7TKQmNzIU3aAd62s
-         npiqk8ynaCe2PDF+eZuyBa0Pa0p2uiw4VlxVTHH9yKD5DW7H0xEaMIV38sncrPcbRZcJ
-         2RJA==
+        bh=ov6L/wi+7+c3LJQtnAfH1iT/wWmTs9arji1NNjI5w4w=;
+        b=Yb2xQLauQk9/iW9wuQpdmmzQth3lijiwwro7aLkL5nw59+KYnhhGwe+WIsASJe2cBr
+         of7MVf0dwHgmm84nllvZVdfbbSiTFGCdTKGpaQSwxJ+1mQNO8nd9dFIg901Ya3V8mjHa
+         V3cjPw39w//0pzFRjKGn8TBsMyNb7IVbLBg4vmO5wOyP6grDoA/orJvrEIXjZitenosh
+         65JY/acJLBixVB+TAd71beQ7dZXUBG+OVI7t28wEBifdeUjo15dx4B5AwMHn4yqGi0NZ
+         EDjwMWYGla6li8QVOIPfR3DcF8njHOcUzDeuNpgxKkY9NVrmmTtNQBAN9TEqRiUQUkIE
+         NaMQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=r0YTDRKEg68ROrVXaToU8Wcjr+vVydQlVmQ/OWyjWgg=;
-        b=q1kJ7hwZZsmUW0g+6BfzfnVZ+CfMvwWDyBm+9vR50JN9EY+1XXcQJSqdS2leVgNjCo
-         e1Ncq+n41xy4Rw8Z4+YnoNrdT3psUFtAb6FvVTG56qxkQymAp6NPc1CQs3Un8LSvRgNv
-         r5//WxXfKeAMdPzt9T2Qpj07a2FrrHVSZeey7MZRdMWmC6c6/FPqa8Zv+M6dqOr520fo
-         Mae3Y2yL8PUCxDmI23LUN4Ng6h0uXbrnKl8/SlpCX8rWfbI7otmcBlch4UJRk+rSSEqD
-         0Y5CAqZ3RzMbHhaw8o7pKdbw/HHuEbrdtGLR3AGMVszSG3FYT6evxr3BxHI96UAb8u96
-         D+KA==
-X-Gm-Message-State: AOAM532xobjRf6ZPZt+GyP/fHEEV1+iBJg1MZ1QwJcH+mCsEOiXOcb+b
-        rQMuD6kMwp9CpLTLoBVUds3EfmlM51s=
-X-Google-Smtp-Source: ABdhPJwb8ysVVPvmoUCYBr2zwcOCS8CSTP0C/1S9MCVIrEL8VL8f1OZN/0+JiI5Ybm1C4mkALqUPWA==
-X-Received: by 2002:a19:4c87:: with SMTP id z129mr3119098lfa.183.1615490503974;
-        Thu, 11 Mar 2021 11:21:43 -0800 (PST)
+        bh=ov6L/wi+7+c3LJQtnAfH1iT/wWmTs9arji1NNjI5w4w=;
+        b=GRscBF8qmw4jQuBo4hGtvavWFlFNXoce0mdwfP2MrjIClxFhEeUiV+6p6/ppWtyawg
+         03sIa1MO2gyM9HTfVLzQzkOVUbVMvCOcnQVAQCel4wqz+aPyHHe1ERoSmYhyo2zKLcQe
+         IP0O7HyHzUiq3qbXw0orSShPXO+vZuYQ7AmYdOU2jXocMm7wbHaXkA5HKivNcciCWJhM
+         Q5+JdlCx4G4N6gxNWtW+2TThdRfNC+OVRiANxQTrChGq7ik9xKVCV+wq3fkwhTDOJlHG
+         rYNXAQmvrM/UvYlto7ShuwJhzCg9TFlZOq1/Nt1qXUNlCozsx6R5MiUBQGgfGALAALYq
+         wiSA==
+X-Gm-Message-State: AOAM531enb/LcFoitaBvvPWx7+151eg6cWSltYxuNwgBmx6jxyVXLe5D
+        Ff069D2gJBkuau0B5fK76W8=
+X-Google-Smtp-Source: ABdhPJz+liOGeJUMZvP/rB0AsK2HT9znbIStPC1d8LC453bn0G05ViKsvD2ssCnu0cxW5E/Wbnfj7A==
+X-Received: by 2002:a05:651c:124b:: with SMTP id h11mr213713ljh.401.1615490500164;
+        Thu, 11 Mar 2021 11:21:40 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
-        by smtp.gmail.com with ESMTPSA id u14sm1121153lfl.40.2021.03.11.11.21.42
+        by smtp.gmail.com with ESMTPSA id u14sm1121153lfl.40.2021.03.11.11.21.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 11:21:43 -0800 (PST)
+        Thu, 11 Mar 2021 11:21:39 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Qiang Yu <yuq825@gmail.com>, Rob Clark <robdclark@gmail.com>,
         Sean Paul <sean@poorly.run>, Rob Herring <robh@kernel.org>,
@@ -83,9 +83,9 @@ Cc:     Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
         linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org,
         linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v2 06/14] serial: qcom_geni_serial: Convert to use resource-managed OPP API
-Date:   Thu, 11 Mar 2021 22:20:57 +0300
-Message-Id: <20210311192105.14998-7-digetx@gmail.com>
+Subject: [PATCH v2 03/14] opp: Add devres wrapper for dev_pm_opp_set_supported_hw
+Date:   Thu, 11 Mar 2021 22:20:54 +0300
+Message-Id: <20210311192105.14998-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210311192105.14998-1-digetx@gmail.com>
 References: <20210311192105.14998-1-digetx@gmail.com>
@@ -97,91 +97,91 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Yangtao Li <tiny.windzz@gmail.com>
 
-Use resource-managed OPP API to simplify code.
+Add devres wrapper for dev_pm_opp_set_supported_hw() to simplify driver
+code.
 
 Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/tty/serial/qcom_geni_serial.c | 24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
+ drivers/opp/core.c     | 38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h |  8 ++++++++
+ 2 files changed, 46 insertions(+)
 
-diff --git a/drivers/tty/serial/qcom_geni_serial.c b/drivers/tty/serial/qcom_geni_serial.c
-index 291649f02821..7c6e029fdb2a 100644
---- a/drivers/tty/serial/qcom_geni_serial.c
-+++ b/drivers/tty/serial/qcom_geni_serial.c
-@@ -1352,6 +1352,7 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
- 	int irq;
- 	bool console = false;
- 	struct uart_driver *drv;
-+	struct opp_table *opp_table;
- 
- 	if (of_device_is_compatible(pdev->dev.of_node, "qcom,geni-debug-uart"))
- 		console = true;
-@@ -1433,14 +1434,14 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
- 	if (of_property_read_bool(pdev->dev.of_node, "cts-rts-swap"))
- 		port->cts_rts_swap = true;
- 
--	port->se.opp_table = dev_pm_opp_set_clkname(&pdev->dev, "se");
--	if (IS_ERR(port->se.opp_table))
--		return PTR_ERR(port->se.opp_table);
-+	opp_table = devm_pm_opp_set_clkname(&pdev->dev, "se");
-+	if (IS_ERR(opp_table))
-+		return PTR_ERR(opp_table);
- 	/* OPP table is optional */
--	ret = dev_pm_opp_of_add_table(&pdev->dev);
-+	ret = devm_pm_opp_of_add_table(&pdev->dev);
- 	if (ret && ret != -ENODEV) {
- 		dev_err(&pdev->dev, "invalid OPP table in device tree\n");
--		goto put_clkname;
-+		return ret;
- 	}
- 
- 	port->private_data.drv = drv;
-@@ -1450,7 +1451,7 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
- 
- 	ret = uart_add_one_port(drv, uport);
- 	if (ret)
--		goto err;
-+		return ret;
- 
- 	irq_set_status_flags(uport->irq, IRQ_NOAUTOEN);
- 	ret = devm_request_irq(uport->dev, uport->irq, qcom_geni_serial_isr,
-@@ -1458,7 +1459,7 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err(uport->dev, "Failed to get IRQ ret %d\n", ret);
- 		uart_remove_one_port(drv, uport);
--		goto err;
-+		return ret;
- 	}
- 
- 	/*
-@@ -1475,16 +1476,11 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
- 		if (ret) {
- 			device_init_wakeup(&pdev->dev, false);
- 			uart_remove_one_port(drv, uport);
--			goto err;
-+			return ret;
- 		}
- 	}
- 
- 	return 0;
--err:
--	dev_pm_opp_of_remove_table(&pdev->dev);
--put_clkname:
--	dev_pm_opp_put_clkname(port->se.opp_table);
--	return ret;
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 32fa2bff847b..f9e4ebb7aad0 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1857,6 +1857,44 @@ void dev_pm_opp_put_supported_hw(struct opp_table *opp_table)
  }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
  
- static int qcom_geni_serial_remove(struct platform_device *pdev)
-@@ -1492,8 +1488,6 @@ static int qcom_geni_serial_remove(struct platform_device *pdev)
- 	struct qcom_geni_serial_port *port = platform_get_drvdata(pdev);
- 	struct uart_driver *drv = port->private_data.drv;
++static void devm_pm_opp_supported_hw_release(void *data)
++{
++	dev_pm_opp_put_supported_hw(data);
++}
++
++/**
++ * devm_pm_opp_set_supported_hw() - Set supported platforms
++ * @dev: Device for which supported-hw has to be set.
++ * @versions: Array of hierarchy of versions to match.
++ * @count: Number of elements in the array.
++ *
++ * This is required only for the V2 bindings, and it enables a platform to
++ * specify the hierarchy of versions it supports. OPP layer will then enable
++ * OPPs, which are available for those versions, based on its 'opp-supported-hw'
++ * property.
++ *
++ * The opp_table structure will be freed after the device is destroyed.
++ */
++struct opp_table *devm_pm_opp_set_supported_hw(struct device *dev,
++					       const u32 *versions,
++					       unsigned int count)
++{
++	struct opp_table *opp_table;
++	int err;
++
++	opp_table = dev_pm_opp_set_supported_hw(dev, versions, count);
++	if (IS_ERR(opp_table))
++		return opp_table;
++
++	err = devm_add_action_or_reset(dev, devm_pm_opp_supported_hw_release,
++				       opp_table);
++	if (err)
++		opp_table = ERR_PTR(err);
++
++	return opp_table;
++}
++EXPORT_SYMBOL_GPL(devm_pm_opp_set_supported_hw);
++
+ /**
+  * dev_pm_opp_set_prop_name() - Set prop-extn name
+  * @dev: Device for which the prop-name has to be set.
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 284d23665b15..e68c3c29301e 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -144,6 +144,7 @@ int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb
  
--	dev_pm_opp_of_remove_table(&pdev->dev);
--	dev_pm_opp_put_clkname(port->se.opp_table);
- 	dev_pm_clear_wake_irq(&pdev->dev);
- 	device_init_wakeup(&pdev->dev, false);
- 	uart_remove_one_port(drv, &port->uport);
+ struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
+ void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
++struct opp_table *devm_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
+ struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count);
+@@ -321,6 +322,13 @@ static inline struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
+ 
+ static inline void dev_pm_opp_put_supported_hw(struct opp_table *opp_table) {}
+ 
++static inline struct opp_table *devm_pm_opp_set_supported_hw(struct device *dev,
++							     const u32 *versions,
++							     unsigned int count)
++{
++	return ERR_PTR(-EOPNOTSUPP);
++}
++
+ static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ 			int (*set_opp)(struct dev_pm_set_opp_data *data))
+ {
 -- 
 2.29.2
 
