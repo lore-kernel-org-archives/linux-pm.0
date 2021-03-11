@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02733C433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5CF8C4332E
 	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 17:24:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A482964DD1
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 17:24:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7242964E0C
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 17:24:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229675AbhCKRYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229756AbhCKRYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 11 Mar 2021 12:24:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40774 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40780 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229806AbhCKRXv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 12:23:51 -0500
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10BFAC061574;
-        Thu, 11 Mar 2021 09:23:51 -0800 (PST)
-Received: by mail-lj1-x229.google.com with SMTP id u4so3168989ljo.6;
-        Thu, 11 Mar 2021 09:23:50 -0800 (PST)
+        with ESMTP id S229819AbhCKRXw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 12:23:52 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FCC9C061760;
+        Thu, 11 Mar 2021 09:23:52 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id e7so41103982lft.2;
+        Thu, 11 Mar 2021 09:23:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=NLoHiP3d+5lNwT7CIKnzK9m4XZbys2sERvq2/PuPWts=;
-        b=OjWK3wFbksojHdfmupqd5gy+Mg37v24f6j+8Ol8GghZXgYnlKwjv0D+10szaRXsatR
-         Oah/RPo7tgEpMBJvtNSlw0maRM+Sy/z6e7DURhN2dDk/0BLd9NniGeCDGeycTjsx+L8E
-         4UMAh+a7sNYJQFfJOsTBYMQv/v48mlax2rcic89sVYfdHzmpUrULmLBDcYK1Z7GwuyRl
-         cNgSclfnXPb2kTyAkNE4QRXrg2GSwJYRhApcLxH8VbA0uhwWzXpWSbwu4ZfpXCw8Rz63
-         VjQ4PcqUSKPdcy1A+adzAjOr/G75y9nppt6Wc9Rl8SkKovZ2g5jDen6onnP4LRhGSFFD
-         dY5w==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=RHqyaVV9xNkvF/r79ZHMYRyngwcH1Np8oMRkBFJWWS4=;
+        b=jOzvebEprjH+UNDtQ0eiaWAJpepmixIx4HivkVVMR8DVeATpb0aWVeaHhz3g81NF7J
+         m07wO70GxtCYfBv9BhJ5YbjCgqmj3Kf1JgUYLLjm8Ox3DKLn3y1tFDSXKQvsJMD/iwab
+         7ia08BpOn9HvG5UgJ25e5xryGGMBgxjuJwtaKP9Q8FRLhDWKwQJXvIRuDfB4cjDBlK7e
+         m2YOj2ItToskDt3QLmK2rmM1jcFtOsFmk4MKGgDa2tgg+iBYufZk552MzllFaXINMkn0
+         /WAS5i0Z9Xv96ZiW+i9uLVffX/pT2BTiwH9LiMSDRVIXdxBpQEZCoz9BLv/EaYqPCPzN
+         7ivA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=NLoHiP3d+5lNwT7CIKnzK9m4XZbys2sERvq2/PuPWts=;
-        b=OMySTh6FovhfwIAOO1I7jPQ2mAsi781yaayIunrUG4b8UQAGHDK6Ayz7T7W0YNPUne
-         R1S+uEbOqeP4tvwgFI/Fo2IzO5auycbK6Yq/R8RTN6BUt5Bw00VcJGn9XjESkzwfBQiK
-         wl7FH7el3ZYFwpGCEaHrr4xh6Jl4xzeWULJGt7scaP7d4PZ8sgMUvnnhqrLWieuD3WLl
-         8WbwQlD2QWTnN4nWiOallFZVtu4VYnBFmvtM/phB+BJWQ+hqBMrrsPQWCovH6saciahl
-         /Gb+wPrJeULC730vfkGdycltxgusTRJCR92h6hvV/nprdKnYe3sj58ImpPK9DTzy/6Ni
-         8OPQ==
-X-Gm-Message-State: AOAM532mNJAMJnvDCD7ILxv2fqDxJc/4w7DbHmzxu7kNGWZJqIm4Wf1P
-        EL6bbWrR+87W//FK4khGk8MXnBBYE8k=
-X-Google-Smtp-Source: ABdhPJxudYcrz6shnnCY/yzrTieJmSXgC6cgM00Md07ielNo75CBMq/9vqKKoCu2ueg5MihZZ1OejQ==
-X-Received: by 2002:a2e:8111:: with SMTP id d17mr5366586ljg.337.1615483429543;
-        Thu, 11 Mar 2021 09:23:49 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=RHqyaVV9xNkvF/r79ZHMYRyngwcH1Np8oMRkBFJWWS4=;
+        b=U8jtD7t4ISMf+Uh3UolA9D3PAnVV9kQPpARYBy1oNhaoCD9oZNy2JuLYVjoT+rrL+9
+         9pcER6416e2VOW4W52o24zOAU68MpaBSMMVc+kng45Xs7y1V1S898OmlyMQ3DjaCNqrm
+         FmjKsCCVrMClU/0cXgEo3U8EfYdjKYrujxEP6iIZhVikEuFpCJC4sFctaoz2OMZzRxaE
+         pQprSPKl7aNfmGQf40nyR4+AT1nM8WxKMsDgGpH0ajg24lmVaA4ng/wvv4GBc2tMrnx9
+         UHTOdbI1iCGsoMkprYM+r+WXVCOcrgYtFYoROxe/1pxYFi/Wa5YSWEeH+a6AEhdjJVor
+         vAdA==
+X-Gm-Message-State: AOAM532IZz4NvQxd6JdmkCnZhXGUtvSedkTGD8UHvfy2VR98iY6NFydl
+        d4UNXiggPPsiH+DOju/SnSo=
+X-Google-Smtp-Source: ABdhPJztAQWmjq2zo62rB08ITil4t3jQrmqfbm1NE0Hhb0bt5ELzc1moRUFI8X2r17ZfHZjaQC25gA==
+X-Received: by 2002:a19:d61a:: with SMTP id n26mr2774558lfg.383.1615483430986;
+        Thu, 11 Mar 2021 09:23:50 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
-        by smtp.gmail.com with ESMTPSA id p5sm1180088ljj.26.2021.03.11.09.23.48
+        by smtp.gmail.com with ESMTPSA id p5sm1180088ljj.26.2021.03.11.09.23.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 09:23:49 -0800 (PST)
+        Thu, 11 Mar 2021 09:23:50 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,51 +65,100 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v15 0/2] Add memory bandwidth management to NVIDIA Tegra DRM driver
-Date:   Thu, 11 Mar 2021 20:22:53 +0300
-Message-Id: <20210311172255.25213-1-digetx@gmail.com>
+Subject: [PATCH v15 2/2] drm/tegra: dc: Extend debug stats with total number of events
+Date:   Thu, 11 Mar 2021 20:22:55 +0300
+Message-Id: <20210311172255.25213-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210311172255.25213-1-digetx@gmail.com>
+References: <20210311172255.25213-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds memory bandwidth management to the NVIDIA Tegra DRM driver,
-which is done using interconnect framework. It fixes display corruption that
-happens due to insufficient memory bandwidth.
+It's useful to know the total number of underflow events and currently
+the debug stats are getting reset each time CRTC is being disabled. Let's
+account the overall number of events that doesn't get a reset.
 
-Changelog:
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/gpu/drm/tegra/dc.c | 10 ++++++++++
+ drivers/gpu/drm/tegra/dc.h |  5 +++++
+ 2 files changed, 15 insertions(+)
 
-v15: - Corrected tegra_plane_icc_names[] NULL-check that was partially lost
-       by accident in v14 after unsuccessful rebase.
-
-v14: - Made improvements that were suggested by Michał Mirosław to v13:
-
-       - Changed 'unsigned int' to 'bool'.
-       - Renamed functions which calculate bandwidth state.
-       - Reworked comment in the code that explains why downscaled plane
-         require higher bandwidth.
-       - Added round-up to bandwidth calculation.
-       - Added sanity checks of the plane index and fixed out-of-bounds
-         access which happened on T124 due to the cursor plane index.
-
-v13: - No code changes. Patches missed v5.12, re-sending them for v5.13.
-
-Dmitry Osipenko (2):
-  drm/tegra: dc: Support memory bandwidth management
-  drm/tegra: dc: Extend debug stats with total number of events
-
- drivers/gpu/drm/tegra/Kconfig |   1 +
- drivers/gpu/drm/tegra/dc.c    | 362 ++++++++++++++++++++++++++++++++++
- drivers/gpu/drm/tegra/dc.h    |  19 ++
- drivers/gpu/drm/tegra/drm.c   |  14 ++
- drivers/gpu/drm/tegra/hub.c   |   3 +
- drivers/gpu/drm/tegra/plane.c | 127 ++++++++++++
- drivers/gpu/drm/tegra/plane.h |  15 ++
- 7 files changed, 541 insertions(+)
-
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 49fa488cf930..ecac28e814ec 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -1539,6 +1539,11 @@ static int tegra_dc_show_stats(struct seq_file *s, void *data)
+ 	seq_printf(s, "underflow: %lu\n", dc->stats.underflow);
+ 	seq_printf(s, "overflow: %lu\n", dc->stats.overflow);
+ 
++	seq_printf(s, "frames total: %lu\n", dc->stats.frames_total);
++	seq_printf(s, "vblank total: %lu\n", dc->stats.vblank_total);
++	seq_printf(s, "underflow total: %lu\n", dc->stats.underflow_total);
++	seq_printf(s, "overflow total: %lu\n", dc->stats.overflow_total);
++
+ 	return 0;
+ }
+ 
+@@ -2313,6 +2318,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): frame end\n", __func__);
+ 		*/
++		dc->stats.frames_total++;
+ 		dc->stats.frames++;
+ 	}
+ 
+@@ -2321,6 +2327,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		dev_dbg(dc->dev, "%s(): vertical blank\n", __func__);
+ 		*/
+ 		drm_crtc_handle_vblank(&dc->base);
++		dc->stats.vblank_total++;
+ 		dc->stats.vblank++;
+ 	}
+ 
+@@ -2328,6 +2335,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): underflow\n", __func__);
+ 		*/
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+@@ -2335,11 +2343,13 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): overflow\n", __func__);
+ 		*/
++		dc->stats.overflow_total++;
+ 		dc->stats.overflow++;
+ 	}
+ 
+ 	if (status & HEAD_UF_INT) {
+ 		dev_dbg_ratelimited(dc->dev, "%s(): head underflow\n", __func__);
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+diff --git a/drivers/gpu/drm/tegra/dc.h b/drivers/gpu/drm/tegra/dc.h
+index 69d4cca2e58c..ad8d51a55a00 100644
+--- a/drivers/gpu/drm/tegra/dc.h
++++ b/drivers/gpu/drm/tegra/dc.h
+@@ -48,6 +48,11 @@ struct tegra_dc_stats {
+ 	unsigned long vblank;
+ 	unsigned long underflow;
+ 	unsigned long overflow;
++
++	unsigned long frames_total;
++	unsigned long vblank_total;
++	unsigned long underflow_total;
++	unsigned long overflow_total;
+ };
+ 
+ struct tegra_windowgroup_soc {
 -- 
 2.29.2
 
