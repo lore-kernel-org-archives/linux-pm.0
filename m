@@ -2,931 +2,161 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B61DFC4332D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 17:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0161CC4332B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8DBE864FE2
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 17:24:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CFE3E64F10
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229809AbhCKRYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Mar 2021 12:24:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40778 "EHLO
+        id S230319AbhCKTWC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Mar 2021 14:22:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229814AbhCKRXw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 12:23:52 -0500
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A10BC061574;
-        Thu, 11 Mar 2021 09:23:52 -0800 (PST)
-Received: by mail-lj1-x22d.google.com with SMTP id z8so3162936ljm.12;
-        Thu, 11 Mar 2021 09:23:52 -0800 (PST)
+        with ESMTP id S229774AbhCKTVi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 14:21:38 -0500
+Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFDC0C061574;
+        Thu, 11 Mar 2021 11:21:37 -0800 (PST)
+Received: by mail-lj1-x230.google.com with SMTP id z25so3607014lja.3;
+        Thu, 11 Mar 2021 11:21:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ol+PqB97sAmKkiUelNgjvAjb9lKi7sQ5W80GevgjBXY=;
-        b=DlB+L6YytKKmqo6PUuZche4+0azwjiX95fLIjl77nWfcAG77wlrj1GAUYMcWnihILG
-         UrcoLcPyIfQQwytH93T+vyYWqFueO47tzgMhM+Goe8pKEF6khSz5oekA8TgWqdULzKE9
-         7F19c2YQ69k2jrT1k4JMj5UPvGU+bLqKO5unb+UCrSMq+1Oc1yj3MVwr5Wwag1gzJcqR
-         ZO+hfCvKF5w//temF2V8Pn44Sau9DjGw0+AGSCt96ZgATZhUFpJ4hT/cxkfAWW020nwg
-         Bn+Y29CnL8yC5scc7Stp6lpXLrGXPXo5An/pAoUC1J/dBQm5HZnDND6b1RcFzch5JbNc
-         S97w==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=nr3MMopQK2U9fHQgnqesF0TFAIQZjafir6ZJocCIzyI=;
+        b=MyIkaSeXkIuqBbDFC2RZN06Z7+tiTtAyEFnuG6JcB8fVDc/Sps5Y/4lD3XbsyeO4ae
+         TVru7tnsGRkHH9T+lqIfziLi24bGn4Y8kTsTE9yDA1ltlFtHAtJpiks0QkaZ9aRplxPS
+         5gaASxaSxYV09M2FNYhkdvW8CF+zEtfZisqi7xVpZXA/1IPDNlhxHt6m05FCcOY89lyR
+         2GdG2+f4JHdOC1hDD3wwJPE/7krkXhXW5bP+CHhYBHdm3OpOYonPaVP1OLWWZ9Kwv+eU
+         27iTZCIS1IVBb33goI5qAl9/7f1WShlaTr+5bUuPY/hADp7/1yeTfOzDA3lIhMeLMcrB
+         kshg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ol+PqB97sAmKkiUelNgjvAjb9lKi7sQ5W80GevgjBXY=;
-        b=lwGL/Tn9I2m23iajEVPjolaqyWl2W0h8C8NAN55Bxgj+wzEida1BZ8BF3petekUJUR
-         3l7nT3wTr+zCBmBXvZnu02fECrcxdWYwFwAZE0RAIs/kkM10IZLhJclRR2FWBztMtswu
-         AUDAC5t6bIBnxxtoQAQkbT9llGtYbHS7ec3tQ2fa9ckmgdpfNrGPHD9pNprD94kU3IYQ
-         zvkJq3DGpYzSCq9lByf6Mzk4mMucLLdnCD1j2VyBwAIKG3YP5d3s9wT+I0n5geNn5D2j
-         THMxNH2+Wgaf9SF3G9PfSipI95/mhubdmKYsBTzus2P3iLyJnpQSQVOnl2Sva8M8k4qw
-         8Vig==
-X-Gm-Message-State: AOAM532poGQEbe7jpuon1rkeO+bMJZYju8RJOGVu33h+nCAtsF4SJ1yi
-        ZkyQqwUxTPtNHWHbpvxYYyA=
-X-Google-Smtp-Source: ABdhPJyaK/qEBQfb/YiPtGw1jgHfz11uQ1oUlCmgOrA8Bxrm2iv8Mrn0LveweySGnycbseehq7ph8g==
-X-Received: by 2002:a2e:96c7:: with SMTP id d7mr5417307ljj.268.1615483430341;
-        Thu, 11 Mar 2021 09:23:50 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=nr3MMopQK2U9fHQgnqesF0TFAIQZjafir6ZJocCIzyI=;
+        b=SU8oCQXPSZuT7rjtLz2JzEq3yTH5DnZthgvl/KK2CbcWvCrUzxrVqM/XgZ0WkQM8xc
+         8Whk3xb+TsUHQ5B0ypA7ggtbf6fg09csUXCxlgTUE6Tvb2rG+7SZwjxxfsrfd6A9fkKq
+         vqdzH9bjMCS+FoZJPuPwsI9aOo6+XpV8hug0/U8JX3XYbMvKa0xTAuSjWH9o8vELuO+z
+         /fdLEiRyStdDusvSisJLu6b0K56RCUwR46y/nCVBSNZk74ItkbACKu8k1HgvIeI9rCg1
+         dYOaPc8CqjaaUIieYQPkVFyk6LqRZ2cj4MRQ7Zp/OirJ/M99AkJeZQRM2eQrmSD8b2fd
+         kAXA==
+X-Gm-Message-State: AOAM531iMjIci2L41j8DNaDVAOeo8UKHtywdRyRdYwcLEbgR0eVcPIcL
+        Vv0mrzTpiq8ZdyQvKILWDB0=
+X-Google-Smtp-Source: ABdhPJwV50MJdowwGjHNgx6AtXCWhwuCfX9B+Ri0kWRJuRnNED/9RtxV4BcKLyAa4veO0GRq4JAp4w==
+X-Received: by 2002:a2e:9f45:: with SMTP id v5mr215188ljk.183.1615490496374;
+        Thu, 11 Mar 2021 11:21:36 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
-        by smtp.gmail.com with ESMTPSA id p5sm1180088ljj.26.2021.03.11.09.23.49
+        by smtp.gmail.com with ESMTPSA id u14sm1121153lfl.40.2021.03.11.11.21.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 09:23:50 -0800 (PST)
+        Thu, 11 Mar 2021 11:21:35 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v15 1/2] drm/tegra: dc: Support memory bandwidth management
-Date:   Thu, 11 Mar 2021 20:22:54 +0300
-Message-Id: <20210311172255.25213-2-digetx@gmail.com>
+To:     Qiang Yu <yuq825@gmail.com>, Rob Clark <robdclark@gmail.com>,
+        Sean Paul <sean@poorly.run>, Rob Herring <robh@kernel.org>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        Steven Price <steven.price@arm.com>,
+        Alyssa Rosenzweig <alyssa.rosenzweig@collabora.com>,
+        Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Yangtao Li <tiny.windzz@gmail.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
+        lima@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+Subject: [PATCH v2 00/14] Introduce devm_pm_opp_* API
+Date:   Thu, 11 Mar 2021 22:20:51 +0300
+Message-Id: <20210311192105.14998-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20210311172255.25213-1-digetx@gmail.com>
-References: <20210311172255.25213-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Display controller (DC) performs isochronous memory transfers, and thus,
-has a requirement for a minimum memory bandwidth that shall be fulfilled,
-otherwise framebuffer data can't be fetched fast enough and this results
-in a DC's data-FIFO underflow that follows by a visual corruption.
+This series adds resource-managed OPP API helpers and makes drivers
+to use them.
 
-The Memory Controller drivers provide facility for memory bandwidth
-management via interconnect API. Let's wire up the interconnect API
-support to the DC driver in order to fix the distorted display output
-on T30 Ouya, T124 TK1 and other Tegra devices.
+Changelog:
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
-Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/gpu/drm/tegra/Kconfig |   1 +
- drivers/gpu/drm/tegra/dc.c    | 352 ++++++++++++++++++++++++++++++++++
- drivers/gpu/drm/tegra/dc.h    |  14 ++
- drivers/gpu/drm/tegra/drm.c   |  14 ++
- drivers/gpu/drm/tegra/hub.c   |   3 +
- drivers/gpu/drm/tegra/plane.c | 127 ++++++++++++
- drivers/gpu/drm/tegra/plane.h |  15 ++
- 7 files changed, 526 insertions(+)
+v2: - This is a continuation of the work that was started by Yangtao Li.
+      Apparently Yangtao doesn't have time to finish it, so I
+      (Dmitry Osipenko) picked up the effort since these patches are
+      wanted by the NVIDIA Tegra voltage-scaling series that I'm
+      working on.
 
-diff --git a/drivers/gpu/drm/tegra/Kconfig b/drivers/gpu/drm/tegra/Kconfig
-index 5043dcaf1cf9..1650a448eabd 100644
---- a/drivers/gpu/drm/tegra/Kconfig
-+++ b/drivers/gpu/drm/tegra/Kconfig
-@@ -9,6 +9,7 @@ config DRM_TEGRA
- 	select DRM_MIPI_DSI
- 	select DRM_PANEL
- 	select TEGRA_HOST1X
-+	select INTERCONNECT
- 	select IOMMU_IOVA
- 	select CEC_CORE if CEC_NOTIFIER
- 	help
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index 0ae3a025efe9..49fa488cf930 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -8,6 +8,7 @@
- #include <linux/debugfs.h>
- #include <linux/delay.h>
- #include <linux/iommu.h>
-+#include <linux/interconnect.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
- #include <linux/pm_runtime.h>
-@@ -616,6 +617,9 @@ static int tegra_plane_atomic_check(struct drm_plane *plane,
- 	struct tegra_dc *dc = to_tegra_dc(state->crtc);
- 	int err;
- 
-+	plane_state->peak_memory_bandwidth = 0;
-+	plane_state->avg_memory_bandwidth = 0;
-+
- 	/* no need for further checks if the plane is being disabled */
- 	if (!state->crtc)
- 		return 0;
-@@ -802,6 +806,12 @@ static struct drm_plane *tegra_primary_plane_create(struct drm_device *drm,
- 	formats = dc->soc->primary_formats;
- 	modifiers = dc->soc->modifiers;
- 
-+	err = tegra_plane_interconnect_init(plane);
-+	if (err) {
-+		kfree(plane);
-+		return ERR_PTR(err);
-+	}
-+
- 	err = drm_universal_plane_init(drm, &plane->base, possible_crtcs,
- 				       &tegra_plane_funcs, formats,
- 				       num_formats, modifiers, type, NULL);
-@@ -833,9 +843,13 @@ static const u32 tegra_cursor_plane_formats[] = {
- static int tegra_cursor_atomic_check(struct drm_plane *plane,
- 				     struct drm_plane_state *state)
- {
-+	struct tegra_plane_state *plane_state = to_tegra_plane_state(state);
- 	struct tegra_plane *tegra = to_tegra_plane(plane);
- 	int err;
- 
-+	plane_state->peak_memory_bandwidth = 0;
-+	plane_state->avg_memory_bandwidth = 0;
-+
- 	/* no need for further checks if the plane is being disabled */
- 	if (!state->crtc)
- 		return 0;
-@@ -973,6 +987,12 @@ static struct drm_plane *tegra_dc_cursor_plane_create(struct drm_device *drm,
- 	num_formats = ARRAY_SIZE(tegra_cursor_plane_formats);
- 	formats = tegra_cursor_plane_formats;
- 
-+	err = tegra_plane_interconnect_init(plane);
-+	if (err) {
-+		kfree(plane);
-+		return ERR_PTR(err);
-+	}
-+
- 	err = drm_universal_plane_init(drm, &plane->base, possible_crtcs,
- 				       &tegra_plane_funcs, formats,
- 				       num_formats, NULL,
-@@ -1087,6 +1107,12 @@ static struct drm_plane *tegra_dc_overlay_plane_create(struct drm_device *drm,
- 	num_formats = dc->soc->num_overlay_formats;
- 	formats = dc->soc->overlay_formats;
- 
-+	err = tegra_plane_interconnect_init(plane);
-+	if (err) {
-+		kfree(plane);
-+		return ERR_PTR(err);
-+	}
-+
- 	if (!cursor)
- 		type = DRM_PLANE_TYPE_OVERLAY;
- 	else
-@@ -1204,6 +1230,7 @@ tegra_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
- {
- 	struct tegra_dc_state *state = to_dc_state(crtc->state);
- 	struct tegra_dc_state *copy;
-+	unsigned int i;
- 
- 	copy = kmalloc(sizeof(*copy), GFP_KERNEL);
- 	if (!copy)
-@@ -1215,6 +1242,9 @@ tegra_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
- 	copy->div = state->div;
- 	copy->planes = state->planes;
- 
-+	for (i = 0; i < ARRAY_SIZE(state->plane_peak_bw); i++)
-+		copy->plane_peak_bw[i] = state->plane_peak_bw[i];
-+
- 	return &copy->base;
- }
- 
-@@ -1741,6 +1771,106 @@ static int tegra_dc_wait_idle(struct tegra_dc *dc, unsigned long timeout)
- 	return -ETIMEDOUT;
- }
- 
-+static void
-+tegra_crtc_update_memory_bandwidth(struct drm_crtc *crtc,
-+				   struct drm_atomic_state *state,
-+				   bool prepare_bandwidth_transition)
-+{
-+	const struct tegra_plane_state *old_tegra_state, *new_tegra_state;
-+	const struct tegra_dc_state *old_dc_state, *new_dc_state;
-+	u32 i, new_avg_bw, old_avg_bw, new_peak_bw, old_peak_bw;
-+	const struct drm_plane_state *old_plane_state;
-+	const struct drm_crtc_state *old_crtc_state;
-+	struct tegra_dc_window window, old_window;
-+	struct tegra_dc *dc = to_tegra_dc(crtc);
-+	struct tegra_plane *tegra;
-+	struct drm_plane *plane;
-+
-+	if (dc->soc->has_nvdisplay)
-+		return;
-+
-+	old_crtc_state = drm_atomic_get_old_crtc_state(state, crtc);
-+	old_dc_state = to_const_dc_state(old_crtc_state);
-+	new_dc_state = to_const_dc_state(crtc->state);
-+
-+	if (!crtc->state->active) {
-+		if (!old_crtc_state->active)
-+			return;
-+
-+		/*
-+		 * When CRTC is disabled on DPMS, the state of attached planes
-+		 * is kept unchanged. Hence we need to enforce removal of the
-+		 * bandwidths from the ICC paths.
-+		 */
-+		drm_atomic_crtc_for_each_plane(plane, crtc) {
-+			tegra = to_tegra_plane(plane);
-+
-+			icc_set_bw(tegra->icc_mem, 0, 0);
-+			icc_set_bw(tegra->icc_mem_vfilter, 0, 0);
-+		}
-+
-+		return;
-+	}
-+
-+	for_each_old_plane_in_state(old_crtc_state->state, plane,
-+				    old_plane_state, i) {
-+		old_tegra_state = to_const_tegra_plane_state(old_plane_state);
-+		new_tegra_state = to_const_tegra_plane_state(plane->state);
-+		tegra = to_tegra_plane(plane);
-+
-+		/*
-+		 * We're iterating over the global atomic state and it contains
-+		 * planes from another CRTC, hence we need to filter out the
-+		 * planes unrelated to this CRTC.
-+		 */
-+		if (tegra->dc != dc)
-+			continue;
-+
-+		new_avg_bw = new_tegra_state->avg_memory_bandwidth;
-+		old_avg_bw = old_tegra_state->avg_memory_bandwidth;
-+
-+		new_peak_bw = new_dc_state->plane_peak_bw[tegra->index];
-+		old_peak_bw = old_dc_state->plane_peak_bw[tegra->index];
-+
-+		/*
-+		 * See the comment related to !crtc->state->active above,
-+		 * which explains why bandwidths need to be updated when
-+		 * CRTC is turning ON.
-+		 */
-+		if (new_avg_bw == old_avg_bw && new_peak_bw == old_peak_bw &&
-+		    old_crtc_state->active)
-+			continue;
-+
-+		window.src.h = drm_rect_height(&plane->state->src) >> 16;
-+		window.dst.h = drm_rect_height(&plane->state->dst);
-+
-+		old_window.src.h = drm_rect_height(&old_plane_state->src) >> 16;
-+		old_window.dst.h = drm_rect_height(&old_plane_state->dst);
-+
-+		/*
-+		 * During the preparation phase (atomic_begin), the memory
-+		 * freq should go high before the DC changes are committed
-+		 * if bandwidth requirement goes up, otherwise memory freq
-+		 * should to stay high if BW requirement goes down.  The
-+		 * opposite applies to the completion phase (post_commit).
-+		 */
-+		if (prepare_bandwidth_transition) {
-+			new_avg_bw = max(old_avg_bw, new_avg_bw);
-+			new_peak_bw = max(old_peak_bw, new_peak_bw);
-+
-+			if (tegra_plane_use_vertical_filtering(tegra, &old_window))
-+				window = old_window;
-+		}
-+
-+		icc_set_bw(tegra->icc_mem, new_avg_bw, new_peak_bw);
-+
-+		if (tegra_plane_use_vertical_filtering(tegra, &window))
-+			icc_set_bw(tegra->icc_mem_vfilter, new_avg_bw, new_peak_bw);
-+		else
-+			icc_set_bw(tegra->icc_mem_vfilter, 0, 0);
-+	}
-+}
-+
- static void tegra_crtc_atomic_disable(struct drm_crtc *crtc,
- 				      struct drm_atomic_state *state)
- {
-@@ -1922,6 +2052,8 @@ static void tegra_crtc_atomic_begin(struct drm_crtc *crtc,
- {
- 	unsigned long flags;
- 
-+	tegra_crtc_update_memory_bandwidth(crtc, state, true);
-+
- 	if (crtc->state->event) {
- 		spin_lock_irqsave(&crtc->dev->event_lock, flags);
- 
-@@ -1954,7 +2086,215 @@ static void tegra_crtc_atomic_flush(struct drm_crtc *crtc,
- 	value = tegra_dc_readl(dc, DC_CMD_STATE_CONTROL);
- }
- 
-+static bool tegra_plane_is_cursor(const struct drm_plane_state *state)
-+{
-+	const struct tegra_dc_soc_info *soc = to_tegra_dc(state->crtc)->soc;
-+	const struct drm_format_info *fmt = state->fb->format;
-+	unsigned int src_w = drm_rect_width(&state->src) >> 16;
-+	unsigned int dst_w = drm_rect_width(&state->dst);
-+
-+	if (state->plane->type != DRM_PLANE_TYPE_CURSOR)
-+		return false;
-+
-+	if (soc->supports_cursor)
-+		return true;
-+
-+	if (src_w != dst_w || fmt->num_planes != 1 || src_w * fmt->cpp[0] > 256)
-+		return false;
-+
-+	return true;
-+}
-+
-+static unsigned long
-+tegra_plane_overlap_mask(struct drm_crtc_state *state,
-+			 const struct drm_plane_state *plane_state)
-+{
-+	const struct drm_plane_state *other_state;
-+	const struct tegra_plane *tegra;
-+	unsigned long overlap_mask = 0;
-+	struct drm_plane *plane;
-+	struct drm_rect rect;
-+
-+	if (!plane_state->visible || !plane_state->fb)
-+		return 0;
-+
-+	drm_atomic_crtc_state_for_each_plane_state(plane, other_state, state) {
-+		rect = plane_state->dst;
-+
-+		tegra = to_tegra_plane(other_state->plane);
-+
-+		if (!other_state->visible || !other_state->fb)
-+			continue;
-+
-+		/*
-+		 * Ignore cursor plane overlaps because it's not practical to
-+		 * assume that it contributes to the bandwidth in overlapping
-+		 * area if window width is small.
-+		 */
-+		if (tegra_plane_is_cursor(other_state))
-+			continue;
-+
-+		if (drm_rect_intersect(&rect, &other_state->dst))
-+			overlap_mask |= BIT(tegra->index);
-+	}
-+
-+	/*
-+	 * Data-prefetch FIFO will easily help to overcome temporal memory
-+	 * pressure if other plane overlaps with the cursor plane.
-+	 */
-+	if (tegra_plane_is_cursor(plane_state) && overlap_mask)
-+		return 0;
-+
-+	return overlap_mask;
-+}
-+
-+static struct drm_plane *
-+tegra_crtc_get_plane_by_index(struct drm_crtc *crtc, unsigned int index)
-+{
-+	struct drm_plane *plane;
-+
-+	drm_atomic_crtc_for_each_plane(plane, crtc) {
-+		if (to_tegra_plane(plane)->index == index)
-+			return plane;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int tegra_crtc_calculate_memory_bandwidth(struct drm_crtc *crtc,
-+						 struct drm_atomic_state *state)
-+{
-+	ulong overlap_mask[TEGRA_DC_LEGACY_PLANES_NUM] = {}, mask;
-+	u32 plane_peak_bw[TEGRA_DC_LEGACY_PLANES_NUM] = {};
-+	bool all_planes_overlap_simultaneously = true;
-+	const struct tegra_plane_state *tegra_state;
-+	const struct drm_plane_state *plane_state;
-+	const struct tegra_dc_state *old_dc_state;
-+	struct tegra_dc *dc = to_tegra_dc(crtc);
-+	const struct drm_crtc_state *old_state;
-+	struct tegra_dc_state *new_dc_state;
-+	struct drm_crtc_state *new_state;
-+	struct tegra_plane *tegra;
-+	struct drm_plane *plane;
-+	u32 i, k, overlap_bw;
-+
-+	/*
-+	 * The nv-display uses shared planes.  The algorithm below assumes
-+	 * maximum 3 planes per-CRTC, this assumption isn't applicable to
-+	 * the nv-display.  Note that T124 support has additional windows,
-+	 * but currently they aren't supported by the driver.
-+	 */
-+	if (dc->soc->has_nvdisplay)
-+		return 0;
-+
-+	new_state = drm_atomic_get_new_crtc_state(state, crtc);
-+	new_dc_state = to_dc_state(new_state);
-+
-+	/*
-+	 * For overlapping planes pixel's data is fetched for each plane at
-+	 * the same time, hence bandwidths are accumulated in this case.
-+	 * This needs to be taken into account for calculating total bandwidth
-+	 * consumed by all planes.
-+	 *
-+	 * Here we get the overlapping state of each plane, which is a
-+	 * bitmask of plane indices telling with what planes there is an
-+	 * overlap. Note that bitmask[plane] includes BIT(plane) in order
-+	 * to make further code nicer and simpler.
-+	 */
-+	drm_atomic_crtc_state_for_each_plane_state(plane, plane_state, new_state) {
-+		tegra_state = to_const_tegra_plane_state(plane_state);
-+		tegra = to_tegra_plane(plane);
-+
-+		if (WARN_ON_ONCE(tegra->index >= TEGRA_DC_LEGACY_PLANES_NUM))
-+			return -EINVAL;
-+
-+		plane_peak_bw[tegra->index] = tegra_state->peak_memory_bandwidth;
-+		mask = tegra_plane_overlap_mask(new_state, plane_state);
-+		overlap_mask[tegra->index] = mask;
-+
-+		if (hweight_long(mask) != 3)
-+			all_planes_overlap_simultaneously = false;
-+	}
-+
-+	old_state = drm_atomic_get_old_crtc_state(state, crtc);
-+	old_dc_state = to_const_dc_state(old_state);
-+
-+	/*
-+	 * Then we calculate maximum bandwidth of each plane state.
-+	 * The bandwidth includes the plane BW + BW of the "simultaneously"
-+	 * overlapping planes, where "simultaneously" means areas where DC
-+	 * fetches from the planes simultaneously during of scan-out process.
-+	 *
-+	 * For example, if plane A overlaps with planes B and C, but B and C
-+	 * don't overlap, then the peak bandwidth will be either in area where
-+	 * A-and-B or A-and-C planes overlap.
-+	 *
-+	 * The plane_peak_bw[] contains peak memory bandwidth values of
-+	 * each plane, this information is needed by interconnect provider
-+	 * in order to set up latency allowness based on the peak BW, see
-+	 * tegra_crtc_update_memory_bandwidth().
-+	 */
-+	for (i = 0; i < ARRAY_SIZE(plane_peak_bw); i++) {
-+		overlap_bw = 0;
-+
-+		for_each_set_bit(k, &overlap_mask[i], 3) {
-+			if (k == i)
-+				continue;
-+
-+			if (all_planes_overlap_simultaneously)
-+				overlap_bw += plane_peak_bw[k];
-+			else
-+				overlap_bw = max(overlap_bw, plane_peak_bw[k]);
-+		}
-+
-+		new_dc_state->plane_peak_bw[i] = plane_peak_bw[i] + overlap_bw;
-+
-+		/*
-+		 * If plane's peak bandwidth changed (for example plane isn't
-+		 * overlapped anymore) and plane isn't in the atomic state,
-+		 * then add plane to the state in order to have the bandwidth
-+		 * updated.
-+		 */
-+		if (old_dc_state->plane_peak_bw[i] !=
-+		    new_dc_state->plane_peak_bw[i]) {
-+			plane = tegra_crtc_get_plane_by_index(crtc, i);
-+			if (!plane)
-+				continue;
-+
-+			plane_state = drm_atomic_get_plane_state(state, plane);
-+			if (IS_ERR(plane_state))
-+				return PTR_ERR(plane_state);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int tegra_crtc_atomic_check(struct drm_crtc *crtc,
-+				   struct drm_atomic_state *state)
-+{
-+	int err;
-+
-+	err = tegra_crtc_calculate_memory_bandwidth(crtc, state);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+void tegra_crtc_atomic_post_commit(struct drm_crtc *crtc,
-+				   struct drm_atomic_state *state)
-+{
-+	/*
-+	 * Display bandwidth is allowed to go down only once hardware state
-+	 * is known to be armed, i.e. state was committed and VBLANK event
-+	 * received.
-+	 */
-+	tegra_crtc_update_memory_bandwidth(crtc, state, false);
-+}
-+
- static const struct drm_crtc_helper_funcs tegra_crtc_helper_funcs = {
-+	.atomic_check = tegra_crtc_atomic_check,
- 	.atomic_begin = tegra_crtc_atomic_begin,
- 	.atomic_flush = tegra_crtc_atomic_flush,
- 	.atomic_enable = tegra_crtc_atomic_enable,
-@@ -2245,7 +2585,9 @@ static const struct tegra_dc_soc_info tegra20_dc_soc_info = {
- 	.overlay_formats = tegra20_overlay_formats,
- 	.modifiers = tegra20_modifiers,
- 	.has_win_a_without_filters = true,
-+	.has_win_b_vfilter_mem_client = true,
- 	.has_win_c_without_vert_filter = true,
-+	.plane_tiled_memory_bandwidth_x2 = false,
- };
- 
- static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
-@@ -2264,7 +2606,9 @@ static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
- 	.overlay_formats = tegra20_overlay_formats,
- 	.modifiers = tegra20_modifiers,
- 	.has_win_a_without_filters = false,
-+	.has_win_b_vfilter_mem_client = true,
- 	.has_win_c_without_vert_filter = false,
-+	.plane_tiled_memory_bandwidth_x2 = true,
- };
- 
- static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
-@@ -2283,7 +2627,9 @@ static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
- 	.overlay_formats = tegra114_overlay_formats,
- 	.modifiers = tegra20_modifiers,
- 	.has_win_a_without_filters = false,
-+	.has_win_b_vfilter_mem_client = false,
- 	.has_win_c_without_vert_filter = false,
-+	.plane_tiled_memory_bandwidth_x2 = true,
- };
- 
- static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
-@@ -2302,7 +2648,9 @@ static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
- 	.overlay_formats = tegra124_overlay_formats,
- 	.modifiers = tegra124_modifiers,
- 	.has_win_a_without_filters = false,
-+	.has_win_b_vfilter_mem_client = false,
- 	.has_win_c_without_vert_filter = false,
-+	.plane_tiled_memory_bandwidth_x2 = false,
- };
- 
- static const struct tegra_dc_soc_info tegra210_dc_soc_info = {
-@@ -2321,7 +2669,9 @@ static const struct tegra_dc_soc_info tegra210_dc_soc_info = {
- 	.overlay_formats = tegra114_overlay_formats,
- 	.modifiers = tegra124_modifiers,
- 	.has_win_a_without_filters = false,
-+	.has_win_b_vfilter_mem_client = false,
- 	.has_win_c_without_vert_filter = false,
-+	.plane_tiled_memory_bandwidth_x2 = false,
- };
- 
- static const struct tegra_windowgroup_soc tegra186_dc_wgrps[] = {
-@@ -2370,6 +2720,7 @@ static const struct tegra_dc_soc_info tegra186_dc_soc_info = {
- 	.has_nvdisplay = true,
- 	.wgrps = tegra186_dc_wgrps,
- 	.num_wgrps = ARRAY_SIZE(tegra186_dc_wgrps),
-+	.plane_tiled_memory_bandwidth_x2 = false,
- };
- 
- static const struct tegra_windowgroup_soc tegra194_dc_wgrps[] = {
-@@ -2418,6 +2769,7 @@ static const struct tegra_dc_soc_info tegra194_dc_soc_info = {
- 	.has_nvdisplay = true,
- 	.wgrps = tegra194_dc_wgrps,
- 	.num_wgrps = ARRAY_SIZE(tegra194_dc_wgrps),
-+	.plane_tiled_memory_bandwidth_x2 = false,
- };
- 
- static const struct of_device_id tegra_dc_of_match[] = {
-diff --git a/drivers/gpu/drm/tegra/dc.h b/drivers/gpu/drm/tegra/dc.h
-index 051d03dcb9b0..69d4cca2e58c 100644
---- a/drivers/gpu/drm/tegra/dc.h
-+++ b/drivers/gpu/drm/tegra/dc.h
-@@ -15,6 +15,8 @@
- 
- struct tegra_output;
- 
-+#define TEGRA_DC_LEGACY_PLANES_NUM	7
-+
- struct tegra_dc_state {
- 	struct drm_crtc_state base;
- 
-@@ -23,6 +25,8 @@ struct tegra_dc_state {
- 	unsigned int div;
- 
- 	u32 planes;
-+
-+	unsigned long plane_peak_bw[TEGRA_DC_LEGACY_PLANES_NUM];
- };
- 
- static inline struct tegra_dc_state *to_dc_state(struct drm_crtc_state *state)
-@@ -33,6 +37,12 @@ static inline struct tegra_dc_state *to_dc_state(struct drm_crtc_state *state)
- 	return NULL;
- }
- 
-+static inline const struct tegra_dc_state *
-+to_const_dc_state(const struct drm_crtc_state *state)
-+{
-+	return to_dc_state((struct drm_crtc_state *)state);
-+}
-+
- struct tegra_dc_stats {
- 	unsigned long frames;
- 	unsigned long vblank;
-@@ -65,7 +75,9 @@ struct tegra_dc_soc_info {
- 	unsigned int num_overlay_formats;
- 	const u64 *modifiers;
- 	bool has_win_a_without_filters;
-+	bool has_win_b_vfilter_mem_client;
- 	bool has_win_c_without_vert_filter;
-+	bool plane_tiled_memory_bandwidth_x2;
- };
- 
- struct tegra_dc {
-@@ -151,6 +163,8 @@ int tegra_dc_state_setup_clock(struct tegra_dc *dc,
- 			       struct drm_crtc_state *crtc_state,
- 			       struct clk *clk, unsigned long pclk,
- 			       unsigned int div);
-+void tegra_crtc_atomic_post_commit(struct drm_crtc *crtc,
-+				   struct drm_atomic_state *state);
- 
- /* from rgb.c */
- int tegra_dc_rgb_probe(struct tegra_dc *dc);
-diff --git a/drivers/gpu/drm/tegra/drm.c b/drivers/gpu/drm/tegra/drm.c
-index e9ce7d6992d2..47e7945dbc3b 100644
---- a/drivers/gpu/drm/tegra/drm.c
-+++ b/drivers/gpu/drm/tegra/drm.c
-@@ -20,6 +20,7 @@
- #include <drm/drm_prime.h>
- #include <drm/drm_vblank.h>
- 
-+#include "dc.h"
- #include "drm.h"
- #include "gem.h"
- 
-@@ -59,6 +60,17 @@ static const struct drm_mode_config_funcs tegra_drm_mode_config_funcs = {
- 	.atomic_commit = drm_atomic_helper_commit,
- };
- 
-+static void tegra_atomic_post_commit(struct drm_device *drm,
-+				     struct drm_atomic_state *old_state)
-+{
-+	struct drm_crtc_state *old_crtc_state __maybe_unused;
-+	struct drm_crtc *crtc;
-+	unsigned int i;
-+
-+	for_each_old_crtc_in_state(old_state, crtc, old_crtc_state, i)
-+		tegra_crtc_atomic_post_commit(crtc, old_state);
-+}
-+
- static void tegra_atomic_commit_tail(struct drm_atomic_state *old_state)
- {
- 	struct drm_device *drm = old_state->dev;
-@@ -75,6 +87,8 @@ static void tegra_atomic_commit_tail(struct drm_atomic_state *old_state)
- 	} else {
- 		drm_atomic_helper_commit_tail_rpm(old_state);
- 	}
-+
-+	tegra_atomic_post_commit(drm, old_state);
- }
- 
- static const struct drm_mode_config_helper_funcs
-diff --git a/drivers/gpu/drm/tegra/hub.c b/drivers/gpu/drm/tegra/hub.c
-index 5ce771cba133..2a46289a3896 100644
---- a/drivers/gpu/drm/tegra/hub.c
-+++ b/drivers/gpu/drm/tegra/hub.c
-@@ -344,6 +344,9 @@ static int tegra_shared_plane_atomic_check(struct drm_plane *plane,
- 	struct tegra_dc *dc = to_tegra_dc(state->crtc);
- 	int err;
- 
-+	plane_state->peak_memory_bandwidth = 0;
-+	plane_state->avg_memory_bandwidth = 0;
-+
- 	/* no need for further checks if the plane is being disabled */
- 	if (!state->crtc || !state->fb)
- 		return 0;
-diff --git a/drivers/gpu/drm/tegra/plane.c b/drivers/gpu/drm/tegra/plane.c
-index 539d14935728..c9965e82ed3e 100644
---- a/drivers/gpu/drm/tegra/plane.c
-+++ b/drivers/gpu/drm/tegra/plane.c
-@@ -4,6 +4,7 @@
-  */
- 
- #include <linux/iommu.h>
-+#include <linux/interconnect.h>
- 
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_helper.h>
-@@ -64,6 +65,8 @@ tegra_plane_atomic_duplicate_state(struct drm_plane *plane)
- 	copy->reflect_x = state->reflect_x;
- 	copy->reflect_y = state->reflect_y;
- 	copy->opaque = state->opaque;
-+	copy->peak_memory_bandwidth = state->peak_memory_bandwidth;
-+	copy->avg_memory_bandwidth = state->avg_memory_bandwidth;
- 
- 	for (i = 0; i < 2; i++)
- 		copy->blending[i] = state->blending[i];
-@@ -212,6 +215,89 @@ void tegra_plane_cleanup_fb(struct drm_plane *plane,
- 		tegra_dc_unpin(dc, to_tegra_plane_state(state));
- }
- 
-+static int tegra_plane_calculate_memory_bandwidth(struct drm_plane_state *state)
-+{
-+	struct tegra_plane_state *tegra_state = to_tegra_plane_state(state);
-+	unsigned int i, bpp, dst_w, src_w, src_h, mul;
-+	const struct tegra_dc_soc_info *soc;
-+	const struct drm_format_info *fmt;
-+	struct drm_crtc_state *crtc_state;
-+	u32 avg_bandwidth, peak_bandwidth;
-+
-+	if (!state->visible)
-+		return 0;
-+
-+	crtc_state = drm_atomic_get_new_crtc_state(state->state, state->crtc);
-+	if (!crtc_state)
-+		return -EINVAL;
-+
-+	src_w = drm_rect_width(&state->src) >> 16;
-+	src_h = drm_rect_height(&state->src) >> 16;
-+	dst_w = drm_rect_width(&state->dst);
-+
-+	fmt = state->fb->format;
-+	soc = to_tegra_dc(state->crtc)->soc;
-+
-+	/*
-+	 * Note that real memory bandwidth vary depending on format and
-+	 * memory layout, we are not taking that into account because small
-+	 * estimation error isn't important since bandwidth is rounded up
-+	 * anyway.
-+	 */
-+	for (i = 0, bpp = 0; i < fmt->num_planes; i++) {
-+		unsigned int bpp_plane = fmt->cpp[i] * 8;
-+
-+		/*
-+		 * Sub-sampling is relevant for chroma planes only and vertical
-+		 * readouts are not cached, hence only horizontal sub-sampling
-+		 * matters.
-+		 */
-+		if (i > 0)
-+			bpp_plane /= fmt->hsub;
-+
-+		bpp += bpp_plane;
-+	}
-+
-+	/*
-+	 * Horizontal downscale needs a lower memory latency, which roughly
-+	 * depends on the scaled width.  Trying to tune latency of a memory
-+	 * client alone will likely result in a strong negative impact on
-+	 * other memory clients, hence we will request a higher bandwidth
-+	 * since latency depends on bandwidth.  This allows to prevent memory
-+	 * FIFO underflows for a large plane downscales, meanwhile allowing
-+	 * display to share bandwidth fairly with other memory clients.
-+	 */
-+	if (src_w > dst_w)
-+		mul = (src_w - dst_w) * bpp / 2048 + 1;
-+	else
-+		mul = 1;
-+
-+	/* average bandwidth in bytes/s */
-+	avg_bandwidth  = (bpp * src_w * src_h * mul + 7) / 8;
-+	avg_bandwidth *= drm_mode_vrefresh(&crtc_state->mode);
-+
-+	/* mode.clock in kHz, peak bandwidth in kbit/s */
-+	peak_bandwidth = crtc_state->mode.clock * bpp * mul;
-+
-+	/*
-+	 * Tegra30/114 Memory Controller can't interleave DC memory requests
-+	 * and DC uses 16-bytes atom for the tiled windows, while DDR3 uses 32
-+	 * bytes atom.  Hence there is x2 memory overfetch for tiled framebuffer
-+	 * and DDR3 on older SoCs.
-+	 */
-+	if (soc->plane_tiled_memory_bandwidth_x2 &&
-+	    tegra_state->tiling.mode == TEGRA_BO_TILING_MODE_TILED) {
-+		peak_bandwidth *= 2;
-+		avg_bandwidth *= 2;
-+	}
-+
-+	/* ICC bandwidth in kbyte/s */
-+	tegra_state->peak_memory_bandwidth = kbps_to_icc(peak_bandwidth);
-+	tegra_state->avg_memory_bandwidth = Bps_to_icc(avg_bandwidth);
-+
-+	return 0;
-+}
-+
- int tegra_plane_state_add(struct tegra_plane *plane,
- 			  struct drm_plane_state *state)
- {
-@@ -230,6 +316,10 @@ int tegra_plane_state_add(struct tegra_plane *plane,
- 	if (err < 0)
- 		return err;
- 
-+	err = tegra_plane_calculate_memory_bandwidth(state);
-+	if (err < 0)
-+		return err;
-+
- 	tegra = to_dc_state(crtc_state);
- 
- 	tegra->planes |= WIN_A_ACT_REQ << plane->index;
-@@ -595,3 +685,40 @@ int tegra_plane_setup_legacy_state(struct tegra_plane *tegra,
- 
- 	return 0;
- }
-+
-+static const char * const tegra_plane_icc_names[TEGRA_DC_LEGACY_PLANES_NUM] = {
-+	"wina", "winb", "winc", NULL, NULL, NULL, "cursor",
-+};
-+
-+int tegra_plane_interconnect_init(struct tegra_plane *plane)
-+{
-+	const char *icc_name = tegra_plane_icc_names[plane->index];
-+	struct device *dev = plane->dc->dev;
-+	struct tegra_dc *dc = plane->dc;
-+	int err;
-+
-+	if (WARN_ON(plane->index >= TEGRA_DC_LEGACY_PLANES_NUM) ||
-+	    WARN_ON(!tegra_plane_icc_names[plane->index]))
-+		return -EINVAL;
-+
-+	plane->icc_mem = devm_of_icc_get(dev, icc_name);
-+	err = PTR_ERR_OR_ZERO(plane->icc_mem);
-+	if (err) {
-+		dev_err_probe(dev, err, "failed to get %s interconnect\n",
-+			      icc_name);
-+		return err;
-+	}
-+
-+	/* plane B on T20/30 has a dedicated memory client for a 6-tap vertical filter */
-+	if (plane->index == 1 && dc->soc->has_win_b_vfilter_mem_client) {
-+		plane->icc_mem_vfilter = devm_of_icc_get(dev, "winb-vfilter");
-+		err = PTR_ERR_OR_ZERO(plane->icc_mem_vfilter);
-+		if (err) {
-+			dev_err_probe(dev, err, "failed to get %s interconnect\n",
-+				      "winb-vfilter");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-diff --git a/drivers/gpu/drm/tegra/plane.h b/drivers/gpu/drm/tegra/plane.h
-index c691dd79b27b..f2731aae7d01 100644
---- a/drivers/gpu/drm/tegra/plane.h
-+++ b/drivers/gpu/drm/tegra/plane.h
-@@ -8,6 +8,7 @@
- 
- #include <drm/drm_plane.h>
- 
-+struct icc_path;
- struct tegra_bo;
- struct tegra_dc;
- 
-@@ -16,6 +17,9 @@ struct tegra_plane {
- 	struct tegra_dc *dc;
- 	unsigned int offset;
- 	unsigned int index;
-+
-+	struct icc_path *icc_mem;
-+	struct icc_path *icc_mem_vfilter;
- };
- 
- struct tegra_cursor {
-@@ -52,6 +56,10 @@ struct tegra_plane_state {
- 	/* used for legacy blending support only */
- 	struct tegra_plane_legacy_blending_state blending[2];
- 	bool opaque;
-+
-+	/* bandwidths are in ICC units, i.e. kbytes/sec */
-+	u32 peak_memory_bandwidth;
-+	u32 avg_memory_bandwidth;
- };
- 
- static inline struct tegra_plane_state *
-@@ -63,6 +71,12 @@ to_tegra_plane_state(struct drm_plane_state *state)
- 	return NULL;
- }
- 
-+static inline const struct tegra_plane_state *
-+to_const_tegra_plane_state(const struct drm_plane_state *state)
-+{
-+	return to_tegra_plane_state((struct drm_plane_state *)state);
-+}
-+
- extern const struct drm_plane_funcs tegra_plane_funcs;
- 
- int tegra_plane_prepare_fb(struct drm_plane *plane,
-@@ -77,5 +91,6 @@ int tegra_plane_format(u32 fourcc, u32 *format, u32 *swap);
- bool tegra_plane_format_is_yuv(unsigned int format, bool *planar);
- int tegra_plane_setup_legacy_state(struct tegra_plane *tegra,
- 				   struct tegra_plane_state *state);
-+int tegra_plane_interconnect_init(struct tegra_plane *plane);
- 
- #endif /* TEGRA_PLANE_H */
+    - Fixed the double put of OPP resources.
+
+    - Dropped all patches that are unrelated to OPP API. I also dropped
+      the Tegra memory patch since it doesn't apply now and because I plan
+      to switch all Tegra drivers soon to a common tegra-specific OPP helper
+      that will use the resource-managed OPP API anyways.
+
+    - Squashed couple patches into a single ones since there was no
+      good reason to separate them.
+
+    - Added acks that were given to a couple of v1 patches.
+
+Yangtao Li (14):
+  opp: Add devres wrapper for dev_pm_opp_set_clkname
+  opp: Add devres wrapper for dev_pm_opp_set_regulators
+  opp: Add devres wrapper for dev_pm_opp_set_supported_hw
+  opp: Add devres wrapper for dev_pm_opp_of_add_table
+  opp: Add devres wrapper for dev_pm_opp_register_notifier
+  serial: qcom_geni_serial: Convert to use resource-managed OPP API
+  spi: spi-geni-qcom: Convert to use resource-managed OPP API
+  spi: spi-qcom-qspi: Convert to use resource-managed OPP API
+  mmc: sdhci-msm: Convert to use resource-managed OPP API
+  drm/msm: Convert to use resource-managed OPP API
+  drm/lima: Convert to use resource-managed OPP API
+  drm/panfrost: Convert to use resource-managed OPP API
+  media: venus: Convert to use resource-managed OPP API
+  memory: samsung: exynos5422-dmc: Convert to use resource-managed OPP
+    API
+
+ drivers/gpu/drm/lima/lima_devfreq.c           |  43 ++---
+ drivers/gpu/drm/lima/lima_devfreq.h           |   2 -
+ drivers/gpu/drm/msm/adreno/a5xx_gpu.c         |   2 +-
+ drivers/gpu/drm/msm/adreno/a6xx_gmu.c         |   2 +-
+ drivers/gpu/drm/msm/adreno/adreno_gpu.c       |   2 +-
+ drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c       |  24 ++-
+ drivers/gpu/drm/msm/disp/dpu1/dpu_kms.h       |   2 -
+ drivers/gpu/drm/msm/dp/dp_ctrl.c              |  31 +---
+ drivers/gpu/drm/msm/dp/dp_ctrl.h              |   1 -
+ drivers/gpu/drm/msm/dp/dp_display.c           |   5 +-
+ drivers/gpu/drm/msm/dsi/dsi_host.c            |  14 +-
+ drivers/gpu/drm/panfrost/panfrost_devfreq.c   |  33 +---
+ drivers/gpu/drm/panfrost/panfrost_devfreq.h   |   1 -
+ .../media/platform/qcom/venus/pm_helpers.c    |  18 +--
+ drivers/memory/samsung/exynos5422-dmc.c       |  13 +-
+ drivers/mmc/host/sdhci-msm.c                  |  20 +--
+ drivers/opp/core.c                            | 151 ++++++++++++++++++
+ drivers/opp/of.c                              |  36 +++++
+ drivers/spi/spi-geni-qcom.c                   |  17 +-
+ drivers/spi/spi-qcom-qspi.c                   |  19 +--
+ drivers/tty/serial/qcom_geni_serial.c         |  24 ++-
+ include/linux/pm_opp.h                        |  34 ++++
+ include/linux/qcom-geni-se.h                  |   2 -
+ 23 files changed, 300 insertions(+), 196 deletions(-)
+
 -- 
 2.29.2
 
