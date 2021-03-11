@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 098C1C4361B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C49ECC43142
 	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD3F864F0D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7FCD064F11
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Mar 2021 19:22:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230456AbhCKTWH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Mar 2021 14:22:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38062 "EHLO
+        id S230438AbhCKTWG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Mar 2021 14:22:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230076AbhCKTVq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 14:21:46 -0500
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A15AEC061574;
-        Thu, 11 Mar 2021 11:21:45 -0800 (PST)
-Received: by mail-lf1-x12c.google.com with SMTP id v9so41664077lfa.1;
-        Thu, 11 Mar 2021 11:21:45 -0800 (PST)
+        with ESMTP id S230056AbhCKTVn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Mar 2021 14:21:43 -0500
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E81AC061574;
+        Thu, 11 Mar 2021 11:21:43 -0800 (PST)
+Received: by mail-lj1-x231.google.com with SMTP id a1so3610840ljp.2;
+        Thu, 11 Mar 2021 11:21:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=vHoS/NDYFORjyzzTgThoswp953REgCaZA6oZyehzPtM=;
-        b=h362kHxm7AXBGWNXuqvqq9EOyjYzGfY6Mte8IJOtpFAmZ0dUmAscX0n1qSCmm1AO5V
-         LDVuZ7MCuOb6qm3QPdlkBHauuyzyTvwar/8pMq/M5FiHeylVt6gNNuy5IpiaLbE7cmGt
-         oy6/Nvhz/BLeMEZBTmaF3LlEpKxOsDX/wpNY7yNN/9I/li514FvvGEZg56ss+wjoBlL+
-         FnS0QMw6K4sJj/2Nlnikr3D4Gf4KfDUb5O41f43pOhUlPhphqJt5brgOA6bvlDeRsSzr
-         q5X2w6ocCZ70dwyzwKqoe3wUvscbuEofHhe27NBvxBXuMpnNnJc5fh5ahJY4o82s6muT
-         PUpA==
+        bh=m7dOV4uNWoySiVfi1U62XLNIjOEl4DQUJk7AsVchpY0=;
+        b=jNzZ5bhFzRYwTGoQGRFZr6zS62/1FCJrLohl6shdMFzIMvJ9cnxiadM1oStpJhoEYa
+         YCcxwfYd4JEkxZWExeIpo0vQ/F+5ARIaUbaLXJ4naL6G2C23qefVXtKwg/H3YCkYJwMC
+         IUW2DuICeG5jN7ND+VmdViRmZ/XJQ00vfNBMxLFV7yU0x4uUqWyDC0H2QO4srri21zZL
+         B9d0ZnwwMsIFkrDTAje/tBFbeHQsfgi5f/DHcvqFbwkuVLVCcANkIPpClAvX3v1FPyhu
+         +Ti/rO4EW6vyd/D81w+cAOTP5lvhMKSUXx/NJhg8sBmlLFGspR/iKaphy+ta/665s5bq
+         cFIA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=vHoS/NDYFORjyzzTgThoswp953REgCaZA6oZyehzPtM=;
-        b=py0pahLQbAxKPBzdUPJOdabp9pdA1tEAQIzlkfbz+6R1/wi2xB1sMTlcTWUFBekjZo
-         qBEwDzsBqhtj2gkMNtCIX7JidiFMentTGAGPzCyNIzGR9NmvKx4/h37QdrJNFQL41LdJ
-         2x0aaRdckbqgO+C3Ouox2SXfOtqukWPEP1ZkqVI1LOg6J2jk3JImWZ6oRYLAhnISQzg/
-         bCvDXaxeRe885zGUJuzVPc34TdKM9KXNo9MAswb2ewnVqXj/WO3gBCKqfREviryvNfY+
-         +fS3aki5SVqwTlP3AF2Po0VtKDofmKY/JuNYJbnA24mX2aO+UbHmQv3f8tKCRk80Bnrv
-         iaFw==
-X-Gm-Message-State: AOAM530bsw0DfPYFH8bYfxC0Xv69OwhDCxT3DR/sscdbVPvuLIVTnLv8
-        bIKbxk5mL22HHpXRbUUMTYo=
-X-Google-Smtp-Source: ABdhPJy7MNztyPSIi0lioGZtVc9/WU9dKO5Scs7kPni8BUiZ6lSUAxqLXijElOwcoQF/pJhUu1yqUg==
-X-Received: by 2002:a05:6512:696:: with SMTP id t22mr3085939lfe.631.1615490502700;
-        Thu, 11 Mar 2021 11:21:42 -0800 (PST)
+        bh=m7dOV4uNWoySiVfi1U62XLNIjOEl4DQUJk7AsVchpY0=;
+        b=SAYEFf6BnZ7DFgXLAAXuENDOZNFe6ZrG0J3gGgamTa8cVU4cyBUxlXQ+QOE5xFURfz
+         l1IgYe+CxWRBT0Kk8QbFrtaq6B4gEogsueCptqCBcFmLr65mp3LFmkoLpC1gH5LUSLee
+         ea4+3Az8f8LTDr3mdP1Pf96oGSzL0D9gyVgBuJQJuWzP2YYPNV22wOWgnB9fCd8x+gVI
+         Oj1e3zbjE0b9zajuJQJ8CLgdYR/M/WrRFcGCWg/DcuNoS3HKH6mD2CebnchHp8tcAGAk
+         wJcJgDxRbPTE+pg6ZGBgPBxJcm0bRC1Meo0HbOzKqPK8AVFGVYxMpsRX8XM04xi7c6ZB
+         shcQ==
+X-Gm-Message-State: AOAM533k7vCO/wd9HhRc4tN9/eM38pX8D1UWShrETAzFekvrWgvOVy7o
+        fWbI1PMuJAz3YAdEssNPQak=
+X-Google-Smtp-Source: ABdhPJxKtt0/QNPAPokFtyrBLj9jSOu1ZxgRF4Tu4gWmrQeJALVgjaKWtCy+IAGZ2Sw/4/W0FVeyAg==
+X-Received: by 2002:a2e:9101:: with SMTP id m1mr236037ljg.378.1615490501433;
+        Thu, 11 Mar 2021 11:21:41 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
-        by smtp.gmail.com with ESMTPSA id u14sm1121153lfl.40.2021.03.11.11.21.41
+        by smtp.gmail.com with ESMTPSA id u14sm1121153lfl.40.2021.03.11.11.21.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Mar 2021 11:21:42 -0800 (PST)
+        Thu, 11 Mar 2021 11:21:41 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Qiang Yu <yuq825@gmail.com>, Rob Clark <robdclark@gmail.com>,
         Sean Paul <sean@poorly.run>, Rob Herring <robh@kernel.org>,
@@ -83,9 +83,9 @@ Cc:     Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
         linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org,
         linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v2 05/14] opp: Add devres wrapper for dev_pm_opp_register_notifier
-Date:   Thu, 11 Mar 2021 22:20:56 +0300
-Message-Id: <20210311192105.14998-6-digetx@gmail.com>
+Subject: [PATCH v2 04/14] opp: Add devres wrapper for dev_pm_opp_of_add_table
+Date:   Thu, 11 Mar 2021 22:20:55 +0300
+Message-Id: <20210311192105.14998-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210311192105.14998-1-digetx@gmail.com>
 References: <20210311192105.14998-1-digetx@gmail.com>
@@ -97,89 +97,87 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Yangtao Li <tiny.windzz@gmail.com>
 
-Add devres wrapper for dev_pm_opp_register_notifier() to simplify driver
+Add devres wrapper for dev_pm_opp_of_add_table() to simplify driver
 code.
 
 Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/opp/core.c     | 38 ++++++++++++++++++++++++++++++++++++++
+ drivers/opp/of.c       | 36 ++++++++++++++++++++++++++++++++++++
  include/linux/pm_opp.h |  6 ++++++
- 2 files changed, 44 insertions(+)
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index f9e4ebb7aad0..509b2e052f3c 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2899,6 +2899,44 @@ int dev_pm_opp_unregister_notifier(struct device *dev,
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index f480c10e6314..c582a9ca397b 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -1104,6 +1104,42 @@ static int _of_add_table_indexed(struct device *dev, int index, bool getclk)
+ 	return ret;
  }
- EXPORT_SYMBOL(dev_pm_opp_unregister_notifier);
  
-+static void devm_pm_opp_notifier_release(struct device *dev, void *res)
++static void devm_pm_opp_of_table_release(void *data)
 +{
-+	struct notifier_block *nb = *(struct notifier_block **)res;
-+
-+	WARN_ON(dev_pm_opp_unregister_notifier(dev, nb));
++	dev_pm_opp_of_remove_table(data);
 +}
 +
 +/**
-+ * devm_pm_opp_register_notifier() - Register OPP notifier for the device
-+ * @dev:	Device for which notifier needs to be registered
-+ * @nb:		Notifier block to be registered
++ * devm_pm_opp_of_add_table() - Initialize opp table from device tree
++ * @dev:	device pointer used to lookup OPP table.
 + *
-+ * Return: 0 on success or a negative error value.
++ * Register the initial OPP table with the OPP library for given device.
 + *
-+ * The notifier will be unregistered after the device is destroyed.
++ * The opp_table structure will be freed after the device is destroyed.
++ *
++ * Return:
++ * 0		On success OR
++ *		Duplicate OPPs (both freq and volt are same) and opp->available
++ * -EEXIST	Freq are same and volt are different OR
++ *		Duplicate OPPs (both freq and volt are same) and !opp->available
++ * -ENOMEM	Memory allocation failure
++ * -ENODEV	when 'operating-points' property is not found or is invalid data
++ *		in device node.
++ * -ENODATA	when empty 'operating-points' property is found
++ * -EINVAL	when invalid entries are found in opp-v2 table
 + */
-+int devm_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
++int devm_pm_opp_of_add_table(struct device *dev)
 +{
-+	struct notifier_block **ptr;
 +	int ret;
 +
-+	ptr = devres_alloc(devm_pm_opp_notifier_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return -ENOMEM;
-+
-+	ret = dev_pm_opp_register_notifier(dev, nb);
-+	if (ret) {
-+		devres_free(ptr);
++	ret = dev_pm_opp_of_add_table(dev);
++	if (ret)
 +		return ret;
-+	}
 +
-+	*ptr = nb;
-+	devres_add(dev, ptr);
-+
-+	return 0;
++	return devm_add_action_or_reset(dev, devm_pm_opp_of_table_release, dev);
 +}
-+EXPORT_SYMBOL(devm_pm_opp_register_notifier);
++EXPORT_SYMBOL_GPL(devm_pm_opp_of_add_table);
 +
  /**
-  * dev_pm_opp_remove_table() - Free all OPPs associated with the device
+  * dev_pm_opp_of_add_table() - Initialize opp table from device tree
   * @dev:	device pointer used to lookup OPP table.
 diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 2f5dc123c1a0..7088997491b2 100644
+index e68c3c29301e..2f5dc123c1a0 100644
 --- a/include/linux/pm_opp.h
 +++ b/include/linux/pm_opp.h
-@@ -141,6 +141,7 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- 
- int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
- int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
-+int devm_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
- 
- struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
- void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
-@@ -313,6 +314,11 @@ static inline int dev_pm_opp_unregister_notifier(struct device *dev, struct noti
- 	return -EOPNOTSUPP;
+@@ -441,6 +441,7 @@ int dev_pm_opp_of_add_table(struct device *dev);
+ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
+ int dev_pm_opp_of_add_table_noclk(struct device *dev, int index);
+ void dev_pm_opp_of_remove_table(struct device *dev);
++int devm_pm_opp_of_add_table(struct device *dev);
+ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
+ void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
+ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -473,6 +474,11 @@ static inline void dev_pm_opp_of_remove_table(struct device *dev)
+ {
  }
  
-+static inline int devm_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
++static inline int devm_pm_opp_of_add_table(struct device *dev)
 +{
 +	return -EOPNOTSUPP;
 +}
 +
- static inline struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
- 							    const u32 *versions,
- 							    unsigned int count)
+ static inline int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
+ {
+ 	return -EOPNOTSUPP;
 -- 
 2.29.2
 
