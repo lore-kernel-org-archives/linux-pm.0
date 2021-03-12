@@ -2,227 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26712C28E82
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F35CDC4332D
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:54:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0B2E564FFA
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B99436501C
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:54:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232288AbhCLPwi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:52:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48846 "EHLO
+        id S232344AbhCLPyL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:54:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232130AbhCLPwa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:52:30 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F32CAC061765;
-        Fri, 12 Mar 2021 07:52:29 -0800 (PST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id A3BF31F46E78
-Received: by jupiter.universe (Postfix, from userid 1000)
-        id 6B2BF480118; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH 30/38] dt-bindings: power: supply: lp8727: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:49 +0100
-Message-Id: <20210312154357.1561730-31-sebastian.reichel@collabora.com>
-X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
-References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
+        with ESMTP id S232270AbhCLPx5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:53:57 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CA94C061761
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 07:53:57 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id j18so2046068wra.2
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 07:53:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=Nf/x3zdOo4NltH5YdliW8QtzzVE+SJmh6Ofm5Su6NTI=;
+        b=DPoPxHIC42Nu7DXh2UsEAnJWPFfA50NY9vRtjTTu52q/y2IropDXGPAanOKL276Dux
+         /yBBODZK/+F0U2WDPTSeqONqwea06TkjA00UKGmBvd7aIMO1N3odzUpf12f0jNO4IQ70
+         NBNbtrI7KpVb1DMvauN+htMpb4eQ5TgBoY81JaKbJ+mZQ11eFi0Yxr9/Zmc8tAS9Ar7O
+         1fGOK1KCMrQ8AUsSNR/VgkUIPziYbegKu35VvAVMrjcyRSc4xI7Lgrn/9iyqltNROjOP
+         1s3UGwvKG+1cr2Dd12gq1GxOVY3tuYQiNAizic26XSjKGLZdMuXSQBr0N+fgfPMDXDHL
+         E5PA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=Nf/x3zdOo4NltH5YdliW8QtzzVE+SJmh6Ofm5Su6NTI=;
+        b=i9uHC9c/dG/oSa9V0hzJ8AfA0GLYW2IcJ4NSMar8vFblmS3YqVCm3wAmaWdu2gPwM2
+         HuBELfmEHD+jVf45rZGtHD657OD3aV7eGn7KbkUa0lSjUkJOxYd+sXPbCmeehnTbMrzf
+         XJrGrxcJXFDu0ZEFCQdUR48aE3tXDJsTgA6qEH/elJjI0fMQQ52G31fuU20C4KnjQA5q
+         TPGHQ0OFp66cb68bwNL7HkXmfU6UVGBVvRLE2HDmK8nzyd4c8nExSUnST8kQnlEmp6Nb
+         jDibB/JTWWHv0tk4YKCquAyz8AKQZx5DWwKTdCjzEJbHSGLT+60nowDl5Qy4MHkgRayS
+         4Pxg==
+X-Gm-Message-State: AOAM532Ja5URTrZ2A01lU1+VQr/t127W1YPgu1jSsI8RJxCrcf9US+3U
+        5tcY4yshK3ajjV4unkneGU1q+Q==
+X-Google-Smtp-Source: ABdhPJyOgIySm2XuuxssRqoflifsys8dPKXZGlhOXbB4SqKGDnrsUhWWwqynyp7g5FQ058K4gPpjoQ==
+X-Received: by 2002:a5d:4903:: with SMTP id x3mr14701303wrq.143.1615564435935;
+        Fri, 12 Mar 2021 07:53:55 -0800 (PST)
+Received: from ?IPv6:2a01:e34:ed2f:f020:cc8a:6653:68f4:ff69? ([2a01:e34:ed2f:f020:cc8a:6653:68f4:ff69])
+        by smtp.googlemail.com with ESMTPSA id h22sm2964654wmb.36.2021.03.12.07.53.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 12 Mar 2021 07:53:55 -0800 (PST)
+Subject: Re: [PATCH 2/3] thermal/drivers/devfreq_cooling: Use device name
+ instead of auto-numbering
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     rui.zhang@intel.com, amitk@kernel.org, linux-pm@vger.kernel.org,
+        open list <linux-kernel@vger.kernel.org>
+References: <20210310114600.27178-1-daniel.lezcano@linaro.org>
+ <20210310114600.27178-2-daniel.lezcano@linaro.org>
+ <8f17dc8b-3259-8e6a-f46b-b97495ecd550@arm.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <345395f7-006d-c879-a777-c24d79ae9e23@linaro.org>
+Date:   Fri, 12 Mar 2021 16:53:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <8f17dc8b-3259-8e6a-f46b-b97495ecd550@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the binding to DT schema format.
+On 12/03/2021 12:15, Lukasz Luba wrote:
+> 
+> 
+> On 3/10/21 11:45 AM, Daniel Lezcano wrote:
+>> Currently the naming of a cooling device is just a cooling technique
+>> followed by a number. When there are multiple cooling devices using
+>> the same technique, it is impossible to clearly identify the related
+>> device as this one is just a number.
+>>
+>> For instance:
+>>
+>>   thermal-devfreq-0
+>>   thermal-devfreq-1
+>>   etc ...
+>>
+>> The 'thermal' prefix is redundant with the subsystem namespace. This
+>> patch removes the 'thermal prefix and changes the number by the device
+> 
+> missing ' after 'thermal
+> 
+>> name. So the naming above becomes:
+>>
+>>   devfreq-5000000.gpu
+>>   devfreq-1d84000.ufshc
+>>   etc ...
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- .../bindings/power/supply/lp8727_charger.txt  |  43 -------
- .../bindings/power/supply/ti,lp8727.yaml      | 112 ++++++++++++++++++
- 2 files changed, 112 insertions(+), 43 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/lp8727_charger.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/ti,lp8727.yaml
+[ ... ]
 
-diff --git a/Documentation/devicetree/bindings/power/supply/lp8727_charger.txt b/Documentation/devicetree/bindings/power/supply/lp8727_charger.txt
-deleted file mode 100644
-index 0355a4b68f79..000000000000
---- a/Documentation/devicetree/bindings/power/supply/lp8727_charger.txt
-+++ /dev/null
-@@ -1,43 +0,0 @@
--Binding for TI/National Semiconductor LP8727 Charger
--
--Required properties:
--- compatible: "ti,lp8727"
--- reg: I2C slave address 27h
--
--Optional properties:
--- interrupts: interrupt specifier (see interrupt binding[0])
--- debounce-ms: interrupt debounce time. (u32)
--
--AC and USB charging parameters
--- charger-type: "ac" or "usb" (string)
--- eoc-level: value of 'enum lp8727_eoc_level' (u8)
--- charging-current: value of 'enum lp8727_ichg' (u8)
--
--[0]: Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
--
--Example)
--
--lp8727@27 {
--	compatible = "ti,lp8727";
--	reg = <0x27>;
--
--	/* GPIO 134 is used for LP8728 interrupt pin */
--	interrupt-parent = <&gpio5>; 	/* base = 128 */
--	interrupts = <6 0x2>;		/* offset = 6, falling edge type */
--
--	debounce-ms = <300>;
--
--	/* AC charger: 5% EOC and 500mA charging current */
--	ac {
--		charger-type = "ac";
--		eoc-level = /bits/ 8 <0>;
--		charging-current = /bits/ 8 <4>;
--	};
--
--	/* USB charger: 10% EOC and 400mA charging current */
--	usb {
--		charger-type = "usb";
--		eoc-level = /bits/ 8 <1>;
--		charging-current = /bits/ 8 <2>;
--	};
--};
-diff --git a/Documentation/devicetree/bindings/power/supply/ti,lp8727.yaml b/Documentation/devicetree/bindings/power/supply/ti,lp8727.yaml
-new file mode 100644
-index 000000000000..65894b36a69d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/ti,lp8727.yaml
-@@ -0,0 +1,112 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/ti,lp8727.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Binding for TI/National Semiconductor LP8727 Charger
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+allOf:
-+  - $ref: power-supply.yaml#
-+
-+properties:
-+  compatible:
-+    const: ti,lp8727
-+
-+  reg:
-+    const: 0x27
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  debounce-ms:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: interrupt debounce time in ms
-+
-+  ac:
-+    type: object
-+    description: AC charging parameters
-+    properties:
-+      charger-type:
-+        const: ac
-+
-+      eoc-level:
-+        $ref: /schemas/types.yaml#/definitions/uint8
-+        minimum: 0
-+        maximum: 6
-+        description: |
-+          End of Charge Percentage with the following mapping:
-+          0 = 5%, 1 = 10%, 2 = 16%, 3 = 20%, 4 = 25%, 5 = 33%, 6 = 50%
-+
-+      charging-current:
-+        $ref: /schemas/types.yaml#/definitions/uint8
-+        minimum: 0
-+        maximum: 9
-+        description: |
-+          Charging current with the following mapping:
-+          0 = 90mA, 1 = 100mA, 2 = 400mA, 3 = 450mA, 4 = 500mA, 5 = 600mA,
-+          6 = 700mA, 7 = 800mA, 8 = 900mA, 9 = 1000mA
-+
-+  usb:
-+    type: object
-+    description: USB charging parameters
-+    properties:
-+      charger-type:
-+        const: usb
-+
-+      eoc-level:
-+        $ref: /schemas/types.yaml#/definitions/uint8
-+        minimum: 0
-+        maximum: 6
-+        description: |
-+          End of Charge Percentage with the following mapping:
-+          0 = 5%, 1 = 10%, 2 = 16%, 3 = 20%, 4 = 25%, 5 = 33%, 6 = 50%
-+
-+      charging-current:
-+        $ref: /schemas/types.yaml#/definitions/uint8
-+        minimum: 0
-+        maximum: 9
-+        description: |
-+          Charging current with the following mapping:
-+          0 = 90mA, 1 = 100mA, 2 = 400mA, 3 = 450mA, 4 = 500mA, 5 = 600mA,
-+          6 = 700mA, 7 = 800mA, 8 = 900mA, 9 = 1000mA
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      lp8727: charger@27 {
-+        compatible = "ti,lp8727";
-+        reg = <0x27>;
-+        interrupt-parent = <&gpio5>;
-+        interrupts = <6 IRQ_TYPE_EDGE_FALLING>;
-+        debounce-ms = <300>;
-+
-+        /* AC charger: 5% EOC and 500mA charging current */
-+        ac {
-+          charger-type = "ac";
-+          eoc-level = /bits/ 8 <0>;
-+          charging-current = /bits/ 8 <4>;
-+        };
-+
-+        /* USB charger: 10% EOC and 400mA charging current */
-+        usb {
-+          charger-type = "usb";
-+          eoc-level = /bits/ 8 <1>;
-+          charging-current = /bits/ 8 <2>;
-+        };
-+      };
-+    };
-+
+> ---------------------------------------------------------
+> 
+> We should allocate tmp buffer for it, to not loose the meaningful part
+> of that string name or end up with only the same prefix, like for the
+> first 3 from top:
+> 
+> devfreq-18321000.qco
+> 
+> or for the GPU:
+> devfreq-3d00000.qcom
+> 
+> This is tricky area and vendors might put any non-meaningful prefix.
+> 
+> The rest of the code looks OK, only this name construction part.
+
+That requires a change in the thermal_core code to replace the strlcpy
+into the cdev->type by a kstrdup.
+
+Otherwise the name will be truncated in any case by the underlying
+thermal_cooling_device_register() function.
+
+
 -- 
-2.30.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
