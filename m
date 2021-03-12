@@ -5,25 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1CD9C43333
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F941C43619
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C29916500B
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 53EF864FFA
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232233AbhCLPwg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:52:36 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55848 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231928AbhCLPw3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:52:29 -0500
+        id S232503AbhCLPwj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:52:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48840 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232057AbhCLPwa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:52:30 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E9E8C061762;
+        Fri, 12 Mar 2021 07:52:27 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 783C01F46E72
+        with ESMTPSA id 755F11F46E70
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 69260480117; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 704E148011A; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 29/38] dt-bindings: power: supply: da9150: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:48 +0100
-Message-Id: <20210312154357.1561730-30-sebastian.reichel@collabora.com>
+Subject: [PATCH 32/38] dt-bindings: power: supply: ltc294x: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:51 +0100
+Message-Id: <20210312154357.1561730-33-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -47,90 +50,32 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/da9150-charger.txt  | 26 ----------
- .../bindings/power/supply/da9150-fg.txt       | 23 --------
- .../power/supply/dlg,da9150-charger.yaml      | 52 +++++++++++++++++++
- .../power/supply/dlg,da9150-fuel-gauge.yaml   | 51 ++++++++++++++++++
- 4 files changed, 103 insertions(+), 49 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/da9150-charger.txt
- delete mode 100644 Documentation/devicetree/bindings/power/supply/da9150-fg.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/dlg,da9150-charger.yaml
- create mode 100644 Documentation/devicetree/bindings/power/supply/dlg,da9150-fuel-gauge.yaml
+ .../bindings/power/supply/lltc,ltc294x.yaml   | 66 +++++++++++++++++++
+ .../bindings/power/supply/ltc2941.txt         | 28 --------
+ 2 files changed, 66 insertions(+), 28 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/lltc,ltc294x.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/ltc2941.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/da9150-charger.txt b/Documentation/devicetree/bindings/power/supply/da9150-charger.txt
-deleted file mode 100644
-index f3906663c454..000000000000
---- a/Documentation/devicetree/bindings/power/supply/da9150-charger.txt
-+++ /dev/null
-@@ -1,26 +0,0 @@
--Dialog Semiconductor DA9150 Charger Power Supply bindings
--
--Required properties:
--- compatible: "dlg,da9150-charger" for DA9150 Charger Power Supply
--
--Optional properties:
--- io-channels: List of phandle and IIO specifier pairs
--- io-channel-names: List of channel names used by charger
--      ["CHAN_IBUS", "CHAN_VBUS", "CHAN_TJUNC", "CHAN_VBAT"]
--  (See Documentation/devicetree/bindings/iio/iio-bindings.txt for further info)
--
--
--Example:
--
--	da9150-charger {
--		compatible = "dlg,da9150-charger";
--
--		io-channels = <&gpadc 0>,
--			      <&gpadc 2>,
--			      <&gpadc 8>,
--			      <&gpadc 5>;
--		io-channel-names = "CHAN_IBUS",
--				   "CHAN_VBUS",
--				   "CHAN_TJUNC",
--				   "CHAN_VBAT";
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/da9150-fg.txt b/Documentation/devicetree/bindings/power/supply/da9150-fg.txt
-deleted file mode 100644
-index 00236fe3ea31..000000000000
---- a/Documentation/devicetree/bindings/power/supply/da9150-fg.txt
-+++ /dev/null
-@@ -1,23 +0,0 @@
--Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
--
--Required properties:
--- compatible: "dlg,da9150-fuel-gauge" for DA9150 Fuel-Gauge Power Supply
--
--Optional properties:
--- dlg,update-interval: Interval time (milliseconds) between battery level checks.
--- dlg,warn-soc-level: Battery discharge level (%) where warning event raised.
--      [1 - 100]
--- dlg,crit-soc-level: Battery discharge level (%) where critical event raised.
--  This value should be lower than the warning level.
--      [1 - 100]
--
--
--Example:
--
--	fuel-gauge {
--		compatible = "dlg,da9150-fuel-gauge";
--
--		dlg,update-interval = <10000>;
--		dlg,warn-soc-level = /bits/ 8 <15>;
--		dlg,crit-soc-level = /bits/ 8 <5>;
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/dlg,da9150-charger.yaml b/Documentation/devicetree/bindings/power/supply/dlg,da9150-charger.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/lltc,ltc294x.yaml b/Documentation/devicetree/bindings/power/supply/lltc,ltc294x.yaml
 new file mode 100644
-index 000000000000..96336b05d76d
+index 000000000000..043bf378040f
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/dlg,da9150-charger.yaml
-@@ -0,0 +1,52 @@
++++ b/Documentation/devicetree/bindings/power/supply/lltc,ltc294x.yaml
+@@ -0,0 +1,66 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/dlg,da9150-charger.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/lltc,ltc294x.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Dialog Semiconductor DA9150 Charger Power Supply bindings
++title: Binding for LTC2941, LTC2942, LTC2943 and LTC2944 battery fuel gauges
++
++description: |
++  All chips measure battery capacity.
++  The LTC2942 is pin compatible with the LTC2941, it adds voltage and
++  temperature monitoring, and is runtime detected. LTC2943 and LTC2944
++  are software compatible, uses a slightly different conversion formula
++  for the charge counter and adds voltage, current and temperature monitoring.
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
@@ -140,99 +85,83 @@ index 000000000000..96336b05d76d
 +
 +properties:
 +  compatible:
-+    const: dlg,da9150-charger
++    enum:
++      - lltc,ltc2941
++      - lltc,ltc2942
++      - lltc,ltc2943
++      - lltc,ltc2944
 +
-+  io-channels:
-+    items:
-+      - description: ADC channel for current
-+      - description: ADC channel for bus voltage
-+      - description: ADC channel for junction temperature
-+      - description: ADC channel for battery voltage
++  reg:
++    maxItems: 1
 +
-+  io-channel-names:
-+    items:
-+      - const: CHAN_IBUS
-+      - const: CHAN_VBUS
-+      - const: CHAN_TJUNC
-+      - const: CHAN_VBAT
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    pmic {
-+      charger {
-+        compatible = "dlg,da9150-charger";
-+        io-channels = <&gpadc 0>,
-+                      <&gpadc 2>,
-+                      <&gpadc 8>,
-+                      <&gpadc 5>;
-+        io-channel-names = "CHAN_IBUS",
-+                           "CHAN_VBUS",
-+                           "CHAN_TJUNC",
-+                           "CHAN_VBAT";
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/power/supply/dlg,da9150-fuel-gauge.yaml b/Documentation/devicetree/bindings/power/supply/dlg,da9150-fuel-gauge.yaml
-new file mode 100644
-index 000000000000..30c2fff7cf92
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/dlg,da9150-fuel-gauge.yaml
-@@ -0,0 +1,51 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/dlg,da9150-fuel-gauge.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+allOf:
-+  - $ref: power-supply.yaml#
-+
-+properties:
-+  compatible:
-+    const: dlg,da9150-fuel-gauge
-+
-+  dlg,update-interval:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Interval time (milliseconds) between battery level checks.
-+
-+  dlg,warn-soc-level:
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 100
-+    description: Battery discharge level (%) where warning event raised.
-+
-+  dlg,crit-soc-level:
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 100
++  lltc,resistor-sense:
++    $ref: /schemas/types.yaml#/definitions/int32
 +    description: |
-+      Battery discharge level (%) where critical event raised.
-+      This value should be lower than the warning level.
++      Sense resistor value in milli-ohms.
++      Can be negative value when the battery has been connected to the wrong end of the resistor.
++
++  lltc,prescaler-exponent:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      The prescaler exponent as explained in the datasheet.
++      This determines the range and accuracy of the gauge.
++      The value is programmed into the chip only if it differs from the current setting.
++      The setting is lost when the battery is disconnected.
 +
 +required:
 +  - compatible
++  - reg
++  - lltc,resistor-sense
++  - lltc,prescaler-exponent
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
-+    pmic {
-+      battery {
-+        compatible = "dlg,da9150-fuel-gauge";
-+        dlg,update-interval = <10000>;
-+        dlg,warn-soc-level = /bits/ 8 <15>;
-+        dlg,crit-soc-level = /bits/ 8 <5>;
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++      battery@64 {
++        compatible = "lltc,ltc2943";
++        reg = <0x64>;
++        lltc,resistor-sense = <15>;
++        lltc,prescaler-exponent = <5>; /* 2^(2*5) = 1024 */
 +      };
 +    };
+diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+deleted file mode 100644
+index 3b9ba147b041..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
++++ /dev/null
+@@ -1,28 +0,0 @@
+-binding for LTC2941, LTC2942, LTC2943 and LTC2944 battery gauges
+-
+-All chips measure battery capacity.
+-The LTC2942 is pin compatible with the LTC2941, it adds voltage and
+-temperature monitoring, and is runtime detected. LTC2943 and LTC2944
+-is software compatible, uses a slightly different conversion formula
+-for the charge counter and adds voltage, current and temperature monitoring.
+-
+-Required properties:
+-- compatible: Should contain "lltc,ltc2941", "lltc,ltc2942", "lltc,ltc2943"
+-    or "lltc,ltc2944" which also indicates the type of I2C chip attached.
+-- reg: The 7-bit I2C address.
+-- lltc,resistor-sense: The sense resistor value in milli-ohms. Can be a 32-bit
+-    negative value when the battery has been connected to the wrong end of the
+-    resistor.
+-- lltc,prescaler-exponent: The prescaler exponent as explained in the datasheet.
+-    This determines the range and accuracy of the gauge. The value is programmed
+-    into the chip only if it differs from the current setting. The setting is
+-    lost when the battery is disconnected.
+-
+-Example from the Topic Miami Florida board:
+-
+-	fuelgauge: ltc2943@64 {
+-		compatible = "lltc,ltc2943";
+-		reg = <0x64>;
+-		lltc,resistor-sense = <15>;
+-		lltc,prescaler-exponent = <5>; /* 2^(2*5) = 1024 */
+-	};
 -- 
 2.30.1
 
