@@ -7,170 +7,495 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E23DC433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C853C433DB
 	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:10:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB0B664FFB
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:10:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D1E764FFB
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:10:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230243AbhCLNKE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 08:10:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41950 "EHLO
+        id S231223AbhCLNKD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 08:10:03 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41934 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231131AbhCLNJt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 08:09:49 -0500
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88DD6C061761
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:49 -0800 (PST)
-Received: by mail-wr1-x429.google.com with SMTP id e10so4764182wro.12
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:49 -0800 (PST)
+        with ESMTP id S230491AbhCLNJq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 08:09:46 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1950C061761
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:45 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id j18so1742845wra.2
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=Y+3de1AeeAJ1f3wvK6vHJ9cHErXRUBGiuppggQN/HY8=;
-        b=Pkgj/hKqaE5pZ9CRW1TFxEV3VYj479VPkYabx0stapmnfeYvEipZ62n4iTBYqKsvlG
-         0d9JosIdJZp26i9crzbWxJMw15hpPU/hxsJ17qd5uNj2sO+x6SQ6qteZjiPaspB4p3Qj
-         dbQa+tw5W4FoPXr5D1ka+3DwwifS+40VImXpTU1aTJX661EwlB31jS0QFu4Ni1E3zum9
-         rd++tKPJbXVVk5mHdMTBOpX1/EnJDeDZXYh2y2tB6Bzue2pNvzX628DUnN1lJGyvOgzg
-         IK11/3zPDOmaaiYXnrnZZbv0Ojl+NET2GOw8S8jiXNvn1GxTyPyScJvSCMXsYOsJ/GvP
-         QNFA==
+        h=from:to:cc:subject:date:message-id;
+        bh=M5SGZfBWTxGnrRmJMSKycIe7vQtvGUeYvLVf8SZiSFw=;
+        b=rGPg/VMLiVOtxxjANKuRkKsmjMp4vvofFM3TGJjE+WDSi5siL0qNE/m/zixrdqlLoS
+         NvjWLyY7xghAxUTAyOWtlmAS0D9cpi/GenAD42ub9m7ehvRo+goVfCgerah+1pC1Uype
+         fe1tQ0SitlRPDYvIiVaQtWE4r4KOMWm3mZ33Q6Ohmdn7mfsUDtLigVdQ+c8c1cAJST7N
+         Ds6CPFAV8krF0JDMJhg/t/ADVBLz2U+ktsqCEeE1nVG6SVKV47RFRRPOOClLWZ4x0575
+         cD/e2qXj4wEn2AuMVPx7bgJ4kA2eEsjns70+JhF7faB5pnH3kfcpCsxYYwhMVkQyldky
+         xRwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=Y+3de1AeeAJ1f3wvK6vHJ9cHErXRUBGiuppggQN/HY8=;
-        b=X2od+fYJLn+y9a5hHXqunBldfy/FWBFpza/UwyBgMILZOhi27fq60ymbxUhfotrgcO
-         V6R5SaEDV6nOGPWKndUjjYm6MraIzBaq/y3NZHxno4KZDdWzn0JJqB/xkDrb48NOSY7X
-         VprszKX5G2yGapvaw1shjnk40Ug3JLhxsOIZzJYpJpUrEKDkPcL3PdrB+kEU3WbM4sV1
-         xHd1UNYXpKMTO3Y963g2ofI8fxdc78vYXynxLHoOpETlWHUEoJC0qmwUQUb1+6dnYWCo
-         93py316bTKhqTynPLCO5Fk6opaiXqsOsrSGeKkrl4iHHy3FrK+K1dHANTeoGyD//yJK8
-         QqQA==
-X-Gm-Message-State: AOAM531XPoiIU9jsNe5VdLP2XSHUN3V4l+o0GQy5d5juyxS51ya2jlN3
-        eqVkrPtBMcNjI7xz0UQBwN0tcQ==
-X-Google-Smtp-Source: ABdhPJw9ebKQtQQ182M7ifS/1h/w2PaM5a9w1mmxlyNwCIRROQkuBDHiCIfrG0dWrOfW9iATnVxnGQ==
-X-Received: by 2002:a5d:4445:: with SMTP id x5mr14268622wrr.30.1615554588225;
-        Fri, 12 Mar 2021 05:09:48 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=M5SGZfBWTxGnrRmJMSKycIe7vQtvGUeYvLVf8SZiSFw=;
+        b=NuZZEwkGPJmcuwWfIo4Ni/CDNx1PvWoDTiX0kkdmLf/3TFTgYHihVPnTqfTU8ZA2bs
+         9KsSu5iK1zyevuo9dlLYsrIKuQquIbcp8vOiZPtJJCocZrurXsvRyQ0ouwDt/gCOHamD
+         wjmd+HRagju2aEVXUmBdcBnFoQEkU1eYvXVXoqNd7QB+04yTnsqX+Y850AAEY4vDP43Y
+         ZeQC86Cu4uLL/GT7t0GHPHSt4yTxS2PGvz/1UQfFNRpwBrgweNhPR3Yf+ypj5PQt2+/b
+         DMRmqRuyrj9xWMp+S3mY4r6V1ym52skSDwqDibbC7paOgC+WpZyizjLu8nMN3v8wW3ue
+         WNXA==
+X-Gm-Message-State: AOAM530c+dFMkBROXDPzqr2gt7Pp+0Ri102k9HJrshDA00s3xCa90o1Y
+        RVVTErvliuGgdRPnbx0smLrFhQ==
+X-Google-Smtp-Source: ABdhPJwuDzU5tkHFsDfBA+F2I4PcNaQLlzuSAD9y7x6Qy++dsz5K6U3TWo3GpQo8hdlYsMULvGs1fw==
+X-Received: by 2002:a05:6000:18a:: with SMTP id p10mr14143550wrx.166.1615554584307;
+        Fri, 12 Mar 2021 05:09:44 -0800 (PST)
 Received: from localhost.localdomain ([82.142.0.212])
-        by smtp.gmail.com with ESMTPSA id q15sm7655033wrr.58.2021.03.12.05.09.46
+        by smtp.gmail.com with ESMTPSA id q15sm7655033wrr.58.2021.03.12.05.09.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Mar 2021 05:09:47 -0800 (PST)
+        Fri, 12 Mar 2021 05:09:43 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         lukasz.luba@arm.com
-Subject: [PATCH v4 3/5] powercap/drivers/dtpm: Simplify the dtpm table
-Date:   Fri, 12 Mar 2021 14:04:09 +0100
-Message-Id: <20210312130411.29833-3-daniel.lezcano@linaro.org>
+Subject: [PATCH v4 1/5] powercap/drivers/dtpm: Encapsulate even more the code
+Date:   Fri, 12 Mar 2021 14:04:07 +0100
+Message-Id: <20210312130411.29833-1-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210312130411.29833-1-daniel.lezcano@linaro.org>
-References: <20210312130411.29833-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The dtpm table is an array of pointers, that forces the user of the
-table to define initdata along with the declaration of the table
-entry. It is more efficient to create an array of dtpm structure, so
-the declaration of the table entry can be done by initializing the
-different fields.
+In order to increase the self-encapsulation of the dtpm generic code,
+the following changes are adding a power update ops to the dtpm
+ops. That allows the generic code to call directly the dtpm backend
+function to update the power values.
+
+The power update function does compute the power characteristics when
+the function is invoked. In the case of the CPUs, the power
+consumption depends on the number of online CPUs. The online CPUs mask
+is not up to date at CPUHP_AP_ONLINE_DYN state in the tear down
+callback. That is the reason why the online / offline are at separate
+state. As there is already an existing state for DTPM, this one is
+only moved to the DEAD state, so there is no addition of new state
+with these changes. The dtpm node is not removed when the cpu is
+unplugged.
+
+That simplifies the code for the next changes and results in a more
+self-encapsulated code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/powercap/dtpm.c     |  4 ++--
- drivers/powercap/dtpm_cpu.c |  4 +++-
- include/linux/dtpm.h        | 22 +++++++++-------------
- 3 files changed, 14 insertions(+), 16 deletions(-)
+V4:
+ - Replaced s/sprintf/snprintf/ for the dtpm node name
+V2:
+ - Updated the changelog with the CPU node not being removed
+ - Commented the cpu hotplug callbacks to explain why there are two callbacks
+ - Changed 'upt_power_uw' to 'update_power_uw'
+ - Removed unused cpumask variable
+---
+ drivers/powercap/dtpm.c     |  54 ++++++-------
+ drivers/powercap/dtpm_cpu.c | 148 ++++++++++++++++--------------------
+ include/linux/cpuhotplug.h  |   2 +-
+ include/linux/dtpm.h        |   3 +-
+ 4 files changed, 97 insertions(+), 110 deletions(-)
 
 diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-index d00f55f0ee30..74d9603bd42a 100644
+index c2185ec5f887..58433b8ef9a1 100644
 --- a/drivers/powercap/dtpm.c
 +++ b/drivers/powercap/dtpm.c
-@@ -610,7 +610,7 @@ int dtpm_create(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+@@ -116,8 +116,6 @@ static void __dtpm_sub_power(struct dtpm *dtpm)
+ 		parent->power_limit -= dtpm->power_limit;
+ 		parent = parent->parent;
+ 	}
+-
+-	__dtpm_rebalance_weight(root);
+ }
  
- static int __init dtpm_init(void)
+ static void __dtpm_add_power(struct dtpm *dtpm)
+@@ -130,45 +128,45 @@ static void __dtpm_add_power(struct dtpm *dtpm)
+ 		parent->power_limit += dtpm->power_limit;
+ 		parent = parent->parent;
+ 	}
++}
++
++static int __dtpm_update_power(struct dtpm *dtpm)
++{
++	int ret;
++
++	__dtpm_sub_power(dtpm);
+ 
+-	__dtpm_rebalance_weight(root);
++	ret = dtpm->ops->update_power_uw(dtpm);
++	if (ret)
++		pr_err("Failed to update power for '%s': %d\n",
++		       dtpm->zone.name, ret);
++
++	if (!test_bit(DTPM_POWER_LIMIT_FLAG, &dtpm->flags))
++		dtpm->power_limit = dtpm->power_max;
++
++	__dtpm_add_power(dtpm);
++
++	if (root)
++		__dtpm_rebalance_weight(root);
++
++	return ret;
+ }
+ 
+ /**
+  * dtpm_update_power - Update the power on the dtpm
+  * @dtpm: a pointer to a dtpm structure to update
+- * @power_min: a u64 representing the new power_min value
+- * @power_max: a u64 representing the new power_max value
+  *
+  * Function to update the power values of the dtpm node specified in
+  * parameter. These new values will be propagated to the tree.
+  *
+  * Return: zero on success, -EINVAL if the values are inconsistent
+  */
+-int dtpm_update_power(struct dtpm *dtpm, u64 power_min, u64 power_max)
++int dtpm_update_power(struct dtpm *dtpm)
  {
--	struct dtpm_descr **dtpm_descr;
-+	struct dtpm_descr *dtpm_descr;
+-	int ret = 0;
++	int ret;
  
- 	pct = powercap_register_control_type(NULL, "dtpm", NULL);
- 	if (IS_ERR(pct)) {
-@@ -619,7 +619,7 @@ static int __init dtpm_init(void)
+ 	mutex_lock(&dtpm_lock);
+-
+-	if (power_min == dtpm->power_min && power_max == dtpm->power_max)
+-		goto unlock;
+-
+-	if (power_max < power_min) {
+-		ret = -EINVAL;
+-		goto unlock;
+-	}
+-
+-	__dtpm_sub_power(dtpm);
+-
+-	dtpm->power_min = power_min;
+-	dtpm->power_max = power_max;
+-	if (!test_bit(DTPM_POWER_LIMIT_FLAG, &dtpm->flags))
+-		dtpm->power_limit = power_max;
+-
+-	__dtpm_add_power(dtpm);
+-
+-unlock:
++	ret = __dtpm_update_power(dtpm);
+ 	mutex_unlock(&dtpm_lock);
+ 
+ 	return ret;
+@@ -436,6 +434,7 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 
+ 	if (dtpm->ops && !(dtpm->ops->set_power_uw &&
+ 			   dtpm->ops->get_power_uw &&
++			   dtpm->ops->update_power_uw &&
+ 			   dtpm->ops->release))
+ 		return -EINVAL;
+ 
+@@ -455,7 +454,8 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 		root = dtpm;
  	}
  
- 	for_each_dtpm_table(dtpm_descr)
--		(*dtpm_descr)->init(*dtpm_descr);
-+		dtpm_descr->init();
+-	__dtpm_add_power(dtpm);
++	if (dtpm->ops && !dtpm->ops->update_power_uw(dtpm))
++		__dtpm_add_power(dtpm);
  
- 	return 0;
- }
+ 	pr_info("Registered dtpm node '%s' / %llu-%llu uW, \n",
+ 		dtpm->zone.name, dtpm->power_min, dtpm->power_max);
 diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index 8592a78e47e4..c4fa35fabc40 100644
+index 51c366938acd..f6076de39540 100644
 --- a/drivers/powercap/dtpm_cpu.c
 +++ b/drivers/powercap/dtpm_cpu.c
-@@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 	return ret;
- }
+@@ -14,6 +14,8 @@
+  * The CPU hotplug is supported and the power numbers will be updated
+  * if a CPU is hot plugged / unplugged.
+  */
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/cpumask.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpuhotplug.h>
+@@ -23,8 +25,6 @@
+ #include <linux/slab.h>
+ #include <linux/units.h>
  
--int dtpm_register_cpu(struct dtpm *parent)
-+static int __init dtpm_cpu_init(void)
+-static struct dtpm *__parent;
+-
+ static DEFINE_PER_CPU(struct dtpm *, dtpm_per_cpu);
+ 
+ struct dtpm_cpu {
+@@ -32,57 +32,16 @@ struct dtpm_cpu {
+ 	int cpu;
+ };
+ 
+-/*
+- * When a new CPU is inserted at hotplug or boot time, add the power
+- * contribution and update the dtpm tree.
+- */
+-static int power_add(struct dtpm *dtpm, struct em_perf_domain *em)
+-{
+-	u64 power_min, power_max;
+-
+-	power_min = em->table[0].power;
+-	power_min *= MICROWATT_PER_MILLIWATT;
+-	power_min += dtpm->power_min;
+-
+-	power_max = em->table[em->nr_perf_states - 1].power;
+-	power_max *= MICROWATT_PER_MILLIWATT;
+-	power_max += dtpm->power_max;
+-
+-	return dtpm_update_power(dtpm, power_min, power_max);
+-}
+-
+-/*
+- * When a CPU is unplugged, remove its power contribution from the
+- * dtpm tree.
+- */
+-static int power_sub(struct dtpm *dtpm, struct em_perf_domain *em)
+-{
+-	u64 power_min, power_max;
+-
+-	power_min = em->table[0].power;
+-	power_min *= MICROWATT_PER_MILLIWATT;
+-	power_min = dtpm->power_min - power_min;
+-
+-	power_max = em->table[em->nr_perf_states - 1].power;
+-	power_max *= MICROWATT_PER_MILLIWATT;
+-	power_max = dtpm->power_max - power_max;
+-
+-	return dtpm_update_power(dtpm, power_min, power_max);
+-}
+-
+ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
  {
- 	int ret;
+ 	struct dtpm_cpu *dtpm_cpu = dtpm->private;
+-	struct em_perf_domain *pd;
++	struct em_perf_domain *pd = em_cpu_get(dtpm_cpu->cpu);
+ 	struct cpumask cpus;
+ 	unsigned long freq;
+ 	u64 power;
+ 	int i, nr_cpus;
  
-@@ -241,3 +241,5 @@ int dtpm_register_cpu(struct dtpm *parent)
+-	pd = em_cpu_get(dtpm_cpu->cpu);
+-
+ 	cpumask_and(&cpus, cpu_online_mask, to_cpumask(pd->cpus));
+-
+ 	nr_cpus = cpumask_weight(&cpus);
  
+ 	for (i = 0; i < pd->nr_perf_states; i++) {
+@@ -113,6 +72,7 @@ static u64 get_pd_power_uw(struct dtpm *dtpm)
+ 
+ 	pd = em_cpu_get(dtpm_cpu->cpu);
+ 	freq = cpufreq_quick_get(dtpm_cpu->cpu);
++
+ 	cpumask_and(&cpus, cpu_online_mask, to_cpumask(pd->cpus));
+ 	nr_cpus = cpumask_weight(&cpus);
+ 
+@@ -128,6 +88,27 @@ static u64 get_pd_power_uw(struct dtpm *dtpm)
  	return 0;
  }
+ 
++static int update_pd_power_uw(struct dtpm *dtpm)
++{
++	struct dtpm_cpu *dtpm_cpu = dtpm->private;
++	struct em_perf_domain *em = em_cpu_get(dtpm_cpu->cpu);
++	struct cpumask cpus;
++	int nr_cpus;
 +
-+DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init);
++	cpumask_and(&cpus, cpu_online_mask, to_cpumask(em->cpus));
++	nr_cpus = cpumask_weight(&cpus);
++
++	dtpm->power_min = em->table[0].power;
++	dtpm->power_min *= MICROWATT_PER_MILLIWATT;
++	dtpm->power_min *= nr_cpus;
++
++	dtpm->power_max = em->table[em->nr_perf_states - 1].power;
++	dtpm->power_max *= MICROWATT_PER_MILLIWATT;
++	dtpm->power_max *= nr_cpus;
++
++	return 0;
++}
++
+ static void pd_release(struct dtpm *dtpm)
+ {
+ 	struct dtpm_cpu *dtpm_cpu = dtpm->private;
+@@ -139,39 +120,24 @@ static void pd_release(struct dtpm *dtpm)
+ }
+ 
+ static struct dtpm_ops dtpm_ops = {
+-	.set_power_uw = set_pd_power_limit,
+-	.get_power_uw = get_pd_power_uw,
+-	.release = pd_release,
++	.set_power_uw	 = set_pd_power_limit,
++	.get_power_uw	 = get_pd_power_uw,
++	.update_power_uw = update_pd_power_uw,
++	.release	 = pd_release,
+ };
+ 
+ static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
+ {
+-	struct cpufreq_policy *policy;
+ 	struct em_perf_domain *pd;
+ 	struct dtpm *dtpm;
+ 
+-	policy = cpufreq_cpu_get(cpu);
+-
+-	if (!policy)
+-		return 0;
+-
+ 	pd = em_cpu_get(cpu);
+ 	if (!pd)
+ 		return -EINVAL;
+ 
+ 	dtpm = per_cpu(dtpm_per_cpu, cpu);
+ 
+-	power_sub(dtpm, pd);
+-
+-	if (cpumask_weight(policy->cpus) != 1)
+-		return 0;
+-
+-	for_each_cpu(cpu, policy->related_cpus)
+-		per_cpu(dtpm_per_cpu, cpu) = NULL;
+-
+-	dtpm_unregister(dtpm);
+-
+-	return 0;
++	return dtpm_update_power(dtpm);
+ }
+ 
+ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+@@ -184,7 +150,6 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	int ret = -ENOMEM;
+ 
+ 	policy = cpufreq_cpu_get(cpu);
+-
+ 	if (!policy)
+ 		return 0;
+ 
+@@ -194,7 +159,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 
+ 	dtpm = per_cpu(dtpm_per_cpu, cpu);
+ 	if (dtpm)
+-		return power_add(dtpm, pd);
++		return dtpm_update_power(dtpm);
+ 
+ 	dtpm = dtpm_alloc(&dtpm_ops);
+ 	if (!dtpm)
+@@ -210,27 +175,20 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	for_each_cpu(cpu, policy->related_cpus)
+ 		per_cpu(dtpm_per_cpu, cpu) = dtpm;
+ 
+-	sprintf(name, "cpu%d", dtpm_cpu->cpu);
++	snprintf(name, sizeof(name), "cpu%d-cpufreq", dtpm_cpu->cpu);
+ 
+-	ret = dtpm_register(name, dtpm, __parent);
++	ret = dtpm_register(name, dtpm, NULL);
+ 	if (ret)
+ 		goto out_kfree_dtpm_cpu;
+ 
+-	ret = power_add(dtpm, pd);
+-	if (ret)
+-		goto out_dtpm_unregister;
+-
+ 	ret = freq_qos_add_request(&policy->constraints,
+ 				   &dtpm_cpu->qos_req, FREQ_QOS_MAX,
+ 				   pd->table[pd->nr_perf_states - 1].frequency);
+ 	if (ret)
+-		goto out_power_sub;
++		goto out_dtpm_unregister;
+ 
+ 	return 0;
+ 
+-out_power_sub:
+-	power_sub(dtpm, pd);
+-
+ out_dtpm_unregister:
+ 	dtpm_unregister(dtpm);
+ 	dtpm_cpu = NULL;
+@@ -248,10 +206,38 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 
+ int dtpm_register_cpu(struct dtpm *parent)
+ {
+-	__parent = parent;
++	int ret;
++
++	/*
++	 * The callbacks at CPU hotplug time are calling
++	 * dtpm_update_power() which in turns calls update_pd_power().
++	 *
++	 * The function update_pd_power() uses the online mask to
++	 * figure out the power consumption limits.
++	 *
++	 * At CPUHP_AP_ONLINE_DYN, the CPU is present in the CPU
++	 * online mask when the cpuhp_dtpm_cpu_online function is
++	 * called, but the CPU is still in the online mask for the
++	 * tear down callback. So the power can not be updated when
++	 * the CPU is unplugged.
++	 *
++	 * At CPUHP_AP_DTPM_CPU_DEAD, the situation is the opposite as
++	 * above. The CPU online mask is not up to date when the CPU
++	 * is plugged in.
++	 *
++	 * For this reason, we need to call the online and offline
++	 * callbacks at different moments when the CPU online mask is
++	 * consistent with the power numbers we want to update.
++	 */
++	ret = cpuhp_setup_state(CPUHP_AP_DTPM_CPU_DEAD, "dtpm_cpu:offline",
++				NULL, cpuhp_dtpm_cpu_offline);
++	if (ret < 0)
++		return ret;
++
++	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "dtpm_cpu:online",
++				cpuhp_dtpm_cpu_online, NULL);
++	if (ret < 0)
++		return ret;
+ 
+-	return cpuhp_setup_state(CPUHP_AP_DTPM_CPU_ONLINE,
+-				 "dtpm_cpu:online",
+-				 cpuhp_dtpm_cpu_online,
+-				 cpuhp_dtpm_cpu_offline);
++	return 0;
+ }
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index ee09a39627d6..fcb2967fb5ba 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -61,6 +61,7 @@ enum cpuhp_state {
+ 	CPUHP_LUSTRE_CFS_DEAD,
+ 	CPUHP_AP_ARM_CACHE_B15_RAC_DEAD,
+ 	CPUHP_PADATA_DEAD,
++	CPUHP_AP_DTPM_CPU_DEAD,
+ 	CPUHP_WORKQUEUE_PREP,
+ 	CPUHP_POWER_NUMA_PREPARE,
+ 	CPUHP_HRTIMERS_PREPARE,
+@@ -193,7 +194,6 @@ enum cpuhp_state {
+ 	CPUHP_AP_ONLINE_DYN_END		= CPUHP_AP_ONLINE_DYN + 30,
+ 	CPUHP_AP_X86_HPET_ONLINE,
+ 	CPUHP_AP_X86_KVM_CLK_ONLINE,
+-	CPUHP_AP_DTPM_CPU_ONLINE,
+ 	CPUHP_AP_ACTIVE,
+ 	CPUHP_ONLINE,
+ };
 diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
-index d724c5a7b2f4..5f71ddc18ee9 100644
+index e80a332e3d8a..acf8d3638988 100644
 --- a/include/linux/dtpm.h
 +++ b/include/linux/dtpm.h
-@@ -34,25 +34,23 @@ struct dtpm_ops {
+@@ -29,6 +29,7 @@ struct dtpm {
+ struct dtpm_ops {
+ 	u64 (*set_power_uw)(struct dtpm *, u64);
+ 	u64 (*get_power_uw)(struct dtpm *);
++	int (*update_power_uw)(struct dtpm *);
  	void (*release)(struct dtpm *);
  };
  
--struct dtpm_descr;
--
--typedef int (*dtpm_init_t)(struct dtpm_descr *);
-+typedef int (*dtpm_init_t)(void);
+@@ -62,7 +63,7 @@ static inline struct dtpm *to_dtpm(struct powercap_zone *zone)
+ 	return container_of(zone, struct dtpm, zone);
+ }
  
- struct dtpm_descr {
--	struct dtpm *parent;
--	const char *name;
- 	dtpm_init_t init;
- };
+-int dtpm_update_power(struct dtpm *dtpm, u64 power_min, u64 power_max);
++int dtpm_update_power(struct dtpm *dtpm);
  
- /* Init section thermal table */
--extern struct dtpm_descr *__dtpm_table[];
--extern struct dtpm_descr *__dtpm_table_end[];
-+extern struct dtpm_descr __dtpm_table[];
-+extern struct dtpm_descr __dtpm_table_end[];
+ int dtpm_release_zone(struct powercap_zone *pcz);
  
--#define DTPM_TABLE_ENTRY(name)			\
--	static typeof(name) *__dtpm_table_entry_##name	\
--	__used __section("__dtpm_table") = &name
-+#define DTPM_TABLE_ENTRY(name, __init)				\
-+	static struct dtpm_descr __dtpm_table_entry_##name	\
-+	__used __section("__dtpm_table") = {			\
-+		.init = __init,					\
-+	}
- 
--#define DTPM_DECLARE(name)	DTPM_TABLE_ENTRY(name)
-+#define DTPM_DECLARE(name, init)	DTPM_TABLE_ENTRY(name, init)
- 
- #define for_each_dtpm_table(__dtpm)	\
- 	for (__dtpm = __dtpm_table;	\
-@@ -74,8 +72,6 @@ void dtpm_destroy(struct dtpm *dtpm);
- 
- int dtpm_create(const char *name, struct dtpm *dtpm, struct dtpm *parent);
- 
--int dtpm_register_cpu(struct dtpm *parent);
--
- int dtpm_register(const char *name, struct dtpm *dtpm);
- 
- void dtpm_unregister(const char *name);
 -- 
 2.17.1
 
