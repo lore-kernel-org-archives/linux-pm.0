@@ -7,23 +7,26 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B11C2BA17
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A86C28E8A
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2E1B365020
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 572F564FDC
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232834AbhCLPou (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:50 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55670 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232032AbhCLPoR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:17 -0500
+        id S232793AbhCLPos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47050 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232583AbhCLPoQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:16 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50226C061761;
+        Fri, 12 Mar 2021 07:44:16 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 522061F46EC7
+        with ESMTPSA id 3F3931F46EC3
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 5D450480108; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 4F3A64800FF; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 22/38] dt-bindings: power: supply: max17042: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:41 +0100
-Message-Id: <20210312154357.1561730-23-sebastian.reichel@collabora.com>
+Subject: [PATCH 15/38] dt-bindings: power: supply: tps65090: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:34 +0100
+Message-Id: <20210312154357.1561730-16-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -47,66 +50,25 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/max17042_battery.txt         | 35 ---------
- .../bindings/power/supply/maxim,max17042.yaml | 78 +++++++++++++++++++
- 2 files changed, 78 insertions(+), 35 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/max17042_battery.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
+ .../power/supply/tps65090-charger.yaml        | 36 +++++++++++++++++++
+ .../bindings/power/supply/tps65090.txt        | 17 ---------
+ 2 files changed, 36 insertions(+), 17 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/tps65090-charger.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/tps65090.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/max17042_battery.txt b/Documentation/devicetree/bindings/power/supply/max17042_battery.txt
-deleted file mode 100644
-index f34c5daae9af..000000000000
---- a/Documentation/devicetree/bindings/power/supply/max17042_battery.txt
-+++ /dev/null
-@@ -1,35 +0,0 @@
--max17042_battery
--~~~~~~~~~~~~~~~~
--
--Required properties :
-- - compatible : one of the following
-- * "maxim,max17042"
-- * "maxim,max17047"
-- * "maxim,max17050"
-- * "maxim,max17055"
--
--Optional properties :
-- - maxim,rsns-microohm : Resistance of rsns resistor in micro Ohms
--                         (datasheet-recommended value is 10000).
--   Defining this property enables current-sense functionality.
--
--Optional threshold properties :
-- If skipped the condition won't be reported.
-- - maxim,cold-temp :      Temperature threshold to report battery
--                          as cold (in tenths of degree Celsius).
-- - maxim,over-heat-temp : Temperature threshold to report battery
--                          as over heated (in tenths of degree Celsius).
-- - maxim,dead-volt :      Voltage threshold to report battery
--                          as dead (in mV).
-- - maxim,over-volt :      Voltage threshold to report battery
--                          as over voltage (in mV).
--
--Example:
--
--	battery-charger@36 {
--		compatible = "maxim,max17042";
--		reg = <0x36>;
--		maxim,rsns-microohm = <10000>;
--		maxim,over-heat-temp = <600>;
--		maxim,over-volt = <4300>;
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/tps65090-charger.yaml b/Documentation/devicetree/bindings/power/supply/tps65090-charger.yaml
 new file mode 100644
-index 000000000000..c70f05ea6d27
+index 000000000000..f2dd38bf078c
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/maxim,max17042.yaml
-@@ -0,0 +1,78 @@
++++ b/Documentation/devicetree/bindings/power/supply/tps65090-charger.yaml
+@@ -0,0 +1,36 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/maxim,max17042.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/tps65090-charger.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Maxim 17042 fuel gauge series
++title: TPS65090 Frontend PMU with Switchmode Charger
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
@@ -116,68 +78,49 @@ index 000000000000..c70f05ea6d27
 +
 +properties:
 +  compatible:
-+    enum:
-+      - maxim,max17042
-+      - maxim,max17047
-+      - maxim,max17050
-+      - maxim,max17055
++    const: ti,tps65090-charger
 +
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  maxim,rsns-microohm:
-+    $ref: /schemas/types.yaml#/definitions/uint32
++  ti,enable-low-current-chrg:
++    type: boolean
 +    description: |
-+      Resistance of rsns resistor in micro Ohms (datasheet-recommended value is 10000).
-+      Defining this property enables current-sense functionality.
-+
-+  maxim,cold-temp:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Temperature threshold to report battery as cold (in tenths of degree Celsius).
-+      Default is not to report cold events.
-+
-+  maxim,over-heat-temp:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Temperature threshold to report battery as over heated (in tenths of degree Celsius).
-+      Default is not to report over heating events.
-+
-+  maxim,dead-volt:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Voltage threshold to report battery as dead (in mV).
-+      Default is not to report dead battery events.
-+
-+  maxim,over-volt:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Voltage threshold to report battery as over voltage (in mV).
-+      Default is not to report over-voltage events.
++      Enables charging when a low current is detected while the default logic is to stop charging.
 +
 +required:
 +  - compatible
-+  - reg
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      battery@36 {
-+        compatible = "maxim,max17042";
-+        reg = <0x36>;
-+        maxim,rsns-microohm = <10000>;
-+        maxim,over-heat-temp = <600>;
-+        maxim,over-volt = <4300>;
++    pmic {
++      charger {
++        compatible = "ti,tps65090-charger";
++        ti,enable-low-current-chrg;
 +      };
 +    };
+diff --git a/Documentation/devicetree/bindings/power/supply/tps65090.txt b/Documentation/devicetree/bindings/power/supply/tps65090.txt
+deleted file mode 100644
+index 8e5e0d3910df..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/tps65090.txt
++++ /dev/null
+@@ -1,17 +0,0 @@
+-TPS65090 Frontend PMU with Switchmode Charger
+-
+-Required Properties:
+--compatible: "ti,tps65090-charger"
+-
+-Optional Properties:
+--ti,enable-low-current-chrg: Enables charging when a low current is detected
+- while the default logic is to stop charging.
+-
+-This node is a subnode of the tps65090 PMIC.
+-
+-Example:
+-
+-	tps65090-charger {
+-		compatible = "ti,tps65090-charger";
+-		ti,enable-low-current-chrg;
+-	};
 -- 
 2.30.1
 
