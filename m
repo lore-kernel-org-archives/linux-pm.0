@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B55E3C4321A
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB37C433DB
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C99264FF3
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4103664FE0
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232630AbhCLPoj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:39 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55600 "EHLO
+        id S232478AbhCLPok (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:40 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:55620 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232054AbhCLPoN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:13 -0500
+        with ESMTP id S232529AbhCLPoO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:14 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 840081F46E96
+        with ESMTPSA id 9EF021F46E6C
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 3D37C4800E0; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 455C74800E3; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +31,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 08/38] dt-bindings: power: supply: bq24735: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:27 +0100
-Message-Id: <20210312154357.1561730-9-sebastian.reichel@collabora.com>
+Subject: [PATCH 11/38] dt-bindings: power: supply: sbs-manager: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:30 +0100
+Message-Id: <20210312154357.1561730-12-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -47,26 +47,97 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/bq24735.yaml        | 88 +++++++++++++++++++
- .../bindings/power/supply/ti,bq24735.txt      | 39 --------
- 2 files changed, 88 insertions(+), 39 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq24735.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+ .../bindings/power/supply/sbs,sbs-manager.txt |  66 -----------
+ .../power/supply/sbs,sbs-manager.yaml         | 111 ++++++++++++++++++
+ 2 files changed, 111 insertions(+), 66 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq24735.yaml b/Documentation/devicetree/bindings/power/supply/bq24735.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+deleted file mode 100644
+index 4b2195571a49..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
++++ /dev/null
+@@ -1,66 +0,0 @@
+-Binding for sbs-manager
+-
+-Required properties:
+-- compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
+-  number compatible string might be used in order to take care of vendor
+-  specific registers.
+-- reg: integer, i2c address of the device. Should be <0xa>.
+-Optional properties:
+-- gpio-controller: Marks the port as GPIO controller.
+-  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
+-- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
+-  is used to specify optional parameters:
+-  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
+-
+-From OS view the device is basically an i2c-mux used to communicate with up to
+-four smart battery devices at address 0xb. The driver actually implements this
+-behaviour. So standard i2c-mux nodes can be used to register up to four slave
+-batteries. Channels will be numerated starting from 1 to 4.
+-
+-Example:
+-
+-batman@a {
+-    compatible = "lltc,ltc1760", "sbs,sbs-manager";
+-    reg = <0x0a>;
+-    #address-cells = <1>;
+-    #size-cells = <0>;
+-
+-    gpio-controller;
+-    #gpio-cells = <2>;
+-
+-    i2c@1 {
+-        #address-cells = <1>;
+-        #size-cells = <0>;
+-        reg = <1>;
+-
+-        battery@b {
+-            compatible = "ti,bq2060", "sbs,sbs-battery";
+-            reg = <0x0b>;
+-            sbs,battery-detect-gpios = <&batman 1 1>;
+-        };
+-    };
+-
+-    i2c@2 {
+-        #address-cells = <1>;
+-        #size-cells = <0>;
+-        reg = <2>;
+-
+-        battery@b {
+-            compatible = "ti,bq2060", "sbs,sbs-battery";
+-            reg = <0x0b>;
+-            sbs,battery-detect-gpios = <&batman 2 1>;
+-        };
+-    };
+-
+-    i2c@3 {
+-        #address-cells = <1>;
+-        #size-cells = <0>;
+-        reg = <3>;
+-
+-        battery@b {
+-            compatible = "ti,bq2060", "sbs,sbs-battery";
+-            reg = <0x0b>;
+-            sbs,battery-detect-gpios = <&batman 3 1>;
+-        };
+-    };
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
 new file mode 100644
-index 000000000000..8a3a31ada128
+index 000000000000..592c476d83e6
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq24735.yaml
-@@ -0,0 +1,88 @@
++++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
+@@ -0,0 +1,111 @@
 +# SPDX-License-Identifier: GPL-2.0
-+# Copyright (C) 2021 Sebastian Reichel
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/bq24735.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++$id: http://devicetree.org/schemas/power/supply/sbs,sbs-manager.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Binding for TI BQ24735 Li-Ion Battery Charger
++title: SBS compliant manger
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
@@ -76,56 +147,28 @@ index 000000000000..8a3a31ada128
 +
 +properties:
 +  compatible:
-+    const: ti,bq24735
++    oneOf:
++      - items:
++          - enum:
++              - lltc,ltc1760
++          - enum:
++              - sbs,sbs-manager
++      - items:
++          - const: sbs,sbs-manager
 +
 +  reg:
-+    maxItems: 1
++    const: 0xa
 +
-+  interrupts:
-+    description: AC adapter plug event interrupt
-+    maxItems: 1
++  "#address-cells":
++    const: 1
 +
-+  ti,ac-detect-gpios:
-+    maxItems: 1
-+    description: |
-+      This GPIO is optionally used to read the AC adapter status. This is a Host GPIO
-+      that is configured as an input and connected to the ACOK pin on the bq24735.
-+      Note: for backwards compatibility reasons, the GPIO must be active on AC adapter
-+      absence despite ACOK being active (high) on AC adapter presence.
++  "#size-cells":
++    const: 0
 +
-+  ti,charge-current:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Used to control and set the charging current.
-+      This value must be between 128mA and 8.128A with a 64mA step resolution.
-+      The POR value is 0x0000h. This number is in mA (e.g. 8192).
-+      See spec for more information about the ChargeCurrent (0x14h) register.
++  gpio-controller: true
 +
-+  ti,charge-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Used to control and set the charging voltage.
-+      This value must be between 1.024V and 19.2V with a 16mV step resolution.
-+      The POR value is 0x0000h. This number is in mV (e.g. 19200).
-+      See spec for more information about the ChargeVoltage (0x15h) register.
-+
-+  ti,input-current:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Used to control and set the charger input current.
-+      This value must be between 128mA and 8.064A with a 128mA step resolution.
-+      The POR value is 0x1000h. This number is in mA (e.g. 8064).
-+      See the spec for more information about the InputCurrent (0x3fh) register.
-+
-+  ti,external-control:
-+    type: boolean
-+    description: |
-+      Indicates that the charger is configured externally and that the host should not
-+      attempt to enable/disable charging or set the charge voltage/current.
-+
-+  poll-interval:
-+    description: |
-+      If 'interrupts' is not specified, poll AC adapter presence with this interval (milliseconds).
++  "#gpio-cells":
++    const: 2
 +
 +required:
 +  - compatible
@@ -133,65 +176,72 @@ index 000000000000..8a3a31ada128
 +
 +additionalProperties: false
 +
++dependencies:
++  '#gpio-cells': [gpio-controller]
++  gpio-controller: ['#gpio-cells']
++
++patternProperties:
++  "^i2c@[1-4]$":
++    type: object
++
++    allOf:
++      - $ref: /schemas/i2c/i2c-controller.yaml#
++
 +examples:
 +  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
 +    #include <dt-bindings/gpio/gpio.h>
 +
-+    i2c0 {
++    i2c {
 +      #address-cells = <1>;
 +      #size-cells = <0>;
 +
-+      charger@9 {
-+        compatible = "ti,bq24735";
-+        reg = <0x9>;
-+        ti,ac-detect-gpios = <&gpio 72 0x1>;
++      batman: battery-manager@a {
++        compatible = "lltc,ltc1760", "sbs,sbs-manager";
++        reg = <0x0a>;
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        gpio-controller;
++        #gpio-cells = <2>;
++
++        i2c@1 {
++          #address-cells = <1>;
++          #size-cells = <0>;
++          reg = <1>;
++
++          battery@b {
++            compatible = "ti,bq20z65", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 1 1>;
++          };
++        };
++
++        i2c@2 {
++          #address-cells = <1>;
++          #size-cells = <0>;
++          reg = <2>;
++
++          battery@b {
++            compatible = "ti,bq20z65", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 2 1>;
++          };
++        };
++
++        i2c@3 {
++          #address-cells = <1>;
++          #size-cells = <0>;
++          reg = <3>;
++
++          battery@b {
++            compatible = "ti,bq20z65", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 3 1>;
++          };
++        };
 +      };
 +    };
-diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-deleted file mode 100644
-index de45e1a2a4d9..000000000000
---- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-+++ /dev/null
-@@ -1,39 +0,0 @@
--TI BQ24735 Charge Controller
--~~~~~~~~~~
--
--Required properties :
-- - compatible : "ti,bq24735"
--
--Optional properties :
-- - interrupts : Specify the interrupt to be used to trigger when the AC
--   adapter is either plugged in or removed.
-- - ti,ac-detect-gpios : This GPIO is optionally used to read the AC adapter
--   status. This is a Host GPIO that is configured as an input and connected
--   to the ACOK pin on the bq24735. Note: for backwards compatibility reasons,
--   the GPIO must be active on AC adapter absence despite ACOK being active
--   (high) on AC adapter presence.
-- - ti,charge-current : Used to control and set the charging current. This value
--   must be between 128mA and 8.128A with a 64mA step resolution. The POR value
--   is 0x0000h. This number is in mA (e.g. 8192), see spec for more information
--   about the ChargeCurrent (0x14h) register.
-- - ti,charge-voltage : Used to control and set the charging voltage. This value
--   must be between 1.024V and 19.2V with a 16mV step resolution. The POR value
--   is 0x0000h. This number is in mV (e.g. 19200), see spec for more information
--   about the ChargeVoltage (0x15h) register.
-- - ti,input-current : Used to control and set the charger input current. This
--   value must be between 128mA and 8.064A with a 128mA step resolution. The
--   POR value is 0x1000h. This number is in mA (e.g. 8064), see the spec for
--   more information about the InputCurrent (0x3fh) register.
-- - ti,external-control : Indicates that the charger is configured externally
--   and that the host should not attempt to enable/disable charging or set the
--   charge voltage/current.
-- - poll-interval : In case 'interrupts' is not specified, poll AC adapter
--   presence with this interval (milliseconds).
--
--Example:
--
--	bq24735@9 {
--		compatible = "ti,bq24735";
--		reg = <0x9>;
--		ti,ac-detect-gpios = <&gpio 72 0x1>;
--	}
 -- 
 2.30.1
 
