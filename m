@@ -7,64 +7,64 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C635C43381
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D97C4332D
 	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 17:04:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E7F8464FD9
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 17:04:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 189316502A
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 17:04:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232647AbhCLRDi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 12:03:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36084 "EHLO
+        id S232764AbhCLRDj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 12:03:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232699AbhCLRDc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 12:03:32 -0500
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 993E9C061763
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 09:03:31 -0800 (PST)
-Received: by mail-wm1-x330.google.com with SMTP id c76-20020a1c9a4f0000b029010c94499aedso16227062wme.0
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 09:03:31 -0800 (PST)
+        with ESMTP id S232768AbhCLRDg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 12:03:36 -0500
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9B43C061574
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 09:03:35 -0800 (PST)
+Received: by mail-wm1-x32b.google.com with SMTP id r10-20020a05600c35cab029010c946c95easo15573064wmq.4
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 09:03:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=s7fCt8jAahXLsklhkFc/v9K2fCeNdzwdfE44cqbig58=;
-        b=X0lBMvAlM/aI9s6P8gpDF/A2H6hRtLmQX0fu6RSroOLDo+GfgC5JMl46hETKXvJ+9E
-         JfSuZ+xVrLucKcrdR6RseL/Hpv7SMTiseGuTidEInW56e1miGmBEWBWLRtQ/1DL07r7w
-         MFWp1EtKUFh+jWd6/bg3j2hUlW1PZipr6ikhhpomDNbI5+mr84zY5Hb8J8Li4bMNYqxx
-         i3dYvIQeXJrm20peNAiseQaBbaeTdEcR4NrqMLbKx+KETP7W1u7zxwnZ67IcWEIzy2aD
-         5Sr3+pBRXt5BtK8VoumFQi2vULgDs0C8pSrEXAi7b9Z1paRxQo9g3ym9bY89DcUWxgMe
-         HYqg==
+        bh=0xkCbEvZITlI3FuObl7ojygKHKc8b/X8zJQNxRSg5U8=;
+        b=vSNwp16ODVdxzM23E/bgP/ktZVmMyV0r0DypdYvSkDZF1m9PRNfX52KlC9ibbZU6H9
+         TljQagWPlpVNGNVlZiEtawxLYbPSPFHaEK6eQurl0lFgXoDL7lv4wnUZ7Fh+4pYwym00
+         UEtQ4EaAw/4OQodzQN0QbNHmMyN1BNx5ZQ0BsKZ11rP/5Q2fmCkdScrEZj4i4fTz05ZA
+         UmfzaJ1wYUwe7di/LY0x5LFMkn5efvM3H4ZwoeIwBoRjqWMAB3PUVBtWDzGNxmIaI26Y
+         RjtC0rqhlw+aIJmDSNpf49h3Vy7xQe8iogeTHIozjnUQAO3wy+w+FfGyktTHmnH5oaMB
+         w0bQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=s7fCt8jAahXLsklhkFc/v9K2fCeNdzwdfE44cqbig58=;
-        b=oktgeqx2W0XJt640KRYuLURP8voeXuZQRgWT0EfQGpPJw7CSbP9Yigk/Saf/BCtJCz
-         ZXZ115hLf4UdAnSmOpInfFZWfnkBqdiYEBXuPrVKmpJhFdvoko7VdvRudEtFf1oFpYGE
-         xJesJA1z3UVQQqnqfu2Rz6qU09prqMXmNj377w0CH2m8rD4MCa+iizLbkz/hrQZzp3rj
-         0xT0cIGE5OhtFxzgd0ySvsz0WhY4/xnonqLRfFyIFq9EPgZth50y+ieVjUm5M9cOFy2W
-         I/1yzmzfx9aMS/iCHtbDPmOq+XO/8UVB2ZaX3j8QHo+b8LEtzK+MIeTeQi754Hn1chMn
-         bdCg==
-X-Gm-Message-State: AOAM533pDCJEa/wK8CuL9j5KoD+RqXJ4fi0ldYNliNwAalR1g4YMwRS/
-        5VErk5glLyAC1tMenc21luTHmeib06emHQ==
-X-Google-Smtp-Source: ABdhPJypFvYqCkonVq+396IfmkPJ+afGI1syn30KATEJwBQ++/NZnoeLMzqs2Lwy5fh32LRMs4BarQ==
-X-Received: by 2002:a1c:1fc6:: with SMTP id f189mr14152756wmf.68.1615568610171;
-        Fri, 12 Mar 2021 09:03:30 -0800 (PST)
+        bh=0xkCbEvZITlI3FuObl7ojygKHKc8b/X8zJQNxRSg5U8=;
+        b=ZygWkgS2hconFLkXoo5zl+TW2b31SVNwhcf/+Fdb/tvq0l2/Lc+mSUllq3DjR+VPXD
+         C+/Yo6MBKAsFY4dKmcsQPdHkM9JuQMaMUW7tZxTmUn3JGX6icjMOgwKxNLLA8q/F9JJ8
+         zzVAn6YBCCF6yrX+CyVbzkHoo8yAvbqF0JCC8F+MauYt5QnY+BgsfVz2tUJsMQl1AbJy
+         GTylp6B6aY6lo976Ahok9SKbhQbAGlbcXNqHvtU4X1sJkLy+la2AYtWgdp17G0GjWZgk
+         dY69bZ1O0p+P/S9Lo6Y34X3H41R4vijyNsis9wX8QmgTvLOEazGEVTwFgBQ3b5mGgu4r
+         CV+Q==
+X-Gm-Message-State: AOAM531SDxC9rPZO16yiLwV8xB//NMarXllNyYSy/lIziXy853/JqcnY
+        pWzAWIbC3Y7lZ8pcOiax5m69HA==
+X-Google-Smtp-Source: ABdhPJzMVkkJH5FBKuz/H/AKJCdoc31BdUq0HscoqSrBMFDJey3SjjZ1UrkMe9a1e6HCrTRNifKbYg==
+X-Received: by 2002:a7b:c087:: with SMTP id r7mr14049213wmh.110.1615568614327;
+        Fri, 12 Mar 2021 09:03:34 -0800 (PST)
 Received: from localhost.localdomain ([82.142.0.212])
-        by smtp.gmail.com with ESMTPSA id 1sm2854681wmj.2.2021.03.12.09.03.29
+        by smtp.gmail.com with ESMTPSA id 1sm2854681wmj.2.2021.03.12.09.03.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Mar 2021 09:03:29 -0800 (PST)
+        Fri, 12 Mar 2021 09:03:33 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        lukasz.luba@arm.com, Viresh Kumar <viresh.kumar@linaro.org>,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        lukasz.luba@arm.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Javi Merino <javi.merino@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH v2 2/5] thermal/drivers/cpufreq_cooling: Use device name instead of auto-numbering
-Date:   Fri, 12 Mar 2021 18:03:13 +0100
-Message-Id: <20210312170316.3138-2-daniel.lezcano@linaro.org>
+Subject: [PATCH v2 5/5] thermal/drivers/cpufreq_cooling: Remove unused list
+Date:   Fri, 12 Mar 2021 18:03:16 +0100
+Message-Id: <20210312170316.3138-5-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210312170316.3138-1-daniel.lezcano@linaro.org>
 References: <20210312170316.3138-1-daniel.lezcano@linaro.org>
@@ -72,155 +72,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently the naming of a cooling device is just a cooling technique
-followed by a number. When there are multiple cooling devices using
-the same technique, it is impossible to clearly identify the related
-device as this one is just a number.
+There is a list with the purpose of grouping the cpufreq cooling
+device together as described in the comments but actually it is
+unused, the code evolved since 2012 and the list was no longer needed.
 
-For instance:
-
- thermal-cpufreq-0
- thermal-cpufreq-1
- etc ...
-
-The 'thermal' prefix is redundant with the subsystem namespace. This
-patch removes the 'thermal' prefix and changes the number by the device
-name. So the naming above becomes:
-
- cpufreq-cpu0
- cpufreq-cpu4
- etc ...
+Delete the remaining unused list related code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
-V2:
-  - Use kasprintf() instead of fixed array length on the stack
-  - Fixed typo in the log
-  - Removed idr.h inclusion
----
- drivers/thermal/cpufreq_cooling.c | 34 +++++++++++--------------------
- 1 file changed, 12 insertions(+), 22 deletions(-)
+ drivers/thermal/cpufreq_cooling.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
 diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index 10af3341e5ea..3f5f1dce1320 100644
+index 3f5f1dce1320..f3d308427665 100644
 --- a/drivers/thermal/cpufreq_cooling.c
 +++ b/drivers/thermal/cpufreq_cooling.c
-@@ -13,10 +13,10 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpu_cooling.h>
-+#include <linux/device.h>
- #include <linux/energy_model.h>
- #include <linux/err.h>
- #include <linux/export.h>
--#include <linux/idr.h>
- #include <linux/pm_opp.h>
- #include <linux/pm_qos.h>
- #include <linux/slab.h>
-@@ -50,8 +50,6 @@ struct time_in_idle {
- 
- /**
-  * struct cpufreq_cooling_device - data for cooling device with cpufreq
-- * @id: unique integer value corresponding to each cpufreq_cooling_device
-- *	registered.
-  * @last_load: load measured by the latest call to cpufreq_get_requested_power()
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-@@ -69,7 +67,6 @@ struct time_in_idle {
-  * cpufreq_cooling_device.
-  */
- struct cpufreq_cooling_device {
--	int id;
- 	u32 last_load;
- 	unsigned int cpufreq_state;
+@@ -59,7 +59,6 @@ struct time_in_idle {
+  * @cdev: thermal_cooling_device pointer to keep track of the
+  *	registered cooling device.
+  * @policy: cpufreq policy.
+- * @node: list_head to link all cpufreq_cooling_device together.
+  * @idle_time: idle time stats
+  * @qos_req: PM QoS contraint to apply
+  *
+@@ -72,16 +71,12 @@ struct cpufreq_cooling_device {
  	unsigned int max_level;
-@@ -82,7 +79,6 @@ struct cpufreq_cooling_device {
+ 	struct em_perf_domain *em;
+ 	struct cpufreq_policy *policy;
+-	struct list_head node;
+ #ifndef CONFIG_SMP
+ 	struct time_in_idle *idle_time;
+ #endif
  	struct freq_qos_request qos_req;
  };
  
--static DEFINE_IDA(cpufreq_ida);
- static DEFINE_MUTEX(cooling_list_lock);
- static LIST_HEAD(cpufreq_cdev_list);
- 
-@@ -528,11 +524,11 @@ __cpufreq_cooling_register(struct device_node *np,
- {
- 	struct thermal_cooling_device *cdev;
- 	struct cpufreq_cooling_device *cpufreq_cdev;
--	char dev_name[THERMAL_NAME_LENGTH];
- 	unsigned int i;
- 	struct device *dev;
- 	int ret;
- 	struct thermal_cooling_device_ops *cooling_ops;
-+	char *name;
- 
- 	dev = get_cpu_device(policy->cpu);
- 	if (unlikely(!dev)) {
-@@ -567,16 +563,6 @@ __cpufreq_cooling_register(struct device_node *np,
- 	/* max_level is an index, not a counter */
- 	cpufreq_cdev->max_level = i - 1;
- 
--	ret = ida_simple_get(&cpufreq_ida, 0, 0, GFP_KERNEL);
--	if (ret < 0) {
--		cdev = ERR_PTR(ret);
--		goto free_idle_time;
--	}
--	cpufreq_cdev->id = ret;
+-static DEFINE_MUTEX(cooling_list_lock);
+-static LIST_HEAD(cpufreq_cdev_list);
 -
--	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
--		 cpufreq_cdev->id);
--
- 	cooling_ops = &cpufreq_cooling_ops;
- 
  #ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-@@ -591,7 +577,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 		pr_err("%s: unsorted frequency tables are not supported\n",
- 		       __func__);
- 		cdev = ERR_PTR(-EINVAL);
--		goto remove_ida;
-+		goto free_idle_time;
- 	}
- 
- 	ret = freq_qos_add_request(&policy->constraints,
-@@ -601,11 +587,18 @@ __cpufreq_cooling_register(struct device_node *np,
- 		pr_err("%s: Failed to add freq constraint (%d)\n", __func__,
- 		       ret);
- 		cdev = ERR_PTR(ret);
--		goto remove_ida;
-+		goto free_idle_time;
- 	}
- 
--	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
-+	cdev = ERR_PTR(-ENOMEM);
-+	name = kasprintf(GFP_KERNEL, "cpufreq-%s", dev_name(dev));
-+	if (!name)
-+		goto remove_qos_req;
-+
-+	cdev = thermal_of_cooling_device_register(np, name, cpufreq_cdev,
- 						  cooling_ops);
-+	kfree(name);
-+
+ /**
+  * get_level: Find the level for a particular frequency
+@@ -602,10 +597,6 @@ __cpufreq_cooling_register(struct device_node *np,
  	if (IS_ERR(cdev))
  		goto remove_qos_req;
  
-@@ -617,8 +610,6 @@ __cpufreq_cooling_register(struct device_node *np,
+-	mutex_lock(&cooling_list_lock);
+-	list_add(&cpufreq_cdev->node, &cpufreq_cdev_list);
+-	mutex_unlock(&cooling_list_lock);
+-
+ 	return cdev;
  
  remove_qos_req:
- 	freq_qos_remove_request(&cpufreq_cdev->qos_req);
--remove_ida:
--	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- free_idle_time:
- 	free_idle_time(cpufreq_cdev);
- free_cdev:
-@@ -712,7 +703,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+@@ -697,10 +688,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
  
+ 	cpufreq_cdev = cdev->devdata;
+ 
+-	mutex_lock(&cooling_list_lock);
+-	list_del(&cpufreq_cdev->node);
+-	mutex_unlock(&cooling_list_lock);
+-
  	thermal_cooling_device_unregister(cdev);
  	freq_qos_remove_request(&cpufreq_cdev->qos_req);
--	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
  	free_idle_time(cpufreq_cdev);
- 	kfree(cpufreq_cdev);
- }
 -- 
 2.17.1
 
