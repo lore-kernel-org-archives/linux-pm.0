@@ -2,119 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F434C433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6EFEC433E9
 	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 08:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D7FA064FC1
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 08:36:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8FE864FA9
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 08:36:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232274AbhCLIgV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 03:36:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39022 "EHLO
+        id S232363AbhCLIgW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 03:36:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232281AbhCLIgL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 03:36:11 -0500
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B8E5C061574
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 00:36:10 -0800 (PST)
-Received: by mail-lj1-x234.google.com with SMTP id a1so5697156ljp.2
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 00:36:10 -0800 (PST)
+        with ESMTP id S232251AbhCLIgP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 03:36:15 -0500
+Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0500C061574
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 00:36:14 -0800 (PST)
+Received: by mail-lj1-x230.google.com with SMTP id z25so5695936lja.3
+        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 00:36:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=em7dfJLsuPWNoBZ5RIglWlkFRGvmQrMQ7HhOt27sGkg=;
-        b=KTwtsgfyiGwQF6XJDg2CkwPV+PNOhi0ZuS3gk4R5yeKgmlDmTeuxGyt6C5TDsrCQIS
-         89Z680OPXy4aWZd3KtXazaVSqOlOh5y6jYfcUqNH7BaoVG9BUVnzcIUaRCm25dVpi3b9
-         IZK4TyOe6TzqU63FFP33TMDkcRecrkOfjictUgiEwkB9/gUWm1hjkVi+MHWpus8WPee7
-         yCFNJk3c83FyhEjlTkaFK/aqokWlgz5cYeJ5yx7d9dvE6Qb3z4MU7+LtNF7CVEvkCGUc
-         SaSVGdKncOxbKcDcInz854nBrnZFsqjpw3bPTbbPfcbl88wtMc9n5H0oILrVA6BorOWH
-         mV7w==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=w3IZh6Sr3KpjXM0LqFQFqH1i8vaQmDVN35tRH7/mbAU=;
+        b=w4PN1C4PgugnW7X5qRA0bcvSlXdgQLcTfkchIx0g+Hin/luGafbnvA2aV/WxDs2ar6
+         XrD/+ibpcgVcuoPff1Cp1tkimFnIBsHp48mxcjjn58EWXIz4SJqmxKEXImfdGQwdZtQF
+         +IO0VbfdjPVxP4ZBNW/Bbicd0DoS2ZjmsycP4IHap5SpZ4U1jGnropCsldbRsPXZiEZO
+         kntOeDJluDH47l0LSpRjbsgf8w7NJPXpkpEWaTPvCOAE4f3paj3i8hYY40SdKSemRz/z
+         VWNOk0fzneDCuiWEmduxwGqYtxMVbd6TpvE7ZIOezFhqugFwYv2UDZ3YzpiPrtyMBCRD
+         7drg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=em7dfJLsuPWNoBZ5RIglWlkFRGvmQrMQ7HhOt27sGkg=;
-        b=lbdgNDnEBIFap+ouPz1EWBxBiYpuLGoYWatr3D9/lyogqB9WGYZw7HI2mU+GeZA2Ye
-         9qBZgSrSnbXZwSOHMv/1XzRJHr4eCcWmmNKDaL2D+zOMbcuptRpAsz8Gy8dKGBtt3SwF
-         pl6dIO4XNFy9GzKvmqcnYRjqz+LTcxgeocoioQsW5nRre/SLTA0qC9c+2kmjFUOzWZmH
-         zSarsy6jHoYnVrxxGTlTme/0fucKbNdB5kYP/Z+GRR0oXEs2fBZlCydyX46ctFQI7Vry
-         eSTmac3IBCs/NOzldhfGwZ1wb/KGz5gaOIJHCjVwyce5GhMDLECtU1yEqD4QU/0Yv235
-         ZWMA==
-X-Gm-Message-State: AOAM530BHRPQ2DY604IsQ8ebgkzmLVArVjmcEgkHIswFdEH9gTbtH4X8
-        1oB3cYc/jppxIvY+4y5K1OtZpw==
-X-Google-Smtp-Source: ABdhPJwudCeMpAQ/FIhQYdxteL/3mQVeO5HwZMu2xEg2lOFOrphhSNdVU9afiBQ1dWr+s+ZrgTWoRw==
-X-Received: by 2002:a2e:b4d0:: with SMTP id r16mr1741074ljm.324.1615538169164;
-        Fri, 12 Mar 2021 00:36:09 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=w3IZh6Sr3KpjXM0LqFQFqH1i8vaQmDVN35tRH7/mbAU=;
+        b=b78PMOtsfCpQSU/xz4wICRItBLMM7D2+aOqz8Tmkvo/asQANSQllsBffP+GIMTrefx
+         MDg1wb/fK9UMMF+BZqv2JZRinNQDWpblDUTAWLsN35BeAXVbHAQCnMg8ond2tbsJzJAb
+         45XoK+Wbx6bnAcUHIE2fwzdk8/c0ruX5wk938tr3+KwJFh53QdEU3hZGR8/dGq5LeGa1
+         TLnnzTX9UUGAQSOI2bRthRmx0aq2iA5FW1JgueuH0Kp6Thm8odgIP0Hoy0Q2Sdwrl8vZ
+         KaK8g0DcJLlQz/e7TQIHjHcs5xsD5iFJtds1ALCyGnHR7xoj+d4KFAQ/ZK+NKqBdkUu3
+         TBTQ==
+X-Gm-Message-State: AOAM532MOSqOGSHzN9QrzPpRFSKOpS34cGKBvUFJ2xXuOnzzUobDuezk
+        qKr0WpaL8CwPxxM2yfdIQ7OjkA==
+X-Google-Smtp-Source: ABdhPJy9M4sSSBaKf+jN/ywwLXdo+WJR/aU9Z0pLUCJ/Mp9QUJNGkawLsTml2ipEhkUt62BQxkwYuQ==
+X-Received: by 2002:a2e:b17b:: with SMTP id a27mr1760158ljm.62.1615538173441;
+        Fri, 12 Mar 2021 00:36:13 -0800 (PST)
 Received: from localhost.localdomain (c-d7cb225c.014-348-6c756e10.bbcust.telenor.se. [92.34.203.215])
-        by smtp.gmail.com with ESMTPSA id p6sm1617532lfc.71.2021.03.12.00.36.08
+        by smtp.gmail.com with ESMTPSA id p6sm1617532lfc.71.2021.03.12.00.36.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Mar 2021 00:36:08 -0800 (PST)
+        Fri, 12 Mar 2021 00:36:13 -0800 (PST)
 From:   Linus Walleij <linus.walleij@linaro.org>
 To:     lee.jones@linaro.org, Sebastian Reichel <sre@kernel.org>
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 0/4] mfd/power: Push data into power supply
-Date:   Fri, 12 Mar 2021 09:36:00 +0100
-Message-Id: <20210312083604.3708890-1-linus.walleij@linaro.org>
+Subject: [PATCH 3/4] mfd/power: ab8500: Push algorithm to power supply code
+Date:   Fri, 12 Mar 2021 09:36:03 +0100
+Message-Id: <20210312083604.3708890-4-linus.walleij@linaro.org>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210312083604.3708890-1-linus.walleij@linaro.org>
+References: <20210312083604.3708890-1-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series pushes some AB8500 power supply headers down
-into the power supply subsystem so the power supply code
-becomes independent from the other AB8500 stuff.
+The charging algorithm header is only used locally in the
+power supply subsystem so push this down into
+drivers/power/supply and rename from the confusing
+"ux500_chargalg.h" to "ab8500-chargalg.h" for clarity:
+it is only used with the AB8500.
 
-The first patch makes the code require device tree so
-that the series make sense: once all data for the power
-supply comes from device tree, it makes sense for that
-code to not require global headers for platform data
-etc.
+This is another remnant of non-DT code needing to pass
+data from boardfiles, which we don't do anymore.
 
-This is in preparation for some finalization of the AB8500
-power code, as merge strategy I think it is best if:
-
-- The power maintainer (Sebastian) provide an ACK
-
-- The MFD matinainer (Lee) merges this and provide an
-  immutable branch that the power maintainer can possibly
-  pull as a base for his tree
-
-I hope both subsystems are happy with the changes.
-
-One of the patches already has Lee's Acked-for-MFD, but I
-got a bit stressed out in the last kernel cycle. Let's
-take this stepwise, first these four patches. No hurry.
-
-Linus Walleij (4):
-  mfd/power: ab8500: Require device tree
-  mfd/power: ab8500: Push data to power supply code
-  mfd/power: ab8500: Push algorithm to power supply code
-  mfd/power: ab8500: Push data to power supply code
-
- drivers/mfd/ab8500-core.c                     |  17 +-
- drivers/power/supply/Kconfig                  |   2 +-
- .../power/supply}/ab8500-bm.h                 | 297 ++++++++++++++++--
- .../power/supply/ab8500-chargalg.h            |   6 +-
- drivers/power/supply/ab8500_bmdata.c          |   3 +-
- drivers/power/supply/ab8500_btemp.c           |  45 +--
- drivers/power/supply/ab8500_charger.c         |  27 +-
- drivers/power/supply/ab8500_fg.c              |  20 +-
- drivers/power/supply/abx500_chargalg.c        |  22 +-
- drivers/power/supply/pm2301_charger.c         |   4 +-
- include/linux/mfd/abx500.h                    | 276 ----------------
- 11 files changed, 326 insertions(+), 393 deletions(-)
- rename {include/linux/mfd/abx500 => drivers/power/supply}/ab8500-bm.h (58%)
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ .../power/supply/ab8500-chargalg.h                          | 6 +++---
+ drivers/power/supply/ab8500_charger.c                       | 2 +-
+ drivers/power/supply/abx500_chargalg.c                      | 2 +-
+ drivers/power/supply/pm2301_charger.c                       | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
  rename include/linux/mfd/abx500/ux500_chargalg.h => drivers/power/supply/ab8500-chargalg.h (93%)
 
+diff --git a/include/linux/mfd/abx500/ux500_chargalg.h b/drivers/power/supply/ab8500-chargalg.h
+similarity index 93%
+rename from include/linux/mfd/abx500/ux500_chargalg.h
+rename to drivers/power/supply/ab8500-chargalg.h
+index 9b97d284d0ce..94a6f9068bc5 100644
+--- a/include/linux/mfd/abx500/ux500_chargalg.h
++++ b/drivers/power/supply/ab8500-chargalg.h
+@@ -4,8 +4,8 @@
+  * Author: Johan Gardsmark <johan.gardsmark@stericsson.com> for ST-Ericsson.
+  */
+ 
+-#ifndef _UX500_CHARGALG_H
+-#define _UX500_CHARGALG_H
++#ifndef _AB8500_CHARGALG_H_
++#define _AB8500_CHARGALG_H_
+ 
+ #include <linux/power_supply.h>
+ 
+@@ -48,4 +48,4 @@ struct ux500_charger {
+ 
+ extern struct blocking_notifier_head charger_notifier_list;
+ 
+-#endif
++#endif /* _AB8500_CHARGALG_H_ */
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index 50989a5ec95c..a9be10eb2c22 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -28,12 +28,12 @@
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/abx500/ab8500.h>
+ #include <linux/mfd/abx500.h>
+-#include <linux/mfd/abx500/ux500_chargalg.h>
+ #include <linux/usb/otg.h>
+ #include <linux/mutex.h>
+ #include <linux/iio/consumer.h>
+ 
+ #include "ab8500-bm.h"
++#include "ab8500-chargalg.h"
+ 
+ /* Charger constants */
+ #define NO_PW_CONN			0
+diff --git a/drivers/power/supply/abx500_chargalg.c b/drivers/power/supply/abx500_chargalg.c
+index 5b28d58041b4..f5b792243727 100644
+--- a/drivers/power/supply/abx500_chargalg.c
++++ b/drivers/power/supply/abx500_chargalg.c
+@@ -28,10 +28,10 @@
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/abx500.h>
+ #include <linux/mfd/abx500/ab8500.h>
+-#include <linux/mfd/abx500/ux500_chargalg.h>
+ #include <linux/notifier.h>
+ 
+ #include "ab8500-bm.h"
++#include "ab8500-chargalg.h"
+ 
+ /* Watchdog kick interval */
+ #define CHG_WD_INTERVAL			(6 * HZ)
+diff --git a/drivers/power/supply/pm2301_charger.c b/drivers/power/supply/pm2301_charger.c
+index 5aeff75db33b..d53e0c37c059 100644
+--- a/drivers/power/supply/pm2301_charger.c
++++ b/drivers/power/supply/pm2301_charger.c
+@@ -18,13 +18,13 @@
+ #include <linux/i2c.h>
+ #include <linux/workqueue.h>
+ #include <linux/mfd/abx500/ab8500.h>
+-#include <linux/mfd/abx500/ux500_chargalg.h>
+ #include <linux/pm2301_charger.h>
+ #include <linux/gpio.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pm.h>
+ 
+ #include "ab8500-bm.h"
++#include "ab8500-chargalg.h"
+ #include "pm2301_charger.h"
+ 
+ #define to_pm2xxx_charger_ac_device_info(x) container_of((x), \
 -- 
 2.29.2
 
