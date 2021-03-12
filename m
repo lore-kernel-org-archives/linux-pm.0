@@ -7,33 +7,33 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92A2EC46461
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18912C43619
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6BD2E64FF5
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E68BA64FDD
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232798AbhCLPos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:48 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55656 "EHLO
+        id S232676AbhCLPom (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:42 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:55604 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232572AbhCLPoQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:16 -0500
+        with ESMTP id S232524AbhCLPoO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:14 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 446521F46EC4
+        with ESMTPSA id 82E301F46E7A
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 582A5480105; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 34E1F4800DD; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com, David Lechner <david@lechnology.com>
-Subject: [PATCH 19/38] dt-bindings: power: supply: lego-ev3-battery: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:38 +0100
-Message-Id: <20210312154357.1561730-20-sebastian.reichel@collabora.com>
+        kernel@collabora.com
+Subject: [PATCH 05/38] dt-bindings: power: supply: bq24257: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:24 +0100
+Message-Id: <20210312154357.1561730-6-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -45,103 +45,212 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Convert the binding to DT schema format.
 
-Cc: David Lechner <david@lechnology.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/lego,ev3-battery.yaml        | 55 +++++++++++++++++++
- .../power/supply/lego_ev3_battery.txt         | 21 -------
- 2 files changed, 55 insertions(+), 21 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
+ .../bindings/power/supply/bq24257.txt         |  62 ---------
+ .../bindings/power/supply/bq24257.yaml        | 124 ++++++++++++++++++
+ 2 files changed, 124 insertions(+), 62 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/bq24257.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq24257.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml b/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/bq24257.txt b/Documentation/devicetree/bindings/power/supply/bq24257.txt
+deleted file mode 100644
+index f8f5a1685bb9..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/bq24257.txt
++++ /dev/null
+@@ -1,62 +0,0 @@
+-Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
+-
+-Required properties:
+-- compatible: Should contain one of the following:
+- * "ti,bq24250"
+- * "ti,bq24251"
+- * "ti,bq24257"
+-- reg: integer, i2c address of the device.
+-- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
+-    conjunction with "interrupt-parent".
+-- ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
+-- ti,charge-current: integer, maximum charging current in uA.
+-- ti,termination-current: integer, charge will be terminated when current in
+-    constant-voltage phase drops below this value (in uA).
+-
+-Optional properties:
+-- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
+-    This pin is not available on all devices however it should be used if
+-    possible as this is the recommended way to obtain the charger's input PG
+-    state. If this pin is not specified a software-based approach for PG
+-    detection is used.
+-- ti,current-limit: The maximum current to be drawn from the charger's input
+-    (in uA). If this property is not specified, the input limit current is
+-    set automatically using USB D+/D- signal based charger type detection.
+-    If the hardware does not support the D+/D- based detection, a default
+-    of 500,000 is used (=500mA) instead.
+-- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
+-    not specified a default of 6,5000,000 (=6.5V) is used.
+-- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
+-    power path management (in uV). If not specified a default of 4,360,000
+-    (=4.36V) is used.
+-
+-Example:
+-
+-bq24257 {
+-	compatible = "ti,bq24257";
+-	reg = <0x6a>;
+-	interrupt-parent = <&gpio1>;
+-	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
+-
+-	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+-
+-	ti,battery-regulation-voltage = <4200000>;
+-	ti,charge-current = <1000000>;
+-	ti,termination-current = <50000>;
+-};
+-
+-Example:
+-
+-bq24250 {
+-	compatible = "ti,bq24250";
+-	reg = <0x6a>;
+-	interrupt-parent = <&gpio1>;
+-	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
+-
+-	ti,battery-regulation-voltage = <4200000>;
+-	ti,charge-current = <500000>;
+-	ti,termination-current = <50000>;
+-	ti,current-limit = <900000>;
+-	ti,ovp-voltage = <9500000>;
+-	ti,in-dpm-voltage = <4440000>;
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/bq24257.yaml b/Documentation/devicetree/bindings/power/supply/bq24257.yaml
 new file mode 100644
-index 000000000000..518eabb63588
+index 000000000000..3a0f6cd9015a
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
-@@ -0,0 +1,55 @@
++++ b/Documentation/devicetree/bindings/power/supply/bq24257.yaml
+@@ -0,0 +1,124 @@
 +# SPDX-License-Identifier: GPL-2.0
++# Copyright (C) 2021 Sebastian Reichel
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/lego,ev3-battery.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/bq24257.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: LEGO MINDSTORMS EV3 Battery
++title: Binding for bq24250, bq24251 and bq24257 Li-Ion Charger
 +
 +maintainers:
-+  - David Lechner <david@lechnology.com>
 +  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  LEGO MINDSTORMS EV3 has some built-in capability for monitoring the battery.
-+  It uses 6 AA batteries or a special Li-ion rechargeable battery pack that is
-+  detected by a key switch in the battery compartment.
 +
 +allOf:
 +  - $ref: power-supply.yaml#
 +
 +properties:
 +  compatible:
-+    const: lego,ev3-battery
++    enum:
++      - ti,bq24250
++      - ti,bq24251
++      - ti,bq24257
 +
-+  io-channels:
-+    items:
-+      - description: ADC channel for battery voltage
-+      - description: ADC channel for battery current
-+
-+  io-channel-names:
-+    items:
-+      - const: voltage
-+      - const: current
-+
-+  rechargeable-gpios:
++  reg:
 +    maxItems: 1
-+    description: Rechargeable battery indication gpio
++
++  interrupts:
++    maxItems: 1
++
++  ti,battery-regulation-voltage:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: maximum charging voltage in uV
++
++  ti,charge-current:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: maximum charging current in uA
++
++  ti,termination-current:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      charge will be terminated when current in constant-voltage phase
++      drops below this value (in uA)
++
++  pg-gpios:
++    description: |
++      GPIO used for connecting the bq2425x device PG (Power Good) pin.
++      This pin is not available on all devices however it should be used if
++      possible as this is the recommended way to obtain the charger's input PG
++      state. If this pin is not specified a software-based approach for PG
++      detection is used.
++    maxItems: 1
++
++  ti,current-limit:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      The maximum current to be drawn from the charger's input (in uA).
++      If this property is not specified, the input limit current is set
++      automatically using USB D+/D- signal based charger type detection.
++      If the hardware does not support the D+/D- based detection, a default
++      of 500,000 is used (=500mA) instead.
++
++  ti,ovp-voltage:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      Configures the over voltage protection voltage (in uV).
++      If not specified a default of 6,5000,000 (=6.5V) is used.
++
++  ti,in-dpm-voltage:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      Configures the threshold input voltage for the dynamic power path management (in uV).
++      If not specified a default of 4,360,000 (=4.36V) is used.
 +
 +required:
 +  - compatible
-+  - io-channels
-+  - io-channel-names
-+  - rechargeable-gpios
++  - reg
++  - interrupts
++  - ti,battery-regulation-voltage
++  - ti,charge-current
++  - ti,termination-current
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
 +    #include <dt-bindings/gpio/gpio.h>
-+    battery {
-+      compatible = "lego,ev3-battery";
-+      io-channels = <&adc 4>, <&adc 3>;
-+      io-channel-names = "voltage", "current";
-+      rechargeable-gpios = <&gpio 136 GPIO_ACTIVE_LOW>;
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      charger@6a {
++        compatible = "ti,bq24257";
++        reg = <0x6a>;
++        interrupt-parent = <&gpio1>;
++        interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
++
++        pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
++
++        ti,battery-regulation-voltage = <4200000>;
++        ti,charge-current = <1000000>;
++        ti,termination-current = <50000>;
++      };
 +    };
-diff --git a/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt b/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
-deleted file mode 100644
-index 5485633b1faa..000000000000
---- a/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
-+++ /dev/null
-@@ -1,21 +0,0 @@
--LEGO MINDSTORMS EV3 Battery
--~~~~~~~~~~~~~~~~~~~~~~~~~~~
--
--LEGO MINDSTORMS EV3 has some built-in capability for monitoring the battery.
--It uses 6 AA batteries or a special Li-ion rechargeable battery pack that is
--detected by a key switch in the battery compartment.
--
--Required properties:
-- - compatible: Must be "lego,ev3-battery"
-- - io-channels: phandles to analog inputs for reading voltage and current
-- - io-channel-names: Must be "voltage", "current"
-- - rechargeable-gpios: phandle to the rechargeable battery indication gpio
--
--Example:
--
--	battery {
--		compatible = "lego,ev3-battery";
--		io-channels = <&adc 4>, <&adc 3>;
--		io-channel-names = "voltage", "current";
--		rechargeable-gpios = <&gpio 136 GPIO_ACTIVE_LOW>;
--	};
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      charger@6a {
++        compatible = "ti,bq24250";
++        reg = <0x6a>;
++        interrupt-parent = <&gpio1>;
++        interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
++
++        ti,battery-regulation-voltage = <4200000>;
++        ti,charge-current = <500000>;
++        ti,termination-current = <50000>;
++        ti,current-limit = <900000>;
++        ti,ovp-voltage = <9500000>;
++        ti,in-dpm-voltage = <4440000>;
++      };
++    };
 -- 
 2.30.1
 
