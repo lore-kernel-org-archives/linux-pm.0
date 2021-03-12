@@ -5,25 +5,25 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4733C2BA14
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51EF5C4161F
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8B6764FE0
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 419F764FF3
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232835AbhCLPou (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:50 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55676 "EHLO
+        id S232720AbhCLPop (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:45 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:55622 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232043AbhCLPoR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:17 -0500
+        with ESMTP id S232530AbhCLPoO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:14 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 564561F46EC8
+        with ESMTPSA id 9F2E91F46E99
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 63CD4480113; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 47C204800E4; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +31,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 26/38] dt-bindings: power: supply: pm8941-coincell: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:45 +0100
-Message-Id: <20210312154357.1561730-27-sebastian.reichel@collabora.com>
+Subject: [PATCH 12/38] dt-bindings: power: supply: ds2760: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:31 +0100
+Message-Id: <20210312154357.1561730-13-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -47,130 +47,95 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/qcom,coincell-charger.txt    | 48 ---------------
- .../power/supply/qcom,pm8941-coincell.yaml    | 58 +++++++++++++++++++
- 2 files changed, 58 insertions(+), 48 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
+ .../bindings/power/supply/maxim,ds2760.txt    | 26 -----------
+ .../bindings/power/supply/maxim,ds2760.yaml   | 45 +++++++++++++++++++
+ 2 files changed, 45 insertions(+), 26 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt b/Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
 deleted file mode 100644
-index 747899223262..000000000000
---- a/Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt
+index 55967a0bee11..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
 +++ /dev/null
-@@ -1,48 +0,0 @@
--Qualcomm Coincell Charger:
+@@ -1,26 +0,0 @@
+-Devicetree bindings for Maxim DS2760
+-====================================
 -
--The hardware block controls charging for a coincell or capacitor that is
--used to provide power backup for certain features of the power management
--IC (PMIC)
+-The ds2760 is a w1 slave device and must hence have its sub-node in DT
+-under a w1 bus master node.
 -
--- compatible:
--	Usage: required
--	Value type: <string>
--	Definition: must be: "qcom,pm8941-coincell"
+-The device exposes a power supply, so the details described in
+-Documentation/devicetree/bindings/power/supply/power_supply.txt apply.
 -
--- reg:
--	Usage: required
--	Value type: <u32>
--	Definition: base address of the coincell charger registers
+-Required properties:
+-- compatible: must be "maxim,ds2760"
 -
--- qcom,rset-ohms:
--	Usage: required
--	Value type: <u32>
--	Definition: resistance (in ohms) for current-limiting resistor
--		must be one of: 800, 1200, 1700, 2100
--
--- qcom,vset-millivolts:
--	Usage: required
--	Value type: <u32>
--	Definition: voltage (in millivolts) to apply for charging
--		must be one of: 2500, 3000, 3100, 3200
--
--- qcom,charger-disable:
--	Usage: optional
--	Value type: <boolean>
--	Definition: defining this property disables charging
--
--This charger is a sub-node of one of the 8941 PMIC blocks, and is specified
--as a child node in DTS of that node.  See ../mfd/qcom,spmi-pmic.txt and
--../mfd/qcom-pm8xxx.txt
--
--Example:
--
--	pm8941@0 {
--		coincell@2800 {
--			compatible = "qcom,pm8941-coincell";
--			reg = <0x2800>;
--
--			qcom,rset-ohms = <2100>;
--			qcom,vset-millivolts = <3000>;
--		};
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
+-Optional properties:
+-- power-supplies:	Refers to one or more power supplies connected to
+-			this battery.
+-- maxim,pmod-enabled:	This boolean property enables the DS2760 to enter
+-			sleep mode when the DQ line goes low for greater
+-			than 2 seconds and leave sleep Mode when the DQ
+-			line goes high.
+-- maxim,cache-time-ms:	Time im milliseconds to cache the data for. When
+-			this time expires, the values are read again from
+-			the hardware. Defaults to 1000.
+-- rated-capacity-microamp-hours:
+-			The rated capacity of the battery, in mAh.
+-			If not specified, the value stored in the
+-			non-volatile chip memory is used.
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
 new file mode 100644
-index 000000000000..bcaf3be1f647
+index 000000000000..3b3fb611393a
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-coincell.yaml
-@@ -0,0 +1,58 @@
++++ b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
+@@ -0,0 +1,45 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/power/supply/qcom,pm8941-coincell.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++$id: "http://devicetree.org/schemas/power/supply/maxim,ds2760.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Qualcomm Coincell Charger
-+
-+description: |
-+  The hardware block controls charging for a coincell or capacitor that is
-+  used to provide power backup for certain features of the power management
-+  IC (PMIC)
++title: Maxim DS2760 DT bindings
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
 +
++description: |
++  The ds2760 is a w1 slave device and must hence have its sub-node in
++  DT under a w1 bus master node.
++
++allOf:
++  - $ref: power-supply.yaml#
++
 +properties:
 +  compatible:
-+    const: qcom,pm8941-coincell
++    const: maxim,ds2760
 +
-+  reg:
-+    maxItems: 1
-+
-+  qcom,rset-ohms:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: resistance (in ohms) for current-limiting resistor
-+    enum: [ 800, 1200, 1700, 2100 ]
-+
-+  qcom,vset-millivolts:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: voltage (in millivolts) to apply for charging
-+    enum: [ 2500, 3000, 3100, 3200 ]
-+
-+  qcom,charger-disable:
++  maxim,pmod-enabled:
++    description: |
++      Allow the DS2760 to enter sleep mode when the DQ line goes low for more than 2 seconds
++      and leave sleep Mode when the DQ line goes high.
 +    type: boolean
-+    description: defining this property disables charging
++
++  maxim,cache-time-ms:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      Time im milliseconds to cache the data for.
++      When this time expires, the values are read again from the hardware.
++      Defaults to 1000.
++
++  rated-capacity-microamp-hours:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      The rated capacity of the battery, in mAh.
++      If not specified, the value stored in the non-volatile chip memory is used.
 +
 +required:
 +  - compatible
-+  - reg
-+  - qcom,rset-ohms
-+  - qcom,vset-millivolts
 +
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    pmic {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      charger@2800 {
-+        compatible = "qcom,pm8941-coincell";
-+        reg = <0x2800>;
-+        qcom,rset-ohms = <2100>;
-+        qcom,vset-millivolts = <3000>;
-+      };
-+    };
++unevaluatedProperties: false
 -- 
 2.30.1
 
