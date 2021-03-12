@@ -5,25 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FB89C2BA19
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42CEBC28E82
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5B48D64FDC
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2942064FF5
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232850AbhCLPov (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:51 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55678 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231925AbhCLPoS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:18 -0500
+        id S232693AbhCLPon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47034 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232067AbhCLPoO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:14 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93C46C061574;
+        Fri, 12 Mar 2021 07:44:13 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 5ACD11F46EC9
+        with ESMTPSA id 831721F46E8C
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 656F5480114; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 3A7704800DF; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 27/38] dt-bindings: power: supply: act8945a: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:46 +0100
-Message-Id: <20210312154357.1561730-28-sebastian.reichel@collabora.com>
+Subject: [PATCH 07/38] dt-bindings: power: supply: bq2415x: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:26 +0100
+Message-Id: <20210312154357.1561730-8-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -47,75 +50,79 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/act8945a-charger.txt         | 44 -----------
- .../supply/active-semi,act8945a-charger.yaml  | 77 +++++++++++++++++++
- 2 files changed, 77 insertions(+), 44 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/active-semi,act8945a-charger.yaml
+ .../bindings/power/supply/bq2415x.txt         | 47 ---------
+ .../bindings/power/supply/bq2415x.yaml        | 98 +++++++++++++++++++
+ 2 files changed, 98 insertions(+), 47 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/bq2415x.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq2415x.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/bq2415x.txt b/Documentation/devicetree/bindings/power/supply/bq2415x.txt
 deleted file mode 100644
-index cb737a9e1f16..000000000000
---- a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+index d0327f0b59ad..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/bq2415x.txt
 +++ /dev/null
-@@ -1,44 +0,0 @@
--Device-Tree bindings for charger of Active-semi ACT8945A Multi-Function Device
+@@ -1,47 +0,0 @@
+-Binding for TI bq2415x Li-Ion Charger
 -
 -Required properties:
-- - compatible: "active-semi,act8945a-charger".
-- - active-semi,chglev-gpios: charge current level phandle with args
--   as described in ../gpio/gpio.txt.
-- - active-semi,lbo-gpios: specify the low battery voltage detect phandle
--   with args as as described in ../gpio/gpio.txt.
-- - interrupts: <a b> where a is the interrupt number and b is a
--   field that represents an encoding of the sense and level
--   information for the interrupt.
+-- compatible: Should contain one of the following:
+- * "ti,bq24150"
+- * "ti,bq24150"
+- * "ti,bq24150a"
+- * "ti,bq24151"
+- * "ti,bq24151a"
+- * "ti,bq24152"
+- * "ti,bq24153"
+- * "ti,bq24153a"
+- * "ti,bq24155"
+- * "ti,bq24156"
+- * "ti,bq24156a"
+- * "ti,bq24158"
+-- reg:			   integer, i2c address of the device.
+-- ti,current-limit:	   integer, initial maximum current charger can pull
+-			   from power supply in mA.
+-- ti,weak-battery-voltage: integer, weak battery voltage threshold in mV.
+-			   The chip will use slow precharge if battery voltage
+-			   is below this value.
+-- ti,battery-regulation-voltage: integer, maximum charging voltage in mV.
+-- ti,charge-current:	   integer, maximum charging current in mA.
+-- ti,termination-current:  integer, charge will be terminated when current in
+-			   constant-voltage phase drops below this value (in mA).
+-- ti,resistor-sense:	   integer, value of sensing resistor in milliohm.
 -
 -Optional properties:
-- - active-semi,input-voltage-threshold-microvolt: unit: mV;
--   Specifies the charger's input over-voltage threshold value;
--   The value can be: 6600, 7000, 7500, 8000; default: 6600
-- - active-semi,precondition-timeout: unit: minutes;
--   Specifies the charger's PRECONDITION safety timer setting value;
--   The value can be: 40, 60, 80, 0; If 0, it means to disable this timer;
--   default: 40.
-- - active-semi,total-timeout: unit: hours;
--   Specifies the charger's total safety timer setting value;
--   The value can be: 3, 4, 5, 0; If 0, it means to disable this timer;
--   default: 3.
+-- ti,usb-charger-detection: phandle to usb charger detection device.
+-			    (required for auto mode)
 -
--Example:
--	pmic@5b {
--		compatible = "active-semi,act8945a";
--		reg = <0x5b>;
+-Example from Nokia N900:
 -
--		charger {
--			compatible = "active-semi,act8945a-charger";
--			pinctrl-names = "default";
--			pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
--			interrupt-parent = <&pioA>;
--			interrupts = <45 IRQ_TYPE_LEVEL_LOW>;
+-bq24150a {
+-	compatible = "ti,bq24150a";
+-	reg = <0x6b>;
 -
--			active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
--			active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
--			active-semi,input-voltage-threshold-microvolt = <6600>;
--			active-semi,precondition-timeout = <40>;
--			active-semi,total-timeout = <3>;
--		};
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/active-semi,act8945a-charger.yaml b/Documentation/devicetree/bindings/power/supply/active-semi,act8945a-charger.yaml
+-	ti,current-limit = <100>;
+-	ti,weak-battery-voltage = <3400>;
+-	ti,battery-regulation-voltage = <4200>;
+-	ti,charge-current = <650>;
+-	ti,termination-current = <100>;
+-	ti,resistor-sense = <68>;
+-
+-	ti,usb-charger-detection = <&isp1704>;
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/bq2415x.yaml b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
 new file mode 100644
-index 000000000000..b3b4ee855499
+index 000000000000..f8461f06e6f4
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/active-semi,act8945a-charger.yaml
-@@ -0,0 +1,77 @@
++++ b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+@@ -0,0 +1,98 @@
 +# SPDX-License-Identifier: GPL-2.0
++# Copyright (C) 2021 Sebastian Reichel
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/active-semi,act8945a-charger.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/bq2415x.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Active-semi ACT8945A Charger Function
++title: Binding for TI bq2415x Li-Ion Charger
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
@@ -125,65 +132,85 @@ index 000000000000..b3b4ee855499
 +
 +properties:
 +  compatible:
-+    const: active-semi,act8945a-charger
++    enum:
++      - ti,bq24150
++      - ti,bq24150
++      - ti,bq24150a
++      - ti,bq24151
++      - ti,bq24151a
++      - ti,bq24152
++      - ti,bq24153
++      - ti,bq24153a
++      - ti,bq24155
++      - ti,bq24156
++      - ti,bq24156a
++      - ti,bq24158
 +
-+  interrupts:
++  reg:
 +    maxItems: 1
 +
-+  active-semi,chglev-gpios:
-+    maxItems: 1
-+    description: charge current level GPIO
++  ti,current-limit:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: initial maximum current charger can pull from power supply in mA.
 +
-+  active-semi,lbo-gpios:
-+    maxItems: 1
-+    description: low battery voltage detect GPIO
-+
-+  active-semi,input-voltage-threshold-microvolt:
++  ti,weak-battery-voltage:
 +    $ref: /schemas/types.yaml#/definitions/uint32
 +    description: |
-+      Specifies the charger's input over-voltage threshold value.
-+      Despite the name, specified values are in millivolt (mV).
-+      Defaults to 6.6 V
-+    enum: [ 6600, 7000, 7500, 8000 ]
++      weak battery voltage threshold in mV.
++      The chip will use slow precharge if battery voltage is below this value.
 +
-+  active-semi,precondition-timeout:
++  ti,battery-regulation-voltage:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: maximum charging voltage in mV.
++
++  ti,charge-current:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: maximum charging current in mA.
++
++  ti,termination-current:
 +    $ref: /schemas/types.yaml#/definitions/uint32
 +    description: |
-+      Specifies the charger's PRECONDITION safety timer setting value in minutes.
-+      If 0, it means to disable this timer.
-+      Defaults to 40 minutes.
-+    enum: [ 0, 40, 60, 80 ]
++      charge will be terminated when current in constant-voltage phase drops
++      below this value (in mA).
 +
-+  active-semi,total-timeout:
++  ti,resistor-sense:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Specifies the charger's total safety timer setting value in hours;
-+      If 0, it means to disable this timer;
-+      Defaults to 3 hours.
-+    enum: [ 0, 3, 4, 5 ]
++    description: value of sensing resistor in milliohm.
++
++  ti,usb-charger-detection:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to usb charger detection device (required for auto mode)
 +
 +required:
 +  - compatible
-+  - interrupts
-+  - active-semi,chglev-gpios
-+  - active-semi,lbo-gpios
++  - reg
++  - ti,current-limit
++  - ti,weak-battery-voltage
++  - ti,battery-regulation-voltage
++  - ti,charge-current
++  - ti,termination-current
++  - ti,resistor-sense
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    pmic {
-+      charger {
-+        compatible = "active-semi,act8945a-charger";
-+        interrupt-parent = <&pioA>;
-+        interrupts = <45 IRQ_TYPE_LEVEL_LOW>;
-+        active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
-+        active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
-+        active-semi,input-voltage-threshold-microvolt = <6600>;
-+        active-semi,precondition-timeout = <40>;
-+        active-semi,total-timeout = <3>;
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      charger@6b {
++        compatible = "ti,bq24150a";
++        reg = <0x6b>;
++
++        ti,current-limit = <100>;
++        ti,weak-battery-voltage = <3400>;
++        ti,battery-regulation-voltage = <4200>;
++        ti,charge-current = <650>;
++        ti,termination-current = <100>;
++        ti,resistor-sense = <68>;
++
++        ti,usb-charger-detection = <&isp1704>;
 +      };
 +    };
 -- 
