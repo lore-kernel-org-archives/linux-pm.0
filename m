@@ -5,28 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42CEBC28E82
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A84C2BA83
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2942064FF5
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6FDDC64FDD
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232693AbhCLPon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47034 "EHLO
+        id S232880AbhCLPox (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47066 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232067AbhCLPoO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:14 -0500
+        with ESMTP id S232344AbhCLPoT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:19 -0500
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93C46C061574;
-        Fri, 12 Mar 2021 07:44:13 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BECA1C061574;
+        Fri, 12 Mar 2021 07:44:18 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 831721F46E8C
+        with ESMTPSA id B0AFB1F46E80
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 3A7704800DF; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 7589148011C; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -34,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH 07/38] dt-bindings: power: supply: bq2415x: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:26 +0100
-Message-Id: <20210312154357.1561730-8-sebastian.reichel@collabora.com>
+Subject: [PATCH 34/38] dt-bindings: power: supply: olpc-battery: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:53 +0100
+Message-Id: <20210312154357.1561730-35-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -50,79 +50,25 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/bq2415x.txt         | 47 ---------
- .../bindings/power/supply/bq2415x.yaml        | 98 +++++++++++++++++++
- 2 files changed, 98 insertions(+), 47 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/bq2415x.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+ .../bindings/power/supply/olpc-battery.yaml   | 27 +++++++++++++++++++
+ .../bindings/power/supply/olpc_battery.txt    |  5 ----
+ 2 files changed, 27 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/olpc-battery.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/olpc_battery.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2415x.txt b/Documentation/devicetree/bindings/power/supply/bq2415x.txt
-deleted file mode 100644
-index d0327f0b59ad..000000000000
---- a/Documentation/devicetree/bindings/power/supply/bq2415x.txt
-+++ /dev/null
-@@ -1,47 +0,0 @@
--Binding for TI bq2415x Li-Ion Charger
--
--Required properties:
--- compatible: Should contain one of the following:
-- * "ti,bq24150"
-- * "ti,bq24150"
-- * "ti,bq24150a"
-- * "ti,bq24151"
-- * "ti,bq24151a"
-- * "ti,bq24152"
-- * "ti,bq24153"
-- * "ti,bq24153a"
-- * "ti,bq24155"
-- * "ti,bq24156"
-- * "ti,bq24156a"
-- * "ti,bq24158"
--- reg:			   integer, i2c address of the device.
--- ti,current-limit:	   integer, initial maximum current charger can pull
--			   from power supply in mA.
--- ti,weak-battery-voltage: integer, weak battery voltage threshold in mV.
--			   The chip will use slow precharge if battery voltage
--			   is below this value.
--- ti,battery-regulation-voltage: integer, maximum charging voltage in mV.
--- ti,charge-current:	   integer, maximum charging current in mA.
--- ti,termination-current:  integer, charge will be terminated when current in
--			   constant-voltage phase drops below this value (in mA).
--- ti,resistor-sense:	   integer, value of sensing resistor in milliohm.
--
--Optional properties:
--- ti,usb-charger-detection: phandle to usb charger detection device.
--			    (required for auto mode)
--
--Example from Nokia N900:
--
--bq24150a {
--	compatible = "ti,bq24150a";
--	reg = <0x6b>;
--
--	ti,current-limit = <100>;
--	ti,weak-battery-voltage = <3400>;
--	ti,battery-regulation-voltage = <4200>;
--	ti,charge-current = <650>;
--	ti,termination-current = <100>;
--	ti,resistor-sense = <68>;
--
--	ti,usb-charger-detection = <&isp1704>;
--};
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2415x.yaml b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/olpc-battery.yaml b/Documentation/devicetree/bindings/power/supply/olpc-battery.yaml
 new file mode 100644
-index 000000000000..f8461f06e6f4
+index 000000000000..0bd7bf3b8e1b
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
-@@ -0,0 +1,98 @@
++++ b/Documentation/devicetree/bindings/power/supply/olpc-battery.yaml
+@@ -0,0 +1,27 @@
 +# SPDX-License-Identifier: GPL-2.0
-+# Copyright (C) 2021 Sebastian Reichel
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/bq2415x.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/olpc-battery.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Binding for TI bq2415x Li-Ion Charger
++title: OLPC Battery
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
@@ -132,87 +78,28 @@ index 000000000000..f8461f06e6f4
 +
 +properties:
 +  compatible:
-+    enum:
-+      - ti,bq24150
-+      - ti,bq24150
-+      - ti,bq24150a
-+      - ti,bq24151
-+      - ti,bq24151a
-+      - ti,bq24152
-+      - ti,bq24153
-+      - ti,bq24153a
-+      - ti,bq24155
-+      - ti,bq24156
-+      - ti,bq24156a
-+      - ti,bq24158
-+
-+  reg:
-+    maxItems: 1
-+
-+  ti,current-limit:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: initial maximum current charger can pull from power supply in mA.
-+
-+  ti,weak-battery-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      weak battery voltage threshold in mV.
-+      The chip will use slow precharge if battery voltage is below this value.
-+
-+  ti,battery-regulation-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: maximum charging voltage in mV.
-+
-+  ti,charge-current:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: maximum charging current in mA.
-+
-+  ti,termination-current:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      charge will be terminated when current in constant-voltage phase drops
-+      below this value (in mA).
-+
-+  ti,resistor-sense:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: value of sensing resistor in milliohm.
-+
-+  ti,usb-charger-detection:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to usb charger detection device (required for auto mode)
++    oneOf:
++      - items:
++          - const: olpc,xo1.5-battery
++          - const: olpc,xo1-battery
++      - items:
++          - const: olpc,xo1-battery
 +
 +required:
 +  - compatible
-+  - reg
-+  - ti,current-limit
-+  - ti,weak-battery-voltage
-+  - ti,battery-regulation-voltage
-+  - ti,charge-current
-+  - ti,termination-current
-+  - ti,resistor-sense
 +
 +additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      charger@6b {
-+        compatible = "ti,bq24150a";
-+        reg = <0x6b>;
-+
-+        ti,current-limit = <100>;
-+        ti,weak-battery-voltage = <3400>;
-+        ti,battery-regulation-voltage = <4200>;
-+        ti,charge-current = <650>;
-+        ti,termination-current = <100>;
-+        ti,resistor-sense = <68>;
-+
-+        ti,usb-charger-detection = <&isp1704>;
-+      };
-+    };
+diff --git a/Documentation/devicetree/bindings/power/supply/olpc_battery.txt b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
+deleted file mode 100644
+index 8d87d6b35a98..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
++++ /dev/null
+@@ -1,5 +0,0 @@
+-OLPC battery
+-~~~~~~~~~~~~
+-
+-Required properties:
+-  - compatible : "olpc,xo1-battery" or "olpc,xo1.5-battery"
 -- 
 2.30.1
 
