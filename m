@@ -5,38 +5,35 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46FAEC433E6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82E6AC43381
 	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BCE664FFE
+	by mail.kernel.org (Postfix) with ESMTP id 4BBA464FFB
 	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:53:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232165AbhCLPwf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:52:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48838 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232043AbhCLPw3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:52:29 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97D36C061761;
-        Fri, 12 Mar 2021 07:52:27 -0800 (PST)
+        id S232283AbhCLPwh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:52:37 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:55862 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232020AbhCLPwa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:52:30 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 6E8691F40E2C
+        with ESMTPSA id A857D1F46E7C
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 72E7348011B; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 672A5480115; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH 33/38] dt-bindings: power: supply: rt9455: Convert to DT schema format
-Date:   Fri, 12 Mar 2021 16:43:52 +0100
-Message-Id: <20210312154357.1561730-34-sebastian.reichel@collabora.com>
+        kernel@collabora.com, Chen-Yu Tsai <wens@csie.org>
+Subject: [PATCH 28/38] dt-bindings: power: supply: axp20x: Convert to DT schema format
+Date:   Fri, 12 Mar 2021 16:43:47 +0100
+Message-Id: <20210312154357.1561730-29-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -48,29 +45,149 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Convert the binding to DT schema format.
 
+Cc: Chen-Yu Tsai <wens@csie.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/richtek,rt9455.yaml | 90 +++++++++++++++++++
- .../bindings/power/supply/rt9455_charger.txt  | 46 ----------
- 2 files changed, 90 insertions(+), 46 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
+ .../bindings/power/supply/axp20x_ac_power.txt | 25 -----------
+ .../bindings/power/supply/axp20x_battery.txt  | 20 ---------
+ .../power/supply/axp20x_usb_power.txt         | 41 -------------------
+ .../x-powers,axp20x-ac-power-supply.yaml      | 32 +++++++++++++++
+ .../x-powers,axp20x-battery-power-supply.yaml | 30 ++++++++++++++
+ .../x-powers,axp20x-usb-power-supply.yaml     | 33 +++++++++++++++
+ 6 files changed, 95 insertions(+), 86 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml b/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+deleted file mode 100644
+index 7a1fb532abe5..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
++++ /dev/null
+@@ -1,25 +0,0 @@
+-AXP20X and AXP22X PMICs' AC power supply
+-
+-Required Properties:
+- - compatible: One of:
+-			"x-powers,axp202-ac-power-supply"
+-			"x-powers,axp221-ac-power-supply"
+-			"x-powers,axp813-ac-power-supply"
+-
+-This node is a subnode of the axp20x PMIC.
+-
+-The AXP20X can read the current current and voltage supplied by AC by
+-reading ADC channels from the AXP20X ADC.
+-
+-The AXP22X is only able to tell if an AC power supply is present and
+-usable.
+-
+-AXP813/AXP803 are able to limit current and supply voltage
+-
+-Example:
+-
+-&axp209 {
+-	ac_power_supply: ac-power-supply {
+-		compatible = "x-powers,axp202-ac-power-supply";
+-	};
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+deleted file mode 100644
+index 41916f69902c..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
++++ /dev/null
+@@ -1,20 +0,0 @@
+-AXP20x and AXP22x battery power supply
+-
+-Required Properties:
+- - compatible, one of:
+-			"x-powers,axp209-battery-power-supply"
+-			"x-powers,axp221-battery-power-supply"
+-			"x-powers,axp813-battery-power-supply"
+-
+-This node is a subnode of its respective PMIC DT node.
+-
+-The supported devices can read the battery voltage, charge and discharge
+-currents of the battery by reading ADC channels from the ADC.
+-
+-Example:
+-
+-&axp209 {
+-	battery_power_supply: battery-power-supply {
+-		compatible = "x-powers,axp209-battery-power-supply";
+-	}
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+deleted file mode 100644
+index b2d4968fde7d..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
++++ /dev/null
+@@ -1,41 +0,0 @@
+-AXP20x USB power supply
+-
+-Required Properties:
+--compatible: One of: "x-powers,axp202-usb-power-supply"
+-                     "x-powers,axp221-usb-power-supply"
+-                     "x-powers,axp223-usb-power-supply"
+-		     "x-powers,axp813-usb-power-supply"
+-
+-The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
+-variations such as the former being able to set the VBUS power supply max
+-current to 100mA, unlike the latter.
+-
+-This node is a subnode of the axp20x PMIC.
+-
+-Example:
+-
+-axp209: pmic@34 {
+-	compatible = "x-powers,axp209";
+-	reg = <0x34>;
+-	interrupt-parent = <&nmi_intc>;
+-	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+-	interrupt-controller;
+-	#interrupt-cells = <1>;
+-
+-	regulators {
+-		x-powers,dcdc-freq = <1500>;
+-
+-		vdd_cpu: dcdc2 {
+-			regulator-always-on;
+-			regulator-min-microvolt = <1000000>;
+-			regulator-max-microvolt = <1450000>;
+-			regulator-name = "vdd-cpu";
+-		};
+-
+-		...
+-	};
+-
+-	usb-power-supply: usb-power-supply {
+-		compatible = "x-powers,axp202-usb-power-supply";
+-	};
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
 new file mode 100644
-index 000000000000..e1c233462f29
+index 000000000000..dcda6660b8ed
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
-@@ -0,0 +1,90 @@
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
+@@ -0,0 +1,32 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/richtek,rt9455.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-ac-power-supply.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Binding for Richtek rt9455 battery charger
++title: AXP20x AC power-supply
++
++description: |
++  The AXP20X can read the current current and voltage supplied by AC by
++  reading ADC channels from the AXP20X ADC. The AXP22X is only able to
++  tell if an AC power supply is present and usable. AXP813/AXP803 are
++  able to limit current and supply voltage
 +
 +maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
 +  - Sebastian Reichel <sre@kernel.org>
 +
 +allOf:
@@ -78,132 +195,90 @@ index 000000000000..e1c233462f29
 +
 +properties:
 +  compatible:
-+    const: richtek,rt9455
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  richtek,output-charge-current:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: output current from the charger to the battery, in uA.
-+
-+  richtek,end-of-charge-percentage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      percent of the output charge current. When the current in constant-voltage phase drops
-+      below output_charge_current x end-of-charge-percentage, charge is terminated.
-+
-+  richtek,battery-regulation-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: maximum battery voltage in uV.
-+
-+  richtek,boost-output-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      maximum voltage provided to consumer devices, when the charger is in boost mode, in uV.
-+
-+  richtek,min-input-voltage-regulation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      input voltage level in uV, used to decrease voltage level when the over current of the
-+      input power source occurs. This prevents input voltage drop due to insufficient
-+      current provided by the power source. Defaults to 4500000 uV (4.5V).
-+
-+  richtek,avg-input-current-regulation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      input current value in uA drained by the charger from the power source.
-+      Defaults to 500000 uA (500mA).
++    enum:
++      - x-powers,axp202-ac-power-supply
++      - x-powers,axp221-ac-power-supply
++      - x-powers,axp813-ac-power-supply
 +
 +required:
 +  - compatible
-+  - reg
-+  - interrupts
-+  - richtek,output-charge-current
-+  - richtek,end-of-charge-percentage
-+  - richtek,battery-regulation-voltage
-+  - richtek,boost-output-voltage
 +
 +additionalProperties: false
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+new file mode 100644
+index 000000000000..86e8a713d4e2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+@@ -0,0 +1,30 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-battery-power-supply.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
++title: AXP20x Battery power-supply
 +
-+      charger@22 {
-+        compatible = "richtek,rt9455";
-+        reg = <0x22>;
++description: |
++  The supported devices can read the battery voltage, charge and discharge
++  currents of the battery by reading ADC channels from the ADC.
 +
-+        interrupt-parent = <&gpio1>;
-+        interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
++  - Sebastian Reichel <sre@kernel.org>
 +
-+        richtek,output-charge-current	    = <500000>;
-+        richtek,end-of-charge-percentage    = <10>;
-+        richtek,battery-regulation-voltage  = <4200000>;
-+        richtek,boost-output-voltage	    = <5050000>;
++allOf:
++  - $ref: power-supply.yaml#
 +
-+        richtek,min-input-voltage-regulation = <4500000>;
-+        richtek,avg-input-current-regulation = <500000>;
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt b/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
-deleted file mode 100644
-index 1e6107c7578e..000000000000
---- a/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
-+++ /dev/null
-@@ -1,46 +0,0 @@
--Binding for Richtek rt9455 battery charger
--
--Required properties:
--- compatible:				it should contain one of the following:
--					"richtek,rt9455".
--- reg:					integer, i2c address of the device.
--- interrupts:				interrupt mapping for GPIO IRQ, it should be
--					configured with IRQ_TYPE_LEVEL_LOW flag.
--- richtek,output-charge-current:	integer, output current from the charger to the
--					battery, in uA.
--- richtek,end-of-charge-percentage:	integer, percent of the output charge current.
--					When the current in constant-voltage phase drops
--					below output_charge_current x end-of-charge-percentage,
--					charge is terminated.
--- richtek,battery-regulation-voltage:	integer, maximum battery voltage in uV.
--- richtek,boost-output-voltage:		integer, maximum voltage provided to consumer
--					devices, when the charger is in boost mode, in uV.
--
--Optional properties:
--- richtek,min-input-voltage-regulation: integer, input voltage level in uV, used to
--					decrease voltage level when the over current
--					of the input power source occurs.
--					This prevents input voltage drop due to insufficient
--					current provided by the power source.
--					Default: 4500000 uV (4.5V)
--- richtek,avg-input-current-regulation: integer, input current value in uA drained by the
--					charger from the power source.
--					Default: 500000 uA (500mA)
--
--Example:
--
--rt9455@22 {
--	compatible = "richtek,rt9455";
--	reg = <0x22>;
--
--	interrupt-parent = <&gpio1>;
--	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
--
--	richtek,output-charge-current	    = <500000>;
--	richtek,end-of-charge-percentage    = <10>;
--	richtek,battery-regulation-voltage  = <4200000>;
--	richtek,boost-output-voltage	    = <5050000>;
--
--	richtek,min-input-voltage-regulation = <4500000>;
--	richtek,avg-input-current-regulation = <500000>;
--};
++properties:
++  compatible:
++    enum:
++      - x-powers,axp209-battery-power-supply
++      - x-powers,axp221-battery-power-supply
++      - x-powers,axp813-battery-power-supply
++
++required:
++  - compatible
++
++additionalProperties: false
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
+new file mode 100644
+index 000000000000..61f1b320c157
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
+@@ -0,0 +1,33 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-usb-power-supply.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: AXP20x USB power-supply
++
++description: |
++  The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
++  variations such as the former being able to set the VBUS power supply max
++  current to 100mA, unlike the latter.
++
++maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
++  - Sebastian Reichel <sre@kernel.org>
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - x-powers,axp202-usb-power-supply
++      - x-powers,axp221-usb-power-supply
++      - x-powers,axp223-usb-power-supply
++      - x-powers,axp813-usb-power-supply
++
++
++required:
++  - compatible
++
++additionalProperties: false
 -- 
 2.30.1
 
