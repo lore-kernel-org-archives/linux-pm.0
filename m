@@ -7,33 +7,37 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCA27C2BA82
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9821AC43333
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8853464FE0
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 765C464FDC
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 15:45:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232887AbhCLPoy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 10:44:54 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:55690 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232602AbhCLPoT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:19 -0500
+        id S232617AbhCLPoi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 10:44:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47020 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232502AbhCLPoM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 10:44:12 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A3BDC061574;
+        Fri, 12 Mar 2021 07:44:12 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id B048C1F46E7C
+        with ESMTPSA id 610AB1F46E6B
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 7A7B548011E; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
+        id 298764800C7; Fri, 12 Mar 2021 16:44:08 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH 36/38] dt-bindings: power: supply: sbs-battery: Fix dtbs_check
-Date:   Fri, 12 Mar 2021 16:43:55 +0100
-Message-Id: <20210312154357.1561730-37-sebastian.reichel@collabora.com>
+        kernel@collabora.com, Tony Lindgren <tony@atomide.com>,
+        linux-omap@vger.kernel.org
+Subject: [PATCH 01/38] ARM: dts: motorola-cpcap-mapphone: Prepare for dtbs_check parsing
+Date:   Fri, 12 Mar 2021 16:43:20 +0100
+Message-Id: <20210312154357.1561730-2-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.1
 In-Reply-To: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
 References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
@@ -43,48 +47,113 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Existing in-tree users make use of '"ti,bq20z45", "sbs,sbs-battery"', so
-add it to the list of known compatible strings.
+'<&gpio1 parameters &gpio2 parameters>' and '<&gpio1 parameters>,
+<&gpio2 parameters>' result in the same DTB, but second format has
+better source code readability. Also 'dtbs_check' currently uses
+this format to determine the amount of items specified, so using
+this syntax is needed to successfully verify the devicetree source
+against a DT schema format.
 
-Also add missing support for the generic 'power-supplies' property by
-importing power-supply.yaml and setting unevaluatedProperties instead
-of additionalProperties.
-
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../devicetree/bindings/power/supply/sbs,sbs-battery.yaml  | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ .../arm/boot/dts/motorola-cpcap-mapphone.dtsi | 59 +++++++++----------
+ 1 file changed, 28 insertions(+), 31 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
-index a90b3601e695..90b9d3d882a4 100644
---- a/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
-@@ -12,12 +12,15 @@ maintainers:
- description: |
-   Battery compatible with the smart battery system specifications
+diff --git a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+index 08a7d3ce383f..ea02fd403a9b 100644
+--- a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
++++ b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+@@ -27,16 +27,14 @@ cpcap_adc: adc {
  
--properties:
-+allOf:
-+  - $ref: power-supply.yaml#
+ 		cpcap_battery: battery {
+ 			compatible = "motorola,cpcap-battery";
+-			interrupts-extended = <
+-				&cpcap 6 0 &cpcap 5 0 &cpcap 3 0
+-				&cpcap 20 0 &cpcap 54 0 &cpcap 57 0
+-			>;
++			interrupts-extended =
++				<&cpcap 6 0>, <&cpcap 5 0>, <&cpcap 3 0>,
++				<&cpcap 20 0>, <&cpcap 54 0>, <&cpcap 57 0>;
+ 			interrupt-names =
+ 				"eol", "lowbph", "lowbpl",
+-				"chrgcurr1", "battdetb",
+-				"cccal";
+-			io-channels = <&cpcap_adc 0 &cpcap_adc 1
+-				       &cpcap_adc 5 &cpcap_adc 6>;
++				"chrgcurr1", "battdetb", "cccal";
++			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
++				      <&cpcap_adc 5>, <&cpcap_adc 6>;
+ 			io-channel-names = "battdetb", "battp",
+ 					   "chg_isense", "batti";
+ 			power-supplies = <&cpcap_charger>;
+@@ -44,20 +42,19 @@ &cpcap 20 0 &cpcap 54 0 &cpcap 57 0
  
-+properties:
-   compatible:
-     oneOf:
-       - items:
-           - enum:
-+              - ti,bq20z45
-               - ti,bq20z65
-               - ti,bq20z75
-           - enum:
-@@ -60,7 +63,7 @@ required:
-   - compatible
-   - reg
+ 		cpcap_charger: charger {
+ 			compatible = "motorola,mapphone-cpcap-charger";
+-			interrupts-extended = <
+-				&cpcap 13 0 &cpcap 12 0 &cpcap 29 0 &cpcap 28 0
+-				&cpcap 22 0 &cpcap 21 0 &cpcap 20 0 &cpcap 19 0
+-				&cpcap 54 0
+-			>;
++			interrupts-extended =
++				<&cpcap 13 0>, <&cpcap 12 0>, <&cpcap 29 0>,
++				<&cpcap 28 0>, <&cpcap 22 0>, <&cpcap 21 0>,
++				<&cpcap 20 0>, <&cpcap 19 0>, <&cpcap 54 0>;
+ 			interrupt-names =
+-				"chrg_det", "rvrs_chrg", "chrg_se1b", "se0conn",
+-				"rvrs_mode", "chrgcurr2", "chrgcurr1", "vbusvld",
+-				"battdetb";
+-			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW
+-				      &gpio3 23 GPIO_ACTIVE_LOW>;
+-			io-channels = <&cpcap_adc 0 &cpcap_adc 1
+-				       &cpcap_adc 2 &cpcap_adc 5
+-				       &cpcap_adc 6>;
++				"chrg_det", "rvrs_chrg", "chrg_se1b",
++				"se0conn", "rvrs_mode", "chrgcurr2",
++				"chrgcurr1", "vbusvld", "battdetb";
++			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>,
++				     <&gpio3 23 GPIO_ACTIVE_LOW>;
++			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
++				      <&cpcap_adc 2>, <&cpcap_adc 5>,
++				      <&cpcap_adc 6>;
+ 			io-channel-names = "battdetb", "battp",
+ 					   "vbus", "chg_isense",
+ 					   "batti";
+@@ -98,22 +95,22 @@ power_button: button {
  
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
+ 		cpcap_usb2_phy: phy {
+ 			compatible = "motorola,mapphone-cpcap-usb-phy";
+-			pinctrl-0 = <&usb_gpio_mux_sel1 &usb_gpio_mux_sel2>;
++			pinctrl-0 = <&usb_gpio_mux_sel1>, <&usb_gpio_mux_sel2>;
+ 			pinctrl-1 = <&usb_ulpi_pins>;
+ 			pinctrl-2 = <&usb_utmi_pins>;
+ 			pinctrl-3 = <&uart3_pins>;
+ 			pinctrl-names = "default", "ulpi", "utmi", "uart";
+ 			#phy-cells = <0>;
+-			interrupts-extended = <
+-				&cpcap 15 0 &cpcap 14 0 &cpcap 28 0 &cpcap 19 0
+-				&cpcap 18 0 &cpcap 17 0 &cpcap 16 0 &cpcap 49 0
+-				&cpcap 48 0
+-			>;
++			interrupts-extended =
++				<&cpcap 15 0>, <&cpcap 14 0>, <&cpcap 28 0>,
++				<&cpcap 19 0>, <&cpcap 18 0>, <&cpcap 17 0>,
++				<&cpcap 16 0>, <&cpcap 49 0>, <&cpcap 48 0>;
+ 			interrupt-names =
+-				"id_ground", "id_float", "se0conn", "vbusvld",
+-				"sessvld", "sessend", "se1", "dm", "dp";
+-			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH
+-				      &gpio1 0 GPIO_ACTIVE_HIGH>;
++				"id_ground", "id_float", "se0conn",
++				"vbusvld", "sessvld", "sessend",
++				"se1", "dm", "dp";
++			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,
++				     <&gpio1 0 GPIO_ACTIVE_HIGH>;
+ 			io-channels = <&cpcap_adc 2>, <&cpcap_adc 7>;
+ 			io-channel-names = "vbus", "id";
+ 			vusb-supply = <&vusb>;
 -- 
 2.30.1
 
