@@ -2,313 +2,123 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01DEDC4332B
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:10:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D10EBC433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:18:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D2D6464FEE
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:10:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9457964FEA
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Mar 2021 13:18:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230127AbhCLNKF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Mar 2021 08:10:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41960 "EHLO
+        id S231252AbhCLNRf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Mar 2021 08:17:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43588 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231173AbhCLNJv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 08:09:51 -0500
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0B2AC061574
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:50 -0800 (PST)
-Received: by mail-wr1-x431.google.com with SMTP id y16so4788694wrw.3
-        for <linux-pm@vger.kernel.org>; Fri, 12 Mar 2021 05:09:50 -0800 (PST)
+        with ESMTP id S230302AbhCLNRY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Mar 2021 08:17:24 -0500
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD956C061574;
+        Fri, 12 Mar 2021 05:17:23 -0800 (PST)
+Received: by mail-lf1-x12e.google.com with SMTP id u4so45734764lfs.0;
+        Fri, 12 Mar 2021 05:17:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=KpveMINi5uXwaTB3etXOif2Qu8MdIK4KNh+5Pxmbs+s=;
-        b=wjrfsnchgZQQL1g3RUznMrA3TT0WVuJt+4uJxxAx17O4+ywP1LkZd7IpjbEZDjoXqy
-         ueqqlHoWWTO7GObu8lfFgPE1iFlfA7gse5C2KZH1jjM5Zno+fCfL4vC0VRlQ9Rre+tOu
-         5nNpsT0DXzX9UBSP6UbPxYmb5hQGETyS4BCKylDvkil91jhpytqQoToA2CxBAkKa+Z1f
-         lq0Qe5DoAMXV+aF52ct4r6GwPY2/5PhLrPnamazKfIMp6AMX+jYD+R0xOB1MPM/a3xSi
-         if80KSXZFVEP0owOyBGDONZ+qE9d/CXB95X9MUjOFpyyiUUWWhCxBy6WzojxU8uaUpOb
-         9BSg==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=kKylRMS171DSUAUGLyXWsq2Tz6pdoiZRigFrFZwqxVY=;
+        b=eUHZSSaI5vPFgCHKI71eDK0ms124Rbgs1AggoS8af2xSFxsDK5SvDdHRqKZcudOXj/
+         P7eWD2DuQ5pSSwttIk03LP1GI7IELva1IQj4teSCKjz3NCQwiCFLuZMBEceMFlJ/Q1xY
+         fAI3aAvftZ2OHaAcIFUk7dDlK2lrsGn1EcjsP+1W8S29zE8n11MaBaYGTkBsM9mRoPay
+         RgR6eXgSRUoKyXx8TzB+ivVIhA/LkIC/9w9Y0n02pjNGA5d2nv8si4OmOFrXBQWnb8s0
+         +cr8J/K96dWe6Y8YAwMIUDn+/X+fQ0+L/LRGlc77yg5sWB3K8cC4YDGz6y4OjHy6cSh0
+         Tv6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=KpveMINi5uXwaTB3etXOif2Qu8MdIK4KNh+5Pxmbs+s=;
-        b=AwImfIbxPzJPa4+cKoiZDSGERlZdO7EJ4ZEZc5F6sLKRBCL1QuRKVUi1PeWuEHgcvT
-         qpt5tZeHCYWJZ8TvZaa5/8t5g2sfN4y7mk5i60Rg1ruIszU51Xsy4Z8I/BNWS/NCBMV7
-         2mWkeNrhJPHbNb7olLuDj29KphO07GBK5xoDxmxY8IARkNvmWlB/BhhxfCEzowNRo0le
-         pl+0oaH0z+xHBZomT/1pP6106i3+qm6+KY8lj9SvBt34wrTJHplnjKer6aFL9olA+SXm
-         HJjqfpVEh0lOQHjChk0jxc/u/6tDId1BzqP7AxUbK2nkG7X0CHj4Y2PxadosS4MxZMpw
-         VUCw==
-X-Gm-Message-State: AOAM533b5u9TtFepnMjIBdRR3kOUAJSuz7LXcTBlfG8NUItGI5TYoqZI
-        8xn+VbbmjJBU/bZbiZ7LB7usIw==
-X-Google-Smtp-Source: ABdhPJxtfN1ZaSzAcNBZN/oLqKN4i4IwnqLCvtFAkxEVaRFwPxwWsYuHwyGEOGh3NclemN9Ovy/Bvw==
-X-Received: by 2002:adf:d1ce:: with SMTP id b14mr13881031wrd.126.1615554589418;
-        Fri, 12 Mar 2021 05:09:49 -0800 (PST)
-Received: from localhost.localdomain ([82.142.0.212])
-        by smtp.gmail.com with ESMTPSA id q15sm7655033wrr.58.2021.03.12.05.09.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Mar 2021 05:09:49 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        lukasz.luba@arm.com
-Subject: [PATCH v4 4/5] powercap/drivers/dtpm: Use container_of instead of a private data field
-Date:   Fri, 12 Mar 2021 14:04:10 +0100
-Message-Id: <20210312130411.29833-4-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210312130411.29833-1-daniel.lezcano@linaro.org>
-References: <20210312130411.29833-1-daniel.lezcano@linaro.org>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=kKylRMS171DSUAUGLyXWsq2Tz6pdoiZRigFrFZwqxVY=;
+        b=YHgox1TxUbIyzP/V39oDzT+cU2hLJEQjq4ye5xytBMQE0BLiEw+ySHecF5rHFjQu5v
+         tqLXoX8dTOgRoSixTGDTpEfNX/sByZGotsXT82EYmDj0BwfDisRi1do0ot5N0i3CnCkl
+         IJQSSAhxdqlN4cZoD0oI2jMtpSEokbtR0VlVcf3uyb1wn5nrL7IGYqihOp2qQs0iUjh+
+         S10Sv2ZF2Psx4Yr2aE/BNxk57HHSRPw5AyDk9WWSI/hpRdfhkzmt0EHxCALxXS0Koad1
+         qzxdyBDnZgpisPHTd1+FDYMuSCFgBg1C6R2HOdBZBalm+BGrxXpjxTe3IsITqjoIaVwS
+         mDkQ==
+X-Gm-Message-State: AOAM53178vLO7o/ryNY5SFFGhQux3LIHZIi4rL0LGSsNEP5V9E99uXrr
+        HW39Oruo262L6JdAkHi7IsUzJ7T8qFM=
+X-Google-Smtp-Source: ABdhPJyyXw4QXGPCVy0ERilhNXqz3whUGsc8C9NeIrl8gS+TKEhNS13UCZoBdLhL/YqNG5x1dPt40w==
+X-Received: by 2002:ac2:5603:: with SMTP id v3mr5617629lfd.67.1615555042189;
+        Fri, 12 Mar 2021 05:17:22 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-52.dynamic.spd-mgts.ru. [109.252.193.52])
+        by smtp.googlemail.com with ESMTPSA id k6sm1959405ljb.110.2021.03.12.05.17.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 12 Mar 2021 05:17:21 -0800 (PST)
+Subject: Re: [PATCH v2 05/14] opp: Add devres wrapper for
+ dev_pm_opp_register_notifier
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Qiang Yu <yuq825@gmail.com>, Rob Clark <robdclark@gmail.com>,
+        Sean Paul <sean@poorly.run>, Rob Herring <robh@kernel.org>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        Steven Price <steven.price@arm.com>,
+        Alyssa Rosenzweig <alyssa.rosenzweig@collabora.com>,
+        Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org, linux-media@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-tegra@vger.kernel.org
+References: <20210311192105.14998-1-digetx@gmail.com>
+ <20210311192105.14998-6-digetx@gmail.com>
+ <20210312052659.uih7ikjdnkc5kl4j@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <7c288641-99ad-c938-1e5e-8c1ca19c9ea4@gmail.com>
+Date:   Fri, 12 Mar 2021 16:17:20 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <20210312052659.uih7ikjdnkc5kl4j@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The dtpm framework provides an API to allocate a dtpm node. However
-when a backend dtpm driver needs to allocate a dtpm node it must
-define its own structure and store the pointer of this structure in
-the private field of the dtpm structure.
+12.03.2021 08:26, Viresh Kumar пишет:
+> On 11-03-21, 22:20, Dmitry Osipenko wrote:
+>> From: Yangtao Li <tiny.windzz@gmail.com>
+>>
+>> Add devres wrapper for dev_pm_opp_register_notifier() to simplify driver
+>> code.
+>>
+>> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/opp/core.c     | 38 ++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_opp.h |  6 ++++++
+>>  2 files changed, 44 insertions(+)
+> 
+> As I said in the previous version, I am not sure if we need this patch
+> at all. This has only one user.
+> 
 
-It is more elegant to use the container_of macro and add the dtpm
-structure inside the dtpm backend specific structure. The code will be
-able to deal properly with the dtpm structure as a generic entity,
-making all this even more self-encapsulated.
-
-The dtpm_alloc() function does no longer make sense as the dtpm
-structure will be allocated when allocating the device specific dtpm
-structure. The dtpm_init() is provided instead.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/powercap/dtpm.c     | 27 ++++++++++------------
- drivers/powercap/dtpm_cpu.c | 46 ++++++++++++++++++-------------------
- include/linux/dtpm.h        |  3 +--
- 3 files changed, 35 insertions(+), 41 deletions(-)
-
-diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-index 74d9603bd42a..a4784ac2f79b 100644
---- a/drivers/powercap/dtpm.c
-+++ b/drivers/powercap/dtpm.c
-@@ -191,10 +191,13 @@ struct dtpm *dtpm_get(const char *name)
- 
- 	mutex_lock(&dtpm_lock);
- 	dtpm = __dtpm_lookup(name);
--	if (!dtpm)
--		dtpm = dtpm_alloc(NULL);
--	else
-+	if (!dtpm) {
-+		dtpm = kzalloc(sizeof(*dtpm), GFP_KERNEL);
-+		if (dtpm)
-+			dtpm_init(dtpm, NULL);
-+	} else {
- 		kref_get(&dtpm->kref);
-+	}
- 	mutex_unlock(&dtpm_lock);
- 
- 	return dtpm;
-@@ -498,16 +501,12 @@ static struct powercap_zone_ops zone_ops = {
- };
- 
- /**
-- * dtpm_alloc - Allocate and initialize a dtpm struct
-- * @name: a string specifying the name of the node
-- *
-- * Return: a struct dtpm pointer, NULL in case of error
-+ * dtpm_init - Allocate and initialize a dtpm struct
-+ * @dtpm: The dtpm struct pointer to be initialized
-+ * @ops: The dtpm device specific ops, NULL for a virtual node
-  */
--struct dtpm *dtpm_alloc(struct dtpm_ops *ops)
-+void dtpm_init(struct dtpm *dtpm, struct dtpm_ops *ops)
- {
--	struct dtpm *dtpm;
--
--	dtpm = kzalloc(sizeof(*dtpm), GFP_KERNEL);
- 	if (dtpm) {
- 		INIT_LIST_HEAD(&dtpm->children);
- 		INIT_LIST_HEAD(&dtpm->sibling);
-@@ -515,8 +514,6 @@ struct dtpm *dtpm_alloc(struct dtpm_ops *ops)
- 		dtpm->weight = 1024;
- 		dtpm->ops = ops;
- 	}
--
--	return dtpm;
- }
- 
- /**
-@@ -608,7 +605,7 @@ int dtpm_create(const char *name, struct dtpm *dtpm, struct dtpm *parent)
- 	return 0;
- }
- 
--static int __init dtpm_init(void)
-+static int __init init_dtpm(void)
- {
- 	struct dtpm_descr *dtpm_descr;
- 
-@@ -623,4 +620,4 @@ static int __init dtpm_init(void)
- 
- 	return 0;
- }
--late_initcall(dtpm_init);
-+late_initcall(init_dtpm);
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index c4fa35fabc40..1c6d1e54691f 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -25,16 +25,22 @@
- #include <linux/slab.h>
- #include <linux/units.h>
- 
--static DEFINE_PER_CPU(struct dtpm *, dtpm_per_cpu);
--
- struct dtpm_cpu {
-+	struct dtpm dtpm;
- 	struct freq_qos_request qos_req;
- 	int cpu;
- };
- 
-+static DEFINE_PER_CPU(struct dtpm_cpu *, dtpm_per_cpu);
-+
-+static struct dtpm_cpu *to_dtpm_cpu(struct dtpm *dtpm)
-+{
-+	return container_of(dtpm, struct dtpm_cpu, dtpm);
-+}
-+
- static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
- {
--	struct dtpm_cpu *dtpm_cpu = dtpm->private;
-+	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
- 	struct em_perf_domain *pd = em_cpu_get(dtpm_cpu->cpu);
- 	struct cpumask cpus;
- 	unsigned long freq;
-@@ -64,7 +70,7 @@ static u64 set_pd_power_limit(struct dtpm *dtpm, u64 power_limit)
- 
- static u64 get_pd_power_uw(struct dtpm *dtpm)
- {
--	struct dtpm_cpu *dtpm_cpu = dtpm->private;
-+	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
- 	struct em_perf_domain *pd;
- 	struct cpumask cpus;
- 	unsigned long freq;
-@@ -90,7 +96,7 @@ static u64 get_pd_power_uw(struct dtpm *dtpm)
- 
- static int update_pd_power_uw(struct dtpm *dtpm)
- {
--	struct dtpm_cpu *dtpm_cpu = dtpm->private;
-+	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
- 	struct em_perf_domain *em = em_cpu_get(dtpm_cpu->cpu);
- 	struct cpumask cpus;
- 	int nr_cpus;
-@@ -111,7 +117,7 @@ static int update_pd_power_uw(struct dtpm *dtpm)
- 
- static void pd_release(struct dtpm *dtpm)
- {
--	struct dtpm_cpu *dtpm_cpu = dtpm->private;
-+	struct dtpm_cpu *dtpm_cpu = to_dtpm_cpu(dtpm);
- 
- 	if (freq_qos_request_active(&dtpm_cpu->qos_req))
- 		freq_qos_remove_request(&dtpm_cpu->qos_req);
-@@ -129,20 +135,19 @@ static struct dtpm_ops dtpm_ops = {
- static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
- {
- 	struct em_perf_domain *pd;
--	struct dtpm *dtpm;
-+	struct dtpm_cpu *dtpm_cpu;
- 
- 	pd = em_cpu_get(cpu);
- 	if (!pd)
- 		return -EINVAL;
- 
--	dtpm = per_cpu(dtpm_per_cpu, cpu);
-+	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
- 
--	return dtpm_update_power(dtpm);
-+	return dtpm_update_power(&dtpm_cpu->dtpm);
- }
- 
- static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- {
--	struct dtpm *dtpm;
- 	struct dtpm_cpu *dtpm_cpu;
- 	struct cpufreq_policy *policy;
- 	struct em_perf_domain *pd;
-@@ -157,27 +162,23 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 	if (!pd)
- 		return -EINVAL;
- 
--	dtpm = per_cpu(dtpm_per_cpu, cpu);
--	if (dtpm)
--		return dtpm_update_power(dtpm);
--
--	dtpm = dtpm_alloc(&dtpm_ops);
--	if (!dtpm)
--		return -EINVAL;
-+	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
-+	if (dtpm_cpu)
-+		return dtpm_update_power(&dtpm_cpu->dtpm);
- 
- 	dtpm_cpu = kzalloc(sizeof(*dtpm_cpu), GFP_KERNEL);
- 	if (!dtpm_cpu)
--		goto out_kfree_dtpm;
-+		return -ENOMEM;
- 
--	dtpm->private = dtpm_cpu;
-+	dtpm_init(&dtpm_cpu->dtpm, &dtpm_ops);
- 	dtpm_cpu->cpu = cpu;
- 
- 	for_each_cpu(cpu, policy->related_cpus)
--		per_cpu(dtpm_per_cpu, cpu) = dtpm;
-+		per_cpu(dtpm_per_cpu, cpu) = dtpm_cpu;
- 
- 	snprintf(name, sizeof(name), "cpu%d-cpufreq", dtpm_cpu->cpu);
- 
--	ret = dtpm_register(name, dtpm);
-+	ret = dtpm_register(name, &dtpm_cpu->dtpm);
- 	if (ret)
- 		goto out_kfree_dtpm_cpu;
- 
-@@ -192,15 +193,12 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- out_dtpm_unregister:
- 	dtpm_unregister(name);
- 	dtpm_cpu = NULL;
--	dtpm = NULL;
- 
- out_kfree_dtpm_cpu:
- 	for_each_cpu(cpu, policy->related_cpus)
- 		per_cpu(dtpm_per_cpu, cpu) = NULL;
- 	kfree(dtpm_cpu);
- 
--out_kfree_dtpm:
--	kfree(dtpm);
- 	return ret;
- }
- 
-diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
-index 5f71ddc18ee9..4f7ad21291e6 100644
---- a/include/linux/dtpm.h
-+++ b/include/linux/dtpm.h
-@@ -24,7 +24,6 @@ struct dtpm {
- 	u64 power_max;
- 	u64 power_min;
- 	int weight;
--	void *private;
- };
- 
- struct dtpm_ops {
-@@ -66,7 +65,7 @@ int dtpm_update_power(struct dtpm *dtpm);
- 
- int dtpm_release_zone(struct powercap_zone *pcz);
- 
--struct dtpm *dtpm_alloc(struct dtpm_ops *ops);
-+void dtpm_init(struct dtpm *dtpm, struct dtpm_ops *ops);
- 
- void dtpm_destroy(struct dtpm *dtpm);
- 
--- 
-2.17.1
-
+I'll drop this patch in v3, thanks.
