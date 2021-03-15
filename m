@@ -2,124 +2,234 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 678C8C43619
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Mar 2021 15:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEE21C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Mar 2021 18:22:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 45F3164E64
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Mar 2021 15:34:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7CF9164F4D
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Mar 2021 18:22:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229905AbhCOPeX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Mar 2021 11:34:23 -0400
-Received: from mail-ot1-f52.google.com ([209.85.210.52]:33894 "EHLO
-        mail-ot1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230331AbhCOPeO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Mar 2021 11:34:14 -0400
-Received: by mail-ot1-f52.google.com with SMTP id n23so7213964otq.1;
-        Mon, 15 Mar 2021 08:34:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=w2PzQp98xEVljnuInqGfZNpkRUMzLCMEZ5M6TM/sg/0=;
-        b=qBerCCiV3UsDsZgvgOxDfEzsfqmXUDUQK3HBe1tQ95dv1tPDCyvnzOSKZ+Sr43glfr
-         a9n2GkVti5+kSPrBeAfpJEzSrU6OYodGVXwtgv0LFGd4mUyOoApmchSdFiXa0sKAkKQh
-         miouKQqZs7+f0mVWScpFvRxN8XuZCAyUVyjptsN7tnvDvdURoVDpCIwi7JMeaI65gWUc
-         T2rp/EVh418R94Ih36RlIzWKKjxewe99PENV9sPu77SgbX62lwsUWkGdgQVyZEeaDFMm
-         y1KmOZTezNPfm0nIaL5Wm1bEFmthJcBlpGukkASc+vtSjNtcQDF8lEbpxwJBWe7stJ62
-         BOcA==
-X-Gm-Message-State: AOAM533o98jipz/LPxH6O72JI2uzvsfiltQYink8xglh6Xu7EntBhXkO
-        cgm5ztmcGGanZjuo0su/U0HQnQy3uN1YNgRLtQ0=
-X-Google-Smtp-Source: ABdhPJyl/cbr7pq28PHZ/0h31pXlvj6SfsiJtApwzlRSUKiFzC/UHOEFF4rEujy7pXbWO9dTlmsXetPUp2PHgNx7OEE=
-X-Received: by 2002:a9d:3422:: with SMTP id v31mr14466855otb.260.1615822453930;
- Mon, 15 Mar 2021 08:34:13 -0700 (PDT)
+        id S231770AbhCOSWR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Mar 2021 14:22:17 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51206 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231513AbhCOSVs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Mar 2021 14:21:48 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 878ED64F4C;
+        Mon, 15 Mar 2021 18:21:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1615832507;
+        bh=afoa9GqZg2qqHylfjPMfhqp2/JmOVLX1GiaEqBxH+DM=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=aOjgCgPyePMGaMuQQI6WR/A02j6B7YlrIp4zZ3Z1By1mQEWgMzNRz4AgreOONuy/+
+         blnwZPlvetKkD+2HkKadVjMIZ0aMxJj4SeLObJIZ7fpXyCDAYR6jeHIZ16AWWK9Mcv
+         fU6Jplj6A/fwzmKsWaPzCnghPFP1cxZ9j6U7YiemIGM6F0dW8CVAkEEOJ74s2LYbRx
+         78NEk3TI/0Nu9RmRxdXNGQFoVA7H/UOYXHykAjfGLLe8VaC0fntO0kJS7jkWFEKY3M
+         YDHaYKW6275Jslc49Jb62DnwTTj/z0bfO8P24qQuLDSMIM5QzULLoYw1vqAR7s9LJu
+         q0onSoBY1n/wg==
+Received: by mail-ed1-f50.google.com with SMTP id z1so18490372edb.8;
+        Mon, 15 Mar 2021 11:21:47 -0700 (PDT)
+X-Gm-Message-State: AOAM532nLhReI9GdOZYrEPC1WDuKmcDAysPZqTwU9G/EzdF2FPw69VQv
+        epQMIdhe6UOwTzuy27cEjSynf5TPN+RrKvXfRA==
+X-Google-Smtp-Source: ABdhPJwXvaxf3Xd1WXC/uPyRinIjZ+scVfiqaCoSD1eCqTQBavGoOpWdvdB43Rk0TBOVIYIWudB8auhe+rWL0Mj14RU=
+X-Received: by 2002:a05:6402:c0f:: with SMTP id co15mr31140438edb.373.1615832506118;
+ Mon, 15 Mar 2021 11:21:46 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210314000439.3138941-1-luzmaximilian@gmail.com>
-In-Reply-To: <20210314000439.3138941-1-luzmaximilian@gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 15 Mar 2021 16:34:02 +0100
-Message-ID: <CAJZ5v0hY=NgKAU+N_kaya=q3Vk6SnkRTfXuiiP0ttoxHq+pRTA@mail.gmail.com>
-Subject: Re: [PATCH v2] PCI: Run platform power transition on initial D0 entry
-To:     Maximilian Luz <luzmaximilian@gmail.com>
-Cc:     Bjorn Helgaas <bhelgaas@google.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20210312154357.1561730-1-sebastian.reichel@collabora.com> <20210312154357.1561730-5-sebastian.reichel@collabora.com>
+In-Reply-To: <20210312154357.1561730-5-sebastian.reichel@collabora.com>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Mon, 15 Mar 2021 12:21:34 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqKFJPSMyMbcrpnL1WgttHSP+3Q+U8bJ_m5hm=O0gEPe4g@mail.gmail.com>
+Message-ID: <CAL_JsqKFJPSMyMbcrpnL1WgttHSP+3Q+U8bJ_m5hm=O0gEPe4g@mail.gmail.com>
+Subject: Re: [PATCH 04/38] dt-bindings: power: supply: bq25890: Convert to DT
+ schema format
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        devicetree@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Collabora Kernel ML <kernel@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Mar 14, 2021 at 1:06 AM Maximilian Luz <luzmaximilian@gmail.com> wrote:
+On Fri, Mar 12, 2021 at 8:44 AM Sebastian Reichel
+<sebastian.reichel@collabora.com> wrote:
 >
-> On some devices and platforms, the initial platform (e.g. ACPI) power
-> state is not in sync with the power state of the PCI device.
+> Convert the binding to DT schema format.
 >
-> This seems like it is, for all intents and purposes, an issue with the
-> device firmware (e.g. ACPI). On some devices, specifically Microsoft
-> Surface Books 2 and 3, we encounter ACPI code akin to the following
-> power resource, corresponding to a PCI device:
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
+>  .../bindings/power/supply/bq25890.txt         |  60 ---------
+>  .../bindings/power/supply/bq25890.yaml        | 125 ++++++++++++++++++
+>  2 files changed, 125 insertions(+), 60 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/power/supply/bq25890.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq25890.yaml
 >
->     PowerResource (PRP5, 0x00, 0x0000)
->     {
->         // Initialized to zero, i.e. off. There is no logic for checking
->         // the actual state dynamically.
->         Name (_STA, Zero)
->
->         Method (_ON, 0, Serialized)
->         {
->             // ... code omitted ...
->             _STA = One
->         }
->
->         Method (_OFF, 0, Serialized)
->         {
->             // ... code omitted ...
->             _STA = Zero
->         }
->     }
->
-> This resource is initialized to 'off' and does not have any logic for
-> checking its actual state, i.e. the state of the corresponding PCI
-> device. The stored state of this resource can only be changed by running
-> the (platform/ACPI) power transition functions (i.e. _ON and _OFF).
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq25890.txt b/Documentation/devicetree/bindings/power/supply/bq25890.txt
+> deleted file mode 100644
+> index 805040c6fff9..000000000000
+> --- a/Documentation/devicetree/bindings/power/supply/bq25890.txt
+> +++ /dev/null
+> @@ -1,60 +0,0 @@
+> -Binding for TI bq25890 Li-Ion Charger
+> -
+> -This driver will support the bq25892, the bq25896 and the bq25890. There are
+> -other ICs in the same family but those have not been tested.
+> -
+> -Required properties:
+> -- compatible: Should contain one of the following:
+> -    * "ti,bq25890"
+> -    * "ti,bq25892"
+> -    * "ti,bq25895"
+> -    * "ti,bq25896"
+> -- reg: integer, i2c address of the device.
+> -- interrupts: interrupt line;
+> -- ti,battery-regulation-voltage: integer, maximum charging voltage (in uV);
+> -- ti,charge-current: integer, maximum charging current (in uA);
+> -- ti,termination-current: integer, charge will be terminated when current in
+> -    constant-voltage phase drops below this value (in uA);
+> -- ti,precharge-current: integer, maximum charge current during precharge
+> -    phase (in uA);
+> -- ti,minimum-sys-voltage: integer, when battery is charging and it is below
+> -    minimum system voltage, the system will be regulated above
+> -    minimum-sys-voltage setting (in uV);
+> -- ti,boost-voltage: integer, VBUS voltage level in boost mode (in uV);
+> -- ti,boost-max-current: integer, maximum allowed current draw in boost mode
+> -    (in uA).
+> -
+> -Optional properties:
+> -- ti,boost-low-freq: boolean, if present boost mode frequency will be 500kHz,
+> -    otherwise 1.5MHz;
+> -- ti,use-ilim-pin: boolean, if present the ILIM resistor will be used and the
+> -    input current will be the lower between the resistor setting and the IINLIM
+> -    register setting;
+> -- ti,thermal-regulation-threshold: integer, temperature above which the charge
+> -    current is lowered, to avoid overheating (in degrees Celsius). If omitted,
+> -    the default setting will be used (120 degrees);
+> -- ti,ibatcomp-micro-ohms: integer, value of a resistor in series with
+> -    the battery;
+> -- ti,ibatcomp-clamp-microvolt: integer, maximum charging voltage adjustment due
+> -    to expected voltage drop on in-series resistor;
+> -
+> -Example:
+> -
+> -bq25890 {
+> -       compatible = "ti,bq25890";
+> -       reg = <0x6a>;
+> -
+> -       interrupt-parent = <&gpio1>;
+> -       interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
+> -
+> -       ti,battery-regulation-voltage = <4200000>;
+> -       ti,charge-current = <1000000>;
+> -       ti,termination-current = <50000>;
+> -       ti,precharge-current = <128000>;
+> -       ti,minimum-sys-voltage = <3600000>;
+> -       ti,boost-voltage = <5000000>;
+> -       ti,boost-max-current = <1000000>;
+> -
+> -       ti,use-ilim-pin;
+> -       ti,thermal-regulation-threshold = <120>;
+> -};
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq25890.yaml b/Documentation/devicetree/bindings/power/supply/bq25890.yaml
+> new file mode 100644
+> index 000000000000..de6e03ec120c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/bq25890.yaml
+> @@ -0,0 +1,125 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +# Copyright (C) 2021 Sebastian Reichel
+> +%YAML 1.2
+> +---
+> +$id: "http://devicetree.org/schemas/power/supply/bq25890.yaml#"
+> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> +
+> +title: Binding for bq25890, bq25892, bq25895 and bq25896 Li-Ion Charger
+> +
+> +maintainers:
+> +  - Sebastian Reichel <sre@kernel.org>
+> +
+> +allOf:
+> +  - $ref: power-supply.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ti,bq25890
+> +      - ti,bq25892
+> +      - ti,bq25895
+> +      - ti,bq25896
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  ti,battery-regulation-voltage:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: maximum charging voltage (in uV)
+> +
+> +  ti,charge-current:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: maximum charging current (in uA)
+> +
+> +  ti,termination-current:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: |
+> +      charge will be terminated when current in constant-voltage phase
+> +      drops below this value (in uA)
+> +
+> +  ti,precharge-current:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: maximum charge current during precharge phase (in uA)
+> +
+> +  ti,minimum-sys-voltage:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: |
+> +      when battery is charging and it is below minimum system voltage,
+> +      the system will be regulated above minimum-sys-voltage setting (in uV)
+> +
+> +  ti,boost-voltage:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: VBUS voltage level in boost mode (in uV)
+> +
+> +  ti,boost-max-current:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: maximum allowed current draw in boost mode (in uA)
+> +
+> +  ti,boost-low-freq:
+> +    description: boost mode frequency will be 500kHz, otherwise 1.5MHz
+> +    type: boolean
+> +
+> +  ti,use-ilim-pin:
+> +    description: |
+> +      ILIM resistor will be used and the input current will be the lower
+> +      between the resistor setting and the IINLIM register setting
+> +    type: boolean
+> +
+> +  ti,thermal-regulation-threshold:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: |
+> +      temperature above which the charge current is lowered, to avoid overheating
+> +      (in degrees Celsius). If omitted, the default setting will be used (120 degrees)
+> +
+> +  ti,ibatcomp-micro-ohms:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: value of a resistor in series with the battery (in Micro Ohms)
+> +
+> +  ti,ibatcomp-clamp-microvolt:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: max. charging voltage adjustment due to expected voltage drop on in-series resistor
 
-Well, there is _STA that returns "off" initially, so the OS should set
-the initial state of the device to D3cold and transition it into D0 as
-appropriate (i.e. starting with setting all of the power resources
-used by it to "on").
+You don't need a type $ref on properties with a standard unit suffix.
+Though it looks like there's some non-standard ones (-microvolts) in
+the series.
 
-> This means that, at boot, the PCI device power state is out of sync with
-> the power state of the corresponding ACPI resource.
->
-> During initial bring-up of a PCI device, pci_enable_device_flags()
-> updates its PCI core state (from initially 'unknown') by reading from
-> its PCI_PM_CTRL register. It does, however, not check if the platform
-> (here ACPI) state is in sync with/valid for the actual device state and
-> needs updating.
-
-Well, that's inconsistent.
-
-Also, it is rather pointless to update the device's power state at
-this point, because nothing between this point and the later
-do_pci_enable_device() call in this function requires its
-current_state to be up to date AFAICS.
-
-Have you tried to drop the power state update from
-pci_enable_device_flags()?  [Note that we're talking about relatively
-old code here and it looks like that code is not necessary any more.]
-
-Either it should be possible to do that and all should work, or there
-is a good reason to make current_state reflect the real current power
-state of the device upfront, but then that should be done by putting
-it into D0 diractly at that point rather than later.
-
-Calling pci_power_up(dev) instead of pci_set_power_state(dev, PCI_D0)
-when current_state is already 0 only pokes at the power resources,
-because pci_raw_set_power_state() will do nothing then, but that is a
-rather less-than-straightforward way of doing this.  Moreover, the
-ordering of actions mandated by the spec is to set power resources to
-"on" first and then write to the PMCSR, not the other way around.
+Rob
