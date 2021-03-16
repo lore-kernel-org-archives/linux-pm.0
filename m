@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B129DC433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 07:03:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 012D7C433E9
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 07:03:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 86C7564F69
+	by mail.kernel.org (Postfix) with ESMTP id C3A6165198
 	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 07:03:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232682AbhCPHCd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Mar 2021 03:02:33 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:44328 "EHLO
+        id S232749AbhCPHCe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Mar 2021 03:02:34 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:44373 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S231356AbhCPHCM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Mar 2021 03:02:12 -0400
-X-UUID: 5abef9c256ff417386aec7eb5af5cbf7-20210316
-X-UUID: 5abef9c256ff417386aec7eb5af5cbf7-20210316
+        with ESMTP id S234012AbhCPHCP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Mar 2021 03:02:15 -0400
+X-UUID: a18191d57ae143b69c50acdb900aa94e-20210316
+X-UUID: a18191d57ae143b69c50acdb900aa94e-20210316
 Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <michael.kao@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1502989313; Tue, 16 Mar 2021 15:02:11 +0800
+        with ESMTP id 1421002501; Tue, 16 Mar 2021 15:02:11 +0800
 Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
  mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Tue, 16 Mar 2021 15:01:44 +0800
@@ -44,136 +44,196 @@ CC:     Eduardo Valentin <edubezval@gmail.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>
-Subject: [v7,1/3] arm64: dts: mt8183: add thermal zone node
-Date:   Tue, 16 Mar 2021 15:01:42 +0800
-Message-ID: <20210316070144.28440-2-michael.kao@mediatek.com>
+Subject: [v7,3/3] thermal: mediatek: add another get_temp ops for thermal sensors
+Date:   Tue, 16 Mar 2021 15:01:44 +0800
+Message-ID: <20210316070144.28440-4-michael.kao@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20210316070144.28440-1-michael.kao@mediatek.com>
 References: <20210316070144.28440-1-michael.kao@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-SNTS-SMTP: 18D33057B35F074E492F7361681F86E71698E3215D951BD9CBBD6C0687251D1E2000:8
+X-TM-SNTS-SMTP: 5502FE4983EE4EF0C9EE559D06838E1313D22C550A32EAE19895D408E1CEA4032000:8
 X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "michael.kao" <michael.kao@mediatek.com>
+Provide thermal zone to read thermal sensor
+in the SoC. We can read all the thermal sensors
+value in the SoC by the node /sys/class/thermal/
 
-Add thermal zone node to Mediatek MT8183 dts file.
+In mtk_thermal_bank_temperature, return -EAGAIN instead of -EACCESS
+on the first read of sensor that often are bogus values.
+This can avoid following warning on boot:
 
-Evaluate the thermal zone every 500ms while not cooling
-and every 100ms when passive cooling is performed.
+  thermal thermal_zone6: failed to read out thermal zone (-13)
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
 ---
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 85 ++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+ drivers/thermal/mtk_thermal.c | 100 +++++++++++++++++++++++++---------
+ 1 file changed, 75 insertions(+), 25 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 5b782a4769e7..d3550af06408 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -657,6 +657,87 @@
- 			status = "disabled";
- 		};
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 149c6d7fd5a0..57e4f08a947e 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -245,6 +245,11 @@ enum mtk_thermal_version {
  
-+		thermal: thermal@1100b000 {
-+			#thermal-sensor-cells = <1>;
-+			compatible = "mediatek,mt8183-thermal";
-+			reg = <0 0x1100b000 0 0x1000>;
-+			clocks = <&infracfg CLK_INFRA_THERM>,
-+				 <&infracfg CLK_INFRA_AUXADC>;
-+			clock-names = "therm", "auxadc";
-+			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-+			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
-+			mediatek,auxadc = <&auxadc>;
-+			mediatek,apmixedsys = <&apmixedsys>;
-+			nvmem-cells = <&thermal_calibration>;
-+			nvmem-cell-names = "calibration-data";
-+		};
+ struct mtk_thermal;
+ 
++struct mtk_thermal_zone {
++	struct mtk_thermal *mt;
++	int id;
++};
 +
-+		thermal-zones {
-+			cpu_thermal: cpu_thermal {
-+				polling-delay-passive = <100>;
-+				polling-delay = <500>;
-+				thermal-sensors = <&thermal 0>;
-+				sustainable-power = <5000>;
-+			};
+ struct thermal_bank_cfg {
+ 	unsigned int num_sensors;
+ 	const int *sensors;
+@@ -637,6 +642,30 @@ static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+ 		mutex_unlock(&mt->lock);
+ }
+ 
++static u32 _get_sensor_temp(struct mtk_thermal *mt, int id)
++{
++	u32 raw;
++	int temp;
 +
-+			/* The tzts1 ~ tzts6 don't need to polling */
-+			/* The tzts1 ~ tzts6 don't need to thermal throttle */
++	raw = readl(mt->thermal_base + mt->conf->msr[id]);
 +
-+			tzts1: tzts1 {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 1>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
++	if (mt->conf->version == MTK_THERMAL_V1)
++		temp = raw_to_mcelsius_v1(mt, id, raw);
++	else
++		temp = raw_to_mcelsius_v2(mt, id, raw);
 +
-+			tzts2: tzts2 {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 2>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
++	/*
++	 * The first read of a sensor often contains very high bogus
++	 * temperature value. Filter these out so that the system does
++	 * not immediately shut down.
++	 */
 +
-+			tzts3: tzts3 {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 3>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
++	if (temp > 200000)
++		return -EAGAIN;
++	else
++		return temp;
++}
 +
-+			tzts4: tzts4 {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 4>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
+ /**
+  * mtk_thermal_bank_temperature - get the temperature of a bank
+  * @bank:	The bank
+@@ -647,28 +676,11 @@ static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
+ {
+ 	struct mtk_thermal *mt = bank->mt;
+-	const struct mtk_thermal_data *conf = mt->conf;
+ 	int i, temp = INT_MIN, max = INT_MIN;
+-	u32 raw;
+-
+-	for (i = 0; i < conf->bank_data[bank->id].num_sensors; i++) {
+-		raw = readl(mt->thermal_base + conf->msr[i]);
+ 
+-		if (mt->conf->version == MTK_THERMAL_V1) {
+-			temp = raw_to_mcelsius_v1(
+-				mt, conf->bank_data[bank->id].sensors[i], raw);
+-		} else {
+-			temp = raw_to_mcelsius_v2(
+-				mt, conf->bank_data[bank->id].sensors[i], raw);
+-		}
++	for (i = 0; i < mt->conf->bank_data[bank->id].num_sensors; i++) {
+ 
+-		/*
+-		 * The first read of a sensor often contains very high bogus
+-		 * temperature value. Filter these out so that the system does
+-		 * not immediately shut down.
+-		 */
+-		if (temp > 200000)
+-			temp = 0;
++		temp = _get_sensor_temp(mt, i);
+ 
+ 		if (temp > max)
+ 			max = temp;
+@@ -679,7 +691,8 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
+ 
+ static int mtk_read_temp(void *data, int *temperature)
+ {
+-	struct mtk_thermal *mt = data;
++	struct mtk_thermal_zone *tz = data;
++	struct mtk_thermal *mt = tz->mt;
+ 	int i;
+ 	int tempmax = INT_MIN;
+ 
+@@ -698,10 +711,28 @@ static int mtk_read_temp(void *data, int *temperature)
+ 	return 0;
+ }
+ 
++static int mtk_read_sensor_temp(void *data, int *temperature)
++{
++	struct mtk_thermal_zone *tz = data;
++	struct mtk_thermal *mt = tz->mt;
++	int id = tz->id - 1;
 +
-+			tzts5: tzts5 {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 5>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
++	if (id < 0)
++		return -EACCES;
 +
-+			tztsABB: tztsABB {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+				thermal-sensors = <&thermal 6>;
-+				sustainable-power = <5000>;
-+				trips {};
-+				cooling-maps {};
-+			};
-+		};
++	*temperature = _get_sensor_temp(mt, id);
 +
- 		pwm0: pwm@1100e000 {
- 			compatible = "mediatek,mt8183-disp-pwm";
- 			reg = <0 0x1100e000 0 0x1000>;
-@@ -926,6 +1007,10 @@
- 			reg = <0 0x11f10000 0 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-+			thermal_calibration: calib@180 {
-+				reg = <0x180 0xc>;
-+			};
++	return 0;
++}
 +
- 			mipi_tx_calibration: calib@190 {
- 				reg = <0x190 0xc>;
- 			};
+ static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
+ 	.get_temp = mtk_read_temp,
+ };
+ 
++static const struct thermal_zone_of_device_ops mtk_thermal_sensor_ops = {
++	.get_temp = mtk_read_sensor_temp,
++};
++
+ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
+ 				  u32 apmixed_phys_base, u32 auxadc_phys_base,
+ 				  int ctrl_id)
+@@ -992,6 +1023,7 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	u64 auxadc_phys_base, apmixed_phys_base;
+ 	struct thermal_zone_device *tzdev;
+ 	void __iomem *apmixed_base, *auxadc_base;
++	struct mtk_thermal_zone *tz;
+ 
+ 	mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
+ 	if (!mt)
+@@ -1080,11 +1112,29 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, mt);
+ 
+-	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, mt,
+-						     &mtk_thermal_ops);
+-	if (IS_ERR(tzdev)) {
+-		ret = PTR_ERR(tzdev);
+-		goto err_disable_clk_peri_therm;
++	for (i = 0; i < mt->conf->num_sensors + 1; i++) {
++		tz = devm_kmalloc(&pdev->dev, sizeof(*tz), GFP_KERNEL);
++		if (!tz)
++			return -ENOMEM;
++
++		tz->mt = mt;
++		tz->id = i;
++
++		tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, i, tz, (i == 0) ?
++							     &mtk_thermal_ops :
++							     &mtk_thermal_sensor_ops);
++
++		if (IS_ERR(tzdev)) {
++			if (PTR_ERR(tzdev) == -ENODEV) {
++				dev_warn(&pdev->dev,
++					 "sensor %d not registered in thermal zone in dt\n", i);
++				continue;
++			}
++			if (PTR_ERR(tzdev) == -EACCES) {
++				ret = PTR_ERR(tzdev);
++				goto err_disable_clk_peri_therm;
++			}
++		}
+ 	}
+ 
+ 	return 0;
 -- 
 2.18.0
 
