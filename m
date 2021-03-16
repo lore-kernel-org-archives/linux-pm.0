@@ -2,102 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8629BC433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 17:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0A04C43381
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 17:54:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 50032650DB
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 17:53:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CAF6B6513F
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 17:54:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231492AbhCPRxN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Mar 2021 13:53:13 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43198 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239269AbhCPRxA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Mar 2021 13:53:00 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7EF196512F;
-        Tue, 16 Mar 2021 17:52:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1615917179;
-        bh=W8rr8sTbWk/xigthIkTyoScmrkEHXz8tnd8LeK4Aq5U=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=L7Qe6r7cy4oo3a7QC4RU5ShnI1IfUIXGMymWJJL18hoP+qr4a8ZlmErgMfOoQWY2q
-         I+YaFe3FcrFsNCFjwfQA/NUkr5Vyl1hjheDf0cH1T2Fy9kleyC9GyZYS/nxm8JT8MX
-         Dbbhr5IoBUtl+Tfft2wdeXYupzQRO6HVWl8qefQFnqIcrOqRmMhpoS2oHxwfPHATek
-         0US5gr2za1lShVj87zBMfiYTUZv5ZGxPrspuMOfmjVGaTWndwj+YsoEHzjQOoosw41
-         glO5ohMoFTmZgAM4+mYn79CnD7j0IJ0tfFSfUx9sXQKBEawxfJaVtDkHz9jGNYUIB8
-         oewgcyTXbsouw==
-Received: by mail-qt1-f181.google.com with SMTP id l13so12304799qtu.9;
-        Tue, 16 Mar 2021 10:52:59 -0700 (PDT)
-X-Gm-Message-State: AOAM533VVjS1w60iIaXJTU5UsKxHo5+jbuRBGIGT5g5+ieE1mLA6CUas
-        QeIdhgq0SbQYY5h3ufpfo9MVArnB9qQksonKsQ==
-X-Google-Smtp-Source: ABdhPJxG0ZFRjKxTysjTNHhJwM08UgCXG6fkHthhoVafsNybBo0emZ8KLn06OpgaliodW8DNOmRhuSOZzuNZ9pzhXaU=
-X-Received: by 2002:ac8:4ccc:: with SMTP id l12mr58779qtv.137.1615917178617;
- Tue, 16 Mar 2021 10:52:58 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210312154357.1561730-1-sebastian.reichel@collabora.com>
- <20210312154357.1561730-17-sebastian.reichel@collabora.com>
- <CAL_JsqLn9Mo_hTuCEPapNz3cFHbC8NKHH0npYrnV+dC85pBAsQ@mail.gmail.com> <20210316162045.cvvb226rpzxbovdl@earth.universe>
-In-Reply-To: <20210316162045.cvvb226rpzxbovdl@earth.universe>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Tue, 16 Mar 2021 11:52:47 -0600
-X-Gmail-Original-Message-ID: <CAL_Jsq+rynEXFCJDL-Xrar1hSam65qP6ZAiOQUKRtDbu26BYSw@mail.gmail.com>
-Message-ID: <CAL_Jsq+rynEXFCJDL-Xrar1hSam65qP6ZAiOQUKRtDbu26BYSw@mail.gmail.com>
-Subject: Re: [PATCH 16/38] dt-bindings: power: supply: tps65217: Convert to DT
- schema format
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Collabora Kernel ML <kernel@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
+        id S230252AbhCPRyR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Mar 2021 13:54:17 -0400
+Received: from mail-io1-f50.google.com ([209.85.166.50]:42133 "EHLO
+        mail-io1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239351AbhCPRyM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Mar 2021 13:54:12 -0400
+Received: by mail-io1-f50.google.com with SMTP id u20so38105868iot.9;
+        Tue, 16 Mar 2021 10:54:12 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=Z93rlUj9sdWeq37uZfM03RuUP74yX70Y9MLTGZ1xQjw=;
+        b=e27tK+eOU1ayF0YZhD4iP21I89e/adqzgnYnwUeMh7rJbNJI8WLG9nfLWL6fZhm3sX
+         sCXxlc+tZKt92fmcbKhwOILvGYli2sZDWpN1rfJsTxuFSzPoPfvauqZKUHpv0wEPYJNz
+         xFzoULuBSL9OQIKBPh3zzuBjWaG+1IBDdGmlqX+Km9+3d0WAINSwhpa7Nw5iYRh1D+uu
+         czpMrUhJMy7Bn6DAGFXQwhRZsEWkxDGAULuIXyxXfLdTS5e79LODYQEr5iToT46823mk
+         9jT5hVZA/M8MR4gEoEspvmZGTKcY4Pxd//AcN8nczrN8+dYhcp5ORNlzCr5BdDATP7Ac
+         Gr7g==
+X-Gm-Message-State: AOAM533oUnr9C7vvlMbHmXNhWW//U16F9pDjnTCd3M5Jngj0qgSKJtj5
+        kyKUPmYlDPUlMi5NFN9Zag==
+X-Google-Smtp-Source: ABdhPJx9NqGassAFyEjEetsnxzPc4LiCv5OZO+q67dVfM9IFfAuk7yGqkR/agnODdaVp/QC2A1v/ig==
+X-Received: by 2002:a05:6602:26cb:: with SMTP id g11mr4090124ioo.180.1615917252062;
+        Tue, 16 Mar 2021 10:54:12 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.253])
+        by smtp.gmail.com with ESMTPSA id l16sm9795688ils.11.2021.03.16.10.54.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Mar 2021 10:54:11 -0700 (PDT)
+Received: (nullmailer pid 3326118 invoked by uid 1000);
+        Tue, 16 Mar 2021 17:54:09 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Roger Lu <roger.lu@mediatek.com>
+Cc:     Kevin Hilman <khilman@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        YT Lee <yt.lee@mediatek.com>, Stephen Boyd <sboyd@kernel.org>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        Fan Chen <fan.chen@mediatek.com>,
+        linux-mediatek@lists.infradead.org,
+        Mark Rutland <mark.rutland@arm.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
+In-Reply-To: <20210315133018.4976-2-roger.lu@mediatek.com>
+References: <20210315133018.4976-1-roger.lu@mediatek.com> <20210315133018.4976-2-roger.lu@mediatek.com>
+Subject: Re: [PATCH v12 1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
+Date:   Tue, 16 Mar 2021 11:54:09 -0600
+Message-Id: <1615917249.208932.3326117.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 16, 2021 at 10:20 AM Sebastian Reichel
-<sebastian.reichel@collabora.com> wrote:
->
-> Hi Rob,
->
-> On Mon, Mar 15, 2021 at 12:33:23PM -0600, Rob Herring wrote:
-> > On Fri, Mar 12, 2021 at 8:44 AM Sebastian Reichel
-> > <sebastian.reichel@collabora.com> wrote:
-> > > +  interrupts:
-> > > +    minItems: 2
-> > > +    maxItems: 2
-> >
-> > We've lost info that was in the original binding. You could do
-> > something like this:
-> >
-> > items:
-> >   - description: USB charger
-> >     const: 0
-> >   - description: AC charger
-> >     const: 1
-> >
-> > (Usually the interrupt values would be out of scope of the binding,
-> > but I guess here it makes some sense.)
->
-> I initially did this, but it did not work. I see the following for
-> dt_binding_check (dtbs_check triggers the same):
->
-> Documentation/devicetree/bindings/power/supply/tps65217-charger.example.dt.yaml: charger: interrupts:0: [0] is too short
->         From schema: Documentation/devicetree/bindings/power/supply/tps65217-charger.yaml
-> Documentation/devicetree/bindings/power/supply/tps65217-charger.example.dt.yaml: charger: interrupts: [[0], [1]] is too long
->         From schema: Documentation/devicetree/bindings/power/supply/tps65217-charger.yaml
-> Documentation/devicetree/bindings/power/supply/tps65217-charger.example.dt.yaml: charger: interrupts: Additional items are not allowed ([1] was unexpected)
->         From schema: Documentation/devicetree/bindings/power/supply/tps65217-charger.yaml
->
-> Seemed to be a limitation in the validation tool, so I just dropped
-> the extra information. If we do not want to loose information I can
-> add it to the description, or should the validation tool be fixed?
-> I suppose it's kind of unusual, that the binding can provide the
-> interrupt line numbers.
+On Mon, 15 Mar 2021 21:30:12 +0800, Roger Lu wrote:
+> Document the binding for enabling mtk svs on MediaTek SoC.
+> 
+> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+> ---
+>  .../bindings/soc/mediatek/mtk-svs.yaml        | 81 +++++++++++++++++++
+>  1 file changed, 81 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+> 
 
-It is, so let's just leave it as-is.
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Rob
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml: properties:nvmem-cells:maxItems: False schema does not allow 2
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml: ignoring, error in schema: properties: nvmem-cells: maxItems
+warning: no schema found in file: ./Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+
+See https://patchwork.ozlabs.org/patch/1453275
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
+
