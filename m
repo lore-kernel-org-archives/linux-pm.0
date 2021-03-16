@@ -2,103 +2,148 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5718AC433E9
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 06:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9040AC433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 07:02:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1883E65252
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 06:58:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 59ECB65007
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Mar 2021 07:02:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235791AbhCPG5q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Mar 2021 02:57:46 -0400
-Received: from foss.arm.com ([217.140.110.172]:48936 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235775AbhCPG5S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Mar 2021 02:57:18 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 33DEAD6E;
-        Mon, 15 Mar 2021 23:57:16 -0700 (PDT)
-Received: from bogus (unknown [10.163.66.225])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 846613F792;
-        Mon, 15 Mar 2021 23:57:12 -0700 (PDT)
-Date:   Tue, 16 Mar 2021 06:57:05 +0000
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Sowjanya Komatineni <skomatineni@nvidia.com>
-Cc:     thierry.reding@gmail.com, jonathanh@nvidia.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>, ksitaraman@nvidia.com,
-        sanjayc@nvidia.com, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v1 3/5] dt-bindings: arm: Add cpu-idle-states to Tegra194
- CPU nodes
-Message-ID: <20210316065705.bpuhsdjfa5nnwrik@bogus>
-References: <1614838092-30398-1-git-send-email-skomatineni@nvidia.com>
- <1614838092-30398-4-git-send-email-skomatineni@nvidia.com>
- <20210308043755.llvdsuz2jwvweovb@bogus>
- <4cebf482-a2f8-5a79-a2f6-4ccd7d31c6ad@nvidia.com>
- <20210311025138.o4ub4j2ss725zpv4@bogus>
- <b31d14ef-81d8-0480-805b-a3cb64404b12@nvidia.com>
- <08ac26c1-8257-4c6d-d274-595fee28a00f@nvidia.com>
+        id S231940AbhCPHCC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Mar 2021 03:02:02 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:44042 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S231978AbhCPHBz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Mar 2021 03:01:55 -0400
+X-UUID: 767150ff4af74e5a894747134e872fc4-20210316
+X-UUID: 767150ff4af74e5a894747134e872fc4-20210316
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+        (envelope-from <michael.kao@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 593126547; Tue, 16 Mar 2021 15:01:52 +0800
+Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 16 Mar 2021 15:01:44 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by MTKCAS06.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 16 Mar 2021 15:01:44 +0800
+From:   Michael Kao <michael.kao@mediatek.com>
+To:     <michael.kao@mediatek.com>, <fan.chen@mediatek.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        <linux-pm@vger.kernel.org>, <srv_heupstream@mediatek.com>
+CC:     Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        <hsinyi@chromium.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        Matthias Kaehlcke <mka@chromium.org>
+Subject: [v7,2/3] arm64: dts: mt8183: Configure CPU cooling
+Date:   Tue, 16 Mar 2021 15:01:43 +0800
+Message-ID: <20210316070144.28440-3-michael.kao@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210316070144.28440-1-michael.kao@mediatek.com>
+References: <20210316070144.28440-1-michael.kao@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="y"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <08ac26c1-8257-4c6d-d274-595fee28a00f@nvidia.com>
-User-Agent: NeoMutt/20171215
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Mar 12, 2021 at 02:27:30PM -0800, Sowjanya Komatineni wrote:
-> Hi Sudeep,
->
-> To make our driver PSCI compliant below are few updates to be done
->
-> 1. Standardize passing residency time run-time thru PSCI to ATF.
->
+From: Matthias Kaehlcke <mka@chromium.org>
 
-Yes that was my initial understanding, but your previous response was
-confusing. I should have read this first.
+Add two passive trip points at 68°C and 80°C for the CPU temperature.
 
->     From PSCI specification I only see PSCI_STAT_RESIDENCY and
-> PSCI_STAT_COUNT optional functions for PSCI1.0/PSCI1.1
->
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+Tested-by: Hsin-Yi Wang <hsinyi@chromium.org>
+---
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 56 ++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-Indeed, we don't have any support to pass run-time residency hints in PSCI
-today.
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index d3550af06408..1ad0a1d55d53 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -13,6 +13,7 @@
+ #include <dt-bindings/power/mt8183-power.h>
+ #include <dt-bindings/reset-controller/mt8183-resets.h>
+ #include <dt-bindings/phy/phy.h>
++#include <dt-bindings/thermal/thermal.h>
+ #include "mt8183-pinfunc.h"
+ 
+ / {
+@@ -678,6 +679,61 @@
+ 				polling-delay = <500>;
+ 				thermal-sensors = <&thermal 0>;
+ 				sustainable-power = <5000>;
++
++				trips {
++					threshold: trip-point@0 {
++						temperature = <68000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++
++					target: trip-point@1 {
++						temperature = <80000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++
++					cpu_crit: cpu-crit {
++						temperature = <115000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&target>;
++						cooling-device = <&cpu0
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu1
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu2
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu3
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++						contribution = <3072>;
++					};
++					map1 {
++						trip = <&target>;
++						cooling-device = <&cpu4
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu5
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu6
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>,
++								 <&cpu7
++							THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++						contribution = <1024>;
++					};
++				};
+ 			};
+ 
+ 			/* The tzts1 ~ tzts6 don't need to polling */
+-- 
+2.18.0
 
->    Can you please help add right people to explore on possible ways to add
-> PSCI function for passing corresponding state residency time to ATF?
->
-
-Before we jump to implementation in TF-A we need to get agreement to get this
-added to the specification to support in OSPM/Linux. TF-A is just one
-implementation of PSCI and may not be only one.
-
-Formally you can raise any specification related queries to
-https://developer.arm.com/support or support@arm.com. I will ask the author
-of PSCI specification internally to take a look at this thread and chime in
-if they can.
-
-> 2. Tegra CPU Idle support definitely need to pass deepest cluster state and
-> threshold to MCE firmware from DT and looks like we can move this
-> implementation to ATF
->
-
-Yes, I just asked the same question as response to your earlier email. Thanks
-for confirming that it can be moved out of OSPM/Linux and DT
-
->      With both of the above implementation changes Tegra194 driver will be
-> PSCI compliant.
->
-
-We still need to get agreement on the specification front 😉.
-
---
-Regards,
-Sudeep
