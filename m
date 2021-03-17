@@ -5,39 +5,35 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B76CC43381
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 307B7C43331
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CDFB464F73
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3B5364F75
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231489AbhCQNtd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:49:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46288 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231397AbhCQNtK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:10 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A62AAC06175F;
-        Wed, 17 Mar 2021 06:49:09 -0700 (PDT)
+        id S231536AbhCQNtg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:49:36 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56156 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231428AbhCQNtL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:11 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 594421F44A01
+        with ESMTPSA id B48BE1F44E67
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id BB0244800C7; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
+        id D4CC44800E2; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com, Tony Lindgren <tony@atomide.com>,
-        linux-omap@vger.kernel.org
-Subject: [PATCHv2 01/38] ARM: dts: motorola-cpcap-mapphone: Prepare for dtbs_check parsing
-Date:   Wed, 17 Mar 2021 14:48:27 +0100
-Message-Id: <20210317134904.80737-2-sebastian.reichel@collabora.com>
+        kernel@collabora.com
+Subject: [PATCHv2 10/38] dt-bindings: power: supply: sbs-charger: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:36 +0100
+Message-Id: <20210317134904.80737-11-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -47,113 +43,104 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-'<&gpio1 parameters &gpio2 parameters>' and '<&gpio1 parameters>,
-<&gpio2 parameters>' result in the same DTB, but second format has
-better source code readability. Also 'dtbs_check' currently uses
-this format to determine the amount of items specified, so using
-this syntax is needed to successfully verify the devicetree source
-against a DT schema format.
+Convert the binding to DT schema format.
 
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../arm/boot/dts/motorola-cpcap-mapphone.dtsi | 59 +++++++++----------
- 1 file changed, 28 insertions(+), 31 deletions(-)
+ .../power/supply/sbs,sbs-charger.yaml         | 55 +++++++++++++++++++
+ .../bindings/power/supply/sbs_sbs-charger.txt | 21 -------
+ 2 files changed, 55 insertions(+), 21 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-charger.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
 
-diff --git a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
-index 08a7d3ce383f..ea02fd403a9b 100644
---- a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
-+++ b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
-@@ -27,16 +27,14 @@ cpcap_adc: adc {
- 
- 		cpcap_battery: battery {
- 			compatible = "motorola,cpcap-battery";
--			interrupts-extended = <
--				&cpcap 6 0 &cpcap 5 0 &cpcap 3 0
--				&cpcap 20 0 &cpcap 54 0 &cpcap 57 0
--			>;
-+			interrupts-extended =
-+				<&cpcap 6 0>, <&cpcap 5 0>, <&cpcap 3 0>,
-+				<&cpcap 20 0>, <&cpcap 54 0>, <&cpcap 57 0>;
- 			interrupt-names =
- 				"eol", "lowbph", "lowbpl",
--				"chrgcurr1", "battdetb",
--				"cccal";
--			io-channels = <&cpcap_adc 0 &cpcap_adc 1
--				       &cpcap_adc 5 &cpcap_adc 6>;
-+				"chrgcurr1", "battdetb", "cccal";
-+			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
-+				      <&cpcap_adc 5>, <&cpcap_adc 6>;
- 			io-channel-names = "battdetb", "battp",
- 					   "chg_isense", "batti";
- 			power-supplies = <&cpcap_charger>;
-@@ -44,20 +42,19 @@ &cpcap 20 0 &cpcap 54 0 &cpcap 57 0
- 
- 		cpcap_charger: charger {
- 			compatible = "motorola,mapphone-cpcap-charger";
--			interrupts-extended = <
--				&cpcap 13 0 &cpcap 12 0 &cpcap 29 0 &cpcap 28 0
--				&cpcap 22 0 &cpcap 21 0 &cpcap 20 0 &cpcap 19 0
--				&cpcap 54 0
--			>;
-+			interrupts-extended =
-+				<&cpcap 13 0>, <&cpcap 12 0>, <&cpcap 29 0>,
-+				<&cpcap 28 0>, <&cpcap 22 0>, <&cpcap 21 0>,
-+				<&cpcap 20 0>, <&cpcap 19 0>, <&cpcap 54 0>;
- 			interrupt-names =
--				"chrg_det", "rvrs_chrg", "chrg_se1b", "se0conn",
--				"rvrs_mode", "chrgcurr2", "chrgcurr1", "vbusvld",
--				"battdetb";
--			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW
--				      &gpio3 23 GPIO_ACTIVE_LOW>;
--			io-channels = <&cpcap_adc 0 &cpcap_adc 1
--				       &cpcap_adc 2 &cpcap_adc 5
--				       &cpcap_adc 6>;
-+				"chrg_det", "rvrs_chrg", "chrg_se1b",
-+				"se0conn", "rvrs_mode", "chrgcurr2",
-+				"chrgcurr1", "vbusvld", "battdetb";
-+			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>,
-+				     <&gpio3 23 GPIO_ACTIVE_LOW>;
-+			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
-+				      <&cpcap_adc 2>, <&cpcap_adc 5>,
-+				      <&cpcap_adc 6>;
- 			io-channel-names = "battdetb", "battp",
- 					   "vbus", "chg_isense",
- 					   "batti";
-@@ -98,22 +95,22 @@ power_button: button {
- 
- 		cpcap_usb2_phy: phy {
- 			compatible = "motorola,mapphone-cpcap-usb-phy";
--			pinctrl-0 = <&usb_gpio_mux_sel1 &usb_gpio_mux_sel2>;
-+			pinctrl-0 = <&usb_gpio_mux_sel1>, <&usb_gpio_mux_sel2>;
- 			pinctrl-1 = <&usb_ulpi_pins>;
- 			pinctrl-2 = <&usb_utmi_pins>;
- 			pinctrl-3 = <&uart3_pins>;
- 			pinctrl-names = "default", "ulpi", "utmi", "uart";
- 			#phy-cells = <0>;
--			interrupts-extended = <
--				&cpcap 15 0 &cpcap 14 0 &cpcap 28 0 &cpcap 19 0
--				&cpcap 18 0 &cpcap 17 0 &cpcap 16 0 &cpcap 49 0
--				&cpcap 48 0
--			>;
-+			interrupts-extended =
-+				<&cpcap 15 0>, <&cpcap 14 0>, <&cpcap 28 0>,
-+				<&cpcap 19 0>, <&cpcap 18 0>, <&cpcap 17 0>,
-+				<&cpcap 16 0>, <&cpcap 49 0>, <&cpcap 48 0>;
- 			interrupt-names =
--				"id_ground", "id_float", "se0conn", "vbusvld",
--				"sessvld", "sessend", "se1", "dm", "dp";
--			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH
--				      &gpio1 0 GPIO_ACTIVE_HIGH>;
-+				"id_ground", "id_float", "se0conn",
-+				"vbusvld", "sessvld", "sessend",
-+				"se1", "dm", "dp";
-+			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,
-+				     <&gpio1 0 GPIO_ACTIVE_HIGH>;
- 			io-channels = <&cpcap_adc 2>, <&cpcap_adc 7>;
- 			io-channel-names = "vbus", "id";
- 			vusb-supply = <&vusb>;
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-charger.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-charger.yaml
+new file mode 100644
+index 000000000000..cb73ffa4778e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-charger.yaml
+@@ -0,0 +1,55 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/sbs,sbs-charger.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: SBS compliant charger
++
++maintainers:
++  - Sebastian Reichel <sre@kernel.org>
++
++description: |
++  Charger compatible with the smart battery system specifications
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - lltc,ltc4100
++          - enum:
++              - sbs,sbs-charger
++      - items:
++          - const: sbs,sbs-charger
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        charger@9 {
++            compatible = "lltc,ltc4100", "sbs,sbs-charger";
++            reg = <0x9>;
++            interrupt-parent = <&gpio6>;
++            interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
++       };
++    };
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
+deleted file mode 100644
+index 84e74151eef2..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
++++ /dev/null
+@@ -1,21 +0,0 @@
+-SBS sbs-charger
+-~~~~~~~~~~
+-
+-Required properties:
+- - compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
+-     number compatible string might be used in order to take care of vendor
+-     specific registers.
+-
+-Optional properties:
+-- interrupts: Interrupt mapping for GPIO IRQ. Use in conjunction with
+-    "interrupt-parent". If an interrupt is not provided the driver will switch
+-    automatically to polling.
+-
+-Example:
+-
+-	ltc4100@9 {
+-		compatible = "lltc,ltc4100", "sbs,sbs-charger";
+-		reg = <0x9>;
+-		interrupt-parent = <&gpio6>;
+-		interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
+-	};
 -- 
 2.30.2
 
