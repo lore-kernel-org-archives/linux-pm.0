@@ -5,25 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15CF9C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17A88C433E6
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B121564F5E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6E7C64F67
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231278AbhCQN4b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:56:31 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:56314 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231351AbhCQN4B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:56:01 -0400
+        id S231512AbhCQN4f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:56:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47822 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231403AbhCQN4D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:56:03 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5157C061760;
+        Wed, 17 Mar 2021 06:56:01 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 8C9811F451D2
+        with ESMTPSA id 93DAF1F451E7
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 0A03A48010E; Wed, 17 Mar 2021 14:49:06 +0100 (CET)
+        id 209D448011B; Wed, 17 Mar 2021 14:49:06 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCHv2 25/38] dt-bindings: power: supply: pm8941-charger: Convert to DT schema format
-Date:   Wed, 17 Mar 2021 14:48:51 +0100
-Message-Id: <20210317134904.80737-26-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 33/38] dt-bindings: power: supply: rt9455: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:59 +0100
+Message-Id: <20210317134904.80737-34-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -47,342 +50,159 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/qcom,pm8941-charger.yaml     | 169 ++++++++++++++++++
- .../bindings/power/supply/qcom_smbb.txt       | 150 ----------------
- 2 files changed, 169 insertions(+), 150 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,pm8941-charger.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
+ .../bindings/power/supply/richtek,rt9455.yaml | 90 +++++++++++++++++++
+ .../bindings/power/supply/rt9455_charger.txt  | 46 ----------
+ 2 files changed, 90 insertions(+), 46 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/qcom,pm8941-charger.yaml b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-charger.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml b/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
 new file mode 100644
-index 000000000000..bc8904872d1b
+index 000000000000..e1c233462f29
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/qcom,pm8941-charger.yaml
-@@ -0,0 +1,169 @@
++++ b/Documentation/devicetree/bindings/power/supply/richtek,rt9455.yaml
+@@ -0,0 +1,90 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/power/supply/qcom,pm8941-charger.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++$id: "http://devicetree.org/schemas/power/supply/richtek,rt9455.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Qualcomm Switch-Mode Battery Charger and Boost
++title: Binding for Richtek rt9455 battery charger
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
 +
++allOf:
++  - $ref: power-supply.yaml#
++
 +properties:
 +  compatible:
-+    const: qcom,pm8941-charger
++    const: richtek,rt9455
 +
 +  reg:
 +    maxItems: 1
 +
 +  interrupts:
-+    items:
-+      - description: charge done
-+      - description: charge fast mode
-+      - description: charge trickle mode
-+      - description: battery temperature ok
-+      - description: battery present
-+      - description: charger disconnected
-+      - description: USB-in valid
-+      - description: DC-in valid
++    maxItems: 1
 +
-+  interrupt-names:
-+    items:
-+      - const: chg-done
-+      - const: chg-fast
-+      - const: chg-trkl
-+      - const: bat-temp-ok
-+      - const: bat-present
-+      - const: chg-gone
-+      - const: usb-valid
-+      - const: dc-valid
-+
-+  qcom,fast-charge-current-limit:
++  richtek,output-charge-current:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 100000
-+    maximum: 3000000
-+    description: Maximum charge current in uA; May be clamped to safety limits; Defaults to 1A
++    description: output current from the charger to the battery, in uA.
 +
-+  qcom,fast-charge-low-threshold-voltage:
++  richtek,end-of-charge-percentage:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 2100000
-+    maximum: 3600000
 +    description: |
-+      Battery voltage limit in uV above which fast charging may operate; Defaults to 3.2V
-+      Below this value linear or switch-mode auto-trickle-charging will operate.
++      percent of the output charge current. When the current in constant-voltage phase drops
++      below output_charge_current x end-of-charge-percentage, charge is terminated.
 +
-+  qcom,fast-charge-high-threshold-voltage:
++  richtek,battery-regulation-voltage:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 3240000
-+    maximum: 5000000
-+    description: |
-+      Battery voltage limit in uV below which fast charging may operate; Defaults to 4.2V
-+      The fast charger will attempt to charge the battery to this voltage.
-+      May be clamped to safety limits.
++    description: maximum battery voltage in uV.
 +
-+  qcom,fast-charge-safe-voltage:
++  richtek,boost-output-voltage:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 3240000
-+    maximum: 5000000
 +    description: |
-+      Maximum safe battery voltage in uV; May be pre-set by bootloader, in which case,
-+      setting this will harmlessly fail. The property 'fast-charge-high-watermark' will
-+      be clamped by this value. Defaults to 4.2V.
++      maximum voltage provided to consumer devices, when the charger is in boost mode, in uV.
 +
-+  qcom,fast-charge-safe-current:
++  richtek,min-input-voltage-regulation:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 100000
-+    maximum: 3000000
 +    description: |
-+      Maximum safe battery charge current in uA; May pre-set by bootloader, in which case,
-+      setting this will harmlessly fail. The property 'qcom,fast-charge-current-limit'
-+      will be clamped by this value. Defaults to 1A.
++      input voltage level in uV, used to decrease voltage level when the over current of the
++      input power source occurs. This prevents input voltage drop due to insufficient
++      current provided by the power source. Defaults to 4500000 uV (4.5V).
 +
-+  qcom,auto-recharge-threshold-voltage:
++  richtek,avg-input-current-regulation:
 +    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 3240000
-+    maximum: 5000000
 +    description: |
-+      Battery voltage limit in uV below which auto-recharge functionality will restart charging
-+      after end-of-charge; The high cutoff limit for auto-recharge is 5% above this value.
-+      Defaults to 4.1V.
-+
-+  qcom,minimum-input-voltage:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 4200000
-+    maximum: 9600000
-+    description: |
-+      Input voltage level in uV above which charging may operate. Defaults to 4.3V.
-+
-+  qcom,dc-current-limit:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 100000
-+    maximum: 2500000
-+    description: |
-+      Default DC charge current limit in uA. Defaults to 100mA.
-+
-+  qcom,disable-dc:
-+    type: boolean
-+    description: Disable DC charger
-+
-+  qcom,jeita-extended-temp-range:
-+    type: boolean
-+    description: |
-+      Enable JEITA extended temperature range;  This does *not* adjust the maximum charge
-+      voltage or current in the extended temperature range. It only allows charging when
-+      the battery is in the extended temperature range. Voltage/current regulation must
-+      be done externally to fully comply with the JEITA safety guidelines if this flag
-+      is set.
-+
-+  usb-otg-in-supply:
-+    description: Reference to the regulator supplying power to the USB_OTG_IN pin.
-+
-+  otg-vbus:
-+    type: object
-+    description: |
-+      This node defines a regulator used to control the direction of VBUS voltage.
-+      Specifically whether to supply voltage to VBUS for host mode operation of the OTG port,
-+      or allow input voltage from external VBUS for charging. In the hardware, the supply for
-+      this regulator comes from usb_otg_in-supply.
++      input current value in uA drained by the charger from the power source.
++      Defaults to 500000 uA (500mA).
 +
 +required:
 +  - compatible
 +  - reg
 +  - interrupts
-+  - interrupt-names
++  - richtek,output-charge-current
++  - richtek,end-of-charge-percentage
++  - richtek,battery-regulation-voltage
++  - richtek,boost-output-voltage
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
 +    #include <dt-bindings/interrupt-controller/irq.h>
-+    pmic {
++    i2c0 {
 +      #address-cells = <1>;
 +      #size-cells = <0>;
 +
-+      charger@1000 {
-+        compatible = "qcom,pm8941-charger";
-+        reg = <0x1000>;
-+        interrupts = <0x0 0x10 7 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x10 5 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x10 4 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x12 1 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x12 0 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x13 2 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x13 1 IRQ_TYPE_EDGE_BOTH>,
-+                     <0x0 0x14 1 IRQ_TYPE_EDGE_BOTH>;
-+        interrupt-names = "chg-done",
-+                          "chg-fast",
-+                          "chg-trkl",
-+                          "bat-temp-ok",
-+                          "bat-present",
-+                          "chg-gone",
-+                          "usb-valid",
-+                          "dc-valid";
-+        qcom,fast-charge-current-limit = <1000000>;
-+        qcom,dc-current-limit = <1000000>;
-+        usb-otg-in-supply = <&pm8941_5vs1>;
++      charger@22 {
++        compatible = "richtek,rt9455";
++        reg = <0x22>;
 +
-+        otg-vbus {};
++        interrupt-parent = <&gpio1>;
++        interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++
++        richtek,output-charge-current	    = <500000>;
++        richtek,end-of-charge-percentage    = <10>;
++        richtek,battery-regulation-voltage  = <4200000>;
++        richtek,boost-output-voltage	    = <5050000>;
++
++        richtek,min-input-voltage-regulation = <4500000>;
++        richtek,avg-input-current-regulation = <500000>;
 +      };
 +    };
-diff --git a/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt b/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt b/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
 deleted file mode 100644
-index 06f8a5ddb68e..000000000000
---- a/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
+index 1e6107c7578e..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
 +++ /dev/null
-@@ -1,150 +0,0 @@
--Qualcomm Switch-Mode Battery Charger and Boost
+@@ -1,46 +0,0 @@
+-Binding for Richtek rt9455 battery charger
 -
--PROPERTIES
--- compatible:
--  Usage: required
--  Value type: <stringlist>
--  Description: Must be one of:
--               - "qcom,pm8941-charger"
+-Required properties:
+-- compatible:				it should contain one of the following:
+-					"richtek,rt9455".
+-- reg:					integer, i2c address of the device.
+-- interrupts:				interrupt mapping for GPIO IRQ, it should be
+-					configured with IRQ_TYPE_LEVEL_LOW flag.
+-- richtek,output-charge-current:	integer, output current from the charger to the
+-					battery, in uA.
+-- richtek,end-of-charge-percentage:	integer, percent of the output charge current.
+-					When the current in constant-voltage phase drops
+-					below output_charge_current x end-of-charge-percentage,
+-					charge is terminated.
+-- richtek,battery-regulation-voltage:	integer, maximum battery voltage in uV.
+-- richtek,boost-output-voltage:		integer, maximum voltage provided to consumer
+-					devices, when the charger is in boost mode, in uV.
 -
--- reg:
--  Usage: required
--  Value type: <prop-encoded-array>
--  Description: Base address of registers for SMBB block
+-Optional properties:
+-- richtek,min-input-voltage-regulation: integer, input voltage level in uV, used to
+-					decrease voltage level when the over current
+-					of the input power source occurs.
+-					This prevents input voltage drop due to insufficient
+-					current provided by the power source.
+-					Default: 4500000 uV (4.5V)
+-- richtek,avg-input-current-regulation: integer, input current value in uA drained by the
+-					charger from the power source.
+-					Default: 500000 uA (500mA)
 -
--- interrupts:
--  Usage: required
--  Value type: <prop-encoded-array>
--  Description: The format of the specifier is defined by the binding document
--               describing the node's interrupt parent.  Must contain one
--               specifier for each of the following interrupts, in order:
--               - charge done
--               - charge fast mode
--               - charge trickle mode
--               - battery temperature ok
--               - battery present
--               - charger disconnected
--               - USB-in valid
--               - DC-in valid
+-Example:
 -
--- interrupt-names:
--  Usage: required
--  Value type: <stringlist>
--  Description: Must contain the following list, strictly ordered:
--               "chg-done",
--               "chg-fast",
--               "chg-trkl",
--               "bat-temp-ok",
--               "bat-present",
--               "chg-gone",
--               "usb-valid",
--               "dc-valid"
+-rt9455@22 {
+-	compatible = "richtek,rt9455";
+-	reg = <0x22>;
 -
--- qcom,fast-charge-current-limit:
--  Usage: optional (default: 1A, or pre-configured value)
--  Value type: <u32>; uA; range [100mA : 3A]
--  Description: Maximum charge current; May be clamped to safety limits.
+-	interrupt-parent = <&gpio1>;
+-	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
 -
--- qcom,fast-charge-low-threshold-voltage:
--  Usage: optional (default: 3.2V, or pre-configured value)
--  Value type: <u32>; uV; range [2.1V : 3.6V]
--  Description: Battery voltage limit above which fast charging may operate;
--               Below this value linear or switch-mode auto-trickle-charging
--               will operate.
+-	richtek,output-charge-current	    = <500000>;
+-	richtek,end-of-charge-percentage    = <10>;
+-	richtek,battery-regulation-voltage  = <4200000>;
+-	richtek,boost-output-voltage	    = <5050000>;
 -
--- qcom,fast-charge-high-threshold-voltage:
--  Usage: optional (default: 4.2V, or pre-configured value)
--  Value type: <u32>; uV; range [3.24V : 5V]
--  Description: Battery voltage limit below which fast charging may operate;
--               The fast charger will attempt to charge the battery to this
--               voltage.  May be clamped to safety limits.
--
--- qcom,fast-charge-safe-voltage:
--  Usage: optional (default: 4.2V, or pre-configured value)
--  Value type: <u32>; uV; range [3.24V : 5V]
--  Description: Maximum safe battery voltage; May be pre-set by bootloader, in
--               which case, setting this will harmlessly fail. The property
--               'fast-charge-high-watermark' will be clamped by this value.
--
--- qcom,fast-charge-safe-current:
--  Usage: optional (default: 1A, or pre-configured value)
--  Value type: <u32>; uA; range [100mA : 3A]
--  Description: Maximum safe battery charge current; May pre-set by bootloader,
--               in which case, setting this will harmlessly fail. The property
--               'qcom,fast-charge-current-limit' will be clamped by this value.
--
--- qcom,auto-recharge-threshold-voltage:
--  Usage: optional (default: 4.1V, or pre-configured value)
--  Value type: <u32>; uV; range [3.24V : 5V]
--  Description: Battery voltage limit below which auto-recharge functionality
--               will restart charging after end-of-charge;  The high cutoff
--               limit for auto-recharge is 5% above this value.
--
--- qcom,minimum-input-voltage:
--  Usage: optional (default: 4.3V, or pre-configured value)
--  Value type: <u32>; uV; range [4.2V : 9.6V]
--  Description: Input voltage level above which charging may operate
--
--- qcom,dc-current-limit:
--  Usage: optional (default: 100mA, or pre-configured value)
--  Value type: <u32>; uA; range [100mA : 2.5A]
--  Description: Default DC charge current limit
--
--- qcom,disable-dc:
--  Usage: optional (default: false)
--  Value type: boolean: <u32> or <empty>
--  Description: Disable DC charger
--
--- qcom,jeita-extended-temp-range:
--  Usage: optional (default: false)
--  Value type: boolean: <u32> or <empty>
--  Description: Enable JEITA extended temperature range;  This does *not*
--               adjust the maximum charge voltage or current in the extended
--               temperature range.  It only allows charging when the battery
--               is in the extended temperature range.  Voltage/current
--               regulation must be done externally to fully comply with
--               the JEITA safety guidelines if this flag is set.
--
--- usb_otg_in-supply:
--  Usage: optional
--  Value type: <phandle>
--  Description: Reference to the regulator supplying power to the USB_OTG_IN
--               pin.
--
--child nodes:
--- otg-vbus:
--  Usage: optional
--  Description: This node defines a regulator used to control the direction
--               of VBUS voltage - specifically: whether to supply voltage
--               to VBUS for host mode operation of the OTG port, or allow
--               input voltage from external VBUS for charging.  In the
--               hardware, the supply for this regulator comes from
--               usb_otg_in-supply.
--
--EXAMPLE
--charger@1000 {
--       compatible = "qcom,pm8941-charger";
--       reg = <0x1000 0x700>;
--       interrupts = <0x0 0x10 7 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x10 5 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x10 4 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x12 1 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x12 0 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x13 2 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x13 1 IRQ_TYPE_EDGE_BOTH>,
--                       <0x0 0x14 1 IRQ_TYPE_EDGE_BOTH>;
--       interrupt-names = "chg-done",
--                       "chg-fast",
--                       "chg-trkl",
--                       "bat-temp-ok",
--                       "bat-present",
--                       "chg-gone",
--                       "usb-valid",
--                       "dc-valid";
--
--       qcom,fast-charge-current-limit = <1000000>;
--       qcom,dc-charge-current-limit = <1000000>;
--       usb_otg_in-supply = <&pm8941_5vs1>;
--
--       otg-vbus {};
+-	richtek,min-input-voltage-regulation = <4500000>;
+-	richtek,avg-input-current-regulation = <500000>;
 -};
 -- 
 2.30.2
