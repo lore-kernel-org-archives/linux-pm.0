@@ -5,38 +5,39 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D4EDC433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B76CC43381
 	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E76A64F69
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDFB464F73
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231485AbhCQNte (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:49:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46286 "EHLO
+        id S231489AbhCQNtd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:49:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231368AbhCQNtK (ORCPT
+        with ESMTP id S231397AbhCQNtK (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:10 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A51FC06174A;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A62AAC06175F;
         Wed, 17 Mar 2021 06:49:09 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 507561F44452
+        with ESMTPSA id 594421F44A01
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id BDFA84800C8; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
+        id BB0244800C7; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com, Tony Lindgren <tony@atomide.com>
-Subject: [PATCHv2 02/38] dt-bindings: power: supply: cpcap-battery: Convert to DT schema format
-Date:   Wed, 17 Mar 2021 14:48:28 +0100
-Message-Id: <20210317134904.80737-3-sebastian.reichel@collabora.com>
+        kernel@collabora.com, Tony Lindgren <tony@atomide.com>,
+        linux-omap@vger.kernel.org
+Subject: [PATCHv2 01/38] ARM: dts: motorola-cpcap-mapphone: Prepare for dtbs_check parsing
+Date:   Wed, 17 Mar 2021 14:48:27 +0100
+Message-Id: <20210317134904.80737-2-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -46,148 +47,113 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the binding to DT schema format. I also added the missing bits
-used by the only in-tree user and implemented in the driver.
+'<&gpio1 parameters &gpio2 parameters>' and '<&gpio1 parameters>,
+<&gpio2 parameters>' result in the same DTB, but second format has
+better source code readability. Also 'dtbs_check' currently uses
+this format to determine the amount of items specified, so using
+this syntax is needed to successfully verify the devicetree source
+against a DT schema format.
 
 Cc: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/cpcap-battery.txt   | 31 -------
- .../bindings/power/supply/cpcap-battery.yaml  | 87 +++++++++++++++++++
- 2 files changed, 87 insertions(+), 31 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.yaml
+ .../arm/boot/dts/motorola-cpcap-mapphone.dtsi | 59 +++++++++----------
+ 1 file changed, 28 insertions(+), 31 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-deleted file mode 100644
-index a04efa22da01..000000000000
---- a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-+++ /dev/null
-@@ -1,31 +0,0 @@
--Motorola CPCAP PMIC battery driver binding
--
--Required properties:
--- compatible: Shall be "motorola,cpcap-battery"
--- interrupts: Interrupt specifier for each name in interrupt-names
--- interrupt-names: Should contain the following entries:
--		   "lowbph", "lowbpl", "chrgcurr1", "battdetb"
--- io-channels: IIO ADC channel specifier for each name in io-channel-names
--- io-channel-names: Should contain the following entries:
--		    "battdetb", "battp", "chg_isense", "batti"
--- power-supplies: List of phandles for power-supplying devices, as
--		  described in power_supply.txt. Typically a reference
--		  to cpcap_charger.
--
--Example:
--
--cpcap_battery: battery {
--	compatible = "motorola,cpcap-battery";
--	interrupts-extended = <
--		&cpcap 5 0 &cpcap 3 0
--		&cpcap 20 0 &cpcap 54 0
--	>;
--	interrupt-names =
--		"lowbph", "lowbpl",
--		"chrgcurr1", "battdetb";
--	io-channels = <&cpcap_adc 0 &cpcap_adc 1
--		       &cpcap_adc 5 &cpcap_adc 6>;
--	io-channel-names = "battdetb", "battp",
--			   "chg_isense", "batti";
--	power-supplies = <&cpcap_charger>;
--};
-diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.yaml b/Documentation/devicetree/bindings/power/supply/cpcap-battery.yaml
-new file mode 100644
-index 000000000000..7153fd4ce55f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.yaml
-@@ -0,0 +1,87 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# Copyright (C) 2021 Sebastian Reichel
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/cpcap-battery.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Motorola CPCAP PMIC battery
-+
-+maintainers:
-+  - Tony Lindgren <tony@atomide.com>
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  Motorola CPCAP is a PMIC found in some mobile phones, e.g.
-+  the Droid 4. This binding describes its battery fuel gauge
-+  sub-function.
-+
-+allOf:
-+  - $ref: power-supply.yaml#
-+
-+properties:
-+  compatible:
-+    const: motorola,cpcap-battery
-+
-+  interrupts:
-+    items:
-+      - description: eol interrupt
-+      - description: low battery percentage interrupt
-+      - description: critical battery percentage interrupt
-+      - description: charger detect interrupt
-+      - description: battery detect interrupt
-+      - description: coulomb counter calibration interrupt
-+
-+  interrupt-names:
-+    items:
-+      - const: eol
-+      - const: lowbph
-+      - const: lowbpl
-+      - const: chrgcurr1
-+      - const: battdetb
-+      - const: cccal
-+
-+  io-channels:
-+    items:
-+      - description: battery temperature
-+      - description: battery voltage
-+      - description: battery charge current
-+      - description: battery current
-+
-+  io-channel-names:
-+    items:
-+      - const: battdetb
-+      - const: battp
-+      - const: chg_isense
-+      - const: batti
-+
-+  power-supplies: true
-+
-+required:
-+  - compatible
-+  - interrupts
-+  - interrupt-names
-+  - io-channels
-+  - io-channel-names
-+  - power-supplies
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    cpcap {
-+      battery {
-+        compatible = "motorola,cpcap-battery";
-+        interrupts-extended =
-+                <&cpcap 6 0>, <&cpcap 5 0>, <&cpcap 3 0>,
-+                <&cpcap 20 0>, <&cpcap 54 0>, <&cpcap 57 0>;
-+        interrupt-names =
-+                "eol", "lowbph", "lowbpl",
-+                "chrgcurr1", "battdetb", "cccal";
-+        io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
-+                      <&cpcap_adc 5>, <&cpcap_adc 6>;
-+        io-channel-names = "battdetb", "battp",
-+                           "chg_isense", "batti";
-+        power-supplies = <&cpcap_charger>;
-+      };
-+    };
+diff --git a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+index 08a7d3ce383f..ea02fd403a9b 100644
+--- a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
++++ b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+@@ -27,16 +27,14 @@ cpcap_adc: adc {
+ 
+ 		cpcap_battery: battery {
+ 			compatible = "motorola,cpcap-battery";
+-			interrupts-extended = <
+-				&cpcap 6 0 &cpcap 5 0 &cpcap 3 0
+-				&cpcap 20 0 &cpcap 54 0 &cpcap 57 0
+-			>;
++			interrupts-extended =
++				<&cpcap 6 0>, <&cpcap 5 0>, <&cpcap 3 0>,
++				<&cpcap 20 0>, <&cpcap 54 0>, <&cpcap 57 0>;
+ 			interrupt-names =
+ 				"eol", "lowbph", "lowbpl",
+-				"chrgcurr1", "battdetb",
+-				"cccal";
+-			io-channels = <&cpcap_adc 0 &cpcap_adc 1
+-				       &cpcap_adc 5 &cpcap_adc 6>;
++				"chrgcurr1", "battdetb", "cccal";
++			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
++				      <&cpcap_adc 5>, <&cpcap_adc 6>;
+ 			io-channel-names = "battdetb", "battp",
+ 					   "chg_isense", "batti";
+ 			power-supplies = <&cpcap_charger>;
+@@ -44,20 +42,19 @@ &cpcap 20 0 &cpcap 54 0 &cpcap 57 0
+ 
+ 		cpcap_charger: charger {
+ 			compatible = "motorola,mapphone-cpcap-charger";
+-			interrupts-extended = <
+-				&cpcap 13 0 &cpcap 12 0 &cpcap 29 0 &cpcap 28 0
+-				&cpcap 22 0 &cpcap 21 0 &cpcap 20 0 &cpcap 19 0
+-				&cpcap 54 0
+-			>;
++			interrupts-extended =
++				<&cpcap 13 0>, <&cpcap 12 0>, <&cpcap 29 0>,
++				<&cpcap 28 0>, <&cpcap 22 0>, <&cpcap 21 0>,
++				<&cpcap 20 0>, <&cpcap 19 0>, <&cpcap 54 0>;
+ 			interrupt-names =
+-				"chrg_det", "rvrs_chrg", "chrg_se1b", "se0conn",
+-				"rvrs_mode", "chrgcurr2", "chrgcurr1", "vbusvld",
+-				"battdetb";
+-			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW
+-				      &gpio3 23 GPIO_ACTIVE_LOW>;
+-			io-channels = <&cpcap_adc 0 &cpcap_adc 1
+-				       &cpcap_adc 2 &cpcap_adc 5
+-				       &cpcap_adc 6>;
++				"chrg_det", "rvrs_chrg", "chrg_se1b",
++				"se0conn", "rvrs_mode", "chrgcurr2",
++				"chrgcurr1", "vbusvld", "battdetb";
++			mode-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>,
++				     <&gpio3 23 GPIO_ACTIVE_LOW>;
++			io-channels = <&cpcap_adc 0>, <&cpcap_adc 1>,
++				      <&cpcap_adc 2>, <&cpcap_adc 5>,
++				      <&cpcap_adc 6>;
+ 			io-channel-names = "battdetb", "battp",
+ 					   "vbus", "chg_isense",
+ 					   "batti";
+@@ -98,22 +95,22 @@ power_button: button {
+ 
+ 		cpcap_usb2_phy: phy {
+ 			compatible = "motorola,mapphone-cpcap-usb-phy";
+-			pinctrl-0 = <&usb_gpio_mux_sel1 &usb_gpio_mux_sel2>;
++			pinctrl-0 = <&usb_gpio_mux_sel1>, <&usb_gpio_mux_sel2>;
+ 			pinctrl-1 = <&usb_ulpi_pins>;
+ 			pinctrl-2 = <&usb_utmi_pins>;
+ 			pinctrl-3 = <&uart3_pins>;
+ 			pinctrl-names = "default", "ulpi", "utmi", "uart";
+ 			#phy-cells = <0>;
+-			interrupts-extended = <
+-				&cpcap 15 0 &cpcap 14 0 &cpcap 28 0 &cpcap 19 0
+-				&cpcap 18 0 &cpcap 17 0 &cpcap 16 0 &cpcap 49 0
+-				&cpcap 48 0
+-			>;
++			interrupts-extended =
++				<&cpcap 15 0>, <&cpcap 14 0>, <&cpcap 28 0>,
++				<&cpcap 19 0>, <&cpcap 18 0>, <&cpcap 17 0>,
++				<&cpcap 16 0>, <&cpcap 49 0>, <&cpcap 48 0>;
+ 			interrupt-names =
+-				"id_ground", "id_float", "se0conn", "vbusvld",
+-				"sessvld", "sessend", "se1", "dm", "dp";
+-			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH
+-				      &gpio1 0 GPIO_ACTIVE_HIGH>;
++				"id_ground", "id_float", "se0conn",
++				"vbusvld", "sessvld", "sessend",
++				"se1", "dm", "dp";
++			mode-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>,
++				     <&gpio1 0 GPIO_ACTIVE_HIGH>;
+ 			io-channels = <&cpcap_adc 2>, <&cpcap_adc 7>;
+ 			io-channel-names = "vbus", "id";
+ 			vusb-supply = <&vusb>;
 -- 
 2.30.2
 
