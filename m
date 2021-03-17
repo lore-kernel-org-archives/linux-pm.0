@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 812ADC4332B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7065C43331
 	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 12:40:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4918164F50
+	by mail.kernel.org (Postfix) with ESMTP id 7412F64F4D
 	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 12:40:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229680AbhCQMjq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230293AbhCQMjq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 17 Mar 2021 08:39:46 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:49886 "EHLO
+Received: from Galois.linutronix.de ([193.142.43.55]:49820 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230290AbhCQMjO (ORCPT
+        with ESMTP id S230292AbhCQMjO (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 08:39:14 -0400
-Date:   Wed, 17 Mar 2021 12:39:12 -0000
+Date:   Wed, 17 Mar 2021 12:39:13 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1615984753;
+        s=2020; t=1615984754;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=xqjmBd/hLNwcPlfMkF1v8P5kZvoPrOjrYZY8NFgf26o=;
-        b=S1Xbk6EziSiy4aVh9USyx5lOPMt0dtVL8FWUXjICLwnzBuTNfNX7bey5yZPw5OAaccKwvG
-        WB/Ax1GtNcEZu12eldtpYr8D4jDD3kr4SjmhPebNZ/yTRtqGbjefJeOziydYwRAJ0b80Zp
-        zPqndyi2bUnMUZeIeV99DC+E34cdQJjNlqMDkZKW0sUuzbMIZDq7LxfaLtDR8QEg577Vej
-        1Va2NCA7SQRI7QG+9T2+UUnqZNMNAPhEV0cPbpFVoapn3clLF3RqtGwbP5vxjmsyYPJBZM
-        ermD+ybbFNoMTI8Pa2m9mPHUzQscrWlcwe8O9lFnht9Ze4f4b82ivisA3UHkKw==
+        bh=2KVDagARgEqJCXRFinYryzqaLRMen55//SALzdx+C9c=;
+        b=m3tamVcX4zYE2xC0nBN/6jkFxYdnJsZLNqeeAcAYLXOOpm3diZCdTF56GtrH8T2BY0a0mF
+        aH0SjpvVLPHEd0Q6FSqpJJok655g9p1z6bniWYGXvKqHf72Omz6SnGIllbCKeVMYPYoePj
+        PqywbWmF6yTXKcoJrV1jQXObhidVTGzHRQBbYl4gPte/IdMfAOnRj/cjbLsXJAOGk41ehJ
+        H2f7uZ5sw6829SnWmV5Gw6JHAgJGFoo2WRdHzA1cmO0gInGpszbVWOwXsKPiBTSCil31g1
+        AzBOmvLftbrJ7sdeCJ0pf3wvHuQE7v4ozf3xZ7lS3d/XQVj6hQZ9B0y92bnMYA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1615984753;
+        s=2020e; t=1615984754;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=xqjmBd/hLNwcPlfMkF1v8P5kZvoPrOjrYZY8NFgf26o=;
-        b=36nTRRJrFEVpE1jtVqYKLhF3hDE2vcsYAoF4NZCUePIQqNmz/1UejRNUBLccEFq9PKHp4/
-        ysllp2b8vbfyQtBA==
-From:   "thermal-bot for Zhang Yunkai" <tip-bot2@linutronix.de>
+        bh=2KVDagARgEqJCXRFinYryzqaLRMen55//SALzdx+C9c=;
+        b=5FdtEFK4zDDz0yQtaK8bc2BLByE0wjNWBhQh7VDZoU6CWV2xY3vFme4Tu0Ue0ysj+8vfTk
+        9V3nKI1mFJJPkXAw==
+From:   "thermal-bot for Bhaskar Chowdhury" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal:ti-soc-thermal: Remove duplicate
- include in ti-bandgap
-Cc:     Zhang Yunkai <zhang.yunkai@zte.com.cn>,
+Subject: [thermal: thermal/next] thermal: Fix couple of spellos in the file
+ sun8i_thermal.c
+Cc:     Bhaskar Chowdhury <unixbhaskar@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210306123415.219441-1-zhang.yunkai@zte.com.cn>
-References: <20210306123415.219441-1-zhang.yunkai@zte.com.cn>
+In-Reply-To: <20210305014348.17412-1-unixbhaskar@gmail.com>
+References: <20210305014348.17412-1-unixbhaskar@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161598475284.398.16285889390760354167.tip-bot2@tip-bot2>
+Message-ID: <161598475356.398.6972397347901219162.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,34 +66,44 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     7440e912b0fe755d80b958a65859ebabb5338cf8
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7440e912b0fe755d80b958a65859ebabb5338cf8
-Author:        Zhang Yunkai <zhang.yunkai@zte.com.cn>
-AuthorDate:    Sat, 06 Mar 2021 04:34:15 -08:00
+Commit-ID:     76d6329534ae3b2f344aa72cc978ef4cfd69c0c8
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//76d6329534ae3b2f344aa72cc978ef4cfd69c0c8
+Author:        Bhaskar Chowdhury <unixbhaskar@gmail.com>
+AuthorDate:    Fri, 05 Mar 2021 07:13:48 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 10 Mar 2021 13:04:16 +01:00
+CommitterDate: Wed, 10 Mar 2021 12:54:58 +01:00
 
-thermal:ti-soc-thermal: Remove duplicate include in ti-bandgap
+thermal: Fix couple of spellos in the file sun8i_thermal.c
 
-'of_device.h' included in 'ti-bandgap.c' is duplicated.
-It is also included in the 25th line.
+s/calibartion/calibration/
+s/undocummented/undocumented/
 
-Signed-off-by: Zhang Yunkai <zhang.yunkai@zte.com.cn>
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210306123415.219441-1-zhang.yunkai@zte.com.cn
+Link: https://lore.kernel.org/r/20210305014348.17412-1-unixbhaskar@gmail.com
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/thermal/sun8i_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 8a3646e..d81af89 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -32,7 +32,6 @@
- #include <linux/pm_runtime.h>
- #include <linux/pm.h>
- #include <linux/of.h>
--#include <linux/of_device.h>
+diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
+index 8c80bd0..d9cd23c 100644
+--- a/drivers/thermal/sun8i_thermal.c
++++ b/drivers/thermal/sun8i_thermal.c
+@@ -300,7 +300,7 @@ static int sun8i_ths_calibrate(struct ths_device *tmdev)
+ 		 * or 0x8xx, so they won't be away from the default value
+ 		 * for a lot.
+ 		 *
+-		 * So here we do not return error if the calibartion data is
++		 * So here we do not return error if the calibration data is
+ 		 * not available, except the probe needs deferring.
+ 		 */
+ 		goto out;
+@@ -418,7 +418,7 @@ static int sun8i_h3_thermal_init(struct ths_device *tmdev)
+ }
  
- #include "ti-bandgap.h"
- 
+ /*
+- * Without this undocummented value, the returned temperatures would
++ * Without this undocumented value, the returned temperatures would
+  * be higher than real ones by about 20C.
+  */
+ #define SUN50I_H6_CTRL0_UNK 0x0000002f
