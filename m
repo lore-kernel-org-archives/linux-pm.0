@@ -7,23 +7,26 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E87C2BBCF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88248C2BBCD
 	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1420064F67
+	by mail.kernel.org (Postfix) with ESMTP id 5DA1764F69
 	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231648AbhCQNtz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:49:55 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:56190 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231491AbhCQNtP (ORCPT
+        id S231642AbhCQNty (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:49:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46324 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231495AbhCQNtP (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:15 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98442C06174A;
+        Wed, 17 Mar 2021 06:49:14 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 315A61F44A2D
+        with ESMTPSA id 56DDB1F451C5
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 2A5F848011F; Wed, 17 Mar 2021 14:49:06 +0100 (CET)
+        id F1691480106; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -31,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCHv2 37/38] dt-bindings: power: supply: Fix remaining battery.txt links
-Date:   Wed, 17 Mar 2021 14:49:03 +0100
-Message-Id: <20210317134904.80737-38-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 20/38] dt-bindings: power: supply: max17040: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:46 +0100
+Message-Id: <20210317134904.80737-21-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -43,49 +46,175 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Convert the binding to DT schema format.
+
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- Documentation/devicetree/bindings/power/supply/battery.txt     | 3 ---
- Documentation/devicetree/bindings/power/supply/bq27xxx.yaml    | 2 +-
- .../devicetree/bindings/power/supply/rohm,bd99954.yaml         | 2 +-
- 3 files changed, 2 insertions(+), 5 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+ .../power/supply/max17040_battery.txt         | 52 ----------
+ .../bindings/power/supply/maxim,max17040.yaml | 95 +++++++++++++++++++
+ 2 files changed, 95 insertions(+), 52 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 deleted file mode 100644
-index a9f80cc49068..000000000000
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
+index c802f664b508..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 +++ /dev/null
-@@ -1,3 +0,0 @@
--The contents of this file has been moved to battery.yaml
+@@ -1,52 +0,0 @@
+-max17040_battery
+-~~~~~~~~~~~~~~~~
 -
--Please note that not all charger drivers respect all of the properties.
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-index 45beefccf31a..4da17065422a 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
-@@ -65,7 +65,7 @@ properties:
-        - charge-full-design-microamp-hours
-        - voltage-min-design-microvolt
-        Both or neither of the *-full-design-*-hours properties must be set.
--       See Documentation/devicetree/bindings/power/supply/battery.txt
-+       See Documentation/devicetree/bindings/power/supply/battery.yaml
- 
-   power-supplies: true
- 
-diff --git a/Documentation/devicetree/bindings/power/supply/rohm,bd99954.yaml b/Documentation/devicetree/bindings/power/supply/rohm,bd99954.yaml
-index 9852d2febf65..24b06957b4ca 100644
---- a/Documentation/devicetree/bindings/power/supply/rohm,bd99954.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/rohm,bd99954.yaml
-@@ -110,7 +110,7 @@ properties:
- #     multipleOf: 64000
- #     a charge cycle terminates when the battery voltage is above recharge
- #     threshold, and the current is below this setting (7 in above chart)
--#   See also Documentation/devicetree/bindings/power/supply/battery.txt
-+#   See also Documentation/devicetree/bindings/power/supply/battery.yaml
- 
-   reg:
-     maxItems: 1
+-Required properties :
+- - compatible : "maxim,max17040", "maxim,max17041", "maxim,max17043",
+-		"maxim,max17044", "maxim,max17048", "maxim,max17049",
+-		"maxim,max17058", "maxim,max17059" or "maxim,max77836-battery"
+- - reg: i2c slave address
+-
+-Optional properties :
+-- maxim,alert-low-soc-level :	The alert threshold that sets the state of
+-				charge level (%) where an interrupt is
+-				generated. Can be configured from 1 up to 32
+-				(%). If skipped the power up default value of
+-				4 (%) will be used.
+-- maxim,double-soc : 		Certain devices return double the capacity.
+-				Specify this boolean property to divide the
+-				reported value in 2 and thus normalize it.
+-				SOC == State of Charge == Capacity.
+-- maxim,rcomp :			A value to compensate readings for various
+-				battery chemistries and operating temperatures.
+-				max17040,41 have 2 byte rcomp, default to
+-				0x97 0x00. All other devices have one byte
+-				rcomp, default to 0x97.
+-- interrupts : 			Interrupt line see Documentation/devicetree/
+-				bindings/interrupt-controller/interrupts.txt
+-- wakeup-source :		This device has wakeup capabilities. Use this
+-				property to use alert low SOC level interrupt
+-				as wake up source.
+-
+-Optional properties support interrupt functionality for alert low state of
+-charge level, present in some ICs in the same family, and should be used with
+-compatible "maxim,max77836-battery".
+-
+-Example:
+-
+-	battery-fuel-gauge@36 {
+-		compatible = "maxim,max77836-battery";
+-		reg = <0x36>;
+-		maxim,alert-low-soc-level = <10>;
+-		interrupt-parent = <&gpio7>;
+-		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+-		wakeup-source;
+-	};
+-
+-	battery-fuel-gauge@36 {
+-		compatible = "maxim,max17048";
+-		reg = <0x36>;
+-		maxim,rcomp = /bits/ 8 <0x56>;
+-		maxim,alert-low-soc-level = <10>;
+-		maxim,double-soc;
+-	};
+diff --git a/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
+new file mode 100644
+index 000000000000..de91cf3f058c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/maxim,max17040.yaml
+@@ -0,0 +1,95 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/maxim,max17040.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: Maxim 17040 fuel gauge series
++
++maintainers:
++  - Sebastian Reichel <sre@kernel.org>
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - maxim,max17040
++      - maxim,max17041
++      - maxim,max17043
++      - maxim,max17044
++      - maxim,max17048
++      - maxim,max17049
++      - maxim,max17058
++      - maxim,max17059
++      - maxim,max77836-battery
++
++  reg:
++    maxItems: 1
++
++  maxim,alert-low-soc-level:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    minimum: 1
++    maximum: 32
++    description: |
++      The alert threshold that sets the state of charge level (%) where an interrupt is generated.
++      If skipped the power up default value of 4 (%) will be used.
++
++  maxim,double-soc:
++    type: boolean
++    description: |
++      Certain devices return double the capacity.
++      Specify this to divide the reported value in 2 and thus normalize it.
++      SoC == State of Charge == Capacity.
++
++  maxim,rcomp:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: |
++      A value to compensate readings for various battery chemistries and operating temperatures.
++      max17040,41 have 2 byte rcomp, default to 0x97 0x00.
++      All other devices have one byte rcomp, default to 0x97.
++
++  interrupts:
++    maxItems: 1
++
++  wakeup-source:
++    type: boolean
++    description: |
++      Use this property to use alert low SoC level interrupt as wake up source.
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      battery@36 {
++        compatible = "maxim,max17048";
++        reg = <0x36>;
++        maxim,rcomp = /bits/ 8 <0x56>;
++        maxim,alert-low-soc-level = <10>;
++        maxim,double-soc;
++      };
++    };
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      battery@36 {
++        compatible = "maxim,max77836-battery";
++        reg = <0x36>;
++        maxim,alert-low-soc-level = <10>;
++        interrupt-parent = <&gpio7>;
++        interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
++        wakeup-source;
++      };
++    };
 -- 
 2.30.2
 
