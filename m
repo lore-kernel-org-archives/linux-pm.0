@@ -2,207 +2,293 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BD45C4332E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 12:40:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0388C433DB
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:33:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 27A3464F7E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 12:40:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 99E1264F17
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:33:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230286AbhCQMjo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 08:39:44 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:49830 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229707AbhCQMjN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 08:39:13 -0400
-Date:   Wed, 17 Mar 2021 12:39:11 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1615984751;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=dbYPZJMit2S6mcexfMsE9CKRGjsB5bQkGXLvdlG5gis=;
-        b=BMBC8CvEHSaRbktI1Kdj8LAzS4yAN7/GPugUODfALeh7ET2X54EwXOqgQP6jhwWKJQ9Vu3
-        dfDJvdlyCfFos+pbEyWlYQShlTmyor+h0pBvmLCIqGbUriRjRM6rjRD3tQxiefSSRJAFK3
-        t44JVx5CLnM31xzv38rcw3U4X6UrHGZcvqkYqsEWNp0jkZYFlDtWNS9LR/YGaaPbuPEETF
-        ScKQT9vNpxrdJuXWhZQbs+hCD9DT3maVTjNBS4oucVYkEhPiB+ERaDKPAKmW+2jN0OAnRT
-        ClafbTCxOIZ3VQHpU+FY7Ne4WwBVrEIM4Zpv8p6hUOpZimzC8IUmynNEhiP21w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1615984751;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=dbYPZJMit2S6mcexfMsE9CKRGjsB5bQkGXLvdlG5gis=;
-        b=6qFvvF7LABJ6sVljQzphffl+MK/8Si26mV0kdTqZvGwSLMERymFnr8Az40ci2viYrVAcs0
-        f5uCWeF118YpBNAA==
-From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/core: Use a char pointer for
- the cooling device name
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Ido Schimmel <idosch@nvidia.com>, rui.zhang@intel.com,
-        amitk@kernel.org
-In-Reply-To: <20210314111333.16551-1-daniel.lezcano@linaro.org>
-References: <20210314111333.16551-1-daniel.lezcano@linaro.org>
+        id S230044AbhCQNcg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:32:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39222 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231184AbhCQNcX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 Mar 2021 09:32:23 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B35C364F30;
+        Wed, 17 Mar 2021 13:32:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1615987942;
+        bh=dP0T4Vv8ezLoW9YxSyV8XtEBlr4MIKdWUxZQAWmvu7g=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=nEkDFSgPQC30W4exIwygLygvA4NRGCh/9X5Jc5PjWU4vEkLb0iOn+h7suPyfHfnTJ
+         aougOIY0Cfb5uj9Y49bkHBM4GszG2VCKQu5IXg+C//qfP/ARWjDEzTsMBVfs5QFExi
+         7Ab/LkuHatF5nUREMlUuUrprGKI6TTDGNQWF6lCv5zT60MhhjXgR+xVzHqPGZEgajw
+         0Q7vlUTOvGVHnSTEQzThUNbWtid0SaDFcY8zgvWeOfRYcJQagZ8ANmbu9LbeGP47xV
+         xCCMDTAY9oCzZAsoz0Kl9UFk8MkZ5iQbAUyMKOWwo5byeUXNj+5Fc788tCrhtzpdg7
+         KfLClmGfk5pUg==
+Received: by earth.universe (Postfix, from userid 1000)
+        id 7A6AB3C0C96; Wed, 17 Mar 2021 14:32:20 +0100 (CET)
+Date:   Wed, 17 Mar 2021 14:32:20 +0100
+From:   Sebastian Reichel <sre@kernel.org>
+To:     LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+Cc:     robh+dt@kernel.org, pali@kernel.org, krzk@kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        grygorii.tertychnyi@leica-geosystems.com,
+        andrey.zhizhikin@leica-geosystems.com
+Subject: Re: [PATCH V6 2/2] power: supply: bq27xxx: Add support for BQ78Z100
+Message-ID: <20210317133220.sv2nlyyiw4nnai4t@earth.universe>
+References: <20210317104918.12323-1-Qing-wu.Li@leica-geosystems.com.cn>
+ <20210317104918.12323-3-Qing-wu.Li@leica-geosystems.com.cn>
 MIME-Version: 1.0
-Message-ID: <161598475138.398.3398009902870639070.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ulfaazjgolx56jnt"
+Content-Disposition: inline
+In-Reply-To: <20210317104918.12323-3-Qing-wu.Li@leica-geosystems.com.cn>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     58483761810087e5ffdf36e84ac1bf26df909097
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//58483761810087e5ffdf36e84ac1bf26df909097
-Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Sun, 14 Mar 2021 12:13:29 +01:00
-Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 15 Mar 2021 04:46:25 +01:00
+--ulfaazjgolx56jnt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thermal/drivers/core: Use a char pointer for the cooling device name
+Hi,
 
-We want to have any kind of name for the cooling devices as we do no
-longer want to rely on auto-numbering. Let's replace the cooling
-device's fixed array by a char pointer to be allocated dynamically
-when registering the cooling device, so we don't limit the length of
-the name.
+On Wed, Mar 17, 2021 at 10:49:18AM +0000, LI Qingwu wrote:
+> Add support for TI BQ78Z100, I2C interface gas gauge.
+> It provides a fully integrated safety protection
+> and authentication for 1 to 2-series cell Li-Ion and
+> Li-Polymer battery packs.
+>=20
+> The patch was tested with BQ78Z100 equipment.
+>=20
+> Signed-off-by: LI Qingwu <Qing-wu.Li@leica-geosystems.com.cn>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+>=20
+> result of cat "/sys/class/power_supply/<bat_name>/uevent"
+>=20
+> CASE I:  Discharging current>0:
+>     POWER_SUPPLY_NAME=3Dbq78z100-0
+>     POWER_SUPPLY_STATUS=3DDischarging
+>     POWER_SUPPLY_PRESENT=3D1
+>     POWER_SUPPLY_VOLTAGE_NOW=3D3405000
+>     POWER_SUPPLY_CURRENT_NOW=3D4000
 
-Rework the error path at the same time as we have to rollback the
-allocations in case of error.
+4mA @ 3.4V is 13.6 mW, which seems really small to me.
+Is this what you expect for your hardware?
 
-Tested with a dummy device having the name:
- "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch"
+>     POWER_SUPPLY_CAPACITY=3D28
+>     POWER_SUPPLY_CAPACITY_LEVEL=3DNormal
+>     POWER_SUPPLY_TEMP=3D259
+>     POWER_SUPPLY_TIME_TO_EMPTY_NOW=3D1611000
 
-A village on the island of Anglesey (Wales), known to have the longest
-name in Europe.
+I guess 18 days TTE is expected with such a small discharge rate.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Tested-by: Ido Schimmel <idosch@nvidia.com>
-Link: https://lore.kernel.org/r/20210314111333.16551-1-daniel.lezcano@linaro.org
----
- drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  2 +-
- drivers/thermal/thermal_core.c                     | 38 +++++++------
- include/linux/thermal.h                            |  2 +-
- 3 files changed, 24 insertions(+), 18 deletions(-)
+>     POWER_SUPPLY_TECHNOLOGY=3DLi-ion
+>     POWER_SUPPLY_CHARGE_FULL=3D6494000
+>     POWER_SUPPLY_CHARGE_FULL_DESIGN=3D6000000
+>     POWER_SUPPLY_CYCLE_COUNT=3D1
+>     POWER_SUPPLY_ENERGY_NOW=3D0
 
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index bf85ce9..7447c2a 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -141,7 +141,7 @@ static int mlxsw_get_cooling_device_idx(struct mlxsw_thermal *thermal,
- 	/* Allow mlxsw thermal zone binding to an external cooling device */
- 	for (i = 0; i < ARRAY_SIZE(mlxsw_thermal_external_allowed_cdev); i++) {
- 		if (strnstr(cdev->type, mlxsw_thermal_external_allowed_cdev[i],
--			    sizeof(cdev->type)))
-+			    strlen(cdev->type)))
- 			return 0;
- 	}
- 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 996c038..c8d4010 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -960,10 +960,7 @@ __thermal_cooling_device_register(struct device_node *np,
- {
- 	struct thermal_cooling_device *cdev;
- 	struct thermal_zone_device *pos = NULL;
--	int result;
--
--	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
--		return ERR_PTR(-EINVAL);
-+	int ret;
- 
- 	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
- 	    !ops->set_cur_state)
-@@ -973,14 +970,17 @@ __thermal_cooling_device_register(struct device_node *np,
- 	if (!cdev)
- 		return ERR_PTR(-ENOMEM);
- 
--	result = ida_simple_get(&thermal_cdev_ida, 0, 0, GFP_KERNEL);
--	if (result < 0) {
--		kfree(cdev);
--		return ERR_PTR(result);
-+	ret = ida_simple_get(&thermal_cdev_ida, 0, 0, GFP_KERNEL);
-+	if (ret < 0)
-+		goto out_kfree_cdev;
-+	cdev->id = ret;
-+
-+	cdev->type = kstrdup(type ? type : "", GFP_KERNEL);
-+	if (!cdev->type) {
-+		ret = -ENOMEM;
-+		goto out_ida_remove;
- 	}
- 
--	cdev->id = result;
--	strlcpy(cdev->type, type ? : "", sizeof(cdev->type));
- 	mutex_init(&cdev->lock);
- 	INIT_LIST_HEAD(&cdev->thermal_instances);
- 	cdev->np = np;
-@@ -990,12 +990,9 @@ __thermal_cooling_device_register(struct device_node *np,
- 	cdev->devdata = devdata;
- 	thermal_cooling_device_setup_sysfs(cdev);
- 	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
--	result = device_register(&cdev->device);
--	if (result) {
--		ida_simple_remove(&thermal_cdev_ida, cdev->id);
--		put_device(&cdev->device);
--		return ERR_PTR(result);
--	}
-+	ret = device_register(&cdev->device);
-+	if (ret)
-+		goto out_kfree_type;
- 
- 	/* Add 'this' new cdev to the global cdev list */
- 	mutex_lock(&thermal_list_lock);
-@@ -1013,6 +1010,14 @@ __thermal_cooling_device_register(struct device_node *np,
- 	mutex_unlock(&thermal_list_lock);
- 
- 	return cdev;
-+
-+out_kfree_type:
-+	kfree(cdev->type);
-+	put_device(&cdev->device);
-+out_ida_remove:
-+	ida_simple_remove(&thermal_cdev_ida, cdev->id);
-+out_kfree_cdev:
-+	return ERR_PTR(ret);
- }
- 
- /**
-@@ -1171,6 +1176,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 	ida_simple_remove(&thermal_cdev_ida, cdev->id);
- 	device_del(&cdev->device);
- 	thermal_cooling_device_destroy_sysfs(cdev);
-+	kfree(cdev->type);
- 	put_device(&cdev->device);
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 6ac7bb1..1695021 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -91,7 +91,7 @@ struct thermal_cooling_device_ops {
- 
- struct thermal_cooling_device {
- 	int id;
--	char type[THERMAL_NAME_LENGTH];
-+	char *type;
- 	struct device device;
- 	struct device_node *np;
- 	void *devdata;
+You are not feeding ENERGY_NOW with data, so do not expose it.
+
+>     POWER_SUPPLY_POWER_AVG=3D65535
+
+That's a signed int16 -1 and looks suspicious. Especially since
+expected power average is around 13.6 mW. Is something wrong with
+the handling of BQ27XXX_REG_AP for your chip?
+
+>     POWER_SUPPLY_HEALTH=3DGood
+>     POWER_SUPPLY_MANUFACTURER=3DTexas Instruments
+>=20
+> CASE II : No discharging current:
+>     POWER_SUPPLY_NAME=3Dbq78z100-0
+>     POWER_SUPPLY_STATUS=3DDischarging
+
+That should actually be "Not Charging" for an idle battery. I
+suppose recent changes to bq27000, which I applied in the last
+few days to my for-next branch, might fix this.
+
+>     POWER_SUPPLY_PRESENT=3D1
+>     POWER_SUPPLY_VOLTAGE_NOW=3D3405000
+>     POWER_SUPPLY_CURRENT_NOW=3D0
+>     POWER_SUPPLY_CAPACITY=3D28
+>     POWER_SUPPLY_CAPACITY_LEVEL=3DNormal
+>     POWER_SUPPLY_TEMP=3D260
+>     POWER_SUPPLY_TECHNOLOGY=3DLi-ion
+>     POWER_SUPPLY_CHARGE_FULL=3D6494000
+>     POWER_SUPPLY_CHARGE_FULL_DESIGN=3D6000000
+>     POWER_SUPPLY_CYCLE_COUNT=3D1
+>     POWER_SUPPLY_ENERGY_NOW=3D0
+>     POWER_SUPPLY_POWER_AVG=3D0
+>     POWER_SUPPLY_HEALTH=3DGood
+>     POWER_SUPPLY_MANUFACTURER=3DTexas Instruments
+> ---
+
+You should expose POWER_SUPPLY_PROP_CHARGE_NOW for exposing
+BQ27XXX_REG_RC info, which is more precise than CAPACITY.
+
+Thanks,
+
+-- Sebastian
+
+>  drivers/power/supply/bq27xxx_battery.c     | 44 ++++++++++++++++++++++
+>  drivers/power/supply/bq27xxx_battery_i2c.c |  2 +
+>  include/linux/power/bq27xxx_battery.h      |  1 +
+>  3 files changed, 47 insertions(+)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index 4c4a7b1c64c5..05a4f9190160 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -39,6 +39,7 @@
+>   * https://www.ti.com/product/bq27z561
+>   * https://www.ti.com/product/bq28z610
+>   * https://www.ti.com/product/bq34z100-g1
+> + * https://www.ti.com/product/bq78z100
+>   */
+> =20
+>  #include <linux/device.h>
+> @@ -515,6 +516,27 @@ static u8
+>  		[BQ27XXX_REG_DCAP] =3D 0x3c,
+>  		[BQ27XXX_REG_AP] =3D 0x22,
+>  		BQ27XXX_DM_REG_ROWS,
+> +	},
+> +	bq78z100_regs[BQ27XXX_REG_MAX] =3D {
+> +		[BQ27XXX_REG_CTRL] =3D 0x00,
+> +		[BQ27XXX_REG_TEMP] =3D 0x06,
+> +		[BQ27XXX_REG_INT_TEMP] =3D 0x28,
+> +		[BQ27XXX_REG_VOLT] =3D 0x08,
+> +		[BQ27XXX_REG_AI] =3D 0x14,
+> +		[BQ27XXX_REG_FLAGS] =3D 0x0a,
+> +		[BQ27XXX_REG_TTE] =3D 0x16,
+> +		[BQ27XXX_REG_TTF] =3D 0x18,
+> +		[BQ27XXX_REG_TTES] =3D 0x1c,
+> +		[BQ27XXX_REG_TTECP] =3D INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_NAC] =3D INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_RC] =3D 0x10,
+> +		[BQ27XXX_REG_FCC] =3D 0x12,
+> +		[BQ27XXX_REG_CYCT] =3D 0x2a,
+> +		[BQ27XXX_REG_AE] =3D INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_SOC] =3D 0x2c,
+> +		[BQ27XXX_REG_DCAP] =3D 0x3c,
+> +		[BQ27XXX_REG_AP] =3D 0x22,
+> +		BQ27XXX_DM_REG_ROWS,
+>  	};
+> =20
+>  static enum power_supply_property bq27000_props[] =3D {
+> @@ -813,6 +835,26 @@ static enum power_supply_property bq34z100_props[] =
+=3D {
+>  	POWER_SUPPLY_PROP_MANUFACTURER,
+>  };
+> =20
+> +static enum power_supply_property bq78z100_props[] =3D {
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_PRESENT,
+> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+> +	POWER_SUPPLY_PROP_CAPACITY,
+> +	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+> +	POWER_SUPPLY_PROP_TEMP,
+> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+> +	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+> +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+> +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+> +	POWER_SUPPLY_PROP_ENERGY_NOW,
+> +	POWER_SUPPLY_PROP_POWER_AVG,
+> +	POWER_SUPPLY_PROP_HEALTH,
+> +	POWER_SUPPLY_PROP_MANUFACTURER,
+> +};
+> +
+>  struct bq27xxx_dm_reg {
+>  	u8 subclass_id;
+>  	u8 offset;
+> @@ -911,6 +953,7 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D {
+>  #define bq27z561_dm_regs 0
+>  #define bq28z610_dm_regs 0
+>  #define bq34z100_dm_regs 0
+> +#define bq78z100_dm_regs 0
+> =20
+>  #define BQ27XXX_O_ZERO		BIT(0)
+>  #define BQ27XXX_O_OTDC		BIT(1) /* has OTC/OTD overtemperature flags */
+> @@ -969,6 +1012,7 @@ static struct {
+>  	[BQ28Z610]  =3D BQ27XXX_DATA(bq28z610,  0         , BQ27Z561_O_BITS),
+>  	[BQ34Z100]  =3D BQ27XXX_DATA(bq34z100,  0         , BQ27XXX_O_OTDC | BQ=
+27XXX_O_SOC_SI | \
+>  							  BQ27XXX_O_HAS_CI | BQ27XXX_O_MUL_CHEM),
+> +	[BQ78Z100]  =3D BQ27XXX_DATA(bq78z100,  0x00000000, BQ27Z561_O_BITS),
+>  };
+> =20
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/s=
+upply/bq27xxx_battery_i2c.c
+> index eb4f4284982f..46f078350fd3 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -248,6 +248,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_tabl=
+e[] =3D {
+>  	{ "bq27z561", BQ27Z561 },
+>  	{ "bq28z610", BQ28Z610 },
+>  	{ "bq34z100", BQ34Z100 },
+> +	{ "bq78z100", BQ78Z100 },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+> @@ -284,6 +285,7 @@ static const struct of_device_id bq27xxx_battery_i2c_=
+of_match_table[] =3D {
+>  	{ .compatible =3D "ti,bq27z561" },
+>  	{ .compatible =3D "ti,bq28z610" },
+>  	{ .compatible =3D "ti,bq34z100" },
+> +	{ .compatible =3D "ti,bq78z100" },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(of, bq27xxx_battery_i2c_of_match_table);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/=
+bq27xxx_battery.h
+> index 111a40d0d3d5..ac17618043b1 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -33,6 +33,7 @@ enum bq27xxx_chip {
+>  	BQ27Z561,
+>  	BQ28Z610,
+>  	BQ34Z100,
+> +	BQ78Z100,
+>  };
+> =20
+>  struct bq27xxx_device_info;
+> --=20
+> 2.17.1
+>=20
+
+--ulfaazjgolx56jnt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmBSBNYACgkQ2O7X88g7
++po7cRAAiEHZ1Q+anvGAe72jt6xDycEXFA+EwDdtDZOzhkh3cr/rV47Kt2mbonO8
+g7aAwtabAoym0YlKzSGkouhHbwRy1NoMRWmxT4BT9o23P0LLRd4IpPszaQ/ijk6I
+2fWMqEnRzxQz6TuBFt6IdE38R6WRT4IdTi9xk01jS7Bg+BlEzikp2zzwCVHsM8QV
+XqINOsWxdDUe4upHZXEyLn7G1EblJ7HIvTIPuFt1MUSHfTwnt7zh8yklGjkYwpSY
+YFvCYrJTDCaxv0NpMSGMmq60WINSYqK2QAoE8EmRvVqCJ80Lf2CTtwyn0EkvIsIs
+WkgarUAPrk1FrFHK6GLYWKoEuNgrbV3Ax4mbq+xz3zylGEv68Sg6WOL0xr3meV+j
+2SHql8mVGFs4QkkLXTzRfu952bzrGaDbCqfBkzUP0m0it4zTi3Ay77FS8VO14xrN
+dv8+eMgOb0qciAnM5eYftX1y4OKWYtBMvdA3sygYeLgLbXa5+rHRBH/8N1MsmFCi
+Oxzuxgx1oZIfAsMolx4R2oBJBzfxO9aNRnxDOUUH9VuuvdHEQSss/L6sk/3h2fjq
+nMlvG9lD/rkxbSAZIeOAB6GiKYTnuCGan4clGblNbXV1M7sPwd91LoGnaZj29RRI
+ELNS65+mERPTBUJ/VCEYxiAb5DHJROKQbq41lc/3Bo4WhC8RjiM=
+=/4/K
+-----END PGP SIGNATURE-----
+
+--ulfaazjgolx56jnt--
