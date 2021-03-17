@@ -5,38 +5,38 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DB67C43603
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8013C43333
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 123E164F5E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E8F964F4F
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:57:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231550AbhCQN4i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:56:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47830 "EHLO
+        id S231543AbhCQN4h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:56:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47832 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231491AbhCQN4E (ORCPT
+        with ESMTP id S231494AbhCQN4E (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:56:04 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88966C06174A;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94BE3C06175F;
         Wed, 17 Mar 2021 06:56:03 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 790261F45201
+        with ESMTPSA id 783881F451F5
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 1B5E2480119; Wed, 17 Mar 2021 14:49:06 +0100 (CET)
+        id 1294B480115; Wed, 17 Mar 2021 14:49:06 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCHv2 31/38] dt-bindings: power: supply: lt3651: Convert to DT schema format
-Date:   Wed, 17 Mar 2021 14:48:57 +0100
-Message-Id: <20210317134904.80737-32-sebastian.reichel@collabora.com>
+        kernel@collabora.com, Chen-Yu Tsai <wens@csie.org>
+Subject: [PATCHv2 28/38] dt-bindings: power: supply: axp20x: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:54 +0100
+Message-Id: <20210317134904.80737-29-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -48,29 +48,149 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Convert the binding to DT schema format.
 
+Cc: Chen-Yu Tsai <wens@csie.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/lltc,lt3651-charger.yaml     | 44 +++++++++++++++++++
- .../bindings/power/supply/lt3651-charger.txt  | 29 ------------
- 2 files changed, 44 insertions(+), 29 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/lltc,lt3651-charger.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/lt3651-charger.txt
+ .../bindings/power/supply/axp20x_ac_power.txt | 25 -----------
+ .../bindings/power/supply/axp20x_battery.txt  | 20 ---------
+ .../power/supply/axp20x_usb_power.txt         | 41 -------------------
+ .../x-powers,axp20x-ac-power-supply.yaml      | 32 +++++++++++++++
+ .../x-powers,axp20x-battery-power-supply.yaml | 30 ++++++++++++++
+ .../x-powers,axp20x-usb-power-supply.yaml     | 33 +++++++++++++++
+ 6 files changed, 95 insertions(+), 86 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/lltc,lt3651-charger.yaml b/Documentation/devicetree/bindings/power/supply/lltc,lt3651-charger.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+deleted file mode 100644
+index 7a1fb532abe5..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
++++ /dev/null
+@@ -1,25 +0,0 @@
+-AXP20X and AXP22X PMICs' AC power supply
+-
+-Required Properties:
+- - compatible: One of:
+-			"x-powers,axp202-ac-power-supply"
+-			"x-powers,axp221-ac-power-supply"
+-			"x-powers,axp813-ac-power-supply"
+-
+-This node is a subnode of the axp20x PMIC.
+-
+-The AXP20X can read the current current and voltage supplied by AC by
+-reading ADC channels from the AXP20X ADC.
+-
+-The AXP22X is only able to tell if an AC power supply is present and
+-usable.
+-
+-AXP813/AXP803 are able to limit current and supply voltage
+-
+-Example:
+-
+-&axp209 {
+-	ac_power_supply: ac-power-supply {
+-		compatible = "x-powers,axp202-ac-power-supply";
+-	};
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+deleted file mode 100644
+index 41916f69902c..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
++++ /dev/null
+@@ -1,20 +0,0 @@
+-AXP20x and AXP22x battery power supply
+-
+-Required Properties:
+- - compatible, one of:
+-			"x-powers,axp209-battery-power-supply"
+-			"x-powers,axp221-battery-power-supply"
+-			"x-powers,axp813-battery-power-supply"
+-
+-This node is a subnode of its respective PMIC DT node.
+-
+-The supported devices can read the battery voltage, charge and discharge
+-currents of the battery by reading ADC channels from the ADC.
+-
+-Example:
+-
+-&axp209 {
+-	battery_power_supply: battery-power-supply {
+-		compatible = "x-powers,axp209-battery-power-supply";
+-	}
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+deleted file mode 100644
+index b2d4968fde7d..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
++++ /dev/null
+@@ -1,41 +0,0 @@
+-AXP20x USB power supply
+-
+-Required Properties:
+--compatible: One of: "x-powers,axp202-usb-power-supply"
+-                     "x-powers,axp221-usb-power-supply"
+-                     "x-powers,axp223-usb-power-supply"
+-		     "x-powers,axp813-usb-power-supply"
+-
+-The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
+-variations such as the former being able to set the VBUS power supply max
+-current to 100mA, unlike the latter.
+-
+-This node is a subnode of the axp20x PMIC.
+-
+-Example:
+-
+-axp209: pmic@34 {
+-	compatible = "x-powers,axp209";
+-	reg = <0x34>;
+-	interrupt-parent = <&nmi_intc>;
+-	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+-	interrupt-controller;
+-	#interrupt-cells = <1>;
+-
+-	regulators {
+-		x-powers,dcdc-freq = <1500>;
+-
+-		vdd_cpu: dcdc2 {
+-			regulator-always-on;
+-			regulator-min-microvolt = <1000000>;
+-			regulator-max-microvolt = <1450000>;
+-			regulator-name = "vdd-cpu";
+-		};
+-
+-		...
+-	};
+-
+-	usb-power-supply: usb-power-supply {
+-		compatible = "x-powers,axp202-usb-power-supply";
+-	};
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
 new file mode 100644
-index 000000000000..e2d8d2aebb73
+index 000000000000..dcda6660b8ed
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/lltc,lt3651-charger.yaml
-@@ -0,0 +1,44 @@
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-ac-power-supply.yaml
+@@ -0,0 +1,32 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/lltc,lt3651-charger.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-ac-power-supply.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Analog Devices LT3651 Charger Power Supply bindings
++title: AXP20x AC power-supply
++
++description: |
++  The AXP20X can read the current current and voltage supplied by AC by
++  reading ADC channels from the AXP20X ADC. The AXP22X is only able to
++  tell if an AC power supply is present and usable. AXP813/AXP803 are
++  able to limit current and supply voltage
 +
 +maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
 +  - Sebastian Reichel <sre@kernel.org>
 +
 +allOf:
@@ -79,68 +199,89 @@ index 000000000000..e2d8d2aebb73
 +properties:
 +  compatible:
 +    enum:
-+      - lltc,lt3651-charger
-+      - lltc,ltc3651-charger  # deprecated, use lltc,lt3651-charger
-+
-+  lltc,acpr-gpios:
-+    maxItems: 1
-+
-+  lltc,fault-gpios:
-+    maxItems: 1
-+
-+  lltc,chrg-gpios:
-+    maxItems: 1
++      - x-powers,axp202-ac-power-supply
++      - x-powers,axp221-ac-power-supply
++      - x-powers,axp813-ac-power-supply
 +
 +required:
 +  - compatible
-+  - lltc,acpr-gpios
 +
 +additionalProperties: false
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+new file mode 100644
+index 000000000000..86e8a713d4e2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-battery-power-supply.yaml
+@@ -0,0 +1,30 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-battery-power-supply.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+    charger {
-+      compatible = "lltc,lt3651-charger";
-+      lltc,acpr-gpios = <&gpio0 68 GPIO_ACTIVE_LOW>;
-+      lltc,fault-gpios = <&gpio0 64 GPIO_ACTIVE_LOW>;
-+      lltc,chrg-gpios = <&gpio0 63 GPIO_ACTIVE_LOW>;
-+    };
-diff --git a/Documentation/devicetree/bindings/power/supply/lt3651-charger.txt b/Documentation/devicetree/bindings/power/supply/lt3651-charger.txt
-deleted file mode 100644
-index 40811ff8de10..000000000000
---- a/Documentation/devicetree/bindings/power/supply/lt3651-charger.txt
-+++ /dev/null
-@@ -1,29 +0,0 @@
--Analog Devices LT3651 Charger Power Supply bindings: lt3651-charger
--
--Required properties:
--- compatible: Should contain one of the following:
-- * "lltc,ltc3651-charger", (DEPRECATED: Use "lltc,lt3651-charger")
-- * "lltc,lt3651-charger"
-- - lltc,acpr-gpios: Connect to ACPR output. See remark below.
--
--Optional properties:
-- - lltc,fault-gpios: Connect to FAULT output. See remark below.
-- - lltc,chrg-gpios: Connect to CHRG output. See remark below.
--
--The lt3651 outputs are open-drain type and active low. The driver assumes the
--GPIO reports "active" when the output is asserted, so if the pins have been
--connected directly, the GPIO flags should be set to active low also.
--
--The driver will attempt to aquire interrupts for all GPIOs to detect changes in
--line state. If the system is not capabale of providing interrupts, the driver
--cannot report changes and userspace will need to periodically read the sysfs
--attributes to detect changes.
--
--Example:
--
--	charger: battery-charger {
--		compatible = "lltc,lt3651-charger";
--		lltc,acpr-gpios = <&gpio0 68 GPIO_ACTIVE_LOW>;
--		lltc,fault-gpios = <&gpio0 64 GPIO_ACTIVE_LOW>;
--		lltc,chrg-gpios = <&gpio0 63 GPIO_ACTIVE_LOW>;
--	};
++title: AXP20x Battery power-supply
++
++description: |
++  The supported devices can read the battery voltage, charge and discharge
++  currents of the battery by reading ADC channels from the ADC.
++
++maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
++  - Sebastian Reichel <sre@kernel.org>
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - x-powers,axp209-battery-power-supply
++      - x-powers,axp221-battery-power-supply
++      - x-powers,axp813-battery-power-supply
++
++required:
++  - compatible
++
++additionalProperties: false
+diff --git a/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
+new file mode 100644
+index 000000000000..61f1b320c157
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/x-powers,axp20x-usb-power-supply.yaml
+@@ -0,0 +1,33 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/x-powers,axp20x-usb-power-supply.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: AXP20x USB power-supply
++
++description: |
++  The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
++  variations such as the former being able to set the VBUS power supply max
++  current to 100mA, unlike the latter.
++
++maintainers:
++  - Chen-Yu Tsai <wens@csie.org>
++  - Sebastian Reichel <sre@kernel.org>
++
++allOf:
++  - $ref: power-supply.yaml#
++
++properties:
++  compatible:
++    enum:
++      - x-powers,axp202-usb-power-supply
++      - x-powers,axp221-usb-power-supply
++      - x-powers,axp223-usb-power-supply
++      - x-powers,axp813-usb-power-supply
++
++
++required:
++  - compatible
++
++additionalProperties: false
 -- 
 2.30.2
 
