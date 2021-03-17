@@ -5,28 +5,28 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DA39C4332E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D339C2BA4C
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BAD0064F50
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE06F64F75
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231611AbhCQNts (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:49:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46308 "EHLO
+        id S231556AbhCQNtj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:49:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46298 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231469AbhCQNtN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:13 -0400
+        with ESMTP id S231450AbhCQNtM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:12 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D89EC06175F;
-        Wed, 17 Mar 2021 06:49:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBDE4C06174A;
+        Wed, 17 Mar 2021 06:49:11 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id BCC711F44EEB
+        with ESMTPSA id AD5C61F44E62
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id DA8D64800E4; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
+        id D18054800E1; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -34,9 +34,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         kernel@collabora.com
-Subject: [PATCHv2 12/38] dt-bindings: power: supply: ds2760: Convert to DT schema format
-Date:   Wed, 17 Mar 2021 14:48:38 +0100
-Message-Id: <20210317134904.80737-13-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 09/38] dt-bindings: power: supply: isp1704: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:35 +0100
+Message-Id: <20210317134904.80737-10-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -50,93 +50,83 @@ Convert the binding to DT schema format.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/maxim,ds2760.txt    | 26 -----------
- .../bindings/power/supply/maxim,ds2760.yaml   | 43 +++++++++++++++++++
- 2 files changed, 43 insertions(+), 26 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
+ .../bindings/power/supply/isp1704.txt         | 17 --------
+ .../bindings/power/supply/isp1704.yaml        | 42 +++++++++++++++++++
+ 2 files changed, 42 insertions(+), 17 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/isp1704.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/isp1704.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/isp1704.txt b/Documentation/devicetree/bindings/power/supply/isp1704.txt
 deleted file mode 100644
-index 55967a0bee11..000000000000
---- a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+index fa3596907967..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/isp1704.txt
 +++ /dev/null
-@@ -1,26 +0,0 @@
--Devicetree bindings for Maxim DS2760
--====================================
--
--The ds2760 is a w1 slave device and must hence have its sub-node in DT
--under a w1 bus master node.
--
--The device exposes a power supply, so the details described in
--Documentation/devicetree/bindings/power/supply/power_supply.txt apply.
+@@ -1,17 +0,0 @@
+-Binding for NXP ISP1704 USB Charger Detection
 -
 -Required properties:
--- compatible: must be "maxim,ds2760"
+-- compatible: Should contain one of the following:
+- * "nxp,isp1704"
+-- nxp,enable-gpio: Should contain a phandle + gpio-specifier
+-  to the GPIO pin connected to the chip's enable pin.
+-- usb-phy: Should contain a phandle to the USB PHY
+-  the ISP1704 is connected to.
 -
--Optional properties:
--- power-supplies:	Refers to one or more power supplies connected to
--			this battery.
--- maxim,pmod-enabled:	This boolean property enables the DS2760 to enter
--			sleep mode when the DQ line goes low for greater
--			than 2 seconds and leave sleep Mode when the DQ
--			line goes high.
--- maxim,cache-time-ms:	Time im milliseconds to cache the data for. When
--			this time expires, the values are read again from
--			the hardware. Defaults to 1000.
--- rated-capacity-microamp-hours:
--			The rated capacity of the battery, in mAh.
--			If not specified, the value stored in the
--			non-volatile chip memory is used.
-diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
+-Example:
+-
+-isp1704 {
+-	compatible = "nxp,isp1704";
+-	nxp,enable-gpio = <&gpio3 3 GPIO_ACTIVE_LOW>;
+-	usb-phy = <&usb2_phy>;
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/isp1704.yaml b/Documentation/devicetree/bindings/power/supply/isp1704.yaml
 new file mode 100644
-index 000000000000..818647edf63d
+index 000000000000..4c91da70011d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.yaml
-@@ -0,0 +1,43 @@
++++ b/Documentation/devicetree/bindings/power/supply/isp1704.yaml
+@@ -0,0 +1,42 @@
 +# SPDX-License-Identifier: GPL-2.0
++# Copyright (C) 2021 Sebastian Reichel
 +%YAML 1.2
 +---
-+$id: "http://devicetree.org/schemas/power/supply/maxim,ds2760.yaml#"
++$id: "http://devicetree.org/schemas/power/supply/isp1704.yaml#"
 +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: Maxim DS2760 DT bindings
++title: Binding for NXP ISP1704 USB Charger Detection
 +
 +maintainers:
 +  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  The ds2760 is a w1 slave device and must hence have its sub-node in
-+  DT under a w1 bus master node.
 +
 +allOf:
 +  - $ref: power-supply.yaml#
 +
 +properties:
 +  compatible:
-+    const: maxim,ds2760
++    const: nxp,isp1704
 +
-+  maxim,pmod-enabled:
-+    description: |
-+      Allow the DS2760 to enter sleep mode when the DQ line goes low for more than 2 seconds
-+      and leave sleep Mode when the DQ line goes high.
-+    type: boolean
++  nxp,enable-gpio:
++    maxItems: 1
++    description: GPIO connected to the chip's enable pin
 +
-+  maxim,cache-time-ms:
-+    description: |
-+      Time im milliseconds to cache the data for.
-+      When this time expires, the values are read again from the hardware.
-+      Defaults to 1000.
-+
-+  rated-capacity-microamp-hours:
-+    description: |
-+      The rated capacity of the battery, in mAh.
-+      If not specified, the value stored in the non-volatile chip memory is used.
++  usb-phy:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: USB PHY the ISP1704 is connected to
 +
 +required:
 +  - compatible
++  - nxp,enable-gpio
++  - usb-phy
 +
-+unevaluatedProperties: false
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    charger-detect {
++      compatible = "nxp,isp1704";
++      nxp,enable-gpio = <&gpio3 3 GPIO_ACTIVE_LOW>;
++      usb-phy = <&usb2_phy>;
++    };
 -- 
 2.30.2
 
