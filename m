@@ -5,38 +5,35 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA88EC2BA83
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 020DBC41620
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 857A864F67
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C7F0864E86
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Mar 2021 13:50:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231607AbhCQNtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Mar 2021 09:49:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46306 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231473AbhCQNtN (ORCPT
+        id S231578AbhCQNtm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Mar 2021 09:49:42 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56196 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231467AbhCQNtN (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Mar 2021 09:49:13 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28BD5C06174A;
-        Wed, 17 Mar 2021 06:49:13 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id B6FCF1F44EBC
+        with ESMTPSA id 549F81F451B0
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id D7B454800E3; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
+        id EE4E2480105; Wed, 17 Mar 2021 14:49:05 +0100 (CET)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCHv2 11/38] dt-bindings: power: supply: sbs-manager: Convert to DT schema format
-Date:   Wed, 17 Mar 2021 14:48:37 +0100
-Message-Id: <20210317134904.80737-12-sebastian.reichel@collabora.com>
+        kernel@collabora.com, David Lechner <david@lechnology.com>
+Subject: [PATCHv2 19/38] dt-bindings: power: supply: lego-ev3-battery: Convert to DT schema format
+Date:   Wed, 17 Mar 2021 14:48:45 +0100
+Message-Id: <20210317134904.80737-20-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210317134904.80737-1-sebastian.reichel@collabora.com>
 References: <20210317134904.80737-1-sebastian.reichel@collabora.com>
@@ -48,199 +45,103 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Convert the binding to DT schema format.
 
+Cc: David Lechner <david@lechnology.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/sbs,sbs-manager.txt |  66 -----------
- .../power/supply/sbs,sbs-manager.yaml         | 107 ++++++++++++++++++
- 2 files changed, 107 insertions(+), 66 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
+ .../power/supply/lego,ev3-battery.yaml        | 55 +++++++++++++++++++
+ .../power/supply/lego_ev3_battery.txt         | 21 -------
+ 2 files changed, 55 insertions(+), 21 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-deleted file mode 100644
-index 4b2195571a49..000000000000
---- a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-+++ /dev/null
-@@ -1,66 +0,0 @@
--Binding for sbs-manager
--
--Required properties:
--- compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
--  number compatible string might be used in order to take care of vendor
--  specific registers.
--- reg: integer, i2c address of the device. Should be <0xa>.
--Optional properties:
--- gpio-controller: Marks the port as GPIO controller.
--  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
--- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
--  is used to specify optional parameters:
--  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
--
--From OS view the device is basically an i2c-mux used to communicate with up to
--four smart battery devices at address 0xb. The driver actually implements this
--behaviour. So standard i2c-mux nodes can be used to register up to four slave
--batteries. Channels will be numerated starting from 1 to 4.
--
--Example:
--
--batman@a {
--    compatible = "lltc,ltc1760", "sbs,sbs-manager";
--    reg = <0x0a>;
--    #address-cells = <1>;
--    #size-cells = <0>;
--
--    gpio-controller;
--    #gpio-cells = <2>;
--
--    i2c@1 {
--        #address-cells = <1>;
--        #size-cells = <0>;
--        reg = <1>;
--
--        battery@b {
--            compatible = "ti,bq2060", "sbs,sbs-battery";
--            reg = <0x0b>;
--            sbs,battery-detect-gpios = <&batman 1 1>;
--        };
--    };
--
--    i2c@2 {
--        #address-cells = <1>;
--        #size-cells = <0>;
--        reg = <2>;
--
--        battery@b {
--            compatible = "ti,bq2060", "sbs,sbs-battery";
--            reg = <0x0b>;
--            sbs,battery-detect-gpios = <&batman 2 1>;
--        };
--    };
--
--    i2c@3 {
--        #address-cells = <1>;
--        #size-cells = <0>;
--        reg = <3>;
--
--        battery@b {
--            compatible = "ti,bq2060", "sbs,sbs-battery";
--            reg = <0x0b>;
--            sbs,battery-detect-gpios = <&batman 3 1>;
--        };
--    };
--};
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml b/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
 new file mode 100644
-index 000000000000..72e8f274c791
+index 000000000000..518eabb63588
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.yaml
-@@ -0,0 +1,107 @@
++++ b/Documentation/devicetree/bindings/power/supply/lego,ev3-battery.yaml
+@@ -0,0 +1,55 @@
 +# SPDX-License-Identifier: GPL-2.0
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/power/supply/sbs,sbs-manager.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++$id: "http://devicetree.org/schemas/power/supply/lego,ev3-battery.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+title: SBS compliant manger
++title: LEGO MINDSTORMS EV3 Battery
 +
 +maintainers:
++  - David Lechner <david@lechnology.com>
 +  - Sebastian Reichel <sre@kernel.org>
++
++description: |
++  LEGO MINDSTORMS EV3 has some built-in capability for monitoring the battery.
++  It uses 6 AA batteries or a special Li-ion rechargeable battery pack that is
++  detected by a key switch in the battery compartment.
 +
 +allOf:
 +  - $ref: power-supply.yaml#
 +
 +properties:
 +  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - lltc,ltc1760
-+          - enum:
-+              - sbs,sbs-manager
-+      - items:
-+          - const: sbs,sbs-manager
++    const: lego,ev3-battery
 +
-+  reg:
-+    const: 0xa
++  io-channels:
++    items:
++      - description: ADC channel for battery voltage
++      - description: ADC channel for battery current
 +
-+  "#address-cells":
-+    const: 1
++  io-channel-names:
++    items:
++      - const: voltage
++      - const: current
 +
-+  "#size-cells":
-+    const: 0
-+
-+  gpio-controller: true
-+
-+  "#gpio-cells":
-+    const: 2
++  rechargeable-gpios:
++    maxItems: 1
++    description: Rechargeable battery indication gpio
 +
 +required:
 +  - compatible
-+  - reg
++  - io-channels
++  - io-channel-names
++  - rechargeable-gpios
 +
 +additionalProperties: false
 +
-+patternProperties:
-+  "^i2c@[1-4]$":
-+    type: object
-+
-+    allOf:
-+      - $ref: /schemas/i2c/i2c-controller.yaml#
-+
 +examples:
 +  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
 +    #include <dt-bindings/gpio/gpio.h>
-+
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      batman: battery-manager@a {
-+        compatible = "lltc,ltc1760", "sbs,sbs-manager";
-+        reg = <0x0a>;
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+
-+        i2c@1 {
-+          #address-cells = <1>;
-+          #size-cells = <0>;
-+          reg = <1>;
-+
-+          battery@b {
-+            compatible = "ti,bq20z65", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 1 1>;
-+          };
-+        };
-+
-+        i2c@2 {
-+          #address-cells = <1>;
-+          #size-cells = <0>;
-+          reg = <2>;
-+
-+          battery@b {
-+            compatible = "ti,bq20z65", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 2 1>;
-+          };
-+        };
-+
-+        i2c@3 {
-+          #address-cells = <1>;
-+          #size-cells = <0>;
-+          reg = <3>;
-+
-+          battery@b {
-+            compatible = "ti,bq20z65", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 3 1>;
-+          };
-+        };
-+      };
++    battery {
++      compatible = "lego,ev3-battery";
++      io-channels = <&adc 4>, <&adc 3>;
++      io-channel-names = "voltage", "current";
++      rechargeable-gpios = <&gpio 136 GPIO_ACTIVE_LOW>;
 +    };
+diff --git a/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt b/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
+deleted file mode 100644
+index 5485633b1faa..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/lego_ev3_battery.txt
++++ /dev/null
+@@ -1,21 +0,0 @@
+-LEGO MINDSTORMS EV3 Battery
+-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-
+-LEGO MINDSTORMS EV3 has some built-in capability for monitoring the battery.
+-It uses 6 AA batteries or a special Li-ion rechargeable battery pack that is
+-detected by a key switch in the battery compartment.
+-
+-Required properties:
+- - compatible: Must be "lego,ev3-battery"
+- - io-channels: phandles to analog inputs for reading voltage and current
+- - io-channel-names: Must be "voltage", "current"
+- - rechargeable-gpios: phandle to the rechargeable battery indication gpio
+-
+-Example:
+-
+-	battery {
+-		compatible = "lego,ev3-battery";
+-		io-channels = <&adc 4>, <&adc 3>;
+-		io-channel-names = "voltage", "current";
+-		rechargeable-gpios = <&gpio 136 GPIO_ACTIVE_LOW>;
+-	};
 -- 
 2.30.2
 
