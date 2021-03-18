@@ -4,45 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CC28C433E6
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 18:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB43CC433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 18:29:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B25064E2E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 18:16:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6D1764E31
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 18:29:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232387AbhCRSQN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Mar 2021 14:16:13 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:56600 "EHLO
+        id S232336AbhCRS3O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Mar 2021 14:29:14 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:63892 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232412AbhCRSPo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 14:15:44 -0400
+        with ESMTP id S232262AbhCRS3K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 14:29:10 -0400
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.0.3)
- id a56c98ea21005667; Thu, 18 Mar 2021 19:15:42 +0100
+ id 820c3476cb80a778; Thu, 18 Mar 2021 19:29:08 +0100
 Received: from kreacher.localnet (89-64-80-250.dynamic.chello.pl [89.64.80.250])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id C39A9668FA9;
-        Thu, 18 Mar 2021 19:15:41 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 42D9D668FA9;
+        Thu, 18 Mar 2021 19:29:08 +0100 (CET)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>,
-        "elaine.zhang" <zhangqing@rock-chips.com>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v1 2/2] PM: runtime: Defer suspending suppliers
-Date:   Thu, 18 Mar 2021 19:15:13 +0100
-Message-ID: <2060154.irdbgypaU6@kreacher>
-In-Reply-To: <5448054.DvuYhMxLoT@kreacher>
-References: <5448054.DvuYhMxLoT@kreacher>
+        Linux PM <linux-pm@vger.kernel.org>,
+        David Box <david.e.box@linux.intel.com>
+Subject: [PATCH v2 1/2] ACPI: scan: Turn off unused power resources during initialization
+Date:   Thu, 18 Mar 2021 19:25:12 +0100
+Message-ID: <9860889.nUPlyArG6x@kreacher>
+In-Reply-To: <3108574.44csPzL39Z@kreacher>
+References: <3108574.44csPzL39Z@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudefiedguddufecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttddvnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepffeuvddutdelgfdvtefgiefftddvfffgjeelvdethfehgfekfeeluedvueevvedunecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepkeelrdeigedrkedtrddvhedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedtrddvhedtpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepiihhrghnghhqihhnghesrhhotghkqdgthhhiphhsrdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhg
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudefiedgudduhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttddvnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhephfekveffledtuefgueevudetgfeukeegudeufeeljeetgfetleefudevledvtdejnecuffhomhgrihhnpehuvghfihdrohhrghenucfkphepkeelrdeigedrkedtrddvhedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedtrddvhedtpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuggrvhhiugdrvgdrsghogieslhhinhhugidrihhnthgvlhdrtgho
+ mh
 X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -50,122 +51,90 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Because the PM-runtime status of the device is not updated in
-__rpm_callback(), attempts to suspend the suppliers of the given
-device triggered by the rpm_put_suppliers() call in there may fail.
+It is reported that on certain platforms there are power resources
+that are not associated with any devices physically present in the
+platform.  Those power resources are expected to be turned off by
+the OS in accordance with the ACPI specification (section 7.3 of
+ACPI 6.4) which currently is not done by Linux and that may lead
+to obscure issues.
 
-To fix this (1) modify __rpm_callback() to avoid attempting to
-actually suspend the suppliers, but only decrease their PM-runtime
-usage counters and (2) make rpm_suspend() try to suspend the suppliers
-after changing the device's PM-runtime status, in analogy with the
-handling of the device's parent.
+For instance, leaving those power resources in the "on" state may
+prevent the platform from reaching the lowest power state in
+suspend-to-idle which leads to excessive power draw.
 
-Link: https://lore.kernel.org/linux-pm/CAPDyKFqm06KDw_p8WXsM4dijDbho4bb6T4k50UqqvR1_COsp8g@mail.gmail.com/
-Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
-Reported-by: elaine.zhang <zhangqing@rock-chips.com>
-Diagnosed-by: Ulf Hansson <ulf.hansson@linaro.org> 
+For this reason, turn all of the unused ACPI power resources off
+at the end of the initial namespace scan for devices in analogy with
+resume from suspend-to-RAM.
+
+Link: https://uefi.org/specs/ACPI/6.4/07_Power_and_Performance_Mgmt/device-power-management-objects.html
+Reported-by: David Box <david.e.box@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/runtime.c |   45 +++++++++++++++++++++++++++++++++++++------
- 1 file changed, 39 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/base/power/runtime.c
+-> v2: Expand the changelog somewhat and make it build with CONFIG_PM_SLEEP
+       unset.
+
+---
+ drivers/acpi/internal.h |    1 +
+ drivers/acpi/power.c    |    2 +-
+ drivers/acpi/scan.c     |    2 ++
+ drivers/acpi/sleep.h    |    1 -
+ 4 files changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/acpi/internal.h
 ===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -305,7 +305,7 @@ static int rpm_get_suppliers(struct devi
- 	return 0;
- }
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -139,6 +139,7 @@ int acpi_device_sleep_wake(struct acpi_d
+ int acpi_power_get_inferred_state(struct acpi_device *device, int *state);
+ int acpi_power_on_resources(struct acpi_device *device, int state);
+ int acpi_power_transition(struct acpi_device *device, int state);
++void acpi_turn_off_unused_power_resources(void);
  
--static void rpm_put_suppliers(struct device *dev)
-+static void __rpm_put_suppliers(struct device *dev, bool try_to_suspend)
- {
- 	struct device_link *link;
- 
-@@ -313,10 +313,30 @@ static void rpm_put_suppliers(struct dev
- 				device_links_read_lock_held()) {
- 
- 		while (refcount_dec_not_one(&link->rpm_active))
--			pm_runtime_put(link->supplier);
-+			pm_runtime_put_noidle(link->supplier);
-+
-+		if (try_to_suspend)
-+			pm_request_idle(link->supplier);
- 	}
- }
- 
-+static void rpm_put_suppliers(struct device *dev)
-+{
-+	__rpm_put_suppliers(dev, true);
-+}
-+
-+static void rpm_try_to_suspend_suppliers(struct device *dev)
-+{
-+	struct device_link *link;
-+	int idx = device_links_read_lock();
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node,
-+				device_links_read_lock_held())
-+		pm_request_idle(link->supplier);
-+
-+	device_links_read_unlock(idx);
-+}
-+
- /**
-  * __rpm_callback - Run a given runtime PM callback for a given device.
-  * @cb: Runtime PM callback to run.
-@@ -344,8 +364,10 @@ static int __rpm_callback(int (*cb)(stru
- 			idx = device_links_read_lock();
- 
- 			retval = rpm_get_suppliers(dev);
--			if (retval)
-+			if (retval) {
-+				rpm_put_suppliers(dev);
- 				goto fail;
-+			}
- 
- 			device_links_read_unlock(idx);
+ /* --------------------------------------------------------------------------
+                               Device Power Management
+Index: linux-pm/drivers/acpi/scan.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/scan.c
++++ linux-pm/drivers/acpi/scan.c
+@@ -2360,6 +2360,8 @@ int __init acpi_scan_init(void)
  		}
-@@ -368,9 +390,9 @@ static int __rpm_callback(int (*cb)(stru
- 		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
- 			idx = device_links_read_lock();
- 
-- fail:
--			rpm_put_suppliers(dev);
-+			__rpm_put_suppliers(dev, false);
- 
-+fail:
- 			device_links_read_unlock(idx);
- 		}
- 
-@@ -642,8 +664,11 @@ static int rpm_suspend(struct device *de
- 		goto out;
  	}
  
-+	if (dev->power.irq_safe)
-+		goto out;
++	acpi_turn_off_unused_power_resources();
 +
- 	/* Maybe the parent is now able to suspend. */
--	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
-+	if (parent && !parent->power.ignore_children) {
- 		spin_unlock(&dev->power.lock);
- 
- 		spin_lock(&parent->power.lock);
-@@ -652,6 +677,14 @@ static int rpm_suspend(struct device *de
- 
- 		spin_lock(&dev->power.lock);
- 	}
-+	/* Maybe the suppliers are now able to suspend. */
-+	if (dev->power.links_count > 0) {
-+		spin_unlock(&dev->power.lock);
-+
-+		rpm_try_to_suspend_suppliers(dev);
-+
-+		spin_lock(&dev->power.lock);
-+	}
+ 	acpi_scan_initialized = true;
  
   out:
- 	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
+Index: linux-pm/drivers/acpi/sleep.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.h
++++ linux-pm/drivers/acpi/sleep.h
+@@ -8,7 +8,6 @@ extern struct list_head acpi_wakeup_devi
+ extern struct mutex acpi_device_lock;
+ 
+ extern void acpi_resume_power_resources(void);
+-extern void acpi_turn_off_unused_power_resources(void);
+ 
+ static inline acpi_status acpi_set_waking_vector(u32 wakeup_address)
+ {
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -996,6 +996,7 @@ void acpi_resume_power_resources(void)
+ 
+ 	mutex_unlock(&power_resource_list_lock);
+ }
++#endif
+ 
+ void acpi_turn_off_unused_power_resources(void)
+ {
+@@ -1025,4 +1026,3 @@ void acpi_turn_off_unused_power_resource
+ 
+ 	mutex_unlock(&power_resource_list_lock);
+ }
+-#endif
 
 
 
