@@ -7,66 +7,66 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FBCFC43333
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C764C432C3
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 13:06:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2104164E20
+	by mail.kernel.org (Postfix) with ESMTP id 5BE8364E20
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 13:06:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231349AbhCRNGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Mar 2021 09:06:07 -0400
-Received: from esa1.hgst.iphmx.com ([68.232.141.245]:21358 "EHLO
+        id S231518AbhCRNGI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Mar 2021 09:06:08 -0400
+Received: from esa1.hgst.iphmx.com ([68.232.141.245]:21386 "EHLO
         esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231491AbhCRNFt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 09:05:49 -0400
+        with ESMTP id S231515AbhCRNGC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 09:06:02 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1616072749; x=1647608749;
+  t=1616072762; x=1647608762;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:content-transfer-encoding:mime-version;
-  bh=yTb4qoGUflJi8m7HSJa5+nLEjyRfrdKGIcYDXHbPmSw=;
-  b=kw35lgNNiUSWD9MtDQDoKn9Pt/3WufI0WTIA1zLA6yC7/Z7zBFNk3sla
-   sNiQsH8gGUV0i2VEaXK/xI2jPusla2I3duUO0YujNOd0CHzXfbgjKHlV4
-   GAk0lGN/9DH6+D6yhE19UAvYvBzhv8GJZ23wTAnYIqKWlt7QkiDvNwN0x
-   JrE58wTINARs+OJX1mV23zsoxIg/54Mng+qhqMrTlqV48XmHt7Av1GX5E
-   +2j/aGHlsPHMg1Qd8pAedRnygqbICSwBfBR7D+wLa50sZ6T1fpHcTVFWG
-   xnh+4rcTVvwc4/JM7y/b5bwjtXAMr0tVpsPr3kw0DA451ogPFryZtz2IE
-   g==;
-IronPort-SDR: u0wl6+b+ywKEv6tV8uv7Xnqz9cpRscbmVu2963x/O7+QNhVxZydqUTGE2QKCqVJbBQsbkG76/F
- CKdGsed2B8BihtLaombnn33mPDhsFm+pw5aoKryWNVIpHK2/m6Lwlg7T4e9r84+r8bP/Hyl5Gi
- KVwAy9z9ppZUJ5yHgbza1yh7tbFaiccuWpS0oRkDlZmObwX3V2lup+HBptZ53s1kWN1SjjbKDg
- cogSMsFfHTeGQeIDnWYiBvAQ6EarrbU4pY3Hn8yZiUvMkLMGdN3VTr3O/0myKyx8Xt3vDsut/O
- oN0=
+  bh=x4KgaKkTuSTDs7W+KwB0YDqVJn55pqqtz7HQEAs74SM=;
+  b=PWINx98sz2O6Tgyjp9mMha4ux3OvpY4H54ZdQ4ZJgj/oamh4uBO8j14Z
+   zgLtAfcr0E4zsWn+RapSWxdP9Otfwtwuy1rBwiYUO1gzzZEm4/+Lb3Cvr
+   HE5QrO79HJUdeoz5lI4cWw9So41FgLppeS5KUE3zo4fH8MflBoMFBIChk
+   cRpM8I9Y4X/Pdv2a+FRBmaxRE3hq/SBK3aHXc46/DRfGh15ycdPWT4zoy
+   V2U2gbTi1O20Uxfni2hnVDjKeRjAki63D1nMQv4vFimQknUDKTsbK6Wo1
+   BmNk1LYOQ/+fQchOJRLsr3O+rPnPMl6rqCLkyi6KVhHBlSPJskggODm7t
+   Q==;
+IronPort-SDR: jZ8dVWhSrlQ/3C/aaWlm+oEg3BR8stwRuomf0mk7loEvftpAc+Y+IbR938sov3MDl1oAmrlS33
+ /FVqCrjq73L6P2MnATw5yg7oUcKfEjM5UZ1McN5+LtuF4SgJ7pnjWY8pszOuoC4iyKcNxt8jc8
+ /V9UwpvYzDSM73fGsuShtzQLZ6H2jUrRefpjj1v9bA1OO6YsdPJkRJ5xkr2vCcQ0Va8id6uJU3
+ gPIYuDG7yMyiYrGVtw/OMGJ0/R52fUIPKW/JgtmNO1kmfdE2dzb4zm/zObeat4DEuSsEnw4uLz
+ /UU=
 X-IronPort-AV: E=Sophos;i="5.81,258,1610380800"; 
-   d="scan'208";a="273192076"
-Received: from mail-sn1nam02lp2050.outbound.protection.outlook.com (HELO NAM02-SN1-obe.outbound.protection.outlook.com) ([104.47.36.50])
-  by ob1.hgst.iphmx.com with ESMTP; 18 Mar 2021 21:05:47 +0800
+   d="scan'208";a="273192108"
+Received: from mail-sn1nam02lp2055.outbound.protection.outlook.com (HELO NAM02-SN1-obe.outbound.protection.outlook.com) ([104.47.36.55])
+  by ob1.hgst.iphmx.com with ESMTP; 18 Mar 2021 21:06:00 +0800
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ecyXH3LRsUGGJK4fUV7UmP4wENp+SMMJ40yQCRRbvLQ4gIt83e4DGKMScLHRJtTe8LvGaI+Vv2QUmpJ51oxb2LLr5jBJk2svAF7ujcfh9aoEQ7DDE6yKXQc5QwBftcAV3fhVhkZ2BLlXGMB0wp76NKPd6WXa4tIFMEv5PJ9xediDXdeHx7Iydl2tg+ltytyENtx+CFS+jvk35S9gxh3AO4KeNSqXwbDdDciCWu772Ul6fjv5oaM4qi4uN2thJPDZdiseFnlHJwquWvsu5S1IIqfqz4DnACvqbphnUa8RT/Vh6hCcEiyOb0ukzSyuJ/oelftxENiXjtyo4et1rqbFuw==
+ b=fXfm1hT/9gqrRCSa+3z0Fo5eMWtV1UtXCGR0tniMWYDUHG2ifSC/HPip3Z/bRlMGuLBXKxYH5CTNSjPY5fneFLTJZA+SpysaA2Ba2zqxZstXyv5VyieSFgAgewWiaZxw/mtPx7jEp6k/mt1tMecFIL6ca8B4mYElImsOP6GVCCB1jl2tXpRofdBlZGkKtYENsk4WCuqw1V+M1mHrHI6oTS83OROA1VsRKBSyXsb9AYp48/xYodn/WvON4+8J5/wn3G5eNw0S66mTeAUjbU+oQSrMqCcZY2++JFvu76LXN+J68T3toZ5LMAFZ904zvvS/neCEDSqyQOpLLI2TpV8yLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=KvODrHxjR9O17ndKUIDhzXHw4AWnkKpIZcsCTapVmys=;
- b=HMzZAEiG6CAFt0jrUrC+W6Pnkal+eQCdyIa9u9wikkpT3+qQPwZBZy7TgVlt3leeMy9db8A2lIEJMhk9sIXrRYqRFRDXc1UAAFV1GlcL6Mv5z5/YXpYf/dh53T8D/hDDmQyHn7eXwmEsc1ADcJhCx6wcVgFZmeF5GeCcnnSrhDcHJSscOKUq8RENQE1b4TpqH1FbT1x3axDvsVqUlHfJC+SmqH+aEDC4O/jXQRj7FD5YynjJ+J3yVVW4l74bm1XbfCYj/5GMzCPSxqgY4WCzCZUKYAHAxp7x0c/8t91e+k5GWMV/Oh3oHl1Akk7CntVeZX7PTCpWSKs6q9aSPJ7aJg==
+ bh=LDcvlmi0tjBar+fQD5MnMHG7r/5NNePHjRo4ppQ2rj8=;
+ b=CoX3Wy5zsMDV/BY9HncZq3zUq6PEgxkP0CXT/lLf9FhgC7Im6NTBrODZqB96LJiNOg/op/yOafxbzbGyIocrJDk2bVNTsoNVAQ6gSxx5smDt4ZaACCWelTVw/ass4gZovSpH4GHtXsI1qFGefefgRWiZL+H8d1XQdBlqCoYrvMStnJyvh9M+no4TfzOWHryZ3wHRjFAbCB3qBkPNV/JyZ5nPIiCHpI5nY2seR0qT0oI5FdwTeYLdhEzfXFnd3rxdh1LIc23BuyHpuP/0d7TWjqCba6DM2kVGliTCLK5Nhz/iOpQYyFBi3rCpouAhRgQqxkak6OkEoFvmd0pkN9HbcQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
  header.d=wdc.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=KvODrHxjR9O17ndKUIDhzXHw4AWnkKpIZcsCTapVmys=;
- b=Gnaht0D/y6Y3dzwt5sskuyJlnR2nZ5E7e+XgFVXavLjGg6NN97YwsEi+zl9yBotq8XN6skJIv0OQDVGRXzJFG9FSQ1gCZHAUuLO323jJGDsw+v1K9DD+gFg/KTiJjFMmezWkgTClFOHgGlsgjni0DkFympkAwybkvIWO0WHhdgU=
+ bh=LDcvlmi0tjBar+fQD5MnMHG7r/5NNePHjRo4ppQ2rj8=;
+ b=mDvxpQ4pUT9UqXn643bf2NCmSEH8L3EBGdG2aLHI/gNfk9eObZg3aonaNnmo4Xo6uCEc0PmDpq0IaOwPSS2P+fAzPqhqeLDFMb+9ECdwiZ99yWtY8EwmFJdQqti0HicD+g4bgNXgjPLHnFjMR3MO166UMHoh7lv6rPyvNgIO7ik=
 Authentication-Results: dabbelt.com; dkim=none (message not signed)
  header.d=none;dabbelt.com; dmarc=none action=none header.from=wdc.com;
 Received: from DM6PR04MB6201.namprd04.prod.outlook.com (2603:10b6:5:127::32)
  by DM5PR04MB0826.namprd04.prod.outlook.com (2603:10b6:3:100::21) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18; Thu, 18 Mar
- 2021 13:05:46 +0000
+ 2021 13:05:59 +0000
 Received: from DM6PR04MB6201.namprd04.prod.outlook.com
  ([fe80::38c0:cc46:192b:1868]) by DM6PR04MB6201.namprd04.prod.outlook.com
  ([fe80::38c0:cc46:192b:1868%7]) with mapi id 15.20.3955.018; Thu, 18 Mar 2021
- 13:05:46 +0000
+ 13:05:59 +0000
 From:   Anup Patel <anup.patel@wdc.com>
 To:     Palmer Dabbelt <palmer@dabbelt.com>,
         Palmer Dabbelt <palmerdabbelt@google.com>,
@@ -84,9 +84,9 @@ Cc:     Sandeep Tripathy <milun.tripathy@gmail.com>,
         linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         Anup Patel <anup.patel@wdc.com>
-Subject: [RFC PATCH v3 1/8] RISC-V: Enable CPU_IDLE drivers
-Date:   Thu, 18 Mar 2021 18:35:05 +0530
-Message-Id: <20210318130512.1025416-2-anup.patel@wdc.com>
+Subject: [RFC PATCH v3 3/8] RISC-V: Add arch functions for non-retentive suspend entry/exit
+Date:   Thu, 18 Mar 2021 18:35:07 +0530
+Message-Id: <20210318130512.1025416-4-anup.patel@wdc.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210318130512.1025416-1-anup.patel@wdc.com>
 References: <20210318130512.1025416-1-anup.patel@wdc.com>
@@ -98,212 +98,364 @@ X-ClientProxiedBy: MA1PR01CA0148.INDPRD01.PROD.OUTLOOK.COM
  (2603:10b6:5:127::32)
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from wdc.com (122.167.155.94) by MA1PR01CA0148.INDPRD01.PROD.OUTLOOK.COM (2603:1096:a00:71::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18 via Frontend Transport; Thu, 18 Mar 2021 13:05:41 +0000
+Received: from wdc.com (122.167.155.94) by MA1PR01CA0148.INDPRD01.PROD.OUTLOOK.COM (2603:1096:a00:71::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3955.18 via Frontend Transport; Thu, 18 Mar 2021 13:05:53 +0000
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 4cb4b010-1d19-4070-1f59-08d8ea0e8bb5
+X-MS-Office365-Filtering-Correlation-Id: 7330ed45-ba61-4bc8-a496-08d8ea0e9341
 X-MS-TrafficTypeDiagnostic: DM5PR04MB0826:
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM5PR04MB082695C8942A99CC593B474C8D699@DM5PR04MB0826.namprd04.prod.outlook.com>
+X-Microsoft-Antispam-PRVS: <DM5PR04MB0826BFBBD0A209FB07545C708D699@DM5PR04MB0826.namprd04.prod.outlook.com>
 WDCIPOUTBOUND: EOP-TRUE
-X-MS-Oob-TLC-OOBClassifiers: OLM:5236;
+X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: xS9w+NSYIRyJjyXY7adJzS+9gCDTk44yhVjCDIhCn/BIm7vlbRtNY2msOzR+GFgA/i7n2Xxb2/qPRjPG+9dhMa+K9jYhkCrex9fVu6SqWxs4kEiunwi12vVp1FE8CGAILUqobpcvtSGUjymIQ88QQhcgJavg/QD88BQ/yaO4yrIAoQbAwTpasWPS9rwFbwpth3B7kUSgD9mFUQhYUSuCYTekJ9BZoWbPPswfGDuqhbvK6AwD/ASCb+k8c5omm1pfZ5fWw/SDSNKaJRCbG1Sv/8vbluVhwqXBy1n19XxwipCSnpw0gvHFCfqNjkdTonfZupk87TJEvi586Ain686ahtnsQtOM7tO5jlyflF4IFb309bETtXkNsfqsNWssnrSjHLqODQbUfYL9ydVdkXCFU/XV/zzCDJ2Ryquv7EbNHtvccJhNLngL+wawv28Ti04OKiqovsh51vyw3nkjS9AUHgv374p/MD9Oh+q7zK/1IaR1QgYxhUi3hUFoobPPnh+wJkL+Zwpxywy9p7mWmXmewe0iTRGMps4qZp44ll6K09IVi4Wv3puDxdQGABDn1E5YWKj6PYGaR3qZnoTgdiPrdI+IJoeh7yJYgw3EOxQhBlYA/iujr6qFNL5UpIXZliGd
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR04MB6201.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(376002)(366004)(346002)(396003)(136003)(39860400002)(4326008)(86362001)(44832011)(2906002)(186003)(36756003)(478600001)(110136005)(1076003)(38100700001)(316002)(956004)(55016002)(2616005)(8936002)(8886007)(26005)(7416002)(54906003)(66556008)(5660300002)(16526019)(8676002)(66946007)(6666004)(66476007)(7696005)(83380400001)(52116002);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?e4uymjveWFmNiTKiMEj/SB7woqljYOp82k9CjfpwVQLNANHcNY4FTphVG05o?=
- =?us-ascii?Q?rxCir+ugHDoQGyL1Skt5VsoZrhuHXSobjYunVbkWPwhv2J6HfxVLeq4duOL/?=
- =?us-ascii?Q?EKqIvVZJwCrWeLCI5zsXOvk8oFzX2RNAz55KFi93cuYU5xR22FJf0wEIECw2?=
- =?us-ascii?Q?wusfvpOLFoF5OMViEZBNCn2JzA+l47D0dBmV6VchmzJhLqShH78TAoDK7aCg?=
- =?us-ascii?Q?1dxryiMvIqzbyAgFtOxVUqfi9E2MMb7dV6A6d8Gcm3aeonXHyMo1rPL1L244?=
- =?us-ascii?Q?jePww63R1ANde1oBLif57w2YjDI/W75KvfytGTvMzykael7h3RVXsnHH07my?=
- =?us-ascii?Q?rmK/hYAF7diHVnfEjiMJitMV00uqL9SpOHvFbQZSBvsLtn9iZcOxIjXIUdVq?=
- =?us-ascii?Q?SsqWxIrcb3Tl0CySjKX929QeW+5/W4KkKm3Bc3+dvL/NiifZDgYI7Zavj9UB?=
- =?us-ascii?Q?74JVnsxZjR1Ki1odbHxxkumH3sdfxSc/id1HcVar59CAsQiJDqxyGJj29zCI?=
- =?us-ascii?Q?6VzP0qhfPyOfCQqhYIl3ppCTweIQWclcDcc8qPZgRna7qgK9o76ub6CZJakY?=
- =?us-ascii?Q?TcAb5hmlY6M9zVxgHID1Dj/4u2xQo8KZsdd7xsNAbAEFioiObbBewhrDtA3E?=
- =?us-ascii?Q?l8pdjiLtFBqf2NIeJ/5geGBFPlSGWoxq5IkPs8EqZ8yJnHyE1hY6HbK33A99?=
- =?us-ascii?Q?yna2S7w+noiGKWMjgqxBgnIC94O80ddSYqKr8pC2QkCHXjH3VN6VapXpilcT?=
- =?us-ascii?Q?H8S811Et0SNEfyYQVsE2vDO5RJdxFCgffK3q7CoYWoI7R0A9rZPiYEURCTas?=
- =?us-ascii?Q?upEv+9EwRp1bafVGku6YLDTXCd3+RW8p3E7oQR6og/3jwwOTd1+5BQnb9jT+?=
- =?us-ascii?Q?R0veHC4TgB5io0OA0yJ8PtWWCo2/SMymG9H+Fd1CiLCYfmbDXFLNKvUya9E1?=
- =?us-ascii?Q?BMT+GaebMYdPLxIRb4OsXkF3ZzbPX1pemwI9iemTWiUS7Ajj1B0DXNdl+576?=
- =?us-ascii?Q?kF4uKXW6mYvwpdI7RKC415/4zNlYjTmYzczJ4uvoKdiCbRPs0/Y0fxenlq60?=
- =?us-ascii?Q?ZXM9lidXVp/KmnY9BBVJnSyTj+FHZ2/TKSBcPNMIOel7vqdtPeOA4jchhGci?=
- =?us-ascii?Q?zkdz8uPBwTFREgdex/3vEibwhaHEII4Ov2f3+QcP6FSWFEeFKPboMVoLQAkX?=
- =?us-ascii?Q?liX9/9OfaCkRPgBa/0JvAySjmOvqUvrWw1G4zFc/PTwKlDJVbkHovh1+2DBS?=
- =?us-ascii?Q?zOpr9txRHkIEd3DgbpZ2zvVVXpKtDJ2MzqjkJaV67HRf3GntxCdOaZaHoCV9?=
- =?us-ascii?Q?h560Uof4SndHhuGIjspWA983?=
+X-Microsoft-Antispam-Message-Info: MnthN84iUQLwXKQN93prhuf4DrhqZVP8tJA4x+03zS/GADTPNvPOO5Y7SMjpLHCknukxvVK2OUOtahGqdm+SI2MwCHKxGYq9k0EXtmXhO5dGrgUE9sBXz2jSXgbhuX8T8AMA/H+bRcFtFxIDOWDN6NjEHI7v281jllFQcyr2ISB70733DQLx7VDh95unQrVGDFH7sjpaEcuxhaTnD1j1eUKSZghuY1llCPgeZisCzw0dzWN5LzbOmBv6BtoOtJTGWpd44lDcZSpYbvFe0xQT8b89lur1s/35zaCEiFNjjAwo3MXnOsbvdh0gBM3t5+uzUuJ0xH0CAErtjVfpZ/iTjR13s+SsKwwY6iEZHMGysgv1RVZzW/uMkjqHt7BgPuLPLdn/WRhAIe7XljRpJvzEo7jIALiE/UYdBC3L0fVifkpo6GgyqhZ3E7rZhRAFAZcSUbFQf3NB8oKcgOoaEdMSr2+6EqyGBsmymCL3ojcsTC7F2KYnLa/EvaKODCcKudrbTjNzclQUHvrmGiXL2NoTiPcDdI0K6OEkYX6aPsG0qofhbtiFXi4qNvnr37bS57eg7XMLo8tHv1C8ZPbKtry/FBX0mYi1+qt2K6zdKsp0+MM=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR04MB6201.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(376002)(366004)(346002)(396003)(136003)(39860400002)(4326008)(15650500001)(86362001)(44832011)(2906002)(186003)(36756003)(478600001)(110136005)(1076003)(38100700001)(316002)(956004)(55016002)(2616005)(8936002)(8886007)(26005)(7416002)(54906003)(66556008)(5660300002)(16526019)(8676002)(66946007)(6666004)(66476007)(7696005)(83380400001)(52116002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?BnvdM+Xsw5uQ5XKweKZaBvkYTnFoiJMIAxLtphJwsquueTT3TxP9/1WaVbrm?=
+ =?us-ascii?Q?kpLKYmdAluhPAjVHNCJoYJPzaYEpcpPYxLP6biCAFFtRw0NeQZ6Eg1cR8PSY?=
+ =?us-ascii?Q?ac5FLUFxgj2aN800oDFN6P9Fy9wIYVzfkbgh18bwoshI16IzON3pDN9NUJxH?=
+ =?us-ascii?Q?SZqa93d7a1/IPRTvf6SAB2ehfajqWXJ63xMokF9+nUGBbgc0MYk74R4wqGYH?=
+ =?us-ascii?Q?ChEUJKlHY1FapbCC/Z9ys9jIWYj6sWVOK/2uUAxwDrauHfGDAFN+7QJhXKgx?=
+ =?us-ascii?Q?Rfc3bA5C3BrGdJ0xTLMDoUncnGL46YKvOLC/AvJLkrzIohG53yb2cGM5j46S?=
+ =?us-ascii?Q?9woNT3MUOhVatFDOa0Ij98GDyKQAn8C0hMgoIQc9lzgUUajIPLc1p971N5bR?=
+ =?us-ascii?Q?aQVkZGRj6tDPuvY5HLL9VJlb9qLMfn34D6/vkHwYImyHT/ICMmsxXmj8kiEh?=
+ =?us-ascii?Q?jOn9JEf6TB5H1UnT2bvRiu/yGEag38vgHdY/cQ0kvgVuvSoPxB0QqlXaVEko?=
+ =?us-ascii?Q?SY5d/6fSIDLoiJZa1BR/ZkK4gnS68vCMCtxiqAuCaoEAFEWLlnrkva8nSgY1?=
+ =?us-ascii?Q?R9eRiRwGEY+aJol3oS9l7hD/CAs/fIepxKPIJTuhkOGsCRIXhvDXcGkHMZxI?=
+ =?us-ascii?Q?tcNr9JBpTsBCSmxs4CQhG3w7h34RmkCDT3p7QgQVoM3MOaooR7q9/Z/99ICO?=
+ =?us-ascii?Q?KzHYFIguAhilB7xqW5V0cxe+5HxzMXQFDd+jkN1dOxPTDb+Z+WJT6og282Qi?=
+ =?us-ascii?Q?YVinAEoa6fWn356PC7o0SndJ5F2SygmLgllpM7dXwwmPzGbfSZS9Nt8bm3fr?=
+ =?us-ascii?Q?YkLbnUGjjFYJ0INiEccAUqqK0LvUOsSJI6AXP6XpmCZ8RGbVVyMWhB9cPiEf?=
+ =?us-ascii?Q?Ci4q4sleYDJTIasHCzpw87rxfTD10UQpDtD7EBKstcwWMV3j/4x6gamNZghe?=
+ =?us-ascii?Q?L/BC696EcGIkrqDEzi7zh/10mHraKyVJCEdQNo18Wv3PZLFCiYbOsTtagVfJ?=
+ =?us-ascii?Q?R9oQrqr/iEt5xwerZO3xHtv6NC3ZLsFJkyA322ho3MB3YGzY4rswnrBidNAQ?=
+ =?us-ascii?Q?ezihnz5w9zEWeGCwg3A1NiJrp4WWmcUqWoz/gypdU5/gHyBRbz87sJiZosrr?=
+ =?us-ascii?Q?FJTIkJHCkENtGvtKUZeOmMUsWMOJxwllwNUK6Ffh17410VbFIjqbSfCXO3Ex?=
+ =?us-ascii?Q?juLQEHiuoys4K9QJpO5u7KM4tm9JRpg6mB5E41+vDpFItdlswNQ7Z/r/hNx+?=
+ =?us-ascii?Q?KYcFWmaaYus8r1v80DJ0hYxU2ef2ofF31exlp5sPM/ATTvEwILMVM1gH1DiR?=
+ =?us-ascii?Q?o8GQYTOk/KD5Yyj5ms7/xIMv?=
 X-OriginatorOrg: wdc.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4cb4b010-1d19-4070-1f59-08d8ea0e8bb5
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7330ed45-ba61-4bc8-a496-08d8ea0e9341
 X-MS-Exchange-CrossTenant-AuthSource: DM6PR04MB6201.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2021 13:05:46.9068
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2021 13:05:59.7837
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: b61c8803-16f3-4c35-9b17-6f65f441df86
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: sIl2+K+VK1t43E7LcMXPsmhPmsQdISpRCRlPWMVq3BV401rgapfKHoMnke1kev08+U/J3X+CmBQQP5LI+kAF1g==
+X-MS-Exchange-CrossTenant-UserPrincipalName: ExSJIQYAhhQF263KzUcsYXy77lOYAU6bYfceyZXBjqawKoe7gsNeYWZTBLakSCI6H0dixlfxJsSKhBLZYPuOEA==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR04MB0826
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We force select CPU_PM and provide asm/cpuidle.h so that we can
-use CPU IDLE drivers for Linux RISC-V kernel.
+The hart registers and CSRs are not preserved in non-retentative
+suspend state so we provide arch specific helper functions which
+will save/restore hart context upon entry/exit to non-retentive
+suspend state. These helper functions can be used by cpuidle
+drivers for non-retentive suspend entry/exit.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- arch/riscv/Kconfig                |  7 +++++++
- arch/riscv/configs/defconfig      |  7 +++----
- arch/riscv/configs/rv32_defconfig |  4 ++--
- arch/riscv/include/asm/cpuidle.h  | 24 ++++++++++++++++++++++++
- arch/riscv/kernel/process.c       |  3 ++-
- 5 files changed, 38 insertions(+), 7 deletions(-)
- create mode 100644 arch/riscv/include/asm/cpuidle.h
+ arch/riscv/include/asm/suspend.h  |  35 +++++++++
+ arch/riscv/kernel/Makefile        |   2 +
+ arch/riscv/kernel/asm-offsets.c   |   3 +
+ arch/riscv/kernel/suspend.c       |  86 ++++++++++++++++++++++
+ arch/riscv/kernel/suspend_entry.S | 116 ++++++++++++++++++++++++++++++
+ 5 files changed, 242 insertions(+)
+ create mode 100644 arch/riscv/include/asm/suspend.h
+ create mode 100644 arch/riscv/kernel/suspend.c
+ create mode 100644 arch/riscv/kernel/suspend_entry.S
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 468642c4e92f..19c9ae909001 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -37,6 +37,7 @@ config RISCV
- 	select CLONE_BACKWARDS
- 	select CLINT_TIMER if !MMU
- 	select COMMON_CLK
-+	select CPU_PM if CPU_IDLE
- 	select EDAC_SUPPORT
- 	select GENERIC_ARCH_TOPOLOGY if SMP
- 	select GENERIC_ATOMIC64 if !64BIT
-@@ -475,4 +476,10 @@ source "kernel/power/Kconfig"
- 
- endmenu
- 
-+menu "CPU Power Management"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- source "drivers/firmware/Kconfig"
-diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
-index 6c0625aa96c7..dc4927c0e44b 100644
---- a/arch/riscv/configs/defconfig
-+++ b/arch/riscv/configs/defconfig
-@@ -13,11 +13,13 @@ CONFIG_USER_NS=y
- CONFIG_CHECKPOINT_RESTORE=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
-+# CONFIG_SYSFS_SYSCALL is not set
- CONFIG_BPF_SYSCALL=y
- CONFIG_SOC_SIFIVE=y
- CONFIG_SOC_VIRT=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_CPU_IDLE=y
- CONFIG_JUMP_LABEL=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
-@@ -65,10 +67,9 @@ CONFIG_HW_RANDOM=y
- CONFIG_HW_RANDOM_VIRTIO=y
- CONFIG_SPI=y
- CONFIG_SPI_SIFIVE=y
-+# CONFIG_PTP_1588_CLOCK is not set
- CONFIG_GPIOLIB=y
- CONFIG_GPIO_SIFIVE=y
--# CONFIG_PTP_1588_CLOCK is not set
--CONFIG_POWER_RESET=y
- CONFIG_DRM=y
- CONFIG_DRM_RADEON=y
- CONFIG_DRM_VIRTIO_GPU=y
-@@ -132,5 +133,3 @@ CONFIG_DEBUG_BLOCK_EXT_DEVT=y
- # CONFIG_FTRACE is not set
- # CONFIG_RUNTIME_TESTING_MENU is not set
- CONFIG_MEMTEST=y
--# CONFIG_SYSFS_SYSCALL is not set
--CONFIG_EFI=y
-diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
-index 8dd02b842fef..332e43a4a2c3 100644
---- a/arch/riscv/configs/rv32_defconfig
-+++ b/arch/riscv/configs/rv32_defconfig
-@@ -13,12 +13,14 @@ CONFIG_USER_NS=y
- CONFIG_CHECKPOINT_RESTORE=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
-+# CONFIG_SYSFS_SYSCALL is not set
- CONFIG_BPF_SYSCALL=y
- CONFIG_SOC_SIFIVE=y
- CONFIG_SOC_VIRT=y
- CONFIG_ARCH_RV32I=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_CPU_IDLE=y
- CONFIG_JUMP_LABEL=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
-@@ -67,7 +69,6 @@ CONFIG_HW_RANDOM_VIRTIO=y
- CONFIG_SPI=y
- CONFIG_SPI_SIFIVE=y
- # CONFIG_PTP_1588_CLOCK is not set
--CONFIG_POWER_RESET=y
- CONFIG_DRM=y
- CONFIG_DRM_RADEON=y
- CONFIG_DRM_VIRTIO_GPU=y
-@@ -131,4 +132,3 @@ CONFIG_DEBUG_BLOCK_EXT_DEVT=y
- # CONFIG_FTRACE is not set
- # CONFIG_RUNTIME_TESTING_MENU is not set
- CONFIG_MEMTEST=y
--# CONFIG_SYSFS_SYSCALL is not set
-diff --git a/arch/riscv/include/asm/cpuidle.h b/arch/riscv/include/asm/cpuidle.h
+diff --git a/arch/riscv/include/asm/suspend.h b/arch/riscv/include/asm/suspend.h
 new file mode 100644
-index 000000000000..71fdc607d4bc
+index 000000000000..63e9f434fb89
 --- /dev/null
-+++ b/arch/riscv/include/asm/cpuidle.h
-@@ -0,0 +1,24 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
++++ b/arch/riscv/include/asm/suspend.h
+@@ -0,0 +1,35 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
-+ * Copyright (C) 2021 Allwinner Ltd
-+ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
 + */
 +
-+#ifndef _ASM_RISCV_CPUIDLE_H
-+#define _ASM_RISCV_CPUIDLE_H
++#ifndef _ASM_RISCV_SUSPEND_H
++#define _ASM_RISCV_SUSPEND_H
 +
-+#include <asm/barrier.h>
-+#include <asm/processor.h>
++#include <asm/ptrace.h>
 +
-+static inline void cpu_do_idle(void)
-+{
-+	/*
-+	 * Add mb() here to ensure that all
-+	 * IO/MEM accesses are completed prior
-+	 * to entering WFI.
-+	 */
-+	mb();
-+	wait_for_interrupt();
-+}
++struct suspend_context {
++	/* Saved and restored by low-level functions */
++	struct pt_regs regs;
++	/* Saved and restored by high-level functions */
++	unsigned long scratch;
++	unsigned long tvec;
++	unsigned long ie;
++#ifdef CONFIG_MMU
++	unsigned long satp;
++#endif
++};
++
++/* Low-level CPU suspend entry function */
++int __cpu_suspend_enter(struct suspend_context *context);
++
++/* High-level CPU suspend which will save context and call finish() */
++int cpu_suspend(unsigned long arg,
++		int (*finish)(unsigned long arg,
++			      unsigned long entry,
++			      unsigned long context));
++
++/* Low-level CPU resume entry function */
++int __cpu_resume_enter(unsigned long hartid, unsigned long context);
 +
 +#endif
-diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index 6f728e731bed..dd2ef18517f4 100644
---- a/arch/riscv/kernel/process.c
-+++ b/arch/riscv/kernel/process.c
-@@ -22,6 +22,7 @@
- #include <asm/string.h>
- #include <asm/switch_to.h>
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index 3dc0abde988a..b9b1b05ab860 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -42,6 +42,8 @@ obj-$(CONFIG_SMP)		+= cpu_ops_spinwait.o
+ obj-$(CONFIG_MODULES)		+= module.o
+ obj-$(CONFIG_MODULE_SECTIONS)	+= module-sections.o
+ 
++obj-$(CONFIG_CPU_PM)		+= suspend_entry.o suspend.o
++
+ obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o ftrace.o
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= mcount-dyn.o
+ 
+diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
+index 9ef33346853c..2628dfd0f77d 100644
+--- a/arch/riscv/kernel/asm-offsets.c
++++ b/arch/riscv/kernel/asm-offsets.c
+@@ -10,6 +10,7 @@
+ #include <linux/sched.h>
  #include <asm/thread_info.h>
-+#include <asm/cpuidle.h>
+ #include <asm/ptrace.h>
++#include <asm/suspend.h>
  
- register unsigned long gp_in_global __asm__("gp");
+ void asm_offsets(void);
  
-@@ -36,7 +37,7 @@ extern asmlinkage void ret_from_kernel_thread(void);
+@@ -111,6 +112,8 @@ void asm_offsets(void)
+ 	OFFSET(PT_BADADDR, pt_regs, badaddr);
+ 	OFFSET(PT_CAUSE, pt_regs, cause);
  
- void arch_cpu_idle(void)
- {
--	wait_for_interrupt();
-+	cpu_do_idle();
- 	raw_local_irq_enable();
- }
- 
++	OFFSET(SUSPEND_CONTEXT_REGS, suspend_context, regs);
++
+ 	/*
+ 	 * THREAD_{F,X}* might be larger than a S-type offset can handle, but
+ 	 * these are used in performance-sensitive assembly so we can't resort
+diff --git a/arch/riscv/kernel/suspend.c b/arch/riscv/kernel/suspend.c
+new file mode 100644
+index 000000000000..49dddec30e99
+--- /dev/null
++++ b/arch/riscv/kernel/suspend.c
+@@ -0,0 +1,86 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
++ */
++
++#include <linux/ftrace.h>
++#include <asm/csr.h>
++#include <asm/suspend.h>
++
++static void suspend_save_csrs(struct suspend_context *context)
++{
++	context->scratch = csr_read(CSR_SCRATCH);
++	context->tvec = csr_read(CSR_TVEC);
++	context->ie = csr_read(CSR_IE);
++
++	/*
++	 * No need to save/restore IP CSR (i.e. MIP or SIP) because:
++	 *
++	 * 1. For no-MMU (M-mode) kernel, the bits in MIP are set by
++	 *    external devices (such as interrupt controller, timer, etc).
++	 * 2. For MMU (S-mode) kernel, the bits in SIP are set by
++	 *    M-mode firmware and external devices (such as interrupt
++	 *    controller, etc).
++	 */
++
++#ifdef CONFIG_MMU
++	context->satp = csr_read(CSR_SATP);
++#endif
++}
++
++static void suspend_restore_csrs(struct suspend_context *context)
++{
++	csr_write(CSR_SCRATCH, context->scratch);
++	csr_write(CSR_TVEC, context->tvec);
++	csr_write(CSR_IE, context->ie);
++
++#ifdef CONFIG_MMU
++	csr_write(CSR_SATP, context->satp);
++#endif
++}
++
++int cpu_suspend(unsigned long arg,
++		int (*finish)(unsigned long arg,
++			      unsigned long entry,
++			      unsigned long context))
++{
++	int rc = 0;
++	struct suspend_context context = { 0 };
++
++	/* Finisher should be non-NULL */
++	if (!finish)
++		return -EINVAL;
++
++	/* Save additional CSRs*/
++	suspend_save_csrs(&context);
++
++	/*
++	 * Function graph tracer state gets incosistent when the kernel
++	 * calls functions that never return (aka finishers) hence disable
++	 * graph tracing during their execution.
++	 */
++	pause_graph_tracing();
++
++	/* Save context on stack */
++	if (__cpu_suspend_enter(&context)) {
++		/* Call the finisher */
++		rc = finish(arg, __pa_symbol(__cpu_resume_enter),
++			    (ulong)&context);
++
++		/*
++		 * Should never reach here, unless the suspend finisher
++		 * fails. Successful cpu_suspend() should return from
++		 * __cpu_resume_entry()
++		 */
++		if (!rc)
++			rc = -EOPNOTSUPP;
++	}
++
++	/* Enable function graph tracer */
++	unpause_graph_tracing();
++
++	/* Restore additional CSRs */
++	suspend_restore_csrs(&context);
++
++	return rc;
++}
+diff --git a/arch/riscv/kernel/suspend_entry.S b/arch/riscv/kernel/suspend_entry.S
+new file mode 100644
+index 000000000000..dee85c86e177
+--- /dev/null
++++ b/arch/riscv/kernel/suspend_entry.S
+@@ -0,0 +1,116 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2021 Western Digital Corporation or its affiliates.
++ */
++
++#include <linux/linkage.h>
++#include <asm/asm.h>
++#include <asm/asm-offsets.h>
++#include <asm/csr.h>
++
++	.text
++	.altmacro
++	.option norelax
++
++ENTRY(__cpu_suspend_enter)
++	/* Save registers (except A0 and T0-T6) */
++	REG_S	ra, (SUSPEND_CONTEXT_REGS + PT_RA)(a0)
++	REG_S	sp, (SUSPEND_CONTEXT_REGS + PT_SP)(a0)
++	REG_S	gp, (SUSPEND_CONTEXT_REGS + PT_GP)(a0)
++	REG_S	tp, (SUSPEND_CONTEXT_REGS + PT_TP)(a0)
++	REG_S	s0, (SUSPEND_CONTEXT_REGS + PT_S0)(a0)
++	REG_S	s1, (SUSPEND_CONTEXT_REGS + PT_S1)(a0)
++	REG_S	a1, (SUSPEND_CONTEXT_REGS + PT_A1)(a0)
++	REG_S	a2, (SUSPEND_CONTEXT_REGS + PT_A2)(a0)
++	REG_S	a3, (SUSPEND_CONTEXT_REGS + PT_A3)(a0)
++	REG_S	a4, (SUSPEND_CONTEXT_REGS + PT_A4)(a0)
++	REG_S	a5, (SUSPEND_CONTEXT_REGS + PT_A5)(a0)
++	REG_S	a6, (SUSPEND_CONTEXT_REGS + PT_A6)(a0)
++	REG_S	a7, (SUSPEND_CONTEXT_REGS + PT_A7)(a0)
++	REG_S	s2, (SUSPEND_CONTEXT_REGS + PT_S2)(a0)
++	REG_S	s3, (SUSPEND_CONTEXT_REGS + PT_S3)(a0)
++	REG_S	s4, (SUSPEND_CONTEXT_REGS + PT_S4)(a0)
++	REG_S	s5, (SUSPEND_CONTEXT_REGS + PT_S5)(a0)
++	REG_S	s6, (SUSPEND_CONTEXT_REGS + PT_S6)(a0)
++	REG_S	s7, (SUSPEND_CONTEXT_REGS + PT_S7)(a0)
++	REG_S	s8, (SUSPEND_CONTEXT_REGS + PT_S8)(a0)
++	REG_S	s9, (SUSPEND_CONTEXT_REGS + PT_S9)(a0)
++	REG_S	s10, (SUSPEND_CONTEXT_REGS + PT_S10)(a0)
++	REG_S	s11, (SUSPEND_CONTEXT_REGS + PT_S11)(a0)
++
++	/* Save CSRs */
++	csrr	t0, CSR_EPC
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_EPC)(a0)
++	csrr	t0, CSR_STATUS
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_STATUS)(a0)
++	csrr	t0, CSR_TVAL
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_BADADDR)(a0)
++	csrr	t0, CSR_CAUSE
++	REG_S	t0, (SUSPEND_CONTEXT_REGS + PT_CAUSE)(a0)
++
++	/* Return non-zero value */
++	li	a0, 1
++
++	/* Return to C code */
++	ret
++END(__cpu_suspend_enter)
++
++ENTRY(__cpu_resume_enter)
++#ifdef CONFIG_MMU
++	/* Save A0 and A1 */
++	add	t0, a0, zero
++	add	t1, a1, zero
++
++	/* Enable MMU */
++	la	a0, swapper_pg_dir
++	call	relocate_enable_mmu
++
++	/* Restore A0 and A1 */
++	add	a0, t0, zero
++	add	a1, t1, zero
++#endif
++
++	/* Make A0 point to suspend context */
++	add	a0, a1, zero
++
++	/* Restore CSRs */
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_EPC)(a0)
++	csrw	CSR_EPC, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_STATUS)(a0)
++	csrw	CSR_STATUS, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_BADADDR)(a0)
++	csrw	CSR_TVAL, t0
++	REG_L	t0, (SUSPEND_CONTEXT_REGS + PT_CAUSE)(a0)
++	csrw	CSR_CAUSE, t0
++
++	/* Restore registers (except A0 and T0-T6) */
++	REG_L	ra, (SUSPEND_CONTEXT_REGS + PT_RA)(a0)
++	REG_L	sp, (SUSPEND_CONTEXT_REGS + PT_SP)(a0)
++	REG_L	gp, (SUSPEND_CONTEXT_REGS + PT_GP)(a0)
++	REG_L	tp, (SUSPEND_CONTEXT_REGS + PT_TP)(a0)
++	REG_L	s0, (SUSPEND_CONTEXT_REGS + PT_S0)(a0)
++	REG_L	s1, (SUSPEND_CONTEXT_REGS + PT_S1)(a0)
++	REG_L	a1, (SUSPEND_CONTEXT_REGS + PT_A1)(a0)
++	REG_L	a2, (SUSPEND_CONTEXT_REGS + PT_A2)(a0)
++	REG_L	a3, (SUSPEND_CONTEXT_REGS + PT_A3)(a0)
++	REG_L	a4, (SUSPEND_CONTEXT_REGS + PT_A4)(a0)
++	REG_L	a5, (SUSPEND_CONTEXT_REGS + PT_A5)(a0)
++	REG_L	a6, (SUSPEND_CONTEXT_REGS + PT_A6)(a0)
++	REG_L	a7, (SUSPEND_CONTEXT_REGS + PT_A7)(a0)
++	REG_L	s2, (SUSPEND_CONTEXT_REGS + PT_S2)(a0)
++	REG_L	s3, (SUSPEND_CONTEXT_REGS + PT_S3)(a0)
++	REG_L	s4, (SUSPEND_CONTEXT_REGS + PT_S4)(a0)
++	REG_L	s5, (SUSPEND_CONTEXT_REGS + PT_S5)(a0)
++	REG_L	s6, (SUSPEND_CONTEXT_REGS + PT_S6)(a0)
++	REG_L	s7, (SUSPEND_CONTEXT_REGS + PT_S7)(a0)
++	REG_L	s8, (SUSPEND_CONTEXT_REGS + PT_S8)(a0)
++	REG_L	s9, (SUSPEND_CONTEXT_REGS + PT_S9)(a0)
++	REG_L	s10, (SUSPEND_CONTEXT_REGS + PT_S10)(a0)
++	REG_L	s11, (SUSPEND_CONTEXT_REGS + PT_S11)(a0)
++
++	/* Return zero value */
++	add	a0, zero, zero
++
++	/* Return to C code */
++	ret
++END(__cpu_resume_enter)
 -- 
 2.25.1
 
