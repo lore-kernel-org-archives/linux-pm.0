@@ -2,553 +2,398 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E737C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 09:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F20EC433E6
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 09:38:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 23D5064F3B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 09:33:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BA9F6146D
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Mar 2021 09:38:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229570AbhCRJdN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Mar 2021 05:33:13 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:17157 "EHLO rere.qmqm.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229558AbhCRJdA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Mar 2021 05:33:00 -0400
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 4F1MJV0TGqzFV;
-        Thu, 18 Mar 2021 10:32:57 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1616059978; bh=40yQtqUk6OB6WNO5+EEEvp9Q3T5U2MxClWlqdMONUKY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=WBG6cvns8yTGsMV7Xw1j//stQexgeAQb+kErVz4xSFxgY9gyutYfIZYmCdZcK79P/
-         NaQ0PZlB1zqyi+/N669EFIwyui0w3QTB9tmjeoBt1vd4oqGwnf5DhZARd1yJjnj2pB
-         Y7kpL2IRmZIsL6s1sq7M5Azp4qGqOpqnD2sbryLWYItwkR/lkam+Zcow78FAIOv3nV
-         +QHv9KFljoolhYvQsTt4lJ1DK6SwIcAbOLRlNeyxru3kkyFXVRpGXCoHZTj6VBexUn
-         QDQDO2OAFCxtd587gfalRvxmikDG3Ys+UXVYfR+O/xmV88HL2+GqjzaWLSpTYM77w1
-         AqKIVk5P31U0A==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.102.4 at mail
-Date:   Thu, 18 Mar 2021 10:31:42 +0100
-From:   =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v16 1/2] drm/tegra: dc: Support memory bandwidth
- management
-Message-ID: <20210318093142.GB18038@qmqm.qmqm.pl>
-References: <20210317185734.14661-1-digetx@gmail.com>
- <20210317185734.14661-2-digetx@gmail.com>
+        id S229745AbhCRJhf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Mar 2021 05:37:35 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:54407 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229785AbhCRJhZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 05:37:25 -0400
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20210318093723epoutp0392b68666f1348bd8b94e440ad41ff727~tZjqdWFM52029920299epoutp03q
+        for <linux-pm@vger.kernel.org>; Thu, 18 Mar 2021 09:37:23 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20210318093723epoutp0392b68666f1348bd8b94e440ad41ff727~tZjqdWFM52029920299epoutp03q
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1616060243;
+        bh=6SaYaiy79O/OjpADCgJc+9tLRpr4nVMSOT6EqKFfGoA=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=LS4Sfhf+p1LIP3CKXRvy00se3h2TzBRX9cqKNX+NxmZcsLgrOSyad4xvNnFqFpz5S
+         MuxYXtZrmPBBPev0gAPBDTFMxTvdMiAL/8oDtkZbWDRaN7DxTfO1iSqVqinA0rrSRJ
+         w2PePuDk7p+Hp6WwhUslWy7tXdr625UQprefaokQ=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
+        20210318093722epcas1p3d0c1344e378b1c5140ece27424c297a1~tZjp5QWhv2607326073epcas1p3q;
+        Thu, 18 Mar 2021 09:37:22 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.156]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4F1MPX3Sbzz4x9Pv; Thu, 18 Mar
+        2021 09:37:20 +0000 (GMT)
+Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        F2.D0.02418.05F13506; Thu, 18 Mar 2021 18:37:20 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20210318093719epcas1p431f8a1f49fe3ec457475b5fdd14772ab~tZjnK6mFC0400004000epcas1p4d;
+        Thu, 18 Mar 2021 09:37:19 +0000 (GMT)
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20210318093719epsmtrp2bd8749122724c0e6573787a2e847c76a~tZjnJVYl_1994919949epsmtrp2G;
+        Thu, 18 Mar 2021 09:37:19 +0000 (GMT)
+X-AuditID: b6c32a35-c0dff70000010972-f2-60531f504bdb
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        11.4F.08745.F4F13506; Thu, 18 Mar 2021 18:37:19 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20210318093719epsmtip24f0933735e134abd03418a3e3693ceac~tZjm3HSn-2653226532epsmtip2Z;
+        Thu, 18 Mar 2021 09:37:19 +0000 (GMT)
+Subject: Re: [PATCH 07/11] PM / devfreq: check get_dev_status before start
+ monitor
+To:     Dong Aisheng <dongas86@gmail.com>,
+        Chanwoo Choi <cwchoi00@gmail.com>
+Cc:     Dong Aisheng <aisheng.dong@nxp.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        Sascha Hauer <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        open list <linux-kernel@vger.kernel.org>,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        Abel Vesa <abel.vesa@nxp.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <0e518145-5cae-63f1-c32f-e6207fdeae54@samsung.com>
+Date:   Thu, 18 Mar 2021 18:54:26 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
+In-Reply-To: <CAA+hA=QOhUH19an+=p5womfp+oJRJPrFoVuLN4Ai0oezB8myNQ@mail.gmail.com>
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210317185734.14661-2-digetx@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrBJsWRmVeSWpSXmKPExsWy7bCmgW6AfHCCwcpPEhbLLh1ltPgydRez
+        xbOj2hZ/N09ns1g1dSeLxdmmN+wWmx5fY7Xo+rWS2eLyrjlsFp97jzBa3G5cwWbxYou4A4/H
+        zll32T02repk89i8pN5j47sdTB79fw08+rasYvT4vEkugD0q2yYjNTEltUghNS85PyUzL91W
+        yTs43jne1MzAUNfQ0sJcSSEvMTfVVsnFJ0DXLTMH6EolhbLEnFKgUEBicbGSvp1NUX5pSapC
+        Rn5xia1SakFKToFlgV5xYm5xaV66XnJ+rpWhgYGRKVBhQnbGkt9iBf88K9Z/e8rSwPjLuouR
+        k0NCwETi7YrfTF2MXBxCAjsYJb5db2OHcD4xSjRO+waV+cwosfnaRHaYlk9bHjBDJHYxSnxu
+        2A7lvGeUOHL1BiNIlbBAiMTk03+ZQWwRAQ+JS9OnsIEUMQssZJb4vOcRC0iCTUBLYv+LG2wg
+        Nr+AosTVH4/BmnkF7CS6jq1iArFZBFQleroh4qICYRInt7VA1QhKnJz5BGwOp0CgxKmep2Dn
+        MQuIS9x6Mp8JwpaXaN46G+w6CYETHBKtn5ewQPzgIvFzQTcbhC0s8er4FqjfpCQ+v9sLFa+W
+        WHnyCBtEcwejxJb9F1ghEsYS+5dOBtrAAbRBU2L9Ln2IsKLEzt9zGSEW80m8+9rDClIiIcAr
+        0dEmBFGiLHH5wV0mCFtSYnF7J9sERqVZSN6ZheSFWUhemIWwbAEjyypGsdSC4tz01GLDAkPk
+        6N7ECE7CWqY7GCe+/aB3iJGJg/EQowQHs5IIr2leQIIQb0piZVVqUX58UWlOavEhRlNgAE9k
+        lhJNzgfmgbySeENTI2NjYwsTQzNTQ0Mlcd4kgwfxQgLpiSWp2ampBalFMH1MHJxSDUz2aRYB
+        oqFKHB2ffHQVDCr/v221FnfwbVi2g+Fq3fS5XL+aPA/xm5orbZvRc9w0yX5l7qW7Sxw4tYPd
+        9AyVrF9dLE8WfFndX6hsdjUlimeKwPrI2TtnuZxZmtHgpvszoHihhJbTkVPPeGMlVpq3ft77
+        ald50883T67pM08zerb50/n2fbcDo04HKafNPl184fyGrLzkw1JR7E+2OErmbb4YvvPwrIuO
+        ByrUe05NaXO+oScR/frzjeDoRZnmj0WWMlgfdjFb2D31uMY/N6e5XvnvdzNWlO35mc6ZVm26
+        yPHz6VtBXDrmRpWHSvbJHd05w/LC9p2bbS+rNflucmNpdv+iYmAU/39ygfxLzquaHEosxRmJ
+        hlrMRcWJAIkeuJlLBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrEIsWRmVeSWpSXmKPExsWy7bCSvK6/fHCCwYNXShbLLh1ltPgydRez
+        xbOj2hZ/N09ns1g1dSeLxdmmN+wWmx5fY7Xo+rWS2eLyrjlsFp97jzBa3G5cwWbxYou4A4/H
+        zll32T02repk89i8pN5j47sdTB79fw08+rasYvT4vEkugD2KyyYlNSezLLVI3y6BK2PJb7GC
+        f54V6789ZWlg/GXdxcjJISFgIvFpywPmLkYuDiGBHYwSnztesEIkJCWmXTwKlOAAsoUlDh8u
+        hqh5yyjxbMYDJpAaYYEQicmn/zKD2CICHhKXpk9hAyliFljILLFw7wqoqTvZJHq7d7KDVLEJ
+        aEnsf3GDDcTmF1CUuPrjMSOIzStgJ9F1bBXYVBYBVYmeboi4qECYxM4lj5kgagQlTs58wgJi
+        cwoESpzqeQo2k1lAXeLPvEvMELa4xK0n85kgbHmJ5q2zmScwCs9C0j4LScssJC2zkLQsYGRZ
+        xSiZWlCcm55bbFhglJdarlecmFtcmpeul5yfu4kRHI1aWjsY96z6oHeIkYmD8RCjBAezkgiv
+        aV5AghBvSmJlVWpRfnxRaU5q8SFGaQ4WJXHeC10n44UE0hNLUrNTUwtSi2CyTBycUg1M7Q3L
+        mDZNVyu20ZgTtPtR9NIdTY+WFe4UZX57I+KvwpYvXG7n+yvTra7zss/itrn8l9l3d2u6WmWC
+        6n416d/X5/dYTIjdtMqc/3yXyLWFF0Mbk35d2aO0NfazLF/ClAq/WUyRxi8nbBDYETSjVf4k
+        i7a6b7B81DWvIgvrq1dO12zasme9l1Dh6rCk8H0tEW+uKNx/5lCwP9/uZ7dK1wWmrSd9l97a
+        9aW4PUd0pfdVHWcb3q9XPHvv5h6a9reWN7rwoVX20pcpB3mOpO6Z9oJr94XFrVd90mftWeHV
+        8XRfLCsTV725m7nX5KvnHgb99lx+qW37VLuDV97bvNZd2Km3J+Zc+8xiyTOh2g3bRD2+KbEU
+        ZyQaajEXFScCAHOyU0c1AwAA
+X-CMS-MailID: 20210318093719epcas1p431f8a1f49fe3ec457475b5fdd14772ab
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20210310025703epcas1p10fdb324cc7ce1accfdc8f66315e8a93e
+References: <1615294733-22761-1-git-send-email-aisheng.dong@nxp.com>
+        <1615294733-22761-8-git-send-email-aisheng.dong@nxp.com>
+        <de25cd22-7f17-5902-21d3-881e3128dd31@gmail.com>
+        <a546248b-3946-c781-94a9-30f0c92f88d2@gmail.com>
+        <CGME20210310025703epcas1p10fdb324cc7ce1accfdc8f66315e8a93e@epcas1p1.samsung.com>
+        <CAA+hA=QZbxE-aFh2UnH6wHBUStj8SAtW8C4SEZtGcxQwsOO=Aw@mail.gmail.com>
+        <31be2267-8988-f162-f5a6-6e6389bbf1fb@samsung.com>
+        <CAA+hA=S76yHTeL_yCDkv55iKpBLbtZc_cV8sjORheLxbSuenzA@mail.gmail.com>
+        <b5a3ee55-0c71-a0ca-b03f-3b6790f3d2f4@samsung.com>
+        <CAA+hA=Q0M0bTf0VLjNmf23HqFn4Unk0h4BN-mEQXb1LkZLV=NQ@mail.gmail.com>
+        <d92b7660-a622-06f3-6e1f-03c99fdf0a55@gmail.com>
+        <CAA+hA=T3A=FW-kCu=3jDTP+o3JpPYVB6VnphazXVkybGZCanaQ@mail.gmail.com>
+        <CAA+hA=QOhUH19an+=p5womfp+oJRJPrFoVuLN4Ai0oezB8myNQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Mar 17, 2021 at 09:57:33PM +0300, Dmitry Osipenko wrote:
-[...]
-> --- a/drivers/gpu/drm/tegra/dc.c
-> +++ b/drivers/gpu/drm/tegra/dc.c
-> @@ -8,6 +8,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/delay.h>
->  #include <linux/iommu.h>
-> +#include <linux/interconnect.h>
->  #include <linux/module.h>
->  #include <linux/of_device.h>
->  #include <linux/pm_runtime.h>
-> @@ -618,6 +619,9 @@ static int tegra_plane_atomic_check(struct drm_plane *plane,
->  	struct tegra_dc *dc = to_tegra_dc(new_plane_state->crtc);
->  	int err;
->  
-> +	plane_state->peak_memory_bandwidth = 0;
-> +	plane_state->avg_memory_bandwidth = 0;
-> +
->  	/* no need for further checks if the plane is being disabled */
->  	if (!new_plane_state->crtc)
->  		return 0;
-> @@ -808,6 +812,12 @@ static struct drm_plane *tegra_primary_plane_create(struct drm_device *drm,
->  	formats = dc->soc->primary_formats;
->  	modifiers = dc->soc->modifiers;
->  
-> +	err = tegra_plane_interconnect_init(plane);
-> +	if (err) {
-> +		kfree(plane);
-> +		return ERR_PTR(err);
-> +	}
-> +
->  	err = drm_universal_plane_init(drm, &plane->base, possible_crtcs,
->  				       &tegra_plane_funcs, formats,
->  				       num_formats, modifiers, type, NULL);
-> @@ -841,9 +851,13 @@ static int tegra_cursor_atomic_check(struct drm_plane *plane,
->  {
->  	struct drm_plane_state *new_plane_state = drm_atomic_get_new_plane_state(state,
->  										 plane);
-> +	struct tegra_plane_state *plane_state = to_tegra_plane_state(new_plane_state);
->  	struct tegra_plane *tegra = to_tegra_plane(plane);
->  	int err;
->  
-> +	plane_state->peak_memory_bandwidth = 0;
-> +	plane_state->avg_memory_bandwidth = 0;
-> +
->  	/* no need for further checks if the plane is being disabled */
->  	if (!new_plane_state->crtc)
->  		return 0;
-> @@ -985,6 +999,12 @@ static struct drm_plane *tegra_dc_cursor_plane_create(struct drm_device *drm,
->  	num_formats = ARRAY_SIZE(tegra_cursor_plane_formats);
->  	formats = tegra_cursor_plane_formats;
->  
-> +	err = tegra_plane_interconnect_init(plane);
-> +	if (err) {
-> +		kfree(plane);
-> +		return ERR_PTR(err);
-> +	}
-> +
->  	err = drm_universal_plane_init(drm, &plane->base, possible_crtcs,
->  				       &tegra_plane_funcs, formats,
->  				       num_formats, NULL,
-> @@ -1099,6 +1119,12 @@ static struct drm_plane *tegra_dc_overlay_plane_create(struct drm_device *drm,
->  	num_formats = dc->soc->num_overlay_formats;
->  	formats = dc->soc->overlay_formats;
->  
-> +	err = tegra_plane_interconnect_init(plane);
-> +	if (err) {
-> +		kfree(plane);
-> +		return ERR_PTR(err);
-> +	}
-> +
->  	if (!cursor)
->  		type = DRM_PLANE_TYPE_OVERLAY;
->  	else
-> @@ -1216,6 +1242,7 @@ tegra_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
->  {
->  	struct tegra_dc_state *state = to_dc_state(crtc->state);
->  	struct tegra_dc_state *copy;
-> +	unsigned int i;
->  
->  	copy = kmalloc(sizeof(*copy), GFP_KERNEL);
->  	if (!copy)
-> @@ -1227,6 +1254,9 @@ tegra_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
->  	copy->div = state->div;
->  	copy->planes = state->planes;
->  
-> +	for (i = 0; i < ARRAY_SIZE(state->plane_peak_bw); i++)
-> +		copy->plane_peak_bw[i] = state->plane_peak_bw[i];
-> +
->  	return &copy->base;
->  }
->  
-> @@ -1753,6 +1783,106 @@ static int tegra_dc_wait_idle(struct tegra_dc *dc, unsigned long timeout)
->  	return -ETIMEDOUT;
->  }
->  
-> +static void
-> +tegra_crtc_update_memory_bandwidth(struct drm_crtc *crtc,
-> +				   struct drm_atomic_state *state,
-> +				   bool prepare_bandwidth_transition)
-> +{
-> +	const struct tegra_plane_state *old_tegra_state, *new_tegra_state;
-> +	const struct tegra_dc_state *old_dc_state, *new_dc_state;
-> +	u32 i, new_avg_bw, old_avg_bw, new_peak_bw, old_peak_bw;
-> +	const struct drm_plane_state *old_plane_state;
-> +	const struct drm_crtc_state *old_crtc_state;
-> +	struct tegra_dc_window window, old_window;
-> +	struct tegra_dc *dc = to_tegra_dc(crtc);
-> +	struct tegra_plane *tegra;
-> +	struct drm_plane *plane;
-> +
-> +	if (dc->soc->has_nvdisplay)
-> +		return;
-> +
-> +	old_crtc_state = drm_atomic_get_old_crtc_state(state, crtc);
-> +	old_dc_state = to_const_dc_state(old_crtc_state);
-> +	new_dc_state = to_const_dc_state(crtc->state);
-> +
-> +	if (!crtc->state->active) {
-> +		if (!old_crtc_state->active)
-> +			return;
-> +
-> +		/*
-> +		 * When CRTC is disabled on DPMS, the state of attached planes
-> +		 * is kept unchanged. Hence we need to enforce removal of the
-> +		 * bandwidths from the ICC paths.
-> +		 */
-> +		drm_atomic_crtc_for_each_plane(plane, crtc) {
-> +			tegra = to_tegra_plane(plane);
-> +
-> +			icc_set_bw(tegra->icc_mem, 0, 0);
-> +			icc_set_bw(tegra->icc_mem_vfilter, 0, 0);
-> +		}
-> +
-> +		return;
-> +	}
-> +
-> +	for_each_old_plane_in_state(old_crtc_state->state, plane,
-> +				    old_plane_state, i) {
-> +		old_tegra_state = to_const_tegra_plane_state(old_plane_state);
-> +		new_tegra_state = to_const_tegra_plane_state(plane->state);
-> +		tegra = to_tegra_plane(plane);
-> +
-> +		/*
-> +		 * We're iterating over the global atomic state and it contains
-> +		 * planes from another CRTC, hence we need to filter out the
-> +		 * planes unrelated to this CRTC.
-> +		 */
-> +		if (tegra->dc != dc)
-> +			continue;
-> +
-> +		new_avg_bw = new_tegra_state->avg_memory_bandwidth;
-> +		old_avg_bw = old_tegra_state->avg_memory_bandwidth;
-> +
-> +		new_peak_bw = new_dc_state->plane_peak_bw[tegra->index];
-> +		old_peak_bw = old_dc_state->plane_peak_bw[tegra->index];
-> +
-> +		/*
-> +		 * See the comment related to !crtc->state->active above,
-> +		 * which explains why bandwidths need to be updated when
-> +		 * CRTC is turning ON.
-> +		 */
-> +		if (new_avg_bw == old_avg_bw && new_peak_bw == old_peak_bw &&
-> +		    old_crtc_state->active)
-> +			continue;
-> +
-> +		window.src.h = drm_rect_height(&plane->state->src) >> 16;
-> +		window.dst.h = drm_rect_height(&plane->state->dst);
-> +
-> +		old_window.src.h = drm_rect_height(&old_plane_state->src) >> 16;
-> +		old_window.dst.h = drm_rect_height(&old_plane_state->dst);
-> +
-> +		/*
-> +		 * During the preparation phase (atomic_begin), the memory
-> +		 * freq should go high before the DC changes are committed
-> +		 * if bandwidth requirement goes up, otherwise memory freq
-> +		 * should to stay high if BW requirement goes down.  The
-> +		 * opposite applies to the completion phase (post_commit).
-> +		 */
-> +		if (prepare_bandwidth_transition) {
-> +			new_avg_bw = max(old_avg_bw, new_avg_bw);
-> +			new_peak_bw = max(old_peak_bw, new_peak_bw);
-> +
-> +			if (tegra_plane_use_vertical_filtering(tegra, &old_window))
-> +				window = old_window;
-> +		}
-> +
-> +		icc_set_bw(tegra->icc_mem, new_avg_bw, new_peak_bw);
-> +
-> +		if (tegra_plane_use_vertical_filtering(tegra, &window))
-> +			icc_set_bw(tegra->icc_mem_vfilter, new_avg_bw, new_peak_bw);
-> +		else
-> +			icc_set_bw(tegra->icc_mem_vfilter, 0, 0);
-> +	}
-> +}
-> +
->  static void tegra_crtc_atomic_disable(struct drm_crtc *crtc,
->  				      struct drm_atomic_state *state)
->  {
-> @@ -1934,6 +2064,8 @@ static void tegra_crtc_atomic_begin(struct drm_crtc *crtc,
->  {
->  	unsigned long flags;
->  
-> +	tegra_crtc_update_memory_bandwidth(crtc, state, true);
-> +
->  	if (crtc->state->event) {
->  		spin_lock_irqsave(&crtc->dev->event_lock, flags);
->  
-> @@ -1966,7 +2098,215 @@ static void tegra_crtc_atomic_flush(struct drm_crtc *crtc,
->  	value = tegra_dc_readl(dc, DC_CMD_STATE_CONTROL);
->  }
->  
-> +static bool tegra_plane_is_cursor(const struct drm_plane_state *state)
-> +{
-> +	const struct tegra_dc_soc_info *soc = to_tegra_dc(state->crtc)->soc;
-> +	const struct drm_format_info *fmt = state->fb->format;
-> +	unsigned int src_w = drm_rect_width(&state->src) >> 16;
-> +	unsigned int dst_w = drm_rect_width(&state->dst);
-> +
-> +	if (state->plane->type != DRM_PLANE_TYPE_CURSOR)
-> +		return false;
-> +
-> +	if (soc->supports_cursor)
-> +		return true;
-> +
-> +	if (src_w != dst_w || fmt->num_planes != 1 || src_w * fmt->cpp[0] > 256)
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
-> +static unsigned long
-> +tegra_plane_overlap_mask(struct drm_crtc_state *state,
-> +			 const struct drm_plane_state *plane_state)
-> +{
-> +	const struct drm_plane_state *other_state;
-> +	const struct tegra_plane *tegra;
-> +	unsigned long overlap_mask = 0;
-> +	struct drm_plane *plane;
-> +	struct drm_rect rect;
-> +
-> +	if (!plane_state->visible || !plane_state->fb)
-> +		return 0;
-> +
-> +	/*
-> +	 * Data-prefetch FIFO will easily help to overcome temporal memory
-> +	 * pressure if other plane overlaps with the cursor plane.
-> +	 */
-> +	if (tegra_plane_is_cursor(plane_state))
-> +		return 0;
-> +
-> +	drm_atomic_crtc_state_for_each_plane_state(plane, other_state, state) {
-> +		rect = plane_state->dst;
-> +
-> +		tegra = to_tegra_plane(other_state->plane);
-> +
-> +		if (!other_state->visible || !other_state->fb)
-> +			continue;
-> +
-> +		/*
-> +		 * Ignore cursor plane overlaps because it's not practical to
-> +		 * assume that it contributes to the bandwidth in overlapping
-> +		 * area if window width is small.
-> +		 */
-> +		if (tegra_plane_is_cursor(other_state))
-> +			continue;
-> +
-> +		if (drm_rect_intersect(&rect, &other_state->dst))
-> +			overlap_mask |= BIT(tegra->index);
-> +	}
-> +
-> +	return overlap_mask;
-> +}
-> +
-> +static struct drm_plane *
-> +tegra_crtc_get_plane_by_index(struct drm_crtc *crtc, unsigned int index)
-> +{
-> +	struct drm_plane *plane;
-> +
-> +	drm_atomic_crtc_for_each_plane(plane, crtc) {
-> +		if (to_tegra_plane(plane)->index == index)
-> +			return plane;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static int tegra_crtc_calculate_memory_bandwidth(struct drm_crtc *crtc,
-> +						 struct drm_atomic_state *state)
-> +{
-> +	ulong overlap_mask[TEGRA_DC_LEGACY_PLANES_NUM] = {}, mask;
-> +	u32 plane_peak_bw[TEGRA_DC_LEGACY_PLANES_NUM] = {};
-> +	bool all_planes_overlap_simultaneously = true;
-> +	const struct tegra_plane_state *tegra_state;
-> +	const struct drm_plane_state *plane_state;
-> +	const struct tegra_dc_state *old_dc_state;
-> +	struct tegra_dc *dc = to_tegra_dc(crtc);
-> +	const struct drm_crtc_state *old_state;
-> +	struct tegra_dc_state *new_dc_state;
-> +	struct drm_crtc_state *new_state;
-> +	struct tegra_plane *tegra;
-> +	struct drm_plane *plane;
-> +	u32 i, k, overlap_bw;
-> +
-> +	/*
-> +	 * The nv-display uses shared planes.  The algorithm below assumes
-> +	 * maximum 3 planes per-CRTC, this assumption isn't applicable to
-> +	 * the nv-display.  Note that T124 support has additional windows,
-> +	 * but currently they aren't supported by the driver.
-> +	 */
-> +	if (dc->soc->has_nvdisplay)
-> +		return 0;
-> +
-> +	new_state = drm_atomic_get_new_crtc_state(state, crtc);
-> +	new_dc_state = to_dc_state(new_state);
-> +
-> +	/*
-> +	 * For overlapping planes pixel's data is fetched for each plane at
-> +	 * the same time, hence bandwidths are accumulated in this case.
-> +	 * This needs to be taken into account for calculating total bandwidth
-> +	 * consumed by all planes.
-> +	 *
-> +	 * Here we get the overlapping state of each plane, which is a
-> +	 * bitmask of plane indices telling with what planes there is an
-> +	 * overlap. Note that bitmask[plane] includes BIT(plane) in order
-> +	 * to make further code nicer and simpler.
-> +	 */
-> +	drm_atomic_crtc_state_for_each_plane_state(plane, plane_state, new_state) {
-> +		tegra_state = to_const_tegra_plane_state(plane_state);
-> +		tegra = to_tegra_plane(plane);
-> +
-> +		if (WARN_ON_ONCE(tegra->index >= TEGRA_DC_LEGACY_PLANES_NUM))
-> +			return -EINVAL;
-> +
-> +		plane_peak_bw[tegra->index] = tegra_state->peak_memory_bandwidth;
-> +		mask = tegra_plane_overlap_mask(new_state, plane_state);
-> +		overlap_mask[tegra->index] = mask;
-> +
-> +		if (hweight_long(mask) != 3)
-> +			all_planes_overlap_simultaneously = false;
-> +	}
-> +
-> +	old_state = drm_atomic_get_old_crtc_state(state, crtc);
-> +	old_dc_state = to_const_dc_state(old_state);
-> +
-> +	/*
-> +	 * Then we calculate maximum bandwidth of each plane state.
-> +	 * The bandwidth includes the plane BW + BW of the "simultaneously"
-> +	 * overlapping planes, where "simultaneously" means areas where DC
-> +	 * fetches from the planes simultaneously during of scan-out process.
-> +	 *
-> +	 * For example, if plane A overlaps with planes B and C, but B and C
-> +	 * don't overlap, then the peak bandwidth will be either in area where
-> +	 * A-and-B or A-and-C planes overlap.
-> +	 *
-> +	 * The plane_peak_bw[] contains peak memory bandwidth values of
-> +	 * each plane, this information is needed by interconnect provider
-> +	 * in order to set up latency allowness based on the peak BW, see
-> +	 * tegra_crtc_update_memory_bandwidth().
-> +	 */
-> +	for (i = 0; i < ARRAY_SIZE(plane_peak_bw); i++) {
-> +		overlap_bw = 0;
-> +
-> +		for_each_set_bit(k, &overlap_mask[i], 3) {
-> +			if (k == i)
-> +				continue;
-> +
-> +			if (all_planes_overlap_simultaneously)
-> +				overlap_bw += plane_peak_bw[k];
-> +			else
-> +				overlap_bw = max(overlap_bw, plane_peak_bw[k]);
-> +		}
-> +
-> +		new_dc_state->plane_peak_bw[i] = plane_peak_bw[i] + overlap_bw;
-> +
-> +		/*
-> +		 * If plane's peak bandwidth changed (for example plane isn't
-> +		 * overlapped anymore) and plane isn't in the atomic state,
-> +		 * then add plane to the state in order to have the bandwidth
-> +		 * updated.
-> +		 */
-> +		if (old_dc_state->plane_peak_bw[i] !=
-> +		    new_dc_state->plane_peak_bw[i]) {
-> +			plane = tegra_crtc_get_plane_by_index(crtc, i);
-> +			if (!plane)
-> +				continue;
-> +
-> +			plane_state = drm_atomic_get_plane_state(state, plane);
-> +			if (IS_ERR(plane_state))
-> +				return PTR_ERR(plane_state);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int tegra_crtc_atomic_check(struct drm_crtc *crtc,
-> +				   struct drm_atomic_state *state)
-> +{
-> +	int err;
-> +
-> +	err = tegra_crtc_calculate_memory_bandwidth(crtc, state);
-> +	if (err)
-> +		return err;
-> +
-> +	return 0;
-> +}
-> +
-> +void tegra_crtc_atomic_post_commit(struct drm_crtc *crtc,
-> +				   struct drm_atomic_state *state)
-> +{
-> +	/*
-> +	 * Display bandwidth is allowed to go down only once hardware state
-> +	 * is known to be armed, i.e. state was committed and VBLANK event
-> +	 * received.
-> +	 */
-> +	tegra_crtc_update_memory_bandwidth(crtc, state, false);
-> +}
-> +
->  static const struct drm_crtc_helper_funcs tegra_crtc_helper_funcs = {
-> +	.atomic_check = tegra_crtc_atomic_check,
->  	.atomic_begin = tegra_crtc_atomic_begin,
->  	.atomic_flush = tegra_crtc_atomic_flush,
->  	.atomic_enable = tegra_crtc_atomic_enable,
-> @@ -2257,7 +2597,9 @@ static const struct tegra_dc_soc_info tegra20_dc_soc_info = {
->  	.overlay_formats = tegra20_overlay_formats,
->  	.modifiers = tegra20_modifiers,
->  	.has_win_a_without_filters = true,
-> +	.has_win_b_vfilter_mem_client = true,
->  	.has_win_c_without_vert_filter = true,
-> +	.plane_tiled_memory_bandwidth_x2 = false,
->  };
->  
->  static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
-> @@ -2276,7 +2618,9 @@ static const struct tegra_dc_soc_info tegra30_dc_soc_info = {
->  	.overlay_formats = tegra20_overlay_formats,
->  	.modifiers = tegra20_modifiers,
->  	.has_win_a_without_filters = false,
-> +	.has_win_b_vfilter_mem_client = true,
->  	.has_win_c_without_vert_filter = false,
-> +	.plane_tiled_memory_bandwidth_x2 = true,
->  };
->  
->  static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
-> @@ -2295,7 +2639,9 @@ static const struct tegra_dc_soc_info tegra114_dc_soc_info = {
->  	.overlay_formats = tegra114_overlay_formats,
->  	.modifiers = tegra20_modifiers,
->  	.has_win_a_without_filters = false,
-> +	.has_win_b_vfilter_mem_client = false,
->  	.has_win_c_without_vert_filter = false,
-> +	.plane_tiled_memory_bandwidth_x2 = true,
->  };
->  
->  static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
-> @@ -2314,7 +2660,9 @@ static const struct tegra_dc_soc_info tegra124_dc_soc_info = {
->  	.overlay_formats = tegra124_overlay_formats,
->  	.modifiers = tegra124_modifiers,
->  	.has_win_a_without_filters = false,
-> +	.has_win_b_vfilter_mem_client = false,
->  	.has_win_c_without_vert_filter = false,
-> +	.plane_tiled_memory_bandwidth_x2 = false,
->  };
->  
->  static const struct tegra_dc_soc_info tegra210_dc_soc_info = {
-> @@ -2333,7 +2681,9 @@ static const struct tegra_dc_soc_info tegra210_dc_soc_info = {
->  	.overlay_formats = tegra114_overlay_formats,
->  	.modifiers = tegra124_modifiers,
->  	.has_win_a_without_filters = false,
-> +	.has_win_b_vfilter_mem_client = false,
->  	.has_win_c_without_vert_filter = false,
-> +	.plane_tiled_memory_bandwidth_x2 = false,
->  };
->  
->  static const struct tegra_windowgroup_soc tegra186_dc_wgrps[] = {
-> @@ -2382,6 +2732,7 @@ static const struct tegra_dc_soc_info tegra186_dc_soc_info = {
->  	.has_nvdisplay = true,
->  	.wgrps = tegra186_dc_wgrps,
->  	.num_wgrps = ARRAY_SIZE(tegra186_dc_wgrps),
-> +	.plane_tiled_memory_bandwidth_x2 = false,
->  };
->  
->  static const struct tegra_windowgroup_soc tegra194_dc_wgrps[] = {
-> @@ -2430,6 +2781,7 @@ static const struct tegra_dc_soc_info tegra194_dc_soc_info = {
->  	.has_nvdisplay = true,
->  	.wgrps = tegra194_dc_wgrps,
->  	.num_wgrps = ARRAY_SIZE(tegra194_dc_wgrps),
-> +	.plane_tiled_memory_bandwidth_x2 = false,
->  };
+On 3/18/21 5:03 PM, Dong Aisheng wrote:
+> Hi Chanwoo,
+> 
+> On Sat, Mar 13, 2021 at 2:45 PM Dong Aisheng <dongas86@gmail.com> wrote:
+>>
+>> On Sat, Mar 13, 2021 at 12:09 AM Chanwoo Choi <cwchoi00@gmail.com> wrote:
+>>>
+>>> On 21. 3. 12. 오후 7:57, Dong Aisheng wrote:
+>>>> On Thu, Mar 11, 2021 at 2:54 PM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>>>>>
+>>>>> On 3/10/21 1:56 PM, Dong Aisheng wrote:
+>>>>>> On Wed, Mar 10, 2021 at 11:08 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>>>>>>>
+>>>>>>> On 3/10/21 11:56 AM, Dong Aisheng wrote:
+>>>>>>>> On Wed, Mar 10, 2021 at 12:12 AM Chanwoo Choi <cwchoi00@gmail.com> wrote:
+>>>>>>>>>
+>>>>>>>>> On 21. 3. 10. 오전 12:58, Chanwoo Choi wrote:
+>>>>>>>>>> On 21. 3. 9. 오후 9:58, Dong Aisheng wrote:
+>>>>>>>>>>> The devfreq monitor depends on the device to provide load information
+>>>>>>>>>>> by .get_dev_status() to calculate the next target freq.
+>>>>>>>>>>>
+>>>>>>>>>>> And this will cause changing governor to simple ondemand fail
+>>>>>>>>>>> if device can't support.
+>>>>>>>>>>>
+>>>>>>>>>>> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+>>>>>>>>>>> ---
+>>>>>>>>>>>    drivers/devfreq/devfreq.c                 | 10 +++++++---
+>>>>>>>>>>>    drivers/devfreq/governor.h                |  2 +-
+>>>>>>>>>>>    drivers/devfreq/governor_simpleondemand.c |  3 +--
+>>>>>>>>>>>    3 files changed, 9 insertions(+), 6 deletions(-)
+>>>>>>>>>>>
+>>>>>>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>>>>>>>>> index 7231fe6862a2..d1787b6c7d7c 100644
+>>>>>>>>>>> --- a/drivers/devfreq/devfreq.c
+>>>>>>>>>>> +++ b/drivers/devfreq/devfreq.c
+>>>>>>>>>>> @@ -482,10 +482,13 @@ static void devfreq_monitor(struct work_struct
+>>>>>>>>>>> *work)
+>>>>>>>>>>>     * to be called from governor in response to DEVFREQ_GOV_START
+>>>>>>>>>>>     * event when device is added to devfreq framework.
+>>>>>>>>>>>     */
+>>>>>>>>>>> -void devfreq_monitor_start(struct devfreq *devfreq)
+>>>>>>>>>>> +int devfreq_monitor_start(struct devfreq *devfreq)
+>>>>>>>>>>>    {
+>>>>>>>>>>>        if (IS_SUPPORTED_FLAG(devfreq->governor->flags, IRQ_DRIVEN))
+>>>>>>>>>>> -        return;
+>>>>>>>>>>> +        return 0;
+>>>>>>>>>>> +
+>>>>>>>>>>> +    if (!devfreq->profile->get_dev_status)
+>>>>>>>>>>> +        return -EINVAL;
+>>>>>>>>>
+>>>>>>>>> Again, I think that get_dev_status is not used for all governors.
+>>>>>>>>> So that it cause the governor start fail. Don't check whether
+>>>>>>>>> .get_dev_status is NULL or not.
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> I'm not quite understand your point.
+>>>>>>>> it is used by governor_simpleondemand.c and tegra_devfreq_governor.
+>>>>>>>> get_target_freq -> devfreq_update_stats -> get_dev_status
+>>>>>>>
+>>>>>>> The devfreq can add the new governor by anyone.
+>>>>>>> So these functions like devfreq_monitor_* have to support
+>>>>>>> the governors and also must support the governor to be added
+>>>>>>> in the future.
+>>>>>>
+>>>>>> Yes, but devfreq_monitor_* is only used by polling mode, right?
+>>>>>> The governor using it has to implement get_dev_status unless
+>>>>>> there's an exception in the future.
+>>>>>>
+>>>>>> Currently this patch wants to address the issue that user can switch
+>>>>>> to ondemand governor (polling mode) by sysfs even devices does
+>>>>>> not support it (no get_dev_status implemented).
+>>>>>
+>>>>> As I commented, I'll fix this issue. If devfreq driver doesn't implement
+>>>>> the .get_dev_status, don't show it via available_governors. I think that
+>>>>> it is fundamental solution to fix this issue.
+>>>>
+>>>> Sounds good
+>>>>
+>>>>> So on this version,
+>>>>> don't add the this conditional statement on this function
+>>>>>
+>>>>
+>>>> Almost all this patch did is adding a checking for get_dev_status.
+>>>> So do you mean drop this patch?
+>>>> I wonder it's still a necessary checking to explicitly tell devfreq monitor
+>>>> users that get_dev_status is needed during governor startup.
+>>>
+>>> I think that the it is enough to check .get_dev_status in
+>>> devfreq_update_stats. We have to check it on where it is used.
+>>>
+>>
+>> I think the drawback of only checking .get_dev_status in
+>> devfreq_update_stats is:
+>> 1. devfreq will still register successfully and ondemand governor starts ok
+>> 2. ondemand governor will still be shown in sysfs which is something
+>> you want to fix
+>> 3. devfreq will end up printing endless error messages in devfreq_monitor worker
+>>     "dvfs failed with (%d) error" as the possible missing .get_dev_status
 
-For globals you will have .x = false by default; I'm not sure those entries
-add much value.
+I think that devfreq_monitor_start have to handle only work instance.
+This approach is too considering the deep check list.
+I want to resolve this periodical error log with different solution.
 
-Reviewed-by: Micha� Miros�aw <mirq-linux@rere.qmqm.pl>
+Actually, we have to reject the registration of devfreq device
+when calling devfreq_add_device instead of checking .get_dev_status
+in devfreq_monitor_start().
+
+
+>>
+>> So i wonder if you don't like changing the common devfreq_monitor_start in order
+>> to make it look common for all governors, then we probably still need
+>> to fix it in
+>> ondemand governor in order to avoid the possible above issues.
+>>
+>> static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+>>                                 unsigned int event, void *data)
+>> {
+>>         switch (event) {
+>>         case DEVFREQ_GOV_START:
+>>                 if (!devfreq->profile->get_dev_status)
+>>                         return -EINVAL;
+>>
+>>                 return devfreq_monitor_start(devfreq);
+>> ...
+>> }
+>>
+>> How do you think?
+> 
+> Any feedback?
+> 
+> I'm waiting for your confirmation whether dropping this one,
+> then I can re-sent the series.
+> 
+> Regards
+> Aisheng
+> 
+>>
+>> Regards
+>> Aisheng
+>>
+>>
+>>>>
+>>>>> And on next version, please use the capital letter for first character
+>>>>> on patch title as following:
+>>>>>
+>>>>> - PM / devfreq: Check get_dev_status before start monitor
+>>>>>
+>>>>
+>>>> Okay to me.
+>>>> Thanks for the suggestion.
+>>>>
+>>>> Regards
+>>>> Aisheng
+>>>>
+>>>>>>
+>>>>>> Regards
+>>>>>> Aisheng
+>>>>>>
+>>>>>>>
+>>>>>>>>
+>>>>>>>> Without checking, device can switch to ondemand governor if it does not support.
+>>>>>>>>
+>>>>>>>> Am i missed something?
+>>>>>>>>
+>>>>>>>> Regards
+>>>>>>>> Aisheng
+>>>>>>>>
+>>>>>>>>>>>        switch (devfreq->profile->timer) {
+>>>>>>>>>>>        case DEVFREQ_TIMER_DEFERRABLE:
+>>>>>>>>>>> @@ -495,12 +498,13 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+>>>>>>>>>>>            INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
+>>>>>>>>>>>            break;
+>>>>>>>>>>>        default:
+>>>>>>>>>>> -        return;
+>>>>>>>>>>> +        return -EINVAL;
+>>>>>>>>>>>        }
+>>>>>>>>>>>        if (devfreq->profile->polling_ms)
+>>>>>>>>>>>            queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>>>>>>>>>                msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>>>>>>>> +    return 0;
+>>>>>>>>>>>    }
+>>>>>>>>>>>    EXPORT_SYMBOL(devfreq_monitor_start);
+>>>>>>>>>>> diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+>>>>>>>>>>> index 5cee3f64fe2b..31af6d072a10 100644
+>>>>>>>>>>> --- a/drivers/devfreq/governor.h
+>>>>>>>>>>> +++ b/drivers/devfreq/governor.h
+>>>>>>>>>>> @@ -75,7 +75,7 @@ struct devfreq_governor {
+>>>>>>>>>>>                    unsigned int event, void *data);
+>>>>>>>>>>>    };
+>>>>>>>>>>> -void devfreq_monitor_start(struct devfreq *devfreq);
+>>>>>>>>>>> +int devfreq_monitor_start(struct devfreq *devfreq);
+>>>>>>>>>>>    void devfreq_monitor_stop(struct devfreq *devfreq);
+>>>>>>>>>>>    void devfreq_monitor_suspend(struct devfreq *devfreq);
+>>>>>>>>>>>    void devfreq_monitor_resume(struct devfreq *devfreq);
+>>>>>>>>>>> diff --git a/drivers/devfreq/governor_simpleondemand.c
+>>>>>>>>>>> b/drivers/devfreq/governor_simpleondemand.c
+>>>>>>>>>>> index d57b82a2b570..ea287b57cbf3 100644
+>>>>>>>>>>> --- a/drivers/devfreq/governor_simpleondemand.c
+>>>>>>>>>>> +++ b/drivers/devfreq/governor_simpleondemand.c
+>>>>>>>>>>> @@ -89,8 +89,7 @@ static int devfreq_simple_ondemand_handler(struct
+>>>>>>>>>>> devfreq *devfreq,
+>>>>>>>>>>>    {
+>>>>>>>>>>>        switch (event) {
+>>>>>>>>>>>        case DEVFREQ_GOV_START:
+>>>>>>>>>>> -        devfreq_monitor_start(devfreq);
+>>>>>>>>>>> -        break;
+>>>>>>>>>>> +        return devfreq_monitor_start(devfreq);
+>>>>>>>>>>>        case DEVFREQ_GOV_STOP:
+>>>>>>>>>>>            devfreq_monitor_stop(devfreq);
+>>>>>>>>>>>
+>>>>>>>>>>
+>>>>>>>>>> Need to handle the all points of devfreq_monitor_start() usage.
+>>>>>>>>>> please check the tegra30-devfreq.c for this update.
+>>>>>>>>>>
+>>>>>>>>>> $ grep -rn "devfreq_monitor_start" drivers/
+>>>>>>>>>> drivers/devfreq/governor_simpleondemand.c:92:
+>>>>>>>>>> devfreq_monitor_start(devfreq);
+>>>>>>>>>> drivers/devfreq/tegra30-devfreq.c:744:
+>>>>>>>>>> devfreq_monitor_start(devfreq);
+>>>>>>>>>> ......
+>>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> --
+>>>>>>>>> Best Regards,
+>>>>>>>>> Samsung Electronics
+>>>>>>>>> Chanwoo Choi
+>>>>>>>>
+>>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> --
+>>>>>>> Best Regards,
+>>>>>>> Chanwoo Choi
+>>>>>>> Samsung Electronics
+>>>>>>
+>>>>>>
+>>>>>
+>>>>>
+>>>>> --
+>>>>> Best Regards,
+>>>>> Chanwoo Choi
+>>>>> Samsung Electronics
+>>>
+>>>
+>>> --
+>>> Best Regards,
+>>> Samsung Electronics
+>>> Chanwoo Choi
+> 
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
