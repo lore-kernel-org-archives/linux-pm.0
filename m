@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8D43C433C1
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 22:07:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A8BDC433E4
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 22:09:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9D57461988
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 22:07:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7AAA61976
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 22:09:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230438AbhCSWHY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Mar 2021 18:07:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41496 "EHLO
+        id S230477AbhCSWIa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Mar 2021 18:08:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41704 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231126AbhCSWHP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Mar 2021 18:07:15 -0400
-Received: from relay07.th.seeweb.it (relay07.th.seeweb.it [IPv6:2001:4b7a:2000:18::168])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01CB0C06175F
-        for <linux-pm@vger.kernel.org>; Fri, 19 Mar 2021 15:07:14 -0700 (PDT)
+        with ESMTP id S230264AbhCSWIM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Mar 2021 18:08:12 -0400
+Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CBA9C06175F
+        for <linux-pm@vger.kernel.org>; Fri, 19 Mar 2021 15:08:11 -0700 (PDT)
 Received: from localhost.localdomain (abac242.neoplus.adsl.tpnet.pl [83.6.166.242])
-        by m-r2.th.seeweb.it (Postfix) with ESMTPA id 9D6453F572;
-        Fri, 19 Mar 2021 23:07:12 +0100 (CET)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id B75B21F928;
+        Fri, 19 Mar 2021 23:08:08 +0100 (CET)
 From:   Konrad Dybcio <konrad.dybcio@somainline.org>
 To:     ~postmarketos/upstreaming@lists.sr.ht
 Cc:     martin.botka@somainline.org,
         angelogioacchino.delregno@somainline.org,
         marijn.suijten@somainline.org,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Amit Kucheria <amitk@kernel.org>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] thermal: qcom: tsens-v0_1: Add support for MDM9607
-Date:   Fri, 19 Mar 2021 23:07:04 +0100
-Message-Id: <20210319220704.198101-2-konrad.dybcio@somainline.org>
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [RESEND PATCH v4 2/2] thermal: qcom: tsens-v0_1: Add support for MDM9607
+Date:   Fri, 19 Mar 2021 23:08:02 +0100
+Message-Id: <20210319220802.198215-2-konrad.dybcio@somainline.org>
 X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20210319220704.198101-1-konrad.dybcio@somainline.org>
-References: <20210319220704.198101-1-konrad.dybcio@somainline.org>
+In-Reply-To: <20210319220802.198215-1-konrad.dybcio@somainline.org>
+References: <20210319220802.198215-1-konrad.dybcio@somainline.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -56,6 +56,8 @@ minor adjustments to various tuning values.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
+v4: Remove unneeded braces and newline
+
  drivers/thermal/qcom/tsens-v0_1.c | 98 ++++++++++++++++++++++++++++++-
  drivers/thermal/qcom/tsens.c      |  3 +
  drivers/thermal/qcom/tsens.h      |  2 +-
