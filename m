@@ -2,368 +2,357 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E338DC433E9
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 00:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69239C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 00:53:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B457064F30
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 00:42:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0E14564F11
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 00:53:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231365AbhCSAle (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Mar 2021 20:41:34 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:25970 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230245AbhCSAlL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 20:41:11 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1616114471; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
- Subject: Sender; bh=nKbpL+MXOXfmWr7OykBCzihZEQAYD28qNBi+NK46kd0=; b=QSlXWB+Ork9sB5MKTmubQb09HZmTOUeIE5t8pOeMUrAi/hhY6g03hsO1ejqhT84C+x6tmWhs
- oCegWBuxCYcDaPaqPB8vxkQxI0OoSFTzwk6dJBYSkjuGaTExaIwvWUkEMp4XX0pks6oY23Fg
- 3iYaoPX3ruooD8a89rm9rYCfyow=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n07.prod.us-east-1.postgun.com with SMTP id
- 6053f30f1de5dd7b9928d1bb (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 19 Mar 2021 00:40:47
- GMT
-Sender: asutoshd=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 18B6BC433CA; Fri, 19 Mar 2021 00:40:47 +0000 (UTC)
-Received: from [192.168.8.168] (cpe-70-95-149-85.san.res.rr.com [70.95.149.85])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: asutoshd)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 43CE8C433C6;
-        Fri, 19 Mar 2021 00:40:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 43CE8C433C6
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=asutoshd@codeaurora.org
-Subject: Re: [PATCH v10 1/2] scsi: ufs: Enable power management for wlun
-To:     Adrian Hunter <adrian.hunter@intel.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Alan Stern <stern@rowland.harvard.edu>,
-        Bart Van Assche <bvanassche@acm.org>, cang@codeaurora.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        "open list:TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Avri Altman <avri.altman@wdc.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Stanley Chu <stanley.chu@mediatek.com>,
+        id S233427AbhCSAxF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Mar 2021 20:53:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49064 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231892AbhCSAwr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Mar 2021 20:52:47 -0400
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9316FC06175F;
+        Thu, 18 Mar 2021 17:52:46 -0700 (PDT)
+Received: by mail-ed1-x533.google.com with SMTP id w18so8914383edc.0;
+        Thu, 18 Mar 2021 17:52:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Igmc9cLwjjnQbW2NQgn8XSOIxrY5hQGnjVY13RlbqSs=;
+        b=ZuwZPySLxKfbajls8fvAx6ZxvxXLGCqrU6d0wSZyj0vi8HicNuJqERrJvFiYYkudnH
+         orbOFHe4B4R3hIpm/S4rTBazuQg20OuI9Ac+U9noozWEk3S563a4UyQF7/fRqqMC7fUt
+         qvNLifBraOyIMw3wWZqsX/teK5T7dmBDngOs1FpMaRqxywHgfWIjPvDus8Lnj1nCjhFi
+         rx8Y00V/lQEQRj1VWlvWOnuRbCZpXMHAVshuDPQ+7uyzN/7ec7q3tZBQevAwlw7UveYL
+         m6s6bmNq/I1QPF/ZssPG90JA2xAhhfQhxGhtXh2y/ZPG/PRQlkuFVrLdLGga1P2I0KGS
+         QbRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Igmc9cLwjjnQbW2NQgn8XSOIxrY5hQGnjVY13RlbqSs=;
+        b=aRWOSlEsm8my1EcYfkPPfbfnZZWWx1AScdR4jCzE+J/fO8+O4nJIsX9U0ZkZDy8r+r
+         IfWnwXDuJe20E/9F4u1Ahe7r1eYsMLTPLZxx6vZPLqjgGyf0Mj8Oc4RZG/53d/UE9Mc3
+         5PtdJQtKw3iRtqjGhqYcLGzlANF4d02fAreXYE/xl2Y4gGg3xMH5K1ULrY4G1iJOoryG
+         zaYi1Rb880q+fZA7hpkX8OO5v14IQ7yA/8gSriqe8dRBNEPFIe1ZDr5VYCwPfJwwAa44
+         BrKzYDEZ6Zj7H8mrN05JQc6n3GkQW/62XODTiihyeWVm3a5kYzknKywKAMg4NiPknDSq
+         bzvQ==
+X-Gm-Message-State: AOAM531AIA/cC51vRb9kK+7O+PZPLZeN5BJB4rJjsw/ie7ncwtl4FDrH
+        LSGpf02krxRkoaglkB2vRjU=
+X-Google-Smtp-Source: ABdhPJyOx/xJvbaDPN/uPN7cj/jTTvZX29GGie3BKYmg774cntnpq8LkLb/WyerU4NEAeWFKCnfW1w==
+X-Received: by 2002:a05:6402:2744:: with SMTP id z4mr6831334edd.347.1616115165262;
+        Thu, 18 Mar 2021 17:52:45 -0700 (PDT)
+Received: from Ansuel-xps.localdomain (host-95-233-52-6.retail.telecomitalia.it. [95.233.52.6])
+        by smtp.googlemail.com with ESMTPSA id q25sm3186976edt.51.2021.03.18.17.52.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 18 Mar 2021 17:52:45 -0700 (PDT)
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Thara Gopinath <thara.gopinath@linaro.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Kiwoong Kim <kwmad.kim@samsung.com>,
-        Bean Huo <beanhuo@micron.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Wei Yongjun <weiyongjun1@huawei.com>,
-        Dinghao Liu <dinghao.liu@zju.edu.cn>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Tomas Winkler <tomas.winkler@intel.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        Satya Tangirala <satyat@google.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        "moderated list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "open list:ARM/SAMSUNG S3C, S5P AND EXYNOS ARM ARCHITECTURES" 
-        <linux-samsung-soc@vger.kernel.org>,
-        "moderated list:UNIVERSAL FLASH STORAGE HOST CONTROLLER DRIVER..." 
-        <linux-mediatek@lists.infradead.org>,
-        Linux-PM mailing list <linux-pm@vger.kernel.org>
-References: <cover.1614725302.git.asutoshd@codeaurora.org>
- <6e98724d-2e75-d1fe-188f-a7010f86c509@codeaurora.org>
- <20210306161616.GC74411@rowland.harvard.edu>
- <CAJZ5v0ihJe8rNjWRwNic_BQUvKbALNcjx8iiPAh5nxLhOV9duw@mail.gmail.com>
- <CAJZ5v0iJ4yqRTt=mTCC930HULNFNTgvO4f9ToVO6pNz53kxFkw@mail.gmail.com>
- <f1e9b21d-1722-d20b-4bae-df7e6ce50bbc@codeaurora.org>
- <2bd90336-18a9-9acd-5abb-5b52b27fc535@codeaurora.org>
- <b13086f3-eea1-51a7-2117-579d520f21fc@intel.com>
- <20cbd52d-7254-3e1c-06a3-712326c99f75@codeaurora.org>
- <c1b38327-fece-4e31-709b-84ec775c6e18@intel.com>
- <ae871d38-4865-5836-d370-e5f9b7be762c@codeaurora.org>
- <24dfb6fc-5d54-6ee2-9195-26428b7ecf8a@intel.com>
- <CAJZ5v0iOT4oi8Ez5xgN9LE0E7J=_Vb7G8a-9etmu+QTvQ1j9ew@mail.gmail.com>
- <d9ea43fd-b065-0e6e-07cb-d6ec6ef97bae@codeaurora.org>
- <CAJZ5v0iTymqf0yRrfvHoxejzKiZ7hnGH+xXYTZhbDait5ULzTQ@mail.gmail.com>
- <36864099-e9a0-83bf-8c9d-d821bb102a72@codeaurora.org>
- <5a01ba2f-81d8-5b0f-6224-d47bd11c9f85@intel.com>
-From:   "Asutosh Das (asd)" <asutoshd@codeaurora.org>
-Message-ID: <9ad33d49-57d1-dc48-adab-7c22c6c6f55b@codeaurora.org>
-Date:   Thu, 18 Mar 2021 17:40:39 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v11 1/9] drivers: thermal: tsens: Add VER_0 tsens version
+Date:   Fri, 19 Mar 2021 01:52:19 +0100
+Message-Id: <20210319005228.1250-2-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210319005228.1250-1-ansuelsmth@gmail.com>
+References: <20210319005228.1250-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <5a01ba2f-81d8-5b0f-6224-d47bd11c9f85@intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 3/18/2021 12:16 PM, Adrian Hunter wrote:
-> On 18/03/21 7:58 pm, Asutosh Das (asd) wrote:
->> On 3/18/2021 10:54 AM, Rafael J. Wysocki wrote:
->>> On Thu, Mar 18, 2021 at 6:33 PM Asutosh Das (asd)
->>> <asutoshd@codeaurora.org> wrote:
->>>>
->>>> On 3/18/2021 7:00 AM, Rafael J. Wysocki wrote:
->>>>> On Wed, Mar 17, 2021 at 7:37 AM Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>>
->>>>>> On 16/03/21 10:35 pm, Asutosh Das (asd) wrote:
->>>>>>> On 3/16/2021 12:48 AM, Adrian Hunter wrote:
->>>>>>>> On 16/03/21 12:22 am, Asutosh Das (asd) wrote:
->>>>>>>>> On 3/14/2021 1:11 AM, Adrian Hunter wrote:
->>>>>>>>>> On 10/03/21 5:04 am, Asutosh Das (asd) wrote:
->>>>>>>>>>> On 3/9/2021 7:56 AM, Asutosh Das (asd) wrote:
->>>>>>>>>>>> On 3/8/2021 9:17 AM, Rafael J. Wysocki wrote:
->>>>>>>>>>>>> On Mon, Mar 8, 2021 at 5:21 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>>>>>>>>>>>>
->>>>>>>>>>>>>> On Sat, Mar 6, 2021 at 5:17 PM Alan Stern <stern@rowland.harvard.edu> wrote:
->>>>>>>>>>>>>>>
->>>>>>>>>>>>>>> On Fri, Mar 05, 2021 at 06:54:24PM -0800, Asutosh Das (asd) wrote:
->>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> Now during my testing I see a weird issue sometimes (1 in 7).
->>>>>>>>>>>>>>>> Scenario - bootups
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> Issue:
->>>>>>>>>>>>>>>> The supplier 'ufs_device_wlun 0:0:0:49488' goes into runtime suspend even
->>>>>>>>>>>>>>>> when one/more of its consumers are in RPM_ACTIVE state.
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> *Log:
->>>>>>>>>>>>>>>> [   10.056379][  T206] sd 0:0:0:1: [sdb] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.062497][  T113] sd 0:0:0:5: [sdf] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.356600][   T32] sd 0:0:0:7: [sdh] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.362944][  T174] sd 0:0:0:3: [sdd] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.696627][   T83] sd 0:0:0:2: [sdc] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.704562][  T170] sd 0:0:0:6: [sdg] Synchronizing SCSI cache
->>>>>>>>>>>>>>>> [   10.980602][    T5] sd 0:0:0:0: [sda] Synchronizing SCSI cache
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> /** Printing all the consumer nodes of supplier **/
->>>>>>>>>>>>>>>> [   10.987327][    T5] ufs_device_wlun 0:0:0:49488: usage-count @ suspend: 0
->>>>>>>>>>>>>>>> <-- this is the usage_count
->>>>>>>>>>>>>>>> [   10.994440][    T5] ufs_rpmb_wlun 0:0:0:49476: PM state - 2
->>>>>>>>>>>>>>>> [   11.000402][    T5] scsi 0:0:0:49456: PM state - 2
->>>>>>>>>>>>>>>> [   11.005453][    T5] sd 0:0:0:0: PM state - 2
->>>>>>>>>>>>>>>> [   11.009958][    T5] sd 0:0:0:1: PM state - 2
->>>>>>>>>>>>>>>> [   11.014469][    T5] sd 0:0:0:2: PM state - 2
->>>>>>>>>>>>>>>> [   11.019072][    T5] sd 0:0:0:3: PM state - 2
->>>>>>>>>>>>>>>> [   11.023595][    T5] sd 0:0:0:4: PM state - 0 << RPM_ACTIVE
->>>>>>>>>>>>>>>> [   11.353298][    T5] sd 0:0:0:5: PM state - 2
->>>>>>>>>>>>>>>> [   11.357726][    T5] sd 0:0:0:6: PM state - 2
->>>>>>>>>>>>>>>> [   11.362155][    T5] sd 0:0:0:7: PM state - 2
->>>>>>>>>>>>>>>> [   11.366584][    T5] ufshcd-qcom 1d84000.ufshc: __ufshcd_wl_suspend - 8709
->>>>>>>>>>>>>>>> [   11.374366][    T5] ufs_device_wlun 0:0:0:49488: __ufshcd_wl_suspend -
->>>>>>>>>>>>>>>> (0) has rpm_active flags
->>>>>>>>>>>>>>
->>>>>>>>>>>>>> Do you mean that rpm_active of the link between the consumer and the
->>>>>>>>>>>>>> supplier is greater than 0 at this point and the consumer is
->>>>>>>>>>>>>
->>>>>>>>>>>>> I mean is rpm_active of the link greater than 1 (because 1 means "no
->>>>>>>>>>>>> active references to the supplier")?
->>>>>>>>>>>> Hi Rafael:
->>>>>>>>>>>> No - it is not greater than 1.
->>>>>>>>>>>>
->>>>>>>>>>>> I'm trying to understand what's going on in it; will update when I've something.
->>>>>>>>>>>>
->>>>>>>>>>>>>
->>>>>>>>>>>>>> RPM_ACTIVE, but the supplier suspends successfully nevertheless?
->>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> [   11.383376][    T5] ufs_device_wlun 0:0:0:49488:
->>>>>>>>>>>>>>>> ufshcd_wl_runtime_suspend <-- Supplier suspends fine.
->>>>>>>>>>>>>>>> [   12.977318][  T174] sd 0:0:0:4: [sde] Synchronizing SCSI cache
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> And the the suspend of sde is stuck now:
->>>>>>>>>>>>>>>> schedule+0x9c/0xe0
->>>>>>>>>>>>>>>> schedule_timeout+0x40/0x128
->>>>>>>>>>>>>>>> io_schedule_timeout+0x44/0x68
->>>>>>>>>>>>>>>> wait_for_common_io+0x7c/0x100
->>>>>>>>>>>>>>>> wait_for_completion_io+0x14/0x20
->>>>>>>>>>>>>>>> blk_execute_rq+0x90/0xcc
->>>>>>>>>>>>>>>> __scsi_execute+0x104/0x1c4
->>>>>>>>>>>>>>>> sd_sync_cache+0xf8/0x2a0
->>>>>>>>>>>>>>>> sd_suspend_common+0x74/0x11c
->>>>>>>>>>>>>>>> sd_suspend_runtime+0x14/0x20
->>>>>>>>>>>>>>>> scsi_runtime_suspend+0x64/0x94
->>>>>>>>>>>>>>>> __rpm_callback+0x80/0x2a4
->>>>>>>>>>>>>>>> rpm_suspend+0x308/0x614
->>>>>>>>>>>>>>>> pm_runtime_work+0x98/0xa8
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> I added 'DL_FLAG_RPM_ACTIVE' while creating links.
->>>>>>>>>>>>>>>>             if (hba->sdev_ufs_device) {
->>>>>>>>>>>>>>>>                     link = device_link_add(&sdev->sdev_gendev,
->>>>>>>>>>>>>>>>                                         &hba->sdev_ufs_device->sdev_gendev,
->>>>>>>>>>>>>>>>                                        DL_FLAG_PM_RUNTIME|DL_FLAG_RPM_ACTIVE);
->>>>>>>>>>>>>>>> I didn't expect this to resolve the issue anyway and it didn't.
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> Another interesting point here is when I resume any of the above suspended
->>>>>>>>>>>>>>>> consumers, it all goes back to normal, which is kind of expected. I tried
->>>>>>>>>>>>>>>> resuming the consumer and the supplier is resumed and the supplier is
->>>>>>>>>>>>>>>> suspended when all the consumers are suspended.
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> Any pointers on this issue please?
->>>>>>>>>>>>>>>>
->>>>>>>>>>>>>>>> @Bart/@Alan - Do you've any pointers please?
->>>>>>>>>>>>>>>
->>>>>>>>>>>>>>> It's very noticeable that although you seem to have isolated a bug in
->>>>>>>>>>>>>>> the power management subsystem (supplier goes into runtime suspend
->>>>>>>>>>>>>>> even when one of its consumers is still active), you did not CC the
->>>>>>>>>>>>>>> power management maintainer or mailing list.
->>>>>>>>>>>>>>>
->>>>>>>>>>>>>>> I have added the appropriate CC's.
->>>>>>>>>>>>>>
->>>>>>>>>>>>>> Thanks Alan!
->>>>>>>>>>>>
->>>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>> Hello
->>>>>>>>>>> I & Can (thanks CanG) debugged this further:
->>>>>>>>>>>
->>>>>>>>>>> Looks like this issue can occur if the sd probe is asynchronous.
->>>>>>>>>>>
->>>>>>>>>>> Essentially, the sd_probe() is done asynchronously and driver_probe_device() invokes pm_runtime_get_suppliers() before invoking sd_probe().
->>>>>>>>>>>
->>>>>>>>>>> But scsi_probe_and_add_lun() runs in a separate context.
->>>>>>>>>>> So the scsi_autopm_put_device() invoked from scsi_scan_host() context reduces the link->rpm_active to 1. And sd_probe() invokes scsi_autopm_put_device() and starts a timer. And then driver_probe_device() invoked from __device_attach_async_helper context reduces the link->rpm_active to 1 thus enabling the supplier to suspend before the consumer suspends.
->>>>>>>>>>>
->>>>>>>>>>> So if:
->>>>>>>>>>> Context T1:
->>>>>>>>>>> [1] scsi_probe_and_add_lun()
->>>>>>>>>>> [2]    |- scsi_autopm_put_device() - reduce the link->rpm_active to 1
->>>>>>>>>>>
->>>>>>>>>>> Context T2:
->>>>>>>>>>> __device_attach_async_helper()
->>>>>>>>>>>          |- driver_probe_device()
->>>>>>>>>>>              |- sd_probe()
->>>>>>>>>>> In between [1] and [2] say, driver_probe_device() -> sd_probe() is invoked in a separate context from __device_attach_async_helper().
->>>>>>>>>>> The driver_probe_device() -> pm_runtime_get_suppliers() but [2] would reduce link->rpm_active to 1.
->>>>>>>>>>> Then sd_probe() would invoke rpm_resume() and proceed as is.
->>>>>>>>>>> When sd_probe() invokes scsi_autopm_put_device() it'd start a timer, dev->power.timer_autosuspends = 1.
->>>>>>>>>>>
->>>>>>>>>>> Now then, pm_runtime_put_suppliers() is invoked from driver_probe_device() and that makes the link->rpm_active = 1.
->>>>>>>>>>> But by now, the corresponding 'sd dev' (consumer) usage_count = 0, state = RPM_ACTIVE and link->rpm_active = 1.
->>>>>>>>>>> At this point of time, all other 'sd dev' (consumers) _may_ be suspended or active but would have the link->rpm_active = 1.
->>>>>>>>>>
->>>>>>>>>> Is this with DL_FLAG_RPM_ACTIVE?  In that case, wouldn't active
->>>>>>>>>> consumers have link->rpm_active = 2 and also have incremented
->>>>>>>>>> the supplier's usage_count?
->>>>>>>
->>>>>>> Yes this is with DL_FLAG_RPM_ACTIVE.
->>>>>>>
->>>>>>> Please let me share a log here:
->>>>>>> BEF means - Before, AFT means After.
->>>>>>>
->>>>>>> [    6.843445][    T7] scsi 0:0:0:4: [UFSDBG]: ufshcd_setup_links:4779:  supp: usage_cnt: 3 Link - 0:0:0:49488 link-rpm_active: 2 avail_luns: 5
->>>>>>> [    6.892545][    T7] scsi 0:0:0:4: pm_runtime_get_suppliers: (0:0:0:49488): supp: usage_count: 5 rpm_active: 4
->>>>>>>
->>>>>>> In the above log, T7 is the context in which this scsi device is being added - scsi_sysfs_add_sdev()
->>>>>>>
->>>>>>> [    6.931846][    T7] ufs_rpmb_wlun 0:0:0:4: [UFSDBG]: ufshcd_rpmb_probe:9692: invoked
->>>>>>> [    6.941246][    T7] scsi 0:0:0:4: pm_runtime_put_suppliers: rpm_active: 4
->>>>>>>
->>>>>>> [    6.941246][    T7] scsi 0:0:0:4: pm_runtime_put_suppliers: (0:0:0:49488) [BEF] usage_count: 5
->>>>>>> [    6.941247][    T7] scsi 0:0:0:4: pm_runtime_put_suppliers: (0:0:0:49488) [AFT] usage_count: 4 rpm_active: 3
->>>>>>>
->>>>>>> [    6.941267][    T7] scsi 0:0:0:4: rpm_put_suppliers: [BEF] Supp (0:0:0:49488) usage_count: 4 rpm_active: 3
->>>>>>>
->>>>>>> ------ T196 Context comes in while T7 is running ----------
->>>>>>> [    6.941466][  T196] scsi 0:0:0:4: pm_runtime_get_suppliers: (0:0:0:49488): supp: usage_count: 5 rpm_active: 4
->>>>>>> --------------------------------------------------------------
->>>>>>>
->>>>>>> [    7.788397][    T7] scsi 0:0:0:4: rpm_put_suppliers: [AFT] Supp (0:0:0:49488) usage_count: 2 rpm_active: 1
->>>>>>
->>>>>>
->>>>>>
->>>>>>>
->>>>>>> -- 
->>>>>>>
->>>>>>> T196 is the context in which sd_probe() is invoked for this scsi device.
->>>>>>>
->>>>>>> [    7.974410][  T196] sd 0:0:0:4: [sde] Attached SCSI disk
->>>>>>> [    7.984188][  T196] sd 0:0:0:4: pm_runtime_put_suppliers: rpm_active: 2
->>>>>>> [    7.998424][  T196] sd 0:0:0:4: pm_runtime_put_suppliers: (0:0:0:49488) [BEF] usage_count: 4
->>>>>>> [    8.017320][  T196] sd 0:0:0:4: pm_runtime_put_suppliers: (0:0:0:49488) [AFT] usage_count: 1 rpm_active: 1
->>>>>>>
->>>>>>> The reference to the link is released after sd_probe() is completed.
->>>>>>> At this point, the rpm_active should be 2. And the rpm_active should become 1 when sd 0:0:0:4 actually suspends. But at the end of sd_probe() the suspend is only scheduled. However the supplier is now free to suspend.
->>>>>>>
->>>>>>> In this log, the usage_count of supplier becomes 0 here:
->>>>>>> [   11.963885][  T117] sd 0:0:0:7: rpm_put_suppliers: [BEF] Supp (0:0:0:49488) usage_count: 1 rpm_active: 2
->>>>>>> [   11.973821][  T117] sd 0:0:0:7: rpm_put_suppliers: [AFT] Supp (0:0:0:49488) usage_count: 0 rpm_active: 1
->>>>>>>
->>>>>>> However, the consumer sd 0:0:0:4 is still active but has released the reference to the supplier:
->>>>>>
->>>>>> If that is the case, then it is an error in PM not UFS.
->>>>>>
->>>>>> A second look at the code around rpm_put_suppliers() does look
->>>>>> potentially racy, since there does not appear to be anything
->>>>>> stopping the runtime_status changing between
->>>>>> spin_unlock_irq(&dev->power.lock) and device_links_read_lock().
->>>>>>
->>>>>> Rafael, can you comment?
->>>>>
->>>>> Indeed, if the device is suspending, changing its PM-runtime status to
->>>>> RPM_SUSPENDED and dropping its power.lock allows a concurrent
->>>>> rpm_resume() to run and resume the device before the suppliers can be
->>>>> suspended.
->>>>>
->>>>> That's incorrect and has been introduced by commit 44cc89f76464 ("PM:
->>>>> runtime: Update device status before letting suppliers suspend").
->>>>>
->>>>> It is probably better to revert that commit and address the original
->>>>> issue in a different way.
->>>>>
->>>> Hello,
->>>> One approach to address the original issue could be to prevent the scsi
->>>> devices from suspending until the probe is completed, perhaps?
->>>
->>> I was talking about the original issue that commit 44cc89f76464
->>> attempted to address.
->>>
->>> I'm not sure if and how it is related to the issue you have been debugging.
->>>
->> Hi Rafael
->> Thanks for clarifying that.
->> Understood.
->> I was referring to the issue that I've been discussing with Adrian.
-> 
-> For test purposes, you could try reverting 44cc89f76464, making the
-> other changes to the UFS driver, and see if the device_links issue
-> goes away.
-> 
-Hi Adrian
+VER_0 is used to describe device based on tsens version before v0.1.
+These device are devices based on msm8960 for example apq8064 or
+ipq806x.
 
-Thanks for the review and comments.
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ drivers/thermal/qcom/tsens.c | 141 ++++++++++++++++++++++++++++-------
+ drivers/thermal/qcom/tsens.h |   4 +-
+ 2 files changed, 116 insertions(+), 29 deletions(-)
 
-I addressed the comments and tested it. I still see the device_links 
-issue. I've pushed the change that I tested as v12.
-
-# grep -H . /sys/bus/scsi/devices/*/power/runtime_status 
-          <
-/sys/bus/scsi/devices/0:0:0:0/power/runtime_status:suspending <
-/sys/bus/scsi/devices/0:0:0:1/power/runtime_status:suspended
-/sys/bus/scsi/devices/0:0:0:2/power/runtime_status:suspended
-/sys/bus/scsi/devices/0:0:0:3/power/runtime_status:suspending <
-/sys/bus/scsi/devices/0:0:0:4/power/runtime_status:suspending <
-/sys/bus/scsi/devices/0:0:0:49456/power/runtime_status:suspended
-/sys/bus/scsi/devices/0:0:0:49476/power/runtime_status:suspended
-/sys/bus/scsi/devices/0:0:0:49488/power/runtime_status:suspended <
-
-I think it couldn't resolve the issue because we're not stopping the 
-scsi devices from suspending after the async probe is scheduled.
-
--asd
-
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index d8ce3a687b80..277d9b17e949 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -12,6 +12,7 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm.h>
+ #include <linux/regmap.h>
+@@ -515,6 +516,15 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
+ 			dev_dbg(priv->dev, "[%u] %s: no violation:  %d\n",
+ 				hw_id, __func__, temp);
+ 		}
++
++		if (tsens_version(priv) < VER_0_1) {
++			/* Constraint: There is only 1 interrupt control register for all
++			 * 11 temperature sensor. So monitoring more than 1 sensor based
++			 * on interrupts will yield inconsistent result. To overcome this
++			 * issue we will monitor only sensor 0 which is the master sensor.
++			 */
++			break;
++		}
+ 	}
+ 
+ 	return IRQ_HANDLED;
+@@ -530,6 +540,13 @@ static int tsens_set_trips(void *_sensor, int low, int high)
+ 	int high_val, low_val, cl_high, cl_low;
+ 	u32 hw_id = s->hw_id;
+ 
++	if (tsens_version(priv) < VER_0_1) {
++		/* Pre v0.1 IP had a single register for each type of interrupt
++		 * and thresholds
++		 */
++		hw_id = 0;
++	}
++
+ 	dev_dbg(dev, "[%u] %s: proposed thresholds: (%d:%d)\n",
+ 		hw_id, __func__, low, high);
+ 
+@@ -584,18 +601,21 @@ int get_temp_tsens_valid(const struct tsens_sensor *s, int *temp)
+ 	u32 valid;
+ 	int ret;
+ 
+-	ret = regmap_field_read(priv->rf[valid_idx], &valid);
+-	if (ret)
+-		return ret;
+-	while (!valid) {
+-		/* Valid bit is 0 for 6 AHB clock cycles.
+-		 * At 19.2MHz, 1 AHB clock is ~60ns.
+-		 * We should enter this loop very, very rarely.
+-		 */
+-		ndelay(400);
++	/* VER_0 doesn't have VALID bit */
++	if (tsens_version(priv) >= VER_0_1) {
+ 		ret = regmap_field_read(priv->rf[valid_idx], &valid);
+ 		if (ret)
+ 			return ret;
++		while (!valid) {
++			/* Valid bit is 0 for 6 AHB clock cycles.
++			 * At 19.2MHz, 1 AHB clock is ~60ns.
++			 * We should enter this loop very, very rarely.
++			 */
++			ndelay(400);
++			ret = regmap_field_read(priv->rf[valid_idx], &valid);
++			if (ret)
++				return ret;
++		}
+ 	}
+ 
+ 	/* Valid bit is set, OK to read the temperature */
+@@ -608,15 +628,29 @@ int get_temp_common(const struct tsens_sensor *s, int *temp)
+ {
+ 	struct tsens_priv *priv = s->priv;
+ 	int hw_id = s->hw_id;
+-	int last_temp = 0, ret;
++	int last_temp = 0, ret, trdy;
++	unsigned long timeout;
+ 
+-	ret = regmap_field_read(priv->rf[LAST_TEMP_0 + hw_id], &last_temp);
+-	if (ret)
+-		return ret;
++	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
++	do {
++		if (tsens_version(priv) == VER_0) {
++			ret = regmap_field_read(priv->rf[TRDY], &trdy);
++			if (ret)
++				return ret;
++			if (!trdy)
++				continue;
++		}
+ 
+-	*temp = code_to_degc(last_temp, s) * 1000;
++		ret = regmap_field_read(priv->rf[LAST_TEMP_0 + hw_id], &last_temp);
++		if (ret)
++			return ret;
+ 
+-	return 0;
++		*temp = code_to_degc(last_temp, s) * 1000;
++
++		return 0;
++	} while (time_before(jiffies, timeout));
++
++	return -ETIMEDOUT;
+ }
+ 
+ #ifdef CONFIG_DEBUG_FS
+@@ -738,19 +772,31 @@ int __init init_common(struct tsens_priv *priv)
+ 		priv->tm_offset = 0x1000;
+ 	}
+ 
+-	res = platform_get_resource(op, IORESOURCE_MEM, 0);
+-	tm_base = devm_ioremap_resource(dev, res);
+-	if (IS_ERR(tm_base)) {
+-		ret = PTR_ERR(tm_base);
+-		goto err_put_device;
++	if (tsens_version(priv) >= VER_0_1) {
++		res = platform_get_resource(op, IORESOURCE_MEM, 0);
++		tm_base = devm_ioremap_resource(dev, res);
++		if (IS_ERR(tm_base)) {
++			ret = PTR_ERR(tm_base);
++			goto err_put_device;
++		}
++
++		priv->tm_map = devm_regmap_init_mmio(dev, tm_base, &tsens_config);
++	} else { /* VER_0 share the same gcc regs using a syscon */
++		struct device *parent = priv->dev->parent;
++
++		if (parent)
++			priv->tm_map = syscon_node_to_regmap(parent->of_node);
+ 	}
+ 
+-	priv->tm_map = devm_regmap_init_mmio(dev, tm_base, &tsens_config);
+-	if (IS_ERR(priv->tm_map)) {
++	if (IS_ERR_OR_NULL(priv->tm_map)) {
+ 		ret = PTR_ERR(priv->tm_map);
+ 		goto err_put_device;
+ 	}
+ 
++	/* VER_0 have only tm_map */
++	if (!priv->srot_map)
++		priv->srot_map = priv->tm_map;
++
+ 	if (tsens_version(priv) > VER_0_1) {
+ 		for (i = VER_MAJOR; i <= VER_STEP; i++) {
+ 			priv->rf[i] = devm_regmap_field_alloc(dev, priv->srot_map,
+@@ -769,6 +815,10 @@ int __init init_common(struct tsens_priv *priv)
+ 		ret = PTR_ERR(priv->rf[TSENS_EN]);
+ 		goto err_put_device;
+ 	}
++	/* in VER_0 TSENS need to be explicitly enabled */
++	if (tsens_version(priv) == VER_0)
++		regmap_field_write(priv->rf[TSENS_EN], 1);
++
+ 	ret = regmap_field_read(priv->rf[TSENS_EN], &enabled);
+ 	if (ret)
+ 		goto err_put_device;
+@@ -791,6 +841,20 @@ int __init init_common(struct tsens_priv *priv)
+ 		goto err_put_device;
+ 	}
+ 
++	priv->rf[TSENS_SW_RST] = devm_regmap_field_alloc(
++		dev, priv->srot_map, priv->fields[TSENS_SW_RST]);
++	if (IS_ERR(priv->rf[TSENS_SW_RST])) {
++		ret = PTR_ERR(priv->rf[TSENS_SW_RST]);
++		goto err_put_device;
++	}
++
++	priv->rf[TRDY] =
++		devm_regmap_field_alloc(dev, priv->tm_map, priv->fields[TRDY]);
++	if (IS_ERR(priv->rf[TRDY])) {
++		ret = PTR_ERR(priv->rf[TRDY]);
++		goto err_put_device;
++	}
++
+ 	/* This loop might need changes if enum regfield_ids is reordered */
+ 	for (j = LAST_TEMP_0; j <= UP_THRESH_15; j += 16) {
+ 		for (i = 0; i < priv->feat->max_sensors; i++) {
+@@ -806,7 +870,7 @@ int __init init_common(struct tsens_priv *priv)
+ 		}
+ 	}
+ 
+-	if (priv->feat->crit_int) {
++	if (priv->feat->crit_int || tsens_version(priv) < VER_0_1) {
+ 		/* Loop might need changes if enum regfield_ids is reordered */
+ 		for (j = CRITICAL_STATUS_0; j <= CRIT_THRESH_15; j += 16) {
+ 			for (i = 0; i < priv->feat->max_sensors; i++) {
+@@ -844,7 +908,11 @@ int __init init_common(struct tsens_priv *priv)
+ 	}
+ 
+ 	spin_lock_init(&priv->ul_lock);
+-	tsens_enable_irq(priv);
++
++	/* VER_0 interrupt doesn't need to be enabled */
++	if (tsens_version(priv) >= VER_0_1)
++		tsens_enable_irq(priv);
++
+ 	tsens_debug_init(op);
+ 
+ err_put_device:
+@@ -943,10 +1011,14 @@ static int tsens_register_irq(struct tsens_priv *priv, char *irqname,
+ 		if (irq == -ENXIO)
+ 			ret = 0;
+ 	} else {
+-		ret = devm_request_threaded_irq(&pdev->dev, irq,
+-						NULL, thread_fn,
+-						IRQF_ONESHOT,
+-						dev_name(&pdev->dev), priv);
++		/* VER_0 interrupt is TRIGGER_RISING, VER_0_1 and up is ONESHOT */
++		ret = devm_request_threaded_irq(
++			&pdev->dev, irq,
++			tsens_version(priv) == VER_0 ? thread_fn : NULL,
++			tsens_version(priv) == VER_0 ? NULL : thread_fn,
++			tsens_version(priv) == VER_0 ? IRQF_TRIGGER_RISING :
++							     IRQF_ONESHOT,
++			dev_name(&pdev->dev), priv);
+ 		if (ret)
+ 			dev_err(&pdev->dev, "%s: failed to get irq\n",
+ 				__func__);
+@@ -975,6 +1047,19 @@ static int tsens_register(struct tsens_priv *priv)
+ 			priv->ops->enable(priv, i);
+ 	}
+ 
++	/* VER_0 require to set MIN and MAX THRESH
++	 * These 2 regs are set using the:
++	 * - CRIT_THRESH_0 for MAX THRESH hardcoded to 120°C
++	 * - CRIT_THRESH_1 for MIN THRESH hardcoded to   0°C
++	 */
++	if (tsens_version(priv) < VER_0_1) {
++		regmap_field_write(priv->rf[CRIT_THRESH_0],
++				   tsens_mC_to_hw(priv->sensor, 120000));
++
++		regmap_field_write(priv->rf[CRIT_THRESH_1],
++				   tsens_mC_to_hw(priv->sensor, 0));
++	}
++
+ 	ret = tsens_register_irq(priv, "uplow", tsens_irq_thread);
+ 	if (ret < 0)
+ 		return ret;
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index f40b625f897e..8e6c1fd3ccf5 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -13,6 +13,7 @@
+ #define CAL_DEGC_PT2		120
+ #define SLOPE_FACTOR		1000
+ #define SLOPE_DEFAULT		3200
++#define TIMEOUT_US		100
+ #define THRESHOLD_MAX_ADC_CODE	0x3ff
+ #define THRESHOLD_MIN_ADC_CODE	0x0
+ 
+@@ -25,7 +26,8 @@ struct tsens_priv;
+ 
+ /* IP version numbers in ascending order */
+ enum tsens_ver {
+-	VER_0_1 = 0,
++	VER_0 = 0,
++	VER_0_1,
+ 	VER_1_X,
+ 	VER_2_X,
+ };
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-Linux Foundation Collaborative Project
+2.30.2
+
