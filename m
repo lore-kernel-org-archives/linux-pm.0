@@ -2,113 +2,180 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77958C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 14:36:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99DA3C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 14:49:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4B26564F4D
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 14:36:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7281B64F18
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Mar 2021 14:49:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229973AbhCSOfv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Mar 2021 10:35:51 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44700 "EHLO
+        id S230347AbhCSOsq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Mar 2021 10:48:46 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:47194 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230129AbhCSOfr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Mar 2021 10:35:47 -0400
+        with ESMTP id S230461AbhCSOsW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Mar 2021 10:48:22 -0400
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.0.3)
- id 9de933e05a2b666b; Fri, 19 Mar 2021 15:35:45 +0100
+ id e69104418b086582; Fri, 19 Mar 2021 15:48:20 +0100
 Received: from kreacher.localnet (89-64-81-50.dynamic.chello.pl [89.64.81.50])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id EE65E668FB8;
-        Fri, 19 Mar 2021 15:35:44 +0100 (CET)
+        by v370.home.net.pl (Postfix) with ESMTPSA id E1BC0667D8E;
+        Fri, 19 Mar 2021 15:48:19 +0100 (CET)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Peter Zijlstra <peterz@infradead.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     mingo@redhat.com, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org,
-        linux-kernel@vger.kernel.org, Josh Poimboeuf <jpoimboe@redhat.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH] sched: Optimize cpufreq_update_util
-Date:   Fri, 19 Mar 2021 15:35:43 +0100
-Message-ID: <5452200.DvuYhMxLoT@kreacher>
-In-Reply-To: <20210319073751.qz2ytpxl2ikrt2b7@vireshk-i7>
-References: <20210318212826.GW4746@worktop.programming.kicks-ass.net> <20210319073751.qz2ytpxl2ikrt2b7@vireshk-i7>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     "elaine.zhang" <zhangqing@rock-chips.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 2/2] PM: runtime: Defer suspending suppliers
+Date:   Fri, 19 Mar 2021 15:47:31 +0100
+Message-ID: <2773244.e9J7NaK4W3@kreacher>
+In-Reply-To: <4641414.31r3eYUQgx@kreacher>
+References: <5448054.DvuYhMxLoT@kreacher> <4641414.31r3eYUQgx@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudefkedgieejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepkeelrdeigedrkedurdehtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeekledrieegrdekuddrhedtpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepvhhirhgvshhhrdhkuhhmrghrsehlihhnrghrohdrohhrghdprhgtphhtthhopehmihhnghhosehrvgguhhgrthdrtghomhdprhgtphhtthhopehvihhntggvnhhtrdhguhhithhtohhtsehlihhnrghrohdrohhrghdprhgtphhtthhopeguihgvthhmrghrrdgvghhgvghmrghnnhesrghrmhdrtghomhdprhgtphhtthho
- pehrohhsthgvughtsehgohhoughmihhsrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepjhhpohhimhgsohgvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehrrghfrggvlheskhgvrhhnvghlrdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudefkedgieelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetgefgleetgeduheeugeeikeevudelueelvdeufeejfeffgeefjedugfetfeehhfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeekledrieegrdekuddrhedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedurdehtddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopeiihhgrnhhgqhhinhhgsehrohgtkhdqtghhihhpshdrtghomhdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday, March 19, 2021 8:37:51 AM CET Viresh Kumar wrote:
-> On 18-03-21, 22:28, Peter Zijlstra wrote:
-> > Also, is there a lock order comment in cpufreq somewhere?
-> 
-> I don't think so.
-> 
-> > I tried
-> > following it, but eventually gave up and figured 'asking' lockdep was
-> > far simpler.
-> 
-> This will get called from CPU's online/offline path at worst, nothing more.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I'm not sure if I understand you correctly, but for completeness the callback
-is also set/unset on driver registration and governor switch.
+Because the PM-runtime status of the device is not updated in
+__rpm_callback(), attempts to suspend the suppliers of the given
+device triggered by the rpm_put_suppliers() call in there may
+cause a supplier to be suspended completely before the status of
+the consumer is updated to RPM_SUSPENDED, which is confusing.
 
-> > +static void cpufreq_update_optimize(void)
-> > +{
-> > +	struct update_util_data *data;
-> > +	cpu_util_update_f func = NULL, dfunc;
-> > +	int cpu;
-> > +
-> > +	for_each_online_cpu(cpu) {
-> > +		data = per_cpu(cpufreq_update_util_data, cpu);
-> > +		dfunc = data ? READ_ONCE(data->func) : NULL;
-> > +
-> > +		if (dfunc) {
-> > +			if (!func)
-> > +				func = dfunc;
-> > +			else if (func != dfunc)
-> > +				return;
-> > +		} else if (func)
-> > +			return;
-> > +	}
-> 
-> So there is nothing cpufreq specific IIRC that can help make this better, this
-> is basically per policy.
+To avoid that (1) modify __rpm_callback() to only decrease the
+PM-runtime usage counter of each supplier and (2) make rpm_suspend()
+try to suspend the suppliers after changing the consumer's status to
+RPM_SUSPENDED, in analogy with the device's parent.
 
-Well, in some cases the driver knows that there will never be more that 1 CPU
-per policy and so schedutil will never use the "shared" variant.
+Link: https://lore.kernel.org/linux-pm/CAPDyKFqm06KDw_p8WXsM4dijDbho4bb6T4k50UqqvR1_COsp8g@mail.gmail.com/
+Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
+Reported-by: elaine.zhang <zhangqing@rock-chips.com>
+Diagnosed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-For instance, with intel_pstate all CPUs will always use the same callback.
+v1 -> v2:
+   * Change a function name as requested by Ulf.
+   * Add the R-by tag from Ulf.
+   * Use spin_unlock_irq()/spin_lock_irq() around the rpm_suspend_suppliers()
+     call in rpm_suspend().
 
-> For example, on an ARM platform we have two cpufreq policies with one policy
-> covering 4 CPUs, while the other one covering only 1 (maybe because we didn't
-> add those CPUs in DT or something else), then also we will end up separate
-> routines.
-> 
-> Or if we take all CPUs of a policy offline and then bring them up one by one, I
-> think for the first CPU online event in that policy we will end up using the
-> sugov_update_single_freq() variant for some time, until the time more CPUs come
-> up.
-> 
-> So traversing the way you did this is probably something that will work properly
-> in all corner cases.
+---
+ drivers/base/power/runtime.c |   45 +++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 39 insertions(+), 6 deletions(-)
 
-Agreed.
-
-It might be simplified in some cases, though, AFAICS.
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -305,7 +305,7 @@ static int rpm_get_suppliers(struct devi
+ 	return 0;
+ }
+ 
+-static void rpm_put_suppliers(struct device *dev)
++static void __rpm_put_suppliers(struct device *dev, bool try_to_suspend)
+ {
+ 	struct device_link *link;
+ 
+@@ -313,10 +313,30 @@ static void rpm_put_suppliers(struct dev
+ 				device_links_read_lock_held()) {
+ 
+ 		while (refcount_dec_not_one(&link->rpm_active))
+-			pm_runtime_put(link->supplier);
++			pm_runtime_put_noidle(link->supplier);
++
++		if (try_to_suspend)
++			pm_request_idle(link->supplier);
+ 	}
+ }
+ 
++static void rpm_put_suppliers(struct device *dev)
++{
++	__rpm_put_suppliers(dev, true);
++}
++
++static void rpm_suspend_suppliers(struct device *dev)
++{
++	struct device_link *link;
++	int idx = device_links_read_lock();
++
++	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node,
++				device_links_read_lock_held())
++		pm_request_idle(link->supplier);
++
++	device_links_read_unlock(idx);
++}
++
+ /**
+  * __rpm_callback - Run a given runtime PM callback for a given device.
+  * @cb: Runtime PM callback to run.
+@@ -344,8 +364,10 @@ static int __rpm_callback(int (*cb)(stru
+ 			idx = device_links_read_lock();
+ 
+ 			retval = rpm_get_suppliers(dev);
+-			if (retval)
++			if (retval) {
++				rpm_put_suppliers(dev);
+ 				goto fail;
++			}
+ 
+ 			device_links_read_unlock(idx);
+ 		}
+@@ -368,9 +390,9 @@ static int __rpm_callback(int (*cb)(stru
+ 		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
+ 			idx = device_links_read_lock();
+ 
+- fail:
+-			rpm_put_suppliers(dev);
++			__rpm_put_suppliers(dev, false);
+ 
++fail:
+ 			device_links_read_unlock(idx);
+ 		}
+ 
+@@ -642,8 +664,11 @@ static int rpm_suspend(struct device *de
+ 		goto out;
+ 	}
+ 
++	if (dev->power.irq_safe)
++		goto out;
++
+ 	/* Maybe the parent is now able to suspend. */
+-	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
++	if (parent && !parent->power.ignore_children) {
+ 		spin_unlock(&dev->power.lock);
+ 
+ 		spin_lock(&parent->power.lock);
+@@ -652,6 +677,14 @@ static int rpm_suspend(struct device *de
+ 
+ 		spin_lock(&dev->power.lock);
+ 	}
++	/* Maybe the suppliers are now able to suspend. */
++	if (dev->power.links_count > 0) {
++		spin_unlock_irq(&dev->power.lock);
++
++		rpm_suspend_suppliers(dev);
++
++		spin_lock_irq(&dev->power.lock);
++	}
+ 
+  out:
+ 	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
 
 
 
