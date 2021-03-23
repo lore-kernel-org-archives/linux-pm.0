@@ -2,120 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E22AC433E6
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A12C433E9
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3442561994
+	by mail.kernel.org (Postfix) with ESMTP id B426C619B9
 	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231799AbhCWN5Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Mar 2021 09:57:16 -0400
-Received: from mail-lj1-f177.google.com ([209.85.208.177]:40727 "EHLO
-        mail-lj1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231847AbhCWN4y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Mar 2021 09:56:54 -0400
-Received: by mail-lj1-f177.google.com with SMTP id u10so25749019lju.7;
-        Tue, 23 Mar 2021 06:56:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=SG2RU9BGddGqc8+LmYNU3X5hDH9nRq0LsOGSuQU+0vQ=;
-        b=s0VzzVyD4zLCXcSoRrl9DTO8JC+CvDbhokb//KimK1eBtV39qos6dh4RL8WpZfNyy+
-         CvUKTkxaPbEKJl9EObDmy9vRdD6YBjPj0fqKAwlpo/MWTFEb7cW9189Feab189UJDBym
-         gQenjUAhWA01lATvWfss2fxtrsfODF4up1MMnlvGK/zZlVkaG3NVSuiK7OVZwEXooszi
-         AY5rbjGfk8HOivJ6wuC8Fyn7JYibXH/SzCtMG2oHHX3lr5FFllHmH5B4bh4Tkf3NF/+c
-         ogtKvygdKjbDM9F9+izHiBag4WEGGcrRgSiKL7HYaG3C+pFH4JXgtNA8eOrtfgf9jj57
-         2jbw==
-X-Gm-Message-State: AOAM530EoB2L87yRjZ7RQM3g7mfl9jndPNAPzVvDCTSGmWbnPWnLu33n
-        kTaAKYh8vWYH54m0ldtm/v0=
-X-Google-Smtp-Source: ABdhPJy3Q4ez4TI4HgvOym73a7CNZxNo9F4RX6+quzkcgtglSKAIYgcyFhe8wnD7m830kMhc58yt5Q==
-X-Received: by 2002:a2e:810a:: with SMTP id d10mr3149259ljg.304.1616507812249;
-        Tue, 23 Mar 2021 06:56:52 -0700 (PDT)
-Received: from localhost.localdomain (dc7vkhyyyyyyyyyyyyyby-3.rev.dnainternet.fi. [2001:14ba:16e2:8300::2])
-        by smtp.gmail.com with ESMTPSA id l12sm2351935lji.122.2021.03.23.06.56.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Mar 2021 06:56:51 -0700 (PDT)
-Date:   Tue, 23 Mar 2021 15:56:44 +0200
-From:   Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-        Matti Vaittinen <mazziesaccount@gmail.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <mgross@linux.intel.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-        gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-watchdog@vger.kernel.org
-Subject: [PATCH v3 2/8] MAINTAINERS: Add entry for devm helpers
-Message-ID: <eec1797734e3d080662aa732c565ed4a3c261799.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
+        id S231889AbhCWN5T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Mar 2021 09:57:19 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:40627 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S231857AbhCWN5F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Mar 2021 09:57:05 -0400
+X-UUID: 964117d929484bcb874cfb414cef2292-20210323
+X-UUID: 964117d929484bcb874cfb414cef2292-20210323
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1775652508; Tue, 23 Mar 2021 21:57:00 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs06n1.mediatek.inc (172.21.101.129) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 23 Mar 2021 21:56:59 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 23 Mar 2021 21:56:59 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Subject: [PATCH v13 6/7] arm64: dts: mt8192: add svs device information
+Date:   Tue, 23 Mar 2021 21:56:56 +0800
+Message-ID: <20210323135657.2701-7-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210323135657.2701-1-roger.lu@mediatek.com>
+References: <20210323135657.2701-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Devm helper header containing small inline helpers was added.
-Hans promised to maintain it.
+add compitable/reg/irq/clock/efuse/reset setting in svs node
 
-Add Hans as maintainer and myself as designated reviewer.
-
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
-Changelog from RFCv2:
- - RFC dropped. No functional changes.
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi | 34 ++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
- MAINTAINERS | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9e876927c60d..fa5ac3164678 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5169,6 +5169,12 @@ M:	Torben Mathiasen <device@lanana.org>
- S:	Maintained
- W:	http://lanana.org/docs/device-list/index.html
- 
-+DEVICE RESOURCE MANAGEMENT HELPERS
-+M:	Hans de Goede <hdegoede@redhat.com>
-+R:	Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-+S:	Maintained
-+F:	include/linux/devm-helpers.h
+diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+index 2f0b4824a024..f3a339de8992 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+@@ -268,6 +268,14 @@
+ 			compatible = "mediatek,mt8192-infracfg", "syscon";
+ 			reg = <0 0x10001000 0 0x1000>;
+ 			#clock-cells = <1>;
 +
- DEVICE-MAPPER  (LVM)
- M:	Alasdair Kergon <agk@redhat.com>
- M:	Mike Snitzer <snitzer@redhat.com>
++			infracfg_rst: reset-controller {
++				compatible = "mediatek,infra-reset", "ti,syscon-reset";
++				#reset-cells = <1>;
++				ti,reset-bits = <
++					0x150 5 0x154 5 0 0     (ASSERT_SET | DEASSERT_SET | STATUS_NONE) /* 0: svs */
++				>;
++			};
+ 		};
+ 
+ 		pericfg: syscon@10003000 {
+@@ -362,6 +370,20 @@
+ 			status = "disabled";
+ 		};
+ 
++		svs: svs@1100b000 {
++			compatible = "mediatek,mt8192-svs";
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH 0>;
++			clocks = <&infracfg CLK_INFRA_THERM>;
++			clock-names = "main";
++			nvmem-cells = <&svs_calibration>,
++				      <&lvts_e_data1>;
++			nvmem-cell-names = "svs-calibration-data",
++					   "t-calibration-data";
++			resets = <&infracfg_rst 0>;
++			reset-names = "svs_rst";
++		};
++
+ 		spi1: spi@11010000 {
+ 			compatible = "mediatek,mt8192-spi",
+ 				     "mediatek,mt6765-spi";
+@@ -473,6 +495,18 @@
+ 			status = "disable";
+ 		};
+ 
++		efuse: efuse@11c10000 {
++			compatible = "mediatek,efuse";
++			reg = <0 0x11c10000 0 0x1000>;
++
++			lvts_e_data1: data1 {
++				reg = <0x1C0 0x58>;
++			};
++			svs_calibration: calib@580 {
++				reg = <0x580 0x68>;
++			};
++		};
++
+ 		i2c3: i2c3@11cb0000 {
+ 			compatible = "mediatek,mt8192-i2c";
+ 			reg = <0 0x11cb0000 0 0x1000>,
 -- 
-2.25.4
+2.18.0
 
-
--- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
-Simon says - in Latin please.
-~~~ "non cogito me" dixit Rene Descarte, deinde evanescavit ~~~
-Thanks to Simon Glass for the translation =] 
