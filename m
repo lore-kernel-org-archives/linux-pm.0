@@ -2,197 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3627BC433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 03:14:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A90C433C1
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 03:26:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 097C8619AB
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 03:14:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30B7A61923
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 03:26:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230063AbhCWDNl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Mar 2021 23:13:41 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:36726 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229868AbhCWDNI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 Mar 2021 23:13:08 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0EA4F1A1B18;
-        Tue, 23 Mar 2021 04:13:07 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 283961A1B04;
-        Tue, 23 Mar 2021 04:13:02 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id DB246402BB;
-        Tue, 23 Mar 2021 04:12:55 +0100 (CET)
-From:   Dong Aisheng <aisheng.dong@nxp.com>
-To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
-        linux-imx@nxp.com, linux-kernel@vger.kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com, abel.vesa@nxp.com,
-        Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH V2 5/6] PM / devfreq: governor: optimize simpleondemand get_target_freq
-Date:   Tue, 23 Mar 2021 10:59:18 +0800
-Message-Id: <1616468359-14513-6-git-send-email-aisheng.dong@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1616468359-14513-1-git-send-email-aisheng.dong@nxp.com>
+        id S229764AbhCWDZm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Mar 2021 23:25:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47108 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229761AbhCWDZ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Mar 2021 23:25:28 -0400
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6759C061574;
+        Mon, 22 Mar 2021 20:25:27 -0700 (PDT)
+Received: by mail-oi1-x22b.google.com with SMTP id d12so15536523oiw.12;
+        Mon, 22 Mar 2021 20:25:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=K7Tw0WCUQjSiYC8t7LUsVB/c7mgFoROBsLD7V9Z1Oc4=;
+        b=U1BnVoCoXnGfe+QLv7at8Ir+Zzzgj3Oh6JJ+wfkwWC26wxiW9SbxQuMxSqRRpdNBeO
+         4+RrhjdyUcL1y19QLs38G3bFh5gRZytMbSRa+Kd7IAdkUn+SZIdOV87qdFMGiYfp/quz
+         YbYUzve5cmzpbW2KR34PPWthBEpWNj/EjWpzaw19EC/qwb1YiWO556aC12bI/WrDUXdw
+         7qVKDF2aBCZ83VFaNsVOJ016I3w1F7R44kvLKQAEgrivsngqLP/IMenBs3hmeLRC38pi
+         1p5EwHXy+UrEmXlVBGZJ0C5aefCmiNQtGDFRK742K8tKVpfG8T2riKdt7d7+jqRAgZo9
+         fHZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=K7Tw0WCUQjSiYC8t7LUsVB/c7mgFoROBsLD7V9Z1Oc4=;
+        b=RNANscygsT8yTwMG2XbQ0vRx7SWs4mfCr6u8HzdeK3RitWk2OWkX7HFZc+zRPsVsbo
+         H85uK0nlA4JtLgzjf8L3N8UlgfNSEVbWobbH2ieFP5Un8CjJAh13GDYlUlP4JeXhiVQQ
+         YdHju7CfZbgxRxqIErKD8IMtSaJF7OaZA7509ji91yA7PqfImD0ImAwEnnfKcwFthvRh
+         25lRIPoVe2HOKfizZXxDdu6Aq6tg9aBQtZNjZ3rFGVWOfp05B/DBw6k50ZDakA6b9lND
+         uNrwax+drFkDlU0P8FVrpDkxRoHwdzZ1dboTpfhpQpBJS3Ig/yqJVLRLeRtSuMNmL/V/
+         ovHQ==
+X-Gm-Message-State: AOAM531UiNX04Fwp++U8RiIckAZjEjEUUe/aQ+kuNa1Rf6OuIep4wtZK
+        wWJWZj+6TwpuHr/EIKbk6RFUU0kgGJ8duqlfpCkGd9rVv5E=
+X-Google-Smtp-Source: ABdhPJxOlbD5cDyzmZpcXOlOun6O7MxtpbD45eqN9K9SAVe7LtXHkPOJKmakdLnUt57bd9t48WWH1hmPE/VNeNYwcX4=
+X-Received: by 2002:a05:6808:1413:: with SMTP id w19mr1771900oiv.20.1616469927194;
+ Mon, 22 Mar 2021 20:25:27 -0700 (PDT)
+MIME-Version: 1.0
 References: <1616468359-14513-1-git-send-email-aisheng.dong@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+In-Reply-To: <1616468359-14513-1-git-send-email-aisheng.dong@nxp.com>
+From:   Dong Aisheng <dongas86@gmail.com>
+Date:   Tue, 23 Mar 2021 11:25:09 +0800
+Message-ID: <CAA+hA=Sb+eXqaVFKtSgzM6RsnwufqEHcKrbnD_rmnDW3-qGJSQ@mail.gmail.com>
+Subject: Re: [PATCH V2 0/6] PM / devfreq: a few small fixes and improvements
+To:     Dong Aisheng <aisheng.dong@nxp.com>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        Sascha Hauer <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        open list <linux-kernel@vger.kernel.org>,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Abel Vesa <abel.vesa@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The device profile up_threshold/down_differential only needs to be
-initialized once when calling devm_devfreq_add_device. It's unnecessary
-to put the data check logic in the hot path (.get_target_freq()) where it
-will be called all the time during polling. Instead, we only check and
-initialize it one time during DEVFREQ_GOV_START.
+Hi Chanwoo,
 
-This also helps check data validability in advance during DEVFREQ_GOV_START
-rather than checking it later when running .get_target_freq().
+On Tue, Mar 23, 2021 at 11:13 AM Dong Aisheng <aisheng.dong@nxp.com> wrote:
+>
+> A few small fixes and improvements
+>
+> ChangeLog:
+> v1->v2:
+>  * squash a few patches
+>  * rebase to devfreq-testing
 
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-Change Log:
-v1->v2:
- * rebase to devfreq-testing
----
- drivers/devfreq/devfreq.c                 | 24 +++++-------------
- drivers/devfreq/governor_simpleondemand.c | 31 +++++++++++++++--------
- 2 files changed, 26 insertions(+), 29 deletions(-)
+I have to rebase to devfreq-testing instead of devfreq-next because
+below two patches
+only exist in devfreq-testing.
+5cc75e9252e9 (devfreq/devfreq-testing) PM / devfreq: Add
+devfreq_transitions debugfs file
+dc9e557845c1 PM / devfreq: Add new up_threshold and down_differential
+sysfs attrs
+My patch 5 needs change based on it according to your suggestion. So i have to
+rebase to that branch.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index cacda7d1f858..270e51f5318f 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1908,9 +1908,7 @@ static ssize_t up_threshold_show(struct device *dev,
- 	if (!df->profile)
- 		return -EINVAL;
- 
--	return sprintf(buf, "%d\n", df->profile->up_threshold
--					? df->profile->up_threshold
--					: DEVFREQ_UP_THRESHOLD);
-+	return sprintf(buf, "%d\n", df->profile->up_threshold);
- }
- 
- static ssize_t up_threshold_store(struct device *dev,
-@@ -1934,9 +1932,7 @@ static ssize_t up_threshold_store(struct device *dev,
- 	if (value > 100)
- 		value = 100;
- 
--	down_differential = df->profile->down_differential
--				? df->profile->down_differential
--				: DEVFREQ_DOWN_DIFFERENCTIAL;
-+	down_differential = df->profile->down_differential;
- 	if (value < down_differential)
- 		value = down_differential;
- 
-@@ -1961,9 +1957,7 @@ static ssize_t down_differential_show(struct device *dev,
- 	if (!df->profile)
- 		return -EINVAL;
- 
--	return sprintf(buf, "%d\n", df->profile->down_differential
--					? df->profile->down_differential
--					: DEVFREQ_DOWN_DIFFERENCTIAL);
-+	return sprintf(buf, "%d\n", df->profile->down_differential);
- }
- 
- static ssize_t down_differential_store(struct device *dev,
-@@ -1984,9 +1978,7 @@ static ssize_t down_differential_store(struct device *dev,
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	up_threshold = df->profile->up_threshold
--				? df->profile->up_threshold
--				: DEVFREQ_UP_THRESHOLD;
-+	up_threshold = df->profile->up_threshold;
- 	if (value > up_threshold)
- 		value = up_threshold;
- 
-@@ -2113,16 +2105,12 @@ static int devfreq_summary_show(struct seq_file *s, void *data)
- 			polling_ms = 0;
- 
- 		if (IS_SUPPORTED_ATTR(devfreq->governor->attrs, UP_THRESHOLD))
--			up_threshold = devfreq->profile->up_threshold
--					? devfreq->profile->up_threshold
--					: DEVFREQ_UP_THRESHOLD;
-+			up_threshold = devfreq->profile->up_threshold;
- 		else
- 			up_threshold = 0;
- 
- 		if (IS_SUPPORTED_ATTR(devfreq->governor->attrs, DOWN_DIFF))
--			down_differential = devfreq->profile->down_differential
--					? devfreq->profile->down_differential
--					: DEVFREQ_DOWN_DIFFERENCTIAL;
-+			down_differential = devfreq->profile->down_differential;
- 		else
- 			down_differential = 0;
- 		mutex_unlock(&devfreq->lock);
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index 93f6061667d9..3e195b46554a 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -18,8 +18,8 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	int err;
- 	struct devfreq_dev_status *stat;
- 	unsigned long long a, b;
--	unsigned int dfso_upthreshold = DEVFREQ_UP_THRESHOLD;
--	unsigned int dfso_downdifferential = DEVFREQ_DOWN_DIFFERENCTIAL;
-+	unsigned int dfso_upthreshold = df->profile->up_threshold;
-+	unsigned int dfso_downdifferential = df->profile->down_differential;
- 
- 	err = devfreq_update_stats(df);
- 	if (err)
-@@ -27,15 +27,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 
- 	stat = &df->last_status;
- 
--	if (df->profile->up_threshold)
--		dfso_upthreshold = df->profile->up_threshold;
--	if (df->profile->down_differential)
--		dfso_downdifferential = df->profile->down_differential;
--
--	if (dfso_upthreshold > 100 ||
--	    dfso_upthreshold < dfso_downdifferential)
--		return -EINVAL;
--
- 	/* Assume MAX if it is going to be divided by zero */
- 	if (stat->total_time == 0) {
- 		*freq = DEVFREQ_MAX_FREQ;
-@@ -79,11 +70,29 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	return 0;
- }
- 
-+static int devfreq_simple_ondemand_check_od(struct devfreq *df)
-+{
-+	if (!df->profile->up_threshold)
-+		df->profile->up_threshold = DEVFREQ_UP_THRESHOLD;
-+
-+	if (!df->profile->down_differential)
-+		df->profile->down_differential = DEVFREQ_DOWN_DIFFERENCTIAL;
-+
-+	if (df->profile->up_threshold > 100 ||
-+	    df->profile->up_threshold < df->profile->down_differential)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
- 				unsigned int event, void *data)
- {
- 	switch (event) {
- 	case DEVFREQ_GOV_START:
-+		if (devfreq_simple_ondemand_check_od(devfreq))
-+			return -EINVAL;
-+
- 		devfreq_monitor_start(devfreq);
- 		break;
- 
--- 
-2.25.1
+However, i found devfreq-testing can't build with GOV_PASSVIE enabled.
+Patch 1 fixed it. You can squash to the original one when apply.
 
+Please help take a look at this new series.
+Thanks
+
+Regards
+Aisheng
+
+>  * drop two patches which are already in devfreq-next
+>
+> Dong Aisheng (6):
+>   PM / devfreq: fix build error when DEVFREQ_GOV_PASSIVE enabled
+>   PM / devfreq: Use more accurate returned new_freq as resume_freq
+>   PM / devfreq: Remove the invalid description for get_target_freq
+>   PM / devfreq: bail out early if no freq changes in devfreq_set_target
+>   PM / devfreq: governor: optimize simpleondemand get_target_freq
+>   PM / devfreq: imx8m-ddrc: remove imx8m_ddrc_get_dev_status
+>
+>  Documentation/ABI/testing/sysfs-class-devfreq |  5 +--
+>  drivers/devfreq/devfreq.c                     | 37 +++++++------------
+>  drivers/devfreq/governor.h                    |  2 -
+>  drivers/devfreq/governor_simpleondemand.c     | 31 ++++++++++------
+>  drivers/devfreq/imx8m-ddrc.c                  | 14 -------
+>  5 files changed, 35 insertions(+), 54 deletions(-)
+>
+> --
+> 2.25.1
+>
