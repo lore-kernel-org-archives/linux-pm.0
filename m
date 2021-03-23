@@ -2,166 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F7FC433C1
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EE06C433E3
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DBE86199F
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 11D32619C1
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 13:57:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231603AbhCWN4n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Mar 2021 09:56:43 -0400
-Received: from mail-lj1-f175.google.com ([209.85.208.175]:37554 "EHLO
-        mail-lj1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231264AbhCWN42 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Mar 2021 09:56:28 -0400
-Received: by mail-lj1-f175.google.com with SMTP id r20so25744028ljk.4;
-        Tue, 23 Mar 2021 06:56:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=YkgDIkTmim/5O1glQvMKfNSxF6ObBNcULBvb2FB6ZQQ=;
-        b=bJFEAz74eKHvKE2ulO63o7LNI8KJZk/auj0Gl+MmNsuhy9/YEDeRnC4i93gpz9+8lf
-         4jUdc3W18bMJk2GsfTOXwG/ZxY4kZGQix1kdMzOih7ga8vEwKiBFJXZPyBHEwBfaMQSv
-         bqs4C0goMBqJ5VWFJLYWqQNHrDjfW+cSmyU11zKjjc2KBDg7m40ulRz1K5DKH+PsFrkV
-         06eMIL1J3hBU6gPkYfxARI4orX1ny3LOy/w/gHwpmp71MvFOulLQUkIZYCYkUnLSD0Hi
-         HDG0vULZ0boG4Q9uVwRGI42pjVI2Hqmm4FMgg+3p0nVVwIFHGTXff07jzTOhbTHGhD6N
-         FB5g==
-X-Gm-Message-State: AOAM531SiPiZRRIa5aOeMUcj6PrGQeotjO5lN8wQapbfKqmr6/ZPRBhb
-        mTVk/kCj5YEzB+SL0oo/y+k=
-X-Google-Smtp-Source: ABdhPJyq5feOEictEeFvfmt8qtd4uPXsGM6InICgywJruZvfoOZLCjpQIM+ajmYsqEt7lv77ngAV4g==
-X-Received: by 2002:a2e:9310:: with SMTP id e16mr3265214ljh.226.1616507785244;
-        Tue, 23 Mar 2021 06:56:25 -0700 (PDT)
-Received: from localhost.localdomain (dc7vkhyyyyyyyyyyyyyby-3.rev.dnainternet.fi. [2001:14ba:16e2:8300::2])
-        by smtp.gmail.com with ESMTPSA id u11sm1863085lfm.78.2021.03.23.06.56.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Mar 2021 06:56:24 -0700 (PDT)
-Date:   Tue, 23 Mar 2021 15:56:17 +0200
-From:   Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-        Matti Vaittinen <mazziesaccount@gmail.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <mgross@linux.intel.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
-        gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-watchdog@vger.kernel.org
-Subject: [PATCH v3 1/8] workqueue: Add resource managed version of delayed
- work init
-Message-ID: <51769ea4668198deb798fe47fcfb5f5288d61586.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
+        id S231741AbhCWN5Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Mar 2021 09:57:16 -0400
+Received: from mailgw01.mediatek.com ([210.61.82.183]:34751 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S231602AbhCWN5E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Mar 2021 09:57:04 -0400
+X-UUID: 831725d4f06a420883594fa86afc2c17-20210323
+X-UUID: 831725d4f06a420883594fa86afc2c17-20210323
+Received: from mtkmrs01.mediatek.inc [(172.21.131.159)] by mailgw01.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 597238201; Tue, 23 Mar 2021 21:57:01 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 23 Mar 2021 21:56:58 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 23 Mar 2021 21:56:58 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Subject: [PATCH v13 0/7] soc: mediatek: SVS: introduce MTK SVS
+Date:   Tue, 23 Mar 2021 21:56:50 +0800
+Message-ID: <20210323135657.2701-1-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1616506559.git.matti.vaittinen@fi.rohmeurope.com>
+Content-Type: text/plain
+X-TM-SNTS-SMTP: A33E67F89CD86AA5EB5C20A89A9B6C49CB4E1286C37074145C82D3EADA8A33B72000:8
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A few drivers which need a delayed work-queue must cancel work at driver
-detach. Some of those implement remove() solely for this purpose. Help
-drivers to avoid unnecessary remove and error-branch implementation by
-adding managed verision of delayed work initialization. This will also
-help drivers to avoid mixing manual and devm based unwinding when other
-resources are handled by devm.
+1. SVS driver uses OPP adjust event in [1] to update OPP table voltage part.
+2. SVS driver gets thermal/GPU device by node [2][3] and CPU device by get_cpu_device(). After retrieving subsys device, SVS driver does
+device_link_add() to make sure probe/suspend callback priority.
+3. SVS dts refers to reset controller [4] to help reset SVS HW.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
----
-Changelog from RFCv2:
- - RFC dropped. No functional changes.
+#mt8183 SVS related patches
+[1] https://patchwork.kernel.org/patch/11193513/
+[2] https://patchwork.kernel.org/project/linux-mediatek/patch/20201013102358.22588-2-michael.kao@mediatek.com/
+[3] https://patchwork.kernel.org/project/linux-mediatek/patch/20200306041345.259332-3-drinkcat@chromium.org/
 
- include/linux/devm-helpers.h | 53 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 include/linux/devm-helpers.h
+#mt8192 SVS related patches
+[1] https://patchwork.kernel.org/patch/11193513/
+[2] https://patchwork.kernel.org/project/linux-mediatek/patch/20201223074944.2061-1-michael.kao@mediatek.com/
+[3] https://lore.kernel.org/patchwork/patch/1360551/
+[4] https://patchwork.kernel.org/project/linux-mediatek/patch/20200817030324.5690-5-crystal.guo@mediatek.com/
 
-diff --git a/include/linux/devm-helpers.h b/include/linux/devm-helpers.h
-new file mode 100644
-index 000000000000..f64e0c9f3763
---- /dev/null
-+++ b/include/linux/devm-helpers.h
-@@ -0,0 +1,53 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __LINUX_DEVM_HELPERS_H
-+#define __LINUX_DEVM_HELPERS_H
-+
-+/*
-+ * Functions which do automatically cancel operations or release resources upon
-+ * driver detach.
-+ *
-+ * These should be helpful to avoid mixing the manual and devm-based resource
-+ * management which can be source of annoying, rarely occurring,
-+ * hard-to-reproduce bugs.
-+ *
-+ * Please take into account that devm based cancellation may be performed some
-+ * time after the remove() is ran.
-+ *
-+ * Thus mixing devm and manual resource management can easily cause problems
-+ * when unwinding operations with dependencies. IRQ scheduling a work in a queue
-+ * is typical example where IRQs are often devm-managed and WQs are manually
-+ * cleaned at remove(). If IRQs are not manually freed at remove() (and this is
-+ * often the case when we use devm for IRQs) we have a period of time after
-+ * remove() - and before devm managed IRQs are freed - where new IRQ may fire
-+ * and schedule a work item which won't be cancelled because remove() was
-+ * already ran.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/workqueue.h>
-+
-+static inline void devm_delayed_work_drop(void *res)
-+{
-+	cancel_delayed_work_sync(res);
-+}
-+
-+/**
-+ * devm_delayed_work_autocancel - Resource-managed work allocation
-+ * @dev: Device which lifetime work is bound to
-+ * @pdata: work to be cancelled when driver is detached
-+ *
-+ * Initialize work which is automatically cancelled when driver is detached.
-+ * A few drivers need delayed work which must be cancelled before driver
-+ * is detached to avoid accessing removed resources.
-+ * devm_delayed_work_autocancel() can be used to omit the explicit
-+ * cancelleation when driver is detached.
-+ */
-+static inline int devm_delayed_work_autocancel(struct device *dev,
-+					       struct delayed_work *w,
-+					       work_func_t worker)
-+{
-+	INIT_DELAYED_WORK(w, worker);
-+	return devm_add_action(dev, devm_delayed_work_drop, w);
-+}
-+
-+#endif
--- 
-2.25.4
+changes since v12:
+- Change reg_data[3][] to reg_data[SVSB_PHASE_NUM][]
+- Change MT8192 SVS GPU opp count from 16 to 14 for project requirment
+- Remove redundant "pd_req = false" in svs_mt8192_banks
+- Assign svsp->bank_num by ARRAY_SIZE(svs_mt81xx_banks)
+- Replace `,` with `;` in svs_get_svs_mt8192_platform_data()
+
+Roger Lu (7):
+  [v13,1/7]: dt-bindings: soc: mediatek: add mtk svs dt-bindings
+  [v13,2/7]: arm64: dts: mt8183: add svs device information
+  [v13,3/7]: soc: mediatek: SVS: introduce MTK SVS engine
+  [v13,4/7]: soc: mediatek: SVS: add debug commands
+  [v13,5/7]: dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
+  [v13,6/7]: arm64: dts: mt8192: add svs device information
+  [v13,7/7]: soc: mediatek: SVS: add mt8192 SVS GPU driver
+
+ .../bindings/soc/mediatek/mtk-svs.yaml        |   89 +
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi      |   18 +
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi      |   34 +
+ drivers/soc/mediatek/Kconfig                  |   10 +
+ drivers/soc/mediatek/Makefile                 |    1 +
+ drivers/soc/mediatek/mtk-svs.c                | 2494 +++++++++++++++++
+ 6 files changed, 2646 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+ create mode 100644 drivers/soc/mediatek/mtk-svs.c
 
 
--- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
-Simon says - in Latin please.
-~~~ "non cogito me" dixit Rene Descarte, deinde evanescavit ~~~
-Thanks to Simon Glass for the translation =] 
