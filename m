@@ -2,96 +2,149 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65386C433E5
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 07:35:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC4EDC433C1
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 08:38:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 149B2619C1
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 07:35:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B89EF61974
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Mar 2021 08:38:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229866AbhCWHe2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Mar 2021 03:34:28 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:38680 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229591AbhCWHd6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Mar 2021 03:33:58 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8F83B1A0A6C;
-        Tue, 23 Mar 2021 08:33:56 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C18751A1D01;
-        Tue, 23 Mar 2021 08:33:51 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id A576A402C9;
-        Tue, 23 Mar 2021 08:33:45 +0100 (CET)
-From:   Dong Aisheng <aisheng.dong@nxp.com>
-To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc:     dongas86@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
-        linux-imx@nxp.com, linux-kernel@vger.kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        cw00.choi@samsung.com, abel.vesa@nxp.com,
-        Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH V2 RESEND 4/4] PM / devfreq: imx8m-ddrc: remove imx8m_ddrc_get_dev_status
-Date:   Tue, 23 Mar 2021 15:20:11 +0800
-Message-Id: <1616484011-26702-5-git-send-email-aisheng.dong@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1616484011-26702-1-git-send-email-aisheng.dong@nxp.com>
-References: <1616484011-26702-1-git-send-email-aisheng.dong@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S229716AbhCWIhs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Mar 2021 04:37:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57220 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229879AbhCWIhT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Mar 2021 04:37:19 -0400
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28DD6C061764
+        for <linux-pm@vger.kernel.org>; Tue, 23 Mar 2021 01:37:10 -0700 (PDT)
+Received: by mail-pf1-x433.google.com with SMTP id j25so13549091pfe.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Mar 2021 01:37:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=nJ49K0Y3pc/vXvz/MndKHeIP8eApFdm0tvtyJXXJc4M=;
+        b=bDOGPvAeLeCdI4C/k38kkvfbz9fXXt1xc0yrKayV8taQLf93FDl4YJMl+26PM30Q9q
+         yDBnqP7miYpbw+biEcxk+I62t5aib0Vt9+77b7X3516cgQE3obpYN4Zj7GL0tmHvfoVu
+         h47XGGW0XX3At7qAUrSKpYspp+VBelGiSEqN8xHLltcrezDis3ugL9W8aVMAeLO4VwBv
+         6n0wBMEH7sQLYNxTWChdcJ8LKqQy3byhvC5LgsSLcuoWSVYy2MTnhMtcJQSC0o0p8WuH
+         gXuVCIbk4Ug6HaKr3NQ6qkwtWJX/oj4nUAWcHf+GWkrD0y3wY/ewCrETqFO/j1Fwfbn1
+         c4xA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=nJ49K0Y3pc/vXvz/MndKHeIP8eApFdm0tvtyJXXJc4M=;
+        b=Yevfkxd9+aANuWET08sPvkNy0OGMRwSAVyxF7m4N3sfmJ83dOY/Ub0ho95zdRjfb/g
+         wN/auIBF2RoVD3WY96hNSkXBrvPT6FGy0bozJlusctTTv19O/uiZ++2xbf/JjPfy/Dc1
+         UVuNILTOT1PAFhruPuULxwxu1jZyJaSgiZh+ASP468rqrEhH3E+EgXA0FCf8KHGQVGW7
+         qhBwUKR1Y53UpXxBtB3V6Tl3/XvxI2HDwzLdSainK/XdOfYq5MR6HzubJPV2SX/wv/uJ
+         p5+qsl1MFPsOh0c2ybY/7CNikhw+VX22fWIIgMhvUx8js+NsoAktFpB9mj96Zz5cGOti
+         6tBw==
+X-Gm-Message-State: AOAM531VruiW6aphCny/j7/BUEve80h2Q+jdSlD08UfJUa8pzZESZB+W
+        MZCc9wDzsjF6VQ22t4FSEHQGYD+vWo2ZnV1/qGQ6Ww==
+X-Google-Smtp-Source: ABdhPJwTzKZlfXnOfsWp9P6XVptQULaFAqOpbq72bJOqIMs1aR5DlqdyZC28GcSCMl/VJcnM4gObI+jgJVzhfDk9NVo=
+X-Received: by 2002:a17:902:7d8d:b029:e6:4061:b767 with SMTP id
+ a13-20020a1709027d8db02900e64061b767mr4342010plm.32.1616488629727; Tue, 23
+ Mar 2021 01:37:09 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210322100420.125616-1-robert.foss@linaro.org>
+ <20210322100420.125616-2-robert.foss@linaro.org> <b3f17dd3-d4b3-930c-db02-9f67748e4427@somainline.org>
+In-Reply-To: <b3f17dd3-d4b3-930c-db02-9f67748e4427@somainline.org>
+From:   Robert Foss <robert.foss@linaro.org>
+Date:   Tue, 23 Mar 2021 09:36:58 +0100
+Message-ID: <CAG3jFysRW7ObLONrcydYKk6XLetNkR1vYfqGNXL=gTdL9O4zhQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] arm64: dts: qcom: sm8350: Add thermal zones and
+ throttling support
+To:     Konrad Dybcio <konrad.dybcio@somainline.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>, amitk@kernel.org,
+        rui.zhang@intel.com, Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        MSM <linux-arm-msm@vger.kernel.org>, linux-pm@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Vinod Koul <vinod.koul@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Current driver actually does not support simple ondemand governor
-as it's unable to provide device load information. So removing
-the unnecessary callback to avoid confusing.
-Right now the driver is using userspace governor by default.
+Hey Konrad,
 
-polling_ms was also dropped as it's not needed for non-ondemand
-governor.
+Thanks for the review!
 
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- drivers/devfreq/imx8m-ddrc.c | 14 --------------
- 1 file changed, 14 deletions(-)
 
-diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-index bc82d3653bff..ecb9375aa877 100644
---- a/drivers/devfreq/imx8m-ddrc.c
-+++ b/drivers/devfreq/imx8m-ddrc.c
-@@ -280,18 +280,6 @@ static int imx8m_ddrc_get_cur_freq(struct device *dev, unsigned long *freq)
- 	return 0;
- }
- 
--static int imx8m_ddrc_get_dev_status(struct device *dev,
--				     struct devfreq_dev_status *stat)
--{
--	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
--
--	stat->busy_time = 0;
--	stat->total_time = 0;
--	stat->current_frequency = clk_get_rate(priv->dram_core);
--
--	return 0;
--}
--
- static int imx8m_ddrc_init_freq_info(struct device *dev)
- {
- 	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
-@@ -429,9 +417,7 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto err;
- 
--	priv->profile.polling_ms = 1000;
- 	priv->profile.target = imx8m_ddrc_target;
--	priv->profile.get_dev_status = imx8m_ddrc_get_dev_status;
- 	priv->profile.exit = imx8m_ddrc_exit;
- 	priv->profile.get_cur_freq = imx8m_ddrc_get_cur_freq;
- 	priv->profile.initial_freq = clk_get_rate(priv->dram_core);
--- 
-2.25.1
+On Mon, 22 Mar 2021 at 18:27, Konrad Dybcio
+<konrad.dybcio@somainline.org> wrote:
+>
+> Hi!
+>
+>
+> > +             tsens0: thermal-sensor@c222000 {
+> > +                     compatible = "qcom,sm8350-tsens", "qcom,tsens-v2";
+> > +                     reg = <0 0x0C263000 0 0x1ff>, /* TM */
+> > +                           <0 0x0C222000 0 0x8>; /* SROT */
+>
+> Please use lowercase hex
 
+Ack
+
+>
+>
+> > +             tsens1: thermal-sensor@c223000 {
+> > +                     compatible = "qcom,sm8350-tsens", "qcom,tsens-v2";
+> > +                     reg = <0 0x0C265000 0 0x1ff>, /* TM */
+> > +                           <0 0x0c223000 0 0x8>; /* SROT */
+>
+> Ditto
+
+Ack
+
+>
+>
+> > +                     trips {
+> > +                             cpu0_alert0: trip-point0 {
+> > +                                     temperature = <90000>;
+> > +                                     hysteresis = <2000>;
+> > +                                     type = "passive";
+> > +                             };
+> > +
+> > +                             cpu0_alert1: trip-point1 {
+> > +                                     temperature = <95000>;
+> > +                                     hysteresis = <2000>;
+> > +                                     type = "passive";
+>
+> Shouldn't this be "hot"? Possibly ditto for all cpu*alert1-labeled nodes.
+
+I based this patch on the upstream DTS for sm8250 & sdm845, and this
+is what they use. However, if you think it is incorrect I'm happy to
+do a little digging.
+
+>
+>
+> > +                             };
+> > +
+> > +                             cpu0_crit: cpu_crit {
+> > +                                     temperature = <110000>;
+> > +                                     hysteresis = <1000>;
+> > +                                     type = "critical";
+> > +                             };
+> > +                     };
+>
+> These values seem, err.. scorching hot.. Are they alright?
+
+I agree :) This is what the vendor ships in their downstream DTS.
+
+>
+>
+>
+> > +             // TODO: What is the NSP subsystem?
+> Please use C-style comments (/* foo */)
+
+Removing comment.
