@@ -6,56 +6,56 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72185C433F7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADE73C433FC
 	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 21:45:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5293461A4D
+	by mail.kernel.org (Postfix) with ESMTP id 8AD9461A1E
 	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 21:45:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238610AbhCXVok (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S238608AbhCXVok (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 24 Mar 2021 17:44:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59986 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59984 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233614AbhCXVoT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Mar 2021 17:44:19 -0400
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BBD8AC06174A;
-        Wed, 24 Mar 2021 14:44:18 -0700 (PDT)
-Received: by mail-ej1-x62d.google.com with SMTP id jy13so35313728ejc.2;
-        Wed, 24 Mar 2021 14:44:18 -0700 (PDT)
+        with ESMTP id S238545AbhCXVoS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Mar 2021 17:44:18 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C70F9C06174A;
+        Wed, 24 Mar 2021 14:44:17 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id b7so35353126ejv.1;
+        Wed, 24 Mar 2021 14:44:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=eiZ/OUht/kOLQVInECTqjo/bGxXXWMawhAot8IzJzB8=;
-        b=VbbDJdRCpNaCCNPNYmuFR7FvSYuGVigTDdkuML0ukmfdNFDPmLTFym3RJq9FBOykSM
-         bNC2KmyH5CWf2ESliwWpjAsxm4otVWaLFr0q6h8fCiaCUgCtbKO//t5cgu5LcHrw49A0
-         7G0px/oL40qoQGXbHMBreMCKerVwFfHStuuU/TKSYrzOce73c/424EhsRqT2Eg+Oxoxe
-         9/EKKsUHwUcUSFdYGQz9h0PR/gLvDEw0apJI1xNZJ8zuLfh56RUalZxsuj7wT14TKsly
-         vpxlGJpLpV3bXEP87QSW7nlIGKfzgWCSRiZUFYEFUkcakKBLoljbwy8SQsW1NbFfWIe0
-         ypTw==
+        bh=A96CjrFMTFBzH0FBnki24YuX02XsfjoC/hVWyeOwHlQ=;
+        b=iGfYpa2O03sy2L2GYtZoHamI20Wg7B4SG80ShHCAHUfhfJH5YwDGXXoIVIem0b2SRb
+         1P9GpnyVdCxrknvBx/Ko8OjFNLzjolWWdyYd27FjxmWTxbAGHVVe6tcbA+74cjDdKnB4
+         DerV97GYntkufIG+qZesTyCbPYzjmHICEAUq1dwX/jDu5ZqB6MC/HZxvsZe/mNQG9ZIz
+         wGyMLMjLHM1PxT6vYg53Dfk+I46DRX0J7d8W3FI3d05BwWmjQVAKKeDntR2cmEKlbOT6
+         QHuUAMUYCPh1AeXa8OZHXMF+E2j6GFtD88N6CAbckmdanNLComy31iUsqcQlxQ3qneyZ
+         XizA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=eiZ/OUht/kOLQVInECTqjo/bGxXXWMawhAot8IzJzB8=;
-        b=ChYfXHsAFBUqfnCK83rfCczNmcI1V8mKrWY2FdunZWq2OiN+UfIDiWZ/xF3607Hvs/
-         cb6pEHQ5LqGA8C3fVnnyNRu9Usd8gq+ZvS0uKXTuBrRmzzff5IPk4ayy1gUJG5AcAwYG
-         x4m1kYEZFo6eeMzmcq9OrETqgdFBOMly0t8+FoOFgxbRzd3oMgzcW4A7JxA61t5V5aNn
-         lmPXoldA7IFszeR+81arXTfwKkQ2FN3l28EUTzc9NVwb7YSdjz7Sp6Ctnv/w4gbT0fYW
-         a7qYLJ0UD7wjcblDhTv+djvsbCAKsRgBufeBuUCZflH4eBw2c3ttCnbj5jAiYEkptiYR
-         +5jQ==
-X-Gm-Message-State: AOAM5311E1LTXgjU3yNCbk/NopR0NwjykUPPdvgVtnecgNcqH/2VQ90N
-        u7dFPI2L9zDjvu6TlXSH++k=
-X-Google-Smtp-Source: ABdhPJw0657aWt0rjTjUMXuSidEn8WNuq/LYrmKuVSe/+dggYcg5MMIhhqObVRRHGG0RhYa+M9R2Rw==
-X-Received: by 2002:a17:906:6bd1:: with SMTP id t17mr6003777ejs.319.1616622257378;
-        Wed, 24 Mar 2021 14:44:17 -0700 (PDT)
+        bh=A96CjrFMTFBzH0FBnki24YuX02XsfjoC/hVWyeOwHlQ=;
+        b=HuRZykL/XwPBcJUwebsmXYdPPjF+KUtIhl6Z1Saxw3v4oQeDdhEQiy1B7+1Z3it6PJ
+         2sAmPNQdXWiE3ZXPWTU7hDbufO2/DLMYl162eMcSn/v3i7Arb23rOfII8KNvLB6A6ldx
+         XBW/soDJjk49mq+IN4Bpuu5DmibLFfJZ6FVzW+Be1kh50tQlmctkPh7gdaETouurLOs0
+         MIfbkW5S+AAVLOCnvrDRUprmvNx0POc73D73OCZORaicY0v3eqeZoJy3jOzT3Kg7c0Li
+         wikbf4aAeEEqxJVH75j7171t6TOvcW1lpbnkxfZBOfLTt7vD8pbMqWEpS6MO/LAxgR01
+         PfpQ==
+X-Gm-Message-State: AOAM5321JTyidIpnZgBk9h+p2gpSCVnrGZgPwWqxHYWqHa/akuITA+oi
+        gTIFv1PF2Rp5qz5uZtUv8dk=
+X-Google-Smtp-Source: ABdhPJxTiXo06fuFJdBWdssTrrTa3r0lIOJ5hn1V5qlXLDFDdk8a06QYlbIOex50jYM7xGIBBUzNgQ==
+X-Received: by 2002:a17:907:d1b:: with SMTP id gn27mr5812551ejc.227.1616622250841;
+        Wed, 24 Mar 2021 14:44:10 -0700 (PDT)
 Received: from Ansuel-xps.localdomain (host-79-34-220-97.business.telecomitalia.it. [79.34.220.97])
-        by smtp.googlemail.com with ESMTPSA id z9sm1871211edr.75.2021.03.24.14.44.16
+        by smtp.googlemail.com with ESMTPSA id z9sm1871211edr.75.2021.03.24.14.44.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Mar 2021 14:44:17 -0700 (PDT)
+        Wed, 24 Mar 2021 14:44:10 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Thara Gopinath <thara.gopinath@linaro.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -67,9 +67,9 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v13 6/9] drivers: thermal: tsens: Replace custom 8960 apis with generic apis
-Date:   Wed, 24 Mar 2021 22:44:00 +0100
-Message-Id: <20210324214404.798-7-ansuelsmth@gmail.com>
+Subject: [PATCH v13 2/9] drivers: thermal: tsens: Don't hardcode sensor slope
+Date:   Wed, 24 Mar 2021 22:43:56 +0100
+Message-Id: <20210324214404.798-3-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210324214404.798-1-ansuelsmth@gmail.com>
 References: <20210324214404.798-1-ansuelsmth@gmail.com>
@@ -79,111 +79,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rework calibrate function to use common function. Derive the offset from
-a missing hardcoded slope table and the data from the nvmem calib
-efuses.
-Drop custom get_temp function and use generic api.
+Function compute_intercept_slope hardcode the sensor slope to
+SLOPE_DEFAULT. Change this and use the default value only if a slope is
+not defined. This is needed for tsens VER_0 that has a hardcoded slope
+table.
 
 Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Acked-by: Thara Gopinath <thara.gopinath@linaro.org>
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
 ---
- drivers/thermal/qcom/tsens-8960.c | 56 +++++++++----------------------
- 1 file changed, 15 insertions(+), 41 deletions(-)
+ drivers/thermal/qcom/tsens.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 95fcccafae14..9cc8a7dd23ae 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -67,6 +67,13 @@
- #define S9_STATUS_OFF		0x3674
- #define S10_STATUS_OFF		0x3678
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 6b582a81358f..6da567de1db7 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -86,7 +86,8 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
+ 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
+ 			__func__, i, p1[i], p2[i]);
  
-+/* Original slope - 200 to compensate mC to C inaccuracy */
-+static u32 tsens_msm8960_slope[] = {
-+			976, 976, 954, 976,
-+			911, 932, 932, 999,
-+			932, 999, 932
-+			};
-+
- static int suspend_8960(struct tsens_priv *priv)
- {
- 	int ret;
-@@ -194,9 +201,7 @@ static int calibrate_8960(struct tsens_priv *priv)
- {
- 	int i;
- 	char *data;
--
--	ssize_t num_read = priv->num_sensors;
--	struct tsens_sensor *s = priv->sensor;
-+	u32 p1[11];
- 
- 	data = qfprom_read(priv->dev, "calib");
- 	if (IS_ERR(data))
-@@ -204,49 +209,18 @@ static int calibrate_8960(struct tsens_priv *priv)
- 	if (IS_ERR(data))
- 		return PTR_ERR(data);
- 
--	for (i = 0; i < num_read; i++, s++)
--		s->offset = data[i];
-+	for (i = 0; i < priv->num_sensors; i++) {
-+		p1[i] = data[i];
-+		priv->sensor[i].slope = tsens_msm8960_slope[i];
-+	}
-+
-+	compute_intercept_slope(priv, p1, NULL, ONE_PT_CALIB);
- 
- 	kfree(data);
- 
- 	return 0;
- }
- 
--/* Temperature on y axis and ADC-code on x-axis */
--static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
--{
--	int slope, offset;
--
--	slope = thermal_zone_get_slope(s->tzd);
--	offset = CAL_MDEGC - slope * s->offset;
--
--	return adc_code * slope + offset;
--}
--
--static int get_temp_8960(const struct tsens_sensor *s, int *temp)
--{
--	int ret;
--	u32 code, trdy;
--	struct tsens_priv *priv = s->priv;
--	unsigned long timeout;
--
--	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
--	do {
--		ret = regmap_read(priv->tm_map, INT_STATUS_ADDR, &trdy);
--		if (ret)
--			return ret;
--		if (!(trdy & TRDY_MASK))
--			continue;
--		ret = regmap_read(priv->tm_map, s->status, &code);
--		if (ret)
--			return ret;
--		*temp = code_to_mdegC(code, s);
--		return 0;
--	} while (time_before(jiffies, timeout));
--
--	return -ETIMEDOUT;
--}
--
- static struct tsens_features tsens_8960_feat = {
- 	.ver_major	= VER_0,
- 	.crit_int	= 0,
-@@ -315,7 +289,7 @@ static const struct reg_field tsens_8960_regfields[MAX_REGFIELDS] = {
- static const struct tsens_ops ops_8960 = {
- 	.init		= init_common,
- 	.calibrate	= calibrate_8960,
--	.get_temp	= get_temp_8960,
-+	.get_temp	= get_temp_common,
- 	.enable		= enable_8960,
- 	.disable	= disable_8960,
- 	.suspend	= suspend_8960,
+-		priv->sensor[i].slope = SLOPE_DEFAULT;
++		if (!priv->sensor[i].slope)
++			priv->sensor[i].slope = SLOPE_DEFAULT;
+ 		if (mode == TWO_PT_CALIB) {
+ 			/*
+ 			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
 -- 
 2.30.2
 
