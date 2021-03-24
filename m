@@ -2,45 +2,46 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93F23C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 09:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D43EBC433C1
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 09:22:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3EE9961A19
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 09:22:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C6F661A01
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Mar 2021 09:22:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234643AbhCXJVi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Mar 2021 05:21:38 -0400
-Received: from mail-lj1-f173.google.com ([209.85.208.173]:44916 "EHLO
-        mail-lj1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231685AbhCXJVG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Mar 2021 05:21:06 -0400
-Received: by mail-lj1-f173.google.com with SMTP id u9so1629363ljd.11;
-        Wed, 24 Mar 2021 02:21:05 -0700 (PDT)
+        id S231760AbhCXJWL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Mar 2021 05:22:11 -0400
+Received: from mail-lj1-f169.google.com ([209.85.208.169]:33397 "EHLO
+        mail-lj1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234656AbhCXJVl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Mar 2021 05:21:41 -0400
+Received: by mail-lj1-f169.google.com with SMTP id 15so29354212ljj.0;
+        Wed, 24 Mar 2021 02:21:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition;
-        bh=KwtrWhf8f4Zw1shSmmFlqEB5Jch6Dst+BR5dO8pa4gc=;
-        b=o06AOP+sF7hA+9GiDBPnEPr6LooDSs6qjUBQh23+eBNXc0izFGn/fJUpwRi4zD4YgV
-         3WxXXoiM3e+L+U0leNr8rk7VWhrGKZAtuWfnN2jJhG6bF+blpS8hNXk0qz3fVma4E/bD
-         LaO59/HBLJejO3tANYLNhFKHDvQTYDyu2maNSGN3unJ2IEtTcIlRcs4XDo5CsOQfAMIl
-         0erbCaP+Q5RoJtgLpQZU+eLvlP15GWELlrrLWydHRPLFHBH0rcvGbIcJpv9+SyK9eafF
-         ZEBpd1SrszlLSuc6Mn3KHVLXxVfnZHLCxsvyojFSTsseosgf8cpNi/jBj6wO4fblHbcs
-         UefA==
-X-Gm-Message-State: AOAM5324JXVBGowQ/eCMxd35UFY7/Y14p/H4MtN9p10PjGTbiXZ2CYku
-        zehw2xLu8ZmWunvdkDbS2Y0=
-X-Google-Smtp-Source: ABdhPJxBkJvsvaGLG1uu/fgPF7N8/AvsHPfrH5IyWgXBN8+m4524ZIK961psKUHL3rPQGrGXA8bsMQ==
-X-Received: by 2002:a2e:98d2:: with SMTP id s18mr1454207ljj.412.1616577664762;
-        Wed, 24 Mar 2021 02:21:04 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=l2s71zdl6Ez98egv6WkHsjsQArym1MCaFt9Bj1GaoS0=;
+        b=K3OvwEycIC0XpaaCvpF++8gju9Ah9k7fSw3hnRM21LEANwkJpC/qatgYxvcQSoZb4d
+         lxIEfnxTrXvRwm2M0rGY90is5o1n8R27GLyw+NaqINwDEGQ3YG4d6QC45hviCJ3QTrM3
+         OorOSU8m2ja6YzIvu6hTfJah6tsk4ozTFTdU027fWIJqlCRP4+Z+7vi5YkXUaid1Zylv
+         GvKMt2qt3V34d5gvVLcYdfqvUyFmylN1R8SUqsVQBkZ7emplw/IgxehARctahAeVZEmu
+         0fgt3hATY8KUpeGk3G0MFBlNXwCV2bv3A31BOBDJ+bNOtMnayHfAQDncNJVcMkyNZbNV
+         Ypfg==
+X-Gm-Message-State: AOAM530Gl8fToYGHoA1fTD8LAG5fFln80KD7m07ALoca3D+tWWzKaKu3
+        B37BfB+I7YoorEnTWPr3bxI=
+X-Google-Smtp-Source: ABdhPJz4zboU+CsWwucsqAkmbqnwBVmwnmhni1ldEaRx3beredWRDGvpSSnUAHa6PMiMiShXmZmMxQ==
+X-Received: by 2002:a2e:9a0a:: with SMTP id o10mr1488317lji.432.1616577700292;
+        Wed, 24 Mar 2021 02:21:40 -0700 (PDT)
 Received: from localhost.localdomain (dc7vkhyyyyyyyyyyyyyby-3.rev.dnainternet.fi. [2001:14ba:16e2:8300::2])
-        by smtp.gmail.com with ESMTPSA id q26sm246954ljg.90.2021.03.24.02.21.03
+        by smtp.gmail.com with ESMTPSA id i12sm181191lfv.220.2021.03.24.02.21.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Mar 2021 02:21:04 -0700 (PDT)
-Date:   Wed, 24 Mar 2021 11:20:58 +0200
+        Wed, 24 Mar 2021 02:21:39 -0700 (PDT)
+Date:   Wed, 24 Mar 2021 11:21:34 +0200
 From:   Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
         Matti Vaittinen <mazziesaccount@gmail.com>
@@ -52,42 +53,63 @@ Cc:     Hans de Goede <hdegoede@redhat.com>,
         Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 0/2] Fixes to device-managed work-queue series
-Message-ID: <cover.1616574973.git.matti.vaittinen@fi.rohmeurope.com>
+Subject: [PATCH 2/2] power: supply: axp20x_usb_power: fix work-queue init
+Message-ID: <a774ca25010b7c932c07f22ce8a548466705c023.1616574973.git.matti.vaittinen@fi.rohmeurope.com>
+References: <cover.1616574973.git.matti.vaittinen@fi.rohmeurope.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cover.1616574973.git.matti.vaittinen@fi.rohmeurope.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The series "Add managed version of delayed work init" was applied to
-driver-core by Greg. Few issues were reported afterwards.
+The commit 6d0c5de2fd84
+("power: supply: Clean-up few drivers by using managed work init")
+Re-introduced wrong order of initializing work-queue and requesting
+the IRQs which was originally fixed by the commit b5e8642ed95f
+("power: supply: axp20x_usb_power: Init work before enabling IRQs")
 
-Chen-Yu Tsai reported problem in axp20x_usb_power power-supply driver.
-Work-queue initialization and request IRQ ordering was wrong and
-work-queue was initialized twice. This was originated by my incorrect
-rebase where I missed a fixup done between my patch revisions.
+In addition this caused the work queue to be initialized twice.
 
-Additional print was reuqested on work-queue initialization error path
-at extcon-gpio.c by Chanwoo Choi.
+Fix it again.
 
-This series fixes both of these issues.
+Fixes: 6d0c5de2fd84 ("power: supply: Clean-up few drivers by using managed work init")
 
-Series is done based on driver-core-next.
-
+Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Reported-by: Chen-Yu Tsai <wens@csie.org>
 ---
-
-Matti Vaittinen (2):
-  extcon: extcon-gpio: Log error if work-queue init fails
-  power: supply: axp20x_usb_power: fix work-queue init
-
- drivers/extcon/extcon-gpio.c            |  4 +++-
  drivers/power/supply/axp20x_usb_power.c | 10 +++++-----
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-
-base-commit: a7d30f3f41cf40aad1c4557fa180fe320d5b7c74
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index 4259709e3491..e954970b50e6 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -594,7 +594,11 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 	power->axp20x_id = axp_data->axp20x_id;
+ 	power->regmap = axp20x->regmap;
+ 	power->num_irqs = axp_data->num_irq_names;
+-	INIT_DELAYED_WORK(&power->vbus_detect, axp20x_usb_power_poll_vbus);
++
++	ret = devm_delayed_work_autocancel(&pdev->dev, &power->vbus_detect,
++					   axp20x_usb_power_poll_vbus);
++	if (ret)
++		return ret;
+ 
+ 	if (power->axp20x_id == AXP202_ID) {
+ 		/* Enable vbus valid checking */
+@@ -647,10 +651,6 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	ret = devm_delayed_work_autocancel(&pdev->dev, &power->vbus_detect,
+-					   axp20x_usb_power_poll_vbus);
+-	if (ret)
+-		return ret;
+ 	if (axp20x_usb_vbus_needs_polling(power))
+ 		queue_delayed_work(system_power_efficient_wq, &power->vbus_detect, 0);
+ 
 -- 
 2.25.4
 
