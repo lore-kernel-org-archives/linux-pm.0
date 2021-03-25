@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F195C433E4
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Mar 2021 08:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7FCAC433E2
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Mar 2021 09:10:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6EB9161A27
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Mar 2021 08:14:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9477461A1E
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Mar 2021 09:10:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229642AbhCYINd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Mar 2021 04:13:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53964 "EHLO
+        id S229574AbhCYJJk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Mar 2021 05:09:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37816 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229653AbhCYINT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Mar 2021 04:13:19 -0400
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66337C06175F
-        for <linux-pm@vger.kernel.org>; Thu, 25 Mar 2021 01:13:18 -0700 (PDT)
-Received: by mail-ej1-x62b.google.com with SMTP id ce10so1445504ejb.6
-        for <linux-pm@vger.kernel.org>; Thu, 25 Mar 2021 01:13:18 -0700 (PDT)
+        with ESMTP id S229629AbhCYJJM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Mar 2021 05:09:12 -0400
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E728C061763
+        for <linux-pm@vger.kernel.org>; Thu, 25 Mar 2021 02:09:12 -0700 (PDT)
+Received: by mail-pf1-x433.google.com with SMTP id q5so1366094pfh.10
+        for <linux-pm@vger.kernel.org>; Thu, 25 Mar 2021 02:09:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=HejjARvJ9xPzmvq9Kb1zqDu3RAw9VmmzKI0Ua2yVZWY=;
-        b=kYALy9LoxNSmT31hMkqKdDwmBUCwkQQPfZRxqVfaQNb6SSyyhqEVXORGQlZ/gsHHyL
-         rXpU596MLUA5ZE1M/vgYekdE1EiSfL+awNober1qR+38waVNDhZ1gogY3f6If/6rPjhm
-         tRHSt8U2JKFMBMwQDjjbXDRbBau0NanR76FFbkd5R/qeAwZ0ZCRAzI7AeMp6TkSG6HQG
-         enuNkyUis7EzsT9InqgX6kqC7sIJoX7DJGAu2WSZaeBhJnYPd8xc4IAJ1kkBUp17OoIR
-         pSRo1pEVuBU8iSze/ZeCLFzmGo/bjTsymjwcGQ43kDa4b7elG140bCFf2S9J0OvntzLF
-         YQRQ==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=VWsn6esj8imf1uae7i0PYfEIqahCeH1CMSkS7p/mVYk=;
+        b=HIBYhMJ3tP1aKPSwg0gUFOAmtXGabKSCvtt0vxq0cKr4wnvUWwGpH5l0/daMM0gb/q
+         eIwN1cktfuMgY07XYtnR4aTFv6SgzyJlgqyBDscikKf+wOHVSMQVAuIXcbyikkFclA/K
+         MuGM/06m6QL2fjldeVmJVaoJ/1ivyC1rsOIPx9oWGRx1XrxxHELz9ghFbUAAZcItYjAX
+         62xPTBRZVJzPGGYRrt1LTVxDKe/NVKOQ3EyxKwXzDRmp9/8Q35XveLxwWjLE3b4jWTiY
+         TguamkqvVDR4TQ+2YgOyTpHcp1WGhmTN0kndzst7ijFQqpPPyH+K2OR8r/0QkVhkChQD
+         PfFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=HejjARvJ9xPzmvq9Kb1zqDu3RAw9VmmzKI0Ua2yVZWY=;
-        b=tcgxNIOL7v018Tea/YSpFMm5r6zkB4bjPZT3NrMAsvWYjm/j5Y0cY8/TBOJwO6YDRj
-         qH+sL41aJGrbOk3OhzDkluMH8heKmXia1l5dnYPDPuOVitPyzJ+IO3EggTuVVcY+53gZ
-         Sy2wnHwemO+Vok2H9MKhQNGGDyLnAvRQtDfcVCYs+U+iVNXfU7upkCv903N5gP/oJE8X
-         zi3gubSDT90KeefS7vgyXPlIpD1KUiTcCM/Gbr2v8yhMoVO8APb8Bj73wbwmvrvvXwx7
-         86Q6uRygnN1ahtz/fqxcAOfmcS0u6DcFWFk82oYLeaw4nMt7YLZPY206/4xTq2RAVTbd
-         glCQ==
-X-Gm-Message-State: AOAM53224G/SeDGfW/JNkfxikGzNzcXu2J9K4WOusw1w39aDY/xu1FPu
-        IOm6reWaM9DzCse73c5Y4dqo+Q==
-X-Google-Smtp-Source: ABdhPJxQhbpkhmqgC6PVpNJ3hc23dX6UiyLifzKp1AQpw+OE0HW4RV3jfMUeAGihMpu5JSftIMhv/g==
-X-Received: by 2002:a17:906:2404:: with SMTP id z4mr7851672eja.14.1616659997026;
-        Thu, 25 Mar 2021 01:13:17 -0700 (PDT)
-Received: from [192.168.1.54] (hst-208-220.medicom.bg. [84.238.208.220])
-        by smtp.googlemail.com with ESMTPSA id u24sm2049805ejr.34.2021.03.25.01.13.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 25 Mar 2021 01:13:16 -0700 (PDT)
-Subject: Re: [PATCH v3 14/15] media: venus: Convert to use resource-managed
- OPP API
-To:     Dmitry Osipenko <digetx@gmail.com>, Qiang Yu <yuq825@gmail.com>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=VWsn6esj8imf1uae7i0PYfEIqahCeH1CMSkS7p/mVYk=;
+        b=oERygKHWbNf8RbQgd6k/VeM5h2Gzm5Kuf5VMjmiy2PPgjy6YmkENyijUGQeBcjkaFQ
+         WStNU/1TxtjESKEk1qnMZ9VnDa2zySD+rjeAJMpqtYpr97u36YAyagOjYRi4Sb5kJ8r9
+         LcTBuCv7GgWLf3lr7KfkjlFDxrLlUr24p3VfayGBSD/ScEDExKxA2M2fLTgNkMRnaxIA
+         qgNHCky7RqudGMsl7SzgzVzkXYiFTseB+s8YO8IxWhRYVhGre0Bp+/9sU3Kn0+12eFWs
+         uuCqXKurRKIwuh+ymxq6TZ98vorosR6NIZqCKIFNVPd1/y/WOHf9Bjs48SivjAouwa66
+         Y51g==
+X-Gm-Message-State: AOAM533UDS4aQPIUcJEWn0adV6a6EnV2sBrt83ozMeFnGffVKvTaVwT5
+        /BuglcS+q2b/nQ38FFZ3Dllrug==
+X-Google-Smtp-Source: ABdhPJx75YaqoIXZKRzV6JNv+rXXkBOJ5fO88bVSyJdWvRiD9Mrig/3TUZdgxk+pZ1DK2jZHu6G8NA==
+X-Received: by 2002:a63:e44a:: with SMTP id i10mr6546829pgk.404.1616663351651;
+        Thu, 25 Mar 2021 02:09:11 -0700 (PDT)
+Received: from localhost ([122.172.6.13])
+        by smtp.gmail.com with ESMTPSA id s184sm5341831pgb.63.2021.03.25.02.09.10
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 25 Mar 2021 02:09:10 -0700 (PDT)
+Date:   Thu, 25 Mar 2021 14:39:09 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Stanimir Varbanov <stanimir.varbanov@linaro.org>
+Cc:     Dmitry Osipenko <digetx@gmail.com>, Qiang Yu <yuq825@gmail.com>,
         Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
         Rob Herring <robh@kernel.org>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>,
@@ -76,47 +76,50 @@ To:     Dmitry Osipenko <digetx@gmail.com>, Qiang Yu <yuq825@gmail.com>,
         Mark Brown <broonie@kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Jiri Slaby <jirislaby@kernel.org>,
-        Yangtao Li <tiny.windzz@gmail.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, dri-devel@lists.freedesktop.org,
-        lima@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
-        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-tegra@vger.kernel.org
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, lima@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org, linux-media@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-serial@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: Re: [PATCH v3 14/15] media: venus: Convert to use resource-managed
+ OPP API
+Message-ID: <20210325090909.pyzyt3xds2ajvm7i@vireshk-i7>
 References: <20210314163408.22292-1-digetx@gmail.com>
  <20210314163408.22292-15-digetx@gmail.com>
-From:   Stanimir Varbanov <stanimir.varbanov@linaro.org>
-Message-ID: <b780c19f-7f5d-5453-dec1-062fa7c1dc07@linaro.org>
-Date:   Thu, 25 Mar 2021 10:13:14 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+ <b780c19f-7f5d-5453-dec1-062fa7c1dc07@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20210314163408.22292-15-digetx@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b780c19f-7f5d-5453-dec1-062fa7c1dc07@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
-
-On 3/14/21 6:34 PM, Dmitry Osipenko wrote:
-> From: Yangtao Li <tiny.windzz@gmail.com>
+On 25-03-21, 10:13, Stanimir Varbanov wrote:
+> Hi,
 > 
-> Use resource-managed OPP API to simplify code.
+> On 3/14/21 6:34 PM, Dmitry Osipenko wrote:
+> > From: Yangtao Li <tiny.windzz@gmail.com>
+> > 
+> > Use resource-managed OPP API to simplify code.
+> > 
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> > ---
+> >  drivers/media/platform/qcom/venus/core.h      |  1 -
+> >  .../media/platform/qcom/venus/pm_helpers.c    | 35 +++++--------------
+> >  2 files changed, 8 insertions(+), 28 deletions(-)
 > 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  drivers/media/platform/qcom/venus/core.h      |  1 -
->  .../media/platform/qcom/venus/pm_helpers.c    | 35 +++++--------------
->  2 files changed, 8 insertions(+), 28 deletions(-)
+> 
+> I'll take this through media-tree once OPP API changes are merged.
 
+Okay, dropped from my tree.
 
-I'll take this through media-tree once OPP API changes are merged.
+Thanks.
 
 -- 
-regards,
-Stan
+viresh
