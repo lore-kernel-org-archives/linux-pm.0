@@ -2,85 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8EE2C433C1
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:09:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 268BDC433C1
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:14:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E8D261A42
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:09:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 097D561A33
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:14:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230229AbhCZUI1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Mar 2021 16:08:27 -0400
-Received: from mail-io1-f53.google.com ([209.85.166.53]:47097 "EHLO
-        mail-io1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230003AbhCZUIZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Mar 2021 16:08:25 -0400
-Received: by mail-io1-f53.google.com with SMTP id j26so6605669iog.13;
-        Fri, 26 Mar 2021 13:08:25 -0700 (PDT)
+        id S230003AbhCZUNt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Mar 2021 16:13:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41340 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229957AbhCZUNS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Mar 2021 16:13:18 -0400
+Received: from mail-il1-x12c.google.com (mail-il1-x12c.google.com [IPv6:2607:f8b0:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53C36C0613AA
+        for <linux-pm@vger.kernel.org>; Fri, 26 Mar 2021 13:13:18 -0700 (PDT)
+Received: by mail-il1-x12c.google.com with SMTP id w2so5578349ilj.12
+        for <linux-pm@vger.kernel.org>; Fri, 26 Mar 2021 13:13:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=VZSKNGzGJ60Qyb0f+51PLhvKxGH2rZp6nAQ6/LNBPVA=;
+        b=gu6+We8rlAiWth1r7aBhadigDi6vEJyBTG8Eb1XckLfVrjH8TLtxXrmm+WillkipeO
+         N9JFST0RhJDni2fMTz1C0GCU1SCaoqxZ9e0U+oQw9HXSoD4GmnyMDsNUh5lRmXBidhrJ
+         bh7cPeu+t1mGe2YGSYaogmLpGVauL5K3u3NGY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=DASKl11Okq61XpyLvc+74DH7y8wg+D061aTOEn3xo/4=;
-        b=R/ptozOT2+ZMDKXd67RrJWISdLufWwOHIX9F5PDrj9wxLch04r+TIWg+mcbW6gCMfD
-         uxYvW2zjZ3IZZOM+5fauxbayLaCFRWmkbibftqf15JQq58Aaih+01WK9VWoY8jzH8VMa
-         fFVBlDK2zTI20NwGLy2XPjC/W8IMj2nl2ipa+YHSQAo8zTz+Zp0WJ2c/nUPBv4Z4FEIb
-         7wD/CqVloqLCp/FZtE7ZtCAG3bGxKeHgEwI0rivPj/JFM4skEelTPshuX25d6zL5HeCP
-         G75Zt+0zald3PUO738ygMJMt0l3Jx1oNjnI3mM1DhNHBb7tNtuq97L0fipOC7ue+b+2I
-         zGjw==
-X-Gm-Message-State: AOAM530s8EaA7Dd3myh3dWTN4+3hI4rN1qTnDtLkaG3TyWzzHsTJuf+t
-        o27qAYS7OTosYTK5koHuxg==
-X-Google-Smtp-Source: ABdhPJzOMr0U8Z8VHTkdGna00jzbpA/m/ZJVl1xMmbaPPdHDWEfwemmVN983hu/qZLjWRyhejOe9Ug==
-X-Received: by 2002:a5e:d908:: with SMTP id n8mr11743371iop.121.1616789304697;
-        Fri, 26 Mar 2021 13:08:24 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.253])
-        by smtp.gmail.com with ESMTPSA id b4sm4677200ilj.11.2021.03.26.13.08.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 26 Mar 2021 13:08:24 -0700 (PDT)
-Received: (nullmailer pid 3784988 invoked by uid 1000);
-        Fri, 26 Mar 2021 20:08:20 -0000
-Date:   Fri, 26 Mar 2021 14:08:20 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Roger Lu <roger.lu@mediatek.com>
-Cc:     Enric Balletbo Serra <eballetbo@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        devicetree@vger.kernel.org, Kevin Hilman <khilman@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        Nicolas Boichat <drinkcat@google.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Project_Global_Chrome_Upstream_Group@mediatek.com,
-        linux-kernel@vger.kernel.org, Fan Chen <fan.chen@mediatek.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>, Nishanth Menon <nm@ti.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>
-Subject: Re: [PATCH v14 5/7] dt-bindings: soc: mediatek: add mt8192 svs
- dt-bindings
-Message-ID: <20210326200820.GA3784958@robh.at.kernel.org>
-References: <20210325025114.25842-1-roger.lu@mediatek.com>
- <20210325025114.25842-6-roger.lu@mediatek.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=VZSKNGzGJ60Qyb0f+51PLhvKxGH2rZp6nAQ6/LNBPVA=;
+        b=czc1/s6bWZu4AxL6KzGRug0SVk0iy3jv81cFZKjGDa/QwjrfiGG/IsUSLaPZbew77M
+         Ww/V2Uk+C2XYk/fsN3Eq7dlhWT7x+ke9gz6OKAzeRXApt6VhPb45d1VDfyFCQatSqqUb
+         2GVfMMJItmTzDq4FicgcuzCe5PzMTH5lefH3CjIsYgxN171QXnuB1ja4Pg2mZC10zED7
+         TPljk1FdEV9KCTZi3JHybuVA4L+AYWN/Am35JcdHVyXjk655m6ccUWfOlEAo0JT4UGXI
+         0zVl9O9Uo2A9/2Nt1luhaOY5WQ+4iwrbsR2CItCxnC1znzMRANoaXsBLqJyuOBV2BumR
+         ayNA==
+X-Gm-Message-State: AOAM530sg6plntHy+lGIHDhKlcbveJrGluM5SMCf0Av+ihK61Ec/C6L9
+        gI2iJ8ZVP5eV0eHAYSfycfieag==
+X-Google-Smtp-Source: ABdhPJzt8drO79fpapEss5lHXWrwLEVtc4MvNRIPcKaH4x2ayc2/H0bRpRqZ49xfVlzxaNJqiF8Zng==
+X-Received: by 2002:a05:6e02:13ad:: with SMTP id h13mr11959183ilo.32.1616789597805;
+        Fri, 26 Mar 2021 13:13:17 -0700 (PDT)
+Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
+        by smtp.gmail.com with ESMTPSA id d1sm4864822ils.49.2021.03.26.13.13.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 26 Mar 2021 13:13:17 -0700 (PDT)
+Subject: Re: [PATCH 2/2] cpupower: fix amd cpu (family >= 0x17) active state
+ issue
+To:     xufuhai <xufuhai1992@gmail.com>, linux@dominikbrodowski.net,
+        sherry.hurwitz@amd.com, trenn@suse.com, linux-pm@vger.kernel.org
+Cc:     lishujin@kuaishou.com, Shuah Khan <skhan@linuxfoundation.org>
+References: <e3f8c0f1-63dc-9b25-7129-d0a4ee87f62a@gmail.com>
+From:   Shuah Khan <skhan@linuxfoundation.org>
+Message-ID: <c85e7ec8-0fef-fbb1-772b-4144774353e1@linuxfoundation.org>
+Date:   Fri, 26 Mar 2021 14:13:15 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210325025114.25842-6-roger.lu@mediatek.com>
+In-Reply-To: <e3f8c0f1-63dc-9b25-7129-d0a4ee87f62a@gmail.com>
+Content-Type: text/plain; charset=gbk; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 25 Mar 2021 10:51:12 +0800, Roger Lu wrote:
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> ---
->  .../devicetree/bindings/soc/mediatek/mtk-svs.yaml         | 8 ++++++++
->  1 file changed, 8 insertions(+)
+On 3/24/21 4:28 AM, xufuhai wrote:
+> From: xufuhai <xufuhai@kuaishou.com>
+> 
+> If the read_msr function is executed by a non-root user, the function
+> returns -1, which means that there is no permission to access /dev/cpu/%d/msr,
+> but cpufreq_has_boost_support should also return -1 immediately, and should not
+> follow the original logic to return 0, which will cause amd The cpupower tool
+> returns the turbo active status as 0.
+> 
+> Reproduce procedure:
+>          cpupower frequency-info
 > 
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Please run get_maintainer.pl and send patch maintainers
+and others suggested by the tool. I don't see this in my
+Inbox for me to review/accept and send it to pm maintainer.
+
+Please include before and after the patch when you run
+cpupower frequency-info
+
+thanks,
+-- Shuah
+
