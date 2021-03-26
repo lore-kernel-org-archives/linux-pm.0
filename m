@@ -2,139 +2,81 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E8B0C433DB
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:14:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D158AC433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 21:18:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 18AC661A36
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 20:14:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B08FF61954
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Mar 2021 21:18:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230188AbhCZUNt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Mar 2021 16:13:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41330 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230003AbhCZUNQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Mar 2021 16:13:16 -0400
-Received: from mail-il1-x130.google.com (mail-il1-x130.google.com [IPv6:2607:f8b0:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EEE9C0613AA
-        for <linux-pm@vger.kernel.org>; Fri, 26 Mar 2021 13:13:15 -0700 (PDT)
-Received: by mail-il1-x130.google.com with SMTP id c17so6044221ilj.7
-        for <linux-pm@vger.kernel.org>; Fri, 26 Mar 2021 13:13:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=WVMG+7OiXIZ+Tm7880JAi7R4ykpWVADSbHltba1Tmtw=;
-        b=PToeyhk756IYZ6A8qqmUKdWRLxuiMuBiC8vnreFD06Ls7ehqeoJXU9pdvob9HcY2bQ
-         BDWOOnzVVxyPOxYwVjpS0FGW5OsTJ1EgnjhPOPpcHJ6PBFvvobkCewLruQQMRwGGEOiL
-         W5fDvsaNg6YDst25ZRwfcBSRLd+uvym0snuOI=
+        id S230196AbhCZVR6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Mar 2021 17:17:58 -0400
+Received: from mail-il1-f173.google.com ([209.85.166.173]:33683 "EHLO
+        mail-il1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230026AbhCZVR6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Mar 2021 17:17:58 -0400
+Received: by mail-il1-f173.google.com with SMTP id r17so14762ilt.0;
+        Fri, 26 Mar 2021 14:17:58 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=WVMG+7OiXIZ+Tm7880JAi7R4ykpWVADSbHltba1Tmtw=;
-        b=jzO33Bmh6C0q6IbGLBGDJA9xlUEeLpE2+L0BIGpd9QPyy8NU34zzcSM4/J1kcK03n8
-         uT05xDE0RVPTcMwVH7S6xSgJiX1czEF2WzKFCcBpTlTj3fCFfUTDY9pVvOUoAv+yf8Ia
-         tNf+1/UFh95Mj0H+4C/pT09BJbzQ8tG/jRhdMKw4brfXigzK21eylHJIfWFYSLOhtI7B
-         KtJk0KhpmCAbTVPZzDZLxZWbUT0L4q8e4IToAXH2Pnr41CFA7UNk4PrDwV6T+cj+NVUZ
-         JYh4wOjFwcBk92JPxgT5ntks+NjcXRRN5sj2pKGWZcSRuuEq+/vxWVPUMs4fe4VMbSpk
-         9SgQ==
-X-Gm-Message-State: AOAM533DfouSQV4x55sMnpFWhx/vgsBOjQIJE6iTfE757VGUTWBv/DbS
-        0iecN44SwL4j9hLzK9QEUlBCWA==
-X-Google-Smtp-Source: ABdhPJwIDes6amG0J/cAf8yoUYe0o8MHlYApTDoSJi5e5BMogPc/YMrs7/psuQmwh+I1XkIdNR5kKg==
-X-Received: by 2002:a92:902:: with SMTP id y2mr2748928ilg.98.1616789594655;
-        Fri, 26 Mar 2021 13:13:14 -0700 (PDT)
-Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
-        by smtp.gmail.com with ESMTPSA id d2sm4771243ilm.7.2021.03.26.13.13.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 26 Mar 2021 13:13:13 -0700 (PDT)
-Subject: Re: [PATCH 1/2] cpupower: fix amd cpu (family < 0x17) active state
- issue
-To:     xufuhai <xufuhai1992@gmail.com>, linux@dominikbrodowski.net,
-        sherry.hurwitz@amd.com, trenn@suse.com, linux-pm@vger.kernel.org
-Cc:     lishujin@kuaishou.com, Shuah Khan <skhan@linuxfoundation.org>
-References: <35ab0d0a-f9ce-b4d7-cd85-3cd8a8638ab6@gmail.com>
-From:   Shuah Khan <skhan@linuxfoundation.org>
-Message-ID: <6b87cf2f-cb58-735f-49ac-f51b83b71306@linuxfoundation.org>
-Date:   Fri, 26 Mar 2021 14:13:12 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=zsTvpCrYT0Lc4X3Z73PNNolhuuDLCbvnaIUlG9Bl/gA=;
+        b=Xgxt+Z3/86kJcgRtHgm5Lghgtp6+Nr25fTxVjgKRrauSVqXd7/8skxWdBOcRRWORlD
+         X6SoanePPNjP62C9ZOViJZDxHNlYS3w5yDyHsxxCy465dUPz/+0fX2/SEIWUGxLIANYq
+         tRAftnHCLE6XwQV/aNCP8kKfk+4oCvmc3icm2ef1K7HTuxKxzMVgnT8bB8/D7w47dldf
+         Dr3GWgaSyR9J/otJim5h7YfuU66igfxXj3sBjOpkHS5Z10SgjCXDg5qDA4DIaBCoW6qX
+         +EpgtVggLOhZkp1cyKTIQUUHU3gcJmEbpDEc59+x1Dr1h3sMs9YAEu2Yzac369nFgeJB
+         S5nw==
+X-Gm-Message-State: AOAM532uL8rrPkk5t502uKaKnrk4SjID9foE09jYKos9+FMZAySgxyfZ
+        akV34ejLF0x/DfmPSY0x4A==
+X-Google-Smtp-Source: ABdhPJymPho/jDMKEZRBOFRsIGbnBuOV45w3lMbXDDVrh2c6zpyvhIrqJWUfBfpsvmt+1BRd+56+4g==
+X-Received: by 2002:a92:c0c6:: with SMTP id t6mr11978351ilf.210.1616793477754;
+        Fri, 26 Mar 2021 14:17:57 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.253])
+        by smtp.gmail.com with ESMTPSA id a4sm4714882iow.55.2021.03.26.14.17.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Mar 2021 14:17:57 -0700 (PDT)
+Received: (nullmailer pid 3876305 invoked by uid 1000);
+        Fri, 26 Mar 2021 21:17:54 -0000
+Date:   Fri, 26 Mar 2021 15:17:54 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Konrad Dybcio <konrad.dybcio@somainline.org>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Gross <agross@kernel.org>, martin.botka@somainline.org,
+        linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        marijn.suijten@somainline.org, Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        linux-arm-msm@vger.kernel.org,
+        angelogioacchino.delregno@somainline.org,
+        devicetree@vger.kernel.org
+Subject: Re: [RESEND PATCH v4 1/2] dt-bindings: tsens: qcom: Document MDM9607
+ compatible
+Message-ID: <20210326211754.GA3876275@robh.at.kernel.org>
+References: <20210319220802.198215-1-konrad.dybcio@somainline.org>
 MIME-Version: 1.0
-In-Reply-To: <35ab0d0a-f9ce-b4d7-cd85-3cd8a8638ab6@gmail.com>
-Content-Type: text/plain; charset=gbk; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210319220802.198215-1-konrad.dybcio@somainline.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 3/24/21 4:27 AM, xufuhai wrote:
-> From: xufuhai <xufuhai@kuaishou.com>
+On Fri, 19 Mar 2021 23:08:01 +0100, Konrad Dybcio wrote:
+> Add the compatible for MDM9607.
 > 
-> For the old  AMD processor (family < 0x17), cpupower will call the
-> amd_pci_get_num_boost_states function, but for the non-root user
-> pci_read_byte function (implementation comes from the psutil library),
-> val will be set to 0xff, indicating that there is no read function
-> callback. At this time, the original logic will set the cpupower turbo
-> active state to yes. This is an obvious issue~
-> 
-
-Please run get_maintainer.pl and send patch maintainers
-and others suggested by the tool. I don't see this in my
-Inbox for me to review/accept and send it to pm maintainer.
-
-Hmm. I am seeing on my AMD
-
-as non-root
-current CPU frequency: Unable to call hardware
-
-as root
-current CPU frequency: 3.60 GHz (asserted by call to hardware)
-
-Are you sure this change is necessary?
-
-Please give me more information on this fix.
-
-
-> Reproduce procedure:
-> 	cpupower frequency-info
-> 
-> Signed-off-by: xufuhai <xufuhai@kuaishou.com>
-> Signed-off-by: chenguanqiao <chenguanqiao@kuaishou.com>
-> Signed-off-by: lishujin <lishujin@kuaishou.com>
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 > ---
->   tools/power/cpupower/utils/helpers/amd.c | 7 +++++++
->   1 file changed, 7 insertions(+)
+> v4: separate from the main patch
 > 
-> diff --git a/tools/power/cpupower/utils/helpers/amd.c b/tools/power/cpupower/utils/helpers/amd.c
-> index 97f2c857048e..6f9504906afa 100644
-> --- a/tools/power/cpupower/utils/helpers/amd.c
-> +++ b/tools/power/cpupower/utils/helpers/amd.c
-> @@ -137,6 +137,13 @@ int amd_pci_get_num_boost_states(int *active, int *states)
->   		return -ENODEV;
->   
->   	val = pci_read_byte(device, 0x15c);
-> +
-> +	/* If val is 0xff, meaning has no permisson to
-
-Typo: permisson. Reads better as "0xff indicates user
-doesn't have permission to read boot states"
-
-> +	 * get the boost states, return -1
-> +	 */
-> +	if (val == 0xff)
-> +		return -1;
-> +
->   	if (val & 3)
->   		*active = 1;
->   	else
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
 
-thanks,
--- Shuah
+Acked-by: Rob Herring <robh@kernel.org>
