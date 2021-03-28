@@ -2,126 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E82C433C1
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 10:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FCB2C433C1
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 11:12:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 34A4F61976
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 10:32:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E25ED6197C
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 11:12:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231344AbhC1K0l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Mar 2021 06:26:41 -0400
-Received: from comms.puri.sm ([159.203.221.185]:56204 "EHLO comms.puri.sm"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230209AbhC1K0X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 28 Mar 2021 06:26:23 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id D4BC1E01F7;
-        Sun, 28 Mar 2021 03:25:53 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id ePzUWSYUeNv5; Sun, 28 Mar 2021 03:25:53 -0700 (PDT)
-From:   Martin Kepplinger <martin.kepplinger@puri.sm>
-To:     martin.kepplinger@puri.sm
-Cc:     bvanassche@acm.org, jejb@linux.ibm.com,
-        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-pm@vger.kernel.org, martin.petersen@oracle.com,
-        stern@rowland.harvard.edu
-Subject: [PATCH v3 3/4] scsi: sd: use expecting_media_change for BLIST_MEDIA_CHANGE devices
-Date:   Sun, 28 Mar 2021 12:25:30 +0200
-Message-Id: <20210328102531.1114535-4-martin.kepplinger@puri.sm>
-In-Reply-To: <20210328102531.1114535-1-martin.kepplinger@puri.sm>
-References: <20210328102531.1114535-1-martin.kepplinger@puri.sm>
+        id S231143AbhC1LLm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Mar 2021 07:11:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59396 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229593AbhC1LLe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Mar 2021 07:11:34 -0400
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 798E8C061762
+        for <linux-pm@vger.kernel.org>; Sun, 28 Mar 2021 04:11:33 -0700 (PDT)
+Received: by mail-wm1-x32e.google.com with SMTP id r10-20020a05600c35cab029010c946c95easo5207513wmq.4
+        for <linux-pm@vger.kernel.org>; Sun, 28 Mar 2021 04:11:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=03U8ZMcgkCMSWbeLEL3An/d37+jEYP73/KLFh0oPZkk=;
+        b=dSHU3AkY20kHSycyny0dJXlEcmUIE/a4hb26zil3sNljjaXhXGl/feAyLZsHwBbiO/
+         /1D35gNUay9qNctUYaxMb1+klydlmlDAlmcx6zCXThSi4ydunwKtB7o+ZmSqutDPiO/x
+         yihvI2T6Bsgb/ztwJcWEI4Kk34YuqstE/QExX5VMswWyTmTXpH+rSJ4zDQQYKVPPYfHd
+         eE+RaSY61hxEXDFHVcFVJ687anq23Vatqezzkz1RqyJ791ddIauHQOOxmrzMGOyBPAik
+         vMdvYca5FINBW97aKto8OS9z2pkmCtc9gR9ob2sceZ5KRJPXhc/SFj5e7q0UQr9lwkFa
+         2hxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=03U8ZMcgkCMSWbeLEL3An/d37+jEYP73/KLFh0oPZkk=;
+        b=Y2kdP1c0vlgSSUBRShcEK/H/0lhV7ox7UeontXWvupBvdSSFXr+r9k+Mk4/fPs+L+t
+         Ah8AfpiUJZAH7vvTunFimJL3d7ylzZ6lqDQ/ztS0hlq4aHQ5bwU6cpAX2gZen2iZ97g+
+         XoIcKQcuQKD71817EqMxNRV4f5DuRIm0jAdk7dHUZY/OGNbZZ/0Xc75o+GV/yhl99gkM
+         2cwXIghfepTLPpvdsqkZtTrk9iyGV4uGDlo8ZDNnNDwOVmlF4dhHk4fJu1jTuaOYNEbV
+         zV9Y0eIbCZbz+btCZiGIrZl8m0Cdw3ha/q5SFNnwGqRimu5uqMnT6GN2pvdCJbxgafTp
+         YExg==
+X-Gm-Message-State: AOAM532ln1u7mE2LTuZ/KSBmkC/T/8mrpCuCIeZHV+krvrWppEG5s8/t
+        FKDSaFlrCW3keYdAGW/fb/ip/Rq9Wy8zog==
+X-Google-Smtp-Source: ABdhPJw5Ey5kw3tDAPC4O1P6YYfhEgqqOwo1zCJo692Orwzm8Id8fgGseOsIDV3Bsl/mwSzQRZ5tMw==
+X-Received: by 2002:a1c:bac2:: with SMTP id k185mr20937198wmf.148.1616929891924;
+        Sun, 28 Mar 2021 04:11:31 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:2d8b:2e0e:777b:e562? ([2a01:e34:ed2f:f020:2d8b:2e0e:777b:e562])
+        by smtp.googlemail.com with ESMTPSA id 135sm20185846wma.44.2021.03.28.04.11.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 28 Mar 2021 04:11:31 -0700 (PDT)
+Subject: Re: [PATCH v4 2/5] powercap/drivers/dtpm: Create a registering system
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     rafael@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, lukasz.luba@arm.com
+References: <20210312130411.29833-1-daniel.lezcano@linaro.org>
+ <20210312130411.29833-2-daniel.lezcano@linaro.org>
+ <YF8qIw4UBLnj9TCA@kroah.com>
+ <433ec4ac-a7a9-ecf9-f1c1-f658d279a2df@linaro.org>
+ <YGAnRx8SiZHFPpY6@kroah.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <7df276d1-abea-622c-2c7e-2c5e412aa4a9@linaro.org>
+Date:   Sun, 28 Mar 2021 13:11:30 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <YGAnRx8SiZHFPpY6@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For SD cardreader devices that have the BLIST_MEDIA_CHANGE flag set,
-ignore one MEDIA CHANGE unit attention after resuming from runtime
-suspend. These devices issue said unit attention when resuming
-even when no medium changed.
 
-expecting_media_change is the device flag that is being clearing in
-the error path.
+Hi Greg,
 
-The "downside" is that for these devices we now rely on users not to
-really change the medium (SD card) *during* a runtime suspend/resume
-cycle, i.e. when not unmounting.
+On 28/03/2021 08:50, Greg KH wrote:
 
-Since these devices don't distinguish between resume and medium changed
-there's no better solution.
+[ ... ]
 
-To enable runtime PM for an SD cardreader (device number 0:0:0:0), do:
+>>> And any reason why you are not using "real" struct devices in this
+>>> subsystem?  You seem to be rolling your own infrastructure for no good
+>>> reason.  I imagine you want sysfs support next, right?
+>>
+>> Actually, the framework is on top of powercap, so it has de facto the
+>> sysfs support. On the other side, the dtpm backends are tied with the
+>> device they manage.
+> 
+> So why are they not a "real" device in the driver model?  It looks like
+> you almost are wanting all of that functionality and are having to
+> implement it "by hand" instead.
 
-echo 0 > /sys/module/block/parameters/events_dfl_poll_msecs
-echo 1000 > /sys/bus/scsi/devices/0:0:0:0/power/autosuspend_delay_ms
-echo auto > /sys/bus/scsi/devices/0:0:0:0/power/control
+I'm sorry I misunderstanding your point. dtpm is the backend for the
+powercap subsystem which is the generic subsystem to do power limitation.
 
-Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
----
- drivers/scsi/sd.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+We have:
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 91c34ee972c7..0a6413a4c629 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -63,6 +63,7 @@
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_dbg.h>
- #include <scsi/scsi_device.h>
-+#include <scsi/scsi_devinfo.h>
- #include <scsi/scsi_driver.h>
- #include <scsi/scsi_eh.h>
- #include <scsi/scsi_host.h>
-@@ -114,6 +115,7 @@ static void sd_shutdown(struct device *);
- static int sd_suspend_system(struct device *);
- static int sd_suspend_runtime(struct device *);
- static int sd_resume(struct device *);
-+static int sd_resume_runtime(struct device *);
- static void sd_rescan(struct device *);
- static blk_status_t sd_init_command(struct scsi_cmnd *SCpnt);
- static void sd_uninit_command(struct scsi_cmnd *SCpnt);
-@@ -608,7 +610,7 @@ static const struct dev_pm_ops sd_pm_ops = {
- 	.poweroff		= sd_suspend_system,
- 	.restore		= sd_resume,
- 	.runtime_suspend	= sd_suspend_runtime,
--	.runtime_resume		= sd_resume,
-+	.runtime_resume		= sd_resume_runtime,
- };
- 
- static struct scsi_driver sd_template = {
-@@ -3701,6 +3703,25 @@ static int sd_resume(struct device *dev)
- 	return ret;
- }
- 
-+static int sd_resume_runtime(struct device *dev)
-+{
-+	struct scsi_disk *sdkp = dev_get_drvdata(dev);
-+	struct scsi_device *sdp = sdkp->device;
-+	int ret;
-+
-+	if (!sdkp)	/* E.g.: runtime resume at the start of sd_probe() */
-+		return 0;
-+
-+	/*
-+	 * This device issues a MEDIA CHANGE unit attention when
-+	 * resuming from suspend. Ignore the next one from now.
-+	 */
-+	if (sdp->sdev_bflags & BLIST_MEDIA_CHANGE)
-+		sdkp->device->expecting_media_change = 1;
-+
-+	return sd_resume(dev);
-+}
-+
- /**
-  *	init_sd - entry point for this driver (both when built in or when
-  *	a module).
+struct dtpm_cpu {
+	struct dtpm dtmp;
+	...
+}
+
+struct dtpm {
+	struct powercap powecap;
+};
+
+struct powercap {
+	struct device dev;
+};
+
+
+
 -- 
-2.30.2
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
