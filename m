@@ -2,39 +2,64 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62FF3C433DB
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 17:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15417C433E1
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 18:03:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 352BD6192F
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 17:28:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C109560231
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Mar 2021 18:02:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230525AbhC1R13 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Mar 2021 13:27:29 -0400
-Received: from mail.kernel.org ([198.145.29.99]:59808 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229593AbhC1R1C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 28 Mar 2021 13:27:02 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 24F2061929;
-        Sun, 28 Mar 2021 17:27:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1616952421;
-        bh=QEqM6tDytb7lgcGKZ/gDMwwXoV4ceL76Hk1LDKF5R10=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=X09agavam2BFbqZUMespZZ9ze22dgaYgo0o6sWeiXWKRfqKT4bLc/jJBN9CRqcZPx
-         i604BLoSul71colDwMG9cpwLCjVa0fNPRYFyuTGea/G7AwpRly7isjoYNNE8CVCFyC
-         T+pXl2b/mKXEWEAFFfzDd5GOnFqULQaHNXsY6SfI=
-Date:   Sun, 28 Mar 2021 19:26:58 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+        id S231308AbhC1SCZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Mar 2021 14:02:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33976 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229647AbhC1SB6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Mar 2021 14:01:58 -0400
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA507C061762
+        for <linux-pm@vger.kernel.org>; Sun, 28 Mar 2021 11:01:57 -0700 (PDT)
+Received: by mail-wm1-x334.google.com with SMTP id b2-20020a7bc2420000b029010be1081172so5538627wmj.1
+        for <linux-pm@vger.kernel.org>; Sun, 28 Mar 2021 11:01:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=FSV6rta3hJrwpk1P4mXDAcDYdRJg95MvBSYZceCodik=;
+        b=oSOYYdNRkdQVtznXgt78DhiwTWTyzGZF3oJMe8w4KEtcPyBLXe+SMFYvGd+1oj9LQU
+         r+3uWqxIghxhPFZU6Wuc3lTsr1obuN/1XT+oueshAk+gbGImzMAYJdf85a6crcqhy0e1
+         +wZlhI6QwSVp9fLFMCSC4+ilP5ANqr7SeCPSHFAjZvo4GtktRLFRtw0ftjbX+D8y7QhE
+         kOKivr+Xaqy/9hlXYLyfK3URX9DHSdP8BlWHVxIGKPZyn5bMqhtXBFITvpGaI+/xd/rM
+         sFNiokpGBV5ArT1Z24VLOrvllQ0LUemSArwJLtk2pUBXbSKIRoROtHU9pA39vqDdmQwk
+         xaSA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=FSV6rta3hJrwpk1P4mXDAcDYdRJg95MvBSYZceCodik=;
+        b=JZsvcfnkgU4eVzxigAQz7OVhuWbg7Mf8B4iuwpUMS9+1BwPC0maxzFYU0rHpKAKYr2
+         SQU0U9j7D7nmqt0ZYHXnEZc8Q2c05ssYTsaGjQwqfSPpu1ihvIaSRug7LkcQpt44wXpl
+         5jH6xa1iMDMxisfA1ogmL51q+52bH66OB+xy22JyeHH5jsOeSVq98mHY1wI279v3mOVJ
+         370gFcPk9XnJjivla6a9VF8gb31H1o3E03E+MQRl8WuxhWexe8DumK0K9e944vkrWqWK
+         TyvVqN0ByAi9QBpY5PJX3WuMNGeJSw2SgFbU7tVyiVfYvKp6mjfiV0CwV8uzKF4y08OW
+         U02Q==
+X-Gm-Message-State: AOAM531dVWTJREKONhkvYn0Oc+CDRTuv4kRPIHFCxLE2jpqLp4eTMNsb
+        9VRY9bNKQiwuFEzUYDQQ3gi1Vg==
+X-Google-Smtp-Source: ABdhPJy+gVLRWMbs9MBvQ5wgzJ1R9N4zHUB5GvTCe8IVgfnknokeggtcfnLxxlZFMTEPF9ziKiZFcw==
+X-Received: by 2002:a05:600c:1992:: with SMTP id t18mr21563797wmq.125.1616954516332;
+        Sun, 28 Mar 2021 11:01:56 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:1945:696f:a453:cac9? ([2a01:e34:ed2f:f020:1945:696f:a453:cac9])
+        by smtp.googlemail.com with ESMTPSA id g11sm25154394wrw.89.2021.03.28.11.01.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 28 Mar 2021 11:01:55 -0700 (PDT)
+Subject: Re: [PATCH v4 2/5] powercap/drivers/dtpm: Create a registering system
+To:     Greg KH <gregkh@linuxfoundation.org>
 Cc:     rafael@kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, lukasz.luba@arm.com
-Subject: Re: [PATCH v4 2/5] powercap/drivers/dtpm: Create a registering system
-Message-ID: <YGC8Yj9OTgc4aU0y@kroah.com>
 References: <20210312130411.29833-1-daniel.lezcano@linaro.org>
  <20210312130411.29833-2-daniel.lezcano@linaro.org>
  <YF8qIw4UBLnj9TCA@kroah.com>
@@ -43,77 +68,54 @@ References: <20210312130411.29833-1-daniel.lezcano@linaro.org>
  <7df276d1-abea-622c-2c7e-2c5e412aa4a9@linaro.org>
  <YGBng8D+nPS4/LJO@kroah.com>
  <7ba5094b-7fac-72ff-0e52-6f60eb86f253@linaro.org>
+ <YGC8Yj9OTgc4aU0y@kroah.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <35b543d1-5559-b814-11b0-8a53c1218750@linaro.org>
+Date:   Sun, 28 Mar 2021 20:01:54 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7ba5094b-7fac-72ff-0e52-6f60eb86f253@linaro.org>
+In-Reply-To: <YGC8Yj9OTgc4aU0y@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Mar 28, 2021 at 06:07:10PM +0200, Daniel Lezcano wrote:
-> On 28/03/2021 13:24, Greg KH wrote:
-> > On Sun, Mar 28, 2021 at 01:11:30PM +0200, Daniel Lezcano wrote:
-> >>
-> >> Hi Greg,
-> >>
-> >> On 28/03/2021 08:50, Greg KH wrote:
-> >>
-> >> [ ... ]
-> >>
-> >>>>> And any reason why you are not using "real" struct devices in this
-> >>>>> subsystem?  You seem to be rolling your own infrastructure for no good
-> >>>>> reason.  I imagine you want sysfs support next, right?
-> >>>>
-> >>>> Actually, the framework is on top of powercap, so it has de facto the
-> >>>> sysfs support. On the other side, the dtpm backends are tied with the
-> >>>> device they manage.
-> >>>
-> >>> So why are they not a "real" device in the driver model?  It looks like
-> >>> you almost are wanting all of that functionality and are having to
-> >>> implement it "by hand" instead.
-> >>
-> >> I'm sorry I misunderstanding your point. dtpm is the backend for the
-> >> powercap subsystem which is the generic subsystem to do power limitation.
-> >>
-> >> We have:
-> >>
-> >> struct dtpm_cpu {
-> >> 	struct dtpm dtmp;
-> >> 	...
-> >> }
-> >>
-> >> struct dtpm {
-> >> 	struct powercap powecap;
-> >> };
-> >>
-> >> struct powercap {
-> >> 	struct device dev;
-> >> };
-> > 
-> > Oh nice.  So you can not use a kref here at all as you already have a
-> > reference counted device controling your structure.  You can not have 2
-> > references trying to control the same structure, that way lies madness
-> > and bugs :(
-> > 
-> > So why are you trying to add a kref here as the structure already has
-> > support for proper lifetimes?
+On 28/03/2021 19:26, Greg KH wrote:
+
+[ ... ]
+
+>>> So why are you trying to add a kref here as the structure already has
+>>> support for proper lifetimes?
+>>
+>> Right, I'll revisit that part. Thanks for the review.
+>>
+>> I've a branch which is pulled by Rafael [1]. These parts are already
+>> merged in the dtpm/next branch but not yet in Rafael's tree.
 > 
-> Right, I'll revisit that part. Thanks for the review.
+> I would recommend fixing that up if you can rebase it.  If not, you need
+> to revert it and start over.  I'll be glad to review it if you cc: me on
+> the patches.
 > 
-> I've a branch which is pulled by Rafael [1]. These parts are already
-> merged in the dtpm/next branch but not yet in Rafael's tree.
+>> I think a rebase is possible but I would like to avoid that. Would be a
+>> patch on top of the dtpm/next acceptable given your flow with Android ?
+> 
+> This has nothing to do with the Android kernel workflow, sorry.  I am
+> concerned about proper kernel development and keeping bugs out of it.
 
-I would recommend fixing that up if you can rebase it.  If not, you need
-to revert it and start over.  I'll be glad to review it if you cc: me on
-the patches.
 
-> I think a rebase is possible but I would like to avoid that. Would be a
-> patch on top of the dtpm/next acceptable given your flow with Android ?
+Fair enough, I will fix it up and send a v5.
 
-This has nothing to do with the Android kernel workflow, sorry.  I am
-concerned about proper kernel development and keeping bugs out of it.
+Thanks
 
-thanks,
+  -- Daniel
 
-greg k-h
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
