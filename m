@@ -2,32 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 942D7C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Mar 2021 18:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7EF9C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Mar 2021 18:38:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A6706198A
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Mar 2021 18:38:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 83A416198E
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Mar 2021 18:38:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231468AbhC2Shl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Mar 2021 14:37:41 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:58862 "EHLO
+        id S231645AbhC2SiN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Mar 2021 14:38:13 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:60208 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231152AbhC2She (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Mar 2021 14:37:34 -0400
+        with ESMTP id S231479AbhC2Shm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Mar 2021 14:37:42 -0400
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.0.3)
- id 74fd3ee51afe9a10; Mon, 29 Mar 2021 20:37:30 +0200
+ id 291421c0a50beb6e; Mon, 29 Mar 2021 20:37:41 +0200
 Received: from kreacher.localnet (89-64-81-131.dynamic.chello.pl [89.64.81.131])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 9C724669165;
-        Mon, 29 Mar 2021 20:37:29 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 5480F669165;
+        Mon, 29 Mar 2021 20:37:40 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -35,100 +34,45 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         "Zhou Ti (x2019cwm)" <x2019cwm@stfx.ca>
-Subject: [PATCH v1 5/5] cpuidle: menu: Take negative "sleep length" values into account
-Date:   Mon, 29 Mar 2021 20:37:12 +0200
-Message-ID: <7927358.NyiUUSuA9g@kreacher>
-In-Reply-To: <2764850.e9J7NaK4W3@kreacher>
-References: <2764850.e9J7NaK4W3@kreacher>
+Subject: [PATCH v1 0/5] cpuidle: Take possible negative "sleep length" values into account
+Date:   Mon, 29 Mar 2021 20:12:39 +0200
+Message-ID: <2764850.e9J7NaK4W3@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudehkedguddvkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdejlefghfeiudektdelkeekvddugfeghffggeejgfeukeejleevgffgvdeluddtnecukfhppeekledrieegrdekuddrudefudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeekledrieegrdekuddrudefuddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehfrhgvuggvrhhitgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepphgvthgvrhiisehinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohepthhglhigsehlihhnuhhtrhhonhhigidruggvpdhrtghp
- thhtohepgidvtddulegtfihmsehsthhfgidrtggr
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrudehkedguddvlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdevgfetueetheekudeuvdduteelvefftdfftdejjeeukeffteeikefgiefghedunecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepkeelrdeigedrkedurddufedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedurddufedupdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepfhhrvgguvghrihgtsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehpvghtvghriiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehtghhlgies
+ lhhinhhuthhrohhnihigrdguvgdprhgtphhtthhopeigvddtudeltgifmhesshhtfhigrdgtrg
 X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpuidle: menu: Take negative "sleep length" values into account
+Hi All,
 
-Make the menu governor check the tick_nohz_get_next_hrtimer()
-return value so as to avoid dealing with negative "sleep length"
-values and make it use that value directly when the tick is stopped.
+As follows from the discussion triggered by the patch at
 
-While at it, rename local variable delta_next in menu_select() to
-delta_tick which better reflects its purpose.
+https://lore.kernel.org/lkml/20210311123708.23501-2-frederic@kernel.org/
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+the cpuidle governors using tick_nohz_get_sleep_length() assume it to always
+return positive values which is not correct in general.
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -271,7 +271,7 @@ static int menu_select(struct cpuidle_dr
- 	u64 predicted_ns;
- 	u64 interactivity_req;
- 	unsigned long nr_iowaiters;
--	ktime_t delta_next;
-+	ktime_t delta, delta_tick;
- 	int i, idx;
- 
- 	if (data->needs_update) {
-@@ -280,7 +280,12 @@ static int menu_select(struct cpuidle_dr
- 	}
- 
- 	/* determine the expected residency time, round up */
--	data->next_timer_ns = tick_nohz_get_sleep_length(&delta_next);
-+	delta = tick_nohz_get_sleep_length(&delta_tick);
-+	if (unlikely(delta < 0)) {
-+		delta = 0;
-+		delta_tick = 0;
-+	}
-+	data->next_timer_ns = delta;
- 
- 	nr_iowaiters = nr_iowait_cpu(dev->cpu);
- 	data->bucket = which_bucket(data->next_timer_ns, nr_iowaiters);
-@@ -318,7 +323,7 @@ static int menu_select(struct cpuidle_dr
- 		 * state selection.
- 		 */
- 		if (predicted_ns < TICK_NSEC)
--			predicted_ns = delta_next;
-+			predicted_ns = data->next_timer_ns;
- 	} else {
- 		/*
- 		 * Use the performance multiplier and the user-configurable
-@@ -377,7 +382,7 @@ static int menu_select(struct cpuidle_dr
- 			 * stuck in the shallow one for too long.
- 			 */
- 			if (drv->states[idx].target_residency_ns < TICK_NSEC &&
--			    s->target_residency_ns <= delta_next)
-+			    s->target_residency_ns <= delta_tick)
- 				idx = i;
- 
- 			return idx;
-@@ -399,7 +404,7 @@ static int menu_select(struct cpuidle_dr
- 	     predicted_ns < TICK_NSEC) && !tick_nohz_tick_stopped()) {
- 		*stop_tick = false;
- 
--		if (idx > 0 && drv->states[idx].target_residency_ns > delta_next) {
-+		if (idx > 0 && drv->states[idx].target_residency_ns > delta_tick) {
- 			/*
- 			 * The tick is not going to be stopped and the target
- 			 * residency of the state to be returned is not within
-@@ -411,7 +416,7 @@ static int menu_select(struct cpuidle_dr
- 					continue;
- 
- 				idx = i;
--				if (drv->states[i].target_residency_ns <= delta_next)
-+				if (drv->states[i].target_residency_ns <= delta_tick)
- 					break;
- 			}
- 		}
+To address this issues, first document the fact that negative values can
+be returned by tick_nohz_get_sleep_length() (patch [1/5]).  Then, in
+preparation for more substantial changes, change the data type of two
+fields in struct cpuidle_state to s64 so they can be used in computations
+involving negative numbers safely (patch [2/5]).
+
+Next, adjust the teo governor a bit so that negative "sleep length" values
+are counted like zero by it (patch [3/5]) and modify it so as to avoid
+mishandling negative "sleep length" values (patch [4/5]).
+
+Finally, make the menu governor take negative "sleep length" values into
+account properly (patch [5/5]).
+
+Please see the changelogs of the patches for details.
+
+Thanks!
 
 
 
