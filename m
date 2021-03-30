@@ -2,122 +2,178 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FORGED_MUA_MOZILLA,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D86A5C433E3
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:59:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E38D8C433C1
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 09:44:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9B6416195C
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:59:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B1A72619A9
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 09:44:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231702AbhC3I7I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Mar 2021 04:59:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58364 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231687AbhC3I66 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Mar 2021 04:58:58 -0400
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8F72C061762
-        for <linux-pm@vger.kernel.org>; Tue, 30 Mar 2021 01:58:57 -0700 (PDT)
-Received: by mail-pf1-x431.google.com with SMTP id h3so11683140pfr.12
-        for <linux-pm@vger.kernel.org>; Tue, 30 Mar 2021 01:58:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:thread-topic:thread-index:date:message-id
-         :references:in-reply-to:reply-to:accept-language:content-language
-         :user-agent:content-id:content-transfer-encoding:mime-version;
-        bh=+uhFrBWaCsyuNOo4z1kocdKrE8L+h5QcfAeQ5IrnGB0=;
-        b=hpW6OY4VTSdGIxYQpyhMwxyfpp8NCBLUGaRQFyVhvX8/y5x7xpLA223FcxVyiTjRkU
-         NJZQZtnH8fJ00zR7zqv2IF9kbId/eybJocOs7kdIg/FLaBs3XNxdUTKYIeKzHEYLtgHA
-         TJHESMwzDwkic5tdYJ4S/UEZ1Gqe5O9VOiRHYADptVT3iQ0NthEePzWI9MfVUfFfpoq5
-         Go/BUFAXpViw9W2ydVunAkj7XhcyMEztXcaVH1YjbuLafpnrxde0eeNwvrsSJQzw3wsX
-         zZ/3MQ27kzIxiUPPUDiqO0ANJaKEomcg8okHzxZ+lHgxwaf5jcAGhjSfBOZ6I6bhgi5e
-         G2gQ==
+        id S231464AbhC3Jnr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Mar 2021 05:43:47 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:51934 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231370AbhC3Jni (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Mar 2021 05:43:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1617097417;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=g6WYQfr2zYY7caL+uqTK6vngT15vqF+k7JyRicFrFTM=;
+        b=Rd+OG6kg6SoYxt3yOo3poE6etkIhLnWjN8uCYcZzoWUToXQCQJEsD3t0CQ/elzlaRx2tcf
+        GjBzbyJyTR0yN8frOxC1k1B1bhEi2hbRzfvfOd+ApCpGuj8wnjLXUA5cD2jsQEiCxVpE7H
+        cRvRZFZM03TVacOnHMz1iBIsN2OQf0A=
+Received: from mail-ed1-f69.google.com (mail-ed1-f69.google.com
+ [209.85.208.69]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-314-mOuiOtIROSCbllXnHdTvLw-1; Tue, 30 Mar 2021 05:43:24 -0400
+X-MC-Unique: mOuiOtIROSCbllXnHdTvLw-1
+Received: by mail-ed1-f69.google.com with SMTP id r19so9924130edv.3
+        for <linux-pm@vger.kernel.org>; Tue, 30 Mar 2021 02:43:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:thread-topic:thread-index
-         :date:message-id:references:in-reply-to:reply-to:accept-language
-         :content-language:user-agent:content-id:content-transfer-encoding
-         :mime-version;
-        bh=+uhFrBWaCsyuNOo4z1kocdKrE8L+h5QcfAeQ5IrnGB0=;
-        b=M5EOD5duvt1LDZCvdxhcj8KegUZf9xm9bRUPhoEN9qKB9QSErX2Z7nrzeQyg5GkYJG
-         tR35A+c/tv8+sFgvbwLseDuZR2B9agPUUKkkjVbevPukS1vdLSy0Mv/i6CAhnkC6eYvu
-         kghGakJSxN+XMaLBAx6EQttJazAnXDzlmIoSs/JB647siHabcJzTeGuoJ2TJAwW8s1ai
-         iJIreWzWXcNQr6xoneJF5v/BRRkMhoQg6UUP1pzznvADzjYOmrns0qIF8N3uoZPJcelJ
-         L6v/7iSTBVbIbrnFtycxJnqSETE4UBUSC9nsgaDUReYEUdH2QnneIM7tHSaxlVbcdgqy
-         nXRQ==
-X-Gm-Message-State: AOAM530wPDEVhsUKH2/JylC2FON5wkJWzfRN+abrjLI5Zhjq03v5k4ZH
-        sNgXndNmhjOUkgX0MSA9rPkrPQ==
-X-Google-Smtp-Source: ABdhPJz7LwupF/B1gNSoRnCm8bwQgn9zwOYz4Y9wzg7e28NAKTcbiMTJxnxPfMLrTybbYLom2aBD2A==
-X-Received: by 2002:a63:c90c:: with SMTP id o12mr28187503pgg.210.1617094737576;
-        Tue, 30 Mar 2021 01:58:57 -0700 (PDT)
-Received: from PH0PR06MB7560.namprd06.prod.outlook.com ([2603:1036:30c:50::5])
-        by smtp.gmail.com with ESMTPSA id h68sm19401653pfe.111.2021.03.30.01.58.56
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Mar 2021 01:58:57 -0700 (PDT)
-Received: from [10.0.0.17] (218.80.79.188) by
- HK2PR0302CA0021.apcprd03.prod.outlook.com (2603:1096:202::31) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3999.16 via Frontend Transport; Tue, 30 Mar 2021 08:40:45 +0000
-From:   Haojian Zhuang <haojian.zhuang@linaro.org>
-To:     Hao Fang <fanghao11@huawei.com>, "sre@kernel.org" <sre@kernel.org>,
-        "xuwei5@hisilicon.com" <xuwei5@hisilicon.com>
-CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "prime.zeng@hisilicon.com" <prime.zeng@hisilicon.com>
-Subject: Re: [PATCH] power: reset: hisi-reboot: use the correct HiSilicon
- copyright
-Thread-Topic: [PATCH] power: reset: hisi-reboot: use the correct HiSilicon
- copyright
-Thread-Index: AQHXJS+jiVlA9W11uE+RPaeN3QHKyaqcNlmA
-X-MS-Exchange-MessageSentRepresentingType: 1
-Date:   Tue, 30 Mar 2021 08:40:48 +0000
-Message-ID: <PH0PR06MB7560EB9D65A4CF06F6F5C0A3977D9@PH0PR06MB7560.namprd06.prod.outlook.com>
-References: <1617086285-36565-1-git-send-email-fanghao11@huawei.com>
-In-Reply-To: <1617086285-36565-1-git-send-email-fanghao11@huawei.com>
-Reply-To: "haojian.zhuang@linaro.org" <haojian.zhuang@linaro.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Exchange-Organization-AuthAs: Internal
-X-MS-Exchange-Organization-AuthMechanism: 06
-X-MS-Exchange-Organization-AuthSource: PH0PR06MB7560.namprd06.prod.outlook.com
-X-MS-Has-Attach: 
-X-MS-Exchange-Organization-Network-Message-Id: e3aea8aa-daf2-4fa5-c100-08d8f3578406
-X-MS-Exchange-Organization-SCL: -1
-X-MS-TNEF-Correlator: 
-X-MS-Exchange-Organization-RecordReviewCfmType: 0
-x-clientproxiedby: HK2PR0302CA0021.apcprd03.prod.outlook.com
- (2603:1096:202::31) To PH0PR06MB7560.namprd06.prod.outlook.com
- (2603:10b6:510:50::12)
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
-x-tmn:  [Uy7Thh/wUSziR3uoac2f0LHqtu3KKXNR]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <FD12282F87BF8C498ABD3FD608B1785B@namprd06.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+         :message-id:mime-version;
+        bh=g6WYQfr2zYY7caL+uqTK6vngT15vqF+k7JyRicFrFTM=;
+        b=ixVv/yNZRgJfXORggC+r1bxyZ078zgmlA0GjbRzcTbtGpQUNZOAiO7wQvWLjaLJhtA
+         jQYfKS0HZ+NGy2BB4eIV9J0dg7ao+Js35jEE1vdx66CSCJLvKnW2quFz8u2tKIlM1cLN
+         jE/hOSbM8dDYnlckaGAt3c8Mr8jEfq3U9ukG6Nsqlyrmnwwz1H75ljyFPjSaIm05DKoU
+         zdFt1XMaTV3ArkF2i4g7LtjRtMRyOn/3485SOsxim44H7te9MHqXt32hD5dQxSOCSMDF
+         yI8mfLr7aX0iRVU+pmsmE4crq1jo9W/Ds7p1+pj/O097s65GblZzJsOgF8s1q8+006xk
+         tSHQ==
+X-Gm-Message-State: AOAM5329LQQQgAlcbMOKwP5uyoYoINobEyi8oQesZwkLwc4JU476yKEV
+        Ty+mU1UQ6CVX8ul8tQXtIzU9c3Qm3WscduYxEMwptwbc2Uye9RiFLDRM54yHAMcm1yMVfh+8m3H
+        PescsInVXbSZKiIr7sMRbJpPzpxMz7H2nfoSuR2lTpGwq5NmPXhXeQufE9sJa0pPEbDr3loI=
+X-Received: by 2002:a05:6402:5113:: with SMTP id m19mr33248391edd.78.1617097403575;
+        Tue, 30 Mar 2021 02:43:23 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJz4a/x0IoycE52tHgn4H7FB5BUvgYw6VInMN/z0rYUeu6ZJUK6HgT0mpOxvUyCDXbVPzrp3bQ==
+X-Received: by 2002:a05:6402:5113:: with SMTP id m19mr33248375edd.78.1617097403386;
+        Tue, 30 Mar 2021 02:43:23 -0700 (PDT)
+Received: from vitty.brq.redhat.com (g-server-2.ign.cz. [91.219.240.2])
+        by smtp.gmail.com with ESMTPSA id f9sm10626380edq.43.2021.03.30.02.43.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Mar 2021 02:43:22 -0700 (PDT)
+From:   Vitaly Kuznetsov <vkuznets@redhat.com>
+To:     kernel test robot <lkp@intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     kbuild-all@lists.01.org, clang-built-linux@googlegroups.com,
+        linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [pm:bleeding-edge 47/48] drivers/acpi/processor_idle.c:548:7:
+ error: implicit declaration of function 'wakeup_cpu0'
+In-Reply-To: <202103300806.BOpYVHTe-lkp@intel.com>
+References: <202103300806.BOpYVHTe-lkp@intel.com>
+Date:   Tue, 30 Mar 2021 11:43:22 +0200
+Message-ID: <87sg4d9dtx.fsf@vitty.brq.redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-T24gMy8zMC8yMSAyOjM4IFBNLCBIYW8gRmFuZyB3cm90ZToNCj4gcy9IaXNpbGljb24vSGlTaWxp
-Y29uL2cuDQo+IEl0IHNob3VsZCB1c2UgY2FwaXRhbCBTLCBhY2NvcmRpbmcgdG8NCj4gaHR0cHM6
-Ly93d3cuaGlzaWxpY29uLmNvbS9lbi90ZXJtcy1vZi11c2UuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5
-OiBIYW8gRmFuZyA8ZmFuZ2hhbzExQGh1YXdlaS5jb20+DQo+IC0tLQ0KPiAgIGRyaXZlcnMvcG93
-ZXIvcmVzZXQvaGlzaS1yZWJvb3QuYyB8IDQgKystLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAyIGlu
-c2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9w
-b3dlci9yZXNldC9oaXNpLXJlYm9vdC5jIGIvZHJpdmVycy9wb3dlci9yZXNldC9oaXNpLXJlYm9v
-dC5jDQo+IGluZGV4IDBiYTVmZGMuLjVhYmM1ZjYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvcG93
-ZXIvcmVzZXQvaGlzaS1yZWJvb3QuYw0KPiArKysgYi9kcml2ZXJzL3Bvd2VyL3Jlc2V0L2hpc2kt
-cmVib290LmMNCj4gQEAgLTEsOCArMSw4IEBADQo+ICAgLy8gU1BEWC1MaWNlbnNlLUlkZW50aWZp
-ZXI6IEdQTC0yLjAtb25seQ0KPiAgIC8qDQo+IC0gKiBIaXNpbGljb24gU29DIHJlc2V0IGNvZGUN
-Cj4gKyAqIEhpU2lsaWNvbiBTb0MgcmVzZXQgY29kZQ0KPiAgICAqDQo+IC0gKiBDb3B5cmlnaHQg
-KGMpIDIwMTQgSGlzaWxpY29uIEx0ZC4NCj4gKyAqIENvcHlyaWdodCAoYykgMjAxNCBIaVNpbGlj
-b24gTHRkLg0KPiAgICAqIENvcHlyaWdodCAoYykgMjAxNCBMaW5hcm8gTHRkLg0KPiAgICAqDQo+
-ICAgICogQXV0aG9yOiBIYW9qaWFuIFpodWFuZyA8aGFvamlhbi56aHVhbmdAbGluYXJvLm9yZz4N
-Cj4gDQoNCkFja2VkLWJ5OiBIYW9qaWFuIFpodWFuZyA8aGFvamlhbi56aHVhbmdAbGluYXJvLm9y
-Zz4NCg==
+kernel test robot <lkp@intel.com> writes:
+
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> head:   a70fdf61936ab0200d31bebea4b44bb67454ce07
+> commit: 5f5e49e999acd8556e694e841d63226d21e409d9 [47/48] ACPI: processor: Fix CPU0 wakeup in acpi_idle_play_dead()
+> config: x86_64-randconfig-a013-20210329 (attached as .config)
+> compiler: clang version 13.0.0 (https://github.com/llvm/llvm-project 2a28d1d3b7bf2062288b46af34e33ccc543a99fa)
+> reproduce (this is a W=1 build):
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # install x86_64 cross compiling tool for clang build
+>         # apt-get install binutils-x86-64-linux-gnu
+>         # https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?id=5f5e49e999acd8556e694e841d63226d21e409d9
+>         git remote add pm https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+>         git fetch --no-tags pm bleeding-edge
+>         git checkout 5f5e49e999acd8556e694e841d63226d21e409d9
+>         # save the attached .config to linux build tree
+>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+>
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+>
+> All errors (new ones prefixed by >>):
+>
+>>> drivers/acpi/processor_idle.c:548:7: error: implicit declaration of function 'wakeup_cpu0' [-Werror,-Wimplicit-function-declaration]
+>                    if (wakeup_cpu0())
+>                        ^
+
+Sigh,
+
+This one is under CONFIG_SMP in arch/x86/include/asm/smp.h
+
+>>> drivers/acpi/processor_idle.c:549:4: error: implicit declaration of function 'start_cpu0' [-Werror,-Wimplicit-function-declaration]
+>                            start_cpu0();
+
+This one is under CONFIG_HOTPLUG_CPU0 (which obviously depends on
+CONFIG_SMP)
+
+I think we can put the whole block under #ifdef CONFIG_HOTPLUG_CPU0 as
+it makes zero sense otherwise. I'll send a follow-up patch.
+
+>                            ^
+>    drivers/acpi/processor_idle.c:1103:12: warning: no previous prototype for function 'acpi_processor_ffh_lpi_probe' [-Wmissing-prototypes]
+>    int __weak acpi_processor_ffh_lpi_probe(unsigned int cpu)
+>               ^
+>    drivers/acpi/processor_idle.c:1103:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+>    int __weak acpi_processor_ffh_lpi_probe(unsigned int cpu)
+>    ^
+>    static 
+>    drivers/acpi/processor_idle.c:1108:12: warning: no previous prototype for function 'acpi_processor_ffh_lpi_enter' [-Wmissing-prototypes]
+>    int __weak acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+>               ^
+>    drivers/acpi/processor_idle.c:1108:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+>    int __weak acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+>    ^
+>    static 
+>    2 warnings and 2 errors generated.
+>
+>
+> vim +/wakeup_cpu0 +548 drivers/acpi/processor_idle.c
+>
+>    524	
+>    525	/**
+>    526	 * acpi_idle_play_dead - enters an ACPI state for long-term idle (i.e. off-lining)
+>    527	 * @dev: the target CPU
+>    528	 * @index: the index of suggested state
+>    529	 */
+>    530	static int acpi_idle_play_dead(struct cpuidle_device *dev, int index)
+>    531	{
+>    532		struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+>    533	
+>    534		ACPI_FLUSH_CPU_CACHE();
+>    535	
+>    536		while (1) {
+>    537	
+>    538			if (cx->entry_method == ACPI_CSTATE_HALT)
+>    539				safe_halt();
+>    540			else if (cx->entry_method == ACPI_CSTATE_SYSTEMIO) {
+>    541				inb(cx->address);
+>    542				wait_for_freeze();
+>    543			} else
+>    544				return -ENODEV;
+>    545	
+>    546	#ifdef CONFIG_X86
+>    547			/* If NMI wants to wake up CPU0, start CPU0. */
+>  > 548			if (wakeup_cpu0())
+>  > 549				start_cpu0();
+>    550	#endif
+>    551		}
+>    552	
+>    553		/* Never reached */
+>    554		return 0;
+>    555	}
+>    556	
+>
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+
+-- 
+Vitaly
+
