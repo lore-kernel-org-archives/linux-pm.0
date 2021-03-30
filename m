@@ -2,278 +2,150 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61251C433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 02:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C87E7C433DB
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 02:02:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 32E2B61969
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 02:00:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 924EA6196C
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 02:02:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230233AbhC3CAJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Mar 2021 22:00:09 -0400
-Received: from mail-eopbgr660078.outbound.protection.outlook.com ([40.107.66.78]:18392
-        "EHLO CAN01-QB1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S229483AbhC3B7n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Mar 2021 21:59:43 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ezJ6tO8yTZqFbZzCj/pxsCd5rc3kvZDiR7/uBttYwEtV2yMfhkZh6IO3i+k5Q/wXleGAPZHsGy/5mXbUbFr9KzZI3BjGc9CWSOn9MbDw3SpPWEDK7ZcbmuuNwPXJMsSMAIpR9E464WbEB9b6Rb0hDPwq7NnollVAJYqrDynKpdDJG0/crkyktVlLPfMFCVta/aMToK4jREc1aeo+rMot01MgI+thZzhyV+w0veiYZf2HdVcvoTUVSVhcUphiTQA+uWFVAyKimYXuYckCjbKvgBWRyUsgwTwxMvhk4MaYVTNzFbTRodN/bH4PFXPcrcAwcijtFKnl0207Dw2et3mRSQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=PluljONvciY1yxGEG0IAKjCe9RVEsZ5+Lqgxtj7e+pM=;
- b=dU8T/mM8srB3lRrL0l5Ti0eCraX7J3uzftHf/9c2w0kPsvAnNbUXnbwmNkgj2kC2DbDBBRaBsiIMqE1f0K+viqlWyEZwKhp7SCh3mHKV7kDoVkbbFoLMH4Ea5vb1YvP9YfIRN0XGbykEhE03ku1XOq3pac7OWRvVekVQsJOT113QdgtXvQ2v1MKCRLoSUSElgo4LeIBtwVtpCZss4oic203wq9IZrSlScKwNP67a7IRucglCsYjP7gRZw3avIIptg6AHAgQrNv9voWP41ailqI3bzObz6oKw+ZBcA8aHpGZVReFGkjDyVUkjQj4zRVziG0G+J+KLSRwCiz4g+pI0oA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=stfx.ca; dmarc=pass action=none header.from=stfx.ca; dkim=pass
- header.d=stfx.ca; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=stfxca.onmicrosoft.com; s=selector2-stfxca-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=PluljONvciY1yxGEG0IAKjCe9RVEsZ5+Lqgxtj7e+pM=;
- b=XbbtG+5PHdeBIe2F7aO62TATyhI4/5kMIo7WHu9sD1Bjh0u0GktPk1erFyjY3YHmrTvGzsNRj22TWMPpn7qkQNey4uRrhxbeUvaOQmupdsPJUtXearYhYVz/wv6/q0wg4vVZEN0wEktSrFLQYAafRtYmHDvH9X3qVpfa3p8eGCU=
-Received: from YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:17::19)
- by YT1PR01MB2412.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:4::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3977.33; Tue, 30 Mar
- 2021 01:59:41 +0000
-Received: from YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::c087:282b:4ebb:81b3]) by YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::c087:282b:4ebb:81b3%7]) with mapi id 15.20.3977.033; Tue, 30 Mar 2021
- 01:59:41 +0000
-From:   "Zhou Ti (x2019cwm)" <x2019cwm@stfx.ca>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-CC:     LKML <linux-kernel@vger.kernel.org>,
-        Frederic Weisbecker <frederic@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v1 5/5] cpuidle: menu: Take negative "sleep length" values
- into account
-Thread-Topic: [PATCH v1 5/5] cpuidle: menu: Take negative "sleep length"
- values into account
-Thread-Index: AQHXJMqW2cL1o6UBuEaCN31sThmNSKqbxtcz
-Date:   Tue, 30 Mar 2021 01:59:40 +0000
-Message-ID: <YTBPR01MB3262DB49961DBCCE96C51AB8C47D9@YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM>
-References: <2764850.e9J7NaK4W3@kreacher>,<7927358.NyiUUSuA9g@kreacher>
-In-Reply-To: <7927358.NyiUUSuA9g@kreacher>
-Accept-Language: en-CA, zh-CN, en-US
-Content-Language: en-CA
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: rjwysocki.net; dkim=none (message not signed)
- header.d=none;rjwysocki.net; dmarc=none action=none header.from=stfx.ca;
-x-originating-ip: [141.109.104.135]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: e0302d3a-5216-464d-dc71-08d8f31f7b40
-x-ms-traffictypediagnostic: YT1PR01MB2412:
-x-microsoft-antispam-prvs: <YT1PR01MB24120376ED6600B54C954FACC47D9@YT1PR01MB2412.CANPRD01.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:1051;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: g7ks6G3YNoph07mytqkia/kyMRm0thwW0nW2EY85naeJ3F4NvCFQyL6+rKsAVN39rIHLXe79yX0VTKusj/eMFSZZbIVwzeyWSV6GWWNU4c8518k0DS1z7STj6ybcghSfA8QthiIjWVxLPHte3yKCN/7za+38+I9m8LLES6m+sc36awpvxZ4PxgIhUmoTnq0iNlAdXd1snKV9QrmjUEkPcrlKyKfFANVEni+9mvhx6xzvjsoYdxqHA4CyhyTx+4GAUlLc3ct2sQla+DzdxL61rI8zHXWBGFWgpeyi26y1u7a3gOdU4a9OHgSZrLhBNXqkqMWEIK8fCzaOBABWzpAJaf43cljIUWhP8tQxzXnivTITlClXIDSoDP5zjWgVQSHRz3/PQSSBVER9Cg448HBpZlJba7slEb4mx201kbWmmeUgMn5hPFvSn+l0/oRXxiYxAO/DExK475tB33MtiE40g3t8sAE6XtQ02XKKh41Abv2Rvtg1kn1uhFM5Stfnh2uvCGMIypZBS3rIKQFl+RzuQedOXMbjhKi5cQrF+CA4nHGTTbnc6nhD2HAe64TsO060zWYvoEvgfHrpHDIRk8lIp4FT1Oboe0FN/0lkaJs3WKUxJ9FskGW868a1Gnnng1Ax74nlOdRSmV4FWGBo7IiNgO99yECQaifW4ZM32bl3c9Q=
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(4636009)(396003)(136003)(376002)(346002)(39840400004)(366004)(8936002)(38100700001)(478600001)(316002)(54906003)(55016002)(9686003)(786003)(26005)(186003)(110136005)(7696005)(2906002)(71200400001)(8676002)(6506007)(86362001)(5660300002)(52536014)(66946007)(66446008)(76116006)(64756008)(66476007)(66556008)(33656002)(4326008)(83380400001);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata: =?iso-8859-1?Q?FtcgJMv8UJSXtEi9YWcQHZuleuAhFo72iWAGVBnouL9Ryy79vqHhSlDTrr?=
- =?iso-8859-1?Q?4twC01cKdrpbxKnjFRoDxzOJi6TCsUNklF4GEDwz55bZQMzyz3Tyy5pfVH?=
- =?iso-8859-1?Q?BYX4dfsu5AwG/RX5eeiO4zphmIvQ8Re9OyxILa4/dCIsDUekhIF5ZYwxnY?=
- =?iso-8859-1?Q?iLXQpWUQb6mnOZ7Ne8efGQxXgbQ6lSL8Z00eEkF6dfgsNxTCF7wVteXIMq?=
- =?iso-8859-1?Q?N+4wPUmjibgF60rlgjGYIlJE9WdbGSxFxC7hcjuVtseu67fG8svcrqeiMp?=
- =?iso-8859-1?Q?nw3WdSsUYRg2xqEJ4A4FCzRu/J6IYqw65/HwmYnDtQ1EYjRX8QQcviZfJ6?=
- =?iso-8859-1?Q?EXAqZaFSJm8btRoHQiBlhD3j80nKgQHavvma4iPDHUHGx9srvOIR9EZI2w?=
- =?iso-8859-1?Q?jeUju4Bf1JYCMRc6/5TKAr52G5AWRnf1xxX4y3A8Yo9o1HqA8RH6UJb+E/?=
- =?iso-8859-1?Q?ZBNdj6rbMPKxB0kVyGlBdG3i5CJMnXAmm9X6FaSDM23LCNq0ZaX8cfVF9p?=
- =?iso-8859-1?Q?YW8tfWpsuKvnKCTBf+nM2n6iVICm8N2qlCdu5hPWxXNvFDFhyfYu86K5iT?=
- =?iso-8859-1?Q?m1mzy2pRddGEDV0e+oWU2Y4v2q7AT107xmz61rlxKzPaeLb4Hq8nXgRToF?=
- =?iso-8859-1?Q?usaK/VXGLOKpM/RRoa5qrMbG+2+Z/ZHIuzqh7vcHnprAylOuEmrRdB1K3w?=
- =?iso-8859-1?Q?3FbDM/2WRSImQshcTULKBQGmYRp/inNZd7DUIRdeDigo1cqmAE8Tymm0Jz?=
- =?iso-8859-1?Q?KXZpxEc82Pm5Z5Qy6dkuonz9/9XMwDAwSuZCbFN01zFCYaNm8QlAUJaBWh?=
- =?iso-8859-1?Q?uB+5453/9d4IY0fR1loPln6V+1GNrdY0+pYwfq3IsrfGmR6C6ABrm01CJk?=
- =?iso-8859-1?Q?PvNBXZQ348RakaDVtPTF3cErLpXU2lEeUhP4uY5ASS4u/yw94PcaJNyMXq?=
- =?iso-8859-1?Q?VzWf0+/AEkDZqTNfqTwA/Tu4g07PxbIDFnWEQcy7OxCv6w1Uz96xxOFZ5C?=
- =?iso-8859-1?Q?L8t9mubEM62hzpmGBTJFSMQvSGP3fct9w67F+FW4CIIOC0xW5DpZtnD09Y?=
- =?iso-8859-1?Q?8QGGW9qmMCdIZ/rQknwp+ZyEIdLSOd2zJOrZe0LJECx4Hi9lB/lBY6DeTZ?=
- =?iso-8859-1?Q?M456TQdbbYP7pfVytg9BCUC4wAqplkhSeoO0T7K4H4SdgZFNXz6N+bsOjV?=
- =?iso-8859-1?Q?wHEdYgSFABqFTTg0CkI/ASk07L0NMnU4Erm+g9Uu/Rw2ONz8oLjgWxT9bq?=
- =?iso-8859-1?Q?4KvwuLUHr8cTIkMXSN7lERSlPH6uQeTTy26S3CEkOGALqu63qmrrM07nh4?=
- =?iso-8859-1?Q?8Cfxc4LpU+dTHqXWnWZONLI875p/tFaPC6Kf1usT7iF97fTnrxZBahezYI?=
- =?iso-8859-1?Q?8v2fyy1M0r?=
-x-ms-exchange-transport-forked: True
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+        id S230495AbhC3CBr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Mar 2021 22:01:47 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:21867 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230434AbhC3CBo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Mar 2021 22:01:44 -0400
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20210330020142epoutp03f81818d5bd0138ca190670ec3464c44b~w-FOlA3px2685226852epoutp03n
+        for <linux-pm@vger.kernel.org>; Tue, 30 Mar 2021 02:01:42 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20210330020142epoutp03f81818d5bd0138ca190670ec3464c44b~w-FOlA3px2685226852epoutp03n
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1617069702;
+        bh=5LHwGUnv+7Yz8Cd8SMnGnbGl0pOMxtIm799tDYb5xXM=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=nOt/ALdBtHZ5MAclb1WdiStfJ6JJEYsOhLGCCWFfRhJt+FraNxU0msEXIMjjPxAiz
+         3H1kQ90dSpkMHyA0hm8lkW95DSDVHqxeVi5MYjHIZbazmMBIUk+ePN9zyQIVkSd/r4
+         KrZ5YwvC4ZvlbImNDIek8b0xYcUNB7y73amYqmFk=
+Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20210330020137epcas1p277085e822ae27da4f25cc8a5b9461e7a~w-FKDf-Ss1342613426epcas1p2V;
+        Tue, 30 Mar 2021 02:01:37 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.155]) by
+        epsnrtp4.localdomain (Postfix) with ESMTP id 4F8Xk71jZTz4x9Pv; Tue, 30 Mar
+        2021 02:01:35 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        76.19.22618.97682606; Tue, 30 Mar 2021 11:01:29 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20210330020124epcas1p29d8c60d272b5c95a2bbf35d0910ee53a~w-E_Vsd7g2051320513epcas1p2n;
+        Tue, 30 Mar 2021 02:01:24 +0000 (GMT)
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20210330020124epsmtrp21bceb73e7d92ad35bc8ae9237d361ccd~w-E_VF6xK1872018720epsmtrp2H;
+        Tue, 30 Mar 2021 02:01:24 +0000 (GMT)
+X-AuditID: b6c32a38-3f2a8a800001585a-cc-6062867975d8
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        4A.2F.08745.47682606; Tue, 30 Mar 2021 11:01:24 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20210330020124epsmtip26b6b7f5b0e2f02a33d6d98ccedcb3670~w-E_GAkDj3060630606epsmtip2B;
+        Tue, 30 Mar 2021 02:01:24 +0000 (GMT)
+Subject: Re: [PATCH 2/2] PM / devfreq: imx8m-ddrc: Remove unneeded
+ of_match_ptr()
+To:     Fabio Estevam <festevam@gmail.com>
+Cc:     linux-imx@nxp.com, linux-pm@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <481127dc-1112-35d5-ba77-096eafab01e0@samsung.com>
+Date:   Tue, 30 Mar 2021 11:18:39 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-X-OriginatorOrg: stfx.ca
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: YTBPR01MB3262.CANPRD01.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: e0302d3a-5216-464d-dc71-08d8f31f7b40
-X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Mar 2021 01:59:40.8510
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 8c46abc7-960b-4124-8950-1628b2b192f9
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: /obn9Fg2RdzBuYYRSsjNtXmjGgLwpFMM4umR6sK5mlybw4FL2VtSadTyQS6vel9FenPjdhWsNUsSUDqwELb/TA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT1PR01MB2412
+In-Reply-To: <20210329122425.579386-2-festevam@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrCKsWRmVeSWpSXmKPExsWy7bCmvm5lW1KCwf5mUYuHV/0tun6tZLb4
+        3HuE0YHZY+esu+weG9/tYPL4vEkugDkq2yYjNTEltUghNS85PyUzL91WyTs43jne1MzAUNfQ
+        0sJcSSEvMTfVVsnFJ0DXLTMHaI+SQlliTilQKCCxuFhJ386mKL+0JFUhI7+4xFYptSAlp8Cy
+        QK84Mbe4NC9dLzk/18rQwMDIFKgwITvj4Jv57AXz2Su+PuZpYPzG2sXIwSEhYCLR9VOhi5GT
+        Q0hgB6PEqrk8XYxcQPYnRom+p+uZIZzPjBLLti1gAakCa1jdxQrRsYtR4lSTCoT9nlFi5vMI
+        EFtYIFhi9cp5TCALRATUJE7P0wcJMwvoS9xc/ogNxGYT0JLY/+IGmM0voChx9cdjRhCbV8BO
+        YlpPDxOIzSKgKvHo8kMwW1QgTOLkthaoGkGJkzOfgJ3DKWApcXbeZ2aI+eISt57MZ4Kw5SW2
+        v50Ddr+EwEt2iavXWlgh7neRWP93HdQvwhKvjm9hh7ClJD6/28sGYVdLrDx5hA2iuYNRYsv+
+        C1DNxhL7l04Ge4xZQFNi/S59iLCixM7fcxkhFvNJvPvaAw1cXomONiGIEmWJyw/uMkHYkhKL
+        2zvZJjAqzULyziwkL8xC8sIshGULGFlWMYqlFhTnpqcWGxaYIEf0JkZw8tOy2ME49+0HvUOM
+        TByMhxglOJiVRHiFDyQmCPGmJFZWpRblxxeV5qQWH2I0BQbwRGYp0eR8YPrNK4k3NDUyNja2
+        MDE0MzU0VBLnTTJ4EC8kkJ5YkpqdmlqQWgTTx8TBKdXAVOApsDlTz9h69e+jPeuruFaKNOh6
+        8wWKfGYXfldYbxl6OzO5J2DRvOdbJp6pZLrZ8lCrd9uU9Ye5G+cH1Ete2D+XlSPBnH3NOwvH
+        j7ETGLdWeqk5cbK0pszITe5rXeHwUPOtauQnmxK/yXJL/p+qeLDsIP8Fx32nzK2SOqe/feYz
+        dSLzo7iq2aUd/xa+6d27gNn20LHjgsoLl0TwrTw6aVWXW8uuNSoydXZKD39r/5ngO/lTt3nS
+        HYdjqS9lFNLmbecIDVQTO7Zr8uTJgfzn4jykF1vffyy4Zfdqb7v2pKu3F3oaRM6KjzrCXrNP
+        w93lmB53gr4zvwnvi4DExlnb49cESTHql667qTy5uXuhEktxRqKhFnNRcSIAjnNRgQcEAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrILMWRmVeSWpSXmKPExsWy7bCSvG5JW1KCwY5LJhYPr/pbdP1ayWzx
+        ufcIowOzx85Zd9k9Nr7bweTxeZNcAHMUl01Kak5mWWqRvl0CV8bBN/PZC+azV3x9zNPA+I21
+        i5GTQ0LARKJrdReYLSSwg1Hi0HlbiLikxLSLR5m7GDmAbGGJw4eLuxi5gEreMkrcnvCcHaRG
+        WCBYYvXKeUwgNSICahKn5+mDhJkF9CVuLn/EBlG/m1Hiy/1DjCAJNgEtif0vbrCB2PwCihJX
+        fzwGi/MK2ElM6+lhArFZBFQlHl1+CGaLCoRJ7FzymAmiRlDi5MwnLCA2p4ClxNl5n5khlqlL
+        /Jl3CcoWl7j1ZD4ThC0vsf3tHOYJjMKzkLTPQtIyC0nLLCQtCxhZVjFKphYU56bnFhsWGOWl
+        lusVJ+YWl+al6yXn525iBMeCltYOxj2rPugdYmTiYDzEKMHBrCTCK3wgMUGINyWxsiq1KD++
+        qDQntfgQozQHi5I474Wuk/FCAumJJanZqakFqUUwWSYOTqkGpu3nvjqLid6PT855p7Zf3k5/
+        h/cKxkT5lXzt7Pc/fo/nmD7bUvrznOnvnAOPNWrK7Nrc/26vaVN27da9Bl3xkqW13P+6JBU4
+        y1j7E055bOMvmWW8lzVU+XH5ieJ2m8PC5+eWH3AsT1lbn6oTfcx8HUcwV9Ple/efm/exbTGf
+        PIHXRi9c1KpAZT9b8/NbyxyvlD6SlP8lr5vSs2tV/Np9axunrHXk7lcUCN6wPuLkNdHPgYkm
+        3mu81tQWLnm7KcTm3TRn7Rfl2fqOlWXzzmvOjriuyn6D4SZ/R/TyfQ8T9k5qX+KjXSsw4crT
+        hx90Nhj7eq26KvOh9EBB5/+nDvYhd+d7J8l1f//lamu65kC6EktxRqKhFnNRcSIAiSqaTfQC
+        AAA=
+X-CMS-MailID: 20210330020124epcas1p29d8c60d272b5c95a2bbf35d0910ee53a
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20210329122449epcas1p1be5b4b7adc60a1826384aa6d38430b22
+References: <20210329122425.579386-1-festevam@gmail.com>
+        <CGME20210329122449epcas1p1be5b4b7adc60a1826384aa6d38430b22@epcas1p1.samsung.com>
+        <20210329122425.579386-2-festevam@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon 2021-03-29 14:37 Rafael J. Wysocki wrote:=0A=
-> Make the menu governor check the tick_nohz_get_next_hrtimer()=0A=
-> return value so as to avoid dealing with negative "sleep length"=0A=
-> values and make it use that value directly when the tick is stopped.=0A=
-> =0A=
-> While at it, rename local variable delta_next in menu_select() to=0A=
-> delta_tick which better reflects its purpose.=0A=
-> =0A=
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>=0A=
-> ---=0A=
->  drivers/cpuidle/governors/menu.c |   17 +++++++++++------=0A=
->  1 file changed, 11 insertions(+), 6 deletions(-)=0A=
-> =0A=
-> Index: linux-pm/drivers/cpuidle/governors/menu.c=0A=
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
-> --- linux-pm.orig/drivers/cpuidle/governors/menu.c=0A=
-> +++ linux-pm/drivers/cpuidle/governors/menu.c=0A=
-> @@ -271,7 +271,7 @@ static int menu_select(struct cpuidle_dr=0A=
->          u64 predicted_ns;=0A=
->          u64 interactivity_req;=0A=
->          unsigned long nr_iowaiters;=0A=
-> -       ktime_t delta_next;=0A=
-> +       ktime_t delta, delta_tick;=0A=
->          int i, idx;=0A=
->  =0A=
->          if (data->needs_update) {=0A=
-> @@ -280,7 +280,12 @@ static int menu_select(struct cpuidle_dr=0A=
->          }=0A=
->  =0A=
->          /* determine the expected residency time, round up */=0A=
-> -       data->next_timer_ns =3D tick_nohz_get_sleep_length(&delta_next);=
-=0A=
-> +       delta =3D tick_nohz_get_sleep_length(&delta_tick);=0A=
-> +       if (unlikely(delta < 0)) {=0A=
-> +               delta =3D 0;=0A=
-> +               delta_tick =3D 0;=0A=
-> +       }=0A=
-> +       data->next_timer_ns =3D delta;=0A=
->  =0A=
->          nr_iowaiters =3D nr_iowait_cpu(dev->cpu);=0A=
->          data->bucket =3D which_bucket(data->next_timer_ns, nr_iowaiters)=
-;=0A=
-> @@ -318,7 +323,7 @@ static int menu_select(struct cpuidle_dr=0A=
->                   * state selection.=0A=
->                   */=0A=
->                  if (predicted_ns < TICK_NSEC)=0A=
-> -                       predicted_ns =3D delta_next;=0A=
-> +                       predicted_ns =3D data->next_timer_ns;=0A=
->          } else {=0A=
->                  /*=0A=
->                   * Use the performance multiplier and the user-configura=
-ble=0A=
-> @@ -377,7 +382,7 @@ static int menu_select(struct cpuidle_dr=0A=
->                           * stuck in the shallow one for too long.=0A=
->                           */=0A=
->                          if (drv->states[idx].target_residency_ns < TICK_=
-NSEC &&=0A=
-> -                           s->target_residency_ns <=3D delta_next)=0A=
-> +                           s->target_residency_ns <=3D delta_tick)=0A=
->                                  idx =3D i;=0A=
->  =0A=
->                          return idx;=0A=
-> @@ -399,7 +404,7 @@ static int menu_select(struct cpuidle_dr=0A=
->               predicted_ns < TICK_NSEC) && !tick_nohz_tick_stopped()) {=
-=0A=
->                  *stop_tick =3D false;=0A=
->  =0A=
-> -               if (idx > 0 && drv->states[idx].target_residency_ns > del=
-ta_next) {=0A=
-> +               if (idx > 0 && drv->states[idx].target_residency_ns > del=
-ta_tick) {=0A=
->                          /*=0A=
->                           * The tick is not going to be stopped and the t=
-arget=0A=
->                           * residency of the state to be returned is not =
-within=0A=
-> @@ -411,7 +416,7 @@ static int menu_select(struct cpuidle_dr=0A=
->                                          continue;=0A=
->  =0A=
->                                  idx =3D i;=0A=
-> -                               if (drv->states[i].target_residency_ns <=
-=3D delta_next)=0A=
-> +                               if (drv->states[i].target_residency_ns <=
-=3D delta_tick)=0A=
->                                          break;=0A=
->                          }=0A=
->                  }=0A=
-=0A=
-How about this.=0A=
-I think it's possible to avoid the new variable delta.=0A=
-=0A=
----=0A=
-=0A=
---- linux-pm/drivers/cpuidle/governors/menu.c.orig	2021-03-29 22:44:02.3169=
-71970 -0300=0A=
-+++ linux-pm/drivers/cpuidle/governors/menu.c	2021-03-29 22:51:15.804377168=
- -0300=0A=
-@@ -271,7 +271,7 @@ static int menu_select(struct cpuidle_dr=0A=
- 	u64 predicted_ns;=0A=
- 	u64 interactivity_req;=0A=
- 	unsigned long nr_iowaiters;=0A=
--	ktime_t delta_next;=0A=
-+	ktime_t delta_tick;=0A=
- 	int i, idx;=0A=
- =0A=
- 	if (data->needs_update) {=0A=
-@@ -280,7 +280,12 @@ static int menu_select(struct cpuidle_dr=0A=
- 	}=0A=
- =0A=
- 	/* determine the expected residency time, round up */=0A=
--	data->next_timer_ns =3D tick_nohz_get_sleep_length(&delta_next);=0A=
-+	data->next_timer_ns =3D tick_nohz_get_sleep_length(&delta_tick);=0A=
-+=0A=
-+	if (unlikely(data->next_timer_ns >> 63)) {=0A=
-+		data->next_timer_ns =3D 0;=0A=
-+		delta_tick =3D 0;=0A=
-+	}=0A=
- =0A=
- 	nr_iowaiters =3D nr_iowait_cpu(dev->cpu);=0A=
- 	data->bucket =3D which_bucket(data->next_timer_ns, nr_iowaiters);=0A=
-@@ -318,7 +323,7 @@ static int menu_select(struct cpuidle_dr=0A=
- 		 * state selection.=0A=
- 		 */=0A=
- 		if (predicted_ns < TICK_NSEC)=0A=
--			predicted_ns =3D delta_next;=0A=
-+			predicted_ns =3D data->next_timer_ns;=0A=
- 	} else {=0A=
- 		/*=0A=
- 		 * Use the performance multiplier and the user-configurable=0A=
-@@ -377,7 +382,7 @@ static int menu_select(struct cpuidle_dr=0A=
- 			 * stuck in the shallow one for too long.=0A=
- 			 */=0A=
- 			if (drv->states[idx].target_residency_ns < TICK_NSEC &&=0A=
--			    s->target_residency_ns <=3D delta_next)=0A=
-+			    s->target_residency_ns <=3D delta_tick)=0A=
- 				idx =3D i;=0A=
- =0A=
- 			return idx;=0A=
-@@ -399,7 +404,7 @@ static int menu_select(struct cpuidle_dr=0A=
- 	     predicted_ns < TICK_NSEC) && !tick_nohz_tick_stopped()) {=0A=
- 		*stop_tick =3D false;=0A=
- =0A=
--		if (idx > 0 && drv->states[idx].target_residency_ns > delta_next) {=0A=
-+		if (idx > 0 && drv->states[idx].target_residency_ns > delta_tick) {=0A=
- 			/*=0A=
- 			 * The tick is not going to be stopped and the target=0A=
- 			 * residency of the state to be returned is not within=0A=
-@@ -411,7 +416,7 @@ static int menu_select(struct cpuidle_dr=0A=
- 					continue;=0A=
- =0A=
- 				idx =3D i;=0A=
--				if (drv->states[i].target_residency_ns <=3D delta_next)=0A=
-+				if (drv->states[i].target_residency_ns <=3D delta_tick)=0A=
- 					break;=0A=
- 			}=0A=
- 		}=0A=
+On 3/29/21 9:24 PM, Fabio Estevam wrote:
+> i.MX is a DT-only platform, so of_match_ptr() can be safely
+> removed.
+> 
+> Remove the unneeded of_match_ptr(). 
+> 
+> Signed-off-by: Fabio Estevam <festevam@gmail.com>
+> ---
+>  drivers/devfreq/imx8m-ddrc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
+> index ecb9375aa877..16636973eb10 100644
+> --- a/drivers/devfreq/imx8m-ddrc.c
+> +++ b/drivers/devfreq/imx8m-ddrc.c
+> @@ -447,7 +447,7 @@ static struct platform_driver imx8m_ddrc_platdrv = {
+>  	.probe		= imx8m_ddrc_probe,
+>  	.driver = {
+>  		.name	= "imx8m-ddrc-devfreq",
+> -		.of_match_table = of_match_ptr(imx8m_ddrc_of_match),
+> +		.of_match_table = imx8m_ddrc_of_match,
+>  	},
+>  };
+>  module_platform_driver(imx8m_ddrc_platdrv);
+> 
+
+Applied it. Thanks.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
