@@ -2,194 +2,76 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF2DDC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1644DC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:43:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B52BD61996
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:22:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CBFE361582
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Mar 2021 08:43:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231434AbhC3IVf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Mar 2021 04:21:35 -0400
-Received: from mga06.intel.com ([134.134.136.31]:18459 "EHLO mga06.intel.com"
+        id S231220AbhC3InW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Mar 2021 04:43:22 -0400
+Received: from foss.arm.com ([217.140.110.172]:53308 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231313AbhC3IV2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 Mar 2021 04:21:28 -0400
-IronPort-SDR: vWubqws/0S5PZqIcnmeUo8N3v9jASGIt8Ftl+e2sJigsKZxy3iqhT6OCE6saBMs5feCbsN7M9E
- 8W0Jb6SBK8lA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9938"; a="253061643"
-X-IronPort-AV: E=Sophos;i="5.81,290,1610438400"; 
-   d="scan'208";a="253061643"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2021 01:21:27 -0700
-IronPort-SDR: KhzZcLyCacj5K8wC/c57nLE3VGJ0vLRPLrfCOCl7PII55CEepG9hvduAq9oAZelas57329x6T9
- BiKs743Rio6Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.81,290,1610438400"; 
-   d="scan'208";a="415733823"
-Received: from lkp-server01.sh.intel.com (HELO 69d8fcc516b7) ([10.239.97.150])
-  by orsmga007.jf.intel.com with ESMTP; 30 Mar 2021 01:21:25 -0700
-Received: from kbuild by 69d8fcc516b7 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1lR9cq-00059v-AP; Tue, 30 Mar 2021 08:21:24 +0000
-Date:   Tue, 30 Mar 2021 16:20:55 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD REGRESSION
- a70fdf61936ab0200d31bebea4b44bb67454ce07
-Message-ID: <6062df67.xFGyi2yKtRohuAOm%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S231602AbhC3Im5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 30 Mar 2021 04:42:57 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1BC4EED1;
+        Tue, 30 Mar 2021 01:42:56 -0700 (PDT)
+Received: from [10.57.21.131] (unknown [10.57.21.131])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B45713F719;
+        Tue, 30 Mar 2021 01:42:52 -0700 (PDT)
+Subject: Re: [PATCH v2] thermal: cpufreq_cooling: fix slab OOB issue
+To:     Michael Kao <michael.kao@mediatek.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>, fan.chen@mediatek.com,
+        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com,
+        Mark Rutland <mark.rutland@arm.com>,
+        devicetree@vger.kernel.org,
+        brian-sy yang <brian-sy.yang@mediatek.com>,
+        linux-kernel@vger.kernel.org,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-mediatek@lists.infradead.org, hsinyi@chromium.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-arm-kernel@lists.infradead.org
+References: <20201229050831.19493-1-michael.kao@mediatek.com>
+ <1617072684.13941.2.camel@mtksdccf07>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <e7bf390f-c4b8-0ba0-6bab-41a8bd406046@arm.com>
+Date:   Tue, 30 Mar 2021 09:42:50 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1617072684.13941.2.camel@mtksdccf07>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: a70fdf61936ab0200d31bebea4b44bb67454ce07  Merge branch 'acpi-processor-fixes' into bleeding-edge
 
-Error/Warning reports:
 
-https://lore.kernel.org/linux-acpi/202103300514.cNhP3ar5-lkp@intel.com
-https://lore.kernel.org/linux-acpi/202103300806.BOpYVHTe-lkp@intel.com
+On 3/30/21 3:51 AM, Michael Kao wrote:
+> Dear Daniel,
+> 
+> Kindly ping.
+> Can this patch be merged? Or any comment?
+> 
+> BR,
+> Michael
+> 
+> On Tue, 2020-12-29 at 13:08 +0800, Michael Kao wrote:
 
-Error/Warning in current branch:
+Please also send it to stable@vger.kernel.org
+since it affects stable versions starting from v5.7.
+Was applied there as  9006b543384ab10 [1].
 
-drivers/acpi/processor_idle.c:548:7: error: implicit declaration of function 'wakeup_cpu0' [-Werror,-Wimplicit-function-declaration]
-drivers/acpi/processor_idle.c:548:7: error: implicit declaration of function 'wakeup_cpu0' [-Werror=implicit-function-declaration]
-drivers/acpi/processor_idle.c:549:4: error: implicit declaration of function 'start_cpu0' [-Werror,-Wimplicit-function-declaration]
-drivers/acpi/processor_idle.c:549:4: error: implicit declaration of function 'start_cpu0'; did you mean 'task_cpu'? [-Werror=implicit-function-declaration]
+Regards,
+Lukasz
 
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- i386-randconfig-a014-20210329
-    |-- drivers-acpi-processor_idle.c:error:implicit-declaration-of-function-start_cpu0
-    `-- drivers-acpi-processor_idle.c:error:implicit-declaration-of-function-wakeup_cpu0
-
-clang_recent_errors
-`-- x86_64-randconfig-a013-20210329
-    |-- drivers-acpi-processor_idle.c:error:implicit-declaration-of-function-start_cpu0-Werror-Wimplicit-function-declaration
-    `-- drivers-acpi-processor_idle.c:error:implicit-declaration-of-function-wakeup_cpu0-Werror-Wimplicit-function-declaration
-
-elapsed time: 878m
-
-configs tested: 102
-configs skipped: 2
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-xtensa                         virt_defconfig
-m68k                       m5249evb_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                        magician_defconfig
-powerpc                     tqm8540_defconfig
-mips                      maltaaprp_defconfig
-arm                            zeus_defconfig
-mips                          rm200_defconfig
-powerpc                     pseries_defconfig
-arm                         hackkit_defconfig
-m68k                             alldefconfig
-parisc                generic-64bit_defconfig
-xtensa                  cadence_csp_defconfig
-arm                          pxa3xx_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                 mpc8272_ads_defconfig
-sh                          kfr2r09_defconfig
-mips                           rs90_defconfig
-arm                        neponset_defconfig
-alpha                            alldefconfig
-powerpc                    mvme5100_defconfig
-powerpc                      acadia_defconfig
-sh                           se7343_defconfig
-arm                           tegra_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20210329
-i386                 randconfig-a004-20210329
-i386                 randconfig-a001-20210329
-i386                 randconfig-a002-20210329
-i386                 randconfig-a006-20210329
-i386                 randconfig-a005-20210329
-i386                 randconfig-a014-20210329
-i386                 randconfig-a011-20210329
-i386                 randconfig-a015-20210329
-i386                 randconfig-a016-20210329
-i386                 randconfig-a013-20210329
-i386                 randconfig-a012-20210329
-x86_64               randconfig-a002-20210329
-x86_64               randconfig-a003-20210329
-x86_64               randconfig-a006-20210329
-x86_64               randconfig-a001-20210329
-x86_64               randconfig-a005-20210329
-x86_64               randconfig-a004-20210329
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a015-20210329
-x86_64               randconfig-a012-20210329
-x86_64               randconfig-a013-20210329
-x86_64               randconfig-a014-20210329
-x86_64               randconfig-a011-20210329
-x86_64               randconfig-a016-20210329
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+[1] https://cdn.kernel.org/pub/linux/kernel/v5.x/ChangeLog-5.7.8
