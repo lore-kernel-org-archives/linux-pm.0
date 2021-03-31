@@ -2,87 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89AFAC43600
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Mar 2021 16:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63DC7C43462
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Mar 2021 16:37:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6001E6101A
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Mar 2021 16:35:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3ACF66100C
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Mar 2021 16:37:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234054AbhCaQec (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Mar 2021 12:34:32 -0400
-Received: from foss.arm.com ([217.140.110.172]:46494 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233747AbhCaQeW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 31 Mar 2021 12:34:22 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 66D3411D4;
-        Wed, 31 Mar 2021 09:34:21 -0700 (PDT)
-Received: from e123648.arm.com (unknown [10.57.22.51])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id BA5213F792;
-        Wed, 31 Mar 2021 09:34:19 -0700 (PDT)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org
-Cc:     linux-pm@vger.kernel.org, amitk@kernel.org, rui.zhang@intel.com,
-        lukasz.luba@arm.com
-Subject: [PATCH 1/2] thermal: power_allocator: maintain the device statistics from going stale
-Date:   Wed, 31 Mar 2021 17:33:51 +0100
-Message-Id: <20210331163352.32416-2-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210331163352.32416-1-lukasz.luba@arm.com>
-References: <20210331163352.32416-1-lukasz.luba@arm.com>
+        id S234040AbhCaQhL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Mar 2021 12:37:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45218 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233966AbhCaQhH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Mar 2021 12:37:07 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0324C06174A
+        for <linux-pm@vger.kernel.org>; Wed, 31 Mar 2021 09:37:06 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id u5-20020a7bcb050000b029010e9316b9d5so1470543wmj.2
+        for <linux-pm@vger.kernel.org>; Wed, 31 Mar 2021 09:37:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=TnvnZxOACqCq+A8twXUOuSk4g7qmxy4JPsXlvzDSCsc=;
+        b=rVpz048TIOhPnZDI0bFHdGqg55LctDMZMTVOT50l44L5oV4G7tLmigNzUYIXcdhhpd
+         Oyz//g08P72Um05QQaR18j89EZ11DwdlpvhfuZRQXC8BofyTZjos8+s4a0fds6WCfKu3
+         wGxpnvsF1hHt/yJ2vz6haC53ujxLVDfC7iif46SeiDVhbcUdO0gOGKb6KMs6ln3EQSZk
+         DV2RzlGaguhQ+Y3irWAffBKKphz1FiPRMdsK0muP8RwChE/EsZPA+JL+S6YPua6hvhSR
+         viCRJJlsG9OkYuTObmyLtCUv3lh6V0pVmG7fpk9gNkpSGICsZTGhwwqfF0dpiRVb+ktm
+         Tblg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=TnvnZxOACqCq+A8twXUOuSk4g7qmxy4JPsXlvzDSCsc=;
+        b=bqTkjvtizMXhFTeVizFkYCq5HXgAptdWivxAbxIBqxUroTsLz0sm6kXYkPOujstU43
+         kqqBeRTJnOsBcxSlHNY9dap2zkXrIluAsh6iSMqn/v5bOthaKijLCCwHeNf6oS63khNN
+         AFNLo87yP9dumlDPbMeNTwO99Qow17XoXIyqkbenDmxxymzWOMAnRQwwhbbV5DZwGO+F
+         Vw7LzdIFolYSUICiso0BTbzW6C8h5B0l4NupfWUZTUtfj8alAQArF2K8nyor2JhKPwd1
+         pA8MnlfQp41F1Tzld8EibTamiYU1z0oyeR45UjF9nowDmY6keVhil9Sq4b4qBJRLQULI
+         8JTQ==
+X-Gm-Message-State: AOAM533bkgxXWMq+6doRgBjSEnJYqzCU25j3Iij8Nc6GQdhpMRX9TxCw
+        PpxEA5f0SJZ5pfBLEQ9qioPD0w==
+X-Google-Smtp-Source: ABdhPJz10HL+5/BOj1Bk7HPn6MnV8AJUkitxTA4JqmwUj3KT9mJHDIeqkbfrMVp0zqjv6uSNDkz5Wg==
+X-Received: by 2002:a1c:3c8a:: with SMTP id j132mr3861932wma.127.1617208625431;
+        Wed, 31 Mar 2021 09:37:05 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:1573:1dd5:899d:6362? ([2a01:e34:ed2f:f020:1573:1dd5:899d:6362])
+        by smtp.googlemail.com with ESMTPSA id q207sm6798719wme.36.2021.03.31.09.37.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 31 Mar 2021 09:37:04 -0700 (PDT)
+Subject: Re: [PATCH] thermal: ti-soc-thermal: of_device.h is included twice
+To:     Wan Jiabing <wanjiabing@vivo.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     kael_w@yeah.net
+References: <20210323021430.141218-1-wanjiabing@vivo.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <9d835b9f-e687-ff6a-89d3-3e15f95b0f83@linaro.org>
+Date:   Wed, 31 Mar 2021 18:37:02 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <20210323021430.141218-1-wanjiabing@vivo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the temperature is below the first activation trip point the cooling
-devices are not checked, so they cannot maintain fresh statistics. It
-leads into the situation, when temperature crosses first trip point, the
-statistics are stale and show state for very long period. This has impact
-on IPA algorithm calculation and wrong decisions. Thus, check the cooling
-devices even when the temperature is low, to refresh these statistics.
+On 23/03/2021 03:14, Wan Jiabing wrote:
+> linux/of_device.h has been included at line 25, so remove 
+> the duplicate one at line 35.
+> 
+> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+> ---
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/gov_power_allocator.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Thanks for your patch.
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index 2802a0e13c88..0cbd10cab193 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -575,15 +575,27 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
- {
- 	struct thermal_instance *instance;
- 	struct power_allocator_params *params = tz->governor_data;
-+	u32 req_power;
- 
- 	mutex_lock(&tz->lock);
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-+		struct thermal_cooling_device *cdev = instance->cdev;
-+
- 		if ((instance->trip != params->trip_max_desired_temperature) ||
- 		    (!cdev_is_power_actor(instance->cdev)))
- 			continue;
- 
- 		instance->target = 0;
- 		mutex_lock(&instance->cdev->lock);
-+		/*
-+		 * Call for updating the cooling devices local stats and avoid
-+		 * periods of dozen of seconds when those have not been
-+		 * maintained. The long period would come into the first check
-+		 * when lower threshold is crossed. Thus, limit it to single
-+		 * one longer polling period.
-+		 */
-+		cdev->ops->get_requested_power(cdev, &req_power);
-+
- 		instance->cdev->updated = false;
- 		mutex_unlock(&instance->cdev->lock);
- 		thermal_cdev_update(instance->cdev);
+It was actually already fixed [1].
+
+   -- D.
+
+[1]
+https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/commit/?h=thermal/next&id=7440e912b0fe755d80b958a65859ebabb5338cf8
+
+
 -- 
-2.17.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
