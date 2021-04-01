@@ -2,92 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81FF5C43462
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25BF2C43460
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 50E1560201
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7B4B60201
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237279AbhDASXF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 14:23:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35766 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236817AbhDASLl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:11:41 -0400
-Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53B64C08EBB1;
-        Thu,  1 Apr 2021 06:41:10 -0700 (PDT)
-Received: by mail-ot1-x331.google.com with SMTP id t23-20020a0568301e37b02901b65ab30024so2149284otr.4;
-        Thu, 01 Apr 2021 06:41:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=2NoJkPq4zQdTHoZTxopL+2N6VYZj6FaKcFy4WNq08MA=;
-        b=FWVtKf+liiT1xYjii+/BELjuBQrfQxy7+GEvGeEqJ/AsdRSIYyx71kHxUgJurph5h5
-         o6YoeUlZXwyqLyKBSPLXeio9Al+ojaYvVN53ovCkP3ivzSZEHiUg6yUc971Iaw1xFriR
-         XuzFQA2YLa2q/K7WSddvTs8ZONwcVbb7dtuKgnJwzE8iCthvnM4EEXqTkDd+r3LhYMdS
-         A46LhXrFn1Sjfdoj15hOc6wRPRfBFQN5Qj9sTBjk5qDbpYpKX90QEzSXCtyTUkQLnTL2
-         J8195UtAGXueC5LidtyISq6D9Utx4/h3UGIEUfL7lflvPfy+z/1JCRZpvNJ+GKYbVQOq
-         JUiw==
-X-Gm-Message-State: AOAM531AqJqwjW4qM/ENjdox2FJqPov5rLMiV0vtIBqYpC1D8PHy8wJE
-        9aaQDXuseHMTkGW4td0PeHQB19m26OcXJpqRVZQ=
-X-Google-Smtp-Source: ABdhPJwc0WXpqYznTofwrvExvKI+jDR9Wu3nkiFl6RKeYLFaRFDzM7rj4ga9EyBvNGejAY4PRuA0a7tO0EbvLV6WN1A=
-X-Received: by 2002:a9d:4811:: with SMTP id c17mr7183919otf.206.1617284469641;
- Thu, 01 Apr 2021 06:41:09 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210331232614.304591-1-pierre-louis.bossart@linux.intel.com> <20210331232614.304591-4-pierre-louis.bossart@linux.intel.com>
-In-Reply-To: <20210331232614.304591-4-pierre-louis.bossart@linux.intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 1 Apr 2021 15:40:56 +0200
-Message-ID: <CAJZ5v0jS0Wfzq0M45ZbP2vNX4y=e+tvZjrmn4AiE+ycxij+CWg@mail.gmail.com>
-Subject: Re: [PATCH 3/7] PM: runtime: remove kernel-doc warnings
-To:     Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
+        id S237550AbhDASXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:23:06 -0400
+Received: from mail.kernel.org ([198.145.29.99]:44978 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S237451AbhDASNC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Apr 2021 14:13:02 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 8709F61205;
+        Thu,  1 Apr 2021 12:17:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1617279476;
+        bh=a43R6JQDznUNGqfSK68B+tax5VVfBWlTLzjy/Xf6wOk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=dKGJR8RJYpeMKKZHZVMOR2rPSQadIfHCLLjVnF1DsA9h4DdorXuG18pOpTomM71kW
+         5bLQ3DzFx86lGoUv4P+74cA4ghLdOt0N9J3nxYixfYDmWca9y7rRLXPuvcVPlUWfu3
+         b2Dyk63NyUvknf3TOhyfWHgb2HwVJ2tkkShwnbZo/88V0Ac/AgHwj7U7ISPL6fe2Rw
+         zfHZaDxY0XsOg6B7Pi2agJOm3NFPhlf9TDlRHvSGaMcaq2whAQIYk+EUzS1yq3AivG
+         mKub+mRPtKt3n/Q0Zc376e+Fbe5YxFhUFpRwd1mLh7zBXP4wgyu/jCJ1VMpZZv9JpT
+         +7Hfex5IP/rCA==
+Received: by mail.kernel.org with local (Exim 4.94)
+        (envelope-from <mchehab@kernel.org>)
+        id 1lRwGo-001c3c-Id; Thu, 01 Apr 2021 14:17:54 +0200
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        "Jonathan Corbet" <corbet@lwn.net>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Dan Murphy <dmurphy@ti.com>, Len Brown <len.brown@intel.com>,
+        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh@kernel.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH 28/32] dt-bindings: power: update battery.yaml reference
+Date:   Thu,  1 Apr 2021 14:17:48 +0200
+Message-Id: <38d6c11d44570822931395dfe18ccaf7d72ac84e.1617279356.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <cover.1617279355.git.mchehab+huawei@kernel.org>
+References: <cover.1617279355.git.mchehab+huawei@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Apr 1, 2021 at 1:26 AM Pierre-Louis Bossart
-<pierre-louis.bossart@linux.intel.com> wrote:
->
-> remove make W=1 warnings
->
-> drivers/base/power/runtime.c:926: warning: Function parameter or
-> member 'timer' not described in 'pm_suspend_timer_fn'
->
-> drivers/base/power/runtime.c:926: warning: Excess function parameter
-> 'data' description in 'pm_suspend_timer_fn'
->
-> Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-> ---
->  drivers/base/power/runtime.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index fe1dad68aee4..1fc1a992f90c 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -951,7 +951,7 @@ static void pm_runtime_work(struct work_struct *work)
->
->  /**
->   * pm_suspend_timer_fn - Timer function for pm_schedule_suspend().
-> - * @data: Device pointer passed by pm_schedule_suspend().
-> + * @timer: hrtimer used by pm_schedule_suspend().
->   *
->   * Check if the time is right and queue a suspend request.
->   */
-> --
+Changesets: 70c23e62d20c ("dt-bindings: power: supply: Fix remaining battery.txt links")
+and: 471dec8023d1 ("dt-bindings: power: Convert battery.txt to battery.yaml")
+renamed: Documentation/devicetree/bindings/power/supply/battery.txt
+to: Documentation/devicetree/bindings/power/supply/battery.yaml.
 
-I can apply this along with the [4-5/7].  Do you want me to do that?
+Update its cross-reference accordingly.
+
+Fixes: 70c23e62d20c ("dt-bindings: power: supply: Fix remaining battery.txt links")
+Fixes: 471dec8023d1 ("dt-bindings: power: Convert battery.txt to battery.yaml")
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ Documentation/power/power_supply_class.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/power/power_supply_class.rst b/Documentation/power/power_supply_class.rst
+index 7b8c42f8b1de..c04fabee0a58 100644
+--- a/Documentation/power/power_supply_class.rst
++++ b/Documentation/power/power_supply_class.rst
+@@ -233,7 +233,7 @@ Devicetree battery characteristics
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Drivers should call power_supply_get_battery_info() to obtain battery
+ characteristics from a devicetree battery node, defined in
+-Documentation/devicetree/bindings/power/supply/battery.txt. This is
++Documentation/devicetree/bindings/power/supply/battery.yaml. This is
+ implemented in drivers/power/supply/bq27xxx_battery.c.
+ 
+ Properties in struct power_supply_battery_info and their counterparts in the
+-- 
+2.30.2
+
