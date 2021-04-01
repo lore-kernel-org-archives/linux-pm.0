@@ -2,53 +2,67 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25BF2C43460
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 395A2C43462
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E7B4B60201
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 139EF60C3E
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237550AbhDASXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S237554AbhDASXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 1 Apr 2021 14:23:06 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44978 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:45700 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237451AbhDASNC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Apr 2021 14:13:02 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8709F61205;
-        Thu,  1 Apr 2021 12:17:56 +0000 (UTC)
+        id S239627AbhDASQn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Apr 2021 14:16:43 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0169F6113E;
+        Thu,  1 Apr 2021 12:17:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1617279476;
-        bh=a43R6JQDznUNGqfSK68B+tax5VVfBWlTLzjy/Xf6wOk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=dKGJR8RJYpeMKKZHZVMOR2rPSQadIfHCLLjVnF1DsA9h4DdorXuG18pOpTomM71kW
-         5bLQ3DzFx86lGoUv4P+74cA4ghLdOt0N9J3nxYixfYDmWca9y7rRLXPuvcVPlUWfu3
-         b2Dyk63NyUvknf3TOhyfWHgb2HwVJ2tkkShwnbZo/88V0Ac/AgHwj7U7ISPL6fe2Rw
-         zfHZaDxY0XsOg6B7Pi2agJOm3NFPhlf9TDlRHvSGaMcaq2whAQIYk+EUzS1yq3AivG
-         mKub+mRPtKt3n/Q0Zc376e+Fbe5YxFhUFpRwd1mLh7zBXP4wgyu/jCJ1VMpZZv9JpT
-         +7Hfex5IP/rCA==
+        bh=wRad7N84rWD9dSoio69a4lZ1e70YET8Y/U4ELbCnnho=;
+        h=From:To:Cc:Subject:Date:From;
+        b=Q1xGCX8CjWBXtQC1pgo9/9vi4nDHYsR9ze0Q3GiyebU0GCkZVF2x7Dm68maSFFiUb
+         aYhFb4Mtsxe3dwyRk1InCmoNe+43BkSOmz3+yXmoJlqQon680CoD7Fu0OV/kMatoKB
+         POCl1bXAfQ85z4s39lkLH+3JCvV54zR+CeAxccTEvavGiJh0qGmRlyOcVNt9cvXxRq
+         kYRsUf12VYN3g12XZxM/SAQ9Jf1Po6QForEFkcVk/jW0b2lIFgc1wXKAcg30pF7BC8
+         U8xRKFjOp2o3cBdsuc5vEOD8ftGdy/B8MUbxDoRdCuirrnPb1300SCFtXBNU1EX6Km
+         N9eYgXDgwnnkA==
 Received: by mail.kernel.org with local (Exim 4.94)
         (envelope-from <mchehab@kernel.org>)
-        id 1lRwGo-001c3c-Id; Thu, 01 Apr 2021 14:17:54 +0200
+        id 1lRwGn-001c2K-FQ; Thu, 01 Apr 2021 14:17:53 +0200
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Dan Murphy <dmurphy@ti.com>, Len Brown <len.brown@intel.com>,
-        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh@kernel.org>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 28/32] dt-bindings: power: update battery.yaml reference
-Date:   Thu,  1 Apr 2021 14:17:48 +0200
-Message-Id: <38d6c11d44570822931395dfe18ccaf7d72ac84e.1617279356.git.mchehab+huawei@kernel.org>
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        =?UTF-8?q?Przemys=C5=82aw=20Gaj?= <pgaj@cadence.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Andy Whitcroft <apw@canonical.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Dwaipayan Ray <dwaipayanray1@gmail.com>,
+        Joe Perches <joe@perches.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Vitor Soares <vitor.soares@synopsys.com>,
+        alsa-devel@alsa-project.org, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+        linux-i3c@lists.infradead.org, linux-iio@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-pm@vger.kernel.org, patches@opensource.cirrus.com
+Subject: [PATCH 00/32] Fix broken documentation file references
+Date:   Thu,  1 Apr 2021 14:17:20 +0200
+Message-Id: <cover.1617279355.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <cover.1617279355.git.mchehab+huawei@kernel.org>
-References: <cover.1617279355.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
@@ -56,33 +70,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changesets: 70c23e62d20c ("dt-bindings: power: supply: Fix remaining battery.txt links")
-and: 471dec8023d1 ("dt-bindings: power: Convert battery.txt to battery.yaml")
-renamed: Documentation/devicetree/bindings/power/supply/battery.txt
-to: Documentation/devicetree/bindings/power/supply/battery.yaml.
+Each patch on this series can be applied independently. They fix broken
+file references.
 
-Update its cross-reference accordingly.
+Most of them are due to DT binding renames, but there are also other
+unrelated changes.
 
-Fixes: 70c23e62d20c ("dt-bindings: power: supply: Fix remaining battery.txt links")
-Fixes: 471dec8023d1 ("dt-bindings: power: Convert battery.txt to battery.yaml")
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- Documentation/power/power_supply_class.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This series is based on next-20210401.
 
-diff --git a/Documentation/power/power_supply_class.rst b/Documentation/power/power_supply_class.rst
-index 7b8c42f8b1de..c04fabee0a58 100644
---- a/Documentation/power/power_supply_class.rst
-+++ b/Documentation/power/power_supply_class.rst
-@@ -233,7 +233,7 @@ Devicetree battery characteristics
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Drivers should call power_supply_get_battery_info() to obtain battery
- characteristics from a devicetree battery node, defined in
--Documentation/devicetree/bindings/power/supply/battery.txt. This is
-+Documentation/devicetree/bindings/power/supply/battery.yaml. This is
- implemented in drivers/power/supply/bq27xxx_battery.c.
- 
- Properties in struct power_supply_battery_info and their counterparts in the
+Mauro Carvalho Chehab (32):
+  MAINTAINERS: update adi,ad5758.yaml reference
+  MAINTAINERS: update ste,mcde.yaml reference
+  MAINTAINERS: update brcm,bcm-v3d.yaml reference
+  MAINTAINERS: update fsl,dpaa2-console.yaml reference
+  MAINTAINERS: update st,hts221.yaml reference
+  MAINTAINERS: update dpot-dac.yaml reference
+  MAINTAINERS: update envelope-detector.yaml reference
+  MAINTAINERS: update current-sense-amplifier.yaml reference
+  MAINTAINERS: update current-sense-shunt.yaml reference
+  MAINTAINERS: update voltage-divider.yaml reference
+  MAINTAINERS: update invensense,mpu3050.yaml reference
+  MAINTAINERS: update lego,ev3-battery.yaml reference
+  MAINTAINERS: update marvell,armada-3700-utmi-phy.yaml reference
+  MAINTAINERS: update mtk-sd.yaml reference
+  MAINTAINERS: update atmel,sama5d2-adc.yaml reference
+  MAINTAINERS: update pni,rm3100.yaml reference
+  MAINTAINERS: update renesas,rcar-gyroadc.yaml reference
+  MAINTAINERS: update st,lsm6dsx.yaml reference
+  MAINTAINERS: update st,vl53l0x.yaml reference
+  MAINTAINERS: update snps,dw-axi-dmac.yaml reference
+  MAINTAINERS: update ti,dac7612.yaml reference
+  MAINTAINERS: update nxp,imx8-jpeg.yaml reference
+  MAINTAINERS: update ovti,ov2680.yaml reference
+  MAINTAINERS: update imi,rdacm2x-gmsl.yaml reference
+  dt-bindings:iio:dac: update microchip,mcp4725.yaml reference
+  dt-bindings: iommu: mediatek: update mediatek,iommu.yaml references
+  dt-bindings: i3c: update i3c.yaml references
+  dt-bindings: power: update battery.yaml reference
+  docs: dt: update writing-schema.rst references
+  Documentation: net: dsa: update configuration.rst reference
+  Documentation: update sysfs-platform_profile.rst reference
+  pinctrl: update pin-control.rst references
+
+ .../display/mediatek/mediatek,disp.txt        |  2 +-
+ .../bindings/i3c/cdns,i3c-master.txt          |  6 +--
+ .../bindings/i3c/snps,dw-i3c-master.txt       |  6 +--
+ .../bindings/media/mediatek-jpeg-decoder.txt  |  2 +-
+ .../bindings/media/mediatek-jpeg-encoder.txt  |  2 +-
+ .../bindings/media/mediatek-mdp.txt           |  2 +-
+ .../bindings/media/mediatek-vcodec.txt        |  2 +-
+ .../bindings/submitting-patches.rst           |  2 +-
+ Documentation/filesystems/cifs/cifsd.rst      |  2 +-
+ Documentation/power/power_supply_class.rst    |  2 +-
+ MAINTAINERS                                   | 48 +++++++++----------
+ include/linux/device.h                        |  2 +-
+ include/linux/iio/dac/mcp4725.h               |  2 +-
+ include/linux/mfd/madera/pdata.h              |  2 +-
+ include/linux/pinctrl/pinconf-generic.h       |  2 +-
+ include/linux/platform_profile.h              |  2 +-
+ scripts/checkpatch.pl                         |  2 +-
+ 17 files changed, 44 insertions(+), 44 deletions(-)
+
 -- 
 2.30.2
+
 
