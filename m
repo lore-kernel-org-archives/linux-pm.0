@@ -2,134 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB96AC43460
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 17:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 298E7C43461
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:03:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8F1C9611EE
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 17:58:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3DA661001
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:03:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236741AbhDAR6g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 13:58:36 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:52315 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234376AbhDAR4S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 13:56:18 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1617299776;
-        h=from:from:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=a0Q1VkfOZIavvpczXjt7TZjbwwjRT1qxWEncvyA0WC8=;
-        b=NDMaGp3Mj1AzVqhj6dk2OE8BIStjC+yAYFSxc5Lhp4xNg/4EaxYYmS9YRQEjoJPv4KKBZB
-        oMNCJJkk6E5AfaBRrFqhbYFdbrD4AQVp2G72pEezeLfFMOFkRhbEpO8+BUP8ih2CyQEYaw
-        8n3bRqibmYYE9+TmO+Af1bqvULDpzgs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-384-bTpy2vqsPHWKDQ6nxtplsw-1; Thu, 01 Apr 2021 09:54:45 -0400
-X-MC-Unique: bTpy2vqsPHWKDQ6nxtplsw-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id DC44A1018F95;
-        Thu,  1 Apr 2021 13:54:23 +0000 (UTC)
-Received: from crecklin.bos.csb (unknown [10.22.8.39])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 0FA865D9CC;
-        Thu,  1 Apr 2021 13:54:21 +0000 (UTC)
-Reply-To: crecklin@redhat.com
-Subject: Re: Fix hibernation in FIPS mode?
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ard Biesheuvel <ardb@kernel.org>
-Cc:     Simo Sorce <simo@redhat.com>, Dexuan Cui <decui@microsoft.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <MW2PR2101MB08924CD74C6EB773C4D5FAFDBF7E9@MW2PR2101MB0892.namprd21.prod.outlook.com>
- <CAJZ5v0g+=AnRAmAAn8NpHm8bmZ1WkwDpjb5rr_zPOVABW1PYug@mail.gmail.com>
- <4e95307db43e2f7cc8516e645b81db7db0dd8ad4.camel@redhat.com>
- <CAMj1kXHg2RDgwmOhJkaAPoWeHpxnd6tixp94Kha1-bzNvCaQUg@mail.gmail.com>
- <504652e70f0a4e42e4927583b9ed47cd78590329.camel@redhat.com>
- <CAMj1kXHRduBs0TJcLC4iMkyoGXyyrXPM_WpVVij33ki8THf9Kw@mail.gmail.com>
- <CAJZ5v0hKPBtUzGKfGHD6KX-c2QEETfatCkNjCK8ukh-AhVfUhA@mail.gmail.com>
-From:   Chris von Recklinghausen <crecklin@redhat.com>
-Organization: Red Hat
-Message-ID: <2b452865-ca6c-892d-f04e-3e6e2a74b598@redhat.com>
-Date:   Thu, 1 Apr 2021 09:54:21 -0400
+        id S234954AbhDASD1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:03:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33956 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237078AbhDAR7Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 13:59:24 -0400
+Received: from mail-il1-x129.google.com (mail-il1-x129.google.com [IPv6:2607:f8b0:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78D42C061225
+        for <linux-pm@vger.kernel.org>; Thu,  1 Apr 2021 05:27:16 -0700 (PDT)
+Received: by mail-il1-x129.google.com with SMTP id r17so1914872ilt.0
+        for <linux-pm@vger.kernel.org>; Thu, 01 Apr 2021 05:27:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=iWl62oGTxpsnb8MfsXXVQ5OE+zxxuQ8ZrjZT5mqhmk8=;
+        b=m3677M48tkn2V4ziKwwwBU2+rjUUc5Y3kj9IMK3hkZIsyEAd+wXLJPXp9d2zToyTZY
+         OtfzMXSxLpduWxLqZdB5iSGbld4WQ4wx09lwTchEkZim1b4qw598CREf3Cj8U5CrMJJZ
+         yWNUM3aYMlHDLxX9T6S0zoY30xB+V4HRp8h0996xITMmbP+CwG33gV5IGbnuSHwSFcNR
+         UpMROF7sOkhWtZZSrwV0YFKVy+2ta9KN79NWM+hB73LuOq3yVUbbkY1faeq8wh3RI8py
+         rEkjdFtpH6W3uwW45xeGv/oDcvlyw3ul7ACWkVz9KSVZeGxpK1Cy0RAvfonUTZqDCnxl
+         279g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=iWl62oGTxpsnb8MfsXXVQ5OE+zxxuQ8ZrjZT5mqhmk8=;
+        b=MTsTHBhc4jd+LrJ+KLD4qb3zrGnfJQDbs6G//51ja6UeJDcBRZ13nzwTWfQW6wlme2
+         D5iD5GnF4PqMb/QiDan2MG8yf1waRh52sR5VX6r/ZGKdk8dIyFdegjjjSXxdJoebuqXw
+         D3+1AFcB5D+BT4cytjXDv2Tl1YUJ287clm4UTf6mWOOlvQR/cDcH2il5IQW5NOg0QpRE
+         W/IxWlopnOgk97K5eoo673EUQBKm7Yelz50BN5jYETW9r2+WGZ3LBOYw3oc5DbG8xF1M
+         pR+889eMhiCKtWxDO+EsI0nrWMhDpZ0KQNTZWBnzYfKPDYDncFj/6kObsROfklH3leU6
+         cO3g==
+X-Gm-Message-State: AOAM533243TI+LjBwtZwp3toj44bB9R7GgxPCtN82AEvdmtFEaDShLJm
+        1P/g5L6TF1idfk79ZvSeqTcjxqMrUEsxOrUQ
+X-Google-Smtp-Source: ABdhPJxz4i1NViOjDljoXKjIaTUxYrlyylEQ9VAbjNxwF2W8jdt1X3/G2E9h4ykpRvGW5oG6LbrB4Q==
+X-Received: by 2002:a05:6e02:1a45:: with SMTP id u5mr6717204ilv.4.1617280035922;
+        Thu, 01 Apr 2021 05:27:15 -0700 (PDT)
+Received: from [172.22.22.4] (c-73-185-129-58.hsd1.mn.comcast.net. [73.185.129.58])
+        by smtp.googlemail.com with ESMTPSA id k4sm2846785iol.18.2021.04.01.05.27.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 01 Apr 2021 05:27:15 -0700 (PDT)
+Subject: Re: [PATCH] interconnect: qcom: sm8350: Add missing link between
+ nodes
+To:     Georgi Djakov <georgi.djakov@linaro.org>, djakov@kernel.org,
+        vkoul@kernel.org
+Cc:     bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20210401094435.28937-1-georgi.djakov@linaro.org>
+From:   Alex Elder <elder@linaro.org>
+Message-ID: <7ab2be33-9269-8c28-71d7-1611e60c72fe@linaro.org>
+Date:   Thu, 1 Apr 2021 07:27:14 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-In-Reply-To: <CAJZ5v0hKPBtUzGKfGHD6KX-c2QEETfatCkNjCK8ukh-AhVfUhA@mail.gmail.com>
+In-Reply-To: <20210401094435.28937-1-georgi.djakov@linaro.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 4/1/21 9:38 AM, Rafael J. Wysocki wrote:
-> On Thu, Apr 1, 2021 at 10:47 AM Ard Biesheuvel <ardb@kernel.org> wrote:
->> On Tue, 30 Mar 2021 at 21:56, Simo Sorce <simo@redhat.com> wrote:
->>> On Tue, 2021-03-30 at 21:45 +0200, Ard Biesheuvel wrote:
->>>> On Tue, 30 Mar 2021 at 20:05, Simo Sorce <simo@redhat.com> wrote:
->>>>> On Tue, 2021-03-30 at 16:46 +0200, Rafael J. Wysocki wrote:
->>>>>> On Tue, Mar 30, 2021 at 12:14 AM Dexuan Cui <decui@microsoft.com> wrote:
->>>>>>> Hi,
->>>>>>> MD5 was marked incompliant with FIPS in 2009:
->>>>>>> a3bef3a31a19 ("crypto: testmgr - Skip algs not flagged fips_allowed in fips mode")
->>>>>>> a1915d51e8e7 ("crypto: testmgr - Mark algs allowed in fips mode")
->>>>>>>
->>>>>>> But hibernation_e820_save() is still using MD5, and fails in FIPS mode
->>>>>>> due to the 2018 patch:
->>>>>>> 749fa17093ff ("PM / hibernate: Check the success of generating md5 digest before hibernation")
->>>>>>>
->>>>>>> As a result, hibernation doesn't work when FIPS is on.
->>>>>>>
->>>>>>> Do you think if hibernation_e820_save() should be changed to use a
->>>>>>> FIPS-compliant algorithm like SHA-1?
->>>>>> I would say yes, it should.
->>>>>>
->>>>>>> PS, currently it looks like FIPS mode is broken in the mainline:
->>>>>>> https://www.mail-archive.com/linux-crypto@vger.kernel.org/msg49414.html
->>>>> FYI, SHA-1 is not a good choice, it is only permitted in HMAC
->>>>> constructions and only for specified uses. If you need to change
->>>>> algorithm you should go straight to SHA-2 or SHA-3 based hashes.
->>>>>
->>>> What is the reason for using a [broken] cryptographic hash here? if
->>>> this is just an integrity check, better use CRC32
-> Not really.
->
-> CRC32 is not really sufficient for integrity checking here AFAICS.  It
-> might be made a fallback option if MD5 is not available, but making it
-> the default would be somewhat over the top IMO.
+On 4/1/21 4:44 AM, Georgi Djakov wrote:
+> There is a link between the GEM NoC and C NoC nodes, which is currently
+> missing from the topology. Let's add it to allow consumers request paths
+> that use this link.
+> 
+> Reported-by: Alex Elder <elder@linaro.org>
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 
+Thanks Georgi.
 
-Would ghash be a better choice? It produces the same size digest as md5.
+Tested-by: Alex Elder <elder@linaro.org>
 
-Does anyone have any other suggestions of algorithms to try?
-
-Thanks,
-
-Chris
-
->
->>> If the integrity check is used exclusively to verify there were no
->>> accidental changes and is not used as a security measure, by all means
->>> I agree that using crc32 is a better idea.
->>>
->> Looking at 62a03defeabd58f74e07ca030d6c21e069d4d88e which introduced
->> this, it is only a best effort check which is simply omitted if md5
->> happens to be unavailable, so there is definitely no need for crypto
->> here.
-> Yes, it is about integrity checking only.  No, CRC32 is not equivalent
-> to MD5 in that respect AFAICS.
->
-> Thanks!
->
+> ---
+>   drivers/interconnect/qcom/sm8350.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
+> index 01202989a5b2..579b6ce8e046 100644
+> --- a/drivers/interconnect/qcom/sm8350.c
+> +++ b/drivers/interconnect/qcom/sm8350.c
+> @@ -139,7 +139,7 @@ DEFINE_QNODE(qhs_llcc, SM8350_SLAVE_LLCC_CFG, 1, 4);
+>   DEFINE_QNODE(qns_gemnoc, SM8350_SLAVE_GEM_NOC_CFG, 1, 4);
+>   DEFINE_QNODE(qhs_mdsp_ms_mpu_cfg, SM8350_SLAVE_MSS_PROC_MS_MPU_CFG, 1, 4);
+>   DEFINE_QNODE(qhs_modem_ms_mpu_cfg, SM8350_SLAVE_MCDMA_MS_MPU_CFG, 1, 4);
+> -DEFINE_QNODE(qns_gem_noc_cnoc, SM8350_SLAVE_GEM_NOC_CNOC, 1, 16);
+> +DEFINE_QNODE(qns_gem_noc_cnoc, SM8350_SLAVE_GEM_NOC_CNOC, 1, 16, SM8350_MASTER_GEM_NOC_CNOC);
+>   DEFINE_QNODE(qns_llcc, SM8350_SLAVE_LLCC, 4, 16, SM8350_MASTER_LLCC);
+>   DEFINE_QNODE(qns_pcie, SM8350_SLAVE_MEM_NOC_PCIE_SNOC, 1, 8);
+>   DEFINE_QNODE(srvc_even_gemnoc, SM8350_SLAVE_SERVICE_GEM_NOC_1, 1, 4);
+> 
 
