@@ -2,170 +2,309 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24497C43462
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90233C43460
 	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 17:54:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0146D610A0
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 17:54:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B5CB6112F
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 17:54:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234898AbhDARyA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 13:54:00 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:23856 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234972AbhDARoI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 13:44:08 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1617299047;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:in-reply-to:in-reply-to:references:references;
-        bh=L6weqK0EgOdnKM6eI+LLl6Quz9MwIP8tW17Rjuf/Yjc=;
-        b=djhcnNCRoIJZMjERQMcJ+22XLqlSl3qSMKYjxUpj9kewUrvJOS1y+xaXg+PGvB6TMQ8XII
-        e5Zweh5zdXkSb9522W/YUi9ZutOysQQ+I48ffygK1ohN3BGRimksIEP7drT/Njpgz+yyDX
-        pN7klPqal+biICN1TX9ufMxjv4GMHG4=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-220-pPFPgX6bPdCeTjGQaFVDyw-1; Thu, 01 Apr 2021 12:43:17 -0400
-X-MC-Unique: pPFPgX6bPdCeTjGQaFVDyw-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 093FF8015B6;
-        Thu,  1 Apr 2021 16:42:52 +0000 (UTC)
-Received: from crecklin.bos.com (unknown [10.22.8.39])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id AC1C35D9DE;
-        Thu,  1 Apr 2021 16:42:49 +0000 (UTC)
-From:   Chris von Recklinghausen <crecklin@redhat.com>
-To:     ardb@kernel.org, simo@redhat.com, rafael@kernel.org,
-        decui@microsoft.com, linux-pm@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/1] use crc32 instead of md5 for hibernation e820 integrity check
-Date:   Thu,  1 Apr 2021 12:41:45 -0400
-Message-Id: <20210401164145.8051-2-crecklin@redhat.com>
-In-Reply-To: <20210401164145.8051-1-crecklin@redhat.com>
-References: <20210401164145.8051-1-crecklin@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+        id S236237AbhDARyB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 13:54:01 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:8226 "EHLO
+        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S236478AbhDARpM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 13:45:12 -0400
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 131BZGTV145437;
+        Thu, 1 Apr 2021 07:45:15 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=LuDD8VzmtFl5Y8oY6EKB24UqifZWh7WEjtXEmMC2hko=;
+ b=CEDmJcu9s1CXHGA8JMfcITgC0TvDAC7j2TisHYEu0TdjuWLgub1KNgzZeOkcTrhzcMix
+ /fKHbDlt/SZnLAqeRoEWoVDijtDVTiXOXae+o+AJ+JGF/oPVJ9lbOi6sJjqUDROO8DpI
+ li+EMT+fp+cP7zHejXKNpBuWqUscqcFbV5BNvO0Bw6UdE1hXjugGbRWqf671cMNy4E5M
+ lg4Gna4q2hYpB/lEZOozEwycSH6/pf/3NAcWvzoiUOm8ZmbFQmUzYhKFgpNGDBfSH3PC
+ Mu4ep8tQM0m/+JJROZRgG3gzhqvjsdWddQj8vXJoncAfqkz/SSufBfUiEwkUyCo+1zxI 1g== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 37n2ea13sp-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 01 Apr 2021 07:45:15 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 131BdBIe158179;
+        Thu, 1 Apr 2021 07:45:14 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 37n2ea13s2-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 01 Apr 2021 07:45:14 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+        by ppma03ams.nl.ibm.com (8.16.0.43/8.16.0.43) with SMTP id 131Bg5iD004696;
+        Thu, 1 Apr 2021 11:45:12 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+        by ppma03ams.nl.ibm.com with ESMTP id 37n28rrev9-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 01 Apr 2021 11:45:12 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
+        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 131Bj9iW36307344
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 1 Apr 2021 11:45:09 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id B17FDA4069;
+        Thu,  1 Apr 2021 11:45:09 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 76415A4053;
+        Thu,  1 Apr 2021 11:45:07 +0000 (GMT)
+Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.46.97])
+        by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+        Thu,  1 Apr 2021 11:45:07 +0000 (GMT)
+From:   Pratik Rajesh Sampat <psampat@linux.ibm.com>
+To:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, shuah@kernel.org,
+        dsmythies@telus.net, ego@linux.vnet.ibm.com, svaidy@linux.ibm.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org, pratik.r.sampat@gmail.com,
+        psampat@linux.ibm.com
+Subject: [RFC v2 1/2] cpuidle: Extract IPI based and timer based wakeup latency from idle states
+Date:   Thu,  1 Apr 2021 17:15:03 +0530
+Message-Id: <20210401114504.13466-2-psampat@linux.ibm.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210401114504.13466-1-psampat@linux.ibm.com>
+References: <20210401114504.13466-1-psampat@linux.ibm.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: pjj6RQbFSGyJlsuQ7MEJLwdjiD3ZVneC
+X-Proofpoint-ORIG-GUID: B8lTuSTebxeXt1Eq8NgfHj7w0yCUYSHu
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.369,18.0.761
+ definitions=2021-04-01_04:2021-03-31,2021-04-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 adultscore=0 bulkscore=0 clxscore=1015
+ impostorscore=0 spamscore=0 phishscore=0 mlxscore=0 lowpriorityscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2103310000 definitions=main-2104010082
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Suspend fails on a system in fips mode because md5 is used for the e820
-integrity check and is not available. Use crc32 instead.
+Introduce a mechanism to fire directed IPIs from a specified source CPU
+to a specified target CPU and measure the difference in time incurred on
+wakeup.
 
-Fixes: 62a03defeabd ("PM / hibernate: Verify the consistent of e820 memory map
-       by md5 digest")
-Signed-off-by: Chris von Recklinghausen <crecklin@redhat.com>
+Also, introduce a mechanism to queue a HR timer on a specified CPU and
+subsequently measure the time taken to wakeup the CPU.
+
+Finally define a simple debugfs interface to control the knobs to fire
+the IPI and Timer events on specified CPU and view their incurred idle
+wakeup latencies.
+
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 ---
- arch/x86/power/hibernate.c | 35 +++++++++++++++++++----------------
- 1 file changed, 19 insertions(+), 16 deletions(-)
+ drivers/cpuidle/Makefile               |   1 +
+ drivers/cpuidle/test-cpuidle_latency.c | 157 +++++++++++++++++++++++++
+ lib/Kconfig.debug                      |  10 ++
+ 3 files changed, 168 insertions(+)
+ create mode 100644 drivers/cpuidle/test-cpuidle_latency.c
 
-diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
-index cd3914fc9f3d..b56172553275 100644
---- a/arch/x86/power/hibernate.c
-+++ b/arch/x86/power/hibernate.c
-@@ -55,31 +55,31 @@ int pfn_is_nosave(unsigned long pfn)
- }
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 26bbc5e74123..3b4ee06a9164 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+ obj-$(CONFIG_DT_IDLE_STATES)		  += dt_idle_states.o
+ obj-$(CONFIG_ARCH_HAS_CPU_RELAX)	  += poll_state.o
+ obj-$(CONFIG_HALTPOLL_CPUIDLE)		  += cpuidle-haltpoll.o
++obj-$(CONFIG_IDLE_LATENCY_SELFTEST)	  += test-cpuidle_latency.o
  
- 
--#define MD5_DIGEST_SIZE 16
-+#define CRC32_DIGEST_SIZE 16
- 
- struct restore_data_record {
- 	unsigned long jump_address;
- 	unsigned long jump_address_phys;
- 	unsigned long cr3;
- 	unsigned long magic;
--	u8 e820_digest[MD5_DIGEST_SIZE];
-+	u8 e820_digest[CRC32_DIGEST_SIZE];
- };
- 
--#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
-+#if IS_BUILTIN(CONFIG_CRYPTO_CRC32)
- /**
-- * get_e820_md5 - calculate md5 according to given e820 table
-+ * get_e820_crc32 - calculate crc32 according to given e820 table
-  *
-  * @table: the e820 table to be calculated
-- * @buf: the md5 result to be stored to
-+ * @buf: the crc32 result to be stored to
-  */
--static int get_e820_md5(struct e820_table *table, void *buf)
-+static int get_e820_crc32(struct e820_table *table, void *buf)
- {
- 	struct crypto_shash *tfm;
- 	struct shash_desc *desc;
- 	int size;
- 	int ret = 0;
- 
--	tfm = crypto_alloc_shash("md5", 0, 0);
-+	tfm = crypto_alloc_shash("crc32", 0, 0);
- 	if (IS_ERR(tfm))
- 		return -ENOMEM;
- 
-@@ -107,24 +107,24 @@ static int get_e820_md5(struct e820_table *table, void *buf)
- 
- static int hibernation_e820_save(void *buf)
- {
--	return get_e820_md5(e820_table_firmware, buf);
-+	return get_e820_crc32(e820_table_firmware, buf);
- }
- 
- static bool hibernation_e820_mismatch(void *buf)
- {
- 	int ret;
--	u8 result[MD5_DIGEST_SIZE];
-+	u8 result[CRC32_DIGEST_SIZE];
- 
--	memset(result, 0, MD5_DIGEST_SIZE);
-+	memset(result, 0, CRC32_DIGEST_SIZE);
- 	/* If there is no digest in suspend kernel, let it go. */
--	if (!memcmp(result, buf, MD5_DIGEST_SIZE))
-+	if (!memcmp(result, buf, CRC32_DIGEST_SIZE))
- 		return false;
- 
--	ret = get_e820_md5(e820_table_firmware, result);
-+	ret = get_e820_crc32(e820_table_firmware, result);
- 	if (ret)
- 		return true;
- 
--	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
-+	return memcmp(result, buf, CRC32_DIGEST_SIZE) ? true : false;
- }
- #else
- static int hibernation_e820_save(void *buf)
-@@ -134,15 +134,15 @@ static int hibernation_e820_save(void *buf)
- 
- static bool hibernation_e820_mismatch(void *buf)
- {
--	/* If md5 is not builtin for restore kernel, let it go. */
-+	/* If crc32 is not builtin for restore kernel, let it go. */
- 	return false;
- }
- #endif
- 
- #ifdef CONFIG_X86_64
--#define RESTORE_MAGIC	0x23456789ABCDEF01UL
-+#define RESTORE_MAGIC	0x23456789ABCDEF02UL
- #else
--#define RESTORE_MAGIC	0x12345678UL
-+#define RESTORE_MAGIC	0x12345679UL
- #endif
- 
- /**
-@@ -160,6 +160,9 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
- 	rdr->jump_address = (unsigned long)restore_registers;
- 	rdr->jump_address_phys = __pa_symbol(restore_registers);
- 
-+	/* crc32 digest size is 4 but digest buffer size is 16 so zero it all */
-+	memset(rdr->e820_digest, 0, CRC32_DIGEST_SIZE);
+ ##################################################################################
+ # ARM SoC drivers
+diff --git a/drivers/cpuidle/test-cpuidle_latency.c b/drivers/cpuidle/test-cpuidle_latency.c
+new file mode 100644
+index 000000000000..f138011ac225
+--- /dev/null
++++ b/drivers/cpuidle/test-cpuidle_latency.c
+@@ -0,0 +1,157 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Module-based API test facility for cpuidle latency using IPIs and timers
++ */
 +
- 	/*
- 	 * The restore code fixes up CR3 and CR4 in the following sequence:
- 	 *
++#include <linux/debugfs.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++
++/*
++ * IPI based wakeup latencies
++ * Measure time taken for a CPU to wakeup on a IPI sent from another CPU
++ * The latency measured also includes the latency of sending the IPI
++ */
++struct latency {
++	unsigned int src_cpu;
++	unsigned int dest_cpu;
++	ktime_t time_start;
++	ktime_t time_end;
++	u64 latency_ns;
++} ipi_wakeup;
++
++static void measure_latency(void *info)
++{
++	struct latency *v;
++	ktime_t time_diff;
++
++	v = (struct latency *)info;
++	v->time_end = ktime_get();
++	time_diff = ktime_sub(v->time_end, v->time_start);
++	v->latency_ns = ktime_to_ns(time_diff);
++}
++
++void run_smp_call_function_test(unsigned int cpu)
++{
++	ipi_wakeup.src_cpu = smp_processor_id();
++	ipi_wakeup.dest_cpu = cpu;
++	ipi_wakeup.time_start = ktime_get();
++	smp_call_function_single(cpu, measure_latency, &ipi_wakeup, 1);
++}
++
++/*
++ * Timer based wakeup latencies
++ * Measure time taken for a CPU to wakeup on a timer being armed and fired
++ */
++struct timer_data {
++	unsigned int src_cpu;
++	u64 timeout;
++	ktime_t time_start;
++	ktime_t time_end;
++	struct hrtimer timer;
++	u64 timeout_diff_ns;
++} timer_wakeup;
++
++static enum hrtimer_restart timer_called(struct hrtimer *hrtimer)
++{
++	struct timer_data *w;
++	ktime_t time_diff;
++
++	w = container_of(hrtimer, struct timer_data, timer);
++	w->time_end = ktime_get();
++
++	time_diff = ktime_sub(w->time_end, w->time_start);
++	time_diff = ktime_sub(time_diff, ns_to_ktime(w->timeout));
++	w->timeout_diff_ns = ktime_to_ns(time_diff);
++	return HRTIMER_NORESTART;
++}
++
++static void run_timer_test(unsigned int ns)
++{
++	hrtimer_init(&timer_wakeup.timer, CLOCK_MONOTONIC,
++		     HRTIMER_MODE_REL);
++	timer_wakeup.timer.function = timer_called;
++	timer_wakeup.src_cpu = smp_processor_id();
++	timer_wakeup.timeout = ns;
++	timer_wakeup.time_start = ktime_get();
++
++	hrtimer_start(&timer_wakeup.timer, ns_to_ktime(ns),
++		      HRTIMER_MODE_REL_PINNED);
++}
++
++static struct dentry *dir;
++
++static int cpu_read_op(void *data, u64 *dest_cpu)
++{
++	*dest_cpu = ipi_wakeup.dest_cpu;
++	return 0;
++}
++
++static int cpu_write_op(void *data, u64 value)
++{
++	run_smp_call_function_test(value);
++	return 0;
++}
++DEFINE_SIMPLE_ATTRIBUTE(ipi_ops, cpu_read_op, cpu_write_op, "%llu\n");
++
++static int timeout_read_op(void *data, u64 *timeout)
++{
++	*timeout = timer_wakeup.timeout;
++	return 0;
++}
++
++static int timeout_write_op(void *data, u64 value)
++{
++	run_timer_test(value);
++	return 0;
++}
++DEFINE_SIMPLE_ATTRIBUTE(timeout_ops, timeout_read_op, timeout_write_op, "%llu\n");
++
++static int __init latency_init(void)
++{
++	struct dentry *temp;
++
++	dir = debugfs_create_dir("latency_test", 0);
++	if (!dir) {
++		pr_alert("latency_test: failed to create /sys/kernel/debug/latency_test\n");
++		return -1;
++	}
++	temp = debugfs_create_file("ipi_cpu_dest",
++				   0666,
++				   dir,
++				   NULL,
++				   &ipi_ops);
++	if (!temp) {
++		pr_alert("latency_test: failed to create /sys/kernel/debug/ipi_cpu_dest\n");
++		return -1;
++	}
++	debugfs_create_u64("ipi_latency_ns", 0444, dir, &ipi_wakeup.latency_ns);
++	debugfs_create_u32("ipi_cpu_src", 0444, dir, &ipi_wakeup.src_cpu);
++
++	temp = debugfs_create_file("timeout_expected_ns",
++				   0666,
++				   dir,
++				   NULL,
++				   &timeout_ops);
++	if (!temp) {
++		pr_alert("latency_test: failed to create /sys/kernel/debug/timeout_expected_ns\n");
++		return -1;
++	}
++	debugfs_create_u64("timeout_diff_ns", 0444, dir, &timer_wakeup.timeout_diff_ns);
++	debugfs_create_u32("timeout_cpu_src", 0444, dir, &timer_wakeup.src_cpu);
++	pr_info("Latency Test module loaded\n");
++	return 0;
++}
++
++static void __exit latency_cleanup(void)
++{
++	pr_info("Cleaning up Latency Test module.\n");
++	debugfs_remove_recursive(dir);
++}
++
++module_init(latency_init);
++module_exit(latency_cleanup);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("IBM Corporation");
++MODULE_DESCRIPTION("Measuring idle latency for IPIs and Timers");
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 2779c29d9981..60fa46a99a4f 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -1513,6 +1513,16 @@ config DEBUG_KOBJECT
+ 	  If you say Y here, some extra kobject debugging messages will be sent
+ 	  to the syslog.
+ 
++config IDLE_LATENCY_SELFTEST
++	tristate "Cpuidle latency selftests"
++	depends on CPU_IDLE
++	help
++	  This option provides a kernel module that runs tests using the IPI and
++	  timers to measure latency.
++
++	  Say M if you want these self tests to build as a module.
++	  Say N if you are unsure.
++
+ config DEBUG_KOBJECT_RELEASE
+ 	bool "kobject release debugging"
+ 	depends on DEBUG_OBJECTS_TIMERS
 -- 
-2.18.1
+2.17.1
 
