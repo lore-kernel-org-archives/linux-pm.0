@@ -2,158 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7501C43600
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAC8C43460
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:13:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AC28961001
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:03:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CE66260241
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:13:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237078AbhDASDd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 14:03:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34002 "EHLO
+        id S237305AbhDASN4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:13:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237128AbhDAR7f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 13:59:35 -0400
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72387C08EBB0
-        for <linux-pm@vger.kernel.org>; Thu,  1 Apr 2021 06:40:40 -0700 (PDT)
-Received: by mail-pj1-x1033.google.com with SMTP id ot17-20020a17090b3b51b0290109c9ac3c34so3090269pjb.4
-        for <linux-pm@vger.kernel.org>; Thu, 01 Apr 2021 06:40:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=bVDnPlNnjqbgpQGzavlda6brSZnN61XQvhUSzwXhr/8=;
-        b=vMuEQRdhiMo7rFdB3dnK4gIvrKvSJ2NR48Y7ft6h6KTCR1agr1cIsJxCODlAFPLs8W
-         82LZ/YBoz3mzyp8ydcGJUqu+3kz9kbxxJgV3OYSa7A7fWZtAuLIpcfu8Pd4+IkgB64+q
-         pdtwXsznkd929hiROBw6IH6q+RByK1gWzCSkKYgpPLQIVnaZhmRPO+caW9v5wkEX1M0h
-         msAvsv9UG3dGsr0HsGSnQ/YNUjIF5mvs6FAOb8DcUwOMOjzz27XtBbir7O/FT1IJVrjZ
-         t0DEjpg6P2ljgW9N6KslanxF2BL7YSjtpSFDcZNdbOSHOcyXfb1jkkPa5FlPS5fXdmWh
-         OWKw==
+        with ESMTP id S236792AbhDASHj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:07:39 -0400
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2429C08EBAF;
+        Thu,  1 Apr 2021 06:38:26 -0700 (PDT)
+Received: by mail-ot1-x330.google.com with SMTP id t23-20020a0568301e37b02901b65ab30024so2140917otr.4;
+        Thu, 01 Apr 2021 06:38:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=bVDnPlNnjqbgpQGzavlda6brSZnN61XQvhUSzwXhr/8=;
-        b=nCBZ/EqNFqLlYfjakR4dbgoO3zAf64jprmVouVSU0/P6La6G6qOT9I/USc6OvBIqXq
-         wiOEzm77g8KtWJXwZWQ0jJ2rF68W7x06mSSj50wKU3ct+Wp6T1WLcrwrZssPYVSAQlne
-         wRPua0rBsmU2R1Ti2y4Nb9HQqi1Pn+xgpqT7hrTGzVlaKjGfTLLRL77ycn2YCZYXMnp3
-         L/bsNU5m15e+3su5b8tarSuPNHJzs8KNyMLvszqv7ajJntp5KxmCfgXXt18LGHIl17Nt
-         josazkDHdE2TiPcA5ETU8GlJg9cZgTNjJBozgn5RZuVSaOa2YBpDNVBLzxEcJWpbRd1a
-         h2ig==
-X-Gm-Message-State: AOAM5336GMiM0gpBsZTjumrkWvesdoROb/2AFlxIivMaTCnAw5DGJ8hM
-        86Poh/j0SrVhFBoXt20yu49u2Q==
-X-Google-Smtp-Source: ABdhPJx28qilFkDBFANUYcjrBeA+aUH4MLvmevLvqau/CK2zuVMMEycNSDpcJ8EtWhQFpkhZkItuWA==
-X-Received: by 2002:a17:90b:360b:: with SMTP id ml11mr8664142pjb.98.1617284438477;
-        Thu, 01 Apr 2021 06:40:38 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id d20sm5857735pjv.47.2021.04.01.06.40.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Apr 2021 06:40:38 -0700 (PDT)
-Message-ID: <6065cd56.1c69fb81.7ff93.e5c8@mx.google.com>
-Date:   Thu, 01 Apr 2021 06:40:38 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=h8G7y9c30KfRlKihNXRgoauoQW97JeaTkhUBkRBHJtk=;
+        b=bc4CWHskETvuX+z488KGBvudmdIYxCdrwoMjD/F74lcuHFiSQCbnF50DmyjcxI1eX0
+         5O6nYBAXuOJ8smFhaL384YoOYvVWfamu/HRg3cg4+PgXKbjOcDsZRdQe73LsWFD3uGgG
+         HmojeDE9mzXyMcQIBY0ORnzpjLfWORkI8YjsVQydsHXgaGb/iLYbDe+eO5PxZibvb7oh
+         Usywp+iWQm2yd20V3SGEqoWibPxOGACwKGagfchCrXhtFjxH2qpgWA1OqNztRczOXJsf
+         PXpV46H+OuI3KnrlklNPqGj4PSzHdVfyeRxmvL1/stofoo1o/2/OyJJyX2WE58IQgzJ5
+         jqsQ==
+X-Gm-Message-State: AOAM531W4RdkUPmXQtOMHCBGYoleIUZj2MaGXRC4Xn6gUO0jpygXVBW4
+        rINiaCykIBjCOA6vglbc02EZcqvidh10yOUkkqs=
+X-Google-Smtp-Source: ABdhPJzCR0gDaubIVEpSXyh38pTht2H8Xfn5MxhmAKQTle86XqlnC5JMvjkSxFajcAamy+BrTpyqyOx6AAJsCd/h+T8=
+X-Received: by 2002:a05:6830:55b:: with SMTP id l27mr6322628otb.260.1617284306011;
+ Thu, 01 Apr 2021 06:38:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: v5.12-rc5-47-g85f34ae663986
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 1 warning (v5.12-rc5-47-g85f34ae663986)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+References: <MW2PR2101MB08924CD74C6EB773C4D5FAFDBF7E9@MW2PR2101MB0892.namprd21.prod.outlook.com>
+ <CAJZ5v0g+=AnRAmAAn8NpHm8bmZ1WkwDpjb5rr_zPOVABW1PYug@mail.gmail.com>
+ <4e95307db43e2f7cc8516e645b81db7db0dd8ad4.camel@redhat.com>
+ <CAMj1kXHg2RDgwmOhJkaAPoWeHpxnd6tixp94Kha1-bzNvCaQUg@mail.gmail.com>
+ <504652e70f0a4e42e4927583b9ed47cd78590329.camel@redhat.com> <CAMj1kXHRduBs0TJcLC4iMkyoGXyyrXPM_WpVVij33ki8THf9Kw@mail.gmail.com>
+In-Reply-To: <CAMj1kXHRduBs0TJcLC4iMkyoGXyyrXPM_WpVVij33ki8THf9Kw@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 1 Apr 2021 15:38:12 +0200
+Message-ID: <CAJZ5v0hKPBtUzGKfGHD6KX-c2QEETfatCkNjCK8ukh-AhVfUhA@mail.gmail.com>
+Subject: Re: Fix hibernation in FIPS mode?
+To:     Ard Biesheuvel <ardb@kernel.org>
+Cc:     Simo Sorce <simo@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Dexuan Cui <decui@microsoft.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "crecklin@redhat.com" <crecklin@redhat.com>,
+        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.12-rc5-47-g85=
-f34ae663986)
+On Thu, Apr 1, 2021 at 10:47 AM Ard Biesheuvel <ardb@kernel.org> wrote:
+>
+> On Tue, 30 Mar 2021 at 21:56, Simo Sorce <simo@redhat.com> wrote:
+> >
+> > On Tue, 2021-03-30 at 21:45 +0200, Ard Biesheuvel wrote:
+> > > On Tue, 30 Mar 2021 at 20:05, Simo Sorce <simo@redhat.com> wrote:
+> > > > On Tue, 2021-03-30 at 16:46 +0200, Rafael J. Wysocki wrote:
+> > > > > On Tue, Mar 30, 2021 at 12:14 AM Dexuan Cui <decui@microsoft.com> wrote:
+> > > > > > Hi,
+> > > > > > MD5 was marked incompliant with FIPS in 2009:
+> > > > > > a3bef3a31a19 ("crypto: testmgr - Skip algs not flagged fips_allowed in fips mode")
+> > > > > > a1915d51e8e7 ("crypto: testmgr - Mark algs allowed in fips mode")
+> > > > > >
+> > > > > > But hibernation_e820_save() is still using MD5, and fails in FIPS mode
+> > > > > > due to the 2018 patch:
+> > > > > > 749fa17093ff ("PM / hibernate: Check the success of generating md5 digest before hibernation")
+> > > > > >
+> > > > > > As a result, hibernation doesn't work when FIPS is on.
+> > > > > >
+> > > > > > Do you think if hibernation_e820_save() should be changed to use a
+> > > > > > FIPS-compliant algorithm like SHA-1?
+> > > > >
+> > > > > I would say yes, it should.
+> > > > >
+> > > > > > PS, currently it looks like FIPS mode is broken in the mainline:
+> > > > > > https://www.mail-archive.com/linux-crypto@vger.kernel.org/msg49414.html
+> > > >
+> > > > FYI, SHA-1 is not a good choice, it is only permitted in HMAC
+> > > > constructions and only for specified uses. If you need to change
+> > > > algorithm you should go straight to SHA-2 or SHA-3 based hashes.
+> > > >
+> > >
+> > > What is the reason for using a [broken] cryptographic hash here? if
+> > > this is just an integrity check, better use CRC32
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-12-rc5-47-g85f34ae663986/
+Not really.
 
-Tree: pm
-Branch: testing
-Git Describe: v5.12-rc5-47-g85f34ae663986
-Git Commit: 85f34ae663986081df77a1df26e08fd1978573a3
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+CRC32 is not really sufficient for integrity checking here AFAICS.  It
+might be made a fallback option if MD5 is not available, but making it
+the default would be somewhat over the top IMO.
 
-Warnings Detected:
+> > If the integrity check is used exclusively to verify there were no
+> > accidental changes and is not used as a security measure, by all means
+> > I agree that using crc32 is a better idea.
+> >
+>
+> Looking at 62a03defeabd58f74e07ca030d6c21e069d4d88e which introduced
+> this, it is only a best effort check which is simply omitted if md5
+> happens to be unavailable, so there is definitely no need for crypto
+> here.
 
-arc:
+Yes, it is about integrity checking only.  No, CRC32 is not equivalent
+to MD5 in that respect AFAICS.
 
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-8): 1 warning
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    WARNING: modpost: Symbol info of vmlinux is missing. Unresolved sy=
-mbol check will be entirely skipped.
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 1 warning, 0 secti=
-on mismatches
-
-Warnings:
-    WARNING: modpost: Symbol info of vmlinux is missing. Unresolved symbol =
-check will be entirely skipped.
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----
-For more info write to <info@kernelci.org>
+Thanks!
