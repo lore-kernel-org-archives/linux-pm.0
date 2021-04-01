@@ -2,181 +2,133 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 310BCC43461
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D76C433ED
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:33:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 14055610D1
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:33:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F0ED61041
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:33:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237686AbhDASd2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 14:33:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37958 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236481AbhDASVf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:21:35 -0400
-Received: from mail-oi1-x232.google.com (mail-oi1-x232.google.com [IPv6:2607:f8b0:4864:20::232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3651C02FEAE;
-        Thu,  1 Apr 2021 09:22:55 -0700 (PDT)
-Received: by mail-oi1-x232.google.com with SMTP id i81so2321000oif.6;
-        Thu, 01 Apr 2021 09:22:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=VyiK3ga+MjpNx3ROsvcuMTu8ZgQYqAmDYD3HeeCO9E8=;
-        b=uQClKYOH5szUATdP/CSDB9c3xJsfgRrcieOVUg3c3Z/1xlyidFHkgVzowu2cf/Gufy
-         gw7GzjHFgtYkaVnjdJ7NSnKYYaGFWU1TuI2RnEdgt871nsN/JfrwQVqMlWQ6Fbian0D8
-         BKrdYI8TXBTXMxGR89FIAmxs/dadVUtc1JhK1QIHKNXVzTfjkiwsku5QTpUapRRmRTnQ
-         C1oAYTIpEJ9Gq1stbqANEuYT6j6xBr1fdr6qqHV8/QuA0X0d5mh/HoaHEHZQQ70z6ZeV
-         OSfODwliHI8cE4w4TQ0QhYZNCFS5N3YmGlWFsY1qZ+ff/5Pr9fUPww9cPZbGNkUBywEA
-         tDLA==
-X-Gm-Message-State: AOAM530Wour3fi0nIHeIBEDk6cGQ0NLN/8/78WO/C+WLI3FjSQ6+lQkw
-        wzAPBZUeipz2OiJygzWGiT8ikcAiAX/a1pZhMew=
-X-Google-Smtp-Source: ABdhPJytJr7gZPGY5G1tj1N5bsPNGF/1NWZnXDUz8yajq4Ho2WuQPTQSPZvFqMq2Onp+MZu3YOOOjEkWVGwB1kurl6s=
-X-Received: by 2002:aca:c4c5:: with SMTP id u188mr6587947oif.71.1617294175221;
- Thu, 01 Apr 2021 09:22:55 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210401122458.12663-1-crecklin@redhat.com> <20210401122458.12663-2-crecklin@redhat.com>
- <CAJZ5v0gCkhoKC_81WP6wdehZBYpEpmNhHwDygYawFdrWk3K6vg@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gCkhoKC_81WP6wdehZBYpEpmNhHwDygYawFdrWk3K6vg@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 1 Apr 2021 18:22:43 +0200
-Message-ID: <CAJZ5v0gaawSNnB5V1WPR7Bj6HurGB9RmkgNN20uxF+iV+zikkA@mail.gmail.com>
-Subject: Re: [PATCH 1/1] use crc32 instead of md5 for hibernation e820
- integrity check
+        id S237757AbhDASda (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:33:30 -0400
+Received: from mail.kernel.org ([198.145.29.99]:53242 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S239990AbhDAS0t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Apr 2021 14:26:49 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id DBCF56023C;
+        Thu,  1 Apr 2021 18:26:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1617301609;
+        bh=XM/eKl64AYtF/NjYhxGawQinsb3OUrzVM5Yt/ORJnc8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=iUfU1tk4s1agyreSXqTLRnrvXWc+nxCQOErH69opvfdFYdsoEWg3KkBNDPgCuFwkh
+         kxFFooCipCdAUjy1yQZpJ+7ae23TJMUXguBCmTMUVmLeAT/pEpRP11mgNz1EFqrKbn
+         MK2i5goUcObSnNYFwLi3t6fspZqfNL9gm7bdPZRtc4gMbVoknzIdAYBVPwlmz7eX0l
+         EXBa5y9Bm1jZ/UAzVYQwGPwGtKCqtSGZ27mdjKa+DnJvqWwfdMESOo3thUAy5B32cT
+         eMbzuDTT2IEU8qjxDnHspVTP5eaODb/RPTyebX5eL3oXIAzgZ5AN29QOqOoVA7RSEC
+         3ALbNShPAU1dQ==
+Date:   Thu, 1 Apr 2021 11:26:47 -0700
+From:   Eric Biggers <ebiggers@kernel.org>
 To:     Chris von Recklinghausen <crecklin@redhat.com>
-Cc:     Ard Biesheuvel <ardb@kernel.org>, simo@redhat.com,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ard Biesheuvel <ardb@kernel.org>, Simo Sorce <simo@redhat.com>,
         Dexuan Cui <decui@microsoft.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Fix hibernation in FIPS mode?
+Message-ID: <YGYQZwRhpVkwVBjw@gmail.com>
+References: <MW2PR2101MB08924CD74C6EB773C4D5FAFDBF7E9@MW2PR2101MB0892.namprd21.prod.outlook.com>
+ <CAJZ5v0g+=AnRAmAAn8NpHm8bmZ1WkwDpjb5rr_zPOVABW1PYug@mail.gmail.com>
+ <4e95307db43e2f7cc8516e645b81db7db0dd8ad4.camel@redhat.com>
+ <CAMj1kXHg2RDgwmOhJkaAPoWeHpxnd6tixp94Kha1-bzNvCaQUg@mail.gmail.com>
+ <504652e70f0a4e42e4927583b9ed47cd78590329.camel@redhat.com>
+ <CAMj1kXHRduBs0TJcLC4iMkyoGXyyrXPM_WpVVij33ki8THf9Kw@mail.gmail.com>
+ <CAJZ5v0hKPBtUzGKfGHD6KX-c2QEETfatCkNjCK8ukh-AhVfUhA@mail.gmail.com>
+ <2b452865-ca6c-892d-f04e-3e6e2a74b598@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2b452865-ca6c-892d-f04e-3e6e2a74b598@redhat.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Apr 1, 2021 at 3:34 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Apr 1, 2021 at 2:25 PM Chris von Recklinghausen
-> <crecklin@redhat.com> wrote:
-> >
-> > Suspend fails on a system in fips mode because md5 is used for the e820
-> > integrity check and is not available. Use crc32 instead.
-> >
-> > Fixes: 62a03defeabd ("PM / hibernate: Verify the consistent of e820 memory map
-> >        by md5 digest")
-> > Signed-off-by: Chris von Recklinghausen <crecklin@redhat.com>
-> > ---
-> >  arch/x86/power/hibernate.c | 31 +++++++++++++++++--------------
-> >  1 file changed, 17 insertions(+), 14 deletions(-)
-> >
-> > diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
-> > index cd3914fc9f3d..6a3f4e32e49c 100644
-> > --- a/arch/x86/power/hibernate.c
-> > +++ b/arch/x86/power/hibernate.c
-> > @@ -55,31 +55,31 @@ int pfn_is_nosave(unsigned long pfn)
-> >  }
-> >
-> >
-> > -#define MD5_DIGEST_SIZE 16
-> > +#define CRC32_DIGEST_SIZE 16
-> >
-> >  struct restore_data_record {
-> >         unsigned long jump_address;
-> >         unsigned long jump_address_phys;
-> >         unsigned long cr3;
-> >         unsigned long magic;
-> > -       u8 e820_digest[MD5_DIGEST_SIZE];
-> > +       u8 e820_digest[CRC32_DIGEST_SIZE];
-> >  };
->
-> No.
->
-> CRC32 was used here before and it was deemed insufficient.
->
-> Please find a different way to address this issue.
+On Thu, Apr 01, 2021 at 09:54:21AM -0400, Chris von Recklinghausen wrote:
+> On 4/1/21 9:38 AM, Rafael J. Wysocki wrote:
+> > On Thu, Apr 1, 2021 at 10:47 AM Ard Biesheuvel <ardb@kernel.org> wrote:
+> > > On Tue, 30 Mar 2021 at 21:56, Simo Sorce <simo@redhat.com> wrote:
+> > > > On Tue, 2021-03-30 at 21:45 +0200, Ard Biesheuvel wrote:
+> > > > > On Tue, 30 Mar 2021 at 20:05, Simo Sorce <simo@redhat.com> wrote:
+> > > > > > On Tue, 2021-03-30 at 16:46 +0200, Rafael J. Wysocki wrote:
+> > > > > > > On Tue, Mar 30, 2021 at 12:14 AM Dexuan Cui <decui@microsoft.com> wrote:
+> > > > > > > > Hi,
+> > > > > > > > MD5 was marked incompliant with FIPS in 2009:
+> > > > > > > > a3bef3a31a19 ("crypto: testmgr - Skip algs not flagged fips_allowed in fips mode")
+> > > > > > > > a1915d51e8e7 ("crypto: testmgr - Mark algs allowed in fips mode")
+> > > > > > > > 
+> > > > > > > > But hibernation_e820_save() is still using MD5, and fails in FIPS mode
+> > > > > > > > due to the 2018 patch:
+> > > > > > > > 749fa17093ff ("PM / hibernate: Check the success of generating md5 digest before hibernation")
+> > > > > > > > 
+> > > > > > > > As a result, hibernation doesn't work when FIPS is on.
+> > > > > > > > 
+> > > > > > > > Do you think if hibernation_e820_save() should be changed to use a
+> > > > > > > > FIPS-compliant algorithm like SHA-1?
+> > > > > > > I would say yes, it should.
+> > > > > > > 
+> > > > > > > > PS, currently it looks like FIPS mode is broken in the mainline:
+> > > > > > > > https://www.mail-archive.com/linux-crypto@vger.kernel.org/msg49414.html
+> > > > > > FYI, SHA-1 is not a good choice, it is only permitted in HMAC
+> > > > > > constructions and only for specified uses. If you need to change
+> > > > > > algorithm you should go straight to SHA-2 or SHA-3 based hashes.
+> > > > > > 
+> > > > > What is the reason for using a [broken] cryptographic hash here? if
+> > > > > this is just an integrity check, better use CRC32
+> > Not really.
+> > 
+> > CRC32 is not really sufficient for integrity checking here AFAICS.  It
+> > might be made a fallback option if MD5 is not available, but making it
+> > the default would be somewhat over the top IMO.
+> 
+> 
+> Would ghash be a better choice? It produces the same size digest as md5.
+> 
+> Does anyone have any other suggestions of algorithms to try?
+> 
+> Thanks,
+> 
+> Chris
+> 
+> > 
+> > > > If the integrity check is used exclusively to verify there were no
+> > > > accidental changes and is not used as a security measure, by all means
+> > > > I agree that using crc32 is a better idea.
+> > > > 
+> > > Looking at 62a03defeabd58f74e07ca030d6c21e069d4d88e which introduced
+> > > this, it is only a best effort check which is simply omitted if md5
+> > > happens to be unavailable, so there is definitely no need for crypto
+> > > here.
+> > Yes, it is about integrity checking only.  No, CRC32 is not equivalent
+> > to MD5 in that respect AFAICS.
+> > 
 
-Well, I guess I'm going to change my mind on this, so we can go with
-this patch, but please bump up RESTORE_MAGIC too.
+If you need to detect intentional changes (ensure authenticity, not just
+integrity) then you need a cryptographic MAC, such as HMAC-SHA256.
 
-> > -#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
-> > +#if IS_BUILTIN(CONFIG_CRYPTO_CRC32)
-> >  /**
-> > - * get_e820_md5 - calculate md5 according to given e820 table
-> > + * get_e820_crc32 - calculate crc32 according to given e820 table
-> >   *
-> >   * @table: the e820 table to be calculated
-> > - * @buf: the md5 result to be stored to
-> > + * @buf: the crc32 result to be stored to
-> >   */
-> > -static int get_e820_md5(struct e820_table *table, void *buf)
-> > +static int get_e820_crc32(struct e820_table *table, void *buf)
-> >  {
-> >         struct crypto_shash *tfm;
-> >         struct shash_desc *desc;
-> >         int size;
-> >         int ret = 0;
-> >
-> > -       tfm = crypto_alloc_shash("md5", 0, 0);
-> > +       tfm = crypto_alloc_shash("crc32", 0, 0);
-> >         if (IS_ERR(tfm))
-> >                 return -ENOMEM;
-> >
-> > @@ -107,24 +107,24 @@ static int get_e820_md5(struct e820_table *table, void *buf)
-> >
-> >  static int hibernation_e820_save(void *buf)
-> >  {
-> > -       return get_e820_md5(e820_table_firmware, buf);
-> > +       return get_e820_crc32(e820_table_firmware, buf);
-> >  }
-> >
-> >  static bool hibernation_e820_mismatch(void *buf)
-> >  {
-> >         int ret;
-> > -       u8 result[MD5_DIGEST_SIZE];
-> > +       u8 result[CRC32_DIGEST_SIZE];
-> >
-> > -       memset(result, 0, MD5_DIGEST_SIZE);
-> > +       memset(result, 0, CRC32_DIGEST_SIZE);
-> >         /* If there is no digest in suspend kernel, let it go. */
-> > -       if (!memcmp(result, buf, MD5_DIGEST_SIZE))
-> > +       if (!memcmp(result, buf, CRC32_DIGEST_SIZE))
-> >                 return false;
-> >
-> > -       ret = get_e820_md5(e820_table_firmware, result);
-> > +       ret = get_e820_crc32(e820_table_firmware, result);
-> >         if (ret)
-> >                 return true;
-> >
-> > -       return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
-> > +       return memcmp(result, buf, CRC32_DIGEST_SIZE) ? true : false;
-> >  }
-> >  #else
-> >  static int hibernation_e820_save(void *buf)
-> > @@ -134,7 +134,7 @@ static int hibernation_e820_save(void *buf)
-> >
-> >  static bool hibernation_e820_mismatch(void *buf)
-> >  {
-> > -       /* If md5 is not builtin for restore kernel, let it go. */
-> > +       /* If crc32 is not builtin for restore kernel, let it go. */
-> >         return false;
-> >  }
-> >  #endif
-> > @@ -160,6 +160,9 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
-> >         rdr->jump_address = (unsigned long)restore_registers;
-> >         rdr->jump_address_phys = __pa_symbol(restore_registers);
-> >
-> > +       /* crc32 digest size is 4 but digest buffer size is 16 so zero it all */
-> > +       memset(rdr->e820_digest, 0, CRC32_DIGEST_SIZE);
-> > +
-> >         /*
-> >          * The restore code fixes up CR3 and CR4 in the following sequence:
-> >          *
-> > --
-> > 2.18.1
-> >
+If you only need to detect accidental changes (ensure integrity-only), then a
+checksum such as CRC-32 or xxHash64 is sufficient.  A cryptographic hash
+function such as SHA-256 would also be sufficient, though much slower.  Using a
+broken cryptographic hash function such as MD5 doesn't make sense because it is
+broken (so doesn't actually provide cryptographic security), and is much slower
+than a checksum.
+
+If the 1 in 4 billion collision rate of a CRC-32 isn't sufficient, then use
+CRC-64 or xxHash64 for a 1 in 2^64 collision rate.
+
+Don't use GHASH, as it is neither a checksum nor a cryptographic hash function.
+
+- Eric
