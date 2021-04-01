@@ -2,210 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06630C433ED
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EC9C43460
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD90A60C3E
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9285E60BBB
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237594AbhDASXI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 14:23:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37842 "EHLO
+        id S237603AbhDASXJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:23:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239824AbhDASRB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:17:01 -0400
-Received: from mail-io1-xd2d.google.com (mail-io1-xd2d.google.com [IPv6:2607:f8b0:4864:20::d2d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 133C6C06121F
-        for <linux-pm@vger.kernel.org>; Thu,  1 Apr 2021 05:26:25 -0700 (PDT)
-Received: by mail-io1-xd2d.google.com with SMTP id n198so2057159iod.0
-        for <linux-pm@vger.kernel.org>; Thu, 01 Apr 2021 05:26:25 -0700 (PDT)
+        with ESMTP id S239883AbhDASRF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:17:05 -0400
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB5A7C0045D6
+        for <linux-pm@vger.kernel.org>; Thu,  1 Apr 2021 07:24:28 -0700 (PDT)
+Received: by mail-pj1-x102e.google.com with SMTP id w8so1233223pjf.4
+        for <linux-pm@vger.kernel.org>; Thu, 01 Apr 2021 07:24:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=yzoc7dlOuPc3fxpeVRBd2xxNN+g9BpN8EdGoYo9aWVE=;
-        b=m5QiDBDooUfCNqfYQlVTwxVtvLK54ia5tZo6Wys7ChLrzR/J9dXdq7Pexaq2BrjoVV
-         bz09dEbLFywRSzfY3pWZnETz3jE/J1OpCQ0y2UvAg9cPwQPdZ9sCCyQIMzv6qzeQspij
-         gRmUY2LoFzHD29EWn0vUjYOEsd6KlWw17JzhLQEWPHXOrXlUa0fx8epVjIj069gYGUH9
-         QrSPV9b7mKtSWkQX0PClaYqdNSuOb5HwyVB3YtPRIuj3z7HEcLH2C2eoMEOuT0ZAPpXw
-         prdzXQ+vyGc1khcnnotPCu1aoM6ejtTVjokiJ7nVSZ319txyAyZNeWgZbFCqRU2NGXh0
-         AYVw==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=WfIBTVO/GVb+L0JRI57dnbShae2nCBHRW3TkOl+Bw9c=;
+        b=LtWwlDu+mCsInf8t28JB8gCCw0dpMp+7vyIvgbRoQHfFsrPk+AYwSbG91wcXWWE1T0
+         6wcz88oDAxpYxPZG7TxUZBELkqLS2DP+L5m7Evu6ZBXKoxG+zhF3AXAGvbZogOVaztwm
+         t5adc4jBMoPY5cIvWoVF3D49NPnBM7YF3K6kKhy5BZJp9G8U2WBSNC3RenxgIW7fD4ZN
+         hQHeJBGCFqr34Nd9gaadGihRi66NB2jA3GgphsYfEb3/QU1p7W3fgtlM42EBxZdPmqH8
+         /K+892bQZkQ59JIYu1PY5mb7wZg5m54hBb44UNg/sTxt/M5K5xSDFDSLSzI/GCNN7Kvr
+         PCQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=yzoc7dlOuPc3fxpeVRBd2xxNN+g9BpN8EdGoYo9aWVE=;
-        b=SqqsjTIj/lYWes7448KvPosccCcFcNBc7otOHEAxDmWJGHeU7lU5lgVTNIq/n51w3y
-         GSYIjXXTBJNTa/YNuKJ4pLzZDDyKrbztDR2WeYqY/vvk8dbOsbq2doKu6jGcmrGxT3Kw
-         8FfGlzf9RblS3scEVW6VgSAPJU4d9qRWT1JSWW4HmPF0bLJhktAX3gP5yQAAkHR4CbI+
-         HvgKJpTEuqLokR1vorEn9CAVLDeBC62AxhdGb/x3H4reu0qUZ3F5fah/bYu/d0rCuSh/
-         yo4iuOxqM5zwjNQBb7PhpmLCrU1QfkdlApU6RoMPTKIRkWTHQAzcc6RLdAsTfInfJnlS
-         +1cg==
-X-Gm-Message-State: AOAM530tBFdZKJKFFRKdJronUzRoSdxl6NvvDZPOIxjmFkWTUM7Kmsy0
-        vtkkVEupsesvED65OZD9tt/FJw==
-X-Google-Smtp-Source: ABdhPJyE24mml/gnaveIp3qOdCpfL7fwfK5stVOa3qBN51+rH8IAcY9hD0/00XIwekootMyJpESaXg==
-X-Received: by 2002:a5d:9807:: with SMTP id a7mr6644491iol.7.1617279984396;
-        Thu, 01 Apr 2021 05:26:24 -0700 (PDT)
-Received: from [172.22.22.4] (c-73-185-129-58.hsd1.mn.comcast.net. [73.185.129.58])
-        by smtp.googlemail.com with ESMTPSA id w2sm132030iot.29.2021.04.01.05.26.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Apr 2021 05:26:23 -0700 (PDT)
-Subject: Re: [PATCH] interconnect: qcom: sm8350: Use the correct ids
-To:     Georgi Djakov <georgi.djakov@linaro.org>, djakov@kernel.org,
-        vkoul@kernel.org
-Cc:     bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20210401094334.28871-1-georgi.djakov@linaro.org>
-From:   Alex Elder <elder@linaro.org>
-Message-ID: <ff0c1b21-7d83-cb29-17d5-06061f46006e@linaro.org>
-Date:   Thu, 1 Apr 2021 07:26:23 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=WfIBTVO/GVb+L0JRI57dnbShae2nCBHRW3TkOl+Bw9c=;
+        b=iTeJLWt/kfp0cx0rt6n2d//T5TX70iUgsnhkObkDGZLttyXIs0jiMWs/GBYmYDTqIX
+         gMj1eIc01g2FjbANBv2Gz3H1vpRj1zBH1bHrAUVH7MWfHs3R60rtNJ6fogTDImYf/jxA
+         iB6DKeyXCtr+YtnjuByP48kaRpEm2QkAtw+zyFVLrdgS1Kr0VYgD+O2wbP/PT3o1dGnK
+         MFFsuwUU9lvwBgYrkNgNY9lRu8+Qs7QZ1E1z6Yu0NcZg6pkB5BL35osyE0bRxv63mrxc
+         zdLu+d396SKdFpBRwTqNEkFT6dgqZA1uOWZzLo/zYrtYn23X8vq/U2Caw9zmPnaWueD+
+         AsVQ==
+X-Gm-Message-State: AOAM532kZyKwk/2BPhSUSebkcX6XAZCKHhGukRBtEV0qfnd9eZ5LuLDG
+        5/QueD4Kao1lCAfcKy+ymUYJ3g==
+X-Google-Smtp-Source: ABdhPJwbvZChYAEtTVMky5o5FU/BekvQk278c+LWWRfjZBLf/XguRfxoyjdm/n9ohtlBhFu7YHbsoA==
+X-Received: by 2002:a17:902:c1c4:b029:e6:7bc9:71fd with SMTP id c4-20020a170902c1c4b02900e67bc971fdmr8010711plc.5.1617287068290;
+        Thu, 01 Apr 2021 07:24:28 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id a15sm5904827pju.34.2021.04.01.07.24.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Apr 2021 07:24:27 -0700 (PDT)
+Message-ID: <6065d79b.1c69fb81.81e12.e7f2@mx.google.com>
+Date:   Thu, 01 Apr 2021 07:24:27 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20210401094334.28871-1-georgi.djakov@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v5.12-rc5-47-g85f34ae663986
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing baseline: 81 runs,
+ 1 regressions (v5.12-rc5-47-g85f34ae663986)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 4/1/21 4:43 AM, Georgi Djakov wrote:
-> For creating an array with the members for each NoC, we should be using
-> a local indexes, as otherwise unnecessary large arrays would be created.
-> Using an incorrect indexes will also result error for the consumers when
-> they try to find a valid path between the endpoints. Let's fix this and
-> use the correct ids.
-> 
-> Reported-by: Alex Elder <elder@linaro.org>
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+pm/testing baseline: 81 runs, 1 regressions (v5.12-rc5-47-g85f34ae663986)
 
-Looks good to me.
+Regressions Summary
+-------------------
 
-Acked-by: Alex Elder <elder@linaro.org>
+platform   | arch  | lab     | compiler | defconfig | regressions
+-----------+-------+---------+----------+-----------+------------
+imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
 
-> ---
->   drivers/interconnect/qcom/sm8350.c | 80 +++++++++++++++---------------
->   1 file changed, 40 insertions(+), 40 deletions(-)
-> 
-> diff --git a/drivers/interconnect/qcom/sm8350.c b/drivers/interconnect/qcom/sm8350.c
-> index f3aab02b8678..01202989a5b2 100644
-> --- a/drivers/interconnect/qcom/sm8350.c
-> +++ b/drivers/interconnect/qcom/sm8350.c
-> @@ -228,20 +228,20 @@ static struct qcom_icc_bcm *aggre2_noc_bcms[] = {
->   };
->   
->   static struct qcom_icc_node *aggre2_noc_nodes[] = {
-> -	[SM8350_MASTER_QDSS_BAM] = &qhm_qdss_bam,
-> -	[SM8350_MASTER_QUP_0] = &qhm_qup0,
-> -	[SM8350_MASTER_QUP_2] = &qhm_qup2,
-> -	[SM8350_MASTER_A2NOC_CFG] = &qnm_a2noc_cfg,
-> -	[SM8350_MASTER_CRYPTO] = &qxm_crypto,
-> -	[SM8350_MASTER_IPA] = &qxm_ipa,
-> -	[SM8350_MASTER_PCIE_0] = &xm_pcie3_0,
-> -	[SM8350_MASTER_PCIE_1] = &xm_pcie3_1,
-> -	[SM8350_MASTER_QDSS_ETR] = &xm_qdss_etr,
-> -	[SM8350_MASTER_SDCC_2] = &xm_sdc2,
-> -	[SM8350_MASTER_UFS_CARD] = &xm_ufs_card,
-> -	[SM8350_SLAVE_A2NOC_SNOC] = &qns_a2noc_snoc,
-> -	[SM8350_SLAVE_ANOC_PCIE_GEM_NOC] = &qns_pcie_mem_noc,
-> -	[SM8350_SLAVE_SERVICE_A2NOC] = &srvc_aggre2_noc,
-> +	[MASTER_QDSS_BAM] = &qhm_qdss_bam,
-> +	[MASTER_QUP_0] = &qhm_qup0,
-> +	[MASTER_QUP_2] = &qhm_qup2,
-> +	[MASTER_A2NOC_CFG] = &qnm_a2noc_cfg,
-> +	[MASTER_CRYPTO] = &qxm_crypto,
-> +	[MASTER_IPA] = &qxm_ipa,
-> +	[MASTER_PCIE_0] = &xm_pcie3_0,
-> +	[MASTER_PCIE_1] = &xm_pcie3_1,
-> +	[MASTER_QDSS_ETR] = &xm_qdss_etr,
-> +	[MASTER_SDCC_2] = &xm_sdc2,
-> +	[MASTER_UFS_CARD] = &xm_ufs_card,
-> +	[SLAVE_A2NOC_SNOC] = &qns_a2noc_snoc,
-> +	[SLAVE_ANOC_PCIE_GEM_NOC] = &qns_pcie_mem_noc,
-> +	[SLAVE_SERVICE_A2NOC] = &srvc_aggre2_noc,
->   };
->   
->   static struct qcom_icc_desc sm8350_aggre2_noc = {
-> @@ -414,10 +414,10 @@ static struct qcom_icc_bcm *mc_virt_bcms[] = {
->   };
->   
->   static struct qcom_icc_node *mc_virt_nodes[] = {
-> -	[SM8350_MASTER_LLCC] = &llcc_mc,
-> -	[SM8350_SLAVE_EBI1] = &ebi,
-> -	[SM8350_MASTER_LLCC_DISP] = &llcc_mc_disp,
-> -	[SM8350_SLAVE_EBI1_DISP] = &ebi_disp,
-> +	[MASTER_LLCC] = &llcc_mc,
-> +	[SLAVE_EBI1] = &ebi,
-> +	[MASTER_LLCC_DISP] = &llcc_mc_disp,
-> +	[SLAVE_EBI1_DISP] = &ebi_disp,
->   };
->   
->   static struct qcom_icc_desc sm8350_mc_virt = {
-> @@ -439,24 +439,24 @@ static struct qcom_icc_bcm *mmss_noc_bcms[] = {
->   };
->   
->   static struct qcom_icc_node *mmss_noc_nodes[] = {
-> -	[SM8350_MASTER_CAMNOC_HF] = &qnm_camnoc_hf,
-> -	[SM8350_MASTER_CAMNOC_ICP] = &qnm_camnoc_icp,
-> -	[SM8350_MASTER_CAMNOC_SF] = &qnm_camnoc_sf,
-> -	[SM8350_MASTER_CNOC_MNOC_CFG] = &qnm_mnoc_cfg,
-> -	[SM8350_MASTER_VIDEO_P0] = &qnm_video0,
-> -	[SM8350_MASTER_VIDEO_P1] = &qnm_video1,
-> -	[SM8350_MASTER_VIDEO_PROC] = &qnm_video_cvp,
-> -	[SM8350_MASTER_MDP0] = &qxm_mdp0,
-> -	[SM8350_MASTER_MDP1] = &qxm_mdp1,
-> -	[SM8350_MASTER_ROTATOR] = &qxm_rot,
-> -	[SM8350_SLAVE_MNOC_HF_MEM_NOC] = &qns_mem_noc_hf,
-> -	[SM8350_SLAVE_MNOC_SF_MEM_NOC] = &qns_mem_noc_sf,
-> -	[SM8350_SLAVE_SERVICE_MNOC] = &srvc_mnoc,
-> -	[SM8350_MASTER_MDP0_DISP] = &qxm_mdp0_disp,
-> -	[SM8350_MASTER_MDP1_DISP] = &qxm_mdp1_disp,
-> -	[SM8350_MASTER_ROTATOR_DISP] = &qxm_rot_disp,
-> -	[SM8350_SLAVE_MNOC_HF_MEM_NOC_DISP] = &qns_mem_noc_hf_disp,
-> -	[SM8350_SLAVE_MNOC_SF_MEM_NOC_DISP] = &qns_mem_noc_sf_disp,
-> +	[MASTER_CAMNOC_HF] = &qnm_camnoc_hf,
-> +	[MASTER_CAMNOC_ICP] = &qnm_camnoc_icp,
-> +	[MASTER_CAMNOC_SF] = &qnm_camnoc_sf,
-> +	[MASTER_CNOC_MNOC_CFG] = &qnm_mnoc_cfg,
-> +	[MASTER_VIDEO_P0] = &qnm_video0,
-> +	[MASTER_VIDEO_P1] = &qnm_video1,
-> +	[MASTER_VIDEO_PROC] = &qnm_video_cvp,
-> +	[MASTER_MDP0] = &qxm_mdp0,
-> +	[MASTER_MDP1] = &qxm_mdp1,
-> +	[MASTER_ROTATOR] = &qxm_rot,
-> +	[SLAVE_MNOC_HF_MEM_NOC] = &qns_mem_noc_hf,
-> +	[SLAVE_MNOC_SF_MEM_NOC] = &qns_mem_noc_sf,
-> +	[SLAVE_SERVICE_MNOC] = &srvc_mnoc,
-> +	[MASTER_MDP0_DISP] = &qxm_mdp0_disp,
-> +	[MASTER_MDP1_DISP] = &qxm_mdp1_disp,
-> +	[MASTER_ROTATOR_DISP] = &qxm_rot_disp,
-> +	[SLAVE_MNOC_HF_MEM_NOC_DISP] = &qns_mem_noc_hf_disp,
-> +	[SLAVE_MNOC_SF_MEM_NOC_DISP] = &qns_mem_noc_sf_disp,
->   };
->   
->   static struct qcom_icc_desc sm8350_mmss_noc = {
-> @@ -472,10 +472,10 @@ static struct qcom_icc_bcm *nsp_noc_bcms[] = {
->   };
->   
->   static struct qcom_icc_node *nsp_noc_nodes[] = {
-> -	[SM8350_MASTER_CDSP_NOC_CFG] = &qhm_nsp_noc_config,
-> -	[SM8350_MASTER_CDSP_PROC] = &qxm_nsp,
-> -	[SM8350_SLAVE_CDSP_MEM_NOC] = &qns_nsp_gemnoc,
-> -	[SM8350_SLAVE_SERVICE_NSP_NOC] = &service_nsp_noc,
-> +	[MASTER_CDSP_NOC_CFG] = &qhm_nsp_noc_config,
-> +	[MASTER_CDSP_PROC] = &qxm_nsp,
-> +	[SLAVE_CDSP_MEM_NOC] = &qns_nsp_gemnoc,
-> +	[SLAVE_SERVICE_NSP_NOC] = &service_nsp_noc,
->   };
->   
->   static struct qcom_icc_desc sm8350_compute_noc = {
-> 
 
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.12-rc=
+5-47-g85f34ae663986/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.12-rc5-47-g85f34ae663986
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      85f34ae663986081df77a1df26e08fd1978573a3 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform   | arch  | lab     | compiler | defconfig | regressions
+-----------+-------+---------+----------+-----------+------------
+imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/6065d0275ba6b0c9fddac6d1
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.12-rc5-47-g85f34=
+ae663986/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.12-rc5-47-g85f34=
+ae663986/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-5-g2f114cc7102b/arm64/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/6065d0275ba6b0c9fddac=
+6d2
+        new failure (last pass: v5.12-rc5-47-g506a524e05e2) =
+
+ =20
