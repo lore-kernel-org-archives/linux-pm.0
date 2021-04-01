@@ -2,126 +2,146 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EC9C43460
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AD4DC43462
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9285E60BBB
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EC1660C3E
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Apr 2021 18:23:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237603AbhDASXJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Apr 2021 14:23:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37146 "EHLO
+        id S237620AbhDASXK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Apr 2021 14:23:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239883AbhDASRF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:17:05 -0400
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB5A7C0045D6
-        for <linux-pm@vger.kernel.org>; Thu,  1 Apr 2021 07:24:28 -0700 (PDT)
-Received: by mail-pj1-x102e.google.com with SMTP id w8so1233223pjf.4
-        for <linux-pm@vger.kernel.org>; Thu, 01 Apr 2021 07:24:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=WfIBTVO/GVb+L0JRI57dnbShae2nCBHRW3TkOl+Bw9c=;
-        b=LtWwlDu+mCsInf8t28JB8gCCw0dpMp+7vyIvgbRoQHfFsrPk+AYwSbG91wcXWWE1T0
-         6wcz88oDAxpYxPZG7TxUZBELkqLS2DP+L5m7Evu6ZBXKoxG+zhF3AXAGvbZogOVaztwm
-         t5adc4jBMoPY5cIvWoVF3D49NPnBM7YF3K6kKhy5BZJp9G8U2WBSNC3RenxgIW7fD4ZN
-         hQHeJBGCFqr34Nd9gaadGihRi66NB2jA3GgphsYfEb3/QU1p7W3fgtlM42EBxZdPmqH8
-         /K+892bQZkQ59JIYu1PY5mb7wZg5m54hBb44UNg/sTxt/M5K5xSDFDSLSzI/GCNN7Kvr
-         PCQg==
+        with ESMTP id S237290AbhDASTE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Apr 2021 14:19:04 -0400
+Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B855BC02FE96;
+        Thu,  1 Apr 2021 09:02:24 -0700 (PDT)
+Received: by mail-oi1-x233.google.com with SMTP id w70so2300029oie.0;
+        Thu, 01 Apr 2021 09:02:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=WfIBTVO/GVb+L0JRI57dnbShae2nCBHRW3TkOl+Bw9c=;
-        b=iTeJLWt/kfp0cx0rt6n2d//T5TX70iUgsnhkObkDGZLttyXIs0jiMWs/GBYmYDTqIX
-         gMj1eIc01g2FjbANBv2Gz3H1vpRj1zBH1bHrAUVH7MWfHs3R60rtNJ6fogTDImYf/jxA
-         iB6DKeyXCtr+YtnjuByP48kaRpEm2QkAtw+zyFVLrdgS1Kr0VYgD+O2wbP/PT3o1dGnK
-         MFFsuwUU9lvwBgYrkNgNY9lRu8+Qs7QZ1E1z6Yu0NcZg6pkB5BL35osyE0bRxv63mrxc
-         zdLu+d396SKdFpBRwTqNEkFT6dgqZA1uOWZzLo/zYrtYn23X8vq/U2Caw9zmPnaWueD+
-         AsVQ==
-X-Gm-Message-State: AOAM532kZyKwk/2BPhSUSebkcX6XAZCKHhGukRBtEV0qfnd9eZ5LuLDG
-        5/QueD4Kao1lCAfcKy+ymUYJ3g==
-X-Google-Smtp-Source: ABdhPJwbvZChYAEtTVMky5o5FU/BekvQk278c+LWWRfjZBLf/XguRfxoyjdm/n9ohtlBhFu7YHbsoA==
-X-Received: by 2002:a17:902:c1c4:b029:e6:7bc9:71fd with SMTP id c4-20020a170902c1c4b02900e67bc971fdmr8010711plc.5.1617287068290;
-        Thu, 01 Apr 2021 07:24:28 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id a15sm5904827pju.34.2021.04.01.07.24.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Apr 2021 07:24:27 -0700 (PDT)
-Message-ID: <6065d79b.1c69fb81.81e12.e7f2@mx.google.com>
-Date:   Thu, 01 Apr 2021 07:24:27 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=NceWVRPYS7nNidFPd8tJDQfG9QQ6Am5einMv70McUlY=;
+        b=qAiDjUgsiJhKQpQgHxcvrxqSzpnXMiIzfeINJLQa0z5FzehGNhAQOCvLGixbfq0gki
+         yfXOBWwVei8e5M9Y1fd31JpTbNbYyFKNVwKNW9+yCCqzyQSzuj0hzsWAgOHWujneTWJ1
+         vwd9u5KZlejXJ4yzsGeUMz8Z0CbR5v46OhHtllrbAGxLO1rPF/SL3SgWWISk3QtsklR/
+         QBG0uD7FBX8pj60hwncr/fiFmkNnDk5dZxxi3RBtZBCwkCURbB1rRLxOcuBEMb9PEkZO
+         q/56Y5Ef3Us7uju3SISEMnhB6KOWBErcQ1jY476lnyO4PxG4ENLXO2/tkuc6GoHPal+b
+         3pqw==
+X-Gm-Message-State: AOAM531EAPngxAHFzPBYWOo95u5s28TfiD8POXWlzRfch/u8oyNJSkk8
+        L2naWJ7+hLFEeOvNMdNozKrMYrRFavHKajqBwP8=
+X-Google-Smtp-Source: ABdhPJzd0pdsMy9851vuDBDqnWIPtooI4jg6cdkcFhkWb4gghJPio4WVgXsX3ocLeVWwHrgLXiWvwYl/wMQ9HtItZ6M=
+X-Received: by 2002:aca:c4c5:: with SMTP id u188mr6514855oif.71.1617292943979;
+ Thu, 01 Apr 2021 09:02:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: test
-X-Kernelci-Kernel: v5.12-rc5-47-g85f34ae663986
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing baseline: 81 runs,
- 1 regressions (v5.12-rc5-47-g85f34ae663986)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+References: <MW2PR2101MB08924CD74C6EB773C4D5FAFDBF7E9@MW2PR2101MB0892.namprd21.prod.outlook.com>
+ <CAJZ5v0g+=AnRAmAAn8NpHm8bmZ1WkwDpjb5rr_zPOVABW1PYug@mail.gmail.com>
+ <4e95307db43e2f7cc8516e645b81db7db0dd8ad4.camel@redhat.com>
+ <CAMj1kXHg2RDgwmOhJkaAPoWeHpxnd6tixp94Kha1-bzNvCaQUg@mail.gmail.com>
+ <504652e70f0a4e42e4927583b9ed47cd78590329.camel@redhat.com>
+ <CAMj1kXHRduBs0TJcLC4iMkyoGXyyrXPM_WpVVij33ki8THf9Kw@mail.gmail.com>
+ <CAJZ5v0hKPBtUzGKfGHD6KX-c2QEETfatCkNjCK8ukh-AhVfUhA@mail.gmail.com> <CAMj1kXFrBGTitSNYZC58=UdmfgbbF2MvTcfLVRpkxJ-uYX3piw@mail.gmail.com>
+In-Reply-To: <CAMj1kXFrBGTitSNYZC58=UdmfgbbF2MvTcfLVRpkxJ-uYX3piw@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 1 Apr 2021 18:02:12 +0200
+Message-ID: <CAJZ5v0iPneWK69GTzWigdXjjb6VN6Hyd5=hLCdGasfnTxXCYNg@mail.gmail.com>
+Subject: Re: Fix hibernation in FIPS mode?
+To:     Ard Biesheuvel <ardb@kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Simo Sorce <simo@redhat.com>, Dexuan Cui <decui@microsoft.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "crecklin@redhat.com" <crecklin@redhat.com>,
+        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 81 runs, 1 regressions (v5.12-rc5-47-g85f34ae663986)
+On Thu, Apr 1, 2021 at 3:54 PM Ard Biesheuvel <ardb@kernel.org> wrote:
+>
+> On Thu, 1 Apr 2021 at 15:38, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Thu, Apr 1, 2021 at 10:47 AM Ard Biesheuvel <ardb@kernel.org> wrote:
+> > >
+> > > On Tue, 30 Mar 2021 at 21:56, Simo Sorce <simo@redhat.com> wrote:
+> > > >
+> > > > On Tue, 2021-03-30 at 21:45 +0200, Ard Biesheuvel wrote:
+> > > > > On Tue, 30 Mar 2021 at 20:05, Simo Sorce <simo@redhat.com> wrote:
+> > > > > > On Tue, 2021-03-30 at 16:46 +0200, Rafael J. Wysocki wrote:
+> > > > > > > On Tue, Mar 30, 2021 at 12:14 AM Dexuan Cui <decui@microsoft.com> wrote:
+> > > > > > > > Hi,
+> > > > > > > > MD5 was marked incompliant with FIPS in 2009:
+> > > > > > > > a3bef3a31a19 ("crypto: testmgr - Skip algs not flagged fips_allowed in fips mode")
+> > > > > > > > a1915d51e8e7 ("crypto: testmgr - Mark algs allowed in fips mode")
+> > > > > > > >
+> > > > > > > > But hibernation_e820_save() is still using MD5, and fails in FIPS mode
+> > > > > > > > due to the 2018 patch:
+> > > > > > > > 749fa17093ff ("PM / hibernate: Check the success of generating md5 digest before hibernation")
+> > > > > > > >
+> > > > > > > > As a result, hibernation doesn't work when FIPS is on.
+> > > > > > > >
+> > > > > > > > Do you think if hibernation_e820_save() should be changed to use a
+> > > > > > > > FIPS-compliant algorithm like SHA-1?
+> > > > > > >
+> > > > > > > I would say yes, it should.
+> > > > > > >
+> > > > > > > > PS, currently it looks like FIPS mode is broken in the mainline:
+> > > > > > > > https://www.mail-archive.com/linux-crypto@vger.kernel.org/msg49414.html
+> > > > > >
+> > > > > > FYI, SHA-1 is not a good choice, it is only permitted in HMAC
+> > > > > > constructions and only for specified uses. If you need to change
+> > > > > > algorithm you should go straight to SHA-2 or SHA-3 based hashes.
+> > > > > >
+> > > > >
+> > > > > What is the reason for using a [broken] cryptographic hash here? if
+> > > > > this is just an integrity check, better use CRC32
+> >
+> > Not really.
+> >
+> > CRC32 is not really sufficient for integrity checking here AFAICS.  It
+> > might be made a fallback option if MD5 is not available, but making it
+> > the default would be somewhat over the top IMO.
+> >
+> > > > If the integrity check is used exclusively to verify there were no
+> > > > accidental changes and is not used as a security measure, by all means
+> > > > I agree that using crc32 is a better idea.
+> > > >
+> > >
+> > > Looking at 62a03defeabd58f74e07ca030d6c21e069d4d88e which introduced
+> > > this, it is only a best effort check which is simply omitted if md5
+> > > happens to be unavailable, so there is definitely no need for crypto
+> > > here.
+> >
+> > Yes, it is about integrity checking only.  No, CRC32 is not equivalent
+> > to MD5 in that respect AFAICS.
+> >
+>
+> There are two possibilities:
+> - we care about an adversary attempting to forge a collision, in which
+> case you need a cryptographic hash which is not broken;
+> - we only care about integrity, in which case crypto is overkill, and
+> CRC32 is sufficient. (Note that the likelihood of an honest,
+> inadvertent modification not being caught by CRC32 is 1 in 4 billion)
 
-Regressions Summary
--------------------
+That depends on how you count.
 
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+Surely, there are modifications caught by MD5 that will not be caught by CRC32.
 
+> MD5 does not meet either requirement, given that it is known to be
+> broken, and overkill for simple integrity checks. MD5 should be phased
+> out and removed, and moving this code onto the correct abstraction
+> would be a reasonable step towards that goal.
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.12-rc=
-5-47-g85f34ae663986/plan/baseline/
+This clearly is a matter of opinion.
 
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.12-rc5-47-g85f34ae663986
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      85f34ae663986081df77a1df26e08fd1978573a3 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/6065d0275ba6b0c9fddac6d1
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.12-rc5-47-g85f34=
-ae663986/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.12-rc5-47-g85f34=
-ae663986/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
-.05-5-g2f114cc7102b/arm64/baseline/rootfs.cpio.gz =
-
-
-
-  * baseline.login: https://kernelci.org/test/case/id/6065d0275ba6b0c9fddac=
-6d2
-        new failure (last pass: v5.12-rc5-47-g506a524e05e2) =
-
- =20
+I'm not religious about it though.  If there is a general consensus
+that CRC32 is sufficient for error detection in hibernation files,
+then it can be used.  So is there such a consensus and if so, can you
+give me a pointer to some research that it is based on?
