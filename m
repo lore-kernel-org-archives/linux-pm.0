@@ -2,189 +2,144 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D2ADC43461
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Apr 2021 20:35:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E5D1C433B4
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Apr 2021 08:12:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E4A0161205
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Apr 2021 20:35:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6365C61396
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Apr 2021 08:12:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231675AbhDDUfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Apr 2021 16:35:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35436 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231639AbhDDUf3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Apr 2021 16:35:29 -0400
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70805C061797;
-        Sun,  4 Apr 2021 13:35:21 -0700 (PDT)
-Received: by mail-ej1-x634.google.com with SMTP id ap14so14395069ejc.0;
-        Sun, 04 Apr 2021 13:35:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=21TRq5T7n/YlJzaiHd/rYW7/ONn9U06XAcWKZPDtNYI=;
-        b=M4eDEHA7l9wyZKJKdkZ3+WB+zAsyqVMa09C0V4FY+OtPURMur+wQEEu556G6Vr60aE
-         JHYzgsAezfJLn4gGjtWhb5HOtAsNhd4RKEaZJ7R72PJNNC5hv7+1jEBoTArQvhd5nv3o
-         d4/yEs0fGzaJGecJ0yYA8b/MjPUFNst42iBh1Vku40ntMYrw7SyUFbAJQuz0m1uawdwo
-         zSFXgjFfm7ChRDZ3prphxFwfglmu3y80bJJ295zfk8diP14mvMKOcvAfbddFAaNum2tI
-         3rnGtbyuJF0ZOXeFiWVr7x1jO7uEVo+7XExUfzmroDb+OsbfcEhox7RmWMHca/13+F3+
-         I5GQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=21TRq5T7n/YlJzaiHd/rYW7/ONn9U06XAcWKZPDtNYI=;
-        b=cqMlfzxDY+W3WIaamf7rik0PZ0ucZcXsqnpku7VwUzPI3Vzo5DFi30r6ykI/c7O5+8
-         Dx4tMILNceEJTKIWyCNw4YyckMHeUqSh1ixh5rLyWJ/cfYCIOKRI/iLx4zLfr5tfQsCN
-         ZdFp3ywQd+9TcPO6kI3dVFMEOS59+3rBaxuOEBX8mL6j6jcdlF+SMY3tkQhZxJNPXONY
-         xO2VOi04osvvF5JY3MrzZdn0J6C/As6KccGm6P0nyhSYAka0O0FH2rdS27XfB5m0e3dR
-         mylOS+Vhl63iXJp5AabKbIYis5fJZ88VH8Omll8guaGuafsiOEwGPOawctWzGKwn7GG0
-         oqgA==
-X-Gm-Message-State: AOAM531axKRuECrKuTQ0oB0Q6d2Rl9NY86dQxAvNC4KbublNaS1xCtw9
-        qKlAUDN7rL7qpslzCCMXuo8hHQzatkU=
-X-Google-Smtp-Source: ABdhPJyNXcRjlippyXIMc/+PnZGk2e+9H+1Uy7aUEKqxmoGDzV/o/WLhyc7AWbrwvZr1LTAO9WqoBw==
-X-Received: by 2002:a17:906:814a:: with SMTP id z10mr11054668ejw.476.1617568520142;
-        Sun, 04 Apr 2021 13:35:20 -0700 (PDT)
-Received: from Ansuel-xps.localdomain (host-79-52-251-187.retail.telecomitalia.it. [79.52.251.187])
-        by smtp.googlemail.com with ESMTPSA id s4sm7191140ejf.108.2021.04.04.13.35.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Apr 2021 13:35:19 -0700 (PDT)
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>, Rob Herring <robh@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v14 9/9] dt-bindings: thermal: tsens: Document ipq8064 bindings
-Date:   Sun,  4 Apr 2021 16:48:23 +0200
-Message-Id: <20210404144823.31867-10-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210404144823.31867-1-ansuelsmth@gmail.com>
-References: <20210404144823.31867-1-ansuelsmth@gmail.com>
+        id S232185AbhDEIMQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Apr 2021 04:12:16 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56716 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232041AbhDEIMQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Apr 2021 04:12:16 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 687081F40EDB
+Received: by earth.universe (Postfix, from userid 1000)
+        id 4241E3C0C96; Mon,  5 Apr 2021 10:12:07 +0200 (CEST)
+Date:   Mon, 5 Apr 2021 10:12:07 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Carl Philipp Klemm <philipp@uvos.xyz>
+Cc:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
+        Arthur Demchenkov <spinal.by@gmail.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Merlijn Wajer <merlijn@wizzup.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/5] power: supply: cpcap-battery: invalidate
+ empty->counter_uah and charge_full when they are grossly wrong
+Message-ID: <20210405081207.oqkd37scsimj4lpo@earth.universe>
+References: <20210117224638.10c9d9aee7c0144fafd70520@uvos.xyz>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ssvre46dn3edmrrv"
+Content-Disposition: inline
+In-Reply-To: <20210117224638.10c9d9aee7c0144fafd70520@uvos.xyz>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the use of bindings used for msm8960 tsens based devices.
-msm8960 use the same gcc regs and is set as a child of the qcom gcc.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/thermal/qcom-tsens.yaml          | 56 ++++++++++++++++---
- 1 file changed, 48 insertions(+), 8 deletions(-)
+--ssvre46dn3edmrrv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 95462e071ab4..1785b1c75a3c 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -19,6 +19,11 @@ description: |
- properties:
-   compatible:
-     oneOf:
-+      - description: msm9860 TSENS based
-+        items:
-+          - enum:
-+              - qcom,ipq8064-tsens
-+
-       - description: v0.1 of TSENS
-         items:
-           - enum:
-@@ -73,7 +78,9 @@ properties:
-     maxItems: 2
-     items:
-       - const: calib
--      - const: calib_sel
-+      - enum:
-+          - calib_backup
-+          - calib_sel
- 
-   "#qcom,sensors":
-     description:
-@@ -88,12 +95,20 @@ properties:
-       Number of cells required to uniquely identify the thermal sensors. Since
-       we have multiple sensors this is set to 1
- 
-+required:
-+  - compatible
-+  - interrupts
-+  - interrupt-names
-+  - "#thermal-sensor-cells"
-+  - "#qcom,sensors"
-+
- allOf:
-   - if:
-       properties:
-         compatible:
-           contains:
-             enum:
-+              - qcom,ipq8064-tsens
-               - qcom,msm8916-tsens
-               - qcom,msm8974-tsens
-               - qcom,msm8976-tsens
-@@ -114,17 +129,42 @@ allOf:
-         interrupt-names:
-           minItems: 2
- 
--required:
--  - compatible
--  - reg
--  - "#qcom,sensors"
--  - interrupts
--  - interrupt-names
--  - "#thermal-sensor-cells"
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,tsens-v0_1
-+              - qcom,tsens-v1
-+              - qcom,tsens-v2
-+
-+    then:
-+      required:
-+        - reg
- 
- additionalProperties: false
- 
- examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    // Example msm9860 based SoC (ipq8064):
-+    gcc: clock-controller {
-+
-+           /* ... */
-+
-+           tsens: thermal-sensor {
-+                compatible = "qcom,ipq8064-tsens";
-+
-+                 nvmem-cells = <&tsens_calib>, <&tsens_calib_backup>;
-+                 nvmem-cell-names = "calib", "calib_backup";
-+                 interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
-+                 interrupt-names = "uplow";
-+
-+                 #qcom,sensors = <11>;
-+                 #thermal-sensor-cells = <1>;
-+          };
-+    };
-+
-   - |
-     #include <dt-bindings/interrupt-controller/arm-gic.h>
-     // Example 1 (legacy: for pre v1 IP):
--- 
-2.30.2
+Hi,
 
+On Sun, Jan 17, 2021 at 10:46:38PM +0100, Carl Philipp Klemm wrote:
+> This invalidates empty->counter_uah and charge_full when charge_now indic=
+ates
+> that they are grossly wrong and adds some tolerance to
+> POWER_SUPPLY_PROP_CHARGE_FULL to allow for inaccuracies in the charge cou=
+nter
+> and manufacturing tolerances in the battery.
+>=20
+> Signed-off-by: Carl Philipp Klemm <philipp@uvos.xyz>
+> ---
+>  drivers/power/supply/cpcap-battery.c | 18 +++++++++++++++---
+>  1 file changed, 15 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/=
+cpcap-battery.c
+> index 86ed41d9627f..8ae0c9c7ebcb 100644
+> --- a/drivers/power/supply/cpcap-battery.c
+> +++ b/drivers/power/supply/cpcap-battery.c
+> @@ -667,10 +667,22 @@ static int cpcap_battery_get_property(struct power_=
+supply *psy,
+>  		if (!empty->voltage)
+>  			return -ENODATA;
+>  		val->intval =3D empty->counter_uah - latest->counter_uah;
+> -		if (val->intval < 0)
+> +		if (val->intval < 0) {
+> +			if (ddata->charge_full && abs(val->intval) > ddata->charge_full/5) {
+
+Please add a comment what this check is doing. It's hard to grasp
+without context of the commit when reading the driver at a later
+point.
+
+/* Assume invalid config if CHARGE_NOW is -20% */
+
+> +				empty->voltage =3D 0;
+> +				ddata->charge_full =3D 0;
+> +				return -ENODATA;
+> +			}
+>  			val->intval =3D 0;
+> -		else if (ddata->charge_full && ddata->charge_full < val->intval)
+> +		}
+> +		else if (ddata->charge_full && ddata->charge_full < val->intval) {
+
+put closing curly bracket into the same line as the else. Also
+please add sth. like
+
+/* Assume invalid config if CHARGE_NOW exceeds CHARGE_FULL by 20% */
+
+> +			if (val->intval > (6*ddata->charge_full)/5) {
+> +				empty->voltage =3D 0;
+> +				ddata->charge_full =3D 0;
+> +				return -ENODATA;
+> +			}
+>  			val->intval =3D ddata->charge_full;
+> +		}
+>  		break;
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL:
+>  		if (!ddata->charge_full)
+> @@ -747,7 +759,7 @@ static int cpcap_battery_set_property(struct power_su=
+pply *psy,
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL:
+>  		if (val->intval < 0)
+>  			return -EINVAL;
+> -		if (val->intval > ddata->config.info.charge_full_design)
+> +		if (val->intval > (6*ddata->config.info.charge_full_design)/5)
+>  			return -EINVAL;
+> =20
+>  		ddata->charge_full =3D val->intval;
+
+-- Sebastian
+
+--ssvre46dn3edmrrv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmBqxlAACgkQ2O7X88g7
++pp+4A//WNcSZJnmCk+7d8molNw4pQC8m8OB59QVII+Uh9iOk7TldIrYs6n0Ph2n
+TWRhrm7iDRkJhoJzSljtOeKJThXSY5enDGuGsIiTxwTO5EEUNGajbm2lOpbhTv8m
+/FvKreJJdsEzNDdgwgDWuw+FCvkhw926YXipqmqYvZ2HaITefujWyfJ/avPRM6be
+WUyRtFICYEsAcwI6wsD7OKqlNpTtut1CNcap4WiR1tqbFu9fTMivNrrhsyBVNEl1
+8twbzEaIio8F3/C+RQlsx8qA0hDh+n/eyjZxPKI7yw4UFTxcYg6vc7CDvgCHSTA/
+FDW1BHv91CVqe9tmnDVOOtUKDYtH4+H0h2RnRNwUuMo4A75JbtSko4FiJ9EI2+bS
+o0NwDzknAeij2Bsk1UttjN3Ztb9JXHfbHc2653mbJt7sWq66MAkswejhCFWlqMrY
+2CNUxi5GZc5HYCd0Oz6G9JKqxfUPZA+5jlP52dy6iGZqiuVM43Yr6uhUtTWyWMu7
+O8frwXsfVGXEkXgi3jprXi49odvgBk5xNa3tqTO4GpqEAl9KzZUKRIMmIRe9d4mL
+uChGycJkguvQMWulFLUIQMDsZyA3EGALvu7lsueQLBi+aR6qf3M3bXl5XJfq9Wf4
+kn8Pm16Wxbe+m2EqvriAs+ND6qaAz++0PPRYlJEJtTxUBxbe4JI=
+=wqOj
+-----END PGP SIGNATURE-----
+
+--ssvre46dn3edmrrv--
