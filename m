@@ -2,89 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D24AC433ED
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 08:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3394EC433B4
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 09:19:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD739613C0
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 08:44:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3A4A613A0
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 09:19:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244467AbhDFIoS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Apr 2021 04:44:18 -0400
-Received: from foss.arm.com ([217.140.110.172]:38664 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S244462AbhDFIoL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Apr 2021 04:44:11 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 306C91FB;
-        Tue,  6 Apr 2021 01:44:04 -0700 (PDT)
-Received: from [10.57.24.162] (unknown [10.57.24.162])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E74D33F694;
-        Tue,  6 Apr 2021 01:44:02 -0700 (PDT)
-Subject: Re: [PATCH 1/2] thermal: power_allocator: maintain the device
- statistics from going stale
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        amitk@kernel.org, rui.zhang@intel.com
-References: <20210331163352.32416-1-lukasz.luba@arm.com>
- <20210331163352.32416-2-lukasz.luba@arm.com>
- <b27e0c79-de27-f9b1-ad16-17825b302615@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <1f0710d5-cd78-dfff-1ce2-bba5f6e469b7@arm.com>
-Date:   Tue, 6 Apr 2021 09:44:02 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S235399AbhDFJTj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Apr 2021 05:19:39 -0400
+Received: from szxga07-in.huawei.com ([45.249.212.35]:16346 "EHLO
+        szxga07-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S244822AbhDFJTi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Apr 2021 05:19:38 -0400
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
+        by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4FF23f67Xsz94Cl;
+        Tue,  6 Apr 2021 17:17:18 +0800 (CST)
+Received: from thunder-town.china.huawei.com (10.174.179.202) by
+ DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
+ 14.3.498.0; Tue, 6 Apr 2021 17:19:22 +0800
+From:   Zhen Lei <thunder.leizhen@huawei.com>
+To:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+        "Zhang Rui" <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Amit Kucheria" <amitk@kernel.org>,
+        linux-pm <linux-pm@vger.kernel.org>,
+        linux-omap <linux-omap@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+CC:     Zhen Lei <thunder.leizhen@huawei.com>
+Subject: [PATCH v2 1/1] thermal: ti-soc-thermal: Remove duplicated header file inclusion
+Date:   Tue, 6 Apr 2021 17:19:12 +0800
+Message-ID: <20210406091912.2583-2-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.26.0.windows.1
+In-Reply-To: <20210406091912.2583-1-thunder.leizhen@huawei.com>
+References: <20210406091912.2583-1-thunder.leizhen@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <b27e0c79-de27-f9b1-ad16-17825b302615@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.174.179.202]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Delete one of the header files <linux/of_device.h> that are included
+twice, all included header files are then rearranged alphabetically.
 
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 35 ++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 18 deletions(-)
 
-On 4/2/21 4:54 PM, Daniel Lezcano wrote:
-> On 31/03/2021 18:33, Lukasz Luba wrote:
->> When the temperature is below the first activation trip point the cooling
->> devices are not checked, so they cannot maintain fresh statistics. It
->> leads into the situation, when temperature crosses first trip point, the
->> statistics are stale and show state for very long period.
-> 
-> Can you elaborate the statistics you are referring to ?
-> 
-> I can understand the pid controller needs temperature but I don't
-> understand the statistics with the cooling device.
-> 
-> 
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 8a3646e26ddd208..5e7e80b4a8171c4 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -9,30 +9,29 @@
+  *   Eduardo Valentin <eduardo.valentin@ti.com>
+  */
+ 
+-#include <linux/module.h>
++#include <linux/clk.h>
++#include <linux/cpu_pm.h>
++#include <linux/device.h>
++#include <linux/err.h>
+ #include <linux/export.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/init.h>
+-#include <linux/kernel.h>
+ #include <linux/interrupt.h>
+-#include <linux/clk.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/platform_device.h>
+-#include <linux/err.h>
+-#include <linux/types.h>
+-#include <linux/spinlock.h>
+-#include <linux/sys_soc.h>
+-#include <linux/reboot.h>
+-#include <linux/of_device.h>
+-#include <linux/of_platform.h>
+-#include <linux/of_irq.h>
+ #include <linux/io.h>
+ #include <linux/iopoll.h>
+-#include <linux/cpu_pm.h>
+-#include <linux/device.h>
+-#include <linux/pm_runtime.h>
+-#include <linux/pm.h>
+-#include <linux/of.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/of_device.h>
++#include <linux/of.h>
++#include <linux/of_irq.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/pm_runtime.h>
++#include <linux/reboot.h>
++#include <linux/spinlock.h>
++#include <linux/sys_soc.h>
++#include <linux/types.h>
+ 
+ #include "ti-bandgap.h"
+ 
+-- 
+1.8.3
 
-The allocate_power() calls cooling_ops->get_requested_power(),
-which is for CPUs cpufreq_get_requested_power() function.
-In that cpufreq implementation for !SMP we still has the
-issue of stale statistics. Viresh, when he introduced the usage
-of sched_cpu_util(), he fixed that 'long non-meaningful period'
-of the broken statistics and it can be found since v5.12-rc1.
-
-The bug is still there for the !SMP. Look at the way how idle time
-is calculated in get_load() [1]. It relies on 'idle_time->timestamp'
-for calculating the period. But when this function is not called,
-the value can be very far away in time, e.g. a few seconds back,
-when the last allocate_power() was called.
-
-The bug is there for both SMP and !SMP [2] for older kernels, which can
-be used in Android or ChromeOS. I've been considering to put this simple
-IPA fix also to some other kernels, because Viresh's change is more
-a 'feature' and does not cover both platforms.
-
-Regards,
-Lukasz
-
-[1] 
-https://elixir.bootlin.com/linux/v5.12-rc5/source/drivers/thermal/cpufreq_cooling.c#L156
-[2] 
-https://elixir.bootlin.com/linux/v5.11.11/source/drivers/thermal/cpufreq_cooling.c#L143
 
