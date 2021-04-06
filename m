@@ -2,61 +2,164 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44DC1C43461
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 09:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74A5DC433ED
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 10:16:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0A7A8613C7
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 09:19:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4355B613CB
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Apr 2021 10:16:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244828AbhDFJTk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Apr 2021 05:19:40 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:16345 "EHLO
-        szxga07-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244823AbhDFJTi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Apr 2021 05:19:38 -0400
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
-        by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4FF23f5s0mz94Ck;
-        Tue,  6 Apr 2021 17:17:18 +0800 (CST)
-Received: from thunder-town.china.huawei.com (10.174.179.202) by
- DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.498.0; Tue, 6 Apr 2021 17:19:21 +0800
-From:   Zhen Lei <thunder.leizhen@huawei.com>
-To:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
-        "Zhang Rui" <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Amit Kucheria" <amitk@kernel.org>,
-        linux-pm <linux-pm@vger.kernel.org>,
-        linux-omap <linux-omap@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-CC:     Zhen Lei <thunder.leizhen@huawei.com>
-Subject: [PATCH v2 0/1] thermal: ti-soc-thermal: Remove duplicated header file inclusion
-Date:   Tue, 6 Apr 2021 17:19:11 +0800
-Message-ID: <20210406091912.2583-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.26.0.windows.1
+        id S242661AbhDFKQ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Apr 2021 06:16:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43856 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232696AbhDFKQ1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Apr 2021 06:16:27 -0400
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1960C06174A
+        for <linux-pm@vger.kernel.org>; Tue,  6 Apr 2021 03:16:19 -0700 (PDT)
+Received: by mail-wm1-x331.google.com with SMTP id z6-20020a1c4c060000b029010f13694ba2so6992859wmf.5
+        for <linux-pm@vger.kernel.org>; Tue, 06 Apr 2021 03:16:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=oyIf/x1l5BfzE7VF1G+hmZ5fvaHAS0ZsNoW+4Cxe2pc=;
+        b=lpHCeEmTYmpp3dv39j2GK0W6pYHt3nK4abRD1Lt8TofuRYc+0PeGuRAoID1n9je/h6
+         sciNQIovVHSmNcJefPFeVQEKHxPTPVOnBd/1sCWJOZSbhXC1GmAt46ImGkad04HHGFk1
+         LF6CxDE8KVMx1vXfoiDADRhtxQmytrgsMGFQM/cKBtkPtpwi2y81sUxhhDSrYZPvIXYZ
+         /h4Jx2+f4Iw3Z5Ph/OwvCohY1qRBYfI3gm+FCOHhVpaDF+kqz9N0uSlrqkByWzJevRM5
+         lA8SwpIM51LvQWk3sszq3OyfWdOHukx4lMLUrNsk1uRD4Xg6u3lza/LHkaC1qzjrn1Ga
+         H2mA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=oyIf/x1l5BfzE7VF1G+hmZ5fvaHAS0ZsNoW+4Cxe2pc=;
+        b=Hll8ka41rHM9QXw88J+QNSOfji4dhABX+wmMf7HIpeTMnzJIYxg9Cj/+ChkHsgH96/
+         IA0T5Go5jc/RdOulLfnpmTRARU6Qn0V2bp3VVkvCRq26TRFz8KH34taRyh7j57mJZLeI
+         pPCuVXHRxknd/JGmdU7CfbuqzdZFvbz0fIWwdYmz0OSQBER+F5MrJ0xgvFIc1+1bXVPd
+         elMv26ykQJaxepSyE8loaQx554OLtuQALvoEtwM0kB2FflTm3gOzchtQkfAPejAg5TTh
+         F/pU/z/xl5rOfu3a61a4WaFFSuxDnTJHwHGS4t1602xuRDz4CtDYGkc/ZmiZDmrHGJqH
+         qtHg==
+X-Gm-Message-State: AOAM531bVi0hcO5ivPUBDu1U/2jL+Gg86OnLQJKS3m3f4uuotYzy3UzX
+        +K2DKKr7iZ+LeSkvOXS48QkAyzg9QO1Jcw==
+X-Google-Smtp-Source: ABdhPJyRBdWfyZF7odkRc/rVdzu6OWDZtlPPm4/fVx3syA+o0ENWmozYw3JONODf2yOiyCU3Hrj98w==
+X-Received: by 2002:a1c:7d56:: with SMTP id y83mr3483585wmc.6.1617704178588;
+        Tue, 06 Apr 2021 03:16:18 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:d506:6f5d:adb6:da14? ([2a01:e34:ed2f:f020:d506:6f5d:adb6:da14])
+        by smtp.googlemail.com with ESMTPSA id w7sm6525106wrt.15.2021.04.06.03.16.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 06 Apr 2021 03:16:17 -0700 (PDT)
+Subject: Re: [PATCH 1/2] thermal: power_allocator: maintain the device
+ statistics from going stale
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        amitk@kernel.org, rui.zhang@intel.com
+References: <20210331163352.32416-1-lukasz.luba@arm.com>
+ <20210331163352.32416-2-lukasz.luba@arm.com>
+ <b27e0c79-de27-f9b1-ad16-17825b302615@linaro.org>
+ <1f0710d5-cd78-dfff-1ce2-bba5f6e469b7@arm.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <1a0b6e4a-1717-91d6-a664-d50e6aa8a809@linaro.org>
+Date:   Tue, 6 Apr 2021 12:16:16 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.174.179.202]
-X-CFilter-Loop: Reflected
+In-Reply-To: <1f0710d5-cd78-dfff-1ce2-bba5f6e469b7@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-v1 --> v2:
-Arrange all included header files in alphabetical order.
+On 06/04/2021 10:44, Lukasz Luba wrote:
+> 
+> 
+> On 4/2/21 4:54 PM, Daniel Lezcano wrote:
+>> On 31/03/2021 18:33, Lukasz Luba wrote:
+>>> When the temperature is below the first activation trip point the
+>>> cooling
+>>> devices are not checked, so they cannot maintain fresh statistics. It
+>>> leads into the situation, when temperature crosses first trip point, the
+>>> statistics are stale and show state for very long period.
+>>
+>> Can you elaborate the statistics you are referring to ?
+>>
+>> I can understand the pid controller needs temperature but I don't
+>> understand the statistics with the cooling device.
+>>
+>>
+> 
+> The allocate_power() calls cooling_ops->get_requested_power(),
+> which is for CPUs cpufreq_get_requested_power() function.
+> In that cpufreq implementation for !SMP we still has the
+> issue of stale statistics. Viresh, when he introduced the usage
+> of sched_cpu_util(), he fixed that 'long non-meaningful period'
+> of the broken statistics and it can be found since v5.12-rc1.
+> 
+> The bug is still there for the !SMP. Look at the way how idle time
+> is calculated in get_load() [1]. It relies on 'idle_time->timestamp'
+> for calculating the period. But when this function is not called,
+> the value can be very far away in time, e.g. a few seconds back,
+> when the last allocate_power() was called.
+> 
+> The bug is there for both SMP and !SMP [2] for older kernels, which can
+> be used in Android or ChromeOS. I've been considering to put this simple
+> IPA fix also to some other kernels, because Viresh's change is more
+> a 'feature' and does not cover both platforms.
+
+Ok, so IIUC, the temperature is needed as well as the power to do the
+connection for the pid loop (temp vs power).
+
+I'm trying to figure out how to delegate the mitigation switch on/off to
+the core code instead of the governor (and kill tz->passive) but how
+things are implemented for the IPA makes this very difficult.
+
+AFAICT, this fix is not correct.
+
+If the temperature is below the 'switch_on_temp' the passive is set to
+zero and the throttle function is not called anymore (assuming it is
+interrupt mode not polling mode), so the power number is not updated also.
+
+My suggestion is to do the following:
+
+	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
+
+					&switch_on_temp);
+	if (ret)
+		return ret;
+
+	if ((tz->temperature < switch_on_temp)) {
+
+		/* Nothing to do */
+		if (tz->last_temperature < switch_on_temp)
+			return 0;
+
+		/* Switch off */		
+                tz->passive = 0;
+                reset_pid_controller(params);
+                allow_maximum_power(tz);
+                return 0;
+        }
+
+	/* Collect the power numbers */
+	...
 
 
-Zhen Lei (1):
-  thermal: ti-soc-thermal: Remove duplicated header file inclusion
+Two birds in a shot.
 
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 35 ++++++++++++++---------------
- 1 file changed, 17 insertions(+), 18 deletions(-)
+
 
 -- 
-1.8.3
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
