@@ -2,74 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 558DFC43460
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:49:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97E97C433ED
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:51:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 10E7A61158
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:49:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A49E61177
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:51:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230470AbhDHJtp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Apr 2021 05:49:45 -0400
-Received: from szxga04-in.huawei.com ([45.249.212.190]:16087 "EHLO
-        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230322AbhDHJtp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 05:49:45 -0400
-Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.60])
-        by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FGGdN5Kxnz19Krq;
-        Thu,  8 Apr 2021 17:47:20 +0800 (CST)
-Received: from huawei.com (10.67.174.117) by DGGEMS411-HUB.china.huawei.com
- (10.3.19.211) with Microsoft SMTP Server id 14.3.498.0; Thu, 8 Apr 2021
- 17:49:22 +0800
-From:   Ruiqi Gong <gongruiqi1@huawei.com>
-To:     <gongruiqi1@huawei.com>, Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        "Scott Branden" <sbranden@broadcom.com>,
-        <bcm-kernel-feedback-list@broadcom.com>
-CC:     Wang Weiyang <wangweiyang2@huawei.com>, <linux-pm@vger.kernel.org>,
-        <linux-rpi-kernel@lists.infradead.org>,
+        id S231301AbhDHJvy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Apr 2021 05:51:54 -0400
+Received: from Mailgw01.mediatek.com ([1.203.163.78]:2708 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S229686AbhDHJvy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 05:51:54 -0400
+X-UUID: 3d628607a0c742699c5e430d67f2cf3d-20210408
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=DhXrt3L4CKxUl57HEQInxirgPEfKt48YlqcSx9oo5a8=;
+        b=TH4uvBxi42WGWVOPlxcK2pS/M8nrP96H81le+D77xFD24qDp31B04ONqs76H7nBxmhsi/un1VJfO5XsaRI0l9kUW6g33TfucN02FH+EaM595wAAMDncR0XDfZZEc5YKJzYGqhop1O6RsAtUgf1s51rsSRivpXL2aV1kLDQRz6fk=;
+X-UUID: 3d628607a0c742699c5e430d67f2cf3d-20210408
+Received: from mtkcas36.mediatek.inc [(172.27.4.253)] by mailgw01.mediatek.com
+        (envelope-from <chunfeng.yun@mediatek.com>)
+        (mailgw01.mediatek.com ESMTP with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1541904808; Thu, 08 Apr 2021 17:51:39 +0800
+Received: from MTKCAS32.mediatek.inc (172.27.4.184) by MTKMBS31N1.mediatek.inc
+ (172.27.4.69) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 8 Apr
+ 2021 17:51:36 +0800
+Received: from [10.17.3.153] (10.17.3.153) by MTKCAS32.mediatek.inc
+ (172.27.4.170) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 8 Apr 2021 17:51:35 +0800
+Message-ID: <1617875495.12105.10.camel@mhfsdcap03>
+Subject: Re: [PATCH 4/6] usb: xhci-mtk: add support runtime PM
+From:   Chunfeng Yun <chunfeng.yun@mediatek.com>
+To:     Ikjoon Jang <ikjn@chromium.org>
+CC:     Rob Herring <robh+dt@kernel.org>,
+        Mathias Nyman <mathias.nyman@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        <linux-usb@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
-        <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] thermal: bcm2835: remove redundant dev_err call in bcm2835_thermal_probe()
-Date:   Thu, 8 Apr 2021 06:03:29 -0400
-Message-ID: <20210408100329.7585-1-gongruiqi1@huawei.com>
-X-Mailer: git-send-email 2.17.1
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Tianping Fang <tianping.fang@mediatek.com>,
+        Eddie Hung <eddie.hung@mediatek.com>,
+        "Nicolas Boichat" <drinkcat@chromium.org>
+Date:   Thu, 8 Apr 2021 17:51:35 +0800
+In-Reply-To: <1617874514-12282-4-git-send-email-chunfeng.yun@mediatek.com>
+References: <1617874514-12282-1-git-send-email-chunfeng.yun@mediatek.com>
+         <1617874514-12282-4-git-send-email-chunfeng.yun@mediatek.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.10.4-0ubuntu2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.174.117]
-X-CFilter-Loop: Reflected
+X-TM-SNTS-SMTP: E15A2741E4BB7D8CC38E834F7543B5CB54B1540CBD14BBD60B90D85081593F412000:8
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is a error message within devm_ioremap_resource
-already, so remove the dev_err call to avoid redundant
-error message.
-
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Ruiqi Gong <gongruiqi1@huawei.com>
----
- drivers/thermal/broadcom/bcm2835_thermal.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index 3199977f1e73..c8e4344d5a3d 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -184,7 +184,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 	data->regs = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(data->regs)) {
- 		err = PTR_ERR(data->regs);
--		dev_err(&pdev->dev, "Could not get registers: %d\n", err);
- 		return err;
- 	}
- 
+SGkgSWtqb29uLA0KDQpPbiBUaHUsIDIwMjEtMDQtMDggYXQgMTc6MzUgKzA4MDAsIENodW5mZW5n
+IFl1biB3cm90ZToNCj4gQSBkZWRpY2F0ZWQgd2FrZXVwIGlycSB3aWxsIGJlIHVzZWQgdG8gaGFu
+ZGxlIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUsDQo+IHdlIHVzZSBkZXZfcG1fc2V0X2RlZGljYXRl
+ZF93YWtlX2lycSBBUEkgdG8gdGFrZSBjYXJlIG9mIHJlcXVlc3RpbmcNCj4gYW5kIGF0dGFjaGlu
+ZyB3YWtldXAgaXJxLCB0aGVuIHRoZSBzdXNwZW5kL3Jlc3VtZSBmcmFtZXdvcmsgd2lsbCBoZWxw
+DQo+IHRvIGVuYWJsZS9kaXNhYmxlIHdha2V1cCBpcnEuDQo+IA0KPiBUaGUgcnVudGltZSBQTSBp
+cyBkZWZhdWx0IG9mZiBzaW5jZSBzb21lIHBsYXRmb3JtcyBtYXkgbm90IHN1cHBvcnQgaXQuDQo+
+IHVzZXJzIGNhbiBlbmFibGUgaXQgdmlhIHBvd2VyL2NvbnRyb2wgKHNldCAiYXV0byIpIGluIHN5
+c2ZzLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQ2h1bmZlbmcgWXVuIDxjaHVuZmVuZy55dW5AbWVk
+aWF0ZWsuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvdXNiL2hvc3QveGhjaS1tdGsuYyB8IDE0MCAr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAx
+MjQgaW5zZXJ0aW9ucygrKSwgMTYgZGVsZXRpb25zKC0pDQoNClBsZWFzZSBoZWxwIHRvIHRlc3Qg
+dGhlIHNlcmllcyBvbiBtdDgxOTIgY2hyb21lYm9vaywgdGhhbmtzIGEgbG90DQoNCg==
 
