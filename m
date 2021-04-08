@@ -2,94 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB23FC433B4
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25263C433ED
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:30:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BBB3461181
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:10:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3E92611BE
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:30:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232332AbhDHVKc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Apr 2021 17:10:32 -0400
-Received: from condef-10.nifty.com ([202.248.20.75]:61249 "EHLO
-        condef-10.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231862AbhDHVKb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 17:10:31 -0400
-X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Apr 2021 17:10:30 EDT
-Received: from conuserg-09.nifty.com ([10.126.8.72])by condef-10.nifty.com with ESMTP id 138Kxvkl031146;
-        Fri, 9 Apr 2021 05:59:57 +0900
-Received: from localhost.localdomain (133-32-232-101.west.xps.vectant.ne.jp [133.32.232.101]) (authenticated)
-        by conuserg-09.nifty.com with ESMTP id 138Kx46x002644;
-        Fri, 9 Apr 2021 05:59:04 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 138Kx46x002644
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
-        s=dec2015msa; t=1617915545;
-        bh=CMNsK6z9omY3K2WcWrv+g7O+FAyKXeHXo7JaGbnAshQ=;
-        h=From:To:Cc:Subject:Date:From;
-        b=mCAELu1K9iNcHwzxPpkt2QeYzsGvXO3xtV9FO7Le8ftDrt50ftucQPKlGRH7qugRy
-         Ya3grKSZw2YFqHeSRjzjleVybuCxC+F+LDqxW2ODDfZDizTzeFFEkS6xgklZ8DNySf
-         sgjxmlZOGgylBtk14MT/msL3h5+0RgNqd1KhWiFHvZojROpII/2xzBmIKYk5FrMILE
-         JH+ze/FBtu+Utc1Sh1V3UapkGiwD83/r25JpRXNpVeB6q8+2OIyrktRiLXSQ5RNZ6Y
-         WT1cfD2EQCAGNfK7s+unVooFzVx+HATnyUBAB+3r8X2pMEEL5HCT32AGFF6izs7hFa
-         M6AzFOhU0pc5Q==
-X-Nifty-SrcIP: [133.32.232.101]
-From:   Masahiro Yamada <masahiroy@kernel.org>
-To:     linux-kbuild@vger.kernel.org
-Cc:     linux-gpio@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH 0/2] linux/kconfig.h: move IF_ENABLED() out of <linux/kconfig.h>
-Date:   Fri,  9 Apr 2021 05:58:56 +0900
-Message-Id: <20210408205858.51751-1-masahiroy@kernel.org>
-X-Mailer: git-send-email 2.27.0
+        id S232597AbhDHVaR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Apr 2021 17:30:17 -0400
+Received: from mout.kundenserver.de ([212.227.17.13]:33739 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232265AbhDHVaQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 17:30:16 -0400
+Received: from mail-oi1-f171.google.com ([209.85.167.171]) by
+ mrelayeu.kundenserver.de (mreue108 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1Mdvua-1m2IY91N0o-00aztr; Thu, 08 Apr 2021 23:30:03 +0200
+Received: by mail-oi1-f171.google.com with SMTP id 25so2208171oiy.5;
+        Thu, 08 Apr 2021 14:30:02 -0700 (PDT)
+X-Gm-Message-State: AOAM533YXAP+6RI8auigr7sjDj79+QpWQizW2MzwVNhTcD/2iBI6x6aY
+        QG1skkgj09cpcgUgwRmS9EA9s9WdGg/jPZZMhXE=
+X-Google-Smtp-Source: ABdhPJy0iWrhNPTZiYV5V76eutOZ5yur0zzh+RpJdmWXk6BV1PCspWe/8HGv1qdBtvUvk7EkkRQbIYcXbgnILzx2lHg=
+X-Received: by 2002:a05:6808:313:: with SMTP id i19mr7492382oie.67.1617917401802;
+ Thu, 08 Apr 2021 14:30:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20210408205858.51751-1-masahiroy@kernel.org> <20210408205858.51751-3-masahiroy@kernel.org>
+In-Reply-To: <20210408205858.51751-3-masahiroy@kernel.org>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Thu, 8 Apr 2021 23:29:45 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3gzfZhNdp-_=HCxoMw385nGQeNOhhH8X+uyN=AMvHJ8Q@mail.gmail.com>
+Message-ID: <CAK8P3a3gzfZhNdp-_=HCxoMw385nGQeNOhhH8X+uyN=AMvHJ8Q@mail.gmail.com>
+Subject: Re: [PATCH 2/2] pm: allow drivers to drop #ifdef and __maybe_unused
+ from pm callbacks
+To:     Masahiro Yamada <masahiroy@kernel.org>
+Cc:     Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:jBCef5MBplAyhl76VQF9Oz/gsjkGI646Ek39SGM6gF/9FUydqP3
+ RKHFm6nBVAILMMau+SlIBizvt+Uf9D8nj4jJp33wo6W7MfUlWzCZK286b9ZAlhsRVK7vOTR
+ U7Zsyy71yKPhIXd5BQnuUc4B+neTcrY4EjxxjS+qLg6gzp/K/KXofiXLaVHfZBEdiRyyLY2
+ WBg+6e8lH5pKKbO85xIcA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:yD+w5GzQUF8=:65dIGNT0YpnNeLFMR/yjE3
+ tiuRIXRgv3lLwhO9WqBhDuGerF4/u5KyJsgKJuQFBqpliwXtuRq4SYL82x8kcSesnus9yX1sB
+ Jdw6lR3JevWjGdCJMwmfieS5K5KgRFD4rpTJ2ec9RQN2po7S4qoYVLgU8Q0VKLtS3ytfyWcu8
+ 6x+MEBAG3XxaC/yaOovdpsDmHG4N0lAX+HRla7hW3lGBHnnWCgG635ObrDZSgVaxJrXs5uaa2
+ F91TK+J8x0EfjHlVX5S6zdvspXa+QyjPHw28hncPWb4IuGLjtxwKYRoUKyHXno+7q91YyXOrO
+ vqdbigPo0y1nHeWzzZOo9uIlg3J1bpoktX197AZyMK/nFSQb55N3np17RXtOmth3IK1Btzn/P
+ IILhDErrxS4zg6LedNHqAnT5e+1/qxg8Y1umMG4L/QA7E+8dTd5gFdH7QzXs0s1sewfXYFV2u
+ WvQapsBUWn3ZG781mT/zCl1DR0rxYao=
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Apr 8, 2021 at 11:00 PM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> Drivers typically surround suspend and resume callbacks with #ifdef
+> CONFIG_PM(_SLEEP) or mark them as __maybe_unused in order to avoid
+> -Wunused-const-variable warnings.
+>
+> With this commit, drivers will be able to remove #ifdef CONFIG_PM(_SLEEP)
+> and __maybe_unsed because unused functions are dropped by the compiler
+> instead of the preprocessor.
+>
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
 
-I insist on <linux/kconfig.h> having only minimal set of macros
-that are needed to evaluate CONFIG options.
+I tried this before and could not get it to work right.
 
-Everytime somebody added an alien to <linux/kconfig.h>, I needed to
-kick it out.
+>
+> -#ifdef CONFIG_PM_SLEEP
+> +#define pm_ptr(_ptr)           PTR_IF(IS_ENABLED(CONFIG_PM), _ptr)
+> +#define pm_sleep_ptr(_ptr)     PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), _ptr)
+> +
+>  #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> -       .suspend = suspend_fn, \
+> -       .resume = resume_fn, \
+> -       .freeze = suspend_fn, \
+> -       .thaw = resume_fn, \
+> -       .poweroff = suspend_fn, \
+> -       .restore = resume_fn,
+> -#else
+> -#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+> -#endif
+> +       .suspend  = pm_sleep_ptr(suspend_fn), \
+> +       .resume   = pm_sleep_ptr(resume_fn), \
+> +       .freeze   = pm_sleep_ptr(suspend_fn), \
+> +       .thaw     = pm_sleep_ptr(resume_fn), \
+> +       .poweroff = pm_sleep_ptr(suspend_fn), \
+> +       .restore  = pm_sleep_ptr(resume_fn),
 
-I did not notice 1b399bb04837183cecdc1b32ef1cfc7fcfa75d32 because
-I was not addressed by [1].
+The problem that I think you inevitably hit is that you run into a missing
+declaration for any driver that still uses an #ifdef around a static
+function.
 
-[1]: https://lore.kernel.org/lkml/?q=kconfig.h%3A+Add+IF_ENABLED%28%29+macro
+The only way I can see us doing this is to create a new set of
+macros that behave like the version you propose here but leave
+the old macros in place until the last such #ifdef has been removed.
 
-I like Paul's idea, but if I had noticed the patch in time, I would
-have tried my best to persuade to implement it outside of <linux/kconfig.h>
-(Paul's initial patch was adding it to a new header instead of <linux/kconfig.h>)
-
-Before it is widely used, I want to fix it.
-
-In 2/2, I converted pm.h to allow driver cleanups.
-
-
-
-Masahiro Yamada (2):
-  linux/kconfig.h: replace IF_ENABLED() with PTR_IF() in
-    <linux/kernel.h>
-  pm: allow drivers to drop #ifdef and __maybe_unused from pm callbacks
-
- drivers/pinctrl/pinctrl-ingenic.c | 20 ++++-----
- include/linux/kconfig.h           |  6 ---
- include/linux/kernel.h            |  2 +
- include/linux/pm.h                | 67 +++++++++++--------------------
- 4 files changed, 36 insertions(+), 59 deletions(-)
-
--- 
-2.27.0
-
+       Arnd
