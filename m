@@ -2,134 +2,166 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3B45C433ED
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 18:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99D3EC433ED
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:01:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 763F461132
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 18:07:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 78CEF61181
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 21:01:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231716AbhDHSIJ convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Apr 2021 14:08:09 -0400
-Received: from mail-ot1-f54.google.com ([209.85.210.54]:34386 "EHLO
-        mail-ot1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231676AbhDHSII (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 14:08:08 -0400
-Received: by mail-ot1-f54.google.com with SMTP id k14-20020a9d7dce0000b02901b866632f29so3205171otn.1;
-        Thu, 08 Apr 2021 11:07:56 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=Hha4WLCdP1Tred4k8z/7+ghIuMbscDUDnCCYfhCr11w=;
-        b=byDsUxX0YiP8fNBxdqfK06Zyr5g5Ompu49RXYgrUN2bqs2DUJvVJSH4iKD8wiPQpWw
-         G1YMTqmDu6rXG8/mdzLCbDjHrnAwCYgCBiRFnTHAL6jO42VlIJ+KeQdoNbt5NmKT0JrG
-         +D+po84FGQtKdm83VgSO5yjXw4ZFIuU6R+VfFAeQVrZtPbSYo2eqEHp8RhmEz7Xoi0qH
-         qaQ1W+O+UCrvkhbxChECAqi0Ip6LY7W5kgwlol61gnFxYnLcLqsQf+0tDY+hvqO2GSp1
-         whsmgRvuKJbHTx8cCTKMfyrPTYmnfNhaSNA8IgczzjLASkCSi6znm6lJ2q7eB3LUWi7/
-         dIYA==
-X-Gm-Message-State: AOAM531Dx6USESkOH43my+KG1Bj39n7ctl30nuo7zSI6PcS8xwO/APPT
-        Aw1SuJeXn0QRu5aJCTJ8Nh2kEq26jqS/FGJOt6s=
-X-Google-Smtp-Source: ABdhPJykvn7GHTDQHeTAFgBSw7yNPQg2mzia76ADzeIDipJKfYEn0lTtjqQl9KkkV6NzPvEFXkUXGHAqnKu5tpw9NOM=
-X-Received: by 2002:a05:6830:55b:: with SMTP id l27mr8762177otb.260.1617905276522;
- Thu, 08 Apr 2021 11:07:56 -0700 (PDT)
+        id S232425AbhDHVCD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Apr 2021 17:02:03 -0400
+Received: from condef-02.nifty.com ([202.248.20.67]:36740 "EHLO
+        condef-02.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232345AbhDHVCC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 17:02:02 -0400
+Received: from conuserg-09.nifty.com ([10.126.8.72])by condef-02.nifty.com with ESMTP id 138KxvMA004966;
+        Fri, 9 Apr 2021 05:59:57 +0900
+Received: from localhost.localdomain (133-32-232-101.west.xps.vectant.ne.jp [133.32.232.101]) (authenticated)
+        by conuserg-09.nifty.com with ESMTP id 138Kx471002644;
+        Fri, 9 Apr 2021 05:59:06 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com 138Kx471002644
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+        s=dec2015msa; t=1617915546;
+        bh=piA+8z078kwb/KfPJ/8L0g75CBWXThZTe0VPYso6g/U=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=E65GbUOUKULlL/mKzA0AVQ65w88zN1o5uif53wxAmxGkhdZqItC49y4rWkJOjItNJ
+         tLVX6tAyd6DCAdOQi4Q9iODqSvyhaZpq1G3MGyCAqWx9BS7IxNeVuPI52RwF/I1mKM
+         +0V0UVCeASxlppgX6piANkaMLhn4EPqvs4OyKv+2eE8tUq2MLgR84FxMdKuVYsh+fS
+         OocOwD5+NGyVq5Oz29d3cGRt56StEw9e0mB4RldDJE5kU0GuJmHDbWYmjsMzuVJPyR
+         WcNIsANqTZ2NaqQ7xrAM3Z36qfPcbMNMYisubExgEllrLizap3fossetR+MCScZVMA
+         MLPM5V2rgSV5g==
+X-Nifty-SrcIP: [133.32.232.101]
+From:   Masahiro Yamada <masahiroy@kernel.org>
+To:     linux-kbuild@vger.kernel.org
+Cc:     linux-gpio@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] pm: allow drivers to drop #ifdef and __maybe_unused from pm callbacks
+Date:   Fri,  9 Apr 2021 05:58:58 +0900
+Message-Id: <20210408205858.51751-3-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210408205858.51751-1-masahiroy@kernel.org>
+References: <20210408205858.51751-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-References: <03743d3c-a3bf-066f-614c-1a49f566fdb2@linaro.org>
- <CAJZ5v0iGQGRvjaesmvvxpmot9vkyEEVWHkj3Wka24xZCzL351w@mail.gmail.com> <4b8b0bc5-492c-7e95-9b08-ab87c9ac65d5@linaro.org>
-In-Reply-To: <4b8b0bc5-492c-7e95-9b08-ab87c9ac65d5@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 8 Apr 2021 20:07:45 +0200
-Message-ID: <CAJZ5v0iT28V07sg1cPTvNur4=y=H7pBw2FQZNMoMggmDVsWh2A@mail.gmail.com>
-Subject: Re: [GIT PULL] cpuidle for v5.13-rc1
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        He Ying <heying24@huawei.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM mailing list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Apr 8, 2021 at 8:02 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> On 08/04/2021 19:24, Rafael J. Wysocki wrote:
-> > On Thu, Apr 8, 2021 at 5:10 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> >>
-> >>
-> >> Hi Rafael,
-> >>
-> >> please consider pulling the following change for cpuidle on ARM for
-> >> v5.13-rc1
-> >>
-> >> Thanks
-> >>
-> >>   -- Daniel
-> >>
-> >>
-> >> The following changes since commit dde8740bd9b505c58ec8b2277d5d55c6951b7e42:
-> >>
-> >>   Merge branch 'acpi-processor-fixes' into linux-next (2021-04-07
-> >> 19:02:56 +0200)
-> >
-> > Can you please rebase this on 5.12-rc6?  My linux-next branch is
-> > re-merged on a regular basis.
-> >
-> > Generally speaking, if you want me to pull from a branch, please make
-> > sure that this branch is based on a commit present in the Linus' tree,
-> > preferably one of the commits tagged as -rc or a specific merge.
-> >
->
-> Sure, here is the pull request based on v5.12-rc6 with the signed tag
-> cpuidle-v5.13-rc1
+Drivers typically surround suspend and resume callbacks with #ifdef
+CONFIG_PM(_SLEEP) or mark them as __maybe_unused in order to avoid
+-Wunused-const-variable warnings.
 
-Pulled, thanks!
+With this commit, drivers will be able to remove #ifdef CONFIG_PM(_SLEEP)
+and __maybe_unsed because unused functions are dropped by the compiler
+instead of the preprocessor.
 
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
 
-> The following changes since commit e49d033bddf5b565044e2abe4241353959bc9120:
->
->   Linux 5.12-rc6 (2021-04-04 14:15:36 -0700)
->
-> are available in the Git repository at:
->
->   https://git.linaro.org/people/daniel.lezcano/linux tags/cpuidle-v5.13-rc1
->
-> for you to fetch changes up to 498ba2a8a2756694b6f3888857426dbc8a5e6b6c:
->
->   cpuidle: Fix ARM_QCOM_SPM_CPUIDLE configuration (2021-04-08 19:54:14
-> +0200)
->
-> ----------------------------------------------------------------
-> - Fix the C7 state on the tegra114 by setting the L2-no-flush flag
->   unconditionally (Dmitry Osipenko)
->
-> - Remove the do_idle firmware call as it is not supported by the ATF
->   on tegra SoC (Dmitry Osipenko)
->
-> - Add a missing dependency on CONFIG_MMU to prevent linkage error (He
->   Ying)
->
-> ----------------------------------------------------------------
-> Dmitry Osipenko (2):
->       cpuidle: tegra: Fix C7 idling state on Tegra114
->       cpuidle: tegra: Remove do_idle firmware call
->
-> He Ying (1):
->       cpuidle: Fix ARM_QCOM_SPM_CPUIDLE configuration
->
->  drivers/cpuidle/Kconfig.arm     |  2 +-
->  drivers/cpuidle/cpuidle-tegra.c | 19 ++++---------------
->  2 files changed, 5 insertions(+), 16 deletions(-)
->
-> --
-> <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
+ include/linux/pm.h | 67 +++++++++++++++++-----------------------------
+ 1 file changed, 24 insertions(+), 43 deletions(-)
+
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 482313a8ccfc..ca764566692a 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -301,50 +301,37 @@ struct dev_pm_ops {
+ 	int (*runtime_idle)(struct device *dev);
+ };
+ 
+-#ifdef CONFIG_PM_SLEEP
++#define pm_ptr(_ptr)		PTR_IF(IS_ENABLED(CONFIG_PM), _ptr)
++#define pm_sleep_ptr(_ptr)	PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), _ptr)
++
+ #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+-	.suspend = suspend_fn, \
+-	.resume = resume_fn, \
+-	.freeze = suspend_fn, \
+-	.thaw = resume_fn, \
+-	.poweroff = suspend_fn, \
+-	.restore = resume_fn,
+-#else
+-#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+-#endif
++	.suspend  = pm_sleep_ptr(suspend_fn), \
++	.resume   = pm_sleep_ptr(resume_fn), \
++	.freeze   = pm_sleep_ptr(suspend_fn), \
++	.thaw     = pm_sleep_ptr(resume_fn), \
++	.poweroff = pm_sleep_ptr(suspend_fn), \
++	.restore  = pm_sleep_ptr(resume_fn),
+ 
+-#ifdef CONFIG_PM_SLEEP
+ #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+-	.suspend_late = suspend_fn, \
+-	.resume_early = resume_fn, \
+-	.freeze_late = suspend_fn, \
+-	.thaw_early = resume_fn, \
+-	.poweroff_late = suspend_fn, \
+-	.restore_early = resume_fn,
+-#else
+-#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+-#endif
++	.suspend_late  = pm_sleep_ptr(suspend_fn), \
++	.resume_early  = pm_sleep_ptr(resume_fn), \
++	.freeze_late   = pm_sleep_ptr(suspend_fn), \
++	.thaw_early    = pm_sleep_ptr(resume_fn), \
++	.poweroff_late = pm_sleep_ptr(suspend_fn), \
++	.restore_early = pm_sleep_ptr(resume_fn),
+ 
+-#ifdef CONFIG_PM_SLEEP
+ #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+-	.suspend_noirq = suspend_fn, \
+-	.resume_noirq = resume_fn, \
+-	.freeze_noirq = suspend_fn, \
+-	.thaw_noirq = resume_fn, \
+-	.poweroff_noirq = suspend_fn, \
+-	.restore_noirq = resume_fn,
+-#else
+-#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+-#endif
++	.suspend_noirq  = pm_sleep_ptr(suspend_fn), \
++	.resume_noirq   = pm_sleep_ptr(resume_fn), \
++	.freeze_noirq   = pm_sleep_ptr(suspend_fn), \
++	.thaw_noirq     = pm_sleep_ptr(resume_fn), \
++	.poweroff_noirq = pm_sleep_ptr(suspend_fn), \
++	.restore_noirq  = pm_sleep_ptr(resume_fn),
+ 
+-#ifdef CONFIG_PM
+ #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+-	.runtime_suspend = suspend_fn, \
+-	.runtime_resume = resume_fn, \
+-	.runtime_idle = idle_fn,
+-#else
+-#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
+-#endif
++	.runtime_suspend = pm_ptr(suspend_fn), \
++	.runtime_resume  = pm_ptr(resume_fn), \
++	.runtime_idle    = pm_ptr(idle_fn),
+ 
+ /*
+  * Use this if you want to use the same suspend and resume callbacks for suspend
+@@ -374,12 +361,6 @@ const struct dev_pm_ops __maybe_unused name = { \
+ 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+ }
+ 
+-#ifdef CONFIG_PM
+-#define pm_ptr(_ptr) (_ptr)
+-#else
+-#define pm_ptr(_ptr) NULL
+-#endif
+-
+ /*
+  * PM_EVENT_ messages
+  *
+-- 
+2.27.0
+
