@@ -4,279 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5C73C43617
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76858C43460
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:47:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 959AC61154
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:35:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44A12610A6
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Apr 2021 09:47:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231332AbhDHJfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Apr 2021 05:35:45 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:35204 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S230470AbhDHJfk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 05:35:40 -0400
-X-UUID: c31ffdb73cbe4a04a05c6b41db109833-20210408
-X-UUID: c31ffdb73cbe4a04a05c6b41db109833-20210408
-Received: from mtkmrs01.mediatek.inc [(172.21.131.159)] by mailgw01.mediatek.com
-        (envelope-from <chunfeng.yun@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 344547842; Thu, 08 Apr 2021 17:35:25 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs06n2.mediatek.inc (172.21.101.130) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 8 Apr 2021 17:35:23 +0800
-Received: from localhost.localdomain (10.17.3.153) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 8 Apr 2021 17:35:21 +0800
-From:   Chunfeng Yun <chunfeng.yun@mediatek.com>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mathias Nyman <mathias.nyman@intel.com>
-CC:     Chunfeng Yun <chunfeng.yun@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        <linux-usb@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Tony Lindgren <tony@atomide.com>,
-        Tianping Fang <tianping.fang@mediatek.com>,
-        Eddie Hung <eddie.hung@mediatek.com>,
-        Ikjoon Jang <ikjn@chromium.org>,
-        Nicolas Boichat <drinkcat@chromium.org>
-Subject: [PATCH 5/6] usb: xhci-mtk: use clock bulk to get clocks
-Date:   Thu, 8 Apr 2021 17:35:13 +0800
-Message-ID: <1617874514-12282-5-git-send-email-chunfeng.yun@mediatek.com>
-X-Mailer: git-send-email 1.8.1.1.dirty
-In-Reply-To: <1617874514-12282-1-git-send-email-chunfeng.yun@mediatek.com>
-References: <1617874514-12282-1-git-send-email-chunfeng.yun@mediatek.com>
+        id S231322AbhDHJr7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Apr 2021 05:47:59 -0400
+Received: from szxga06-in.huawei.com ([45.249.212.32]:16406 "EHLO
+        szxga06-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231321AbhDHJr6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Apr 2021 05:47:58 -0400
+Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.58])
+        by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4FGGbm6cgkzkjWR;
+        Thu,  8 Apr 2021 17:45:56 +0800 (CST)
+Received: from huawei.com (10.67.174.117) by DGGEMS408-HUB.china.huawei.com
+ (10.3.19.208) with Microsoft SMTP Server id 14.3.498.0; Thu, 8 Apr 2021
+ 17:47:38 +0800
+From:   Ruiqi Gong <gongruiqi1@huawei.com>
+To:     <gongruiqi1@huawei.com>, Talel Shenhar <talel@amazon.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+CC:     Wang Weiyang <wangweiyang2@huawei.com>, <linux-pm@vger.kernel.org>,
+        <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] thermal: thermal_mmio: remove redundant dev_err call in thermal_mmio_probe()
+Date:   Thu, 8 Apr 2021 06:01:44 -0400
+Message-ID: <20210408100144.7494-1-gongruiqi1@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-SNTS-SMTP: 35884E1CF77416F3359BD1765DBFB508BB3FA0BCEE83CBD35591F1898D4E947D2000:8
-X-MTK:  N
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.174.117]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use clock bulk helpers to get/enable/disable clocks, meanwhile
-make sys_ck optional, then will be easier to handle clocks.
+There is a error message within devm_ioremap_resource
+already, so remove the dev_err call to avoid redundant
+error message.
 
-Signed-off-by: Chunfeng Yun <chunfeng.yun@mediatek.com>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Ruiqi Gong <gongruiqi1@huawei.com>
 ---
- drivers/usb/host/xhci-mtk.c | 109 +++++++-----------------------------
- drivers/usb/host/xhci-mtk.h |  10 ++--
- 2 files changed, 24 insertions(+), 95 deletions(-)
+ drivers/thermal/thermal_mmio.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/usb/host/xhci-mtk.c b/drivers/usb/host/xhci-mtk.c
-index 30927f4064d4..d4c455eecb8d 100644
---- a/drivers/usb/host/xhci-mtk.c
-+++ b/drivers/usb/host/xhci-mtk.c
-@@ -7,7 +7,6 @@
-  *  Chunfeng Yun <chunfeng.yun@mediatek.com>
-  */
+diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
+index d0bdf1ea3331..ded1dd0d4ef7 100644
+--- a/drivers/thermal/thermal_mmio.c
++++ b/drivers/thermal/thermal_mmio.c
+@@ -54,11 +54,8 @@ static int thermal_mmio_probe(struct platform_device *pdev)
  
--#include <linux/clk.h>
- #include <linux/dma-mapping.h>
- #include <linux/iopoll.h>
- #include <linux/kernel.h>
-@@ -220,89 +219,6 @@ static int xhci_mtk_ssusb_config(struct xhci_hcd_mtk *mtk)
- 	return xhci_mtk_host_enable(mtk);
- }
- 
--static int xhci_mtk_clks_get(struct xhci_hcd_mtk *mtk)
--{
--	struct device *dev = mtk->dev;
--
--	mtk->sys_clk = devm_clk_get(dev, "sys_ck");
--	if (IS_ERR(mtk->sys_clk)) {
--		dev_err(dev, "fail to get sys_ck\n");
--		return PTR_ERR(mtk->sys_clk);
+ 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	sensor->mmio_base = devm_ioremap_resource(&pdev->dev, resource);
+-	if (IS_ERR(sensor->mmio_base)) {
+-		dev_err(&pdev->dev, "failed to ioremap memory (%ld)\n",
+-			PTR_ERR(sensor->mmio_base));
++	if (IS_ERR(sensor->mmio_base))
+ 		return PTR_ERR(sensor->mmio_base);
 -	}
--
--	mtk->xhci_clk = devm_clk_get_optional(dev, "xhci_ck");
--	if (IS_ERR(mtk->xhci_clk))
--		return PTR_ERR(mtk->xhci_clk);
--
--	mtk->ref_clk = devm_clk_get_optional(dev, "ref_ck");
--	if (IS_ERR(mtk->ref_clk))
--		return PTR_ERR(mtk->ref_clk);
--
--	mtk->mcu_clk = devm_clk_get_optional(dev, "mcu_ck");
--	if (IS_ERR(mtk->mcu_clk))
--		return PTR_ERR(mtk->mcu_clk);
--
--	mtk->dma_clk = devm_clk_get_optional(dev, "dma_ck");
--	return PTR_ERR_OR_ZERO(mtk->dma_clk);
--}
--
--static int xhci_mtk_clks_enable(struct xhci_hcd_mtk *mtk)
--{
--	int ret;
--
--	ret = clk_prepare_enable(mtk->ref_clk);
--	if (ret) {
--		dev_err(mtk->dev, "failed to enable ref_clk\n");
--		goto ref_clk_err;
--	}
--
--	ret = clk_prepare_enable(mtk->sys_clk);
--	if (ret) {
--		dev_err(mtk->dev, "failed to enable sys_clk\n");
--		goto sys_clk_err;
--	}
--
--	ret = clk_prepare_enable(mtk->xhci_clk);
--	if (ret) {
--		dev_err(mtk->dev, "failed to enable xhci_clk\n");
--		goto xhci_clk_err;
--	}
--
--	ret = clk_prepare_enable(mtk->mcu_clk);
--	if (ret) {
--		dev_err(mtk->dev, "failed to enable mcu_clk\n");
--		goto mcu_clk_err;
--	}
--
--	ret = clk_prepare_enable(mtk->dma_clk);
--	if (ret) {
--		dev_err(mtk->dev, "failed to enable dma_clk\n");
--		goto dma_clk_err;
--	}
--
--	return 0;
--
--dma_clk_err:
--	clk_disable_unprepare(mtk->mcu_clk);
--mcu_clk_err:
--	clk_disable_unprepare(mtk->xhci_clk);
--xhci_clk_err:
--	clk_disable_unprepare(mtk->sys_clk);
--sys_clk_err:
--	clk_disable_unprepare(mtk->ref_clk);
--ref_clk_err:
--	return ret;
--}
--
--static void xhci_mtk_clks_disable(struct xhci_hcd_mtk *mtk)
--{
--	clk_disable_unprepare(mtk->dma_clk);
--	clk_disable_unprepare(mtk->mcu_clk);
--	clk_disable_unprepare(mtk->xhci_clk);
--	clk_disable_unprepare(mtk->sys_clk);
--	clk_disable_unprepare(mtk->ref_clk);
--}
--
- /* only clocks can be turn off for ip-sleep wakeup mode */
- static void usb_wakeup_ip_sleep_set(struct xhci_hcd_mtk *mtk, bool enable)
- {
-@@ -367,6 +283,19 @@ static void usb_wakeup_set(struct xhci_hcd_mtk *mtk, bool enable)
- 		usb_wakeup_ip_sleep_set(mtk, enable);
- }
  
-+static int xhci_mtk_clks_get(struct xhci_hcd_mtk *mtk)
-+{
-+	struct clk_bulk_data *clks = mtk->clks;
-+
-+	clks[0].id = "sys_ck";
-+	clks[1].id = "xhci_ck";
-+	clks[2].id = "ref_ck";
-+	clks[3].id = "mcu_ck";
-+	clks[4].id = "dma_ck";
-+
-+	return devm_clk_bulk_get_optional(mtk->dev, BULK_CLKS_NUM, clks);
-+}
-+
- static int xhci_mtk_ldos_enable(struct xhci_hcd_mtk *mtk)
- {
- 	int ret;
-@@ -522,7 +451,7 @@ static int xhci_mtk_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto disable_pm;
- 
--	ret = xhci_mtk_clks_enable(mtk);
-+	ret = clk_bulk_prepare_enable(BULK_CLKS_NUM, mtk->clks);
- 	if (ret)
- 		goto disable_ldos;
- 
-@@ -625,7 +554,7 @@ static int xhci_mtk_probe(struct platform_device *pdev)
- 	usb_put_hcd(hcd);
- 
- disable_clk:
--	xhci_mtk_clks_disable(mtk);
-+	clk_bulk_disable_unprepare(BULK_CLKS_NUM, mtk->clks);
- 
- disable_ldos:
- 	xhci_mtk_ldos_disable(mtk);
-@@ -655,7 +584,7 @@ static int xhci_mtk_remove(struct platform_device *pdev)
- 	usb_put_hcd(shared_hcd);
- 	usb_put_hcd(hcd);
- 	xhci_mtk_sch_exit(mtk);
--	xhci_mtk_clks_disable(mtk);
-+	clk_bulk_disable_unprepare(BULK_CLKS_NUM, mtk->clks);
- 	xhci_mtk_ldos_disable(mtk);
- 
- 	pm_runtime_disable(dev);
-@@ -682,7 +611,7 @@ static int __maybe_unused xhci_mtk_suspend(struct device *dev)
- 	if (ret)
- 		goto restart_poll_rh;
- 
--	xhci_mtk_clks_disable(mtk);
-+	clk_bulk_disable_unprepare(BULK_CLKS_NUM, mtk->clks);
- 	usb_wakeup_set(mtk, true);
- 	return 0;
- 
-@@ -703,7 +632,7 @@ static int __maybe_unused xhci_mtk_resume(struct device *dev)
- 	int ret;
- 
- 	usb_wakeup_set(mtk, false);
--	ret = xhci_mtk_clks_enable(mtk);
-+	ret = clk_bulk_prepare_enable(BULK_CLKS_NUM, mtk->clks);
- 	if (ret)
- 		goto enable_wakeup;
- 
-@@ -719,7 +648,7 @@ static int __maybe_unused xhci_mtk_resume(struct device *dev)
- 	return 0;
- 
- disable_clks:
--	xhci_mtk_clks_disable(mtk);
-+	clk_bulk_disable_unprepare(BULK_CLKS_NUM, mtk->clks);
- enable_wakeup:
- 	usb_wakeup_set(mtk, true);
- 	return ret;
-diff --git a/drivers/usb/host/xhci-mtk.h b/drivers/usb/host/xhci-mtk.h
-index 621ec1a85009..11996edc1967 100644
---- a/drivers/usb/host/xhci-mtk.h
-+++ b/drivers/usb/host/xhci-mtk.h
-@@ -9,8 +9,12 @@
- #ifndef _XHCI_MTK_H_
- #define _XHCI_MTK_H_
- 
-+#include <linux/clk.h>
-+
- #include "xhci.h"
- 
-+#define BULK_CLKS_NUM	5
-+
- /**
-  * To simplify scheduler algorithm, set a upper limit for ESIT,
-  * if a synchromous ep's ESIT is larger than @XHCI_MTK_MAX_ESIT,
-@@ -140,11 +144,7 @@ struct xhci_hcd_mtk {
- 	int u3p_dis_msk;
- 	struct regulator *vusb33;
- 	struct regulator *vbus;
--	struct clk *sys_clk;	/* sys and mac clock */
--	struct clk *xhci_clk;
--	struct clk *ref_clk;
--	struct clk *mcu_clk;
--	struct clk *dma_clk;
-+	struct clk_bulk_data clks[BULK_CLKS_NUM];
- 	struct regmap *pericfg;
- 	struct phy **phys;
- 	int num_phys;
--- 
-2.18.0
+ 	sensor_init_func = device_get_match_data(&pdev->dev);
+ 	if (sensor_init_func) {
 
