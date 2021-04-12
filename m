@@ -2,79 +2,214 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6AB2C433B4
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Apr 2021 12:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A3CCC433B4
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Apr 2021 14:09:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7AEE461261
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Apr 2021 12:52:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D6BE76134F
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Apr 2021 14:09:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239439AbhDLMw1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Apr 2021 08:52:27 -0400
-Received: from mail-oi1-f173.google.com ([209.85.167.173]:41484 "EHLO
-        mail-oi1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239364AbhDLMw1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Apr 2021 08:52:27 -0400
-Received: by mail-oi1-f173.google.com with SMTP id x77so3907204oix.8
-        for <linux-pm@vger.kernel.org>; Mon, 12 Apr 2021 05:52:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Xpo3TckKaHNiDw3wSyXZBpsmO26WwZJti6++Tk062Es=;
-        b=YeV5Ngj+JiTxm13EDiiQU1Bk+1Ae89N8vmZ/Qks8NADGJcvVAvuEf76voB37LT53rS
-         +tzqZa+9V2rtAPpLFtbKophvj96ysALtRLg3hs46AHJ+Wt5PMqoNzZazetpknrMomETi
-         VXJDxt8yRx2eKmA8VhqujQiHt9uvDCP5kHdrjYRuJuNNX5/i/ebXW5/DSEcjScCT3vgW
-         IJvaJ6XMVvK6QNwFUxWw8udCZo/P+0QM0y3PUOZZ3y6zXJH+wCS7N222ESKIiYZzOTra
-         K0IKpo86gwGL12tEJ2DOxnDphzIyVQ8pwPgebjtEeK3kI9YzEneS2i2L2mm8d3wc6w24
-         xGYQ==
-X-Gm-Message-State: AOAM532gNkYbQJ5IellWX198Kc2v5T3Q+8lZwi8VmtT8aIAyiyqbItVl
-        wRgIDkONLkPw4qstHg5MNLcW12BjkVxp5ys+TM47dKH9
-X-Google-Smtp-Source: ABdhPJxy8gEausERpUaiSNXq/pRezPXMN4iBPaVku4nfse6EFUy+u4/yp1JuEy3gNbrlbr/bfgySAEnwrF7vo/lIen8=
-X-Received: by 2002:aca:5fc3:: with SMTP id t186mr18611491oib.69.1618231929033;
- Mon, 12 Apr 2021 05:52:09 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210412055219.zt47pkorhxbnsg5z@vireshk-i7>
-In-Reply-To: <20210412055219.zt47pkorhxbnsg5z@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 12 Apr 2021 14:51:53 +0200
-Message-ID: <CAJZ5v0jcOVOfGN658q62uZ4AUgq74M9SrCO3iF+CrQkVBF-XuQ@mail.gmail.com>
-Subject: Re: [GIT PULL] OPP updates for 5.13
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S241193AbhDLOKA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Apr 2021 10:10:00 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:38126 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S240501AbhDLOJ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Apr 2021 10:09:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1618236581;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc; bh=SbIHlRt5xnwBUezOuapEzl2m40Nh7kvApwj+aK9cf3Y=;
+        b=C0V/I05iEUO6F+ZvymhBLsd8t68quj1Zo8j7TOQBVbSP7wzKvxDMH7w3JMbIpvUT4xskUo
+        Q/vErqFecQcub/8rsSzUcxno0SoE/lOEoYhGHmNwsqloUuugdWiTPznp+sRmrB49FOkS0F
+        Wc+INygTqvQmtGt70uskDRm+sd9hSns=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-338-FCLC3kK9N0uQ_opseESiCA-1; Mon, 12 Apr 2021 10:09:39 -0400
+X-MC-Unique: FCLC3kK9N0uQ_opseESiCA-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 8F1B3800D53;
+        Mon, 12 Apr 2021 14:09:37 +0000 (UTC)
+Received: from crecklin.bos.com (ovpn-113-158.rdu2.redhat.com [10.10.113.158])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 77B06100238C;
+        Mon, 12 Apr 2021 14:09:33 +0000 (UTC)
+From:   Chris von Recklinghausen <crecklin@redhat.com>
+To:     ardb@kernel.org, simo@redhat.com, rafael@kernel.org,
+        decui@microsoft.com, linux-pm@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v6 1/1] use crc32 instead of md5 for hibernation e820 integrity check
+Date:   Mon, 12 Apr 2021 10:09:32 -0400
+Message-Id: <20210412140932.31162-1-crecklin@redhat.com>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Apr 12, 2021 at 7:52 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> Hi Rafael,
->
-> This pull request adds devm variants for OPP APIs, and updates few of the users
-> as well (Yangtao Li and Dmitry Osipenko).
->
-> Thanks.
->
-> --
-> Viresh
->
-> -------------------------8<-------------------------
->
-> The following changes since commit 606a5d4227e4610399c61086ac55c46068a90b03:
->
->   opp: Don't drop extra references to OPPs accidentally (2021-03-12 09:26:52 +0530)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/linux-next
->
-> for you to fetch changes up to a8bb0e872bfb962de4653ce8f8723c0e1f712ce3:
->
->   memory: samsung: exynos5422-dmc: Convert to use resource-managed OPP API (2021-03-25 14:38:48 +0530)
+Suspend fails on a system in fips mode because md5 is used for the e820
+integrity check and is not available. Use crc32 instead.
 
-Pulled, thanks!
+This patch changes the integrity check algorithm from md5 to crc32.
+
+The purpose of the integrity check is to detect possible differences
+between the memory map used at the time when the hibernation image is
+about to be loaded into memory and the memory map used at the image
+creation time, because it is generally unsafe to load the image if the
+current memory map doesn't match the one used when it was created. so
+it is not intended as a cryptographic integrity check.
+
+Fixes: 62a03defeabd ("PM / hibernate: Verify the consistent of e820 memory map
+       by md5 digest")
+
+Signed-off-by: Chris von Recklinghausen <crecklin@redhat.com>
+---
+v1 -> v2
+   bump up RESTORE_MAGIC
+v2 -> v3
+   move embelishment from cover letter to commit comments (no code change)
+v3 -> v4
+   add note to comments that md5 isn't used for encryption here.
+v4 -> v5
+   reword comment per Simo's suggestion
+v5 -> v6
+   use wording from Eric Biggers, use crc32_le instead of crc32 from crypto
+	framework (crc32_le is in the core API and removes need for #defines)
+
+ arch/x86/power/hibernate.c | 76 +++++++++++---------------------------
+ 1 file changed, 22 insertions(+), 54 deletions(-)
+
+diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
+index cd3914fc9f3d..f39e507e34ca 100644
+--- a/arch/x86/power/hibernate.c
++++ b/arch/x86/power/hibernate.c
+@@ -13,6 +13,8 @@
+ #include <linux/kdebug.h>
+ #include <linux/cpu.h>
+ #include <linux/pgtable.h>
++#include <linux/types.h>
++#include <linux/crc32.h>
+ 
+ #include <crypto/hash.h>
+ 
+@@ -55,94 +57,60 @@ int pfn_is_nosave(unsigned long pfn)
+ }
+ 
+ 
+-#define MD5_DIGEST_SIZE 16
++#define CRC32_DIGEST_SIZE (sizeof (u32))
+ 
+ struct restore_data_record {
+ 	unsigned long jump_address;
+ 	unsigned long jump_address_phys;
+ 	unsigned long cr3;
+ 	unsigned long magic;
+-	u8 e820_digest[MD5_DIGEST_SIZE];
++	u8 e820_digest[CRC32_DIGEST_SIZE];
+ };
+ 
+-#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
+ /**
+- * get_e820_md5 - calculate md5 according to given e820 table
++ * get_e820_crc32 - calculate crc32 according to given e820 table
+  *
+  * @table: the e820 table to be calculated
+- * @buf: the md5 result to be stored to
++ * @buf: the crc32 result to be stored to
+  */
+-static int get_e820_md5(struct e820_table *table, void *buf)
++static int get_e820_crc32(struct e820_table *table, void *buf)
+ {
+-	struct crypto_shash *tfm;
+-	struct shash_desc *desc;
+-	int size;
+-	int ret = 0;
+-
+-	tfm = crypto_alloc_shash("md5", 0, 0);
+-	if (IS_ERR(tfm))
+-		return -ENOMEM;
+-
+-	desc = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(tfm),
+-		       GFP_KERNEL);
+-	if (!desc) {
+-		ret = -ENOMEM;
+-		goto free_tfm;
+-	}
+-
+-	desc->tfm = tfm;
++	int size = offsetof(struct e820_table, entries) +
++                sizeof(struct e820_entry) * table->nr_entries;
++	u32 ret;
+ 
+-	size = offsetof(struct e820_table, entries) +
+-		sizeof(struct e820_entry) * table->nr_entries;
+-
+-	if (crypto_shash_digest(desc, (u8 *)table, size, buf))
+-		ret = -EINVAL;
+-
+-	kfree_sensitive(desc);
+-
+-free_tfm:
+-	crypto_free_shash(tfm);
+-	return ret;
++	ret = crc32_le(0, (unsigned char const *)table, size);
++	memset(buf, 0, CRC32_DIGEST_SIZE);
++	memcpy(buf, (char *)&ret, sizeof (ret));
++	return 0;
+ }
+ 
+ static int hibernation_e820_save(void *buf)
+ {
+-	return get_e820_md5(e820_table_firmware, buf);
++	return get_e820_crc32(e820_table_firmware, buf);
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+ {
+ 	int ret;
+-	u8 result[MD5_DIGEST_SIZE];
++	u8 result[CRC32_DIGEST_SIZE];
+ 
+-	memset(result, 0, MD5_DIGEST_SIZE);
++	memset(result, 0, CRC32_DIGEST_SIZE);
+ 	/* If there is no digest in suspend kernel, let it go. */
+-	if (!memcmp(result, buf, MD5_DIGEST_SIZE))
++	if (!memcmp(result, buf, CRC32_DIGEST_SIZE))
+ 		return false;
+ 
+-	ret = get_e820_md5(e820_table_firmware, result);
++	ret = get_e820_crc32(e820_table_firmware, result);
+ 	if (ret)
+ 		return true;
+ 
+-	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
++	return memcmp(result, buf, CRC32_DIGEST_SIZE) ? true : false;
+ }
+-#else
+-static int hibernation_e820_save(void *buf)
+-{
+-	return 0;
+-}
+-
+-static bool hibernation_e820_mismatch(void *buf)
+-{
+-	/* If md5 is not builtin for restore kernel, let it go. */
+-	return false;
+-}
+-#endif
+ 
+ #ifdef CONFIG_X86_64
+-#define RESTORE_MAGIC	0x23456789ABCDEF01UL
++#define RESTORE_MAGIC	0x23456789ABCDEF02UL
+ #else
+-#define RESTORE_MAGIC	0x12345678UL
++#define RESTORE_MAGIC	0x12345679UL
+ #endif
+ 
+ /**
+-- 
+2.27.0
+
