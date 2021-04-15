@@ -7,56 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46BA8C43603
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4330DC4361A
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1D7AF61139
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 11F6B613A9
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232795AbhDOMEZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Apr 2021 08:04:25 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:59462 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232768AbhDOMEX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:23 -0400
-Date:   Thu, 15 Apr 2021 12:03:57 -0000
+        id S232789AbhDOME1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Apr 2021 08:04:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34626 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232797AbhDOMEZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:25 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59438C061574
+        for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:02 -0700 (PDT)
+Date:   Thu, 15 Apr 2021 12:04:00 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1618488238;
+        s=2020; t=1618488241;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UCw9VXv+Ts+G/vKgBAnCmGvlYayfbPH5zdQ/cYSLOJI=;
-        b=eSiScKXZaS9iAVypCGEOr1XyZWxTzBsVvXEWqVvDeNxsDTVgdZ5MGq5JlNucz9GupTVCpm
-        FMsZ+kJESjPgbhZoFXNWrdiBb/9js1J3EoVjxBgcN7JNNp66K9Ii9+89ipstsFGVe4Hapc
-        49D5VXfkox/nTAUSGva+CU8H+GQukfhyZLa1Iz8y7MUrSvM0OqHE2R32vjDs1WnP+Hi2jG
-        wFruu5f5rVNfhsYfpf1ncwpE7Q5PeSnvYGPSBQyaE2SCGHM/ZPzsADgST1G4QJMgKrOyrb
-        zgsS7So5VtFf4AeQpGNmKNDBOFMrQP/tr3pXCDikDyLUuHknW/keCmG05jrYnA==
+        bh=0Q/WhqAfUhrd+IX08m9AmmBvM3E4TsQFY+CssVrYq4c=;
+        b=v6wdWlCGXKsjMnKXTdA8IpGd9TQ6H8elcm/0XkAh992yZbsmRCV6UUMvqLSSwVLc5Bvdw2
+        TJIEMr1jrp3Ph1OHQynlK0C00tRh7jadJOCNRom83CA6f+y54cVSe+aTLPHa3qEkoLSIbw
+        PgpElry6YO8tYcN65CBqFDPjvYuHlHm7G+k7wTHR7LvTJSLNRMGG5CTSl75cW+v54rNdBw
+        eOjudIGSgBpait7rFVz4hSwXqODfghAFY5XLgEswfxuBxwxM7oLZVG7MILEoYBW/uRT2G8
+        2FMejGHinBZAL0NogucxOe6VeeARmMDQlwKXIFyQFCsDj7iVn/LDS7NTpQDPUA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1618488238;
+        s=2020e; t=1618488241;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UCw9VXv+Ts+G/vKgBAnCmGvlYayfbPH5zdQ/cYSLOJI=;
-        b=5jhMzKayMv7nL88gvg91lmOkigqkY+d6ge9p3jyfK72OQXWNfea3Kwz3cEiMwKEMKS4+RP
-        0HiIM/vKBAMmx4Dw==
-From:   "thermal-bot for Ansuel Smith" <tip-bot2@linutronix.de>
+        bh=0Q/WhqAfUhrd+IX08m9AmmBvM3E4TsQFY+CssVrYq4c=;
+        b=z7RTKbcGJ6sX0q0vFdbTRZy345GnGdhvcBbFaZWuMKq3qAK0TJtDAGIJbbWinwjr0Sx1A+
+        QcV0cWXAqlETYKAw==
+From:   "thermal-bot for Guangqing Zhu" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/tsens: Fix bug in sensor
- enable for msm8960
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
+Subject: [thermal: thermal/next] thermal/drivers/tsens: Fix missing put_device error
+Cc:     Guangqing Zhu <zhuguangqing83@gmail.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210404144823.31867-6-ansuelsmth@gmail.com>
-References: <20210404144823.31867-6-ansuelsmth@gmail.com>
+In-Reply-To: <20210404125431.12208-1-zhuguangqing83@gmail.com>
+References: <20210404125431.12208-1-zhuguangqing83@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161848823790.29796.13208214932206882829.tip-bot2@tip-bot2>
+Message-ID: <161848824018.29796.16963569425778407686.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -67,76 +69,44 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     f1c6aa8f9cbd35f3119d915cd553020495d23f0e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f1c6aa8f9cbd35f3119d915cd553020495d23f0e
-Author:        Ansuel Smith <ansuelsmth@gmail.com>
-AuthorDate:    Sun, 04 Apr 2021 16:48:19 +02:00
+Commit-ID:     f4136863e8899fa0554343201b78b9e197c78a78
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f4136863e8899fa0554343201b78b9e197c78a78
+Author:        Guangqing Zhu <zhuguangqing83@gmail.com>
+AuthorDate:    Sun, 04 Apr 2021 20:54:31 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 15 Apr 2021 13:21:43 +02:00
+CommitterDate: Thu, 15 Apr 2021 13:21:42 +02:00
 
-thermal/drivers/tsens: Fix bug in sensor enable for msm8960
+thermal/drivers/tsens: Fix missing put_device error
 
-Device based on tsens VER_0 contains a hardware bug that results in some
-problem with sensor enablement. Sensor id 6-11 can't be enabled
-selectively and all of them must be enabled in one step.
+Fixes coccicheck error:
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Acked-by: Thara Gopinath <thara.gopinath@linaro.org>
+drivers/thermal/qcom/tsens.c:759:4-10: ERROR: missing put_device; call
+of_find_device_by_node on line 715, but without a corresponding object
+release within this function.
+
+Fixes: a7ff82976122 ("drivers: thermal: tsens: Merge tsens-common.c into tsens.c")
+Signed-off-by: Guangqing Zhu <zhuguangqing83@gmail.com>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210404144823.31867-6-ansuelsmth@gmail.com
+Link: https://lore.kernel.org/r/20210404125431.12208-1-zhuguangqing83@gmail.com
 ---
- drivers/thermal/qcom/tsens-8960.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ drivers/thermal/qcom/tsens.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 86585f4..95fccca 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -27,9 +27,9 @@
- #define EN			BIT(0)
- #define SW_RST			BIT(1)
- #define SENSOR0_EN		BIT(3)
-+#define MEASURE_PERIOD		BIT(18)
- #define SLP_CLK_ENA		BIT(26)
- #define SLP_CLK_ENA_8660	BIT(24)
--#define MEASURE_PERIOD		1
- #define SENSOR0_SHIFT		3
- 
- /* INT_STATUS_ADDR bitmasks */
-@@ -126,17 +126,34 @@ static int resume_8960(struct tsens_priv *priv)
- static int enable_8960(struct tsens_priv *priv, int id)
- {
- 	int ret;
--	u32 reg, mask;
-+	u32 reg, mask = BIT(id);
- 
- 	ret = regmap_read(priv->tm_map, CNTL_ADDR, &reg);
- 	if (ret)
- 		return ret;
- 
--	mask = BIT(id + SENSOR0_SHIFT);
-+	/* HARDWARE BUG:
-+	 * On platforms with more than 6 sensors, all remaining sensors
-+	 * must be enabled together, otherwise undefined results are expected.
-+	 * (Sensor 6-7 disabled, Sensor 3 disabled...) In the original driver,
-+	 * all the sensors are enabled in one step hence this bug is not
-+	 * triggered.
-+	 */
-+	if (id > 5)
-+		mask = GENMASK(10, 6);
-+
-+	mask <<= SENSOR0_SHIFT;
-+
-+	/* Sensors already enabled. Skip. */
-+	if ((reg & mask) == mask)
-+		return 0;
-+
- 	ret = regmap_write(priv->tm_map, CNTL_ADDR, reg | SW_RST);
- 	if (ret)
- 		return ret;
- 
-+	reg |= MEASURE_PERIOD;
-+
- 	if (priv->num_sensors > 1)
- 		reg |= mask | SLP_CLK_ENA | EN;
- 	else
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index d8ce3a6..3c4c051 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -755,8 +755,10 @@ int __init init_common(struct tsens_priv *priv)
+ 		for (i = VER_MAJOR; i <= VER_STEP; i++) {
+ 			priv->rf[i] = devm_regmap_field_alloc(dev, priv->srot_map,
+ 							      priv->fields[i]);
+-			if (IS_ERR(priv->rf[i]))
+-				return PTR_ERR(priv->rf[i]);
++			if (IS_ERR(priv->rf[i])) {
++				ret = PTR_ERR(priv->rf[i]);
++				goto err_put_device;
++			}
+ 		}
+ 		ret = regmap_field_read(priv->rf[VER_MINOR], &ver_minor);
+ 		if (ret)
