@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88A30C433B4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB8E0C43462
 	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 55DA3613E9
+	by mail.kernel.org (Postfix) with ESMTP id C6B24613B7
 	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232771AbhDOMEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232773AbhDOMEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 15 Apr 2021 08:04:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34610 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232773AbhDOMEX (ORCPT
+        with ESMTP id S232774AbhDOMEX (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:23 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19822C061756
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19A1BC06175F
         for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:00 -0700 (PDT)
-Date:   Thu, 15 Apr 2021 12:03:56 -0000
+Date:   Thu, 15 Apr 2021 12:03:57 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1618488237;
+        s=2020; t=1618488238;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=eomtPt55X/hEHI+ND4aIkR564+Sr7wa3Dhy0Julipz4=;
-        b=qiFv1+oUJVY2wO76EZhMjyA0y84lCVPrsHJXePPwGmNbPshcG7/XfmOOz5FqEggHbwVbDZ
-        oIKLFnZFOzf1G/chaLWa1pr4ZKraSx4Xulj/dwrGFy8YR1psbxTYJQN/E+LytFkrWnk2iK
-        iqsnCbGkV/bQa/wt6xoMlIxlcvo+yhRYcUpSt50u//CVttbgXPX1ZSNK0iNPA+ZfINf4Da
-        NstmdMdtA2/cGr/Cr47vZi0QJcbp0ISB1jlqdRbVuaupnmFwhY1NrA7MJjidvQN37FSikg
-        mC4j8xCNg4BlUg1lYXfngGmmgrFSVRfiAuLAJpRemkccWtJ8SDWb7hI/mI/V2g==
+        bh=x0EHMUCYxtH9+r7QjJX3L7hwy7PbnAjt5ZvtOU10shU=;
+        b=TCv8JkvTcEyxAss4yxdTOIaVIUz2TvlrUW+SVc1MxXQD39ucZriubsNlp1/HVdtjdKUmvE
+        y7ihUkGw/xJa0LqWeQc0dnYE5XHXZXjuIN+HFvm04pNZWkAegld75t4SMCy/nYUAps4CiD
+        UJJL3UwWoZcvIHsL4mYv5xR/trGpfrXIiVDmVRVJdJRNVCG76kep03VsUC6Vq/XrxwTuUU
+        KELaU/vMocHt1LIzZotjG5ydgL7XAtpUh09xJezz1l7udeMVUdn3dGnK8FdicnQnl4+gch
+        d64ONwY/YILQU6VL3NMo9ztwvMFQ3CgL6gX/JuFT4Ua/mlRhKqix83Pch2JqKw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1618488237;
+        s=2020e; t=1618488238;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=eomtPt55X/hEHI+ND4aIkR564+Sr7wa3Dhy0Julipz4=;
-        b=t0ZNduVmQCsD9u7eYKIJeVaLIRctc5kQQ+pFap0+fVZQxos6ynIDJ3InoOyNS2AyHIyqzw
-        wxMSwoHhouEy8JAg==
+        bh=x0EHMUCYxtH9+r7QjJX3L7hwy7PbnAjt5ZvtOU10shU=;
+        b=wdp6Yb+ZtnKReBdxBYksUs8D8wSmjjyXpAKoJug6wBG7Xs4cPTpKvPC54KcwOZnNfu1A4k
+        kC3S5f5ETPYcOsDg==
 From:   "thermal-bot for Ansuel Smith" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: tsens: Document ipq8064
- bindings
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>, Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] thermal/drivers/tsens: Replace custom 8960
+ apis with generic apis
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210404144823.31867-10-ansuelsmth@gmail.com>
-References: <20210404144823.31867-10-ansuelsmth@gmail.com>
+In-Reply-To: <20210404144823.31867-7-ansuelsmth@gmail.com>
+References: <20210404144823.31867-7-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161848823642.29796.1638383881353230504.tip-bot2@tip-bot2>
+Message-ID: <161848823756.29796.12643669787292265318.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,122 +70,119 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     33edf3a534d5b54cc7dd763fef1899c75b5b7e49
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//33edf3a534d5b54cc7dd763fef1899c75b5b7e49
+Commit-ID:     7a23894876d8c34b4f1599804ee621cee946d114
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//7a23894876d8c34b4f1599804ee621cee946d114
 Author:        Ansuel Smith <ansuelsmth@gmail.com>
-AuthorDate:    Sun, 04 Apr 2021 16:48:23 +02:00
+AuthorDate:    Sun, 04 Apr 2021 16:48:20 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Thu, 15 Apr 2021 13:21:43 +02:00
 
-dt-bindings: thermal: tsens: Document ipq8064 bindings
+thermal/drivers/tsens: Replace custom 8960 apis with generic apis
 
-Document the use of bindings used for msm8960 tsens based devices.
-msm8960 use the same gcc regs and is set as a child of the qcom gcc.
+Rework calibrate function to use common function. Derive the offset from
+a missing hardcoded slope table and the data from the nvmem calib
+efuses.
+Drop custom get_temp function and use generic api.
 
 Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210404144823.31867-10-ansuelsmth@gmail.com
+Link: https://lore.kernel.org/r/20210404144823.31867-7-ansuelsmth@gmail.com
 ---
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 55 +++++--
- 1 file changed, 47 insertions(+), 8 deletions(-)
+ drivers/thermal/qcom/tsens-8960.c | 56 ++++++++----------------------
+ 1 file changed, 15 insertions(+), 41 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index fbd03cd..b7a832f 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -19,6 +19,11 @@ description: |
- properties:
-   compatible:
-     oneOf:
-+      - description: msm9860 TSENS based
-+        items:
-+          - enum:
-+              - qcom,ipq8064-tsens
-+
-       - description: v0.1 of TSENS
-         items:
-           - enum:
-@@ -75,7 +80,9 @@ properties:
-     maxItems: 2
-     items:
-       - const: calib
--      - const: calib_sel
-+      - enum:
-+          - calib_backup
-+          - calib_sel
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
+index 95fccca..9cc8a7d 100644
+--- a/drivers/thermal/qcom/tsens-8960.c
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -67,6 +67,13 @@
+ #define S9_STATUS_OFF		0x3674
+ #define S10_STATUS_OFF		0x3678
  
-   "#qcom,sensors":
-     description:
-@@ -90,12 +97,19 @@ properties:
-       Number of cells required to uniquely identify the thermal sensors. Since
-       we have multiple sensors this is set to 1
++/* Original slope - 200 to compensate mC to C inaccuracy */
++static u32 tsens_msm8960_slope[] = {
++			976, 976, 954, 976,
++			911, 932, 932, 999,
++			932, 999, 932
++			};
++
+ static int suspend_8960(struct tsens_priv *priv)
+ {
+ 	int ret;
+@@ -194,9 +201,7 @@ static int calibrate_8960(struct tsens_priv *priv)
+ {
+ 	int i;
+ 	char *data;
+-
+-	ssize_t num_read = priv->num_sensors;
+-	struct tsens_sensor *s = priv->sensor;
++	u32 p1[11];
  
-+required:
-+  - compatible
-+  - interrupts
-+  - interrupt-names
-+  - "#thermal-sensor-cells"
-+  - "#qcom,sensors"
- allOf:
-   - if:
-       properties:
-         compatible:
-           contains:
-             enum:
-+              - qcom,ipq8064-tsens
-               - qcom,mdm9607-tsens
-               - qcom,msm8916-tsens
-               - qcom,msm8974-tsens
-@@ -117,19 +131,44 @@ allOf:
-         interrupt-names:
-           minItems: 2
+ 	data = qfprom_read(priv->dev, "calib");
+ 	if (IS_ERR(data))
+@@ -204,49 +209,18 @@ static int calibrate_8960(struct tsens_priv *priv)
+ 	if (IS_ERR(data))
+ 		return PTR_ERR(data);
  
--required:
--  - compatible
--  - reg
--  - "#qcom,sensors"
--  - interrupts
--  - interrupt-names
--  - "#thermal-sensor-cells"
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,tsens-v0_1
-+              - qcom,tsens-v1
-+              - qcom,tsens-v2
+-	for (i = 0; i < num_read; i++, s++)
+-		s->offset = data[i];
++	for (i = 0; i < priv->num_sensors; i++) {
++		p1[i] = data[i];
++		priv->sensor[i].slope = tsens_msm8960_slope[i];
++	}
 +
-+    then:
-+      required:
-+        - reg
++	compute_intercept_slope(priv, p1, NULL, ONE_PT_CALIB);
  
- additionalProperties: false
+ 	kfree(data);
  
- examples:
-   - |
-     #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    // Example msm9860 based SoC (ipq8064):
-+    gcc: clock-controller {
-+
-+           /* ... */
-+
-+           tsens: thermal-sensor {
-+                compatible = "qcom,ipq8064-tsens";
-+
-+                 nvmem-cells = <&tsens_calib>, <&tsens_calib_backup>;
-+                 nvmem-cell-names = "calib", "calib_backup";
-+                 interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
-+                 interrupt-names = "uplow";
-+
-+                 #qcom,sensors = <11>;
-+                 #thermal-sensor-cells = <1>;
-+          };
-+    };
-+
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-     // Example 1 (legacy: for pre v1 IP):
-     tsens1: thermal-sensor@900000 {
-            compatible = "qcom,msm8916-tsens", "qcom,tsens-v0_1";
+ 	return 0;
+ }
+ 
+-/* Temperature on y axis and ADC-code on x-axis */
+-static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
+-{
+-	int slope, offset;
+-
+-	slope = thermal_zone_get_slope(s->tzd);
+-	offset = CAL_MDEGC - slope * s->offset;
+-
+-	return adc_code * slope + offset;
+-}
+-
+-static int get_temp_8960(const struct tsens_sensor *s, int *temp)
+-{
+-	int ret;
+-	u32 code, trdy;
+-	struct tsens_priv *priv = s->priv;
+-	unsigned long timeout;
+-
+-	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
+-	do {
+-		ret = regmap_read(priv->tm_map, INT_STATUS_ADDR, &trdy);
+-		if (ret)
+-			return ret;
+-		if (!(trdy & TRDY_MASK))
+-			continue;
+-		ret = regmap_read(priv->tm_map, s->status, &code);
+-		if (ret)
+-			return ret;
+-		*temp = code_to_mdegC(code, s);
+-		return 0;
+-	} while (time_before(jiffies, timeout));
+-
+-	return -ETIMEDOUT;
+-}
+-
+ static struct tsens_features tsens_8960_feat = {
+ 	.ver_major	= VER_0,
+ 	.crit_int	= 0,
+@@ -315,7 +289,7 @@ static const struct reg_field tsens_8960_regfields[MAX_REGFIELDS] = {
+ static const struct tsens_ops ops_8960 = {
+ 	.init		= init_common,
+ 	.calibrate	= calibrate_8960,
+-	.get_temp	= get_temp_8960,
++	.get_temp	= get_temp_common,
+ 	.enable		= enable_8960,
+ 	.disable	= disable_8960,
+ 	.suspend	= suspend_8960,
