@@ -7,59 +7,55 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9898C4363E
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E87C2C43616
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 95C7E61139
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B9D9C613C3
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232836AbhDOME1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Apr 2021 08:04:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34628 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232799AbhDOMEZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:25 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5260C061756
-        for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:02 -0700 (PDT)
-Date:   Thu, 15 Apr 2021 12:04:00 -0000
+        id S232785AbhDOMEZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Apr 2021 08:04:25 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:59494 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232767AbhDOMEY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:24 -0400
+Date:   Thu, 15 Apr 2021 12:03:59 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1618488241;
+        s=2020; t=1618488239;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=GUI5Akfoi0AO9pkb9mEuO6LNc0sXIotwjn0CX8O1f10=;
-        b=I+z78Zk2jOxfuCvkLC9bFppOm4vFOcwUAlhcGhEFr54jvnjglT9IpDqgNyip6+WG2/DPvx
-        An/jG32JJfeTk2ULptm9ee+hT8lOlB4ubuXXhMCx6bgCjTkDQQj+xRVv6PzyJ1t9r1kD8L
-        6jA6l+ZwtWHnDMJo7XaR0w/NDri6B1RqZoOWIJ5aDAL1Zjz5jgGzMFF4t5YNvBHZHmn5i5
-        sZB5Y8KlD6mI3pEsRw2o4QXVtlVVNjIENDYrbD9eijyeQIDJj7DqMNj07WFg8ru2ADdn1l
-        mquL9IP9eRUI/i/YXNFxKjgC0ay7VqiMnRB3EAJKOiSMO3vGzkGttXwW/Q7piA==
+        bh=vcLVW6qmIhchgvNZ5onfWSNMky292Olnyy7KCXssmnY=;
+        b=nhSesb2C8Pom3CNPW4EcrU+0h+nzjMrAFynk15+F6tHpAen8bwoez3J77b7fgDoICetMVI
+        edeiqa02q7Jdd+0I9MFGp6PldUYZEz0M7FVOxh2OvlgCQEKR6LchrVqVw2y21ZFcqhAiK9
+        pjTFQxntyGauz6Qf0mZRsSErxOedtjSrLiBnf4kNJC14+LsjgBd3zmPMCVrjRohoZI4wa5
+        c9D7imqggnsuBghBx1t2pVVX87EAm66WJRhkrwl9zHkm6cCP6reo1OPD1Zwdns3cZjnNr5
+        edwbzqs4p0ETnqKGd7nB3pk5f59inWHonnlm2qbBbNWZWJxVXFGpmf3TmnZ8YA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1618488241;
+        s=2020e; t=1618488239;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=GUI5Akfoi0AO9pkb9mEuO6LNc0sXIotwjn0CX8O1f10=;
-        b=VjifrLsy3yUV+ti+6jdSftmseOGbVB3SoKHfjy0UHkuj88Se9KgjJZYTAW3nzwnLqBerQf
-        vmBZfNnzpU6kk3BQ==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=vcLVW6qmIhchgvNZ5onfWSNMky292Olnyy7KCXssmnY=;
+        b=HxfYaVT+OvihdH+nr6XF19hKvaEMFA5SKQ6Tq1c4G6JMWbVEBBjayaRz8/EfL2oSqGvllY
+        JtFgurz0GMLJRSDA==
+From:   "thermal-bot for Ansuel Smith" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] MAINTAINERS: update thermal CPU cooling section
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Javi Merino <javi.merino@kernel.org>,
+Subject: [thermal: thermal/next] thermal/drivers/tsens: Don't hardcode sensor slope
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210217115908.22547-1-lukasz.luba@arm.com>
-References: <20210217115908.22547-1-lukasz.luba@arm.com>
+In-Reply-To: <20210404144823.31867-3-ansuelsmth@gmail.com>
+References: <20210404144823.31867-3-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161848824055.29796.13659501203766535115.tip-bot2@tip-bot2>
+Message-ID: <161848823911.29796.11209123240672207975.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -70,36 +66,39 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     5b5f1121d60bca8305951930d7aa2123fb213cb0
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//5b5f1121d60bca8305951930d7aa2123fb213cb0
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Wed, 17 Feb 2021 11:59:08 
+Commit-ID:     e801d870ffafd03f0e85058cea7a949cb15628f1
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e801d870ffafd03f0e85058cea7a949cb15628f1
+Author:        Ansuel Smith <ansuelsmth@gmail.com>
+AuthorDate:    Sun, 04 Apr 2021 16:48:16 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Thu, 15 Apr 2021 13:21:42 +02:00
 
-MAINTAINERS: update thermal CPU cooling section
+thermal/drivers/tsens: Don't hardcode sensor slope
 
-Update maintainers responsible for CPU cooling on Arm side.
+Function compute_intercept_slope hardcode the sensor slope to
+SLOPE_DEFAULT. Change this and use the default value only if a slope is
+not defined. This is needed for tsens VER_0 that has a hardcoded slope
+table.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Javi Merino <javi.merino@kernel.org>
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210217115908.22547-1-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20210404144823.31867-3-ansuelsmth@gmail.com
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/qcom/tsens.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f919aa8..6926711 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17771,7 +17771,7 @@ THERMAL/CPU_COOLING
- M:	Amit Daniel Kachhap <amit.kachhap@gmail.com>
- M:	Daniel Lezcano <daniel.lezcano@linaro.org>
- M:	Viresh Kumar <viresh.kumar@linaro.org>
--M:	Javi Merino <javi.merino@kernel.org>
-+R:	Lukasz Luba <lukasz.luba@arm.com>
- L:	linux-pm@vger.kernel.org
- S:	Supported
- F:	Documentation/driver-api/thermal/cpu-cooling-api.rst
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 124384c..54382c6 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -86,7 +86,8 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
+ 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
+ 			__func__, i, p1[i], p2[i]);
+ 
+-		priv->sensor[i].slope = SLOPE_DEFAULT;
++		if (!priv->sensor[i].slope)
++			priv->sensor[i].slope = SLOPE_DEFAULT;
+ 		if (mode == TWO_PT_CALIB) {
+ 			/*
+ 			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
