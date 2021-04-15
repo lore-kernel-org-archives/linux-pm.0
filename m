@@ -7,55 +7,60 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBE5C4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94582C43618
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 65327613B7
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 622F561139
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232851AbhDOME2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Apr 2021 08:04:28 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:59494 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232768AbhDOMEZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:25 -0400
-Date:   Thu, 15 Apr 2021 12:04:01 -0000
+        id S232819AbhDOME0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Apr 2021 08:04:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34618 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232774AbhDOMEY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:24 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00FF4C061756
+        for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:02 -0700 (PDT)
+Date:   Thu, 15 Apr 2021 12:03:59 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1618488242;
+        s=2020; t=1618488240;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qTQ3M5pKKejtp2Ri6Ef9iU9AbB8qF51x5KTwSJqJFn8=;
-        b=mRypYykoh2LxRaD0u2dvDBNaOWviM1Xn8y26sJ7GII5t4/DHWb6Ni8PyLH+BQFJYM9Neyw
-        wuhw5nynbGUMSEgFb1J5d8OtDsTUbTHHLIzpP/XPDqhZEaAY0oJ/q0gLL26lEcPhdYEF06
-        H99dRwgO0Uc2liqq+wYs9LRv3E8vl/X+aAlDf3h1E6CQQHFhXY0XpDyN5c0JwjWova42Nh
-        8wcCBjKY0AjAtUcw87wbKvOK7mcRg6z5YCdRnt6bihnKN38xSk9+juoU399+DZ8JrzdjBn
-        UFIeD+c1KML6hSBYcgOrtDOUisnHWSv6rR5Qc72jSN+WDVgkHzTyhhHHcbsnDQ==
+        bh=vVSTSEObDgSbWpuvk9rXnhHt0pG1N7lmb6HKMij7jBc=;
+        b=OFeCKqxZNyPZkKdUpN4VUIjR0/jYLhxztAjbeJwN2TwSWeB2NTBerIo6miQfRvjboe8jFh
+        Y/IRRiQPf0UR3JVRebEuVL3gIQECeci1jlAUiBQYPu/Ih2R1bK8PNNS/DbYdydv86WYDVU
+        GvdgVCUmfIQIxJIpfqcbVqX4rt/x4Gc/vihk0X9AlbiKjyr2FlfMD+yMg0+dNOxeqdgUaw
+        jY3tEwl1LqzkZSE8KHQxBLnLHF7tvk2XRnB20vCi5bCmkUBDbmvKY4lV92IXCaMnTz+I6l
+        kk6BTIH00b16WGbCZBbiKEHwbduLuGSLxFoHk48N1Dnv/9s1DmOIGkjFQfpc5Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1618488242;
+        s=2020e; t=1618488240;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qTQ3M5pKKejtp2Ri6Ef9iU9AbB8qF51x5KTwSJqJFn8=;
-        b=t/DW5EUzsuuIw0DEAWN90sFwlwKi4dMT4j1eWuS+1BZuNNb53xptynt5iG+FRxbcRSkOGU
-        mep6k+YtdTOrNnBQ==
-From:   "thermal-bot for Hao Fang" <tip-bot2@linutronix.de>
+        bh=vVSTSEObDgSbWpuvk9rXnhHt0pG1N7lmb6HKMij7jBc=;
+        b=9buFxcfDfuBO+pVHpozUFK72StPLgw/1ro1Oqv/rgQ200VNDmy8J4Bx/TRotb6Ktokbigz
+        qjvsPgbBnRDOlGCg==
+From:   "thermal-bot for Robert Foss" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/hisi: Use the correct
- HiSilicon copyright
-Cc:     Hao Fang <fanghao11@huawei.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: qcom-tsens: Add
+ compatible for sm8350
+Cc:     Robert Foss <robert.foss@linaro.org>,
+        Vinod Koul <vkoul@kernel.org>, Rob Herring <robh@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <1617086733-2705-1-git-send-email-fanghao11@huawei.com>
-References: <1617086733-2705-1-git-send-email-fanghao11@huawei.com>
+In-Reply-To: <20210324124308.1265626-1-robert.foss@linaro.org>
+References: <20210324124308.1265626-1-robert.foss@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161848824170.29796.14245035825395416946.tip-bot2@tip-bot2>
+Message-ID: <161848823984.29796.18162327130011680736.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,44 +71,36 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     4481b39f9390e82c73fb03193b4a5e7e242d22a4
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4481b39f9390e82c73fb03193b4a5e7e242d22a4
-Author:        Hao Fang <fanghao11@huawei.com>
-AuthorDate:    Tue, 30 Mar 2021 14:45:33 +08:00
+Commit-ID:     c0612265295bc7bbbc7189ab811192fe77be8196
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c0612265295bc7bbbc7189ab811192fe77be8196
+Author:        Robert Foss <robert.foss@linaro.org>
+AuthorDate:    Wed, 24 Mar 2021 13:43:08 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Thu, 15 Apr 2021 13:21:42 +02:00
 
-thermal/drivers/hisi: Use the correct HiSilicon copyright
+dt-bindings: thermal: qcom-tsens: Add compatible for sm8350
 
-s/Hisilicon/HiSilicon/g.
-It should use capital S, according to
-https://www.hisilicon.com/en/terms-of-use.
+Add tsens bindings for sm8350.
 
-Signed-off-by: Hao Fang <fanghao11@huawei.com>
+Signed-off-by: Robert Foss <robert.foss@linaro.org>
+Reviewed-by: Vinod Koul <vkoul@kernel.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/1617086733-2705-1-git-send-email-fanghao11@huawei.com
+Link: https://lore.kernel.org/r/20210324124308.1265626-1-robert.foss@linaro.org
 ---
- drivers/thermal/hisi_thermal.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index ee05950..d902db9 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -1,7 +1,7 @@
- /*
-- * Hisilicon thermal sensor driver
-+ * HiSilicon thermal sensor driver
-  *
-- * Copyright (c) 2014-2015 Hisilicon Limited.
-+ * Copyright (c) 2014-2015 HiSilicon Limited.
-  * Copyright (c) 2014-2015 Linaro Limited.
-  *
-  * Xinwei Kong <kong.kongxinwei@hisilicon.com>
-@@ -672,5 +672,5 @@ module_platform_driver(hisi_thermal_driver);
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 8ad9dc1..fbd03cd 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -44,6 +44,7 @@ properties:
+               - qcom,sdm845-tsens
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
++              - qcom,sm8350-tsens
+           - const: qcom,tsens-v2
  
- MODULE_AUTHOR("Xinwei Kong <kong.kongxinwei@hisilicon.com>");
- MODULE_AUTHOR("Leo Yan <leo.yan@linaro.org>");
--MODULE_DESCRIPTION("Hisilicon thermal driver");
-+MODULE_DESCRIPTION("HiSilicon thermal driver");
- MODULE_LICENSE("GPL v2");
+   reg:
