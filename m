@@ -2,112 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 340F7C433B4
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 02:26:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBA71C433ED
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 03:25:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0DF1B6120E
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 02:26:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C73E1611B0
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 03:25:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229620AbhDOC0Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Apr 2021 22:26:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49170 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229618AbhDOC0X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Apr 2021 22:26:23 -0400
-Received: from mail-qk1-x731.google.com (mail-qk1-x731.google.com [IPv6:2607:f8b0:4864:20::731])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F0B6C061756
-        for <linux-pm@vger.kernel.org>; Wed, 14 Apr 2021 19:26:01 -0700 (PDT)
-Received: by mail-qk1-x731.google.com with SMTP id o5so23822565qkb.0
-        for <linux-pm@vger.kernel.org>; Wed, 14 Apr 2021 19:26:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kepstin.ca; s=google;
-        h=message-id:subject:from:to:cc:date:in-reply-to:references
-         :user-agent:mime-version:content-transfer-encoding;
-        bh=pZKbTgJnvPwOaUYzf3pb93PEk5cL8bWVMYrrjP/xOH4=;
-        b=Qlpt5ZpSWroQ7rYeDQVSrQSdxxEXRRo69YO9IVS5fWVDNoasfnswUPnJgyknFRHyDd
-         EpBBKrWcPjtGfeDigjaYQvwaKoJcd4+5P6cv7Qo3niTww6YLT7lbBsEVlVnW5NX+T7ED
-         VENGLJofkUiQI8XMMdajfn2VlpdFYx8nw6DCc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
-         :references:user-agent:mime-version:content-transfer-encoding;
-        bh=pZKbTgJnvPwOaUYzf3pb93PEk5cL8bWVMYrrjP/xOH4=;
-        b=GsOYBfle5nWwZSsNPuitgYz5KmxRcBq4NPDy3+KwlTz+uqiLys2SkUqqftKVWbzjJq
-         d/T60YP3Bf2RmsR+Yqi3cbVjPcTT1G9XrUX1vTJp6oCqn4PTqNGeXrDYp6CnlM2yi9HN
-         v160nWHXQ8WoCXZ0chGaIShPG8S9xV7Xl9+VXTjCrw3FhalBW/zQkzsedpLJjzuWKI/A
-         +NrGwdMvsZV4KVBgi1goCdrWk59/F03ky6Sk7g7cJvnaeqN8Geiz0PR6K0xdbyCb4+Wk
-         avhm1AisvOPgRZKW31iBEoFBXBw7MXYH0ElgiAAnOs7Og5I63TFML/o5Xh1dytv9rqMG
-         0eFg==
-X-Gm-Message-State: AOAM531P4yggNTEx8/N8uewgrLQnxqrNbV9qp4TixdhGsJ+3mX1i5HC3
-        7YfLnygIUtDF1ikIbkxHsXqzJA==
-X-Google-Smtp-Source: ABdhPJy//y8HLOaczheOwyPBn4LzZ8Gv3A4UCYqLYLsnHCfJ4RS+zPv5nnkiQ1sc5Y4PVVX7atqKkQ==
-X-Received: by 2002:a37:a52:: with SMTP id 79mr1470698qkk.162.1618453560475;
-        Wed, 14 Apr 2021 19:26:00 -0700 (PDT)
-Received: from saya.kepstin.ca (dhcp-108-168-125-232.cable.user.start.ca. [108.168.125.232])
-        by smtp.gmail.com with ESMTPSA id m2sm874009qkc.14.2021.04.14.19.25.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Apr 2021 19:26:00 -0700 (PDT)
-Message-ID: <e596d27c0cae71685bcee8eef61f781ffdc42e11.camel@kepstin.ca>
-Subject: Re: [PATCH] Fix turbostat exiting with an error when run on AMD CPUs
-From:   Calvin Walton <calvin.walton@kepstin.ca>
-To:     Chen Yu <yu.c.chen@intel.com>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Len Brown <lenb@kernel.org>
-Date:   Wed, 14 Apr 2021 22:25:58 -0400
-In-Reply-To: <20210415022600.GA341188@chenyu-desktop>
-References: <88d11c19e662f67ae492eb4b93e12e1b24e68c1d.camel@kepstin.ca>
-         <07f5e30a2af1674f0a2f8995641bbaaf64e47d34.camel@kepstin.ca>
-         <20210415022600.GA341188@chenyu-desktop>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.2 
+        id S229598AbhDODZs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Apr 2021 23:25:48 -0400
+Received: from mail-m17635.qiye.163.com ([59.111.176.35]:36072 "EHLO
+        mail-m17635.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229467AbhDODZo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Apr 2021 23:25:44 -0400
+Received: from wanjb-virtual-machine.localdomain (unknown [36.152.145.182])
+        by mail-m17635.qiye.163.com (Hmail) with ESMTPA id A5F024003CA;
+        Thu, 15 Apr 2021 11:25:20 +0800 (CST)
+From:   Wan Jiabing <wanjiabing@vivo.com>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     kael_w@yeah.net, Wan Jiabing <wanjiabing@vivo.com>
+Subject: [PATCH] power: reset: Remove unneeded semicolon
+Date:   Thu, 15 Apr 2021 11:24:56 +0800
+Message-Id: <20210415032456.24070-1-wanjiabing@vivo.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZS1VLWVdZKFlBSE83V1ktWUFJV1kPCR
+        oVCBIfWUFZGRhKSVYeHk1JTUNLSk8eSE9VEwETFhoSFyQUDg9ZV1kWGg8SFR0UWUFZT0tIVUpKS0
+        hKTFVLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Nxw6NRw4Cj8RFhM#HhApKTZK
+        VikaCQFVSlVKTUpDT05MSklKSk1OVTMWGhIXVQwaFRESGhkSFRw7DRINFFUYFBZFWVdZEgtZQVlI
+        TVVKTklVSk9OVUpDSVlXWQgBWUFKQ0tNNwY+
+X-HM-Tid: 0a78d38fd057d991kuwsa5f024003ca
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2021-04-15 at 10:26 +0800, Chen Yu wrote:
-> Hi Calvin,
-> On Wed, Apr 14, 2021 at 10:08:07PM -0400, Calvin Walton wrote:
-> > On Wed, 2021-04-14 at 22:05 -0400, Calvin Walton wrote:
-> > > The current version of turbostat exits immediately upon entering
-> > > the
-> > > main loop, with error code -13. This is a regression that was
-> > > introducted
-> > > in these commits:
-> > > 
-> > > 9972d5d84d76 tools/power turbostat: Enable accumulate RAPL
-> > > display
-> > > 87e15da95775 tools/power turbostat: Introduce functions to
-> > > accumulate
-> > > RAPL consumption
-> > 
-> > Ah, I failed to check the mailing list before sending this patch!
-> > Terry
-> > Bowman's fix here should probably be preferred:
-> > https://patchwork.kernel.org/project/linux-pm/patch/20210331155807.3838-1-terry.bowman@amd.com/
-> > 
-> > My patch was simply the minimum necessary to get turbostat working
-> > again.
-> Thanks for reporting this. We had a fix for this previously at
-> https://lkml.org/lkml/2021/3/12/682
-> 
-> I'll check with Len if this patch has been merged.
+Fix the following coccicheck warning:
 
-Thanks for checking.
+./drivers/power/reset/vexpress-poweroff.c:136:2-3: Unneeded semicolon
 
-I notice that the linked patch doesn't include the other part of the
-fix - correcting the type used for the MSR offsets to off_t (the AMD
-MSRs at 0xc0010299 exceed the range of a signed 32-bit int), so if that
-patch is in the queue to be merged, I can submit the off_t patch
-separately.
+Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+---
+ drivers/power/reset/vexpress-poweroff.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 1fdbcbd95fc2..447ffdacddf9 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -133,7 +133,7 @@ static int vexpress_reset_probe(struct platform_device *pdev)
+ 	case FUNC_REBOOT:
+ 		ret = _vexpress_register_restart_handler(&pdev->dev);
+ 		break;
+-	};
++	}
+ 
+ 	return ret;
+ }
 -- 
-Calvin Walton <calvin.walton@kepstin.ca>
+2.25.1
 
