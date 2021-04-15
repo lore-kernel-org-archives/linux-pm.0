@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8B80C43462
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9898C4363E
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A9EB6613BB
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 95C7E61139
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Apr 2021 12:04:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232827AbhDOMEa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Apr 2021 08:04:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34638 "EHLO
+        id S232836AbhDOME1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Apr 2021 08:04:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232848AbhDOME1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:27 -0400
+        with ESMTP id S232799AbhDOMEZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Apr 2021 08:04:25 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DB38C061574
-        for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:04 -0700 (PDT)
-Date:   Thu, 15 Apr 2021 12:04:02 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5260C061756
+        for <linux-pm@vger.kernel.org>; Thu, 15 Apr 2021 05:04:02 -0700 (PDT)
+Date:   Thu, 15 Apr 2021 12:04:00 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1618488243;
+        s=2020; t=1618488241;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BRoARq+x/xatykkxto1ouWcvShbFW1YuL+8JliFuhEE=;
-        b=4SUqi06kZXbwASCHUYKNGbeQz+lsG1C0c/zbV3YsgJCfvFSdlFoAAXtanw12CzUWmZX2h4
-        C+7p6d2HVu9QfUAPtpmsLO38oxioikMspwMs1x0yAkWPYvNANfe9GWrm7K2IZ8L3x47l7L
-        QjPdI3SrlstQI1xVAoGKG8aL09D8lVnrw5DHkHywXnzTFk+wmkYGTwt9s9SiitGs86ecyK
-        yfedpxAPlNOZbhQXJ7jVyyEBtxSzHSEbOIRYXuZnggRCiKKORwM9lYiJQM4fPOIswmeh78
-        KQKBt6+RxzZwfJRC4alUyCYplIX+YtQuLg2Aa1IYdMt1q98LMYbT8dR8WmLJOA==
+        bh=GUI5Akfoi0AO9pkb9mEuO6LNc0sXIotwjn0CX8O1f10=;
+        b=I+z78Zk2jOxfuCvkLC9bFppOm4vFOcwUAlhcGhEFr54jvnjglT9IpDqgNyip6+WG2/DPvx
+        An/jG32JJfeTk2ULptm9ee+hT8lOlB4ubuXXhMCx6bgCjTkDQQj+xRVv6PzyJ1t9r1kD8L
+        6jA6l+ZwtWHnDMJo7XaR0w/NDri6B1RqZoOWIJ5aDAL1Zjz5jgGzMFF4t5YNvBHZHmn5i5
+        sZB5Y8KlD6mI3pEsRw2o4QXVtlVVNjIENDYrbD9eijyeQIDJj7DqMNj07WFg8ru2ADdn1l
+        mquL9IP9eRUI/i/YXNFxKjgC0ay7VqiMnRB3EAJKOiSMO3vGzkGttXwW/Q7piA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1618488243;
+        s=2020e; t=1618488241;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BRoARq+x/xatykkxto1ouWcvShbFW1YuL+8JliFuhEE=;
-        b=b9eikFmK1gzdAWWp2tiS7Q3NzOSKPwij96cU2f45dzfwX+ok3lM8Rm9iXqnto5OMKnQ++1
-        QJx46gc9KWeW6gBg==
-From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
+        bh=GUI5Akfoi0AO9pkb9mEuO6LNc0sXIotwjn0CX8O1f10=;
+        b=VjifrLsy3yUV+ti+6jdSftmseOGbVB3SoKHfjy0UHkuj88Se9KgjJZYTAW3nzwnLqBerQf
+        vmBZfNnzpU6kk3BQ==
+From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/cpuidle_cooling: Fix use after error
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
+Subject: [thermal: thermal/next] MAINTAINERS: update thermal CPU cooling section
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Javi Merino <javi.merino@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, rui.zhang@intel.com,
-        amitk@kernel.org
-In-Reply-To: <20210319202522.891061-1-daniel.lezcano@linaro.org>
-References: <20210319202522.891061-1-daniel.lezcano@linaro.org>
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20210217115908.22547-1-lukasz.luba@arm.com>
+References: <20210217115908.22547-1-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Message-ID: <161848824237.29796.17508442305407405734.tip-bot2@tip-bot2>
+Message-ID: <161848824055.29796.13659501203766535115.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,58 +70,36 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     6cc7b38c0ca3187abd07af849ec179b42337bcf6
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//6cc7b38c0ca3187abd07af849ec179b42337bcf6
-Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
-AuthorDate:    Fri, 19 Mar 2021 21:25:22 +01:00
+Commit-ID:     5b5f1121d60bca8305951930d7aa2123fb213cb0
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//5b5f1121d60bca8305951930d7aa2123fb213cb0
+Author:        Lukasz Luba <lukasz.luba@arm.com>
+AuthorDate:    Wed, 17 Feb 2021 11:59:08 
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 15 Apr 2021 13:21:26 +02:00
+CommitterDate: Thu, 15 Apr 2021 13:21:42 +02:00
 
-thermal/drivers/cpuidle_cooling: Fix use after error
+MAINTAINERS: update thermal CPU cooling section
 
-When the function successfully finishes it logs an information about
-the registration of the cooling device and use its name to build the
-message. Unfortunately it was freed right before:
+Update maintainers responsible for CPU cooling on Arm side.
 
-drivers/thermal/cpuidle_cooling.c:218 __cpuidle_cooling_register()
-	warn: 'name' was already freed.
-
-Fix this by freeing after the message happened.
-
-Fixes: 6fd1b186d900 ("thermal/drivers/cpuidle_cooling: Use device name instead of auto-numbering")
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Link: https://lore.kernel.org/r/20210319202522.891061-1-daniel.lezcano@linaro.org
+Acked-by: Javi Merino <javi.merino@kernel.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20210217115908.22547-1-lukasz.luba@arm.com
 ---
- drivers/thermal/cpuidle_cooling.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
-index f329761..4f41102 100644
---- a/drivers/thermal/cpuidle_cooling.c
-+++ b/drivers/thermal/cpuidle_cooling.c
-@@ -208,18 +208,20 @@ static int __cpuidle_cooling_register(struct device_node *np,
- 
- 	cdev = thermal_of_cooling_device_register(np, name, idle_cdev,
- 						  &cpuidle_cooling_ops);
--	kfree(name);
--
- 	if (IS_ERR(cdev)) {
- 		ret = PTR_ERR(cdev);
--		goto out_unregister;
-+		goto out_kfree_name;
- 	}
- 
- 	pr_debug("%s: Idle injection set with idle duration=%u, latency=%u\n",
- 		 name, idle_duration_us, latency_us);
- 
-+	kfree(name);
-+
- 	return 0;
- 
-+out_kfree_name:
-+	kfree(name);
- out_unregister:
- 	idle_inject_unregister(ii_dev);
- out_kfree:
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f919aa8..6926711 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17771,7 +17771,7 @@ THERMAL/CPU_COOLING
+ M:	Amit Daniel Kachhap <amit.kachhap@gmail.com>
+ M:	Daniel Lezcano <daniel.lezcano@linaro.org>
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+-M:	Javi Merino <javi.merino@kernel.org>
++R:	Lukasz Luba <lukasz.luba@arm.com>
+ L:	linux-pm@vger.kernel.org
+ S:	Supported
+ F:	Documentation/driver-api/thermal/cpu-cooling-api.rst
