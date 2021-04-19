@@ -2,89 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B95AC433ED
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Apr 2021 12:04:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D616C433B4
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Apr 2021 01:29:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EB0D161019
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Apr 2021 12:04:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 354CD6108D
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Apr 2021 01:29:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230441AbhDRMEm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Apr 2021 08:04:42 -0400
-Received: from mout.gmx.net ([212.227.17.21]:53899 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230273AbhDRMEl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 18 Apr 2021 08:04:41 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1618747428;
-        bh=UJsT5aV+MxRbho8JhRzNBpNeMbZUN3ULqGnvmwYqqo8=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=gtWAMLhVANHc5fa/MEW9QtadcRt6E3XfLkUMwhO75vFNJ9hSiCIcdBXyh19j4Glvx
-         xlP1dPLK+L+gfju2A+suqWIgK1cDu7nk/k+Hk8vya2JdjeXOowr3KojS5rMCxKfH0l
-         k494tuyFNJv4jIqxdj0i2T9ANWf8U/auoWtHGEaE=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [80.245.75.88] ([80.245.75.88]) by web-mail.gmx.net
- (3c-app-gmx-bap31.server.lan [172.19.172.101]) (via HTTP); Sun, 18 Apr 2021
- 14:03:48 +0200
-MIME-Version: 1.0
-Message-ID: <trinity-93ab11dc-32c6-4e6b-8617-6bfff1a1b42d-1618747428085@3c-app-gmx-bap31>
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     Frank Wunderlich <linux@fw-web.de>
-Cc:     linux-mediatek@lists.infradead.org,
+        id S233117AbhDSBaU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Apr 2021 21:30:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44674 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232133AbhDSBaT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Apr 2021 21:30:19 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3220C061760;
+        Sun, 18 Apr 2021 18:29:50 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id sd23so41698261ejb.12;
+        Sun, 18 Apr 2021 18:29:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=vyio+zXMVMJ7Uz88On71j+PqEMDFxBYUNNuIBYyFxT8=;
+        b=NJnPBzkDirodq8hbHuRfEQrt27cLdZZeSqt/jCw3Bm2L/kE2vt4EOhA+LC5X6m4FpW
+         sqOb1CpjcTIy8NZBhCQwDw7HUVtvj/zpaHz+vbEJqvkrvrkmngHALo/nRUF08lx394U9
+         vh8tPH4W0I029I2H36gHMjyJ9I0So6fJWbta4n9gcO4HI4lJFbT7cL0pddLijgKaOUTS
+         Waxr5nLT0rsrZvxCPpzL3LZEzyB4M6nDWGZZYpSzepyCQ+A5a2t2ld401RhY8LfQOsRp
+         Y9I8N3s+Ikcv5ZFhANC0buBQaomXoJdVx5Jg6JGbKHBcpOAaxDB2kAwhjfnjP4xBiOIG
+         GSjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=vyio+zXMVMJ7Uz88On71j+PqEMDFxBYUNNuIBYyFxT8=;
+        b=F7LwPZvrp/VxpwnP/TOct+7AbEaKQ/exfueTMZDxMTus9Uci2hi+ouUB82JrB5rBvI
+         pseFPIuRN3lQqTf/ktyDpPun2vGFNZCpM/vkY/FbGHOYOfw1TQuqBJjshUejQT+kZDJy
+         vr1OukHNssrYFZfx7sGJEsngkM2YwjkEJNAn/nrCENasbubVsVMR9iJ4B9FzdvSqSaG1
+         aL0wOdHQr/wIsRQDnh71kvp9yS7++rArJoorkU/P4ChnQ8FaLASx29oR/yWTS7A12UyQ
+         KF50R1SCnx2JWUMs7astv76d6gTNRQ2ddkx+Soo/gQQeQqJ7bWfxi/ln8WwFzP94g+sl
+         CBfA==
+X-Gm-Message-State: AOAM533Tu9KvltKxzYkmA8gWNXjoISxle6UfNeG0vSqH+27Y1JMC0904
+        HuratOZOwgUaU/HAa9dq9mFtCAmM9wCorw==
+X-Google-Smtp-Source: ABdhPJxEOHY6dhXbVJoawZsMi2xGVHy/z8wvsBDyo953717LkPZl1Af7qHaAafvaoLEWABQNZll0Cg==
+X-Received: by 2002:a17:907:3f9f:: with SMTP id hr31mr19290251ejc.349.1618795789597;
+        Sun, 18 Apr 2021 18:29:49 -0700 (PDT)
+Received: from Ansuel-xps.localdomain (93-35-189-2.ip56.fastwebnet.it. [93.35.189.2])
+        by smtp.googlemail.com with ESMTPSA id mj3sm9083579ejb.3.2021.04.18.18.29.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 18 Apr 2021 18:29:49 -0700 (PDT)
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Thara Gopinath <thara.gopinath@linaro.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: Aw: [PATCH] thermal: mediatek: add sensors-support
-Content-Type: text/plain; charset=UTF-8
-Date:   Sun, 18 Apr 2021 14:03:48 +0200
-Importance: normal
-Sensitivity: Normal
-In-Reply-To: <20210320080646.49615-1-linux@fw-web.de>
-References: <20210320080646.49615-1-linux@fw-web.de>
-Content-Transfer-Encoding: quoted-printable
-X-UI-Message-Type: mail
-X-Priority: 3
-X-Provags-ID: V03:K1:NpJG2XS0uVpmsDDBMEbodtzzfxpTnTBa8p1RkMykjqag/W3Gxr2tax05+zGq5AUWfZw8Y
- UR2I0pxvM9MHe0r8VhdDWkgQGBL1SI+8mAdYtMqgypfgy6RLOSe0qt1nK7c6agDFY5PfxSqpyO4Z
- wuBrnzufOyhYmZnoAymsyPyAXn2DXmF91+zeC+t21fCSauEkUxk78mx99SIl3IWAzCGwm7sT9tOV
- qAI+rAIGkZY8+FqJkyyuAffLkkKWZ7AsT6wur+yubLVNmz8hfao5kD5mi04EgQYx2wDkuWpwzz5T
- Is=
-X-UI-Out-Filterresults: notjunk:1;V03:K0:I5KzL9OLaQU=:3OPO7RKu+UrbJhyuN6QKpU
- 4BFYTNIp75gm+rV0iVvIjAnrZ4rj3UrvsoLuay+pCtGrHP3kS1gyMDoKaExubD2BtRxmnDcFP
- EXKFerqtjTB04wqUrO88LfpaXR73l0pGklAIgozu0o1JwZcj0Umk3S/bG6qd2vhka6gZH3jKh
- qRu0q85YFDxkMoCR6UUPpVEPnVYXeqHPNTdFN37xLgMWQ6okybKiy8tUUE+bUyeT2ZSVPD1yk
- 2at67rwVhXuVNRDnpguJsZvuCBq9MJa5fWUHc/BZ4u54VHhg5HH6Qir6G8J48GSr6ZgzVdfWF
- p1FA/423VEpjXaXcAtA3tBTHaZAk59UAaiEn8hsDVE+UUwrb60yU3LAmxv8g0UrhJfDmYHsrh
- Gl4F4Cn9dkJEs266ePIsPs5U8XZ8yIBRtVlm/DYT+Ge3FHzqx90mSDbru7P8Cb72TdhZb4stC
- zb+HotaIeKhlrhZ7IbA57k62MuPtnAjeyawwjbZqzPnkb42UGomNLhwhjTnDyEFNvjezFFpfD
- y5rD4nGv3MbX/iTa+hRpzw5YKZVeCdbli2KhM3KWeQ8GEP5WQaBF9Eruhdvw1L3CE2jyPSMCz
- 7K8Icw0Cf8kRzGRPxjMNukY07zv3tUyfUnBba8wMSmmdn8CcArkicuPi0i8/5ZZu5jVyN6+K1
- X+qLouCPOYByILOHs2fiFZVxcieOhdrk4fND/9bOBTRStLouXPo0aYprAGKXFpg2Yw7ZvHxDZ
- xFsPCVLNJE6nY/vdcN3WQViWdSHZK4iqsfTkN1eZUHW0WF2ORC5TDQOELbuapp321t3PbRyYK
- Bw3XYc3GqeMj2QKSR1+0lg4XQnhRLrXuuWUmN0DTw18tK/eZV4tCyn4MnqM9rUWjA178rfI81
- oX9ZfsAH+dh6HQ+BoZgsyLstw8Wrc5NgE3NKpQkJv+j1dSkcAiZcwjlHyVnblA5CKZ7/vcTyt
- VDaQZgQnZ+Q==
+Subject: [thermal-next PATCH 2/2] thermal: qcom: tsens: simplify debugfs init function
+Date:   Mon, 19 Apr 2021 03:29:30 +0200
+Message-Id: <20210419012930.7727-2-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210419012930.7727-1-ansuelsmth@gmail.com>
+References: <20210419012930.7727-1-ansuelsmth@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Simplify debugfs init function.
+- Drop useless variables
+- Add check for existing dev directory.
+- Fix wrong version in dbg_version_show (with version 0.0.0, 0.1.0 was
+  incorrectly reported)
 
-any opinion (except typo)?
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ drivers/thermal/qcom/tsens.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
-thermanl =3D> thermal
-
-regards Frank
-
-
-> Gesendet: Samstag, 20=2E M=C3=A4rz 2021 um 10:06 Uhr
-> Von: "Frank Wunderlich" <linux@fw-web=2Ede>
-> add HWMON-support to mediateks thermanl driver to allow lm-sensors
-> userspace tools read soc temperature
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index f9d50a67e..b086d1496 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -692,7 +692,7 @@ static int dbg_version_show(struct seq_file *s, void *data)
+ 			return ret;
+ 		seq_printf(s, "%d.%d.%d\n", maj_ver, min_ver, step_ver);
+ 	} else {
+-		seq_puts(s, "0.1.0\n");
++		seq_printf(s, "0.%d.0\n", priv->feat->ver_major);
+ 	}
+ 
+ 	return 0;
+@@ -704,21 +704,19 @@ DEFINE_SHOW_ATTRIBUTE(dbg_sensors);
+ static void tsens_debug_init(struct platform_device *pdev)
+ {
+ 	struct tsens_priv *priv = platform_get_drvdata(pdev);
+-	struct dentry *root, *file;
+ 
+-	root = debugfs_lookup("tsens", NULL);
+-	if (!root)
++	priv->debug_root = debugfs_lookup("tsens", NULL);
++	if (!priv->debug_root)
+ 		priv->debug_root = debugfs_create_dir("tsens", NULL);
+-	else
+-		priv->debug_root = root;
+ 
+-	file = debugfs_lookup("version", priv->debug_root);
+-	if (!file)
++	if (!debugfs_lookup("version", priv->debug_root))
+ 		debugfs_create_file("version", 0444, priv->debug_root,
+ 				    pdev, &dbg_version_fops);
+ 
+ 	/* A directory for each instance of the TSENS IP */
+-	priv->debug = debugfs_create_dir(dev_name(&pdev->dev), priv->debug_root);
++	priv->debug = debugfs_lookup(dev_name(&pdev->dev), priv->debug_root);
++	if (!priv->debug)
++		priv->debug = debugfs_create_dir(dev_name(&pdev->dev), priv->debug_root);
+ 	debugfs_create_file("sensors", 0444, priv->debug, pdev, &dbg_sensors_fops);
+ }
+ #else
+-- 
+2.30.2
 
