@@ -2,256 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF672C433ED
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 11:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8B00C433B4
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 11:32:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 93D476139A
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 11:07:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 776E8613AE
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 11:32:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231810AbhDTLIK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Apr 2021 07:08:10 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:25901 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231734AbhDTLIJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Apr 2021 07:08:09 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1618916857;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc; bh=zPYo1aiWptSZbQIMuyBU4NEQHLJgCFJFKFi4vRSHdZE=;
-        b=fU6kfhjCtgtfl1Y/DvxzI87wvikcus5mlGjfY34FmKJPX3wOeOesGt+l7nXqCcjzAKt5zb
-        pqMPCQS64z7XFURtFx1gNELcQ0DZvp0HLr+EiT5DnyawwUA+IpbJ6gSJFC+Jm4n5+Eie68
-        19QBd3f8cJTwI8DLubwAqZruvuu5Nx8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-183-z2t-rxPTNXCEW0LW5UYCVQ-1; Tue, 20 Apr 2021 07:07:24 -0400
-X-MC-Unique: z2t-rxPTNXCEW0LW5UYCVQ-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A987487A826;
-        Tue, 20 Apr 2021 11:07:22 +0000 (UTC)
-Received: from crecklin.bos.com (unknown [10.10.115.243])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 677B75D9C0;
-        Tue, 20 Apr 2021 11:07:18 +0000 (UTC)
-From:   Chris von Recklinghausen <crecklin@redhat.com>
-To:     ebiggers@kernel.org, ardb@kernel.org, simo@redhat.com,
-        rafael@kernel.org, decui@microsoft.com, linux-pm@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1 v9] use crc32 instead of md5 for hibernation e820 integrity check
-Date:   Tue, 20 Apr 2021 07:07:17 -0400
-Message-Id: <20210420110717.20077-1-crecklin@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+        id S230290AbhDTLd3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Apr 2021 07:33:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40526 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230408AbhDTLd2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Apr 2021 07:33:28 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12ABCC06174A
+        for <linux-pm@vger.kernel.org>; Tue, 20 Apr 2021 04:32:54 -0700 (PDT)
+Received: by mail-wr1-x42e.google.com with SMTP id k26so20813794wrc.8
+        for <linux-pm@vger.kernel.org>; Tue, 20 Apr 2021 04:32:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=2pB+5dp9tOe3/dQfTfQajQflD5Wxu+BkUEq3uAg1PfQ=;
+        b=ph5SBtuyq81FoMcmjUEeWTKFwwnAlcefH5oEpymATxD8zX9ELEMr7M0PAz2JEc8466
+         i84A9Qgv80DO55uznNOlnLhI2Mc/dKGY7aRNdki4qreeio9TJn0RObTHM7ueCeBUUij6
+         CMGYR9BmQXsWhmzhlcn+8FWWOEAsJFRHniP9Ox9STMaOpYaUl/mMDOEJ4micwElgAKr4
+         ys44priunaBvffyn9dpWmNU8zoGhrCIeWB8ezcIt4tVE/B3iWrCEmuCm1nLU7rql6EhC
+         Nn/71eha/Smn8yGnxGakkZJLgEQ5bGt2WFWOA5+m2mZXKMO447NJkPKJhZCLvwwjxUnx
+         11Xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=2pB+5dp9tOe3/dQfTfQajQflD5Wxu+BkUEq3uAg1PfQ=;
+        b=SBsCUoRCJXeL9ZnaNQmi1JK2pbjsQ4K8laLf/i/TMOEF60c8ufU/FS/TuVNu5mU3ex
+         jdPDuJ5EtRsIpA8lSmBybLkXBw1qLF1L8zpWxmXqsqU2Y1AfNsQRbOkJPTMqTQKWclch
+         eMYVqryeJ49Sn5mnMpkxC6e9rfkYG/7Lh6IyDWoaBUakn7sj3QbAEvDdLo/MLaqwkmoO
+         PuitPgO3+ly7K38n2BQA1afBma2c4MbqUU/4oN5pKrDasnuNNIRRGIB2xgw7CFXkSU87
+         /Ap4dD0E0e6If7DOCW76VyiEODwLYsYL0yWwSSPywHvvFAlRVstJP1FxsiyhEV9CJqx7
+         Qv+g==
+X-Gm-Message-State: AOAM53334a/5b2+MjQIrCDgacT65NcwCQuPxp94YuZY3x5Uqe4O87TNV
+        p5RBu5k+VoGFIQWJTTr4T1ujNQ==
+X-Google-Smtp-Source: ABdhPJzHR+pXLyFtnHnqdzNOqKATo+m3eHymmTvVFNfNhvTk+j4hOP6tNW/jSyJBKhuXVh1l3v3fEg==
+X-Received: by 2002:a05:6000:1816:: with SMTP id m22mr20421266wrh.260.1618918372649;
+        Tue, 20 Apr 2021 04:32:52 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:a079:f96:da87:2d00? ([2a01:e34:ed2f:f020:a079:f96:da87:2d00])
+        by smtp.googlemail.com with ESMTPSA id n18sm20815825wrw.11.2021.04.20.04.32.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 20 Apr 2021 04:32:52 -0700 (PDT)
+Subject: Re: [thermal: thermal/next] thermal/drivers/tsens: Convert msm8960 to
+ reg_field
+To:     Ansuel Smith <ansuelsmth@gmail.com>
+Cc:     kernel test robot <lkp@intel.com>,
+        thermal-bot for Ansuel Smith <tip-bot2@linutronix.de>,
+        "open list:QUALCOMM CPUFREQ DRIVER MSM8996/APQ8096" 
+        <linux-pm@vger.kernel.org>, kbuild-all@lists.01.org,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>
+References: <161848823868.29796.2378720492280917598.tip-bot2@tip-bot2>
+ <202104160110.kPF71m4S-lkp@intel.com>
+ <CA+_ehUzAhPhqn62ivcxF+giMUy430eija7_sOSoNmC=291wq-g@mail.gmail.com>
+ <4187051b-4dcf-88e0-ac3d-fb47ff42e3ef@linaro.org>
+ <CA+_ehUziRf7Ls8PByz-9_L8SKB26+yRY-MrZK_26GqdycCkNhg@mail.gmail.com>
+ <7019d902-885f-d9ea-e24d-64ee8dd5aa0e@linaro.org>
+ <CA+_ehUwzYLU5W0452Lvryb41w=-U_SgwGBePVhQA-3UBBZUOig@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <e92be9ae-1ce9-adf1-86b9-0193cce708ea@linaro.org>
+Date:   Tue, 20 Apr 2021 13:32:47 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <CA+_ehUwzYLU5W0452Lvryb41w=-U_SgwGBePVhQA-3UBBZUOig@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hibernation fails on a system in fips mode because md5 is used for the e820
-integrity check and is not available. Use crc32 instead.
+On 20/04/2021 13:04, Ansuel Smith wrote:
+>>
+>> On 19/04/2021 14:08, Ansuel Smith wrote:
+>>
+>> [ ... ]
+>>
+>>>>>> vim +193 drivers/thermal/qcom/tsens-8960.c
+>>>>
+>>>> [ ... ]
+>>>>
+>>>>> What happened here? This doesn't seem right.
+>>>>
+>>>> Yes, it is. It means the series is not git bisect safe.
+>>>>
+>>>> Please fix it.
+>>>>
+>>>>
+>>>
+>>> I'm a bit confused. Should I send just a patch to fix this or I
+>>> need to send the series again rebased with the new changes?
+>>
+>> The latter, I've dropped your series from the thermal/next branch
+>>
+> 
+> Ok I will resend the series. I notice it has been applied to linux-next,
+> will that be a problem?
 
-The check is intended to detect whether the E820 memory map provided
-by the firmware after cold boot unexpectedly differs from the one that
-was in use when the hibernation image was created. In this case, the
-hibernation image cannot be restored, as it may cover memory regions
-that are no longer available to the OS.
+No, it is fine. linux-next uses thermal/linux-next and it is allowed to
+rebase the branch.
 
-A non-cryptographic checksum such as CRC-32 is sufficient to detect such
-inadvertent deviations.
+I've just updated it with your v14 series dropped.
 
-Fixes: 62a03defeabd ("PM / hibernate: Verify the consistent of e820 memory map
-       by md5 digest")
 
-Signed-off-by: Chris von Recklinghausen <crecklin@redhat.com>
----
-v1 -> v2
-   bump up RESTORE_MAGIC
-v2 -> v3
-   move embelishment from cover letter to commit comments (no code change)
-v3 -> v4
-   add note to comments that md5 isn't used for encryption here.
-v4 -> v5
-   reword comment per Simo's suggestion
-v5 -> v6
-   use wording from Eric Biggers, use crc32_le instead of crc32 from crypto
-	framework (crc32_le is in the core API and removes need for #defines)
-v6 -> v7
-   reword with input from Eric/Ard/Simo, code changed per Eric's feedback
-v7 -> v8
-   More feedback per Eric -
-   change 'Suspend' to 'Hibernation' in commit comments, rename e820_digest to
-   e820_checksum and change it to an unsigned long. rename get_e820_md5 to
-   compute_e820_crc32 and have it return the checksum value instead of writing
-   it into a user supplied buffer, get rid of hibernation_e820_save in favor of
-   calling compute_e820_crc32 directly, likewise, get rid of
-   hibernation_e820_mismatch in favor of comparing e820_checksum to the return
-   value of compute_e820_crc32()
-v8 -> v9
-   Make comment for compute_e820_crc32 more kerneldoc friendly. Also update
-   comment about the e820 firmware table in arch/x86/kernel/e820.c since it
-   also referred to MD5 and hibernation.
+>> --
+>> <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
 
- arch/x86/kernel/e820.c     |  4 +-
- arch/x86/power/hibernate.c | 89 ++++++--------------------------------
- 2 files changed, 16 insertions(+), 77 deletions(-)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 22aad412f965..629c4994f165 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -31,8 +31,8 @@
-  *       - inform the user about the firmware's notion of memory layout
-  *         via /sys/firmware/memmap
-  *
-- *       - the hibernation code uses it to generate a kernel-independent MD5
-- *         fingerprint of the physical memory layout of a system.
-+ *       - the hibernation code uses it to generate a kernel-independent CRC32
-+ *         checksum of the physical memory layout of a system.
-  *
-  * - 'e820_table_kexec': a slightly modified (by the kernel) firmware version
-  *   passed to us by the bootloader - the major difference between
-diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
-index cd3914fc9f3d..e94e0050a583 100644
---- a/arch/x86/power/hibernate.c
-+++ b/arch/x86/power/hibernate.c
-@@ -13,8 +13,8 @@
- #include <linux/kdebug.h>
- #include <linux/cpu.h>
- #include <linux/pgtable.h>
--
--#include <crypto/hash.h>
-+#include <linux/types.h>
-+#include <linux/crc32.h>
- 
- #include <asm/e820/api.h>
- #include <asm/init.h>
-@@ -54,95 +54,33 @@ int pfn_is_nosave(unsigned long pfn)
- 	return pfn >= nosave_begin_pfn && pfn < nosave_end_pfn;
- }
- 
--
--#define MD5_DIGEST_SIZE 16
--
- struct restore_data_record {
- 	unsigned long jump_address;
- 	unsigned long jump_address_phys;
- 	unsigned long cr3;
- 	unsigned long magic;
--	u8 e820_digest[MD5_DIGEST_SIZE];
-+	unsigned long e820_checksum;
- };
- 
--#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
- /**
-- * get_e820_md5 - calculate md5 according to given e820 table
-+ * compute_e820_crc32 - calculate crc32 of a given e820 table
-  *
-  * @table: the e820 table to be calculated
-- * @buf: the md5 result to be stored to
-+ *
-+ * Return: the resulting checksum
-  */
--static int get_e820_md5(struct e820_table *table, void *buf)
-+static inline u32 compute_e820_crc32(struct e820_table *table)
- {
--	struct crypto_shash *tfm;
--	struct shash_desc *desc;
--	int size;
--	int ret = 0;
--
--	tfm = crypto_alloc_shash("md5", 0, 0);
--	if (IS_ERR(tfm))
--		return -ENOMEM;
--
--	desc = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(tfm),
--		       GFP_KERNEL);
--	if (!desc) {
--		ret = -ENOMEM;
--		goto free_tfm;
--	}
--
--	desc->tfm = tfm;
--
--	size = offsetof(struct e820_table, entries) +
-+	int size = offsetof(struct e820_table, entries) +
- 		sizeof(struct e820_entry) * table->nr_entries;
- 
--	if (crypto_shash_digest(desc, (u8 *)table, size, buf))
--		ret = -EINVAL;
--
--	kfree_sensitive(desc);
--
--free_tfm:
--	crypto_free_shash(tfm);
--	return ret;
--}
--
--static int hibernation_e820_save(void *buf)
--{
--	return get_e820_md5(e820_table_firmware, buf);
--}
--
--static bool hibernation_e820_mismatch(void *buf)
--{
--	int ret;
--	u8 result[MD5_DIGEST_SIZE];
--
--	memset(result, 0, MD5_DIGEST_SIZE);
--	/* If there is no digest in suspend kernel, let it go. */
--	if (!memcmp(result, buf, MD5_DIGEST_SIZE))
--		return false;
--
--	ret = get_e820_md5(e820_table_firmware, result);
--	if (ret)
--		return true;
--
--	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
--}
--#else
--static int hibernation_e820_save(void *buf)
--{
--	return 0;
--}
--
--static bool hibernation_e820_mismatch(void *buf)
--{
--	/* If md5 is not builtin for restore kernel, let it go. */
--	return false;
-+	return ~crc32_le(~0, (unsigned char const *)table, size);
- }
--#endif
- 
- #ifdef CONFIG_X86_64
--#define RESTORE_MAGIC	0x23456789ABCDEF01UL
-+#define RESTORE_MAGIC	0x23456789ABCDEF02UL
- #else
--#define RESTORE_MAGIC	0x12345678UL
-+#define RESTORE_MAGIC	0x12345679UL
- #endif
- 
- /**
-@@ -179,7 +117,8 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
- 	 */
- 	rdr->cr3 = restore_cr3 & ~CR3_PCID_MASK;
- 
--	return hibernation_e820_save(rdr->e820_digest);
-+	rdr->e820_checksum = compute_e820_crc32(e820_table_firmware);
-+	return 0;
- }
- 
- /**
-@@ -200,7 +139,7 @@ int arch_hibernation_header_restore(void *addr)
- 	jump_address_phys = rdr->jump_address_phys;
- 	restore_cr3 = rdr->cr3;
- 
--	if (hibernation_e820_mismatch(rdr->e820_digest)) {
-+	if (rdr->e820_checksum != compute_e820_crc32(e820_table_firmware)) {
- 		pr_crit("Hibernate inconsistent memory map detected!\n");
- 		return -ENODEV;
- 	}
 -- 
-2.18.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
