@@ -2,97 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40EDBC433B4
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 17:23:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D496C43461
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 18:34:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF2E561076
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 17:23:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA94E613D8
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Apr 2021 18:34:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231549AbhDTRXq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 20 Apr 2021 13:23:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33960 "EHLO
+        id S233532AbhDTSeg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 20 Apr 2021 14:34:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233305AbhDTRXp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Apr 2021 13:23:45 -0400
-Received: from mxout2.routing.net (mxout2.routing.net [IPv6:2a03:2900:1:a::b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D574C06174A;
-        Tue, 20 Apr 2021 10:23:12 -0700 (PDT)
-Received: from mxbox4.masterlogin.de (unknown [192.168.10.79])
-        by mxout2.routing.net (Postfix) with ESMTP id 036CC5FCE7;
-        Tue, 20 Apr 2021 17:23:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailerdienst.de;
-        s=20200217; t=1618939391;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=u2UmPgWhv8jDff+sft2q0VUDxc4XXaa5vanqClNiNS8=;
-        b=ehOsyo0UfwFQR70tYVkEiUXuxZe7CvvTgYS3JansE8oYt6/7S5/87gexXfYc2bdTA7uvlj
-        i1oDX0EzuvktTIJzIhT/NkdNMgnGZAkiBEKDiL728YufmOlZVHYw5RuifdO6JJXy3nCqrM
-        qrkzrBRLKk3InmL6axymeQWgFSYIAXc=
-Received: from localhost.localdomain (fttx-pool-80.245.77.151.bambit.de [80.245.77.151])
-        by mxbox4.masterlogin.de (Postfix) with ESMTPSA id 1F0148064D;
-        Tue, 20 Apr 2021 17:23:10 +0000 (UTC)
-From:   Frank Wunderlich <linux@fw-web.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        with ESMTP id S233381AbhDTSef (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Apr 2021 14:34:35 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC8F6C06138A;
+        Tue, 20 Apr 2021 11:34:02 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id h10so46254230edt.13;
+        Tue, 20 Apr 2021 11:34:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=TsKSaKVr8eqOkpvXK9OW60ORfpfmzSRm1tZjKRVxrds=;
+        b=d4rHJtqKlz16XoOUweOadeJsl83KmgaprZcKHJKwzLvadt3lMmoCwF17aP22OwVK8g
+         2/9ndF+dTV9eE2h+3jW6kWwCU/tpctjiQtuuV78FD2JoFj1IyjMgeLKIXMDcewvmC6qI
+         71C+/qZlTjnX47wuZYhua8qt2nfrpExvgX3Jd7NNYdLLIydrZ1n7ONj4i10JLWzuU0qX
+         fCjvmnM5ZJr2lyajlSpf3e8UAcy7+Z8afoUopFQ8LBwJbd2Y3RYsKibMu+QwE2prqiNa
+         dVbRiyA4H3U3vVycZnn59mRqSKtI7CUrlyROEHrqjb0Z5IOXb2SzFVAqzLNZg+Ch7Ilj
+         XrdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=TsKSaKVr8eqOkpvXK9OW60ORfpfmzSRm1tZjKRVxrds=;
+        b=brp/h8claMexACl6ueNWiMfhXLPzB/vpkbxzRhPCMf0Jx6JDDbXBXkaa4IWkp8GNak
+         5aytZJ2RpPIgK1Sso8QIhgCYxB4GsWFpFJzWvObnccqEYVWE8nRTOf01drAQ+zYb5hNP
+         YNd/irTn+e73ZXj8FA1ZPxERSjMsjjj6U8nOMuLMRFoiqZf7/Xz0nWZcJCyClcNp+1pO
+         shnRyrhQASRU/kClSsfFH8VBJxp/lEuI9O4C6+8I8GkAgihlcPw4Vc0nkeO+2fgtzQtB
+         9IfP1snzoP3eYS0+iF0brSGJkTWeapYnKEvm10TKin6hQLdKXPM5eUyMqAR7qplch2Z1
+         gXMw==
+X-Gm-Message-State: AOAM5333D3f+VSVAEjRatY0gJWWONrWOkkeCnAxMdX3SUW+Nu5H91rpo
+        8s9kdZrHS7TFmdzaKkMxtH8=
+X-Google-Smtp-Source: ABdhPJwVnvlTj/f73js9LWNlyL9kTBLX28ndldorz4gVTC2TLUP3EsIuATQ2N6wfNhOe7Em877HZ/g==
+X-Received: by 2002:a50:eb0d:: with SMTP id y13mr6090392edp.326.1618943641591;
+        Tue, 20 Apr 2021 11:34:01 -0700 (PDT)
+Received: from Ansuel-xps.localdomain (93-35-189-2.ip56.fastwebnet.it. [93.35.189.2])
+        by smtp.googlemail.com with ESMTPSA id n10sm13357141ejg.124.2021.04.20.11.34.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 20 Apr 2021 11:34:01 -0700 (PDT)
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v3] thermal: mediatek: add sensors-support
-Date:   Tue, 20 Apr 2021 19:23:08 +0200
-Message-Id: <20210420172308.134685-1-linux@fw-web.de>
-X-Mailer: git-send-email 2.25.1
+Subject: [thermal PATCH v15 1/9] drivers: thermal: tsens: Don't hardcode sensor slope
+Date:   Tue, 20 Apr 2021 20:33:35 +0200
+Message-Id: <20210420183343.2272-2-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210420183343.2272-1-ansuelsmth@gmail.com>
+References: <20210420183343.2272-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mail-ID: 10d04dc0-d980-42d8-8607-1dad480fb628
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Frank Wunderlich <frank-w@public-files.de>
+Function compute_intercept_slope hardcode the sensor slope to
+SLOPE_DEFAULT. Change this and use the default value only if a slope is
+not defined. This is needed for tsens VER_0 that has a hardcoded slope
+table.
 
-add HWMON-support to mediateks thermal driver to allow lm-sensors
-userspace tools read soc temperature
-
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
 ---
-v3: drop no_hwmon - now really, sorry
-v2: drop ifdef and used devm_thermal_add_hwmon_sysfs
----
- drivers/thermal/mtk_thermal.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/thermal/qcom/tsens.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 149c6d7fd5a0..85964988684b 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -23,6 +23,8 @@
- #include <linux/reset.h>
- #include <linux/types.h>
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 8d3e94d2a..562c438ff 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -85,7 +85,8 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
+ 			"%s: sensor%d - data_point1:%#x data_point2:%#x\n",
+ 			__func__, i, p1[i], p2[i]);
  
-+#include "thermal_hwmon.h"
-+
- /* AUXADC Registers */
- #define AUXADC_CON1_SET_V	0x008
- #define AUXADC_CON1_CLR_V	0x00c
-@@ -1087,6 +1089,10 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 		goto err_disable_clk_peri_therm;
- 	}
- 
-+	ret = devm_thermal_add_hwmon_sysfs(tzdev);
-+	if (ret)
-+		dev_err(&pdev->dev, "error in thermal_add_hwmon_sysfs");
-+
- 	return 0;
- 
- err_disable_clk_peri_therm:
+-		priv->sensor[i].slope = SLOPE_DEFAULT;
++		if (!priv->sensor[i].slope)
++			priv->sensor[i].slope = SLOPE_DEFAULT;
+ 		if (mode == TWO_PT_CALIB) {
+ 			/*
+ 			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
 -- 
-2.25.1
+2.30.2
 
