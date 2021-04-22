@@ -2,66 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40A9FC43617
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Apr 2021 20:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C372FC433ED
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Apr 2021 20:31:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 012EE613DB
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Apr 2021 20:31:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CDC761437
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Apr 2021 20:31:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239705AbhDVUbf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Apr 2021 16:31:35 -0400
-Received: from mail-bn8nam11on2061.outbound.protection.outlook.com ([40.107.236.61]:27585
-        "EHLO NAM11-BN8-obe.outbound.protection.outlook.com"
+        id S239727AbhDVUb4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Apr 2021 16:31:56 -0400
+Received: from mail-mw2nam12on2045.outbound.protection.outlook.com ([40.107.244.45]:49803
+        "EHLO NAM12-MW2-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S239609AbhDVUbe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Apr 2021 16:31:34 -0400
+        id S239664AbhDVUbz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 22 Apr 2021 16:31:55 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Zfz48k+21k5nOD17p/vfAupHmF7lZqdjA5yaI9YpzWWmaPyQcRS7ueAYGmpuQYk5RIa6pi58qbyIuUrQCkg/E+goXW6VvpF6pahFO5TQ1KZGtZ70mFlx2TZka4NQiKu/nCeEHAyGtm7e1LRk+fuORmMqZmmXgbK9pK1c+lVRCAkIgX3ed8oW+PaZbskWEdwUD4Dfh9RSaHQbpTWhmdfX6Egao5gIay5/R/AUCgujwdj7o9CEl2HwzcQBJgCNvbkJPCTefGpoSX/13VQbhrpNGW/w347UALeKT5o/hEVpTRBZT3uF3Wfsa7ScDhu0tqS233VdCzen1x3LGSuFaGOpyA==
+ b=F0kRd1EKPT5d+Gw83lkX4zPpSVhwjdfr83ewU+4afBpJDjIXKU3O089tms4HzyNeFKn7cKccwfZCPo0i3aug79dSX8Iz0G7e7ZHycklCQ6tGKFtLyys3TUyW//CxXDTVp3KDbB5EoPgBf/RgYBn+GJQM5v4MTh5xnK/TS7yJD96lXI4bEkYDGTwWkLbhAI17CpyrQPkl5ytzVrJph9kPnS/UslbL2xEzESOZSVEp9O0ss2TVjvbzmRFJeOciUqbKX6sZVTdnhLQxzhCpjhT5lDIw1m9EbqZ04EvCvCmwcId2R94bmwn0CtlKd58MRZy8IBwOpnluMKUCCTThxjwWCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CtsiOu047O9vFV8NZ8TJJp6dBhvE5MnMYzf49G42uqU=;
- b=JKljzhHcJj529jGzDdp7NQEK1krqsmwC+ra/khddckf/7VxJrn8z/ueF5o27kGjU7CTlsz9Qp+o6e9DB4WwGnx6TvjlnDuPQ5Yqr0ClBPYCoJo2QLMjmJH775k1ovWQflSk2E4NqftQhKlM1rXDiywzb42fYVfTHCfTv4abC8S6kUt0qpto9TN2eAKXrR4FLuspFJY++/YZfPF/pQZMl1pXNIxUcIq+RO5Yx6OLWY/1Iwdroqv2kl/thU0dVTlkYbMMckApExso/p3Ewb46WRxF+ZQhB7w6xEnoOh6bJw4DvHLyjAdxdRCNYVCIhkMrBze/XwNsLZB0KS7dmWEC3kA==
+ bh=z6S8lXDInWFaqTFEEZimN8g5hMJcs3Sm9N4Gcd+FskI=;
+ b=oVN5ulDQ+ILV9MS03BOZwxPu9m/tGCmHLaTAJ88PQ/kpGAMmaBqPC0GvFnEpQfzM26oNFoO++k9e22xf/Lq7DA53HDpv+uvT9/xihv0Q6scdc7t1bUhhMgnH5T1YUVJZOLrQMGdzJCkOKBKSZRGKLSGPOL2HATSMJDKXAllld7vXok22pwSmUtfWegv+Q/ySUy0vThGFjyjU2E9emVI+JHAZGkzji8YotAdg5cKjumAK6kVGFx4hSJvN6NRUOWvEplVkJJL/do2LqUpj4XjyQrAi0CZXxw8wkUZKxy0A4indGYowxS8eDs9jNjDEyYsjv9vNq+mSf6aM0BxnIRzPFQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.112.32) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
+ 216.228.112.36) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
  dmarc=pass (p=none sp=none pct=100) action=none header.from=nvidia.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CtsiOu047O9vFV8NZ8TJJp6dBhvE5MnMYzf49G42uqU=;
- b=FNPJUpvtgzQLAuqs2Vin3zHUIKrmy9R2+ukbcwEbnuschPRmytjQtU57MrGt0sof8ivdb6AV2YnkMesS/tnzihxF9Cwob4gbzFqUcaHxBMXUon29IlaN2ttJuTM2uWj6DtTJzuPh4kNmskyzvTUMqci+mMnCGS6xYBLZrEUZJLzSp+pg5GbfNxWy17FQKbhqMnNJt9Gs9ggcz4n1lghhIB80UEkYhafwozgID+8nkpDMrmb21uBHvfdXh10M8mnQ2qVhbkCPlMBEd1tcDAL/R9KvTyNuKAVBHgMXJfgTW6snpWnrS7Is5qDgBm08OC+zr5gKla3vyS/CvkXeSQLxkw==
-Received: from BN9PR03CA0300.namprd03.prod.outlook.com (2603:10b6:408:f5::35)
- by DM6PR12MB2940.namprd12.prod.outlook.com (2603:10b6:5:15f::19) with
+ bh=z6S8lXDInWFaqTFEEZimN8g5hMJcs3Sm9N4Gcd+FskI=;
+ b=cGCM6b5RRpC8x/Znslczax9MqRL0jApFRLe1Pu+S5Bdf/EW41SzX/WsVPMTIy669Q6HkSo42x8B6kArpMlcm6sEj6m/2NeeW/SQEAPUd8hrbzeD9r8fn/kyUxsru2kDEEbyZco0ugpiDn3fPd/vEVMi/LaxGGI7yRwPA7VSZw3zcJhHjdew5cJfnHZtAHaCrQhe/ekrSz1x3IwvH4zz2TLxQ5SlWnGeLdHVJVFHVFD5EBX/vblW+xY2H6wLUu6OdeYB8uEmVBEj2+cYCa/jClgupv0QNBs+1+msxzYzGAVj0gB06KRjYIFi+InJq8cQrw0UEpvmTF7U8hzFrlbufpw==
+Received: from BN6PR22CA0033.namprd22.prod.outlook.com (2603:10b6:404:37::19)
+ by BN7PR12MB2721.namprd12.prod.outlook.com (2603:10b6:408:2b::28) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4065.22; Thu, 22 Apr
- 2021 20:30:57 +0000
-Received: from BN8NAM11FT011.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:f5:cafe::44) by BN9PR03CA0300.outlook.office365.com
- (2603:10b6:408:f5::35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4065.22 via Frontend
- Transport; Thu, 22 Apr 2021 20:30:57 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.112.32)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4065.21; Thu, 22 Apr
+ 2021 20:31:19 +0000
+Received: from BN8NAM11FT010.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:404:37:cafe::e2) by BN6PR22CA0033.outlook.office365.com
+ (2603:10b6:404:37::19) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4065.21 via Frontend
+ Transport; Thu, 22 Apr 2021 20:31:19 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.112.36)
  smtp.mailfrom=nvidia.com; vger.kernel.org; dkim=none (message not signed)
  header.d=none;vger.kernel.org; dmarc=pass action=none header.from=nvidia.com;
 Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.112.32 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.112.32; helo=mail.nvidia.com;
-Received: from mail.nvidia.com (216.228.112.32) by
- BN8NAM11FT011.mail.protection.outlook.com (10.13.176.140) with Microsoft SMTP
+ 216.228.112.36 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.112.36; helo=mail.nvidia.com;
+Received: from mail.nvidia.com (216.228.112.36) by
+ BN8NAM11FT010.mail.protection.outlook.com (10.13.177.53) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.20.4065.21 via Frontend Transport; Thu, 22 Apr 2021 20:30:57 +0000
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 22 Apr
- 2021 13:30:56 -0700
+ 15.20.4065.21 via Frontend Transport; Thu, 22 Apr 2021 20:31:18 +0000
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 22 Apr
+ 2021 20:30:53 +0000
 Received: from skomatineni-linux.nvidia.com (172.20.145.6) by mail.nvidia.com
  (172.20.187.10) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 22 Apr 2021 20:30:56 +0000
+ Transport; Thu, 22 Apr 2021 20:30:53 +0000
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <sudeep.holla@arm.com>, <souvik.chakravarty@arm.com>,
         <thierry.reding@gmail.com>, <skomatineni@nvidia.com>,
@@ -71,133 +71,88 @@ CC:     <jonathanh@nvidia.com>, <ksitaraman@nvidia.com>,
         <sanjayc@nvidia.com>, <linux-arm-kernel@lists.infradead.org>,
         <linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>
-Subject: [RFC PATCH 4/4] arm64: dts: tegra194: Add CPU idle states
-Date:   Thu, 22 Apr 2021 13:30:48 -0700
-Message-ID: <1619123448-10138-5-git-send-email-skomatineni@nvidia.com>
+Subject: [RFC PATCH 0/4] Support for passing runtime state idle time to TF-A
+Date:   Thu, 22 Apr 2021 13:30:44 -0700
+Message-ID: <1619123448-10138-1-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1619123448-10138-1-git-send-email-skomatineni@nvidia.com>
-References: <1619123448-10138-1-git-send-email-skomatineni@nvidia.com>
 X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: bb6b35f2-6993-41f6-dad8-08d905cd891e
-X-MS-TrafficTypeDiagnostic: DM6PR12MB2940:
-X-Microsoft-Antispam-PRVS: <DM6PR12MB2940747FF553CB9EFDC769D7C2469@DM6PR12MB2940.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:262;
+X-MS-Office365-Filtering-Correlation-Id: 2b4f9269-0ccb-477b-b99a-08d905cd95f2
+X-MS-TrafficTypeDiagnostic: BN7PR12MB2721:
+X-Microsoft-Antispam-PRVS: <BN7PR12MB2721709EF992158DD9FADE1AC2469@BN7PR12MB2721.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: EgrbMHM+gu96CyeyksYcqt3BlfmZBn6xG0Nd/aG6MSidPBJe5E1zu/1i1Ofu6NrnT3AlcrC/aSM3tQpMAoZBUUU4UIXlL1qSZ2wYkcXNUliEhebixK1mHmQwbZi4/dwu5I8nIMJHXWQwMENwnEsYlLyvF/DlpD24Cu8STMPqlXtuMfy90zs9tCXIv9KH13pQ1rULlmJad9zPhSbXppiUec8zB+mrWrZYoQXJaMsu1C07Pxz4rXny/LKDTgTUzuZ4X6WN54KfHQTZt5l+yjqWZLpYCEwjQbJVn9YPX6iuEy0zxCYXb/W/I4ykqvSZu/Iq06xWfgK2F8tQGYnAoIrT36Ets6z62TVgYbIget7Kip8HWGfTt6qplA/4gTQcI9VqsJOYLcvWAg2CTWMt/SCHpMPUJsVwLsXYJjUEOO3LkkDdh8PTExAb066zks+bDLK41cI99y8Xq+T8WFSExibx8c085WFt0qkdONhHt64X0KNhIKMa5pBQIQ0PdnCaSPQQLwS7wXbm1FJS1sJqDWWhKNu/gf7teEG2LENpIpduxMTpxgtO15NRqyFumlagdzBnrRHuq33uKCNPdBlavLSMmS8rhCB5TJf4w02gfWjl0oa0NZoogPaoPSVTbWu/wbCXFJkb39dxRktgAJIV1nMBl7WdCkpxrFDmR/hljV73GHw=
-X-Forefront-Antispam-Report: CIP:216.228.112.32;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:schybrid01.nvidia.com;CAT:NONE;SFS:(4636009)(396003)(39860400002)(376002)(136003)(346002)(36840700001)(46966006)(83380400001)(478600001)(8676002)(426003)(336012)(70206006)(186003)(7636003)(7416002)(36756003)(6666004)(4326008)(5660300002)(70586007)(356005)(26005)(2906002)(54906003)(86362001)(316002)(47076005)(110136005)(82740400003)(7696005)(36860700001)(2616005)(82310400003)(8936002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: u/kUcv4pRbNvK+M7X9riqq9vQ59PqytsacQUQnSpEXHA0Y0iEcavj9Citu2/n90FDV88uNeBxgRIqP7TR56Xob7uZkIyxDc0fXWG6MScdlgHwEgrdzZHSZdv/xvzZhmpH7Y6K+kZZ+a2Y1Uv8LFeVXTzEuqXM/t3nFet6XigP7iL1aGbqNF1kRc6sQDXncpMDlCqH7LT2sD0M6oNZ1lZOLTN+u+nuNHopigDz+jLQhDPOwIbsOX4hKGCrzEcJbpcT4XRN+4d0g2ytZ/fwDSA+6hA8odFJxHyU6MSWVPaa8wFHIkOoSN2Au4FP+hT1NgRWf/QxqTa9VBI++8C4Djj0lindnu9xphosba74y9tjJGuTlRUiY21Ocqln4rm1H06fyoShQTmTS+LCi7vMv2i7wecfuVhAMtOI7QwOvntNqmNwq54Urib8dF2L17BuSjldHmJqdmWW8xEtBXBBEEWoV9Z0yOGR1i/kp1qpKHUvdpXV0YMay/imygYDIsolA3Fk3+hi5f7Cva10TFAhmqq9/aC7lpflTVVnaEqQUbAN3KvmNxjJJTdjb7xGCVTcNEhUWgov7aLyI1IL91Zx6JM88nfpw541Rhwk7CFb4/YCjne84TUSvXmlWGA1eKdVzBM5SU12QRaSN1HuUl2NfuDc3MYh2WpRyV2Z7glE2RtrqQ=
+X-Forefront-Antispam-Report: CIP:216.228.112.36;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:schybrid05.nvidia.com;CAT:NONE;SFS:(4636009)(376002)(136003)(346002)(39860400002)(396003)(46966006)(36840700001)(186003)(36906005)(316002)(83380400001)(7416002)(2616005)(2906002)(478600001)(86362001)(8676002)(6666004)(7696005)(70206006)(356005)(47076005)(26005)(70586007)(5660300002)(54906003)(336012)(426003)(36756003)(82740400003)(36860700001)(4326008)(8936002)(7636003)(110136005)(82310400003);DIR:OUT;SFP:1101;
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Apr 2021 20:30:57.4832
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Apr 2021 20:31:18.9853
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: bb6b35f2-6993-41f6-dad8-08d905cd891e
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2b4f9269-0ccb-477b-b99a-08d905cd95f2
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.112.32];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT011.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.112.36];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT010.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB2940
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR12MB2721
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds CPU core and cluster idle states to Tegra194
-device tree
+Tegra194 and Tegra186 platforms use separate MCE firmware for CPUs which is
+in charge of deciding on state transition based on target state, state idle
+time, and some other Tegra CPU core cluster states information.
 
-Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
----
+Current PSCI specification don't have function defined for passing runtime
+state idle time predicted by governor (based on next events and state target
+residency) to ARM trusted firmware.
+
+With the support of adding new PSCI function to allow passing runtime state
+idle time from kernel to ARM trusted firmware, Tegra194 platforms can use
+generic psci cpuidle driver rather than having Tegra specific cpuidle driver.
+
+During Tegra specific cpuidle driver V1 review, Sudeep Holla from ARM also
+suggested to use generic cpuidle driver by generalizing the need of runtime
+state idle time.
+
+So had internal discussion between ARM and NVIDIA on adding new PSCI function
+to allow passing runtime state idle time from kernel to TF-A through PSCI and
+once this implementation is accepted by upstream, ARM will look into further
+to update PSCI specification for this new PSCI function.
+
+So sending these patches as RFC as new PSCI function added in this series is
+not part of PSCI specification and once this implementation is accepted by ARM
+and upstream community, ARM can help to take this forward to add to PSCI
+specification.
+
+To keep the backward compatibility we can't update CPU_SUSPEND function to pass
+state idle time argument. So added seperate function for passing state idle time
+and serializing this with cpu suspend state enter.
+
+Once this approach is agreed, we can either use this way of separate PSCI
+function for passing state idle time or with PSCI specification update we can
+use same CPU_SUSPEND function with extra argument for state idle time which can
+be decided later for final patches based on discussion with ARM.
+
+
+Sowjanya Komatineni (4):
+  firmware/psci: add support for PSCI function SET_STATE_IDLE_TIME
+  cpuidle: menu: add idle_time to cpuidle_state
+  cpuidle: psci: pass state idle time before state enter callback
+  arm64: dts: tegra194: Add CPU idle states
+
  arch/arm64/boot/dts/nvidia/tegra194.dtsi | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/cpuidle/cpuidle-psci.c           | 11 +++++++++++
+ drivers/cpuidle/governors/menu.c         |  7 ++++++-
+ drivers/firmware/psci/psci.c             |  9 +++++++++
+ include/linux/cpuidle.h                  |  1 +
+ include/linux/psci.h                     |  1 +
+ include/uapi/linux/psci.h                |  2 ++
+ 7 files changed, 49 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra194.dtsi b/arch/arm64/boot/dts/nvidia/tegra194.dtsi
-index 9449156..c3b478e 100644
---- a/arch/arm64/boot/dts/nvidia/tegra194.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra194.dtsi
-@@ -2161,6 +2161,7 @@
- 			device_type = "cpu";
- 			reg = <0x000>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2175,6 +2176,7 @@
- 			device_type = "cpu";
- 			reg = <0x001>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2189,6 +2191,7 @@
- 			device_type = "cpu";
- 			reg = <0x100>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2203,6 +2206,7 @@
- 			device_type = "cpu";
- 			reg = <0x101>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2217,6 +2221,7 @@
- 			device_type = "cpu";
- 			reg = <0x200>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2231,6 +2236,7 @@
- 			device_type = "cpu";
- 			reg = <0x201>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2245,6 +2251,7 @@
- 			device_type = "cpu";
- 			reg = <0x300>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2259,6 +2266,7 @@
- 			device_type = "cpu";
- 			reg = <0x301>;
- 			enable-method = "psci";
-+			cpu-idle-states = <&C6>;
- 			i-cache-size = <131072>;
- 			i-cache-line-size = <64>;
- 			i-cache-sets = <512>;
-@@ -2343,6 +2351,17 @@
- 			cache-line-size = <64>;
- 			cache-sets = <4096>;
- 		};
-+
-+		idle-states {
-+			entry-method = "arm,psci";
-+			C6: c6 {
-+				compatible = "arm,idle-state";
-+				wakeup-latency-us = <2000>;
-+				min-residency-us = <30000>;
-+				arm,psci-suspend-param = <0x6>;
-+				status = "okay";
-+			};
-+		};
- 	};
- 
- 	psci {
 -- 
 2.7.4
 
