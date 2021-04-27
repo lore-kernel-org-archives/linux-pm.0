@@ -7,56 +7,55 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE2CCC4361B
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3437C4363C
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A39716023B
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8D4F7613F7
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238930AbhD0TpR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Apr 2021 15:45:17 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:43138 "EHLO
+        id S238967AbhD0TpS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Apr 2021 15:45:18 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:43160 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238967AbhD0TpQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:16 -0400
-Date:   Tue, 27 Apr 2021 19:44:31 -0000
+        with ESMTP id S238952AbhD0TpS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:18 -0400
+Date:   Tue, 27 Apr 2021 19:44:33 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1619552672;
+        s=2020; t=1619552674;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=e+fDsaXtL8BuYIyFkm4b7pLocHxzwnjKlB3ZJRrXb2s=;
-        b=paXQfbWUuJUhiPsTltL3HicF+QHSIW0OGV/Aq81f/bDECOjZoOhNpqufHrVpuqaIfBmO8o
-        GzMOzypmGAb9c5STwDa4LUatHz8G0NAWVK+Vn3dCShAHkD/+6YZRQcCvvQHX91K8dzUkaF
-        vjSYDA+rO4bUAyUJ22Bt6UxcLTx0Wfzgu+/DWJQIZxbMtmNkVAaIWyU77pl6AZL8d8TaQ2
-        RgbeAsybmx5TOEzE6TS9gCP8bZ4g1o37VobDJf1Sdq8W7845daD8CcwhYHfFv7iA6HoAfd
-        dyCHs0AXoC2/HE/uDECfq4Zfuc9x+7Mqngi/fv4iATu6xB9Wfiw2MAeEv4xLvA==
+        bh=ahJHEyLsX2lTE/D7PvDCkyzY5fgthNOevel5nEBU8sU=;
+        b=Xk094gpLo4h6c+zhur5it+i117/uXQGkdsHaVOL8YiNWWiaSxLztil/6eFjs0mKQZclHND
+        abpvFLmiAqRGciuJny2jpXDRwQ9h0bEg/FHdatoijwZvRWaJVzF09nM2pwgdUSyEG7m23K
+        qvEvF/ZPta/KvtdjbjdBT+fto/zyPvjN30UctIqtFXHjYCjRZHp97flJLVx0UEkuRCQc7U
+        eFbvchdmWvqWFSuvwXJ8CM7PQs1P8T+GpxU4kKLebJ+h9ZahzC5tSVl/NqDjyhgoFPqiav
+        +4/RK9Bh7Ur7YXXd5AFCRNc3lUjK+LKzgsyOA9pnmzWVTF5bN++bi+RNwwl4NA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1619552672;
+        s=2020e; t=1619552674;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=e+fDsaXtL8BuYIyFkm4b7pLocHxzwnjKlB3ZJRrXb2s=;
-        b=BWFcNlRfFYkSCELDIeTkJaSpmxxZPdvk6SZb93LhPd+ffLXPKndrf/FqGRi2ibQIsHMR+Q
-        U/DLraeP/bEK4ACQ==
-From:   "thermal-bot for Lin Ruizhe" <tip-bot2@linutronix.de>
+        bh=ahJHEyLsX2lTE/D7PvDCkyzY5fgthNOevel5nEBU8sU=;
+        b=Hxc8pzKDoVGRvmp3IEIppIRYsByVleYepIZYDJ8qGS4wnoYtlq0/eisDIcZMAN116W1Um1
+        i6Q/CJqfB7XrXLBg==
+From:   "thermal-bot for Ye Bin" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/ti-soc-thermal/bandgap Remove
- unused variable 'val'
-Cc:     Hulk Robot <hulkci@huawei.com>, Lin Ruizhe <linruizhe@huawei.com>,
-        Tony Lindgren <tony@atomide.com>,
+Subject: [thermal: thermal/next] thermal/drivers/hisi: Remove redundant
+ dev_err call in hisi_thermal_probe()
+Cc:     Hulk Robot <hulkci@huawei.com>, Ye Bin <yebin10@huawei.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210421084256.57591-1-linruizhe@huawei.com>
-References: <20210421084256.57591-1-linruizhe@huawei.com>
+In-Reply-To: <20210409075224.2109503-1-yebin10@huawei.com>
+References: <20210409075224.2109503-1-yebin10@huawei.com>
 MIME-Version: 1.0
-Message-ID: <161955267138.29796.3566387171712555298.tip-bot2@tip-bot2>
+Message-ID: <161955267329.29796.10846130053666149008.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -67,51 +66,40 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     d473327f8f53418691cb2944a45da3e9ea51f9bf
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d473327f8f53418691cb2944a45da3e9ea51f9bf
-Author:        Lin Ruizhe <linruizhe@huawei.com>
-AuthorDate:    Wed, 21 Apr 2021 16:42:56 +08:00
+Commit-ID:     beaa41029fdea9d3e01af3a1a800538542d30869
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//beaa41029fdea9d3e01af3a1a800538542d30869
+Author:        Ye Bin <yebin10@huawei.com>
+AuthorDate:    Fri, 09 Apr 2021 15:52:24 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 21 Apr 2021 13:37:18 +02:00
+CommitterDate: Tue, 20 Apr 2021 09:18:57 +02:00
 
-thermal/drivers/ti-soc-thermal/bandgap Remove unused variable 'val'
+thermal/drivers/hisi: Remove redundant dev_err call in hisi_thermal_probe()
 
-The function ti_bandgap_restore_ctxt() restores the context at resume
-time. It checks if the sensor has a counter, reads the register but
-does nothing with the value.
-
-The block was probably omitted by the commit b87ea759a4cc.
-
-Remove the unused variable as well as the block using it as we can
-consider it as dead code.
+There is a error message within devm_ioremap_resource
+already, so remove the dev_err call to avoid redundant
+error message.
 
 Reported-by: Hulk Robot <hulkci@huawei.com>
-Fixes: b87ea759a4cc ("staging: omap-thermal: fix context restore function")
-Signed-off-by: Lin Ruizhe <linruizhe@huawei.com>
-Reviewed-by: Tony Lindgren <tony@atomide.com>
-Tested-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Ye Bin <yebin10@huawei.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210421084256.57591-1-linruizhe@huawei.com
+Link: https://lore.kernel.org/r/20210409075224.2109503-1-yebin10@huawei.com
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/thermal/hisi_thermal.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 008fbed..ebe7cb7 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1142,14 +1142,10 @@ static int ti_bandgap_restore_ctxt(struct ti_bandgap *bgp)
- 	for (i = 0; i < bgp->conf->sensor_count; i++) {
- 		struct temp_sensor_registers *tsr;
- 		struct temp_sensor_regval *rval;
--		u32 val = 0;
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index d902db9..9a21ac0 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -572,10 +572,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
  
- 		rval = &bgp->regval[i];
- 		tsr = bgp->conf->sensors[i].registers;
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	data->regs = devm_ioremap_resource(dev, res);
+-	if (IS_ERR(data->regs)) {
+-		dev_err(dev, "failed to get io address\n");
++	if (IS_ERR(data->regs))
+ 		return PTR_ERR(data->regs);
+-	}
  
--		if (TI_BANDGAP_HAS(bgp, COUNTER))
--			val = ti_bandgap_readl(bgp, tsr->bgap_counter);
--
- 		if (TI_BANDGAP_HAS(bgp, TSHUT_CONFIG))
- 			ti_bandgap_writel(bgp, rval->tshut_threshold,
- 					  tsr->tshut_threshold);
+ 	ret = data->ops->probe(data);
+ 	if (ret)
