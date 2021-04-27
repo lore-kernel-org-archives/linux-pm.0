@@ -7,135 +7,199 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15734C4363E
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77444C43619
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E4BC2613F6
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48A5861404
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238740AbhD0TpS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Apr 2021 15:45:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40186 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238970AbhD0TpS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:18 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FF09C061574
-        for <linux-pm@vger.kernel.org>; Tue, 27 Apr 2021 12:44:34 -0700 (PDT)
-Date:   Tue, 27 Apr 2021 19:44:32 -0000
+        id S238962AbhD0TpR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Apr 2021 15:45:17 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:43160 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238930AbhD0TpP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:15 -0400
+Date:   Tue, 27 Apr 2021 19:44:30 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1619552673;
+        s=2020; t=1619552671;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UuAQPj5lYvKDp3juv0H7KiQHS6joNDFqJ+4nCU1Nykw=;
-        b=L8uYylLh0DAYM+7Q6LtFH7Wlc2Lwgbho8kqjXL9OgLTkyY/JUgqnLE/BelTX501EhXw8Ms
-        Z3kDsqK1W4FMEvFreLQjrRiBedPAcVjVXTEXZE74WqEospuWQIkkg8c/FeVGNxJQAuQRRE
-        a2bufkYLWJoMlyEyM/t4QSoV8YnciwuyBIfBnI0xY++P1TGkILtkr0kryOlP4KiiX3QOQX
-        z2EA8AK4Oyx5u2mFlVvSahfnojrKJwLBGvbWWDZ3aVd5G7gyb5FAYNX7KAV5BnG5KB3U3a
-        6FwaGZ/grCMnxBj7Je89upCtWaSuGRNJrnbRKiWNhgatlEcW3jLchxUA9t7bQw==
+        bh=NSPSvl4s8y5p+yfLlW7jlTNJjnmAovQ5DqhkURonC3Q=;
+        b=cvoOew6uC/y+zG0Lab3lkFdlnXTtPtVWg+iYb+u9GHGtqGGfI7IrQZSjKDJdAlKW86+7fj
+        9uU3EDDoCfg4ezsyo0TEm1G/4L6xaGTTjUJp6czJrYA8Ujwco8sgAjkVcRGPs8eHzw8sAF
+        z5CCphoWfi9S0H0pJqshKEHnHsqwQuFPSevELuf6EqHFJ06ZHEQ3SAxarsxPAU/mV+KfWC
+        1vcSasoQ6M56MvgFmG7HRrnYW1o5wiUi9ydQ/rVbLb3ifFMSq48H+VoNbUzzM0AKND1Ql3
+        bxf4hi2sg2464ttwClCNFX4cUS4wKaHyUCEu0evxDPL0fX5rT8jSEr2j9RXiXw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1619552673;
+        s=2020e; t=1619552671;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UuAQPj5lYvKDp3juv0H7KiQHS6joNDFqJ+4nCU1Nykw=;
-        b=HYpd8UO3D3MPGTcGBBDjtbAs3BUw4J1QThqG07gunB4lzmtSI+oTcvtX0Wk5INs8ka1r4l
-        H5scYU6AHh/horDQ==
-From:   "thermal-bot for Zhen Lei" <tip-bot2@linutronix.de>
+        bh=NSPSvl4s8y5p+yfLlW7jlTNJjnmAovQ5DqhkURonC3Q=;
+        b=/Kg8xQ6m2f89bhX9Ay/q6f0dw+hO+H/F1Z5MWk9GOoaSRmd/IbWqVfIo+WYTwV0M5HLnp4
+        Hf2uX8bqhGLJv9Cw==
+From:   thermal-bot for =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/ti-soc-thermal/ti-bandgap:
- Rearrange all the included header files alphabetically
-Cc:     Zhen Lei <thunder.leizhen@huawei.com>, Keerthy <j-keerthy@ti.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: brcm,ns-thermal:
+ Convert to the json-schema
+Cc:     rafal@milecki.pl, Rob Herring <robh@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210406091912.2583-2-thunder.leizhen@huawei.com>
-References: <20210406091912.2583-2-thunder.leizhen@huawei.com>
+In-Reply-To: <20210420210104.10555-1-zajec5@gmail.com>
+References: <20210420210104.10555-1-zajec5@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161955267233.29796.1764788966833145464.tip-bot2@tip-bot2>
+Message-ID: <161955267091.29796.2618446813971655267.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     5a4a8235fee69b5a31cf1c56a9fa14b0d21a930c
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//5a4a8235fee69b5a31cf1c56a9fa14b0d21a930c
-Author:        Zhen Lei <thunder.leizhen@huawei.com>
-AuthorDate:    Tue, 06 Apr 2021 17:19:12 +08:00
+Commit-ID:     08e9fdfbb2248e93bbfaeb9cde284776085466cd
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//08e9fdfbb2248e93bbfaeb9cde284776085466cd
+Author:        Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl>
+AuthorDate:    Tue, 20 Apr 2021 23:01:04 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 20 Apr 2021 19:02:16 +02:00
+CommitterDate: Wed, 21 Apr 2021 20:42:48 +02:00
 
-thermal/drivers/ti-soc-thermal/ti-bandgap: Rearrange all the included header files alphabetically
+dt-bindings: thermal: brcm,ns-thermal: Convert to the json-schema
 
-For the sake of lisibility, reorder the header files alphabetically.
+This helps validating DTS files.
 
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
-Reviewed-by: Keerthy <j-keerthy@ti.com>
+Signed-off-by: Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210406091912.2583-2-thunder.leizhen@huawei.com
+Link: https://lore.kernel.org/r/20210420210104.10555-1-zajec5@gmail.com
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 34 ++++++++++----------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt  | 37 +----
+ Documentation/devicetree/bindings/thermal/brcm,ns-thermal.yaml | 60 +++++++-
+ 2 files changed, 60 insertions(+), 37 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal=
+.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal=
+.yaml
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index d81af89..008fbed 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -9,29 +9,29 @@
-  *   Eduardo Valentin <eduardo.valentin@ti.com>
-  */
- 
--#include <linux/module.h>
-+#include <linux/clk.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
- #include <linux/export.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/init.h>
--#include <linux/kernel.h>
- #include <linux/interrupt.h>
--#include <linux/clk.h>
--#include <linux/gpio/consumer.h>
--#include <linux/platform_device.h>
--#include <linux/err.h>
--#include <linux/types.h>
--#include <linux/spinlock.h>
--#include <linux/sys_soc.h>
--#include <linux/reboot.h>
--#include <linux/of_device.h>
--#include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/io.h>
- #include <linux/iopoll.h>
--#include <linux/cpu_pm.h>
--#include <linux/device.h>
--#include <linux/pm_runtime.h>
--#include <linux/pm.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/of_irq.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/reboot.h>
-+#include <linux/spinlock.h>
-+#include <linux/sys_soc.h>
-+#include <linux/types.h>
- 
- #include "ti-bandgap.h"
- 
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt b/=
+Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt
+deleted file mode 100644
+index 68e0471..0000000
+--- a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt
++++ /dev/null
+@@ -1,37 +0,0 @@
+-* Broadcom Northstar Thermal
+-
+-This binding describes thermal sensor that is part of Northstar's DMU (Device
+-Management Unit).
+-
+-Required properties:
+-- compatible : Must be "brcm,ns-thermal"
+-- reg : iomem address range of PVTMON registers
+-- #thermal-sensor-cells : Should be <0>
+-
+-Example:
+-
+-thermal: thermal@1800c2c0 {
+-	compatible =3D "brcm,ns-thermal";
+-	reg =3D <0x1800c2c0 0x10>;
+-	#thermal-sensor-cells =3D <0>;
+-};
+-
+-thermal-zones {
+-	cpu_thermal: cpu-thermal {
+-		polling-delay-passive =3D <0>;
+-		polling-delay =3D <1000>;
+-		coefficients =3D <(-556) 418000>;
+-		thermal-sensors =3D <&thermal>;
+-
+-		trips {
+-			cpu-crit {
+-				temperature	=3D <125000>;
+-				hysteresis	=3D <0>;
+-				type		=3D "critical";
+-			};
+-		};
+-
+-		cooling-maps {
+-		};
+-	};
+-};
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.yaml b=
+/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.yaml
+new file mode 100644
+index 0000000..fdeb333
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.yaml
+@@ -0,0 +1,60 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/brcm,ns-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Broadcom Northstar Thermal
++
++maintainers:
++  - Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl>
++
++description:
++  Thermal sensor that is part of Northstar's DMU (Device Management Unit).
++
++allOf:
++  - $ref: thermal-sensor.yaml#
++
++properties:
++  compatible:
++    const: brcm,ns-thermal
++
++  reg:
++    description: PVTMON registers range
++    maxItems: 1
++
++  "#thermal-sensor-cells":
++    const: 0
++
++unevaluatedProperties: false
++
++required:
++  - reg
++
++examples:
++  - |
++    thermal: thermal@1800c2c0 {
++        compatible =3D "brcm,ns-thermal";
++        reg =3D <0x1800c2c0 0x10>;
++        #thermal-sensor-cells =3D <0>;
++    };
++
++    thermal-zones {
++        cpu-thermal {
++            polling-delay-passive =3D <0>;
++            polling-delay =3D <1000>;
++            coefficients =3D <(-556) 418000>;
++            thermal-sensors =3D <&thermal>;
++
++            trips {
++                cpu-crit {
++                    temperature =3D <125000>;
++                    hysteresis =3D <0>;
++                    type =3D "critical";
++                };
++            };
++
++            cooling-maps {
++            };
++        };
++    };
