@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E804FC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BE82C43462
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B9C44613F7
+	by mail.kernel.org (Postfix) with ESMTP id E7413613FF
 	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236287AbhD0TpK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S238822AbhD0TpK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 27 Apr 2021 15:45:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40148 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238822AbhD0TpJ (ORCPT
+        with ESMTP id S238838AbhD0TpJ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:09 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E49E6C061574
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4FF4C06175F
         for <linux-pm@vger.kernel.org>; Tue, 27 Apr 2021 12:44:25 -0700 (PDT)
-Date:   Tue, 27 Apr 2021 19:44:23 -0000
+Date:   Tue, 27 Apr 2021 19:44:22 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1619552663;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -30,12 +30,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=a1AIkcoASM/pnlIlcIl8sxr7ncjeEI92lXe/x3Op0rA=;
-        b=Hn46TXMKxbLdrOZvFsKwz+4IhHtAcl+qyTP7zXsSPWeLgBugVvWKh4lW2Z0YvsxfAvylIs
-        /szKxUu38UahJQsDzPg1d/zWUU6Eb7aqh0K9++9Ghek2Br13IwmL8S2gxqhev9cpYFRlxY
-        Vrs3FYSny12HjgAPZ3goDfTCfieU4ciZCYcRf7rPoxnKoZhGee6Bm6UtHeMjpacRz7yw1a
-        WVXn74groYpN94SL19Wof5hmE+xp4OY8ZJa8pduzbPLg8mB/JphH2tWxeIdamI1nHBVgdH
-        s4jWb7FobPSU2ItmXCLWSKhwVSHUiJ1TXa5JP+8IfQxQHhT8VWAsN2IGCejjrw==
+        bh=MfNPVXU7ie35VwgTuVUuND4oIEXYwgWGjLb0UYY5YtM=;
+        b=nOXz0ILLhLZAD3hQntXBt3uT/X0sGJTnvtC4YdNTMupCjquS/dliWACWgcMpCgZEK3KTSU
+        2K0IFGEeBeCVhUAAkiy9kar201eYEQP1L3fpC8DgHGaOH4yfhrDhpFwyaa61KNaHmOO7YF
+        LaZA+w/yBnphiSXj9TDjCBchmB5IKY4ZdUV27XFdr1TrEEWKVxqHGGb7XAstKjekqvEMz/
+        puvLESZ6/31JcczZuGARfYfFiYgjzDb4+t0pM7I5ppAgsDlHPyXnkuLokC0EzzTDQtW8tr
+        Dat6fi6bJQ4zwLyk1bi8jlCwPRgDWENrCgQB3RCbk+YQL/1hLmmo5KUngLXtCw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1619552663;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -43,22 +43,22 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=a1AIkcoASM/pnlIlcIl8sxr7ncjeEI92lXe/x3Op0rA=;
-        b=uDxaVDwFE6xj7kdjQzk88S88FErXe9TemA5SZu19u4a/7z6+amoGxxSQNkZkzr+sP7VoJy
-        eb2F3eRzUpwhjFAA==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=MfNPVXU7ie35VwgTuVUuND4oIEXYwgWGjLb0UYY5YtM=;
+        b=APbIGy6d047SHHcvU3pGjfb0EevYyfEeK+LgaYwNtnQQtWSXjnI543h/cwM++QKTpB/HPW
+        QDprNap4uWEQhEDg==
+From:   "thermal-bot for Colin Ian King" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/core/power allocator: Use the
- lockless __thermal_cdev_update() function
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] thermal/drivers/mtk_thermal: Remove redundant
+ initializations of several variables
+Cc:     Colin Ian King <colin.king@canonical.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210422153624.6074-4-lukasz.luba@arm.com>
-References: <20210422153624.6074-4-lukasz.luba@arm.com>
+In-Reply-To: <20210422120412.246291-1-colin.king@canonical.com>
+References: <20210422120412.246291-1-colin.king@canonical.com>
 MIME-Version: 1.0
-Message-ID: <161955266323.29796.8033580750194184814.tip-bot2@tip-bot2>
+Message-ID: <161955266273.29796.17804080313828073962.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,37 +69,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     ab39c8853737158604e154ad3b03639e74082bd6
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ab39c8853737158604e154ad3b03639e74082bd6
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Thu, 22 Apr 2021 16:36:24 +01:00
+Commit-ID:     c310e546164d5cca4c12faf9582b75989b030b68
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c310e546164d5cca4c12faf9582b75989b030b68
+Author:        Colin Ian King <colin.king@canonical.com>
+AuthorDate:    Thu, 22 Apr 2021 13:04:12 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Thu, 22 Apr 2021 23:51:32 +02:00
 
-thermal/core/power allocator: Use the lockless __thermal_cdev_update() function
+thermal/drivers/mtk_thermal: Remove redundant initializations of several variables
 
-Use the new helper function and avoid unnecessery second lock/unlock,
-which was present in old approach with thermal_cdev_update().
+Several variables are being initialized with values that is never
+read and being updated later with a new value. The initializations
+are redundant and can be removed.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Addresses-Coverity: ("Unused value")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210422153624.6074-4-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20210422120412.246291-1-colin.king@canonical.com
 ---
- drivers/thermal/gov_power_allocator.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/thermal/mtk_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index a6cdb2e..13e3757 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -301,9 +301,8 @@ power_actor_set_power(struct thermal_cooling_device *cdev,
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 149c6d7..97e8678 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -573,12 +573,12 @@ static int raw_to_mcelsius_v1(struct mtk_thermal *mt, int sensno, s32 raw)
  
- 	instance->target = clamp_val(state, instance->lower, instance->upper);
- 	mutex_lock(&cdev->lock);
--	cdev->updated = false;
-+	__thermal_cdev_update(cdev);
- 	mutex_unlock(&cdev->lock);
--	thermal_cdev_update(cdev);
+ static int raw_to_mcelsius_v2(struct mtk_thermal *mt, int sensno, s32 raw)
+ {
+-	s32 format_1 = 0;
+-	s32 format_2 = 0;
+-	s32 g_oe = 1;
+-	s32 g_gain = 1;
+-	s32 g_x_roomt = 0;
+-	s32 tmp = 0;
++	s32 format_1;
++	s32 format_2;
++	s32 g_oe;
++	s32 g_gain;
++	s32 g_x_roomt;
++	s32 tmp;
  
- 	return 0;
- }
+ 	if (raw == 0)
+ 		return 0;
