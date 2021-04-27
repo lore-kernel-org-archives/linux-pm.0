@@ -7,55 +7,54 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D34C43611
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AEB0C43462
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AE24611F2
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E487A613F6
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238817AbhD0TpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Apr 2021 15:45:12 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:43160 "EHLO
+        id S238964AbhD0TpP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Apr 2021 15:45:15 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:43138 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238923AbhD0TpL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:11 -0400
-Date:   Tue, 27 Apr 2021 19:44:26 -0000
+        with ESMTP id S238952AbhD0TpO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:14 -0400
+Date:   Tue, 27 Apr 2021 19:44:29 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1619552667;
+        s=2020; t=1619552670;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7inlQs/bLEtN/Xd3HbVKP9XEOv6hNTfZ35LVzWsXy5Q=;
-        b=VPdRmhVFvrkDmSd/2jb0dAlmYK/CVyj+5uqWmBJtA55Wg2SYJRvcQC54Spw1mahZgqernP
-        lYuCKQhB2zb/Q6U00b0AiLVL5MzR/5GQHzlgWnZtbcFoVhUoMRMcYB+3Im/PVL6je8ejvH
-        T4jZ3YQDgVXCwyXrbeTpt5LU3pUu88b0p5oXnQxJA4HGzvy/Gk/O4FlScVyhGqA4OGo42r
-        L2fGpB4haDeYpJe0X4xU+xrtMV0tNSsvguh4QZO8lKCADYXPftya6kUM7k3xPdebOZu5K/
-        /5e/yvsHnuqjQ2PilQHcNjo5bId6JTBsXMYDdDjhG/57Y6+6DhyqSFXZt5qGYg==
+        bh=IwZNmxXdWKtrfWgCAF7ACIyoKQIR09omO3zTHz3qE+k=;
+        b=QJ882u0CpCqdAre2b/bfykXBPAWLA26SAQgvmsIrd5h646ma1knLQP1IAARbskBZqFTMvN
+        MfQ8s7vn1KimE9tuajrmVpHgNXRC47BoNciKA2MQAu5s1Ysj8l44HB2CuYLlwXSn7xh3JW
+        5FVuS/xzeQY03k9DEoIOw6IGolglMMjXCRaqPPBpQVdM7XhMfkndqFC3gBSdeeXDWqZsR4
+        ZVzZJONW5bxUQWqM1b4sgbedXxueusDkc0Za8/vMEEwYGlXKgqGMfgFQ42AFhwtQ9I5+B+
+        BMFAWl0fw80tx/QzuQzAFua71EcSOGmIQSRpTsPuexB2kW7DLAHdeT49q0DK+A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1619552667;
+        s=2020e; t=1619552670;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=7inlQs/bLEtN/Xd3HbVKP9XEOv6hNTfZ35LVzWsXy5Q=;
-        b=nyolchZULmXdhjB+X8GK+1a9RcjjazJG2cNNWB/sv4Orje9SMQWn/3zmuKchxeEEV85km6
-        xU9rISpfWz6KahDw==
-From:   "thermal-bot for Ansuel Smith" <tip-bot2@linutronix.de>
+        bh=IwZNmxXdWKtrfWgCAF7ACIyoKQIR09omO3zTHz3qE+k=;
+        b=DrwHVX5F3eK2Fz/4cGJ8EY68jwkwrEJm1u/NdRxsK4Iz0vHrjoFrmslNoGuml23BGBOPj6
+        gAQLZzEXFqi7N2BA==
+From:   "thermal-bot for Thara Gopinath" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/tsens: Drop unused define for msm8960
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
+Subject: [thermal: thermal/next] thermal/core: Remove thermal_notify_framework
+Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210420183343.2272-8-ansuelsmth@gmail.com>
-References: <20210420183343.2272-8-ansuelsmth@gmail.com>
+In-Reply-To: <20210122023406.3500424-3-thara.gopinath@linaro.org>
+References: <20210122023406.3500424-3-thara.gopinath@linaro.org>
 MIME-Version: 1.0
-Message-ID: <161955266642.29796.6763095510198688989.tip-bot2@tip-bot2>
+Message-ID: <161955266997.29796.1220869279176722111.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,76 +65,79 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     2ebd0982e6ba69d9f9c02a4a0aab705a5526283e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//2ebd0982e6ba69d9f9c02a4a0aab705a5526283e
-Author:        Ansuel Smith <ansuelsmth@gmail.com>
-AuthorDate:    Tue, 20 Apr 2021 20:33:41 +02:00
+Commit-ID:     d60d6e7adfc3814f6de03c978ff1daab21478f87
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d60d6e7adfc3814f6de03c978ff1daab21478f87
+Author:        Thara Gopinath <thara.gopinath@linaro.org>
+AuthorDate:    Thu, 21 Jan 2021 21:34:05 -05:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 22 Apr 2021 14:10:08 +02:00
+CommitterDate: Thu, 22 Apr 2021 13:14:09 +02:00
 
-thermal/drivers/tsens: Drop unused define for msm8960
+thermal/core: Remove thermal_notify_framework
 
-Drop unused define for msm8960 replaced by generic api and reg_field.
+thermal_notify_framework just updates for a single trip point where as
+thermal_zone_device_update does other bookkeeping like updating the
+temperature of the thermal zone and setting the next trip point. The only
+driver that was using thermal_notify_framework was updated in the previous
+patch to use thermal_zone_device_update instead. Since there are no users
+for thermal_notify_framework remove it.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210420183343.2272-8-ansuelsmth@gmail.com
+Link: https://lore.kernel.org/r/20210122023406.3500424-3-thara.gopinath@linaro.org
 ---
- drivers/thermal/qcom/tsens-8960.c | 24 +-----------------------
- 1 file changed, 1 insertion(+), 23 deletions(-)
+ drivers/thermal/thermal_core.c | 18 ------------------
+ include/linux/thermal.h        |  5 -----
+ 2 files changed, 23 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 58112f0..67c1748 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -10,8 +10,6 @@
- #include <linux/thermal.h>
- #include "tsens.h"
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 3566fd2..d20b25f 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -561,24 +561,6 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
  
--#define CAL_MDEGC		30000
+-/**
+- * thermal_notify_framework - Sensor drivers use this API to notify framework
+- * @tz:		thermal zone device
+- * @trip:	indicates which trip point has been crossed
+- *
+- * This function handles the trip events from sensor drivers. It starts
+- * throttling the cooling devices according to the policy configured.
+- * For CRITICAL and HOT trip points, this notifies the respective drivers,
+- * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
+- * The throttling policy is based on the configured platform data; if no
+- * platform data is provided, this uses the step_wise throttling policy.
+- */
+-void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
+-{
+-	handle_thermal_trip(tz, trip);
+-}
+-EXPORT_SYMBOL_GPL(thermal_notify_framework);
 -
- #define CONFIG_ADDR		0x3640
- #define CONFIG_ADDR_8660	0x3620
- /* CONFIG_ADDR bitmasks */
-@@ -21,39 +19,19 @@
- #define CONFIG_SHIFT_8660	28
- #define CONFIG_MASK_8660	(3 << CONFIG_SHIFT_8660)
+ static void thermal_zone_device_check(struct work_struct *work)
+ {
+ 	struct thermal_zone_device *tz = container_of(work, struct
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 1695021..d296f3b 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -390,7 +390,6 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+ int thermal_zone_get_slope(struct thermal_zone_device *tz);
+ int thermal_zone_get_offset(struct thermal_zone_device *tz);
  
--#define STATUS_CNTL_ADDR_8064	0x3660
- #define CNTL_ADDR		0x3620
- /* CNTL_ADDR bitmasks */
- #define EN			BIT(0)
- #define SW_RST			BIT(1)
--#define SENSOR0_EN		BIT(3)
-+
- #define MEASURE_PERIOD		BIT(18)
- #define SLP_CLK_ENA		BIT(26)
- #define SLP_CLK_ENA_8660	BIT(24)
- #define SENSOR0_SHIFT		3
+-void thermal_notify_framework(struct thermal_zone_device *, int);
+ int thermal_zone_device_enable(struct thermal_zone_device *tz);
+ int thermal_zone_device_disable(struct thermal_zone_device *tz);
+ void thermal_zone_device_critical(struct thermal_zone_device *tz);
+@@ -436,10 +435,6 @@ static inline int thermal_zone_get_offset(
+ 		struct thermal_zone_device *tz)
+ { return -ENODEV; }
  
--/* INT_STATUS_ADDR bitmasks */
--#define MIN_STATUS_MASK		BIT(0)
--#define LOWER_STATUS_CLR	BIT(1)
--#define UPPER_STATUS_CLR	BIT(2)
--#define MAX_STATUS_MASK		BIT(3)
+-static inline void thermal_notify_framework(struct thermal_zone_device *tz,
+-	int trip)
+-{ }
 -
- #define THRESHOLD_ADDR		0x3624
--/* THRESHOLD_ADDR bitmasks */
--#define THRESHOLD_MAX_LIMIT_SHIFT	24
--#define THRESHOLD_MIN_LIMIT_SHIFT	16
--#define THRESHOLD_UPPER_LIMIT_SHIFT	8
--#define THRESHOLD_LOWER_LIMIT_SHIFT	0
--
--/* Initial temperature threshold values */
--#define LOWER_LIMIT_TH		0x50
--#define UPPER_LIMIT_TH		0xdf
--#define MIN_LIMIT_TH		0x0
--#define MAX_LIMIT_TH		0xff
+ static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
+ { return -ENODEV; }
  
- #define INT_STATUS_ADDR		0x363c
--#define TRDY_MASK		BIT(7)
--#define TIMEOUT_US		100
- 
- #define S0_STATUS_OFF		0x3628
- #define S1_STATUS_OFF		0x362c
