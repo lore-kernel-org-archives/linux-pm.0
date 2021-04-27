@@ -7,96 +7,102 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82907C43603
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E73CBC43470
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5524761417
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B7B2461404
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Apr 2021 19:44:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238938AbhD0TpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Apr 2021 15:45:12 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:43146 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238917AbhD0TpL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:11 -0400
-Date:   Tue, 27 Apr 2021 19:44:26 -0000
+        id S238963AbhD0TpR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Apr 2021 15:45:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40184 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238946AbhD0TpR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Apr 2021 15:45:17 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E258BC061574
+        for <linux-pm@vger.kernel.org>; Tue, 27 Apr 2021 12:44:33 -0700 (PDT)
+Date:   Tue, 27 Apr 2021 19:44:31 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1619552666;
+        s=2020; t=1619552672;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fYJbqVm154M4wRRddc9WhP90qDZP6522B1CRQOzWhVg=;
-        b=jUJ/kMBs2TmDtofrx1qXU26Q7fqUouFfkNFgQyM5SZq9WdXiqigDjsTjKMdqRIuuyCJK+P
-        MYiOjbF1ezbrPZLsPWbAC0HXOu4zrjHnahgO9baUftHJialVY8N86J2gloG3ukM4LdxRem
-        9g8DKitTGaACMhUI7O2Rc7JsbXDbdxReTjftWjR8EM4OWw7s5hOv8xMTMP+0uGsSO4uerB
-        4JhHcsQCfgEx+wEaEZZGiF+SZv3mP/nk2cIc6Wy6Jo0ToOGghsFIbO4zIQ4FkV9cCA+TMR
-        pQfA+Tcm2FYs/DMGbW9Cur62Mpln3uWQYlR7wIF70w0uUBQU7U/QLUmZdBFjHg==
+        bh=8l2DTofWYvWRCnJBwEwXkx9o86ocwWBl+5MXNtQtvQ8=;
+        b=CaaS/t26pUZvPiubL45auk83w1ig4K0X07QLLAfoZBdW0lMI1ZqyucbOgHe1Th4LFJwnl5
+        pbBmZ11EaGVElgvqVj143PQqcZjvo9Jam5QznhYc9fvqnhU/VXn0w5A/8enGKQ4P/rhAC7
+        ZBApVUSd1dG+EXqK520MBnOf1ix16F+wGtXRLi2V9iD1lVHA7puHn4iqZzftcdrnJ2kr95
+        Z3my5HD+f6P4aNNG8XqvDehxo3WnBTrgdj6RigFG47Pi0mwoMerFO5XfLvdY2gPMbKotDq
+        XNr4pZ7X/V9hyL1g9E/+2KwFXEBcBliGtrUG3a+ofOKi3pmGDrjz2AGxA8m4xQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1619552666;
+        s=2020e; t=1619552672;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=fYJbqVm154M4wRRddc9WhP90qDZP6522B1CRQOzWhVg=;
-        b=Z7qZc5eDLLWTqUVhwZefkO7n57is3nbQWhmzUL7+0PoqAMQG1afou6D7SoIArNZkUsrjc+
-        OHiKbLtv6Oi671BQ==
-From:   "thermal-bot for Ansuel Smith" <tip-bot2@linutronix.de>
+        bh=8l2DTofWYvWRCnJBwEwXkx9o86ocwWBl+5MXNtQtvQ8=;
+        b=9e8uQ3RzjmbH+weq28rZW6zQzLDefFjcNnNGuYs5ak5QdLrohewIzCrPkvfgL3MmLxE1n0
+        CLAYSMHjbACcpLDQ==
+From:   thermal-bot for =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/tsens: Add support for ipq8064-tsens
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: thermal-sensor: require
+ "#thermal-sensor-cells"
+Cc:     rafal@milecki.pl, Rob Herring <robh@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210420183343.2272-9-ansuelsmth@gmail.com>
-References: <20210420183343.2272-9-ansuelsmth@gmail.com>
+In-Reply-To: <20210415112121.4999-1-zajec5@gmail.com>
+References: <20210415112121.4999-1-zajec5@gmail.com>
 MIME-Version: 1.0
-Message-ID: <161955266600.29796.7426770607445648491.tip-bot2@tip-bot2>
+Message-ID: <161955267184.29796.4661105156582755515.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     6b3aeafbc12c18036809108e301efe8056249233
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//6b3aeafbc12c18036809108e301efe8056249233
-Author:        Ansuel Smith <ansuelsmth@gmail.com>
-AuthorDate:    Tue, 20 Apr 2021 20:33:42 +02:00
+Commit-ID:     bd5d553653e4151030ad2a94ef39a46b40c75a9b
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//bd5d553653e4151030ad2a94ef39a46b40c75a9b
+Author:        Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl>
+AuthorDate:    Thu, 15 Apr 2021 13:21:21 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 22 Apr 2021 14:10:17 +02:00
+CommitterDate: Tue, 20 Apr 2021 22:46:48 +02:00
 
-thermal/drivers/tsens: Add support for ipq8064-tsens
+dt-bindings: thermal: thermal-sensor: require "#thermal-sensor-cells"
 
-Add support for tsens present in ipq806x SoCs based on generic msm8960
-tsens driver.
+This property is required for every thermal sensor as it's used when
+using phandles.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
+Signed-off-by: Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl>
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210420183343.2272-9-ansuelsmth@gmail.com
+Link: https://lore.kernel.org/r/20210415112121.4999-1-zajec5@gmail.com
 ---
- drivers/thermal/qcom/tsens.c | 3 +++
+ Documentation/devicetree/bindings/thermal/thermal-sensor.yaml | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 83e01cb..4c7ebd1 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -968,6 +968,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
- 
- static const struct of_device_id tsens_table[] = {
- 	{
-+		.compatible = "qcom,ipq8064-tsens",
-+		.data = &data_8960,
-+	}, {
- 		.compatible = "qcom,mdm9607-tsens",
- 		.data = &data_9607,
- 	}, {
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-sensor.yaml b/=
+Documentation/devicetree/bindings/thermal/thermal-sensor.yaml
+index 9f74792..4bd345c 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal-sensor.yaml
++++ b/Documentation/devicetree/bindings/thermal/thermal-sensor.yaml
+@@ -36,6 +36,9 @@ properties:
+       containing several internal sensors.
+     enum: [0, 1]
+=20
++required:
++  - "#thermal-sensor-cells"
++
+ additionalProperties: true
+=20
+ examples:
