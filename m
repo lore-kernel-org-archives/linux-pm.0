@@ -2,106 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF451C433ED
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Apr 2021 12:23:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DF2CC433B4
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Apr 2021 14:29:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8AC2761477
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Apr 2021 12:23:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EEB2613CA
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Apr 2021 14:29:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231696AbhD3MYd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Apr 2021 08:24:33 -0400
-Received: from mga05.intel.com ([192.55.52.43]:8762 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230208AbhD3MYc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 30 Apr 2021 08:24:32 -0400
-IronPort-SDR: sMStc3CHza2hDduuknvnihVLueHRu9AVHQp430LuvbjZr//noETXJI2p+KgSftIVvxelJHEQSO
- 2ycjWTj1k/tA==
-X-IronPort-AV: E=McAfee;i="6200,9189,9969"; a="282607011"
-X-IronPort-AV: E=Sophos;i="5.82,262,1613462400"; 
-   d="scan'208";a="282607011"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Apr 2021 05:23:44 -0700
-IronPort-SDR: W0vlkEqTU7tW+kredQ0XYgjCZzgujRu4VFGPrrknI3iUx2t/nCaFJj0vZEtMxBdLF8EvEUCilT
- gaYfSCxK01PA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.82,262,1613462400"; 
-   d="scan'208";a="466796415"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
-  by orsmga001.jf.intel.com with ESMTP; 30 Apr 2021 05:23:44 -0700
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        stable@vger.kernel.org
-Subject: [PATCH] thermal: intel: Initialize RW trip to THERMAL_TEMP_INVALID
-Date:   Fri, 30 Apr 2021 05:23:43 -0700
-Message-Id: <20210430122343.1789899-1-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.30.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S230175AbhD3OaA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Apr 2021 10:30:00 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:33699 "EHLO
+        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232829AbhD3O37 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Apr 2021 10:29:59 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1619792951; h=References: In-Reply-To: Message-Id: Date:
+ Subject: Cc: To: From: Sender;
+ bh=/XY2Gqbezynq1cpcpgEPasRKDmNYUdxWeTA2xICyJcM=; b=U/aZDuHdLC2RX/mcwEViudAiA+5tZaH/YoPVvhikSMO4XxC41C9+iIJTNTQaPHD5hfuxjQjx
+ clvhKSp7O0O8LtWBjhg19+eaeUaBlzSQzWgkM1MaJgFVj0jKUcuJ+FyLIk6ja8E6PDZRhNWK
+ MdjK5CgGGvNjN1H+AMXe6W29Z+c=
+X-Mailgun-Sending-Ip: 198.61.254.9
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n01.prod.us-east-1.postgun.com with SMTP id
+ 608c143374f773a6643d63dd (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 30 Apr 2021 14:29:07
+ GMT
+Sender: sibis=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 0AB5FC43217; Fri, 30 Apr 2021 14:29:07 +0000 (UTC)
+Received: from blr-ubuntu-87.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: sibis)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id A5F84C4323A;
+        Fri, 30 Apr 2021 14:29:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org A5F84C4323A
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=sibis@codeaurora.org
+From:   Sibi Sankar <sibis@codeaurora.org>
+To:     bjorn.andersson@linaro.org
+Cc:     viresh.kumar@linaro.org, swboyd@chromium.org, agross@kernel.org,
+        robh+dt@kernel.org, rjw@rjwysocki.net,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        dianders@chromium.org, mka@chromium.org,
+        Sibi Sankar <sibis@codeaurora.org>
+Subject: [PATCH 1/2] cpufreq: blacklist SC7280 in cpufreq-dt-platdev
+Date:   Fri, 30 Apr 2021 19:58:20 +0530
+Message-Id: <1619792901-32701-2-git-send-email-sibis@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1619792901-32701-1-git-send-email-sibis@codeaurora.org>
+References: <1619792901-32701-1-git-send-email-sibis@codeaurora.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-After commit 81ad4276b505 ("Thermal: Ignore invalid trip points") all
-user_space governor notifications via RW trip point is broken in intel
-thermal drivers. This commits marks trip_points with value of 0 during
-call to thermal_zone_device_register() as invalid. RW trip points can be
-0 as user space will set the correct trip temperature later.
+Add SC7280 to cpufreq-dt-platdev blacklist since the actual scaling is
+handled by the 'qcom-cpufreq-hw' driver.
 
-During driver init, x86_package_temp and all int340x drivers sets RW trip
-temperature as 0. This results in all these trips marked as invalid by
-the thermal core.
-
-To fix this initialize RW trips to THERMAL_TEMP_INVALID instead of 0.
-
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 ---
- drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 4 ++++
- drivers/thermal/intel/x86_pkg_temp_thermal.c                 | 2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-index d1248ba943a4..62c0aa5d0783 100644
---- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -237,6 +237,8 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
- 	if (ACPI_FAILURE(status))
- 		trip_cnt = 0;
- 	else {
-+		int i;
-+
- 		int34x_thermal_zone->aux_trips =
- 			kcalloc(trip_cnt,
- 				sizeof(*int34x_thermal_zone->aux_trips),
-@@ -247,6 +249,8 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
- 		}
- 		trip_mask = BIT(trip_cnt) - 1;
- 		int34x_thermal_zone->aux_trip_nr = trip_cnt;
-+		for (i = 0; i < trip_cnt; ++i)
-+			int34x_thermal_zone->aux_trips[i] = THERMAL_TEMP_INVALID;
- 	}
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 5e07065ec22f..345418b8250e 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -137,6 +137,7 @@ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "qcom,msm8996", },
+ 	{ .compatible = "qcom,qcs404", },
+ 	{ .compatible = "qcom,sc7180", },
++	{ .compatible = "qcom,sc7280", },
+ 	{ .compatible = "qcom,sdm845", },
  
- 	trip_cnt = int340x_thermal_read_trips(int34x_thermal_zone);
-diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-index 295742e83960..4d8edc61a78b 100644
---- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-@@ -166,7 +166,7 @@ static int sys_get_trip_temp(struct thermal_zone_device *tzd,
- 	if (thres_reg_value)
- 		*temp = zonedev->tj_max - thres_reg_value * 1000;
- 	else
--		*temp = 0;
-+		*temp = THERMAL_TEMP_INVALID;
- 	pr_debug("sys_get_trip_temp %d\n", *temp);
- 
- 	return 0;
+ 	{ .compatible = "st,stih407", },
 -- 
-2.25.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
