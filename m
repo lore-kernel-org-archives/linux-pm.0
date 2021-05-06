@@ -2,29 +2,26 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49F0FC433ED
-	for <linux-pm@archiver.kernel.org>; Thu,  6 May 2021 17:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2D32C43461
+	for <linux-pm@archiver.kernel.org>; Thu,  6 May 2021 17:55:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 22CA0613C0
-	for <linux-pm@archiver.kernel.org>; Thu,  6 May 2021 17:55:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8700611AE
+	for <linux-pm@archiver.kernel.org>; Thu,  6 May 2021 17:55:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236317AbhEFR4k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 May 2021 13:56:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37444 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236302AbhEFR4j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 May 2021 13:56:39 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1F58C061574;
-        Thu,  6 May 2021 10:55:40 -0700 (PDT)
+        id S236318AbhEFR4m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 May 2021 13:56:42 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:41888 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236302AbhEFR4l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 May 2021 13:56:41 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: ezequiel)
-        with ESMTPSA id 427831F43B7B
+        with ESMTPSA id 1700C1F43B7E
 From:   Ezequiel Garcia <ezequiel@collabora.com>
 To:     linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org
@@ -35,37 +32,39 @@ Cc:     Heiko Stuebner <heiko@sntech.de>,
         Finley Xiao <finley.xiao@rock-chips.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Ezequiel Garcia <ezequiel@collabora.com>, kernel@collabora.com
-Subject: [PATCH v2 0/4] Rockchip thermal YAML and RK3568
-Date:   Thu,  6 May 2021 14:55:10 -0300
-Message-Id: <20210506175514.168365-1-ezequiel@collabora.com>
+Subject: [PATCH v2 1/4] ARM: dts: rockchip: Fix thermal sensor cells
+Date:   Thu,  6 May 2021 14:55:11 -0300
+Message-Id: <20210506175514.168365-2-ezequiel@collabora.com>
 X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210506175514.168365-1-ezequiel@collabora.com>
+References: <20210506175514.168365-1-ezequiel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-v2:
-* Convert to YAML
-* Fix rk322x.dtsi
-* Add comments as suggested by Daniel
+The number of cells to be used with a thermal sensor specifier
+must be "1". Fix this.
 
-Ezequiel Garcia (3):
-  ARM: dts: rockchip: Fix thermal sensor cells
-  dt-bindings: thermal: convert rockchip-thermal to json-schema
-  dt-bindings: rockchip-thermal: Support the RK3568 SoC compatible
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+ arch/arm/boot/dts/rk322x.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Finley Xiao (1):
-  thermal/rockchip: Support RK3568 SoCs in the thermal driver
-
- .../bindings/thermal/rockchip-thermal.txt     |  85 ------------
- .../bindings/thermal/rockchip-thermal.yaml    |  96 ++++++++++++++
- arch/arm/boot/dts/rk322x.dtsi                 |   2 +-
- drivers/thermal/rockchip_thermal.c            | 121 ++++++++++++++++++
- 4 files changed, 218 insertions(+), 86 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-
+diff --git a/arch/arm/boot/dts/rk322x.dtsi b/arch/arm/boot/dts/rk322x.dtsi
+index 208f21245095..9f02ba7a0cc2 100644
+--- a/arch/arm/boot/dts/rk322x.dtsi
++++ b/arch/arm/boot/dts/rk322x.dtsi
+@@ -517,7 +517,7 @@ tsadc: tsadc@11150000 {
+ 		pinctrl-0 = <&otp_pin>;
+ 		pinctrl-1 = <&otp_out>;
+ 		pinctrl-2 = <&otp_pin>;
+-		#thermal-sensor-cells = <0>;
++		#thermal-sensor-cells = <1>;
+ 		rockchip,hw-tshut-temp = <95000>;
+ 		status = "disabled";
+ 	};
 -- 
 2.30.0
 
