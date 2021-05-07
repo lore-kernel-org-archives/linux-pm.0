@@ -2,72 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75BDEC433ED
-	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 06:08:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1558C433ED
+	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 08:59:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 59373613DD
-	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 06:08:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 775E1613C5
+	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 08:59:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234515AbhEGGJY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 May 2021 02:09:24 -0400
-Received: from alexa-out.qualcomm.com ([129.46.98.28]:26424 "EHLO
-        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234478AbhEGGJR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 May 2021 02:09:17 -0400
-Received: from ironmsg-lv-alpha.qualcomm.com ([10.47.202.13])
-  by alexa-out.qualcomm.com with ESMTP; 06 May 2021 23:08:17 -0700
-X-QCInternal: smtphost
-Received: from ironmsg01-blr.qualcomm.com ([10.86.208.130])
-  by ironmsg-lv-alpha.qualcomm.com with ESMTP/TLS/AES256-SHA; 06 May 2021 23:08:16 -0700
-X-QCInternal: smtphost
-Received: from c-rkambl-linux1.ap.qualcomm.com (HELO c-rkambl-linux1.qualcomm.com) ([10.242.50.221])
-  by ironmsg01-blr.qualcomm.com with ESMTP; 07 May 2021 11:37:43 +0530
-Received: by c-rkambl-linux1.qualcomm.com (Postfix, from userid 2344811)
-        id 9AE3B48DF; Fri,  7 May 2021 11:37:42 +0530 (IST)
-From:   Rajeshwari Ravindra Kamble <rkambl@codeaurora.org>
-To:     amitk@kernel.org, thara.gopinath@linaro.org, agross@kernel.org,
-        bjorn.andersson@linaro.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        sanm@codeaurora.org, manafm@codeaurora.org,
-        Rajeshwari Ravindra Kamble <rkambl@codeaurora.org>
-Subject: [PATCH V4 1/3] dt-bindings: thermal: tsens: Add compatible string to TSENS binding for SC7280
-Date:   Fri,  7 May 2021 11:37:19 +0530
-Message-Id: <1620367641-23383-2-git-send-email-rkambl@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1620367641-23383-1-git-send-email-rkambl@codeaurora.org>
-References: <1620367641-23383-1-git-send-email-rkambl@codeaurora.org>
+        id S235793AbhEGJAP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 May 2021 05:00:15 -0400
+Received: from foss.arm.com ([217.140.110.172]:50330 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S235546AbhEGJAP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 May 2021 05:00:15 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B198D106F;
+        Fri,  7 May 2021 01:59:15 -0700 (PDT)
+Received: from bogus (unknown [10.57.33.10])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 359DD3F718;
+        Fri,  7 May 2021 01:59:14 -0700 (PDT)
+Date:   Fri, 7 May 2021 09:59:11 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc:     cristian.marussi@arm.com, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org, nicola.mazzucato@arm.com,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: scmi: Fix an error message
+Message-ID: <20210507085911.yqdwutmn5rev7xdv@bogus>
+References: <b0c09698216af60d97bfd30b55bad89dc0f70112.1620328067.git.christophe.jaillet@wanadoo.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b0c09698216af60d97bfd30b55bad89dc0f70112.1620328067.git.christophe.jaillet@wanadoo.fr>
+User-Agent: NeoMutt/20171215
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Adding compatible string in TSENS dt-bindings for SC7280.
+On Thu, May 06, 2021 at 09:09:48PM +0200, Christophe JAILLET wrote:
+> 'ret' is known to be 0 here.
+> The last error code is stored in 'nr_opp', so use it in the error message.
+>
 
-Signed-off-by: Rajeshwari Ravindra Kamble <rkambl@codeaurora.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 0242fd9..0d4cfe0 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -46,6 +46,7 @@ properties:
-               - qcom,msm8996-tsens
-               - qcom,msm8998-tsens
-               - qcom,sc7180-tsens
-+              - qcom,sc7280-tsens
-               - qcom,sdm845-tsens
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member 
-of Code Aurora Forum, hosted by The Linux Foundation
-
+--
+Regards,
+Sudeep
