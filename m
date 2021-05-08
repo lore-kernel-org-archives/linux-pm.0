@@ -2,79 +2,65 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF091C433B4
-	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 21:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92657C433B4
+	for <linux-pm@archiver.kernel.org>; Sat,  8 May 2021 01:51:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97059610D2
-	for <linux-pm@archiver.kernel.org>; Fri,  7 May 2021 21:44:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76F2F6143B
+	for <linux-pm@archiver.kernel.org>; Sat,  8 May 2021 01:51:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229488AbhEGVpf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 May 2021 17:45:35 -0400
-Received: from mail-ot1-f44.google.com ([209.85.210.44]:38676 "EHLO
-        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229470AbhEGVpe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 May 2021 17:45:34 -0400
-Received: by mail-ot1-f44.google.com with SMTP id q7-20020a9d57870000b02902a5c2bd8c17so9153770oth.5;
-        Fri, 07 May 2021 14:44:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=hiITqmR3MkOf1yfwBYllv9mUhx0O2m9hc1IxfJCX5I0=;
-        b=fRTFT313Tu1N4FZAfGR7Jp4WyvBmkBA7PeGwW0ZgvXNNA7i2tdxuQ7pKGKTeKjRYGa
-         bo1tKW8bEzBrXtK6s8N6/dZ1zBAgaZV/QUSOuYlFwRTNHDzahLJf6Bpu0VGhbyhPCx9c
-         HzuX+L8iJdKaClhMxfF7V1y7l+7WG3qE3spv+r8DfHfaxUi8DQXBKY2RWNi2LN1+NnxV
-         qKrDLYIYeBiy7Y8wuY2RfsVjGd9xcjmIAYLhCIYZXDaHpnBRZuLjiNrsrfIC5g/dbvTx
-         OrqsE4pNRXNHFhPNr1eqLMk3aqoW5M46zZvOLi3Zvw/cpt4qDdj5kPOPCp0mmJC/LHR+
-         to3w==
-X-Gm-Message-State: AOAM531YVJLe34bv/SJkdA5YW8mbeqNeJoKbxhOrrYmX3FPpdAT/5u5k
-        /OPAirAAQL7AGXPlSNskeOe8MRBJpQ==
-X-Google-Smtp-Source: ABdhPJwocDZDc+NSwRU7v73INFImOWfRP0IFFfEgqXzZHnfl39v6PHwY49UNRM65+yeqFYJV/U6gBA==
-X-Received: by 2002:a05:6830:2117:: with SMTP id i23mr9655209otc.331.1620423873421;
-        Fri, 07 May 2021 14:44:33 -0700 (PDT)
-Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id i18sm1320233oot.48.2021.05.07.14.44.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 May 2021 14:44:32 -0700 (PDT)
-Received: (nullmailer pid 2944565 invoked by uid 1000);
-        Fri, 07 May 2021 21:44:31 -0000
-Date:   Fri, 7 May 2021 16:44:31 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Ezequiel Garcia <ezequiel@collabora.com>
-Cc:     Heiko Stuebner <heiko@sntech.de>,
-        Kever Yang <kever.yang@rock-chips.com>,
-        Finley Xiao <finley.xiao@rock-chips.com>,
-        devicetree@vger.kernel.org, linux-rockchip@lists.infradead.org,
-        linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        kernel@collabora.com, Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>
-Subject: Re: [PATCH v2 2/4] dt-bindings: thermal: convert rockchip-thermal to
- json-schema
-Message-ID: <20210507214431.GA2944513@robh.at.kernel.org>
-References: <20210506175514.168365-1-ezequiel@collabora.com>
- <20210506175514.168365-3-ezequiel@collabora.com>
+        id S230356AbhEHBwk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 May 2021 21:52:40 -0400
+Received: from szxga04-in.huawei.com ([45.249.212.190]:17594 "EHLO
+        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230361AbhEHBwj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 May 2021 21:52:39 -0400
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.60])
+        by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4FcVbd1mlJz16NcN;
+        Sat,  8 May 2021 09:49:01 +0800 (CST)
+Received: from huawei.com (10.174.28.241) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.498.0; Sat, 8 May 2021
+ 09:51:28 +0800
+From:   Bixuan Cui <cuibixuan@huawei.com>
+To:     <cuibixuan@huawei.com>, Sebastian Reichel <sre@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: [PATCH -next] power: reset: gpio-poweroff: add missing MODULE_DEVICE_TABLE
+Date:   Sat, 8 May 2021 11:14:59 +0800
+Message-ID: <20210508031459.53589-1-cuibixuan@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210506175514.168365-3-ezequiel@collabora.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.28.241]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 06 May 2021 14:55:12 -0300, Ezequiel Garcia wrote:
-> Convert Rockchip Thermal sensor dt-bindings to YAML.
-> 
-> Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
-> ---
->  .../bindings/thermal/rockchip-thermal.txt     | 85 -----------------
->  .../bindings/thermal/rockchip-thermal.yaml    | 95 +++++++++++++++++++
->  2 files changed, 95 insertions(+), 85 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->  create mode 100644 Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-> 
+This patch adds missing MODULE_DEVICE_TABLE definition which generates
+correct modalias for automatic loading of this driver when it is built
+as an external module.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
+---
+ drivers/power/reset/gpio-poweroff.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
+index c5067eb75370..1c5af2fef142 100644
+--- a/drivers/power/reset/gpio-poweroff.c
++++ b/drivers/power/reset/gpio-poweroff.c
+@@ -90,6 +90,7 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
+ 	{ .compatible = "gpio-poweroff", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, of_gpio_poweroff_match);
+ 
+ static struct platform_driver gpio_poweroff_driver = {
+ 	.probe = gpio_poweroff_probe,
+
