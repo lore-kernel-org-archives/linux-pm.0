@@ -2,254 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1800C433B4
-	for <linux-pm@archiver.kernel.org>; Mon, 10 May 2021 07:02:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DEF4C43470
+	for <linux-pm@archiver.kernel.org>; Mon, 10 May 2021 10:30:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB56D61432
-	for <linux-pm@archiver.kernel.org>; Mon, 10 May 2021 07:02:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 109F161954
+	for <linux-pm@archiver.kernel.org>; Mon, 10 May 2021 10:30:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230252AbhEJHDV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 May 2021 03:03:21 -0400
-Received: from alexa-out.qualcomm.com ([129.46.98.28]:61793 "EHLO
-        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230076AbhEJHDK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 May 2021 03:03:10 -0400
-Received: from ironmsg-lv-alpha.qualcomm.com ([10.47.202.13])
-  by alexa-out.qualcomm.com with ESMTP; 10 May 2021 00:02:05 -0700
-X-QCInternal: smtphost
-Received: from ironmsg01-blr.qualcomm.com ([10.86.208.130])
-  by ironmsg-lv-alpha.qualcomm.com with ESMTP/TLS/AES256-SHA; 10 May 2021 00:02:03 -0700
-X-QCInternal: smtphost
-Received: from c-skakit-linux.ap.qualcomm.com (HELO c-skakit-linux.qualcomm.com) ([10.242.51.242])
-  by ironmsg01-blr.qualcomm.com with ESMTP; 10 May 2021 12:31:20 +0530
-Received: by c-skakit-linux.qualcomm.com (Postfix, from userid 2344709)
-        id 9010C46D8; Mon, 10 May 2021 12:31:19 +0530 (IST)
-From:   satya priya <skakit@codeaurora.org>
-To:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     David Collins <collinsd@codeaurora.org>, kgunda@codeaurora.org,
-        linux-input@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Courtney Cavin <courtney.cavin@sonymobile.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        satya priya <skakit@codeaurora.org>
-Subject: [PATCH V3 1/5] input: pm8941-pwrkey: add support for PMK8350 PON_HLOS PMIC peripheral
-Date:   Mon, 10 May 2021 12:31:00 +0530
-Message-Id: <1620630064-16354-2-git-send-email-skakit@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1620630064-16354-1-git-send-email-skakit@codeaurora.org>
-References: <1620630064-16354-1-git-send-email-skakit@codeaurora.org>
+        id S231773AbhEJKbm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 May 2021 06:31:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:60168 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231807AbhEJKaF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 May 2021 06:30:05 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id BB51C6186A;
+        Mon, 10 May 2021 10:27:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1620642443;
+        bh=m8Om0d0gr6VAcd5Jczu3eLDDIMDn68u18OnEK7cqiXc=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=BGAaeysxa3iFzSZ1FfjZ5/y2eL3suXE253gMCE7F7vm8zA9OeZDiYnUB+LQW/5hRH
+         FnndwxxTEmQ2DJ3uv7HyZXdGu5z5eIuzuN85zhz93xn3PvYoTrI1MbO/ie7vK1kSR4
+         r9sZK7ntrIYeFN8ZNWHi2TbYdY9KQBFWBqSqXJsOoWApq/8HJ5UdmmjcOacrW9euWe
+         TuQrCnXzSf3JG0Wk08bKAi7oUlaz1DFeeiRzQUkIKOnMQYChOf4ytHJLKFxv/rqMKc
+         Cw9HOT9RG5dG6aqVcNFdt3JvTxwc092kb5bghisnH/RJtvOjZ9k8FcUUVuYyvLrlrP
+         OMGHhZJn5zWPQ==
+Received: by mail.kernel.org with local (Exim 4.94.2)
+        (envelope-from <mchehab@kernel.org>)
+        id 1lg38C-000UOy-QM; Mon, 10 May 2021 12:27:20 +0200
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        "Jonathan Corbet" <corbet@lwn.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH 10/53] docs: admin-guide: pm: avoid using UTF-8 chars
+Date:   Mon, 10 May 2021 12:26:22 +0200
+Message-Id: <79d5dca9b4bd0cc3b128ece6ffa16c07b7178626.1620641727.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <cover.1620641727.git.mchehab+huawei@kernel.org>
+References: <cover.1620641727.git.mchehab+huawei@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: David Collins <collinsd@codeaurora.org>
+While UTF-8 characters can be used at the Linux documentation,
+the best is to use them only when ASCII doesn't offer a good replacement.
+So, replace the occurences of the following UTF-8 characters:
 
-On Qualcomm Technologies, Inc. PMIC PMK8350, the PON peripheral
-is split into two peripherals: PON_HLOS and PON_PBS.  The
-application processor only has write access to PON_HLOS which
-limits it to only receiving PON interrupts.
+	- U+2019 ('’'): RIGHT SINGLE QUOTATION MARK
 
-Add support for the PMK8350 PON_HLOS peripheral so that its
-KPDPWR_N and RESIN_N interrupts can be used to detect key
-presses.
-
-Signed-off-by: David Collins <collinsd@codeaurora.org>
-Signed-off-by: satya priya <skakit@codeaurora.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
-Changes in V2:
- - No change.
+ Documentation/admin-guide/pm/intel_idle.rst   | 4 ++--
+ Documentation/admin-guide/pm/intel_pstate.rst | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Changes in V3:
- - No change.
-
- drivers/input/misc/pm8941-pwrkey.c | 103 ++++++++++++++++++++++++++-----------
- 1 file changed, 72 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/input/misc/pm8941-pwrkey.c b/drivers/input/misc/pm8941-pwrkey.c
-index cf81044..10e3fc0 100644
---- a/drivers/input/misc/pm8941-pwrkey.c
-+++ b/drivers/input/misc/pm8941-pwrkey.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
-+ * Copyright (c) 2010-2011, 2020-2021, The Linux Foundation. All rights reserved.
-  * Copyright (c) 2014, Sony Mobile Communications Inc.
-  */
+diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/admin-guide/pm/intel_idle.rst
+index 89309e1b0e48..c3c4f5d4c806 100644
+--- a/Documentation/admin-guide/pm/intel_idle.rst
++++ b/Documentation/admin-guide/pm/intel_idle.rst
+@@ -28,7 +28,7 @@ logical CPU executing it is idle and so it may be possible to put some of the
+ processor's functional blocks into low-power states.  That instruction takes two
+ arguments (passed in the ``EAX`` and ``ECX`` registers of the target CPU), the
+ first of which, referred to as a *hint*, can be used by the processor to
+-determine what can be done (for details refer to Intel Software Developer’s
++determine what can be done (for details refer to Intel Software Developer's
+ Manual [1]_).  Accordingly, ``intel_idle`` refuses to work with processors in
+ which the support for the ``MWAIT`` instruction has been disabled (for example,
+ via the platform firmware configuration menu) or which do not support that
+@@ -261,7 +261,7 @@ restrict the range of permissible idle states to the ones with core-level only
+ References
+ ==========
  
-@@ -22,6 +22,8 @@
- #define PON_RT_STS			0x10
- #define  PON_KPDPWR_N_SET		BIT(0)
- #define  PON_RESIN_N_SET		BIT(1)
-+#define  PON_GEN3_RESIN_N_SET		BIT(6)
-+#define  PON_GEN3_KPDPWR_N_SET		BIT(7)
+-.. [1] *Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume 2B*,
++.. [1] *Intel® 64 and IA-32 Architectures Software Developer's Manual Volume 2B*,
+        https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-2b-manual.html
  
- #define PON_PS_HOLD_RST_CTL		0x5a
- #define PON_PS_HOLD_RST_CTL2		0x5b
-@@ -38,8 +40,12 @@
- #define  PON_DBC_DELAY_MASK		0x7
+ .. [2] *Advanced Configuration and Power Interface (ACPI) Specification*,
+diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
+index df29b4f1f219..d881a32acb6d 100644
+--- a/Documentation/admin-guide/pm/intel_pstate.rst
++++ b/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -26,7 +26,7 @@ than just an operating frequency or an operating performance point (see the
+ LinuxCon Europe 2015 presentation by Kristen Accardi [1]_ for more
+ information about that).  For this reason, the representation of P-states used
+ by ``intel_pstate`` internally follows the hardware specification (for details
+-refer to Intel Software Developer’s Manual [2]_).  However, the ``CPUFreq`` core
++refer to Intel Software Developer's Manual [2]_).  However, the ``CPUFreq`` core
+ uses frequencies for identifying operating performance points of CPUs and
+ frequencies are involved in the user space interface exposed by it, so
+ ``intel_pstate`` maps its internal representation of P-states to frequencies too
+@@ -756,7 +756,7 @@ References
+ .. [1] Kristen Accardi, *Balancing Power and Performance in the Linux Kernel*,
+        https://events.static.linuxfound.org/sites/events/files/slides/LinuxConEurope_2015.pdf
  
- struct pm8941_data {
--	unsigned int pull_up_bit;
--	unsigned int status_bit;
-+	unsigned int	pull_up_bit;
-+	unsigned int	status_bit;
-+	bool		supports_ps_hold_poff_config;
-+	bool		supports_debounce_config;
-+	const char	*name;
-+	const char	*phys;
- };
+-.. [2] *Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume 3: System Programming Guide*,
++.. [2] *Intel® 64 and IA-32 Architectures Software Developer's Manual Volume 3: System Programming Guide*,
+        https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-system-programming-manual-325384.html
  
- struct pm8941_pwrkey {
-@@ -231,34 +237,40 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
- 
- 	input_set_capability(pwrkey->input, EV_KEY, pwrkey->code);
- 
--	pwrkey->input->name = "pm8941_pwrkey";
--	pwrkey->input->phys = "pm8941_pwrkey/input0";
--
--	req_delay = (req_delay << 6) / USEC_PER_SEC;
--	req_delay = ilog2(req_delay);
--
--	error = regmap_update_bits(pwrkey->regmap,
--				   pwrkey->baseaddr + PON_DBC_CTL,
--				   PON_DBC_DELAY_MASK,
--				   req_delay);
--	if (error) {
--		dev_err(&pdev->dev, "failed to set debounce: %d\n", error);
--		return error;
-+	pwrkey->input->name = pwrkey->data->name;
-+	pwrkey->input->phys = pwrkey->data->phys;
-+
-+	if (pwrkey->data->supports_debounce_config) {
-+		req_delay = (req_delay << 6) / USEC_PER_SEC;
-+		req_delay = ilog2(req_delay);
-+
-+		error = regmap_update_bits(pwrkey->regmap,
-+					   pwrkey->baseaddr + PON_DBC_CTL,
-+					   PON_DBC_DELAY_MASK,
-+					   req_delay);
-+		if (error) {
-+			dev_err(&pdev->dev, "failed to set debounce: %d\n",
-+				error);
-+			return error;
-+		}
- 	}
- 
--	error = regmap_update_bits(pwrkey->regmap,
--				   pwrkey->baseaddr + PON_PULL_CTL,
--				   pwrkey->data->pull_up_bit,
--				   pull_up ? pwrkey->data->pull_up_bit : 0);
--	if (error) {
--		dev_err(&pdev->dev, "failed to set pull: %d\n", error);
--		return error;
-+	if (pwrkey->data->pull_up_bit) {
-+		error = regmap_update_bits(pwrkey->regmap,
-+					   pwrkey->baseaddr + PON_PULL_CTL,
-+					   pwrkey->data->pull_up_bit,
-+					   pull_up ? pwrkey->data->pull_up_bit :
-+						     0);
-+		if (error) {
-+			dev_err(&pdev->dev, "failed to set pull: %d\n", error);
-+			return error;
-+		}
- 	}
- 
- 	error = devm_request_threaded_irq(&pdev->dev, pwrkey->irq,
- 					  NULL, pm8941_pwrkey_irq,
- 					  IRQF_ONESHOT,
--					  "pm8941_pwrkey", pwrkey);
-+					  pwrkey->data->name, pwrkey);
- 	if (error) {
- 		dev_err(&pdev->dev, "failed requesting IRQ: %d\n", error);
- 		return error;
-@@ -271,12 +283,14 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
- 		return error;
- 	}
- 
--	pwrkey->reboot_notifier.notifier_call = pm8941_reboot_notify,
--	error = register_reboot_notifier(&pwrkey->reboot_notifier);
--	if (error) {
--		dev_err(&pdev->dev, "failed to register reboot notifier: %d\n",
--			error);
--		return error;
-+	if (pwrkey->data->supports_ps_hold_poff_config) {
-+		pwrkey->reboot_notifier.notifier_call = pm8941_reboot_notify,
-+		error = register_reboot_notifier(&pwrkey->reboot_notifier);
-+		if (error) {
-+			dev_err(&pdev->dev, "failed to register reboot notifier: %d\n",
-+				error);
-+			return error;
-+		}
- 	}
- 
- 	platform_set_drvdata(pdev, pwrkey);
-@@ -289,7 +303,8 @@ static int pm8941_pwrkey_remove(struct platform_device *pdev)
- {
- 	struct pm8941_pwrkey *pwrkey = platform_get_drvdata(pdev);
- 
--	unregister_reboot_notifier(&pwrkey->reboot_notifier);
-+	if (pwrkey->data->supports_ps_hold_poff_config)
-+		unregister_reboot_notifier(&pwrkey->reboot_notifier);
- 
- 	return 0;
- }
-@@ -297,16 +312,42 @@ static int pm8941_pwrkey_remove(struct platform_device *pdev)
- static const struct pm8941_data pwrkey_data = {
- 	.pull_up_bit = PON_KPDPWR_PULL_UP,
- 	.status_bit = PON_KPDPWR_N_SET,
-+	.name = "pm8941_pwrkey",
-+	.phys = "pm8941_pwrkey/input0",
-+	.supports_ps_hold_poff_config = true,
-+	.supports_debounce_config = true,
- };
- 
- static const struct pm8941_data resin_data = {
- 	.pull_up_bit = PON_RESIN_PULL_UP,
- 	.status_bit = PON_RESIN_N_SET,
-+	.name = "pm8941_resin",
-+	.phys = "pm8941_resin/input0",
-+	.supports_ps_hold_poff_config = true,
-+	.supports_debounce_config = true,
-+};
-+
-+static const struct pm8941_data pon_gen3_pwrkey_data = {
-+	.status_bit = PON_GEN3_KPDPWR_N_SET,
-+	.name = "pmic_pwrkey",
-+	.phys = "pmic_pwrkey/input0",
-+	.supports_ps_hold_poff_config = false,
-+	.supports_debounce_config = false,
-+};
-+
-+static const struct pm8941_data pon_gen3_resin_data = {
-+	.status_bit = PON_GEN3_RESIN_N_SET,
-+	.name = "pmic_resin",
-+	.phys = "pmic_resin/input0",
-+	.supports_ps_hold_poff_config = false,
-+	.supports_debounce_config = false,
- };
- 
- static const struct of_device_id pm8941_pwr_key_id_table[] = {
- 	{ .compatible = "qcom,pm8941-pwrkey", .data = &pwrkey_data },
- 	{ .compatible = "qcom,pm8941-resin", .data = &resin_data },
-+	{ .compatible = "qcom,pmk8350-pwrkey", .data = &pon_gen3_pwrkey_data },
-+	{ .compatible = "qcom,pmk8350-resin", .data = &pon_gen3_resin_data },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, pm8941_pwr_key_id_table);
+ .. [3] *Advanced Configuration and Power Interface Specification*,
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member 
-of Code Aurora Forum, hosted by The Linux Foundation
+2.30.2
 
