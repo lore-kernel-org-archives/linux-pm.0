@@ -2,126 +2,92 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0F45C43461
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 12:52:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60C8CC433ED
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 13:50:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6FA0061026
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 12:52:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2297B61040
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 13:50:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233235AbhELMxq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 May 2021 08:53:46 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52776 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231676AbhELMxD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 May 2021 08:53:03 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7E3C461937;
-        Wed, 12 May 2021 12:51:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1620823903;
-        bh=OVSqy/JSKyWtBY0OErxo4l2GIuXyNKw7839n8D1BuyY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SQTmXH4aLBXFpWGx46uYHjS01fSUGZJomKzH6pcv+Rkv47JgYZg+V1RG/pN5sG+cj
-         RJkxxcLnAa0jVvVlBZwKEDV2Qb/tBqB4lcEYgqGWbnkBYfMx1TZHBFOJZU35o2wemv
-         zbtTSFf2+VRa32d/ri6xuNvs22Y9PiTfXwaf9mmYxiPDdHAqz61TzbHJR/tOLl475P
-         awyx55/ZOlKtNuqtpxjRAqm2tYvTs9cjLJrmTry8MPzTGZZL/mrNMdZT/kVEvhCE0Q
-         C9w9jhf6O4cP815hDSQy/Qe4hal18DwXPXwkVQrz9hJtq76Ag6qWNW8zTE/6Hxi+pt
-         5+FCjf0vtZFEA==
-Received: by mail.kernel.org with local (Exim 4.94.2)
-        (envelope-from <mchehab@kernel.org>)
-        id 1lgoKy-0018h7-8A; Wed, 12 May 2021 14:51:40 +0200
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v2 05/40] docs: admin-guide: pm: Use ASCII subset instead of UTF-8 alternate symbols
-Date:   Wed, 12 May 2021 14:50:09 +0200
-Message-Id: <f24d5bd469a42f4a97b9fa5de13575698789dcd6.1620823573.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
-References: <cover.1620823573.git.mchehab+huawei@kernel.org>
+        id S231206AbhELNvH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 May 2021 09:51:07 -0400
+Received: from mail-ot1-f53.google.com ([209.85.210.53]:47095 "EHLO
+        mail-ot1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231230AbhELNvH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 09:51:07 -0400
+Received: by mail-ot1-f53.google.com with SMTP id d3-20020a9d29030000b029027e8019067fso20542903otb.13;
+        Wed, 12 May 2021 06:49:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=mG4BDahR3iB45OP4gYv0F9gGuZ/XZy4giEMKlCWJqUA=;
+        b=e+3jS8QyDx0HNeozopytk7b0bwkBaxJjrBYHYub9xVwNt9p1vlqmbqJnz5+a9YtqQm
+         1V2rQBBHs957nmxZ9bxC6GxT297GmXiYvsFoUrvhBBJG12AerySnOP8JfKoXfRYM1o4k
+         dKdNHonXNUBB8gv4tM3ls+a5rZytUJ3Tyi/FcoO6SmNhuybmrmVPAJUt80RYXLOb1Tv3
+         bSoVsJeSwvM/upi9BAVJek+qH65k84tQjk3+uoLL7b7u5IZ+AEFNrxglv0WPpvMh4qzD
+         4QNM+68z9OaQGi3CMbtuFqTnh2AtkHEjLa6G96Fy7sCGXFKYcebdI/4PWdRoJilJA0MI
+         zmhw==
+X-Gm-Message-State: AOAM533Wu4UqBk6hMM30+yWQOZxpuax1dBLtGHPtwsG0PomDYzzeYh0z
+        6n7WcvgOBxotGYiecuvh2zksqElxTze7dXsGLx3wzThm
+X-Google-Smtp-Source: ABdhPJxrwpETA5Dt0x93sE0FGhvMx5Y6zTk65fr+3+JGUuZRs8AKfe0bwxkyx4N8Ir4PVO/rD0p8SujH4bEvnhf7IaM=
+X-Received: by 2002:a9d:3bcb:: with SMTP id k69mr31863830otc.206.1620827397947;
+ Wed, 12 May 2021 06:49:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
+References: <20210510155819.29595-1-sumeet.r.pawnikar@intel.com>
+In-Reply-To: <20210510155819.29595-1-sumeet.r.pawnikar@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 12 May 2021 15:49:46 +0200
+Message-ID: <CAJZ5v0iu4bRfi8ECi1QUvK3KResqatp6z5jYT4+PP2R0R12BHw@mail.gmail.com>
+Subject: Re: [PATCH] ACPI: DPTF: Add battery participant for Intel SoCs
+To:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The conversion tools used during DocBook/LaTeX/Markdown->ReST conversion
-and some automatic rules which exists on certain text editors like
-LibreOffice turned ASCII characters into some UTF-8 alternatives that
-are better displayed on html and PDF.
+On Mon, May 10, 2021 at 6:09 PM Sumeet Pawnikar
+<sumeet.r.pawnikar@intel.com> wrote:
+>
+> Add ACPI Device ID for DPTF battery participant for the Intel
+> Jasper Lake (INT3532) and Tiger Lake (INTC1050) SoC based platforms.
+>
+> Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+> ---
+>  drivers/acpi/dptf/int340x_thermal.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/acpi/dptf/int340x_thermal.c b/drivers/acpi/dptf/int340x_thermal.c
+> index d14025a85ce8..da5d5f0be2f2 100644
+> --- a/drivers/acpi/dptf/int340x_thermal.c
+> +++ b/drivers/acpi/dptf/int340x_thermal.c
+> @@ -24,6 +24,7 @@ static const struct acpi_device_id int340x_thermal_device_ids[] = {
+>         {"INT3409"},
+>         {"INT340A"},
+>         {"INT340B"},
+> +       {"INT3532"},
+>         {"INTC1040"},
+>         {"INTC1041"},
+>         {"INTC1043"},
+> @@ -33,6 +34,7 @@ static const struct acpi_device_id int340x_thermal_device_ids[] = {
+>         {"INTC1047"},
+>         {"INTC1048"},
+>         {"INTC1049"},
+> +       {"INTC1050"},
+>         {"INTC1060"},
+>         {"INTC1061"},
+>         {""},
+> --
 
-While it is OK to use UTF-8 characters in Linux, it is better to
-use the ASCII subset instead of using an UTF-8 equivalent character
-as it makes life easier for tools like grep, and are easier to edit
-with the some commonly used text/source code editors.
-
-Also, Sphinx already do such conversion automatically outside literal blocks:
-   https://docutils.sourceforge.io/docs/user/smartquotes.html
-
-So, replace the occurences of the following UTF-8 characters:
-
-	- U+2019 ('’'): RIGHT SINGLE QUOTATION MARK
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- Documentation/admin-guide/pm/intel_idle.rst   | 4 ++--
- Documentation/admin-guide/pm/intel_pstate.rst | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/admin-guide/pm/intel_idle.rst b/Documentation/admin-guide/pm/intel_idle.rst
-index 89309e1b0e48..c3c4f5d4c806 100644
---- a/Documentation/admin-guide/pm/intel_idle.rst
-+++ b/Documentation/admin-guide/pm/intel_idle.rst
-@@ -28,7 +28,7 @@ logical CPU executing it is idle and so it may be possible to put some of the
- processor's functional blocks into low-power states.  That instruction takes two
- arguments (passed in the ``EAX`` and ``ECX`` registers of the target CPU), the
- first of which, referred to as a *hint*, can be used by the processor to
--determine what can be done (for details refer to Intel Software Developer’s
-+determine what can be done (for details refer to Intel Software Developer's
- Manual [1]_).  Accordingly, ``intel_idle`` refuses to work with processors in
- which the support for the ``MWAIT`` instruction has been disabled (for example,
- via the platform firmware configuration menu) or which do not support that
-@@ -261,7 +261,7 @@ restrict the range of permissible idle states to the ones with core-level only
- References
- ==========
- 
--.. [1] *Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume 2B*,
-+.. [1] *Intel® 64 and IA-32 Architectures Software Developer's Manual Volume 2B*,
-        https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-2b-manual.html
- 
- .. [2] *Advanced Configuration and Power Interface (ACPI) Specification*,
-diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
-index df29b4f1f219..d881a32acb6d 100644
---- a/Documentation/admin-guide/pm/intel_pstate.rst
-+++ b/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -26,7 +26,7 @@ than just an operating frequency or an operating performance point (see the
- LinuxCon Europe 2015 presentation by Kristen Accardi [1]_ for more
- information about that).  For this reason, the representation of P-states used
- by ``intel_pstate`` internally follows the hardware specification (for details
--refer to Intel Software Developer’s Manual [2]_).  However, the ``CPUFreq`` core
-+refer to Intel Software Developer's Manual [2]_).  However, the ``CPUFreq`` core
- uses frequencies for identifying operating performance points of CPUs and
- frequencies are involved in the user space interface exposed by it, so
- ``intel_pstate`` maps its internal representation of P-states to frequencies too
-@@ -756,7 +756,7 @@ References
- .. [1] Kristen Accardi, *Balancing Power and Performance in the Linux Kernel*,
-        https://events.static.linuxfound.org/sites/events/files/slides/LinuxConEurope_2015.pdf
- 
--.. [2] *Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume 3: System Programming Guide*,
-+.. [2] *Intel® 64 and IA-32 Architectures Software Developer's Manual Volume 3: System Programming Guide*,
-        https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-system-programming-manual-325384.html
- 
- .. [3] *Advanced Configuration and Power Interface Specification*,
--- 
-2.30.2
-
+Applied as 5.14 material, thanks!
