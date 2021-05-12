@@ -2,90 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15423C433ED
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 08:12:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6FEBC43460
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 08:20:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CEA60611BF
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 08:12:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E722613F8
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 08:20:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230300AbhELING (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 May 2021 04:13:06 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:32369 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230247AbhELING (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 04:13:06 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1620807118; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=z0fHUZecSYuqWomka6fjDkY05S5ZCmTD18gCyAwIM1E=; b=SikBjwnyId4WbD6Yq5UFem+v0IdyiYRzEZ6W6H0BEKF41VNSs/as31Uz2SvBopCYybGJhzX/
- AZMqvdfKwjOd+Gq5Z5MfHEzsYY3gP1zw+UWcW6M5tw1Et8fmM5fDf0NbzvRU8dv35JvdBbY0
- Q7VG1lK9Jny8j8v2cKMjzzPEaTE=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n02.prod.us-west-2.postgun.com with SMTP id
- 609b8db9938a1a6b8f0b6ecc (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 12 May 2021 08:11:37
- GMT
-Sender: sibis=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id A7677C43143; Wed, 12 May 2021 08:11:37 +0000 (UTC)
-Received: from blr-ubuntu-87.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: sibis)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 76454C433F1;
-        Wed, 12 May 2021 08:11:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 76454C433F1
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=sibis@codeaurora.org
-From:   Sibi Sankar <sibis@codeaurora.org>
-To:     bjorn.andersson@linaro.org, dianders@chromium.org, mka@chromium.org
-Cc:     viresh.kumar@linaro.org, sboyd@kernel.org, agross@kernel.org,
-        robh+dt@kernel.org, rjw@rjwysocki.net,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Sibi Sankar <sibis@codeaurora.org>
-Subject: [PATCH v3 0/2] DDR/L3 Scaling support on SC7280 SoCs
-Date:   Wed, 12 May 2021 13:41:21 +0530
-Message-Id: <1620807083-5451-1-git-send-email-sibis@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
+        id S230129AbhELIV0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 May 2021 04:21:26 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50322 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229968AbhELIV0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 May 2021 04:21:26 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1620807617; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Vza9DD+KUbiRtLfI0mIL3ImF5EprHsvwKgA+ti787LI=;
+        b=SEUCFz0zu0Zp1BQ9xz1mNFPtDYhbTNwQhQo77/WPTDUSYSs9YYUUH3rHkmMfCEgx7RVIJp
+        dwIeahyOWnteniGqdd3VuYtW/CarKwLYLktS4+AtvvPlDD3WewhKIPFriqz5n56j3P2hbq
+        S4D13UGTFc3ksE8v03AOtcpvvI1r4nc=
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 28C1BAF2C;
+        Wed, 12 May 2021 08:20:17 +0000 (UTC)
+Date:   Wed, 12 May 2021 10:20:16 +0200
+From:   Petr Mladek <pmladek@suse.com>
+To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc:     Matti Vaittinen <mazziesaccount@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        "agross@kernel.org" <agross@kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        linux-power <linux-power@fi.rohmeurope.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-renesas-soc@vger.kernel.org" 
+        <linux-renesas-soc@vger.kernel.org>,
+        "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
+        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Matteo Croce <mcroce@microsoft.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Mike Rapoport <rppt@kernel.org>,
+        Josef Bacik <josef@toxicpanda.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v9 02/10] reboot: Add hardware protection power-off
+Message-ID: <YJuPwAZroVZ/w633@alley>
+References: <cover.1620645507.git.matti.vaittinen@fi.rohmeurope.com>
+ <97260f8e150abb898a262fade25860609b460912.1620645507.git.matti.vaittinen@fi.rohmeurope.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <97260f8e150abb898a262fade25860609b460912.1620645507.git.matti.vaittinen@fi.rohmeurope.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The patch series adds support for DDR/L3 Scaling on SC7280 SoCs.
+On Mon 2021-05-10 14:28:30, Matti Vaittinen wrote:
+> There can be few cases when we need to shut-down the system in order to
+> protect the hardware. Currently this is done at east by the thermal core
+> when temperature raises over certain limit.
+> 
+> Some PMICs can also generate interrupts for example for over-current or
+> over-voltage, voltage drops, short-circuit, ... etc. On some systems
+> these are a sign of hardware failure and only thing to do is try to
+> protect the rest of the hardware by shutting down the system.
+> 
+> Add shut-down logic which can be used by all subsystems instead of
+> implementing the shutdown in each subsystem. The logic is stolen from
+> thermal_core with difference of using atomic_t instead of a mutex in
+> order to allow calls directly from IRQ context.
+> 
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> 
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index a6ad5eb2fa73..5da8c80a2647 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -518,6 +519,85 @@ void orderly_reboot(void)
+>  }
+>  EXPORT_SYMBOL_GPL(orderly_reboot);
+>  
+> +/**
+> + * hw_failure_emergency_poweroff_func - emergency poweroff work after a known delay
+> + * @work: work_struct associated with the emergency poweroff function
+> + *
+> + * This function is called in very critical situations to force
+> + * a kernel poweroff after a configurable timeout value.
+> + */
+> +static void hw_failure_emergency_poweroff_func(struct work_struct *work)
+> +{
+> +	/*
+> +	 * We have reached here after the emergency shutdown waiting period has
+> +	 * expired. This means orderly_poweroff has not been able to shut off
+> +	 * the system for some reason.
+> +	 *
+> +	 * Try to shut down the system immediately using kernel_power_off
+> +	 * if populated
+> +	 */
+> +	WARN(1, "Hardware protection timed-out. Trying forced poweroff\n");
+> +	kernel_power_off();
 
-V3:
- * Rename opp table nodes [Matthias]
- * Rename opp phandles [Doug]
+WARN() look like an overkill here. It prints many lines that are not
+much useful in this case. The function is called from well-known
+context (workqueue worker).
 
-V2:
- * Add a new opp table for cpu 7 to account for the additional frequencies
-   supported by it.
+Also be aware that "panic_on_warn" commandline option will trigger
+panic() here.
 
-Depends on the following patch series:
-L3 Provider Support: https://lore.kernel.org/lkml/1618556290-28303-1-git-send-email-okukatla@codeaurora.org/
-CPUfreq Support: https://lore.kernel.org/lkml/1618020280-5470-2-git-send-email-tdas@codeaurora.org/
-RPMH Provider Support: https://lore.kernel.org/lkml/1619517059-12109-1-git-send-email-okukatla@codeaurora.org/
 
-It also depends on L3 and cpufreq dt nodes from the ^^ series to not have
-overlapping memory regions.
+> +	/*
+> +	 * Worst of the worst case trigger emergency restart
+> +	 */
+> +	WARN(1,
+> +	     "Hardware protection shutdown failed. Trying emergency restart\n");
+> +	emergency_restart();
 
-Sibi Sankar (2):
-  cpufreq: blacklist SC7280 in cpufreq-dt-platdev
-  arm64: dts: qcom: sc7280: Add cpu OPP tables
+Two consecutive WARN() calls are even less useful. They are eye
+catching but it is hard to find the only useful line with
+the custom message.
 
- arch/arm64/boot/dts/qcom/sc7280.dtsi | 215 +++++++++++++++++++++++++++++++++++
- drivers/cpufreq/cpufreq-dt-platdev.c |   1 +
- 2 files changed, 216 insertions(+)
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+Best Regards,
+Petr
