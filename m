@@ -2,73 +2,448 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13999C43616
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 14:15:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7117C43460
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 14:21:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CECC561411
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 14:15:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A1F261289
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 14:21:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231627AbhELORE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 May 2021 10:17:04 -0400
-Received: from outgoing-auth-1.mit.edu ([18.9.28.11]:41050 "EHLO
-        outgoing.mit.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S231630AbhELOQh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 10:16:37 -0400
-Received: from cwcc.thunk.org (pool-72-74-133-215.bstnma.fios.verizon.net [72.74.133.215])
-        (authenticated bits=0)
-        (User authenticated as tytso@ATHENA.MIT.EDU)
-        by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 14CEEiap031112
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 12 May 2021 10:14:45 -0400
-Received: by cwcc.thunk.org (Postfix, from userid 15806)
-        id 448C815C39C2; Wed, 12 May 2021 10:14:44 -0400 (EDT)
-Date:   Wed, 12 May 2021 10:14:44 -0400
-From:   "Theodore Ts'o" <tytso@mit.edu>
-To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        Mali DP Maintainers <malidp@foss.arm.com>,
-        alsa-devel@alsa-project.org, coresight@lists.linaro.org,
-        dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        intel-wired-lan@lists.osuosl.org, keyrings@vger.kernel.org,
-        kvm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
-        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
-        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-integrity@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-sgx@vger.kernel.org, linux-usb@vger.kernel.org,
-        mjpeg-users@lists.sourceforge.net, netdev@vger.kernel.org,
-        rcu@vger.kernel.org
-Subject: Re: [PATCH v2 00/40] Use ASCII subset instead of UTF-8 alternate
- symbols
-Message-ID: <YJvi1L2ss5Tfi+My@mit.edu>
-References: <cover.1620823573.git.mchehab+huawei@kernel.org>
+        id S230473AbhELOXB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 May 2021 10:23:01 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:49750 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230481AbhELOXB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 10:23:01 -0400
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.0.5)
+ id 0f034e882855a2b4; Wed, 12 May 2021 16:21:48 +0200
+Received: from kreacher.localnet (89-64-81-242.dynamic.chello.pl [89.64.81.242])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 8B9FE6695ED;
+        Wed, 12 May 2021 16:21:47 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Len Brown <len.brown@intel.com>, Chen Yu <yu.c.chen@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: hybrid: CPU-specific scaling factor
+Date:   Wed, 12 May 2021 16:19:30 +0200
+Message-ID: <2790305.e9J7NaK4W3@kreacher>
+In-Reply-To: <2212930.ElGaqSPkdT@kreacher>
+References: <2212930.ElGaqSPkdT@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 89.64.81.242
+X-CLIENT-HOSTNAME: 89-64-81-242.dynamic.chello.pl
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdehvddgjedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepkeelrdeigedrkedurddvgedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedurddvgedvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhgvnhdrsghrohifnhesihhnthgvlhdrtghomhdprhgtphhtthhopeihuhdrtgdrtghhvghnsehinhhtvghlrdgt
+ ohhmpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdiihhgrnhhgsehinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
-> v2:
-> - removed EM/EN DASH conversion from this patchset;
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Are you still thinking about doing the
+The scaling factor between HWP performance levels and CPU frequency
+may be different for different types of CPUs in a hybrid processor
+and in general the HWP performance levels need not correspond to
+"P-states" representing values that would be written to
+MSR_IA32_PERF_CTL if HWP was disabled.
 
-EN DASH --> "--"
-EM DASH --> "---"
+However, the policy limits control in cpufreq is defined in terms
+of CPU frequency, so it is necessary to map the frequency limits set
+through that interface to HWP performance levels with reasonable
+accuracy and the behavior of that interface on hybrid processors
+has to be compatible with its behavior on non-hybrid ones.
 
-conversion?  That's not going to change what the documentation will
-look like in the HTML and PDF output forms, and I think it would make
-life easier for people are reading and editing the Documentation/*
-files in text form.
+To address this problem, use the observations that (1) on hybrid
+processors the sysfs interface can operate by mapping frequency
+to "P-states" and translating those "P-states" to specific HWP
+performance levels of the given CPU and (2) the scaling factor
+between the MSR_IA32_PERF_CTL "P-states" and CPU frequency can be
+regarded as a known value.  Moreover, the mapping between the
+HWP performance levels and CPU frequency can be assumed to be
+linear and such that HWP performance level 0 correspond to the
+frequency value of 0, so it is only necessary to know the
+frequency corresponding to one specific HWP performance level
+to compute the scaling factor applicable to all of them.
 
-				- Ted
+One possibility is to take the nominal performance value from CPPC,
+if available, and use cpu_khz as the corresponding frequency.  If
+the CPPC capabilities interface is not there or the nominal
+performance value provided by it is out of range, though, something
+else needs to be done.
+
+Namely, the guaranteed performance level either from CPPC or from
+MSR_HWP_CAPABILITIES can be used instead, but the corresponding
+frequency needs to be determined.  That can be done by computing the
+product of the (known) scaling factor between the MSR_IA32_PERF_CTL
+P-states and CPU frequency (the PERF_CTL scaling factor) and the
+P-state value referred to as the "TDP ratio".
+
+If the HWP-to-frequency scaling factor value obtained in one of the
+ways above turns out to be euqal to the PERF_CTL scaling factor, it
+can be assumed that the number of HWP performance levels is equal to
+the number of P-states and the given CPU can be handled as though
+this was not a hybrid processor.
+
+Otherwise, one more adjustment may still need to be made, because the
+HWP-to-frequency scaling factor computed so far may not be accurate
+enough (e.g. because the CPPC information does not match the exact
+behavior of the processor).  Specifically, in that case the frequency
+corresponding to the highest HWP performance value from
+MSR_HWP_CAPABILITIES (computed as the product of that value and the
+HWP-to-frequency scaling factor) cannot exceed the frequency that
+corresponds to the maximum 1-core turbo P-state value from
+MSR_TURBO_RATIO_LIMIT (computed as the procuct of that value and the
+PERF_CTL scaling factor) and the HWP-to-frequency scaling factor may
+need to be adjusted accordingly.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |  233 ++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 210 insertions(+), 23 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -121,9 +121,10 @@ struct sample {
+  * @max_pstate_physical:This is physical Max P state for a processor
+  *			This can be higher than the max_pstate which can
+  *			be limited by platform thermal design power limits
+- * @scaling:		Scaling factor to  convert frequency to cpufreq
+- *			frequency units
++ * @perf_ctl_scaling:	PERF_CTL P-state to frequency scaling factor
++ * @scaling:		Scaling factor between performance and frequency
+  * @turbo_pstate:	Max Turbo P state possible for this platform
++ * @min_freq:		@min_pstate frequency in cpufreq units
+  * @max_freq:		@max_pstate frequency in cpufreq units
+  * @turbo_freq:		@turbo_pstate frequency in cpufreq units
+  *
+@@ -134,8 +135,10 @@ struct pstate_data {
+ 	int	min_pstate;
+ 	int	max_pstate;
+ 	int	max_pstate_physical;
++	int	perf_ctl_scaling;
+ 	int	scaling;
+ 	int	turbo_pstate;
++	unsigned int min_freq;
+ 	unsigned int max_freq;
+ 	unsigned int turbo_freq;
+ };
+@@ -489,6 +492,149 @@ static int intel_pstate_get_cppc_gurante
+ }
+ #endif /* CONFIG_ACPI_CPPC_LIB */
+ 
++static bool intel_pstate_cppc_perf_valid(u32 perf, struct cppc_perf_caps *caps)
++{
++	return perf && perf <= caps->highest_perf && perf >= caps->lowest_perf;
++}
++
++static bool intel_pstate_cppc_perf_caps(struct cpudata *cpu,
++					struct cppc_perf_caps *caps)
++{
++	if (cppc_get_perf_caps(cpu->cpu, caps))
++		return false;
++
++	return caps->highest_perf && caps->lowest_perf <= caps->highest_perf;
++}
++
++static void intel_pstate_hybrid_hwp_perf_ctl_parity(struct cpudata *cpu)
++{
++	pr_debug("CPU%d: Using PERF_CTL scaling for HWP\n", cpu->cpu);
++
++	cpu->pstate.scaling = cpu->pstate.perf_ctl_scaling;
++}
++
++/**
++ * intel_pstate_hybrid_hwp_calibrate - Calibrate HWP performance levels.
++ * @cpu: Target CPU.
++ *
++ * On hybrid processors, HWP may expose more performance levels than there are
++ * P-states accessible through the PERF_CTL interface.  If that happens, the
++ * scaling factor between HWP performance levels and CPU frequency will be less
++ * than the scaling factor between P-state values and CPU frequency.
++ *
++ * In that case, the scaling factor between HWP performance levels and CPU
++ * frequency needs to be determined which can be done with the help of the
++ * observation that certain HWP performance levels should correspond to certain
++ * P-states, like for example the HWP highest performance should correspond
++ * to the maximum turbo P-state of the CPU.
++ */
++static void intel_pstate_hybrid_hwp_calibrate(struct cpudata *cpu)
++{
++	struct cppc_perf_caps caps;
++	int perf_ctl_max_phys = cpu->pstate.max_pstate_physical;
++	int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
++	int perf_ctl_turbo = pstate_funcs.get_turbo();
++	int turbo_freq = perf_ctl_turbo * perf_ctl_scaling;
++	int perf_ctl_max = pstate_funcs.get_max();
++	int max_freq = perf_ctl_max * perf_ctl_scaling;
++	int scaling = INT_MAX;
++	int freq;
++
++	pr_debug("CPU%d: perf_ctl_max_phys = %d\n", cpu->cpu, perf_ctl_max_phys);
++	pr_debug("CPU%d: perf_ctl_max = %d\n", cpu->cpu, perf_ctl_max);
++	pr_debug("CPU%d: perf_ctl_turbo = %d\n", cpu->cpu, perf_ctl_turbo);
++	pr_debug("CPU%d: perf_ctl_scaling = %d\n", cpu->cpu, perf_ctl_scaling);
++
++	pr_debug("CPU%d: HWP_CAP guaranteed = %d\n", cpu->cpu, cpu->pstate.max_pstate);
++	pr_debug("CPU%d: HWP_CAP highest = %d\n", cpu->cpu, cpu->pstate.turbo_pstate);
++
++	if (intel_pstate_cppc_perf_caps(cpu, &caps)) {
++		if (intel_pstate_cppc_perf_valid(caps.nominal_perf, &caps)) {
++			pr_debug("CPU%d: Using CPPC nominal\n", cpu->cpu);
++
++			/*
++			 * If the CPPC nominal performance is valid, it can be
++			 * assumed to correspond to cpu_khz.
++			 */
++			if (caps.nominal_perf == perf_ctl_max_phys) {
++				intel_pstate_hybrid_hwp_perf_ctl_parity(cpu);
++				return;
++			}
++			scaling = DIV_ROUND_UP(cpu_khz, caps.nominal_perf);
++		} else if (intel_pstate_cppc_perf_valid(caps.guaranteed_perf, &caps)) {
++			pr_debug("CPU%d: Using CPPC guaranteed\n", cpu->cpu);
++
++			/*
++			 * If the CPPC guaranteed performance is valid, it can
++			 * be assumed to correspond to max_freq.
++			 */
++			if (caps.guaranteed_perf == perf_ctl_max) {
++				intel_pstate_hybrid_hwp_perf_ctl_parity(cpu);
++				return;
++			}
++			scaling = DIV_ROUND_UP(max_freq, caps.guaranteed_perf);
++		}
++	}
++	/*
++	 * If using the CPPC data to compute the HWP-to-frequency scaling factor
++	 * doesn't work, use the HWP_CAP gauranteed perf for this purpose with
++	 * the assumption that it corresponds to max_freq.
++	 */
++	if (scaling > perf_ctl_scaling) {
++		pr_debug("CPU%d: Using HWP_CAP guaranteed\n", cpu->cpu);
++
++		if (cpu->pstate.max_pstate == perf_ctl_max) {
++			intel_pstate_hybrid_hwp_perf_ctl_parity(cpu);
++			return;
++		}
++		scaling = DIV_ROUND_UP(max_freq, cpu->pstate.max_pstate);
++		if (scaling > perf_ctl_scaling) {
++			/*
++			 * This should not happen, because it would mean that
++			 * the number of HWP perf levels was less than the
++			 * number of P-states, so use the PERF_CTL scaling in
++			 * that case.
++			 */
++			pr_debug("CPU%d: scaling (%d) out of range\n", cpu->cpu,
++				scaling);
++
++			intel_pstate_hybrid_hwp_perf_ctl_parity(cpu);
++			return;
++		}
++	}
++
++	/*
++	 * If the product of the HWP performance scaling factor obtained above
++	 * and the HWP_CAP highest performance is greater than the maximum turbo
++	 * frequency corresponding to the pstate_funcs.get_turbo() return value,
++	 * the scaling factor is too high, so recompute it so that the HWP_CAP
++	 * highest performance corresponds to the maximum turbo frequency.
++	 */
++	if (turbo_freq < cpu->pstate.turbo_pstate * scaling) {
++		pr_debug("CPU%d: scaling too high (%d)\n", cpu->cpu, scaling);
++
++		cpu->pstate.turbo_freq = turbo_freq;
++		scaling = DIV_ROUND_UP(turbo_freq, cpu->pstate.turbo_pstate);
++	}
++
++	cpu->pstate.scaling = scaling;
++
++	pr_debug("CPU%d: HWP-to-frequency scaling factor: %d\n", cpu->cpu, scaling);
++
++	cpu->pstate.max_freq = rounddown(cpu->pstate.max_pstate * scaling,
++					 perf_ctl_scaling);
++
++	freq = perf_ctl_max_phys * perf_ctl_scaling;
++	cpu->pstate.max_pstate_physical = DIV_ROUND_UP(freq, scaling);
++
++	cpu->pstate.min_freq = cpu->pstate.min_pstate * perf_ctl_scaling;
++	/*
++	 * Cast the min P-state value retrieved via pstate_funcs.get_min() to
++	 * the effective range of HWP performance levels.
++	 */
++	cpu->pstate.min_pstate = DIV_ROUND_UP(cpu->pstate.min_freq, scaling);
++}
++
+ static inline void update_turbo_state(void)
+ {
+ 	u64 misc_en;
+@@ -795,19 +941,22 @@ cpufreq_freq_attr_rw(energy_performance_
+ 
+ static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
+ {
+-	struct cpudata *cpu;
+-	u64 cap;
+-	int ratio;
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
++	int ratio, freq;
+ 
+ 	ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
+ 	if (ratio <= 0) {
++		u64 cap;
++
+ 		rdmsrl_on_cpu(policy->cpu, MSR_HWP_CAPABILITIES, &cap);
+ 		ratio = HWP_GUARANTEED_PERF(cap);
+ 	}
+ 
+-	cpu = all_cpu_data[policy->cpu];
++	freq = ratio * cpu->pstate.scaling;
++	if (cpu->pstate.scaling != cpu->pstate.perf_ctl_scaling)
++		freq = rounddown(freq, cpu->pstate.perf_ctl_scaling);
+ 
+-	return sprintf(buf, "%d\n", ratio * cpu->pstate.scaling);
++	return sprintf(buf, "%d\n", freq);
+ }
+ 
+ cpufreq_freq_attr_ro(base_frequency);
+@@ -831,9 +980,20 @@ static void __intel_pstate_get_hwp_cap(s
+ 
+ static void intel_pstate_get_hwp_cap(struct cpudata *cpu)
+ {
++	int scaling = cpu->pstate.scaling;
++
+ 	__intel_pstate_get_hwp_cap(cpu);
+-	cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
+-	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++
++	cpu->pstate.max_freq = cpu->pstate.max_pstate * scaling;
++	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * scaling;
++	if (scaling != cpu->pstate.perf_ctl_scaling) {
++		int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
++
++		cpu->pstate.max_freq = rounddown(cpu->pstate.max_freq,
++						 perf_ctl_scaling);
++		cpu->pstate.turbo_freq = rounddown(cpu->pstate.turbo_freq,
++						   perf_ctl_scaling);
++	}
+ }
+ 
+ static void intel_pstate_hwp_set(unsigned int cpu)
+@@ -1724,19 +1884,33 @@ static void intel_pstate_max_within_limi
+ 
+ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ {
++	bool hybrid_cpu = boot_cpu_has(X86_FEATURE_HYBRID_CPU);
++	int perf_ctl_max_phys = pstate_funcs.get_max_physical();
++	int perf_ctl_scaling = hybrid_cpu ? cpu_khz / perf_ctl_max_phys :
++					    pstate_funcs.get_scaling();
++
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min();
+-	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
+-	cpu->pstate.scaling = pstate_funcs.get_scaling();
++	cpu->pstate.max_pstate_physical = perf_ctl_max_phys;
++	cpu->pstate.perf_ctl_scaling = perf_ctl_scaling;
+ 
+ 	if (hwp_active && !hwp_mode_bdw) {
+ 		__intel_pstate_get_hwp_cap(cpu);
++
++		if (hybrid_cpu)
++			intel_pstate_hybrid_hwp_calibrate(cpu);
++		else
++			cpu->pstate.scaling = perf_ctl_scaling;
+ 	} else {
++		cpu->pstate.scaling = perf_ctl_scaling;
+ 		cpu->pstate.max_pstate = pstate_funcs.get_max();
+ 		cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	}
+ 
+-	cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
+-	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	if (cpu->pstate.scaling == perf_ctl_scaling) {
++		cpu->pstate.min_freq = cpu->pstate.min_pstate * perf_ctl_scaling;
++		cpu->pstate.max_freq = cpu->pstate.max_pstate * perf_ctl_scaling;
++		cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * perf_ctl_scaling;
++	}
+ 
+ 	if (pstate_funcs.get_aperf_mperf_shift)
+ 		cpu->aperf_mperf_shift = pstate_funcs.get_aperf_mperf_shift();
+@@ -2206,23 +2380,34 @@ static void intel_pstate_update_perf_lim
+ 					    unsigned int policy_min,
+ 					    unsigned int policy_max)
+ {
+-	int scaling = cpu->pstate.scaling;
++	int perf_ctl_scaling = cpu->pstate.perf_ctl_scaling;
+ 	int32_t max_policy_perf, min_policy_perf;
+ 
++	max_policy_perf = policy_max / perf_ctl_scaling;
++	if (policy_max == policy_min) {
++		min_policy_perf = max_policy_perf;
++	} else {
++		min_policy_perf = policy_min / perf_ctl_scaling;
++		min_policy_perf = clamp_t(int32_t, min_policy_perf,
++					  0, max_policy_perf);
++	}
++
+ 	/*
+ 	 * HWP needs some special consideration, because HWP_REQUEST uses
+ 	 * abstract values to represent performance rather than pure ratios.
+ 	 */
+-	if (hwp_active)
++	if (hwp_active) {
+ 		intel_pstate_get_hwp_cap(cpu);
+ 
+-	max_policy_perf = policy_max / scaling;
+-	if (policy_max == policy_min) {
+-		min_policy_perf = max_policy_perf;
+-	} else {
+-		min_policy_perf = policy_min / scaling;
+-		min_policy_perf = clamp_t(int32_t, min_policy_perf,
+-					  0, max_policy_perf);
++		if (cpu->pstate.scaling != perf_ctl_scaling) {
++			int scaling = cpu->pstate.scaling;
++			int freq;
++
++			freq = max_policy_perf * perf_ctl_scaling;
++			max_policy_perf = DIV_ROUND_UP(freq, scaling);
++			freq = min_policy_perf * perf_ctl_scaling;
++			min_policy_perf = DIV_ROUND_UP(freq, scaling);
++		}
+ 	}
+ 
+ 	pr_debug("cpu:%d min_policy_perf:%d max_policy_perf:%d\n",
+@@ -2416,7 +2601,7 @@ static int __intel_pstate_cpu_init(struc
+ 	cpu->min_perf_ratio = 0;
+ 
+ 	/* cpuinfo and default policy values */
+-	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
++	policy->cpuinfo.min_freq = cpu->pstate.min_freq;
+ 	update_turbo_state();
+ 	global.turbo_disabled_mf = global.turbo_disabled;
+ 	policy->cpuinfo.max_freq = global.turbo_disabled ?
+@@ -3146,6 +3331,8 @@ hwp_cpu_matched:
+ 		}
+ 
+ 		pr_info("HWP enabled\n");
++	} else if (boot_cpu_has(X86_FEATURE_HYBRID_CPU)) {
++		pr_warn("Problematic setup: Hybrid processor with disabled HWP\n");
+ 	}
+ 
+ 	return 0;
+
+
+
