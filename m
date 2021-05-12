@@ -2,128 +2,165 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 743C5C43460
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 16:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 952BAC4360C
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 17:13:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 40EE761C94
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 16:20:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A7AA61352
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 17:13:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236298AbhELQVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 May 2021 12:21:03 -0400
-Received: from mga04.intel.com ([192.55.52.120]:8129 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237885AbhELP4p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 May 2021 11:56:45 -0400
-IronPort-SDR: QW+O0+UmWe7EUvfzAem4RwCY3ybkRc1Ve0ZJzC2aUyI6jxxPX2Ogt7GeJgMgmdN21xWw5MuJn+
- qlhG4c+4Wzag==
-X-IronPort-AV: E=McAfee;i="6200,9189,9982"; a="197764649"
-X-IronPort-AV: E=Sophos;i="5.82,293,1613462400"; 
-   d="scan'208";a="197764649"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2021 08:53:06 -0700
-IronPort-SDR: G4fgxFfKg4X+vyaysxA4vL4KHoW3hECwU6YfKJUNntDKfog/8zO1j7VboMTcV+naM8fz1f8ddi
- 3U+L8IL3QT6A==
-X-IronPort-AV: E=Sophos;i="5.82,293,1613462400"; 
-   d="scan'208";a="542112774"
-Received: from vkrish9-mobl.amr.corp.intel.com ([10.209.133.220])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2021 08:53:03 -0700
-Message-ID: <7dc2bb343052c6c8fbb60d38c2ce7dac708f568a.camel@linux.intel.com>
+        id S230230AbhELRNy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 May 2021 13:13:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59118 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240996AbhELQ0M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 12:26:12 -0400
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FE45C06138A
+        for <linux-pm@vger.kernel.org>; Wed, 12 May 2021 08:54:11 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id m9so24151558wrx.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 May 2021 08:54:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=7IwYsrzsC2zQ9ouTjOtGEcNL7bnh+Wh/0iUzgrECoMI=;
+        b=ZjgWy3OuctQsWClejuaMFzNAjqjnQ7T27W0tUvKB6N2vWtLhhuGm5BZlDg/mLYdRIq
+         5Z5u1BnczdsvMnIg9+/j+HBF7VZ2QIpEcSdArGuR73Xl4OnHoJ2/YQ8aU74IR/qG/w3R
+         mr9WfawkFDx97rPEFUjtdLuHQsbMn8ygQP3n13z4tb3r48MOdgu+rx07sEyzkm+quIcY
+         pxDCOZ8E0Q+yJlWR3NKTMtTB/qsJz9CktIxGmQggTbH3zmy2NCcc5RfHNWVBjp7wz9yj
+         eLtgdtLTl5tRFazjALtNnL8Vew/PczQkDpYQpgb2WMCeYwhA4QnRJCdENul460Fy0rYx
+         N+aA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=7IwYsrzsC2zQ9ouTjOtGEcNL7bnh+Wh/0iUzgrECoMI=;
+        b=Z0Gvz275u2jhgoaNcrV15zYF2MmARF3yn+76Gj69UK7A8xJWHzftOU+Mp1GQ7VmVcP
+         l7sMXwX2ox0JgDMFaIYVFjgsSYK8qhiPIs1VcOvIhWBjxGz5/lLnK06jDMJ2pnEyoM+3
+         LeVintWVvw8QIWO85m4xm5+rVnCxhjp08N9VRt0nyCz9WApdRddEHQbG3RdLHLCyjxxV
+         72fpOYEd7zY6LG1oPHSyTncZeJ6ojbE//Fq1TfHUrOHmj6+9LWdLtCBmYi+p6aB7/pGO
+         Lgj+mKAUFCHQcSAZnvNBp+/Ui3t5Yn2m9al1ncY39cPAwTFy+n5W8MOqMPKNcTergxy7
+         +oug==
+X-Gm-Message-State: AOAM5325W7N2iG8SFF2iFJp0jBd/VtH0xxBbRYs7N1h2aNhqcd48DmeA
+        E6Qqf6n8lROp7CsXgEHa5Dm4OEy/99ITLA==
+X-Google-Smtp-Source: ABdhPJwco3h+aOprpJ3p26OsY/TOVH7nGTXIggfYMQhbTiwiYgwiI3ncw0pkRqH0iaLrED0HLn4+uA==
+X-Received: by 2002:adf:f50f:: with SMTP id q15mr44649858wro.279.1620834849855;
+        Wed, 12 May 2021 08:54:09 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:1412:ffb:31a1:6c9d? ([2a01:e34:ed2f:f020:1412:ffb:31a1:6c9d])
+        by smtp.googlemail.com with ESMTPSA id n20sm101363wmk.12.2021.05.12.08.54.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 12 May 2021 08:54:09 -0700 (PDT)
 Subject: Re: [PATCH] thermal: intel: Initialize RW trip to
  THERMAL_TEMP_INVALID
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        rui.zhang@intel.com, amitk@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         stable@vger.kernel.org
-Date:   Wed, 12 May 2021 08:52:55 -0700
-In-Reply-To: <20210430122343.1789899-1-srinivas.pandruvada@linux.intel.com>
 References: <20210430122343.1789899-1-srinivas.pandruvada@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.1-1 
+ <7dc2bb343052c6c8fbb60d38c2ce7dac708f568a.camel@linux.intel.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <62b8cdf7-29b1-d856-2686-34fdab5d485d@linaro.org>
+Date:   Wed, 12 May 2021 17:54:08 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
+In-Reply-To: <7dc2bb343052c6c8fbb60d38c2ce7dac708f568a.camel@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 2021-04-30 at 05:23 -0700, Srinivas Pandruvada wrote:
-> After commit 81ad4276b505 ("Thermal: Ignore invalid trip points") all
-> user_space governor notifications via RW trip point is broken in
-> intel
-> thermal drivers. This commits marks trip_points with value of 0
-> during
-> call to thermal_zone_device_register() as invalid. RW trip points can
-> be
-> 0 as user space will set the correct trip temperature later.
-> 
-> During driver init, x86_package_temp and all int340x drivers sets RW
-> trip
-> temperature as 0. This results in all these trips marked as invalid
-> by
-> the thermal core.
-> 
-> To fix this initialize RW trips to THERMAL_TEMP_INVALID instead of 0.
-> 
-Any chance that we can take care of this issue during 5.13-rc*?
+On 12/05/2021 17:52, Srinivas Pandruvada wrote:
+> On Fri, 2021-04-30 at 05:23 -0700, Srinivas Pandruvada wrote:
+>> After commit 81ad4276b505 ("Thermal: Ignore invalid trip points") all
+>> user_space governor notifications via RW trip point is broken in
+>> intel
+>> thermal drivers. This commits marks trip_points with value of 0
+>> during
+>> call to thermal_zone_device_register() as invalid. RW trip points can
+>> be
+>> 0 as user space will set the correct trip temperature later.
+>>
+>> During driver init, x86_package_temp and all int340x drivers sets RW
+>> trip
+>> temperature as 0. This results in all these trips marked as invalid
+>> by
+>> the thermal core.
+>>
+>> To fix this initialize RW trips to THERMAL_TEMP_INVALID instead of 0.
+>>
+> Any chance that we can take care of this issue during 5.13-rc*?
 
-Thanks,
-Srinivas
-
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Srinivas Pandruvada <
-> srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 4
-> ++++
->  drivers/thermal/intel/x86_pkg_temp_thermal.c                 | 2 +-
->  2 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git
-> a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-> b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-> index d1248ba943a4..62c0aa5d0783 100644
-> --- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-> +++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-> @@ -237,6 +237,8 @@ struct int34x_thermal_zone
-> *int340x_thermal_zone_add(struct acpi_device *adev,
->         if (ACPI_FAILURE(status))
->                 trip_cnt = 0;
->         else {
-> +               int i;
-> +
->                 int34x_thermal_zone->aux_trips =
->                         kcalloc(trip_cnt,
->                                 sizeof(*int34x_thermal_zone-
-> >aux_trips),
-> @@ -247,6 +249,8 @@ struct int34x_thermal_zone
-> *int340x_thermal_zone_add(struct acpi_device *adev,
->                 }
->                 trip_mask = BIT(trip_cnt) - 1;
->                 int34x_thermal_zone->aux_trip_nr = trip_cnt;
-> +               for (i = 0; i < trip_cnt; ++i)
-> +                       int34x_thermal_zone->aux_trips[i] =
-> THERMAL_TEMP_INVALID;
->         }
->  
->         trip_cnt = int340x_thermal_read_trips(int34x_thermal_zone);
-> diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c
-> b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-> index 295742e83960..4d8edc61a78b 100644
-> --- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
-> +++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
-> @@ -166,7 +166,7 @@ static int sys_get_trip_temp(struct
-> thermal_zone_device *tzd,
->         if (thres_reg_value)
->                 *temp = zonedev->tj_max - thres_reg_value * 1000;
->         else
-> -               *temp = 0;
-> +               *temp = THERMAL_TEMP_INVALID;
->         pr_debug("sys_get_trip_temp %d\n", *temp);
->  
->         return 0;
+Yes, I will take care of it
 
 
+>> Cc: <stable@vger.kernel.org>
+>> Signed-off-by: Srinivas Pandruvada <
+>> srinivas.pandruvada@linux.intel.com>
+>> ---
+>>  drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c | 4
+>> ++++
+>>  drivers/thermal/intel/x86_pkg_temp_thermal.c                 | 2 +-
+>>  2 files changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git
+>> a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+>> b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+>> index d1248ba943a4..62c0aa5d0783 100644
+>> --- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+>> +++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+>> @@ -237,6 +237,8 @@ struct int34x_thermal_zone
+>> *int340x_thermal_zone_add(struct acpi_device *adev,
+>>         if (ACPI_FAILURE(status))
+>>                 trip_cnt = 0;
+>>         else {
+>> +               int i;
+>> +
+>>                 int34x_thermal_zone->aux_trips =
+>>                         kcalloc(trip_cnt,
+>>                                 sizeof(*int34x_thermal_zone-
+>>> aux_trips),
+>> @@ -247,6 +249,8 @@ struct int34x_thermal_zone
+>> *int340x_thermal_zone_add(struct acpi_device *adev,
+>>                 }
+>>                 trip_mask = BIT(trip_cnt) - 1;
+>>                 int34x_thermal_zone->aux_trip_nr = trip_cnt;
+>> +               for (i = 0; i < trip_cnt; ++i)
+>> +                       int34x_thermal_zone->aux_trips[i] =
+>> THERMAL_TEMP_INVALID;
+>>         }
+>>  
+>>         trip_cnt = int340x_thermal_read_trips(int34x_thermal_zone);
+>> diff --git a/drivers/thermal/intel/x86_pkg_temp_thermal.c
+>> b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+>> index 295742e83960..4d8edc61a78b 100644
+>> --- a/drivers/thermal/intel/x86_pkg_temp_thermal.c
+>> +++ b/drivers/thermal/intel/x86_pkg_temp_thermal.c
+>> @@ -166,7 +166,7 @@ static int sys_get_trip_temp(struct
+>> thermal_zone_device *tzd,
+>>         if (thres_reg_value)
+>>                 *temp = zonedev->tj_max - thres_reg_value * 1000;
+>>         else
+>> -               *temp = 0;
+>> +               *temp = THERMAL_TEMP_INVALID;
+>>         pr_debug("sys_get_trip_temp %d\n", *temp);
+>>  
+>>         return 0;
+> 
+> 
+
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
