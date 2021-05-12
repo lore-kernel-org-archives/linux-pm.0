@@ -2,113 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_NONE autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8782C433B4
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 10:58:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08434C433ED
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 11:32:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9D2E8613EE
-	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 10:58:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C0F0C613D6
+	for <linux-pm@archiver.kernel.org>; Wed, 12 May 2021 11:32:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230102AbhELLAG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 May 2021 07:00:06 -0400
-Received: from relay.uni-heidelberg.de ([129.206.100.212]:26941 "EHLO
-        relay.uni-heidelberg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230096AbhELLAG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 07:00:06 -0400
-X-IPAS-Result: =?us-ascii?q?A2B8BACts5tg/1BqzoFaHQEBAQEJARIBBQUBQIFXgw1ra?=
- =?us-ascii?q?4RHkgGQDo0GAQEBAQEBAQEBCTkBAgQBAYZFAiU4EwIEAQEBAQMCAwEBAQYBA?=
- =?us-ascii?q?QYBAQEBAQYEgQSFXYZFBiMELCYQJQIfBwICFCghE4V5qQ1/M4EBiD2BISOBE?=
- =?us-ascii?q?CqOChCBVUSBFYNghAAlgzU2gi0EgkAHPRw1gyC7ACwHgXaBIoEpC5t8Ag4ol?=
- =?us-ascii?q?FaQXi2SLKZ6gWuBfDMaJIM4UBkOjlaOGEIvOAIGCgEBAwlZAQGMNQEB?=
-IronPort-HdrOrdr: A9a23:N765kqltNrvazo/zr13/f58lw7TpDfIj3DAbv31ZSRFFG/Fw9v
- rAoB1173/JYVoqMk3I+urvBEDjewK+yXcd2+B4VotKOjOGhILBFvAB0WKI+VDd8kPFmtK0gs
- xbAsxD4YrLfD1HZYKQ2njeL+od
-X-IronPort-Anti-Spam-Filtered: true
-Received: from lemon.iwr.uni-heidelberg.de ([129.206.106.80])
-  by relay.uni-heidelberg.de with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 12 May 2021 12:58:57 +0200
-Received: from hlauer by lemon.iwr.uni-heidelberg.de with local (Exim 4.92)
-        (envelope-from <hlauer@lemon.iwr.uni-heidelberg.de>)
-        id 1lgmZs-000465-HE; Wed, 12 May 2021 12:58:56 +0200
-Date:   Wed, 12 May 2021 12:58:56 +0200
-From:   Hermann Lauer <Hermann.Lauer@iwr.uni-heidelberg.de>
-To:     Chen-Yu Tsai <wens@csie.org>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3] power: supply: axp20x_battery: implement writeable status
- to enable/disable battery charging
-Message-ID: <20210512105856.GA15727@lemon.iwr.uni-heidelberg.de>
-References: <20210421090354.GF19953@lemon.iwr.uni-heidelberg.de>
- <CAGb2v64U3vMew8LUU776Mx7jYj3eVb4FXQdXMZ0aJNBPUh2D2A@mail.gmail.com>
- <20210505112902.GC5302@lemon.iwr.uni-heidelberg.de>
- <CAGb2v64UN6=26QiQLqSWmNJPo49bPOQ3Q-Oz=LsbZz3JcszU0Q@mail.gmail.com>
- <20210510131804.GP11983@lemon.iwr.uni-heidelberg.de>
+        id S230096AbhELLdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 May 2021 07:33:41 -0400
+Received: from mail-ot1-f45.google.com ([209.85.210.45]:46661 "EHLO
+        mail-ot1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230037AbhELLdl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 May 2021 07:33:41 -0400
+Received: by mail-ot1-f45.google.com with SMTP id d3-20020a9d29030000b029027e8019067fso20196989otb.13;
+        Wed, 12 May 2021 04:32:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=V2ju9+ojkSTDJQBwgSscuL9ZbQgrRBMumx4KhsSIeck=;
+        b=TInRVi4W15pVDBlOpe+EgNUki8f56HFiiyOltwuhTFX1EP0vahzcuPF/j2a5Z94DqM
+         I9S8s72p6FlF4YRm3M5lbS0pNqKIfHwcZeRKsTdbaOSWvFaqgWaMpeTtppYVX9gwemc2
+         kVeWgwWlb558aG71Q13cK2dWn8BUiqG4qVnKS/I/pRbQePrntsjwImcNaJkT7hDyY7L7
+         C8BVvHvWD+OV+smX5f75x+pqOH9QjWS9m1VgjdNO49bpxRxzJpSAKB1BTYkigN/PY6Xd
+         S4UoxSrTB4h88l/c/1yRj1GeSmbPTtErpM4EPuS9q0QIJ7Lnu6fHUQeKvZ05181kYg4k
+         8hSw==
+X-Gm-Message-State: AOAM531+UIDUlGhkR4KZO7vwChPWItLBdahn6mAy+vyHaN1X4B39GFm2
+        68jZHwGJPaDqyuLaQDLZ1m15h2CQe7GJqEP+LnE=
+X-Google-Smtp-Source: ABdhPJwTTH6tjOt74iZytTucsmVQQMo/3JsYq78oyRg8JeBSSNVu13qYDKUolrp8gLDmug64HupqdBAhs3judaHptSg=
+X-Received: by 2002:a9d:3bcb:: with SMTP id k69mr31357903otc.206.1620819152814;
+ Wed, 12 May 2021 04:32:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20210510131804.GP11983@lemon.iwr.uni-heidelberg.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <3c88cf35-6725-1bfa-9e1e-8e9d69147e3b@hisilicon.com>
+ <d16058fc-9876-f6a3-d5e8-ff06b5193f2c@intel.com> <2149723.iZASKD2KPV@kreacher>
+ <CAGETcx-tRh45ZJzmbGvHay1htnjeE-EZc3CG9P3=qFfi75owHA@mail.gmail.com>
+ <CAJZ5v0iBV2n0yuvhYEzLPTZFuq-O1SpdK_BmLgXz7qrcNKe-gg@mail.gmail.com> <20210512063542.3079-1-hdanton@sina.com>
+In-Reply-To: <20210512063542.3079-1-hdanton@sina.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 12 May 2021 13:32:21 +0200
+Message-ID: <CAJZ5v0gbRb+CGEV2D09KqhiRPPWxPBtXmwrp5iyuB-xTBEBfvA@mail.gmail.com>
+Subject: Re: Qestion about device link
+To:     Hillf Danton <hdanton@sina.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Saravana Kannan <saravanak@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "chenxiang (M)" <chenxiang66@hisilicon.com>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        John Garry <john.garry@huawei.com>,
+        "scsi list : TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allow disabling and reenabling battery charging of an axp209 PMIC through a
-writable status property. With the current driver code charging is always on.
+On Wed, May 12, 2021 at 8:38 AM Hillf Danton <hdanton@sina.com> wrote:
+>
+> On Tue, 11 May 2021 21:43:40 Rafael J. Wysocki  wrote:
+> > >  #ifdef CONFIG_SRCU
+> > > +static void __device_link_free_fn(struct work_struct *work)
+> > > +{
+> > > +       device_link_free(container_of(work, struct device_link, srcu.work));
+> > > +}
+> > > +
+> > >  static void __device_link_free_srcu(struct rcu_head *rhead)
+> > >  {
+> > > -       device_link_free(container_of(rhead, struct device_link, rcu_head));
+> > > +       struct device_link *link = container_of(rhead, struct device_link,
+> > > +                                               srcu.rhead);
+> > > +       struct work_struct *work = &link->srcu.work;
+> > > +
+> > > +       /*
+> > > +        * Because device_link_free() may sleep in some cases, schedule the
+> > > +        * execution of it instead of invoking it directly.
+> > > +        */
+> > > +       INIT_WORK(work, __device_link_free_fn);
+> > > +       schedule_work(work);
+> > >  }
+>
+> Nope, you need something like queue_work(system_unbound_wq, work); instead
+> because of the blocking wq callback.
 
-This works on the axp209 of Banana {Pi M1+,Pro} and should work on all AXP chips.
-
-Signed-off-by: Hermann.Lauer@uni-heidelberg.de
----
-v2: add fallthrough and improve commit message (thanks to Maxime and ChenYu)
-v3: fix fallthrough usage
-
-Thanks to ChenYu for the idea and greetings
-  Hermann
-
- drivers/power/supply/axp20x_battery.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -40,6 +40,7 @@
- #define AXP209_FG_PERCENT		GENMASK(6, 0)
- #define AXP22X_FG_VALID			BIT(7)
- 
-+#define AXP20X_CHRG_CTRL1_ENABLE	BIT(7)
- #define AXP20X_CHRG_CTRL1_TGT_VOLT	GENMASK(6, 5)
- #define AXP20X_CHRG_CTRL1_TGT_4_1V	(0 << 5)
- #define AXP20X_CHRG_CTRL1_TGT_4_15V	(1 << 5)
-@@ -468,7 +469,18 @@
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
- 		return axp20x_set_max_constant_charge_current(axp20x_batt,
- 							      val->intval);
-+	case POWER_SUPPLY_PROP_STATUS:
-+		switch (val->intval) {
-+		case POWER_SUPPLY_STATUS_CHARGING:
-+			return regmap_update_bits(axp20x_batt->regmap, AXP20X_CHRG_CTRL1,
-+				AXP20X_CHRG_CTRL1_ENABLE, AXP20X_CHRG_CTRL1_ENABLE);
- 
-+		case POWER_SUPPLY_STATUS_DISCHARGING:
-+		case POWER_SUPPLY_STATUS_NOT_CHARGING:
-+			return regmap_update_bits(axp20x_batt->regmap, AXP20X_CHRG_CTRL1,
-+				AXP20X_CHRG_CTRL1_ENABLE, 0);
-+		}
-+		fallthrough;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -491,7 +503,8 @@
- static int axp20x_battery_prop_writeable(struct power_supply *psy,
- 					 enum power_supply_property psp)
- {
--	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN ||
-+	return psp == POWER_SUPPLY_PROP_STATUS ||
-+	       psp == POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN ||
- 	       psp == POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN ||
- 	       psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT ||
- 	       psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX;
+system_long_wq rather, as it really doesn't matter when it gets completed.
