@@ -2,420 +2,214 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40DE4C43470
-	for <linux-pm@archiver.kernel.org>; Sun, 16 May 2021 23:18:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29DB5C433ED
+	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 04:57:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BCAA61164
-	for <linux-pm@archiver.kernel.org>; Sun, 16 May 2021 23:18:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0956961166
+	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 04:57:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234481AbhEPXUG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 16 May 2021 19:20:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34722 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233677AbhEPXUE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 May 2021 19:20:04 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2415C061573;
-        Sun, 16 May 2021 16:18:47 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id e11so4980939ljn.13;
-        Sun, 16 May 2021 16:18:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ej3usfDWpCrZUufefEOW/2pIsHjmzbFoYT9QjkgsxMc=;
-        b=J8wr5Zig/RYbSFknTOBjpG2CAeIKVp5PotjAMsrnNSumhxC1Eyi4V+OYzNg26izVUE
-         fQIJR86e9CVYO3O24zi7O6btvCpF6nzj2brffpV7Vux4yne2UsYefy/Gq5t6mqi4/jSy
-         Zj/huudkw6qOp9/KcMZL+VW7Y9TbL4wHqHB2Ot558SzixinZ0n9tksiahmfBet/tegZ6
-         b9HxU5MYA8Zddm0YnpxgfBDVxG+iL2m1XzyoLQXWrM1yvHET1X0Lv2sSbK/0TkZu59KJ
-         mg+DmgJk2T/me0ROyf6pDbxjMUFzqA/h3sC5EH/x7ClK3gjqWTOKgFJTCHv1rOIprD4P
-         CwAw==
+        id S233540AbhEQE6j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 May 2021 00:58:39 -0400
+Received: from mail-lf1-f43.google.com ([209.85.167.43]:46894 "EHLO
+        mail-lf1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229625AbhEQE6j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 May 2021 00:58:39 -0400
+Received: by mail-lf1-f43.google.com with SMTP id i9so6759350lfe.13;
+        Sun, 16 May 2021 21:57:21 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ej3usfDWpCrZUufefEOW/2pIsHjmzbFoYT9QjkgsxMc=;
-        b=ucwT3GCDuzskCZx4ba6OygCadkL6imCzsi5Vc1WgSaRcttoHgUgUjUWf7yqcMbUY2o
-         b6UWt8uZrRkuSvI+J5GKKPwE/Ojtl5Zgn0pNDD2VMhkm6Wgl/aO7DE5HW21aqDAeNGTD
-         q8uQI1Tz6EjlJD0gNriWtGp9umu4YguA8pEKcOvAMiy2CpDJCbbsDuYqdqvz+WBJsa1G
-         4jOY1VdePYhNreO90NmoM4HN+QgrI2/GA1Nxl5+sXHC8e75r6CdYEREZmrbqEWrFUT7+
-         w1Fv0TUqs1kRkLx42ryRvPHQkn1t721czj1a9hH48LBo64dJ0FQXMF8gvHGffpVraOqK
-         hqeQ==
-X-Gm-Message-State: AOAM533r59JZGzuNkPvS8dX1b2g9UEcekWm8cWBszFvEsKD6i9+Dw2M3
-        wfDT+XRIro4rXQsNF1AWbS8=
-X-Google-Smtp-Source: ABdhPJwH5ziAcuGjLEEOtdC0GCPN7triDBwmeIizQh6H48W3qAsIV5LYjt4uhT9y0ddpFMFtbEZxLQ==
-X-Received: by 2002:a05:651c:232:: with SMTP id z18mr39206216ljn.489.1621207126094;
-        Sun, 16 May 2021 16:18:46 -0700 (PDT)
-Received: from localhost.localdomain (109-252-193-91.dynamic.spd-mgts.ru. [109.252.193.91])
-        by smtp.gmail.com with ESMTPSA id p6sm406478lfr.163.2021.05.16.16.18.45
+        h=x-gm-message-state:message-id:subject:from:reply-to:to:cc
+         :in-reply-to:references:mime-version:date:user-agent
+         :content-transfer-encoding;
+        bh=ZlBxGhYLZ60uGDaPOSr/zz7izf5PGo7iYr82/TiNDOQ=;
+        b=E+zP2LSMSbK65WxXy9THvknp5RylijQ7mfAxj5iwLuA63uOVbTCjdSsNakY2CFRo3w
+         LOnsYBxw4rOJEBDxwkyHOhU8e3PhrV3jhAQEcg8v2PGCJA+bI6NQcBeUAvYHdZwsiiIo
+         ORJg3fGAzaAf0EQH0cJAE4MsmWLVI3XlqFH9/Vm3w88MPoz9bY6vH1hSOZ4T73d46E4G
+         3BBNsMlzByFJb+O4NTJFY4gVg/V6ycwj/H0goTNZrGlmbrLiGbRW1KEiuaHWyzl8boEj
+         6uOrAtWE6cnAAJ2JZCYo4G4VycAS94EsWbjjBuqDdZlSHZkHwllHup3jUZ0QME1yOKNH
+         FSSA==
+X-Gm-Message-State: AOAM531qw2B2rIgSesCMiMuLiYHI9jX9yZ3DTIqvI5Gc66Tq2hiYlbOa
+        /4/FE+fdz+l3t4Q5Ox08GS4=
+X-Google-Smtp-Source: ABdhPJz6XlOoLFS1OExcL4aOBvUwCPGZFB6U6VqCJpuJZQYA/MBhFsa1h3+611hseFVm2x5fKxip8Q==
+X-Received: by 2002:ac2:54ba:: with SMTP id w26mr41231726lfk.78.1621227440658;
+        Sun, 16 May 2021 21:57:20 -0700 (PDT)
+Received: from dc7vkhyyyyyyyyyyyyyby-3.rev.dnainternet.fi (dc7vkhyyyyyyyyyyyyyby-3.rev.dnainternet.fi. [2001:14ba:16e2:8300::2])
+        by smtp.gmail.com with ESMTPSA id g28sm2775163ljn.134.2021.05.16.21.57.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 16 May 2021 16:18:45 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
-        Rob Herring <robh+dt@kernel.org>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        Paul Fertser <fercerpav@gmail.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v5 2/3] soc/tegra: pmc: Add core power domain
-Date:   Mon, 17 May 2021 02:17:54 +0300
-Message-Id: <20210516231755.24193-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210516231755.24193-1-digetx@gmail.com>
-References: <20210516231755.24193-1-digetx@gmail.com>
+        Sun, 16 May 2021 21:57:19 -0700 (PDT)
+Message-ID: <fefd2daff66123d5a812ad41466095e56e699bf2.camel@fi.rohmeurope.com>
+Subject: Re: [PATCH v9 02/10] reboot: Add hardware protection power-off
+From:   Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Reply-To: matti.vaittinen@fi.rohmeurope.com
+To:     Petr Mladek <pmladek@suse.com>
+Cc:     "josef@toxicpanda.com" <josef@toxicpanda.com>,
+        "keescook@chromium.org" <keescook@chromium.org>,
+        "rppt@kernel.org" <rppt@kernel.org>,
+        "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+        linux-power <linux-power@fi.rohmeurope.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
+        "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "linux-renesas-soc@vger.kernel.org" 
+        <linux-renesas-soc@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "linux@roeck-us.net" <linux@roeck-us.net>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "kai.heng.feng@canonical.com" <kai.heng.feng@canonical.com>,
+        "mcroce@microsoft.com" <mcroce@microsoft.com>,
+        "amitk@kernel.org" <amitk@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>,
+        "agross@kernel.org" <agross@kernel.org>,
+        "broonie@kernel.org" <broonie@kernel.org>,
+        "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
+        rostedt@goodmis.org, Geert Uytterhoeven <geert@linux-m68k.org>
+In-Reply-To: <YJzkq+NPW4ZMB8AF@alley>
+References: <cover.1620645507.git.matti.vaittinen@fi.rohmeurope.com>
+         <97260f8e150abb898a262fade25860609b460912.1620645507.git.matti.vaittinen@fi.rohmeurope.com>
+         <YJuPwAZroVZ/w633@alley>
+         <2149df3f542d25ce15d049e81d6188bb7198478c.camel@fi.rohmeurope.com>
+         <YJzkq+NPW4ZMB8AF@alley>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date:   Mon, 17 May 2021 07:57:11 +0300
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-NVIDIA Tegra SoCs have multiple power domains, each domain corresponds
-to an external SoC power rail. Core power domain covers vast majority of
-hardware blocks within a Tegra SoC. The voltage of a power domain should
-be set to a level which satisfies all devices within the power domain.
-Add support for the core power domain which controls voltage state of the
-domain. This allows us to support system-wide DVFS on Tegra20-210 SoCs.
-The PMC powergate domains now are sub-domains of the core domain, this
-requires device-tree updating, older DTBs are unaffected.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Paul Fertser <fercerpav@gmail.com> # PAZ00 T20
-Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/soc/tegra/Kconfig  |  14 ++++
- drivers/soc/tegra/pmc.c    | 143 +++++++++++++++++++++++++++++++++++++
- include/soc/tegra/common.h |   6 ++
- 3 files changed, 163 insertions(+)
+On Thu, 2021-05-13 at 10:34 +0200, Petr Mladek wrote:
+> On Wed 2021-05-12 12:00:46, Vaittinen, Matti wrote:
+> > On Wed, 2021-05-12 at 10:20 +0200, Petr Mladek wrote:
+> > > On Mon 2021-05-10 14:28:30, Matti Vaittinen wrote:
+> > > > There can be few cases when we need to shut-down the system in
+> > > > order to
+> > > > protect the hardware. Currently this is done at east by the
+> > > > thermal
+> > > > core
+> > > > when temperature raises over certain limit.
+> > > > 
+> > > > Some PMICs can also generate interrupts for example for over-
+> > > > current or
+> > > > over-voltage, voltage drops, short-circuit, ... etc. On some
+> > > > systems
+> > > > these are a sign of hardware failure and only thing to do is
+> > > > try to
+> > > > protect the rest of the hardware by shutting down the system.
+> > > > 
+> > > > Add shut-down logic which can be used by all subsystems instead
+> > > > of
+> > > > implementing the shutdown in each subsystem. The logic is
+> > > > stolen
+> > > > from
+> > > > thermal_core with difference of using atomic_t instead of a
+> > > > mutex
+> > > > in
+> > > > order to allow calls directly from IRQ context.
+> > > > 
+> > > > Signed-off-by: Matti Vaittinen <
+> > > > matti.vaittinen@fi.rohmeurope.com>
+> > > > 
+> > > > diff --git a/kernel/reboot.c b/kernel/reboot.c
+> > > > index a6ad5eb2fa73..5da8c80a2647 100644
+> > > > --- a/kernel/reboot.c
+> > > > +++ b/kernel/reboot.c
+> > > > @@ -518,6 +519,85 @@ void orderly_reboot(void)
+> > > >  }
+> > > >  EXPORT_SYMBOL_GPL(orderly_reboot);
+> > > >  
+> > > > +/**
+> > > > + * hw_failure_emergency_poweroff_func - emergency poweroff
+> > > > work
+> > > > after a known delay
+> > > > + * @work: work_struct associated with the emergency poweroff
+> > > > function
+> > > > + *
+> > > > + * This function is called in very critical situations to
+> > > > force
+> > > > + * a kernel poweroff after a configurable timeout value.
+> > > > + */
+> > > > +static void hw_failure_emergency_poweroff_func(struct
+> > > > work_struct
+> > > > *work)
+> > > > +{
+> > > > +	/*
+> > > > +	 * We have reached here after the emergency shutdown
+> > > > waiting
+> > > > period has
+> > > > +	 * expired. This means orderly_poweroff has not been
+> > > > able to
+> > > > shut off
+> > > > +	 * the system for some reason.
+> > > > +	 *
+> > > > +	 * Try to shut down the system immediately using
+> > > > kernel_power_off
+> > > > +	 * if populated
+> > > > +	 */
+> > > > +	WARN(1, "Hardware protection timed-out. Trying forced
+> > > > poweroff\n");
+> > > > +	kernel_power_off();
+> > > 
+> > > WARN() look like an overkill here. It prints many lines that are
+> > > not
+> > > much useful in this case. The function is called from well-known
+> > > context (workqueue worker).
+> > 
+> > This was the existing code which I stole from the thermal_core. I
+> > kind
+> > of think that eye-catching WARN is actually a good choice here.
+> > Doing
+> > autonomous power-off without a WARNing does not sound good to me :)
+> > 
+> > > Also be aware that "panic_on_warn" commandline option will
+> > > trigger
+> > > panic() here.
+> > 
+> > Hmm.. If panic() hangs the system that might indeed be a problem.
+> > Now
+> > we are (again) on a territory which I don't know well. I'd
+> > appreciate
+> > any input from thermal folks and Mark. I don't like the idea of
+> > making
+> > extreme things like power-off w/o well visible log-trace. Thus I
+> > would
+> > like to have WARN()-like eye-catcher, even if the call-trace was
+> > not
+> > too varying. It will at least point to this worker. Any better
+> > suggestions than WARN()?
+> 
+> Heh, it might make sense to create a system wide API for these. I am
+> sure that WARN() is mis-used this way on many other locations.
+> 
+> There already are two locations that use another eye-catching text.
+> A common API might help to avoid duplication of the common parts,
+> see
+> https://lore.kernel.org/lkml/20210305194206.3165917-2-elver@google.com/
+> 
+> Well, it might be out of scope for this patchset.
 
-diff --git a/drivers/soc/tegra/Kconfig b/drivers/soc/tegra/Kconfig
-index 976dee036470..7057254604ee 100644
---- a/drivers/soc/tegra/Kconfig
-+++ b/drivers/soc/tegra/Kconfig
-@@ -13,6 +13,7 @@ config ARCH_TEGRA_2x_SOC
- 	select PINCTRL_TEGRA20
- 	select PL310_ERRATA_727915 if CACHE_L2X0
- 	select PL310_ERRATA_769419 if CACHE_L2X0
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	select SOC_TEGRA20_VOLTAGE_COUPLER
-@@ -27,6 +28,7 @@ config ARCH_TEGRA_3x_SOC
- 	select ARM_ERRATA_764369 if SMP
- 	select PINCTRL_TEGRA30
- 	select PL310_ERRATA_769419 if CACHE_L2X0
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	select SOC_TEGRA30_VOLTAGE_COUPLER
-@@ -40,6 +42,7 @@ config ARCH_TEGRA_114_SOC
- 	select ARM_ERRATA_798181 if SMP
- 	select HAVE_ARM_ARCH_TIMER
- 	select PINCTRL_TEGRA114
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	select TEGRA_TIMER
-@@ -51,6 +54,7 @@ config ARCH_TEGRA_124_SOC
- 	bool "Enable support for Tegra124 family"
- 	select HAVE_ARM_ARCH_TIMER
- 	select PINCTRL_TEGRA124
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	select TEGRA_TIMER
-@@ -66,6 +70,7 @@ if ARM64
- config ARCH_TEGRA_132_SOC
- 	bool "NVIDIA Tegra132 SoC"
- 	select PINCTRL_TEGRA124
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	help
-@@ -77,6 +82,7 @@ config ARCH_TEGRA_132_SOC
- config ARCH_TEGRA_210_SOC
- 	bool "NVIDIA Tegra210 SoC"
- 	select PINCTRL_TEGRA210
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_FLOWCTRL
- 	select SOC_TEGRA_PMC
- 	select TEGRA_TIMER
-@@ -99,6 +105,7 @@ config ARCH_TEGRA_186_SOC
- 	select TEGRA_BPMP
- 	select TEGRA_HSP_MBOX
- 	select TEGRA_IVC
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_PMC
- 	help
- 	  Enable support for the NVIDIA Tegar186 SoC. The Tegra186 features a
-@@ -115,6 +122,7 @@ config ARCH_TEGRA_194_SOC
- 	select TEGRA_BPMP
- 	select TEGRA_HSP_MBOX
- 	select TEGRA_IVC
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_PMC
- 	help
- 	  Enable support for the NVIDIA Tegra194 SoC.
-@@ -125,6 +133,7 @@ config ARCH_TEGRA_234_SOC
- 	select TEGRA_BPMP
- 	select TEGRA_HSP_MBOX
- 	select TEGRA_IVC
-+	select SOC_TEGRA_COMMON
- 	select SOC_TEGRA_PMC
- 	help
- 	  Enable support for the NVIDIA Tegra234 SoC.
-@@ -132,6 +141,11 @@ config ARCH_TEGRA_234_SOC
- endif
- endif
- 
-+config SOC_TEGRA_COMMON
-+	bool
-+	select PM_OPP
-+	select PM_GENERIC_DOMAINS
-+
- config SOC_TEGRA_FUSE
- 	def_bool y
- 	depends on ARCH_TEGRA
-diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 8e3b78bb2ac2..33b6e0885020 100644
---- a/drivers/soc/tegra/pmc.c
-+++ b/drivers/soc/tegra/pmc.c
-@@ -38,6 +38,7 @@
- #include <linux/pinctrl/pinctrl.h>
- #include <linux/platform_device.h>
- #include <linux/pm_domain.h>
-+#include <linux/pm_opp.h>
- #include <linux/reboot.h>
- #include <linux/regmap.h>
- #include <linux/reset.h>
-@@ -428,6 +429,8 @@ struct tegra_pmc {
- 	struct irq_chip irq;
- 
- 	struct notifier_block clk_nb;
-+
-+	bool core_domain_state_synced;
- };
- 
- static struct tegra_pmc *pmc = &(struct tegra_pmc) {
-@@ -1302,12 +1305,115 @@ static int tegra_powergate_add(struct tegra_pmc *pmc, struct device_node *np)
- 	return err;
- }
- 
-+bool tegra_soc_core_domain_state_synced(void)
-+{
-+	return pmc->core_domain_state_synced;
-+}
-+
-+static int
-+tegra_pmc_core_pd_set_performance_state(struct generic_pm_domain *genpd,
-+					unsigned int level)
-+{
-+	struct dev_pm_opp *opp;
-+	int err;
-+
-+	opp = dev_pm_opp_find_level_ceil(&genpd->dev, &level);
-+	if (IS_ERR(opp)) {
-+		dev_err(&genpd->dev, "failed to find OPP for level %u: %pe\n",
-+			level, opp);
-+		return PTR_ERR(opp);
-+	}
-+
-+	mutex_lock(&pmc->powergates_lock);
-+	err = dev_pm_opp_set_opp(pmc->dev, opp);
-+	mutex_unlock(&pmc->powergates_lock);
-+
-+	dev_pm_opp_put(opp);
-+
-+	if (err) {
-+		dev_err(&genpd->dev, "failed to set voltage to %duV: %d\n",
-+			level, err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static unsigned int
-+tegra_pmc_core_pd_opp_to_performance_state(struct generic_pm_domain *genpd,
-+					   struct dev_pm_opp *opp)
-+{
-+	return dev_pm_opp_get_level(opp);
-+}
-+
-+static int tegra_pmc_core_pd_add(struct tegra_pmc *pmc, struct device_node *np)
-+{
-+	static struct lock_class_key tegra_core_domain_lock_class;
-+	struct generic_pm_domain *genpd;
-+	const char *rname = "core";
-+	int err;
-+
-+	genpd = devm_kzalloc(pmc->dev, sizeof(*genpd), GFP_KERNEL);
-+	if (!genpd)
-+		return -ENOMEM;
-+
-+	genpd->name = np->name;
-+	genpd->set_performance_state = tegra_pmc_core_pd_set_performance_state;
-+	genpd->opp_to_performance_state = tegra_pmc_core_pd_opp_to_performance_state;
-+
-+	err = devm_pm_opp_set_regulators(pmc->dev, &rname, 1);
-+	if (err)
-+		return dev_err_probe(pmc->dev, err,
-+				     "failed to set core OPP regulator\n");
-+
-+	err = pm_genpd_init(genpd, NULL, false);
-+	if (err) {
-+		dev_err(pmc->dev, "failed to init core genpd: %d\n", err);
-+		return err;
-+	}
-+
-+	/*
-+	 * We have a "PMC pwrgate -> Core" hierarchy of the power domains
-+	 * where PMC needs to resume and change performance (voltage) of the
-+	 * Core domain from the PMC GENPD on/off callbacks, hence we need
-+	 * to annotate the lock in order to remove confusion from the
-+	 * lockdep checker when a nested access happens.
-+	 */
-+	lockdep_set_class(&genpd->mlock, &tegra_core_domain_lock_class);
-+
-+	err = of_genpd_add_provider_simple(np, genpd);
-+	if (err) {
-+		dev_err(pmc->dev, "failed to add core genpd: %d\n", err);
-+		goto remove_genpd;
-+	}
-+
-+	return 0;
-+
-+remove_genpd:
-+	pm_genpd_remove(genpd);
-+
-+	return err;
-+}
-+
- static int tegra_powergate_init(struct tegra_pmc *pmc,
- 				struct device_node *parent)
- {
-+	struct of_phandle_args child_args, parent_args;
- 	struct device_node *np, *child;
- 	int err = 0;
- 
-+	/*
-+	 * Core power domain is the parent of powergate domains, hence it
-+	 * should be registered first.
-+	 */
-+	np = of_get_child_by_name(parent, "core-domain");
-+	if (np) {
-+		err = tegra_pmc_core_pd_add(pmc, np);
-+		of_node_put(np);
-+		if (err)
-+			return err;
-+	}
-+
- 	np = of_get_child_by_name(parent, "powergates");
- 	if (!np)
- 		return 0;
-@@ -1318,6 +1424,21 @@ static int tegra_powergate_init(struct tegra_pmc *pmc,
- 			of_node_put(child);
- 			break;
- 		}
-+
-+		if (of_parse_phandle_with_args(child, "power-domains",
-+					       "#power-domain-cells",
-+					       0, &parent_args))
-+			continue;
-+
-+		child_args.np = child;
-+		child_args.args_count = 0;
-+
-+		err = of_genpd_add_subdomain(&parent_args, &child_args);
-+		of_node_put(parent_args.np);
-+		if (err) {
-+			of_node_put(child);
-+			break;
-+		}
- 	}
- 
- 	of_node_put(np);
-@@ -1361,6 +1482,12 @@ static void tegra_powergate_remove_all(struct device_node *parent)
- 	}
- 
- 	of_node_put(np);
-+
-+	np = of_get_child_by_name(parent, "core-domain");
-+	if (np) {
-+		of_genpd_del_provider(np);
-+		of_genpd_remove_last(np);
-+	}
- }
- 
- static const struct tegra_io_pad_soc *
-@@ -3672,6 +3799,21 @@ static const struct of_device_id tegra_pmc_match[] = {
- 	{ }
- };
- 
-+static void tegra_pmc_sync_state(struct device *dev)
-+{
-+	int err;
-+
-+	pmc->core_domain_state_synced = true;
-+
-+	/* this is a no-op if core regulator isn't used */
-+	mutex_lock(&pmc->powergates_lock);
-+	err = dev_pm_opp_sync_regulators(dev);
-+	mutex_unlock(&pmc->powergates_lock);
-+
-+	if (err)
-+		dev_err(dev, "failed to sync regulators: %d\n", err);
-+}
-+
- static struct platform_driver tegra_pmc_driver = {
- 	.driver = {
- 		.name = "tegra-pmc",
-@@ -3680,6 +3822,7 @@ static struct platform_driver tegra_pmc_driver = {
- #if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ARM)
- 		.pm = &tegra_pmc_pm_ops,
- #endif
-+		.sync_state = tegra_pmc_sync_state,
- 	},
- 	.probe = tegra_pmc_probe,
- };
-diff --git a/include/soc/tegra/common.h b/include/soc/tegra/common.h
-index e8eab13aa199..9a4ac3af2401 100644
---- a/include/soc/tegra/common.h
-+++ b/include/soc/tegra/common.h
-@@ -22,6 +22,7 @@ struct tegra_core_opp_params {
- 
- #ifdef CONFIG_ARCH_TEGRA
- bool soc_is_tegra(void);
-+bool tegra_soc_core_domain_state_synced(void);
- int devm_tegra_core_dev_init_opp_table(struct device *dev,
- 				       struct tegra_core_opp_params *params);
- #else
-@@ -30,6 +31,11 @@ static inline bool soc_is_tegra(void)
- 	return false;
- }
- 
-+static inline bool tegra_soc_core_domain_state_synced(void)
-+{
-+	return false;
-+}
-+
- static inline int
- devm_tegra_core_dev_init_opp_table(struct device *dev,
- 				   struct tegra_core_opp_params *params)
--- 
-2.30.2
+I just had a very brief "chat" with Geert (3 IRC messages, posted
+during 4 or 5 days :]) - and Geert pointed me to this:
+
+https://lore.kernel.org/linux-iommu/20210331093104.383705-4-geert+renesas@glider.be/
+
+So, maybe I'll just go with simple pr_emerg() and trust that the
+emerg() print should catch attention as such level print probably
+should. I'll respin the patch series (probably tomorrow) - let's see
+what thermal and regulator folks say :)
+
+Thanks for all the help this far!
+
+Best Regards
+	Matti Vaittinen
 
