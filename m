@@ -2,66 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BDFDC433B4
-	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 10:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6030C43461
+	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 10:52:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 170AB611C2
-	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 10:50:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A4981611CA
+	for <linux-pm@archiver.kernel.org>; Mon, 17 May 2021 10:52:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236381AbhEQKvg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 May 2021 06:51:36 -0400
-Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.80]:16338 "EHLO
+        id S236462AbhEQKx5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 May 2021 06:53:57 -0400
+Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.80]:29001 "EHLO
         mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230166AbhEQKve (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 May 2021 06:51:34 -0400
-X-Greylist: delayed 718 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 May 2021 06:51:34 EDT
-ARC-Seal: i=1; a=rsa-sha256; t=1621247895; cv=none;
+        with ESMTP id S236381AbhEQKx5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 May 2021 06:53:57 -0400
+ARC-Seal: i=1; a=rsa-sha256; t=1621248752; cv=none;
     d=strato.com; s=strato-dkim-0002;
-    b=iPzpJ29Vi0Gn0hxmTNWYGokZvDY7IatYN8XPZXKzpDEV7DTkWU7YETZ5iyY/OzzOB4
-    lqZpIns2hBTeDY8+R7C+J53XJDBTkQorNVBdma8Af6hSilF8BPiu8fMZ4zLZzW65SY3C
-    1Gvd7XZJr9m0Md7RLBK+kWDdQuWyBbBUhkX6RSfE0hAM+q1smxO8IPPR9eV31YyyPgyC
-    LWSy4xb7UqqfSN0vajP4mNZaJq4BSxjk4pjqXNXLQwFHw9n2qV5pXjnB3DGFlj6l8U/Q
-    mycJwulwn/8KeNtvATYYLcWnXgD+wMVy5nqUkM6pUposA2RnpzEtgEbg/w6Dfjk44YY/
-    2c5w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1621247895;
+    b=bbBugWMAXPY0x5O2WIR8tzxY8oLH+9Em6l8WAALxh4wcqPphbRKur2hst09f6mHe57
+    kncv4hCI+uPe9Ck337tVvSo5aemUoqYSKpn63kg/fB+Q5uGBhKd2fdvoYvKFE+xEKYHZ
+    ev5f7EH+pmocBcur5B60rVNYXwLbrDj93zZEW+FsNYbJLk90wFDmjucWSRAy0+lKi0u0
+    6sbpXV+oZfPa+AX9da0WkAsRVjFzdB2AQI092H7jd/WXepBJt/uYuKdv1D12MkXx5+xR
+    IG9+KVZsa0vuIheZhPqsI4n/+ByBMpW5YdLY1ErfX7MrCbXZsbPaAnAqrdqCuNKRgtS4
+    ZmrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1621248752;
     s=strato-dkim-0002; d=strato.com;
-    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
-    From:Subject:Sender;
-    bh=4Dcy2LTLgJk8PaoF6Y+q8hdBpMw3cHT4pkb5zRFtSJs=;
-    b=OXEniK7HR/0LnpA1e7zNHIRG7NKxdRl37+mZjjrqXSvTWZ4V13bmHrC30GloIxgviE
-    X6QTHSRaEC9IaFlLIOeV4e6Kq/McbckyKtsDIAD50dTt3Fz6ytPVpe09h6Vj72s279B7
-    o6w5RnkQpLSRNpO5WAr57dSg5d/3S0ktxIEFENEs1KwtuyzvK/XB/HJSnQ9uNLBxHgCt
-    eHzjaX91CQFM57sxfYN+y3gsY/aTSc9cH17sV8DVZ2KzZoyyed/CFpUS6dV4wfjDIpmw
-    r5J6XxomzhlO+Jt/VNcn7dI3fpm61MSuRqEKbK2ypET0ZAAT5TAnRi3luItXp6RingcE
-    Sb+A==
+    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
+    bh=UVrmOlkunBWm8CTCc2zVAt3rt0YhWagI6/xeD1B+H7Y=;
+    b=Lk6nQN5SpBvHKpwviSAN6vQWmGlUwOHOTF1r6q/eI/zZHRKwjOeVHzrndqFu3LOWsJ
+    UGbqFdFkrszIXKQUt/M9gMJ5Wc+VrKQPAJgtCupgVW0bo8pqEEfeVfkIClbnbb15q7ST
+    8nO7nzvFtj/5xnA3AMBGdjJi4yDNyT4tksT1y9vrzVkyUzYNCDPwui+BtNAyK4iNCOVi
+    CVhkkkBy7K79tywI3Cm8t8Ihl48QCuT6r3HZnGLwF+lWHxztdQUYMuih/gOybARkG28f
+    IpNpCyOzNv1Sn9EDKM3vI1f5lRyRDQuN/qYPGokm8WaS9BSXiG2ydj/PBLTneTo1N1gl
+    72Jg==
 ARC-Authentication-Results: i=1; strato.com;
     dkim=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1621247895;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1621248752;
     s=strato-dkim-0002; d=gerhold.net;
-    h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Cc:Date:
-    From:Subject:Sender;
-    bh=4Dcy2LTLgJk8PaoF6Y+q8hdBpMw3cHT4pkb5zRFtSJs=;
-    b=sTqEKLDR0rD5fy4p5UPOM3VQhI8e1H3u6pb2IzvC5UglygtXaFg2sZkvgqgKSHl6I/
-    FmtKrPiqTCsAVrCob45IVWB8IQ9YKxEIYcdB1EUjJCwXkreTiSUXTP/XLsYp644MA+Al
-    W8dE0q56Zfw0CLHh4i35/8tI//fuTdoB/PvWU8+8LDrPbRqq6biENg96YQ8v0/0PK9yS
-    3I+OliATnF+tT/3vNun8r4MCTTd3FhWeyNNwJQ9UAx8RrOEi6CF/8lH3UJYpyb8V2eAy
-    mlQesXPoXklyY5LqmPqVnWlQfbIUaIIFkVPe697OPoFBzpUmgvIxb2AMIW9gsKz4Bo3b
-    zmTQ==
+    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
+    bh=UVrmOlkunBWm8CTCc2zVAt3rt0YhWagI6/xeD1B+H7Y=;
+    b=KhayggNT2xefDq3dqPIYZwNWK0VyBu3Op4EQ+wMyOm5CEGYZ2sS3m0hipKZ1HgRmaK
+    UUlCdUUB+RGM3amahKZyT/Vy9zikoNDCx+csNjjhyBUHN3eN/JMYkAFzTUQgtdPlkxMZ
+    w4cMsmIBYRkv4vyVE/ty2qaxOSo0pjiDxvz4/cB2uRLFEfAUlzo1Tnxmjwrl542k0Pk2
+    Q4XqLpmkqq1c/bqL0rPl4kgd7YJRGZC9y5McRJ+pBOBfVNklZtAK9lBrqE26AkzQffVj
+    3znh0GYuI6m8JvOOrpVX3jH7F9OmZJQu65fllRhpIL+jqjyghUFQ5jhDCA9XQaR+jQzd
+    Nkow==
 Authentication-Results: strato.com;
     dkim=none
 X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVORvLd4SsytBXS7IYBkLahKxB526NcMiO"
 X-RZG-CLASS-ID: mo00
 Received: from droid..
     by smtp.strato.de (RZmta 47.26.0 DYNA|AUTH)
-    with ESMTPSA id 50be75x4HAcF1PV
+    with ESMTPSA id 50be75x4HAqV1VY
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
         (Client did not present a certificate);
-    Mon, 17 May 2021 12:38:15 +0200 (CEST)
+    Mon, 17 May 2021 12:52:31 +0200 (CEST)
 From:   Stephan Gerhold <stephan@gerhold.net>
 To:     Sebastian Reichel <sre@kernel.org>,
         Lee Jones <lee.jones@linaro.org>
@@ -69,45 +66,58 @@ Cc:     Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Beomho Seo <beomho.seo@samsung.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
+        ~postmarketos/upstreaming@lists.sr.ht,
         Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH 3/3] mfd: rt5033: Drop rt5033-battery sub-device
-Date:   Mon, 17 May 2021 12:35:54 +0200
-Message-Id: <20210517103554.168159-4-stephan@gerhold.net>
+Subject: [PATCH v2 0/3] Fix RT5033 battery device tree probing
+Date:   Mon, 17 May 2021 12:51:10 +0200
+Message-Id: <20210517105113.240379-1-stephan@gerhold.net>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210517103554.168159-1-stephan@gerhold.net>
-References: <20210517103554.168159-1-stephan@gerhold.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The fuel gauge in the RT5033 PMIC (rt5033-battery) has its own I2C bus
-and interrupt lines. Therefore, it is not part of the MFD device
-and needs to be specified separately in the device tree.
+At the moment, the RT5033 MFD and battery driver suggest that the
+battery driver should probe as a sub-device of the MFD driver. However,
+this does not make any sense since the fuel gauge part of RT5033 has its
+own I2C device and interrupt line.
 
-Cc: Beomho Seo <beomho.seo@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
-Fixes: 0b271258544b ("mfd: rt5033: Add Richtek RT5033 driver core.")
-Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
----
- drivers/mfd/rt5033.c | 3 ---
- 1 file changed, 3 deletions(-)
+It was also documented as separate I2C device in the original device
+tree bindings [1] (that were never finished up and merged) but for some
+reason the code does not match the documentation (and reality). :/
 
-diff --git a/drivers/mfd/rt5033.c b/drivers/mfd/rt5033.c
-index f1236a9acf30..df095e91e266 100644
---- a/drivers/mfd/rt5033.c
-+++ b/drivers/mfd/rt5033.c
-@@ -41,9 +41,6 @@ static const struct mfd_cell rt5033_devs[] = {
- 	{
- 		.name = "rt5033-charger",
- 		.of_compatible = "richtek,rt5033-charger",
--	}, {
--		.name = "rt5033-battery",
--		.of_compatible = "richtek,rt5033-battery",
- 	}, {
- 		.name = "rt5033-led",
- 		.of_compatible = "richtek,rt5033-led",
+Given other fairly critical mistakes like setting the wrong bits
+in the regulator driver (see [2]), unfortunately I get the feeling
+that none of the RT5033 drivers were ever tested properly. :(
+
+This patch sets adds a proper of_match_table to rt5033-battery
+and removes the rt5033-battery sub-device from the MFD driver.
+There is no compile/runtime dependency of the power supply / MFD patch
+so they can just be applied separately through the power supply / MFD tree.
+
+With these changes, rt5033-battery seems to work fine on the
+Samsung Galaxy A5 (2015) at least (it reports a reasonable
+battery percentage).
+
+[1]: https://lore.kernel.org/linux-pm/1425864191-4121-3-git-send-email-beomho.seo@samsung.com/
+[2]: https://lore.kernel.org/lkml/20201110130047.8097-1-michael.srba@seznam.cz/
+
+Changes in v2: Fix stupid typo in second patch :(
+v1: Honestly, not worth looking at :)
+
+Stephan Gerhold (3):
+  dt-bindings: power: supply: Add DT schema for richtek,rt5033-battery
+  power: supply: rt5033_battery: Fix device tree enumeration
+  mfd: rt5033: Drop rt5033-battery sub-device
+
+ .../power/supply/richtek,rt5033-battery.yaml  | 54 +++++++++++++++++++
+ drivers/mfd/rt5033.c                          |  3 --
+ drivers/power/supply/Kconfig                  |  3 +-
+ drivers/power/supply/rt5033_battery.c         |  7 +++
+ 4 files changed, 63 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/richtek,rt5033-battery.yaml
+
 -- 
 2.31.1
 
