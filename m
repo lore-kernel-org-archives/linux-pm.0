@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05530C43460
-	for <linux-pm@archiver.kernel.org>; Thu, 20 May 2021 23:08:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A840C43617
+	for <linux-pm@archiver.kernel.org>; Thu, 20 May 2021 23:08:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AE5DB613CE
-	for <linux-pm@archiver.kernel.org>; Thu, 20 May 2021 23:08:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A016613CA
+	for <linux-pm@archiver.kernel.org>; Thu, 20 May 2021 23:08:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233220AbhETXKH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 May 2021 19:10:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60726 "EHLO
+        id S233251AbhETXKM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 May 2021 19:10:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233158AbhETXKF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 May 2021 19:10:05 -0400
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9A5AC061574;
-        Thu, 20 May 2021 16:08:41 -0700 (PDT)
-Received: by mail-lf1-x12a.google.com with SMTP id i22so26749790lfl.10;
-        Thu, 20 May 2021 16:08:41 -0700 (PDT)
+        with ESMTP id S233232AbhETXKH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 May 2021 19:10:07 -0400
+Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CA09C061761;
+        Thu, 20 May 2021 16:08:44 -0700 (PDT)
+Received: by mail-lj1-x233.google.com with SMTP id w15so21770435ljo.10;
+        Thu, 20 May 2021 16:08:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=zLZwOwVhuIbHTTUdoWppFfwsPZfVF88GWvkyOwsujd4=;
-        b=D9x5/bPIxbimpi1DB6Y6D/karAe1eJ4yvIUhWWoQK+s3SsjgKeu51JlyJecOaTpIkM
-         wQcPM2ug3H2yTZlc90zeLCBdyD1/EHtoXk3lk/TLQXs8lBEFEkvOc+7XtvcqWcqa9Q30
-         lLzT57bfkYTToPDq9xwOVoMzBYO29Sq67L4kTxcYRxmphS+mhy0PEiFXMksd9bEK/nH5
-         6XZhM7VQXdS5P5LIsllGp5SuRN8Nm8EUXRy+Zjknk6DgFXS7vNC7DTlgKoj5qngoUddf
-         WtUMdz8u8GarGcJimow1fDaJcuB5SvtxswRj5r66cRuPfSkAZ7YrYSsAbTMzvCrZGEI7
-         /nEg==
+        bh=+ru1Y5AhCOlhA7q2BKIbg+3l43tX1d5MlWRnc4jqFnM=;
+        b=t4DPbheCJLYB6Y2YvuMw8oTIGEInCL4pXOndvs24PIpcVEDFDWYQsS782+HuvSZBot
+         FiqPAPURVwCbVbIV1QAcMvf/q9gHOglllhrj6EzPjOSdJImXSrOuCC16Qo/tjJUsK4Yt
+         4hXAf7LApyp6ilHDhM4u0dYt4iaElkjpxnwvuv1p7HVvNf5Faz1GR0HTaK1WSKoDBuo7
+         JO6UDJZhVnE8+k7TnHw2wiuwlaWg3oNbe0U0vinIC5A0K+X4IQwDl9wVPY5HFnmIRv7n
+         4Om3sHsdVfMy+nsM9l48a/oK1ghM3GFkF3xaB6VtwNuAh9NmDOna+ubS4ZHN9nTHTlti
+         4KuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=zLZwOwVhuIbHTTUdoWppFfwsPZfVF88GWvkyOwsujd4=;
-        b=L7QCSgRe9xXbj/I/smBeBYJCIONKpbiWhNqOpEwkrZ3hY2qnYgdjC47gMKIeO0a3Q+
-         GkG4mgmvgvjSve2bkgVoCb+utY5FIXr/7z6ICCbt95Tju0+RqFAjPYf1a+NHAnjW8IB6
-         CKN43TqT9+2YDoPoESusXb+hpDgAbDoxMjKgookB8ydLpWU/+wXHZdlUWQCwbdGtc6ci
-         meBpWJaHJR9bMHeL05gXdgZPkhx8eCJz/W5tfJgB5rVX72G5EwI4qfGZFMCOqgXh1BiW
-         tUl2Uj0Pxajq78W97L7fBIIybP0ENnBT3SajOnAlJ6wFgQuMs2xDVj8aG4F8NMEsBSsZ
-         +PXQ==
-X-Gm-Message-State: AOAM533sAqXy4Hln3xQezc98A8c8UN31yrtchCBziaJFFtehKiH96qL5
-        AvM6ttJ0w51AhCROfq9JDrE=
-X-Google-Smtp-Source: ABdhPJzxNlf6eWuMOIYag1iH++U9JnyryFe1oHI2uBYCvsQEtLf8yFBfjj95PYHEgxv2WbSEJ6HQyw==
-X-Received: by 2002:a05:6512:3f93:: with SMTP id x19mr4745893lfa.182.1621552120151;
-        Thu, 20 May 2021 16:08:40 -0700 (PDT)
+        bh=+ru1Y5AhCOlhA7q2BKIbg+3l43tX1d5MlWRnc4jqFnM=;
+        b=NNabUAHUbyf9nW4oNr3HsfIgjyVBWmpQC+bPU1ZINIjsua0KgA9EJFfJsFEIqJ5pmU
+         bLzbKO0vigOWDMPhen6v8BXwIw/+xcla+kIsDaR/db2eZRFO2bOE2p2FvmZQi2ycZvFc
+         vS/huZHAXrHB+WMUW1elRmWPP+HF/jgZzXKl12Enog+5IhQOmkU377brzKhR0PCPOA1y
+         3wIc47g5DDERUMFr657qRce22fHe49BsSuNF80g5rgukl1y6Oxww1shZZr7e1X/nSoin
+         r8k6SnpjZs3shInKVrdOkkvtD9+cSL821CWYWbKOWIg50ppuKf8Zlj9JFRZaAk0Y4JML
+         TKzg==
+X-Gm-Message-State: AOAM533x0cClX/6Ar9hAS4Q24TEV6vkp77x5PahetznueIrit7XCAaK5
+        x4vUqnNiz5FeGLV1TGOvEeU=
+X-Google-Smtp-Source: ABdhPJw/ysGQ7427eYQET0NAy6+evYOUqKtx2xtDlmMkJLzkbdWOfRMxbxW9hh0/e2L5YHJAOiwryA==
+X-Received: by 2002:a2e:a0cb:: with SMTP id f11mr4675154ljm.72.1621552122338;
+        Thu, 20 May 2021 16:08:42 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-76.dynamic.spd-mgts.ru. [109.252.193.76])
-        by smtp.gmail.com with ESMTPSA id 4sm427821lfr.175.2021.05.20.16.08.39
+        by smtp.gmail.com with ESMTPSA id 4sm427821lfr.175.2021.05.20.16.08.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 May 2021 16:08:39 -0700 (PDT)
+        Thu, 20 May 2021 16:08:42 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,317 +76,187 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Nathan Chancellor <nathan@kernel.org>,
         linux-clk@vger.kernel.org
-Subject: [PATCH v1 02/13] soc/tegra: regulators: Bump voltages on system reboot
-Date:   Fri, 21 May 2021 02:07:40 +0300
-Message-Id: <20210520230751.26848-3-digetx@gmail.com>
+Subject: [PATCH v1 04/13] soc/tegra: Add devm_tegra_core_dev_init_opp_table()
+Date:   Fri, 21 May 2021 02:07:42 +0300
+Message-Id: <20210520230751.26848-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210520230751.26848-1-digetx@gmail.com>
 References: <20210520230751.26848-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Ensure that SoC voltages are at a level suitable for a system reboot.
-This is important for some devices that use CPU reset method for the
-rebooting. SoC CPU and core voltages now are be restored to a level
-that is suitable for rebooting. This patch fixes hang on reboot on
-Asus Transformer TF101, it was also reported as fixing some of reboot
-issues on Toshiba AC100.
+Add common helper which initializes OPP table for Tegra SoC core devices.
 
-Reported-by: Nikola Milosavljević <mnidza@outlook.com>
-Tested-by: Nikola Milosavljević <mnidza@outlook.com> # TF101
+Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
+Tested-by: Paul Fertser <fercerpav@gmail.com> # PAZ00 T20
+Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
+Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/soc/tegra/regulators-tegra20.c | 75 ++++++++++++++++++++++++-
- drivers/soc/tegra/regulators-tegra30.c | 78 +++++++++++++++++++++++++-
- 2 files changed, 151 insertions(+), 2 deletions(-)
+ drivers/soc/tegra/common.c | 97 ++++++++++++++++++++++++++++++++++++++
+ include/soc/tegra/common.h | 22 +++++++++
+ 2 files changed, 119 insertions(+)
 
-diff --git a/drivers/soc/tegra/regulators-tegra20.c b/drivers/soc/tegra/regulators-tegra20.c
-index 367a71a3cd10..3479be5ee494 100644
---- a/drivers/soc/tegra/regulators-tegra20.c
-+++ b/drivers/soc/tegra/regulators-tegra20.c
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
+diff --git a/drivers/soc/tegra/common.c b/drivers/soc/tegra/common.c
+index 3dc54f59cafe..cd33e99249c3 100644
+--- a/drivers/soc/tegra/common.c
++++ b/drivers/soc/tegra/common.c
+@@ -3,9 +3,16 @@
+  * Copyright (C) 2014 NVIDIA CORPORATION.  All rights reserved.
+  */
+ 
++#define dev_fmt(fmt)	"tegra-soc: " fmt
++
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/export.h>
  #include <linux/of.h>
-+#include <linux/reboot.h>
- #include <linux/regulator/coupler.h>
- #include <linux/regulator/driver.h>
- #include <linux/regulator/machine.h>
-@@ -21,7 +22,10 @@ struct tegra_regulator_coupler {
- 	struct regulator_dev *core_rdev;
- 	struct regulator_dev *cpu_rdev;
- 	struct regulator_dev *rtc_rdev;
--	int core_min_uV;
-+	struct notifier_block reboot_notifier;
-+	int core_min_uV, cpu_min_uV;
-+	bool sys_reboot_mode_req;
-+	bool sys_reboot_mode;
- };
++#include <linux/pm_opp.h>
  
- static inline struct tegra_regulator_coupler *
-@@ -242,6 +246,10 @@ static int tegra20_cpu_voltage_update(struct tegra_regulator_coupler *tegra,
- 	if (cpu_uV < 0)
- 		return cpu_uV;
+ #include <soc/tegra/common.h>
++#include <soc/tegra/fuse.h>
  
-+	/* store boot voltage level */
-+	if (!tegra->cpu_min_uV)
-+		tegra->cpu_min_uV = cpu_uV;
-+
- 	/*
- 	 * CPU's regulator may not have any consumers, hence the voltage
- 	 * must not be changed in that case because CPU simply won't
-@@ -250,6 +258,10 @@ static int tegra20_cpu_voltage_update(struct tegra_regulator_coupler *tegra,
- 	if (!cpu_min_uV_consumers)
- 		cpu_min_uV = cpu_uV;
+ static const struct of_device_id tegra_machine_match[] = {
+ 	{ .compatible = "nvidia,tegra20", },
+@@ -31,3 +38,93 @@ bool soc_is_tegra(void)
  
-+	/* restore boot voltage level */
-+	if (tegra->sys_reboot_mode)
-+		cpu_min_uV = max(cpu_min_uV, tegra->cpu_min_uV);
-+
- 	if (cpu_min_uV > cpu_uV) {
- 		err = tegra20_core_rtc_update(tegra, core_rdev, rtc_rdev,
- 					      cpu_uV, cpu_min_uV);
-@@ -290,6 +302,8 @@ static int tegra20_regulator_balance_voltage(struct regulator_coupler *coupler,
- 		return -EINVAL;
- 	}
- 
-+	tegra->sys_reboot_mode = READ_ONCE(tegra->sys_reboot_mode_req);
-+
- 	if (rdev == cpu_rdev)
- 		return tegra20_cpu_voltage_update(tegra, cpu_rdev,
- 						  core_rdev, rtc_rdev);
-@@ -303,6 +317,51 @@ static int tegra20_regulator_balance_voltage(struct regulator_coupler *coupler,
- 	return -EPERM;
+ 	return match != NULL;
  }
- 
-+static int tegra20_regulator_prepare_reboot(struct tegra_regulator_coupler *tegra,
-+					    bool sys_reboot_mode)
++
++static int tegra_core_dev_init_opp_state(struct device *dev)
 +{
++	unsigned long rate;
++	struct clk *clk;
 +	int err;
 +
-+	if (!tegra->core_rdev || !tegra->rtc_rdev || !tegra->cpu_rdev)
-+		return 0;
++	clk = devm_clk_get(dev, NULL);
++	if (IS_ERR(clk)) {
++		dev_err(dev, "failed to get clk: %pe\n", clk);
++		return PTR_ERR(clk);
++	}
 +
-+	WRITE_ONCE(tegra->sys_reboot_mode_req, true);
++	rate = clk_get_rate(clk);
++	if (!rate) {
++		dev_err(dev, "failed to get clk rate\n");
++		return -EINVAL;
++	}
 +
-+	/*
-+	 * Some devices use CPU soft-reboot method and in this case we
-+	 * should ensure that voltages are sane for the reboot by restoring
-+	 * the minimum boot levels.
-+	 */
-+	err = regulator_sync_voltage_rdev(tegra->cpu_rdev);
-+	if (err)
++	/* first dummy rate-setting initializes voltage vote */
++	err = dev_pm_opp_set_rate(dev, rate);
++	if (err) {
++		dev_err(dev, "failed to initialize OPP clock: %d\n", err);
 +		return err;
-+
-+	err = regulator_sync_voltage_rdev(tegra->core_rdev);
-+	if (err)
-+		return err;
-+
-+	WRITE_ONCE(tegra->sys_reboot_mode_req, sys_reboot_mode);
++	}
 +
 +	return 0;
 +}
 +
-+static int tegra20_regulator_reboot(struct notifier_block *notifier,
-+				    unsigned long event, void *cmd)
++/**
++ * devm_tegra_core_dev_init_opp_table() - initialize OPP table
++ * @dev: device for which OPP table is initialized
++ * @params: pointer to the OPP table configuration
++ *
++ * This function will initialize OPP table and sync OPP state of a Tegra SoC
++ * core device.
++ *
++ * Return: 0 on success or errorno.
++ */
++int devm_tegra_core_dev_init_opp_table(struct device *dev,
++				       struct tegra_core_opp_params *params)
 +{
-+	struct tegra_regulator_coupler *tegra;
-+	int ret;
-+
-+	if (event != SYS_RESTART)
-+		return NOTIFY_DONE;
-+
-+	tegra = container_of(notifier, struct tegra_regulator_coupler,
-+			     reboot_notifier);
-+
-+	ret = tegra20_regulator_prepare_reboot(tegra, true);
-+
-+	return notifier_from_errno(ret);
-+}
-+
- static int tegra20_regulator_attach(struct regulator_coupler *coupler,
- 				    struct regulator_dev *rdev)
- {
-@@ -335,6 +394,14 @@ static int tegra20_regulator_detach(struct regulator_coupler *coupler,
- {
- 	struct tegra_regulator_coupler *tegra = to_tegra_coupler(coupler);
- 
-+	/*
-+	 * We don't expect regulators to be decoupled during reboot,
-+	 * this may race with the reboot handler and shouldn't ever
-+	 * happen in practice.
-+	 */
-+	if (WARN_ON_ONCE(system_state > SYSTEM_RUNNING))
-+		return -EPERM;
-+
- 	if (tegra->core_rdev == rdev) {
- 		tegra->core_rdev = NULL;
- 		return 0;
-@@ -359,13 +426,19 @@ static struct tegra_regulator_coupler tegra20_coupler = {
- 		.detach_regulator = tegra20_regulator_detach,
- 		.balance_voltage = tegra20_regulator_balance_voltage,
- 	},
-+	.reboot_notifier.notifier_call = tegra20_regulator_reboot,
- };
- 
- static int __init tegra_regulator_coupler_init(void)
- {
++	u32 hw_version;
 +	int err;
 +
- 	if (!of_machine_is_compatible("nvidia,tegra20"))
- 		return 0;
- 
-+	err = register_reboot_notifier(&tegra20_coupler.reboot_notifier);
-+	WARN_ON(err);
++	err = devm_pm_opp_set_clkname(dev, NULL);
++	if (err) {
++		dev_err(dev, "failed to set OPP clk: %d\n", err);
++		return err;
++	}
 +
- 	return regulator_coupler_register(&tegra20_coupler.coupler);
- }
- arch_initcall(tegra_regulator_coupler_init);
-diff --git a/drivers/soc/tegra/regulators-tegra30.c b/drivers/soc/tegra/regulators-tegra30.c
-index 0e776b20f625..6e4f3d9e7be1 100644
---- a/drivers/soc/tegra/regulators-tegra30.c
-+++ b/drivers/soc/tegra/regulators-tegra30.c
-@@ -12,6 +12,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/of.h>
-+#include <linux/reboot.h>
- #include <linux/regulator/coupler.h>
- #include <linux/regulator/driver.h>
- #include <linux/regulator/machine.h>
-@@ -22,7 +23,10 @@ struct tegra_regulator_coupler {
- 	struct regulator_coupler coupler;
- 	struct regulator_dev *core_rdev;
- 	struct regulator_dev *cpu_rdev;
--	int core_min_uV;
-+	struct notifier_block reboot_notifier;
-+	int core_min_uV, cpu_min_uV;
-+	bool sys_reboot_mode_req;
-+	bool sys_reboot_mode;
- };
- 
- static inline struct tegra_regulator_coupler *
-@@ -172,6 +176,10 @@ static int tegra30_voltage_update(struct tegra_regulator_coupler *tegra,
- 	if (cpu_uV < 0)
- 		return cpu_uV;
- 
-+	/* store boot voltage level */
-+	if (!tegra->cpu_min_uV)
-+		tegra->cpu_min_uV = cpu_uV;
++	/* Tegra114+ doesn't support OPP yet */
++	if (!of_machine_is_compatible("nvidia,tegra20") &&
++	    !of_machine_is_compatible("nvidia,tegra30"))
++		return -ENODEV;
 +
- 	/*
- 	 * CPU's regulator may not have any consumers, hence the voltage
- 	 * must not be changed in that case because CPU simply won't
-@@ -195,6 +203,10 @@ static int tegra30_voltage_update(struct tegra_regulator_coupler *tegra,
- 	if (err)
- 		return err;
- 
-+	/* restore boot voltage level */
-+	if (tegra->sys_reboot_mode)
-+		cpu_min_uV = max(cpu_min_uV, tegra->cpu_min_uV);
++	if (of_machine_is_compatible("nvidia,tegra20"))
++		hw_version = BIT(tegra_sku_info.soc_process_id);
++	else
++		hw_version = BIT(tegra_sku_info.soc_speedo_id);
 +
- 	if (core_min_limited_uV > core_uV) {
- 		pr_err("core voltage constraint violated: %d %d %d\n",
- 		       core_uV, core_min_limited_uV, cpu_uV);
-@@ -263,9 +275,56 @@ static int tegra30_regulator_balance_voltage(struct regulator_coupler *coupler,
- 		return -EINVAL;
- 	}
- 
-+	tegra->sys_reboot_mode = READ_ONCE(tegra->sys_reboot_mode_req);
-+
- 	return tegra30_voltage_update(tegra, cpu_rdev, core_rdev);
- }
- 
-+static int tegra30_regulator_prepare_reboot(struct tegra_regulator_coupler *tegra,
-+					    bool sys_reboot_mode)
-+{
-+	int err;
-+
-+	if (!tegra->core_rdev || !tegra->cpu_rdev)
-+		return 0;
-+
-+	WRITE_ONCE(tegra->sys_reboot_mode_req, true);
++	err = devm_pm_opp_set_supported_hw(dev, &hw_version, 1);
++	if (err) {
++		dev_err(dev, "failed to set OPP supported HW: %d\n", err);
++		return err;
++	}
 +
 +	/*
-+	 * Some devices use CPU soft-reboot method and in this case we
-+	 * should ensure that voltages are sane for the reboot by restoring
-+	 * the minimum boot levels.
++	 * Older device-trees have an empty OPP table, we will get
++	 * -ENODEV from devm_pm_opp_of_add_table() in this case.
 +	 */
-+	err = regulator_sync_voltage_rdev(tegra->cpu_rdev);
-+	if (err)
-+		return err;
++	err = devm_pm_opp_of_add_table(dev);
++	if (err) {
++		if (err == -ENODEV)
++			dev_err_once(dev, "OPP table not found, please update device-tree\n");
++		else
++			dev_err(dev, "failed to add OPP table: %d\n", err);
 +
-+	err = regulator_sync_voltage_rdev(tegra->core_rdev);
-+	if (err)
 +		return err;
++	}
 +
-+	WRITE_ONCE(tegra->sys_reboot_mode_req, sys_reboot_mode);
++	if (params->init_state) {
++		err = tegra_core_dev_init_opp_state(dev);
++		if (err)
++			return err;
++	}
 +
 +	return 0;
 +}
-+
-+static int tegra30_regulator_reboot(struct notifier_block *notifier,
-+				    unsigned long event, void *cmd)
-+{
-+	struct tegra_regulator_coupler *tegra;
-+	int ret;
-+
-+	if (event != SYS_RESTART)
-+		return NOTIFY_DONE;
-+
-+	tegra = container_of(notifier, struct tegra_regulator_coupler,
-+			     reboot_notifier);
-+
-+	ret = tegra30_regulator_prepare_reboot(tegra, true);
-+
-+	return notifier_from_errno(ret);
-+}
-+
- static int tegra30_regulator_attach(struct regulator_coupler *coupler,
- 				    struct regulator_dev *rdev)
- {
-@@ -292,6 +351,17 @@ static int tegra30_regulator_detach(struct regulator_coupler *coupler,
- {
- 	struct tegra_regulator_coupler *tegra = to_tegra_coupler(coupler);
++EXPORT_SYMBOL_GPL(devm_tegra_core_dev_init_opp_table);
+diff --git a/include/soc/tegra/common.h b/include/soc/tegra/common.h
+index 744280ecab5f..af41ad80ec21 100644
+--- a/include/soc/tegra/common.h
++++ b/include/soc/tegra/common.h
+@@ -6,15 +6,37 @@
+ #ifndef __SOC_TEGRA_COMMON_H__
+ #define __SOC_TEGRA_COMMON_H__
  
-+	/*
-+	 * We don't expect regulators to be decoupled during reboot,
-+	 * this may race with the reboot handler and shouldn't ever
-+	 * happen in practice.
-+	 */
-+	if (WARN_ON_ONCE(system_state > SYSTEM_RUNNING))
-+		return -EPERM;
-+
-+	/* bring regulators to the state that is safe for reboot */
-+	tegra30_regulator_prepare_reboot(tegra, false);
-+
- 	if (tegra->core_rdev == rdev) {
- 		tegra->core_rdev = NULL;
- 		return 0;
-@@ -311,13 +381,19 @@ static struct tegra_regulator_coupler tegra30_coupler = {
- 		.detach_regulator = tegra30_regulator_detach,
- 		.balance_voltage = tegra30_regulator_balance_voltage,
- 	},
-+	.reboot_notifier.notifier_call = tegra30_regulator_reboot,
- };
++#include <linux/errno.h>
+ #include <linux/types.h>
  
- static int __init tegra_regulator_coupler_init(void)
++struct device;
++
++/**
++ * Tegra SoC core device OPP table configuration
++ *
++ * @init_state: pre-initialize OPP state of a device
++ */
++struct tegra_core_opp_params {
++	bool init_state;
++};
++
+ #ifdef CONFIG_ARCH_TEGRA
+ bool soc_is_tegra(void);
++
++int devm_tegra_core_dev_init_opp_table(struct device *dev,
++				       struct tegra_core_opp_params *params);
+ #else
+ static inline bool soc_is_tegra(void)
  {
-+	int err;
-+
- 	if (!of_machine_is_compatible("nvidia,tegra30"))
- 		return 0;
- 
-+	err = register_reboot_notifier(&tegra30_coupler.reboot_notifier);
-+	WARN_ON(err);
-+
- 	return regulator_coupler_register(&tegra30_coupler.coupler);
+ 	return false;
  }
- arch_initcall(tegra_regulator_coupler_init);
++
++static inline int
++devm_tegra_core_dev_init_opp_table(struct device *dev,
++				   struct tegra_core_opp_params *params)
++{
++	return -ENODEV;
++}
+ #endif
+ 
+ #endif /* __SOC_TEGRA_COMMON_H__ */
 -- 
 2.30.2
 
