@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 186C3C47094
-	for <linux-pm@archiver.kernel.org>; Sun, 23 May 2021 23:14:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53ACEC4709F
+	for <linux-pm@archiver.kernel.org>; Sun, 23 May 2021 23:14:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EE5016117A
-	for <linux-pm@archiver.kernel.org>; Sun, 23 May 2021 23:14:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B35B6115C
+	for <linux-pm@archiver.kernel.org>; Sun, 23 May 2021 23:14:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232261AbhEWXPe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 May 2021 19:15:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54168 "EHLO
+        id S232269AbhEWXPg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 May 2021 19:15:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232131AbhEWXP0 (ORCPT
+        with ESMTP id S232167AbhEWXP0 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 23 May 2021 19:15:26 -0400
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1348FC06134D;
-        Sun, 23 May 2021 16:13:59 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id e2so24805952ljk.4;
-        Sun, 23 May 2021 16:13:58 -0700 (PDT)
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 947BEC061345;
+        Sun, 23 May 2021 16:13:55 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id r5so37964013lfr.5;
+        Sun, 23 May 2021 16:13:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=lkke/HcONrz1nur5ujlnw3lyx3GmqHu2azh4sgzjwjI=;
-        b=Gexkt71Ri7qoDn+m/H/u1jVqExcpBYkmpdey631snrLUU2Q4UTpaVwo9nKdfsPUCRb
-         MwZRcEEw8+YMrsnqNSUYjurwzL4mTWzbE1MeO+BgdQd+cGj61SblEiao26sMf7mmU3yL
-         YkV6jGTisVdTIkmuHDjUw8AFfL2+8ITpp0aft1YWasnRP26Yp+2o/Ak43Uo69hqp7pS9
-         xDgoT9iAowb3BF3lWes1rQ6RYx7UFk/5W7EeX+sLRnjhkiWrtuKsrUdem5B1k4zcSGQY
-         /5N2ECT35a/WNGFuMLzz9ly97nI+jEe9uK0Tu1bf1uiR+4TMDLdMxfC9XzBpnrD8DM1O
-         5Q+A==
+        bh=PnHT/nk8CJodgkwuBSRTekimstD88D/By8a3gAk3kxw=;
+        b=OErM4JnD/gNFlqVqIfLc/n1bSFiUmbHNPFwSueq2QklEP6f+NAhNETDOLYVqxwmbRX
+         ivXdvTxPtUFu4a4y/+LOWquMHqFuWQ65SU5N4S2S3pZudUc/WB8U0M9HXggXHTSZOmOK
+         yV+iNAaGq8KWr283xFa2OqjSeTR6+raNTXq7ueA3fGNDSIO6khcCmQ5zlTSdQ26+AsHW
+         K1Rt6VtvdEu/Vx3edtIBDAiOXjym175w8cpPRTMcYaLSiaesHFGXdSytJ6Ew6AcDG/OM
+         wF46nsWL9PZKiJmAi/lMeTav+kdd/lzUT+bpyviHLQfcYd7k5PiMXO+X5JYlYDgMsH7+
+         /UFw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=lkke/HcONrz1nur5ujlnw3lyx3GmqHu2azh4sgzjwjI=;
-        b=r+N4AEgi3z/yWA17jV0xUcJhB3gYA3K7NEkPsEKAgyd6m+Z0fKk3NL8d8S8L6IBDDS
-         ZpR3xzWz41DahWjv2y/97GGLde94V5CkdbrPBPr3t819JIYQ9yieZsQdlPORE3lLzxjk
-         z/qATPwnwUUPibOjcwkecNBjomeCM58sqN3eph5hRCgyzaJu8siB2pjVpwrAE0pw0hj5
-         FGXMpPlrRZK0s5c/KQgOjFgSTH/h6PLleHiA0RGSx31ywYtzfzfc19sdhA2UI8yr46yh
-         iJum2TiRkF7Yz7sXL64fINdXOHR60sMoK8gJShv3/wS/V+inhulyUYkL52dYbuIMcXfb
-         diYQ==
-X-Gm-Message-State: AOAM530Noof5YBqFj90cXtz/qDvdylXyNA9LKj//WH1h5AOpnphjng0i
-        JpUBjjrUC+Gg6PCi8h11eDY=
-X-Google-Smtp-Source: ABdhPJza+u6JIkmnpgfTFUYSd+AxYeMSGMOAh6s/vxS9x/Yen0Jz4haSKsACTexNjMDScMfc1Qr0oQ==
-X-Received: by 2002:a2e:9a06:: with SMTP id o6mr14662336lji.198.1621811637484;
-        Sun, 23 May 2021 16:13:57 -0700 (PDT)
+        bh=PnHT/nk8CJodgkwuBSRTekimstD88D/By8a3gAk3kxw=;
+        b=EuHfgXag3mIhWMMEmCJ/rNQBAj00ARJtPd9zkrKnBRNQ4GLTbDhtHR1nA5jsfcSovg
+         svxhzMf5m6EblTm12mtODdOhFIhQikMfg5XBMJP19gTdUSNzx+1jdFiYP4uUPbDru0Tg
+         GAV8DhYxR5ip9/ahrpGeX35UkVSsxsSJC2QzZTCsIb+iIJ9AxmZhjA1onIJ9Zg62CXls
+         cKXYYO3mUq5NmsGASy2FavZJi+y7+UrG4Qbe4U7b8YrHgW9AB2p0uHvUAE+eOGeXsksD
+         vefMmImDc/TkhF7axEiKJkQpTeemwKy9EIg967UBkeOtGvltK4OYWVuojYeGQwPzrc63
+         qdIA==
+X-Gm-Message-State: AOAM5319nSmqkF/ZWSLFQFoSWBxpDvZ7pQ78MopP4D/A3hjeSLbfR+jQ
+        5iVA/Qz0c/n/qT6Jwxirtj8=
+X-Google-Smtp-Source: ABdhPJwHw77jRCGdYpUCUG2K1ICDGwBzfbsCsdbUy3ZzArG9bswCglF7/0ZUFRhjxGhiC0ZSwJl92g==
+X-Received: by 2002:a05:6512:2399:: with SMTP id c25mr8981296lfv.59.1621811633986;
+        Sun, 23 May 2021 16:13:53 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-110.dynamic.spd-mgts.ru. [109.252.193.110])
-        by smtp.gmail.com with ESMTPSA id p7sm1268619lfr.184.2021.05.23.16.13.56
+        by smtp.gmail.com with ESMTPSA id p7sm1268619lfr.184.2021.05.23.16.13.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 May 2021 16:13:57 -0700 (PDT)
+        Sun, 23 May 2021 16:13:53 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Nathan Chancellor <nathan@kernel.org>,
         linux-clk@vger.kernel.org
-Subject: [PATCH v2 12/14] dt-bindings: soc: tegra-pmc: Document core power domain
-Date:   Mon, 24 May 2021 02:13:33 +0300
-Message-Id: <20210523231335.8238-13-digetx@gmail.com>
+Subject: [PATCH v2 08/14] memory: tegra: Fix compilation warnings on 64bit platforms
+Date:   Mon, 24 May 2021 02:13:29 +0300
+Message-Id: <20210523231335.8238-9-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210523231335.8238-1-digetx@gmail.com>
 References: <20210523231335.8238-1-digetx@gmail.com>
@@ -88,86 +88,49 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All NVIDIA Tegra SoCs have a core power domain where majority of hardware
-blocks reside. Document the new core power domain properties.
+Fix compilation warning on 64bit platforms caused by implicit promotion
+of 32bit signed integer to a 64bit unsigned value which happens after
+enabling compile-testing of the EMC drivers.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../arm/tegra/nvidia,tegra20-pmc.yaml         | 35 +++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ drivers/memory/tegra/tegra124-emc.c | 4 ++--
+ drivers/memory/tegra/tegra30-emc.c  | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
-index 43fd2f8927d0..0afec83cc723 100644
---- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
-+++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
-@@ -301,6 +301,33 @@ patternProperties:
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index 5699d909abc2..a21ca8e0841a 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -272,8 +272,8 @@
+ #define EMC_PUTERM_ADJ				0x574
  
-     additionalProperties: false
+ #define DRAM_DEV_SEL_ALL			0
+-#define DRAM_DEV_SEL_0				(2 << 30)
+-#define DRAM_DEV_SEL_1				(1 << 30)
++#define DRAM_DEV_SEL_0				BIT(31)
++#define DRAM_DEV_SEL_1				BIT(30)
  
-+  core-domain:
-+    type: object
-+    description: |
-+      The vast majority of hardware blocks of Tegra SoC belong to a
-+      Core power domain, which has a dedicated voltage rail that powers
-+      the blocks.
-+
-+    properties:
-+      operating-points-v2:
-+        description:
-+          Should contain level, voltages and opp-supported-hw property.
-+          The supported-hw is a bitfield indicating SoC speedo or process
-+          ID mask.
-+
-+      "#power-domain-cells":
-+        const: 0
-+
-+    required:
-+      - operating-points-v2
-+      - "#power-domain-cells"
-+
-+    additionalProperties: false
-+
-+  core-supply:
-+    description:
-+      Phandle to voltage regulator connected to the SoC Core power rail.
-+
- required:
-   - compatible
-   - reg
-@@ -325,6 +352,7 @@ examples:
-     tegra_pmc: pmc@7000e400 {
-               compatible = "nvidia,tegra210-pmc";
-               reg = <0x7000e400 0x400>;
-+              core-supply = <&regulator>;
-               clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
-               clock-names = "pclk", "clk32k_in";
-               #clock-cells = <1>;
-@@ -338,17 +366,24 @@ examples:
-               nvidia,core-power-req-active-high;
-               nvidia,sys-clock-req-active-high;
+ #define EMC_CFG_POWER_FEATURES_MASK		\
+ 	(EMC_CFG_DYN_SREF | EMC_CFG_DRAM_ACPD | EMC_CFG_DRAM_CLKSTOP_SR | \
+diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
+index 829f6d673c96..a2f2738ccb94 100644
+--- a/drivers/memory/tegra/tegra30-emc.c
++++ b/drivers/memory/tegra/tegra30-emc.c
+@@ -150,8 +150,8 @@
+ #define EMC_SELF_REF_CMD_ENABLED		BIT(0)
  
-+              pd_core: core-domain {
-+                      operating-points-v2 = <&core_opp_table>;
-+                      #power-domain-cells = <0>;
-+              };
-+
-               powergates {
-                     pd_audio: aud {
-                             clocks = <&tegra_car TEGRA210_CLK_APE>,
-                                      <&tegra_car TEGRA210_CLK_APB2APE>;
-                             resets = <&tegra_car 198>;
-+                            power-domains = <&pd_core>;
-                             #power-domain-cells = <0>;
-                     };
+ #define DRAM_DEV_SEL_ALL			(0 << 30)
+-#define DRAM_DEV_SEL_0				(2 << 30)
+-#define DRAM_DEV_SEL_1				(1 << 30)
++#define DRAM_DEV_SEL_0				BIT(31)
++#define DRAM_DEV_SEL_1				BIT(30)
+ #define DRAM_BROADCAST(num) \
+ 	((num) > 1 ? DRAM_DEV_SEL_ALL : DRAM_DEV_SEL_0)
  
-                     pd_xusbss: xusba {
-                             clocks = <&tegra_car TEGRA210_CLK_XUSB_SS>;
-                             resets = <&tegra_car TEGRA210_CLK_XUSB_SS>;
-+                            power-domains = <&pd_core>;
-                             #power-domain-cells = <0>;
-                     };
-               };
 -- 
 2.30.2
 
