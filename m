@@ -2,100 +2,176 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6970C47085
-	for <linux-pm@archiver.kernel.org>; Mon, 24 May 2021 15:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B813C47087
+	for <linux-pm@archiver.kernel.org>; Mon, 24 May 2021 15:28:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B87E61414
-	for <linux-pm@archiver.kernel.org>; Mon, 24 May 2021 15:20:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D8A396044F
+	for <linux-pm@archiver.kernel.org>; Mon, 24 May 2021 15:28:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234612AbhEXPWX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 May 2021 11:22:23 -0400
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:54042 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233516AbhEXPRb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 May 2021 11:17:31 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 14OFFrGa041504;
-        Mon, 24 May 2021 10:15:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1621869353;
-        bh=GboA2Om6dWr6qVDBT1Ckg/PVdLDQm9AAnrekIIVfbC4=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=ezxz44WojYw81t7cpvqj9sVTor/6Nt3SS+z2gMEgyX+ijRNxI7/ljJP4TlP+YB19C
-         1OIdg9qgMKnbRN+oVdMOyaNGMZ0GGnOOSMe+vN94M+lh5pbxkIoW09groq6bMFamFh
-         JeLJh3J21Hf9L7J4UbCpnzFtDgauuSwUz879qIxk=
-Received: from DLEE106.ent.ti.com (dlee106.ent.ti.com [157.170.170.36])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 14OFFrqk107878
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 24 May 2021 10:15:53 -0500
-Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE106.ent.ti.com
- (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2176.2; Mon, 24
- May 2021 10:15:52 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2176.2 via
- Frontend Transport; Mon, 24 May 2021 10:15:52 -0500
-Received: from [10.250.35.153] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 14OFFqY7115517;
-        Mon, 24 May 2021 10:15:52 -0500
-Subject: Re: [PATCH] thermal: ti-soc-thermal: Fix kernel-doc
-To:     Yang Li <yang.lee@linux.alibaba.com>, <edubezval@gmail.com>
-CC:     <j-keerthy@ti.com>, <rui.zhang@intel.com>,
-        <daniel.lezcano@linaro.org>, <amitk@kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-omap@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-References: <1621851963-36548-1-git-send-email-yang.lee@linux.alibaba.com>
-From:   Suman Anna <s-anna@ti.com>
-Message-ID: <011fb94c-7775-6c3f-2215-bf9cb505d6d1@ti.com>
-Date:   Mon, 24 May 2021 10:15:52 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S233079AbhEXP37 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 May 2021 11:29:59 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:52510 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233460AbhEXP3I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 May 2021 11:29:08 -0400
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.0.5)
+ id 463d994eb97b68af; Mon, 24 May 2021 17:27:38 +0200
+Received: from kreacher.localnet (89-64-80-49.dynamic.chello.pl [89.64.80.49])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id BD9D666971F;
+        Mon, 24 May 2021 17:27:37 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        David Box <david.e.box@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Dave Olsthoorn <dave@bewaar.me>, Shujun Wang <wsj20369@163.com>
+Subject: [PATCH v1 1/3] ACPI: power: Use u8 as the power resource state data type
+Date:   Mon, 24 May 2021 17:24:16 +0200
+Message-ID: <2786380.e9J7NaK4W3@kreacher>
+In-Reply-To: <2074778.irdbgypaU6@kreacher>
+References: <2074778.irdbgypaU6@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <1621851963-36548-1-git-send-email-yang.lee@linux.alibaba.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 89.64.80.49
+X-CLIENT-HOSTNAME: 89-64-80-49.dynamic.chello.pl
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrvdejledgledtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepkeelrdeigedrkedtrdegleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeekledrieegrdektddrgeelpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprhhuihdriihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopegurghvihgurdgvrdgsohigsehlihhnuhigrdhi
+ nhhtvghlrdgtohhmpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopegurghvvgessggvfigrrghrrdhmvgdprhgtphhtthhopeifshhjvddtfeeileesudeifedrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=8 Fuz1=8 Fuz2=8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 5/24/21 5:26 AM, Yang Li wrote:
-> Fix function name in ti-bandgap.c kernel-doc comment
-> to remove a warning.
-> 
-> drivers/thermal/ti-soc-thermal/ti-bandgap.c:787: warning: expecting
-> prototype for ti_bandgap_alert_init(). Prototype was for
-> ti_bandgap_talert_init() instead.
-> 
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Suman Anna <s-anna@ti.com>
+Use u8 as the data type for representing the state of an ACPI
+power resource.
 
-> ---
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> index ebe7cb7..ea0603b 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -770,7 +770,7 @@ static int ti_bandgap_tshut_init(struct ti_bandgap *bgp,
->  }
->  
->  /**
-> - * ti_bandgap_alert_init() - setup and initialize talert handling
-> + * ti_bandgap_talert_init() - setup and initialize talert handling
->   * @bgp: pointer to struct ti_bandgap
->   * @pdev: pointer to device struct platform_device
->   *
-> 
+It is s not necessary to use int for that and because subsequent
+changes are going to use ACPI_POWER_RESOURCE_STATE_UNKNOWN, it is
+better to adjust the data type so that the "unknown" state is
+represented by the "all ones" value.
+
+While at it, clean up acpi_power_get_state() somewhat.
+
+No intentional functional impact.
+
+Tested-by: Dave Olsthoorn <dave@bewaar.me>
+Tested-by: Shujun Wang <wsj20369@163.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/power.c |   27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
+
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -182,10 +182,11 @@ int acpi_extract_power_resources(union a
+ 	return err;
+ }
+ 
+-static int acpi_power_get_state(acpi_handle handle, int *state)
++static int acpi_power_get_state(acpi_handle handle, u8 *state)
+ {
+ 	acpi_status status = AE_OK;
+ 	unsigned long long sta = 0;
++	u8 cur_state;
+ 
+ 	if (!handle || !state)
+ 		return -EINVAL;
+@@ -194,25 +195,24 @@ static int acpi_power_get_state(acpi_han
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+ 
+-	*state = (sta & 0x01)?ACPI_POWER_RESOURCE_STATE_ON:
+-			      ACPI_POWER_RESOURCE_STATE_OFF;
++	cur_state = sta & ACPI_POWER_RESOURCE_STATE_ON;
+ 
+ 	acpi_handle_debug(handle, "Power resource is %s\n",
+-			  *state ? "on" : "off");
++			  cur_state ? "on" : "off");
+ 
++	*state = cur_state;
+ 	return 0;
+ }
+ 
+-static int acpi_power_get_list_state(struct list_head *list, int *state)
++static int acpi_power_get_list_state(struct list_head *list, u8 *state)
+ {
+ 	struct acpi_power_resource_entry *entry;
+-	int cur_state;
++	u8 cur_state = ACPI_POWER_RESOURCE_STATE_OFF;
+ 
+ 	if (!list || !state)
+ 		return -EINVAL;
+ 
+ 	/* The state of the list is 'on' IFF all resources are 'on'. */
+-	cur_state = 0;
+ 	list_for_each_entry(entry, list, node) {
+ 		struct acpi_power_resource *resource = entry->resource;
+ 		acpi_handle handle = resource->device.handle;
+@@ -592,7 +592,7 @@ int acpi_power_wakeup_list_init(struct l
+ 		struct acpi_power_resource *resource = entry->resource;
+ 		acpi_handle handle = resource->device.handle;
+ 		int result;
+-		int state;
++		u8 state;
+ 
+ 		mutex_lock(&resource->resource_lock);
+ 
+@@ -789,8 +789,8 @@ int acpi_disable_wakeup_device_power(str
+ 
+ int acpi_power_get_inferred_state(struct acpi_device *device, int *state)
+ {
++	u8 list_state = ACPI_POWER_RESOURCE_STATE_OFF;
+ 	int result = 0;
+-	int list_state = 0;
+ 	int i = 0;
+ 
+ 	if (!device || !state)
+@@ -919,7 +919,8 @@ struct acpi_device *acpi_add_power_resou
+ 	union acpi_object acpi_object;
+ 	struct acpi_buffer buffer = { sizeof(acpi_object), &acpi_object };
+ 	acpi_status status;
+-	int state, result = -ENODEV;
++	int result;
++	u8 state;
+ 
+ 	acpi_bus_get_device(handle, &device);
+ 	if (device)
+@@ -979,7 +980,8 @@ void acpi_resume_power_resources(void)
+ 	mutex_lock(&power_resource_list_lock);
+ 
+ 	list_for_each_entry(resource, &acpi_power_resource_list, list_node) {
+-		int result, state;
++		int result;
++		u8 state;
+ 
+ 		mutex_lock(&resource->resource_lock);
+ 
+@@ -1012,7 +1014,8 @@ static void acpi_power_turn_off_if_unuse
+ 		if (resource->users > 0)
+ 			return;
+ 	} else {
+-		int result, state;
++		int result;
++		u8 state;
+ 
+ 		result = acpi_power_get_state(resource->device.handle, &state);
+ 		if (result || state == ACPI_POWER_RESOURCE_STATE_OFF)
+
+
 
