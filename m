@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C4C5C4708A
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 06:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5A37C4707F
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 06:13:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6FFB3613D4
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 06:13:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BB49B613E3
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 06:13:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229836AbhE0GO5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 May 2021 02:14:57 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:48313 "EHLO
+        id S229793AbhE0GPA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 May 2021 02:15:00 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:62122 "EHLO
         so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229904AbhE0GOy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 02:14:54 -0400
+        with ESMTP id S229928AbhE0GO5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 02:14:57 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1622096002; h=References: In-Reply-To: Message-Id: Date:
+ s=smtp; t=1622096004; h=References: In-Reply-To: Message-Id: Date:
  Subject: Cc: To: From: Sender;
- bh=JvgOHm6a2wLmPx0HPIhq/3P0bq9FPp9/PY1rUljh0ag=; b=nTCtFdQc3X2l2jsiK0ZireCGQ4dhwPxpAKM01g7w9Kkk28pyVrIZjqjUZDtMZ1nCFR6fALKf
- 3A4t/qhOSd8U5ZpdLYgcKVvbDEaLVs6HsJvl0F2r0zK79wmWQWySc6BWoP+fVSe+0OKuESd6
- hPZqmzV3QUPAm5mmgY3RlIuL+IU=
+ bh=lXTsfZqPcbDCxCHnsnI5ikdYUjfJEBZAI3C9A6ale4U=; b=vEYfG44NIdrjLa3ykNKbrCWy8vEs1Tpcyd2cPRQGV4KhAsqvsYCLgkNuLNpWYBQDvIonVtSs
+ pFpKBAhezpmCjOKPaLKR4g2B2VHXG2Hpq2QrCKqunjUZmDdd+2JX0eEVc0kO7Or6pwWfxRgG
+ q20Uc11bqCFYwYzg6f4zB7792i4=
 X-Mailgun-Sending-Ip: 198.61.254.9
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n02.prod.us-east-1.postgun.com with SMTP id
- 60af3875b15734c8f9104181 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 27 May 2021 06:13:09
+ smtp-out-n03.prod.us-west-2.postgun.com with SMTP id
+ 60af386df752fca66830b2e4 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 27 May 2021 06:13:01
  GMT
 Sender: rnayak=codeaurora.org@mg.codeaurora.org
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 33AFDC4323A; Thu, 27 May 2021 06:13:09 +0000 (UTC)
+        id 920D7C43460; Thu, 27 May 2021 06:13:01 +0000 (UTC)
 Received: from blr-ubuntu-173.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: rnayak)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 1EDE5C433F1;
-        Thu, 27 May 2021 06:13:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 1EDE5C433F1
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id B8009C43217;
+        Thu, 27 May 2021 06:12:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org B8009C43217
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=rnayak@codeaurora.org
 From:   Rajendra Nayak <rnayak@codeaurora.org>
@@ -52,9 +52,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         swboyd@chromium.org, rojay@codeaurora.org,
         Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v2 3/3] arm64: dts: sc7180: Add assigned-performance-states for i2c
-Date:   Thu, 27 May 2021 11:42:29 +0530
-Message-Id: <1622095949-2014-4-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v2 1/3] dt-bindings: power: Introduce 'assigned-performance-states' property
+Date:   Thu, 27 May 2021 11:42:27 +0530
+Message-Id: <1622095949-2014-2-git-send-email-rnayak@codeaurora.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1622095949-2014-1-git-send-email-rnayak@codeaurora.org>
 References: <1622095949-2014-1-git-send-email-rnayak@codeaurora.org>
@@ -62,156 +62,84 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-qup-i2c devices on sc7180 are clocked with a fixed clock (19.2 MHz)
-Though qup-i2c does not support DVFS, it still needs to vote for a
-performance state on 'CX' to satisfy the 19.2 Mhz clock frequency
-requirement.
-
-Use 'assigned-performance-states' to pass this information from
-device tree, and also add the power-domains property to specify
-the cx power-domain.
+While most devices within power-domains which support performance states,
+scale the performance state dynamically, some devices might want to
+set a static/default performance state while the device is active.
+These devices typically would also run off a fixed clock and not support
+dynamically scaling the device's performance, also known as DVFS techniques.
+Add a property 'assigned-performance-states' which client devices can
+use to set this default performance state on their power-domains.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- arch/arm64/boot/dts/qcom/sc7180.dtsi | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ .../devicetree/bindings/power/power-domain.yaml    | 50 ++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sc7180.dtsi b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-index 6228ba2..7914084 100644
---- a/arch/arm64/boot/dts/qcom/sc7180.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-@@ -786,8 +786,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
+diff --git a/Documentation/devicetree/bindings/power/power-domain.yaml b/Documentation/devicetree/bindings/power/power-domain.yaml
+index aed51e9..88cebf2 100644
+--- a/Documentation/devicetree/bindings/power/power-domain.yaml
++++ b/Documentation/devicetree/bindings/power/power-domain.yaml
+@@ -66,6 +66,19 @@ properties:
+       by the given provider should be subdomains of the domain specified
+       by this binding.
  
- 			spi0: spi@880000 {
-@@ -838,8 +840,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
++  assigned-performance-states:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    description:
++       Some devices might need to configure their power domains in a default
++       performance state while the device is active. These devices typically
++       would also run off a fixed clock and not support dynamically scaling the
++       device's performance, also known as DVFS techniques. The list of performance
++       state values should correspond to the list of power domains specified as part
++       of the power-domains property. Each cell corresponds to one power-domain.
++       A value of 0 can be used for power-domains with no performance state
++       requirement. In case the power-domains have OPP tables associated, the values
++       here would typically match with one of the entries in the OPP table.
++
+ required:
+   - "#power-domain-cells"
  
- 			spi1: spi@884000 {
-@@ -890,8 +894,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			uart2: serial@888000 {
-@@ -924,8 +930,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi3: spi@88c000 {
-@@ -976,8 +984,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			uart4: serial@890000 {
-@@ -1010,8 +1020,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_0 0>,
- 						<&aggre1_noc MASTER_QUP_0 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi5: spi@894000 {
-@@ -1077,8 +1089,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi6: spi@a80000 {
-@@ -1129,8 +1143,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			uart7: serial@a84000 {
-@@ -1163,8 +1179,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi8: spi@a88000 {
-@@ -1215,8 +1233,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			uart9: serial@a8c000 {
-@@ -1249,8 +1269,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi10: spi@a90000 {
-@@ -1301,8 +1323,10 @@
- 						<&gem_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_QUP_1 0>,
- 						<&aggre2_noc MASTER_QUP_1 0 &mc_virt SLAVE_EBI1 0>;
- 				interconnect-names = "qup-core", "qup-config",
- 							"qup-memory";
-+				power-domains = <&rpmhpd SC7180_CX>;
-+				assigned-performance-states = <RPMH_REGULATOR_LEVEL_LOW_SVS>;
- 				status = "disabled";
- 			};
- 
- 			spi11: spi@a94000 {
+@@ -131,3 +144,40 @@ examples:
+             min-residency-us = <7000>;
+         };
+     };
++
++  - |
++    parent4: power-controller@12340000 {
++        compatible = "foo,power-controller";
++        reg = <0x12340000 0x1000>;
++        #power-domain-cells = <0>;
++    };
++
++    parent5: power-controller@43210000 {
++        compatible = "foo,power-controller";
++        reg = <0x43210000 0x1000>;
++        #power-domain-cells = <0>;
++        operating-points-v2 = <&power_opp_table>;
++
++        power_opp_table: opp-table {
++            compatible = "operating-points-v2";
++
++            power_opp_low: opp1 {
++                opp-level = <16>;
++            };
++
++            rpmpd_opp_ret: opp2 {
++                opp-level = <64>;
++            };
++
++            rpmpd_opp_svs: opp3 {
++                opp-level = <256>;
++            };
++        };
++    };
++
++    child4: consumer@12341000 {
++        compatible = "foo,consumer";
++        reg = <0x12341000 0x1000>;
++        power-domains = <&parent4>, <&parent5>;
++        assigned-performance-states = <0>, <256>;
++    };
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
