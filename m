@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6713AC4724C
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:21 +0000 (UTC)
-Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 471F5613F6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3B42C47245
 	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:19 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id B233F613ED
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236543AbhE0Utv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 May 2021 16:49:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49990 "EHLO
+        id S236670AbhE0Utt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 May 2021 16:49:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49972 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236501AbhE0Uto (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 16:49:44 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24005C061574;
-        Thu, 27 May 2021 13:48:10 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id v8so2024781lft.8;
-        Thu, 27 May 2021 13:48:10 -0700 (PDT)
+        with ESMTP id S236428AbhE0Utn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 16:49:43 -0400
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00C42C06138A;
+        Thu, 27 May 2021 13:48:07 -0700 (PDT)
+Received: by mail-lf1-x129.google.com with SMTP id x38so2001718lfa.10;
+        Thu, 27 May 2021 13:48:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=/XloZr9g5QG7Kr7vGUXvbAzz/oLdVnd2/AZAYA2fZnk=;
-        b=isvuWBE8tQb4r5dTtU6bTmJ4cslDHH4ej3H6wxBMbzlRfnQ7ew8oF7so5B+3ewoWh5
-         Sa8oZObiwxsl5rrs/7CXNlqbHKsfmsQBHrL1yCW15GKnE/Ziz9L4aoZ0fz0dlUq5PtbU
-         S+ZN9Hx8m2ZiManlQTe+ox3zpI/egtEhRJt0qkNV7S//duR+dNbvQ8VSXHStqRvif3jG
-         p2CrcOiWOHO8pM63tlUXWCKM+DTq2+qF5EosMUc4zy5jci2rTzD81vDOJH4s9MlvB/0s
-         FTJdN5oKkR0iwAR3ECPuRcWCytcvANwYDloiyowmEXn7InmNyn6uT9SHRFp4fOeLTAtw
-         hmNA==
+        bh=NrCxAlPUucoEt+gGLLTmwPl8GAwFzF+H/pcyQba15ag=;
+        b=fXdyrKn2PV9pBQVHK78mBIFDGIcokAfVdJiGVYOSFe9ueSTUASVS2vpAC8vxvR4/+f
+         MJyzjJC8cEn4ueHeqKT79JqqdeZJwy6KHb9TY0UvBaypKFEr6iHkVtjvZ4V5GnIdtTHe
+         tzCY8wt+R6nvrb6YIMJMdBh/Hma03onFppk5AEw8Pl88NYRbTUR31VMGBOGyEszs7NH3
+         yvOBUxS3EOMY3lTX/uPkgkCfWIcbDgxyOF0h+xNpweQ1Cze/WX+/xerYRQvP+xqHitX6
+         3bVJbAxzwExRyswpbrdRscE0aXRh9g9Xueyg/9/vdMuWEBlbtEJswGEzgVfWA2q2Dg13
+         6IRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=/XloZr9g5QG7Kr7vGUXvbAzz/oLdVnd2/AZAYA2fZnk=;
-        b=XeEgFRiRXz6NHBu/WaP1f63EdwY3gLl76chPsELOaBBLjjbiLstg3TpontULvPLl/Z
-         O8hs382eUXnF6/UBuTfspZXljCgJxOo/5ZHGvsAO/U2tv8PWvn5wkg3NbBf1uTQj/qca
-         14yb7sI3I5PcddrrWbvI6UBLzgOV0YAUr2MAA81CijiTjKW2Yf/xBTfJKlriApbHBNlg
-         bx9POKx+ptPAf+t00rzNxymi+auXzuuDPLwFxrxYWP/18NCPcgMdooafW9Ujd2yjZ0bK
-         OQ9muONRKx7ZXm3vsLjqHKhRNSgFybeSc6Ij+u3s66cYHlyA3Vpyhwb7nMZ6/vzu7ODb
-         zCgA==
-X-Gm-Message-State: AOAM532VdyFCxU04KeZXOd5Ou3pWq0je1HadpMiL1pTpHKfHDqBp1ZJI
-        a/pGcefDokGdXK32scjdE5M=
-X-Google-Smtp-Source: ABdhPJzQfLMqiwv4ZE0yGTSA3wruNbYSTX6oXJ5XMkH2/Ju8jnuWcMiJ87HZPuzSjD2llqJ/AjJ6tQ==
-X-Received: by 2002:a05:6512:468:: with SMTP id x8mr3462294lfd.519.1622148488491;
-        Thu, 27 May 2021 13:48:08 -0700 (PDT)
+        bh=NrCxAlPUucoEt+gGLLTmwPl8GAwFzF+H/pcyQba15ag=;
+        b=PLMDOwawBHiw0MOoZhsVJtJH6q9IAXpcTh5IQW3syNruqzMUz0e/YlKflxLQE9sh9q
+         kgN9fd3CWU1ssqI8ULA+efo7iNZ/KuhnVp6pAROlc0hZAP/Wbh9y66IHgeMwWbXc80fw
+         ouBBNx2GGEtVMXDRSFuE+89w0hGFAdQeXYmmgyU/nzGBzZuvHnxqEwmFsp0LuEmX0wEA
+         fChk38JQSRtnXDRrw1+v1XWZ4YCu6KEpUUs0yyAZKn3JlGldU8MPSNpM7v7rIjfKROxs
+         c2eVANNEaTzCmWQQHn41OfgN/k+D2EbtfjDOz++FuECkXxy56URVhk8+mHTRUjRe0VXU
+         OGNg==
+X-Gm-Message-State: AOAM530DxyQG04xLmotMag6NcBBnWwFSfDtOBKZk3VlfkVYhrxop1eTk
+        Ittb1J80+WLEiSdCuYyR1UE=
+X-Google-Smtp-Source: ABdhPJzMClJ9BTyw0M0W1DeKgeBj/8t0zVMuqRA6WVG/KxJEVE7QopcFAnTDxFWPn3oLiBeH8Pwthg==
+X-Received: by 2002:a05:6512:1392:: with SMTP id p18mr3498349lfa.294.1622148486337;
+        Thu, 27 May 2021 13:48:06 -0700 (PDT)
 Received: from localhost.localdomain (46-138-12-55.dynamic.spd-mgts.ru. [46.138.12.55])
-        by smtp.gmail.com with ESMTPSA id 10sm347297ljq.39.2021.05.27.13.48.07
+        by smtp.gmail.com with ESMTPSA id 10sm347297ljq.39.2021.05.27.13.48.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 May 2021 13:48:08 -0700 (PDT)
+        Thu, 27 May 2021 13:48:05 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Nathan Chancellor <nathan@kernel.org>,
         linux-clk@vger.kernel.org
-Subject: [PATCH v3 13/14] soc/tegra: pmc: Add driver state syncing
-Date:   Thu, 27 May 2021 23:47:41 +0300
-Message-Id: <20210527204742.10379-14-digetx@gmail.com>
+Subject: [PATCH v3 11/14] dt-bindings: soc: tegra-pmc: Document core power domain
+Date:   Thu, 27 May 2021 23:47:39 +0300
+Message-Id: <20210527204742.10379-12-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210527204742.10379-1-digetx@gmail.com>
 References: <20210527204742.10379-1-digetx@gmail.com>
@@ -88,96 +88,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add driver state syncing that is invoked once all PMC consumers are
-attached and ready. The consumers are the power domain clients.
-The synchronization callback is invoked once all client drivers are
-probed, the driver core handles this for us. This callback informs
-PMC driver that all voltage votes are initialized by each PD client
-and it's safe to begin voltage scaling of the core power domain.
+All NVIDIA Tegra SoCs have a core power domain where majority of hardware
+blocks reside. Document the new core power domain properties.
 
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/soc/tegra/pmc.c | 23 +++++++++++++++++++++++
- include/soc/tegra/pmc.h |  6 ++++++
- 2 files changed, 29 insertions(+)
+ .../arm/tegra/nvidia,tegra20-pmc.yaml         | 35 +++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 62f0f928658d..e8e5636f01f8 100644
---- a/drivers/soc/tegra/pmc.c
-+++ b/drivers/soc/tegra/pmc.c
-@@ -429,6 +429,8 @@ struct tegra_pmc {
- 	struct irq_chip irq;
+diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
+index 43fd2f8927d0..0afec83cc723 100644
+--- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
++++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
+@@ -301,6 +301,33 @@ patternProperties:
  
- 	struct notifier_block clk_nb;
-+
-+	bool core_domain_state_synced;
- };
+     additionalProperties: false
  
- static struct tegra_pmc *pmc = &(struct tegra_pmc) {
-@@ -1303,6 +1305,11 @@ static int tegra_powergate_add(struct tegra_pmc *pmc, struct device_node *np)
- 	return err;
- }
++  core-domain:
++    type: object
++    description: |
++      The vast majority of hardware blocks of Tegra SoC belong to a
++      Core power domain, which has a dedicated voltage rail that powers
++      the blocks.
++
++    properties:
++      operating-points-v2:
++        description:
++          Should contain level, voltages and opp-supported-hw property.
++          The supported-hw is a bitfield indicating SoC speedo or process
++          ID mask.
++
++      "#power-domain-cells":
++        const: 0
++
++    required:
++      - operating-points-v2
++      - "#power-domain-cells"
++
++    additionalProperties: false
++
++  core-supply:
++    description:
++      Phandle to voltage regulator connected to the SoC Core power rail.
++
+ required:
+   - compatible
+   - reg
+@@ -325,6 +352,7 @@ examples:
+     tegra_pmc: pmc@7000e400 {
+               compatible = "nvidia,tegra210-pmc";
+               reg = <0x7000e400 0x400>;
++              core-supply = <&regulator>;
+               clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
+               clock-names = "pclk", "clk32k_in";
+               #clock-cells = <1>;
+@@ -338,17 +366,24 @@ examples:
+               nvidia,core-power-req-active-high;
+               nvidia,sys-clock-req-active-high;
  
-+bool tegra_pmc_core_domain_state_synced(void)
-+{
-+	return pmc->core_domain_state_synced;
-+}
++              pd_core: core-domain {
++                      operating-points-v2 = <&core_opp_table>;
++                      #power-domain-cells = <0>;
++              };
 +
- static int
- tegra_pmc_core_pd_set_performance_state(struct generic_pm_domain *genpd,
- 					unsigned int level)
-@@ -3792,6 +3799,21 @@ static const struct of_device_id tegra_pmc_match[] = {
- 	{ }
- };
+               powergates {
+                     pd_audio: aud {
+                             clocks = <&tegra_car TEGRA210_CLK_APE>,
+                                      <&tegra_car TEGRA210_CLK_APB2APE>;
+                             resets = <&tegra_car 198>;
++                            power-domains = <&pd_core>;
+                             #power-domain-cells = <0>;
+                     };
  
-+static void tegra_pmc_sync_state(struct device *dev)
-+{
-+	int err;
-+
-+	pmc->core_domain_state_synced = true;
-+
-+	/* this is a no-op if core regulator isn't used */
-+	mutex_lock(&pmc->powergates_lock);
-+	err = dev_pm_opp_sync_regulators(dev);
-+	mutex_unlock(&pmc->powergates_lock);
-+
-+	if (err)
-+		dev_err(dev, "failed to sync regulators: %d\n", err);
-+}
-+
- static struct platform_driver tegra_pmc_driver = {
- 	.driver = {
- 		.name = "tegra-pmc",
-@@ -3800,6 +3822,7 @@ static struct platform_driver tegra_pmc_driver = {
- #if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ARM)
- 		.pm = &tegra_pmc_pm_ops,
- #endif
-+		.sync_state = tegra_pmc_sync_state,
- 	},
- 	.probe = tegra_pmc_probe,
- };
-diff --git a/include/soc/tegra/pmc.h b/include/soc/tegra/pmc.h
-index 361cb64246f7..3d0b8694b2d9 100644
---- a/include/soc/tegra/pmc.h
-+++ b/include/soc/tegra/pmc.h
-@@ -231,11 +231,17 @@ static inline void tegra_pmc_enter_suspend_mode(enum tegra_suspend_mode mode)
- 
- #if defined(CONFIG_SOC_TEGRA_PMC) && defined(CONFIG_PM_SLEEP)
- enum tegra_suspend_mode tegra_pmc_get_suspend_mode(void);
-+bool tegra_pmc_core_domain_state_synced(void);
- #else
- static inline enum tegra_suspend_mode tegra_pmc_get_suspend_mode(void)
- {
- 	return TEGRA_SUSPEND_NONE;
- }
-+
-+static inline bool tegra_pmc_core_domain_state_synced(void)
-+{
-+	return false;
-+}
- #endif
- 
- #endif /* __SOC_TEGRA_PMC_H__ */
+                     pd_xusbss: xusba {
+                             clocks = <&tegra_car TEGRA210_CLK_XUSB_SS>;
+                             resets = <&tegra_car TEGRA210_CLK_XUSB_SS>;
++                            power-domains = <&pd_core>;
+                             #power-domain-cells = <0>;
+                     };
+               };
 -- 
 2.30.2
 
