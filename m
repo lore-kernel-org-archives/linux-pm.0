@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F334C47093
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87B01C47248
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B7C1A61404
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7CE3E6144A
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 20:48:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236669AbhE0Uts (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 May 2021 16:49:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49960 "EHLO
+        id S236112AbhE0Utk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 May 2021 16:49:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236097AbhE0Utj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 16:49:39 -0400
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FD01C061574;
-        Thu, 27 May 2021 13:48:04 -0700 (PDT)
-Received: by mail-lj1-x229.google.com with SMTP id 131so2589804ljj.3;
-        Thu, 27 May 2021 13:48:04 -0700 (PDT)
+        with ESMTP id S236032AbhE0Utg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 16:49:36 -0400
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43E4DC061574;
+        Thu, 27 May 2021 13:48:01 -0700 (PDT)
+Received: by mail-lj1-x22f.google.com with SMTP id a4so2572388ljd.5;
+        Thu, 27 May 2021 13:48:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=XRjE9GrdNwqNM0RZjj5ET9YAbdAVTqOUbODt0FYhk9w=;
-        b=uHd+rf/sXV179Vp4dFHGFGojkUiRIuuzgDbP0HRJGRhiI+4MmlvuzYd4GtqItt2NMy
-         SJSAJDSq4zC23XErSSRgY5vAlu2358aW/vhJb15/Hsixs3vlTv2mAZe6XxEXpqodj05w
-         S/sLhGSIZYoCrTENPCaruK0Mq2s/O86E+VrqYK4rL8IJAPTsG0PS+YkNPYNjydgg9Nju
-         bHQlnQ8CmZeSPdZnwS2l2QjbfRg6V0lYgQNF1LjjwqrqhUT+LhRg06W6pEnNTXIH4H+F
-         BSdll5qHkr85BAwWgChGJXkoYymQgmdvQ5WNWHsW+ubJthEreDmWZCTb0tf++pzpjr7q
-         F6+A==
+        bh=HXT+IvjVluiKH3yhs5geuypz9CaKXis2aNZdKmGa0hs=;
+        b=o287LWBK3tchYnGzv75tfHJ1VdqUYTX82f7U34q1JZcC1b744czDVI5h+wBt8d62YI
+         3BgNFPRQOjQ+mYvVUpUp9lpZfHZRvrd5g3ztj3FnHahadAkK4O4nQrZbgUDD8oWOgtgX
+         dIGfS3CamF6KFcII+CFkYoDJCZxoYV+Dqidmbvc5EQ0j+xICVlbzl9SJF9EpcBQDZfbD
+         AnEvbd9hIyksFc9LYzEcF3sjutA6G1olgWMG9Qem1Xeo+e4Fh/CJnJirYAiAmM6rIY3S
+         NwA+/99uVrmgmhhnzbakcIR6K2vdxw4kzBqi2lRZieykt/zXezml0UcIdCVEG9wnyX/P
+         pdig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=XRjE9GrdNwqNM0RZjj5ET9YAbdAVTqOUbODt0FYhk9w=;
-        b=XbdADIJGvmv2BBSwjaqvpCtepSvITgcZvqPeUPo6m65MHBIcbq8KGpcOsiT8OGtJQD
-         fmeUWD3/b98r6d6gdYvPb+Q/Ecrj1mDAIsRdtPDHqPhcbdVGGOpxioXA88JMdN1uRQgO
-         UsOUel5TfJcUcuCfyItw9XvkYZN+0x4c/Sj1v+uk/LFYcape9hyvQm/bBny2zD6jMSGJ
-         4qQSMsIkl6N5BGBInZfFEggvY50WA4fxFLE9wEUW0B5KdXaHPrLSrcxBG8dPXvkCaGP8
-         05sNoZXnGKAbZe6zYhJzToegLJOcfd3UdHNKdVrY6lkCLGJnziEMWJrv5LAfkKIhY33M
-         rdlA==
-X-Gm-Message-State: AOAM531NXjqMRq2pm7kz8tgjp7YO6R+VOAP5bdItCtHC5KTmpliFxO9+
-        Z+LXAWdBYRpkoljCVz3Y3wA=
-X-Google-Smtp-Source: ABdhPJxRWNM7CQmXXEzjfx6OqKbUFUiuz1NT6iXFUqtChlWkyWeBo+w/0mgPWC5YDzr/1WPDdPFFiw==
-X-Received: by 2002:a05:651c:102f:: with SMTP id w15mr3848141ljm.367.1622148482863;
-        Thu, 27 May 2021 13:48:02 -0700 (PDT)
+        bh=HXT+IvjVluiKH3yhs5geuypz9CaKXis2aNZdKmGa0hs=;
+        b=bBf1shXf+5qssIWd5UHahk5x19Z+WvcI25vZf6WKoeQlD6VaD+RnSBs+s3exj8vDyC
+         xfF13+BbeOM0Ajb/Sk1eV9fZqQ18qRenep0BNRXt0QGDmwL7+XuUN+PQnpkfOWKd4vWB
+         KDfbcO1Kl8F9zUoqJsQ8eATXplgoN2R/g/qhU2huKTqhhETqka/gjqnzP30bl9Nn8ysn
+         b7wJnCrnU/Z6JCMB4e8kEyDIASnJtbWSszDLurorxQFZJCvf54X2OuWZO+xL+uDIK1Y6
+         lSlsceTNwtmfq3tNgYMwgwYkJIDXntmC9asLrlMqzWbyGJLp81Ro39YJMnZ1CvFdz0VC
+         MUTg==
+X-Gm-Message-State: AOAM533vebPQ8RfO095PdI2Qpc/PWGdiMyAokjiV7guEzVPFidcbzLzC
+        gR0Zh/N5KBuvdGIZ4g9JbdQ=
+X-Google-Smtp-Source: ABdhPJyNnSGRAZAdJaNO2CJRf8+LyjkeQ48ZTe7V0W88t44kISXEF12v+xfOJ1+5fQVAaXQ9m3fW7w==
+X-Received: by 2002:a05:651c:210:: with SMTP id y16mr3963314ljn.386.1622148479669;
+        Thu, 27 May 2021 13:47:59 -0700 (PDT)
 Received: from localhost.localdomain (46-138-12-55.dynamic.spd-mgts.ru. [46.138.12.55])
-        by smtp.gmail.com with ESMTPSA id 10sm347297ljq.39.2021.05.27.13.48.01
+        by smtp.gmail.com with ESMTPSA id 10sm347297ljq.39.2021.05.27.13.47.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 May 2021 13:48:02 -0700 (PDT)
+        Thu, 27 May 2021 13:47:59 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Nathan Chancellor <nathan@kernel.org>,
         linux-clk@vger.kernel.org
-Subject: [PATCH v3 08/14] memory: tegra: Enable compile testing for all drivers
-Date:   Thu, 27 May 2021 23:47:36 +0300
-Message-Id: <20210527204742.10379-9-digetx@gmail.com>
+Subject: [PATCH v3 05/14] soc/tegra: fuse: Add stubs needed for compile-testing
+Date:   Thu, 27 May 2021 23:47:33 +0300
+Message-Id: <20210527204742.10379-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210527204742.10379-1-digetx@gmail.com>
 References: <20210527204742.10379-1-digetx@gmail.com>
@@ -88,73 +88,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable compile testing for all Tegra memory drivers.
+Add missing stubs that will allow Tegra memory driver to be compile-tested
+by kernel build bots.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/Kconfig | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ include/soc/tegra/fuse.h | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
-index a70967a56e52..71bba2345bce 100644
---- a/drivers/memory/tegra/Kconfig
-+++ b/drivers/memory/tegra/Kconfig
-@@ -2,16 +2,18 @@
- config TEGRA_MC
- 	bool "NVIDIA Tegra Memory Controller support"
- 	default y
--	depends on ARCH_TEGRA
-+	depends on ARCH_TEGRA || (COMPILE_TEST && COMMON_CLK)
- 	select INTERCONNECT
- 	help
- 	  This driver supports the Memory Controller (MC) hardware found on
- 	  NVIDIA Tegra SoCs.
+diff --git a/include/soc/tegra/fuse.h b/include/soc/tegra/fuse.h
+index 78cbc787a4dc..990701f788bc 100644
+--- a/include/soc/tegra/fuse.h
++++ b/include/soc/tegra/fuse.h
+@@ -52,14 +52,28 @@ struct tegra_sku_info {
+ 	enum tegra_revision revision;
+ };
  
-+if TEGRA_MC
++#ifdef CONFIG_ARCH_TEGRA
++extern struct tegra_sku_info tegra_sku_info;
+ u32 tegra_read_straps(void);
+ u32 tegra_read_ram_code(void);
+ int tegra_fuse_readl(unsigned long offset, u32 *value);
+-
+-#ifdef CONFIG_ARCH_TEGRA
+-extern struct tegra_sku_info tegra_sku_info;
+ #else
+ static struct tegra_sku_info tegra_sku_info __maybe_unused;
 +
- config TEGRA20_EMC
- 	tristate "NVIDIA Tegra20 External Memory Controller driver"
- 	default y
--	depends on TEGRA_MC && ARCH_TEGRA_2x_SOC
-+	depends on ARCH_TEGRA_2x_SOC || COMPILE_TEST
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
- 	select PM_DEVFREQ
- 	help
-@@ -23,7 +25,7 @@ config TEGRA20_EMC
- config TEGRA30_EMC
- 	tristate "NVIDIA Tegra30 External Memory Controller driver"
- 	default y
--	depends on TEGRA_MC && ARCH_TEGRA_3x_SOC
-+	depends on ARCH_TEGRA_3x_SOC || COMPILE_TEST
- 	select PM_OPP
- 	help
- 	  This driver is for the External Memory Controller (EMC) found on
-@@ -34,8 +36,8 @@ config TEGRA30_EMC
- config TEGRA124_EMC
- 	tristate "NVIDIA Tegra124 External Memory Controller driver"
- 	default y
--	depends on TEGRA_MC && ARCH_TEGRA_124_SOC
--	select TEGRA124_CLK_EMC
-+	depends on ARCH_TEGRA_124_SOC || COMPILE_TEST
-+	select TEGRA124_CLK_EMC if ARCH_TEGRA
- 	select PM_OPP
- 	help
- 	  This driver is for the External Memory Controller (EMC) found on
-@@ -49,10 +51,12 @@ config TEGRA210_EMC_TABLE
++static inline u32 tegra_read_straps(void)
++{
++	return 0;
++}
++
++static inline u32 tegra_read_ram_code(void)
++{
++	return 0;
++}
++
++static inline int tegra_fuse_readl(unsigned long offset, u32 *value)
++{
++	return -ENODEV;
++}
+ #endif
  
- config TEGRA210_EMC
- 	tristate "NVIDIA Tegra210 External Memory Controller driver"
--	depends on TEGRA_MC && ARCH_TEGRA_210_SOC
-+	depends on ARCH_TEGRA_210_SOC || COMPILE_TEST
- 	select TEGRA210_EMC_TABLE
- 	help
- 	  This driver is for the External Memory Controller (EMC) found on
- 	  Tegra210 chips. The EMC controls the external DRAM on the board.
- 	  This driver is required to change memory timings / clock rate for
- 	  external memory.
-+
-+endif
+ struct device *tegra_soc_device_register(void);
 -- 
 2.30.2
 
