@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8565C4707F
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 21:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54443C47092
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 21:44:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6B0E2613BA
-	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 21:44:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3047F613E2
+	for <linux-pm@archiver.kernel.org>; Thu, 27 May 2021 21:44:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235106AbhE0Vpq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 May 2021 17:45:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34102 "EHLO
+        id S235568AbhE0Vpr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 May 2021 17:45:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235193AbhE0Vpf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 17:45:35 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7110BC0613CE;
-        Thu, 27 May 2021 14:43:59 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id f30so2281695lfj.1;
-        Thu, 27 May 2021 14:43:59 -0700 (PDT)
+        with ESMTP id S235543AbhE0Vpi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 May 2021 17:45:38 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75F4AC061343;
+        Thu, 27 May 2021 14:44:02 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id a5so2332394lfm.0;
+        Thu, 27 May 2021 14:44:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=PnHT/nk8CJodgkwuBSRTekimstD88D/By8a3gAk3kxw=;
-        b=UvAFDXd9ZhY5H5Qe2SorzXqtsMKT7W8IWcpABGT7kN0kOSrqn0hnfOywyzzdF/5dIC
-         jfCM/qF9WtOkERpUUU/URO/lGzjf29oxT61cfsn5zSZxKeRbSoeooIynAkmybiSi93ty
-         t0s5Pdekqd/sbk5sRPA+NQLX/L2QRbJvhKIl/eYlaJDdmkRwdotVCzjZaamWZ4Delaai
-         sDcjpnqTQohwNKNImQ0GtvGASqdI6wLyj426CXdcQ2NTWNrCDxvxu5PFfznz1AkVvK5H
-         57iHwJ+EnhBWH+s//jcMVMa6mLl3bW2JOSDUJELpoBb1CacxuDkbhA7PP0AwhQlz8gUR
-         GmLw==
+        bh=eUIhc9uggXHCPJQoAO/4UpzdPZReard7z2PxwHsBSd8=;
+        b=Yczfx/RsfoFRSToQRTHR7l8rYFxZ2D097g20XQV1Gh7sL4WXVwLFc36qhbXnV9Lc2B
+         T9CPi2+EhRQhZ0SRUGFCpLCfy/tI3AkXghvbZ/czt61zKav1TCRzwVyR9ddGtwQPSR8b
+         DP56QQoMSyVi/1N34FrYW07xJ5er8l2jgmXlbs7fWgOAIcaBbNrnNul4FSEvM08Dfqab
+         eEN2t7LqF7UV82x6xuV5n7H7zDHExGJQ2piSIAB0+XnmtW/xa7V8D1Z4aZcmN1sZdIu0
+         X0JuT41lhaKz4lIGtYW2jvzPrdtOYXG5X4ZARCkjetHKVXEsOP1cw9oJUnePSDSfl/EI
+         PyFw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=PnHT/nk8CJodgkwuBSRTekimstD88D/By8a3gAk3kxw=;
-        b=VjFnbs4/soII4Bx4zCY+VzjS8aE0t37t67gaQfm6L+kdVK+BrJaWelWaKvAi1Wc0tz
-         GNZx22UiK0QyC0oFFZyKSF7XIM4qZWjFx3jXJ9tRc7qCgKkA4OQyLUArYgSJXgBEvh3Q
-         acBzfDsOZ0GMMpNJY4b7kASPCku2td7B1q8zJIlMcFvDNVDzUb4LzMu8vr8oXlmJwF0C
-         bF/nGayOUeHsgWarObAZ3jeloJGrqtqGaWUW+FbcxwVs+yYv1FbPtJwJ3kO+pdLp1KZ6
-         SS0OTw5N+QFWVk2c8j+MoAQg8d8+/h5ntbCKBVi9Pw8ZoUmkUo2XFEPTFMNdi4/Oo1Fl
-         Utdg==
-X-Gm-Message-State: AOAM532P3HeG/3DxhqVJWIOY0ylJeTDSo9q/ww+BXq8H/LBDFvDoj1fB
-        xF3zscR90CT3Yaf7gn75zPo=
-X-Google-Smtp-Source: ABdhPJy5GkP3F1HXH3SDY5dJLOmOHXkyM1oICtkpsLFoDAOVoOlhJiVL9lgrhtoSTX2C92/Kqo7LXA==
-X-Received: by 2002:ac2:4281:: with SMTP id m1mr3505892lfh.164.1622151837830;
-        Thu, 27 May 2021 14:43:57 -0700 (PDT)
+        bh=eUIhc9uggXHCPJQoAO/4UpzdPZReard7z2PxwHsBSd8=;
+        b=kEZgL01c+h4Uhctp+2+Lp0dk70TB3fH/P/2Q3bgp0OCl9GThUHIJ6IsEAkGHmCfFoO
+         y0ft1jhbAWJO+VYs3pwTVMTFshX1HjOqaoNEsDWVCHG/awkUZOaTiF74aqz22oEIwJHU
+         lnOGc/6cteim3or+rMiW1yVOPtTaUx6XSONhUQm+NV9WaT+nq+y6ZS/kn/fJo8z35puB
+         tpi7a/Faq61KRF5OMg0eVMIyvt8CZ02xSUiLTa3XZZ2w5sgo5XWxCtKV5ZAzpz/6wKNT
+         PGeLNmXi1CbN5jEELpaQdneXrEKZhggqcRbytiVVV/HNvbrsMMB/xNmA/5XadVKh1O/0
+         GqPw==
+X-Gm-Message-State: AOAM531bze0VbPeBDbd8qk0YStLJDJWDBDDuQWWRXgnPTTbQOSFS4PXf
+        Rds89Qid5xUzUIKIuc1fyPU=
+X-Google-Smtp-Source: ABdhPJyRXlDgXJAcRDhXIu4xBSDCKdFbroHX+LIR24o0iZXhlvS7lUy1yjttlY4Ytv4E15ErfLiwmQ==
+X-Received: by 2002:a05:6512:3d20:: with SMTP id d32mr2326845lfv.459.1622151840867;
+        Thu, 27 May 2021 14:44:00 -0700 (PDT)
 Received: from localhost.localdomain (46-138-12-55.dynamic.spd-mgts.ru. [46.138.12.55])
-        by smtp.gmail.com with ESMTPSA id v11sm298153lfr.44.2021.05.27.14.43.56
+        by smtp.gmail.com with ESMTPSA id v11sm298153lfr.44.2021.05.27.14.43.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 May 2021 14:43:57 -0700 (PDT)
+        Thu, 27 May 2021 14:44:00 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Nathan Chancellor <nathan@kernel.org>,
         linux-clk@vger.kernel.org
-Subject: [PATCH v4 07/14] memory: tegra: Fix compilation warnings on 64bit platforms
-Date:   Fri, 28 May 2021 00:43:10 +0300
-Message-Id: <20210527214317.31014-8-digetx@gmail.com>
+Subject: [PATCH v4 10/14] memory: tegra30-emc: Use devm_tegra_core_dev_init_opp_table()
+Date:   Fri, 28 May 2021 00:43:13 +0300
+Message-Id: <20210527214317.31014-11-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210527214317.31014-1-digetx@gmail.com>
 References: <20210527214317.31014-1-digetx@gmail.com>
@@ -88,48 +88,89 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix compilation warning on 64bit platforms caused by implicit promotion
-of 32bit signed integer to a 64bit unsigned value which happens after
-enabling compile-testing of the EMC drivers.
+Use common devm_tegra_core_dev_init_opp_table() helper for the OPP table
+initialization.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
+Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra124-emc.c | 4 ++--
- drivers/memory/tegra/tegra30-emc.c  | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/memory/tegra/tegra30-emc.c | 48 +++---------------------------
+ 1 file changed, 4 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
-index 5699d909abc2..a21ca8e0841a 100644
---- a/drivers/memory/tegra/tegra124-emc.c
-+++ b/drivers/memory/tegra/tegra124-emc.c
-@@ -272,8 +272,8 @@
- #define EMC_PUTERM_ADJ				0x574
- 
- #define DRAM_DEV_SEL_ALL			0
--#define DRAM_DEV_SEL_0				(2 << 30)
--#define DRAM_DEV_SEL_1				(1 << 30)
-+#define DRAM_DEV_SEL_0				BIT(31)
-+#define DRAM_DEV_SEL_1				BIT(30)
- 
- #define EMC_CFG_POWER_FEATURES_MASK		\
- 	(EMC_CFG_DYN_SREF | EMC_CFG_DRAM_ACPD | EMC_CFG_DRAM_CLKSTOP_SR | \
 diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
-index 829f6d673c96..a2f2738ccb94 100644
+index a2f2738ccb94..63e1983f8a0d 100644
 --- a/drivers/memory/tegra/tegra30-emc.c
 +++ b/drivers/memory/tegra/tegra30-emc.c
-@@ -150,8 +150,8 @@
- #define EMC_SELF_REF_CMD_ENABLED		BIT(0)
+@@ -1480,49 +1480,6 @@ static int tegra_emc_interconnect_init(struct tegra_emc *emc)
+ 	return err;
+ }
  
- #define DRAM_DEV_SEL_ALL			(0 << 30)
--#define DRAM_DEV_SEL_0				(2 << 30)
--#define DRAM_DEV_SEL_1				(1 << 30)
-+#define DRAM_DEV_SEL_0				BIT(31)
-+#define DRAM_DEV_SEL_1				BIT(30)
- #define DRAM_BROADCAST(num) \
- 	((num) > 1 ? DRAM_DEV_SEL_ALL : DRAM_DEV_SEL_0)
+-static int tegra_emc_opp_table_init(struct tegra_emc *emc)
+-{
+-	u32 hw_version = BIT(tegra_sku_info.soc_speedo_id);
+-	struct opp_table *hw_opp_table;
+-	int err;
+-
+-	hw_opp_table = dev_pm_opp_set_supported_hw(emc->dev, &hw_version, 1);
+-	err = PTR_ERR_OR_ZERO(hw_opp_table);
+-	if (err) {
+-		dev_err(emc->dev, "failed to set OPP supported HW: %d\n", err);
+-		return err;
+-	}
+-
+-	err = dev_pm_opp_of_add_table(emc->dev);
+-	if (err) {
+-		if (err == -ENODEV)
+-			dev_err(emc->dev, "OPP table not found, please update your device tree\n");
+-		else
+-			dev_err(emc->dev, "failed to add OPP table: %d\n", err);
+-
+-		goto put_hw_table;
+-	}
+-
+-	dev_info_once(emc->dev, "OPP HW ver. 0x%x, current clock rate %lu MHz\n",
+-		      hw_version, clk_get_rate(emc->clk) / 1000000);
+-
+-	/* first dummy rate-set initializes voltage state */
+-	err = dev_pm_opp_set_rate(emc->dev, clk_get_rate(emc->clk));
+-	if (err) {
+-		dev_err(emc->dev, "failed to initialize OPP clock: %d\n", err);
+-		goto remove_table;
+-	}
+-
+-	return 0;
+-
+-remove_table:
+-	dev_pm_opp_of_remove_table(emc->dev);
+-put_hw_table:
+-	dev_pm_opp_put_supported_hw(hw_opp_table);
+-
+-	return err;
+-}
+-
+ static void devm_tegra_emc_unset_callback(void *data)
+ {
+ 	tegra20_clk_set_emc_round_callback(NULL, NULL);
+@@ -1568,6 +1525,7 @@ static int tegra_emc_init_clk(struct tegra_emc *emc)
+ 
+ static int tegra_emc_probe(struct platform_device *pdev)
+ {
++	struct tegra_core_opp_params opp_params = {};
+ 	struct device_node *np;
+ 	struct tegra_emc *emc;
+ 	int err;
+@@ -1617,7 +1575,9 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	if (err)
+ 		return err;
+ 
+-	err = tegra_emc_opp_table_init(emc);
++	opp_params.init_state = true;
++
++	err = devm_tegra_core_dev_init_opp_table(&pdev->dev, &opp_params);
+ 	if (err)
+ 		return err;
  
 -- 
 2.30.2
