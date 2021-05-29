@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02122C4708F
-	for <linux-pm@archiver.kernel.org>; Sat, 29 May 2021 17:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6779AC47093
+	for <linux-pm@archiver.kernel.org>; Sat, 29 May 2021 17:10:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D37A06112F
-	for <linux-pm@archiver.kernel.org>; Sat, 29 May 2021 17:10:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4BAC561131
+	for <linux-pm@archiver.kernel.org>; Sat, 29 May 2021 17:10:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229841AbhE2RMW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 29 May 2021 13:12:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42824 "EHLO
+        id S229842AbhE2RMY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 29 May 2021 13:12:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42844 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229821AbhE2RMU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 May 2021 13:12:20 -0400
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 034FFC061574;
-        Sat, 29 May 2021 10:10:42 -0700 (PDT)
-Received: by mail-lj1-x22b.google.com with SMTP id 131so9272642ljj.3;
-        Sat, 29 May 2021 10:10:41 -0700 (PDT)
+        with ESMTP id S229756AbhE2RMW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 May 2021 13:12:22 -0400
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8961C061760;
+        Sat, 29 May 2021 10:10:44 -0700 (PDT)
+Received: by mail-lj1-x22f.google.com with SMTP id a4so2487018ljq.9;
+        Sat, 29 May 2021 10:10:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=XcXraiNoRPU0G8oGIVhPyNHE4YAr90zRs8GgZNjViE0=;
-        b=YCaDe2bDmorvvCgvE1ShVN/7GR+xVx4dF6waLCCWikaW/lTY/xX0q8+9RzHGDih738
-         PrQrnKTGSlToJEDVifQew+0xNe4FcXqDSVj64BH35G8zmxtzoYyspZ1sCU6jd7XmhUIN
-         Q3jmCcCKR/WHjMqgXdpFeGrMjDfa4TSptNAotxo4Ro1vJoYoCav+0bSPQV2Dc6fgwI82
-         f+ZRaoBvmb4VPdMz4SQcA+9nyGTRQYjrzPuCidyJrozEWGTnpMC1UAeWOECjVr357xlJ
-         3qcqEokOeJcSRLKeb3CR93wvR6yvBd7jdX6NF5zB53ch4C0F1ZXuV6rJDHIu46vg611X
-         zlCg==
+        bh=W4XYgA9FTIuq7IUiliTgLv6U+XMmEN4JcS1gayFO6x4=;
+        b=XvFneu1s3zOzJ2zvgKrnCS/2o15YzpsE9THHygjk/h4/8KY7IY4R9dGp3cKlJOX1Ta
+         s06++HzTW7zh8avWtXoWOlrl4EWkjsSCQZB4BTOkBStJml0QQcJCLv9bh/J1QDI3Tva8
+         vGgau5lP9RrlxTE0vYkAyxJnt79sgCMFnzA2MefK+m9oNOYvO/yqqb8NU1ui42ueWxd6
+         MPL32zZHljANYSmd8tGc0pvO9zZUlQXmNaDfQIzhVUE14kiHhbbJ5TK86PBKRdy1qiJv
+         C/lrbotvqTyMzGF001GVRO3Jvnc1eyB4+4el0FnvJa8q2QkWo5oOPDVzAqJIiRabqv8x
+         EKIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=XcXraiNoRPU0G8oGIVhPyNHE4YAr90zRs8GgZNjViE0=;
-        b=bveRvCQxTwOu5Z/HWu6PsUuPDqMDNW3c6kXlQrO1z+cdSUSmCdPm0SoVXDtDgkTtuI
-         wZRrWydz3qxIo48n4W+skqzduslzlydabFe2mPWiygF6whLfsPXdpaLg5HeS+Y8kqE1c
-         uhCFIb6KZPCoGYVjPpDyM9/9WP+usCJwa3HW8oNJKrwrhlmzhQqDHAvkTcEGxY+LqsPm
-         KVSv+Hp50pTkHHTaE/XMUEzRbwIMzrcH9tcUKmBJxK+P9WKrsDht/3afeMx0ymynJFzf
-         /66xhD9nZj7iEOLIirT8A0J2NkUQ6NziLAQ9xSjxpw4NGsGotRLW6o54x1vuIG0ad3O+
-         BGtA==
-X-Gm-Message-State: AOAM530PEqjIVQOPgQAdazPHDOhmXt4nfUK5fEx6ktxYB2sgtP1QVagd
-        8wA0j9KTiio2x6uAxHwn9eU=
-X-Google-Smtp-Source: ABdhPJzrlNuE74g1qMDB/HKjZQurMpmUHoKkU6SHJ/TfTL92dLi+ni/w2bYWkHpaV7Z7Rmf350AFqQ==
-X-Received: by 2002:a2e:9193:: with SMTP id f19mr10913555ljg.41.1622308240394;
-        Sat, 29 May 2021 10:10:40 -0700 (PDT)
+        bh=W4XYgA9FTIuq7IUiliTgLv6U+XMmEN4JcS1gayFO6x4=;
+        b=sLI2CvkjHfujnHBdS1ieJO5S4V61sIE19zIfctefouG1GH1GEcGTWyfZ4IV345vLnt
+         T/oAmFdnD2jH/XnKtpmcqedyjLlZjx6nq2CUqNlSi2XeFT94yI51TiUZOD6sk6qObuhj
+         aIksaFa0mfC18f7xBqJzkfb3JBkxLgQIMLmu+u/YTfzkSTu+DJ9EDd1bjfOBC4w3X8Bv
+         v0HhJaqo4YGzVA/3b7D+ZT94SDRGt0On9dnK+BFgrEblweMBYCDqIPn3ZazIGNrYAnPz
+         33+nzKQ+BKPAACyHdE38Hf1WPBa34ROpK3UdcfwfwOY3+gjDACY2AFtRqjtdMeLngaxe
+         NyBA==
+X-Gm-Message-State: AOAM531XEjotptN7NSN6W4ugSC1fQEO5uDR3W864eJ0QD27zSPZTGwyt
+        eT3JOklaAf+D1wrIEvy3wwY=
+X-Google-Smtp-Source: ABdhPJxgEV2rUFHFb4TdOCCxjdNYeijvSRdoUv9yxuJRp6v111XjPjS73BQ/IurSe8xT58MaqGVLyw==
+X-Received: by 2002:a2e:8710:: with SMTP id m16mr7570850lji.165.1622308243100;
+        Sat, 29 May 2021 10:10:43 -0700 (PDT)
 Received: from localhost.localdomain (46-138-84-89.dynamic.spd-mgts.ru. [46.138.84.89])
-        by smtp.gmail.com with ESMTPSA id h12sm901715ljh.130.2021.05.29.10.10.39
+        by smtp.gmail.com with ESMTPSA id h12sm901715ljh.130.2021.05.29.10.10.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 May 2021 10:10:40 -0700 (PDT)
+        Sat, 29 May 2021 10:10:42 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -71,9 +71,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter Geis <pgwipeout@gmail.com>
 Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v3 2/7] thermal: thermal_of: Stop zone device before unregistering it
-Date:   Sat, 29 May 2021 20:09:50 +0300
-Message-Id: <20210529170955.32574-3-digetx@gmail.com>
+Subject: [PATCH v3 5/7] ARM: tegra_defconfig: Enable CONFIG_TEGRA30_TSENSOR
+Date:   Sat, 29 May 2021 20:09:53 +0300
+Message-Id: <20210529170955.32574-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210529170955.32574-1-digetx@gmail.com>
 References: <20210529170955.32574-1-digetx@gmail.com>
@@ -83,31 +83,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Zone device is enabled after thermal_zone_of_sensor_register() completion,
-but it's not disabled before senors if unregistered, leaving temperature
-polling active. This results in accessing a disabled zone device and
-produces a warning about this problem. Stop zone device before
-unregistering it in order to fix this "use-after-free" problem.
+Enable NVIDIA Tegra30 SoC thermal sensor driver in tegra_defconfig.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/thermal/thermal_of.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm/configs/tegra_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 5b76f9a1280d..6379f26a335f 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -559,6 +559,9 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
- 	if (!tz)
- 		return;
- 
-+	/* stop temperature polling */
-+	thermal_zone_device_disable(tzd);
-+
- 	mutex_lock(&tzd->lock);
- 	tzd->ops->get_temp = NULL;
- 	tzd->ops->get_trend = NULL;
+diff --git a/arch/arm/configs/tegra_defconfig b/arch/arm/configs/tegra_defconfig
+index 3d8d8af9524d..63e7f3261e6d 100644
+--- a/arch/arm/configs/tegra_defconfig
++++ b/arch/arm/configs/tegra_defconfig
+@@ -169,6 +169,7 @@ CONFIG_THERMAL_STATISTICS=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_DEVFREQ_THERMAL=y
+ CONFIG_TEGRA_SOCTHERM=m
++CONFIG_TEGRA30_TSENSOR=m
+ CONFIG_WATCHDOG=y
+ CONFIG_MAX77620_WATCHDOG=y
+ CONFIG_TEGRA_WATCHDOG=y
 -- 
 2.30.2
 
