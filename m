@@ -8,279 +8,145 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB9BDC4709A
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 02:24:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F68CC47083
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 02:33:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B0084600D1
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 02:24:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F35A61375
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 02:33:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232689AbhFAC0C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 May 2021 22:26:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59856 "EHLO
+        id S232341AbhFACfH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 May 2021 22:35:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232635AbhFAC0B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 May 2021 22:26:01 -0400
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 692EAC06174A;
-        Mon, 31 May 2021 19:24:18 -0700 (PDT)
-Received: by mail-lf1-x130.google.com with SMTP id q1so19353495lfo.3;
-        Mon, 31 May 2021 19:24:18 -0700 (PDT)
+        with ESMTP id S232268AbhFACfG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 May 2021 22:35:06 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31A7CC06174A;
+        Mon, 31 May 2021 19:33:26 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id f30so19427302lfj.1;
+        Mon, 31 May 2021 19:33:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=T7jwgPjlusYAYMbjtHrJjh1BfFW4WaS2/S+5bph4b30=;
-        b=WB3fT78tlfBxMi/icd8ZxyBWr7m3UB3XhMN8EGxpEsKmRmZP9OrMMi+Z9VN2I/CIdg
-         X1YE/fVw50WopDQyX6CQQYyoz3JZSISKgANFOJI2Jr4kaPsu9pVfYJkwdheh6DS5oHAW
-         cxtp1cmGvRkRY/1B1VIh6PDqObmyoIV8d7IhwDlYeVAwnKY/+S6uxGIiRJTF6HRSqScn
-         wy3ho4VCW3Jg3/sTgbCF9/aZu+crzOHP5cZUR8kMHhquvNAYkFOsrW2dVNTvGRhEcwfM
-         VsddkiJ26BeV2FPvF1qF7MgAS0u+O0YEjpsI5eTWpLGSpOVcpwieJtOZ0msrYaZSYeCn
-         9Nlw==
+        bh=zKZDR8p/L3oeefldCNHrdGkondf8D1T4dxfFGeyIb9I=;
+        b=EDbSPZgN874700gJpT+4dz+/VYX0Av7nGyzOQzOJ+tAEay2tuk8bnBaczhOc1QuuYo
+         LxkoI+e4wC8XzsMODLQJVoZmn/YpeoO/TrJVyjFhBBc2uB1CeqzVDjnrPOXL+lwvMbkb
+         XFqEmdX6jQQH0yZYc0oZoC92XyGIMXxMXU6iwYELviApo6B4CXR+iNWGKpaB1lVf+/XS
+         KvFekkgQv96O9vask4ay+ZAyscs9zfh1IRnQVew8gArrTHI3H0UvIo0vV579tQsy6MBg
+         Ar0YlEmLffc51akmtx56AT8JjR8ecjPoMmrsbc2yI2YPJ1XzfZGURjX3rp0mzcleFLvx
+         PqgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=T7jwgPjlusYAYMbjtHrJjh1BfFW4WaS2/S+5bph4b30=;
-        b=hDM7kfSx9GcUFsCd8N/tENM8MYi/CY4ysvMDFWWmYDYX5IFW0dK+tIzCdQKAZRyV0G
-         hl/68WvY3nPK2HMr3DhsscHH4mPmcPJEzmYW1Mec3NfgWQvQJadTNgM9jqCh63AQ1ODy
-         ZuNo05FznrRZCnI2r56qZsOEtRLaGnA/HPmHAUTNbhKkIwkTYdeIM+8IT0mozyl2myew
-         yy4nu0vEJljhJ/KNCV3zrdV7eCdSdhLlHaAWb4+Q4BK0Fqvw0A7FRVmqynCoH/wsV91v
-         q0S3gJ+TP3ypj3IOiZg30/2xyM30+ETNz6vGft9g8ppmeQNAfD0oBHnAxFapYhlqlo4q
-         Ogfw==
-X-Gm-Message-State: AOAM5310ml5EtRKCXIg9kj7heG6xdzxDdBsO9g++g+ftvwdANGQCbW6M
-        Omyib3EzqXtEFf5o5tYXIUY=
-X-Google-Smtp-Source: ABdhPJzRDEpnQuIL1pgmFEZRRKb2hCKhhFEPx+xH6zJZjy9+F+//nouaZdu1I70dMEldSrXGWEXTUA==
-X-Received: by 2002:a05:6512:3d0f:: with SMTP id d15mr16809278lfv.639.1622514256364;
-        Mon, 31 May 2021 19:24:16 -0700 (PDT)
+        bh=zKZDR8p/L3oeefldCNHrdGkondf8D1T4dxfFGeyIb9I=;
+        b=LG4KAVqn5c9HzqjfQXi0/gDVHGOGiypnltO6CHEetBnAV/EsS2i23Zdz4DU6yWplRP
+         nNivAm1xqYynLlYC8jKhsrQg1aQArO0vV1F0kz/vEjiQP1SGvgm/+nAazZj9Yw1gEgBm
+         CCDn6DpK+4frSwyZa94v4ZQkGM7xFACROK87cCLndbO8o1/sz3Nyx8xHo8r1yftUP+kh
+         +bKmQ6z2afUN3cthI2k+hvY8fItGjsFI4alxK56gOB/1gAMNbNY7CMTaSZ7Xh2dE0Hnd
+         m2HOG/dty0yqjlgqX7uV3Qg16CwseowTe7NqeOgTY5zNh9qc2+8DDroia0fYe3smyQ77
+         lpyQ==
+X-Gm-Message-State: AOAM530tuQ6spktV0UE7sq8yrA3bsIGDFx5vey0ejXEiYKZnMZ64lbil
+        7OyRP+y7kNVnwyWuW0kMW+A=
+X-Google-Smtp-Source: ABdhPJwJkLFu+/LOfRUP0ItGpxKYb2L4n+engi+nXAeAz5+k8jGWK6tVKtkEbCOrerNG7UULP8yw7w==
+X-Received: by 2002:ac2:52b3:: with SMTP id r19mr8615926lfm.525.1622514804614;
+        Mon, 31 May 2021 19:33:24 -0700 (PDT)
 Received: from localhost.localdomain (79-139-170-222.dynamic.spd-mgts.ru. [79.139.170.222])
-        by smtp.gmail.com with ESMTPSA id g34sm1524207lfv.59.2021.05.31.19.24.15
+        by smtp.gmail.com with ESMTPSA id l21sm107848lfc.28.2021.05.31.19.33.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 May 2021 19:24:16 -0700 (PDT)
+        Mon, 31 May 2021 19:33:24 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
+        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+        =?UTF-8?q?Nikola=20Milosavljevi=C4=87?= <mnidza@outlook.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
         Peter Geis <pgwipeout@gmail.com>,
-        Matt Merhar <mattmerhar@protonmail.com>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v2 1/2] dt-bindings: devfreq: tegra30-actmon: Convert to schema
-Date:   Tue,  1 Jun 2021 05:23:18 +0300
-Message-Id: <20210601022319.17938-2-digetx@gmail.com>
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Matt Merhar <mattmerhar@protonmail.com>,
+        Paul Fertser <fercerpav@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>
+Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        Nathan Chancellor <nathan@kernel.org>,
+        linux-clk@vger.kernel.org
+Subject: [PATCH v6 01/14] regulator: core: Add regulator_sync_voltage_rdev()
+Date:   Tue,  1 Jun 2021 05:31:06 +0300
+Message-Id: <20210601023119.22044-2-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210601022319.17938-1-digetx@gmail.com>
-References: <20210601022319.17938-1-digetx@gmail.com>
+In-Reply-To: <20210601023119.22044-1-digetx@gmail.com>
+References: <20210601023119.22044-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert NVIDIA Tegra ACTMON binding to schema.
+Some NVIDIA Tegra devices use a CPU soft-reset method for the reboot and
+in this case we need to restore the coupled voltages to the state that is
+suitable for hardware during boot. Add new regulator_sync_voltage_rdev()
+helper which is needed by regulator drivers in order to sync voltage of
+a coupled regulators.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../arm/tegra/nvidia,tegra30-actmon.txt       |  57 ---------
- .../devfreq/nvidia,tegra30-actmon.yaml        | 121 ++++++++++++++++++
- 2 files changed, 121 insertions(+), 57 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
- create mode 100644 Documentation/devicetree/bindings/devfreq/nvidia,tegra30-actmon.yaml
+ drivers/regulator/core.c         | 23 +++++++++++++++++++++++
+ include/linux/regulator/driver.h |  1 +
+ 2 files changed, 24 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
-deleted file mode 100644
-index 897eedfa2bc8..000000000000
---- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
-+++ /dev/null
-@@ -1,57 +0,0 @@
--NVIDIA Tegra Activity Monitor
--
--The activity monitor block collects statistics about the behaviour of other
--components in the system. This information can be used to derive the rate at
--which the external memory needs to be clocked in order to serve all requests
--from the monitored clients.
--
--Required properties:
--- compatible: should be "nvidia,tegra<chip>-actmon"
--- reg: offset and length of the register set for the device
--- interrupts: standard interrupt property
--- clocks: Must contain a phandle and clock specifier pair for each entry in
--clock-names. See ../../clock/clock-bindings.txt for details.
--- clock-names: Must include the following entries:
--  - actmon
--  - emc
--- resets: Must contain an entry for each entry in reset-names. See
--../../reset/reset.txt for details.
--- reset-names: Must include the following entries:
--  - actmon
--- operating-points-v2: See ../bindings/opp/opp.txt for details.
--- interconnects: Should contain entries for memory clients sitting on
--                 MC->EMC memory interconnect path.
--- interconnect-names: Should include name of the interconnect path for each
--                      interconnect entry. Consult TRM documentation for
--                      information about available memory clients, see MEMORY
--                      CONTROLLER section.
--
--For each opp entry in 'operating-points-v2' table:
--- opp-supported-hw: bitfield indicating SoC speedo ID mask
--- opp-peak-kBps: peak bandwidth of the memory channel
--
--Example:
--	dfs_opp_table: opp-table {
--		compatible = "operating-points-v2";
--
--		opp@12750000 {
--			opp-hz = /bits/ 64 <12750000>;
--			opp-supported-hw = <0x000F>;
--			opp-peak-kBps = <51000>;
--		};
--		...
--	};
--
--	actmon@6000c800 {
--		compatible = "nvidia,tegra124-actmon";
--		reg = <0x0 0x6000c800 0x0 0x400>;
--		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
--		clocks = <&tegra_car TEGRA124_CLK_ACTMON>,
--			 <&tegra_car TEGRA124_CLK_EMC>;
--		clock-names = "actmon", "emc";
--		resets = <&tegra_car 119>;
--		reset-names = "actmon";
--		operating-points-v2 = <&dfs_opp_table>;
--		interconnects = <&mc TEGRA124_MC_MPCORER &emc>;
--		interconnect-names = "cpu";
--	};
-diff --git a/Documentation/devicetree/bindings/devfreq/nvidia,tegra30-actmon.yaml b/Documentation/devicetree/bindings/devfreq/nvidia,tegra30-actmon.yaml
-new file mode 100644
-index 000000000000..ba938eed28ee
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/nvidia,tegra30-actmon.yaml
-@@ -0,0 +1,121 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/devfreq/nvidia,tegra30-actmon.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index e20e77e4c159..aae978c0c148 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -4111,6 +4111,29 @@ int regulator_set_voltage_time_sel(struct regulator_dev *rdev,
+ }
+ EXPORT_SYMBOL_GPL(regulator_set_voltage_time_sel);
+ 
++int regulator_sync_voltage_rdev(struct regulator_dev *rdev)
++{
++	int ret;
 +
-+title: NVIDIA Tegra30 Activity Monitor
++	regulator_lock(rdev);
 +
-+maintainers:
-+  - Dmitry Osipenko <digetx@gmail.com>
-+  - Jon Hunter <jonathanh@nvidia.com>
-+  - Thierry Reding <thierry.reding@gmail.com>
++	if (!rdev->desc->ops->set_voltage &&
++	    !rdev->desc->ops->set_voltage_sel) {
++		ret = -EINVAL;
++		goto out;
++	}
 +
-+description: |
-+  The activity monitor block collects statistics about the behaviour of other
-+  components in the system. This information can be used to derive the rate at
-+  which the external memory needs to be clocked in order to serve all requests
-+  from the monitored clients.
++	/* balance only, if regulator is coupled */
++	if (rdev->coupling_desc.n_coupled > 1)
++		ret = regulator_balance_voltage(rdev, PM_SUSPEND_ON);
++	else
++		ret = -EOPNOTSUPP;
 +
-+properties:
-+  compatible:
-+    enum:
-+      - nvidia,tegra30-actmon
-+      - nvidia,tegra114-actmon
-+      - nvidia,tegra124-actmon
-+      - nvidia,tegra210-actmon
++out:
++	regulator_unlock(rdev);
++	return ret;
++}
 +
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 2
-+
-+  clock-names:
-+    items:
-+      - const: actmon
-+      - const: emc
-+
-+  resets:
-+    maxItems: 1
-+
-+  reset-names:
-+    items:
-+      - const: actmon
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interconnects:
-+    minItems: 1
-+    maxItems: 12
-+
-+  interconnect-names:
-+    minItems: 1
-+    maxItems: 12
-+    description:
-+      Should include name of the interconnect path for each interconnect
-+      entry. Consult TRM documentation for information about available
-+      memory clients, see MEMORY CONTROLLER and ACTIVITY MONITOR sections.
-+
-+  operating-points-v2:
-+    description:
-+      Should contain freqs and voltages and opp-supported-hw property, which
-+      is a bitfield indicating SoC speedo ID mask.
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - clock-names
-+  - resets
-+  - reset-names
-+  - interrupts
-+  - interconnects
-+  - interconnect-names
-+  - operating-points-v2
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/memory/tegra30-mc.h>
-+
-+    mc: memory-controller@7000f000 {
-+        compatible = "nvidia,tegra30-mc";
-+        reg = <0x7000f000 0x400>;
-+        clocks = <&clk 32>;
-+        clock-names = "mc";
-+
-+        interrupts = <0 77 4>;
-+
-+        #iommu-cells = <1>;
-+        #reset-cells = <1>;
-+        #interconnect-cells = <1>;
-+    };
-+
-+    emc: external-memory-controller@7000f400 {
-+        compatible = "nvidia,tegra30-emc";
-+        reg = <0x7000f400 0x400>;
-+        interrupts = <0 78 4>;
-+        clocks = <&clk 57>;
-+
-+        nvidia,memory-controller = <&mc>;
-+        operating-points-v2 = <&dvfs_opp_table>;
-+        power-domains = <&domain>;
-+
-+        #interconnect-cells = <0>;
-+    };
-+
-+    actmon@6000c800 {
-+        compatible = "nvidia,tegra30-actmon";
-+        reg = <0x6000c800 0x400>;
-+        interrupts = <0 45 4>;
-+        clocks = <&clk 119>, <&clk 57>;
-+        clock-names = "actmon", "emc";
-+        resets = <&rst 119>;
-+        reset-names = "actmon";
-+        operating-points-v2 = <&dvfs_opp_table>;
-+        interconnects = <&mc TEGRA30_MC_MPCORER &emc>;
-+        interconnect-names = "cpu-read";
-+    };
+ /**
+  * regulator_sync_voltage - re-apply last regulator output voltage
+  * @regulator: regulator source
+diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+index 4ea520c248e9..35e5a611db81 100644
+--- a/include/linux/regulator/driver.h
++++ b/include/linux/regulator/driver.h
+@@ -540,6 +540,7 @@ int regulator_set_current_limit_regmap(struct regulator_dev *rdev,
+ int regulator_get_current_limit_regmap(struct regulator_dev *rdev);
+ void *regulator_get_init_drvdata(struct regulator_init_data *reg_init_data);
+ int regulator_set_ramp_delay_regmap(struct regulator_dev *rdev, int ramp_delay);
++int regulator_sync_voltage_rdev(struct regulator_dev *rdev);
+ 
+ /*
+  * Helper functions intended to be used by regulator drivers prior registering
 -- 
 2.30.2
 
