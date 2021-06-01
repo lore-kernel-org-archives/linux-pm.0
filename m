@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ECBEC4708F
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 04:21:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8332C47096
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 04:21:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0C56D6135D
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 04:21:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8FDF16135D
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Jun 2021 04:21:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230329AbhFAEXB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Jun 2021 00:23:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57490 "EHLO
+        id S232815AbhFAEXE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Jun 2021 00:23:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57498 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbhFAEXB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jun 2021 00:23:01 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C049C061574;
-        Mon, 31 May 2021 21:21:19 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id f30so19727006lfj.1;
-        Mon, 31 May 2021 21:21:19 -0700 (PDT)
+        with ESMTP id S232809AbhFAEXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jun 2021 00:23:03 -0400
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDE62C061756;
+        Mon, 31 May 2021 21:21:20 -0700 (PDT)
+Received: by mail-lf1-x12e.google.com with SMTP id f30so19727062lfj.1;
+        Mon, 31 May 2021 21:21:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QsBXsRip3kFvEjWTa78PF0czB+uAdglJotlmv/X0+60=;
-        b=KIes/EoqOnLs+HMpSZV8aLJX0vQSdJl1h8s1Y5WCdfl5BR5g8d9InmuQWKJ1KvMqjo
-         DIK2yqGud36NQ8Klulu/6P9vRndNrIxdvwoVUi+tULWtOtPps9ZOL+rkZFNsnNSCGtDQ
-         8H0LWouizgITaU5ewE97EJRQ+4y8kz3pdvDQC9D8ibE8hHbx58WzvOFfZHaQzD95VuRK
-         w39Uhsm2ahQlohyyjl87TRkUOwUYAQk9P0Rjrzv3nFuXZb+vLFBi99o0FsiX2YO8anRX
-         KlTPfUr3cf3THuh9oblpypq6kRFkTapqTfRxG2dfyVAiPHG5bfflneaIOOd/wTHGgVuS
-         3aKQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=WcZrwLvNGthpdEMZsdsYJnWu6LlV6UEvtCLvpde2CIU=;
+        b=mcB9i5jSHhqC/GtCYTTfHDPNJKJUIzWoJpEKe8UI2xLjhXPy4RrtrMOhmvX6OTrgnu
+         G2s5zONt5zIepkBTLa1e+UnzBTiA/Zp/9xXmKNtwWojFOffUwDpouBwyuF8ELcKLYfwE
+         lVixaK8Kah2k2ha8kSbovwwLgqEdA9py5IkE4gJg5sklfgDy6wRxQrKSytTysL0EJKy/
+         cDLtqZy5JuajzTfWILLCVr1five9gkKL4087JDOyLw0Za/8AXHRBxxbmvgJpCzym3NI+
+         CjY1jJM9IJ6BaFJZGiLVOzPeZNTXirSY91xO6zw8RvTmeGXm2bngOFWFR7gJD8vciQKB
+         CYMg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QsBXsRip3kFvEjWTa78PF0czB+uAdglJotlmv/X0+60=;
-        b=VycCtcV1IAu+h7vT/ujUkVAsbqi+Cjqd77o4gYt0Mh/JI8T2u4CHzP+bZ0n9OcYbh9
-         3cA6OYUsyUXM7iCIOAaUaalExApupAMwbaQF09+eZsU9JO4DkQAXDKQHPb8M3uBTfNeE
-         ArXiuH8+1HGr5WbQdqomApFCybuIBZIyJkUVMQ8JJa4AFXzblHPFxWXd9FfJQ52NQKPL
-         H4LmGXlejsKWDVKRRw5e5chM5uZ1d0R0GCNiVrcOv3IyxxlzslCZqjWIACCzV8LUSPgj
-         r9q1G85o8U2+8UJSynfE+YcRRGkZM+ExsqeNTawBN7mpZONDK+680z3LZ/+cnNngTKCQ
-         9jCA==
-X-Gm-Message-State: AOAM533ZZWZvyY6ftzZPVAjH9gazWJocDGQd0/wQIFChaQfsRLsy/gNd
-        1Wr2s/U8Wy4x7lQW2VpxzIg=
-X-Google-Smtp-Source: ABdhPJwyMrkbVvF0P5gWTmcrAcTV0zklr3gP+9QZj6t/LpirjwZx1w4nMr2PW+3tEvnbskIgwL1FeA==
-X-Received: by 2002:a05:6512:3c84:: with SMTP id h4mr13037767lfv.308.1622521278026;
-        Mon, 31 May 2021 21:21:18 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=WcZrwLvNGthpdEMZsdsYJnWu6LlV6UEvtCLvpde2CIU=;
+        b=tzZYl+OZ+aNLIJhbzUCOrVVygJVl6P8YOdECeRD+KTwSfVRkmmXyN/6Fd6bwCocIG9
+         xrbraFFnUtcjdKA947RSXW3bBuKITz7RVE210y37EHq7gzAanU5F7Dws/Cy7zyp4zoOj
+         6AtMwwd08yblwp/lIqHPRd3NTApmJMIFLl1qKtGc8kpWcAsDYVUsK6Y9wgqSEaYHWSNU
+         3yITnPtTeAJqvDWce26rDwO+Ge2llUIeepweZ6ipHvWWtF+ytovGQaYyIiVd7xzO5aSj
+         KF5hfk5FhJp//+HC9H0Xa2+/uUuIS5yo75KD8Pnb3x0wSA8uswEyvzp7lkYpFRhhTW83
+         s6Yg==
+X-Gm-Message-State: AOAM532cGh+i7Wx/PFONe5uESByHTRQr4wQJlNJLMb/eCAHFUlqlfW/R
+        GpNquWPNPQq0/Uj2qcWOPHg=
+X-Google-Smtp-Source: ABdhPJy7zQ/jxMDe+PoPfXpzjCf7fFzoGCi8nggVzZpymadTblEykyA8LUavoIX4czVKAMtpqwRiVw==
+X-Received: by 2002:a19:4c85:: with SMTP id z127mr17231923lfa.336.1622521279399;
+        Mon, 31 May 2021 21:21:19 -0700 (PDT)
 Received: from localhost.localdomain (79-139-170-222.dynamic.spd-mgts.ru. [79.139.170.222])
-        by smtp.gmail.com with ESMTPSA id d9sm931627lfv.47.2021.05.31.21.21.17
+        by smtp.gmail.com with ESMTPSA id d9sm931627lfv.47.2021.05.31.21.21.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 May 2021 21:21:17 -0700 (PDT)
+        Mon, 31 May 2021 21:21:19 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,10 +65,12 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v18 0/2] Add memory bandwidth management to NVIDIA Tegra DRM driver
-Date:   Tue,  1 Jun 2021 07:21:06 +0300
-Message-Id: <20210601042108.1942-1-digetx@gmail.com>
+Subject: [PATCH v18 2/2] drm/tegra: dc: Extend debug stats with total number of events
+Date:   Tue,  1 Jun 2021 07:21:08 +0300
+Message-Id: <20210601042108.1942-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210601042108.1942-1-digetx@gmail.com>
+References: <20210601042108.1942-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -75,70 +78,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds memory bandwidth management to the NVIDIA Tegra DRM driver,
-which is done using interconnect framework. It fixes display corruption that
-happens due to insufficient memory bandwidth.
+It's useful to know the total number of underflow events and currently
+the debug stats are getting reset each time CRTC is being disabled. Let's
+account the overall number of events that doesn't get a reset.
 
-Changelog:
+Reviewed-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/gpu/drm/tegra/dc.c | 10 ++++++++++
+ drivers/gpu/drm/tegra/dc.h |  5 +++++
+ 2 files changed, 15 insertions(+)
 
-v18: - Moved total peak bandwidth from CRTC state to plane state and removed
-       dummy plane bandwidth state initialization from T186+ plane hub. This
-       was suggested by Thierry Reding to v17.
-
-     - I haven't done anything about the cursor's plane bandwidth which
-       doesn't contribute to overlapping bandwidths for a small sized
-       window because it works okay as-is.
-
-v17: - No changes, re-sending for v5.14.
-
-v16: - Implemented suggestions that were given by Michał Mirosław to v15.
-
-     - Added r-b from Michał Mirosław to the debug-stats patch.
-
-     - Rebased on top of a recent linux-next.
-
-     - Removed bandwidth scaling based on width difference of src/dst
-       windows since it's not actual anymore. Apparently the recent memory
-       driver changes fixed problems that I witnessed before.
-
-     - Average bandwidth calculation now won't overflow for 4k resolutions.
-
-     - Average bandwidth calculation now uses the size of the visible
-       area instead of the src area since debug stats of the memory
-       controller clearly show that downscaled window takes less bandwidth,
-       proportionally to the scaled size.
-
-     - Bandwidth calculation now uses "adjusted mode" of the CRTC, which
-       is what used for h/w programming, instead of the mode that was
-       requested by userspace, although the two usually match in practice.
-
-v15: - Corrected tegra_plane_icc_names[] NULL-check that was partially lost
-       by accident in v14 after unsuccessful rebase.
-
-v14: - Made improvements that were suggested by Michał Mirosław to v13:
-
-       - Changed 'unsigned int' to 'bool'.
-       - Renamed functions which calculate bandwidth state.
-       - Reworked comment in the code that explains why downscaled plane
-         require higher bandwidth.
-       - Added round-up to bandwidth calculation.
-       - Added sanity checks of the plane index and fixed out-of-bounds
-         access which happened on T124 due to the cursor plane index.
-
-v13: - No code changes. Patches missed v5.12, re-sending them for v5.13.
-
-Dmitry Osipenko (2):
-  drm/tegra: dc: Support memory bandwidth management
-  drm/tegra: dc: Extend debug stats with total number of events
-
- drivers/gpu/drm/tegra/Kconfig |   1 +
- drivers/gpu/drm/tegra/dc.c    | 358 +++++++++++++++++++++++++++++++++-
- drivers/gpu/drm/tegra/dc.h    |  17 ++
- drivers/gpu/drm/tegra/drm.c   |  14 ++
- drivers/gpu/drm/tegra/plane.c | 117 +++++++++++
- drivers/gpu/drm/tegra/plane.h |  16 ++
- 6 files changed, 521 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 7dfe3250761f..173304f3467d 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -1602,6 +1602,11 @@ static int tegra_dc_show_stats(struct seq_file *s, void *data)
+ 	seq_printf(s, "underflow: %lu\n", dc->stats.underflow);
+ 	seq_printf(s, "overflow: %lu\n", dc->stats.overflow);
+ 
++	seq_printf(s, "frames total: %lu\n", dc->stats.frames_total);
++	seq_printf(s, "vblank total: %lu\n", dc->stats.vblank_total);
++	seq_printf(s, "underflow total: %lu\n", dc->stats.underflow_total);
++	seq_printf(s, "overflow total: %lu\n", dc->stats.overflow_total);
++
+ 	return 0;
+ }
+ 
+@@ -2368,6 +2373,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): frame end\n", __func__);
+ 		*/
++		dc->stats.frames_total++;
+ 		dc->stats.frames++;
+ 	}
+ 
+@@ -2376,6 +2382,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		dev_dbg(dc->dev, "%s(): vertical blank\n", __func__);
+ 		*/
+ 		drm_crtc_handle_vblank(&dc->base);
++		dc->stats.vblank_total++;
+ 		dc->stats.vblank++;
+ 	}
+ 
+@@ -2383,6 +2390,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): underflow\n", __func__);
+ 		*/
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+@@ -2390,11 +2398,13 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): overflow\n", __func__);
+ 		*/
++		dc->stats.overflow_total++;
+ 		dc->stats.overflow++;
+ 	}
+ 
+ 	if (status & HEAD_UF_INT) {
+ 		dev_dbg_ratelimited(dc->dev, "%s(): head underflow\n", __func__);
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+diff --git a/drivers/gpu/drm/tegra/dc.h b/drivers/gpu/drm/tegra/dc.h
+index 581263c7614a..dd171daace9e 100644
+--- a/drivers/gpu/drm/tegra/dc.h
++++ b/drivers/gpu/drm/tegra/dc.h
+@@ -46,6 +46,11 @@ struct tegra_dc_stats {
+ 	unsigned long vblank;
+ 	unsigned long underflow;
+ 	unsigned long overflow;
++
++	unsigned long frames_total;
++	unsigned long vblank_total;
++	unsigned long underflow_total;
++	unsigned long overflow_total;
+ };
+ 
+ struct tegra_windowgroup_soc {
 -- 
 2.30.2
 
