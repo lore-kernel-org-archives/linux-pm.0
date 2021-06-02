@@ -2,126 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A916C4708F
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Jun 2021 15:16:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D1FFC4708F
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Jun 2021 15:35:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4FC0B6138C
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Jun 2021 15:16:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D6EE613B8
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Jun 2021 15:35:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231515AbhFBPRm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Jun 2021 11:17:42 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:49713 "EHLO m43-7.mailgun.net"
+        id S230479AbhFBPhO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Jun 2021 11:37:14 -0400
+Received: from foss.arm.com ([217.140.110.172]:48010 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232091AbhFBPRm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Jun 2021 11:17:42 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1622646959; h=References: In-Reply-To: Message-Id: Date:
- Subject: Cc: To: From: Sender;
- bh=KK9oZ5JV6rw//1PGw9TjnoWljFEt77W7i8OVF7M3Mxk=; b=AMpQKdiTGIdbfQMizeah6xfiQAxqQjlN2YN/G4J+/yzTJ7cH3ziidQjFakhh/1IH+NbXfE5B
- in4Opy9xMBM55N0IBb3lg54QTrSXw18vG9DFdg42wLBvwEFAdTICHNuc2PT054nwDsZwj0dN
- Y/SL5HPuVLz0DtXroZKxjY1QQHg=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n06.prod.us-east-1.postgun.com with SMTP id
- 60b7a085abfd22a3dca5715f (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 02 Jun 2021 15:15:17
- GMT
-Sender: okukatla=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id B09E4C4323A; Wed,  2 Jun 2021 15:15:16 +0000 (UTC)
-Received: from okukatla1-linux.qualcomm.com (unknown [202.46.22.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: okukatla)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 42C87C4338A;
-        Wed,  2 Jun 2021 15:15:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 42C87C4338A
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=okukatla@codeaurora.org
-From:   Odelu Kukatla <okukatla@codeaurora.org>
-To:     georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
-        evgreen@google.com, Andy Gross <agross@kernel.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     sboyd@kernel.org, seansw@qti.qualcomm.com, elder@linaro.org,
-        linux-arm-msm-owner@vger.kernel.org,
-        Odelu Kukatla <okukatla@codeaurora.org>
-Subject: [V3 1/3] dt-bindings: interconnect: Add EPSS L3 DT binding on SC7280
-Date:   Wed,  2 Jun 2021 20:44:51 +0530
-Message-Id: <1622646894-7833-2-git-send-email-okukatla@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1622646894-7833-1-git-send-email-okukatla@codeaurora.org>
-References: <1622646894-7833-1-git-send-email-okukatla@codeaurora.org>
+        id S230246AbhFBPhN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Jun 2021 11:37:13 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C4A711FB;
+        Wed,  2 Jun 2021 08:35:30 -0700 (PDT)
+Received: from [10.57.1.174] (unknown [10.57.1.174])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 253A23F719;
+        Wed,  2 Jun 2021 08:35:26 -0700 (PDT)
+Subject: Re: [PATCH 1/2] sched/fair: Take thermal pressure into account while
+ estimating energy
+To:     Quentin Perret <qperret@google.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        vincent.donnefort@arm.com, mingo@redhat.com, juri.lelli@redhat.com,
+        rostedt@goodmis.org, segall@google.com, mgorman@suse.de,
+        bristot@redhat.com
+References: <20210602135609.10867-1-lukasz.luba@arm.com>
+ <20210602135609.10867-2-lukasz.luba@arm.com> <YLedIMNFlZ5eu2Oe@google.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <ce1751d6-4b23-3588-a050-2c30cd3ec9dc@arm.com>
+Date:   Wed, 2 Jun 2021 16:35:25 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <YLedIMNFlZ5eu2Oe@google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add Epoch Subsystem (EPSS) L3 interconnect provider binding on SC7280
-SoCs.
+Hi Quentin,
 
-Signed-off-by: Odelu Kukatla <okukatla@codeaurora.org>
----
- .../devicetree/bindings/interconnect/qcom,osm-l3.yaml          |  4 +++-
- include/dt-bindings/interconnect/qcom,osm-l3.h                 | 10 +++++++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+On 6/2/21 4:00 PM, Quentin Perret wrote:
+> Hi Lukasz,
+> 
+> On Wednesday 02 Jun 2021 at 14:56:08 (+0100), Lukasz Luba wrote:
+>>   compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+>>   {
+>>   	struct cpumask *pd_mask = perf_domain_span(pd);
+>> -	unsigned long cpu_cap = arch_scale_cpu_capacity(cpumask_first(pd_mask));
+>> +	unsigned long _cpu_cap = arch_scale_cpu_capacity(cpumask_first(pd_mask));
+>>   	unsigned long max_util = 0, sum_util = 0;
+>> +	unsigned long cpu_cap = _cpu_cap;
+>>   	int cpu;
+>>   
+>>   	/*
+>> @@ -6558,6 +6559,14 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+>>   				cpu_util_next(cpu, p, -1) + task_util_est(p);
+>>   		}
+>>   
+>> +		/*
+>> +		 * Take the thermal pressure from non-idle CPUs. They have
+>> +		 * most up-to-date information. For idle CPUs thermal pressure
+>> +		 * signal is not updated so often.
+>> +		 */
+>> +		if (!idle_cpu(cpu))
+>> +			cpu_cap = _cpu_cap - thermal_load_avg(cpu_rq(cpu));
+> 
+> This messes up the irq time scaling no? Maybe move the capping in this
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-index d6a95c3..61e9a35 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
-@@ -18,12 +18,14 @@ properties:
-   compatible:
-     enum:
-       - qcom,sc7180-osm-l3
-+      - qcom,sc7280-epss-l3
-       - qcom,sdm845-osm-l3
-       - qcom,sm8150-osm-l3
-       - qcom,sm8250-epss-l3
- 
-   reg:
--    maxItems: 1
-+    minItems: 1
-+    maxItems: 4
- 
-   clocks:
-     items:
-diff --git a/include/dt-bindings/interconnect/qcom,osm-l3.h b/include/dt-bindings/interconnect/qcom,osm-l3.h
-index 61ef649..99534a5 100644
---- a/include/dt-bindings/interconnect/qcom,osm-l3.h
-+++ b/include/dt-bindings/interconnect/qcom,osm-l3.h
-@@ -1,6 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- /*
-- * Copyright (C) 2019 The Linux Foundation. All rights reserved.
-+ * Copyright (C) 2019, 2021 The Linux Foundation. All rights reserved.
-  */
- 
- #ifndef __DT_BINDINGS_INTERCONNECT_QCOM_OSM_L3_H
-@@ -11,5 +11,13 @@
- 
- #define MASTER_EPSS_L3_APPS	0
- #define SLAVE_EPSS_L3_SHARED	1
-+#define SLAVE_EPSS_L3_CPU0	2
-+#define SLAVE_EPSS_L3_CPU1	3
-+#define SLAVE_EPSS_L3_CPU2	4
-+#define SLAVE_EPSS_L3_CPU3	5
-+#define SLAVE_EPSS_L3_CPU4	6
-+#define SLAVE_EPSS_L3_CPU5	7
-+#define SLAVE_EPSS_L3_CPU6	8
-+#define SLAVE_EPSS_L3_CPU7	9
- 
- #endif
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+You are talking about scale_irq_capacity() which shrinks the util by
+some percentage of irq time. It might be different, by some fraction
+(e.g. 8/9 vs 9/10) compared to SchedUtil view, which passes 'raw' arch
+capacity. It then adds the irq part, but still to this slightly
+different base util.
 
+> function instead of relying on effective_cpu_util() to do it for you?
+
+Agree, since it would be more 'aligned' with how SchedUtil calls
+effective_cpu_util(). I will clamp the returned value.
+
+Thanks for pointing this out.
+
+Regards,
+Lukasz
