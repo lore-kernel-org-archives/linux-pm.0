@@ -2,56 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2CE3C47096
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2C4FC47082
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CEAD7613D8
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CD0DE613E6
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229810AbhFCJho (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Jun 2021 05:37:44 -0400
-Received: from mail-lf1-f52.google.com ([209.85.167.52]:34558 "EHLO
-        mail-lf1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229762AbhFCJhn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jun 2021 05:37:43 -0400
-Received: by mail-lf1-f52.google.com with SMTP id f30so7877635lfj.1
-        for <linux-pm@vger.kernel.org>; Thu, 03 Jun 2021 02:35:45 -0700 (PDT)
+        id S229762AbhFCJhr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Jun 2021 05:37:47 -0400
+Received: from mail-lj1-f169.google.com ([209.85.208.169]:46060 "EHLO
+        mail-lj1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229900AbhFCJhr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jun 2021 05:37:47 -0400
+Received: by mail-lj1-f169.google.com with SMTP id m3so6251689lji.12
+        for <linux-pm@vger.kernel.org>; Thu, 03 Jun 2021 02:35:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=W2qohUx5zvhRLc6tyEmW8SgJ1vqoJNLaHxoGTkcoMlw=;
-        b=nk8B/VdWmx3KAqA42yHHA3SMsqWeaAApkaBxCr8d7U/DoYUBhJk2eMiGbLG2xY3KSn
-         8yfkDnfYsyyB+JRo+vWsEoV3urS7U355PL27lVoLO4lo0N6ulYRZOeJOB/K4C1L3IJcJ
-         qHgHTUEVUWH4EqPFK4iYVeDx0T5WA6VNFSGqTBilmHVAGUwShzf7rzqoewS5bm5T+YZD
-         OTB4FxcnNFGJvSA3FIZxZEYEYJWGv6xZGTPrTcfr5amf61fOLQ7jp+1FYDAZR2lh8ETA
-         y6/3fGJPh+DpX579pnaw9pO77k42Fyz6/xFcBupTzmOrccUjwFa49RazJ+ayor3O4Kbs
-         02Sg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=lFoDekDYb/UgHdylIZARPBsEDFKjhn6BdLJDbtckeQE=;
+        b=JwdfSDzJpLBesUo4+88/C3oqVb/3B86q53A6DEJr2ZBkKnyTIRPbDaSACI/sePRLIp
+         gwg+b6LjuKTGQI/vxI2t9qZrQtdgJTaGhkMl02vSnx+QbSvvdaZn44F72bqAfLFY6wKo
+         GFxgoPbOcNT8sJJd690+WTKApuI3sWs1NsKPt/HEqrPCJVmGrpfh46PaEp3eGZOKLN0d
+         b5n3chr1U+LbMeJHTigal0Oc7hYVdmo6DwpAH4gkrBdIW0jBgiLFgDDFbvmn8K9uw+Pl
+         uYkXHmfMTdXpFwK8IDnr68gi50LJ8pMRtBuotoQZo9dZ1lQPDJi8ldsN8OZLe6ay0DQy
+         klnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=W2qohUx5zvhRLc6tyEmW8SgJ1vqoJNLaHxoGTkcoMlw=;
-        b=XrRSNgHCgAWBYo+qnfSosshK/O644t4Fva+qm8ff9RSPPA7tMLEGJX2jJocOPpetiP
-         WjS+8Xe5FkcNCAbfjEei55Wg32sp2Kef26E/hQbrD2lzrPVI0yYwLI2lWkklSGrLeEoJ
-         pEiQX1/zmpWfembCsjiQVr7JpXdwBHj8YykOmldW9QezvMudxV2OzgOk1fxX6Zu1paLo
-         gQ4lTMCekMsjzj8P8dAPsUxSMnGogLvN9h201gSbmreNSI5HjzTLqZzSMlDDdKrVutyJ
-         tzhoAf5oKzrWSWXQY8pLTBh95GVGspS83VPUO7nWviqsXWzwhRU9slMhaYZH5EiLIYWn
-         ec0A==
-X-Gm-Message-State: AOAM530VjNTm3v2yHDg4+EZBPEs+r03MBA5WYB4ZyvmUZ8D1xsHUqin3
-        rTMKY5NDfAt69b6holJPciXMOcHAzGxcbzgt
-X-Google-Smtp-Source: ABdhPJxKARwFPjRnFkZHuPnu3FusqFdLnePffuVIc/oEngA5mhIyEyAAbQBPSM/kS6I3xgVoFP6VWQ==
-X-Received: by 2002:ac2:443b:: with SMTP id w27mr6921374lfl.295.1622712885178;
-        Thu, 03 Jun 2021 02:34:45 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=lFoDekDYb/UgHdylIZARPBsEDFKjhn6BdLJDbtckeQE=;
+        b=o3RrcYqPcV6KVPizZIgN/4o24dMwwfWgrpgxo0FSGRsdyqewRcztVt/5LZw4NvCY48
+         1NMdODQ91OgPdeEfMCAAHCj5a28DxymwqiiUHl2iSCustXUX4xEkLO4tdZc4GwGv2YJW
+         uJ21r+kyKHwjmxyA/1GhnpLP5RuHGqF/SvuWuhyldtxA+d7r7b02ZpCu9sRDFxid3LIy
+         NbiG75DEXddH+5pAkIGaJB4qFYS9MMCFhKmd+YiJeHxwr2dCWmhlcbh+V3wK5uAczzsh
+         3xilHbXcrBDhbZ6OtqnbIV9/5rRVS+r5VYP9Ltm6LMJboXO+W7uGJNzRRzFLq0bs9sz8
+         6mxg==
+X-Gm-Message-State: AOAM531VdkDsZN3Ed2NHPo3+MhbCjPbnEDbz5qQlDtwZjZj9tx7dd7Mu
+        EBVir/q0FF5E+odBeq3AvlQJhA==
+X-Google-Smtp-Source: ABdhPJwg8KCHV0Hm4Ebc/CXC0Dea/8+lkoKKVArxsAIppRYHAbwPcXW5vLK4PJ8lxuaB3Ecfq3EHaA==
+X-Received: by 2002:a2e:a594:: with SMTP id m20mr29675302ljp.114.1622712888689;
+        Thu, 03 Jun 2021 02:34:48 -0700 (PDT)
 Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
-        by smtp.gmail.com with ESMTPSA id q4sm263373lfc.172.2021.06.03.02.34.43
+        by smtp.gmail.com with ESMTPSA id q4sm263373lfc.172.2021.06.03.02.34.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Jun 2021 02:34:44 -0700 (PDT)
+        Thu, 03 Jun 2021 02:34:47 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -66,53 +66,48 @@ Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Stephen Boyd <sboyd@kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/4] PM: domains: Avoid boilerplate code for DVFS in subsystem/drivers
-Date:   Thu,  3 Jun 2021 11:34:34 +0200
-Message-Id: <20210603093438.138705-1-ulf.hansson@linaro.org>
+Subject: [PATCH v2 2/4] PM: domains: Return early if perf state is already set for the device
+Date:   Thu,  3 Jun 2021 11:34:36 +0200
+Message-Id: <20210603093438.138705-3-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210603093438.138705-1-ulf.hansson@linaro.org>
+References: <20210603093438.138705-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Various discussions on LKML have pointed out that many subsystem/drivers for
-devices that may be attached to a genpd and which manages DVFS/OPP though the
-genpd performance states, would need very similar updates.
+When dev_pm_genpd_set_performance_state() gets called to set a new
+performance state for the device, let's take a quicker path by doing an
+early return, if it turns out that the new state is already set for the
+device.
 
-More precisely, they would likely have to call dev_pm_opp_set_rate|opp() to
-drop and restore OPPs (which propagates upwards into performance states votes
-in genpd), every time their devices should enter/exit a low power state, via
-their device PM callbacks.
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-Rather than having to add the boilerplate code for these things into the
-subsystems/drivers, this series implements the logic internally into genpd.
+Changes in v2:
+	- New patch.
 
-Concerns have been raised about this approach, mostly by myself, around that it
-limits flexibility. On the other hand, it starts to look like more and more
-people are requesting this to be manged internally in genpd, for good reasons.
-So, I think it's worth to give this a try.
+---
+ drivers/base/power/domain.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-In the long run, if it turns out that the flexibility was indeed needed, we can
-always deal with that as special cases on top.
-
-Test and reviews are of course greatly appreciated!
-
-Kind regards
-Ulf Hansson
-
-Ulf Hansson (4):
-  PM: domains: Split code in dev_pm_genpd_set_performance_state()
-  PM: domains: Return early if perf state is already set for the device
-  PM: domains: Drop/restore performance state votes for devices at
-    runtime PM
-  PM: domains: Drop/restore performance state votes for devices at
-    system PM
-
- drivers/base/power/domain.c | 70 +++++++++++++++++++++++++++++--------
- include/linux/pm_domain.h   |  2 ++
- 2 files changed, 58 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 5c476ed1c6c9..ef25a5b18587 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -387,6 +387,9 @@ static int genpd_set_performance_state(struct device *dev, unsigned int state)
+ 	int ret;
+ 
+ 	prev_state = gpd_data->performance_state;
++	if (prev_state == state)
++		return 0;
++
+ 	gpd_data->performance_state = state;
+ 	state = _genpd_reeval_performance_state(genpd, state);
+ 
 -- 
 2.25.1
 
