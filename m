@@ -2,152 +2,76 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 595E1C47097
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED481C47082
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:47:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FE08613E6
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:36:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C2B20613DE
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Jun 2021 09:47:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229769AbhFCJhs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Jun 2021 05:37:48 -0400
-Received: from mail-lf1-f48.google.com ([209.85.167.48]:44807 "EHLO
-        mail-lf1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229902AbhFCJhs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jun 2021 05:37:48 -0400
-Received: by mail-lf1-f48.google.com with SMTP id r198so4491676lff.11
-        for <linux-pm@vger.kernel.org>; Thu, 03 Jun 2021 02:35:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=4rVASeO6Y6OcFufLMrsc56Y+VubvwdMfYIrrp6oq4r4=;
-        b=ttTV9dS3FVDeh8gdxlsfE9fqeYyL4RbcrkOc2YpayXaxhjHVSYzHdSkYf8gZGF03ao
-         FTogbxZRc6drk/Se9oX7peJvwggvDgXeGtDkyw/3Xv08d9EXgUxfFAxWP7R44czFhBxy
-         YRp8d1xzO9W2w2WTbeLM/SXB4WmVUNrPmKHSY+ytmhEPVMbT1SAjeWGwL5t2SWQJjQuO
-         EtV3pNVRyEYfFSK8vxVt+DnxeT0KTLj7s7EYNRrVYfL+2GZ7WUeOnjOue+Sp5vkkozMK
-         JpZ6S/xnkX2a8JkxH42ozOzEKXBVmz9TURd2ykPpNXhzqc0krruQGo/0dWSw05UgWUqD
-         SW2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=4rVASeO6Y6OcFufLMrsc56Y+VubvwdMfYIrrp6oq4r4=;
-        b=FcqjsiVcx5RnWwNsgQt2TpeHETTw5d0vD4Oo1BAQEjZoX2DGdyxS0PGcWAZ8PikM/Q
-         CUHLi/3li7P78iWEabhXEm8u1R7lOtaBue9ornRDxjk14CPRb4f83oKeZX0tY9EOuKva
-         19h3lD9SvvkD47NepTUB/qMBgTqc8QOj6C5PQ13J0c3V6u6RX9SfuCBsTAveHs1J6G9Q
-         fuc1Kaq/8tet978lFdArZeqJ3bt8l0+cuvtMkvR61yvODGIcLjUmgHI6ONfBfAnHJUAS
-         jwwIvPqnf9ZDb5XeGoIFRtk0rpLyBlqOQT3ueXE1wbacvuFfwhP4ZhRw8p4lQ4Fz0rjr
-         hWhA==
-X-Gm-Message-State: AOAM531BVr0U3eILW5kDozDtV65RLeQ7DGsSN4uBycf94MeNXyc69r2P
-        6RW4/dpX2dL9nzw7VAPaQ53u1Q==
-X-Google-Smtp-Source: ABdhPJwTfUiqI1PTAa4Ti9ScSuSpJMZh9fZH533X9DuesqyiUwYZtT+W7JazvFs90129yoD0c46yiQ==
-X-Received: by 2002:ac2:5a4b:: with SMTP id r11mr18051551lfn.338.1622712886936;
-        Thu, 03 Jun 2021 02:34:46 -0700 (PDT)
-Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
-        by smtp.gmail.com with ESMTPSA id q4sm263373lfc.172.2021.06.03.02.34.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Jun 2021 02:34:45 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Roja Rani Yarubandi <rojay@codeaurora.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/4] PM: domains: Split code in dev_pm_genpd_set_performance_state()
-Date:   Thu,  3 Jun 2021 11:34:35 +0200
-Message-Id: <20210603093438.138705-2-ulf.hansson@linaro.org>
+        id S229625AbhFCJtT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Jun 2021 05:49:19 -0400
+Received: from m12-14.163.com ([220.181.12.14]:54615 "EHLO m12-14.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229620AbhFCJtS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 3 Jun 2021 05:49:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=l/H8n
+        C4YoHj05n2BIqJHaCdtBf6rJsdXXUyPoceBaCI=; b=TbRC8odVXPMcv5YTLjAAt
+        N+rDPEE/S3Zu9HVEpnQnEUfZ1QC8ALpPgL3qVnRX1Fwb45m93HwpzDoqFHhY4Iuu
+        JCsO5WMb9qka0fZBHHLhdDvTt+g3pxblVuXrEbU1M52UdPiwm2Q5QAMTODP85zXS
+        wpJ/cvHUOE6Ni0FP2LriEM=
+Received: from localhost.localdomain (unknown [218.17.89.92])
+        by smtp10 (Coremail) with SMTP id DsCowAB3C2Awpbhgr_tpMg--.46694S2;
+        Thu, 03 Jun 2021 17:47:29 +0800 (CST)
+From:   Jian Xin <xinjian34324@163.com>
+To:     sre@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Jian Xin <xinjian@yulong.com>
+Subject: [PATCH] power: supply: ab8500_fg: Fix typo
+Date:   Thu,  3 Jun 2021 17:47:18 +0800
+Message-Id: <20210603094718.229553-1-xinjian34324@163.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210603093438.138705-1-ulf.hansson@linaro.org>
-References: <20210603093438.138705-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DsCowAB3C2Awpbhgr_tpMg--.46694S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7JF4rKr17CryxKryUtF4fZrb_yoWxtrX_ua
+        1rX3W2gry5Kr1a9F1qkFnrXry09a18XFWIva17Kr43tF98ur43JFyUur1DArn5Xr4jkwsI
+        9a9FyFWruryxCjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUnfb1UUUUUU==
+X-Originating-IP: [218.17.89.92]
+X-CM-SenderInfo: x0lqyxtdqtkjisu6il2tof0z/1tbiLBGmCFspaqIkBwAAsK
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To prepare some of the code in dev_pm_genpd_set_performance_state() to be
-re-used from subsequent changes, let's split it up into two functions.
+From: Jian Xin <xinjian@yulong.com>
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+fix misspelled 'interrupts'
+
+Signed-off-by: Jian Xin <xinjian@yulong.com>
 ---
+ drivers/power/supply/ab8500_fg.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes in v2:
-	- A small cosmetic update and added Viresh's tag.
-
----
- drivers/base/power/domain.c | 31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b6a782c31613..5c476ed1c6c9 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -379,6 +379,24 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 	return ret;
- }
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 06ff42c71f24..64c6037cb0bc 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -58,7 +58,7 @@
+ 	((y1) + ((((y2) - (y1)) * ((x) - (x1))) / ((x2) - (x1))));
  
-+static int genpd_set_performance_state(struct device *dev, unsigned int state)
-+{
-+	struct generic_pm_domain *genpd = dev_to_genpd(dev);
-+	struct generic_pm_domain_data *gpd_data = dev_gpd_data(dev);
-+	unsigned int prev_state;
-+	int ret;
-+
-+	prev_state = gpd_data->performance_state;
-+	gpd_data->performance_state = state;
-+	state = _genpd_reeval_performance_state(genpd, state);
-+
-+	ret = _genpd_set_performance_state(genpd, state, 0);
-+	if (ret)
-+		gpd_data->performance_state = prev_state;
-+
-+	return ret;
-+}
-+
  /**
-  * dev_pm_genpd_set_performance_state- Set performance state of device's power
-  * domain.
-@@ -397,8 +415,6 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- {
- 	struct generic_pm_domain *genpd;
--	struct generic_pm_domain_data *gpd_data;
--	unsigned int prev;
- 	int ret;
- 
- 	genpd = dev_to_genpd_safe(dev);
-@@ -410,16 +426,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 		return -EINVAL;
- 
- 	genpd_lock(genpd);
--
--	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
--	prev = gpd_data->performance_state;
--	gpd_data->performance_state = state;
--
--	state = _genpd_reeval_performance_state(genpd, state);
--	ret = _genpd_set_performance_state(genpd, state, 0);
--	if (ret)
--		gpd_data->performance_state = prev;
--
-+	ret = genpd_set_performance_state(dev, state);
- 	genpd_unlock(genpd);
- 
- 	return ret;
+- * struct ab8500_fg_interrupts - ab8500 fg interupts
++ * struct ab8500_fg_interrupts - ab8500 fg interrupts
+  * @name:	name of the interrupt
+  * @isr		function pointer to the isr
+  */
 -- 
 2.25.1
 
