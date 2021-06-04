@@ -5,32 +5,32 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A8F2C4709A
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A60CC4709E
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5F81B61404
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E978E61423
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230374AbhFDKFe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S230378AbhFDKFe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 4 Jun 2021 06:05:34 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:55623 "EHLO
+Received: from mailgw01.mediatek.com ([210.61.82.183]:55823 "EHLO
         mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S229718AbhFDKFd (ORCPT
+        with ESMTP id S230049AbhFDKFd (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:05:33 -0400
-X-UUID: 4ff1925a3cb04bb596a90d6b48f4589a-20210604
-X-UUID: 4ff1925a3cb04bb596a90d6b48f4589a-20210604
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+X-UUID: 534f53f894674d4fb93687648b4d8e4c-20210604
+X-UUID: 534f53f894674d4fb93687648b4d8e4c-20210604
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 335905132; Fri, 04 Jun 2021 18:02:23 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1291570965; Fri, 04 Jun 2021 18:02:32 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 4 Jun 2021 18:02:22 +0800
+ mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 4 Jun 2021 18:02:30 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 4 Jun 2021 18:02:22 +0800
+ Transport; Fri, 4 Jun 2021 18:02:30 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -47,9 +47,9 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         Arvin Wang <arvin.wang@mediatek.com>,
         James Liao <jamesjj.liao@mediatek.com>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V10 01/12] dt-bindings: soc: Add dvfsrc driver bindings
-Date:   Fri, 4 Jun 2021 18:02:07 +0800
-Message-ID: <20210604100218.13613-2-dawei.chien@mediatek.com>
+Subject: [PATCH V10 11/12] arm64: dts: mt8183: add dvfsrc regulator nodes
+Date:   Fri, 4 Jun 2021 18:02:17 +0800
+Message-ID: <20210604100218.13613-12-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210604100218.13613-1-dawei.chien@mediatek.com>
 References: <20210604100218.13613-1-dawei.chien@mediatek.com>
@@ -62,117 +62,30 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Henry Chen <henryc.chen@mediatek.com>
 
-Document the binding for enabling dvfsrc on MediaTek SoC.
+Add dvfsrc regulator nodes which is for MT8183-based platforms
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/soc/mediatek/dvfsrc.yaml   | 67 ++++++++++++++++++++++
- include/dt-bindings/interconnect/mtk,mt8183-emi.h  | 21 +++++++
- 2 files changed, 88 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
- create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
-new file mode 100644
-index 000000000000..f2b67b99921b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
-@@ -0,0 +1,67 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/soc/mediatek/dvfsrc.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: MediaTek dynamic voltage and frequency scaling resource collector (DVFSRC)
-+
-+description: |
-+  The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
-+  HW module which is used to collect all the requests from both software and
-+  hardware and turn into the decision of minimum operating voltage and minimum
-+  DRAM frequency to fulfill those requests.
-+
-+maintainers:
-+  - henryc.chen <henryc.chen@mediatek.com>
-+
-+properties:
-+  reg:
-+    maxItems: 1
-+    description: DVFSRC common register address and length.
-+
-+  compatible:
-+    enum:
-+      - mediatek,mt6873-dvfsrc
-+      - mediatek,mt8183-dvfsrc
-+      - mediatek,mt8192-dvfsrc
-+
-+  '#interconnect-cells':
-+    const: 1
-+
-+  dvfsrc-vcore:
-+    type: object
-+    description:
-+      The DVFSRC regulator is modelled as a subdevice of the DVFSRC.
-+      Because DVFSRC can request power directly via register read/write, likes
-+      vcore which is a core power of mt8183. As such, the DVFSRC regulator
-+      requires that DVFSRC nodes be present.
-+    $ref: /schemas/regulator/regulator.yaml#
-+
-+required:
-+  - compatible
-+  - reg
-+  - "#interconnect-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interconnect/mtk,mt8183-emi.h>
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        dvfsrc@10012000 {
-+            compatible = "mediatek,mt8183-dvfsrc";
-+            reg = <0 0x10012000 0 0x1000>;
-+            #interconnect-cells = <1>;
-+            dvfsrc_vcore: dvfsrc-vcore {
-+                    regulator-name = "dvfsrc-vcore";
-+                    regulator-min-microvolt = <725000>;
-+                    regulator-max-microvolt = <800000>;
-+                    regulator-always-on;
-+            };
-+        };
-+    };
-diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-new file mode 100644
-index 000000000000..dfd143f87885
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0
-+ *
-+ * Copyright (c) 2021 MediaTek Inc.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+
-+#define MT8183_SLAVE_DDR_EMI			0
-+#define MT8183_MASTER_MCUSYS			1
-+#define MT8183_MASTER_GPU			2
-+#define MT8183_MASTER_MMSYS			3
-+#define MT8183_MASTER_MM_VPU			4
-+#define MT8183_MASTER_MM_DISP			5
-+#define MT8183_MASTER_MM_VDEC			6
-+#define MT8183_MASTER_MM_VENC			7
-+#define MT8183_MASTER_MM_CAM			8
-+#define MT8183_MASTER_MM_IMG			9
-+#define MT8183_MASTER_MM_MDP			10
-+
-+#endif
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 062d6dfb89a2..33361f9baa73 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -503,6 +503,12 @@
+ 			compatible = "mediatek,mt8183-dvfsrc";
+ 			reg = <0 0x10012000 0 0x1000>;
+ 			#interconnect-cells = <1>;
++			dvfsrc_vcore: dvfsrc-vcore {
++				regulator-name = "dvfsrc-vcore";
++				regulator-min-microvolt = <725000>;
++				regulator-max-microvolt = <800000>;
++				regulator-always-on;
++			};
+ 		};
+ 
+ 		pwrap: pwrap@1000d000 {
 -- 
 2.14.1
 
