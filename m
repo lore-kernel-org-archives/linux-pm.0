@@ -2,491 +2,886 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 986DFC4709E
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EC15C47099
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:10:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7CC6A61400
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:04:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E847B6141E
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:10:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230508AbhFDKFr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Jun 2021 06:05:47 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:34165 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S230453AbhFDKFq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:05:46 -0400
-X-UUID: cfad90b710b642b4a57db36414517b7d-20210604
-X-UUID: cfad90b710b642b4a57db36414517b7d-20210604
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
-        (envelope-from <dawei.chien@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 408697655; Fri, 04 Jun 2021 18:02:27 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 4 Jun 2021 18:02:26 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 4 Jun 2021 18:02:26 +0800
-From:   Dawei Chien <dawei.chien@mediatek.com>
-To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        id S229987AbhFDKM3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Jun 2021 06:12:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47494 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229668AbhFDKM3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:12:29 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF3E7C06174A;
+        Fri,  4 Jun 2021 03:10:42 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id B0B0E1F43899
+Received: by earth.universe (Postfix, from userid 1000)
+        id 50C303C0C95; Fri,  4 Jun 2021 12:10:39 +0200 (CEST)
+Date:   Fri, 4 Jun 2021 12:10:39 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc:     Matti Vaittinen <mazziesaccount@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Ryan Case <ryandcase@chromium.org>
-CC:     Mark Rutland <mark.rutland@arm.com>,
-        Nicolas Boichat <drinkcat@google.com>,
-        <devicetree@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        Fan Chen <fan.chen@mediatek.com>,
-        Arvin Wang <arvin.wang@mediatek.com>,
-        James Liao <jamesjj.liao@mediatek.com>,
-        Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V10 08/12] interconnect: mediatek: Add interconnect provider driver
-Date:   Fri, 4 Jun 2021 18:02:14 +0800
-Message-ID: <20210604100218.13613-9-dawei.chien@mediatek.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20210604100218.13613-1-dawei.chien@mediatek.com>
-References: <20210604100218.13613-1-dawei.chien@mediatek.com>
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-power@fi.rohmeurope.com, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH 7/9] power: supply: Drop BD70528 support
+Message-ID: <20210604101039.3d4tpumxkgidcdiv@earth.universe>
+References: <cover.1621937490.git.matti.vaittinen@fi.rohmeurope.com>
+ <0d9ca725f04fa54521961e1a33e972888c488879.1621937490.git.matti.vaittinen@fi.rohmeurope.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="aadboz6r5ii6lxfo"
+Content-Disposition: inline
+In-Reply-To: <0d9ca725f04fa54521961e1a33e972888c488879.1621937490.git.matti.vaittinen@fi.rohmeurope.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Henry Chen <henryc.chen@mediatek.com>
 
-Introduce Mediatek MT6873/MT8183/MT8192 specific provider driver
-using the interconnect framework.
+--aadboz6r5ii6lxfo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-             ICC provider         ICC Nodes
-                              ----          ----
-             ---------       |CPU |   |--- |VPU |
-    -----   |         |-----  ----    |     ----
-   |DRAM |--|DRAM     |       ----    |     ----
-   |     |--|scheduler|----- |GPU |   |--- |DISP|
-   |     |--|(EMI)    |       ----    |     ----
-   |     |--|         |       -----   |     ----
-    -----   |         |----- |MMSYS|--|--- |VDEC|
-             ---------        -----   |     ----
-               /|\                    |     ----
-                |change DRAM freq     |--- |VENC|
-             ----------               |     ----
-            |  DVFSR   |              |
-            |          |              |     ----
-             ----------               |--- |IMG |
-                                      |     ----
-                                      |     ----
-                                      |--- |CAM |
-                                            ----
-Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/interconnect/Kconfig            |   1 +
- drivers/interconnect/Makefile           |   1 +
- drivers/interconnect/mediatek/Kconfig   |  13 ++
- drivers/interconnect/mediatek/Makefile  |   3 +
- drivers/interconnect/mediatek/mtk-emi.c | 331 ++++++++++++++++++++++++++++++++
- 5 files changed, 349 insertions(+)
- create mode 100644 drivers/interconnect/mediatek/Kconfig
- create mode 100644 drivers/interconnect/mediatek/Makefile
- create mode 100644 drivers/interconnect/mediatek/mtk-emi.c
+Hi Matti,
 
-diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-index d637a89d4695..da91f847aabd 100644
---- a/drivers/interconnect/Kconfig
-+++ b/drivers/interconnect/Kconfig
-@@ -12,6 +12,7 @@ menuconfig INTERCONNECT
- if INTERCONNECT
- 
- source "drivers/interconnect/imx/Kconfig"
-+source "drivers/interconnect/mediatek/Kconfig"
- source "drivers/interconnect/qcom/Kconfig"
- source "drivers/interconnect/samsung/Kconfig"
- 
-diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
-index 97d393fd638d..d697500d99f0 100644
---- a/drivers/interconnect/Makefile
-+++ b/drivers/interconnect/Makefile
-@@ -5,5 +5,6 @@ icc-core-objs				:= core.o bulk.o
- 
- obj-$(CONFIG_INTERCONNECT)		+= icc-core.o
- obj-$(CONFIG_INTERCONNECT_IMX)		+= imx/
-+obj-$(CONFIG_INTERCONNECT_MTK)		+= mediatek/
- obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
- obj-$(CONFIG_INTERCONNECT_SAMSUNG)	+= samsung/
-diff --git a/drivers/interconnect/mediatek/Kconfig b/drivers/interconnect/mediatek/Kconfig
-new file mode 100644
-index 000000000000..ec98d6a80f55
---- /dev/null
-+++ b/drivers/interconnect/mediatek/Kconfig
-@@ -0,0 +1,13 @@
-+config INTERCONNECT_MTK
-+	bool "Mediatek Network-on-Chip interconnect drivers"
-+	depends on ARCH_MEDIATEK || COMPILE_TEST
-+	help
-+	  Support for Mediatek's Network-on-Chip interconnect hardware.
-+
-+config INTERCONNECT_MTK_EMI
-+	tristate "Mediatek EMI interconnect driver"
-+	depends on INTERCONNECT_MTK
-+	depends on (MTK_DVFSRC && OF) || COMPILE_TEST
-+	help
-+	  This is a driver for the Mediatek Network-on-Chip on DVFSRC-based
-+	  platforms.
-diff --git a/drivers/interconnect/mediatek/Makefile b/drivers/interconnect/mediatek/Makefile
-new file mode 100644
-index 000000000000..353842b2c273
---- /dev/null
-+++ b/drivers/interconnect/mediatek/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+obj-$(CONFIG_INTERCONNECT_MTK_EMI) += mtk-emi.o
-\ No newline at end of file
-diff --git a/drivers/interconnect/mediatek/mtk-emi.c b/drivers/interconnect/mediatek/mtk-emi.c
-new file mode 100644
-index 000000000000..8d650be62b90
---- /dev/null
-+++ b/drivers/interconnect/mediatek/mtk-emi.c
-@@ -0,0 +1,331 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2021, The Linux Foundation. All rights reserved.
-+ *
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/interconnect-provider.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/soc/mediatek/mtk_dvfsrc.h>
-+#include <dt-bindings/interconnect/mtk,mt6873-emi.h>
-+#include <dt-bindings/interconnect/mtk,mt8183-emi.h>
-+
-+enum mtk_icc_name {
-+	SLAVE_DDR_EMI,
-+	MASTER_MCUSYS,
-+	MASTER_GPUSYS,
-+	MASTER_MMSYS,
-+	MASTER_MM_VPU,
-+	MASTER_MM_DISP,
-+	MASTER_MM_VDEC,
-+	MASTER_MM_VENC,
-+	MASTER_MM_CAM,
-+	MASTER_MM_IMG,
-+	MASTER_MM_MDP,
-+	MASTER_VPUSYS,
-+	MASTER_VPU_PORT_0,
-+	MASTER_VPU_PORT_1,
-+	MASTER_MDLASYS,
-+	MASTER_MDLA_PORT_0,
-+	MASTER_UFS,
-+	MASTER_PCIE,
-+	MASTER_USB,
-+	MASTER_WIFI,
-+	MASTER_BT,
-+	MASTER_NETSYS,
-+	MASTER_DBGIF,
-+
-+	SLAVE_HRT_DDR_EMI,
-+	MASTER_HRT_MMSYS,
-+	MASTER_HRT_MM_DISP,
-+	MASTER_HRT_MM_VDEC,
-+	MASTER_HRT_MM_VENC,
-+	MASTER_HRT_MM_CAM,
-+	MASTER_HRT_MM_IMG,
-+	MASTER_HRT_MM_MDP,
-+	MASTER_HRT_DBGIF,
-+};
-+
-+#define MT8183_MAX_LINKS	1
-+
-+/**
-+ * struct mtk_icc_node - Mediatek specific interconnect nodes
-+ * @name: the node name used in debugfs
-+ * @ep : the type of this endpoint
-+ * @id: a unique node identifier
-+ * @links: an array of nodes where we can go next while traversing
-+ * @num_links: the total number of @links
-+ * @sum_avg: current sum aggregate value of all avg bw kBps requests
-+ * @max_peak: current max aggregate value of all peak bw kBps requests
-+ */
-+struct mtk_icc_node {
-+	unsigned char *name;
-+	int ep;
-+	u16 id;
-+	u16 links[MT8183_MAX_LINKS];
-+	u16 num_links;
-+	u64 sum_avg;
-+	u64 max_peak;
-+};
-+
-+struct mtk_icc_desc {
-+	struct mtk_icc_node **nodes;
-+	size_t num_nodes;
-+};
-+
-+#define DEFINE_MNODE(_name, _id, _ep, ...)	\
-+		static struct mtk_icc_node _name = {			\
-+		.name = #_name,						\
-+		.id = _id,						\
-+		.ep = _ep,						\
-+		.num_links = ARRAY_SIZE(((int[]){ __VA_ARGS__ })),	\
-+		.links = { __VA_ARGS__ },				\
-+}
-+
-+DEFINE_MNODE(ddr_emi, SLAVE_DDR_EMI, 1);
-+DEFINE_MNODE(mcusys, MASTER_MCUSYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(gpu, MASTER_GPUSYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(mmsys, MASTER_MMSYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(mm_vpu, MASTER_MM_VPU, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_disp, MASTER_MM_DISP, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_vdec, MASTER_MM_VDEC, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_venc, MASTER_MM_VENC, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_cam, MASTER_MM_CAM, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_img, MASTER_MM_IMG, 0, MASTER_MMSYS);
-+DEFINE_MNODE(mm_mdp, MASTER_MM_MDP, 0, MASTER_MMSYS);
-+DEFINE_MNODE(vpusys, MASTER_VPUSYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(vpu_port_0, MASTER_VPU_PORT_0, 0, MASTER_VPUSYS);
-+DEFINE_MNODE(vpu_port_1, MASTER_VPU_PORT_1, 0, MASTER_VPUSYS);
-+DEFINE_MNODE(mdlasys, MASTER_MDLASYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(mdla_port_0, MASTER_MDLA_PORT_0, 0, MASTER_MDLASYS);
-+DEFINE_MNODE(ufs, MASTER_UFS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(pcie, MASTER_PCIE, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(usb, MASTER_USB, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(wifi, MASTER_WIFI, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(bt, MASTER_BT, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(netsys, MASTER_NETSYS, 0, SLAVE_DDR_EMI);
-+DEFINE_MNODE(dbgif, MASTER_DBGIF, 0, SLAVE_DDR_EMI);
-+
-+DEFINE_MNODE(hrt_ddr_emi, SLAVE_HRT_DDR_EMI, 2);
-+DEFINE_MNODE(hrt_mmsys, MASTER_HRT_MMSYS, 0, SLAVE_HRT_DDR_EMI);
-+DEFINE_MNODE(hrt_mm_disp, MASTER_HRT_MM_DISP, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_mm_vdec, MASTER_HRT_MM_VDEC, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_mm_venc, MASTER_HRT_MM_VENC, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_mm_cam, MASTER_HRT_MM_CAM, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_mm_img, MASTER_HRT_MM_IMG, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_mm_mdp, MASTER_HRT_MM_MDP, 0, MASTER_HRT_MMSYS);
-+DEFINE_MNODE(hrt_dbgif, MASTER_HRT_DBGIF, 0, SLAVE_HRT_DDR_EMI);
-+
-+static struct mtk_icc_node *mt8183_icc_nodes[] = {
-+	[MT8183_SLAVE_DDR_EMI] = &ddr_emi,
-+	[MT8183_MASTER_MCUSYS] = &mcusys,
-+	[MT8183_MASTER_GPU] = &gpu,
-+	[MT8183_MASTER_MMSYS] = &mmsys,
-+	[MT8183_MASTER_MM_VPU] = &mm_vpu,
-+	[MT8183_MASTER_MM_DISP] = &mm_disp,
-+	[MT8183_MASTER_MM_VDEC] = &mm_vdec,
-+	[MT8183_MASTER_MM_VENC] = &mm_venc,
-+	[MT8183_MASTER_MM_CAM] = &mm_cam,
-+	[MT8183_MASTER_MM_IMG] = &mm_img,
-+	[MT8183_MASTER_MM_MDP] = &mm_mdp,
-+};
-+
-+static const struct mtk_icc_desc mt8183_icc = {
-+	.nodes = mt8183_icc_nodes,
-+	.num_nodes = ARRAY_SIZE(mt8183_icc_nodes),
-+};
-+
-+static struct mtk_icc_node *mt6873_icc_nodes[] = {
-+	[MT6873_SLAVE_DDR_EMI] = &ddr_emi,
-+	[MT6873_MASTER_MCUSYS] = &mcusys,
-+	[MT6873_MASTER_GPUSYS] = &gpu,
-+	[MT6873_MASTER_MMSYS] = &mmsys,
-+	[MT6873_MASTER_MM_VPU] = &mm_vpu,
-+	[MT6873_MASTER_MM_DISP] = &mm_disp,
-+	[MT6873_MASTER_MM_VDEC] = &mm_vdec,
-+	[MT6873_MASTER_MM_VENC] = &mm_venc,
-+	[MT6873_MASTER_MM_CAM] = &mm_cam,
-+	[MT6873_MASTER_MM_IMG] = &mm_img,
-+	[MT6873_MASTER_MM_MDP] = &mm_mdp,
-+	[MT6873_MASTER_VPUSYS] = &vpusys,
-+	[MT6873_MASTER_VPU_0] = &vpu_port_0,
-+	[MT6873_MASTER_VPU_1] = &vpu_port_1,
-+	[MT6873_MASTER_MDLASYS] = &mdlasys,
-+	[MT6873_MASTER_MDLA_0] = &mdla_port_0,
-+	[MT6873_MASTER_UFS] = &ufs,
-+	[MT6873_MASTER_PCIE] = &pcie,
-+	[MT6873_MASTER_USB] = &usb,
-+	[MT6873_MASTER_WIFI] = &wifi,
-+	[MT6873_MASTER_BT] = &bt,
-+	[MT6873_MASTER_NETSYS] = &netsys,
-+	[MT6873_MASTER_DBGIF] = &dbgif,
-+
-+	[MT6873_SLAVE_HRT_DDR_EMI] = &hrt_ddr_emi,
-+	[MT6873_MASTER_HRT_MMSYS] = &hrt_mmsys,
-+	[MT6873_MASTER_HRT_MM_DISP] = &hrt_mm_disp,
-+	[MT6873_MASTER_HRT_MM_VDEC] = &hrt_mm_vdec,
-+	[MT6873_MASTER_HRT_MM_VENC] = &hrt_mm_venc,
-+	[MT6873_MASTER_HRT_MM_CAM] = &hrt_mm_cam,
-+	[MT6873_MASTER_HRT_MM_IMG] = &hrt_mm_img,
-+	[MT6873_MASTER_HRT_MM_MDP] = &hrt_mm_mdp,
-+	[MT6873_MASTER_HRT_DBGIF] = &hrt_dbgif,
-+};
-+
-+static struct mtk_icc_desc mt6873_icc = {
-+	.nodes = mt6873_icc_nodes,
-+	.num_nodes = ARRAY_SIZE(mt6873_icc_nodes),
-+};
-+
-+static const struct of_device_id emi_icc_of_match[] = {
-+	{ .compatible = "mediatek,mt8183-dvfsrc", .data = &mt8183_icc },
-+	{ .compatible = "mediatek,mt8192-dvfsrc", .data = &mt6873_icc },
-+	{ .compatible = "mediatek,mt6873-dvfsrc", .data = &mt6873_icc },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, emi_icc_of_match);
-+
-+static int emi_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
-+			     u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
-+{
-+	struct mtk_icc_node *in;
-+
-+	in = node->data;
-+
-+	*agg_avg += avg_bw;
-+	*agg_peak = max_t(u32, *agg_peak, peak_bw);
-+
-+	in->sum_avg = *agg_avg;
-+	in->max_peak = *agg_peak;
-+
-+	return 0;
-+}
-+
-+static int emi_icc_set(struct icc_node *src, struct icc_node *dst)
-+{
-+	int ret = 0;
-+	struct mtk_icc_node *node;
-+
-+	node = dst->data;
-+
-+	if (node->ep == 1) {
-+		mtk_dvfsrc_send_request(src->provider->dev,
-+					MTK_DVFSRC_CMD_PEAK_BW_REQUEST,
-+					node->max_peak);
-+		mtk_dvfsrc_send_request(src->provider->dev,
-+					MTK_DVFSRC_CMD_BW_REQUEST,
-+					node->sum_avg);
-+	} else if (node->ep == 2) {
-+		mtk_dvfsrc_send_request(src->provider->dev,
-+					MTK_DVFSRC_CMD_HRTBW_REQUEST,
-+					node->sum_avg);
-+	}
-+
-+	return ret;
-+}
-+
-+static int emi_icc_remove(struct platform_device *pdev);
-+static int emi_icc_probe(struct platform_device *pdev)
-+{
-+	const struct of_device_id *match;
-+	const struct mtk_icc_desc *desc;
-+	struct device *dev = &pdev->dev;
-+	struct icc_node *node;
-+	struct icc_onecell_data *data;
-+	struct icc_provider *provider;
-+	struct mtk_icc_node **mnodes;
-+	size_t num_nodes, i, j;
-+	int ret;
-+
-+	match = of_match_node(emi_icc_of_match, dev->parent->of_node);
-+
-+	if (!match) {
-+		dev_err(dev, "invalid compatible string\n");
-+		return -ENODEV;
-+	}
-+
-+	desc = match->data;
-+	mnodes = desc->nodes;
-+	num_nodes = desc->num_nodes;
-+
-+	provider = devm_kzalloc(dev, sizeof(*provider), GFP_KERNEL);
-+	if (!provider)
-+		return -ENOMEM;
-+
-+	data = devm_kzalloc(dev, struct_size(data, nodes, num_nodes),
-+			    GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	provider->dev = pdev->dev.parent;
-+	provider->set = emi_icc_set;
-+	provider->aggregate = emi_icc_aggregate;
-+	provider->xlate = of_icc_xlate_onecell;
-+	INIT_LIST_HEAD(&provider->nodes);
-+	provider->data = data;
-+
-+	ret = icc_provider_add(provider);
-+	if (ret) {
-+		dev_err(&pdev->dev, "error adding interconnect provider\n");
-+		return ret;
-+	}
-+
-+	for (i = 0; i < num_nodes; i++) {
-+		node = icc_node_create(mnodes[i]->id);
-+		if (IS_ERR(node)) {
-+			ret = PTR_ERR(node);
-+			goto err;
-+		}
-+
-+		node->name = mnodes[i]->name;
-+		node->data = mnodes[i];
-+		icc_node_add(node, provider);
-+
-+		for (j = 0; j < mnodes[i]->num_links; j++)
-+			icc_link_create(node, mnodes[i]->links[j]);
-+
-+		data->nodes[i] = node;
-+	}
-+	data->num_nodes = num_nodes;
-+
-+	platform_set_drvdata(pdev, provider);
-+
-+	return 0;
-+err:
-+	icc_nodes_remove(provider);
-+	icc_provider_del(provider);
-+	return ret;
-+}
-+
-+static int emi_icc_remove(struct platform_device *pdev)
-+{
-+	struct icc_provider *provider = platform_get_drvdata(pdev);
-+
-+	icc_nodes_remove(provider);
-+	return icc_provider_del(provider);
-+}
-+
-+static struct platform_driver emi_icc_driver = {
-+	.probe = emi_icc_probe,
-+	.remove = emi_icc_remove,
-+	.driver = {
-+		.name = "mediatek-emi-icc",
-+	},
-+};
-+
-+static int __init mtk_emi_icc_init(void)
-+{
-+	return platform_driver_register(&emi_icc_driver);
-+}
-+subsys_initcall(mtk_emi_icc_init);
-+
-+static void __exit mtk_emi_icc_exit(void)
-+{
-+	platform_driver_unregister(&emi_icc_driver);
-+}
-+module_exit(mtk_emi_icc_exit);
-+
-+MODULE_AUTHOR("Henry Chen <henryc.chen@mediatek.com>");
-+MODULE_LICENSE("GPL v2");
--- 
-2.14.1
+On Tue, May 25, 2021 at 01:15:47PM +0300, Matti Vaittinen wrote:
+> The only known BD70528 use-cases are such that the PMIC is controlled
+> from separate MCU which is not running Linux. I am not aware of
+> any Linux driver users. Furthermore, it seems there is no demand for
+> this IC. Let's ease the maintenance burden and drop the driver. We can
+> always add it back if there is sudden need for it.
+>=20
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+>=20
+> ---
+> Please let me know if some of you think the driver is needed.
+> ---
 
+Thanks, queued.
+
+-- Sebastian
+
+>  drivers/power/supply/Kconfig           |   9 -
+>  drivers/power/supply/Makefile          |   1 -
+>  drivers/power/supply/bd70528-charger.c | 710 -------------------------
+>  3 files changed, 720 deletions(-)
+>  delete mode 100644 drivers/power/supply/bd70528-charger.c
+>=20
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index e696364126f1..b99d19f48769 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -760,15 +760,6 @@ config CHARGER_UCS1002
+>  	  Say Y to enable support for Microchip UCS1002 Programmable
+>  	  USB Port Power Controller with Charger Emulation.
+> =20
+> -config CHARGER_BD70528
+> -	tristate "ROHM bd70528 charger driver"
+> -	depends on MFD_ROHM_BD70528
+> -	select LINEAR_RANGES
+> -	help
+> -	  Say Y here to enable support for getting battery status
+> -	  information and altering charger configurations from charger
+> -	  block of the ROHM BD70528 Power Management IC.
+> -
+>  config CHARGER_BD99954
+>  	tristate "ROHM bd99954 charger driver"
+>  	depends on I2C
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index a7309a3d1a47..7ad7d9a05523 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -96,7 +96,6 @@ obj-$(CONFIG_CHARGER_CROS_USBPD)	+=3D cros_usbpd-charge=
+r.o
+>  obj-$(CONFIG_CHARGER_SC2731)	+=3D sc2731_charger.o
+>  obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+=3D sc27xx_fuel_gauge.o
+>  obj-$(CONFIG_CHARGER_UCS1002)	+=3D ucs1002_power.o
+> -obj-$(CONFIG_CHARGER_BD70528)	+=3D bd70528-charger.o
+>  obj-$(CONFIG_CHARGER_BD99954)	+=3D bd99954-charger.o
+>  obj-$(CONFIG_CHARGER_WILCO)	+=3D wilco-charger.o
+>  obj-$(CONFIG_RN5T618_POWER)	+=3D rn5t618_power.o
+> diff --git a/drivers/power/supply/bd70528-charger.c b/drivers/power/suppl=
+y/bd70528-charger.c
+> deleted file mode 100644
+> index 7c1f0b99c71b..000000000000
+> --- a/drivers/power/supply/bd70528-charger.c
+> +++ /dev/null
+> @@ -1,710 +0,0 @@
+> -// SPDX-License-Identifier: GPL-2.0-or-later
+> -//
+> -// Copyright (C) 2018 ROHM Semiconductors
+> -//
+> -// power-supply driver for ROHM BD70528 PMIC
+> -
+> -/*
+> - * BD70528 charger HW state machine.
+> - *
+> - * The thermal shutdown state is not drawn. From any other state but
+> - * battery error and suspend it is possible to go to TSD/TMP states
+> - * if temperature is out of bounds.
+> - *
+> - *  CHG_RST =3D H
+> - *  or CHG_EN=3DL
+> - *  or (DCIN2_UVLO=3DL && DCIN1_UVLO=3DL)
+> - *  or (DCIN2_OVLO=3DH & DCIN1_UVKLO=3DL)
+> - *
+> - *  +--------------+         +--------------+
+> - *  |              |         |              |
+> - *  |  Any state   +-------> |    Suspend   |
+> - *  |              |         |              |
+> - *  +--------------+         +------+-------+
+> - *                                  |
+> - *  CHG_EN =3D H && BAT_DET =3D H &&    |
+> - *  No errors (temp, bat_ov, UVLO,  |
+> - *  OVLO...)                        |
+> - *                                  |
+> - *  BAT_OV or             +---------v----------+
+> - *  (DBAT && TTRI)        |                    |
+> - *      +-----------------+   Trickle Charge   | <---------------+
+> - *      |                 |                    |                 |
+> - *      |                 +-------+------------+                 |
+> - *      |                         |                              |
+> - *      |                         |     ^                        |
+> - *      |        V_BAT > VTRI_TH  |     |  VBAT < VTRI_TH - 50mV |
+> - *      |                         |     |                        |
+> - *      |                         v     |                        |
+> - *      |                               |                        |
+> - *      |     BAT_OV or      +----------+----+                   |
+> - *      |     (DBAT && TFST) |               |                   |
+> - *      |   +----------------+  Fast Charge  |                   |
+> - *      |   |                |               |                   |
+> - *      v   v                +----+----------+                   |
+> - *                                |                              |
+> - *+----------------+   ILIM_DET=3DL |    ^ ILIM_DET                |
+> - *|                |   & CV_DET=3DH |    | or CV_DET=3DL             |
+> - *|  Battery Error |   & VBAT >   |    | or VBAT < VRECHG_TH     |
+> - *|                |   VRECHG_TH  |    | or IBAT  > IFST/x       |
+> - *+----------------+   & IBAT <   |    |                         |
+> - *                     IFST/x     v    |                         |
+> - *       ^                             |                         |
+> - *       |                   +---------+-+                       |
+> - *       |                   |           |                       |
+> - *       +-------------------+  Top OFF  |                       |
+> - *  BAT_OV =3D H or            |           |                       |
+> - *  (DBAT && TFST)           +-----+-----+                       |
+> - *                                 |                             |
+> - *           Stay top-off for 15s  |                             |
+> - *                                 v                             |
+> - *                                                               |
+> - *                            +--------+                         |
+> - *                            |        |                         |
+> - *                            |  Done  +-------------------------+
+> - *                            |        |
+> - *                            +--------+   VBAT < VRECHG_TH
+> - */
+> -
+> -#include <linux/kernel.h>
+> -#include <linux/interrupt.h>
+> -#include <linux/mfd/rohm-bd70528.h>
+> -#include <linux/module.h>
+> -#include <linux/platform_device.h>
+> -#include <linux/power_supply.h>
+> -#include <linux/linear_range.h>
+> -
+> -#define CHG_STAT_SUSPEND	0x0
+> -#define CHG_STAT_TRICKLE	0x1
+> -#define CHG_STAT_FAST		0x3
+> -#define CHG_STAT_TOPOFF		0xe
+> -#define CHG_STAT_DONE		0xf
+> -#define CHG_STAT_OTP_TRICKLE	0x10
+> -#define CHG_STAT_OTP_FAST	0x11
+> -#define CHG_STAT_OTP_DONE	0x12
+> -#define CHG_STAT_TSD_TRICKLE	0x20
+> -#define CHG_STAT_TSD_FAST	0x21
+> -#define CHG_STAT_TSD_TOPOFF	0x22
+> -#define CHG_STAT_BAT_ERR	0x7f
+> -
+> -static const char *bd70528_charger_model =3D "BD70528";
+> -static const char *bd70528_charger_manufacturer =3D "ROHM Semiconductors=
+";
+> -
+> -#define BD_ERR_IRQ_HND(_name_, _wrn_)					\
+> -static irqreturn_t bd0528_##_name_##_interrupt(int irq, void *arg)	\
+> -{									\
+> -	struct power_supply *psy =3D (struct power_supply *)arg;		\
+> -									\
+> -	power_supply_changed(psy);					\
+> -	dev_err(&psy->dev, (_wrn_));					\
+> -									\
+> -	return IRQ_HANDLED;						\
+> -}
+> -
+> -#define BD_INFO_IRQ_HND(_name_, _wrn_)					\
+> -static irqreturn_t bd0528_##_name_##_interrupt(int irq, void *arg)	\
+> -{									\
+> -	struct power_supply *psy =3D (struct power_supply *)arg;		\
+> -									\
+> -	power_supply_changed(psy);					\
+> -	dev_dbg(&psy->dev, (_wrn_));					\
+> -									\
+> -	return IRQ_HANDLED;						\
+> -}
+> -
+> -#define BD_IRQ_HND(_name_) bd0528_##_name_##_interrupt
+> -
+> -struct bd70528_psy {
+> -	struct regmap *regmap;
+> -	struct device *dev;
+> -	struct power_supply *psy;
+> -};
+> -
+> -BD_ERR_IRQ_HND(BAT_OV_DET, "Battery overvoltage detected\n");
+> -BD_ERR_IRQ_HND(DBAT_DET, "Dead battery detected\n");
+> -BD_ERR_IRQ_HND(COLD_DET, "Battery cold\n");
+> -BD_ERR_IRQ_HND(HOT_DET, "Battery hot\n");
+> -BD_ERR_IRQ_HND(CHG_TSD, "Charger thermal shutdown\n");
+> -BD_ERR_IRQ_HND(DCIN2_OV_DET, "DCIN2 overvoltage detected\n");
+> -
+> -BD_INFO_IRQ_HND(BAT_OV_RES, "Battery voltage back to normal\n");
+> -BD_INFO_IRQ_HND(COLD_RES, "Battery temperature back to normal\n");
+> -BD_INFO_IRQ_HND(HOT_RES, "Battery temperature back to normal\n");
+> -BD_INFO_IRQ_HND(BAT_RMV, "Battery removed\n");
+> -BD_INFO_IRQ_HND(BAT_DET, "Battery detected\n");
+> -BD_INFO_IRQ_HND(DCIN2_OV_RES, "DCIN2 voltage back to normal\n");
+> -BD_INFO_IRQ_HND(DCIN2_RMV, "DCIN2 removed\n");
+> -BD_INFO_IRQ_HND(DCIN2_DET, "DCIN2 detected\n");
+> -BD_INFO_IRQ_HND(DCIN1_RMV, "DCIN1 removed\n");
+> -BD_INFO_IRQ_HND(DCIN1_DET, "DCIN1 detected\n");
+> -
+> -struct irq_name_pair {
+> -	const char *n;
+> -	irqreturn_t (*h)(int irq, void *arg);
+> -};
+> -
+> -static int bd70528_get_irqs(struct platform_device *pdev,
+> -			    struct bd70528_psy *bdpsy)
+> -{
+> -	int irq, i, ret;
+> -	unsigned int mask;
+> -	static const struct irq_name_pair bd70528_chg_irqs[] =3D {
+> -		{ .n =3D "bd70528-bat-ov-res", .h =3D BD_IRQ_HND(BAT_OV_RES) },
+> -		{ .n =3D "bd70528-bat-ov-det", .h =3D BD_IRQ_HND(BAT_OV_DET) },
+> -		{ .n =3D "bd70528-bat-dead", .h =3D BD_IRQ_HND(DBAT_DET) },
+> -		{ .n =3D "bd70528-bat-warmed", .h =3D BD_IRQ_HND(COLD_RES) },
+> -		{ .n =3D "bd70528-bat-cold", .h =3D BD_IRQ_HND(COLD_DET) },
+> -		{ .n =3D "bd70528-bat-cooled", .h =3D BD_IRQ_HND(HOT_RES) },
+> -		{ .n =3D "bd70528-bat-hot", .h =3D BD_IRQ_HND(HOT_DET) },
+> -		{ .n =3D "bd70528-chg-tshd", .h =3D BD_IRQ_HND(CHG_TSD) },
+> -		{ .n =3D "bd70528-bat-removed", .h =3D BD_IRQ_HND(BAT_RMV) },
+> -		{ .n =3D "bd70528-bat-detected", .h =3D BD_IRQ_HND(BAT_DET) },
+> -		{ .n =3D "bd70528-dcin2-ov-res", .h =3D BD_IRQ_HND(DCIN2_OV_RES) },
+> -		{ .n =3D "bd70528-dcin2-ov-det", .h =3D BD_IRQ_HND(DCIN2_OV_DET) },
+> -		{ .n =3D "bd70528-dcin2-removed", .h =3D BD_IRQ_HND(DCIN2_RMV) },
+> -		{ .n =3D "bd70528-dcin2-detected", .h =3D BD_IRQ_HND(DCIN2_DET) },
+> -		{ .n =3D "bd70528-dcin1-removed", .h =3D BD_IRQ_HND(DCIN1_RMV) },
+> -		{ .n =3D "bd70528-dcin1-detected", .h =3D BD_IRQ_HND(DCIN1_DET) },
+> -	};
+> -
+> -	for (i =3D 0; i < ARRAY_SIZE(bd70528_chg_irqs); i++) {
+> -		irq =3D platform_get_irq_byname(pdev, bd70528_chg_irqs[i].n);
+> -		if (irq < 0) {
+> -			dev_err(&pdev->dev, "Bad IRQ information for %s (%d)\n",
+> -				bd70528_chg_irqs[i].n, irq);
+> -			return irq;
+> -		}
+> -		ret =3D devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> -						bd70528_chg_irqs[i].h,
+> -						IRQF_ONESHOT,
+> -						bd70528_chg_irqs[i].n,
+> -						bdpsy->psy);
+> -
+> -		if (ret)
+> -			return ret;
+> -	}
+> -	/*
+> -	 * BD70528 irq controller is not touching the main mask register.
+> -	 * So enable the charger block interrupts at main level. We can just
+> -	 * leave them enabled as irq-controller should disable irqs
+> -	 * from sub-registers when IRQ is disabled or freed.
+> -	 */
+> -	mask =3D BD70528_REG_INT_BAT1_MASK | BD70528_REG_INT_BAT2_MASK;
+> -	ret =3D regmap_update_bits(bdpsy->regmap,
+> -				 BD70528_REG_INT_MAIN_MASK, mask, 0);
+> -	if (ret)
+> -		dev_err(&pdev->dev, "Failed to enable charger IRQs\n");
+> -
+> -	return ret;
+> -}
+> -
+> -static int bd70528_get_charger_status(struct bd70528_psy *bdpsy, int *va=
+l)
+> -{
+> -	int ret;
+> -	unsigned int v;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_CURR_STAT, &v);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "Charger state read failure %d\n",
+> -			ret);
+> -		return ret;
+> -	}
+> -
+> -	switch (v & BD70528_MASK_CHG_STAT) {
+> -	case CHG_STAT_SUSPEND:
+> -	/* Maybe we should check the CHG_TTRI_EN? */
+> -	case CHG_STAT_OTP_TRICKLE:
+> -	case CHG_STAT_OTP_FAST:
+> -	case CHG_STAT_OTP_DONE:
+> -	case CHG_STAT_TSD_TRICKLE:
+> -	case CHG_STAT_TSD_FAST:
+> -	case CHG_STAT_TSD_TOPOFF:
+> -	case CHG_STAT_BAT_ERR:
+> -		*val =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
+> -		break;
+> -	case CHG_STAT_DONE:
+> -		*val =3D POWER_SUPPLY_STATUS_FULL;
+> -		break;
+> -	case CHG_STAT_TRICKLE:
+> -	case CHG_STAT_FAST:
+> -	case CHG_STAT_TOPOFF:
+> -		*val =3D POWER_SUPPLY_STATUS_CHARGING;
+> -		break;
+> -	default:
+> -		*val =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> -		break;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static int bd70528_get_charge_type(struct bd70528_psy *bdpsy, int *val)
+> -{
+> -	int ret;
+> -	unsigned int v;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_CURR_STAT, &v);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "Charger state read failure %d\n",
+> -			ret);
+> -		return ret;
+> -	}
+> -
+> -	switch (v & BD70528_MASK_CHG_STAT) {
+> -	case CHG_STAT_TRICKLE:
+> -		*val =3D POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
+> -		break;
+> -	case CHG_STAT_FAST:
+> -	case CHG_STAT_TOPOFF:
+> -		*val =3D POWER_SUPPLY_CHARGE_TYPE_FAST;
+> -		break;
+> -	case CHG_STAT_DONE:
+> -	case CHG_STAT_SUSPEND:
+> -	/* Maybe we should check the CHG_TTRI_EN? */
+> -	case CHG_STAT_OTP_TRICKLE:
+> -	case CHG_STAT_OTP_FAST:
+> -	case CHG_STAT_OTP_DONE:
+> -	case CHG_STAT_TSD_TRICKLE:
+> -	case CHG_STAT_TSD_FAST:
+> -	case CHG_STAT_TSD_TOPOFF:
+> -	case CHG_STAT_BAT_ERR:
+> -		*val =3D POWER_SUPPLY_CHARGE_TYPE_NONE;
+> -		break;
+> -	default:
+> -		*val =3D POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
+> -		break;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static int bd70528_get_battery_health(struct bd70528_psy *bdpsy, int *va=
+l)
+> -{
+> -	int ret;
+> -	unsigned int v;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_BAT_STAT, &v);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "Battery state read failure %d\n",
+> -			ret);
+> -		return ret;
+> -	}
+> -	/* No battery? */
+> -	if (!(v & BD70528_MASK_CHG_BAT_DETECT))
+> -		*val =3D POWER_SUPPLY_HEALTH_DEAD;
+> -	else if (v & BD70528_MASK_CHG_BAT_OVERVOLT)
+> -		*val =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> -	else if (v & BD70528_MASK_CHG_BAT_TIMER)
+> -		*val =3D POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+> -	else
+> -		*val =3D POWER_SUPPLY_HEALTH_GOOD;
+> -
+> -	return 0;
+> -}
+> -
+> -static int bd70528_get_online(struct bd70528_psy *bdpsy, int *val)
+> -{
+> -	int ret;
+> -	unsigned int v;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_IN_STAT, &v);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "DC1 IN state read failure %d\n",
+> -			ret);
+> -		return ret;
+> -	}
+> -
+> -	*val =3D (v & BD70528_MASK_CHG_DCIN1_UVLO) ? 1 : 0;
+> -
+> -	return 0;
+> -}
+> -
+> -static int bd70528_get_present(struct bd70528_psy *bdpsy, int *val)
+> -{
+> -	int ret;
+> -	unsigned int v;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_BAT_STAT, &v);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "Battery state read failure %d\n",
+> -			ret);
+> -		return ret;
+> -	}
+> -
+> -	*val =3D (v & BD70528_MASK_CHG_BAT_DETECT) ? 1 : 0;
+> -
+> -	return 0;
+> -}
+> -
+> -static const struct linear_range current_limit_ranges[] =3D {
+> -	{
+> -		.min =3D 5,
+> -		.step =3D 1,
+> -		.min_sel =3D 0,
+> -		.max_sel =3D 0x22,
+> -	},
+> -	{
+> -		.min =3D 40,
+> -		.step =3D 5,
+> -		.min_sel =3D 0x23,
+> -		.max_sel =3D 0x26,
+> -	},
+> -	{
+> -		.min =3D 60,
+> -		.step =3D 20,
+> -		.min_sel =3D 0x27,
+> -		.max_sel =3D 0x2d,
+> -	},
+> -	{
+> -		.min =3D 200,
+> -		.step =3D 50,
+> -		.min_sel =3D 0x2e,
+> -		.max_sel =3D 0x34,
+> -	},
+> -	{
+> -		.min =3D 500,
+> -		.step =3D 0,
+> -		.min_sel =3D 0x35,
+> -		.max_sel =3D 0x3f,
+> -	},
+> -};
+> -
+> -/*
+> - * BD70528 would support setting and getting own charge current/
+> - * voltage for low temperatures. The driver currently only reads
+> - * the charge current at room temperature. We do set both though.
+> - */
+> -static const struct linear_range warm_charge_curr[] =3D {
+> -	{
+> -		.min =3D 10,
+> -		.step =3D 10,
+> -		.min_sel =3D 0,
+> -		.max_sel =3D 0x12,
+> -	},
+> -	{
+> -		.min =3D 200,
+> -		.step =3D 25,
+> -		.min_sel =3D 0x13,
+> -		.max_sel =3D 0x1f,
+> -	},
+> -};
+> -
+> -/*
+> - * Cold charge current selectors are identical to warm charge current
+> - * selectors. The difference is that only smaller currents are available
+> - * at cold charge range.
+> - */
+> -#define MAX_COLD_CHG_CURR_SEL 0x15
+> -#define MAX_WARM_CHG_CURR_SEL 0x1f
+> -#define MIN_CHG_CURR_SEL 0x0
+> -
+> -static int get_charge_current(struct bd70528_psy *bdpsy, int *ma)
+> -{
+> -	unsigned int sel;
+> -	int ret;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_CHG_CURR_WARM,
+> -			  &sel);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev,
+> -			"Charge current reading failed (%d)\n", ret);
+> -		return ret;
+> -	}
+> -
+> -	sel &=3D BD70528_MASK_CHG_CHG_CURR;
+> -
+> -	ret =3D linear_range_get_value_array(&warm_charge_curr[0],
+> -					   ARRAY_SIZE(warm_charge_curr),
+> -					   sel, ma);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev,
+> -			"Unknown charge current value 0x%x\n",
+> -			sel);
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+> -static int get_current_limit(struct bd70528_psy *bdpsy, int *ma)
+> -{
+> -	unsigned int sel;
+> -	int ret;
+> -
+> -	ret =3D regmap_read(bdpsy->regmap, BD70528_REG_CHG_DCIN_ILIM,
+> -			  &sel);
+> -
+> -	if (ret) {
+> -		dev_err(bdpsy->dev,
+> -			"Input current limit reading failed (%d)\n", ret);
+> -		return ret;
+> -	}
+> -
+> -	sel &=3D BD70528_MASK_CHG_DCIN_ILIM;
+> -
+> -	ret =3D linear_range_get_value_array(&current_limit_ranges[0],
+> -					   ARRAY_SIZE(current_limit_ranges),
+> -					   sel, ma);
+> -	if (ret) {
+> -		/* Unspecified values mean 500 mA */
+> -		*ma =3D 500;
+> -	}
+> -	return 0;
+> -}
+> -
+> -static enum power_supply_property bd70528_charger_props[] =3D {
+> -	POWER_SUPPLY_PROP_STATUS,
+> -	POWER_SUPPLY_PROP_CHARGE_TYPE,
+> -	POWER_SUPPLY_PROP_HEALTH,
+> -	POWER_SUPPLY_PROP_PRESENT,
+> -	POWER_SUPPLY_PROP_ONLINE,
+> -	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+> -	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+> -	POWER_SUPPLY_PROP_MODEL_NAME,
+> -	POWER_SUPPLY_PROP_MANUFACTURER,
+> -};
+> -
+> -static int bd70528_charger_get_property(struct power_supply *psy,
+> -					enum power_supply_property psp,
+> -					union power_supply_propval *val)
+> -{
+> -	struct bd70528_psy *bdpsy =3D power_supply_get_drvdata(psy);
+> -	int ret =3D 0;
+> -
+> -	switch (psp) {
+> -	case POWER_SUPPLY_PROP_STATUS:
+> -		return bd70528_get_charger_status(bdpsy, &val->intval);
+> -	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+> -		return bd70528_get_charge_type(bdpsy, &val->intval);
+> -	case POWER_SUPPLY_PROP_HEALTH:
+> -		return bd70528_get_battery_health(bdpsy, &val->intval);
+> -	case POWER_SUPPLY_PROP_PRESENT:
+> -		return bd70528_get_present(bdpsy, &val->intval);
+> -	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> -		ret =3D get_current_limit(bdpsy, &val->intval);
+> -		val->intval *=3D 1000;
+> -		return ret;
+> -	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+> -		ret =3D get_charge_current(bdpsy, &val->intval);
+> -		val->intval *=3D 1000;
+> -		return ret;
+> -	case POWER_SUPPLY_PROP_ONLINE:
+> -		return bd70528_get_online(bdpsy, &val->intval);
+> -	case POWER_SUPPLY_PROP_MODEL_NAME:
+> -		val->strval =3D bd70528_charger_model;
+> -		return 0;
+> -	case POWER_SUPPLY_PROP_MANUFACTURER:
+> -		val->strval =3D bd70528_charger_manufacturer;
+> -		return 0;
+> -	default:
+> -		break;
+> -	}
+> -
+> -	return -EINVAL;
+> -}
+> -
+> -static int bd70528_prop_is_writable(struct power_supply *psy,
+> -				    enum power_supply_property psp)
+> -{
+> -	switch (psp) {
+> -	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> -	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+> -		return 1;
+> -	default:
+> -		break;
+> -	}
+> -	return 0;
+> -}
+> -
+> -static int set_charge_current(struct bd70528_psy *bdpsy, int ma)
+> -{
+> -	unsigned int reg;
+> -	int ret =3D 0, tmpret;
+> -	bool found;
+> -
+> -	if (ma > 500) {
+> -		dev_warn(bdpsy->dev,
+> -			 "Requested charge current %u exceed maximum (500mA)\n",
+> -			 ma);
+> -		reg =3D MAX_WARM_CHG_CURR_SEL;
+> -		goto set;
+> -	}
+> -	if (ma < 10) {
+> -		dev_err(bdpsy->dev,
+> -			"Requested charge current %u smaller than min (10mA)\n",
+> -			 ma);
+> -		reg =3D MIN_CHG_CURR_SEL;
+> -		ret =3D -EINVAL;
+> -		goto set;
+> -	}
+> -
+> -/*
+> - * For BD70528 voltage/current limits we happily accept any value which
+> - * belongs the range. We could check if value matching the selector is
+> - * desired by computing the range min + (sel - sel_low) * range step - b=
+ut
+> - * I guess it is enough if we use voltage/current which is closest (belo=
+w)
+> - * the requested?
+> - */
+> -
+> -	ret =3D linear_range_get_selector_low_array(warm_charge_curr,
+> -						  ARRAY_SIZE(warm_charge_curr),
+> -						  ma, &reg, &found);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev,
+> -			 "Unsupported charge current %u mA\n", ma);
+> -		reg =3D MIN_CHG_CURR_SEL;
+> -		goto set;
+> -	}
+> -	if (!found) {
+> -		/*
+> -		 * There was a gap in supported values and we hit it.
+> -		 * Yet a smaller value was found so we use it.
+> -		 */
+> -		dev_warn(bdpsy->dev,
+> -			 "Unsupported charge current %u mA\n", ma);
+> -	}
+> -set:
+> -
+> -	tmpret =3D regmap_update_bits(bdpsy->regmap,
+> -				    BD70528_REG_CHG_CHG_CURR_WARM,
+> -				    BD70528_MASK_CHG_CHG_CURR, reg);
+> -	if (tmpret)
+> -		dev_err(bdpsy->dev,
+> -			"Charge current write failure (%d)\n", tmpret);
+> -
+> -	if (reg > MAX_COLD_CHG_CURR_SEL)
+> -		reg =3D MAX_COLD_CHG_CURR_SEL;
+> -
+> -	if (!tmpret)
+> -		tmpret =3D regmap_update_bits(bdpsy->regmap,
+> -					    BD70528_REG_CHG_CHG_CURR_COLD,
+> -					    BD70528_MASK_CHG_CHG_CURR, reg);
+> -
+> -	if (!ret)
+> -		ret =3D tmpret;
+> -
+> -	return ret;
+> -}
+> -
+> -#define MAX_CURR_LIMIT_SEL 0x34
+> -#define MIN_CURR_LIMIT_SEL 0x0
+> -
+> -static int set_current_limit(struct bd70528_psy *bdpsy, int ma)
+> -{
+> -	unsigned int reg;
+> -	int ret =3D 0, tmpret;
+> -	bool found;
+> -
+> -	if (ma > 500) {
+> -		dev_warn(bdpsy->dev,
+> -			 "Requested current limit %u exceed maximum (500mA)\n",
+> -			 ma);
+> -		reg =3D MAX_CURR_LIMIT_SEL;
+> -		goto set;
+> -	}
+> -	if (ma < 5) {
+> -		dev_err(bdpsy->dev,
+> -			"Requested current limit %u smaller than min (5mA)\n",
+> -			ma);
+> -		reg =3D MIN_CURR_LIMIT_SEL;
+> -		ret =3D -EINVAL;
+> -		goto set;
+> -	}
+> -
+> -	ret =3D linear_range_get_selector_low_array(current_limit_ranges,
+> -					ARRAY_SIZE(current_limit_ranges),
+> -					ma, &reg, &found);
+> -	if (ret) {
+> -		dev_err(bdpsy->dev, "Unsupported current limit %umA\n", ma);
+> -		reg =3D MIN_CURR_LIMIT_SEL;
+> -		goto set;
+> -	}
+> -	if (!found) {
+> -		/*
+> -		 * There was a gap in supported values and we hit it.
+> -		 * We found a smaller value from ranges and use it.
+> -		 * Warn user though.
+> -		 */
+> -		dev_warn(bdpsy->dev, "Unsupported current limit %umA\n", ma);
+> -	}
+> -
+> -set:
+> -	tmpret =3D regmap_update_bits(bdpsy->regmap,
+> -				    BD70528_REG_CHG_DCIN_ILIM,
+> -				    BD70528_MASK_CHG_DCIN_ILIM, reg);
+> -
+> -	if (!ret)
+> -		ret =3D tmpret;
+> -
+> -	return ret;
+> -}
+> -
+> -static int bd70528_charger_set_property(struct power_supply *psy,
+> -					enum power_supply_property psp,
+> -					const union power_supply_propval *val)
+> -{
+> -	struct bd70528_psy *bdpsy =3D power_supply_get_drvdata(psy);
+> -
+> -	switch (psp) {
+> -	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> -		return set_current_limit(bdpsy, val->intval / 1000);
+> -	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+> -		return set_charge_current(bdpsy, val->intval / 1000);
+> -	default:
+> -		break;
+> -	}
+> -	return -EINVAL;
+> -}
+> -
+> -static const struct power_supply_desc bd70528_charger_desc =3D {
+> -	.name		=3D "bd70528-charger",
+> -	.type		=3D POWER_SUPPLY_TYPE_MAINS,
+> -	.properties	=3D bd70528_charger_props,
+> -	.num_properties	=3D ARRAY_SIZE(bd70528_charger_props),
+> -	.get_property	=3D bd70528_charger_get_property,
+> -	.set_property	=3D bd70528_charger_set_property,
+> -	.property_is_writeable	=3D bd70528_prop_is_writable,
+> -};
+> -
+> -static int bd70528_power_probe(struct platform_device *pdev)
+> -{
+> -	struct bd70528_psy *bdpsy;
+> -	struct power_supply_config cfg =3D {};
+> -
+> -	bdpsy =3D devm_kzalloc(&pdev->dev, sizeof(*bdpsy), GFP_KERNEL);
+> -	if (!bdpsy)
+> -		return -ENOMEM;
+> -
+> -	bdpsy->regmap =3D dev_get_regmap(pdev->dev.parent, NULL);
+> -	if (!bdpsy->regmap) {
+> -		dev_err(&pdev->dev, "No regmap found for chip\n");
+> -		return -EINVAL;
+> -	}
+> -	bdpsy->dev =3D &pdev->dev;
+> -
+> -	platform_set_drvdata(pdev, bdpsy);
+> -	cfg.drv_data =3D bdpsy;
+> -	cfg.of_node =3D pdev->dev.parent->of_node;
+> -
+> -	bdpsy->psy =3D devm_power_supply_register(&pdev->dev,
+> -						&bd70528_charger_desc, &cfg);
+> -	if (IS_ERR(bdpsy->psy)) {
+> -		dev_err(&pdev->dev, "failed: power supply register\n");
+> -		return PTR_ERR(bdpsy->psy);
+> -	}
+> -
+> -	return bd70528_get_irqs(pdev, bdpsy);
+> -}
+> -
+> -static struct platform_driver bd70528_power =3D {
+> -	.driver =3D {
+> -		.name =3D "bd70528-power"
+> -	},
+> -	.probe =3D bd70528_power_probe,
+> -};
+> -
+> -module_platform_driver(bd70528_power);
+> -
+> -MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
+> -MODULE_DESCRIPTION("BD70528 power-supply driver");
+> -MODULE_LICENSE("GPL");
+> -MODULE_ALIAS("platform:bd70528-power");
+> --=20
+> 2.25.4
+>=20
+>=20
+> --=20
+> Matti Vaittinen, Linux device drivers
+> ROHM Semiconductors, Finland SWDC
+> Kiviharjunlenkki 1E
+> 90220 OULU
+> FINLAND
+>=20
+> ~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
+> Simon says - in Latin please.
+> ~~~ "non cogito me" dixit Rene Descarte, deinde evanescavit ~~~
+> Thanks to Simon Glass for the translation =3D]=20
+
+
+
+--aadboz6r5ii6lxfo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmC5/B8ACgkQ2O7X88g7
++poyIhAAkduuyNS1J2aqhbXiOyEMF27rdZB0jzRIYyyQV0rxsp9N3w3jHWw3LH64
+DFbMYpjM0xMc9PsjE640zO16gQjj2yw32DEA/TFDvzmzvyChFHiHjX5fsIU7ZInS
+kqSeOo4U80E47ovkth/Oo5qNEEjbwJBBkr6JIyehjktiOZ8lb742obilXPkfFk2v
+cqjPg494mBM9nlurmEJr0xNBfwJELsQ3hQGHdw9DlQ9qu6/33v0dblD1Hcf06efB
+C4HljPXjN5pytLvNRGxuvnXk00Dr81GiuE+hP1H8sA09PyAOMGXg50ViLYZgbTgF
+6sWUBo/PcvT9jleULt8EWriDRh90+2GiJ58Kwb2PxFNq9y9ORBKTtJvJ4x0xJPXI
+OrWUssEQ9jjCoOgtRoyEV5xUN8LqkIRVsoummnmsZ2C/7P1fUy3hJSHQ3ywVZEcp
+Vc78xlSWodp/GZLF+9BEXbfdCdpyAFjXHIJh97zgfq4X6vJb91RNB9vQuTvTXbXJ
+gQjCUUKp0DsWUym/IHhT35v+XHZ96IrB9yj3W3aoOkXS8dcERH8UARrxsoPeMzEn
+9r/opH5M+upGYKGFAWEsljGuP/ZFT72xQoTINAkGa8YbTezqQA0oYhEQiW/B+s3W
+rWYxXR8y+O56Fs6WJX20dSDvBf1ZVF2aFFo9rnyrDt6CipozXx0=
+=4j0s
+-----END PGP SIGNATURE-----
+
+--aadboz6r5ii6lxfo--
