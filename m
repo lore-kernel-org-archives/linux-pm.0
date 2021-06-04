@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6639CC47083
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55152C47098
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:30:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4976461420
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:30:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D3386141C
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:30:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229809AbhFDKcD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S229964AbhFDKcD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 4 Jun 2021 06:32:03 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:36814 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S229625AbhFDKcD (ORCPT
+Received: from mailgw01.mediatek.com ([210.61.82.183]:52025 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S229667AbhFDKcD (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:32:03 -0400
-X-UUID: fd700503bfee41ca9a586d8cf5da97ee-20210604
-X-UUID: fd700503bfee41ca9a586d8cf5da97ee-20210604
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+X-UUID: 73ccd12f3eb54d00af5515cbe39744de-20210604
+X-UUID: 73ccd12f3eb54d00af5515cbe39744de-20210604
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1445757416; Fri, 04 Jun 2021 18:30:14 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1750878577; Fri, 04 Jun 2021 18:30:13 +0800
 Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Fri, 4 Jun 2021 18:30:12 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by MTKCAS06.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 4 Jun 2021 18:30:12 +0800
+ Transport; Fri, 4 Jun 2021 18:30:11 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -45,12 +45,11 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         <linux-arm-kernel@lists.infradead.org>,
         Fan Chen <fan.chen@mediatek.com>,
         Arvin Wang <arvin.wang@mediatek.com>,
-        "James Liao" <jamesjj.liao@mediatek.com>,
-        Henry Chen <henryc.chen@mediatek.com>,
-        Dawei Chien <dawei.chien@mediatek.com>
-Subject: [PATCH V10 06/12] arm64: dts: mt8192: add dvfsrc related nodes
-Date:   Fri, 4 Jun 2021 18:29:53 +0800
-Message-ID: <20210604102959.13807-7-dawei.chien@mediatek.com>
+        James Liao <jamesjj.liao@mediatek.com>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V10 02/12] soc: mediatek: add header for mediatek SIP interface
+Date:   Fri, 4 Jun 2021 18:29:49 +0800
+Message-ID: <20210604102959.13807-3-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210604102959.13807-1-dawei.chien@mediatek.com>
 References: <20210604102959.13807-1-dawei.chien@mediatek.com>
@@ -63,31 +62,30 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Henry Chen <henryc.chen@mediatek.com>
 
-Enable dvfsrc on mt8192 platform.
+Add a header to collect SIPs and add one SIP call to initialize power
+management hardware for the SIP interface defined to access the SPM
+handling vcore voltage and ddr rate changes on mt8183 (and most likely
+later socs).
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8192.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-index 9757138a8bbd..c70a3bf744fa 100644
---- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-@@ -282,6 +282,12 @@
- 			#interrupt-cells = <2>;
- 		};
+diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+index 082398e0cfb1..079bbcb361ba 100644
+--- a/include/linux/soc/mediatek/mtk_sip_svc.h
++++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+@@ -22,4 +22,8 @@
+ 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+ 			   ARM_SMCCC_OWNER_SIP, fn_id)
  
-+		ddr_emi: dvfsrc@10012000 {
-+			compatible = "mediatek,mt8192-dvfsrc",
-+				     "mediatek,mt6873-dvfsrc";
-+			reg = <0 0x10012000 0 0x1000>;
-+		};
++/* VCOREFS */
++#define MTK_SIP_VCOREFS_CONTROL \
++	MTK_SIP_SMC_CMD(0x506)
 +
- 		systimer: timer@10017000 {
- 			compatible = "mediatek,mt8192-timer",
- 				     "mediatek,mt6765-timer";
+ #endif
 -- 
 2.14.1
 
