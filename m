@@ -2,125 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3942C47098
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:01:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37B57C47083
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8594B6141B
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:01:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1EE976141D
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229739AbhFDKDR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Jun 2021 06:03:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45348 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229612AbhFDKDR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:03:17 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DCB3C06174A;
-        Fri,  4 Jun 2021 03:01:31 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id 8A4461F43856
-Received: by earth.universe (Postfix, from userid 1000)
-        id F19F33C0C95; Fri,  4 Jun 2021 12:01:26 +0200 (CEST)
-Date:   Fri, 4 Jun 2021 12:01:26 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Lee Jones <lee.jones@linaro.org>,
+        id S229982AbhFDKFc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Jun 2021 06:05:32 -0400
+Received: from mailgw01.mediatek.com ([210.61.82.183]:55623 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S230036AbhFDKFa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:05:30 -0400
+X-UUID: c84a1a86690246588e4a0b5a20a00b7e-20210604
+X-UUID: c84a1a86690246588e4a0b5a20a00b7e-20210604
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw01.mediatek.com
+        (envelope-from <dawei.chien@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 912070988; Fri, 04 Jun 2021 18:02:24 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 4 Jun 2021 18:02:22 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 4 Jun 2021 18:02:22 +0800
+From:   Dawei Chien <dawei.chien@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Mark Brown <broonie@kernel.org>,
-        linux-samsung-soc@vger.kernel.org,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        devicetree@vger.kernel.org,
-        Iskren Chernev <iskren.chernev@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 7/7] power: supply: max17040: Do not enforce
- (incorrect) interrupt trigger type
-Message-ID: <20210604100126.uh6ky5633cci76jz@earth.universe>
-References: <20210526172036.183223-1-krzysztof.kozlowski@canonical.com>
- <20210526172036.183223-8-krzysztof.kozlowski@canonical.com>
- <20210602200609.GA3900200@robh.at.kernel.org>
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        <devicetree@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        Fan Chen <fan.chen@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V10 02/12] soc: mediatek: add header for mediatek SIP interface
+Date:   Fri, 4 Jun 2021 18:02:08 +0800
+Message-ID: <20210604100218.13613-3-dawei.chien@mediatek.com>
+X-Mailer: git-send-email 2.14.1
+In-Reply-To: <20210604100218.13613-1-dawei.chien@mediatek.com>
+References: <20210604100218.13613-1-dawei.chien@mediatek.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5z3bvd56oibiykjk"
-Content-Disposition: inline
-In-Reply-To: <20210602200609.GA3900200@robh.at.kernel.org>
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Henry Chen <henryc.chen@mediatek.com>
 
---5z3bvd56oibiykjk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Add a header to collect SIPs and add one SIP call to initialize power
+management hardware for the SIP interface defined to access the SPM
+handling vcore voltage and ddr rate changes on mt8183 (and most likely
+later socs).
 
-Hi,
+Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
+Signed-off-by: Arvin Wang <arvin.wang@mediatek.com>
+---
+ include/linux/soc/mediatek/mtk_sip_svc.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-On Wed, Jun 02, 2021 at 03:06:09PM -0500, Rob Herring wrote:
-> On Wed, 26 May 2021 13:20:36 -0400, Krzysztof Kozlowski wrote:
-> > From: Krzysztof Kozlowski <krzk@kernel.org>
-> >=20
-> > Interrupt line can be configured on different hardware in different way,
-> > even inverted.  Therefore driver should not enforce specific trigger
-> > type - edge falling - but instead rely on Devicetree to configure it.
-> >=20
-> > The Maxim 14577/77836 datasheets describe the interrupt line as active
-> > low with a requirement of acknowledge from the CPU therefore the edge
-> > falling is not correct.
-> >=20
-> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > Acked-by: Iskren Chernev <iskren.chernev@gmail.com>
-> >=20
-> > ---
-> >=20
-> > Changes since v1:
-> > 1. Remove the 'flags' variable.
-> > 2. Added ack.
-> > 3. Rebase - the bindings were converted to dtschema.
-> > ---
-> >  .../devicetree/bindings/power/supply/maxim,max17040.yaml      | 2 +-
-> >  drivers/power/supply/max17040_battery.c                       | 4 +---
-> >  2 files changed, 2 insertions(+), 4 deletions(-)
-> >=20
->=20
-> Acked-by: Rob Herring <robh@kernel.org>
+diff --git a/include/linux/soc/mediatek/mtk_sip_svc.h b/include/linux/soc/mediatek/mtk_sip_svc.h
+index 082398e0cfb1..079bbcb361ba 100644
+--- a/include/linux/soc/mediatek/mtk_sip_svc.h
++++ b/include/linux/soc/mediatek/mtk_sip_svc.h
+@@ -22,4 +22,8 @@
+ 	ARM_SMCCC_CALL_VAL(ARM_SMCCC_FAST_CALL, MTK_SIP_SMC_CONVENTION, \
+ 			   ARM_SMCCC_OWNER_SIP, fn_id)
+ 
++/* VCOREFS */
++#define MTK_SIP_VCOREFS_CONTROL \
++	MTK_SIP_SMC_CMD(0x506)
++
+ #endif
+-- 
+2.14.1
 
-Thanks, queued.
-
--- Sebastian
-
---5z3bvd56oibiykjk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmC5+fYACgkQ2O7X88g7
-+ppwug//XIycwF2DpnZ+rz60BboIbDdef0QCwTZTOaRDHI2dNpG4xQ/Eizaq8Wj6
-pcP+D6ZyqZdK4vwep2YxpM0OfwNCdk/PNHVLxXCjbEeWQLAnpLERzPrQexBdUZF0
-s04zSTqPu18GBwt5bZ/qmjYClXontLjzgBddFRYYLqFY+O9taGYVicb+qJ7o1Gd4
-JAeXYPuYXjjLMjMN1GOR5lrpOVGt/RNKMWUyBoMqN0sMRZvoAqCLrvP/H2QKJ4xx
-EsnHEtV8Z4r1Vk/ykQZ3bTWBtQUs+Z5PsU0jcEPDHejOJI6cExsTBRnx/j3WjUKH
-NRpzrf7QsnD6eHWXS2XqzHc8Mn6o6yk+ih6y7S8GdQgZ28NpMktcD0ZD4vq4O1Rg
-bjUBJZw6hKV+KjoxEOMZGYxRqBaekGeyElkMH1XFKccKuOdbnWQDoh992yPtWVrz
-ZSgIXMg4N94dQ14VUNpG5OrDUnMpzLg5Is0KgWS4kkOvYCjk2aQiljn0GJ70wb9Y
-fpa59e0Z3L8RfGdOIT6SlfRBMQOBk7F3l/L42HhRx2QtULhtDdhcKhIssuB2SIsA
-Wq1I7hU0Tjraq8yE2GMgFBQ6OjQyjnDDAcvf3EfEWM4wsM/e1OUAyVFuN1q+DBFP
-Tf8AgL3pSmU8QCXAvZmXKdxa10rAjpLHsOj/HVtKN6Ufe9rkusk=
-=yKFF
------END PGP SIGNATURE-----
-
---5z3bvd56oibiykjk--
