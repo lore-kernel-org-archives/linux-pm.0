@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 180C8C4709F
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5970CC47098
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:04:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 010806142D
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:03:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3DC5861208
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Jun 2021 10:04:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230385AbhFDKFf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Jun 2021 06:05:35 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:55692 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S230030AbhFDKFd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:05:33 -0400
-X-UUID: dd8b6cb81827425ba1d01209c2044e18-20210604
-X-UUID: dd8b6cb81827425ba1d01209c2044e18-20210604
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
+        id S230465AbhFDKFp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Jun 2021 06:05:45 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:34165 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S230443AbhFDKFp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jun 2021 06:05:45 -0400
+X-UUID: 0a0282bb4f63473cba498e2bd85ba6d0-20210604
+X-UUID: 0a0282bb4f63473cba498e2bd85ba6d0-20210604
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 209820346; Fri, 04 Jun 2021 18:02:32 +0800
+        with ESMTP id 829457132; Fri, 04 Jun 2021 18:02:26 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 4 Jun 2021 18:02:30 +0800
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 4 Jun 2021 18:02:26 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 4 Jun 2021 18:02:30 +0800
+ Transport; Fri, 4 Jun 2021 18:02:25 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -47,9 +47,9 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         Arvin Wang <arvin.wang@mediatek.com>,
         James Liao <jamesjj.liao@mediatek.com>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [PATCH V10 12/12] arm64: dts: mt8192: add dvfsrc regulator nodes
-Date:   Fri, 4 Jun 2021 18:02:18 +0800
-Message-ID: <20210604100218.13613-13-dawei.chien@mediatek.com>
+Subject: [PATCH V10 07/12] dt-bindings: interconnect: add MT6873 interconnect dt-bindings
+Date:   Fri, 4 Jun 2021 18:02:13 +0800
+Message-ID: <20210604100218.13613-8-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210604100218.13613-1-dawei.chien@mediatek.com>
 References: <20210604100218.13613-1-dawei.chien@mediatek.com>
@@ -62,30 +62,62 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Henry Chen <henryc.chen@mediatek.com>
 
-Add dvfsrc regulator nodes which is for MT8192-based platforms
+Add interconnect provider dt-bindings for MT6873.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm64/boot/dts/mediatek/mt8192.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ include/dt-bindings/interconnect/mtk,mt6873-emi.h | 41 +++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/mtk,mt6873-emi.h
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-index ab3dabcc722e..6aad5ff0646c 100644
---- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-@@ -288,6 +288,12 @@
- 				     "mediatek,mt6873-dvfsrc";
- 			reg = <0 0x10012000 0 0x1000>;
- 			#interconnect-cells = <1>;
-+			dvfsrc_vcore: dvfsrc-vcore {
-+				regulator-name = "dvfsrc-vcore";
-+				regulator-min-microvolt = <575000>;
-+				regulator-max-microvolt = <725000>;
-+				regulator-always-on;
-+			};
- 		};
- 
- 		systimer: timer@10017000 {
+diff --git a/include/dt-bindings/interconnect/mtk,mt6873-emi.h b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
+new file mode 100644
+index 000000000000..0b20011df010
+--- /dev/null
++++ b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
+@@ -0,0 +1,41 @@
++/* SPDX-License-Identifier: GPL-2.0
++ *
++ * Copyright (c) 2021 MediaTek Inc.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
++#define __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
++
++#define MT6873_SLAVE_DDR_EMI		0
++#define MT6873_MASTER_MCUSYS		1
++#define MT6873_MASTER_GPUSYS		2
++#define MT6873_MASTER_MMSYS		3
++#define MT6873_MASTER_MM_VPU		4
++#define MT6873_MASTER_MM_DISP		5
++#define MT6873_MASTER_MM_VDEC		6
++#define MT6873_MASTER_MM_VENC		7
++#define MT6873_MASTER_MM_CAM		8
++#define MT6873_MASTER_MM_IMG		9
++#define MT6873_MASTER_MM_MDP		10
++#define MT6873_MASTER_VPUSYS		11
++#define MT6873_MASTER_VPU_0		12
++#define MT6873_MASTER_VPU_1		13
++#define MT6873_MASTER_MDLASYS		14
++#define MT6873_MASTER_MDLA_0		15
++#define MT6873_MASTER_UFS		16
++#define MT6873_MASTER_PCIE		17
++#define MT6873_MASTER_USB		18
++#define MT6873_MASTER_DBGIF		19
++#define MT6873_SLAVE_HRT_DDR_EMI	20
++#define MT6873_MASTER_HRT_MMSYS		21
++#define MT6873_MASTER_HRT_MM_DISP	22
++#define MT6873_MASTER_HRT_MM_VDEC	23
++#define MT6873_MASTER_HRT_MM_VENC	24
++#define MT6873_MASTER_HRT_MM_CAM	25
++#define MT6873_MASTER_HRT_MM_IMG	26
++#define MT6873_MASTER_HRT_MM_MDP	27
++#define MT6873_MASTER_HRT_DBGIF		28
++#define MT6873_MASTER_WIFI		29
++#define MT6873_MASTER_BT		30
++#define MT6873_MASTER_NETSYS		31
++#endif
 -- 
 2.14.1
 
