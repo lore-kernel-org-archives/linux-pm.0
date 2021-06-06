@@ -5,66 +5,63 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19CABC48BE0
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Jun 2021 22:30:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E3D2C4743E
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Jun 2021 22:31:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 092CC6141D
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Jun 2021 22:30:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 543F26142A
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Jun 2021 22:31:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230475AbhFFWcK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Jun 2021 18:32:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40622 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230454AbhFFWcJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Jun 2021 18:32:09 -0400
-Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E72C2C061789;
-        Sun,  6 Jun 2021 15:30:05 -0700 (PDT)
-Received: by mail-lj1-x233.google.com with SMTP id r14so275959ljd.10;
-        Sun, 06 Jun 2021 15:30:05 -0700 (PDT)
+        id S230374AbhFFWdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Jun 2021 18:33:10 -0400
+Received: from mail-lf1-f50.google.com ([209.85.167.50]:40571 "EHLO
+        mail-lf1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230368AbhFFWdK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Jun 2021 18:33:10 -0400
+Received: by mail-lf1-f50.google.com with SMTP id w33so22967488lfu.7;
+        Sun, 06 Jun 2021 15:31:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ExWGR4VIXCqtCDv/X2/Hi7Cf+i10YymHwbB0CYXGtsM=;
-        b=JeaN0DHTvazorvjOUmOwYFWTlJVeQ0Rj0g5/M2Spcn6zRvpeoLtV0oIp39+K10fTiG
-         pOb7Mr8b4kkTfuOGhJPppbTJ5Us6WbpBBnTbf61vVL8f7iz+rOsnmHDHBepbm4cvMSLQ
-         D0bBmQBRl5ky0JVIe/scoLplRFVlxsxX0dRQTjOYzUjbXOuF4GtVr/hl6U1k4/rrEwnY
-         HWja5xkezxKDUChJ73xLrCHByJJOSYyaqYOtR6W1qrOdbiK1bjQn6v2njWfNlgbNZEVW
-         W4/p4EI1ZH8UpfBxsyRiVG/QsTJNIDdFmBZVyeK8HO0gFnYKpOzNGFi1QnEoHITf3G4O
-         pEBQ==
+        bh=zEnQnzK4FfYQ9Av8T/zWnWahbRfClGvzMlhIDU4oMMc=;
+        b=uM98FGwfg7fGDX/p5gXsn+NM0kEbleS6lEDKE0hGEZPHWLh5FgACvW95Ss6B9hzapU
+         ZZi8AipOZZo16r2koQMEsn6hqUYlj+S4dglLtLZNTb3ry85/HI/Y0MjcCGI8BSja+nIW
+         vJwCcczMHVfAASxVhgDFbu+KwKnaqP7VHLu4G1+XgUV2GjuRw4h6Y8y1nfcjpkTuUZis
+         UA5H4ath1e+N1i+Hl20NU/G7mkl5J1eBWMl634EiShklAXxClhDm+Mc7lrcB47pl144y
+         6HUwJsRJ2N/SUexVE0NJ5RZhCCX08GUphqZ19CtEFD32Duy9OKGmR54HlhsNH7gV180q
+         DAAw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ExWGR4VIXCqtCDv/X2/Hi7Cf+i10YymHwbB0CYXGtsM=;
-        b=dI8YctFBpSmO+VcDis+5X/mCDz+ww/16a0jdtA36x+xkathfF5VwmhO+1vF4lSTYCO
-         qdIY6pTpWkR1ZIm+ETBE/s218SUgbT2WxYCMtynp1pxS+3DuC4+1weryq5UkQgvCuvzv
-         oA+lHESj1MhadJxJQw5f1acfG0QprH9Mgex0wkP9yfWix1XksxV9DHzRKHpESWZXL0GF
-         S037/B+NRqvTEYJT3s0NYXCMpNYiFNZPkbWoqoXrwIyLzKEJG30Q33LHOUVdWhZyudDh
-         VMRGwb/ZOjt8mL3f+of0ItwGOcpzDkz9uqqSjM1WzIfb8Q4/HQUbPH619hEfY+WZstWE
-         7dDA==
-X-Gm-Message-State: AOAM533BMbxwdfai3DGprq7FhOAZusfMXvJd9qngjBp3G0Ug0Vx5IOrF
-        UjESSwCugXoqLBobyuQB4MA=
-X-Google-Smtp-Source: ABdhPJxll34kjQkN7b9+R6Z7JYck8j33HWzrptZr0d85USScPDqjrCavJzVJ1kAEQ86dmCVpZ2dE6Q==
-X-Received: by 2002:a05:651c:3dc:: with SMTP id f28mr12501216ljp.294.1623018604337;
-        Sun, 06 Jun 2021 15:30:04 -0700 (PDT)
+        bh=zEnQnzK4FfYQ9Av8T/zWnWahbRfClGvzMlhIDU4oMMc=;
+        b=FQ4iJdNu+6Krcga2KKdkdychkrxEirmVzHNG6arhsRyQyicp85ALwrRyDbw9ViP/RP
+         0lkK9rOwlrRtgBBimJL0c7G3nXN0iGBtcPaMYiozJtJjMNF02r61QMt3KrM3ghVc7YNq
+         fcHXOKzVvX7Ao3zAkS+mN+ijHs2Js8VUwwIyh3mDG+20FYgXGcqdmzu0uAUyvxbzp6WE
+         6Vrq7w4NS+3835Ut+B2x7yFRuSFDWjucTdAr3Mz/lWsF8FCh5rHQ+Koq7j6KKz3ZTO+L
+         N/eec7RX5sf8PBr7TFTx4OX1P3nJBMgcsyT/I+vO8EI8jc5P2xkhqcvVdIL1xfZHfOB2
+         GPxA==
+X-Gm-Message-State: AOAM530bGUiJ3MwVGWHpK+MaRUM+7XWIi7ctG8TcrQqsApWu7lUrvev/
+        s6bqHMc9h6lRHw0VYFyGy/g=
+X-Google-Smtp-Source: ABdhPJx6nVUgQD3itGieHN1c1h1YiRuxMGaSBkMrnzQAdJnuTAWi7j8eGbs7/c4KJcElfvgNoXXtIg==
+X-Received: by 2002:ac2:4198:: with SMTP id z24mr9908979lfh.335.1623018602497;
+        Sun, 06 Jun 2021 15:30:02 -0700 (PDT)
 Received: from localhost.localdomain (94-29-51-134.dynamic.spd-mgts.ru. [94.29.51.134])
-        by smtp.gmail.com with ESMTPSA id i23sm1017778ljg.38.2021.06.06.15.30.03
+        by smtp.gmail.com with ESMTPSA id i23sm1017778ljg.38.2021.06.06.15.30.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Jun 2021 15:30:04 -0700 (PDT)
+        Sun, 06 Jun 2021 15:30:02 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v1 4/5] clk: tegra: Add stubs needed for compile testing
-Date:   Mon,  7 Jun 2021 01:28:16 +0300
-Message-Id: <20210606222817.12388-5-digetx@gmail.com>
+Subject: [PATCH v1 1/5] soc/tegra: fuse: Add stubs needed for compile testing
+Date:   Mon,  7 Jun 2021 01:28:13 +0300
+Message-Id: <20210606222817.12388-2-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210606222817.12388-1-digetx@gmail.com>
 References: <20210606222817.12388-1-digetx@gmail.com>
@@ -78,25 +75,72 @@ Add stubs needed for compile-testing of tegra-cpuidle driver.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- include/linux/clk/tegra.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/soc/tegra/fuse.h | 31 ++++++++++++++++++++++++++-----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/clk/tegra.h b/include/linux/clk/tegra.h
-index d128ad1570aa..9bd06d8a5436 100644
---- a/include/linux/clk/tegra.h
-+++ b/include/linux/clk/tegra.h
-@@ -42,7 +42,11 @@ struct tegra_cpu_car_ops {
- #endif
- };
+diff --git a/include/soc/tegra/fuse.h b/include/soc/tegra/fuse.h
+index 990701f788bc..67d2bc856fbc 100644
+--- a/include/soc/tegra/fuse.h
++++ b/include/soc/tegra/fuse.h
+@@ -6,6 +6,8 @@
+ #ifndef __SOC_TEGRA_FUSE_H__
+ #define __SOC_TEGRA_FUSE_H__
  
-+#ifdef CONFIG_ARCH_TEGRA
- extern struct tegra_cpu_car_ops *tegra_cpu_car_ops;
-+#else
-+static struct tegra_cpu_car_ops *tegra_cpu_car_ops __maybe_unused;
-+#endif
++#include <linux/types.h>
++
+ #define TEGRA20		0x20
+ #define TEGRA30		0x30
+ #define TEGRA114	0x35
+@@ -22,11 +24,6 @@
  
- static inline void tegra_wait_cpu_in_reset(u32 cpu)
+ #ifndef __ASSEMBLY__
+ 
+-u32 tegra_read_chipid(void);
+-u8 tegra_get_chip_id(void);
+-u8 tegra_get_platform(void);
+-bool tegra_is_silicon(void);
+-
+ enum tegra_revision {
+ 	TEGRA_REVISION_UNKNOWN = 0,
+ 	TEGRA_REVISION_A01,
+@@ -57,6 +54,10 @@ extern struct tegra_sku_info tegra_sku_info;
+ u32 tegra_read_straps(void);
+ u32 tegra_read_ram_code(void);
+ int tegra_fuse_readl(unsigned long offset, u32 *value);
++u32 tegra_read_chipid(void);
++u8 tegra_get_chip_id(void);
++u8 tegra_get_platform(void);
++bool tegra_is_silicon(void);
+ #else
+ static struct tegra_sku_info tegra_sku_info __maybe_unused;
+ 
+@@ -74,6 +75,26 @@ static inline int tegra_fuse_readl(unsigned long offset, u32 *value)
  {
+ 	return -ENODEV;
+ }
++
++static inline u32 tegra_read_chipid(void)
++{
++	return 0;
++}
++
++static inline u8 tegra_get_chip_id(void)
++{
++	return 0;
++}
++
++static inline u8 tegra_get_platform(void)
++{
++	return 0;
++}
++
++static inline bool tegra_is_silicon(void)
++{
++	return false;
++}
+ #endif
+ 
+ struct device *tegra_soc_device_register(void);
 -- 
 2.30.2
 
