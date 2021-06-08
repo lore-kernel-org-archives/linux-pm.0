@@ -2,113 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-22.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C76EEC4743F
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 19:14:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3E75C4743F
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 20:17:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B6D7B61263
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 19:14:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9A5C1610F8
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 20:17:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236323AbhFHTQK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Jun 2021 15:16:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:37120 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237870AbhFHTNA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Jun 2021 15:13:00 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6D8F561429;
-        Tue,  8 Jun 2021 18:49:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1623178181;
-        bh=mkZddtvemX7SZ3/W2EA5INNUZ5bKZfSFMWe9TGtl/Dk=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=nVUytxhH47ZnJYyZxWjW+udYyN+3snizcWsgK3RLppHC1NGMs/g/dQXpEAvxHTPHF
-         Mnu4FUCpc8RQhOmdS6dM5d+fc5n8R4VZ2RaYzB3tq2X0ql3RKJNnRNWSHoZlvrLDd0
-         cejNlj5+sdoTgqVM8IkdLkQNWVCbWFo7cxiR/oE5WsOpaj/03JN53DD0lVF9gn6PFJ
-         wF2TDO5xy7+WsCPMyS/VEyFsSBaCazPvfuC9JQV+QGQyuvTW4DCf9gj7j8SJAb+mWp
-         QyuQaNLfNXwTDjYFNhP8zUx92b6hlN7Pwyxrpi35I/YJKRqxF5JpvUu4JStI/s3fl5
-         WFurUUblPTzUA==
-Subject: Re: [PATCH] thermal: devfreq_cooling: Fix kernel-doc
-To:     Nick Desaulniers <ndesaulniers@google.com>,
-        Yang Li <yang.lee@linux.alibaba.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org,
-        linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        clang-built-linux <clang-built-linux@googlegroups.com>
-References: <1623145562-111662-1-git-send-email-yang.lee@linux.alibaba.com>
- <CAKwvOdmyXV09ZxcDqQ6x43f+Eze4h40W2AoKcCmUhGM2gUWsnQ@mail.gmail.com>
-From:   Nathan Chancellor <nathan@kernel.org>
-Message-ID: <6335deba-9e94-61e0-89a1-8905be0e35a1@kernel.org>
-Date:   Tue, 8 Jun 2021 11:49:40 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        id S235152AbhFHUT1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Jun 2021 16:19:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52428 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235060AbhFHUTW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 16:19:22 -0400
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0291FC061574
+        for <linux-pm@vger.kernel.org>; Tue,  8 Jun 2021 13:17:27 -0700 (PDT)
+Received: by mail-ot1-x336.google.com with SMTP id o17-20020a9d76510000b02903eabfc221a9so7878624otl.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 13:17:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=So38bth6mBWT6iiBoQOuRXazg1ugN3YaIyiAe68Qh/M=;
+        b=VuAfbKtmWgPabI31uDdBl82sfzFiBGAm7/ciGwvTc403GGwWNAu7XSAEQE7qzl7LqM
+         N03Wuy8VsfReMphaXsGXviECqa8CAs97t5wmQceiymT64kFWwbQktu76g1uXD+cNNe48
+         4y7dFklcmE96wx+sROdmiU22Ci8e42dUFLbe1ab5kX/+4q2S96thIisu6o3o+sHSYnTW
+         TWJdpK9zvoQfjsgmkM81C1LeYKJY5Nu4lxQIX6roMvh27WhmoLQQ2NQPgbtiCnw0qIfS
+         15IdAj+kGvDGFl8eUJoTeM6BaorRfm4rU832X9gPZCQPQzk61LjM5lWD0r3uJ+4b7us0
+         6hQQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=So38bth6mBWT6iiBoQOuRXazg1ugN3YaIyiAe68Qh/M=;
+        b=fSlT0dQh9vI4ei4p1d5mO8CZcO6S7qCpNd6ANA0OOOWi8DGs8+vvXQc5DytYhn3JIQ
+         oN/HJnsB29tF/Y5m4+/ajq4GErQg35/6boEM4r470+vO18ZoZB4t0F9qmakq8qZ94d2Y
+         ie1B2ZhE67wW/S3r5gVrP7sximwtf3Ar3AopA14InB1UABn6vUTdGg0HLXNeNoXULmT4
+         rXbNIoF3YKw1qlPGEqUb0aBU2XgJ2FBsDH8l+skn4WP8jZk/dBjQD8jZqA6lsKE2ANYd
+         QoLTKRX/icvsm0k26B8o4sgq0QTsxHb3JLHlVFOOYkx09G8NQJZm/E8vuEzXLtUt7j6/
+         Bk9Q==
+X-Gm-Message-State: AOAM5326k233dN+cYflO+ok6xJ6SrJ+NWUUuAHjm3paX6hOx7RpPfnqW
+        5dRUcGQmgqUHSNIwSNZ9fHIX2g==
+X-Google-Smtp-Source: ABdhPJyZKF1RWsMB7ZjmDMdJI+FRLFEI6UQz8/ft8bojNZcuIrpkXRyQZtuoeYQ4ehCHpYpQBAK+fw==
+X-Received: by 2002:a05:6830:161a:: with SMTP id g26mr12529361otr.62.1623183446592;
+        Tue, 08 Jun 2021 13:17:26 -0700 (PDT)
+Received: from localhost.localdomain (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id i4sm3263231oth.38.2021.06.08.13.17.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Jun 2021 13:17:26 -0700 (PDT)
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: thermal: tsens: Add sc8180x compatible
+Date:   Tue,  8 Jun 2021 13:16:38 -0700
+Message-Id: <20210608201638.2136344-1-bjorn.andersson@linaro.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <CAKwvOdmyXV09ZxcDqQ6x43f+Eze4h40W2AoKcCmUhGM2gUWsnQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 6/8/2021 11:39 AM, Nick Desaulniers wrote:
-> On Tue, Jun 8, 2021 at 2:46 AM Yang Li <yang.lee@linux.alibaba.com> wrote:
->>
->> Fix function name in devfreq_cooling.c kernel-doc comment
->> to remove a warning found by clang(make W=1 LLVM=1).
->>
->> drivers/thermal/devfreq_cooling.c:479: warning: expecting prototype for
->> devfreq_cooling_em_register_power(). Prototype was for
->> devfreq_cooling_em_register() instead.
->>
->> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
->> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
-> 
-> That compiler warning doesn't come from kernel-doc.  Your diff looks
-> good (the comment was wrong), but the commit message is curious.
+The Qualcomm sc8180x platform has the usual tsens blocks, add compatible
+for this.
 
-No, this is indeed kernel-doc complaining. Clang should not even be 
-mentioned in the commit message:
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/scripts/kernel-doc?h=v5.13-rc5#n1228
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 0242fd91b622..fdd7c361104f 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -46,6 +46,7 @@ properties:
+               - qcom,msm8996-tsens
+               - qcom,msm8998-tsens
+               - qcom,sc7180-tsens
++              - qcom,sc8180x-tsens
+               - qcom,sdm845-tsens
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
+-- 
+2.29.2
 
-The warning could probably be improved to say "definition" instead of 
-"prototype" in certain cases but *shrugs*.
-
-This warning is similar to -Wmissing-prototypes from clang but refers to 
-the fact that the comment claims it is documenting one function but it 
-is really documenting another.
-
-Cheers,
-Nathan
-
-> Usually that warning is from when the function prototype does not
-> exist for a function with extern linkage.  It looks like that's always
-> provided though in include/linux/devfreq_cooling.h.  Can you share a
-> link to the original report?
-> 
->> ---
->>   drivers/thermal/devfreq_cooling.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
->> index 3a788ac..5a86cff 100644
->> --- a/drivers/thermal/devfreq_cooling.c
->> +++ b/drivers/thermal/devfreq_cooling.c
->> @@ -458,7 +458,7 @@ struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
->>   EXPORT_SYMBOL_GPL(devfreq_cooling_register);
->>
->>   /**
->> - * devfreq_cooling_em_register_power() - Register devfreq cooling device with
->> + * devfreq_cooling_em_register() - Register devfreq cooling device with
->>    *             power information and automatically register Energy Model (EM)
->>    * @df:                Pointer to devfreq device.
->>    * @dfc_power: Pointer to devfreq_cooling_power.
->> --
->> 1.8.3.1
->>
-> 
-> 
