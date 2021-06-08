@@ -2,79 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 928CFC47082
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 08:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3575C47082
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:03:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7862361246
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 08:13:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B95761285
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:03:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229512AbhFHIPQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Jun 2021 04:15:16 -0400
-Received: from szxga02-in.huawei.com ([45.249.212.188]:4513 "EHLO
-        szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229507AbhFHIPP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 04:15:15 -0400
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.57])
-        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4FzjbW4wsszZdjT;
-        Tue,  8 Jun 2021 16:10:31 +0800 (CST)
-Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 8 Jun 2021 16:13:20 +0800
-Received: from thunder-town.china.huawei.com (10.174.177.72) by
- dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 8 Jun 2021 16:13:20 +0800
-From:   Zhen Lei <thunder.leizhen@huawei.com>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        linux-pm <linux-pm@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-CC:     Zhen Lei <thunder.leizhen@huawei.com>
-Subject: [PATCH 1/1] PM: hibernate: remove leading spaces before tabs
-Date:   Tue, 8 Jun 2021 16:13:14 +0800
-Message-ID: <20210608081314.13435-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.26.0.windows.1
+        id S231239AbhFHJFD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Jun 2021 05:05:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43666 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230444AbhFHJFB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 05:05:01 -0400
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 302BBC061789
+        for <linux-pm@vger.kernel.org>; Tue,  8 Jun 2021 02:03:09 -0700 (PDT)
+Received: by mail-lj1-x22e.google.com with SMTP id r14so6854760ljd.10
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 02:03:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=ehN5ksOKPDeXaQtxFuYUYGE2SbISLeBDzZHvbFwjLMU=;
+        b=YXZJiLTXuA3ySx4PD3wFxfxV+h5X01WFA/yCzSnXtG/SROViS31q2Xpf7c6R6T2uXn
+         /QeDgMD14hOG36l9z4wdggSIniQ0PWuRpuOs6HNWGlfvUy4BZp4+z1wm8G8818dfoF13
+         Rwyen/We5cQJntTe4/vHwQG9ZrKl+eEwgrYwNso5O/dSf6iTkIHUIlEEyRGc4SY8BiWo
+         1VMRoJIHaYmSJ/ocMiVmEPvfFc2Af7tNKsRLJ3+gH8OzIxbVgXOIRGjNxDDmO2duNy4t
+         A+b4Fv/FLcq+ITMNhQrGRmPh6NVEUQdJ3BupS+5llrFBcnvUG+7cIrsTXp4ZFQw/Exmh
+         WNIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=ehN5ksOKPDeXaQtxFuYUYGE2SbISLeBDzZHvbFwjLMU=;
+        b=nDwGX8e5frff5FxEA/sahKKn+Kl3vO1iEgSZLe+3yLSDWjJ4+ykyJTltmyaIMSxUy6
+         nRGjGhNuX0q7/At6BWSKlpUGGqqsLgdF6cDO/qFBtFp98N6pLIqMFONC+SAm4Zl0OpDO
+         HyoZbvEpFU0NnAZOq3P3TQJa3V7Lyw8v43hRBvqZ5yJXFK2Ctk479CjyrpZhk66cOSPr
+         boQC9TS0NEYfYTYnRaywqOsty/X4STnEpdx1mGB7HAGDwNOwK/Fk6mt1VSsvqptyUHAJ
+         lc9zD1kAmBmPD8hZFJervS4WQO+/R5M3+xd5AnsVmTJRzMXB4SFSfMMvyhoDc63EdZw2
+         wbJg==
+X-Gm-Message-State: AOAM532Gjf5uYv6D8z3jOAa4B8oMBcYY9RQcvL05q3zngHV0raBRQ6L2
+        g3hgf89Dgr0twDYOZl9YXUlwTA==
+X-Google-Smtp-Source: ABdhPJz3SwQ9T24mG2HslSdPG6wDOlx6diMgH43qf1V0qfrzdC4lFXrnIIfuLG0XzfSUioSrputIGQ==
+X-Received: by 2002:a2e:a603:: with SMTP id v3mr18072187ljp.175.1623142987476;
+        Tue, 08 Jun 2021 02:03:07 -0700 (PDT)
+Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
+        by smtp.gmail.com with ESMTPSA id n17sm1295197lfq.118.2021.06.08.02.03.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Jun 2021 02:03:06 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
+        Saravana Kannan <saravanak@google.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 3/3] PM: runtime: Clarify documentation when callbacks are unassigned
+Date:   Tue,  8 Jun 2021 11:02:50 +0200
+Message-Id: <20210608090250.85256-4-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210608090250.85256-1-ulf.hansson@linaro.org>
+References: <20210608090250.85256-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.174.177.72]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- dggpemm500006.china.huawei.com (7.185.36.236)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-1) Run the following command to find and remove the leading spaces before
-   tabs:
-   find kernel/power/ -type f | xargs sed -r -i 's/^[ ]+\t/\t/'
-2) Manually check and correct if necessary
+Recent changes to the PM core allows ->runtime_suspend|resume callbacks to
+be unassigned.
 
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+In the earlier behaviour the PM core would return -ENOSYS, when trying to
+runtime resume a device, for example. Let's update the documentation to
+clarify this.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- kernel/power/snapshot.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index af507c8c895b..f7a986078213 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1146,7 +1146,7 @@ int create_basic_memory_bitmaps(void)
-  Free_second_object:
- 	kfree(bm2);
-  Free_first_bitmap:
-- 	memory_bm_free(bm1, PG_UNSAFE_CLEAR);
-+	memory_bm_free(bm1, PG_UNSAFE_CLEAR);
-  Free_first_object:
- 	kfree(bm1);
- 	return -ENOMEM;
+Changes in v2:
+	- Added a new patch for the updating the docs, as pointed out by Alan.
+
+---
+ Documentation/power/runtime_pm.rst | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
+index 18ae21bf7f92..3d09c9fd450d 100644
+--- a/Documentation/power/runtime_pm.rst
++++ b/Documentation/power/runtime_pm.rst
+@@ -827,6 +827,14 @@ or driver about runtime power changes.  Instead, the driver for the device's
+ parent must take responsibility for telling the device's driver when the
+ parent's power state changes.
+ 
++Note that, in some cases it may not be desirable for subsystems/drivers to call
++pm_runtime_no_callbacks() for their devices. This could be because a subset of
++the runtime PM callbacks needs to be implemented, a platform dependent PM
++domain could get attached to the device or that the device is power manged
++through a supplier device link. For these reasons and to avoid boilerplate code
++in subsystems/drivers, the PM core allows runtime PM callbacks to be
++unassigned.
++
+ 9. Autosuspend, or automatically-delayed suspends
+ =================================================
+ 
 -- 
 2.25.1
-
 
