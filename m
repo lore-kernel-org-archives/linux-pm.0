@@ -2,59 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3575C47082
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ABE9C47082
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:04:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9B95761285
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:03:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1622461184
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 09:04:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231239AbhFHJFD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Jun 2021 05:05:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43666 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230444AbhFHJFB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 05:05:01 -0400
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 302BBC061789
-        for <linux-pm@vger.kernel.org>; Tue,  8 Jun 2021 02:03:09 -0700 (PDT)
-Received: by mail-lj1-x22e.google.com with SMTP id r14so6854760ljd.10
-        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 02:03:09 -0700 (PDT)
+        id S230329AbhFHJF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Jun 2021 05:05:57 -0400
+Received: from mail-lj1-f182.google.com ([209.85.208.182]:37501 "EHLO
+        mail-lj1-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229923AbhFHJF4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 05:05:56 -0400
+Received: by mail-lj1-f182.google.com with SMTP id e2so26043614ljk.4
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 02:04:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ehN5ksOKPDeXaQtxFuYUYGE2SbISLeBDzZHvbFwjLMU=;
-        b=YXZJiLTXuA3ySx4PD3wFxfxV+h5X01WFA/yCzSnXtG/SROViS31q2Xpf7c6R6T2uXn
-         /QeDgMD14hOG36l9z4wdggSIniQ0PWuRpuOs6HNWGlfvUy4BZp4+z1wm8G8818dfoF13
-         Rwyen/We5cQJntTe4/vHwQG9ZrKl+eEwgrYwNso5O/dSf6iTkIHUIlEEyRGc4SY8BiWo
-         1VMRoJIHaYmSJ/ocMiVmEPvfFc2Af7tNKsRLJ3+gH8OzIxbVgXOIRGjNxDDmO2duNy4t
-         A+b4Fv/FLcq+ITMNhQrGRmPh6NVEUQdJ3BupS+5llrFBcnvUG+7cIrsTXp4ZFQw/Exmh
-         WNIQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=K0ds+l2wwmikGBIkarzC+RWkNxvJMelGG4IknEWp7ak=;
+        b=QzWpE4d7Czo3Zzuvhv+Wm8SOjKM7edThMVzlJK8RuUE5nNdoUEl19aWE/sd7LJmDHJ
+         VqKCUb0i6PoLbvwyCMdn1VDa7/12/HC0sX0CyTwfcQgofGUxwmOY6YgoMa4J8armXTDn
+         Jemd4DUXYbGk5wjagB0xfxRN/IIdjw1HWDjwNwFFMNbSnCA+s/WWOwZ1C+XkH5sN4nlm
+         Sx8R1byKEXnCGlAClEtDjrPJJiL9xxPGswV/Z8x/EGAGVU/Lijv5j4QTCUXfqJdPvQ/k
+         A6MmbefYfSU/d7S32LbjloQfzUELzcIHsB+ty+To3ojyeGIM6fvi7luoHXiA8treZv9K
+         xbjw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ehN5ksOKPDeXaQtxFuYUYGE2SbISLeBDzZHvbFwjLMU=;
-        b=nDwGX8e5frff5FxEA/sahKKn+Kl3vO1iEgSZLe+3yLSDWjJ4+ykyJTltmyaIMSxUy6
-         nRGjGhNuX0q7/At6BWSKlpUGGqqsLgdF6cDO/qFBtFp98N6pLIqMFONC+SAm4Zl0OpDO
-         HyoZbvEpFU0NnAZOq3P3TQJa3V7Lyw8v43hRBvqZ5yJXFK2Ctk479CjyrpZhk66cOSPr
-         boQC9TS0NEYfYTYnRaywqOsty/X4STnEpdx1mGB7HAGDwNOwK/Fk6mt1VSsvqptyUHAJ
-         lc9zD1kAmBmPD8hZFJervS4WQO+/R5M3+xd5AnsVmTJRzMXB4SFSfMMvyhoDc63EdZw2
-         wbJg==
-X-Gm-Message-State: AOAM532Gjf5uYv6D8z3jOAa4B8oMBcYY9RQcvL05q3zngHV0raBRQ6L2
-        g3hgf89Dgr0twDYOZl9YXUlwTA==
-X-Google-Smtp-Source: ABdhPJz3SwQ9T24mG2HslSdPG6wDOlx6diMgH43qf1V0qfrzdC4lFXrnIIfuLG0XzfSUioSrputIGQ==
-X-Received: by 2002:a2e:a603:: with SMTP id v3mr18072187ljp.175.1623142987476;
-        Tue, 08 Jun 2021 02:03:07 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=K0ds+l2wwmikGBIkarzC+RWkNxvJMelGG4IknEWp7ak=;
+        b=dfW2o2iCsl99jULBV+Avd1O4aayIMKkRhFU4NYaKAGOHXybpnfvOXqQjALY7fM8lz5
+         itPLAZJGInB5c+RPdmjZo4G6zkYL4zm9kDb0qZmn2VFLgYkrIOdBHtTES0+VjyreFgnH
+         zloMrCiHftCNJJCNZEIDzTgpVnAH8lUqafP5SoTqhv+xVdnglYT+mcYNa8B7J7NpSzfC
+         jmOAvGoEMaV+0htpISctZEVO5OH8cK1LrKBeTolzmEHZM71jC7TnPResvCySYvSpbO0H
+         DEKf70/Cqxfd9GxV6eSSI6VSnnlwjzk2eXHXBMYNedJ0yMZLVu3qyTkHnYabolOqncSe
+         R7xw==
+X-Gm-Message-State: AOAM5333+8IwUb9js+k6gD5c+10paCaAhJcKSFHQUM5OttTogXjIvCvT
+        05KJ80ikH10FZmqSV1PFlIlfHA==
+X-Google-Smtp-Source: ABdhPJwkH3G8ZdlvfKKYqYu8Q01goGfnSxTrJLfHwYUX4RxNytFLFgCXQO7z+MAGuPyDCnsi8X9ewg==
+X-Received: by 2002:a2e:8817:: with SMTP id x23mr17928556ljh.17.1623142982721;
+        Tue, 08 Jun 2021 02:03:02 -0700 (PDT)
 Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
-        by smtp.gmail.com with ESMTPSA id n17sm1295197lfq.118.2021.06.08.02.03.06
+        by smtp.gmail.com with ESMTPSA id n17sm1295197lfq.118.2021.06.08.02.03.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Jun 2021 02:03:06 -0700 (PDT)
+        Tue, 08 Jun 2021 02:03:01 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
@@ -65,54 +62,56 @@ Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
         Kevin Hilman <khilman@kernel.org>,
         Geert Uytterhoeven <geert+renesas@glider.be>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/3] PM: runtime: Clarify documentation when callbacks are unassigned
-Date:   Tue,  8 Jun 2021 11:02:50 +0200
-Message-Id: <20210608090250.85256-4-ulf.hansson@linaro.org>
+Subject: [PATCH v2 0/3] PM: runtime: Update behaviour for no callbacks
+Date:   Tue,  8 Jun 2021 11:02:47 +0200
+Message-Id: <20210608090250.85256-1-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210608090250.85256-1-ulf.hansson@linaro.org>
-References: <20210608090250.85256-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Recent changes to the PM core allows ->runtime_suspend|resume callbacks to
-be unassigned.
+While reviewing a patch on the mmc-list, I ended up inspecting the behaviour of
+how we deal with the no callback case for runtime PM.
 
-In the earlier behaviour the PM core would return -ENOSYS, when trying to
-runtime resume a device, for example. Let's update the documentation to
-clarify this.
+A couple of observations:
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+*) When pm_runtime_no_callbacks() have been called, it allows the PM core to
+takes a quicker path, but at the same time, consumer/supplier device links are
+being skipped in rpm_resume|suspend().
 
-Changes in v2:
-	- Added a new patch for the updating the docs, as pointed out by Alan.
+**) Calling pm_runtime_no_callbacks() to avoid boiler plate code (assigning
+empty functions to ->runtime_suspend|resume()), doesn't work if there could be
+consumer/supplier device link being used or a platform dependent PM domain that
+could get attached to the device.
 
----
- Documentation/power/runtime_pm.rst | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Therefore, this series suggests to change the behaviour in the PM core, to
+allow the ->runtime_suspend|resume() callbacks to be unassigned. This is already
+supported for ->runtime_idle() callbacks, so it would also move things into a
+more consistent behaviour.
 
-diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-index 18ae21bf7f92..3d09c9fd450d 100644
---- a/Documentation/power/runtime_pm.rst
-+++ b/Documentation/power/runtime_pm.rst
-@@ -827,6 +827,14 @@ or driver about runtime power changes.  Instead, the driver for the device's
- parent must take responsibility for telling the device's driver when the
- parent's power state changes.
- 
-+Note that, in some cases it may not be desirable for subsystems/drivers to call
-+pm_runtime_no_callbacks() for their devices. This could be because a subset of
-+the runtime PM callbacks needs to be implemented, a platform dependent PM
-+domain could get attached to the device or that the device is power manged
-+through a supplier device link. For these reasons and to avoid boilerplate code
-+in subsystems/drivers, the PM core allows runtime PM callbacks to be
-+unassigned.
-+
- 9. Autosuspend, or automatically-delayed suspends
- =================================================
- 
+I have looked at various error paths, in the kernel of callers of
+pm_runtime_get_sync(). I couldn't find anyone that made sense, that looked for
+the special error code, -ENOSYS, which is the error code getting returned when a
+callback is missing. Whether that is sufficient proof that these changes are
+100% safe, I can't guarantee, but I think it would be worth a try as the
+benefits of avoiding boilerplate code and the corresponding additional code
+paths are quite nice, if you ask me.
+
+Kind regards
+Ulf Hansson
+
+
+Ulf Hansson (3):
+  PM: runtime: Improve path in rpm_idle() when no callback
+  PM: runtime: Allow unassigned ->runtime_suspend|resume callbacks
+  PM: runtime: Clarify documentation when callbacks are unassigned
+
+ Documentation/power/runtime_pm.rst |  8 ++++++++
+ drivers/base/power/runtime.c       | 18 ++++++++----------
+ 2 files changed, 16 insertions(+), 10 deletions(-)
+
 -- 
 2.25.1
 
