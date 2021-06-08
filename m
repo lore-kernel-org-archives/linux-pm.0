@@ -2,66 +2,65 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-28.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B5C6C47082
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 18:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AAFAC4743F
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 18:56:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 07F9561607
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 18:41:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 505F061351
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Jun 2021 18:56:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235417AbhFHSnW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Jun 2021 14:43:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58828 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235102AbhFHSlT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 14:41:19 -0400
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77182C061224
-        for <linux-pm@vger.kernel.org>; Tue,  8 Jun 2021 11:39:14 -0700 (PDT)
-Received: by mail-lf1-x132.google.com with SMTP id p17so32897839lfc.6
-        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 11:39:14 -0700 (PDT)
+        id S236051AbhFHS6S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Jun 2021 14:58:18 -0400
+Received: from mail-lf1-f46.google.com ([209.85.167.46]:35675 "EHLO
+        mail-lf1-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235546AbhFHS4P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jun 2021 14:56:15 -0400
+Received: by mail-lf1-f46.google.com with SMTP id i10so33749939lfj.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jun 2021 11:54:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=RFVHIAFVezn4A//yU0olDz7nXpJepZN2+RpU9TzzyE8=;
-        b=pLX4yrmrJ0rUVnKzsKkQ81cTKwTGWP2ONwJS+KHNRS89xxBiyB9MgfAjB86RnAT/Hk
-         Tk9YXvOafQ9vrGquEY5afAb6ZJVNQfCN9PtLNt7UuAv+nOahJtWqQBqX3sZrGVpHs8Lf
-         EL4D1BDwIKGForCI1dRNmMgqAJY1yw7Y0syMyClHOIQ4j1dVbVW6qMXHzQKLzUt6wUV+
-         fubtP6LfDplz66FfEuMuQIwBCWAPHaJtlF5tZ/bPtAFUKFdfAJx/vbuveJ63671EtKeg
-         vNbwDbFy0UN+xu82/bT9McIXfWX4QTaZBqQFrHMk199Nwyr0Td4t9+GDLdAf2Lyn9LZM
-         i8Yg==
+        bh=XH/3SBzhXEZinQRmZMjAfIGu0JUbJo2MQXLpr1qwFmk=;
+        b=CbTtmukjRPYewEoWFqp1sRz6oSiH0zZb4mGBHEa4nRRWAU8+EcBzOal+ROP5WBXR5x
+         JrRd3XFOeNYJdFs7j4wwrN51j3iRzmFxuYz5Y1baQLAEhXVcCPWQX8Rh+QNU1CfWheAo
+         jkbZ93/skrcSmMajQAsvfoqbVACDfCPcQk525e/YOT9S5Dm+wlyEKqB1/TCSh1y8id4u
+         tqTKYJOT5FYnUJfvbq+NQ0qgjjIg6x8rATA+9dLGjJRXbyDKWLEobCF7i6okmarHEaWV
+         Y9PRz9VRzMiZPhldY+dBeeogHR4wuISY4reP4T++0Az0qZX/04658c1wUFIQ6+8wys8k
+         O1Sg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=RFVHIAFVezn4A//yU0olDz7nXpJepZN2+RpU9TzzyE8=;
-        b=GdPQXp3nGLv1QA1TfZzkLrQ44uE2L2g64KdseDolZuxuPv4tyn944xWXslDMo3z4Jt
-         FzRzgDvVXeSDKIk6btmM9gZVKQWxcFbeZUYxS84PnDkpNb7eS7tb/MNG80jnHhELmC/B
-         f+nOCxeStyXtedO5+BqHwKfYuumU2RJTzcH4X5/k2MDJutVNSAgrV/dz4Xzx9o5a80Dr
-         p80tjSHkKO4PjTN7202oDoVQAeTowYPT+FAsUREsxbbWd1NMjdjWVTZUbXq6t3KqTZfp
-         g8JStrAA3gCuYVJHOFKJIyofHqXZW8tqOawjMWhwDnKuBGT3KZ8nFM8T0ywDSTvj7lCd
-         ZmJg==
-X-Gm-Message-State: AOAM531z0JGzapg/ISlsUcLzxBPE0u2fvU4jYRbxkCsO8t4Wwd9m5uES
-        dd60rAaMAppuPHJjS4vW3yUbFfp8fngT1QQW1Sk9yA==
-X-Google-Smtp-Source: ABdhPJwSkum5TLbm5F7gzs0qrnq/SuixhE2KyLKYeHZQ7LcH11gymZk7UDXcOBrGLp4Svy45uPgtiw0LT083xIgQJuY=
-X-Received: by 2002:a19:4843:: with SMTP id v64mr6200836lfa.374.1623177552600;
- Tue, 08 Jun 2021 11:39:12 -0700 (PDT)
+        bh=XH/3SBzhXEZinQRmZMjAfIGu0JUbJo2MQXLpr1qwFmk=;
+        b=JGvYfMBoox04InOOS/mA4OLNe6zO4sBhDUZIubBIjpF2jRbyOy5MqxVMgJZ3BQS3xt
+         wZIipUuSYTaBWweKOAv37jMOL+9VUNFqQNKbZHDrWDH2JGj3PujKUI7nvZIa3b6Smr1f
+         bo4YlA1+IfKbY2yyrjsnZ23Hi/HMWhSuELg97imFatCIJtlmWhVrjxDGCEcT+PU9kWn+
+         /Dr7zEEQ9xkKRm0e94YS+I6TFRUh6RBEeMfVsT+BepLvgd1OFifW7xwEkLusAIpSbjew
+         4H6PqpsPbp/4OKkLqR5CdMWPOgkZ9F4ZcoiEomaBG9TEt0clzOxpWYu6WE9xoYYP1/Jh
+         620w==
+X-Gm-Message-State: AOAM532A942H7cPgGTjaEwTWiE3zMlnyshL4S7/8zhEzXV0JxZCwTf1Q
+        SNUZVY69AeXMmQg8tluAHjMNhBoTQH+pXf0PRQNo8A==
+X-Google-Smtp-Source: ABdhPJwWbRzEQbfxYswo9wdvvhXIaN36rmEXPktIvShQZ1REoqLGro/C4yPvO7BE/TlBKdYNXLz9J+72h5tMkyhMTF8=
+X-Received: by 2002:ac2:5cd6:: with SMTP id f22mr17251433lfq.73.1623178399858;
+ Tue, 08 Jun 2021 11:53:19 -0700 (PDT)
 MIME-Version: 1.0
 References: <1623145562-111662-1-git-send-email-yang.lee@linux.alibaba.com>
-In-Reply-To: <1623145562-111662-1-git-send-email-yang.lee@linux.alibaba.com>
+ <CAKwvOdmyXV09ZxcDqQ6x43f+Eze4h40W2AoKcCmUhGM2gUWsnQ@mail.gmail.com> <6335deba-9e94-61e0-89a1-8905be0e35a1@kernel.org>
+In-Reply-To: <6335deba-9e94-61e0-89a1-8905be0e35a1@kernel.org>
 From:   Nick Desaulniers <ndesaulniers@google.com>
-Date:   Tue, 8 Jun 2021 11:39:01 -0700
-Message-ID: <CAKwvOdmyXV09ZxcDqQ6x43f+Eze4h40W2AoKcCmUhGM2gUWsnQ@mail.gmail.com>
+Date:   Tue, 8 Jun 2021 11:53:09 -0700
+Message-ID: <CAKwvOdmOOvOBzZ+fNaOxMSDVonkTETmowtD5-4FTFGniNjbObQ@mail.gmail.com>
 Subject: Re: [PATCH] thermal: devfreq_cooling: Fix kernel-doc
-To:     Yang Li <yang.lee@linux.alibaba.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
+To:     Nathan Chancellor <nathan@kernel.org>
+Cc:     Yang Li <yang.lee@linux.alibaba.com>,
+        Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org,
-        Nathan Chancellor <nathan@kernel.org>,
         linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
         clang-built-linux <clang-built-linux@googlegroups.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -69,46 +68,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jun 8, 2021 at 2:46 AM Yang Li <yang.lee@linux.alibaba.com> wrote:
+On Tue, Jun 8, 2021 at 11:49 AM Nathan Chancellor <nathan@kernel.org> wrote:
 >
-> Fix function name in devfreq_cooling.c kernel-doc comment
-> to remove a warning found by clang(make W=1 LLVM=1).
->
-> drivers/thermal/devfreq_cooling.c:479: warning: expecting prototype for
-> devfreq_cooling_em_register_power(). Prototype was for
-> devfreq_cooling_em_register() instead.
->
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> On 6/8/2021 11:39 AM, Nick Desaulniers wrote:
+> > On Tue, Jun 8, 2021 at 2:46 AM Yang Li <yang.lee@linux.alibaba.com> wrote:
+> >>
+> >> Fix function name in devfreq_cooling.c kernel-doc comment
+> >> to remove a warning found by clang(make W=1 LLVM=1).
 
-That compiler warning doesn't come from kernel-doc.  Your diff looks
-good (the comment was wrong), but the commit message is curious.
+Ah, good find. In that case I'd be happy to sign off on a V2 that
+replaced s/clang(make W=1 LLVM=1)/kernel-doc/.
 
-Usually that warning is from when the function prototype does not
-exist for a function with extern linkage.  It looks like that's always
-provided though in include/linux/devfreq_cooling.h.  Can you share a
-link to the original report?
+> >>
+> >> drivers/thermal/devfreq_cooling.c:479: warning: expecting prototype for
+> >> devfreq_cooling_em_register_power(). Prototype was for
+> >> devfreq_cooling_em_register() instead.
+> >>
+> >> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> >> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> >
+> > That compiler warning doesn't come from kernel-doc.  Your diff looks
+> > good (the comment was wrong), but the commit message is curious.
+>
+> No, this is indeed kernel-doc complaining. Clang should not even be
+> mentioned in the commit message:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/scripts/kernel-doc?h=v5.13-rc5#n1228
+>
+> The warning could probably be improved to say "definition" instead of
+> "prototype" in certain cases but *shrugs*.
+>
+> This warning is similar to -Wmissing-prototypes from clang but refers to
+> the fact that the comment claims it is documenting one function but it
+> is really documenting another.
+>
+> Cheers,
+> Nathan
+>
+> > Usually that warning is from when the function prototype does not
+> > exist for a function with extern linkage.  It looks like that's always
+> > provided though in include/linux/devfreq_cooling.h.  Can you share a
+> > link to the original report?
+> >
+> >> ---
+> >>   drivers/thermal/devfreq_cooling.c | 2 +-
+> >>   1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> >> index 3a788ac..5a86cff 100644
+> >> --- a/drivers/thermal/devfreq_cooling.c
+> >> +++ b/drivers/thermal/devfreq_cooling.c
+> >> @@ -458,7 +458,7 @@ struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
+> >>   EXPORT_SYMBOL_GPL(devfreq_cooling_register);
+> >>
+> >>   /**
+> >> - * devfreq_cooling_em_register_power() - Register devfreq cooling device with
+> >> + * devfreq_cooling_em_register() - Register devfreq cooling device with
+> >>    *             power information and automatically register Energy Model (EM)
+> >>    * @df:                Pointer to devfreq device.
+> >>    * @dfc_power: Pointer to devfreq_cooling_power.
+> >> --
+> >> 1.8.3.1
+> >>
+> >
+> >
 
-> ---
->  drivers/thermal/devfreq_cooling.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-> index 3a788ac..5a86cff 100644
-> --- a/drivers/thermal/devfreq_cooling.c
-> +++ b/drivers/thermal/devfreq_cooling.c
-> @@ -458,7 +458,7 @@ struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
->  EXPORT_SYMBOL_GPL(devfreq_cooling_register);
->
->  /**
-> - * devfreq_cooling_em_register_power() - Register devfreq cooling device with
-> + * devfreq_cooling_em_register() - Register devfreq cooling device with
->   *             power information and automatically register Energy Model (EM)
->   * @df:                Pointer to devfreq device.
->   * @dfc_power: Pointer to devfreq_cooling_power.
-> --
-> 1.8.3.1
->
 
 
 -- 
