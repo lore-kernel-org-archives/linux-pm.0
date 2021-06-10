@@ -2,149 +2,183 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF79C47094
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C63D7C47094
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:42:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 470656140F
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B07B561287
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:42:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230373AbhFJI1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Jun 2021 04:27:32 -0400
-Received: from mail-pl1-f177.google.com ([209.85.214.177]:34515 "EHLO
-        mail-pl1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230161AbhFJI12 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jun 2021 04:27:28 -0400
-Received: by mail-pl1-f177.google.com with SMTP id h1so601372plt.1
-        for <linux-pm@vger.kernel.org>; Thu, 10 Jun 2021 01:25:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=9brGsoPBB+d+RHY31m7cZqh3sPnjdxBD51bqiyGsmoM=;
-        b=z4oi+QtsZIOkUCFtJ2RSljkQbvtIlKWhvmfPM3nkaTcx/SmP2SwZ/OG+gHmMtcJIVI
-         Jz+fY/OSo8O9+ELcqVoo7u7WxCuKuZVq4HIvbp2fEaka2FusUdVtB2CaOnVDFdakQq1s
-         WgD8eKYVt4xY7SKlklJT0+vTQaaOeIygjrFnC3E8n2TxgASfZSLqW6emrP4ePhogpd3p
-         LCP0wfYPCSPY2fDENITlznVP5uwLlXyfFtXxpZyog9xudcUFU5hLh2OauKt2jpqkE710
-         p8BQ3NdkFzKdUP8qDnJ5S4CR/6RqEXkcXwAaVGtyWxW6VDOUnL24T7ElbtkSHdIK+Xas
-         nWQw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=9brGsoPBB+d+RHY31m7cZqh3sPnjdxBD51bqiyGsmoM=;
-        b=IwNCkSYc3MRXL/KYPCHyiTb1CVkJz/xAg+eOikJwJPXu52wzp/hKFDjHRGXjo0p+Ii
-         yz66HwoaERO/2VjlzrfauWoFeCGEb8FgW+Iu4vxiaFWvR1M+/1o4tldNzcVIYtq0KCBK
-         3vfu7iSZjmwgSHCh1cBV1NXX/gFYG2uAtCFJzvSY+i37Vtnn7CVnSTbi2Pxrxi/VwKLB
-         gYTnGkj+1t9gh21JtEP+Vwq4Y7eJlAT2kS3fPUNe6rI1OXlR8+EuQSdfXLvzfaHlcv92
-         wBsJzuYBurCmKAnnaUtNS6rX1Vfx1dHZV0h8Zkjq9v4Gz/9PLEYhi6LpW815s4ZN380o
-         nTIg==
-X-Gm-Message-State: AOAM530B3el0lLt9DKJEsxBjf2Ua1ajciBWNp13CtD4rLJr7/bMtLkTv
-        FM1l7E1NUnPTgY5PDBUgilmlgw==
-X-Google-Smtp-Source: ABdhPJyL6nxvcvsq34evJFOy65fc9gysLq/3WyEfD7vvQ+tDWp1jEmZFdtmAB1e5fkCXviRh9tP+3g==
-X-Received: by 2002:a17:90a:1141:: with SMTP id d1mr2224862pje.56.1623313457758;
-        Thu, 10 Jun 2021 01:24:17 -0700 (PDT)
-Received: from localhost ([136.185.169.128])
-        by smtp.gmail.com with ESMTPSA id q13sm1741649pff.13.2021.06.10.01.24.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Jun 2021 01:24:17 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Qian Cai <quic_qiancai@quicinc.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] cpufreq: powerenv: Migrate to ->exit() callback instead of ->stop_cpu()
-Date:   Thu, 10 Jun 2021 13:53:59 +0530
-Message-Id: <0990172cba066ec7747e479f8f0a2069ae368339.1623313323.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
-In-Reply-To: <cover.1623313323.git.viresh.kumar@linaro.org>
-References: <cover.1623313323.git.viresh.kumar@linaro.org>
+        id S230144AbhFJIoW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Jun 2021 04:44:22 -0400
+Received: from foss.arm.com ([217.140.110.172]:53836 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230370AbhFJIoQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Jun 2021 04:44:16 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4CCACD6E;
+        Thu, 10 Jun 2021 01:42:20 -0700 (PDT)
+Received: from [192.168.178.6] (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A7AD23F719;
+        Thu, 10 Jun 2021 01:42:17 -0700 (PDT)
+Subject: Re: [PATCH v2 1/2] sched/fair: Take thermal pressure into account
+ while estimating energy
+To:     Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org
+Cc:     linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org, vincent.guittot@linaro.org,
+        qperret@google.com, vincent.donnefort@arm.com,
+        Beata.Michalska@arm.com, mingo@redhat.com, juri.lelli@redhat.com,
+        rostedt@goodmis.org, segall@google.com, mgorman@suse.de,
+        bristot@redhat.com
+References: <20210604080954.13915-1-lukasz.luba@arm.com>
+ <20210604080954.13915-2-lukasz.luba@arm.com>
+From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
+Message-ID: <2f2fc758-92c6-5023-4fcb-f9558bf3369e@arm.com>
+Date:   Thu, 10 Jun 2021 10:42:15 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210604080954.13915-2-lukasz.luba@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-commit 367dc4aa932b ("cpufreq: Add stop CPU callback to cpufreq_driver
-interface") added the stop_cpu() callback to allow the drivers to do
-clean up before the CPU is completely down and its state cannot be
-modified.
+On 04/06/2021 10:09, Lukasz Luba wrote:
+> Energy Aware Scheduling (EAS) needs to be able to predict the frequency
+> requests made by the SchedUtil governor to properly estimate energy used
+> in the future. It has to take into account CPUs utilization and forecast
+> Performance Domain (PD) frequency. There is a corner case when the max
+> allowed frequency might be reduced due to thermal. SchedUtil is aware of
+> that reduced frequency, so it should be taken into account also in EAS
+> estimations.
+> 
+> SchedUtil, as a CPUFreq governor, knows the maximum allowed frequency of
+> a CPU, thanks to cpufreq_driver_resolve_freq() and internal clamping
+> to 'policy::max'. SchedUtil is responsible to respect that upper limit
+> while setting the frequency through CPUFreq drivers. This effective
+> frequency is stored internally in 'sugov_policy::next_freq' and EAS has
+> to predict that value.
+> 
+> In the existing code the raw value of arch_scale_cpu_capacity() is used
+> for clamping the returned CPU utilization from effective_cpu_util().
+> This patch fixes issue with too big single CPU utilization, by introducing
+> clamping to the allowed CPU capacity. The allowed CPU capacity is a CPU
+> capacity reduced by thermal pressure signal. We rely on this load avg
+> geometric series in similar way as other mechanisms in the scheduler.
+> 
+> Thanks to knowledge about allowed CPU capacity, we don't get too big value
+> for a single CPU utilization, which is then added to the util sum. The
+> util sum is used as a source of information for estimating whole PD energy.
+> To avoid wrong energy estimation in EAS (due to capped frequency), make
+> sure that the calculation of util sum is aware of allowed CPU capacity.
+> 
 
-At that time the CPU hotplug framework used to call the cpufreq core's
-registered notifier for different events like CPU_DOWN_PREPARE and
-CPU_POST_DEAD. The stop_cpu() callback was called during the
-CPU_DOWN_PREPARE event.
+So essentially what you want to do is:
 
-This is no longer the case, cpuhp_cpufreq_offline() is called only once
-by the CPU hotplug core now and we don't really need two separate
-callbacks for cpufreq drivers, i.e. stop_cpu() and exit(), as everything
-can be done from the exit() callback itself.
+Make EAS aware of the frequency clamping schedutil can be faced with:
 
-Migrate to using the exit() callback instead of stop_cpu().
+  get_next_freq() -> cpufreq_driver_resolve_freq() ->
+clamp_val(target_freq, policy->min, policy->max) (1)
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+by subtracting CPU's Thermal Pressure (ThPr) signal from the original
+CPU capacity `arch_scale_cpu_capacity()` (2).
+
 ---
- drivers/cpufreq/powernv-cpufreq.c | 23 +++++++++--------------
- 1 file changed, 9 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index e439b43c19eb..005600cef273 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -875,7 +875,15 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
--	/* timer is deleted in cpufreq_cpu_stop() */
-+	struct powernv_smp_call_data freq_data;
-+	struct global_pstate_info *gpstates = policy->driver_data;
-+
-+	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
-+	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
-+	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
-+	if (gpstates)
-+		del_timer_sync(&gpstates->timer);
-+
- 	kfree(policy->driver_data);
- 
- 	return 0;
-@@ -1007,18 +1015,6 @@ static struct notifier_block powernv_cpufreq_opal_nb = {
- 	.priority	= 0,
- };
- 
--static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
--{
--	struct powernv_smp_call_data freq_data;
--	struct global_pstate_info *gpstates = policy->driver_data;
--
--	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
--	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
--	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
--	if (gpstates)
--		del_timer_sync(&gpstates->timer);
--}
--
- static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
- 					unsigned int target_freq)
- {
-@@ -1042,7 +1038,6 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.target_index	= powernv_cpufreq_target_index,
- 	.fast_switch	= powernv_fast_switch,
- 	.get		= powernv_cpufreq_get,
--	.stop_cpu	= powernv_cpufreq_stop_cpu,
- 	.attr		= powernv_cpu_freq_attr,
- };
- 
--- 
-2.31.1.272.g89b43f80a514
+Isn't there a conceptional flaw in this design? Let's say we have a
+big.Little system with two cpufreq cooling devices and a thermal zone
+(something like Hikey 960). To create a ThPr scenario we have to run
+stuff on the CPUs (e.g. hackbench (3)).
+Eventually cpufreq_set_cur_state() [drivers/thermal/cpufreq_cooling.c]
+will set thermal_pressure to `(2) - (2)*freq/policy->cpuinfo.max_freq`
+and PELT will provide the ThPr signal via thermal_load_avg().
+But to create this scenario, the system will become overutilized
+(system-wide data, if one CPU is overutilized, the whole system is) so
+EAS is disabled (i.e. find_energy_efficient_cpu() and compute_emergy()
+are not executed).
 
+I can see that there are episodes in which EAS is running and
+thermal_load_avg() != 0 but those have to be when (3) has stopped and
+you see the ThPr signal just decaying (no accruing of new ThPr). The
+cpufreq cooling device can still issue cpufreq_set_cur_state() but only
+with decreasing states.
+
+---
+
+IMHO, a precise description of how you envision the system setup,
+incorporating all participating subsystems, would be helpful here.
+
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  kernel/sched/fair.c | 17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 161b92aa1c79..1aeddecabc20 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -6527,6 +6527,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+>  	struct cpumask *pd_mask = perf_domain_span(pd);
+>  	unsigned long cpu_cap = arch_scale_cpu_capacity(cpumask_first(pd_mask));
+>  	unsigned long max_util = 0, sum_util = 0;
+> +	unsigned long _cpu_cap = cpu_cap;
+>  	int cpu;
+>  
+>  	/*
+> @@ -6558,14 +6559,24 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+>  				cpu_util_next(cpu, p, -1) + task_util_est(p);
+>  		}
+>  
+> +		/*
+> +		 * Take the thermal pressure from non-idle CPUs. They have
+> +		 * most up-to-date information. For idle CPUs thermal pressure
+> +		 * signal is not updated so often.
+> +		 */
+> +		if (!idle_cpu(cpu))
+> +			_cpu_cap = cpu_cap - thermal_load_avg(cpu_rq(cpu));
+> +
+
+This one is probably the result of the fact that cpufreq cooling device
+sets the ThPr for all CPUs of the policy (Frequency Domain (FD) or
+Performance Domain (PD)) but PELT updates are happening per-CPU. And
+only !idle CPUs get the update in scheduler_tick().
+
+Looks like thermal_pressure [per_cpu(thermal_pressure, cpu),
+drivers/base/arch_topology.c] set by cpufreq_set_cur_state() is always
+in sync with policy->max/cpuinfo_max_freq).
+So for your use case this instantaneous `signal` is better than the PELT
+one. It's precise (no decaying when frequency clamping is already gone)
+and you avoid the per-cpu update issue.
+
+>  		/*
+>  		 * Busy time computation: utilization clamping is not
+>  		 * required since the ratio (sum_util / cpu_capacity)
+>  		 * is already enough to scale the EM reported power
+>  		 * consumption at the (eventually clamped) cpu_capacity.
+>  		 */
+> -		sum_util += effective_cpu_util(cpu, util_running, cpu_cap,
+> -					       ENERGY_UTIL, NULL);
+> +		cpu_util = effective_cpu_util(cpu, util_running, cpu_cap,
+> +					      ENERGY_UTIL, NULL);
+> +
+> +		sum_util += min(cpu_util, _cpu_cap);
+>  
+>  		/*
+>  		 * Performance domain frequency: utilization clamping
+> @@ -6576,7 +6587,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+>  		 */
+>  		cpu_util = effective_cpu_util(cpu, util_freq, cpu_cap,
+>  					      FREQUENCY_UTIL, tsk);
+> -		max_util = max(max_util, cpu_util);
+> +		max_util = max(max_util, min(cpu_util, _cpu_cap));
+>  	}
+>  
+>  	return em_cpu_energy(pd->em_pd, max_util, sum_util);
+>
