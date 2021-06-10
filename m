@@ -2,111 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF0C7C47094
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 10:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35B59C47094
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 11:19:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B4FC761278
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 10:37:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1205B613DF
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 11:19:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229935AbhFJKjy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Jun 2021 06:39:54 -0400
-Received: from foss.arm.com ([217.140.110.172]:56592 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229778AbhFJKjy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Jun 2021 06:39:54 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C990AD6E;
-        Thu, 10 Jun 2021 03:37:57 -0700 (PDT)
-Received: from [10.57.4.220] (unknown [10.57.4.220])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2CF953F694;
-        Thu, 10 Jun 2021 03:37:55 -0700 (PDT)
-Subject: Re: [PATCH v2 1/2] sched/fair: Take thermal pressure into account
- while estimating energy
-To:     Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        vincent.guittot@linaro.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        qperret@google.com, vincent.donnefort@arm.com,
-        Beata.Michalska@arm.com, mingo@redhat.com, juri.lelli@redhat.com,
-        rostedt@goodmis.org, segall@google.com, mgorman@suse.de,
-        bristot@redhat.com
-References: <20210604080954.13915-1-lukasz.luba@arm.com>
- <20210604080954.13915-2-lukasz.luba@arm.com>
- <2f2fc758-92c6-5023-4fcb-f9558bf3369e@arm.com>
- <905f1d29-50f9-32be-4199-fc17eab79d04@arm.com>
- <3cfa5690-644b-ba80-3fc3-7c5a3f292e70@arm.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <c77d00b9-d7a3-0e8a-a528-ab0c1773496f@arm.com>
-Date:   Thu, 10 Jun 2021 11:37:53 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S230001AbhFJLVZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Jun 2021 07:21:25 -0400
+Received: from mail-oi1-f172.google.com ([209.85.167.172]:39450 "EHLO
+        mail-oi1-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229935AbhFJLVY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jun 2021 07:21:24 -0400
+Received: by mail-oi1-f172.google.com with SMTP id m137so1714995oig.6;
+        Thu, 10 Jun 2021 04:19:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=NR2n9RcVFmQNpFqcuPDMiWFTscN6MglKWG5i9DzogFk=;
+        b=J6t+BVMli32xwPqSkNPqGpX0LhLPSjohaNd/MS26X58utkflJ5i9XIjng9Fo7Z3Cv/
+         U7PYn59Opg6gP+ECn6lsK7O0HmrVAD0OinciJhWFbLtzoBupQpRh1X0voLAZOFCfqCr0
+         5SqzKqjb832PucxCL+2672SAtQA0Mz4nd+b40+K61M8sdSlMbnJrrRzCOwg64cM8f9ub
+         4jU33k4w3+vIQcgiK1SF5P3OrKxFDjUkY2C9BS/1Zl1GlwjRwtkI1rmQuWvw4EmXBqnu
+         vRwgJLFRuvir9s5ZGKgV+3ansfjat7orBK/ksdQm0AnmRV+3ejMsaB5RRmb/nVlOUwwQ
+         DZ7w==
+X-Gm-Message-State: AOAM533UsiBk+cOO3enyPTE1fNuPyuysM/wemIQdPWrJ91xdRki5TSqO
+        B2dv5PL5JjidMKfOUIH1I/wmLCtbQ3N+WxLk3bY=
+X-Google-Smtp-Source: ABdhPJwm1+jKBtIqcbWHpbjqmp/Q2AtWoRgZ2lUwyomvCIlokusgZIMsVa6DZMO3D1lYpdl4wsd6KISgT+xkQex5hg0=
+X-Received: by 2002:a05:6808:f08:: with SMTP id m8mr13731oiw.69.1623323956491;
+ Thu, 10 Jun 2021 04:19:16 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <3cfa5690-644b-ba80-3fc3-7c5a3f292e70@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <28308fc0d38f252baf90e6ffb31fd2f8660be273.1623311808.git.viresh.kumar@linaro.org>
+In-Reply-To: <28308fc0d38f252baf90e6ffb31fd2f8660be273.1623311808.git.viresh.kumar@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 10 Jun 2021 13:19:05 +0200
+Message-ID: <CAJZ5v0i+GvobLS=cM9kc9Cj4BhLcEmTzRoBsRvDqQjLO-o7yGA@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: cppc: Mark frequency invariance broken
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Qian Cai <quic_qiancai@quicinc.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Jun 10, 2021 at 9:58 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> There are few races in the frequency invariance support for CPPC driver,
+> namely the driver doesn't stop the kthread_work and irq_work on policy
+> exit during suspend/resume or CPU hotplug.
+>
+> A proper fix won't be possible for the 5.13-rc, as it requires a lot of
+> changes. Instead of reverting the patch, mark this feature BROKEN for
+> now.
+>
+> Fixes: 4c38f2df71c8 ("cpufreq: CPPC: Add support for frequency invariance")
+> Reported-by: Qian Cai <quic_qiancai@quicinc.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
+Well, why don't we revert 4c38f2df71c8 instead?
 
-On 6/10/21 11:07 AM, Dietmar Eggemann wrote:
-> On 10/06/2021 11:04, Lukasz Luba wrote:
->>
+Is there any particular reason for retaining it?
 
-[snip]
-
->> Not always, it depends on thermal governor decision, workload and
->> 'power actors' (in IPA naming convention). Then it depends when and how
->> hard you clamp the CPUs. They (CPUs) don't have to be always
->> overutilized, they might be even 50-70% utilized but the GPU reduced
->> power budget by 2 Watts, so CPUs left with only 1W. Which is still OK
->> for the CPUs, since they are only 'feeding' the GPU with new 'jobs'.
-> 
-> All this pretty much confines the usefulness of you proposed change. A
-> precise description of it with the patches is necessary to allow people
-> to start from there while exploring your patches.
-
-OK, I see your point.
-
-[snip]
-
->> True, I hope this description above would help to understand the
->> scenario.
-> 
-> This description belongs in the patch header. The scenario in which your
-> functionality would improve things has to be clear.
-> I'm sure that not everybody looking at this patches is immediately aware
-> on how IPA setups work and which specific setup you have in mind here.
-
-Agree. I will add this description into the patch header for v3.
-
-[snip]
-
->>
->> Yes, this code implementation tries to address those issues.
-> 
-> The point I was making here is: why using the PELT signal
-> thermal_load_avg() and not per_cpu(thermal_pressure, cpu) directly,
-> given the fact that the latter perfectly represents the frequency clamping?
-> 
-
-Good question. I wanted to be aligned with other parts in the fair.c
-like cpu_capacity() and all it's users. The CPU capacity is reduced by
-RT, DL, IRQ and thermal load avg, not the 'raw' value from the
-per-cpu variable.
-
-TBH I cannot recall what was the argument back then
-when thermal pressure geometric series was introduced.
-Maybe to have a better control how fast it raises and decays
-so other mechanisms in the scheduler will see the change in thermal
-as not so sharp... (?)
-
-
-Vincent do you remember the motivation to have geometric series
-in thermal pressure and not use just the 'raw' value from per-cpu?
+> ---
+> Rafael, please apply this for v5.13-rc if it looks fine to you.
+>
+>  drivers/cpufreq/Kconfig.arm | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index a5c5f70acfc9..614c34350f41 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -22,6 +22,7 @@ config ACPI_CPPC_CPUFREQ
+>  config ACPI_CPPC_CPUFREQ_FIE
+>         bool "Frequency Invariance support for CPPC cpufreq driver"
+>         depends on ACPI_CPPC_CPUFREQ && GENERIC_ARCH_TOPOLOGY
+> +       depends on BROKEN
+>         default y
+>         help
+>           This extends frequency invariance support in the CPPC cpufreq driver,
+> --
+> 2.31.1.272.g89b43f80a514
+>
