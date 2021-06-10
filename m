@@ -2,100 +2,149 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AE10C47094
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF79C47094
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 45242613FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 470656140F
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Jun 2021 08:25:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230374AbhFJI10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Jun 2021 04:27:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49452 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230317AbhFJI1V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jun 2021 04:27:21 -0400
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5180C0617A6
-        for <linux-pm@vger.kernel.org>; Thu, 10 Jun 2021 01:25:11 -0700 (PDT)
-Received: by mail-pj1-x1033.google.com with SMTP id g4so3224463pjk.0
-        for <linux-pm@vger.kernel.org>; Thu, 10 Jun 2021 01:25:11 -0700 (PDT)
+        id S230373AbhFJI1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Jun 2021 04:27:32 -0400
+Received: from mail-pl1-f177.google.com ([209.85.214.177]:34515 "EHLO
+        mail-pl1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230161AbhFJI12 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jun 2021 04:27:28 -0400
+Received: by mail-pl1-f177.google.com with SMTP id h1so601372plt.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Jun 2021 01:25:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=wvT4K65HJqu4cpNZj3n9YyeOT6IYKvd3QDptTISVcLM=;
-        b=YgwD/vhyqvAl9YxKoqRmfRLmSPvk/YbVgEOGYMTvQRInI+4zjYhoU5675gLHS/WeWM
-         BmOBTxu3YAmmsRm69LMLVBDXOZKpj8YOVzO1jaaNLeoc2pKS+2kZ+wQ0VXUjQ+CijkS6
-         A5Mvq3Q97Oo5n/IpEntVH/yfEgoc/u4vttw5bFfhleC2APLNBu9E7rG3THZG7AVYVGdK
-         9zkt2c62QQInyztkcmHxpnMQwqS9uEZZTQCrUQx2LnLZuWVy0P0A4vb+olICA2wDsJI0
-         9+e2UgDuaBSPOJq6VKvowdL5Rs+qmQnuFbYHAGER+N0AY77lUyJgTISql2lTXS+Id93q
-         EePg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=9brGsoPBB+d+RHY31m7cZqh3sPnjdxBD51bqiyGsmoM=;
+        b=z4oi+QtsZIOkUCFtJ2RSljkQbvtIlKWhvmfPM3nkaTcx/SmP2SwZ/OG+gHmMtcJIVI
+         Jz+fY/OSo8O9+ELcqVoo7u7WxCuKuZVq4HIvbp2fEaka2FusUdVtB2CaOnVDFdakQq1s
+         WgD8eKYVt4xY7SKlklJT0+vTQaaOeIygjrFnC3E8n2TxgASfZSLqW6emrP4ePhogpd3p
+         LCP0wfYPCSPY2fDENITlznVP5uwLlXyfFtXxpZyog9xudcUFU5hLh2OauKt2jpqkE710
+         p8BQ3NdkFzKdUP8qDnJ5S4CR/6RqEXkcXwAaVGtyWxW6VDOUnL24T7ElbtkSHdIK+Xas
+         nWQw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=wvT4K65HJqu4cpNZj3n9YyeOT6IYKvd3QDptTISVcLM=;
-        b=dZz2+0hxEUo5iwoiF9GFS/ayP5l6uUHPbMiHt8QDy3S2uSMv++SgbIVPAU5DmddY5w
-         UmS1ut13yUkZHkjYMkP2lVwGqhx6828C/u2cha8rG0i1WYtiSbA6TzbLiP5x6HPMlLAN
-         phh306GTzonexy402WWNBycaPpVbklMwNftQGKrC/lZTiKgYqhb7Y3D5IH03JRImDxh5
-         4mvWrik6ftIcRZWqlaXTteZEVmzznSzUoRshZqX8jAe0uzggirfi7wN+dN6x0HmmuSmb
-         xUuRwISW9XWC282S8+JvqwzUK3f0P8bU3bcI8B7Wi5g1DbQbP2ybDO6j6IuPhThTDFC0
-         txNw==
-X-Gm-Message-State: AOAM532bD4hgW+3ER31HewR02HpDRnd9cYYdMFSGDkoAGIrmvVwVQ7m0
-        XjhMgahiFx/oWe1/ZiDLLggfFg==
-X-Google-Smtp-Source: ABdhPJwhppcQo/1ShgwmUjhTXb+2sRaKsNZA7dmdZMTrOzJ9ezaFknq9StjI6i16yGrjU5WvFO8bZA==
-X-Received: by 2002:a17:902:b181:b029:fc:c069:865c with SMTP id s1-20020a170902b181b02900fcc069865cmr3936476plr.28.1623313511220;
-        Thu, 10 Jun 2021 01:25:11 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=9brGsoPBB+d+RHY31m7cZqh3sPnjdxBD51bqiyGsmoM=;
+        b=IwNCkSYc3MRXL/KYPCHyiTb1CVkJz/xAg+eOikJwJPXu52wzp/hKFDjHRGXjo0p+Ii
+         yz66HwoaERO/2VjlzrfauWoFeCGEb8FgW+Iu4vxiaFWvR1M+/1o4tldNzcVIYtq0KCBK
+         3vfu7iSZjmwgSHCh1cBV1NXX/gFYG2uAtCFJzvSY+i37Vtnn7CVnSTbi2Pxrxi/VwKLB
+         gYTnGkj+1t9gh21JtEP+Vwq4Y7eJlAT2kS3fPUNe6rI1OXlR8+EuQSdfXLvzfaHlcv92
+         wBsJzuYBurCmKAnnaUtNS6rX1Vfx1dHZV0h8Zkjq9v4Gz/9PLEYhi6LpW815s4ZN380o
+         nTIg==
+X-Gm-Message-State: AOAM530B3el0lLt9DKJEsxBjf2Ua1ajciBWNp13CtD4rLJr7/bMtLkTv
+        FM1l7E1NUnPTgY5PDBUgilmlgw==
+X-Google-Smtp-Source: ABdhPJyL6nxvcvsq34evJFOy65fc9gysLq/3WyEfD7vvQ+tDWp1jEmZFdtmAB1e5fkCXviRh9tP+3g==
+X-Received: by 2002:a17:90a:1141:: with SMTP id d1mr2224862pje.56.1623313457758;
+        Thu, 10 Jun 2021 01:24:17 -0700 (PDT)
 Received: from localhost ([136.185.169.128])
-        by smtp.gmail.com with ESMTPSA id f28sm1962976pgb.12.2021.06.10.01.25.10
+        by smtp.gmail.com with ESMTPSA id q13sm1741649pff.13.2021.06.10.01.24.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Jun 2021 01:25:10 -0700 (PDT)
-Date:   Thu, 10 Jun 2021 13:55:08 +0530
+        Thu, 10 Jun 2021 01:24:17 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Qian Cai <quic_qiancai@quicinc.com>
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Ben Segall <bsegall@google.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Mel Gorman <mgorman@suse.de>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
+To:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Qian Cai <quic_qiancai@quicinc.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>
+Cc:     linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Will Deacon <will@kernel.org>, linux-pm@vger.kernel.org,
         Ionela Voinescu <ionela.voinescu@arm.com>,
-        linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V6 0/4] cpufreq: cppc: Add support for frequency
- invariance
-Message-ID: <20210610082508.756r22w4xd2j6vmm@vireshk-i7>
-References: <cover.1615351622.git.viresh.kumar@linaro.org>
- <41f5195e-0e5f-fdfe-ba37-34e1fd8e4064@quicinc.com>
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/5] cpufreq: powerenv: Migrate to ->exit() callback instead of ->stop_cpu()
+Date:   Thu, 10 Jun 2021 13:53:59 +0530
+Message-Id: <0990172cba066ec7747e479f8f0a2069ae368339.1623313323.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
+In-Reply-To: <cover.1623313323.git.viresh.kumar@linaro.org>
+References: <cover.1623313323.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <41f5195e-0e5f-fdfe-ba37-34e1fd8e4064@quicinc.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09-06-21, 11:46, Qian Cai wrote:
-> Git blame pointed out this series for a use-after-free during CPU offline/online. Any thoughts?
+commit 367dc4aa932b ("cpufreq: Add stop CPU callback to cpufreq_driver
+interface") added the stop_cpu() callback to allow the drivers to do
+clean up before the CPU is completely down and its state cannot be
+modified.
 
-Thanks for reporting the problem here Qian. I have sent you a patchset
-to fix these issues, please see if that works fine or not. It isn't
-tested by me, as I didn't have the right setup for it.
+At that time the CPU hotplug framework used to call the cpufreq core's
+registered notifier for different events like CPU_DOWN_PREPARE and
+CPU_POST_DEAD. The stop_cpu() callback was called during the
+CPU_DOWN_PREPARE event.
 
+This is no longer the case, cpuhp_cpufreq_offline() is called only once
+by the CPU hotplug core now and we don't really need two separate
+callbacks for cpufreq drivers, i.e. stop_cpu() and exit(), as everything
+can be done from the exit() callback itself.
+
+Migrate to using the exit() callback instead of stop_cpu().
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index e439b43c19eb..005600cef273 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -875,7 +875,15 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+-	/* timer is deleted in cpufreq_cpu_stop() */
++	struct powernv_smp_call_data freq_data;
++	struct global_pstate_info *gpstates = policy->driver_data;
++
++	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
++	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
++	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
++	if (gpstates)
++		del_timer_sync(&gpstates->timer);
++
+ 	kfree(policy->driver_data);
+ 
+ 	return 0;
+@@ -1007,18 +1015,6 @@ static struct notifier_block powernv_cpufreq_opal_nb = {
+ 	.priority	= 0,
+ };
+ 
+-static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+-{
+-	struct powernv_smp_call_data freq_data;
+-	struct global_pstate_info *gpstates = policy->driver_data;
+-
+-	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
+-	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
+-	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
+-	if (gpstates)
+-		del_timer_sync(&gpstates->timer);
+-}
+-
+ static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+ 					unsigned int target_freq)
+ {
+@@ -1042,7 +1038,6 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.target_index	= powernv_cpufreq_target_index,
+ 	.fast_switch	= powernv_fast_switch,
+ 	.get		= powernv_cpufreq_get,
+-	.stop_cpu	= powernv_cpufreq_stop_cpu,
+ 	.attr		= powernv_cpu_freq_attr,
+ };
+ 
 -- 
-viresh
+2.31.1.272.g89b43f80a514
+
