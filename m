@@ -2,117 +2,78 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24AC8C48BD1
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Jun 2021 09:34:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B0BC48BD1
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Jun 2021 10:16:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 067BE613D0
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Jun 2021 09:34:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 75D94613DD
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Jun 2021 10:16:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230291AbhFKJgV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Jun 2021 05:36:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45136 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231284AbhFKJgS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jun 2021 05:36:18 -0400
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D174C0617AF
-        for <linux-pm@vger.kernel.org>; Fri, 11 Jun 2021 02:34:20 -0700 (PDT)
-Received: by mail-wm1-x336.google.com with SMTP id h22-20020a05600c3516b02901a826f84095so8088645wmq.5
-        for <linux-pm@vger.kernel.org>; Fri, 11 Jun 2021 02:34:20 -0700 (PDT)
+        id S230291AbhFKKSn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Jun 2021 06:18:43 -0400
+Received: from mail-lf1-f41.google.com ([209.85.167.41]:41856 "EHLO
+        mail-lf1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230233AbhFKKSm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jun 2021 06:18:42 -0400
+Received: by mail-lf1-f41.google.com with SMTP id j20so7768255lfe.8
+        for <linux-pm@vger.kernel.org>; Fri, 11 Jun 2021 03:16:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=A8TIz1cDlej9+ZUNsR4O5xhIVt925U9+N5LJUNgO/fQ=;
-        b=CVaNBmMn5NZaDL8wN6U1Sq99oo2mhoYCZqF9PKZHXIgvVAkYkNOr+KV+1jYNPlzrq+
-         aCUcQR1v9BxZzj0x4czDI08Ae4WEkHlyyJlXAEtQpdc77gA63wM0QlbzPPuKmC9gCd9K
-         r+D/abexRY/D0eXRTYT6Tk9YInO4eRGuznpIxV46cKzr6gXl7R71peun9wCrgCO7C+0l
-         bPCTf8lOCXanzrGmoN5/GeIrAFDNh8FDVVVTlHwwKmiwhQ9FKt9ocbKXDjm2LRbYvKOv
-         ABmSsj5wdgpz67bVIy439wV1me3kp+y92MVxej4Vu8iZXKoJJGBSpL/G2F2RUdkEJ1Rm
-         SobA==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=NHSHhv8DH5N4EUCGo4h1bBiaEnjkumBewOX9z/LMwSQ=;
+        b=QA4jVvVN4LCK88DiOg8DHx/xUKJiUsKHH/u21a9FmFHZL+Mu4uDVyUK9ki3+EcaVxz
+         l8i74R7wCybyiqMTz0t99+VmhIk78TEVsDZAO6Y0Tg7ZtZVKpxYHkymUtDp4azG7fk02
+         e7JFw3FLOa1RNG6Ss4gobTt1yM3BVT8z3tv1VxOx/vw3h71hR1fcYjxY/qopX2Th8qX4
+         R7p2gDkyCBj2FaHhT07M7s2WQyPi/M5PQP+mWTfAzUr3TCBLnh/t7XzHRShCnSldQHIf
+         kEH5i1W5hA4dO5K+7MW53czeYfRE05QCQmqnwp653Ehpywb6BVwIV37Zj44BoXx4bwEC
+         fruQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=A8TIz1cDlej9+ZUNsR4O5xhIVt925U9+N5LJUNgO/fQ=;
-        b=ToP2JWY8rmnGBlSHk27bneFzLm9un3fC1iuksywrCoAbSoov8qJZoyerEDNoZZl+UP
-         xLDnTQ6fw/Wkh0ly23iHXMsILKGV0rHg7c8Fu2k6H2tiwiJUkFRwugXSbeSQ5XkF0sob
-         5bmXEhomlcaWXiOKNEQSPpUQfamfjceFxZN+Ws0tENOZQ32lBtGFhQDBOMEYXCGyMP9J
-         9F5S/Zn+60CEaBah1sGC1XLTsu5znsbwNX+tZKjwmiMZNBIVPJxRG9I4ZpLBqG4HUtaR
-         iDlS1GCFWY2fBS0NGZTVXM+7PnDArE1rwVQ4HmUGx5nq3A0ULddOYP5jvq5lTYDDVyjv
-         /hoQ==
-X-Gm-Message-State: AOAM532O9DCuA632tpWzvb4lkuWh4wVxpmrk8mdJzT8QMg+RTGWUMKHc
-        ROJG8hzVsWlvNttDxpdNpMxhCA==
-X-Google-Smtp-Source: ABdhPJzKJJFONGN/6bSPuZcs8dM9cVLYpIrC7eLXiCIro9zRisQdbkwTqpXI+Nz3xKNyUwdvbHkpOg==
-X-Received: by 2002:a05:600c:2284:: with SMTP id 4mr3033049wmf.146.1623404058646;
-        Fri, 11 Jun 2021 02:34:18 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:e537:d458:d3c4:18e1? ([2a01:e34:ed2f:f020:e537:d458:d3c4:18e1])
-        by smtp.googlemail.com with ESMTPSA id g10sm6489552wrq.12.2021.06.11.02.34.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Jun 2021 02:34:18 -0700 (PDT)
-Subject: Re: [PATCH] thermal: sprd: Add missing MODULE_DEVICE_TABLE
-To:     Chunyan Zhang <zhang.lyra@gmail.com>
-Cc:     linux-pm@vger.kernel.org, Baolin Wang <baolin.wang7@gmail.com>,
-        linux-kernel@vger.kernel.org, Orson Zhai <orsonzhai@gmail.com>,
-        Chunyan Zhang <chunyan.zhang@unisoc.com>
-References: <20210512093752.243168-1-zhang.lyra@gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <cfe9b793-47a6-b6ad-74f0-3342e5ed4d4b@linaro.org>
-Date:   Fri, 11 Jun 2021 11:34:16 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        bh=NHSHhv8DH5N4EUCGo4h1bBiaEnjkumBewOX9z/LMwSQ=;
+        b=LxG3PIQ6Ao512OyDui9tVKvKdzIzEyMrV8lhhbWiVZDQt8AOiNZz2DA11s61qSljUA
+         +JoPjJD70COZJGqXViIdXBSWVcSloRMOilCYy6cmqzAtlNeWM8EPhpsQsgLvm1LB9JIq
+         ILVikDowmjs5SXE57Kzq+xBQ1ZL8dwF9XXalLzE5ES5l0l4g9J1VHZneNl74ET6R1uvk
+         o3Yp+t+0dtXTxW/Td6YeXy5Dc+ICCG7jtJbwoiWmU2P6xvxkGD3uclX+kVWDPoOTEwyl
+         Os5ArJo1RJL7uaXsvp2X2jCHwhGu+7rb0ArRZqi1AKuM979ThswCsndNQ7bzxIxcT8k6
+         BEvg==
+X-Gm-Message-State: AOAM531YfR7b+1NEcvqk0se1IGNYrp0nfcVZS9QYR+nDfRps2RXsqjEQ
+        bLDsfR5WObXBfKqyMhS1J/zu0A==
+X-Google-Smtp-Source: ABdhPJxBZ9vK96gsXAjYydEfz9jpbzWYekseICjHgXuXnxlGOrppnbIcfyEiu+1iDIBmJWbn3ZVHbg==
+X-Received: by 2002:ac2:58e8:: with SMTP id v8mr2231704lfo.35.1623406544295;
+        Fri, 11 Jun 2021 03:15:44 -0700 (PDT)
+Received: from eriador.lan ([37.153.55.125])
+        by smtp.gmail.com with ESMTPSA id b28sm552097lfp.197.2021.06.11.03.15.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Jun 2021 03:15:43 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] PM: domains: use separate lockdep class for each genpd
+Date:   Fri, 11 Jun 2021 13:15:38 +0300
+Message-Id: <20210611101540.3379937-1-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-In-Reply-To: <20210512093752.243168-1-zhang.lyra@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/05/2021 11:37, Chunyan Zhang wrote:
-> From: Chunyan Zhang <chunyan.zhang@unisoc.com>
-> 
-> MODULE_DEVICE_TABLE is used to extract the device information out of the
-> driver and builds a table when being compiled. If using this macro,
-> kernel can find the driver if available when the device is plugged in,
-> and then loads that driver and initializes the device.
-> 
-> Signed-off-by: Chunyan Zhang <chunyan.zhang@unisoc.com>
-
-Applied, and added the Fixes tag:
-
-Fixes: 554fdbaf19b18 ("thermal: sprd: Add Spreadtrum thermal driver
-support")
-
-> ---
->  drivers/thermal/sprd_thermal.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-> index 3682edb2f466..fe06cccf14b3 100644
-> --- a/drivers/thermal/sprd_thermal.c
-> +++ b/drivers/thermal/sprd_thermal.c
-> @@ -532,6 +532,7 @@ static const struct of_device_id sprd_thermal_of_match[] = {
->  	{ .compatible = "sprd,ums512-thermal", .data = &ums512_data },
->  	{ },
->  };
-> +MODULE_DEVICE_TABLE(of, sprd_thermal_of_match);
->  
->  static const struct dev_pm_ops sprd_thermal_pm_ops = {
->  	SET_SYSTEM_SLEEP_PM_OPS(sprd_thm_suspend, sprd_thm_resume)
-> 
+It is not possible to always use mutex nesting when locking/unlocking
+genpds. See for example the trace in the patch#2, where genpd calls are
+broken with regulator calls (genpd enables regulator, regulator uses
+another genpd). This causes lockdep to print a false warning and stop
+reporting further warnings. Break this by introducing per-domain lock
+classes and use them to clearly track genpd locking sequences.
 
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
