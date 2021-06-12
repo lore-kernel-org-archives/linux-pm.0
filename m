@@ -2,95 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E709C48BCF
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 19:09:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B510C48BE8
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 20:53:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3DA716120E
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 19:09:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7363361186
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 20:53:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231431AbhFLTLJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 12 Jun 2021 15:11:09 -0400
-Received: from mail-wm1-f54.google.com ([209.85.128.54]:55888 "EHLO
-        mail-wm1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231311AbhFLTLJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jun 2021 15:11:09 -0400
-Received: by mail-wm1-f54.google.com with SMTP id g204so9781410wmf.5
-        for <linux-pm@vger.kernel.org>; Sat, 12 Jun 2021 12:08:55 -0700 (PDT)
+        id S231445AbhFLUz5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 12 Jun 2021 16:55:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54856 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229874AbhFLUzy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jun 2021 16:55:54 -0400
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDC55C061574
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jun 2021 13:53:54 -0700 (PDT)
+Received: by mail-ej1-x62f.google.com with SMTP id g20so9902851ejt.0
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jun 2021 13:53:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=BB8JUk0gwOcSxW/GKLMC0NWk2t05q2bfE76haF6J3Uo=;
-        b=o0usK3QAxuMZK/rVefuHHGWcinLsWk2ORSuWGqkbpvKNPirUZwHB0IX1vBVsGc1m2q
-         CXODO5OyslNMhb0byegXAdCtsQhI5sf43fRZe4bnHneuWFDsHUKR4ju/vvP3d4KuqNhq
-         WmUzU7I1Vq6e6r/OJP/kHXT3/GOMyHRDUpGs37RF2AhT+UzTfYv6yp2xm373zI9nSeHF
-         MJCgHJkwUnWg+JyfiwGAjyPG2H6Ac/XFERVX0vl6f2Jcn1H1jPxiVW5KOxX3mvpjKx3w
-         BirBvxX1YMVQPleRAlwNumjxpidN4lchJ68kDc2LZRihahAwdQ+Xaw4saFwbQmKBo9Mk
-         8Z3A==
+        d=snejp.pl; s=gmail;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=XiiHomSDQ1o4VUI3T8udjQjFfOxoZmojvalr/eLfj2o=;
+        b=HgVRp6IL+BYfu9aHLffjfvl5GNbB5ZX9YsR+62rCSA+crSI0+5oWYT9uOY4Q+A4OH3
+         s5ty40rJUCrFYkG+3eruX3N+b7SJoxZPDTkYGE1fmEIMc7QmVm56nuuBsg8BtPvFK6jJ
+         uYox0TgiXNq7uJUbSO6zJfV5iS0nHWwH8rLciSJ59IQRxyXlDwMao0jMWISHQe3dK0Qz
+         +i/WT8BvaCwUHFwZb1O/JjEqDmjx3gVKCwtDPqFCiWqv13tSeqLgr+uLIvyCBaejFAwf
+         dwRsfkm+Fce71k7lKbgxU/1KWOUFm9ZDHmvmrC2eKY3nl5uYu1vuvceZXhsIKGipG9oQ
+         l/4w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=BB8JUk0gwOcSxW/GKLMC0NWk2t05q2bfE76haF6J3Uo=;
-        b=tHmP8DIWe7fqWBUD4QNaZGfDwtIVdQIsmSkRJOVvEQNiiEWdTX6CHGRp9Y6P/OUqBj
-         aAAE+CY3Jr2ucwOKcefuGYLv/FocMfOR+mPMM/Tpd9vFncKT+OQVsyM/L5+IJhVQnDD/
-         6zmeBH4qAUyKVO7wmoH6K1/HypQ5kpzQxhs91Vn3QGg6Jtkqlqjdp+MAeeoNt7WttMCy
-         DM5GkXLBMYndTOaZlXc8TlKmiy7sQ6Mjw5FoBnHia99vv77lWlTidG3RIeKk1eRE2Sg7
-         gEjgrCdxwyMNJgPpYOals6wEJ/Lba6VdCgOjPpWpr4/+SgGP4IcIsYqMzw3gbOh+3Nx6
-         HFqg==
-X-Gm-Message-State: AOAM533a1/mGpBZNtVcY592RuUN4pqjOSY/ISHerwQEKO+cOtVodlMqC
-        A4J8d0lLkiEU8J20jUr+szb0WA==
-X-Google-Smtp-Source: ABdhPJz9Cv27r1lmZZb4uNwMHuG9pbRW72eCDdcMkHadZWJDxkgeHQdiuL6Zx6X5A5hk6iPmc4LKew==
-X-Received: by 2002:a7b:c110:: with SMTP id w16mr9449399wmi.4.1623524874956;
-        Sat, 12 Jun 2021 12:07:54 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:15bb:2e33:aa66:1b44? ([2a01:e34:ed2f:f020:15bb:2e33:aa66:1b44])
-        by smtp.googlemail.com with ESMTPSA id w23sm16170888wmi.0.2021.06.12.12.07.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 12 Jun 2021 12:07:54 -0700 (PDT)
-Subject: Re: [PATCH V4 1/3] dt-bindings: thermal: tsens: Add compatible string
- to TSENS binding for SC7280
-To:     Rajeshwari Ravindra Kamble <rkambl@codeaurora.org>,
-        amitk@kernel.org, thara.gopinath@linaro.org, agross@kernel.org,
-        bjorn.andersson@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=XiiHomSDQ1o4VUI3T8udjQjFfOxoZmojvalr/eLfj2o=;
+        b=FsGKPawj7bxxfV/OU856lM98RKPQIdsbOhsa6iYnUVkltAVz43T6NxXkk27NybIcgg
+         Q6y8prXD3/VG04cuPR1ofdvgaGXE7AIMzDSmrLWb5+sGMqOf/7GrnItrE1slmnEhfZ4E
+         HLl+gBfx5+HzC3Z7t+Pi5FeK57msr2bxKQ5Ao8aUqovPmePw6gyyJsRbSBbsL8gutB4x
+         SgmFXQ7UwG99yEuY9BRKI51mmSl2gcJb83/hQBH80WObaRIIQybdbIdX6A2Kw5PvSxWG
+         X3h17Cv3YD0IfqiyqnCiPSgWb93+AcTeZz6AVrBWo2SDibTxf0zIto4Ocj0mmRZ0gD/s
+         lyGg==
+X-Gm-Message-State: AOAM531CZAPixqr48zE4Rl5hbQrziX/KfQaxxnVQXPRDRriDsYoYLHB1
+        5JWo98YJKlY5yDmZR/30584nvg==
+X-Google-Smtp-Source: ABdhPJz0ryjoTQreGfAJzewZlYlepEh5I7//2yewTSPYlLViSpawJAIQC5Wm+lAhXNZaevQvsnggbQ==
+X-Received: by 2002:a17:906:ce4a:: with SMTP id se10mr9354594ejb.235.1623531233345;
+        Sat, 12 Jun 2021 13:53:53 -0700 (PDT)
+Received: from PackardBell (192038129059.mbb.telenor.dk. [192.38.129.59])
+        by smtp.googlemail.com with ESMTPSA id a2sm3574362ejp.1.2021.06.12.13.53.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 12 Jun 2021 13:53:52 -0700 (PDT)
+Received: from localhost (PackardBell [local])
+        by PackardBell (OpenSMTPD) with ESMTPA id 24c9afc8;
+        Sat, 12 Jun 2021 20:53:45 +0000 (UTC)
+From:   Bartosz Dudziak <bartosz.dudziak@snejp.pl>
+To:     Rob Herring <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        David Sterba <dsterba@suse.com>, Jens Axboe <axboe@kernel.dk>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        sanm@codeaurora.org, manafm@codeaurora.org
-References: <1620367641-23383-1-git-send-email-rkambl@codeaurora.org>
- <1620367641-23383-2-git-send-email-rkambl@codeaurora.org>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <9a8f0d40-5368-580b-b037-9d9637cc0861@linaro.org>
-Date:   Sat, 12 Jun 2021 21:07:52 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     Bartosz Dudziak <bartosz.dudziak@snejp.pl>,
+        Rob Herring <robh@kernel.org>
+Subject: [RESEND PATCH v2 1/2] dt-bindings: arm: msm: Add SAW2 for MSM8226
+Date:   Sat, 12 Jun 2021 22:53:34 +0200
+Message-Id: <20210612205335.9730-2-bartosz.dudziak@snejp.pl>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210612205335.9730-1-bartosz.dudziak@snejp.pl>
+References: <20210612205335.9730-1-bartosz.dudziak@snejp.pl>
 MIME-Version: 1.0
-In-Reply-To: <1620367641-23383-2-git-send-email-rkambl@codeaurora.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/05/2021 08:07, Rajeshwari Ravindra Kamble wrote:
-> Adding compatible string in TSENS dt-bindings for SC7280.
-> 
-> Signed-off-by: Rajeshwari Ravindra Kamble <rkambl@codeaurora.org>
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
+Add the dt-binding compatible in the SPM AVS Wrapper 2 (SAW2) for the
+MSM8226 SoC platform.
 
-Applied, thanks
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Bartosz Dudziak <bartosz.dudziak@snejp.pl>
+---
+ Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+index ae4afc6dcf..94d50a949b 100644
+--- a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+@@ -25,6 +25,7 @@ PROPERTIES
+ 			"qcom,saw2"
+ 		    A more specific value could be one of:
+ 			"qcom,apq8064-saw2-v1.1-cpu"
++			"qcom,msm8226-saw2-v2.1-cpu"
+ 			"qcom,msm8974-saw2-v2.1-cpu"
+ 			"qcom,apq8084-saw2-v2.1-cpu"
+ 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.25.1
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
