@@ -2,168 +2,203 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 453FBC48BE8
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 06:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC214C48BE5
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 19:09:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 192CD610F8
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 06:07:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B81AF61186
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Jun 2021 19:09:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229532AbhFLGJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 12 Jun 2021 02:09:42 -0400
-Received: from mga14.intel.com ([192.55.52.115]:48765 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229446AbhFLGJm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 12 Jun 2021 02:09:42 -0400
-IronPort-SDR: setgfYPhZZMxMV9AAQ5YgFTrzbMXzPRlqRBDQNGwjF6Rl9gJKxlx/nF2AdjwtUDkHMVlBpb8uf
- hGgaVbgRtyrw==
-X-IronPort-AV: E=McAfee;i="6200,9189,10012"; a="205464033"
-X-IronPort-AV: E=Sophos;i="5.83,268,1616482800"; 
-   d="scan'208";a="205464033"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jun 2021 23:07:42 -0700
-IronPort-SDR: pSN8dmRFGJiKQX5eqDiiXWw+tl8m+YMMU5uzqT3970zUdu/I5gWJ9D3yiTY2RXyWLNzvWcXGVU
- XKvK2MwUNO/g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.83,268,1616482800"; 
-   d="scan'208";a="449329385"
-Received: from lkp-server02.sh.intel.com (HELO 3cb98b298c7e) ([10.239.97.151])
-  by orsmga008.jf.intel.com with ESMTP; 11 Jun 2021 23:07:41 -0700
-Received: from kbuild by 3cb98b298c7e with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1lrwo1-0000qP-Bw; Sat, 12 Jun 2021 06:07:41 +0000
-Date:   Sat, 12 Jun 2021 14:07:16 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- 2be4aa8aed4de696f2741f8aef751b0da3292184
-Message-ID: <60c44f14.t3H+iJZK/X31Hjjq%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S231389AbhFLTLB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 12 Jun 2021 15:11:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60606 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231301AbhFLTLA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jun 2021 15:11:00 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05308C061767
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jun 2021 12:09:00 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id y7so9621431wrh.7
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jun 2021 12:09:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=kuRUfV+q7qAHGhHA5OLkse4agRm/XQx10cHb9gtUZW8=;
+        b=s06PhCZ3835jxxHTzKKRAtggi+TT9vGycYDn2PwEvmdswflLsTbcKhHiQ3SgfeuhH6
+         UTln/RH6xWVbaX5RJOFqC82Q/B3f3aYTC1orv+iBF8A/jjX6lcbV8+YDnG6WZw88QncR
+         6/DPIpmwfURHFT8Z70F2lt3ihOMkw2zQLWf9Janx0PZqnzaVW797rMWZNae5ABVdTTR4
+         6wfj2/D50XUX5qidQbly9Bx5wKCartZD2mrOLbdWRXNB7AGZEe7R3pefGju+feqgl3M5
+         XLJ2YJ+uErX1tbov1ypjLHcEozMNCKlScPDMkYZp5Mbe9sb4N52H+XXgm1KC1BWqVtrd
+         Sx0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=kuRUfV+q7qAHGhHA5OLkse4agRm/XQx10cHb9gtUZW8=;
+        b=G0U0eXvhkBKQrsQsURopqrRttGDN2uG6OZxxTrXPG5Qg6uDnZnyqoyRK7pUN9RtWt0
+         qbYDlW4Xt/htAqEmYMnHiAEpdyjX2MUK9VgwDq6duTu5GrMyjYBo9zDPUFOu0Mr7wtzt
+         MtY265NO5a4jpZGxzKVyfYrLdIZshh5mhwcGfvILeWTXsjTYo1zSyRzpGQcA836RNCJS
+         VYuHKoO7zdcWr3iFA/6vt0UtnKVeoR83Sh2dyBUlmiV1ubPuz147UXQySYoqxx+VIExr
+         ihjOzcLIy7MyQspwftL+YI3O7W2Sb0Hy13OLletMrwIdQhJcvUPpZZWUg6lGfFwZDUsn
+         9nbA==
+X-Gm-Message-State: AOAM5301qXPyko30QhUnsRyolU6Qgrqx+50IunF0CrbHfVSQ5IcBQalg
+        QqZVLgxsKLTnBtwLggY9KDBr0Wjysqtrv5gx
+X-Google-Smtp-Source: ABdhPJyOO34sWQdESQfjFKmlyoRdLrIAAIE/NVc0QzHnaUCTC12w4DGk0b3HOz9ZD+OqNoC72INAGA==
+X-Received: by 2002:a5d:5752:: with SMTP id q18mr10390688wrw.419.1623524939237;
+        Sat, 12 Jun 2021 12:08:59 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:15bb:2e33:aa66:1b44? ([2a01:e34:ed2f:f020:15bb:2e33:aa66:1b44])
+        by smtp.googlemail.com with ESMTPSA id v15sm10812484wrw.24.2021.06.12.12.08.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 12 Jun 2021 12:08:58 -0700 (PDT)
+Subject: Re: [PATCH v2 08/40] docs: driver-api: thermal: Use ASCII subset
+ instead of UTF-8 alternate symbols
+To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Jonathan Corbet <corbet@lwn.net>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <cover.1620823573.git.mchehab+huawei@kernel.org>
+ <6866f10fbfbe599448fafa0ca35f1b5b262ce60f.1620823573.git.mchehab+huawei@kernel.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <059fe414-8bb0-a0b4-9fab-cc7c8fc73eaa@linaro.org>
+Date:   Sat, 12 Jun 2021 21:08:57 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <6866f10fbfbe599448fafa0ca35f1b5b262ce60f.1620823573.git.mchehab+huawei@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 2be4aa8aed4de696f2741f8aef751b0da3292184  Merge branch 'pm-core' into bleeding-edge
+On 12/05/2021 14:50, Mauro Carvalho Chehab wrote:
+> The conversion tools used during DocBook/LaTeX/Markdown->ReST conversion
+> and some automatic rules which exists on certain text editors like
+> LibreOffice turned ASCII characters into some UTF-8 alternatives that
+> are better displayed on html and PDF.
+> 
+> While it is OK to use UTF-8 characters in Linux, it is better to
+> use the ASCII subset instead of using an UTF-8 equivalent character
+> as it makes life easier for tools like grep, and are easier to edit
+> with the some commonly used text/source code editors.
+> 
+> Also, Sphinx already do such conversion automatically outside literal blocks:
+>    https://docutils.sourceforge.io/docs/user/smartquotes.html
+> 
+> So, replace the occurences of the following UTF-8 characters:
+> 
+> 	- U+2018 ('‘'): LEFT SINGLE QUOTATION MARK
+> 	- U+2019 ('’'): RIGHT SINGLE QUOTATION MARK
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 
-elapsed time: 727m
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-configs tested: 97
-configs skipped: 2
+> ---
+>  .../driver-api/thermal/cpu-idle-cooling.rst        | 14 +++++++-------
+>  .../driver-api/thermal/intel_powerclamp.rst        |  6 +++---
+>  .../thermal/x86_pkg_temperature_thermal.rst        |  2 +-
+>  3 files changed, 11 insertions(+), 11 deletions(-)
+> 
+> diff --git a/Documentation/driver-api/thermal/cpu-idle-cooling.rst b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+> index c2a7ca676853..60934a518560 100644
+> --- a/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+> +++ b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+> @@ -49,7 +49,7 @@ belong to the same cluster, with a duration greater than the cluster
+>  idle state target residency, we lead to dropping the static and the
+>  dynamic leakage for this period (modulo the energy needed to enter
+>  this state). So the sustainable power with idle cycles has a linear
+> -relation with the OPP’s sustainable power and can be computed with a
+> +relation with the OPP's sustainable power and can be computed with a
+>  coefficient similar to::
+>  
+>  	    Power(IdleCycle) = Coef x Power(OPP)
+> @@ -134,7 +134,7 @@ The idle injection duration value must comply with the constraints:
+>    user experience, reactivity vs performance trade off we want. This
+>    value should be specified.
+>  
+> -- It is greater than the idle state’s target residency we want to go
+> +- It is greater than the idle state's target residency we want to go
+>    for thermal mitigation, otherwise we end up consuming more energy.
+>  
+>  Power considerations
+> @@ -146,11 +146,11 @@ power for a specific temperature but at this time we consume::
+>   Power = Capacitance x Voltage^2 x Frequency x Utilisation
+>  
+>  ... which is more than the sustainable power (or there is something
+> -wrong in the system setup). The ‘Capacitance’ and ‘Utilisation’ are a
+> -fixed value, ‘Voltage’ and the ‘Frequency’ are fixed artificially
+> -because we don’t want to change the OPP. We can group the
+> -‘Capacitance’ and the ‘Utilisation’ into a single term which is the
+> -‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have::
+> +wrong in the system setup). The 'Capacitance' and 'Utilisation' are a
+> +fixed value, 'Voltage' and the 'Frequency' are fixed artificially
+> +because we don't want to change the OPP. We can group the
+> +'Capacitance' and the 'Utilisation' into a single term which is the
+> +'Dynamic Power Coefficient (Cdyn)' Simplifying the above, we have::
+>  
+>   Pdyn = Cdyn x Voltage^2 x Frequency
+>  
+> diff --git a/Documentation/driver-api/thermal/intel_powerclamp.rst b/Documentation/driver-api/thermal/intel_powerclamp.rst
+> index 3f6dfb0b3ea6..d349c1b64281 100644
+> --- a/Documentation/driver-api/thermal/intel_powerclamp.rst
+> +++ b/Documentation/driver-api/thermal/intel_powerclamp.rst
+> @@ -29,7 +29,7 @@ By:
+>  INTRODUCTION
+>  ============
+>  
+> -Consider the situation where a system’s power consumption must be
+> +Consider the situation where a system's power consumption must be
+>  reduced at runtime, due to power budget, thermal constraint, or noise
+>  level, and where active cooling is not preferred. Software managed
+>  passive power reduction must be performed to prevent the hardware
+> @@ -39,7 +39,7 @@ Currently, P-states, T-states (clock modulation), and CPU offlining
+>  are used for CPU throttling.
+>  
+>  On Intel CPUs, C-states provide effective power reduction, but so far
+> -they’re only used opportunistically, based on workload. With the
+> +they're only used opportunistically, based on workload. With the
+>  development of intel_powerclamp driver, the method of synchronizing
+>  idle injection across all online CPU threads was introduced. The goal
+>  is to achieve forced and controllable C-state residency.
+> @@ -264,7 +264,7 @@ CPUs).
+>  Usage and Interfaces
+>  ====================
+>  The powerclamp driver is registered to the generic thermal layer as a
+> -cooling device. Currently, it’s not bound to any thermal zones::
+> +cooling device. Currently, it's not bound to any thermal zones::
+>  
+>    jacob@chromoly:/sys/class/thermal/cooling_device14$ grep . *
+>    cur_state:0
+> diff --git a/Documentation/driver-api/thermal/x86_pkg_temperature_thermal.rst b/Documentation/driver-api/thermal/x86_pkg_temperature_thermal.rst
+> index 2ac42ccd236f..5b95af96e40f 100644
+> --- a/Documentation/driver-api/thermal/x86_pkg_temperature_thermal.rst
+> +++ b/Documentation/driver-api/thermal/x86_pkg_temperature_thermal.rst
+> @@ -13,7 +13,7 @@ Authors: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>  Reference
+>  ---------
+>  
+> -Intel® 64 and IA-32 Architectures Software Developer’s Manual (Jan, 2013):
+> +Intel® 64 and IA-32 Architectures Software Developer's Manual (Jan, 2013):
+>  Chapter 14.6: PACKAGE LEVEL THERMAL MANAGEMENT
+>  
+>  Description
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          rsk7264_defconfig
-mips                         bigsur_defconfig
-sh                              ul2_defconfig
-arm                          pxa910_defconfig
-sh                          lboxre2_defconfig
-powerpc                     sequoia_defconfig
-powerpc                      acadia_defconfig
-arm                      jornada720_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                malta_qemu_32r6_defconfig
-mips                      loongson3_defconfig
-powerpc                     kmeter1_defconfig
-mips                           ci20_defconfig
-arc                          axs103_defconfig
-arm                  colibri_pxa300_defconfig
-m68k                       m5249evb_defconfig
-powerpc                          g5_defconfig
-mips                           rs90_defconfig
-arm                            mps2_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20210611
-i386                 randconfig-a006-20210611
-i386                 randconfig-a004-20210611
-i386                 randconfig-a001-20210611
-i386                 randconfig-a005-20210611
-i386                 randconfig-a003-20210611
-x86_64               randconfig-a002-20210611
-x86_64               randconfig-a001-20210611
-x86_64               randconfig-a004-20210611
-x86_64               randconfig-a003-20210611
-x86_64               randconfig-a006-20210611
-x86_64               randconfig-a005-20210611
-i386                 randconfig-a015-20210611
-i386                 randconfig-a013-20210611
-i386                 randconfig-a016-20210611
-i386                 randconfig-a014-20210611
-i386                 randconfig-a012-20210611
-i386                 randconfig-a011-20210611
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-clang tested configs:
-x86_64               randconfig-a015-20210611
-x86_64               randconfig-a011-20210611
-x86_64               randconfig-a012-20210611
-x86_64               randconfig-a014-20210611
-x86_64               randconfig-a016-20210611
-x86_64               randconfig-a013-20210611
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
