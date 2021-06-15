@@ -5,74 +5,73 @@ X-Spam-Level:
 X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07FFBC2B9F4
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Jun 2021 02:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F21FEC2B9F4
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Jun 2021 02:46:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CE9F5613F9
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Jun 2021 02:30:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D080B61405
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Jun 2021 02:46:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229728AbhFOCcZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Jun 2021 22:32:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45038 "EHLO
+        id S229829AbhFOCs1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Jun 2021 22:48:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229689AbhFOCcZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jun 2021 22:32:25 -0400
-Received: from mail-qk1-x732.google.com (mail-qk1-x732.google.com [IPv6:2607:f8b0:4864:20::732])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F97BC061574
-        for <linux-pm@vger.kernel.org>; Mon, 14 Jun 2021 19:30:21 -0700 (PDT)
-Received: by mail-qk1-x732.google.com with SMTP id 5so2542892qkc.8
-        for <linux-pm@vger.kernel.org>; Mon, 14 Jun 2021 19:30:21 -0700 (PDT)
+        with ESMTP id S229609AbhFOCs1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jun 2021 22:48:27 -0400
+Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A624FC061574
+        for <linux-pm@vger.kernel.org>; Mon, 14 Jun 2021 19:46:22 -0700 (PDT)
+Received: by mail-qt1-x829.google.com with SMTP id u20so10198984qtx.1
+        for <linux-pm@vger.kernel.org>; Mon, 14 Jun 2021 19:46:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=O53gEWfH2MVe6PVxXbAaaJkGomJpiUiI0nzOZi1VeT4=;
-        b=ari/JPtxcjD1356HIyGGATsHHtSWUL83yblzZ1qQXrzE9aKC4qdmVYBcEAduXsg65w
-         iH3R3XRzVzGaaA8JHGP913q/bTcysYsnPfgic4E5JxnEJiP2gEi5KM5SaUsYp4pO3aWC
-         UCM6bRQbie3/GERjzCywogJOsYWAjY2PkZheMDuKZ1cftUfXjLtiDqJUv4N0sbb8h/EE
-         m/nhCAdnAjMPclKKExB6pKf8uFPsfyEKw/tvDWmBA0mLEy9CkrZsJui/7RaXLYH0h25Q
-         YzOSd+UF2+LRHmqa8Vqg3Yx589H2gTNpbeqryUiQtnN/RtsNzdecVPRyy8LUA0bdpFJo
-         M/jA==
+        bh=m/Xr0ntJtqqDjvu+zZNOMtwyB3l7sSB1OV4sCJY167c=;
+        b=OAa0PCC3z3isQvGUoDtK5ZnCONmWfWAjL9aspzgoX3J4G5s5Dr/9wFdrHP0hEj90An
+         S9HJL3S7VVBXzX4R9wva6jQL4138lQ7KCMPXlCFDnN7PbOMn1xAQhLIcMd5oxv1LuWSZ
+         Ztvc7ORulbssjnhp0k9tMrdwqeZ6/GMVrslWhakMYr57ZVFm/VOwebMvuvM0OySXLml5
+         5Ap4023GSalqe4A6rzQdTOaPkHCWSn6bY8Tuusob5ntiw+7uBDKYNFpXd65xsaCTqhnW
+         JYwsr5u5/FbNM2Yf0wo1LB+cwxQgN+JnA0OXVv1PRoWXcAYSL59H9Ps2tmqUVC1iLYiv
+         Paaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=O53gEWfH2MVe6PVxXbAaaJkGomJpiUiI0nzOZi1VeT4=;
-        b=UmGyIByRuuiTRe+Z9x/zD6rO41xLT7PTfGya43H/aspWr6QpMmLj+XWy1M6bJunLht
-         oXBj4zhkraWNZyNa8HbLOYaMa/vrLJTbQ1Qc2+3aOj/bLk+7ZRAGGzxyO5zC+LvAStoa
-         ZHAK2JUfXLqd8QNn/6vseZeC1OIhl0zRBsXj7UtQhq81ERIrdXf/vozBAX5PbdIf8xxc
-         7T3CmKD5Pb4qcP6Vr3mrBFlVMMPB9KRov/Gvbtvd4Rkui7oP1UIKA1jrAHYijGkhEEXn
-         FX35njKqU/wsFQ+k/w2ZKqkmT9DaHpB4E1Q0219FOxmhi2C0O25xMLFSXeTKAY22pKM3
-         zulw==
-X-Gm-Message-State: AOAM530p5qlBWjQHCbPcuzm+Pb7IWw2KQ0Xd6/BkJDe5PR8rXccdryJ1
-        eVrXIaYrXhVT8HeHM4cNxnk72Mo5ffzeCA==
-X-Google-Smtp-Source: ABdhPJykLVHgEcNXRGmsiw+Gghaj3UFAO/+ACWLcRb5LGGkrwYT07tHo8yVXU4dF7o02rriG13mIbg==
-X-Received: by 2002:ac8:41d3:: with SMTP id o19mr19449923qtm.90.1623721081609;
-        Mon, 14 Jun 2021 18:38:01 -0700 (PDT)
+        bh=m/Xr0ntJtqqDjvu+zZNOMtwyB3l7sSB1OV4sCJY167c=;
+        b=YElL1Ib1x1ReGZzBnmLnxXT/7a7ecKDnxxHszSMEZuYoJayme+y713+GFMQVS9vVSo
+         SLefVDIREoC5S+nOZKlkt2V4AvZ8exBz4Uo2WW4eHhRimiiMzPRzYiCLEdkfyjmzzG71
+         aI7jxsYgEBKzoL9fyfCUumJpl8UiLxzC1HNbqfDdEsTB5N6V/WqY+B/zNNl6bBhSUxqg
+         wxv/ji7fGi/EENQ0FRt0Yv9ZdGpmkxqh/pkJU/f+l+zZHxkWXNyaXonAsVN/m6PD/I4s
+         NVuuKzX4zJ7KrllpT3PMj0B/0deZ8bm2t1JBqTHhZ/WAWP8DASLAmj3sCT2+R1i2aWga
+         TTew==
+X-Gm-Message-State: AOAM5334Zdrwh2aHM+VTYjvNMF+vG9RfLQRe5IOUNK2JmWRjhNjUcSF3
+        x1lc4ikyI3GOM9kGsmJvLlRiBmiUxaHNng==
+X-Google-Smtp-Source: ABdhPJzVab7BcxlLPO7f4Nw4YbVzcIi/WvF3uVoaYKQDEK2uSmuHKjqFyjM1ujbhrPTSOlKlnKhBUg==
+X-Received: by 2002:a37:6609:: with SMTP id a9mr19546417qkc.459.1623721090786;
+        Mon, 14 Jun 2021 18:38:10 -0700 (PDT)
 Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.gmail.com with ESMTPSA id y15sm708630qto.90.2021.06.14.18.38.00
+        by smtp.gmail.com with ESMTPSA id l6sm1462064qtk.37.2021.06.14.18.38.10
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Jun 2021 18:38:01 -0700 (PDT)
+        Mon, 14 Jun 2021 18:38:10 -0700 (PDT)
 Subject: Re: [PATCH 2/5] thermal: qcom: Add support for LMh driver
-To:     Randy Dunlap <rdunlap@infradead.org>, agross@kernel.org,
-        bjorn.andersson@linaro.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
-        rjw@rjwysocki.net, robh+dt@kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     agross@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        viresh.kumar@linaro.org, rjw@rjwysocki.net, robh+dt@kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 References: <20210608222926.2707768-1-thara.gopinath@linaro.org>
  <20210608222926.2707768-3-thara.gopinath@linaro.org>
- <531fae77-f037-5e4a-be1e-ce21618fbd9d@infradead.org>
+ <YMfBtSap7fR3rdku@builder.lan>
 From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <7917d02c-034b-6bd9-0f65-f4c5009a313f@linaro.org>
-Date:   Mon, 14 Jun 2021 21:37:59 -0400
+Message-ID: <4996de55-daa9-18a4-3c03-cf194d85500e@linaro.org>
+Date:   Mon, 14 Jun 2021 21:38:09 -0400
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <531fae77-f037-5e4a-be1e-ce21618fbd9d@infradead.org>
+In-Reply-To: <YMfBtSap7fR3rdku@builder.lan>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -80,14 +79,14 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Randy,
+Hi Bjorn,
 
-Thanks for the review. I somehow did not see your review earlier. I 
-noticed it today morning when Bjorn replied to this patch. Apologies for 
-the delay
+Thanks for the review
 
-On 6/8/21 10:25 PM, Randy Dunlap wrote:
-> On 6/8/21 3:29 PM, Thara Gopinath wrote:
+
+On 6/14/21 4:53 PM, Bjorn Andersson wrote:
+> On Tue 08 Jun 17:29 CDT 2021, Thara Gopinath wrote:
+> 
 >> Driver enabling various pieces of Limits Management Hardware(LMh) for cpu
 >> cluster0 and cpu cluster1 namely kick starting monitoring of temperature,
 >> current, battery current violations, enabling reliability algorithm and
@@ -127,23 +126,18 @@ On 6/8/21 10:25 PM, Randy Dunlap wrote:
 >> +	help
 >> +	  This enables initialization of Qualcomm limits management
 >> +	  hardware(LMh). LMh allows for h/w enforced mitigation for cpus based on
-> 
-> 	                                hardware-enforced           CPUs
-> 
 >> +	  input from temperature and current sensors.  On many newer Qualcomm SoCs
 >> +	  LMH is configure in the firmware and this feature need not be enabled.
-> 
-> 	  LMh
-> 
 >> +	  However, on certain SoCs like sdm845 LMH has to be configured from HLOS.
-> 
-> 	                                       LMh
-> 
-> What is HLOS?
-
-High Level Operating System. But I will change it to Linux kernel.
-> 
-> 
+>> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+>> index 252ea7d9da0b..0fa2512042e7 100644
+>> --- a/drivers/thermal/qcom/Makefile
+>> +++ b/drivers/thermal/qcom/Makefile
+>> @@ -5,3 +5,4 @@ qcom_tsens-y			+= tsens.o tsens-v2.o tsens-v1.o tsens-v0_1.o \
+>>   				   tsens-8960.o
+>>   obj-$(CONFIG_QCOM_SPMI_ADC_TM5)	+= qcom-spmi-adc-tm5.o
+>>   obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+>> +obj-$(CONFIG_QCOM_LMH)		+= lmh.o
 >> diff --git a/drivers/thermal/qcom/lmh.c b/drivers/thermal/qcom/lmh.c
 >> new file mode 100644
 >> index 000000000000..8741a36cb674
@@ -155,9 +149,128 @@ High Level Operating System. But I will change it to Linux kernel.
 >> +/*
 >> + * Copyright (C) 2021, Linaro Limited. All rights reserved.
 >> + */
+>> +#include <linux/module.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/irqdomain.h>
+>> +#include <linux/err.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/qcom_scm.h>
+>> +
+>> +#define LMH_NODE_DCVS			0x44435653
+>> +#define LMH_CLUSTER0_NODE_ID		0x6370302D
+>> +#define LMH_CLUSTER1_NODE_ID		0x6370312D
+>> +
+>> +#define LMH_SUB_FN_THERMAL		0x54484D4C
+>> +#define LMH_SUB_FN_CRNT			0x43524E54
+>> +#define LMH_SUB_FN_REL			0x52454C00
+>> +#define LMH_SUB_FN_BCL			0x42434C00
+>> +
+>> +#define LMH_ALGO_MODE_ENABLE		0x454E424C
+>> +#define LMH_TH_HI_THRESHOLD		0x48494748
+>> +#define LMH_TH_LOW_THRESHOLD		0x4C4F5700
+>> +#define LMH_TH_ARM_THRESHOLD		0x41524D00
+>> +
+>> +#define LMH_TH_HI_TEMP			95000
+>> +#define LMH_TH_LOW_TEMP			94500
+>> +#define LMH_TH_ARM_TEMP			65000
+>> +
+>> +#define LMH_REG_DCVS_INTR_CLR		0x8
+>> +
+>> +struct lmh_hw_data {
+>> +	void __iomem *base;
+>> +	struct irq_domain *domain;
+>> +	int irq;
+>> +	u32 payload[5];
+>> +	u32 payload_size;
+>> +	u32 cpu_id;
+>> +};
+>> +
+>> +static void update_payload(struct lmh_hw_data *lmh_data, u32 fn, u32 reg, u32 val)
 > 
-> [snip]
+> Please pass fn, reg and val in the scm function call instead and stuff
+> the payload array in the scm driver instead.
+
+Sure . I will redo this part.
+
 > 
+>> +{
+>> +	lmh_data->payload[0] = fn;
+>> +	lmh_data->payload[1] = 0;
+>> +	lmh_data->payload[2] = reg;
+>> +	lmh_data->payload[3] = 1;
+>> +	lmh_data->payload[4] = val;
+>> +}
+>> +
+>> +static irqreturn_t lmh_handle_irq(int hw_irq, void *data)
+>> +{
+>> +	struct lmh_hw_data *lmh_data = data;
+>> +	int irq = irq_find_mapping(lmh_data->domain, 0);
+>> +
+>> +	/*
+>> +	 * Disable interrupt and call the cpufreq driver to handle the interrupt
+>> +	 * cpufreq will enable the interrupt once finished processing.
+>> +	 */
+>> +	disable_irq_nosync(lmh_data->irq);
+> 
+> The contract between this driver's disabling of the IRQ and the
+> cpufreq-hw driver's enabling it when we're done polling does worry me.
+> 
+> In the case of EPSS, don't we disable the interrupt during the polling
+> there as well? If that's the case wouldn't it be better to implement
+> irq_chip->irq_disable and have the cpufreq-hw driver do the disable in
+> both cases?
+
+Yes. You are right. In case of EPSS, the cpufreq-hw will have to disable 
+the interrupt. I did think of the approach you suggested here. My only 
+issue is that we will dispatch the interrupt to cpufreq-hw without it 
+disabling it and hence the interrupt could fire again, right ?
+
+
+> 
+>> +	if (irq)
+>> +		generic_handle_irq(irq);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static void lmh_enable_interrupt(struct irq_data *d)
+>> +{
+>> +	struct lmh_hw_data *lmh_data = irq_data_get_irq_chip_data(d);
+>> +
+>> +	/* Clear the existing interrupt */
+>> +	writel_relaxed(0xFF, lmh_data->base + LMH_REG_DCVS_INTR_CLR);
+> 
+> Please avoid using _relaxed versions of writel, unless there's a strong
+> reason and please lowercase the hex digits.
+
+Sure.
+
+> 
+>> +	enable_irq(lmh_data->irq);
+>> +}
+>> +
+>> +static struct irq_chip lmh_irq_chip = {
+>> +	.name           = "lmh",
+>> +	.irq_enable	= lmh_enable_interrupt,
+>> +};
+>> +
+>> +static int lmh_irq_map(struct irq_domain *d, unsigned int irq, irq_hw_number_t hw)
+>> +{
+>> +	struct lmh_hw_data *lmh_data = d->host_data;
+>> +
+>> +	irq_set_chip_and_handler(irq, &lmh_irq_chip, handle_simple_irq);
+>> +	irq_set_chip_data(irq, lmh_data);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct irq_domain_ops lmh_irq_ops = {
+>> +	.map = lmh_irq_map,
+>> +	.xlate = irq_domain_xlate_onecell,
+>> +};
+>> +
 >> +static int lmh_probe(struct platform_device *pdev)
 >> +{
 >> +	struct device *dev;
@@ -194,12 +307,6 @@ High Level Operating System. But I will change it to Linux kernel.
 >> +		node_id = LMH_CLUSTER1_NODE_ID;
 >> +	} else {
 >> +		dev_err(dev, "Wrong cpu id associated with lmh node\n");
-> 
-> 		                    CPU                    LMh
-
-will fix it. Also will fix all the typos you have caught below.
-
-> 
 >> +		return -EINVAL;
 >> +	}
 >> +
@@ -244,15 +351,6 @@ will fix it. Also will fix all the typos you have caught below.
 >> +				 LMH_NODE_DCVS, node_id, 0);
 >> +	if (ret) {
 >> +		dev_err(dev, "Error %d enabling BCL subfunction\n", ret);
-> 
-> What is BCL?
-
-Battery Current Limits
-
--- 
-Warm Regards
-Thara
-> 
 >> +		return ret;
 >> +	}
 >> +
@@ -268,9 +366,6 @@ Thara
 >> +				 LMH_NODE_DCVS, node_id, 0);
 >> +	if (ret) {
 >> +		dev_err(dev, "Error setting thermal ARM thershold%d\n", ret);
-> 
-> 		                                        threshold
-> 
 >> +		return ret;
 >> +	}
 >> +
@@ -279,9 +374,6 @@ Thara
 >> +				 LMH_NODE_DCVS, node_id, 0);
 >> +	if (ret) {
 >> +		dev_err(dev, "Error setting thermal HI thershold%d\n", ret);
-> 
-> 		                                       threshold
-> 
 >> +		return ret;
 >> +	}
 >> +	update_payload(lmh_data, LMH_SUB_FN_THERMAL, LMH_TH_LOW_THRESHOLD, LMH_TH_LOW_TEMP);
@@ -289,9 +381,6 @@ Thara
 >> +				 LMH_NODE_DCVS, node_id, 0);
 >> +	if (ret) {
 >> +		dev_err(dev, "Error setting thermal ARM thershold%d\n", ret);
-> 
-> 		                                        threshold
-> 
 >> +		return ret;
 >> +	}
 >> +
@@ -315,8 +404,33 @@ Thara
 >> +
 >> +static const struct of_device_id lmh_table[] = {
 >> +	{ .compatible = "qcom,msm-hw-limits", },
+> 
+> Don't we need platform specific compatibles? Perhaps
+> "qcom,<platform>-lmh"?
+
+Yes considering that is the norm, I will follow it.
+
+> 
+> If we're going with a generic compatible I think that should be done in
+> addition to a platform-specific one (and qcom,lmh should be sufficien >
 >> +	{},
+> 
+> Please omit the comma here.
+
+Ok.
+
+> 
 >> +};
+> 
+> Driver is tristate, so you need a MODULE_DEVICE_TABLE(of, lmh_table);
+> here, to make sure the module is loaded automatically based on the
+> compatible strings in DT.
+
+Right. I will fix it .
+> 
+> Regards,
+> Bjorn
+> 
 >> +
 >> +static struct platform_driver lmh_driver = {
 >> +	.probe = lmh_probe,
@@ -329,11 +443,10 @@ Thara
 >> +
 >> +MODULE_LICENSE("GPL v2");
 >> +MODULE_DESCRIPTION("QCOM LMH driver");
-> 
->                              LMh
-> 
-> 
-> thanks.
-> 
+>> -- 
+>> 2.25.1
+>>
 
-
+-- 
+Warm Regards
+Thara (She/Her/Hers)
