@@ -2,106 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CD4DC48BE8
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Jun 2021 19:05:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB562C48BE8
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Jun 2021 19:07:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8327661245
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Jun 2021 19:05:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA7EE610CA
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Jun 2021 19:07:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232297AbhFPTHm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Jun 2021 15:07:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59104 "EHLO
+        id S232270AbhFPTJH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Jun 2021 15:09:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232283AbhFPTHk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jun 2021 15:07:40 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1758FC0617A6;
-        Wed, 16 Jun 2021 12:05:34 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id p17so6028379lfc.6;
-        Wed, 16 Jun 2021 12:05:34 -0700 (PDT)
+        with ESMTP id S229722AbhFPTJH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jun 2021 15:09:07 -0400
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70E2BC06175F
+        for <linux-pm@vger.kernel.org>; Wed, 16 Jun 2021 12:07:00 -0700 (PDT)
+Received: by mail-wr1-x430.google.com with SMTP id r9so3829078wrz.10
+        for <linux-pm@vger.kernel.org>; Wed, 16 Jun 2021 12:07:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=uG0wF9x5J31B5QovgpxzHE3VxGkFw0gZRlBKzlTkO48=;
-        b=bGThFrF/rfr3lNbx8YFa4yk++i0xik8IYr4JabH71d7z+nyjYb3EnbjPsvI9snr5MM
-         DDKoU70OwcetVZxmdUUVE9GRYeLhGmBtlH02svuBsQ3Pt6Kou5gwXUb7WMPNTu/kG0u2
-         Xvkh3zRKTYNS/9OsSmh4KoMopecPTRQe4LG1cSzy3iiHPFrj6g/gRFR3swzus09vDeBz
-         txhhHPAZFGPpCHw4Fq6t5u+5TlqQ5tbOfjjPQgc5LvgBLbu7uCJ7WBedhIpuP/vMa0GL
-         +fsxoexLvJ24f78G+CQeYMYaEikN0aOSJHwAv6wgzBFGiPEJpmWsDdhJhIniw4xHZFdX
-         14mA==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=ux1IzFszJ4GlRe8cOiKiQDcd1b4k328A2GnLxqyXZTc=;
+        b=u11mZiHDrXWDYEuQUIFgr5frWWMBnYydtsUfbt642qNvbXgC43KeK6gIVx5SheJWRS
+         clhSWwMMnJhV+nUkBtiOPpkkwvYE3gkQmkSCZ9z85aKMdopywH/AGZrgWRSg7AD/P2hE
+         Xqyl6661JW41qWHE/F3rrn/VeunyGdjnSqva4g1MfZlKPS1Kr4utEE0+7zAyXACcpH+U
+         tTUeBE6Z7uVAghfdi2B9ngDrP5Re21wM7/ueDnlWaQ8QpfFFWZaFu4PFiHEqXbVTK8KB
+         GmmRouK6IqLtjafVJiB5Kc4G2zTby26f3M6XggH9vvBhj+WiKmMVQiJSOtXEGGhFgmgz
+         ZgRw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=uG0wF9x5J31B5QovgpxzHE3VxGkFw0gZRlBKzlTkO48=;
-        b=b0MalmAt2XZlsKXopCKGRH/kiUOaBd4owgKlEj/XmZl8l8+i6VJ0GXeGW8zGplBDtI
-         4dQWefcyVSjAeKqaDOW/0kj/5t7YlUnzFmGAuxuEqMmmBA/Rir58T18TgN9rR1f+wcIa
-         6WWB0HJ+d+/34MzTfxPgyHvoG1bZZlQJTYtWJvW9tazQyojZEGlEZrS5YGVB1MKl0wiP
-         bp7dZlUhT3zOmOTJxjBvnRZytF4qlANH0MggYziefPiV6FOi5vixGmbuJfm0ISS5pWjM
-         i3XvG6vqjIckmaX/qHU+5VZ/AMBoWcgL+zF2pXwA3bRDussVso/lpiq1RNLX+62/xg2e
-         R1UQ==
-X-Gm-Message-State: AOAM530Lg0pNeGfMmEmGttYTQYltnBC4P38+4Ev5M+7VmV2ZhHMA5Nw0
-        BU16YVsciF/pELfopIicGKc=
-X-Google-Smtp-Source: ABdhPJypYSOUT59FUV6/4CyE34l4ekEnDqwaMiZuHr0/U9lB0u4GSZ/JlZSGevGXxK3Rr3uAbaL6Hg==
-X-Received: by 2002:ac2:43b9:: with SMTP id t25mr862223lfl.253.1623870332500;
-        Wed, 16 Jun 2021 12:05:32 -0700 (PDT)
-Received: from localhost.localdomain (94-29-29-31.dynamic.spd-mgts.ru. [94.29.29.31])
-        by smtp.gmail.com with ESMTPSA id e20sm365951ljk.67.2021.06.16.12.05.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Jun 2021 12:05:32 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=ux1IzFszJ4GlRe8cOiKiQDcd1b4k328A2GnLxqyXZTc=;
+        b=ApR/JFyRvxGesxrqs0z7o3TL6gtDw4gwj4fV2Ei2dRLD8EaBc/y1DYyKMdJ9Axv1H8
+         SS3IBYrytIIFveCCQqrBzBGsV2ZI1TO1N3C5mLiEYLQ8R2BTTTBIDjqYeZbw3U2IJSWD
+         NtHA22iEYSohafv+v2x+BSIgLhSG7bChb73/QIB2uPL3qt/m4PSHOzWzqdQIyNs2l97j
+         81OZ8PGkOQKUUAe0nzis8+4+Dxc9hM0QYYYHsU8A6RX2VqfHZ3+fMHewDR14nkrvXkNZ
+         2wDrH0GrBTG8H/UZa/QHi/oHl8CGs5keNdS7gr/+1brLig0rRG73g5FJyNKTMjBh1NQu
+         iyQg==
+X-Gm-Message-State: AOAM531UH47/sYDv9T5KEfSLct9+kUxZhLjCo0eQPPw/NOLxw5Tv30/1
+        y7z10gxM0RwfHHVGB+hFZd7vAA==
+X-Google-Smtp-Source: ABdhPJwLgeAUSYSDsp9mdlGVzKDcUzuWDxNV7mgIZTgpNxYF5dTbfxwtaA7vSUwo9WVZo8glGwRg0A==
+X-Received: by 2002:a05:6000:1367:: with SMTP id q7mr692232wrz.306.1623870418866;
+        Wed, 16 Jun 2021 12:06:58 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:60a0:f51c:af6:2dab? ([2a01:e34:ed2f:f020:60a0:f51c:af6:2dab])
+        by smtp.googlemail.com with ESMTPSA id c7sm3073452wrs.23.2021.06.16.12.06.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 16 Jun 2021 12:06:58 -0700 (PDT)
+Subject: Re: [PATCH v1 2/5] soc/tegra: irq: Add stubs needed for compile
+ testing
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Andreas Westman Dorcsak <hedmoo@yahoo.com>,
-        Maxim Schwalm <maxim.schwalm@gmail.com>,
-        Svyatoslav Ryhel <clamor95@gmail.com>,
-        Ihor Didenko <tailormoon@rambler.ru>,
-        Ion Agorria <ion@agorria.com>,
-        Matt Merhar <mattmerhar@protonmail.com>,
-        Peter Geis <pgwipeout@gmail.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v4 5/6] ARM: multi_v7_defconfig: Enable CONFIG_TEGRA30_TSENSOR
-Date:   Wed, 16 Jun 2021 22:04:16 +0300
-Message-Id: <20210616190417.32214-6-digetx@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210616190417.32214-1-digetx@gmail.com>
-References: <20210616190417.32214-1-digetx@gmail.com>
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+References: <20210606222817.12388-1-digetx@gmail.com>
+ <20210606222817.12388-3-digetx@gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <92b521c6-f3fd-4f2c-de4f-3363e0384f55@linaro.org>
+Date:   Wed, 16 Jun 2021 21:06:57 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
 MIME-Version: 1.0
+In-Reply-To: <20210606222817.12388-3-digetx@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable NVIDIA Tegra30 SoC thermal sensor driver in multi_v7_defconfig.
+On 07/06/2021 00:28, Dmitry Osipenko wrote:
+> Add stubs needed for compile-testing of tegra-cpuidle driver.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  include/soc/tegra/irq.h | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/soc/tegra/irq.h b/include/soc/tegra/irq.h
+> index 8eb11a7109e4..94539551c8c1 100644
+> --- a/include/soc/tegra/irq.h
+> +++ b/include/soc/tegra/irq.h
+> @@ -6,8 +6,15 @@
+>  #ifndef __SOC_TEGRA_IRQ_H
+>  #define __SOC_TEGRA_IRQ_H
+>  
+> -#if defined(CONFIG_ARM)
+> +#include <linux/types.h>
+> +
+> +#if defined(CONFIG_ARM) && defined(CONFIG_ARCH_TEGRA)
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/arm/configs/multi_v7_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+Does not CONFIG_ARCH_TEGRA depends on CONFIG_ARM ?
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index 52a0400fdd92..fc346f87d7f9 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -523,6 +523,7 @@ CONFIG_BRCMSTB_THERMAL=m
- CONFIG_GENERIC_ADC_THERMAL=m
- CONFIG_ST_THERMAL_MEMMAP=y
- CONFIG_TEGRA_SOCTHERM=m
-+CONFIG_TEGRA30_TSENSOR=m
- CONFIG_UNIPHIER_THERMAL=y
- CONFIG_DA9063_WATCHDOG=m
- CONFIG_XILINX_WATCHDOG=y
+>  bool tegra_pending_sgi(void);
+> +#else
+> +static inline bool tegra_pending_sgi(void)
+> +{
+> +	return false;
+> +}
+>  #endif
+>  
+>  #endif /* __SOC_TEGRA_IRQ_H */
+> 
+
+
 -- 
-2.30.2
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
