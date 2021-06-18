@@ -2,143 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB229C49EA2
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:16:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8B91C49EA4
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:19:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D0D4C613F0
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:16:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B06AA613C2
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:19:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235140AbhFRSSv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Jun 2021 14:18:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40456 "EHLO
+        id S236254AbhFRSVL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Jun 2021 14:21:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41000 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235005AbhFRSSv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 14:18:51 -0400
-Received: from mail-oi1-x232.google.com (mail-oi1-x232.google.com [IPv6:2607:f8b0:4864:20::232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B63EFC06175F
-        for <linux-pm@vger.kernel.org>; Fri, 18 Jun 2021 11:16:41 -0700 (PDT)
-Received: by mail-oi1-x232.google.com with SMTP id s17so2709910oij.11
-        for <linux-pm@vger.kernel.org>; Fri, 18 Jun 2021 11:16:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=7nPUjc8QA8UoxeQQWsD1UQARcs1YVj1sKwBdqRAk8Q8=;
-        b=PHiVcGzVJuHJlg20MflDvGrcV6QmQqNDQPo1eXlcu0MkkFtxNyjn/o4p5oCK6CQ98y
-         qvsuDygUlGKFnIHlmDQ7SmgVxktLOCFAeqtlGXmiWlJia9u5L8pzgrv6ZNT40hGdlGjU
-         Jhk9eMCcOeNK0Sn86SmZgLAJDo3gtoQCDSxtnvePgM6VNT7R+4xZW/zvTTGbv3XQKySp
-         gbJ6CguaXCVTsvr/xNFhoCFq7ZqIAkAH7zZ+A+M259FRh1hOxtnmt0ioYcFSHXCuruZS
-         FikDCXnejHBAVd+SUz4O1uh1QDDAXv5z2lUNxBnNi38OfWZ+TeOIftu3gwv+9NCOyYEY
-         87MA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=7nPUjc8QA8UoxeQQWsD1UQARcs1YVj1sKwBdqRAk8Q8=;
-        b=sT1ZP6D3dz20vyjuPy4JMpAX3UKGYHZdOB5m/nF8QpUV3NFnjskssm9nkTrmOTt0QY
-         KbaLRr9/g/vtujcyWC20tg7g2Re2pFZ3T7YJ2srFz1W0kT8M5Y1ZsBRLQI8jvQ+1QBKV
-         ccNKBvxkKrVpkZy/1a3TjRxNYpb6xy5slopI5oUps/d6NRzS2iZUbbQmDitDFZkRUZFO
-         Nx+zryop73VHUJpytGoAxIg+F6rddy3oTp1z2uA6IABrnTa7iTiwe5ITVI/s++7pTbbp
-         vwZOLArYbY/+yQyV+wiX6gszsqrtEUTwyYRuNp/6E8SF4xc//oCfHLr9JFfx42MWB3HC
-         LdLg==
-X-Gm-Message-State: AOAM533GGlB3gUBDsgdfhpDwVbeGj/WNpFtIqZZqIqwi9w2S7JDFVt1V
-        hUnbxIkws4lBiLs4Z9Ypj04STQ==
-X-Google-Smtp-Source: ABdhPJyJXeeqVdpN6DYy0aD5HSeiFIYVMzlBgxfttmArEwuGWH+9xVpFuzfw2Fm0sJnXavoJbWdrFA==
-X-Received: by 2002:a05:6808:1148:: with SMTP id u8mr8092340oiu.125.1624040201036;
-        Fri, 18 Jun 2021 11:16:41 -0700 (PDT)
-Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
-        by smtp.gmail.com with ESMTPSA id c12sm1949076oov.11.2021.06.18.11.16.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Jun 2021 11:16:40 -0700 (PDT)
-Date:   Fri, 18 Jun 2021 13:16:38 -0500
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Thara Gopinath <thara.gopinath@linaro.org>
-Cc:     agross@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        viresh.kumar@linaro.org, rjw@rjwysocki.net, robh+dt@kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH 3/5] cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support
-Message-ID: <YMzjBvkbITbSIzwf@builder.lan>
-References: <20210608222926.2707768-1-thara.gopinath@linaro.org>
- <20210608222926.2707768-4-thara.gopinath@linaro.org>
+        with ESMTP id S235050AbhFRSVK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 14:21:10 -0400
+X-Greylist: delayed 582 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 18 Jun 2021 11:19:00 PDT
+Received: from relay04.th.seeweb.it (relay04.th.seeweb.it [IPv6:2001:4b7a:2000:18::165])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86579C06175F
+        for <linux-pm@vger.kernel.org>; Fri, 18 Jun 2021 11:19:00 -0700 (PDT)
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 282321F5F9;
+        Fri, 18 Jun 2021 20:09:14 +0200 (CEST)
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+To:     bjorn.andersson@linaro.org
+Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, phone-devel@vger.kernel.org,
+        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
+        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
+        jamipkettunen@somainline.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Subject: [RESEND PATCH v4 0/3] Implement SPM/SAW for MSM8998 and SDM6xx
+Date:   Fri, 18 Jun 2021 20:09:04 +0200
+Message-Id: <20210618180907.258149-1-angelogioacchino.delregno@somainline.org>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210608222926.2707768-4-thara.gopinath@linaro.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue 08 Jun 17:29 CDT 2021, Thara Gopinath wrote:
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-[..]
-> @@ -305,6 +383,8 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  
->  	index = args.args[0];
->  
-> +	lmh_mitigation_enabled = of_property_read_bool(pdev->dev.of_node, "qcom,support-lmh");
+Changes in v4:
+- Huge patch series has been split for better reviewability,
+  as suggested by Bjorn
 
-Rather than adding a new interrupt _and_ a flag to tell the driver that
-this new interrupt should be used, wouldn't it be sufficient to just see
-if the interrupt is specified?
+Changes in v3:
+- Rebased (no changes - was in previous series' v3)
 
-> +
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
->  	if (!res) {
->  		dev_err(dev, "failed to get mem resource %d\n", index);
-> @@ -329,6 +409,11 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  		goto unmap_base;
->  	}
->  
-> +	if (!alloc_cpumask_var(&data->cpus, GFP_KERNEL)) {
-> +		ret = -ENOMEM;
-> +		goto unmap_base;
-> +	}
-> +
->  	data->soc_data = of_device_get_match_data(&pdev->dev);
->  	data->base = base;
->  	data->res = res;
-> @@ -347,6 +432,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  		goto error;
->  	}
->  
-> +	cpumask_copy(data->cpus, policy->cpus);
->  	policy->driver_data = data;
->  
->  	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy);
-> @@ -370,6 +456,20 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  			dev_warn(cpu_dev, "failed to enable boost: %d\n", ret);
->  	}
->  
-> +	if (lmh_mitigation_enabled) {
-> +		data->lmh_dcvs_irq = platform_get_irq(pdev, index);
-> +		if (data->lmh_dcvs_irq < 0) {
+Changes in v2:
+- Fixed MSM8998 SAW parameters on SPM driver
 
-This will be -ENXIO if the interrupt isn't specified and <0 for other
-errors, so you should be able to distinguish the two failure cases.
+Tested on the following smartphones:
+- Sony Xperia XA2        (SDM630)
+- Sony Xperia XA2 Ultra  (SDM630)
+- Sony Xperia 10         (SDM630)
+- Sony Xperia XZ Premium (MSM8998)
+- F(x)Tec Pro 1          (MSM8998)
 
-Regards,
-Bjorn
+This is a component that we can find on very old
+chips, like MSM8974; there, it has been used to actually do the
+power scaling basically "on its own" - sending the cores in a specific
+sleep mode to save power.
+On the newer ones, including MSM8998, SDM630, 660 and others, it is still
+present! Though, this time, it's being used for the cluster caches and it
+has a different firmware (and maybe it's also slightly different HW),
+implementing the SAWv4.1 set and getting controlled *not by the OS* but
+by other controllers in the SoC (like the OSM).
 
-> +			ret = data->lmh_dcvs_irq;
-> +			goto error;
-> +		}
-> +		ret = devm_request_irq(dev, data->lmh_dcvs_irq, qcom_lmh_dcvs_handle_irq,
-> +				       0, "dcvsh-irq", data);
-> +		if (ret) {
-> +			dev_err(dev, "Error %d registering irq %x\n", ret, data->lmh_dcvs_irq);
-> +			goto error;
-> +		}
-> +		INIT_DEFERRABLE_WORK(&data->lmh_dcvs_poll_work, qcom_lmh_dcvs_poll);
-> +	}
->  	return 0;
->  error:
->  	kfree(data);
-> -- 
-> 2.25.1
-> 
+Contrary from MSM8974 and the like, this new version of the SPM just
+requires us to set the initial parameters for AVS and *nothing else*, as
+its states will be totally managed internally.
+
+AngeloGioacchino Del Regno (3):
+  cpuidle: qcom_spm: Detach state machine from main SPM handling
+  soc: qcom: spm: Implement support for SAWv4.1, SDM630/660 L2 AVS
+  soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
+
+ drivers/cpuidle/Kconfig.arm        |   1 +
+ drivers/cpuidle/cpuidle-qcom-spm.c | 294 ++++++-----------------------
+ drivers/soc/qcom/Kconfig           |   9 +
+ drivers/soc/qcom/Makefile          |   1 +
+ drivers/soc/qcom/spm.c             | 240 +++++++++++++++++++++++
+ include/soc/qcom/spm.h             |  45 +++++
+ 6 files changed, 354 insertions(+), 236 deletions(-)
+ create mode 100644 drivers/soc/qcom/spm.c
+ create mode 100644 include/soc/qcom/spm.h
+
+-- 
+2.30.0
+
