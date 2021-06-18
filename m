@@ -2,83 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E1F1C49EA3
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 11:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A80C48BDF
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 12:01:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AC35613F6
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 11:29:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D87B613F5
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 12:01:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233996AbhFRLbw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Jun 2021 07:31:52 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:18336 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233158AbhFRLbw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 07:31:52 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1624015783; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=71O0EH5WcchJDFoozRa29bOwZCDQa5INUojIx8UHm7E=; b=r62js9mntkEoqkZL92MzUhAnHkIKpfoo/glqK9vzfxWvadC46JQSjf2yHsJGeJhEg7iFNqu/
- 1GwjfhNTYi00l6RcR4sS2PEgkQCJ5Tz1ZWiKsN5Dl+RqbGeJaVwzFawZq8DnCip0nh3rqgwA
- Gzrmjcmie4w8zS0KF99r5wxXwyI=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n06.prod.us-east-1.postgun.com with SMTP id
- 60cc8387f726fa418836441e (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 18 Jun 2021 11:29:11
- GMT
-Sender: okukatla=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id E3806C4360C; Fri, 18 Jun 2021 11:29:10 +0000 (UTC)
-Received: from okukatla1-linux.qualcomm.com (unknown [202.46.22.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: okukatla)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id AE0C9C433F1;
-        Fri, 18 Jun 2021 11:29:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org AE0C9C433F1
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=okukatla@codeaurora.org
-From:   Odelu Kukatla <okukatla@codeaurora.org>
-To:     georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
-        evgreen@google.com
-Cc:     sboyd@kernel.org, seansw@qti.qualcomm.com, elder@linaro.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org,
-        Odelu Kukatla <okukatla@codeaurora.org>
-Subject: [V4 0/3] Add L3 provider support for SC7280
-Date:   Fri, 18 Jun 2021 16:58:51 +0530
-Message-Id: <1624015734-16778-1-git-send-email-okukatla@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
+        id S230175AbhFRMDP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Jun 2021 08:03:15 -0400
+Received: from mail-ot1-f41.google.com ([209.85.210.41]:44892 "EHLO
+        mail-ot1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229475AbhFRMDO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 08:03:14 -0400
+Received: by mail-ot1-f41.google.com with SMTP id f3-20020a0568301c23b029044ce5da4794so2811541ote.11;
+        Fri, 18 Jun 2021 05:01:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=rUMzu/K3B6PimF7v/SKPUw8+mIM9nScsj4NJiw7kNYY=;
+        b=HKxxDJRN31u5tezSAqPCn255Ex/5ygIIZMl01jJi/vhcpdQSqQYNZu/GeEPeby4YJS
+         jhxK3P7BYsqLUcXOcE80v3/GqrW5/eQJSfyvEOaBfT6nr8QuWnsAw9dOYYeXQ2/oG3Vk
+         0W8JueMOM+elHI+JYolA+l30ele7ejpTtgfdU3ZIlv6+/pBgSVtrcYVzY1ERXvQ0wd3o
+         fiER3zOkkpVX6CTX2LD7dJwB8T3NIxE49Hecyl6cIWX/EEee7sldEJ14OeuyjR+3I9rC
+         SbX59wyQFQiuufxywABmH++pwM2KIIepec292qBiugfH7Iv+g2sw8mGcvhVgIaizcP4+
+         sOUg==
+X-Gm-Message-State: AOAM531MnJnwleA9n+yGQPcG2lwhF3gVGPoXy2jSknFQlwQeNZe1dUU5
+        0YlffYF7G2GAiPeo3Ppk3E/xpzDA0QzplbuC9xo=
+X-Google-Smtp-Source: ABdhPJwXy4gTSGVhvCzM3rJDQWci+0jDQzP22arVzZyHcAroQNPEwD2D91i6XX7OIJMe5YXGbHGZHnDQZ5sqlvAZ6wI=
+X-Received: by 2002:a05:6830:1bf7:: with SMTP id k23mr9458774otb.206.1624017665309;
+ Fri, 18 Jun 2021 05:01:05 -0700 (PDT)
+MIME-Version: 1.0
+References: <5c8da9d378dee39d9c6063713b093f51d271fa9d.1623825358.git.viresh.kumar@linaro.org>
+ <c31424b7962608eb13f946a665ba6848c4986856.1623986349.git.viresh.kumar@linaro.org>
+In-Reply-To: <c31424b7962608eb13f946a665ba6848c4986856.1623986349.git.viresh.kumar@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 18 Jun 2021 14:00:54 +0200
+Message-ID: <CAJZ5v0h37bs0xLUCeD7ZuZfXLPBx=6Mpr-Y+Ef=qcnDA4aoLbQ@mail.gmail.com>
+Subject: Re: [PATCH V3 2/3] cpufreq: intel_pstate: Migrate away from
+ ->stop_cpu() callback
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dirk Brandewie <dirk.brandewie@gmail.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add Epoch Subsystem (EPSS) L3 provider support on SM7280 SoCs.
+On Fri, Jun 18, 2021 at 5:22 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> commit 367dc4aa932b ("cpufreq: Add stop CPU callback to cpufreq_driver
+> interface") added the stop_cpu() callback to allow the drivers to do
+> clean up before the CPU is completely down and its state can't be
+> modified.
+>
+> At that time the CPU hotplug framework used to call the cpufreq core's
+> registered notifier for different events like CPU_DOWN_PREPARE and
+> CPU_POST_DEAD. The stop_cpu() callback was called during the
+> CPU_DOWN_PREPARE event.
+>
+> This is no longer the case, cpuhp_cpufreq_offline() is called only once
+> by the CPU hotplug core now and we don't really need to separately
+> call stop_cpu() for cpufreq drivers.
+>
+> Migrate to using the exit() and offline() callbacks instead of
+> stop_cpu().
+>
+> We need to clear util hook from both the callbacks, exit() and
+> offline(), since it is possible that only exit() gets called sometimes
+> (specially on errors) or both get called at other times.
+> intel_pstate_clear_update_util_hook() anyway have enough protection in
+> place if it gets called a second time and will return early then.
+>
+> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V2->V3:
+> - Update intel_pstate_cpu_offline() as well.
+> - Improved commit log.
+>
+>  drivers/cpufreq/intel_pstate.c | 12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 0e69dffd5a76..8f8a2d9d7daa 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2335,6 +2335,8 @@ static int intel_pstate_cpu_offline(struct cpufreq_policy *policy)
+>
+>         pr_debug("CPU %d going offline\n", cpu->cpu);
+>
+> +       intel_pstate_clear_update_util_hook(policy->cpu);
+> +
+>         if (cpu->suspended)
+>                 return 0;
+>
+> @@ -2374,17 +2376,12 @@ static int intel_pstate_cpu_online(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> -static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
+> -{
+> -       pr_debug("CPU %d stopping\n", policy->cpu);
+> -
+> -       intel_pstate_clear_update_util_hook(policy->cpu);
+> -}
+> -
+>  static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+>  {
+>         pr_debug("CPU %d exiting\n", policy->cpu);
+>
+> +       intel_pstate_clear_update_util_hook(policy->cpu);
 
-v4:
- - Addressed review comments (Rob Herring)
- 
-Depends on: https://lore.kernel.org/patchwork/cover/1418814/
- 
-Odelu Kukatla (3):
-  dt-bindings: interconnect: Add EPSS L3 DT binding on SC7280
-  interconnect: qcom: Add EPSS L3 support on SC7280
-  arm64: dts: qcom: sc7280: Add EPSS L3 interconnect provider
+This change is not needed now, because ->offline always runs before
+->exit if present.
 
- .../bindings/interconnect/qcom,osm-l3.yaml         |   9 +-
- arch/arm64/boot/dts/qcom/sc7280.dtsi               |   9 ++
- drivers/interconnect/qcom/osm-l3.c                 | 135 ++++++++++++++++-----
- drivers/interconnect/qcom/sc7280.h                 |  10 ++
- include/dt-bindings/interconnect/qcom,osm-l3.h     |  10 +-
- 5 files changed, 142 insertions(+), 31 deletions(-)
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+> +
+>         policy->fast_switch_possible = false;
+>
+>         return 0;
+> @@ -2451,7 +2448,6 @@ static struct cpufreq_driver intel_pstate = {
+>         .resume         = intel_pstate_resume,
+>         .init           = intel_pstate_cpu_init,
+>         .exit           = intel_pstate_cpu_exit,
+> -       .stop_cpu       = intel_pstate_stop_cpu,
+>         .offline        = intel_pstate_cpu_offline,
+>         .online         = intel_pstate_cpu_online,
+>         .update_limits  = intel_pstate_update_limits,
+> --
+> 2.31.1.272.g89b43f80a514
+>
