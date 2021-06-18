@@ -2,94 +2,187 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 316FEC49EA3
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FCA9C49361
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 19:10:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BAC7613F0
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 18:19:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 340BE61261
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Jun 2021 19:10:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236251AbhFRSVL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Jun 2021 14:21:11 -0400
-Received: from relay04.th.seeweb.it ([5.144.164.165]:52339 "EHLO
-        relay04.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236248AbhFRSVL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 14:21:11 -0400
-Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 53C111F5D0;
-        Fri, 18 Jun 2021 20:09:15 +0200 (CEST)
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-To:     bjorn.andersson@linaro.org
-Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, phone-devel@vger.kernel.org,
-        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
-        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
-        jamipkettunen@somainline.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Subject: [RESEND PATCH v4 3/3] soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
-Date:   Fri, 18 Jun 2021 20:09:07 +0200
-Message-Id: <20210618180907.258149-4-angelogioacchino.delregno@somainline.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210618180907.258149-1-angelogioacchino.delregno@somainline.org>
-References: <20210618180907.258149-1-angelogioacchino.delregno@somainline.org>
+        id S235342AbhFRTMZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Jun 2021 15:12:25 -0400
+Received: from mail-oo1-f48.google.com ([209.85.161.48]:44604 "EHLO
+        mail-oo1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235429AbhFRTMX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jun 2021 15:12:23 -0400
+Received: by mail-oo1-f48.google.com with SMTP id o5-20020a4a2c050000b0290245d6c7b555so2687766ooo.11;
+        Fri, 18 Jun 2021 12:10:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=daEJxXx4kGgQjf5gbnT7Q2a5f94zl/Y1PbDu72pCGuA=;
+        b=C3cZdbiyOaUGxJdTspHFL+eBZNDpznXVJQS9UT919UQIbgfaWmo7SDpS+QPsed84l4
+         KHciIjf42j4MFE9aHycHcidh8vwSE21EE0QjYDbKp0r60016t6cTAKpct8JHBTtt3bOe
+         o+TGHKdHkZBsvH6sHy3sU/Gr22G3ZnwNbw4TFXnPrbQWe3TaSgRuNW15qsBhxlnBa0yj
+         M4bb+l1sVJsmZJ5EIW1cKHBkRDz+N9otzJ9gTH+wLPwRKJ/pjHjIvDMAh5JDvmEuJZxJ
+         YIQ8VZCznoc06nZi90WuKpL4VGFo3BcViFzgbN5mjHnkcqomGz8YMwU0/2MobN3r69IJ
+         36qA==
+X-Gm-Message-State: AOAM533DO3JeAsjy+8mQmujfZACra39pUv1y1Gc8z8RpwmYngZLkFfyj
+        HAkzOncAa2h24l81PSQiUnYJwTHT+A==
+X-Google-Smtp-Source: ABdhPJzYycg7M/u2vTWyigX0DR29r/E95lU8Z7lGuBbGyiTV0doykatrXGVzFhx4S8iGthmRHLvppQ==
+X-Received: by 2002:a4a:d781:: with SMTP id c1mr10281257oou.23.1624043412611;
+        Fri, 18 Jun 2021 12:10:12 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.248])
+        by smtp.gmail.com with ESMTPSA id v203sm1970825oie.52.2021.06.18.12.10.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 18 Jun 2021 12:10:11 -0700 (PDT)
+Received: (nullmailer pid 2636260 invoked by uid 1000);
+        Fri, 18 Jun 2021 19:10:07 -0000
+Date:   Fri, 18 Jun 2021 13:10:07 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Ben Tseng <ben.tseng@mediatek.com>
+Cc:     Fan Chen <fan.chen@mediatek.com>, Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>, hsinyi@chromium.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        Michael Kao <michael.kao@mediatek.com>
+Subject: Re: [PATCH v5 3/3] dt-bindings: thermal: Add binding document for
+ mt6873 thermal controller
+Message-ID: <20210618191007.GA2633228@robh.at.kernel.org>
+References: <20210617114707.10618-1-ben.tseng@mediatek.com>
+ <20210617114707.10618-4-ben.tseng@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210617114707.10618-4-ben.tseng@mediatek.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the SAWv4.1 parameters for MSM8998's Gold and Silver clusters.
+On Thu, Jun 17, 2021 at 07:47:07PM +0800, Ben Tseng wrote:
+> From: Michael Kao <michael.kao@mediatek.com>
+> 
+> This patch adds binding document for mt6873 thermal controller.
+> 
+> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> Signed-off-by: Ben Tseng <ben.tseng@mediatek.com>
+> ---
+> This patch depends on [1].
+> 
+> [1] https://patchwork.kernel.org/project/linux-mediatek/patch/20210524122053.17155-7-chun-jie.chen@mediatek.com/
+> ---
+> Feature: Thermal Management
+> 
+> Change-Id: Ibe06c699c6edc870aaee95170c3f182d1889472d
+> ---
+>  .../thermal/mediatek-thermal-lvts.yaml        | 81 +++++++++++++++++++
+>  1 file changed, 81 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml b/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
+> new file mode 100644
+> index 000000000000..69ffe7b14c21
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
+> @@ -0,0 +1,81 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/mediatek-thermal-lvts.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Mediatek SoC LVTS thermal controller (DTS) binding
+> +
+> +maintainers:
+> +  - Yu-Chia Chang <ethan.chang@mediatek.com>
+> +  - Ben Tseng <ben.tseng@mediatek.com>
+> +
+> +properties:
+> +  compatible:
+> +    const: mediatek,mt6873-lvts
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +  clock-names:
+> +    items:
+> +      - const: lvts_clk
 
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
----
- drivers/soc/qcom/spm.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+Not really a useful name. I'd just drop 'clock-names'.
 
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index 843732d12c54..2e6312663293 100644
---- a/drivers/soc/qcom/spm.c
-+++ b/drivers/soc/qcom/spm.c
-@@ -54,6 +54,18 @@ static const struct spm_reg_data spm_reg_660_silver_l2  = {
- 	.avs_limit = 0x4580458,
- };
- 
-+static const struct spm_reg_data spm_reg_8998_gold_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4700470,
-+};
-+
-+static const struct spm_reg_data spm_reg_8998_silver_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4200420,
-+};
-+
- static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
- 	[SPM_REG_CFG]		= 0x08,
- 	[SPM_REG_SPM_CTL]	= 0x30,
-@@ -149,6 +161,10 @@ static const struct of_device_id spm_match_table[] = {
- 	  .data = &spm_reg_660_gold_l2 },
- 	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
- 	  .data = &spm_reg_660_silver_l2 },
-+	{ .compatible = "qcom,msm8998-gold-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_gold_l2 },
-+	{ .compatible = "qcom,msm8998-silver-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_silver_l2 },
- 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
- 	  .data = &spm_reg_8974_8084_cpu },
- 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
--- 
-2.30.0
+> +
+> +  "#thermal-sensor-cells":
+> +    const: 0
+> +
+> +required:
+> +  - "#thermal-sensor-cells"
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - clocks
+> +  - clock-names
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/thermal/thermal.h>
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/clock/mt8192-clk.h>
+> +    dts: lvts@1100b000 {
 
+thermal-sensor@...
+
+> +        compatible = "mediatek,mt6873-lvts";
+> +        reg = <0x1100b000 0x1000>;
+> +        clocks = <&infracfg CLK_INFRA_THERM>;
+> +        clock-names = "lvts_clk";
+> +        #thermal-sensor-cells = <0>;
+> +        interrupts = <GIC_SPI 147 IRQ_TYPE_LEVEL_HIGH>;
+> +    };
+> +
+> +    thermal-zones {
+> +        cpu_thermal: cpu-thermal {
+> +            polling-delay-passive = <0>;
+> +            polling-delay = <0>;
+> +
+> +            thermal-sensors = <&dts>;
+> +            trips {
+> +                cpu_alert1: cpu-alert1 {
+> +                    temperature = <85000>;
+> +                    hysteresis = <0>;
+> +                    type = "passive";
+> +                };
+> +
+> +                cpu_crit: cpu-crit {
+> +                    temperature = <120000>;
+> +                    hysteresis = <0>;
+> +                    type = "critical";
+> +                };
+> +            };
+> +
+> +            cooling-maps {
+> +            };
+> +        };
+> +    };
+> +...
+> -- 
+> 2.18.0
+> 
+> 
