@@ -7,117 +7,107 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFC17C49EA3
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 09:47:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57EF3C48BE5
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 09:47:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D5D7A60FF4
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 09:47:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3196C61151
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 09:47:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229888AbhFUJtX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Jun 2021 05:49:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50670 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230496AbhFUJtF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 05:49:05 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24FA8C061766
-        for <linux-pm@vger.kernel.org>; Mon, 21 Jun 2021 02:46:51 -0700 (PDT)
-Date:   Mon, 21 Jun 2021 09:46:45 -0000
+        id S230496AbhFUJtY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Jun 2021 05:49:24 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:43348 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230393AbhFUJtG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 05:49:06 -0400
+Date:   Mon, 21 Jun 2021 09:46:46 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1624268806;
+        s=2020; t=1624268807;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qYh0CpdHqLUj8PIJIBu81/Laa3X15entcmSp/KJlDQE=;
-        b=OTQB6hoV1SueheO+8yR31tjs4PeKk2wz9bI5v9a3XW6lWb9QPoEvbazFDHWuEiB36ecM/D
-        waWHGjW1jJ5zqauBIQvAFy04DYtjMYIr+9XNCsSQ7ZFom1hO9AjkB63Vtaf93Jf6ZQTOru
-        /lKXX3p0MXqRYnbc4P7rQ5h8maszJP1wWAHiYCrxDYQYfKokp/ncO8Olbn6IXkKZL2yYGs
-        8dyxy2dvTCmM8XCsagU0vG5OC8CFbOtBDiDe36zGqSPAsI+SPlpd8CnpuXqCrhsJIEUCOT
-        OL2c5yeHy+v7sqzScRCTLp3yTqc0am1ObjxwAmuYdvMV4Iw1z6Ye0mhA0K674A==
+        bh=CNvyRCodp4v8IT1QL2PWhc0vr07nnZK8qgyitjDE4aw=;
+        b=i4DPdu3iUOlxD0ni9qo0cZLvmYdB2vkTXOmQ3+cZMqMLj8mDpBVLrwpIhs0Tl5vIcjPrLo
+        0KjOkHIVmzJ17FcoN39nu/05Ct/ya5qxD86OhwwdW4TpVDsA4xjeWNWyJsIALIUlgowe9U
+        9XMA+wjc+dqczGIaEpVfZVr9RC3pTSi6lKYkWDsa/mRy2o+HpsOZm7l1jMWRfIBafCqjKk
+        4KfFLoS4tWWoo9QlSCA6eQKjQPZFbZrzOqI88+UvJZOXzZr/okJAM5sRK+IzZxnFlL1A89
+        C2EOyp5WgdB3okAEfFJvCRK1a8xJJvbxx3ddRQyrWezxAiA11XKLU1oXtp0yVA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1624268806;
+        s=2020e; t=1624268807;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=qYh0CpdHqLUj8PIJIBu81/Laa3X15entcmSp/KJlDQE=;
-        b=1EGyE7PoN/7hnslHtD406VE0WfS0rpEBJdYmes2R/jBlptJYyfEt7tdk4AjY7NfABaiV5G
-        7voqB3gguAVXqcAQ==
-From:   "thermal-bot for Krzysztof Kozlowski" <tip-bot2@linutronix.de>
+        bh=CNvyRCodp4v8IT1QL2PWhc0vr07nnZK8qgyitjDE4aw=;
+        b=KZrWMm33n1wwsxlFyY6EQrGBuvre0GwXsOjzmz6xBTOXXgVSSoBiJBSpSWonOsYSKKy4Ir
+        81CGkGKqzs+8EhCg==
+From:   thermal-bot for Niklas =?utf-8?q?S=C3=B6derlund?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/imx_sc: Add missing
- of_node_put for loop iteration
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Jacky Bai <ping.bai@nxp.com>,
+Subject: [thermal: thermal/next] thermal/drivers/rcar_gen3_thermal: Fix
+ coefficient calculations
+Cc:     Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        niklas.soderlund+renesas@ragnatech.se,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210614192230.19248-1-krzysztof.kozlowski@canonical.com>
-References: <20210614192230.19248-1-krzysztof.kozlowski@canonical.com>
+In-Reply-To: <20210605085211.564909-1-niklas.soderlund+renesas@ragnatech.se>
+References: <20210605085211.564909-1-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
-Message-ID: <162426880551.395.2061660206973556225.tip-bot2@tip-bot2>
+Message-ID: <162426880669.395.3531147058445640547.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     3da97620e8d60da4a7eaae46e03e0a494780642d
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//3da97620e8d60da4a7eaae46e03e0a494780642d
-Author:        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-AuthorDate:    Mon, 14 Jun 2021 21:22:29 +02:00
+Commit-ID:     8946187ab57ffd02088e50256c73dd31f49db06d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//8946187ab57ffd02088e50256c73dd31f49db06d
+Author:        Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+AuthorDate:    Sat, 05 Jun 2021 10:52:11 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 14 Jun 2021 22:41:00 +02:00
+CommitterDate: Mon, 14 Jun 2021 19:02:55 +02:00
 
-thermal/drivers/imx_sc: Add missing of_node_put for loop iteration
+thermal/drivers/rcar_gen3_thermal: Fix coefficient calculations
 
-Early exits from for_each_available_child_of_node() should decrement the
-node reference counter.  Reported by Coccinelle:
+The fixed value of 157 used in the calculations are only correct for
+M3-W, on other Gen3 SoC it should be 167. The constant can be derived
+correctly from the static TJ_3 constant and the SoC specific TJ_1 value.
+Update the calculation be correct on all Gen3 SoCs.
 
-  drivers/thermal/imx_sc_thermal.c:93:1-33: WARNING:
-    Function "for_each_available_child_of_node" should have of_node_put() before return around line 97.
-
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Reviewed-by: Jacky Bai <ping.bai@nxp.com>
+Fixes: 4eb39f79ef44 ("thermal: rcar_gen3_thermal: Update value of Tj_1")
+Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+Reviewed-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210614192230.19248-1-krzysztof.kozlowski@canonical.com
+Link: https://lore.kernel.org/r/20210605085211.564909-1-niklas.soderlund+rene=
+sas@ragnatech.se
 ---
- drivers/thermal/imx_sc_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/rcar_gen3_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-index b01d28e..8d76dbf 100644
---- a/drivers/thermal/imx_sc_thermal.c
-+++ b/drivers/thermal/imx_sc_thermal.c
-@@ -93,6 +93,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 	for_each_available_child_of_node(np, child) {
- 		sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
- 		if (!sensor) {
-+			of_node_put(child);
- 			of_node_put(sensor_np);
- 			return -ENOMEM;
- 		}
-@@ -104,6 +105,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev,
- 				"failed to get valid sensor resource id: %d\n",
- 				ret);
-+			of_node_put(child);
- 			break;
- 		}
- 
-@@ -114,6 +116,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 		if (IS_ERR(sensor->tzd)) {
- 			dev_err(&pdev->dev, "failed to register thermal zone\n");
- 			ret = PTR_ERR(sensor->tzd);
-+			of_node_put(child);
- 			break;
- 		}
- 
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
+thermal.c
+index e1e4123..1a60adb 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -143,7 +143,7 @@ static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3=
+_thermal_tsc *tsc,
+ 	 * Division is not scaled in BSP and if scaled it might overflow
+ 	 * the dividend (4095 * 4095 << 14 > INT_MAX) so keep it unscaled
+ 	 */
+-	tsc->tj_t =3D (FIXPT_INT((ptat[1] - ptat[2]) * 157)
++	tsc->tj_t =3D (FIXPT_INT((ptat[1] - ptat[2]) * (ths_tj_1 - TJ_3))
+ 		     / (ptat[0] - ptat[2])) + FIXPT_INT(TJ_3);
+=20
+ 	tsc->coef.a1 =3D FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[2]),
