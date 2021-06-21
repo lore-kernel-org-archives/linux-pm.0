@@ -7,24 +7,27 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EAB3C48BE5
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A30CAC49EA2
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:21:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 23C1761289
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8D70E61108
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:21:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233599AbhFUSP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Jun 2021 14:15:28 -0400
-Received: from m-r2.th.seeweb.it ([5.144.164.171]:53667 "EHLO
-        m-r2.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233953AbhFUSMs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 14:12:48 -0400
+        id S231799AbhFUSXT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Jun 2021 14:23:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54814 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231682AbhFUSXN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 14:23:13 -0400
+Received: from relay08.th.seeweb.it (relay08.th.seeweb.it [IPv6:2001:4b7a:2000:18::169])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8231DC034622;
+        Mon, 21 Jun 2021 11:10:21 -0700 (PDT)
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id E11EB3ED51;
-        Mon, 21 Jun 2021 20:10:19 +0200 (CEST)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id CCB563ECA8;
+        Mon, 21 Jun 2021 20:10:18 +0200 (CEST)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     bjorn.andersson@linaro.org
@@ -38,9 +41,9 @@ Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
         robh+dt@kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v6 4/5] soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
-Date:   Mon, 21 Jun 2021 20:10:15 +0200
-Message-Id: <20210621181016.365009-5-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v6 2/5] dt-bindings: soc: qcom: Add devicetree binding for QCOM SPM
+Date:   Mon, 21 Jun 2021 20:10:13 +0200
+Message-Id: <20210621181016.365009-3-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org>
 References: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org>
@@ -50,47 +53,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the SAWv4.1 parameters for MSM8998's Gold and Silver clusters.
+Add devicetree binding for Qualcomm Subsystem Power Manager (SPM).
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/soc/qcom/spm.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ .../bindings/soc/qcom/qcom,spm.yaml           | 55 +++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
 
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index 1401db8373dd..8077e337ee7e 100644
---- a/drivers/soc/qcom/spm.c
-+++ b/drivers/soc/qcom/spm.c
-@@ -54,6 +54,18 @@ static const struct spm_reg_data spm_reg_660_silver_l2  = {
- 	.avs_limit = 0x4580458,
- };
- 
-+static const struct spm_reg_data spm_reg_8998_gold_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4700470,
-+};
+diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
+new file mode 100644
+index 000000000000..4aaa319b2932
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
+@@ -0,0 +1,55 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/soc/qcom/qcom,spm.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+static const struct spm_reg_data spm_reg_8998_silver_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4200420,
-+};
++title: Qualcomm Subsystem Power Manager binding
 +
- static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
- 	[SPM_REG_CFG]		= 0x08,
- 	[SPM_REG_SPM_CTL]	= 0x30,
-@@ -149,6 +161,10 @@ static const struct of_device_id spm_match_table[] = {
- 	  .data = &spm_reg_660_gold_l2 },
- 	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
- 	  .data = &spm_reg_660_silver_l2 },
-+	{ .compatible = "qcom,msm8998-gold-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_gold_l2 },
-+	{ .compatible = "qcom,msm8998-silver-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_silver_l2 },
- 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
- 	  .data = &spm_reg_8974_8084_cpu },
- 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
++maintainers:
++  - Andy Gross <agross@kernel.org>
++  - Bjorn Andersson <bjorn.andersson@linaro.org>
++
++description: |
++  This binding describes the Qualcomm Subsystem Power Manager, used to control
++  the peripheral logic surrounding the application cores in Qualcomm platforms.
++
++properties:
++  compatible:
++    enum:
++      - qcom,msm8974-saw2-v2.1-cpu
++      - qcom,apq8084-saw2-v2.1-cpu
++      - qcom,apq8064-saw2-v1.1-cpu
++
++  reg:
++    description: Base address and size of the SPM register region
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    cpus {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        cpu@0 {
++            compatible = "qcom,kryo";
++            device_type = "cpu";
++            enable-method = "qcom,kpss-acc-v2";
++            qcom,saw = <&saw0>;
++            reg = <0x0>;
++            operating-points-v2 = <&cpu_opp_table>;
++        };
++    };
++
++    saw0: power-controller@f9089000 {
++        compatible = "qcom,msm8974-saw2-v2.1-cpu", "qcom,saw2";
++        reg = <0xf9089000 0x1000>;
++    };
++
++...
 -- 
 2.32.0
 
