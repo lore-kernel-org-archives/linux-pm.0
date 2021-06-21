@@ -2,28 +2,29 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF15FC49EA7
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EAB3C48BE5
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CEBDB611CE
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 23C1761289
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:13:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233278AbhFUSP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233599AbhFUSP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 21 Jun 2021 14:15:28 -0400
-Received: from relay06.th.seeweb.it ([5.144.164.167]:59615 "EHLO
-        relay06.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233948AbhFUSMu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 14:12:50 -0400
+Received: from m-r2.th.seeweb.it ([5.144.164.171]:53667 "EHLO
+        m-r2.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233953AbhFUSMs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 14:12:48 -0400
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id B3E303EB9E;
-        Mon, 21 Jun 2021 20:10:17 +0200 (CEST)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id E11EB3ED51;
+        Mon, 21 Jun 2021 20:10:19 +0200 (CEST)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     bjorn.andersson@linaro.org
@@ -37,79 +38,59 @@ Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
         robh+dt@kernel.org,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v6 0/5] Implement SPM/SAW for MSM8998 and SDM6xx
-Date:   Mon, 21 Jun 2021 20:10:11 +0200
-Message-Id: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v6 4/5] soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
+Date:   Mon, 21 Jun 2021 20:10:15 +0200
+Message-Id: <20210621181016.365009-5-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org>
+References: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v6:
-- Moved cpuidle_driver to be private to cpuidle-qcom-spm (unused in spm.c),
-  now we are assigning the cpuidle_driver structure fields inside of the
-  spm_cpuidle_register function; this also fixes the cpumask assignment
-  issue from v5
-- Fixed another contamination from 2/3 in 1/3 (argh!! :])
-- Added dt-bindings documentation for the SPM driver
+Add the SAWv4.1 parameters for MSM8998's Gold and Silver clusters.
 
-Changes in v5:
-- Fixed contamination from patch 2/3 in patch 1/3
-- Fixed missing bits in cpuidle-qcom-spm (thanks Stephan)
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+---
+ drivers/soc/qcom/spm.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-Changes in v4:
-- Huge patch series has been split for better reviewability,
-  as suggested by Bjorn
-
-Changes in v3:
-- Rebased (no changes - was in previous series' v3)
-
-Changes in v2:
-- Fixed MSM8998 SAW parameters on SPM driver
-
-Tested on the following smartphones:
-- Sony Xperia XA2        (SDM630)
-- Sony Xperia XA2 Ultra  (SDM630)
-- Sony Xperia 10         (SDM630)
-- Sony Xperia XZ Premium (MSM8998)
-- F(x)Tec Pro 1          (MSM8998)
-
-This is a component that we can find on very old
-chips, like MSM8974; there, it has been used to actually do the
-power scaling basically "on its own" - sending the cores in a specific
-sleep mode to save power.
-On the newer ones, including MSM8998, SDM630, 660 and others, it is still
-present! Though, this time, it's being used for the cluster caches and it
-has a different firmware (and maybe it's also slightly different HW),
-implementing the SAWv4.1 set and getting controlled *not by the OS* but
-by other controllers in the SoC (like the OSM).
-
-Contrary from MSM8974 and the like, this new version of the SPM just
-requires us to set the initial parameters for AVS and *nothing else*, as
-its states will be totally managed internally.
-
-
-AngeloGioacchino Del Regno (5):
-  cpuidle: qcom_spm: Detach state machine from main SPM handling
-  dt-bindings: soc: qcom: Add devicetree binding for QCOM SPM
-  soc: qcom: spm: Implement support for SAWv4.1, SDM630/660 L2 AVS
-  soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
-  dt-bindings: soc: qcom: spm: Document SDM660 and MSM8998 compatibles
-
- .../bindings/soc/qcom/qcom,spm.yaml           |  77 +++++
- drivers/cpuidle/Kconfig.arm                   |   1 +
- drivers/cpuidle/cpuidle-qcom-spm.c            | 324 ++++--------------
- drivers/soc/qcom/Kconfig                      |   9 +
- drivers/soc/qcom/Makefile                     |   1 +
- drivers/soc/qcom/spm.c                        | 240 +++++++++++++
- include/soc/qcom/spm.h                        |  43 +++
- 7 files changed, 446 insertions(+), 249 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
- create mode 100644 drivers/soc/qcom/spm.c
- create mode 100644 include/soc/qcom/spm.h
-
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index 1401db8373dd..8077e337ee7e 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -54,6 +54,18 @@ static const struct spm_reg_data spm_reg_660_silver_l2  = {
+ 	.avs_limit = 0x4580458,
+ };
+ 
++static const struct spm_reg_data spm_reg_8998_gold_l2  = {
++	.reg_offset = spm_reg_offset_v4_1,
++	.avs_ctl = 0x1010031,
++	.avs_limit = 0x4700470,
++};
++
++static const struct spm_reg_data spm_reg_8998_silver_l2  = {
++	.reg_offset = spm_reg_offset_v4_1,
++	.avs_ctl = 0x1010031,
++	.avs_limit = 0x4200420,
++};
++
+ static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x30,
+@@ -149,6 +161,10 @@ static const struct of_device_id spm_match_table[] = {
+ 	  .data = &spm_reg_660_gold_l2 },
+ 	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
+ 	  .data = &spm_reg_660_silver_l2 },
++	{ .compatible = "qcom,msm8998-gold-saw2-v4.1-l2",
++	  .data = &spm_reg_8998_gold_l2 },
++	{ .compatible = "qcom,msm8998-silver-saw2-v4.1-l2",
++	  .data = &spm_reg_8998_silver_l2 },
+ 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
+ 	  .data = &spm_reg_8974_8084_cpu },
+ 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
 -- 
 2.32.0
 
