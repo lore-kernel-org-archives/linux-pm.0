@@ -2,126 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC72C49EA4
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BE17C48BE5
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:46:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 460C46128A
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:41:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1EFC56128C
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Jun 2021 18:46:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230160AbhFUSnd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Jun 2021 14:43:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59670 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229876AbhFUSna (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jun 2021 14:43:30 -0400
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58877C061574;
-        Mon, 21 Jun 2021 11:41:15 -0700 (PDT)
-Received: by mail-lf1-x129.google.com with SMTP id m21so31792847lfg.13;
-        Mon, 21 Jun 2021 11:41:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=1jk2ZclpdBEYX/i3iFJW267F/ek+tRQuhMbQVF0BgrE=;
-        b=RO7zJnbbWCPVzPMhvCitQtX5ZboD2tfKMGxjoo3FQgJ/tjcmitdtafqdwcZgAu8n1Q
-         Y+jVITDQg/VHxVGvNLWCnxooNolmYP8KH9F59KAom9iDJp5kQQwD10Gv/9XsiGEYU+5+
-         s0eUkp2dYi+RPWBA5WHwh5ean7pIhki+v/LWg1L5yCCOlgmd1xuQcOLzlbIwSDL9Iwfo
-         y6e0aGtoL9i4wWfAXhoYZlosP8nJ4yRgQhikJOkxlOWjevO7+8yZzyOd8BWLDvKZbYqC
-         KZpgY50WSDEPL4RxdfrHGzUwg6oV8+7V4zJkyK+N6tqfKHxnVw8bFLj+eJugmMBZEshX
-         3gQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=1jk2ZclpdBEYX/i3iFJW267F/ek+tRQuhMbQVF0BgrE=;
-        b=Cr3q1FHkz0DKVPSONayCYFZrOpcaqEDtS3JM09ZQudQV7pxvQMXqcrkJ8Q88MWLLeZ
-         89P+PtpNmFNXZHADd8d2YxplpmXLHG/pfEJAiT3Ve2k8tAmnpd5wEOnPtaWnq/jrlffN
-         /JqsCJ6Gf9xUDg4Uv0xdZSxbCtYF4HfEVhzzDblFZDKM743jKi+FHPWywTooRGwywm8/
-         UPCNWzBnku8Q7HcfecudfLezw8jODX7JRgNsEtAR62wZuR8zhBhtV9GsDODiLT4xk0kj
-         mNKe5B88pHjRcglMmEV4kf9+ImpK+mU5spoVEb+LwoX8moFUPLaJYdhhU19WjHsn0GwV
-         o0YA==
-X-Gm-Message-State: AOAM530WhKUE0HpeLTMCb5pvpqL4U8+zSATTeP4BdXchXBoR5W7f4fxh
-        Lhzfi30Tct7QKqw6h4+7ync=
-X-Google-Smtp-Source: ABdhPJxIzTooWK3bftvJAo8/sDoMM4tyc2qMr7vRHi9SUuHdVbQ02muwvy5EsUEbtudZeMz332Y6YA==
-X-Received: by 2002:a19:d7:: with SMTP id 206mr14745697lfa.457.1624300873719;
-        Mon, 21 Jun 2021 11:41:13 -0700 (PDT)
-Received: from localhost.localdomain (94-29-29-31.dynamic.spd-mgts.ru. [94.29.29.31])
-        by smtp.gmail.com with ESMTPSA id y22sm1950843lfa.145.2021.06.21.11.41.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Jun 2021 11:41:13 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
+        id S231193AbhFUSsy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Jun 2021 14:48:54 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40024 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231230AbhFUSsw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Jun 2021 14:48:52 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 94090611BD;
+        Mon, 21 Jun 2021 18:46:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1624301198;
+        bh=qj744D706TyLzYHbyimIMkHWpg6Flb4R+WG1Q1smICE=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Rsacp2LTXROn4UiKGve4taCoslKwvxYeVJeQChkJIG056ju5JiHEPBuz83rriyFE7
+         vk9nG7gwkTXQq83E00xPoPZs/7p6w3kMv9fFTQMsmbHoSyN8g7M3NJFEiCuEbfvTo7
+         5g6DgDtwNinRqBvHBypWIbLS1xIpnzx9qf6lA+JJRMDpp7lupnTLI7Qvlu28UxBs9Y
+         TUdxHyXfRbW8cAkK2LLK9Ak5Hd5RAyEEJ+2gu7xWAAEpt/4gOgwLWnCQrBlweXGDIQ
+         zbZvXaztVh/rr9krZD6BJe44kgtQOTupv2iyT7EQt6qSkAW/FRVn+u6jwn6YFUa0B7
+         VktG0niuxYQJQ==
+From:   Mark Brown <broonie@kernel.org>
+To:     Matti Vaittinen <mazziesaccount@gmail.com>,
+        Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc:     Mark Brown <broonie@kernel.org>,
+        Matteo Croce <mcroce@microsoft.com>,
+        linux-kernel@vger.kernel.org, robh+dt@kernel.org,
+        bjorn.andersson@linaro.org, Kees Cook <keescook@chromium.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Cc:     linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v3 1/2] hwmon: (lm90) Prevent integer underflows of temperature calculations
-Date:   Mon, 21 Jun 2021 21:40:57 +0300
-Message-Id: <20210621184058.4110-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210621184058.4110-1-digetx@gmail.com>
-References: <20210621184058.4110-1-digetx@gmail.com>
+        linux-arm-msm@vger.kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Josef Bacik <josef@toxicpanda.com>, linux-pm@vger.kernel.org,
+        Mike Rapoport <rppt@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>, devicetree@vger.kernel.org,
+        Petr Mladek <pmladek@suse.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        lgirdwood@gmail.com,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-renesas-soc@vger.kernel.org, agross@kernel.org,
+        linux-power <linux-power@fi.rohmeurope.com>
+Subject: Re: [PATCH RESEND v10 00/11] Extend regulator notification support
+Date:   Mon, 21 Jun 2021 19:45:52 +0100
+Message-Id: <162430087046.9551.16763333166755641433.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <cover.1622628333.git.matti.vaittinen@fi.rohmeurope.com>
+References: <cover.1622628333.git.matti.vaittinen@fi.rohmeurope.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The min/max/crit and all other temperature values that are passed to
-the driver are unlimited and value that is close to INT_MIN results in
-integer underflow of the temperature calculations made by the driver
-for LM99 sensor. Temperature hysteresis is among those values that need
-to be limited, but limiting of hysteresis is independent from the sensor
-version. Add the missing limits.
+On Thu, 3 Jun 2021 08:40:07 +0300, Matti Vaittinen wrote:
+> Extend regulator notification support
+> 
+> This series extends the regulator notification and error flag support.
+> Initial discussion on the topic can be found here:
+> https://lore.kernel.org/lkml/6046836e22b8252983f08d5621c35ececb97820d.camel@fi.rohmeurope.com/
+> 
+> In a nutshell - the series adds:
+> 
+> [...]
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/hwmon/lm90.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Applied to
 
-diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
-index b53f17511b05..ee6b8190f08e 100644
---- a/drivers/hwmon/lm90.c
-+++ b/drivers/hwmon/lm90.c
-@@ -1028,6 +1028,9 @@ static int lm90_set_temp11(struct lm90_data *data, int index, long val)
- 	struct reg *regp = &reg[index];
- 	int err;
- 
-+	/* prevent integer underflow */
-+	val = max(val, -128000l);
-+
- 	/* +16 degrees offset for temp2 for the LM99 */
- 	if (data->kind == lm99 && index <= 2)
- 		val -= 16000;
-@@ -1088,6 +1091,9 @@ static int lm90_set_temp8(struct lm90_data *data, int index, long val)
- 	struct i2c_client *client = data->client;
- 	int err;
- 
-+	/* prevent integer underflow */
-+	val = max(val, -128000l);
-+
- 	/* +16 degrees offset for temp2 for the LM99 */
- 	if (data->kind == lm99 && index == 3)
- 		val -= 16000;
-@@ -1130,6 +1136,9 @@ static int lm90_set_temphyst(struct lm90_data *data, long val)
- 	int temp;
- 	int err;
- 
-+	/* prevent integer underflow */
-+	val = max(val, -128000l);
-+
- 	if (data->kind == adt7461 || data->kind == tmp451)
- 		temp = temp_from_u8_adt7461(data, data->temp8[LOCAL_CRIT]);
- 	else if (data->kind == max6646)
--- 
-2.30.2
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
+Thanks!
+
+[01/11] dt_bindings: Add protection limit properties
+        commit: 673e851b7da81256e73fb738c550ec39bac1c9ff
+[02/11] reboot: Add hardware protection power-off
+        commit: dfa19b11385d4cf8f0242fd93e2073e25183c331
+[03/11] thermal: Use generic HW-protection shutdown API
+        commit: db0aeb4f074f7023da26fb65078197c39590346b
+[04/11] regulator: add warning flags
+        commit: e6c3092d43faf0aa095160cc552f8c05490d0962
+[05/11] regulator: move rdev_print helpers to internal.h
+        commit: 157d2230193ae683fcffcc1cd0a2c3aa4479955f
+[06/11] regulator: IRQ based event/error notification helpers
+        commit: 7111c6d1b31b42c8c758f6681e895a5116e3bad6
+[07/11] regulator: add property parsing and callbacks to set protection limits
+        commit: 89a6a5e56c8248a077d12424a1383a6b18ea840b
+[08/11] dt-bindings: regulator: bd9576 add FET ON-resistance for OCW
+        commit: 627793e4ca4f511837de893545baf0e1b8174dc2
+[09/11] regulator: bd9576: Support error reporting
+        commit: e7bf1fa58c46db9f72220c4472272d6da0a54c91
+[10/11] regulator: bd9576: Fix the driver name in id table
+        commit: e71e7d3df7eb712fc29b609bd712a63d60b81b5f
+[11/11] MAINTAINERS: Add reviewer for regulator irq_helpers
+        commit: d55444adedaee5a3024c61637032057fcf38491b
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
