@@ -2,151 +2,163 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34229C2B9F4
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:09:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C91ABC48BDF
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:11:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0AEF361027
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:09:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B305361042
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:11:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230331AbhFVOLx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Jun 2021 10:11:53 -0400
-Received: from foss.arm.com ([217.140.110.172]:49960 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230047AbhFVOLx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 22 Jun 2021 10:11:53 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 76CC631B;
-        Tue, 22 Jun 2021 07:09:37 -0700 (PDT)
-Received: from [10.57.7.129] (unknown [10.57.7.129])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 603503F694;
-        Tue, 22 Jun 2021 07:09:35 -0700 (PDT)
-Subject: Re: [RFC PATCH 3/4] cpufreq: Add Active Stats calls tracking
- frequency changes
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        "Zhang, Rui" <rui.zhang@intel.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Chris Redpath <Chris.Redpath@arm.com>, Beata.Michalska@arm.com,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Amit Kachhap <amit.kachhap@gmail.com>
-References: <20210622075925.16189-1-lukasz.luba@arm.com>
- <20210622075925.16189-4-lukasz.luba@arm.com>
- <CAJZ5v0iVwpn0_wCZOh43DOeR2mudWYJyseMdtMsZGR-sjQ1X9Q@mail.gmail.com>
- <4e5476a6-fa9f-a9ef-ff26-8fa1b4bb90c0@arm.com>
- <CAJZ5v0i0KQwTWzbEPbs=0B-j7MkE6C1XP=mZaU1hhQm9HyZGJg@mail.gmail.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <851205af-39d6-3864-bd28-ae84528946c4@arm.com>
-Date:   Tue, 22 Jun 2021 15:09:33 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S231514AbhFVONr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Jun 2021 10:13:47 -0400
+Received: from m-r1.th.seeweb.it ([5.144.164.170]:52919 "EHLO
+        m-r1.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231478AbhFVONq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 10:13:46 -0400
+Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 76C101FADD;
+        Tue, 22 Jun 2021 16:11:27 +0200 (CEST)
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+To:     bjorn.andersson@linaro.org
+Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, phone-devel@vger.kernel.org,
+        konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
+        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
+        jami.kettunen@somainline.org,
+        ~postmarketos/upstreaming@lists.sr.ht, devicetree@vger.kernel.org,
+        robh+dt@kernel.org, stephan@gerhold.net,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v7 3/5] soc: qcom: spm: Implement support for SAWv4.1, SDM630/660 L2 AVS
+Date:   Tue, 22 Jun 2021 16:11:15 +0200
+Message-Id: <20210622141117.358893-4-angelogioacchino.delregno@somainline.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210622141117.358893-1-angelogioacchino.delregno@somainline.org>
+References: <20210622141117.358893-1-angelogioacchino.delregno@somainline.org>
 MIME-Version: 1.0
-In-Reply-To: <CAJZ5v0i0KQwTWzbEPbs=0B-j7MkE6C1XP=mZaU1hhQm9HyZGJg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Implement the support for SAW v4.1, used in at least MSM8998,
+SDM630, SDM660 and APQ variants and, while at it, also add the
+configuration for the SDM630/660 Silver and Gold cluster L2
+Adaptive Voltage Scaler: this is also one of the prerequisites
+to allow the OSM controller to perform DCVS.
 
+Please note that despite there are various "versions" of these
+values downstream, these are the only ones that are perfectly
+stable on the entire set of tested devices.
 
-On 6/22/21 2:51 PM, Rafael J. Wysocki wrote:
-> On Tue, Jun 22, 2021 at 3:42 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>
->>
->>
->> On 6/22/21 1:28 PM, Rafael J. Wysocki wrote:
->>> On Tue, Jun 22, 2021 at 9:59 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
->>>>
->>>> The Active Stats framework tracks and accounts the activity of the CPU
->>>> for each performance level. It accounts the real residency, when the CPU
->>>> was not idle, at a given performance level. This patch adds needed calls
->>>> which provide the CPU frequency transition events to the Active Stats
->>>> framework.
->>>>
->>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
->>>> ---
->>>>    drivers/cpufreq/cpufreq.c | 5 +++++
->>>>    1 file changed, 5 insertions(+)
->>>>
->>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>>> index 802abc925b2a..d79cb9310572 100644
->>>> --- a/drivers/cpufreq/cpufreq.c
->>>> +++ b/drivers/cpufreq/cpufreq.c
->>>> @@ -14,6 +14,7 @@
->>>>
->>>>    #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->>>>
->>>> +#include <linux/active_stats.h>
->>>>    #include <linux/cpu.h>
->>>>    #include <linux/cpufreq.h>
->>>>    #include <linux/cpu_cooling.h>
->>>> @@ -387,6 +388,8 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
->>>>
->>>>                   cpufreq_stats_record_transition(policy, freqs->new);
->>>>                   policy->cur = freqs->new;
->>>> +
->>>> +               active_stats_cpu_freq_change(policy->cpu, freqs->new);
->>>>           }
->>>>    }
->>>>
->>>> @@ -2085,6 +2088,8 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
->>>>                               policy->cpuinfo.max_freq);
->>>>           cpufreq_stats_record_transition(policy, freq);
->>>>
->>>> +       active_stats_cpu_freq_fast_change(policy->cpu, freq);
->>>> +
->>>
->>> This is quite a bit of overhead and so why is it needed in addition to
->>> the code below?
->>
->> The code below is tracing, which is good for post-processing. We use in
->> our tool LISA, when we analyze the EAS decision, based on captured
->> trace data.
->>
->> This new code is present at run time, so subsystems like our thermal
->> governor IPA can use it and get better estimation about CPU used power
->> for any arbitrary period, e.g. 50ms, 100ms, 300ms, ...
-> 
-> So can it be made not run when the IPA is not using it?
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+---
+ drivers/soc/qcom/spm.c | 32 +++++++++++++++++++++++++++++---
+ include/soc/qcom/spm.h |  4 +++-
+ 2 files changed, 32 insertions(+), 4 deletions(-)
 
-I can make a Kconfig for IPA to select this ACTIVE_STATS.
-Also, I can add description that this framework is mostly needed
-for IPA, so don't enable it if you don't use IPA (default is 'n'
-so it shouldn't harm others).
-
-This Active Stats shouldn't be stopped when thermal zone is switching
-between governors at run time, e.g. IPA -> step_wise -> IPA
-because when IPA is set next time, it might not have correct CPU
-stats (what is the current frequency and for how long it has been
-actively used).
-Beside, switching governors at run time is not a good idea
-(apart from stress testing them ;) ).
-
-> 
->>>
->>> And pretty much the same goes for the idle loop change.  There is
->>> quite a bit of instrumentation in that code already and it avoids
->>> adding new locking for a reason.  Why is it a good idea to add more
->>> locking to that code?
->>
->> This active_stats_cpu_freq_fast_change() doesn't use the locking, it
->> relies on schedutil lock in [1].
-> 
-> Ah, OK.
-> 
-> But it still adds overhead AFAICS.
-
-Agree, it's an extra code. For platforms which use IPA it's a
-justifiable cost, weighted by better estimation thanks to this calls.
-For other platforms, this framework will be set to default 'n' option.
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index 9b6f649c9a10..1401db8373dd 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -32,10 +32,29 @@ enum spm_reg {
+ 	SPM_REG_SEQ_ENTRY,
+ 	SPM_REG_SPM_STS,
+ 	SPM_REG_PMIC_STS,
++	SPM_REG_AVS_CTL,
++	SPM_REG_AVS_LIMIT,
+ 	SPM_REG_NR,
+ };
+ 
+-static const u8 spm_reg_offset_v2_1[SPM_REG_NR] = {
++static const u16 spm_reg_offset_v4_1[SPM_REG_NR] = {
++	[SPM_REG_AVS_CTL]	= 0x904,
++	[SPM_REG_AVS_LIMIT]	= 0x908,
++};
++
++static const struct spm_reg_data spm_reg_660_gold_l2  = {
++	.reg_offset = spm_reg_offset_v4_1,
++	.avs_ctl = 0x1010031,
++	.avs_limit = 0x4580458,
++};
++
++static const struct spm_reg_data spm_reg_660_silver_l2  = {
++	.reg_offset = spm_reg_offset_v4_1,
++	.avs_ctl = 0x101c031,
++	.avs_limit = 0x4580458,
++};
++
++static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x30,
+ 	[SPM_REG_DLY]		= 0x34,
+@@ -54,7 +73,7 @@ static const struct spm_reg_data spm_reg_8974_8084_cpu  = {
+ 	.start_index[PM_SLEEP_MODE_SPC] = 3,
+ };
+ 
+-static const u8 spm_reg_offset_v1_1[SPM_REG_NR] = {
++static const u16 spm_reg_offset_v1_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x20,
+ 	[SPM_REG_PMIC_DLY]	= 0x24,
+@@ -126,6 +145,10 @@ void spm_set_low_power_mode(struct spm_driver_data *drv,
+ }
+ 
+ static const struct of_device_id spm_match_table[] = {
++	{ .compatible = "qcom,sdm660-gold-saw2-v4.1-l2",
++	  .data = &spm_reg_660_gold_l2 },
++	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
++	  .data = &spm_reg_660_silver_l2 },
+ 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
+ 	  .data = &spm_reg_8974_8084_cpu },
+ 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
+@@ -169,6 +192,8 @@ static int spm_dev_probe(struct platform_device *pdev)
+ 	 * CPU was held in reset, the reset signal could trigger the SPM state
+ 	 * machine, before the sequences are completely written.
+ 	 */
++	spm_register_write(drv, SPM_REG_AVS_CTL, drv->reg_data->avs_ctl);
++	spm_register_write(drv, SPM_REG_AVS_LIMIT, drv->reg_data->avs_limit);
+ 	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
+ 	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
+ 	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
+@@ -178,7 +203,8 @@ static int spm_dev_probe(struct platform_device *pdev)
+ 				drv->reg_data->pmic_data[1]);
+ 
+ 	/* Set up Standby as the default low power mode */
+-	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
++	if (drv->reg_data->reg_offset[SPM_REG_SPM_CTL])
++		spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
+ 
+ 	return 0;
+ }
+diff --git a/include/soc/qcom/spm.h b/include/soc/qcom/spm.h
+index 4c7e5ac2583d..4951f9d8b0bd 100644
+--- a/include/soc/qcom/spm.h
++++ b/include/soc/qcom/spm.h
+@@ -21,11 +21,13 @@ enum pm_sleep_mode {
+ };
+ 
+ struct spm_reg_data {
+-	const u8 *reg_offset;
++	const u16 *reg_offset;
+ 	u32 spm_cfg;
+ 	u32 spm_dly;
+ 	u32 pmic_dly;
+ 	u32 pmic_data[MAX_PMIC_DATA];
++	u32 avs_ctl;
++	u32 avs_limit;
+ 	u8 seq[MAX_SEQ_DATA];
+ 	u8 start_index[PM_SLEEP_MODE_NR];
+ };
+-- 
+2.32.0
 
