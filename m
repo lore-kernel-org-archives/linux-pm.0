@@ -2,98 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDB08C49EBE
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:11:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69D98C49EA2
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:36:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AAA636137D
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:11:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 570E3613AE
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 14:36:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231815AbhFVONw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Jun 2021 10:13:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41368 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231657AbhFVONu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 10:13:50 -0400
-Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5739CC0617AE;
-        Tue, 22 Jun 2021 07:11:30 -0700 (PDT)
-Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id E3D961FAF2;
-        Tue, 22 Jun 2021 16:11:27 +0200 (CEST)
-From:   AngeloGioacchino Del Regno 
+        id S231847AbhFVOjG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Jun 2021 10:39:06 -0400
+Received: from mail-io1-f52.google.com ([209.85.166.52]:41680 "EHLO
+        mail-io1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230047AbhFVOjD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 10:39:03 -0400
+Received: by mail-io1-f52.google.com with SMTP id i189so600164ioa.8;
+        Tue, 22 Jun 2021 07:36:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=Of/VzMGz855Wz34Tuq2SD5JHgkJPelGIgUky1xC77Tg=;
+        b=f2P9Ju/nRipalVBCvcFIEd3vVqsZkieUEEVS15OZfaBjxP2cgdbBvneYGJ3gq3r/TN
+         1NnAr2Kl4ygHuurvfQbpmHDl8EXSdrOL0YqiAkLqyqiSmFg8pdWxHfG/tzVQiH866OTc
+         nkRMrtSkgfGQ7iu8kFifb1w9KZjYVzlFlOIU/oommX+WdbHzJEo9/Psx2LZRUXi8SsEA
+         oTvp78X3kMC9LpX6AOFl2c72niXvY8UTEBTMuA8nJfXdckchmTx2HJkMUL9BeihQCd/s
+         GuG6+KX2coM2MDLznFUn41voj2VL7KlrCsITKWDgzMc46kd4xIaR7nzTm3kAlztKO7J9
+         oqTA==
+X-Gm-Message-State: AOAM532z4QpewjUp82ZidKE4N7VncXW+vHAjY5gr+tVkP6zZp6mJ40x/
+        dqw1lywdd5xcch7VHQLJXUt9nViVPg==
+X-Google-Smtp-Source: ABdhPJziqbME6LQR9cT2xsvCNevM8ONjOtoYNfKtB2kAz1pz9qVbzDiyel+JGMXGJMZhR7ZJXiFoKA==
+X-Received: by 2002:a05:6638:3896:: with SMTP id b22mr4300070jav.37.1624372607096;
+        Tue, 22 Jun 2021 07:36:47 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.248])
+        by smtp.gmail.com with ESMTPSA id e2sm9917641iot.50.2021.06.22.07.36.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 22 Jun 2021 07:36:45 -0700 (PDT)
+Received: (nullmailer pid 3566365 invoked by uid 1000);
+        Tue, 22 Jun 2021 14:36:40 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-To:     bjorn.andersson@linaro.org
-Cc:     agross@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, phone-devel@vger.kernel.org,
+Cc:     phone-devel@vger.kernel.org, jeffrey.l.hugo@gmail.com,
         konrad.dybcio@somainline.org, marijn.suijten@somainline.org,
-        martin.botka@somainline.org, jeffrey.l.hugo@gmail.com,
-        jami.kettunen@somainline.org,
-        ~postmarketos/upstreaming@lists.sr.ht, devicetree@vger.kernel.org,
-        robh+dt@kernel.org, stephan@gerhold.net,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v7 4/5] soc: qcom: spm: Add compatible for MSM8998 SAWv4.1 L2
-Date:   Tue, 22 Jun 2021 16:11:16 +0200
-Message-Id: <20210622141117.358893-5-angelogioacchino.delregno@somainline.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210622141117.358893-1-angelogioacchino.delregno@somainline.org>
-References: <20210622141117.358893-1-angelogioacchino.delregno@somainline.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        martin.botka@somainline.org, ~postmarketos/upstreaming@lists.sr.ht,
+        robh+dt@kernel.org, daniel.lezcano@linaro.org,
+        bjorn.andersson@linaro.org, devicetree@vger.kernel.org,
+        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        jami.kettunen@somainline.org, agross@kernel.org
+In-Reply-To: <20210621181016.365009-3-angelogioacchino.delregno@somainline.org>
+References: <20210621181016.365009-1-angelogioacchino.delregno@somainline.org> <20210621181016.365009-3-angelogioacchino.delregno@somainline.org>
+Subject: Re: [PATCH v6 2/5] dt-bindings: soc: qcom: Add devicetree binding for QCOM SPM
+Date:   Tue, 22 Jun 2021 08:36:40 -0600
+Message-Id: <1624372600.481255.3566364.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the SAWv4.1 parameters for MSM8998's Gold and Silver clusters.
+On Mon, 21 Jun 2021 20:10:13 +0200, AngeloGioacchino Del Regno wrote:
+> Add devicetree binding for Qualcomm Subsystem Power Manager (SPM).
+> 
+> Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+> ---
+>  .../bindings/soc/qcom/qcom,spm.yaml           | 55 +++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
+> 
 
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
----
- drivers/soc/qcom/spm.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index 1401db8373dd..8077e337ee7e 100644
---- a/drivers/soc/qcom/spm.c
-+++ b/drivers/soc/qcom/spm.c
-@@ -54,6 +54,18 @@ static const struct spm_reg_data spm_reg_660_silver_l2  = {
- 	.avs_limit = 0x4580458,
- };
- 
-+static const struct spm_reg_data spm_reg_8998_gold_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4700470,
-+};
-+
-+static const struct spm_reg_data spm_reg_8998_silver_l2  = {
-+	.reg_offset = spm_reg_offset_v4_1,
-+	.avs_ctl = 0x1010031,
-+	.avs_limit = 0x4200420,
-+};
-+
- static const u16 spm_reg_offset_v2_1[SPM_REG_NR] = {
- 	[SPM_REG_CFG]		= 0x08,
- 	[SPM_REG_SPM_CTL]	= 0x30,
-@@ -149,6 +161,10 @@ static const struct of_device_id spm_match_table[] = {
- 	  .data = &spm_reg_660_gold_l2 },
- 	{ .compatible = "qcom,sdm660-silver-saw2-v4.1-l2",
- 	  .data = &spm_reg_660_silver_l2 },
-+	{ .compatible = "qcom,msm8998-gold-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_gold_l2 },
-+	{ .compatible = "qcom,msm8998-silver-saw2-v4.1-l2",
-+	  .data = &spm_reg_8998_silver_l2 },
- 	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
- 	  .data = &spm_reg_8974_8084_cpu },
- 	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
--- 
-2.32.0
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/qcom/qcom,spm.example.dt.yaml: power-controller@f9089000: compatible: ['qcom,msm8974-saw2-v2.1-cpu', 'qcom,saw2'] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/qcom/qcom,spm.example.dt.yaml: power-controller@f9089000: compatible: Additional items are not allowed ('qcom,saw2' was unexpected)
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/qcom/qcom,spm.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/soc/qcom/qcom,spm.example.dt.yaml: power-controller@f9089000: '#power-domain-cells' is a required property
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/power-domain.yaml
+Documentation/devicetree/bindings/soc/qcom/qcom,spm.example.dt.yaml:0:0: /example-0/power-controller@f9089000: failed to match any schema with compatible: ['qcom,msm8974-saw2-v2.1-cpu', 'qcom,saw2']
+\ndoc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/1495264
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
