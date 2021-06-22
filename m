@@ -2,92 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FC95C2B9F4
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF4FC2B9F4
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:28:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8A480611CE
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:21:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5459A608FE
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:28:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231272AbhFVMXg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Jun 2021 08:23:36 -0400
-Received: from mail-oi1-f176.google.com ([209.85.167.176]:39649 "EHLO
-        mail-oi1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230232AbhFVMXg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 08:23:36 -0400
-Received: by mail-oi1-f176.google.com with SMTP id m137so23527335oig.6;
-        Tue, 22 Jun 2021 05:21:19 -0700 (PDT)
+        id S231322AbhFVMak (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Jun 2021 08:30:40 -0400
+Received: from mail-ot1-f45.google.com ([209.85.210.45]:42861 "EHLO
+        mail-ot1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231181AbhFVMaj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 08:30:39 -0400
+Received: by mail-ot1-f45.google.com with SMTP id w23-20020a9d5a970000b02903d0ef989477so20949762oth.9;
+        Tue, 22 Jun 2021 05:28:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=IZYDZKvqn5RUIF5RdEqesk2HyugkV5KHruVqM1pBjnQ=;
-        b=ih/L7mckemXNVVirFTUoIDoy+PaU5yxoBpEynOikjb0IYBORjDnZSPWTFxNkafKeOc
-         w0suU34gZKVwUhZWSbddAsQNGyaEkwQ1TMSrB7RSR2gtS0Wfisyh1DL4jEkbF96fc76j
-         VygQEzcUfCsZVs/VKZiVwDWpGAlYLAii/ViMLrNh5heHaaqz6rJOn0TZDD+UAy89qc6k
-         55e6t6h4olJ5uU7dfNjr7fS7y8Osnd0kIOB1qkN3iTWTUKHBS//LOpPLXZq69hd+SBpa
-         UkIN8CuLUS48L2teZ/8Gga3+wq63dyTvRpQUpRiIKYRwGWVfCnXvzMfefa97OtHz6CZl
-         +YZw==
-X-Gm-Message-State: AOAM532DtlJDT+zZ1CDF+mnZyGBB0uKqb0pqUmXDeu/FjLMPpUjgR9NF
-        LJuOiWCFjlY8G44x4LUpwd1ZLeybP7z1o3qhBZw=
-X-Google-Smtp-Source: ABdhPJyLsZOI1aSRXzpQfGzAVUpFHDUXhxWlEc/a8ulGsQ0/wesWKrBLi8PmY5ghpoON+k/VTYOBPvumZEsSFtmYSPc=
-X-Received: by 2002:aca:49c7:: with SMTP id w190mr2847505oia.157.1624364479311;
- Tue, 22 Jun 2021 05:21:19 -0700 (PDT)
+        bh=cHtNQpCSXG22FMwHUu24sGvKayaAtRpBNbls39GRY0k=;
+        b=fxRUVIhQfUbgt5T28jgXCetyExXj9U+0+MbKqK+yaXfRNHrGdaD/U+T68jXd3KPnDc
+         0K57wLEUozn5sflb8WAq6TqjWVbVYB059M7mX8LIjaG9614rUP5FKagJSt3IcuyS7anR
+         IuYcBb99Llp06nSdT2YBbDcvb433K+k1/rDvJ1xiE+EHZFaIp3FsJTbCobFO5O3Dh5Mq
+         qAQ7EF9w6dkHKsIgU4AMp6rFXzWCkU/rtPZBFr0I8dnpwxax7wRrVccL5FAhobbzTlHH
+         mQZt9oTWifEzVukglDcanE5yMre3teo2iA403N9Dm7tAgywcT+gUam8fb/hMqNIrtnDb
+         8nFA==
+X-Gm-Message-State: AOAM531NUKTy0qzycz/5Hv3S2P1Lw1MdW0ssG8AlDVjUDNd1W0dCm63V
+        COWj7GSK3B3ZHVxZ9AXO0LkzN2eQA/nK/61dpOU=
+X-Google-Smtp-Source: ABdhPJz11edPPEwIzAWit6kBhVDryZmRqBd5EY+LP4jHB0+T2TRFdm9ADW+e6N24AglBRWbewC8GNKXh8rFIBXNmq2c=
+X-Received: by 2002:a05:6830:1bf7:: with SMTP id k23mr3061137otb.206.1624364903953;
+ Tue, 22 Jun 2021 05:28:23 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210621220249.GA3306177@bjorn-Precision-5520>
-In-Reply-To: <20210621220249.GA3306177@bjorn-Precision-5520>
+References: <20210622075925.16189-1-lukasz.luba@arm.com> <20210622075925.16189-4-lukasz.luba@arm.com>
+In-Reply-To: <20210622075925.16189-4-lukasz.luba@arm.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 22 Jun 2021 14:21:06 +0200
-Message-ID: <CAJZ5v0gkETL83rm71LiJ8sed=UFn00_Sss8wJ20-+KQiJR0hew@mail.gmail.com>
-Subject: Re: [bugzilla-daemon@bugzilla.kernel.org: [Bug 213481] e1000e
- hardware failure due to PCI patch in all kernels 5.10.36+ with Intel I219-V]
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Michael <phyre@rogers.com>,
-        Jesse Brandeburg <jesse.brandeburg@intel.com>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
+Date:   Tue, 22 Jun 2021 14:28:11 +0200
+Message-ID: <CAJZ5v0iVwpn0_wCZOh43DOeR2mudWYJyseMdtMsZGR-sjQ1X9Q@mail.gmail.com>
+Subject: Re: [RFC PATCH 3/4] cpufreq: Add Active Stats calls tracking
+ frequency changes
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Chris Redpath <Chris.Redpath@arm.com>, Beata.Michalska@arm.com,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Amit Kachhap <amit.kachhap@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jun 22, 2021 at 12:02 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+On Tue, Jun 22, 2021 at 9:59 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
 >
-> FYI.  Looks like 4514d991d992 ("PCI: PM: Do not read power state in
-> pci_enable_device_flags()") appeared in v5.13-rc1, so it would be nice
-> to fix before v5.13.
+> The Active Stats framework tracks and accounts the activity of the CPU
+> for each performance level. It accounts the real residency, when the CPU
+> was not idle, at a given performance level. This patch adds needed calls
+> which provide the CPU frequency transition events to the Active Stats
+> framework.
+>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 802abc925b2a..d79cb9310572 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -14,6 +14,7 @@
+>
+>  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>
+> +#include <linux/active_stats.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpu_cooling.h>
+> @@ -387,6 +388,8 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>
+>                 cpufreq_stats_record_transition(policy, freqs->new);
+>                 policy->cur = freqs->new;
+> +
+> +               active_stats_cpu_freq_change(policy->cpu, freqs->new);
+>         }
+>  }
+>
+> @@ -2085,6 +2088,8 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>                             policy->cpuinfo.max_freq);
+>         cpufreq_stats_record_transition(policy, freq);
+>
+> +       active_stats_cpu_freq_fast_change(policy->cpu, freq);
+> +
 
-I think let's revert it for now and revisit.
+This is quite a bit of overhead and so why is it needed in addition to
+the code below?
 
-Do you want me to push the revert?
+And pretty much the same goes for the idle loop change.  There is
+quite a bit of instrumentation in that code already and it avoids
+adding new locking for a reason.  Why is it a good idea to add more
+locking to that code?
 
-> https://bugzilla.kernel.org/show_bug.cgi?id=213481
->
-> Initial report:
->
->   On the 4.19 kernel, this works perfect.  It also works perfectly in
->   Windows.  If I reboot into 4.19, there is no problem with networking,
->   however in 5.10, there is ZERO network connectivity.  The link NEVER
->   comes up.  You can't assign an IP address to the interface.
->
->
-> From comment #2:
->
->   If I revert commit 4514d991d99211f225d83b7e640285f29f0755d0 (
->   https://github.com/torvalds/linux/commit/4514d991d99211f225d83b7e640285f29f0755d0)
->   from the 5.10.36 kernel, I do NOT have this hardware failure
->   message.  This commit relates to PCI power state.
->
->   It would appear something about this change that the e1000e driver
->   is not handling properly on this system, causing the card to not
->   work.
->
->   As mentioned this is in current kernel versions (5.13, 5.11, and
->   5.10.36+).  Given that this is a regression, a breaking change for
->   the usability of these cards, and we know exactly what causes it for
->   a hopefully easy fix, I've upped the severity.
+>         if (trace_cpu_frequency_enabled()) {
+>                 for_each_cpu(cpu, policy->cpus)
+>                         trace_cpu_frequency(freq, cpu);
+> --
