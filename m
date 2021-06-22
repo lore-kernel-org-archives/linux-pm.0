@@ -2,130 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC72AC2B9F4
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:28:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E947C2B9F4
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:34:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A0ECF61076
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:28:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 598EF6128E
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Jun 2021 12:34:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231181AbhFVMat (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Jun 2021 08:30:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45314 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231598AbhFVM3K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 08:29:10 -0400
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10F49C061574
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jun 2021 05:26:55 -0700 (PDT)
-Received: by mail-pg1-x534.google.com with SMTP id e20so16983791pgg.0
-        for <linux-pm@vger.kernel.org>; Tue, 22 Jun 2021 05:26:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=rn23lz9+ZsFBagDuO6GXp2Y6h6QY+oC/QFMT8WiVZ9w=;
-        b=goLfY1Yx56kumnREB0xvGwtIFtB2RW0ogyxwEs9GuRz9c0f0S/xxdIakEMjxz2lKOh
-         4Md55FU4yt0tO3Md3AUbU9iGbZ8abuxNIN8MbPTKA3oupSdQdmjhJBxXN8b1VDZjjPmH
-         Um+0TZFZ9AuCe6Z5cE6AHl6nrimLMbj+RdXdwfK8tRDzNdkKNSBPWrrXMv+u7E/RtHTs
-         gBwLk8Pl0K/vMxW8k48qNUDeOmkmZiFqftn/RWgF0YcaPFa4fdlHrs+f6EUbzCXJkOtq
-         vb1aD/Oj4bDQhxrMRhQQCm0aOn6HpJxR/LMgkl0FJX3H2vHvaZrucDL5NRJlldIT2e5D
-         MlNA==
+        id S231603AbhFVMg3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Jun 2021 08:36:29 -0400
+Received: from mail-ot1-f48.google.com ([209.85.210.48]:43599 "EHLO
+        mail-ot1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231441AbhFVMg3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Jun 2021 08:36:29 -0400
+Received: by mail-ot1-f48.google.com with SMTP id i12-20020a05683033ecb02903346fa0f74dso21015720otu.10;
+        Tue, 22 Jun 2021 05:34:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=rn23lz9+ZsFBagDuO6GXp2Y6h6QY+oC/QFMT8WiVZ9w=;
-        b=mZ1dCCKZWNypuFH3f+yG4RXst8xV8kLqGuoNjmrCaRG3u4bZV7fUy6nqKZb1gPwluw
-         +g4oggDmmMUxhPsbDkiwt6LAhZUXgZymMkxOu8K2Rhim6tYbEopAo4Rz7rfG6JJBP+aF
-         EC9v+Dpubo5GNWYKnKoNR55HZrec/sLuzbEJUGUrmNWnGGxpp7qpZ0lW02xRQOh+A1wP
-         F/aWYb/V/qQrZHaF8eI1b1qfb2Fm+i4ZqVYTtQqVcNMpEnfjF7XJ89NMvyznaQpcMeGd
-         zU8MrB1f6m0FdHBR2xf8EkaKrcbsoAbXtwDgFzOt/45Ugz1xKdA6jPYM0UTja/HCAvLz
-         JSAg==
-X-Gm-Message-State: AOAM530cVZs5AZFFKq3ofn+PgX1yaRBcbhRnlBHbKLqQ2+0r6OCaMgBr
-        OCOQ0wn4oXkpFWNBNzwi7G+NqA==
-X-Google-Smtp-Source: ABdhPJzSDQ8Guim3I3F8WXbXSIcesoPwv/cvlh0sbS1aWXSmaFBCWtp5c8J8zF1jJwhiVkiK55R/Yg==
-X-Received: by 2002:a63:aa07:: with SMTP id e7mr3537869pgf.170.1624364814621;
-        Tue, 22 Jun 2021 05:26:54 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id r134sm14869976pfc.68.2021.06.22.05.26.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Jun 2021 05:26:54 -0700 (PDT)
-Message-ID: <60d1d70e.1c69fb81.856a7.6371@mx.google.com>
-Date:   Tue, 22 Jun 2021 05:26:54 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ukJopPdTpEa+ImpsHAnJSt0S+hgCvfwUVOz1LgzX7Ks=;
+        b=K/7ZJ+xVxHIh76wAuC5/E5xXT4cvEDgPhODNxJpdA/RBfGGUnL2OCMju5JU3rmPZCn
+         OAMhLJrOKx3upnK11ag29dtHQSh2WCpMFztKtWCg1sn48G9jz3vddUTEzS4mSsqWRAjz
+         tdeDHnNCPRf1L5KlcCGdeRCuUYdeNippnsftEbPdiujN0cLOLjQiTtq7+aiS1XpG5rGX
+         2KT15siAlXHdiYC+3pp8uYNFvQURtV7j3ahxKu7lCFdxftVIONcA7WA0/Su6PHSQPAMw
+         D7dBXOlhnl5YQVAMTmReXHKlYLtep9j4Xri177JJKSAk6kPLKHJ41Y880V6ZdUoouFZw
+         LhhA==
+X-Gm-Message-State: AOAM530IWdfAlGAXZITdB7zEB0MYwDxy81m8tt4I0F4huymkYHqweXi9
+        i5yNdbdb6UR+yCrBn/jaxW1d+ifAoOtg8mixVfk=
+X-Google-Smtp-Source: ABdhPJwPPzStcvS1Yu9sCQdl1M15jPrR6uHAm1d+c55oKiM4yG4Hm1H62+4vxR8Lmsrsa+zw938u7IdW/ZJGppFC2hA=
+X-Received: by 2002:a9d:674b:: with SMTP id w11mr2928120otm.260.1624365252125;
+ Tue, 22 Jun 2021 05:34:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Kernel: v5.13-rc7-145-g1b02478a82ab
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing build: 7 builds: 0 failed,
- 7 passed (v5.13-rc7-145-g1b02478a82ab)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+References: <20210622075925.16189-1-lukasz.luba@arm.com> <20210622075925.16189-3-lukasz.luba@arm.com>
+In-Reply-To: <20210622075925.16189-3-lukasz.luba@arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 22 Jun 2021 14:33:59 +0200
+Message-ID: <CAJZ5v0iGv_1d3BT0HowLgecOfhNHNQdOwH6Kef5WE4-zeBbp2Q@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/4] cpuidle: Add Active Stats calls tracking idle entry/exit
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Chris Redpath <Chris.Redpath@arm.com>, Beata.Michalska@arm.com,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Amit Kachhap <amit.kachhap@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed (v5.13-rc7-145-g1b02478a82ab)
+On Tue, Jun 22, 2021 at 9:59 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+> The Active Stats framework tracks and accounts the activity of the CPU
+> for each performance level. It accounts the real residency,
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-13-rc7-145-g1b02478a82ab/
+No, it doesn't.  It just measures the time between the entry and exit
+and that's not the real residency (because it doesn't take the exit
+latency into account, for example).
 
-Tree: pm
-Branch: testing
-Git Describe: v5.13-rc7-145-g1b02478a82ab
-Git Commit: 1b02478a82abb3950fbd9d64cf8c7d404ffe08d6
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+> when the CPU was not idle, at a given performance level. This patch adds needed calls
+> which provide the CPU idle entry/exit events to the Active Stats
+> framework.
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
+And it adds overhead to overhead-sensitive code.
 
-Detailed per-defconfig build reports:
+AFAICS, some users of that code will not really get the benefit, so
+adding the overhead to it is questionable.
 
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
+First, why is the existing instrumentation in the idle loop insufficient?
 
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
+Second, why do you need to add locking to this code?
 
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----
-For more info write to <info@kernelci.org>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index ef2ea1b12cd8..24a33c6c4a62 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -8,6 +8,7 @@
+>   * This code is licenced under the GPL.
+>   */
+>
+> +#include <linux/active_stats.h>
+>  #include <linux/clockchips.h>
+>  #include <linux/kernel.h>
+>  #include <linux/mutex.h>
+> @@ -231,6 +232,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>         trace_cpu_idle(index, dev->cpu);
+>         time_start = ns_to_ktime(local_clock());
+>
+> +       active_stats_cpu_idle_enter(time_start);
+> +
+>         stop_critical_timings();
+>         if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
+>                 rcu_idle_enter();
+> @@ -243,6 +246,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>         time_end = ns_to_ktime(local_clock());
+>         trace_cpu_idle(PWR_EVENT_EXIT, dev->cpu);
+>
+> +       active_stats_cpu_idle_exit(time_end);
+> +
+>         /* The cpu is no longer idle or about to enter idle. */
+>         sched_idle_set_state(NULL);
+>
+> --
+> 2.17.1
+>
