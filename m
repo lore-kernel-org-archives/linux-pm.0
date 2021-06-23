@@ -2,144 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EC05C4743C
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Jun 2021 15:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E00C4743C
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Jun 2021 16:21:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F40286100B
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Jun 2021 15:13:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A563360FEE
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Jun 2021 16:21:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231370AbhFWPPV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Jun 2021 11:15:21 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:48620 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231364AbhFWPPV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jun 2021 11:15:21 -0400
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 2.1.0)
- id 79ccbd21b1696034; Wed, 23 Jun 2021 17:13:02 +0200
-Received: from kreacher.localnet (89-64-80-57.dynamic.chello.pl [89.64.80.57])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 52FB9669A62;
-        Wed, 23 Jun 2021 17:13:01 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V4 2/4] cpufreq: intel_pstate: Migrate to ->offline() instead of ->stop_cpu()
-Date:   Wed, 23 Jun 2021 17:13:00 +0200
-Message-ID: <5741915.lOV4Wx5bFT@kreacher>
-In-Reply-To: <6144911f36d3d1f5faddf81d744bd39946843f6b.1624421816.git.viresh.kumar@linaro.org>
-References: <cover.1624421816.git.viresh.kumar@linaro.org> <6144911f36d3d1f5faddf81d744bd39946843f6b.1624421816.git.viresh.kumar@linaro.org>
+        id S229822AbhFWQXY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Jun 2021 12:23:24 -0400
+Received: from mail-ot1-f49.google.com ([209.85.210.49]:33418 "EHLO
+        mail-ot1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229726AbhFWQXY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jun 2021 12:23:24 -0400
+Received: by mail-ot1-f49.google.com with SMTP id o17-20020a9d76510000b02903eabfc221a9so2533498otl.0;
+        Wed, 23 Jun 2021 09:21:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=35WsYJT9YpRPnzEEhoqfjKbQt4vKvTmr17v8IGf8pkA=;
+        b=sYAtF3zWwgT0vjuCBM1ozsHW6O+zcXHTrlpOn/qlwwtqe3hhzc0dL1xHVQC3tlXcD6
+         40g6uk8yFFie9GKfV8MfBZ7ejiMeMwJzOk2YFce98HA88itoBVVgPsKqZBIxiZN2BIeI
+         ZZ1Ys4SRgjYahkjZg6DtkDVTVnOhITfjHq7YvWX2b539UbyVFF0RcEeGCEWG6g53wXAO
+         i0Uzb9GTeJXLdD/JXrC2tVg2VoqcUXJmD4oUJ3kGT4szkXzlXrQv0D1utPPGYPSNYTbp
+         4WnUSLiIez/bWI3n9lMCpF+0WWSgajCooovSRyftgzt46tJmkW07C+VYWV/tO77aps0X
+         lIoA==
+X-Gm-Message-State: AOAM532qxeyZIe/VJN8kMK3epXDtRPfRShmqWJ6F06ndCOHH8oZgrj54
+        N/FseOxXaSQmi3hU2yDisId+uHWJb18BxA+VilrCPQmbpmc=
+X-Google-Smtp-Source: ABdhPJzBgjWy+VqeBJbt+KGxoD1N/UTshnFIiaEUPd2SEQOGfdsJ3Kqg/RQuV+59rHsN4vwCi3U7bejsvXkGw+6ep8U=
+X-Received: by 2002:a9d:1905:: with SMTP id j5mr598865ota.321.1624465265283;
+ Wed, 23 Jun 2021 09:21:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 23 Jun 2021 18:20:54 +0200
+Message-ID: <CAJZ5v0gcogmEi_-wcycEv77443_LT9w-7Ln_x1eiBm=mPiX9hA@mail.gmail.com>
+Subject: [GIT PULL] Power management fix for v5.13-rc8
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 89.64.80.57
-X-CLIENT-HOSTNAME: 89-64-80-57.dynamic.chello.pl
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrfeegfedgkeeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetgefgleetgeduheeugeeikeevudelueelvdeufeejfeffgeefjedugfetfeehhfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeekledrieegrdektddrheejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedtrdehjedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehvihhrvghshhdrkhhumhgrrheslhhinhgrrhhordhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlvghnsgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohep
- vhhinhgtvghnthdrghhuihhtthhotheslhhinhgrrhhordhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wednesday, June 23, 2021 6:24:40 AM CEST Viresh Kumar wrote:
-> commit 367dc4aa932b ("cpufreq: Add stop CPU callback to cpufreq_driver
-> interface") added the stop_cpu() callback to allow the drivers to do
-> clean up before the CPU is completely down and its state can't be
-> modified.
-> 
-> At that time the CPU hotplug framework used to call the cpufreq core's
-> registered notifier for different events like CPU_DOWN_PREPARE and
-> CPU_POST_DEAD. The stop_cpu() callback was called during the
-> CPU_DOWN_PREPARE event.
-> 
-> This is no longer the case, cpuhp_cpufreq_offline() is called only once
-> by the CPU hotplug core now and we don't really need to separately
-> call stop_cpu() for cpufreq drivers.
-> 
-> Migrate to using the offline() callbacks instead of stop_cpu().
-> 
-> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/intel_pstate.c | 10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 0e69dffd5a76..b4c0ff7f5b71 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2335,6 +2335,8 @@ static int intel_pstate_cpu_offline(struct cpufreq_policy *policy)
->  
->  	pr_debug("CPU %d going offline\n", cpu->cpu);
->  
-> +	intel_pstate_clear_update_util_hook(policy->cpu);
+Hi Linus,
 
-As mentioned already in
+Please pull from the tag
 
-https://lore.kernel.org/linux-pm/CAJZ5v0g2tCZptcqh+c55YYiO7rDHmZivMLsmpq_7005zNPN1xg@mail.gmail.com/
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.13-rc8
 
-this isn't particularly clean, because intel_pstate_cpu_offline() is
-also used in the passive mode where the above call is not needed.
+with top-most commit 4d6035f9bf4ea12776322746a216e856dfe46698
 
-I would make a change like in the patch below instead.
+ Revert "PCI: PM: Do not read power state in pci_enable_device_flags()"
 
-> +
->  	if (cpu->suspended)
->  		return 0;
+on top of commit 13311e74253fe64329390df80bed3f07314ddd61
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Combine ->stop_cpu() and ->offline()
+ Linux 5.13-rc7
 
-Combine the ->stop_cpu() and ->offline() callback routines for the
-active mode of intel_pstate so as to avoid setting the ->stop_cpu
-callback pointer which is going to be dropped from the framework.
+to receive a power management fix for 5.13-rc8.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+This reverts a recent PCI power management commit that causes
+initialization issues to appear on some systems.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2577,11 +2577,13 @@ static int intel_pstate_cpu_online(struc
- 	return 0;
- }
- 
--static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
-+static int intel_pstate_stop_cpu(struct cpufreq_policy *policy)
- {
- 	pr_debug("CPU %d stopping\n", policy->cpu);
- 
- 	intel_pstate_clear_update_util_hook(policy->cpu);
-+
-+	return intel_pstate_cpu_offline(policy);
- }
- 
- static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-@@ -2654,8 +2656,7 @@ static struct cpufreq_driver intel_pstat
- 	.resume		= intel_pstate_resume,
- 	.init		= intel_pstate_cpu_init,
- 	.exit		= intel_pstate_cpu_exit,
--	.stop_cpu	= intel_pstate_stop_cpu,
--	.offline	= intel_pstate_cpu_offline,
-+	.offline	= intel_pstate_stop_cpu,
- 	.online		= intel_pstate_cpu_online,
- 	.update_limits	= intel_pstate_update_limits,
- 	.name		= "intel_pstate",
+Thanks!
 
 
+---------------
 
+Rafael J. Wysocki (1):
+      Revert "PCI: PM: Do not read power state in pci_enable_device_flags()"
+
+---------------
+
+ drivers/pci/pci.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
