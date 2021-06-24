@@ -2,112 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 567D5C48BC2
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 02:14:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31D8BC48BC2
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 02:22:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 36F7D613AB
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 02:14:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 101E1613B2
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 02:22:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229800AbhFXCQV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Jun 2021 22:16:21 -0400
-Received: from regular1.263xmail.com ([211.150.70.203]:47958 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229774AbhFXCQV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jun 2021 22:16:21 -0400
-X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jun 2021 22:16:20 EDT
-Received: from localhost (unknown [192.168.167.16])
-        by regular1.263xmail.com (Postfix) with ESMTP id B2E208E9;
-        Thu, 24 Jun 2021 10:06:29 +0800 (CST)
-X-MAIL-GRAY: 0
-X-MAIL-DELIVERY: 1
-X-ADDR-CHECKED4: 1
-X-SKE-CHECKED: 1
-X-ABS-CHECKED: 1
-X-ANTISPAM-LEVEL: 2
-Received: from [10.4.23.202] (unknown [58.240.82.166])
-        by smtp.263.net (postfix) whith ESMTP id P12363T139710624155392S1624500379526366_;
-        Thu, 24 Jun 2021 10:06:19 +0800 (CST)
-X-IP-DOMAINF: 1
-X-UNIQUE-TAG: <f5da0c6db39b3ea47ff3dce015b91dc9>
-X-RL-SENDER: pingshuo@uniontech.com
-X-SENDER: pingshuo@uniontech.com
-X-LOGIN-NAME: pingshuo@uniontech.com
-X-FST-TO: linux-kernel@vger.kernel.org
-X-RCPT-COUNT: 7
-X-SENDER-IP: 58.240.82.166
-X-ATTACHMENT-NUM: 0
-X-System-Flag: 0
-Subject: Re: [PATCH] hibernation:stop resume screen during hibernation
-To:     Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20210622124547.28317-1-pingshuo@uniontech.com>
- <CAJZ5v0gnYHmbWANVkoG+6XrUNzBB4__uM0Ladrpn5=L0KEiefA@mail.gmail.com>
- <20210622134703.GA12358@duo.ucw.cz>
-From:   pingshuo <pingshuo@uniontech.com>
-Message-ID: <f1ac4975-775e-93c4-c3a7-8b3438b6373d@uniontech.com>
-Date:   Thu, 24 Jun 2021 10:06:19 +0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+        id S229864AbhFXCZP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Jun 2021 22:25:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49826 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229758AbhFXCZP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Jun 2021 22:25:15 -0400
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A860C06175F
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jun 2021 19:22:56 -0700 (PDT)
+Received: by mail-pg1-x530.google.com with SMTP id d12so3415564pgd.9
+        for <linux-pm@vger.kernel.org>; Wed, 23 Jun 2021 19:22:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=8E0w6EUy5FYV/ZXtFIifZuvspQzbp8qJ/1Ru+U5hWb0=;
+        b=rhcqG5bXRF+/qQu+0PcRAAaZjK7SrDV3G9a1cbYR8BT5Mz2pFl+hUUdvZN0NYn6yVE
+         GGfr2K1IpqQGqoiqk1Wedr2+J4pei2krzolrPowwvr55Vw869by7D5gG/ARMdd0b/qmY
+         AJwdORvXSghESA+PSbE6ve6KEfC7HZ1HG6OLjYqEAg1HE0LXiKWw1J05kuIkSbXYnF//
+         9ekQ5f7BhLj9LqEKdI/OnqMm4WZGXQorynfiOvZMZRnIkn+xWCvNzgs7Ge55Klc6Dr4y
+         M2t6VjCl/BKGoYFThOFYFy/EE4IAfDAjvk5s3Yq7HiOpylTAu45ceA5qquUy5lbxMdHg
+         xBrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=8E0w6EUy5FYV/ZXtFIifZuvspQzbp8qJ/1Ru+U5hWb0=;
+        b=W3VWY/Ue4YcfVtGRszP5h56btP/Or23aPKAsg12LDRkbDQSnQjarAwFKGin43sjGZs
+         ezTHUlyABZE+RiBUyz4CFd0qC1wnPHYJ9FuYVF7F6tx2+Cab4PTEjgcOzXZMV2cN6fqs
+         pBbg4lY2FFKHvgI6rQnv6BbcZhj/4W2hSXqeVnSWWtMjR01snhz+easpqzdnMUwlSJ56
+         VldBmJxd6AsHv5VMre7VsCUVwmEVSa8IEz96gmvHW2awv3Lt8MaK/IVgxu53SUkmDQ/S
+         Q4p0+ig/IZ+LdqXglvmtKEHedfBJ3hGZptdEI+SPRJ12FQhOCOFoJ9ZgYfQ8JlbrN9sK
+         tTzA==
+X-Gm-Message-State: AOAM532ezKk1eDpP5OyLUwpSzYFZQ0n4kPmKUOJ5LmNrwP6TJbWqCFh3
+        bTfWHqrp3Oj3QJFO1hfSNDv+1g==
+X-Google-Smtp-Source: ABdhPJwWW49GPW2MjWU5iNXoK9O0NEZ3kG9SNphywPzGZivZ7VLJeEnm5bhuchn9VRe6TGS/NDA3CQ==
+X-Received: by 2002:a63:1143:: with SMTP id 3mr2553834pgr.166.1624501375726;
+        Wed, 23 Jun 2021 19:22:55 -0700 (PDT)
+Received: from localhost ([136.185.134.182])
+        by smtp.gmail.com with ESMTPSA id j2sm1022237pfb.53.2021.06.23.19.22.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 23 Jun 2021 19:22:54 -0700 (PDT)
+Date:   Thu, 24 Jun 2021 07:52:52 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Qian Cai <quic_qiancai@quicinc.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V3 2/4] cpufreq: cppc: Pass structure instance by
+ reference
+Message-ID: <20210624022252.zrxsftrvcd43eqra@vireshk-i7>
+References: <cover.1624266901.git.viresh.kumar@linaro.org>
+ <b910f89cf11f6916319f9a2fb48d9146005318b1.1624266901.git.viresh.kumar@linaro.org>
+ <20210623134533.GB12411@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <20210622134703.GA12358@duo.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210623134533.GB12411@arm.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 23-06-21, 14:45, Ionela Voinescu wrote:
+> On Monday 21 Jun 2021 at 14:49:35 (+0530), Viresh Kumar wrote:
+> > Don't pass structure instance by value, pass it by reference instead.
+> >
+> 
+> Might be best to justify the change a bit :)
 
+I had it and removed later as I thought it would be obvious :)
 
->> The display will be woken up during hibernation.
->
-> That actually depends on its driver.
->
->> if the computer equipment is poor, it will cause the screen to flicker.
->> Skip to resume the display devices in "thaw".
+> For me this is a judgement call, and I don't really see the reasons for
+> changing it: we don't care if the structure is modified or not, as we're
+> not reusing the data after the call to cppc_get_rate_from_fbctrs().
+> More so, in this scenario we might not even want for the called function
+> to modify the counter values. Also there is no further call to a function
+> in cppc_get_rate_from_fbctrs(), that might require references to the
+> fb_ctrs.
+> 
+> So what is the reason behind this change?
 
-> But this patch looks like a proof of concept rather than a proper solution.
+How about this commit log then:
 
->This needs to be done more carefully.
+Theoretically speaking, call by reference is cheaper/faster than call by value
+for structures as the later requires the compiler to make a new copy of the
+whole structure (which has four u64 values here), to be used by the called
+function, while with call by reference we just need to pass a single pointer
+(u64 on 64-bit architectures) to the existing structure.
 
-When entering hibernation, the display screen will be off first, then 
-will be on (the image data is written to the disk at this time), and 
-finally the display screen will be off again.
+Yes, on modern architectures, the compilers will likely end up using the
+processor registers for passing this structure as it isn't doesn't have lot of
+fields and it shouldn't be bad eventually, but nevertheless the code should do
+the right thing without assuming about the compiler's or architecture's
+optimizations.
 
-> If you want to deal with PCI devices, that needs to happen at the PCI
-bus type level in the first place
+Don't pass structure instance by value, pass it by reference instead.
 
-what is the "PCI bus type level" mean ? Do you mean to modify it in 
-dev->bus or dev-> bus -> pm?
-
-
-  We tested different graphics cards,like amdgpu, radeon,i915,nvidia, 
-this issue occurs during entering hibernation.
-Based on the above test, several graphics cards will be resumed and the 
-screen is on, so we add code here.
-Did you have any idea  if these code is added in here ?
-
-
-
-
-Please answer a question for me.
-
-Resuming device is to write the image to the disk. Is it necessary to 
-wake up all devices? Why not just wake up the devices related to writing 
-image?
-
-Anticipate your response.
-
-thanks,
-                                                               pingshuo
-
-
+-- 
+viresh
