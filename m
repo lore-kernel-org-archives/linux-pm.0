@@ -2,172 +2,219 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B1CFC48BDF
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 09:18:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4849EC49EA6
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 09:27:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0049261358
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 09:18:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 27BE0613F1
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Jun 2021 09:27:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231529AbhFXJVP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Jun 2021 05:21:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57762 "EHLO
+        id S231717AbhFXJ3n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Jun 2021 05:29:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231298AbhFXJVO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jun 2021 05:21:14 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC1C7C061756;
-        Thu, 24 Jun 2021 02:18:54 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id f30so9153420lfj.1;
-        Thu, 24 Jun 2021 02:18:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=IXfOM6leRUQqiZ6AFWwroCwvOGjuryrfMXxJydNy138=;
-        b=einnfXZf7ii7QJx6TtS31VgK5ZNpYU/8FyhQydjGvH05VJVt1Fe56oZu+hoR4NerQ+
-         Y3RvVVU1SB/Y4h3mCDcJYa//JHH9+Iu1qJ9jCVNI2rn2n12fJaTb3mm3GGqKeqYykSEr
-         5PTeJeT2EIe80HHRMOmU1npz2Y3yYu4/XbNY2+CYBMuT7GR7yNDfyG0/B0UDtalCKKJg
-         tOujS0x8k0T+wWX0xjhUNoroBk2VJAOWLA9lGk0luUX6cN9TveuFLW/vo557fwyA8O2+
-         6T5Y9+Zu3Zw1UywKLulIsNQgSzY4SccBCvfqz8BSdQOndk8MuPiQXaC6B5mkOD7Lb72T
-         SQdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=IXfOM6leRUQqiZ6AFWwroCwvOGjuryrfMXxJydNy138=;
-        b=kK0IBG354aEqyNijmpZ/dgi253okOlRt/0GcloIKkUZTXqSa55z4H2cBpdd7bCETQs
-         BpF5ifhGI3dCVj46m2hTFH1mT90EuxuDGaEHepo6QX7mVdCwNB4JXWxe1L4DBhIHNmai
-         pDV9MdmkLGFarC6niFTGefPfdCBT2JyXOR3YPjYweIUtvh5Kyw48e5WXHv7+HruLC/KA
-         MQxYS2I0hto4dfsVrObxaxboUM+8hbPedO3Jbx2+GHx09w1AwpB2KrW/FbdOrZ//NX5S
-         kkEbCgeZ13FlGW6Pa3/QXk6DL3i0cdfAZx83G5E9Gx9d7fKL9/9TdMa+Y/n0n1jBJ48V
-         L2Aw==
-X-Gm-Message-State: AOAM5321n7FfdbCh5+5peIVyMk0qpabPnJRqZcPJ5BdBJ7SHxgeP1sGR
-        fp9AvV9gqVLnldWwnqwXNtA=
-X-Google-Smtp-Source: ABdhPJxe79tfNAU9V/IgOi1WykGvXxyfL0E4yl5Eut/WPsbOWE+91CSHDj3tbIYXTECe9bdMg7yqtg==
-X-Received: by 2002:ac2:5d22:: with SMTP id i2mr3113433lfb.371.1624526333340;
-        Thu, 24 Jun 2021 02:18:53 -0700 (PDT)
-Received: from localhost.localdomain ([185.188.71.122])
-        by smtp.gmail.com with ESMTPSA id l15sm234012ljc.35.2021.06.24.02.18.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Jun 2021 02:18:52 -0700 (PDT)
-From:   Pawel Dembicki <paweldembicki@gmail.com>
-Cc:     Daniel Gonzalez Cabanelas <dgcbueu@gmail.com>,
-        Pawel Dembicki <paweldembicki@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] power: reset: linkstation-poweroff: add new device
-Date:   Thu, 24 Jun 2021 11:18:12 +0200
-Message-Id: <20210624091813.42334-2-paweldembicki@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210624091813.42334-1-paweldembicki@gmail.com>
-References: <20210624091813.42334-1-paweldembicki@gmail.com>
+        with ESMTP id S230274AbhFXJ3m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jun 2021 05:29:42 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1C74C061574;
+        Thu, 24 Jun 2021 02:27:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=HJq7JyHhmABk8L3QGBLRjZPdtxMaLFzHsnnSMC1ABZw=; b=ZJmKQDXJrjfujPiaFSZRaxrkjX
+        AxR9+iD7YwG9o0G+A1aRLp7nv7aHw2No+R2WK9bi/7ULzMJZwOOym75yFSpCT67jpVQLFp/X/p/Z8
+        hIzQwZ32qidkz9EsURph7rabUpvWSd1XGqhmXWtnj0wLXE4m6os7klnE/TLxvWdTPsusuT1Turqg4
+        4OKpdr+2HZpedCC9ckFeHbZe9GDDUHzw1AJnL6N69K0R12yCkH/C1Z859ck1E2h9wV5FdKQO0ZpgY
+        bfZqNh6VW8fBHAdrG5uYVmOC8oMlkN6sBFXtT/uB6Lrrm4i6Tc6MTbHkYkFCxVcDNFO0YhDMBuobv
+        NBb2E4/A==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1lwLdW-00BBs2-N6; Thu, 24 Jun 2021 09:27:09 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id C47053002D7;
+        Thu, 24 Jun 2021 11:27:07 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
+        id AE4A02B64C070; Thu, 24 Jun 2021 11:27:07 +0200 (CEST)
+Message-ID: <20210624092615.947779232@infradead.org>
+User-Agent: quilt/0.66
+Date:   Thu, 24 Jun 2021 11:21:59 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, Will Deacon <will@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2 3/4] ptrace: Track __TASK_TRACED state in p->ptrace
+References: <20210624092156.332208049@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This commit introduces support for NETGEAR ReadyNAS Duo v2.
-This device use bit 4 of LED[2:0] Polarity Control Register to indicate
-AC Power loss.
+Just like we can recover __TASK_STOPPED from p->jobctl, add some bits
+to p->ptrace such that we can recover __TASK_TRACED.
 
-For more details about AC loss detection in NETGEAR ReadyNAS Duo v2,
-please look at the file:
-RND_5.3.13_WW.src/u-boot/board/mv_feroceon/mv_hal/usibootup/usibootup.c
-from Netgear GPL sources.
-
-Signed-off-by: Pawel Dembicki <paweldembicki@gmail.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/power/reset/linkstation-poweroff.c | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ include/linux/ptrace.h       |   36 +++++++++++++++++++++---------------
+ include/linux/sched/signal.h |    6 ++----
+ kernel/ptrace.c              |   25 ++++++++++++++++---------
+ kernel/signal.c              |    1 +
+ 4 files changed, 40 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/power/reset/linkstation-poweroff.c b/drivers/power/reset/linkstation-poweroff.c
-index cb5a32f852c1..5afe3ef23395 100644
---- a/drivers/power/reset/linkstation-poweroff.c
-+++ b/drivers/power/reset/linkstation-poweroff.c
-@@ -19,6 +19,7 @@
- #define MII_MARVELL_PHY_PAGE		22
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -28,30 +28,36 @@ extern int ptrace_access_vm(struct task_
+  * flags.  When the a task is stopped the ptracer owns task->ptrace.
+  */
  
- #define MII_PHY_LED_CTRL		16
-+#define MII_PHY_LED_POL_CTRL		17
- #define MII_88E1318S_PHY_LED_TCR	18
- #define MII_88E1318S_PHY_WOL_CTRL	16
- #define MII_M1011_IEVENT		19
-@@ -29,6 +30,8 @@
- #define LED2_FORCE_ON					(0x8 << 8)
- #define LEDMASK						GENMASK(11,8)
+-#define PT_SEIZED	0x00010000	/* SEIZE used, enable new behavior */
+-#define PT_PTRACED	0x00000001
+-#define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
++#define PT_PTRACED	0x00000001						// 0x00000001
++#define PT_DTRACE	0x00000002 /* delayed trace (used on m68k, i386) */	// 0x00000002
  
-+#define MII_88E1318S_PHY_LED_POL_LED2		BIT(4)
+ #define PT_OPT_FLAG_SHIFT	3
+ /* PT_TRACE_* event enable flags */
+ #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
+-#define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
+-#define PT_TRACE_FORK		PT_EVENT_FLAG(PTRACE_EVENT_FORK)
+-#define PT_TRACE_VFORK		PT_EVENT_FLAG(PTRACE_EVENT_VFORK)
+-#define PT_TRACE_CLONE		PT_EVENT_FLAG(PTRACE_EVENT_CLONE)
+-#define PT_TRACE_EXEC		PT_EVENT_FLAG(PTRACE_EVENT_EXEC)
+-#define PT_TRACE_VFORK_DONE	PT_EVENT_FLAG(PTRACE_EVENT_VFORK_DONE)
+-#define PT_TRACE_EXIT		PT_EVENT_FLAG(PTRACE_EVENT_EXIT)
+-#define PT_TRACE_SECCOMP	PT_EVENT_FLAG(PTRACE_EVENT_SECCOMP)
+ 
+-#define PT_EXITKILL		(PTRACE_O_EXITKILL << PT_OPT_FLAG_SHIFT)
+-#define PT_SUSPEND_SECCOMP	(PTRACE_O_SUSPEND_SECCOMP << PT_OPT_FLAG_SHIFT)
++#define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)			        // 0x00000008
++#define PT_TRACE_FORK		PT_EVENT_FLAG(PTRACE_EVENT_FORK)	        // 0x00000010
++#define PT_TRACE_VFORK		PT_EVENT_FLAG(PTRACE_EVENT_VFORK)	        // 0x00000020
++#define PT_TRACE_CLONE		PT_EVENT_FLAG(PTRACE_EVENT_CLONE)	        // 0x00000040
++#define PT_TRACE_EXEC		PT_EVENT_FLAG(PTRACE_EVENT_EXEC)	        // 0x00000080
++#define PT_TRACE_VFORK_DONE	PT_EVENT_FLAG(PTRACE_EVENT_VFORK_DONE)	        // 0x00000100
++#define PT_TRACE_EXIT		PT_EVENT_FLAG(PTRACE_EVENT_EXIT)	        // 0x00000200
++#define PT_TRACE_SECCOMP	PT_EVENT_FLAG(PTRACE_EVENT_SECCOMP)	        // 0x00000400
 +
- struct power_off_cfg {
- 	char *mdio_node_name;
- 	void (*phy_set_reg)(bool restart);
-@@ -76,11 +79,48 @@ static void linkstation_mvphy_reg_intn(bool restart)
- 		dev_err(&phydev->mdio.dev, "Write register failed, %d\n", rc);
++#define PT_SEIZED		0x00010000 /* SEIZE used, enable new behavior */// 0x00010000
++#define PT_STOPPED		0x00020000					// 0x00020000
++#define PT_STOPPED_FATAL	0x00040000					// 0x00040000
++
++#define PT_STOPPED_MASK		(PT_STOPPED|PT_STOPPED_FATAL)
++
++#define PT_EXITKILL		(PTRACE_O_EXITKILL << PT_OPT_FLAG_SHIFT)	// 0x00800000
++#define PT_SUSPEND_SECCOMP	(PTRACE_O_SUSPEND_SECCOMP << PT_OPT_FLAG_SHIFT) // 0x01000000
+ 
+ /* single stepping state bits (used on ARM and PA-RISC) */
+ #define PT_SINGLESTEP_BIT	31
+-#define PT_SINGLESTEP		(1<<PT_SINGLESTEP_BIT)
++#define PT_SINGLESTEP		(1<<PT_SINGLESTEP_BIT)				// 0x80000000
+ #define PT_BLOCKSTEP_BIT	30
+-#define PT_BLOCKSTEP		(1<<PT_BLOCKSTEP_BIT)
++#define PT_BLOCKSTEP		(1<<PT_BLOCKSTEP_BIT)				// 0x40000000
+ 
+ extern long arch_ptrace(struct task_struct *child, long request,
+ 			unsigned long addr, unsigned long data);
+--- a/include/linux/sched/signal.h
++++ b/include/linux/sched/signal.h
+@@ -422,10 +422,8 @@ static inline void signal_wake_up(struct
+ {
+ 	signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
+ }
+-static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
+-{
+-	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
+-}
++
++extern void ptrace_signal_wake_up(struct task_struct *t, bool resume);
+ 
+ void task_join_group_stop(struct task_struct *task);
+ 
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -64,6 +64,12 @@ int ptrace_access_vm(struct task_struct
+ 	return ret;
  }
  
-+static void readynas_mvphy_set_reg(bool restart)
++void ptrace_signal_wake_up(struct task_struct *t, bool resume)
 +{
-+	int rc = 0, saved_page;
-+	u16 data = 0;
-+
-+	if (restart)
-+		data = MII_88E1318S_PHY_LED_POL_LED2;
-+
-+	saved_page = phy_select_page(phydev, MII_MARVELL_LED_PAGE);
-+	if (saved_page < 0)
-+		goto err;
-+
-+	/* Set the LED[2].0 Polarity bit to the required state */
-+	__phy_modify(phydev, MII_PHY_LED_POL_CTRL,
-+		     MII_88E1318S_PHY_LED_POL_LED2, data);
-+
-+	if (!data) {
-+
-+		/* If WOL was enabled and a magic packet was received before powering
-+		 * off, we won't be able to wake up by sending another magic packet.
-+		 * Clear WOL status.
-+		 */
-+		__phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_MARVELL_WOL_PAGE);
-+		__phy_set_bits(phydev, MII_88E1318S_PHY_WOL_CTRL,
-+			       MII_88E1318S_PHY_WOL_CTRL_CLEAR_WOL_STATUS);
-+	}
-+err:
-+	rc = phy_restore_page(phydev, saved_page, rc);
-+	if (rc < 0)
-+		dev_err(&phydev->mdio.dev, "Write register failed, %d\n", rc);
++	if (resume)
++		t->ptrace &= ~PT_STOPPED_MASK;
++	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
 +}
-+
- static const struct power_off_cfg linkstation_power_off_cfg = {
- 	.mdio_node_name = "mdio",
- 	.phy_set_reg = linkstation_mvphy_reg_intn,
- };
  
-+static const struct power_off_cfg readynas_power_off_cfg = {
-+	.mdio_node_name = "mdio-bus",
-+	.phy_set_reg = readynas_mvphy_set_reg,
-+};
-+
- static int linkstation_reboot_notifier(struct notifier_block *nb,
- 				       unsigned long action, void *unused)
+ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
+ 		   const struct cred *ptracer_cred)
+@@ -197,6 +203,8 @@ static bool ptrace_freeze_traced(struct
+ 	spin_lock_irq(&task->sighand->siglock);
+ 	if (task_is_traced(task) && !looks_like_a_spurious_pid(task) &&
+ 	    !__fatal_signal_pending(task)) {
++		task->ptrace &= ~PT_STOPPED_MASK;
++		task->ptrace |= PT_STOPPED;
+ 		WRITE_ONCE(task->__state, __TASK_TRACED);
+ 		ret = true;
+ 	}
+@@ -218,10 +226,13 @@ static void ptrace_unfreeze_traced(struc
+ 	 */
+ 	spin_lock_irq(&task->sighand->siglock);
+ 	if (READ_ONCE(task->__state) == __TASK_TRACED) {
+-		if (__fatal_signal_pending(task))
++		if (__fatal_signal_pending(task)) {
++			task->ptrace &= ~PT_STOPPED_MASK;
+ 			wake_up_state(task, __TASK_TRACED);
+-		else
++		} else {
++			task->ptrace |= PT_STOPPED_MASK;
+ 			WRITE_ONCE(task->__state, TASK_TRACED);
++		}
+ 	}
+ 	spin_unlock_irq(&task->sighand->siglock);
+ }
+@@ -835,8 +846,6 @@ static long ptrace_get_rseq_configuratio
+ static int ptrace_resume(struct task_struct *child, long request,
+ 			 unsigned long data)
  {
-@@ -109,6 +149,9 @@ static const struct of_device_id ls_poweroff_of_match[] = {
- 	{ .compatible = "buffalo,ls421de",
- 	  .data = &linkstation_power_off_cfg,
- 	},
-+	{ .compatible = "netgear,readynas-duo-v2",
-+	  .data = &readynas_power_off_cfg,
-+	},
- 	{ },
- };
+-	bool need_siglock;
+-
+ 	if (!valid_signal(data))
+ 		return -EIO;
  
--- 
-2.25.1
+@@ -877,13 +886,11 @@ static int ptrace_resume(struct task_str
+ 	 * status and clears the code too; this can't race with the tracee, it
+ 	 * takes siglock after resume.
+ 	 */
+-	need_siglock = data && !thread_group_empty(current);
+-	if (need_siglock)
+-		spin_lock_irq(&child->sighand->siglock);
++	spin_lock_irq(&child->sighand->siglock);
+ 	child->exit_code = data;
++	child->ptrace &= ~PT_STOPPED_MASK;
+ 	wake_up_state(child, __TASK_TRACED);
+-	if (need_siglock)
+-		spin_unlock_irq(&child->sighand->siglock);
++	spin_unlock_irq(&child->sighand->siglock);
+ 
+ 	return 0;
+ }
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2195,6 +2195,7 @@ static void ptrace_stop(int exit_code, i
+ 			return;
+ 	}
+ 
++	current->ptrace |= PT_STOPPED_MASK;
+ 	set_special_state(TASK_TRACED);
+ 
+ 	/*
+
 
