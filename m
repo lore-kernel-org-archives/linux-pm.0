@@ -3,95 +3,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5C77C49EA7
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06AD9C2B9F4
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 22:48:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FA816195B
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CE3986194D
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 22:48:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230049AbhFYVbd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Jun 2021 17:31:33 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:22597 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230001AbhFYVb0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jun 2021 17:31:26 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1624656544; h=Content-Transfer-Encoding: MIME-Version:
- References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=VKnhaTPJl4bd6GS1KO3Fw6pzG9/UGtuplYmEcz9Jwrw=; b=V1c7RteWpf4UfrXASzceuBCaocxvOSrZ/VgedWFC39o2JTbVu3ymrt+PRi8XopFAiZwXRmjf
- WAY7gJB4ULNhVEmzv0GMzqjgwpRyZd2EdKMhTHXA3ZGeYMkie7Hoz8sKfjffUBcfcB9G1mw3
- PtSvpZmlh4kA1TTOXmepE32ycxw=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n02.prod.us-east-1.postgun.com with SMTP id
- 60d64a9c19389419555de0e6 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 25 Jun 2021 21:29:00
- GMT
-Sender: mdtipton=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 84626C433D3; Fri, 25 Jun 2021 21:28:59 +0000 (UTC)
-Received: from hu-mdtipton-lv.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id A2EC1C433F1;
-        Fri, 25 Jun 2021 21:28:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org A2EC1C433F1
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=mdtipton@codeaurora.org
-From:   Mike Tipton <mdtipton@codeaurora.org>
-To:     djakov@kernel.org
-Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
-        saravanak@google.com, okukatla@codeaurora.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH 2/4] interconnect: Always call pre_aggregate before aggregate
-Date:   Fri, 25 Jun 2021 14:28:37 -0700
-Message-Id: <20210625212839.24155-3-mdtipton@codeaurora.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210625212839.24155-1-mdtipton@codeaurora.org>
-References: <20210625212839.24155-1-mdtipton@codeaurora.org>
+        id S229831AbhFYWug (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Jun 2021 18:50:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55348 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229776AbhFYWuf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jun 2021 18:50:35 -0400
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 214FAC061574;
+        Fri, 25 Jun 2021 15:48:13 -0700 (PDT)
+Received: by mail-ed1-x535.google.com with SMTP id i5so15560127eds.1;
+        Fri, 25 Jun 2021 15:48:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=GwvHh55LcSYnXzmmGuQCH1MSG36L8iCah28pi91QZyE=;
+        b=FJHKZ/Abwa6ukbLeMQeNKroNgDPdPBIcURidXDyRCQoEoxRGVebx4/13mw+kkGKaFo
+         1UeXom62Vsb51xnsP123yZONrQbxKW71JyQ1s3uYS+N1N+iVmtECmTgF0Uv8nqO9V27Z
+         3pjTkwp8k5ZqVBx02CHSAUlehshRO1oQyozNDmMRCjJIbAwC85eP+1NXavkvNPNojWqj
+         zT3rF0cpnutggsicdDoz+b6nqBkJ9bxTXM5YYJ7iLHhLUpBbdSQjncKVlccYefkAK3tI
+         0cjdwWSRBU4uMWfZdXJcqbrAVwJpeVxAnWcP7AHT3GLQ64CVAZ3BRvdYFkgpwDgRWCSH
+         Tysg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :mime-version:content-transfer-encoding;
+        bh=GwvHh55LcSYnXzmmGuQCH1MSG36L8iCah28pi91QZyE=;
+        b=GhrfCcmucCFwRmQLpR1br7fp+KebwnkZU3X8i2f6Filunupejk2/W7TWm1/pogEDqT
+         6bkEKCY0DE6NINHNQuR4843Ygak8RCh1Sw7K+SuzcuO64eT68VL4dP8FV+ORYFdMy0dw
+         L4KOebOSuoup69E9M9UuL4wUVLcl2zoGRTws1vohr+ro/idMOtkD7IbZX3ra4/HyaSiP
+         BqNOeo3qkjNIVczEXsI7ZX1GDb0TDfFJJTvh4bVtIm17S4StC3vu8b/pX/qlvzSa5+ok
+         63/qU6lSCZ+E1lQx6tRGTjHpDHqL1vKS8IE39ajDCDM4s75dN0muoS2eCcnocOn6XHRN
+         RWAQ==
+X-Gm-Message-State: AOAM5318RKHPl+eWcM6q4iXuG6BX9AWiG9xpSJoMCwvTQMcpm9JW8rF/
+        tok1ZmanXH9SOgQRmfitoSU=
+X-Google-Smtp-Source: ABdhPJy+T78o4HjFa2vn6tfrdxhsAcbPhpemEzM0Ex0MiUE7jhOjAc3gvDtwoyuMq/cn9PmdUyd/kQ==
+X-Received: by 2002:a05:6402:487:: with SMTP id k7mr17660625edv.315.1624661290121;
+        Fri, 25 Jun 2021 15:48:10 -0700 (PDT)
+Received: from stitch.. (80.71.140.73.ipv4.parknet.dk. [80.71.140.73])
+        by smtp.gmail.com with ESMTPSA id w1sm4719399edr.62.2021.06.25.15.48.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Jun 2021 15:48:09 -0700 (PDT)
+Sender: Emil Renner Berthing <emil.renner.berthing@gmail.com>
+From:   Emil Renner Berthing <kernel@esmil.dk>
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        "Andrew F. Davis" <afd@ti.com>
+Cc:     Emil Renner Berthing <kernel@esmil.dk>, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v1 0/3] BeagleV Starlight reset support
+Date:   Sat, 26 Jun 2021 00:47:41 +0200
+Message-Id: <20210625224744.1020108-1-kernel@esmil.dk>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pre_aggregate callback isn't called in all cases before calling
-aggregate. Add the missing calls so providers can rely on consistent
-framework behavior.
+This series adds reset support to the BeagleV Starlight board[1], and
+converts the TPS65086 PMIC device tree binding to YAML while at it.
 
-Fixes: d3703b3e255f ("interconnect: Aggregate before setting initial bandwidth")
-Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
----
- drivers/interconnect/core.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Support for the StarFive JH7100 RISC-V SoC on there is not yet
+upstreamed, but early feedback on this part would be very welcome.
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 945121e18b5c..cfd54c90a6bb 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -973,9 +973,12 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
- 	}
- 	node->avg_bw = node->init_avg;
- 	node->peak_bw = node->init_peak;
--	if (provider->aggregate)
-+	if (provider->aggregate) {
-+		if (provider->pre_aggregate)
-+			provider->pre_aggregate(node);
- 		provider->aggregate(node, 0, node->init_avg, node->init_peak,
- 				    &node->avg_bw, &node->peak_bw);
-+	}
- 	provider->set(node, node);
- 	node->avg_bw = 0;
- 	node->peak_bw = 0;
+[1] https://github.com/beagleboard/beaglev-starlight
+
+Emil Renner Berthing (3):
+  dt-bindings: mfd: convert tps65086.txt to YAML
+  mfd: tps65086: Make interrupt line optional
+  power: reset: Add TPS65086 restart driver
+
+ .../devicetree/bindings/mfd/ti,tps65086.yaml  | 124 ++++++++++++++++++
+ .../devicetree/bindings/mfd/tps65086.txt      |  54 --------
+ drivers/mfd/tps65086.c                        |  22 ++--
+ drivers/power/reset/Kconfig                   |   6 +
+ drivers/power/reset/Makefile                  |   1 +
+ drivers/power/reset/tps65086-restart.c        |  99 ++++++++++++++
+ 6 files changed, 242 insertions(+), 64 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ti,tps65086.yaml
+ delete mode 100644 Documentation/devicetree/bindings/mfd/tps65086.txt
+ create mode 100644 drivers/power/reset/tps65086-restart.c
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.32.0
 
