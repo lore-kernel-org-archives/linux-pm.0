@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87383C49EA7
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F151C49EB7
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6193661949
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F45E61949
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Jun 2021 21:29:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229916AbhFYVbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Jun 2021 17:31:23 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:24435 "EHLO
+        id S229974AbhFYVbY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Jun 2021 17:31:24 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:22597 "EHLO
         so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229816AbhFYVbU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jun 2021 17:31:20 -0400
+        with ESMTP id S229900AbhFYVbW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jun 2021 17:31:22 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1624656539; h=Content-Transfer-Encoding: MIME-Version:
+ s=smtp; t=1624656541; h=Content-Transfer-Encoding: MIME-Version:
  References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=5dPU7wCaoRSEGtGGrTM61+mt3X7vyLAV8Dbh9+xJrHI=; b=CluTrX024rqxhCfEDsgYKwPTsSvJFVavzTNSOtU6lZz6CXcQ7VVyg3xuMi/V+lEp1nyYAoy2
- k66WTXClPt5JcushxNwEOnAgX4EqNuvvdwTLeTKRkLsIb8I6cCM3zSBK8/VU9QhG+8K3iwxR
- 2upP6DPhhpbkFabSPz+nL+3gpYU=
+ Sender; bh=ySesvNlauEEm7yyBbVlezGiznvSWahvS4OLJh1EwFhQ=; b=b40h3X/YxLEEajPqjgag1Lp2c4c2DFcXWGeNGdVYfcoOS5t8t/itjJ1ARL986XaIWoeoxa5M
+ S3nvogdz6t+9AZ/6q1NWrdC1uVBeQOIl4Ey9Poh2y6e8qDkGz9DlO7kz4t8P4gDWUhawPMpa
+ 3Ex2bVLiTVoiG2dnCS0IH76smIk=
 X-Mailgun-Sending-Ip: 198.61.254.9
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n02.prod.us-west-2.postgun.com with SMTP id
- 60d64a9a7e5ba0fdc0745aa0 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 25 Jun 2021 21:28:58
+ smtp-out-n03.prod.us-west-2.postgun.com with SMTP id
+ 60d64a9c7e5ba0fdc0745f36 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 25 Jun 2021 21:29:00
  GMT
 Sender: mdtipton=codeaurora.org@mg.codeaurora.org
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id C29F9C43460; Fri, 25 Jun 2021 21:28:58 +0000 (UTC)
+        id 81239C433D3; Fri, 25 Jun 2021 21:29:00 +0000 (UTC)
 Received: from hu-mdtipton-lv.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id E3817C4338A;
-        Fri, 25 Jun 2021 21:28:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org E3817C4338A
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 5F94AC4338A;
+        Fri, 25 Jun 2021 21:28:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 5F94AC4338A
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=mdtipton@codeaurora.org
 From:   Mike Tipton <mdtipton@codeaurora.org>
@@ -51,9 +51,9 @@ Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         saravanak@google.com, okukatla@codeaurora.org,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH 1/4] interconnect: Zero initial BW after sync-state
-Date:   Fri, 25 Jun 2021 14:28:36 -0700
-Message-Id: <20210625212839.24155-2-mdtipton@codeaurora.org>
+Subject: [PATCH 3/4] interconnect: qcom: icc-rpmh: Ensure floor BW is enforced for all nodes
+Date:   Fri, 25 Jun 2021 14:28:38 -0700
+Message-Id: <20210625212839.24155-4-mdtipton@codeaurora.org>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20210625212839.24155-1-mdtipton@codeaurora.org>
 References: <20210625212839.24155-1-mdtipton@codeaurora.org>
@@ -63,29 +63,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The initial BW values may be used by providers to enforce floors. Zero
-these values after sync-state so that providers know when to stop
-enforcing them.
+We currently only enforce BW floors for a subset of nodes in a path.
+All BCMs that need updating are queued in the pre_aggregate/aggregate
+phase. The first set() commits all queued BCMs and subsequent set()
+calls short-circuit without committing anything. Since the floor BW
+isn't set in sum_avg/max_peak until set(), then some BCMs are committed
+before their associated nodes reflect the floor.
 
-Fixes: b1d681d8d324 ("interconnect: Add sync state support")
+Set the floor as each node is being aggregated. This ensures that all
+all relevant floors are set before the BCMs are committed.
+
+Fixes: 266cd33b5913 ("interconnect: qcom: Ensure that the floor bandwidth value is enforced")
 Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
 ---
- drivers/interconnect/core.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/interconnect/qcom/icc-rpmh.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 8a1e70e00876..945121e18b5c 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -1106,6 +1106,8 @@ void icc_sync_state(struct device *dev)
- 		dev_dbg(p->dev, "interconnect provider is in synced state\n");
- 		list_for_each_entry(n, &p->nodes, node_list) {
- 			if (n->init_avg || n->init_peak) {
-+				n->init_avg = 0;
-+				n->init_peak = 0;
- 				aggregate_requests(n);
- 				p->set(n, n);
- 			}
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index bf01d09dba6c..f118f57eae37 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -57,6 +57,11 @@ int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+ 			qn->sum_avg[i] += avg_bw;
+ 			qn->max_peak[i] = max_t(u32, qn->max_peak[i], peak_bw);
+ 		}
++
++		if (node->init_avg || node->init_peak) {
++			qn->sum_avg[i] = max_t(u64, qn->sum_avg[i], node->init_avg);
++			qn->max_peak[i] = max_t(u64, qn->max_peak[i], node->init_peak);
++		}
+ 	}
+ 
+ 	*agg_avg += avg_bw;
+@@ -90,11 +95,6 @@ int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	qp = to_qcom_provider(node->provider);
+ 	qn = node->data;
+ 
+-	qn->sum_avg[QCOM_ICC_BUCKET_AMC] = max_t(u64, qn->sum_avg[QCOM_ICC_BUCKET_AMC],
+-						 node->avg_bw);
+-	qn->max_peak[QCOM_ICC_BUCKET_AMC] = max_t(u64, qn->max_peak[QCOM_ICC_BUCKET_AMC],
+-						  node->peak_bw);
+-
+ 	qcom_icc_bcm_voter_commit(qp->voter);
+ 
+ 	return 0;
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
