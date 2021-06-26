@@ -2,117 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD78EC49EA6
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Jun 2021 16:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59440C49EA5
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Jun 2021 23:49:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5ECC661C42
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Jun 2021 16:23:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3CB3161C45
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Jun 2021 23:49:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229916AbhFZQ0P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 26 Jun 2021 12:26:15 -0400
-Received: from mailgw01.mediatek.com ([60.244.123.138]:43586 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S229890AbhFZQ0P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Jun 2021 12:26:15 -0400
-X-UUID: 9c6cadf2445d4918b45d29e5eb155797-20210627
-X-UUID: 9c6cadf2445d4918b45d29e5eb155797-20210627
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
-        (envelope-from <tung-chen.shih@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 2102777713; Sun, 27 Jun 2021 00:23:48 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Sun, 27 Jun 2021 00:23:47 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Sun, 27 Jun 2021 00:23:47 +0800
-From:   TungChen Shih <tung-chen.shih@mediatek.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <matthias.bgg@gmail.com>
-CC:     <wsd_upstream@mediatek.com>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        TungChen Shih <tung-chen.shih@mediatek.com>
-Subject: [PATCH v2 1/1] cpufreq: fix the target freq not in the range of policy->min & max
-Date:   Sun, 27 Jun 2021 00:23:25 +0800
-Message-ID: <20210626162324.8236-1-tung-chen.shih@mediatek.com>
-X-Mailer: git-send-email 2.18.0
+        id S230186AbhFZXwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 26 Jun 2021 19:52:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40852 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229556AbhFZXwS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Jun 2021 19:52:18 -0400
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DD74C061574
+        for <linux-pm@vger.kernel.org>; Sat, 26 Jun 2021 16:49:54 -0700 (PDT)
+Received: by mail-lf1-x132.google.com with SMTP id a15so15984167lfr.6
+        for <linux-pm@vger.kernel.org>; Sat, 26 Jun 2021 16:49:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=eISukSxr9S6lVbjbCM2Ot77tr1WgILTAvVDWCUeQenA=;
+        b=MYRxi85STBrA6ytlEgiBAF1tE55JOmd5vSToUuFjM1ecNxnCG1UeYEMOrCQTkq3P9X
+         OyesvsV1iezO8e/R1kK3dWuPHNwpgUb5ozCEm7WeNKN+sU4QAE8Zc2gS8OTGn87JNOEv
+         1IXZ60oXBsTZo03SRlWIU4LQlqeY8bwkF5QYkA2QKQ/VRVhfekQzQ9nhg2fdm4E6mOog
+         O4BNIgp9Tdjg9lF03NjUsW0NvnXYveR4cre3PMGibplazkrOI2nePRsisS1rwhjBLDpk
+         cm1lQopOxUvlIMkUK18EcgjYnLi21hgNNmFy2d6V/hG89cZTbe2iERrSysO7GnCvFwFV
+         TSEQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=eISukSxr9S6lVbjbCM2Ot77tr1WgILTAvVDWCUeQenA=;
+        b=Xzxqe7ZEfdDnLn8YIxa9H8WDPzJnWbXrkfLywAEMKm/ds/Z8vdBNXsz6gpnq+ThzDo
+         rwJtT4OuiLKRfSwJpgVFSFSAvBdzu7TaOD0UPCOByWwwHjNLbgSxDCpU7bnNmSkwcMAi
+         e8b//gb4DGofyyAAFMfnbahcyxuJYArUrUpqtNWo5IAp182clAZZrjK3/E1GDXi2gJce
+         MacroBkAiIHlvDa85oWH07bqutYrNxkEcexFXlymCDTM9ZWKmGvJpXXQvh16cImoyoO0
+         TiXGsPbW4a9MIcFSEEIARY+9NGHjLspyq9wPn+2AGWB85BXIGWEVhkDKbw5cqe2fi7vR
+         Dyqg==
+X-Gm-Message-State: AOAM533i6rp2YAe6LfytpclZMU/+0z22YiiovzgBBaQCw53Ygkd8a6WV
+        uJg4p6SSEJR5rp1Fh4y8K7ReoQ==
+X-Google-Smtp-Source: ABdhPJwUB44QORbuNBQmNN9Dx4OyT7aCxGiEZFMKFOvUwObcavzCQU8kG1H8revzLTi6Lcqx+RAclQ==
+X-Received: by 2002:a05:6512:610:: with SMTP id b16mr13612599lfe.631.1624751392746;
+        Sat, 26 Jun 2021 16:49:52 -0700 (PDT)
+Received: from localhost.localdomain (c-fdcc225c.014-348-6c756e10.bbcust.telenor.se. [92.34.204.253])
+        by smtp.gmail.com with ESMTPSA id w17sm893700lft.285.2021.06.26.16.49.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 26 Jun 2021 16:49:52 -0700 (PDT)
+From:   Linus Walleij <linus.walleij@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Marcus Cooper <codekipper@gmail.com>
+Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        stable@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] power: supply: ab8500: Fix an old bug
+Date:   Sun, 27 Jun 2021 01:47:49 +0200
+Message-Id: <20210626234749.2958991-1-linus.walleij@linaro.org>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-    The function cpufreq_driver_resolve_freq() should return the lowest
-supported freq greater than or equal to the given target_freq, subject
-to policy (min/max) and driver limitations. However, the index returned
-by cpufreq_frequency_table_target() won't subject to policy min/max in
-some cases.
+Trying to get the AB8500 charging driver working I ran into a bit
+of bitrot: we haven't used the driver for a while so errors in
+refactorings won't be noticed.
 
-    In cpufreq_frequency_table_target(), this function will try to find
-an index for @target_freq in freq_table, and the frequency of selected
-index should be in the range [policy->min, policy->max], which means:
+This one is pretty self evident: use argument to the macro or we
+end up with a random pointer to something else.
 
-    policy->min <= policy->freq_table[idx].frequency <= policy->max
-
-    Though "clamp_val(target_freq, policy->min, policy->max);" would
-have been called to check this condition, when policy->max or min is
-not exactly one of the frequency in the frequency table,
-policy->freq_table[idx].frequency may still go out of the range
-
-    For example, if our sorted freq_table is [3000, 2000, 1000], and
-suppose we have:
-
-    @target_freq = 2500
-    @policy->min = 2000
-    @policy->max = 2200
-    @relation = CPUFREQ_RELATION_L
-
-1. After clamp_val(target_freq, policy->min, policy->max); @target_freq
-becomes 2200
-2. Since we use CPUFREQ_REALTION_L, final selected freq will be 3000 which
-beyonds policy->max
-
-Signed-off-by: TungChen Shih <tung-chen.shih@mediatek.com>
+Cc: stable@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Marcus Cooper <codekipper@gmail.com>
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/power/supply/ab8500-chargalg.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 802abc925b2a..8e3a17781618 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -544,8 +544,23 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
- 	if (cpufreq_driver->target_index) {
- 		unsigned int idx;
+diff --git a/drivers/power/supply/ab8500-chargalg.h b/drivers/power/supply/ab8500-chargalg.h
+index 94a6f9068bc5..07e6ff50084f 100644
+--- a/drivers/power/supply/ab8500-chargalg.h
++++ b/drivers/power/supply/ab8500-chargalg.h
+@@ -15,7 +15,7 @@
+  * - POWER_SUPPLY_TYPE_USB,
+  * because only them store as drv_data pointer to struct ux500_charger.
+  */
+-#define psy_to_ux500_charger(x) power_supply_get_drvdata(psy)
++#define psy_to_ux500_charger(x) power_supply_get_drvdata(x)
  
-+		/*  to find the frequency >= target_freq */
- 		idx = cpufreq_frequency_table_target(policy, target_freq,
- 						     CPUFREQ_RELATION_L);
-+
-+		/* frequency should subject to policy (min/max) */
-+		if (policy->freq_table[idx].frequency > policy->max) {
-+			if (policy->freq_table_sorted == CPUFREQ_TABLE_SORTED_ASCENDING)
-+				idx--;
-+			else
-+				idx++;
-+		} else if (policy->freq_table[idx].frequency < policy->min) {
-+			if (policy->freq_table_sorted == CPUFREQ_TABLE_SORTED_ASCENDING)
-+				idx++;
-+			else
-+				idx--;
-+		}
-+
- 		policy->cached_resolved_idx = idx;
- 		return policy->freq_table[idx].frequency;
- 	}
+ /* Forward declaration */
+ struct ux500_charger;
 -- 
-2.18.0
+2.31.1
 
