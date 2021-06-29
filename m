@@ -4,61 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCEF2C11F68
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Jun 2021 21:11:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED1FC11F69
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Jun 2021 21:11:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B60DF61D8E
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Jun 2021 21:11:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 10C4061DBA
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Jun 2021 21:11:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233976AbhF2VOM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S235690AbhF2VOM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 29 Jun 2021 17:14:12 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55592 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:55584 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235579AbhF2VOI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S235288AbhF2VOI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 29 Jun 2021 17:14:08 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPS id AEDE060200;
+Received: by mail.kernel.org (Postfix) with ESMTPS id 98B5C61D92;
         Tue, 29 Jun 2021 21:11:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1625001100;
-        bh=2aFM78B9Ux3Y3o/9PlJRFNEZEcWWDZHSquCXRDCFxPY=;
+        bh=+6XrR1IedjpmCWyFFmE8lUZLdI08JUB2Noc+XVG1t5o=;
         h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=uH9pYDY3mHEJF3gqyKQlHfZUb2rxdUzH60T8Lcgx0GrUyke82LJkUMzfZ3y57Dr97
-         pAk4IfT32orhhSUJrWVwg5CwzgcLxh7l9FOb9fCcQLgjP2ukRXl3+0OBw0XczEMlFV
-         i0MTEyGnyNHAa0Rti8fmzMQXiEy2ezI/MB3voWeIiMEINqx3U/fpXeZoalju5HXBFq
-         83PMivWh9i0nP5HwETvPsMrG8pbi07H0oeH7hpY2AMTBMtkEVVc6HukzJ2W2IVDRyo
-         lcjpE5f8oyBIjq3e4xZVeA8LuP8j32Y9BV/XNMry7gjSVZzWwo3pcomSEviw8/VOOl
-         3H+Fs4Qv4jsSQ==
-Subject: Re: [GIT PULL] ACPI updates for v5.14-rc1
+        b=Z9hZv8qVI6SRJsFA0XMsgizQ3C7PkdWtUuu9Y9pw07GpfRNLzHRY/LolfHoY/GfK/
+         kTm/QXELfT4BpSmizFv6HM+9JKTsCM5/VKJ9u36lVF8DySB/NjOS9sC5BkIEq3mEG0
+         qfsYkekSFGOPBGlPnmFvABo2p45C+M7SN9ehAGPdnG/mzK6308nUh8B8krTQimAgDO
+         7+8B5g8uYYK07T0VXbR0LoeP9FDjGbF/DiO9xPe8oqBhLYRUjazQmDGwW4K7Sdm/MP
+         lwk9fFNeo4pQpJYnhaB6n5rsjPvkQN2yUB8elJnnuMNcxpDq3Zvi4MVArpzOSMpQ12
+         dvG/vmkVRpA2g==
+Subject: Re: [GIT PULL] Power management updates for v5.14-rc1
 From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0hm5ihfU_hBbMB9u7SmH18PLGp6+Z6=wBLa8WxaVQRTpg@mail.gmail.com>
-References: <CAJZ5v0hm5ihfU_hBbMB9u7SmH18PLGp6+Z6=wBLa8WxaVQRTpg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0i+RhTN4LYqG0X5oUg8e2gs1AbwHP__PSvCRoFT48P7Ug@mail.gmail.com>
+References: <CAJZ5v0i+RhTN4LYqG0X5oUg8e2gs1AbwHP__PSvCRoFT48P7Ug@mail.gmail.com>
 X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0hm5ihfU_hBbMB9u7SmH18PLGp6+Z6=wBLa8WxaVQRTpg@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.14-rc1
-X-PR-Tracked-Commit-Id: 64f9111dd6225a50b8fdd365dfdda275c2a708c0
+X-PR-Tracked-Message-Id: <CAJZ5v0i+RhTN4LYqG0X5oUg8e2gs1AbwHP__PSvCRoFT48P7Ug@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1
+X-PR-Tracked-Commit-Id: 22b65d31ad9d10cdd726239966b6d6f67db8f251
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 5e6928249b81b4d8727ab6a4037a171d15455cb0
-Message-Id: <162500110066.4657.304240203537983404.pr-tracker-bot@kernel.org>
+X-PR-Merge-Commit-Id: 3563f55ce65462063543dfa6a8d8c7fbfb9d7772
+Message-Id: <162500110049.4657.4126985644338376220.pr-tracker-bot@kernel.org>
 Date:   Tue, 29 Jun 2021 21:11:40 +0000
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        the arch/x86 maintainers <x86@kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Tue, 29 Jun 2021 21:01:10 +0200:
+The pull request you sent on Tue, 29 Jun 2021 20:58:30 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.14-rc1
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/5e6928249b81b4d8727ab6a4037a171d15455cb0
+https://git.kernel.org/torvalds/c/3563f55ce65462063543dfa6a8d8c7fbfb9d7772
 
 Thank you!
 
