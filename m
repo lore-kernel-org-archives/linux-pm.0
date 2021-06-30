@@ -5,57 +5,60 @@ X-Spam-Level:
 X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47155C11F69
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 191EBC11F6A
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2460C61D18
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F275161D08
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233717AbhF3Jdb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Jun 2021 05:33:31 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:59506 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233541AbhF3Jdb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 05:33:31 -0400
-Date:   Wed, 30 Jun 2021 09:31:00 -0000
+        id S233817AbhF3Jde (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Jun 2021 05:33:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44340 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233766AbhF3Jdd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 05:33:33 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34821C061756
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jun 2021 02:31:05 -0700 (PDT)
+Date:   Wed, 30 Jun 2021 09:31:01 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1625045461;
+        s=2020; t=1625045462;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=EB8XgQm4pFJU7gJLBKBzuUOj9tNIlv/rtlis7yWGjKs=;
-        b=WsWZe+8QeCjSSzjO4Vg562BXzrNWTIns7lb1N6tFvj6tV4oE6N5z6C+68qi7JoPC7PDBgV
-        4A9mlE3ti8+HXPtkGwuxEWn7i/rxAuyE1cvZCyg/qMp6ZZF7PqCJhYQIh1NxjkFia5K9Jp
-        SlRt3RGYcg37HizWZpBwb4x5Q7ywuY2dKaC/F6f8ZtiLPqSZsdOsCA8SOLtwPN6uWa2/zc
-        Lp6pnmynEK9mA8a4j01M+4yW8L4wTXjNQbDxzdOxvxx8DECEOzmrVojYLNhr3FKFEaVTFI
-        ISW449QtIZTp0IKWHGBxgbktOPrzcqUKyg9V/a1lB0hJi5RlpBtPWjNkSaxu9w==
+        bh=JVMsBEgmL18iI+pUnk3rLGDKdrAI945RuC6Z0SPpv0A=;
+        b=u/cwcjDMyBQHVF1v7lRCyCxLHW648BlLRQhTlHQmXpGo/2hNUmAiAhDd96IdXsNyJR7444
+        WexGbWj0skvrKg8TdDrdv/CdYEh9aWy3VeoHm/jqoMkdSbA4QCRAaujZXpZS16pWSMXdk1
+        IATnxThtz/IFfCNOmGGs+ztOL9aKxoNLzkF8CO+swju2Zpu0Ev5yGatRNrCtrRbeDYker3
+        G4bWhiDGyVmbTgXP6vD+qLuBE/kiKik535sm+13OtgHrqQx7FVi6ef495lGZppKp4qRgKZ
+        +HBj6aBRy+wRZ1Y0KGlUWFWOGOo/a07xc2fCA4FsO200mpFg/ccROeAELn2+yg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1625045461;
+        s=2020e; t=1625045462;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=EB8XgQm4pFJU7gJLBKBzuUOj9tNIlv/rtlis7yWGjKs=;
-        b=8t4QAWek8CfOr6fYXplEwh90A0SHQDrIPIIZyYwRBy3+Yrqs8r9JlhIJK7w6OHykNB/e6w
-        pI2vVfP9ehuudeBw==
-From:   "thermal-bot for Srinivas Pandruvada" <tip-bot2@linutronix.de>
+        bh=JVMsBEgmL18iI+pUnk3rLGDKdrAI945RuC6Z0SPpv0A=;
+        b=dVAlJXFIdQeb9hTclgJBc726Crd22a4xnTmEZFbtE9p7uVTb71LdnKr7EoB521sZfLN3GC
+        uo3eu58fFqOdc7Dw==
+From:   "thermal-bot for Frank Wunderlich" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/int340x/processor_thermal:
- Fix tcc setting
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        stable@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org
-In-Reply-To: <20210628215803.75038-1-srinivas.pandruvada@linux.intel.com>
-References: <20210628215803.75038-1-srinivas.pandruvada@linux.intel.com>
+Subject: [thermal: thermal/next] thermal/drivers/mediatek: Add sensors-support
+Cc:     Frank Wunderlich <frank-w@public-files.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20210608154530.70074-1-linux@fw-web.de>
+References: <20210608154530.70074-1-linux@fw-web.de>
 MIME-Version: 1.0
-Message-ID: <162504546041.395.12283374445354400850.tip-bot2@tip-bot2>
+Message-ID: <162504546151.395.8011120525144706324.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,93 +69,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     1264017b3ab6d903760673a8515180af6e7a7f28
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//1264017b3ab6d903760673a8515180af6e7a7f28
-Author:        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-AuthorDate:    Mon, 28 Jun 2021 14:58:03 -07:00
+Commit-ID:     77b6c4044d8f7062b2c1c2a99f4bb076acc7f04f
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//77b6c4044d8f7062b2c1c2a99f4bb076acc7f04f
+Author:        Frank Wunderlich <frank-w@public-files.de>
+AuthorDate:    Tue, 08 Jun 2021 17:45:30 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 29 Jun 2021 08:15:53 +02:00
+CommitterDate: Mon, 28 Jun 2021 20:57:36 +02:00
 
-thermal/drivers/int340x/processor_thermal: Fix tcc setting
+thermal/drivers/mediatek: Add sensors-support
 
-The following fixes are done for tcc sysfs interface:
-- TCC is 6 bits only from bit 29-24
-- TCC of 0 is valid
-- When BIT(31) is set, this register is read only
-- Check for invalid tcc value
-- Error for negative values
+Add HWMON-support to mediateks thermal driver to allow lm-sensors
+userspace tools read soc temperature
 
-Fixes: fdf4f2fb8e899 ("drivers: thermal: processor_thermal_device: Export sysfs interface for TCC offset")
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: stable@vger.kernel.org
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210628215803.75038-1-srinivas.pandruvada@linux.intel.com
+Link: https://lore.kernel.org/r/20210608154530.70074-1-linux@fw-web.de
 ---
- drivers/thermal/intel/int340x_thermal/processor_thermal_device.c | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+ drivers/thermal/mtk_thermal.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index de4fc64..0f0038a 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -78,24 +78,27 @@ static ssize_t tcc_offset_degree_celsius_show(struct device *dev,
- 	if (err)
- 		return err;
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 97e8678..ede94ea 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -23,6 +23,8 @@
+ #include <linux/reset.h>
+ #include <linux/types.h>
  
--	val = (val >> 24) & 0xff;
-+	val = (val >> 24) & 0x3f;
- 	return sprintf(buf, "%d\n", (int)val);
- }
- 
--static int tcc_offset_update(int tcc)
-+static int tcc_offset_update(unsigned int tcc)
- {
- 	u64 val;
- 	int err;
- 
--	if (!tcc)
-+	if (tcc > 63)
- 		return -EINVAL;
- 
- 	err = rdmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, &val);
- 	if (err)
- 		return err;
- 
--	val &= ~GENMASK_ULL(31, 24);
--	val |= (tcc & 0xff) << 24;
-+	if (val & BIT(31))
-+		return -EPERM;
++#include "thermal_hwmon.h"
 +
-+	val &= ~GENMASK_ULL(29, 24);
-+	val |= (tcc & 0x3f) << 24;
+ /* AUXADC Registers */
+ #define AUXADC_CON1_SET_V	0x008
+ #define AUXADC_CON1_CLR_V	0x00c
+@@ -1087,6 +1089,10 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 		goto err_disable_clk_peri_therm;
+ 	}
  
- 	err = wrmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, val);
- 	if (err)
-@@ -104,14 +107,15 @@ static int tcc_offset_update(int tcc)
++	ret = devm_thermal_add_hwmon_sysfs(tzdev);
++	if (ret)
++		dev_warn(&pdev->dev, "error in thermal_add_hwmon_sysfs");
++
  	return 0;
- }
  
--static int tcc_offset_save;
-+static unsigned int tcc_offset_save;
- 
- static ssize_t tcc_offset_degree_celsius_store(struct device *dev,
- 				struct device_attribute *attr, const char *buf,
- 				size_t count)
- {
-+	unsigned int tcc;
- 	u64 val;
--	int tcc, err;
-+	int err;
- 
- 	err = rdmsrl_safe(MSR_PLATFORM_INFO, &val);
- 	if (err)
-@@ -120,7 +124,7 @@ static ssize_t tcc_offset_degree_celsius_store(struct device *dev,
- 	if (!(val & BIT(30)))
- 		return -EACCES;
- 
--	if (kstrtoint(buf, 0, &tcc))
-+	if (kstrtouint(buf, 0, &tcc))
- 		return -EINVAL;
- 
- 	err = tcc_offset_update(tcc);
+ err_disable_clk_peri_therm:
