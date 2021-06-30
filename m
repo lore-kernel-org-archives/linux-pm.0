@@ -7,59 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0BAFC11F6B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82F67C11F68
 	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C2E3961D08
+	by mail.kernel.org (Postfix) with ESMTP id 6116B61CAD
 	for <linux-pm@archiver.kernel.org>; Wed, 30 Jun 2021 09:31:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233832AbhF3Jde (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Jun 2021 05:33:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44342 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233817AbhF3Jdd (ORCPT
+        id S233779AbhF3Jdd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Jun 2021 05:33:33 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:59564 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233541AbhF3Jdd (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 05:33:33 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46544C061767
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jun 2021 02:31:05 -0700 (PDT)
-Date:   Wed, 30 Jun 2021 09:31:00 -0000
+Date:   Wed, 30 Jun 2021 09:31:03 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1625045461;
+        s=2020; t=1625045463;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=h7Q9CAvGmqUWgXJ9aYGCkmWJSGteWblCZnFQbFQf9bg=;
-        b=vg+e9OxY4GFPEShvyIVljDZzwvx6NS21VxHn/URy0+/vwBbDIOuJLH5GyuUwmeHm8VNrSx
-        Cwy5Sjw1y6X7RqtQ08nQCD5SWxVEmzkZbctAV3xTa8hXhMDch7/4g7MqwmiMy81H0ukko8
-        eAtYd/TaPLn9t+/bL9AOI5tCygC2donBoSAiqrpzQ6fHjvnFx80V4l18BkUtAKt539YJho
-        ZldyxT2PExoR0P4YdsEhIh4InKtQmDcZj05vh1QIYKKLxhZbUkxgO9QyrGmE9+6fsrlnuQ
-        sjlA9WnBzAb5aEyOctIy0Ao1Aj+l12hzkUoolevywFjgQxQmOAS0Qk8nWTltPA==
+        bh=yjCdHI/dl5IOqqgaikMBh5BcNGGtcXcSyRKJlbFtM7c=;
+        b=pohQM/ljjozgxty7ZoTPy3ik9PUNoyGHeykt4SKT3SEa5UlhridaC3t5QfSbbokitiuiDB
+        yktB4FVhmFUwJyNJlqaOC7fRXp75A5Zbq0VnzhwAFyaJL5OrHJHV66TCXf3UVMSj5v+qEK
+        symDiUU78k9StW9+0IR46BvGQ6mAJsxZqib4G5c4ZCIKILPkJ8PreF4B9E+8KuAVxpWsjC
+        yF+2QvaGXbztQSWI73noCGlbll6O3aibcPQuEEAVVVJci90Aw1rszjvvHp1VHrmr6Mv33a
+        d5UmD7hm9YjpRIQLt++UPofkWRcxlCVNpH3hG4GwFBJ4TzcdGYstu5pqZu1ImQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1625045461;
+        s=2020e; t=1625045463;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=h7Q9CAvGmqUWgXJ9aYGCkmWJSGteWblCZnFQbFQf9bg=;
-        b=0SWrg6V3sBaBDvqpJPiV0xTjAgba4EhrdK0Eb//DGi8lknVC81+b/7hVmYVrIO2LhnEH7z
-        ofZ4pHkLZAqBrDCA==
-From:   "thermal-bot for Srinivas Pandruvada" <tip-bot2@linutronix.de>
+        bh=yjCdHI/dl5IOqqgaikMBh5BcNGGtcXcSyRKJlbFtM7c=;
+        b=FoPetYJJvAeKDGRWWklYoNjtjdtXiE6HxoTOgVJ6l86gF/FzxM+2tNhQGhfGjjkIXX0qsS
+        WOMHcKyaAVeZdpAw==
+From:   "thermal-bot for Yang Li" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/int340x/processor_thermal:
- Fix warning for return value
-Cc:     kernel test robot <lkp@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+Subject: [thermal: thermal/next] thermal: devfreq_cooling: Fix kernel-doc
+Cc:     Abaci Robot <abaci@linux.alibaba.com>,
+        Yang Li <yang.lee@linux.alibaba.com>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210628183232.62877-1-srinivas.pandruvada@linux.intel.com>
-References: <20210628183232.62877-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com>
+References: <1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
-Message-ID: <162504546099.395.17438393398806195157.tip-bot2@tip-bot2>
+Message-ID: <162504546301.395.4482419179251470810.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -70,41 +69,43 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     447acc9decdc177f353fa13fb26208a89612d49c
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//447acc9decdc177f353fa13fb26208a89612d49c
-Author:        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-AuthorDate:    Mon, 28 Jun 2021 11:32:32 -07:00
+Commit-ID:     8e5045645e52de63cdc8e5a65968b96411cf95d9
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8e5045645e52de63cdc8e5a65968b96411cf95d9
+Author:        Yang Li <yang.lee@linux.alibaba.com>
+AuthorDate:    Wed, 09 Jun 2021 15:22:30 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 29 Jun 2021 01:24:28 +02:00
+CommitterDate: Mon, 21 Jun 2021 16:08:36 +02:00
 
-thermal/drivers/int340x/processor_thermal: Fix warning for return value
+thermal: devfreq_cooling: Fix kernel-doc
 
-Fix smatch warnings:
-drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c:258 proc_thermal_pci_probe() warn: missing error code 'ret'
+Fix function name in devfreq_cooling.c comment to remove a
+warning found by kernel-doc.
 
-Use PTR_ERR to return failure of thermal_zone_device_register().
+drivers/thermal/devfreq_cooling.c:479: warning: expecting prototype for
+devfreq_cooling_em_register_power(). Prototype was for
+devfreq_cooling_em_register() instead.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210628183232.62877-1-srinivas.pandruvada@linux.intel.com
+Link: https://lore.kernel.org/r/1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com
 ---
- drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/thermal/devfreq_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-index ad7e2e3..11dd2e8 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -254,8 +254,10 @@ static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_
- 	pci_info->tzone = thermal_zone_device_register("TCPU_PCI", 1, 1, pci_info,
- 							&tzone_ops,
- 							&tzone_params, 0, 0);
--	if (IS_ERR(pci_info->tzone))
-+	if (IS_ERR(pci_info->tzone)) {
-+		ret = PTR_ERR(pci_info->tzone);
- 		goto err_ret_mmio;
-+	}
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 3a788ac..5a86cff 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -458,7 +458,7 @@ struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
+ EXPORT_SYMBOL_GPL(devfreq_cooling_register);
  
- 	/* request and enable interrupt */
- 	ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
+ /**
+- * devfreq_cooling_em_register_power() - Register devfreq cooling device with
++ * devfreq_cooling_em_register() - Register devfreq cooling device with
+  *		power information and automatically register Energy Model (EM)
+  * @df:		Pointer to devfreq device.
+  * @dfc_power:	Pointer to devfreq_cooling_power.
