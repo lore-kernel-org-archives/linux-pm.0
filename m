@@ -2,146 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C51C11F67
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:30:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F0D3C11F69
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:43:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6DCFC6135B
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:30:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7771561424
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:43:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234859AbhGAXcq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:32:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40398 "EHLO
+        id S234106AbhGAXqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 19:46:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234561AbhGAXbX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:23 -0400
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53158C0613E1;
-        Thu,  1 Jul 2021 16:28:48 -0700 (PDT)
-Received: by mail-lj1-x22c.google.com with SMTP id p24so10843305ljj.1;
-        Thu, 01 Jul 2021 16:28:48 -0700 (PDT)
+        with ESMTP id S234063AbhGAXqX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:46:23 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB263C061762;
+        Thu,  1 Jul 2021 16:43:51 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id k10so14778033lfv.13;
+        Thu, 01 Jul 2021 16:43:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=eZAIS0SxnjcMuhoOHE6hmlJInxQtsi1U4QiR0A4EtGs=;
-        b=VDH/xQrOx8/VXYTmDKtz/RwrYnmxlkGDB8QetPfkn8ROIpRAI4mkfpuoSWRNuRF7M+
-         LWxCDvv7yQTES2Og4gS+1qRhFuAHDPNu+eBN2dIwuWkCOYdnF/DOEmthQaEGcoI7/tSu
-         I5Nt4uFDZWPefDKTQgMpBWmBTNyg9LYLD3UvLRp0sJ8AitzbLVQCNM8IzipvCMrC8436
-         rSEvW5ltGIHknE7fyy0kEjt9EU7q/EHPQc364W8DmVUQ7EX4fh651NoqqakdBEda0t0Z
-         yfZXHRfctv2oMuKZbKlR59wwkB+Oqn4oTSwHchOaqMoFaVso3nf+A9n/cIl6pFiyWMW2
-         Yrug==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=GxmceOXlSx//Z7AXWshXZETJTGUmHRmXWRqvH0CzuXQ=;
+        b=JvIypy2z9SDBnwZ4f3wpB2JNJWN+WoyyQ2FKe3wp1MlfN2Rr7TwZ8DBy6fec4zP2V8
+         af8F0t5uAxkeK+vQoDqaq6fVwLgPKE0E6UL5IDEYvnaDu5EiVGYNsWdre8xPury6ACe5
+         xCp+TA43FMxkFpK1kHtxYWMNBeZKk+eJVH26ERWzc7Xy6hF3qvWmtq+1nKTEKQCHQY3I
+         9o9SyhNWQe31BcQ6lhluLWO4BYiYkr6fWf8UIoKcgr+kCaA9YUN9d7YOaUxz6SU4XSh1
+         zID/5Bd6Lh5hhDYcQShw31k/zIYox+pVciSPGRYT8pyuXAjNnc+/HjYJnDsJjvIAmXvz
+         VO5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=eZAIS0SxnjcMuhoOHE6hmlJInxQtsi1U4QiR0A4EtGs=;
-        b=cn25HhPepGfW15+fNW2g5/jV+v3c8fPJNHFTQP5CQoUZLtP0L1DYz5MSoCelPX+G60
-         5lhxeiwgJiXa6Ld1qFtMa6vAUGeo52f1SnKK5nFKWlyvuwcO8OgPe0OJFjY90KdbMuDd
-         3bLvTN+X+Otp6/qdb8uBLogphVu1if7hNl4jw/Ff3jr+BvyfvtASKiILWPWfattYYqgh
-         pR6azIaiF/JGk7zxb0kDIW+5/AJngVjFD7x4iM5ry0K/3YNEc7YDP0mPmWROGYbrkNem
-         v06NLgBXLd9RMdqkuUqoxQYnRH9C2NsxNdh73EO2VtJcUpkwaaYMrEqfnr05QDjM1JHc
-         sINg==
-X-Gm-Message-State: AOAM532oT8xnMo2z+0t8V34Y+XF3sbqZdcJ4snLz9XIzRL9aeABsdTK7
-        zXOwR9iCTRAbnav6jK5CgkApu4dtolU=
-X-Google-Smtp-Source: ABdhPJwjfo5zamLKqBGiCvOaPQPrabDEj0zUuu2P4xuLHmcJTf0BQxmrotP+DEcvj7o1ZCyw5kljnQ==
-X-Received: by 2002:a05:651c:178b:: with SMTP id bn11mr1466038ljb.43.1625182126752;
-        Thu, 01 Jul 2021 16:28:46 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=GxmceOXlSx//Z7AXWshXZETJTGUmHRmXWRqvH0CzuXQ=;
+        b=mb7ECcHnJC/IC24fp268h/X6X1gQHzVn1smlO6oveg550bHZWvbx6NcgxDcv+OSG85
+         ex/E95qYTwm1/W7XfzHz3mvmCWs+mc/IY3I2TKvfjvTSdH9QGSx3Jk+tFhLO/53CBaFN
+         StrJs1ucb/oAtA5OQdS9Aeq7aCOKT9iOegmFkG+iQ91UdqJRX7qUQhn3o6qSbg4mVN3I
+         0SDKzAhVCkUoPr2njq1ozUCXYjyhLW0Ke0fYP/Rhf0Pt1rrDYtZygE3srW2U7ONRRkEN
+         rZ0FmgrGA7OsQVOIfjBhOCCe9jxY2FWJSxRX1tBiGHGK5h/fSbfg0lE1i9oD3xfx875M
+         oeYw==
+X-Gm-Message-State: AOAM531fY03MlIodKuQq9GaiEJyOXyfnCh/EytgHmRj03uqDHFgjHCJP
+        gANm2qRBGT+aVO5BS2vX59s=
+X-Google-Smtp-Source: ABdhPJww81eLXSEUQEKQ4zGmxQndbDRbQvxhqYQpJSQB6vXHcAEwqkwiWSdaIqhn9IYO4qqkgQVz6Q==
+X-Received: by 2002:a05:6512:30d:: with SMTP id t13mr1609874lfp.14.1625183030356;
+        Thu, 01 Jul 2021 16:43:50 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.46
+        by smtp.gmail.com with ESMTPSA id e23sm60743lfq.221.2021.07.01.16.43.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:28:46 -0700 (PDT)
+        Thu, 01 Jul 2021 16:43:50 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
+To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v7 28/37] memory: tegra20-emc: Add minimal runtime PM support
-Date:   Fri,  2 Jul 2021 02:27:19 +0300
-Message-Id: <20210701232728.23591-29-digetx@gmail.com>
+        Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Peter Chen <peter.chen@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Felipe Balbi <balbi@kernel.org>,
+        David Heidelberg <david@ixit.cz>
+Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+Subject: [PATCH v2 00/12] Add OTG mode support to Tegra USB PHY, SMB347 and Nexus 7
+Date:   Fri,  2 Jul 2021 02:43:05 +0300
+Message-Id: <20210701234317.26393-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210701232728.23591-1-digetx@gmail.com>
-References: <20210701232728.23591-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-EMC is always enabled, mark it as enabled. This makes the OPP and GENPD
-API usage more consistent since otherwise we're changing performance state
-of a power domain for the device that doesn't support power management.
+Hi,
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/memory/tegra/tegra20-emc.c | 31 ++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+This series adds USB OTG mode support to the NVIDIA Tegra USB PHY driver,
+SMB347 charger driver and Nexus 7 tablet.
 
-diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
-index c3462dbc8c22..22087009fa0c 100644
---- a/drivers/memory/tegra/tegra20-emc.c
-+++ b/drivers/memory/tegra/tegra20-emc.c
-@@ -20,6 +20,7 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/sort.h>
- #include <linux/types.h>
-@@ -1028,6 +1029,32 @@ static int tegra_emc_devfreq_init(struct tegra_emc *emc)
- 	return 0;
- }
- 
-+static void devm_tegra_emc_disable_runtime_pm(void *dev)
-+{
-+	pm_runtime_put(dev);
-+	pm_runtime_disable(dev);
-+}
-+
-+static int tegra_emc_init_pm(struct tegra_emc *emc)
-+{
-+	int err;
-+
-+	pm_runtime_enable(emc->dev);
-+	err = pm_runtime_resume_and_get(emc->dev);
-+	if (err) {
-+		pm_runtime_disable(emc->dev);
-+		return err;
-+	}
-+
-+	err = devm_add_action_or_reset(emc->dev,
-+				       devm_tegra_emc_disable_runtime_pm,
-+				       emc->dev);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
- static int tegra_emc_probe(struct platform_device *pdev)
- {
- 	struct tegra_core_opp_params opp_params = {};
-@@ -1076,6 +1103,10 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	if (err)
- 		return err;
- 
-+	err = tegra_emc_init_pm(emc);
-+	if (err)
-+		return err;
-+
- 	opp_params.init_state = true;
- 
- 	err = devm_tegra_core_dev_init_opp_table(&pdev->dev, &opp_params);
+Changelog:
+
+v2: - The PHY's interrupt is now enabled from PHY's set_wakeup() callback.
+      It prevents getting a spurious interrupt during the CI driver probe
+      time.
+
+Dmitry Osipenko (12):
+  dt-bindings: phy: tegra20-usb-phy: Convert to schema
+  dt-bindings: phy: tegra20-usb-phy: Document properties needed for OTG
+    mode
+  soc/tegra: pmc: Expose USB regmap to all SoCs
+  usb: phy: tegra: Support OTG mode programming
+  usb: otg-fsm: Fix hrtimer list corruption
+  dt-bindings: power: supply: smb347-charger: Document USB VBUS
+    regulator
+  power: supply: smb347-charger: Make smb347_set_writable() IRQ-safe
+  power: supply: smb347-charger: Remove caching of charger state
+  power: supply: smb347-charger: Implement USB VBUS regulator
+  arm64: tegra132: Add new properties to USB PHY device-tree node
+  ARM: tegra: Add new properties to USB PHY device-tree nodes
+  ARM: tegra: nexus7: Enable USB OTG mode
+
+ .../bindings/phy/nvidia,tegra20-usb-phy.txt   |  74 ----
+ .../bindings/phy/nvidia,tegra20-usb-phy.yaml  | 377 ++++++++++++++++++
+ .../power/supply/summit,smb347-charger.yaml   |  28 ++
+ arch/arm/boot/dts/tegra114.dtsi               |   6 +
+ arch/arm/boot/dts/tegra124.dtsi               |   9 +
+ arch/arm/boot/dts/tegra20.dtsi                |   9 +
+ .../tegra30-asus-nexus7-grouper-common.dtsi   |  25 +-
+ arch/arm/boot/dts/tegra30.dtsi                |   9 +
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi      |   9 +
+ drivers/power/supply/Kconfig                  |   1 +
+ drivers/power/supply/smb347-charger.c         | 259 +++++++++++-
+ drivers/soc/tegra/pmc.c                       |   6 +-
+ drivers/usb/common/usb-otg-fsm.c              |   6 +-
+ drivers/usb/phy/phy-tegra-usb.c               | 202 +++++++++-
+ .../dt-bindings/power/summit,smb347-charger.h |   4 +
+ include/linux/usb/otg-fsm.h                   |   1 +
+ include/linux/usb/tegra_usb_phy.h             |   5 +
+ 17 files changed, 926 insertions(+), 104 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.txt
+ create mode 100644 Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.yaml
+
 -- 
 2.30.2
 
