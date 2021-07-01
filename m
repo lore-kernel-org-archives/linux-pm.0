@@ -2,179 +2,149 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF16C11F6D
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 02:25:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6E18C11F64
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 03:36:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 45ABC6147E
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 02:25:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9C1BD613F7
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 03:36:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238780AbhGAC1g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Jun 2021 22:27:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43252 "EHLO
+        id S232559AbhGADir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Jun 2021 23:38:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58730 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238664AbhGAC1W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 22:27:22 -0400
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48AB8C0613A2;
-        Wed, 30 Jun 2021 19:24:51 -0700 (PDT)
-Received: by mail-lj1-x22e.google.com with SMTP id f13so6137658ljp.10;
-        Wed, 30 Jun 2021 19:24:51 -0700 (PDT)
+        with ESMTP id S229622AbhGADiq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 23:38:46 -0400
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21F07C061756
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jun 2021 20:36:16 -0700 (PDT)
+Received: by mail-pj1-x1033.google.com with SMTP id q91so3416591pjk.3
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jun 2021 20:36:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=esff+ZXqqz83swKvK/vBkagYD4H4gF2qZzwq0FaHQEk=;
-        b=LfHrbtJT8SQNYgOxuByF33zsi0fUJ2IMbfbtKeIMm49coJc97ACnpMGGtCM9PDt+fc
-         up57htuFcMKqIJNIWGYbatAi+OVn40wnQw0ij8HAj/TYUkIJdpuwfIZCYFxDg6iQJPQr
-         wuw3W23Fi43sVQZ7XcQ11LiM+Q5nasbnPy6SalNEeHUiXzMEwVsdFOrmKLYXyPJezuGK
-         z8MEjs7L4J/THe1x1Bd7V5seBpsTE8kEw63svctJBGTbyJ+jmd0IRoeLkteQXPB41F6+
-         +ZTKcBG1xpJ+mEpIPS/IDXqgaenRzs9Q9TXm9oZTO7wHAHhcE6duhKhsg7YtZdO9FJ1n
-         dO3w==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+         :user-agent;
+        bh=CfXNvUU+7ZlUmUS/VvpvW61l6Q1EH0W11UuheIfO2kk=;
+        b=kmsAqaKJu2kocfY/lhiYfPeygHmU37T7j6/IInIvhgDpQbjhShhy2V/D/cvcDtbojZ
+         5ktVn1oOFMor48wxo9KMdFvtnyJvHsVqPHAgx0g7s3w/IYBBhroBTiaqan5z0kaJMytZ
+         BkWC94WFlNq1ST7oNlpt+VkBaL1x/zhmny/zOzp5Fjhbz8EsEe+cV2mWduacrqSFEF8i
+         heZX6/NWDru6ntlu7O6wp8fRCaa8vjp0BJ9HsUhc68yvHiHkh0OmFGb/Jjx4H6k/Btfy
+         823oFalSzrFVnZqeul+9mbSd7ESCzqJwBrMG9rfjM4M+k6XzbEe5rlSykSoH9ZWGlPRr
+         XdXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=esff+ZXqqz83swKvK/vBkagYD4H4gF2qZzwq0FaHQEk=;
-        b=QrTW5Ee1EbqY7juR6IB1Bc4FDzObPvc+zXZsMORjcui9k+A1UISVP3O5aB+LZcCkCf
-         Ow+lH7iqP+l1cprh2Z24LfyZZSf0seWLM/cF3B49AyM6ldr6HsFS01I5XsezuDJVXRFl
-         TTANFDx16GWx8EGHkA3Vc6SyUsv4Jo6echF78q7ql+7xfxBJaYvnBnX+DNY7mKZInDkm
-         mJtYajWkDRh6r2iGHEg/FUhMpzzayZqEKKP2v5v59yTrLFAa5DAVzh5q3efMFw9u435A
-         Si3VkcXfH5Twt5t5zp5GY+vtD9UXXlMykHEDIRAeNN6ASRTKhK/bvNXbkad6CGlh6yF5
-         nX4g==
-X-Gm-Message-State: AOAM531RLzbSuTniDf5DokG3dcmtkO5IpSQqwL9tHT9LZt6Kz4ao24g2
-        yQtTw8N1xSzO8DBL6fOHIGI=
-X-Google-Smtp-Source: ABdhPJz+J6+TdtzyRYMkQ/xx/qSunXyMi5ChDbDhNBwakwQ2/5icuNKzrcTHjPloczTgbBDUBe87qQ==
-X-Received: by 2002:a2e:6d11:: with SMTP id i17mr10419938ljc.75.1625106289654;
-        Wed, 30 Jun 2021 19:24:49 -0700 (PDT)
-Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id v7sm2407262ljn.14.2021.06.30.19.24.48
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:user-agent;
+        bh=CfXNvUU+7ZlUmUS/VvpvW61l6Q1EH0W11UuheIfO2kk=;
+        b=S4PrVEJ5ixdu8AbLADRaXpGaRbauNFcFNxVinvN+OJUcde8jm6XDHcoygYQ6yxoEzn
+         1fLWlN2RS2e7/CzHCIfQCJna97JleCA9YLztvazvd8q8dHfw2Ktl7WGvJzK3FYG+MCuS
+         P4lbERxXv21tR6cg9Yz/cCjyUc/U19c6uhUkenaoyFBq/GKQIeC76JMHAI69YugJfOOn
+         ueQffM3cY8GqW8/DdYYslMIkF8XCj1oyzrWx45IfeMgfLvp0cII36gF2wbxEGAuAtFrN
+         H+ag0x10eQtHbWetJL9OKECpoeNEKWMru4wwmC6m87yPUXEMKWzRTqeuEOuYYFbhn2tN
+         aKwA==
+X-Gm-Message-State: AOAM53028R7nazRKJUIERaJs/Epi+0tODyV8sgDHyHMntZqS3HmnC1xE
+        Uq0eEulq2Inyp0Q7CV7WIB0b2xqKewJivw==
+X-Google-Smtp-Source: ABdhPJyhcWUWlR2E7xlmQfhRYhp1FMCM+c6h0Y+B3F15a7ONqt7a0G2+8FYXMVvRco0C8EVcH2yp7g==
+X-Received: by 2002:a17:902:9a8c:b029:113:d891:2eaf with SMTP id w12-20020a1709029a8cb0290113d8912eafmr35156516plp.61.1625110575503;
+        Wed, 30 Jun 2021 20:36:15 -0700 (PDT)
+Received: from localhost ([106.201.108.2])
+        by smtp.gmail.com with ESMTPSA id s1sm24513001pgg.49.2021.06.30.20.36.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Jun 2021 19:24:49 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <treding@nvidia.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Peter Chen <peter.chen@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Felipe Balbi <balbi@kernel.org>,
-        David Heidelberg <david@ixit.cz>
-Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH v1 07/12] power: supply: smb347-charger: Make smb347_set_writable() IRQ-safe
-Date:   Thu,  1 Jul 2021 05:24:00 +0300
-Message-Id: <20210701022405.10817-8-digetx@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210701022405.10817-1-digetx@gmail.com>
-References: <20210701022405.10817-1-digetx@gmail.com>
+        Wed, 30 Jun 2021 20:36:15 -0700 (PDT)
+Date:   Thu, 1 Jul 2021 09:06:13 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Subject: [GIT PULL] cpufreq/arm updates for 5.14
+Message-ID: <20210701033613.ydoxbc5tydzqbln3@vireshk-i7>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The smb347_set_writable() is used by interrupt handler and outside of it.
-The interrupt should be disabled when the function is used outside of
-interrupt handler in order to prevent racing with the interrupt context.
-Add new parameter to smb347_set_writable() that allows to disable IRQ.
+Hi Rafael,
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/power/supply/smb347-charger.c | 30 +++++++++++++++++++--------
- 1 file changed, 21 insertions(+), 9 deletions(-)
+This pull request contains:
 
-diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
-index df240420f2de..db1378b41f80 100644
---- a/drivers/power/supply/smb347-charger.c
-+++ b/drivers/power/supply/smb347-charger.c
-@@ -671,10 +671,22 @@ static int smb347_set_temp_limits(struct smb347_charger *smb)
-  *
-  * Returns %0 on success and negative errno in case of failure.
-  */
--static int smb347_set_writable(struct smb347_charger *smb, bool writable)
-+static int smb347_set_writable(struct smb347_charger *smb, bool writable,
-+			       bool irq_toggle)
- {
--	return regmap_update_bits(smb->regmap, CMD_A, CMD_A_ALLOW_WRITE,
--				  writable ? CMD_A_ALLOW_WRITE : 0);
-+	struct i2c_client *client = to_i2c_client(smb->dev);
-+	int ret;
-+
-+	if (writable && irq_toggle && !smb->irq_unsupported)
-+		disable_irq(client->irq);
-+
-+	ret = regmap_update_bits(smb->regmap, CMD_A, CMD_A_ALLOW_WRITE,
-+				 writable ? CMD_A_ALLOW_WRITE : 0);
-+
-+	if ((!writable || ret) && irq_toggle && !smb->irq_unsupported)
-+		enable_irq(client->irq);
-+
-+	return ret;
- }
- 
- static int smb347_hw_init(struct smb347_charger *smb)
-@@ -682,7 +694,7 @@ static int smb347_hw_init(struct smb347_charger *smb)
- 	unsigned int val;
- 	int ret;
- 
--	ret = smb347_set_writable(smb, true);
-+	ret = smb347_set_writable(smb, true, false);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -758,7 +770,7 @@ static int smb347_hw_init(struct smb347_charger *smb)
- 	ret = smb347_start_stop_charging(smb);
- 
- fail:
--	smb347_set_writable(smb, false);
-+	smb347_set_writable(smb, false, false);
- 	return ret;
- }
- 
-@@ -866,7 +878,7 @@ static int smb347_irq_set(struct smb347_charger *smb, bool enable)
- 	if (smb->irq_unsupported)
- 		return 0;
- 
--	ret = smb347_set_writable(smb, true);
-+	ret = smb347_set_writable(smb, true, true);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -891,7 +903,7 @@ static int smb347_irq_set(struct smb347_charger *smb, bool enable)
- 	ret = regmap_update_bits(smb->regmap, CFG_PIN, CFG_PIN_EN_CHARGER_ERROR,
- 				 enable ? CFG_PIN_EN_CHARGER_ERROR : 0);
- fail:
--	smb347_set_writable(smb, false);
-+	smb347_set_writable(smb, false, true);
- 	return ret;
- }
- 
-@@ -919,7 +931,7 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 	if (!client->irq)
- 		return 0;
- 
--	ret = smb347_set_writable(smb, true);
-+	ret = smb347_set_writable(smb, true, false);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -931,7 +943,7 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 				 CFG_STAT_ACTIVE_HIGH | CFG_STAT_DISABLED,
- 				 CFG_STAT_DISABLED);
- 
--	smb347_set_writable(smb, false);
-+	smb347_set_writable(smb, false, false);
- 
- 	if (ret < 0) {
- 		dev_warn(smb->dev, "failed to initialize IRQ: %d\n", ret);
+- Add frequency invariance support for CPPC driver again and related
+  fixes/changes. (This is based on commit 9357a380f90a ("cpufreq:
+  CPPC: Migrate to ->exit() callback instead of ->stop_cpu()") from
+  the PM tree).
+
+- Minor changes/cleanups for Meditak driver (Fabien Parent and Seiya
+  Wang), Qcom platform (Sibi Sankar), and SCMI driver (Christophe
+  JAILLET).
+
+- New bindings for generic performance domains (Sudeep Holla).
+
+- Rename black/white-lists (Viresh Kumar).
+
+Thanks.
+
+--
+Viresh
+
+-------------------------8<-------------------------
+
+The following changes since commit 9357a380f90a89a168d505561d11f68272e0e768:
+
+  cpufreq: CPPC: Migrate to ->exit() callback instead of ->stop_cpu() (2021-06-30 18:49:29 +0200)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/arm/linux-next
+
+for you to fetch changes up to c503c193db7d7ccc0c58b1ef694eaef331318149:
+
+  Merge branch 'cpufreq/cppc-fie' into cpufreq/arm/linux-next (2021-07-01 07:32:37 +0530)
+
+----------------------------------------------------------------
+Christophe JAILLET (1):
+      cpufreq: scmi: Fix an error message
+
+Fabien Parent (1):
+      cpufreq: mediatek: add support for mt8365
+
+Seiya Wang (2):
+      clk: mediatek: remove deprecated CLK_INFRA_CA57SEL for MT8173 SoC
+      dt-bindings: cpufreq: update cpu type and clock name for MT8173 SoC
+
+Sibi Sankar (1):
+      cpufreq: blacklist SC7280 in cpufreq-dt-platdev
+
+Sudeep Holla (1):
+      dt-bindings: dvfs: Add support for generic performance domains
+
+Viresh Kumar (6):
+      cpufreq: dt: Rename black/white-lists
+      cpufreq: CPPC: Fix potential memleak in cppc_cpufreq_cpu_init
+      cpufreq: CPPC: Pass structure instance by reference
+      arch_topology: Avoid use-after-free for scale_freq_data
+      cpufreq: CPPC: Add support for frequency invariance
+      Merge branch 'cpufreq/cppc-fie' into cpufreq/arm/linux-next
+
+ Documentation/devicetree/bindings/arm/cpus.yaml                |   7 ++++
+ Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt |   8 ++--
+ Documentation/devicetree/bindings/dvfs/performance-domain.yaml |  74 ++++++++++++++++++++++++++++++++++++
+ drivers/base/arch_topology.c                                   |  27 ++++++++++---
+ drivers/cpufreq/Kconfig.arm                                    |  10 +++++
+ drivers/cpufreq/cppc_cpufreq.c                                 | 290 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+ drivers/cpufreq/cpufreq-dt-platdev.c                           |  10 +++--
+ drivers/cpufreq/mediatek-cpufreq.c                             |   1 +
+ drivers/cpufreq/scmi-cpufreq.c                                 |   2 +-
+ include/dt-bindings/clock/mt8173-clk.h                         |   1 -
+ include/linux/arch_topology.h                                  |   1 +
+ kernel/sched/core.c                                            |   1 +
+ 12 files changed, 390 insertions(+), 42 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dvfs/performance-domain.yaml
+
+
 -- 
-2.30.2
-
+viresh
