@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7935DC11F6D
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 10:57:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E262DC11F73
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 10:57:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5957C61490
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 10:57:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C52A961490
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 10:57:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236206AbhGALAN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 07:00:13 -0400
-Received: from relay07.th.seeweb.it ([5.144.164.168]:52757 "EHLO
-        relay07.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236155AbhGALAK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 07:00:10 -0400
+        id S236256AbhGALAP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 07:00:15 -0400
+Received: from relay06.th.seeweb.it ([5.144.164.167]:35843 "EHLO
+        relay06.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236194AbhGALAN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 07:00:13 -0400
 Received: from IcarusMOD.eternityproject.eu (unknown [2.237.20.237])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 3D8DB3F416;
-        Thu,  1 Jul 2021 12:57:38 +0200 (CEST)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id C7CB13F640;
+        Thu,  1 Jul 2021 12:57:39 +0200 (CEST)
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
 To:     bjorn.andersson@linaro.org
@@ -38,9 +38,9 @@ Cc:     viresh.kumar@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
         ~postmarketos/upstreaming@lists.sr.ht, jeffrey.l.hugo@gmail.com,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>
-Subject: [PATCH v6 5/9] cpufreq: qcom-hw: Add kerneldoc to some functions
-Date:   Thu,  1 Jul 2021 12:57:26 +0200
-Message-Id: <20210701105730.322718-6-angelogioacchino.delregno@somainline.org>
+Subject: [PATCH v6 8/9] dt-bindings: cpufreq: qcom-hw: Add bindings for 8998
+Date:   Thu,  1 Jul 2021 12:57:29 +0200
+Message-Id: <20210701105730.322718-9-angelogioacchino.delregno@somainline.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210701105730.322718-1-angelogioacchino.delregno@somainline.org>
 References: <20210701105730.322718-1-angelogioacchino.delregno@somainline.org>
@@ -50,114 +50,113 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some functions may not be very straightforward to understand:
-add kerneldoc to some ones in order to improve readability.
+The OSM programming addition has been done under the
+qcom,cpufreq-hw-8998 compatible name: specify the requirement
+of two additional register spaces for this functionality.
+This implementation, with the same compatible, has been
+tested on MSM8998 and SDM630.
 
 Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 54 +++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 67 ++++++++++++++-----
+ 1 file changed, 52 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index f86859bf76f1..af1b59310249 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -39,6 +39,13 @@ struct qcom_cpufreq_data {
- static unsigned long cpu_hw_rate, xo_rate;
- static bool icc_scaling_enabled;
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+index bc81b6203e27..29b663321a0b 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+@@ -18,6 +18,10 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - description: Non-secure v1 of CPUFREQ HW
++        items:
++          - const: qcom,cpufreq-hw-8998
++
+       - description: v1 of CPUFREQ HW
+         items:
+           - const: qcom,cpufreq-hw
+@@ -28,21 +32,9 @@ properties:
+               - qcom,sm8250-cpufreq-epss
+           - const: qcom,cpufreq-epss
  
-+/**
-+ * qcom_cpufreq_set_bw() - Set interconnect bandwidth
-+ * @policy:   CPUFreq policy structure
-+ * @freq_khz: CPU Frequency in KHz
-+ *
-+ * Returns: Zero for success, otherwise negative value on errors
-+ */
- static int qcom_cpufreq_set_bw(struct cpufreq_policy *policy,
- 			       unsigned long freq_khz)
- {
-@@ -60,6 +67,20 @@ static int qcom_cpufreq_set_bw(struct cpufreq_policy *policy,
- 	return ret;
- }
+-  reg:
+-    minItems: 2
+-    maxItems: 3
+-    items:
+-      - description: Frequency domain 0 register region
+-      - description: Frequency domain 1 register region
+-      - description: Frequency domain 2 register region
++  reg: {}
  
-+/**
-+ * qcom_cpufreq_update_opp() - Update CPU OPP tables
-+ * @policy:   CPUFreq policy structure
-+ * @freq_khz: CPU Frequency for OPP entry in KHz
-+ * @volt:     CPU Voltage for OPP entry in microvolts
-+ *
-+ * The CPU frequencies and voltages are being read from the Operating
-+ * State Manager (OSM) and the related OPPs, read from DT, need to be
-+ * updated to reflect what the hardware will set for each p-state.
-+ * If there is no OPP table specified in DT, then this function will
-+ * add dynamic ones.
-+ *
-+ * Returns: Zero for success, otherwise negative value on errors
-+ */
- static int qcom_cpufreq_update_opp(struct device *cpu_dev,
- 				   unsigned long freq_khz,
- 				   unsigned long volt)
-@@ -80,6 +101,17 @@ static int qcom_cpufreq_update_opp(struct device *cpu_dev,
- 	return dev_pm_opp_enable(cpu_dev, freq_hz);
- }
+-  reg-names:
+-    minItems: 2
+-    maxItems: 3
+-    items:
+-      - const: freq-domain0
+-      - const: freq-domain1
+-      - const: freq-domain2
++  reg-names: {}
  
-+/**
-+ * qcom_cpufreq_hw_target_index() - Set frequency/voltage
-+ * @policy:   CPUFreq policy structure
-+ * @index:    Performance state index to be set
-+ *
-+ * This function sends a request to the Operating State Manager
-+ * to set a Performance State index, so, to set frequency and
-+ * voltage for the target CPU/cluster.
-+ *
-+ * Returns: Always zero
-+ */
- static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 					unsigned int index)
- {
-@@ -95,6 +127,12 @@ static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 	return 0;
- }
+   clocks:
+     items:
+@@ -57,10 +49,55 @@ properties:
+   '#freq-domain-cells':
+     const: 1
  
-+/**
-+ * qcom_cpufreq_hw_get() - Get current Performance State from OSM
-+ * @cpu:      CPU number
-+ *
-+ * Returns: Current CPU/Cluster frequency or zero
-+ */
- static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
- {
- 	struct qcom_cpufreq_data *data;
-@@ -128,6 +166,17 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
- 	return policy->freq_table[index].frequency;
- }
- 
-+/**
-+ * qcom_cpufreq_hw_read_lut() - Read Lookup Table from the OSM
-+ * @cpu_dev:   CPU device
-+ * @policy:    CPUFreq policy structure
-+ *
-+ * The Operating State Manager Lookup Table can always be read, even
-+ * in case it was pre-programmed by the bootloader or by TrustZone.
-+ * Read the LUT from it in order to build OPPs containing DVFS info.
-+ *
-+ * Returns: Zero for success, otherwise negative number on errors.
-+ */
- static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
- 				    struct cpufreq_policy *policy)
- {
-@@ -228,6 +277,11 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
- 	return 0;
- }
- 
-+/*
-+ * qcom_get_related_cpus - Get mask of CPUs in the same frequency domain
-+ * @index: CPU number
-+ * @m:     Returned CPU mask
-+ */
- static void qcom_get_related_cpus(int index, struct cpumask *m)
- {
- 	struct device_node *cpu_np;
++if:
++  properties:
++    compatible:
++      contains:
++        const: qcom,cpufreq-hw-8998
++then:
++  properties:
++    reg:
++      minItems: 2
++      maxItems: 6
++      items:
++        - description: Frequency domain 0 register region
++        - description: Operating State Manager domain 0 register region
++        - description: Frequency domain 1 register region
++        - description: Operating State Manager domain 1 register region
++        - description: PLL ACD domain 0 register region (if ACD programming required)
++        - description: PLL ACD domain 1 register region (if ACD programming required)
++
++    reg-names:
++      minItems: 2
++      maxItems: 6
++      items:
++        - const: "osm-domain0"
++        - const: "freq-domain0"
++        - const: "osm-domain1"
++        - const: "freq-domain1"
++        - const: "osm-acd0"
++        - const: "osm-acd1"
++
++else:
++  properties:
++    reg:
++      minItems: 2
++      maxItems: 3
++      items:
++        - description: Frequency domain 0 register region
++        - description: Frequency domain 1 register region
++        - description: Frequency domain 2 register region
++    reg-names:
++      minItems: 2
++      maxItems: 3
++      items:
++        - const: "freq-domain0"
++        - const: "freq-domain1"
++        - const: "freq-domain2"
++
+ required:
+   - compatible
+   - reg
+-  - reg-names
+   - clocks
+   - clock-names
+   - '#freq-domain-cells'
 -- 
 2.32.0
 
