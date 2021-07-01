@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C357C47E48
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1530AC11F66
 	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 02:24:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E6EA961469
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 02:24:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 06FC5613D9
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 02:24:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238666AbhGAC1W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Jun 2021 22:27:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43256 "EHLO
+        id S238671AbhGAC1X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Jun 2021 22:27:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43252 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238639AbhGAC1U (ORCPT
+        with ESMTP id S238634AbhGAC1U (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jun 2021 22:27:20 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76256C0617A8;
-        Wed, 30 Jun 2021 19:24:50 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id u25so6132690ljj.11;
-        Wed, 30 Jun 2021 19:24:50 -0700 (PDT)
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5069C061756;
+        Wed, 30 Jun 2021 19:24:49 -0700 (PDT)
+Received: by mail-lf1-x134.google.com with SMTP id u13so8943620lfk.2;
+        Wed, 30 Jun 2021 19:24:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=IwL3qryTNfgwkU5i7nwmV+nzWjMAB8DcHs6NfVFo2aw=;
-        b=tIusmnHfpa7QldsC+QYuL0IiSy5lUtLgTU2ip2anCvjeciwgULJeDsonrJ+yE7Xk6l
-         tXLc10VR93uc2MwE5oVK0C+bXZmKMJvoll+Rj4AmzqJuQzUqCW1M0L0eWMWSxh9Iu639
-         3KahBcBhl8XapWawTh3V18wJmhZaaYOzYVEsyf89hLwbVa/88wTEggdv5HeA0gginkZ2
-         +SPq5XqFyvKOYLUDRA3tLGlkR94ffAxn6FoTPGSvcTUD13aQajiSkTWkrBw4oUgevK3c
-         NAIyLzZOwBkTFdiQHvDRoBdFKz6nLpu5V6/Lf62iaz5JVJzGuV4tcLru5TVJri5ZtrVu
-         tXhA==
+        bh=B5wbH7/HMNjanvR8tAtZwAF7kIgDHX/YS9tb4UgAOWc=;
+        b=k2Ku7iWgKzBOaLNhEth63GngO1oW9CLqgD/ZtVyTnRfRRWpTo8NWSgX53DKcAJfTtO
+         KR4GOgmBTALpWYFzuLwRgAbRQUiB0Ufq5yuVQYSmvIu9IFopMiW6Pbo3ceePxZcKm4Wg
+         4eAhacInR0dP74IWrDn9nQVXCtgbqYximc8+3aOcppDMZnuAlF3hLtIl5boI4kri+HO6
+         fqDZySV3aXCdCOTm6mDg/P6pbpX7aQNZVrQIGjvW5XfaBAt5vZVWJw/n7fX9jPYJ3Wgs
+         A/Yj/7jmtzDmzllHM493wv/ia2VwC5KNi7Q8M30sXjz4FiaItTMR4d1t0eyPMvfNjLFJ
+         tjGw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=IwL3qryTNfgwkU5i7nwmV+nzWjMAB8DcHs6NfVFo2aw=;
-        b=UVHqQaq1Sx+pgyLZZLEHYv4kGN+28tiHUHsYqYXDXDg3gpawWW6nAC9MhEg6aMJaUZ
-         jgUr0Xh3zBqtAM2XRiTRgQz1m6rqAyZf4l8dDo8vVDcl9b7U3I0TP32F6J6zRNyrtm1B
-         cDfFsYJrh8fB/v7SuxAd1QDK4ZQ1IQtRK6rmqgl3Fv5pHi75OPY42vXWRLSCmv0S098a
-         a1or6PTUSTjRjo+rbcgF4C8oVew3vPINQmInXXf+IeSOvBkUBxtlfbo8cLDnBHOwC2PH
-         NjHQ15zsO+R2U/U4ouARggN5A+WplWsLctoOinpQ2qSFKo0koOl+Q4QWpHV+MQ+y4WxE
-         9Iog==
-X-Gm-Message-State: AOAM533uc1U4ndVxcL7TbY27/E+88nmDKWdbdKvHjqr7/hMA3YD7UMJP
-        YL7KvEwe+LsyLrHBrpC8JKM=
-X-Google-Smtp-Source: ABdhPJz3UUBzoGKmaBnOPlxMEk6Za+dxEHeTazeZhoLEMO5I1u8ovsFD22Y1hTttln9f0lqnfwyINQ==
-X-Received: by 2002:a2e:9cd:: with SMTP id 196mr10135948ljj.98.1625106288905;
+        bh=B5wbH7/HMNjanvR8tAtZwAF7kIgDHX/YS9tb4UgAOWc=;
+        b=UK5JtVLKJ2epFQFOuHYJbeRL9pvOh7an+Uol1fdTPlG9ZKsHsG5DrZJ3doNOwXoY3U
+         oH3FzTRAk7cCjBG4j2Qa/i3IAhs4WyEH7i1ynw1e+GUbR2iCeghKHPbOd2hltO5WyT44
+         GcVF5LPyg/tnZQePt5EXLykWCUwl6554EC4HykMEljM8JoMHgYf7rLjbpsTOcSt0o2If
+         xCcKLKP7/Y7yz8IdJm/zLMmUhzkdu7YRj+FpOtjNNTBR/+i6vIa7ej/RnOPS6MpHUz2k
+         m3nFxWUsleH6WY5PyM53ZRZu7lhjV3Gq+dFLQquW/B7JIbKyGvMn1d7wm28KOLn/siDu
+         D6Ww==
+X-Gm-Message-State: AOAM530/JD7idILYUBeEZR64ZRRwO4ii1l6v5MK1Tt3dEh6/B6NJ/p+I
+        P087DQS5Q0EJtieR45qbWfE=
+X-Google-Smtp-Source: ABdhPJwwldN7h/dhXXftRXHU5vIrMHcmozYmklSe1EVB8Zp7JVC65y5k0cf8x/g1NoEH+72G6tv3Cw==
+X-Received: by 2002:a05:6512:20c9:: with SMTP id u9mr2667114lfr.264.1625106288212;
         Wed, 30 Jun 2021 19:24:48 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id v7sm2407262ljn.14.2021.06.30.19.24.48
+        by smtp.gmail.com with ESMTPSA id v7sm2407262ljn.14.2021.06.30.19.24.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Jun 2021 19:24:48 -0700 (PDT)
+        Wed, 30 Jun 2021 19:24:47 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <treding@nvidia.com>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v1 06/12] dt-bindings: power: supply: smb347-charger: Document USB VBUS regulator
-Date:   Thu,  1 Jul 2021 05:23:59 +0300
-Message-Id: <20210701022405.10817-7-digetx@gmail.com>
+Subject: [PATCH v1 05/12] usb: otg-fsm: Fix hrtimer list corruption
+Date:   Thu,  1 Jul 2021 05:23:58 +0300
+Message-Id: <20210701022405.10817-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210701022405.10817-1-digetx@gmail.com>
 References: <20210701022405.10817-1-digetx@gmail.com>
@@ -81,82 +81,49 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SMB347 can supply power to USB VBUS, which is required by OTG-cable
-devices that want to switch USB port into the host mode. Add USB VBUS
-regulator properties.
+The HNP work can be re-scheduled while it's still in-fly. This results in
+re-initialization of the busy work, resetting the hrtimer's list node of
+the work and crashing kernel with null dereference within kernel/timer
+once work's timer is expired. It's very easy to trigger this problem by
+re-plugging USB cable quickly. Initialize HNP work only once to fix this
+trouble.
 
+Cc: stable@vger.kernel.org
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../power/supply/summit,smb347-charger.yaml   | 28 +++++++++++++++++++
- .../dt-bindings/power/summit,smb347-charger.h |  4 +++
- 2 files changed, 32 insertions(+)
+ drivers/usb/common/usb-otg-fsm.c | 6 +++++-
+ include/linux/usb/otg-fsm.h      | 1 +
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-index 983fc215c1e5..cd3d834f734d 100644
---- a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-@@ -73,6 +73,24 @@ properties:
-       - 1 # SMB3XX_SOFT_TEMP_COMPENSATE_CURRENT Current compensation
-       - 2 # SMB3XX_SOFT_TEMP_COMPENSATE_VOLTAGE Voltage compensation
+diff --git a/drivers/usb/common/usb-otg-fsm.c b/drivers/usb/common/usb-otg-fsm.c
+index 3740cf95560e..0697fde51d00 100644
+--- a/drivers/usb/common/usb-otg-fsm.c
++++ b/drivers/usb/common/usb-otg-fsm.c
+@@ -193,7 +193,11 @@ static void otg_start_hnp_polling(struct otg_fsm *fsm)
+ 	if (!fsm->host_req_flag)
+ 		return;
  
-+  summit,inok-polarity:
-+    description: |
-+      Polarity of INOK signal indicating presence of external power supply.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum:
-+      - 0 # SMB3XX_SYSOK_INOK_ACTIVE_LOW
-+      - 1 # SMB3XX_SYSOK_INOK_ACTIVE_HIGH
+-	INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
++	if (!fsm->hnp_work_inited) {
++		INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
++		fsm->hnp_work_inited = true;
++	}
 +
-+  usb-vbus:
-+    $ref: "../../regulator/regulator.yaml#"
-+    type: object
-+
-+    properties:
-+      summit,needs-inok-toggle:
-+        type: boolean
-+        description: INOK signal is fixed and polarity needs to be toggled
-+                     in order to enable/disable output mode.
-+
- allOf:
-   - if:
-       properties:
-@@ -134,6 +152,7 @@ examples:
-             reg = <0x7f>;
+ 	schedule_delayed_work(&fsm->hnp_polling_work,
+ 					msecs_to_jiffies(T_HOST_REQ_POLL));
+ }
+diff --git a/include/linux/usb/otg-fsm.h b/include/linux/usb/otg-fsm.h
+index 3aee78dda16d..784659d4dc99 100644
+--- a/include/linux/usb/otg-fsm.h
++++ b/include/linux/usb/otg-fsm.h
+@@ -196,6 +196,7 @@ struct otg_fsm {
+ 	struct mutex lock;
+ 	u8 *host_req_flag;
+ 	struct delayed_work hnp_polling_work;
++	bool hnp_work_inited;
+ 	bool state_changed;
+ };
  
-             summit,enable-charge-control = <SMB3XX_CHG_ENABLE_PIN_ACTIVE_HIGH>;
-+            summit,inok-polarity = <SMB3XX_SYSOK_INOK_ACTIVE_LOW>;
-             summit,chip-temperature-threshold-celsius = <110>;
-             summit,mains-current-limit-microamp = <2000000>;
-             summit,usb-current-limit-microamp = <500000>;
-@@ -141,6 +160,15 @@ examples:
-             summit,enable-mains-charging;
- 
-             monitored-battery = <&battery>;
-+
-+            usb-vbus {
-+                regulator-name = "usb_vbus";
-+                regulator-min-microvolt = <5000000>;
-+                regulator-max-microvolt = <5000000>;
-+                regulator-min-microamp = <750000>;
-+                regulator-max-microamp = <750000>;
-+                summit,needs-inok-toggle;
-+            };
-         };
-     };
- 
-diff --git a/include/dt-bindings/power/summit,smb347-charger.h b/include/dt-bindings/power/summit,smb347-charger.h
-index d918bf321a71..3205699b5e41 100644
---- a/include/dt-bindings/power/summit,smb347-charger.h
-+++ b/include/dt-bindings/power/summit,smb347-charger.h
-@@ -16,4 +16,8 @@
- #define SMB3XX_CHG_ENABLE_PIN_ACTIVE_LOW	1
- #define SMB3XX_CHG_ENABLE_PIN_ACTIVE_HIGH	2
- 
-+/* Polarity of INOK signal */
-+#define SMB3XX_SYSOK_INOK_ACTIVE_LOW		0
-+#define SMB3XX_SYSOK_INOK_ACTIVE_HIGH		1
-+
- #endif
 -- 
 2.30.2
 
