@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95250C11F6C
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:43:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC35AC11F6C
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:44:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6C60161432
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:43:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB3426141A
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:44:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234380AbhGAXqZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:46:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43870 "EHLO
+        id S234510AbhGAXqb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 19:46:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234352AbhGAXqY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:46:24 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 720D8C061764;
-        Thu,  1 Jul 2021 16:43:53 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id u20so10780956ljo.12;
-        Thu, 01 Jul 2021 16:43:53 -0700 (PDT)
+        with ESMTP id S234447AbhGAXq1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:46:27 -0400
+Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com [IPv6:2a00:1450:4864:20::232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ED33C0613DE;
+        Thu,  1 Jul 2021 16:43:55 -0700 (PDT)
+Received: by mail-lj1-x232.google.com with SMTP id u25so10799141ljj.11;
+        Thu, 01 Jul 2021 16:43:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=adJQUfPeiRUepTm54Dxm95RAQuwCijRoZlMsrd5sNGE=;
-        b=t4WwozpdNtQFm35n9vvIaC+3/5uF/mj+RGDBfVbac6Q8gdx0e68DgGpBd/ZWYnYRy5
-         rRJVfBUY8GSWhsez485W9CfUou+UtylEFooQ9N3acejkPXqFqj6D7wUWCaxK4K8hSAjZ
-         dCAw1d+zqsdcJFhE30UelMsJHRf7D1gAoqXbOzaCZy3sa/lflKUGE4cAZBtiDKLf7JFA
-         mghrjxXa9UlzKnmP+NQy9DTYZ121pCOYqwRynadzRZdXQUeKFOj+ZF0JA8TYiNq1Netg
-         8Nzqo48/GVlB9pTLFVmoS/r3lU/RnW7yxxjQhKka5IvrIFW+eR4RTtwN1DzQSSNz9QEH
-         Wu/g==
+        bh=B5wbH7/HMNjanvR8tAtZwAF7kIgDHX/YS9tb4UgAOWc=;
+        b=h0vlT1OlSlEAUB13UOuY9xFCOZ5aFqW82re6QtgaLgVBidGuj7DW94ugdc4fOCjnXa
+         mpKvGPEGWIJ8DVAKgARSG7aL5aBCNl+bxIugTxxSnWlGIbJ0ZRg7AlpK1vtBUM2LZ9Xp
+         Ikr3dKe8y6r9xAudOSnbKmuBeSrpYAvV1V6IiPh2Ca+DxiyJTKaSA6AyPpXagbgvwy7+
+         sYvBZAZQQ+1PEdQTW8bP1gZOdbAIjSiycJxAs6A6bBuQ1Yz/DgRKGoG1kguh+90Xfx8U
+         ozJW4qIR8GzruYBKPSPW7gp6dCYuX03PfTGkoMDNXUwoR+ccfKm5Zzv/nCkXfWelbE/L
+         SToQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=adJQUfPeiRUepTm54Dxm95RAQuwCijRoZlMsrd5sNGE=;
-        b=pYKEvQkTkcc4esOndwOOuJley7kD2ks8BBaNUqNfOoNqeARAQBKPwkimPnO5JnLdxn
-         2aisci2qif0/W8wmQ9AbAc4sDXZ5jpMYJiT7+DjtO0Za3qseadnEzhfcSTWBA+5Pc2UQ
-         CJbxBRy/6JFgmCKyWYFT94SSlWQXrSYLuWNGv5tTrftmzuDn1UU9iXSlqjdgdJc4VF8P
-         OU3TAwZ8PbCRCL3hN/3D54lB4k61+G5/wzntIDc4+IFtbduXB0qj8x8I/Z9bj5RMICBw
-         8jH/R9E2U8L2TllMOQ+Rj2/lw5BuAhL8ko2+B8k42uAI7npjgnTAlQ/rA3Qr0lYrp/Kz
-         EA8w==
-X-Gm-Message-State: AOAM532jiK7rsxH47IgPYRFREA7iVlKMkhhy+WaLaA3w6a/g6atgQBny
-        L4mugxkRc3/qMOv2GZdHBwY=
-X-Google-Smtp-Source: ABdhPJwVf6Y/f55g2R6MJe4/lIwGUkfZNzgt5agcmDHckVkkenxJG89Yu0PLVAPgVPtTYj4gZ9gtHw==
-X-Received: by 2002:a2e:9152:: with SMTP id q18mr1510345ljg.493.1625183031834;
-        Thu, 01 Jul 2021 16:43:51 -0700 (PDT)
+        bh=B5wbH7/HMNjanvR8tAtZwAF7kIgDHX/YS9tb4UgAOWc=;
+        b=Ogp0HltWfe4tSxTaMuLagS5L+sDlW3kKmxY/Y8ti73ZBTtmuOmW2pX/Qw/RduvS2Qi
+         X5A4mvrHhUlEriQ7Je+e2eoufubfFTqgJ6xf6n6sbFqqgqg1gXjdJCK6bGUKfVk9Kp1T
+         QiCuJv9+yKdvGROiM2rt1Ygrt5JVvFQD2jsO+g57j7YxmN/ApLY/+DqM/Zxo40GLGSDD
+         Ikq/xufy7EwvaY7ko51PV4M2zArMi3upuqVsWvwGKpBfDU44G8k2GB5Izi7UX3+LgIh4
+         O9Adq0orKl1K1zbULWI8umLravJatpaqbP6fXs9Ay7MY/KVZoLypjhNbQECFtu1gG0Zw
+         zUXA==
+X-Gm-Message-State: AOAM5323EIKR0E3Hx8JvTNp8JQOsrkWCv3CtboafI0czay/o2R1mVs+J
+        X5zjLvsSJNdXVSYKkgjpvCw=
+X-Google-Smtp-Source: ABdhPJxNWsrRwm0fpmFG46xxp21YRDZQYZzPoDl3+5LZQjGc5mtxccbk+69xZl0ONM5rPoD/L4dK3w==
+X-Received: by 2002:a2e:9ace:: with SMTP id p14mr1571292ljj.188.1625183034051;
+        Thu, 01 Jul 2021 16:43:54 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id e23sm60743lfq.221.2021.07.01.16.43.51
+        by smtp.gmail.com with ESMTPSA id e23sm60743lfq.221.2021.07.01.16.43.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:43:51 -0700 (PDT)
+        Thu, 01 Jul 2021 16:43:53 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <treding@nvidia.com>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v2 02/12] dt-bindings: phy: tegra20-usb-phy: Document properties needed for OTG mode
-Date:   Fri,  2 Jul 2021 02:43:07 +0300
-Message-Id: <20210701234317.26393-3-digetx@gmail.com>
+Subject: [PATCH v2 05/12] usb: otg-fsm: Fix hrtimer list corruption
+Date:   Fri,  2 Jul 2021 02:43:10 +0300
+Message-Id: <20210701234317.26393-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210701234317.26393-1-digetx@gmail.com>
 References: <20210701234317.26393-1-digetx@gmail.com>
@@ -81,89 +81,49 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In order to support OTG mode we need these new properties:
+The HNP work can be re-scheduled while it's still in-fly. This results in
+re-initialization of the busy work, resetting the hrtimer's list node of
+the work and crashing kernel with null dereference within kernel/timer
+once work's timer is expired. It's very easy to trigger this problem by
+re-plugging USB cable quickly. Initialize HNP work only once to fix this
+trouble.
 
-	- interrupt
-	- nvidia,pmc
-	- nvidia,phy-instance
-
-The nvidia,phy-instance isn't strictly needed for the OTG mode since we
-know that only first controller supports it in practice, but it will be
-needed in general for supporting more complex hardware features that
-require knowledge of the PHY offset within common registers of the Power
-Management controller (PMC).
-
-Add the new properties to the bindings.
-
+Cc: stable@vger.kernel.org
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../bindings/phy/nvidia,tegra20-usb-phy.yaml  | 20 +++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/usb/common/usb-otg-fsm.c | 6 +++++-
+ include/linux/usb/otg-fsm.h      | 1 +
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.yaml b/Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.yaml
-index 593187234e6a..a108f1552042 100644
---- a/Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.yaml
-+++ b/Documentation/devicetree/bindings/phy/nvidia,tegra20-usb-phy.yaml
-@@ -77,6 +77,9 @@ properties:
-           - const: timer
-           - const: utmi-pads
+diff --git a/drivers/usb/common/usb-otg-fsm.c b/drivers/usb/common/usb-otg-fsm.c
+index 3740cf95560e..0697fde51d00 100644
+--- a/drivers/usb/common/usb-otg-fsm.c
++++ b/drivers/usb/common/usb-otg-fsm.c
+@@ -193,7 +193,11 @@ static void otg_start_hnp_polling(struct otg_fsm *fsm)
+ 	if (!fsm->host_req_flag)
+ 		return;
  
-+  interrupts:
-+    maxItems: 1
+-	INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
++	if (!fsm->hnp_work_inited) {
++		INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
++		fsm->hnp_work_inited = true;
++	}
 +
-   resets:
-     oneOf:
-       - maxItems: 1
-@@ -199,6 +202,17 @@ properties:
-     maxItems: 1
-     description: GPIO used to reset the PHY.
+ 	schedule_delayed_work(&fsm->hnp_polling_work,
+ 					msecs_to_jiffies(T_HOST_REQ_POLL));
+ }
+diff --git a/include/linux/usb/otg-fsm.h b/include/linux/usb/otg-fsm.h
+index 3aee78dda16d..784659d4dc99 100644
+--- a/include/linux/usb/otg-fsm.h
++++ b/include/linux/usb/otg-fsm.h
+@@ -196,6 +196,7 @@ struct otg_fsm {
+ 	struct mutex lock;
+ 	u8 *host_req_flag;
+ 	struct delayed_work hnp_polling_work;
++	bool hnp_work_inited;
+ 	bool state_changed;
+ };
  
-+  nvidia,pmc:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Phandle to Power Management controller.
-+
-+  nvidia,phy-instance:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 0
-+    maximum: 2
-+    description: Unique hardware ID.
-+
- required:
-   - compatible
-   - reg
-@@ -320,6 +334,7 @@ examples:
-         compatible = "nvidia,tegra124-usb-phy", "nvidia,tegra30-usb-phy";
-         reg = <0x7d008000 0x4000>,
-               <0x7d000000 0x4000>;
-+        interrupts = <0 97 4>;
-         phy_type = "utmi";
-         clocks = <&tegra_car TEGRA124_CLK_USB3>,
-                  <&tegra_car TEGRA124_CLK_PLL_U>,
-@@ -338,6 +353,8 @@ examples:
-         nvidia,hssquelch-level = <2>;
-         nvidia,hsdiscon-level = <5>;
-         nvidia,xcvr-hsslew = <12>;
-+        nvidia,pmc = <&tegra_pmc>;
-+        nvidia,phy-instance= <2>;
-     };
- 
-   - |
-@@ -346,6 +363,7 @@ examples:
-     usb-phy@c5004000 {
-         compatible = "nvidia,tegra20-usb-phy";
-         reg = <0xc5004000 0x4000>;
-+        interrupts = <0 21 4>;
-         phy_type = "ulpi";
-         clocks = <&tegra_car TEGRA20_CLK_USB2>,
-                  <&tegra_car TEGRA20_CLK_PLL_U>,
-@@ -354,4 +372,6 @@ examples:
-         resets = <&tegra_car 58>, <&tegra_car 22>;
-         reset-names = "usb", "utmi-pads";
-         #phy-cells = <0>;
-+        nvidia,pmc = <&tegra_pmc>;
-+        nvidia,phy-instance= <1>;
-     };
 -- 
 2.30.2
 
