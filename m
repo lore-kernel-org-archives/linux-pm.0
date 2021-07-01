@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3738C11F8A
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7509C11F6C
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:28:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 92DB7613F4
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6CD6613F4
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:28:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234549AbhGAXbb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:31:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40454 "EHLO
+        id S234513AbhGAXb1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 19:31:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40398 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234566AbhGAXbX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:23 -0400
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DFCEC0613E3;
-        Thu,  1 Jul 2021 16:28:49 -0700 (PDT)
-Received: by mail-lj1-x22c.google.com with SMTP id k21so10819968ljh.2;
-        Thu, 01 Jul 2021 16:28:49 -0700 (PDT)
+        with ESMTP id S234430AbhGAXbQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:16 -0400
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABA94C061765;
+        Thu,  1 Jul 2021 16:28:43 -0700 (PDT)
+Received: by mail-lf1-x133.google.com with SMTP id f30so14845868lfj.1;
+        Thu, 01 Jul 2021 16:28:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=hfDiTMSt6DeIQpKxm7bnASIvltPyO+9aQgFyDA8r5fQ=;
-        b=PcTlN9dtlgEHQou2uC6X97XufAURw1VpPrICSXnnPwSmTqqMN6XyERe4CBIXyyuWjF
-         HhMUSqKp+58MgIbH8iy1MADP71ezskjzsAj6kYC02qTEoHnqUaRguF2bpI9Ptzgn6SAO
-         byc6hqzJ0ocsEnCnMgSo/+1oGeOo3QC72Vznh5VgRYyBvv0yepbhwMjgyGQ+81ScYLi0
-         1p2QO7Ne6RSLZE5uAaaZdo7uOix62DjL9E2SVa5nlTcZ9Ha4LZr9g7LKBSUqQNYmPAOU
-         Ox+X0A8qJNnm10UylfR2Tjen3TTmNg3TOjdASj1F4fy/pUsGVO4j9rYosJIuGBZHqIWD
-         o8xg==
+        bh=2tPCzNkUD5FTVgjEXVp96zo+k/1b4DbbmBjEro2BRIM=;
+        b=o8AEp7eFIbO/XoUORRUEyUGhkcquM9an74Q4mSX0CyFKaDgA9bDIO8g4+BnrKdgzYC
+         ztslIfxPNVVsc7Qp8kNl2nUYRW3udee+0h9GbphoRsvrQeuw3WHLspyLuhf/yKhEVbIA
+         yE/tzwKJaXZ0Medr9E4EI2HtiUqvLj116L+HQdN22aYGYgu7brNpEvJktlqYQrWm/c3E
+         G+TCrlSkGyA3/a2DpG8KWfVo+XIiEJ6zQaTz2CjAJ3AKybn4i63Mm3V3GXJt2ZQ6iySa
+         vhs5XbO+nwe5IvPCtJjN7kKQZCczttuOEFdslFdZTuqq4QQrv6UM/GTkIgOJvQpGAp6h
+         NVbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=hfDiTMSt6DeIQpKxm7bnASIvltPyO+9aQgFyDA8r5fQ=;
-        b=nBj6WvCoBxLBfzxDN3e3qAULSzEZZnMvv4lVDtNObNe0HGpOy1/vbdAEhbVHeuiTV7
-         2KegRrde5FL3JTwVq5bJ9Te2bJACey5LrG9uVko/l6MIPpWldM0aqnH5ys0ys1SQ+llF
-         NTuqnI6zCPw1v9DX5ECshuddcYq0cq1kOtbXUBK60qzQcHnNbZtgxxYvMZnDcSVIPfhC
-         rs8CB5VTFVOuC5Bwsfj/4osgG+W9j6RK9heeZA4gOspWNGxw+/8MEQF1z4lYLnA5ZDAO
-         4aQVxzIpza7k7Wm0hUm19+OgeLTar/YCfW5JyEsA/82PG+JMd3E2+ZCVU6JebK0Hjlzo
-         9UkQ==
-X-Gm-Message-State: AOAM530c+FiyQMSTomkAnIUMr2wLpdbNKHlJ8CrPWwQ53V12CooeHX1H
-        XG2CJK6rxIVI3u49mM8s9ng=
-X-Google-Smtp-Source: ABdhPJwU7jyMQovx9cyprUCHFXtXmRlux0INiM24bRUppB6Nx4gkZJuJSqgWkh39ypUNHqr97tcbdA==
-X-Received: by 2002:a2e:808d:: with SMTP id i13mr1567832ljg.172.1625182127950;
-        Thu, 01 Jul 2021 16:28:47 -0700 (PDT)
+        bh=2tPCzNkUD5FTVgjEXVp96zo+k/1b4DbbmBjEro2BRIM=;
+        b=UZKa8W5mv2ON4qdk5mQNlnRQKXVeHgq5byJ6KpAvn7aoZHKivRaFz2aEwUZ56uqa+Y
+         ZpSE9bC+c1wQv1su3Z2NwimsYnj1bxPDxFn6uNO0SV+clgWasRzxdOdEGBebfr30U6BD
+         nfP/L2+1X3fa14k1sACHPEP/5KIDl6r07HU2F/KzkAGHFpqIyRJVWQLb0TeN1AJ8nV+h
+         6yTwZAAKPyqRRU4RbOBiexayXfEjw/VtmA9nRNdpiC6SQH0cxfWMbHO4KGO40VBars46
+         0jVC/Vj3lohs99J8UTTHY7W5C4cYIATCNdzETPI1UfGt1X4MXMQdl6i7yT54Uh1aAmKf
+         oMtQ==
+X-Gm-Message-State: AOAM531MB/P01alr6FBtxGPfG8H3QiN7hElRtK0iP50iRIK4SHX0yApa
+        u62bF55niVs0rjOcCDm/zWQ=
+X-Google-Smtp-Source: ABdhPJync9EPn0PVP/JR6wDHPDBE8bmqdg7LEQpWBLESHOActul2jR5Qkx+oFEGH/lGmoShT1rjEhw==
+X-Received: by 2002:a19:ab19:: with SMTP id u25mr1491128lfe.414.1625182122039;
+        Thu, 01 Jul 2021 16:28:42 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.47
+        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:28:47 -0700 (PDT)
+        Thu, 01 Jul 2021 16:28:41 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter De Schrijver <pdeschrijver@nvidia.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v7 30/37] media: dt: bindings: tegra-vde: Convert to schema
-Date:   Fri,  2 Jul 2021 02:27:21 +0300
-Message-Id: <20210701232728.23591-31-digetx@gmail.com>
+Subject: [PATCH v7 20/37] mmc: sdhci-tegra: Add runtime PM and OPP support
+Date:   Fri,  2 Jul 2021 02:27:11 +0300
+Message-Id: <20210701232728.23591-21-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210701232728.23591-1-digetx@gmail.com>
 References: <20210701232728.23591-1-digetx@gmail.com>
@@ -77,199 +77,198 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert NVIDIA Tegra video decoder binding to schema.
+The SDHCI on Tegra belongs to the core power domain and we're going to
+enable GENPD support for the core domain. Now SDHCI must be resumed using
+runtime PM API in order to initialize the SDHCI power state. The SDHCI
+clock rate must be changed using OPP API that will reconfigure the power
+domain performance state in accordance to the rate. Add runtime PM and OPP
+support to the SDHCI driver.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../bindings/media/nvidia,tegra-vde.txt       |  64 -----------
- .../bindings/media/nvidia,tegra-vde.yaml      | 107 ++++++++++++++++++
- 2 files changed, 107 insertions(+), 64 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/media/nvidia,tegra-vde.txt
- create mode 100644 Documentation/devicetree/bindings/media/nvidia,tegra-vde.yaml
+ drivers/mmc/host/sdhci-tegra.c | 81 +++++++++++++++++++++++++++-------
+ 1 file changed, 65 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/media/nvidia,tegra-vde.txt b/Documentation/devicetree/bindings/media/nvidia,tegra-vde.txt
-deleted file mode 100644
-index 602169b8aa19..000000000000
---- a/Documentation/devicetree/bindings/media/nvidia,tegra-vde.txt
-+++ /dev/null
-@@ -1,64 +0,0 @@
--NVIDIA Tegra Video Decoder Engine
--
--Required properties:
--- compatible : Must contain one of the following values:
--   - "nvidia,tegra20-vde"
--   - "nvidia,tegra30-vde"
--   - "nvidia,tegra114-vde"
--   - "nvidia,tegra124-vde"
--   - "nvidia,tegra132-vde"
--- reg : Must contain an entry for each entry in reg-names.
--- reg-names : Must include the following entries:
--  - sxe
--  - bsev
--  - mbe
--  - ppe
--  - mce
--  - tfe
--  - ppb
--  - vdma
--  - frameid
--- iram : Must contain phandle to the mmio-sram device node that represents
--         IRAM region used by VDE.
--- interrupts : Must contain an entry for each entry in interrupt-names.
--- interrupt-names : Must include the following entries:
--  - sync-token
--  - bsev
--  - sxe
--- clocks : Must include the following entries:
--  - vde
--- resets : Must contain an entry for each entry in reset-names.
--- reset-names : Should include the following entries:
--  - vde
--
--Optional properties:
--- resets : Must contain an entry for each entry in reset-names.
--- reset-names : Must include the following entries:
--  - mc
--- iommus: Must contain phandle to the IOMMU device node.
--
--Example:
--
--video-codec@6001a000 {
--	compatible = "nvidia,tegra20-vde";
--	reg = <0x6001a000 0x1000 /* Syntax Engine */
--	       0x6001b000 0x1000 /* Video Bitstream Engine */
--	       0x6001c000  0x100 /* Macroblock Engine */
--	       0x6001c200  0x100 /* Post-processing Engine */
--	       0x6001c400  0x100 /* Motion Compensation Engine */
--	       0x6001c600  0x100 /* Transform Engine */
--	       0x6001c800  0x100 /* Pixel prediction block */
--	       0x6001ca00  0x100 /* Video DMA */
--	       0x6001d800  0x300 /* Video frame controls */>;
--	reg-names = "sxe", "bsev", "mbe", "ppe", "mce",
--		    "tfe", "ppb", "vdma", "frameid";
--	iram = <&vde_pool>; /* IRAM region */
--	interrupts = <GIC_SPI  9 IRQ_TYPE_LEVEL_HIGH>, /* Sync token interrupt */
--		     <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>, /* BSE-V interrupt */
--		     <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>; /* SXE interrupt */
--	interrupt-names = "sync-token", "bsev", "sxe";
--	clocks = <&tegra_car TEGRA20_CLK_VDE>;
--	reset-names = "vde", "mc";
--	resets = <&tegra_car 61>, <&mc TEGRA20_MC_RESET_VDE>;
--	iommus = <&mc TEGRA_SWGROUP_VDE>;
--};
-diff --git a/Documentation/devicetree/bindings/media/nvidia,tegra-vde.yaml b/Documentation/devicetree/bindings/media/nvidia,tegra-vde.yaml
-new file mode 100644
-index 000000000000..3b6c1f031e04
---- /dev/null
-+++ b/Documentation/devicetree/bindings/media/nvidia,tegra-vde.yaml
-@@ -0,0 +1,107 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/media/nvidia,tegra-vde.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/mmc/host/sdhci-tegra.c b/drivers/mmc/host/sdhci-tegra.c
+index 387ce9cdbd7c..19be096b182a 100644
+--- a/drivers/mmc/host/sdhci-tegra.c
++++ b/drivers/mmc/host/sdhci-tegra.c
+@@ -15,6 +15,8 @@
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/pinctrl/consumer.h>
++#include <linux/pm_opp.h>
++#include <linux/pm_runtime.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/reset.h>
+ #include <linux/mmc/card.h>
+@@ -24,6 +26,8 @@
+ #include <linux/gpio/consumer.h>
+ #include <linux/ktime.h>
+ 
++#include <soc/tegra/common.h>
 +
-+title: NVIDIA Tegra Video Decoder Engine
+ #include "sdhci-pltfm.h"
+ #include "cqhci.h"
+ 
+@@ -758,10 +762,15 @@ static void tegra_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+ 	struct sdhci_tegra *tegra_host = sdhci_pltfm_priv(pltfm_host);
++	struct device *dev = mmc_dev(host->mmc);
+ 	unsigned long host_clk;
++	int err;
+ 
+-	if (!clock)
+-		return sdhci_set_clock(host, clock);
++	if (!clock) {
++		sdhci_set_clock(host, clock);
++		dev_pm_opp_set_rate(dev, clock);
++		return;
++	}
+ 
+ 	/*
+ 	 * In DDR50/52 modes the Tegra SDHCI controllers require the SDHCI
+@@ -776,7 +785,12 @@ static void tegra_sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	 * from clk_get_rate() is used.
+ 	 */
+ 	host_clk = tegra_host->ddr_signaling ? clock * 2 : clock;
+-	clk_set_rate(pltfm_host->clk, host_clk);
 +
-+maintainers:
-+  - Dmitry Osipenko <digetx@gmail.com>
-+  - Jon Hunter <jonathanh@nvidia.com>
-+  - Thierry Reding <thierry.reding@gmail.com>
++	err = dev_pm_opp_set_rate(dev, host_clk);
++	if (err)
++		dev_err(dev, "failed to set clk rate to %luHz: %d\n",
++			host_clk, err);
 +
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - nvidia,tegra132-vde
-+              - nvidia,tegra124-vde
-+              - nvidia,tegra114-vde
-+              - nvidia,tegra30-vde
-+          - enum:
-+              - nvidia,tegra20-vde
-+      - items:
-+          - const: nvidia,tegra20-vde
+ 	tegra_host->curr_clk_rate = host_clk;
+ 	if (tegra_host->ddr_signaling)
+ 		host->max_clk = host_clk;
+@@ -1696,7 +1710,6 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
+ 				   "failed to get clock\n");
+ 		goto err_clk_get;
+ 	}
+-	clk_prepare_enable(clk);
+ 	pltfm_host->clk = clk;
+ 
+ 	tegra_host->rst = devm_reset_control_get_exclusive(&pdev->dev,
+@@ -1704,9 +1717,18 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
+ 	if (IS_ERR(tegra_host->rst)) {
+ 		rc = PTR_ERR(tegra_host->rst);
+ 		dev_err(&pdev->dev, "failed to get reset control: %d\n", rc);
+-		goto err_rst_get;
++		goto err_clk_get;
+ 	}
+ 
++	rc = devm_tegra_core_dev_init_opp_table_simple(&pdev->dev);
++	if (rc)
++		goto err_clk_get;
 +
-+  reg:
-+    maxItems: 9
++	pm_runtime_enable(&pdev->dev);
++	rc = pm_runtime_resume_and_get(&pdev->dev);
++	if (rc)
++		goto err_pm_get;
 +
-+  reg-names:
-+    items:
-+      - const: sxe
-+      - const: bsev
-+      - const: mbe
-+      - const: ppe
-+      - const: mce
-+      - const: tfe
-+      - const: ppb
-+      - const: vdma
-+      - const: frameid
+ 	rc = reset_control_assert(tegra_host->rst);
+ 	if (rc)
+ 		goto err_rst_get;
+@@ -1728,7 +1750,9 @@ static int sdhci_tegra_probe(struct platform_device *pdev)
+ err_add_host:
+ 	reset_control_assert(tegra_host->rst);
+ err_rst_get:
+-	clk_disable_unprepare(pltfm_host->clk);
++	pm_runtime_put(&pdev->dev);
++err_pm_get:
++	pm_runtime_disable(&pdev->dev);
+ err_clk_get:
+ 	clk_disable_unprepare(tegra_host->tmclk);
+ err_power_req:
+@@ -1747,7 +1771,9 @@ static int sdhci_tegra_remove(struct platform_device *pdev)
+ 
+ 	reset_control_assert(tegra_host->rst);
+ 	usleep_range(2000, 4000);
+-	clk_disable_unprepare(pltfm_host->clk);
 +
-+  clocks:
-+    maxItems: 1
++	pm_runtime_put(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	clk_disable_unprepare(tegra_host->tmclk);
+ 
+ 	sdhci_pltfm_free(pdev);
+@@ -1755,11 +1781,27 @@ static int sdhci_tegra_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
+-static int __maybe_unused sdhci_tegra_suspend(struct device *dev)
++static int __maybe_unused sdhci_tegra_runtime_suspend(struct device *dev)
+ {
+ 	struct sdhci_host *host = dev_get_drvdata(dev);
+ 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
 +
-+  resets:
-+    maxItems: 2
++	clk_disable_unprepare(pltfm_host->clk);
 +
-+  reset-names:
-+    items:
-+      - const: vde
-+      - const: mc
++	return 0;
++}
 +
-+  interrupts:
-+    maxItems: 3
++static int __maybe_unused sdhci_tegra_runtime_resume(struct device *dev)
++{
++	struct sdhci_host *host = dev_get_drvdata(dev);
++	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
 +
-+  interrupt-names:
-+    items:
-+      - const: sync-token
-+      - const: bsev
-+      - const: sxe
++	return clk_prepare_enable(pltfm_host->clk);
++}
 +
-+  iommus:
-+    maxItems: 1
++static int __maybe_unused sdhci_tegra_suspend(struct device *dev)
++{
++	struct sdhci_host *host = dev_get_drvdata(dev);
+ 	int ret;
+ 
+ 	if (host->mmc->caps2 & MMC_CAP2_CQE) {
+@@ -1774,17 +1816,22 @@ static int __maybe_unused sdhci_tegra_suspend(struct device *dev)
+ 		return ret;
+ 	}
+ 
+-	clk_disable_unprepare(pltfm_host->clk);
++	ret = pm_runtime_force_suspend(dev);
++	if (ret) {
++		sdhci_resume_host(host);
++		cqhci_resume(host->mmc);
++		return ret;
++	}
 +
-+  iram:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Phandle of the SRAM MMIO node.
-+
-+required:
-+  - compatible
-+  - reg
-+  - reg-names
-+  - clocks
-+  - resets
-+  - reset-names
-+  - interrupts
-+  - interrupt-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    video-codec@6001a000 {
-+      compatible = "nvidia,tegra20-vde";
-+      reg = <0x6001a000 0x1000>, /* Syntax Engine */
-+            <0x6001b000 0x1000>, /* Video Bitstream Engine */
-+            <0x6001c000  0x100>, /* Macroblock Engine */
-+            <0x6001c200  0x100>, /* Post-processing Engine */
-+            <0x6001c400  0x100>, /* Motion Compensation Engine */
-+            <0x6001c600  0x100>, /* Transform Engine */
-+            <0x6001c800  0x100>, /* Pixel prediction block */
-+            <0x6001ca00  0x100>, /* Video DMA */
-+            <0x6001d800  0x300>; /* Video frame controls */
-+      reg-names = "sxe", "bsev", "mbe", "ppe", "mce",
-+                  "tfe", "ppb", "vdma", "frameid";
-+      iram = <&iram>; /* IRAM MMIO region */
-+      interrupts = <0  9 4>, /* Sync token */
-+                   <0 10 4>, /* BSE-V */
-+                   <0 12 4>; /* SXE */
-+      interrupt-names = "sync-token", "bsev", "sxe";
-+      clocks = <&clk 61>;
-+      reset-names = "vde", "mc";
-+      resets = <&rst 61>, <&mem 13>;
-+      iommus = <&mem 15>;
-+    };
+ 	return 0;
+ }
+ 
+ static int __maybe_unused sdhci_tegra_resume(struct device *dev)
+ {
+ 	struct sdhci_host *host = dev_get_drvdata(dev);
+-	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(pltfm_host->clk);
++	ret = pm_runtime_force_resume(dev);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1803,13 +1850,15 @@ static int __maybe_unused sdhci_tegra_resume(struct device *dev)
+ suspend_host:
+ 	sdhci_suspend_host(host);
+ disable_clk:
+-	clk_disable_unprepare(pltfm_host->clk);
++	pm_runtime_force_suspend(dev);
+ 	return ret;
+ }
+-#endif
+ 
+-static SIMPLE_DEV_PM_OPS(sdhci_tegra_dev_pm_ops, sdhci_tegra_suspend,
+-			 sdhci_tegra_resume);
++static const struct dev_pm_ops sdhci_tegra_dev_pm_ops = {
++	SET_RUNTIME_PM_OPS(sdhci_tegra_runtime_suspend, sdhci_tegra_runtime_resume,
++			   NULL)
++	SET_SYSTEM_SLEEP_PM_OPS(sdhci_tegra_suspend, sdhci_tegra_resume)
++};
+ 
+ static struct platform_driver sdhci_tegra_driver = {
+ 	.driver		= {
 -- 
 2.30.2
 
