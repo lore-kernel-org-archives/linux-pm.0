@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD9DC11F73
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F408C11F8F
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EA83061411
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3761061411
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234616AbhGAXba (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:31:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40374 "EHLO
+        id S234723AbhGAXbf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 19:31:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234482AbhGAXbT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:19 -0400
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89CB6C0613DB;
-        Thu,  1 Jul 2021 16:28:46 -0700 (PDT)
-Received: by mail-lj1-x234.google.com with SMTP id p24so10843187ljj.1;
-        Thu, 01 Jul 2021 16:28:46 -0700 (PDT)
+        with ESMTP id S234219AbhGAXbZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:25 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE1BCC061765;
+        Thu,  1 Jul 2021 16:28:53 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id f13so10772261ljp.10;
+        Thu, 01 Jul 2021 16:28:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=pqOHj6UrFfgcQU2vnkicKWRHxHORBQtzS7/4pVKTGxE=;
-        b=p/S/evnlDY8Y47RxMRWl4G0g+WA6F+DXjVn+WNg3RJdi6Ow/eh4kYoBBZoNpyXPWsp
-         ZIiCMx7znWdNULpZzwdojijgI2r5GhpBx5Vpy9tSNFZDzNOB/YHS4NGl13xD9oxSnpmp
-         pMTDe0cwOd4Jspep1s6qTZUFUdboSBQLl/Hn2Mtvxo/7bC+vf/1RN1//AM8tOLhO39HH
-         vh/wSrYs0X26J8eaV1lLnCeoYwNTZNW9jVwOJw+M+SnqfR1ZkHEN69LSO7D0aUAliDSm
-         wAwcG0h9a1Lgtn8gbgxsvn3Efqe3lKv50g6ME383GUuBv1jvuUPUwjS6WTmrL6RGxw6C
-         EbjQ==
+        bh=7DByxmYrfYSoFtOXvgezAULCD+kJQTte6BMf4Jj2BLw=;
+        b=IyY9IJkajgob5/6uiA3dJZZOwAlwoF5a2OenrCfuwzof+vwSxfggxSPUyvrw9HY14p
+         l8WIbQk1JpgXE0UcqFufaMzXTp+N/UTO3zOitpXX4YHj6mVvAmRtyykI2Sdps0lwMpjY
+         WVidEhoF9aEMEDje0jBOIS80MHbcIArPrt7oxRrHBr8SAcUYfZoG5+xebDMw41BJ0Q+i
+         AhiTrICXsOfRiXflvtOhhVhgknBH9KDcj1TOGhctmRiQAa2r/F5TGrOgnfm6pJK3OltJ
+         weA+8YBxHY5EL2bvOGBVZ0qe8voPUKo2F+zwd9/V93g9duJLM0G3RN7ivozWPhQCJCI1
+         yu0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=pqOHj6UrFfgcQU2vnkicKWRHxHORBQtzS7/4pVKTGxE=;
-        b=L2w4pvNarqUdBt1gXfKEA+txpNFToxJjbsSA0HUnSMatgy2liIOgABIl08soGzKLzg
-         IDOn27LCKHu0Ahx3QPhK5l/HEjdMxSRBvnGOKyKdHUEaVBx2vEytCIsYLnpeAEBqWNBg
-         7Hx6rxLzf3Ri87dZGraUgho2e3QJm2duCH10Bt2hhJ4TO06wDCotL8524XyPra9Dixvi
-         uYYxAmE50IKDYoLqxAdRclAydmEUjaXvM7WwERYQ6VP3WORvn/8/pN0pBwFuA8EIdcVs
-         oGDfp86xDLiRd3btoJYBupqz1UVHKNJurucLqLOHT5lWnKLPNb1luXdKTCsXFjlaE4Yo
-         k/RA==
-X-Gm-Message-State: AOAM530cYxYaloGNtC1BMKxRHCQgzRLTp3Nbm2ykU4saKBfWd8qv4Oti
-        rG8RFrvHtsHYD4aF1QvtAvQ=
-X-Google-Smtp-Source: ABdhPJyQcvw0XZ6Z8C/0FdRqZAA7PCaWoycuxhyd4tykJmzWd0PCREHHOhoXVeSHDVNGgM5oyFuodg==
-X-Received: by 2002:a2e:b4d0:: with SMTP id r16mr1601164ljm.114.1625182124972;
-        Thu, 01 Jul 2021 16:28:44 -0700 (PDT)
+        bh=7DByxmYrfYSoFtOXvgezAULCD+kJQTte6BMf4Jj2BLw=;
+        b=I4liqj1321dtByFPIFMTvSKtNOEUmUzjyu2iaIKHUmeaGYYeKaPOOxZAmGGh/NBwqW
+         hXRxwpZykYhBIgzSZdW29DXgbZ/NCCYAtbHfrctQ8ETIf0e3FJb5rxpLsyrH8dPIDMlv
+         tzLZJ5K4k3iZoXTmu01btekNQ/ZniJ8jLdnI+Sr9HL9z8MJ/feIp1ch63G7lcfmqxjCp
+         zLfO7RiEv2OEO0HUo/6/NKZeG8wSi3HcPVKcLSDyG+gq2gyWMuwKXzX63NSunLSWW2LA
+         I4Ai132aB6kTdHKYzFbQEe2utF0V0qbyKsXomYPcYhSkylpcWPdj5X9R/fWzJjcWhuZX
+         B7zg==
+X-Gm-Message-State: AOAM530lZWBMN9BuApElEgD3fSSrWB5ofItxF/g3lSx6mT6v2b0AD0VE
+        8b+seFI/xQF/J90cqbFx3c4=
+X-Google-Smtp-Source: ABdhPJyGD4x3fV5UTZqG8S5sHrMDuLGq4yPbUGaXALPZU5QCVl0twJSS9LvqKKIy27oPC49mFdqm0Q==
+X-Received: by 2002:a2e:b708:: with SMTP id j8mr1524001ljo.285.1625182132342;
+        Thu, 01 Jul 2021 16:28:52 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.44
+        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:28:44 -0700 (PDT)
+        Thu, 01 Jul 2021 16:28:52 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter De Schrijver <pdeschrijver@nvidia.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v7 25/37] clk: tegra: Remove CLK_IS_CRITICAL flag from fuse clock
-Date:   Fri,  2 Jul 2021 02:27:16 +0300
-Message-Id: <20210701232728.23591-26-digetx@gmail.com>
+Subject: [PATCH v7 37/37] soc/tegra: pmc: Enable core domain support on Tegra20 and Tegra30
+Date:   Fri,  2 Jul 2021 02:27:28 +0300
+Message-Id: <20210701232728.23591-38-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210701232728.23591-1-digetx@gmail.com>
 References: <20210701232728.23591-1-digetx@gmail.com>
@@ -77,31 +77,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-FUSE driver now takes care of keeping the clock enabled when necessary.
-Remove the CLK_IS_CRITICAL flag from the clock.
+All device drivers got runtime PM and OPP support. Flip the core domain
+support status for Tegra20 and Tegra30 SoCs.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/clk/tegra/clk-tegra-periph.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/soc/tegra/pmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clk/tegra/clk-tegra-periph.c b/drivers/clk/tegra/clk-tegra-periph.c
-index 292d6269daf1..4dcf7f7cb8a0 100644
---- a/drivers/clk/tegra/clk-tegra-periph.c
-+++ b/drivers/clk/tegra/clk-tegra-periph.c
-@@ -777,11 +777,7 @@ static struct tegra_periph_init_data gate_clks[] = {
- 	GATE("ahbdma", "hclk", 33, 0, tegra_clk_ahbdma, 0),
- 	GATE("apbdma", "pclk", 34, 0, tegra_clk_apbdma, 0),
- 	GATE("kbc", "clk_32k", 36, TEGRA_PERIPH_ON_APB | TEGRA_PERIPH_NO_RESET, tegra_clk_kbc, 0),
--	/*
--	 * Critical for RAM re-repair operation, which must occur on resume
--	 * from LP1 system suspend and as part of CCPLEX cluster switching.
--	 */
--	GATE("fuse", "clk_m", 39, TEGRA_PERIPH_ON_APB, tegra_clk_fuse, CLK_IS_CRITICAL),
-+	GATE("fuse", "clk_m", 39, TEGRA_PERIPH_ON_APB, tegra_clk_fuse, 0),
- 	GATE("fuse_burn", "clk_m", 39, TEGRA_PERIPH_ON_APB, tegra_clk_fuse_burn, 0),
- 	GATE("kfuse", "clk_m", 40, TEGRA_PERIPH_ON_APB, tegra_clk_kfuse, 0),
- 	GATE("apbif", "clk_m", 107, TEGRA_PERIPH_ON_APB, tegra_clk_apbif, 0),
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index ebafb818b08e..1f6872f7b211 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -3177,7 +3177,7 @@ static void tegra20_pmc_setup_irq_polarity(struct tegra_pmc *pmc,
+ }
+ 
+ static const struct tegra_pmc_soc tegra20_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra20_powergates),
+ 	.powergates = tegra20_powergates,
+ 	.num_cpu_powergates = 0,
+@@ -3238,7 +3238,7 @@ static const char * const tegra30_reset_sources[] = {
+ };
+ 
+ static const struct tegra_pmc_soc tegra30_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra30_powergates),
+ 	.powergates = tegra30_powergates,
+ 	.num_cpu_powergates = ARRAY_SIZE(tegra30_cpu_powergates),
 -- 
 2.30.2
 
