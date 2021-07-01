@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 495B2C11F82
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE58FC11F7E
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3088B61441
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:28:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D31D6141A
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:29:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234585AbhGAXb2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:31:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40370 "EHLO
+        id S234748AbhGAXbh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 19:31:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234439AbhGAXbQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:16 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F2DBC061764;
-        Thu,  1 Jul 2021 16:28:44 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id q16so14836197lfr.4;
-        Thu, 01 Jul 2021 16:28:44 -0700 (PDT)
+        with ESMTP id S234445AbhGAXbZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:31:25 -0400
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56785C061764;
+        Thu,  1 Jul 2021 16:28:53 -0700 (PDT)
+Received: by mail-lj1-x22c.google.com with SMTP id r16so10775619ljk.9;
+        Thu, 01 Jul 2021 16:28:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=4W3ILiVgyd1ED+oBeZTN1Ck++ELFr33lONulkCFhb04=;
-        b=FnTE15xANM03LuI8cIUYogLzNgj2xnLMkFA3qN8/CSHWL595dgNu7uee50L1AJw/Yh
-         yxx4UHnzdZ33qGzJBQE8xmlUoqVbiDcR9NgNU+E+SR0gAbdwdwqmYMCf8KZN8A4VAbWR
-         /a+0c0wsjwE8rBpw1CP4xLFd0cxzQMjHJI+EwLlY5Ml2dkmWmMPYFmxSW8i2hitLvHR5
-         3U2w6HUOS6fA+7tF4BOvvDwxpIcKkgtsUgobyYTFa7yKlMs6FWa7m+tZ73pNV6DzYu11
-         Uicz4SPo+sXD7kvYvlGmwfqxgZ4/vzYzHpuCRZlYiSlYg8VWgvpPyX6/g7nCSvkh5QqX
-         /4Ig==
+        bh=7DlDGeRQN/MpODoteOvA0zQ5PJl1CPsSr6wfFsEQXQI=;
+        b=fHvOG+ZDiSFiPbL5tTNx/jL7B1hz+Va3DehzVnK1Nus6WzgC9GTr0xedGjgSjRf5wk
+         yzoOdQcOY8qDHw/RfN3o14rVa6iFAGAN6lWEOVvaqwb8pZoL6P6kM7TZP/mNmK+af6V6
+         9q+CLH2UMSV7C6EKa959WjR25a6kPkfTEWRZX67wiS0qoLNrv1OJe3n61nkt6qs42ilh
+         fieQobb4DAw0XsE2qHBNlfY6qKXD7E0py/9l/XgSk8XGIIswMKEj409Rvv895ltcZ2fK
+         pozwsUDC5VBjKtvt3V8ozRYC1129ifF+tvFdctsawflq4PuRy5t4sX9BkKneygD0tF+K
+         gbNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=4W3ILiVgyd1ED+oBeZTN1Ck++ELFr33lONulkCFhb04=;
-        b=d1BKSekbsYbOUA6+GVPPWFvBDFEV2apSmh/z8Y+6KW8B5dy3ad07oqpU1mDtYV+UlP
-         fJW//GoF7ENaS7ZDf2v/5Z5R0ZBKWcivwxEpFpzuxQaWB+2U8RmZFaDCY7z+LlKwukbw
-         lFhlkBBbyJnaidEpuMSAlJ8Y2w9PDiolYEmivj5q+FMAMv7ge7KQZdR7daXARcXYZMll
-         ao12c6uBWOnZC6F2HG84eFfOTOd3T/e2be6LTvGb4aVvASPylSCJocyZZgE5173lcWb7
-         ZhJmbGbdMRguXARIeLUZaCC187IDhP5/6tBSvv0WWC+f/f3OcMnGy/NgBY61NRjpmx1F
-         cm2A==
-X-Gm-Message-State: AOAM5311tCBj/K0eLpkxzCPEJTyfaWmKLP6kRdQgwscmDF/QLLxOSzwC
-        TqVHjctx8uiJCGb+Iyx3vk0=
-X-Google-Smtp-Source: ABdhPJwglAAc1lVAeuzHAN7Eza1H8cYMI02fxljfbrKkDHWeEJeVQetYnB/yhgDtgUVt9GpOHV7YCg==
-X-Received: by 2002:ac2:4c8a:: with SMTP id d10mr1537744lfl.359.1625182122619;
-        Thu, 01 Jul 2021 16:28:42 -0700 (PDT)
+        bh=7DlDGeRQN/MpODoteOvA0zQ5PJl1CPsSr6wfFsEQXQI=;
+        b=A8EA5MZeJSpemoTJAVG3rMb7KS194o1ZQwDA2J/PdBQc12N6lwhEqkCiQks4UIj4Pf
+         7YtfyVxEabm2e4LdeJkXnEFcUKh3P/+VAafl1rz0aNwYWu+Gu643KL9ud+bRdiSp++K0
+         gp+GHS9lbt/i/JyFeKgwjv/AVAXjrJXzG/vTd5JoYYrUld2T3pOqaxGlU+1B7DC5xOOf
+         Pf7Moxqqwji+VWcBY22WRLCDSa5TXoJEEq4CsTHa1MACPS/qlYxteN1xFLaG1OnkKnLR
+         oghQpyxFWj4zRDdRCDsR/DMXR7NfH2Cynn7ziHU0UrkD7i/Uqa4RfE3gJzARZdWyaZ2F
+         /3sg==
+X-Gm-Message-State: AOAM530nJVpeN83vga7WXsUBW55r/r5LV1lM0LqdmvwuLRGY1HPjg/M9
+        rWKWbt2s50wqQRqKS2BLndU=
+X-Google-Smtp-Source: ABdhPJxwGVy+Ts9x1soJKaWZkNX/IC3YXoILTbuNvT5pOX36Aj2zB7vePlbAPnf4+cR1f38o0HpFkQ==
+X-Received: by 2002:a2e:5811:: with SMTP id m17mr1506999ljb.59.1625182131742;
+        Thu, 01 Jul 2021 16:28:51 -0700 (PDT)
 Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.42
+        by smtp.gmail.com with ESMTPSA id s20sm102655lfr.39.2021.07.01.16.28.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:28:42 -0700 (PDT)
+        Thu, 01 Jul 2021 16:28:51 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter De Schrijver <pdeschrijver@nvidia.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v7 21/37] mtd: rawnand: tegra: Add runtime PM support
-Date:   Fri,  2 Jul 2021 02:27:12 +0300
-Message-Id: <20210701232728.23591-22-digetx@gmail.com>
+Subject: [PATCH v7 36/37] ARM: tegra: Add Memory Client resets to Tegra30 GR2D, GR3D and Host1x
+Date:   Fri,  2 Jul 2021 02:27:27 +0300
+Message-Id: <20210701232728.23591-37-digetx@gmail.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210701232728.23591-1-digetx@gmail.com>
 References: <20210701232728.23591-1-digetx@gmail.com>
@@ -77,125 +77,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The NAND on Tegra belongs to the core power domain and we're going to
-enable GENPD support for the core domain. Now NAND must be resumed using
-runtime PM API in order to initialize the NAND power state. Add runtime PM
-support to the NAND driver.
+Memory access must be blocked before hardware reset is asserted and before
+power is gated, otherwise a serious hardware fault is inevitable. Add
+reset for memory clients to the GR2D, GR3D and Host1x nodes.
 
+Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
+Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/mtd/nand/raw/tegra_nand.c | 44 ++++++++++++++++++++++++-------
- 1 file changed, 35 insertions(+), 9 deletions(-)
+ arch/arm/boot/dts/tegra30.dtsi | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mtd/nand/raw/tegra_nand.c b/drivers/mtd/nand/raw/tegra_nand.c
-index fbf67722a049..044c7143af7a 100644
---- a/drivers/mtd/nand/raw/tegra_nand.c
-+++ b/drivers/mtd/nand/raw/tegra_nand.c
-@@ -17,6 +17,7 @@
- #include <linux/mtd/rawnand.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/reset.h>
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index 6e760faaff29..9a9292e31e9f 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -122,8 +122,8 @@ host1x@50000000 {
+ 		interrupt-names = "syncpt", "host1x";
+ 		clocks = <&tegra_car TEGRA30_CLK_HOST1X>;
+ 		clock-names = "host1x";
+-		resets = <&tegra_car 28>;
+-		reset-names = "host1x";
++		resets = <&tegra_car 28>, <&mc TEGRA30_MC_RESET_HC>;
++		reset-names = "host1x", "mc";
+ 		iommus = <&mc TEGRA_SWGROUP_HC>;
+ 		operating-points-v2 = <&host1x_dvfs_opp_table>;
+ 		power-domains = <&pd_heg>;
+@@ -186,8 +186,8 @@ gr2d@54140000 {
+ 			reg = <0x54140000 0x00040000>;
+ 			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&tegra_car TEGRA30_CLK_GR2D>;
+-			resets = <&tegra_car 21>;
+-			reset-names = "2d";
++			resets = <&tegra_car 21>, <&mc TEGRA30_MC_RESET_2D>;
++			reset-names = "2d", "mc";
+ 			operating-points-v2 = <&gr2d_dvfs_opp_table>;
+ 			power-domains = <&pd_heg>;
  
- #define COMMAND					0x00
-@@ -1152,6 +1153,7 @@ static int tegra_nand_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	ctrl->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, ctrl);
- 	nand_controller_init(&ctrl->controller);
- 	ctrl->controller.ops = &tegra_nand_controller_ops;
- 
-@@ -1168,14 +1170,15 @@ static int tegra_nand_probe(struct platform_device *pdev)
- 	if (IS_ERR(ctrl->clk))
- 		return PTR_ERR(ctrl->clk);
- 
--	err = clk_prepare_enable(ctrl->clk);
-+	pm_runtime_enable(ctrl->dev);
-+	err = pm_runtime_resume_and_get(ctrl->dev);
- 	if (err)
--		return err;
-+		goto err_disable_pm;
- 
- 	err = reset_control_reset(rst);
- 	if (err) {
- 		dev_err(ctrl->dev, "Failed to reset HW: %d\n", err);
--		goto err_disable_clk;
-+		goto err_put_pm;
- 	}
- 
- 	writel_relaxed(HWSTATUS_CMD_DEFAULT, ctrl->regs + HWSTATUS_CMD);
-@@ -1190,21 +1193,21 @@ static int tegra_nand_probe(struct platform_device *pdev)
- 			       dev_name(&pdev->dev), ctrl);
- 	if (err) {
- 		dev_err(ctrl->dev, "Failed to get IRQ: %d\n", err);
--		goto err_disable_clk;
-+		goto err_put_pm;
- 	}
- 
- 	writel_relaxed(DMA_MST_CTRL_IS_DONE, ctrl->regs + DMA_MST_CTRL);
- 
- 	err = tegra_nand_chips_init(ctrl->dev, ctrl);
- 	if (err)
--		goto err_disable_clk;
--
--	platform_set_drvdata(pdev, ctrl);
-+		goto err_put_pm;
- 
- 	return 0;
- 
--err_disable_clk:
--	clk_disable_unprepare(ctrl->clk);
-+err_put_pm:
-+	pm_runtime_put(ctrl->dev);
-+err_disable_pm:
-+	pm_runtime_disable(ctrl->dev);
- 	return err;
- }
- 
-@@ -1221,11 +1224,33 @@ static int tegra_nand_remove(struct platform_device *pdev)
- 
- 	nand_cleanup(chip);
- 
-+	pm_runtime_put(ctrl->dev);
-+	pm_runtime_disable(ctrl->dev);
-+
-+	return 0;
-+}
-+
-+static int __maybe_unused tegra_nand_runtime_resume(struct device *dev)
-+{
-+	struct tegra_nand_controller *ctrl = dev_get_drvdata(dev);
-+
-+	return clk_prepare_enable(ctrl->clk);
-+}
-+
-+static int __maybe_unused tegra_nand_runtime_suspend(struct device *dev)
-+{
-+	struct tegra_nand_controller *ctrl = dev_get_drvdata(dev);
-+
- 	clk_disable_unprepare(ctrl->clk);
- 
- 	return 0;
- }
- 
-+static const struct dev_pm_ops tegra_nand_pm = {
-+	SET_RUNTIME_PM_OPS(tegra_nand_runtime_suspend, tegra_nand_runtime_resume,
-+			   NULL)
-+};
-+
- static const struct of_device_id tegra_nand_of_match[] = {
- 	{ .compatible = "nvidia,tegra20-nand" },
- 	{ /* sentinel */ }
-@@ -1236,6 +1261,7 @@ static struct platform_driver tegra_nand_driver = {
- 	.driver = {
- 		.name = "tegra-nand",
- 		.of_match_table = tegra_nand_of_match,
-+		.pm = &tegra_nand_pm,
- 	},
- 	.probe = tegra_nand_probe,
- 	.remove = tegra_nand_remove,
+@@ -201,8 +201,10 @@ gr3d@54180000 {
+ 				 <&tegra_car TEGRA30_CLK_GR3D2>;
+ 			clock-names = "3d", "3d2";
+ 			resets = <&tegra_car 24>,
+-				 <&tegra_car 98>;
+-			reset-names = "3d", "3d2";
++				 <&tegra_car 98>,
++				 <&mc TEGRA30_MC_RESET_3D>,
++				 <&mc TEGRA30_MC_RESET_3D2>;
++			reset-names = "3d", "3d2", "mc", "mc2";
+ 			operating-points-v2 = <&gr3d_dvfs_opp_table>;
+ 			power-domains = <&pd_3d0>, <&pd_3d1>;
+ 			power-domain-names = "3d0", "3d1";
 -- 
 2.30.2
 
