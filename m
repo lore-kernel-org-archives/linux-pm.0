@@ -2,137 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDE5DC11F73
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FCBCC11F67
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jul 2021 03:12:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F114C61427
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Jul 2021 23:44:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 17629613F8
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Jul 2021 03:12:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234833AbhGAXqu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Jul 2021 19:46:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43882 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234478AbhGAXqa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 19:46:30 -0400
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB246C0613E0;
-        Thu,  1 Jul 2021 16:43:57 -0700 (PDT)
-Received: by mail-lj1-x230.google.com with SMTP id e3so2378832ljo.6;
-        Thu, 01 Jul 2021 16:43:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=BFXR8UJAJfYBsWt7j+dPhOe713FxNJqHeaZ6mJiooJo=;
-        b=OUfsTB8bvlLJNIZhdqmNr++UFcXGH0jWJjdQMhOiMZDxIJ+oOW7xYX3hyo20nfWd7x
-         5BWpr9NRU0XmjSR2fmXHU25hPm1UCvLGJcV7cE48RUGM3OB6Oz0wne0IGFaufpDDDyX2
-         ynoQCzsL2SuwtC1nHLuzyfEacRFsWrlrRSmX/0d7SgPwZQgliSDy5cGoWs2ga343ZUGf
-         gXpQ8lvGof7Lt0kVJovGC3oV0sRgxaaIjZdH5e/lqLnMKj8WZ7My78PbmOmzJYVqdwhH
-         KJGktRs7Eux1pDN1YTotgAxSHSK65hpYUgj+fhw88UBveCjdawWFTNUi8NgZsIU4LLv7
-         9BsA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=BFXR8UJAJfYBsWt7j+dPhOe713FxNJqHeaZ6mJiooJo=;
-        b=KIdXRPKFho81KmIXr3e83DJ5UBnMPHRpv4zBB9ByrIvPGVbW3yvaZA6B7iW4EwBMbK
-         njM+ku+305DSiogTlpUau4Fgyz1haOdrkTVt3rSz3LApH/HcW75ztWw4w/Qny07Ln67R
-         r/wqz06gx1K60FghdjZyNc3Jk3hEFj2gvIREtis72nnsQRAlhRdNpohdL+XGMwiOgeat
-         5qZ0NLhpc065/FdUyznXTTsbAFE0hwHz96exMbFvjwjWTAhY3JGP36tt2X7E9CVeahIn
-         Pd0pOzkXapPOQV3NQxqe5T+TBMuVdFdD1kzJno1CGv1Lt3Oo7/Vulu55enr8jqfSR553
-         oKQg==
-X-Gm-Message-State: AOAM530uGSBYqDFhW2lNmj18vvBn2TilySQaQ/AUgi50Kty1QbeprLq7
-        /Wdc0DOFsU4So3mhuV6Wk9Y=
-X-Google-Smtp-Source: ABdhPJzMtsGaG5qcBU/pIh2Vxo8U0DoeGY3xa0hBfW7aaqPkvfVqJv/4RcD3HrWkjmJO0m7BYhI1oA==
-X-Received: by 2002:a05:651c:2cb:: with SMTP id f11mr1539629ljo.174.1625183036211;
-        Thu, 01 Jul 2021 16:43:56 -0700 (PDT)
-Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
-        by smtp.gmail.com with ESMTPSA id e23sm60743lfq.221.2021.07.01.16.43.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Jul 2021 16:43:55 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <treding@nvidia.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mark Brown <broonie@kernel.org>,
+        id S234843AbhGBDOy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Jul 2021 23:14:54 -0400
+Received: from mailgw01.mediatek.com ([60.244.123.138]:41298 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S234820AbhGBDOx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jul 2021 23:14:53 -0400
+X-UUID: 74ec138120ca431ca0ab952f50dca66e-20210702
+X-UUID: 74ec138120ca431ca0ab952f50dca66e-20210702
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 175782217; Fri, 02 Jul 2021 11:12:18 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 2 Jul 2021 11:12:16 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 2 Jul 2021 11:12:16 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Peter Chen <peter.chen@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Felipe Balbi <balbi@kernel.org>,
-        David Heidelberg <david@ixit.cz>
-Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH v2 08/12] power: supply: smb347-charger: Remove caching of charger state
-Date:   Fri,  2 Jul 2021 02:43:13 +0300
-Message-Id: <20210701234317.26393-9-digetx@gmail.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210701234317.26393-1-digetx@gmail.com>
-References: <20210701234317.26393-1-digetx@gmail.com>
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v19 5/7] dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
+Date:   Fri, 2 Jul 2021 11:12:12 +0800
+Message-ID: <20210702031214.21597-6-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20210702031214.21597-1-roger.lu@mediatek.com>
+References: <20210702031214.21597-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Regmap already provides us with the caching, so remove caching of charger
-state to make code cleaner.
-
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/power/supply/smb347-charger.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ .../devicetree/bindings/soc/mediatek/mtk-svs.yaml         | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
-index db1378b41f80..f81c60c679a0 100644
---- a/drivers/power/supply/smb347-charger.c
-+++ b/drivers/power/supply/smb347-charger.c
-@@ -135,7 +135,6 @@
-  * @id: SMB charger ID
-  * @mains_online: is AC/DC input connected
-  * @usb_online: is USB input connected
-- * @charging_enabled: is charging enabled
-  * @irq_unsupported: is interrupt unsupported by SMB hardware
-  * @max_charge_current: maximum current (in uA) the battery can be charged
-  * @max_charge_voltage: maximum voltage (in uV) the battery can be charged
-@@ -192,7 +191,6 @@ struct smb347_charger {
- 	unsigned int		id;
- 	bool			mains_online;
- 	bool			usb_online;
--	bool			charging_enabled;
- 	bool			irq_unsupported;
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+index a855ced410f8..59342e627b67 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
++++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+@@ -22,6 +22,7 @@ properties:
+   compatible:
+     enum:
+       - mediatek,mt8183-svs
++      - mediatek,mt8192-svs
  
- 	unsigned int		max_charge_current;
-@@ -358,21 +356,13 @@ static int smb347_charging_status(struct smb347_charger *smb)
+   reg:
+     maxItems: 1
+@@ -51,6 +52,13 @@ properties:
+       - const: svs-calibration-data
+       - const: t-calibration-data
  
- static int smb347_charging_set(struct smb347_charger *smb, bool enable)
- {
--	int ret = 0;
--
- 	if (smb->enable_control != SMB3XX_CHG_ENABLE_SW) {
- 		dev_dbg(smb->dev, "charging enable/disable in SW disabled\n");
- 		return 0;
- 	}
- 
--	if (smb->charging_enabled != enable) {
--		ret = regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
--					 enable ? CMD_A_CHG_ENABLED : 0);
--		if (!ret)
--			smb->charging_enabled = enable;
--	}
--
--	return ret;
-+	return regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
-+				  enable ? CMD_A_CHG_ENABLED : 0);
- }
- 
- static inline int smb347_charging_enable(struct smb347_charger *smb)
++  resets:
++    maxItems: 1
++
++  reset-names:
++    items:
++      - const: svs_rst
++
+ required:
+   - compatible
+   - reg
 -- 
-2.30.2
+2.18.0
 
