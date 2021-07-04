@@ -5,57 +5,60 @@ X-Spam-Level:
 X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB658C07E9A
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EE6DC07E9B
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A713D613F1
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6F13D6117A
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229642AbhGDSFE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jul 2021 14:05:04 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:55752 "EHLO
+        id S229700AbhGDSFF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jul 2021 14:05:05 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:55804 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229636AbhGDSFE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jul 2021 14:05:04 -0400
-Date:   Sun, 04 Jul 2021 18:02:24 -0000
+        with ESMTP id S229636AbhGDSFF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jul 2021 14:05:05 -0400
+Date:   Sun, 04 Jul 2021 18:02:27 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1625421746;
+        s=2020; t=1625421748;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Zl8b24X6b1YuA30lD6ejZ4gDTXykbocVgLDWkfJ7uEM=;
-        b=alMnw2V1th7Er7OLL0ge1JxaMW+IWqZueNPEw3JBcQwqV4Id/jCcDbHXwfQBTPVIUJEfHu
-        drLr25WD9S9BWuPllveT/shoHogG11khF/6y7znaOt/SiCaXILqh2RjAWp3/xCAA06XiTk
-        ufIIi0cTEEp+sG9QxkdR9ezh19JIxI0gGpZJeesg/dr55najdCBjTazFYsc9gUUW8HYLi6
-        xPgZ6am5BlNRhC4LKyVt1LbfRmRFQ6yaazQPFysVYuxsCzmL1aREUc/EImL4q9faPz9C7v
-        PYLgjhwhje3jAfUDlJ4Z1sn7L77/b/lKEUFa2SnJVGxHuxoJxm1oUY5wsr8TAg==
+        bh=Dk64yZnRfCLaUolBAMMCBJiCGRWJKV7unKN3HXUe3kQ=;
+        b=Zb35XzRimsK1ZxlhruQMCwqgRBygK9YknWJAKHSSiaK860qk1/KGN55TQb8tZun6nHzn8p
+        Hv9D2ZnCEYpp7dao1Rqt6b+1mOlNbUI4/8buZ1FHWGmloaSQyWZbM9eNUFLJqPKMZGcLSw
+        9h3CU2TZKaoXf9VohSVYqF7/VQ+Pv/u00wpRILAHp7vSvA20iQGm+uEVpy4zYj+UU0FUym
+        nBf5dsBFX03evx8wd8WLwfQptbnVSX1N6m39uIf7CRIdJUfos/supOegCcuXzcxLqhaa5K
+        nM5ThWAxGognYK8+AQMIkNTvyPFUejCeIu2xFL/2S9w8zbLCm9QZ+uRHYcgJEQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1625421746;
+        s=2020e; t=1625421748;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Zl8b24X6b1YuA30lD6ejZ4gDTXykbocVgLDWkfJ7uEM=;
-        b=MSJLGGRHOmExeY1FCvXzQzscO5tdutKsUzvCcs2Q6fyxtcoEE4WrbmvvhznBpmtwERaOfG
-        oQ91VLTqFeFtM+Bg==
-From:   "thermal-bot for Srinivas Pandruvada" <tip-bot2@linutronix.de>
+        bh=Dk64yZnRfCLaUolBAMMCBJiCGRWJKV7unKN3HXUe3kQ=;
+        b=6JwmHVlXHfCX7mlHYfq/xiMP3Jmt9G5kvTY+QszQDILqZmYkGUuIRGd/iUivrRUu9sN77e
+        POySoPbNbuvSoxDQ==
+From:   "thermal-bot for Yang Li" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/int340x/processor_thermal:
- Fix tcc setting
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        stable@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org
-In-Reply-To: <20210628215803.75038-1-srinivas.pandruvada@linux.intel.com>
-References: <20210628215803.75038-1-srinivas.pandruvada@linux.intel.com>
+Subject: [thermal: thermal/next] thermal: devfreq_cooling: Fix kernel-doc
+Cc:     Abaci Robot <abaci@linux.alibaba.com>,
+        Yang Li <yang.lee@linux.alibaba.com>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com>
+References: <1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
-Message-ID: <162542174492.395.18073104723994090543.tip-bot2@tip-bot2>
+Message-ID: <162542174778.395.16269952890099570850.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,93 +69,43 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     fe6a6de6692e7f7159c1ff42b07ecd737df712b4
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//fe6a6de6692e7f7159c1ff42b07ecd737df712b4
-Author:        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-AuthorDate:    Mon, 28 Jun 2021 14:58:03 -07:00
+Commit-ID:     8b2ea897328c3e042ef7c3e80503c802db24a678
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8b2ea897328c3e042ef7c3e80503c802db24a678
+Author:        Yang Li <yang.lee@linux.alibaba.com>
+AuthorDate:    Wed, 09 Jun 2021 15:22:30 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Sun, 04 Jul 2021 18:28:04 +02:00
 
-thermal/drivers/int340x/processor_thermal: Fix tcc setting
+thermal: devfreq_cooling: Fix kernel-doc
 
-The following fixes are done for tcc sysfs interface:
-- TCC is 6 bits only from bit 29-24
-- TCC of 0 is valid
-- When BIT(31) is set, this register is read only
-- Check for invalid tcc value
-- Error for negative values
+Fix function name in devfreq_cooling.c comment to remove a
+warning found by kernel-doc.
 
-Fixes: fdf4f2fb8e899 ("drivers: thermal: processor_thermal_device: Export sysfs interface for TCC offset")
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: stable@vger.kernel.org
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+drivers/thermal/devfreq_cooling.c:479: warning: expecting prototype for
+devfreq_cooling_em_register_power(). Prototype was for
+devfreq_cooling_em_register() instead.
+
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210628215803.75038-1-srinivas.pandruvada@linux.intel.com
+Link: https://lore.kernel.org/r/1623223350-128104-1-git-send-email-yang.lee@linux.alibaba.com
 ---
- drivers/thermal/intel/int340x_thermal/processor_thermal_device.c | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+ drivers/thermal/devfreq_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index de4fc64..0f0038a 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -78,24 +78,27 @@ static ssize_t tcc_offset_degree_celsius_show(struct device *dev,
- 	if (err)
- 		return err;
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 3a788ac..5a86cff 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -458,7 +458,7 @@ struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
+ EXPORT_SYMBOL_GPL(devfreq_cooling_register);
  
--	val = (val >> 24) & 0xff;
-+	val = (val >> 24) & 0x3f;
- 	return sprintf(buf, "%d\n", (int)val);
- }
- 
--static int tcc_offset_update(int tcc)
-+static int tcc_offset_update(unsigned int tcc)
- {
- 	u64 val;
- 	int err;
- 
--	if (!tcc)
-+	if (tcc > 63)
- 		return -EINVAL;
- 
- 	err = rdmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, &val);
- 	if (err)
- 		return err;
- 
--	val &= ~GENMASK_ULL(31, 24);
--	val |= (tcc & 0xff) << 24;
-+	if (val & BIT(31))
-+		return -EPERM;
-+
-+	val &= ~GENMASK_ULL(29, 24);
-+	val |= (tcc & 0x3f) << 24;
- 
- 	err = wrmsrl_safe(MSR_IA32_TEMPERATURE_TARGET, val);
- 	if (err)
-@@ -104,14 +107,15 @@ static int tcc_offset_update(int tcc)
- 	return 0;
- }
- 
--static int tcc_offset_save;
-+static unsigned int tcc_offset_save;
- 
- static ssize_t tcc_offset_degree_celsius_store(struct device *dev,
- 				struct device_attribute *attr, const char *buf,
- 				size_t count)
- {
-+	unsigned int tcc;
- 	u64 val;
--	int tcc, err;
-+	int err;
- 
- 	err = rdmsrl_safe(MSR_PLATFORM_INFO, &val);
- 	if (err)
-@@ -120,7 +124,7 @@ static ssize_t tcc_offset_degree_celsius_store(struct device *dev,
- 	if (!(val & BIT(30)))
- 		return -EACCES;
- 
--	if (kstrtoint(buf, 0, &tcc))
-+	if (kstrtouint(buf, 0, &tcc))
- 		return -EINVAL;
- 
- 	err = tcc_offset_update(tcc);
+ /**
+- * devfreq_cooling_em_register_power() - Register devfreq cooling device with
++ * devfreq_cooling_em_register() - Register devfreq cooling device with
+  *		power information and automatically register Energy Model (EM)
+  * @df:		Pointer to devfreq device.
+  * @dfc_power:	Pointer to devfreq_cooling_power.
