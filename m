@@ -2,518 +2,352 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FDB8C07E9D
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05CAAC07E9A
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 21:01:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F3B156117A
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 18:02:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D69AF613D8
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 21:01:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229728AbhGDSFG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jul 2021 14:05:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35372 "EHLO
+        id S229549AbhGDVDo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jul 2021 17:03:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229636AbhGDSFF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jul 2021 14:05:05 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5729C061574
-        for <linux-pm@vger.kernel.org>; Sun,  4 Jul 2021 11:02:29 -0700 (PDT)
-Date:   Sun, 04 Jul 2021 18:02:26 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1625421747;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=78XY8DraJRceAK4vPMiUhvzkeyIl70cWEh6FcVZwzIs=;
-        b=izOl5zQNVPu6j7Ge1XxLp7+qISHmIxDw23pPMRX1bo9dY+VRsK3ln00ciEvmhk9IxZ3GnL
-        Q+5MT0rT6HIM3TmUUpSxIXxqiSuF2ZLqZL9D8OSgKrXoTr63fVb624XcU9TUhUnjFWOWD2
-        fkdrvIv82ARPjI1slcIQXuxucWkq7KaPy53KlrwVtYxjF5IHFf+w3PLwWEL/LJKs3y4IvT
-        xl2TXGyh8LDLpDSMwxKo/EM0e6vSdhDvH2vGGm0h36PtKvCpt49Yh6e3sD42XOBUXOmVWC
-        luaOVe0QuIuiTd1NaF2XRlMd0Go1QbS3dr1RsHh3/weeupDqp+7xWDRAdbEz8w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1625421747;
-        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=78XY8DraJRceAK4vPMiUhvzkeyIl70cWEh6FcVZwzIs=;
-        b=fPo2vpmfsJ/0conf87LD6PxxjiW6Bk60analmajh3Cv6yH43QyTvGdvUHBfPl5yagdYxO9
-        1QqKsuK+Yjv5/QDQ==
-From:   "thermal-bot for Srinivas Pandruvada" <tip-bot2@linutronix.de>
-Sender: tip-bot2@linutronix.de
-Reply-to: linux-pm@vger.kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/int340x/processor_thermal:
- Add PCI MMIO based thermal driver
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210525204811.3793651-3-srinivas.pandruvada@linux.intel.com>
-References: <20210525204811.3793651-3-srinivas.pandruvada@linux.intel.com>
+        with ESMTP id S229824AbhGDVDl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jul 2021 17:03:41 -0400
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3BF0C061574
+        for <linux-pm@vger.kernel.org>; Sun,  4 Jul 2021 14:01:04 -0700 (PDT)
+Received: by mail-pf1-x42e.google.com with SMTP id f17so3380041pfj.8
+        for <linux-pm@vger.kernel.org>; Sun, 04 Jul 2021 14:01:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=telus.net; s=google;
+        h=from:to:cc:references:in-reply-to:subject:date:message-id
+         :mime-version:content-language:thread-index;
+        bh=iI3uF1bDUo4egivepLtXroEvyEa4YutDZwgnKojquc0=;
+        b=OtN4kjkNivn7m/5NuvmBft08BmiJDPlULpP++N7bVsTAWb7XrrpcvsU4zIqaOQgNNJ
+         mDG6zp2b5SxqGSDY//QaPv4FuzjHY0H9+q8TRZDJQn5FcW4uTOnkD3NxC44b7hSpZZiI
+         w9Z86JBIi8AObCwWK4oayQbBLDz+cN9oiTjmHc7goV+HjinT/kAB2q8jzrnixVCJiNSp
+         +sdsKcikEFiZC8N9f3t5lu/3FwUYDmJU6LeGPK6qHs9PMUpxbCt3kjeVoPEbU/yakzAc
+         00nhdeaZ0HBDlclytE8ThwRwecYE9j7ypMjdZSe08FV/MWw1kqU7eHruUCYt8cBUBJxL
+         pPCw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:references:in-reply-to:subject:date
+         :message-id:mime-version:content-language:thread-index;
+        bh=iI3uF1bDUo4egivepLtXroEvyEa4YutDZwgnKojquc0=;
+        b=Qb6zfOUrukQ2Dts2ZuC7nYoXAecAVma/wPI3lQR+a9WVYCQBqe86+K+K9p6m8Bz5MR
+         T8OABvm9DzFLKVEl7MM6xwrVz94GcfKSuQR23Kopr4njFwlnwgQ7xCMUMemtAOANfff8
+         e5qQF2nOQWy2qv9OHs/kbm2dEgxJFW27zjvwi4XgvNn0ZO+ZKI61PVGwUBIu32n6nA7C
+         Y2xDG/0GvXDaHzVDPWhsywVkVxUqVocrIJLvc817sE6hSx/M13w15BzpKIeUW1gHg9Kl
+         937c4zYDatGWbPkt1POhqJsj6AYYAAlNU2fzDwRuDfabxB889KkBIf2js4UOmN9NwWeF
+         oCQg==
+X-Gm-Message-State: AOAM532VUkEqOi4COWcgBqHVHZcIUEHnxz3quv+Fw8YSGoC5F0GFEcSf
+        IIZRuvQpCB3LbHgrbCNnPuYnJw==
+X-Google-Smtp-Source: ABdhPJxRtLiuaegnonLXfVUOSlaK02kjuZO0STvEQcAm6S60ObmdXj0crJVCd9OjQu5kPXwwP5eVUQ==
+X-Received: by 2002:a05:6a00:d5b:b029:315:339c:343f with SMTP id n27-20020a056a000d5bb0290315339c343fmr11240931pfv.67.1625432463810;
+        Sun, 04 Jul 2021 14:01:03 -0700 (PDT)
+Received: from DougS18 (s173-180-45-4.bc.hsia.telus.net. [173.180.45.4])
+        by smtp.gmail.com with ESMTPSA id q24sm11608727pgk.32.2021.07.04.14.01.02
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 04 Jul 2021 14:01:03 -0700 (PDT)
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc:     "'LKML'" <linux-kernel@vger.kernel.org>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>,
+        "Doug Smythies" <dsmythies@telus.net>
+References: <1867445.PYKUYFuaPT@kreacher>
+In-Reply-To: <1867445.PYKUYFuaPT@kreacher>
+Subject: RE: [PATCH v1 0/5] cpuidle: teo: Rework the idle state selection logic
+Date:   Sun, 4 Jul 2021 14:01:03 -0700
+Message-ID: <007101d77117$b3b837a0$1b28a6e0$@telus.net>
 MIME-Version: 1.0
-Message-ID: <162542174657.395.6602551742114446622.tip-bot2@tip-bot2>
-Robot-ID: <tip-bot2@linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+        boundary="----=_NextPart_000_0072_01D770DD.075BD0A0"
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: en-ca
+Thread-Index: AQJWv5LtWSG8O5a4tG6eLIHdXBOua6oyGFTw
+X-MS-TNEF-Correlator: 00000000F612BA434C3BD1459CD08FACC813FD560700C3B68E10F77511CEB4CD00AA00BBB6E600000000000D0000594B38924B34934DBE4E673D978C4FD9000000002ED90000
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the thermal/next branch of thermal:
+This is a multipart message in MIME format.
 
-Commit-ID:     acd65d5d1cf4a3324c8970ba74632abe069fe23e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//acd65d5d1cf4a3324c8970ba74632abe069fe23e
-Author:        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-AuthorDate:    Tue, 25 May 2021 13:48:11 -07:00
-Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Sun, 04 Jul 2021 18:28:04 +02:00
+------=_NextPart_000_0072_01D770DD.075BD0A0
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
-thermal/drivers/int340x/processor_thermal: Add PCI MMIO based thermal driver
+Hi Rafael,
 
-Add a new PCI driver which register a thermal zone and allows to get
-notification for threshold violation by a RW trip point. These
-notifications are delivered from the device using MSI based
-interrupt.
+On 2021.06.02 11:14 Rafael J. Wysocki wrote:
 
-The main difference between this new PCI driver and the existing
-one is that the temperature and trip points directly use PCI
-MMIO instead of using ACPI methods.
+> Hi All,
+>
+> This series of patches addresses some theoretical shortcoming in the
+> TEO (Timer Events Oriented) cpuidle governor by reworking its idle
+> state selection logic to some extent.
+>
+> Patches [1-2/5] are introductory cleanups and the substantial changes are
+> made in patches [3-4/5] (please refer to the changelogs of these two
+> patches for details).  The last patch only deals with documentation.
+>
+> Even though this work is mostly based on theoretical considerations, it
+> shows a measurable reduction of the number of cases in which the
+shallowest
+> idle state is selected while it would be more beneficial to select a
+deeper
+> one or the deepest idle state is selected while it would be more
+beneficial to
+> select a shallower one, which should be a noticeable improvement.
 
-This driver registers a thermal zone "TCPU_PCI" in addition to the
-legacy processor thermal device, which uses ACPI companion device
-to set name, temperature and trips.
+Do you have any test results to share? Or test methods that I can try?
+I have done a few tests, and generally don't notice much difference.
+Perhaps an increase in idle state 2 below (was to shallow) numbers.
+I am searching for some results that would offset the below:
 
-This driver is enabled for AlderLake.
+The difficulty I am having with this patch set is the additional overhead
+which becomes significant at the extremes, where idle state 0 is dominant.
+Throughout the history of teo, I have used multiple one core pipe-tests
+for this particular test. Some results:
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210525204811.3793651-3-srinivas.pandruvada@linux.intel.com
----
- drivers/thermal/intel/int340x_thermal/Makefile                              |   1 +-
- drivers/thermal/intel/int340x_thermal/processor_thermal_device.h            |   1 +-
- drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c        | 371 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c |   1 +-
- 4 files changed, 373 insertions(+), 1 deletion(-)
- create mode 100644 drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
+CPU: Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz
+HWP: disabled
+CPU frequency scaling driver: intel_pstate, active, powersave
+Pipe-tests are run forever, printing average loop time for the
+Last 2.5 million loops. 1021 of those are again averaged.
+Total = 2.5525e9 loops
+The power and idle data is sampled for 100 minutes.
 
-diff --git a/drivers/thermal/intel/int340x_thermal/Makefile b/drivers/thermal/intel/int340x_thermal/Makefile
-index aaf02d5..4e852ce 100644
---- a/drivers/thermal/intel/int340x_thermal/Makefile
-+++ b/drivers/thermal/intel/int340x_thermal/Makefile
-@@ -6,6 +6,7 @@ obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3401_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device_pci_legacy.o
-+obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device_pci.o
- obj-$(CONFIG_PROC_THERMAL_MMIO_RAPL) += processor_thermal_rapl.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_rfim.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_mbox.o
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-index 5e51f11..5a1cfe4 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.h
-@@ -44,6 +44,7 @@ struct proc_thermal_device {
- 	struct intel_soc_dts_sensors *soc_dts;
- 	u32 mmio_feature_mask;
- 	void __iomem *mmio_base;
-+	void *priv_data;
- };
+Note 1: other tests were also done and also with passive,
+schedutil, but it isn't relevant for this test because the
+CPU frequency stays pinned at maximum.
+
+Note 2: I use TCC offset for thermal throttling, but I disabled it
+for these tests, because the temperature needed to go higher
+than my normal throttling point.
+
+Idle configuration 1: As a COMETLAKE processor, with 4 idle states.
+Kernel 5.13-RC4.
+
+Before patch set average:
+2.8014 uSec/loop
+113.9 watts
+Idle state 0 residency: 9.450%
+Idle state 0 entries per minute: 256,812,896.6
+
+After patch set average:
+2.8264 uSec/loop, 0.89% slower
+114.0 watts
+Idle state 0 residency: 8.677% 
+Idle state 0 entries per minute: 254,560,049.9
+
+Menu governor:
+2.8051 uSec/loop, 0.13% slower
+113.9 watts
+Idle state 0 residency: 8.437% 
+Idle state 0 entries per minute: 256,436,417.2
+
+O.K., perhaps not so bad, but also not many idle states.
+
+Idle configuration 2: As a SKYLAKE processor, with 9 idle states.
+i.e.:
+/drivers/idle/intel_idle.c
+static const struct x86_cpu_id intel_idle_ids[] __initconst
+...
+   X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE_X, &idle_cpu_skx),
++ X86_MATCH_INTEL_FAM6_MODEL(COMETLAKE, &idle_cpu_skl),
+
+Purpose: To demonstrate increasing overhead as a function of number
+of idle states.
+Kernel 5.13.
+
+Before patch set average:
+2.8394 uSec/loop
+114.2 watts
+Idle state 0 residency: 7.212%
+Idle state 0 entries per minute: 253,391,954.3
+
+After patch set average:
+2.9103 uSec/loop, 2.5% slower
+114.4 watts, 0.18% more
+Idle state 0 residency: 6.152%, 14.7% less.
+Idle state 0 entries per minute: 244,024,752.1
+
+Menu governor:
+2.8141 uSec/loop, 0.89% faster
+113.9 watts,  0.26% less
+Idle state 0 residency: 7.167%, 0.6% less
+Idle state 0 entries per minute: 255,650,610.7
+
+Another potentially interesting test was the ebizzy test:
+Records per second, averaged over many tests, varying
+threads and intervals:
+
+passive, schedutil:
+Before: 6771.977
+After: 5502.643, -18.7%
+Menu: 10728.89, +58.4%
+
+Active, powersave:
+Before: 8361.82
+After: 8463.31, +1.2%
+Menu: 8225.58, -1.6%
+
+I think it has more to do with CPU scaling governors
+than this patch set, so:
+
+performance:
+Before: 12137.33
+After: 12083.26, -0.4%
+Menu: 11983.73, -1.3%
+
+These and other test results available here:
+(encoded to prevent a barrage of bots)
+
+double u double u double u dot smythies dot com
+/~doug/linux/idle/teo-2021-06/
+
+... a day later ...
+
+I might have an answer to my own question.
+By switching to cross core pipe-tests, and only loading down one
+CPU per core, I was able to get a lot more activity in other idle states.
+The test runs for 100 minutes, and the results change with time, but
+I'll leave that investigation for another day (there is no throttling):
+
+1st 50 tests:
+Before: 3.888 uSec/loop
+After: 3.764 uSec/loop
+Menu: 3.464 uSec/loop
+
+Tests 50 to 100:
+Before: 4.329 uSec/loop
+After: 3.919 uSec/loop
+Menu: 3.514 uSec/loop
+
+Tests 200 to 250:
+Before: 5.089 uSec/loop
+After: 4.364 uSec/loop
+Menu: 4.619 uSec/loop
  
- struct rapl_mmio_regs {
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-new file mode 100644
-index 0000000..ad7e2e3
---- /dev/null
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-@@ -0,0 +1,371 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Processor thermal device for newer processors
-+ * Copyright (c) 2020, Intel Corporation.
-+ */
-+
-+#include <linux/acpi.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/thermal.h>
-+
-+#include "int340x_thermal_zone.h"
-+#include "processor_thermal_device.h"
-+
-+#define DRV_NAME "proc_thermal_pci"
-+
-+struct proc_thermal_pci {
-+	struct pci_dev *pdev;
-+	struct proc_thermal_device *proc_priv;
-+	struct thermal_zone_device *tzone;
-+	struct delayed_work work;
-+	int stored_thres;
-+	int no_legacy;
-+};
-+
-+enum proc_thermal_mmio_type {
-+	PROC_THERMAL_MMIO_TJMAX,
-+	PROC_THERMAL_MMIO_PP0_TEMP,
-+	PROC_THERMAL_MMIO_PP1_TEMP,
-+	PROC_THERMAL_MMIO_PKG_TEMP,
-+	PROC_THERMAL_MMIO_THRES_0,
-+	PROC_THERMAL_MMIO_THRES_1,
-+	PROC_THERMAL_MMIO_INT_ENABLE_0,
-+	PROC_THERMAL_MMIO_INT_ENABLE_1,
-+	PROC_THERMAL_MMIO_INT_STATUS_0,
-+	PROC_THERMAL_MMIO_INT_STATUS_1,
-+	PROC_THERMAL_MMIO_MAX
-+};
-+
-+struct proc_thermal_mmio_info {
-+	enum proc_thermal_mmio_type mmio_type;
-+	u64	mmio_addr;
-+	u64	shift;
-+	u64	mask;
-+};
-+
-+static struct proc_thermal_mmio_info proc_thermal_mmio_info[] = {
-+	{ PROC_THERMAL_MMIO_TJMAX, 0x599c, 16, 0xff },
-+	{ PROC_THERMAL_MMIO_PP0_TEMP, 0x597c, 0, 0xff },
-+	{ PROC_THERMAL_MMIO_PP1_TEMP, 0x5980, 0, 0xff },
-+	{ PROC_THERMAL_MMIO_PKG_TEMP, 0x5978, 0, 0xff },
-+	{ PROC_THERMAL_MMIO_THRES_0, 0x5820, 8, 0x7F },
-+	{ PROC_THERMAL_MMIO_THRES_1, 0x5820, 16, 0x7F },
-+	{ PROC_THERMAL_MMIO_INT_ENABLE_0, 0x5820, 15, 0x01 },
-+	{ PROC_THERMAL_MMIO_INT_ENABLE_1, 0x5820, 23, 0x01 },
-+	{ PROC_THERMAL_MMIO_INT_STATUS_0, 0x7200, 6, 0x01 },
-+	{ PROC_THERMAL_MMIO_INT_STATUS_1, 0x7200, 8, 0x01 },
-+};
-+
-+#define B0D4_THERMAL_NOTIFY_DELAY	1000
-+static int notify_delay_ms = B0D4_THERMAL_NOTIFY_DELAY;
-+
-+static void proc_thermal_mmio_read(struct proc_thermal_pci *pci_info,
-+				    enum proc_thermal_mmio_type type,
-+				    u32 *value)
-+{
-+	*value = ioread32(((u8 __iomem *)pci_info->proc_priv->mmio_base +
-+				proc_thermal_mmio_info[type].mmio_addr));
-+	*value >>= proc_thermal_mmio_info[type].shift;
-+	*value &= proc_thermal_mmio_info[type].mask;
-+}
-+
-+static void proc_thermal_mmio_write(struct proc_thermal_pci *pci_info,
-+				     enum proc_thermal_mmio_type type,
-+				     u32 value)
-+{
-+	u32 current_val;
-+	u32 mask;
-+
-+	current_val = ioread32(((u8 __iomem *)pci_info->proc_priv->mmio_base +
-+				proc_thermal_mmio_info[type].mmio_addr));
-+	mask = proc_thermal_mmio_info[type].mask << proc_thermal_mmio_info[type].shift;
-+	current_val &= ~mask;
-+
-+	value &= proc_thermal_mmio_info[type].mask;
-+	value <<= proc_thermal_mmio_info[type].shift;
-+
-+	current_val |= value;
-+	iowrite32(current_val, ((u8 __iomem *)pci_info->proc_priv->mmio_base +
-+				proc_thermal_mmio_info[type].mmio_addr));
-+}
-+
-+/*
-+ * To avoid sending two many messages to user space, we have 1 second delay.
-+ * On interrupt we are disabling interrupt and enabling after 1 second.
-+ * This workload function is delayed by 1 second.
-+ */
-+static void proc_thermal_threshold_work_fn(struct work_struct *work)
-+{
-+	struct delayed_work *delayed_work = to_delayed_work(work);
-+	struct proc_thermal_pci *pci_info = container_of(delayed_work,
-+						struct proc_thermal_pci, work);
-+	struct thermal_zone_device *tzone = pci_info->tzone;
-+
-+	if (tzone)
-+		thermal_zone_device_update(tzone, THERMAL_TRIP_VIOLATED);
-+
-+	/* Enable interrupt flag */
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 1);
-+}
-+
-+static void pkg_thermal_schedule_work(struct delayed_work *work)
-+{
-+	unsigned long ms = msecs_to_jiffies(notify_delay_ms);
-+
-+	schedule_delayed_work(work, ms);
-+}
-+
-+static irqreturn_t proc_thermal_irq_handler(int irq, void *devid)
-+{
-+	struct proc_thermal_pci *pci_info = devid;
-+	u32 status;
-+
-+	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_INT_STATUS_0, &status);
-+
-+	/* Disable enable interrupt flag */
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
-+	pci_write_config_byte(pci_info->pdev, 0xdc, 0x01);
-+
-+	pkg_thermal_schedule_work(&pci_info->work);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int sys_get_curr_temp(struct thermal_zone_device *tzd, int *temp)
-+{
-+	struct proc_thermal_pci *pci_info = tzd->devdata;
-+	u32 _temp;
-+
-+	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_PKG_TEMP, &_temp);
-+	*temp = (unsigned long)_temp * 1000;
-+
-+	return 0;
-+}
-+
-+static int sys_get_trip_temp(struct thermal_zone_device *tzd,
-+			     int trip, int *temp)
-+{
-+	struct proc_thermal_pci *pci_info = tzd->devdata;
-+	u32 _temp;
-+
-+	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_THRES_0, &_temp);
-+	if (!_temp) {
-+		*temp = THERMAL_TEMP_INVALID;
-+	} else {
-+		int tjmax;
-+
-+		proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_TJMAX, &tjmax);
-+		_temp = tjmax - _temp;
-+		*temp = (unsigned long)_temp * 1000;
-+	}
-+
-+	return 0;
-+}
-+
-+static int sys_get_trip_type(struct thermal_zone_device *tzd, int trip,
-+			      enum thermal_trip_type *type)
-+{
-+	*type = THERMAL_TRIP_PASSIVE;
-+
-+	return 0;
-+}
-+
-+static int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip, int temp)
-+{
-+	struct proc_thermal_pci *pci_info = tzd->devdata;
-+	int tjmax, _temp;
-+
-+	if (temp <= 0) {
-+		cancel_delayed_work_sync(&pci_info->work);
-+		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
-+		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, 0);
-+		thermal_zone_device_disable(tzd);
-+		pci_info->stored_thres = 0;
-+		return 0;
-+	}
-+
-+	proc_thermal_mmio_read(pci_info, PROC_THERMAL_MMIO_TJMAX, &tjmax);
-+	_temp = tjmax - (temp / 1000);
-+	if (_temp < 0)
-+		return -EINVAL;
-+
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, _temp);
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 1);
-+
-+	thermal_zone_device_enable(tzd);
-+	pci_info->stored_thres = temp;
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_device_ops tzone_ops = {
-+	.get_temp = sys_get_curr_temp,
-+	.get_trip_temp = sys_get_trip_temp,
-+	.get_trip_type = sys_get_trip_type,
-+	.set_trip_temp	= sys_set_trip_temp,
-+};
-+
-+static struct thermal_zone_params tzone_params = {
-+	.governor_name = "user_space",
-+	.no_hwmon = true,
-+};
-+
-+static int proc_thermal_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
-+{
-+	struct proc_thermal_device *proc_priv;
-+	struct proc_thermal_pci *pci_info;
-+	int irq_flag = 0, irq, ret;
-+
-+	proc_priv = devm_kzalloc(&pdev->dev, sizeof(*proc_priv), GFP_KERNEL);
-+	if (!proc_priv)
-+		return -ENOMEM;
-+
-+	pci_info = devm_kzalloc(&pdev->dev, sizeof(*pci_info), GFP_KERNEL);
-+	if (!pci_info)
-+		return -ENOMEM;
-+
-+	pci_info->pdev = pdev;
-+	ret = pcim_enable_device(pdev);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "error: could not enable device\n");
-+		return ret;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	INIT_DELAYED_WORK(&pci_info->work, proc_thermal_threshold_work_fn);
-+
-+	ret = proc_thermal_add(&pdev->dev, proc_priv);
-+	if (ret) {
-+		dev_err(&pdev->dev, "error: proc_thermal_add, will continue\n");
-+		pci_info->no_legacy = 1;
-+	}
-+
-+	proc_priv->priv_data = pci_info;
-+	pci_info->proc_priv = proc_priv;
-+	pci_set_drvdata(pdev, proc_priv);
-+
-+	ret = proc_thermal_mmio_add(pdev, proc_priv, id->driver_data);
-+	if (ret)
-+		goto err_ret_thermal;
-+
-+	pci_info->tzone = thermal_zone_device_register("TCPU_PCI", 1, 1, pci_info,
-+							&tzone_ops,
-+							&tzone_params, 0, 0);
-+	if (IS_ERR(pci_info->tzone))
-+		goto err_ret_mmio;
-+
-+	/* request and enable interrupt */
-+	ret = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_ALL_TYPES);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to allocate vectors!\n");
-+		goto err_ret_tzone;
-+	}
-+	if (!pdev->msi_enabled && !pdev->msix_enabled)
-+		irq_flag = IRQF_SHARED;
-+
-+	irq =  pci_irq_vector(pdev, 0);
-+	ret = devm_request_threaded_irq(&pdev->dev, irq,
-+					proc_thermal_irq_handler, NULL,
-+					irq_flag, KBUILD_MODNAME, pci_info);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Request IRQ %d failed\n", pdev->irq);
-+		goto err_free_vectors;
-+	}
-+
-+	return 0;
-+
-+err_free_vectors:
-+	pci_free_irq_vectors(pdev);
-+err_ret_tzone:
-+	thermal_zone_device_unregister(pci_info->tzone);
-+err_ret_mmio:
-+	proc_thermal_mmio_remove(pdev, proc_priv);
-+err_ret_thermal:
-+	if (!pci_info->no_legacy)
-+		proc_thermal_remove(proc_priv);
-+	pci_disable_device(pdev);
-+
-+	return ret;
-+}
-+
-+static void proc_thermal_pci_remove(struct pci_dev *pdev)
-+{
-+	struct proc_thermal_device *proc_priv = pci_get_drvdata(pdev);
-+	struct proc_thermal_pci *pci_info = proc_priv->priv_data;
-+
-+	cancel_delayed_work_sync(&pci_info->work);
-+
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0, 0);
-+	proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 0);
-+
-+	devm_free_irq(&pdev->dev, pdev->irq, pci_info);
-+	pci_free_irq_vectors(pdev);
-+
-+	thermal_zone_device_unregister(pci_info->tzone);
-+	proc_thermal_mmio_remove(pdev, pci_info->proc_priv);
-+	if (!pci_info->no_legacy)
-+		proc_thermal_remove(proc_priv);
-+	pci_disable_device(pdev);
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int proc_thermal_pci_resume(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct proc_thermal_device *proc_priv;
-+	struct proc_thermal_pci *pci_info;
-+
-+	proc_priv = pci_get_drvdata(pdev);
-+	pci_info = proc_priv->priv_data;
-+
-+	if (pci_info->stored_thres) {
-+		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_THRES_0,
-+					 pci_info->stored_thres / 1000);
-+		proc_thermal_mmio_write(pci_info, PROC_THERMAL_MMIO_INT_ENABLE_0, 1);
-+	}
-+
-+	if (!pci_info->no_legacy)
-+		return proc_thermal_resume(dev);
-+
-+	return 0;
-+}
-+#else
-+#define proc_thermal_pci_resume NULL
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(proc_thermal_pci_pm, NULL, proc_thermal_pci_resume);
-+
-+static const struct pci_device_id proc_thermal_pci_ids[] = {
-+	{ PCI_DEVICE_DATA(INTEL, ADL_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_MBOX) },
-+	{ },
-+};
-+
-+MODULE_DEVICE_TABLE(pci, proc_thermal_pci_ids);
-+
-+static struct pci_driver proc_thermal_pci_driver = {
-+	.name		= DRV_NAME,
-+	.probe		= proc_thermal_pci_probe,
-+	.remove	= proc_thermal_pci_remove,
-+	.id_table	= proc_thermal_pci_ids,
-+	.driver.pm	= &proc_thermal_pci_pm,
-+};
-+
-+static int __init proc_thermal_init(void)
-+{
-+	return pci_register_driver(&proc_thermal_pci_driver);
-+}
-+
-+static void __exit proc_thermal_exit(void)
-+{
-+	pci_unregister_driver(&proc_thermal_pci_driver);
-+}
-+
-+module_init(proc_thermal_init);
-+module_exit(proc_thermal_exit);
-+
-+MODULE_AUTHOR("Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>");
-+MODULE_DESCRIPTION("Processor Thermal Reporting Device Driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-index 21cf751..f5fc179 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-@@ -118,7 +118,6 @@ static int proc_thermal_pci_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(proc_thermal_pci_pm, NULL, proc_thermal_pci_resume);
+Tests 280 to 330:
+Before: 5.142 uSec/loop
+After: 4.464 uSec/loop
+Menu: 4.619 uSec/loop
+
+Notice that the "after" this patch set is applied eventually does
+better than using the menu governor. Its processor package power
+always remains less, than the menu governor.
+
+The results can be viewed graphically at the above link, but the
+most dramatic results are:
+
+Idle state 3 above % goes from 70% to 5%.
+Idle state 2 below % goes from 13% to less than 1%.
  
- static const struct pci_device_id proc_thermal_pci_ids[] = {
--	{ PCI_DEVICE_DATA(INTEL, ADL_THERMAL, PROC_THERMAL_FEATURE_RAPL | PROC_THERMAL_FEATURE_FIVR | PROC_THERMAL_FEATURE_DVFS | PROC_THERMAL_FEATURE_MBOX) },
- 	{ PCI_DEVICE_DATA(INTEL, BDW_THERMAL, 0) },
- 	{ PCI_DEVICE_DATA(INTEL, BSW_THERMAL, 0) },
- 	{ PCI_DEVICE_DATA(INTEL, BXT0_THERMAL, 0) },
+... Doug
+
+
+------=_NextPart_000_0072_01D770DD.075BD0A0
+Content-Type: application/ms-tnef;
+	name="winmail.dat"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="winmail.dat"
+
+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
+fvACIPlrVsGUcoUA/y8yNBE8wYOiJXGH81nzZQNhcjJiaXp6WdQhhVL/cMEbsM4En5BCwdHhjTZv
+Y//S1F7VmYAyUCdxpyZjMVwx/5CDE/KZgDtQIYuW5oKRl+XvIYXv5AFhwbAxyaDBsPnJ/32AjsAF
+YLnwzCBDoH7gwYDPzEAGWH2AEaA3MsGAucD5Q6ArNcwB9hX5xYSeHY2P8fARkLzBHvs4NDbJkP4z
++PAiEB6g9gYhJLzQ+JC9ipA4IEIOIdP7QCJuQLH/imBccEDijKEukT2gPUR/Yr+CpgcGebWng21s
+HNFvG5z/ruCSEdLhVwAdjfXwyHDPgO4z+VUfVfXwMPHwCyEgQae90CJmISUxOTLBNyAz//lAIns7
+sYxiX1GUWFo3WXDvOzFXI3MS2WUoYaFcIKY0b1eQh1FxwkFhcohzdsFi2RMwcynnyj2gdVcyWUD/
+PD90UdFxp9Ap4UdxPeJw0WggL348wWezMASxeDvaVHbxLTKgi9AzMDYv/+fK3+FNspzAAlAPcZBg
+3+e/XVYEoKbgKlJZg1mhc1US/ysBp9FIwI0QgjEUQatAZnX+QoKBrUFndCsBYyCMUKuw/3jdXySr
+QF/xZLAagILjRZL/TsGbaLiCeNJ3IhTyVyOmYv/68oixW8FSkoSDlqATwjaF/+1Pa1NZ9Ibwq7CS
+HV8kpPL/WkaX0HGwiJFtFIkhmFNdVf4niuACUVlyXGN0kBhwFEG/jODr05IScbCUVEIyKBLS1+nh
+0TKoaSl8izE3Ebag917EHY3JkDhbsPI+H1U0gf+8+iDKyZAmkF2fawWGU1oi7ytAklEdjfkxMo8Q
+W/9dBf/44GLfXqbHcF9PYFoyoGEj//iQYZ6vQDKwZJ8fVfkxXz//IRV/wBGQae/MZWe1sqCmUvcx
+oGivf9A083BqD2sVXy8/bJ9mn5PC3BBVRaTyImH9+jIiLa1X8tEQkcAQEKZA/TnzdROTlbAEMOAU
+pHCosP+UgqeSmvAUY6UBiTAG2YuQzkmGcayX+nFja4iChQP/4BSCwEwgnNGZQKgw6gCrsP8CYtCw
+LWV7njU9UninoaRwrxlgEBBE8KZAZ6WAcJog/ywBE7F2dUxgGGECUCoBmFT/mzfpYDcR2eCRoNvz
+N0c4h/8Or/xQhQT9UAcABDGcAD8B/je2sKZS/UACrwUQpGHIwd+KG8hyKwF/onq0MYtmzGUtQdJE
+P2Hnyn2RMAADABYQAAAAAAMADTT9P60OAwAPNP0/rQ4CARQ0AQAAABAAAADpL+t1llBEhoO4feUi
+qklIAgHiZQEAAAAUAAAAo8ZOEXWSL0eLchsak/4ZuwAA8MQCAeNlAQAAABUAAAAUo8ZOEXWSL0eL
+chsak/4ZuwAA8MQAAAACAX8AAQAAAI0AAAAwMDAwMDAwMEY2MTJCQTQzNEMzQkQxNDU5Q0QwOEZB
+Q0M4MTNGRDU2MDcwMEMzQjY4RTEwRjc3NTExQ0VCNENEMDBBQTAwQkJCNkU2MDAwMDAwMDAwMDBE
+MDAwMDU5NEIzODkyNEIzNDkzNERCRTRFNjczRDk3OEM0RkQ5MDAwMDAwMDAyRUQ5MDAwMAAAAAAD
+AAYQHaqPdgMABxAHEAAAAwAQEAAAAAADABEQAAAAAB4ACBABAAAAZQAAAEhJUkFGQUVMLE9OMjAy
+MTA2MDIxMToxNFJBRkFFTEpXWVNPQ0tJV1JPVEU6SElBTEwsVEhJU1NFUklFU09GUEFUQ0hFU0FE
+RFJFU1NFU1NPTUVUSEVPUkVUSUNBTFNIT1JUQ08AAAAAr18=
+
+------=_NextPart_000_0072_01D770DD.075BD0A0--
+
