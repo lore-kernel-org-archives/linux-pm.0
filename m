@@ -2,120 +2,137 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1289DC07E9A
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 07:54:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DA39C07E96
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 09:37:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F04A861090
-	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 07:54:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D6EE613E1
+	for <linux-pm@archiver.kernel.org>; Sun,  4 Jul 2021 09:37:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229731AbhGDH51 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 4 Jul 2021 03:57:27 -0400
-Received: from comms.puri.sm ([159.203.221.185]:34052 "EHLO comms.puri.sm"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229549AbhGDH50 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 4 Jul 2021 03:57:26 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 13087DF30C;
-        Sun,  4 Jul 2021 00:54:22 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id zPZxBJM7Ax6i; Sun,  4 Jul 2021 00:54:21 -0700 (PDT)
-From:   Martin Kepplinger <martin.kepplinger@puri.sm>
-To:     martin.kepplinger@puri.sm, bvanassche@acm.org
-Cc:     hch@infradead.org, jejb@linux.ibm.com, kernel@puri.sm,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
-        stern@rowland.harvard.edu
-Subject: [PATCH v6 2/3] scsi: sd: send REQUEST SENSE for BLIST_MEDIA_CHANGE devices in runtime_resume()
-Date:   Sun,  4 Jul 2021 09:54:02 +0200
-Message-Id: <20210704075403.147114-3-martin.kepplinger@puri.sm>
-In-Reply-To: <20210704075403.147114-1-martin.kepplinger@puri.sm>
-References: <20210704075403.147114-1-martin.kepplinger@puri.sm>
-Content-Transfer-Encoding: 8bit
+        id S229561AbhGDJjg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 4 Jul 2021 05:39:36 -0400
+Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.50]:21620 "EHLO
+        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229476AbhGDJjf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Jul 2021 05:39:35 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1625391417;
+    s=strato-dkim-0002; d=gerhold.net;
+    h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:Cc:Date:
+    From:Subject:Sender;
+    bh=/+wpk91XMTrihc0Qk9RG3f8dQOkAeUU1aoN6fWllpYM=;
+    b=AWYE1y2P5P0ZuIi/dY80zB0abajbv326S4WSmfUtKjqLNdS64WjyVCK+I268e+bCmB
+    3jat+1qj/drJLCZm8NIr5jQifWLFuW2Qt1Q/XSOuGbDFApsBg6fM6j9q2xXyBihmy8zL
+    7o2+5mO2jKkvybUGwpM/4BpX1UiixBWPPk6ufsC5lPf67IbBXzzzAwmx9RFioAExvgwf
+    vAn7xPftt34vlxgLeuabOqIyJw1esIjmXwa+Y02VPRltZ+WYtlldQZZcmjk4dCJtujoI
+    /+LPXkzzI+T1lNHBg5Uq98FMAqVJtdbTEboP+riWTP4bYz4FNfu2w2TvL9QAMWI+yxHm
+    p0Ew==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u26zEodhPgRDZ8j5Ic/HBg=="
+X-RZG-CLASS-ID: mo00
+Received: from gerhold.net
+    by smtp.strato.de (RZmta 47.28.1 DYNA|AUTH)
+    with ESMTPSA id Y070ccx649avK4p
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+    Sun, 4 Jul 2021 11:36:57 +0200 (CEST)
+Date:   Sun, 4 Jul 2021 11:36:41 +0200
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     Shawn Guo <shawn.guo@linaro.org>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Vinod Koul <vkoul@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] dt-bindings: qcom,pon: Add 'qcom,mode-in-imem'
+ support
+Message-ID: <YOGArXunEf2O58gL@gerhold.net>
+References: <20210704074045.21643-1-shawn.guo@linaro.org>
+ <20210704074045.21643-3-shawn.guo@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210704074045.21643-3-shawn.guo@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For SD cardreader devices that have the BLIST_MEDIA_CHANGE flag set,
-a MEDIA CHANGE unit attention is received after resuming from runtime
-suspend. Send a REQUEST SENSE to avoid that.
+On Sun, Jul 04, 2021 at 03:40:44PM +0800, Shawn Guo wrote:
+> It's not always the case that reboot mode value gets stored in PON
+> register.  For example, Sony Xperia M4 Aqua phone (MSM8939) uses a
+> different set of mode value and stores them in IMEM.  Add property
+> 'qcom,mode-in-imem' to distinguish this mechanism from the existing one.
+> 
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+>  .../bindings/power/reset/qcom,pon.yaml        | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> index 7764c804af1d..a6270e39b7a2 100644
+> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> +++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> @@ -23,6 +23,10 @@ properties:
+>    reg:
+>      maxItems: 1
+>  
+> +  qcom,mode-in-imem:
+> +    description: Reboot mode is stored in IMEM rather than PON register
+> +    type: boolean
+> +
+>  patternProperties:
+>    "^mode-.+":
+>      $ref: /schemas/types.yaml#/definitions/uint32
+> @@ -35,6 +39,7 @@ required:
+>  additionalProperties: false
+>  
+>  examples:
+> +  # Example 1: Reboot mode is stored in PON register
+>    - |
+>      pmic {
+>          #address-cells = <1>;
+> @@ -47,3 +52,17 @@ examples:
+>              mode-recovery = <0x1>;
+>          };
+>      };
+> +  # Example 2: Reboot mode is stored in IMEM
+> +  - |
+> +    pmic {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        pon@800 {
+> +            compatible = "qcom,pm8916-pon";
+> +            reg = <0x860065c>;
 
-The "downside" is that for these devices we now rely on users not to
-really change the medium (SD card) *during* a runtime suspend/resume
-cycle, i.e. when not unmounting.
+This is quite strange. pon@800 is a node of the PM8916 PMIC,
+so the reg should refer to the address inside the PMIC, not some memory
+address of the SoC. dtc will probably warn about this too since the unit
+address (@800) should match the first reg. (At least on W=1.)
 
-To enable runtime PM for an SD cardreader (device number 0:0:0:0), do:
+Actually we already have some devices using IMEM for the reboot mode,
+like this (qcom-msm8974.dtsi plus qcom-msm8974-fairphone-fp2.dts):
 
-echo 0 > /sys/module/block/parameters/events_dfl_poll_msecs
-echo 1000 > /sys/bus/scsi/devices/0:0:0:0/power/autosuspend_delay_ms
-echo auto > /sys/bus/scsi/devices/0:0:0:0/power/control
+	imem@fe805000 {
+		compatible = "syscon", "simple-mfd";
+		reg = <0xfe805000 0x1000>;
 
-Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/scsi/sd.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+		reboot-mode {
+			compatible = "syscon-reboot-mode";
+			offset = <0x65c>;
+			mode-normal	= <0x77665501>;
+			mode-bootloader	= <0x77665500>;
+			mode-recovery	= <0x77665502>;
+		};
+	};
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 6d2d63629a90..34554224b89a 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -63,6 +63,7 @@
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_dbg.h>
- #include <scsi/scsi_device.h>
-+#include <scsi/scsi_devinfo.h>
- #include <scsi/scsi_driver.h>
- #include <scsi/scsi_eh.h>
- #include <scsi/scsi_host.h>
-@@ -114,6 +115,7 @@ static void sd_shutdown(struct device *);
- static int sd_suspend_system(struct device *);
- static int sd_suspend_runtime(struct device *);
- static int sd_resume(struct device *);
-+static int sd_resume_runtime(struct device *);
- static void sd_rescan(struct device *);
- static blk_status_t sd_init_command(struct scsi_cmnd *SCpnt);
- static void sd_uninit_command(struct scsi_cmnd *SCpnt);
-@@ -608,7 +610,7 @@ static const struct dev_pm_ops sd_pm_ops = {
- 	.poweroff		= sd_suspend_system,
- 	.restore		= sd_resume,
- 	.runtime_suspend	= sd_suspend_runtime,
--	.runtime_resume		= sd_resume,
-+	.runtime_resume		= sd_resume_runtime,
- };
- 
- static struct scsi_driver sd_template = {
-@@ -3720,6 +3722,25 @@ static int sd_resume(struct device *dev)
- 	return ret;
- }
- 
-+static int sd_resume_runtime(struct device *dev)
-+{
-+	struct scsi_disk *sdkp = dev_get_drvdata(dev);
-+	struct scsi_device *sdp = sdkp->device;
-+
-+	if (sdp->sdev_bflags & BLIST_MEDIA_CHANGE) {
-+		/* clear the devices' sense data */
-+		static const u8 cmd[10] = { REQUEST_SENSE };
-+
-+		if (scsi_execute(sdp, cmd, DMA_NONE, NULL, 0, NULL,
-+				 NULL, sdp->request_queue->rq_timeout, 1, 0,
-+				 RQF_PM, NULL))
-+			sd_printk(KERN_NOTICE, sdkp,
-+				  "Failed to clear sense data\n");
-+	}
-+
-+	return sd_resume(dev);
-+}
-+
- /**
-  *	init_sd - entry point for this driver (both when built in or when
-  *	a module).
--- 
-2.30.2
+Perhaps it would be cleaner to add a property to disable the reboot mode
+functionality of pm8916-pon and then set it up like this?
 
+Thanks!
+Stephan
