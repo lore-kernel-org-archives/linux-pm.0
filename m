@@ -2,150 +2,182 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3AAEC07E96
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Jul 2021 09:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 797E7C07E96
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Jul 2021 09:35:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 846D06198E
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Jul 2021 09:31:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 583F8619A4
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Jul 2021 09:35:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231150AbhGFJeN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Jul 2021 05:34:13 -0400
-Received: from mail-eopbgr70051.outbound.protection.outlook.com ([40.107.7.51]:15073
-        "EHLO EUR04-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230472AbhGFJeN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Jul 2021 05:34:13 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ls1+VgcfpPut81U9piU8qjbwniLJ5G3x7Fcz+9R8Od3jHDDvYDVFFIjOLzfWDhnoymge0iAH5cK0c7CBxp4Pcsi2H2+MLZmtTbBR+DCwRGFoPVGBcrhAsgAqmO2edHldMQWe3650DhUvilXuFGZ1unE/Gw7xXz4cLITnteaJTdTZ/wbSl4PDOUm5v/QNcY6ojcBfPyPoJAanhDUFROWpTpEA9gAOP6M78R9AtINd6krXNSMuCXCQVESbnfKY/T0fNA1kyZLVXc2I/cWQfp2D9OfflrlW7IMw2bQbM7mTX6i3KBWDgX1iKnjNakGF5YEfPePWy6M4wkcJIxFTtuM6bQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9TH4dSuE/RICWuqVedJF6PJG/9soufp/J9D/JBeclCA=;
- b=RpFTFnPZHnAOl/P7GnvWmNM5eKV4AExbT0Xo3TwZN3LC88R0CWnoMA5KoboNLcT73WtGHx25Y4fC35mFhoe5QpRPS1pCMFnG/MhfzCxp/N7IvFg2P8We5/7TxO9oJ9MXZNeJFzVuvFxBAfR95hGCsARpNXNFQcwnLcqZ+0ILcoPsdmcCvpH+mQYKNfhdRPVI7CDrz21cQqtGNmbvI6yWMg1Fnd5yWWLXR8RzQ2s90gmbSgsPFZ8TNvDfgAsMus2wem/RLdwXPdPG7+Pp9XKPOC+eVvXaClBkrbhfZh+c/m8j2L0BFgGjQ2wL+rsaXiEpsS/+avcGg8bVP+/MaJHU8A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9TH4dSuE/RICWuqVedJF6PJG/9soufp/J9D/JBeclCA=;
- b=eLWzJFVfx9CquFkIiX1+u1Go5JdAgf/Ltw1jg9Ze7gGWxhWdCY/pEjkCVq/e3XJdm1jSPf8qIc6fClyIgucIRWozBJ8wueunW8M19qYeh+nNxlb1OOEk+U4yya1FV4mV/adU/q74rL+icgW1rPV2jjiftKfzyhN7cBFTexQ4MNE=
-Authentication-Results: rjwysocki.net; dkim=none (message not signed)
- header.d=none;rjwysocki.net; dmarc=none action=none header.from=oss.nxp.com;
-Received: from DB6PR0402MB2760.eurprd04.prod.outlook.com (2603:10a6:4:a1::14)
- by DB8PR04MB5660.eurprd04.prod.outlook.com (2603:10a6:10:a5::33) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4242.19; Tue, 6 Jul
- 2021 09:31:30 +0000
-Received: from DB6PR0402MB2760.eurprd04.prod.outlook.com
- ([fe80::c445:d742:eb76:86dd]) by DB6PR0402MB2760.eurprd04.prod.outlook.com
- ([fe80::c445:d742:eb76:86dd%9]) with mapi id 15.20.4287.033; Tue, 6 Jul 2021
- 09:31:30 +0000
-From:   peng.fan@oss.nxp.com
-To:     rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org,
-        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
-Subject: [PATCH] PM: domains: not update genpd status when power on fail
-Date:   Tue,  6 Jul 2021 18:05:19 +0800
-Message-Id: <20210706100519.13851-1-peng.fan@oss.nxp.com>
-X-Mailer: git-send-email 2.30.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [119.31.174.71]
-X-ClientProxiedBy: SGXP274CA0010.SGPP274.PROD.OUTLOOK.COM (2603:1096:4:b8::22)
- To DB6PR0402MB2760.eurprd04.prod.outlook.com (2603:10a6:4:a1::14)
+        id S231192AbhGFJiY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Jul 2021 05:38:24 -0400
+Received: from first.geanix.com ([116.203.34.67]:44334 "EHLO first.geanix.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230472AbhGFJiY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Jul 2021 05:38:24 -0400
+Received: from skn-laptop (unknown [185.233.254.173])
+        by first.geanix.com (Postfix) with ESMTPSA id 565D04C5704;
+        Tue,  6 Jul 2021 09:35:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=geanix.com; s=first;
+        t=1625564143; bh=d/k8860e8AFp6tYBkjh53bVB2t0WYaWnLcXmdEFyTFM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To;
+        b=NIeERh8FH0EypgDkT5dX93Za4SZ7gO2QpeD4YUHwRTe46f7tUcsV/PPJcCYfzBxMh
+         G5WG+A5oKnl8zDKLJtGOWsHJRhD6vdNJ0r4GMLAJisijCv19dwYrAadxOGns4vfVgH
+         ECB5IiYcdAeH9krU+wNkpV6Ga4PlPDkGwfRTx/rgPVmCTli8VJ/slJ+LYpuWaNnkYJ
+         C63QPbg7MOKVvm3jKffqz19ZyNNV6wiNwP9pNFwIWLwFfA11EH7wTQXCn4NE7gsycY
+         +1+yQYTHIqCE265OcrYtQvAtKruDBd9sJh7Wao3VpBq4glu2NXr4Zi2v6lTEhRLi9o
+         HpDOMoH/sd1eg==
+Date:   Tue, 6 Jul 2021 11:35:41 +0200
+From:   Sean Nyekjaer <sean@geanix.com>
+To:     s.hauer@pengutronix.de, miquel.raynal@bootlin.com, richard@nod.at
+Cc:     linux-pm@vger.kernel.org, han.xu@nxp.com,
+        linux-mtd@lists.infradead.org
+Subject: Re: [BUG RESEND] unsuspend failure under load
+Message-ID: <20210706093541.f4kjxqrkft7fqbcx@skn-laptop>
+References: <20210705065833.2ezlhaspkkju4bh7@skn-laptop>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from linux-1xn6.ap.freescale.net (119.31.174.71) by SGXP274CA0010.SGPP274.PROD.OUTLOOK.COM (2603:1096:4:b8::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4287.22 via Frontend Transport; Tue, 6 Jul 2021 09:31:27 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: fe833d82-699c-4ff4-b0cc-08d94060d61b
-X-MS-TrafficTypeDiagnostic: DB8PR04MB5660:
-X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DB8PR04MB56600FB7660FFA3673EDA765C91B9@DB8PR04MB5660.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1923;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: hQnl1EQ7RBu/o2P83fmKzbe14Y4WV32IInAMiyYEUJ1FSC7aidFMcD70OrvTA8oYMxBN81NS1VxhvCrQUGuGOxkwZNqIyD3uxQAfMYYTp5OHyTsqQjDGTIA12s1GIyjkmzqGxM3M8a7z5o7SgyWUU/b30PRGFGWEYfO3C23msOswKlf9K9kpnCVoONXyZyfOsZ6J9aI9jjbOaDizE64rWk9UOnzgwRhvvmcUR2cIUQ9S5ilvFI9YVclWN+wpBvx7osv0YJXIO0PsggoLNCkgdD8mhPOWqdicHtnLQrYQJJBLWnSf2LDuLwYQDK+IzfhCkwvWElOJuUwRlSV8ly3tZGPsqh30rFhqY3xCLu/RvBLIg2TAojBNVWPuhL7Ds3qXtoPSViu9iRD8ZfiO8bYjbkCsCMz7h6v0WqP0cKU6s7ryM/WE4KhMbM+tTIP/CJT2diX8g0Niom+5vj0RPZChxN33WVv9x5YQplokjAxiiVIPtOlwMwNoM8K8aki+s5PvbcRLY1Tb7JYkE4mMij7UK6gIk6wgVPklgF5q9eGgy21pVJ+ji0Lycdi/Pxgi6oTNvlpKXjM7WmLL583RskUwUNWlcSa1hlNhTVdmSsN0JZJ/Da0IUvZL0Cqu3YT2PfttqB4zu30tJDQPg6ScCUKl1TtMbjgmoGImq71u5zX0YUQF9uniwFp0AeO4j92tA4oSXHCRdaVvbZOznmV/6GbsZg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB6PR0402MB2760.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(396003)(346002)(376002)(136003)(39860400002)(366004)(1076003)(4744005)(52116002)(956004)(26005)(316002)(5660300002)(8936002)(6506007)(6486002)(86362001)(83380400001)(8676002)(2616005)(66946007)(66556008)(6666004)(478600001)(38350700002)(66476007)(2906002)(186003)(6512007)(38100700002)(16526019)(9686003)(4326008);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?VUW2msvlTzJ/8QUwrsjWXQo6N3ENT4H+QfV60IKPHvvC5W7KVuY1wvxBqcFH?=
- =?us-ascii?Q?YTG4lwWofEMKKr0hzQaC1q6F09E5aPNjCnO8QhaDM5FN4E0b5CxVAR25iEaX?=
- =?us-ascii?Q?YDDMd0RN5HTakIS7CAwjWyEG+6a4XCGYTcGPUMU2WMQ0I17kuneZiCLnXjAF?=
- =?us-ascii?Q?xQ2oFk3VJJrpFsQiXHfDm5qkHHSQLQZmo+QaFletaaCLf5kWPb/UrsMUTHd0?=
- =?us-ascii?Q?ZN50Ltnp9g2oTHpUPulYkQ+j2AkJJCVFIyjLCJnXTr2GmiQY7wRuRa7Cmdi8?=
- =?us-ascii?Q?VvnrLQMRuaCz4srdgot96BZIC1aQ61SLhlhkCSPXqwRZKEttIRnhU6smYLT9?=
- =?us-ascii?Q?J9ca1VgkFqKDRw3QJNvpuHU5SnOIkA1hCko8CVOgcYre8ldCZWoFxq18ju63?=
- =?us-ascii?Q?qkQvbfcVZrPYAGc5RePIwhLpmfDxKLtB6+77TsBIGEASAJklQZ7NdcqOn8oF?=
- =?us-ascii?Q?2KiKtEA9300/dZ+XV9F4jNMxgk6IJCaFSoQCp2AylbbsiyeWI7x/Ax4mjw1C?=
- =?us-ascii?Q?CGfweGCaka3Kj4nFsvbsXVGL8KTCfZ7RyGVjdmswNbR6yIJDMg6lyA/zgel0?=
- =?us-ascii?Q?Rl9bYp5yPiNG6Ql99Xs2qyvCzdhKf4qPHiM1UnhyZafLzJifauhPfurC/SYh?=
- =?us-ascii?Q?aV7NC66vX5EHGrxuu9LxKSG4w6PX/hlaH5UTrjYjVGDsqHgI837KdT/bdesq?=
- =?us-ascii?Q?HNvsPvK9z5MomQDw4hXBh+zDoZSM4Tv+Nwxnqt/tA5aqddwRsDTyYzXeCGvX?=
- =?us-ascii?Q?Hf1MD/whNGRWAJE01FTy9A2We4jOaupSTRC4rU/jXFD3SrSUpwGEmLGQsd0Y?=
- =?us-ascii?Q?7wF5vBSvDDz3k7fT7UVnYQbIGUEUvEKO9BKQKqyaflrrfXUYZto0P0oTCxGe?=
- =?us-ascii?Q?WXu+9eRPtizCHA4YndfE8IpRx+/PlJ2Ocfj5mkbByJl9WSGnyj+9pORGvzr6?=
- =?us-ascii?Q?rUPK46nzzM6Ik2SVkrFNaJb6WHQ/BXyKQkBfA3y8bbxF1VR/q/Wjr409W6Ni?=
- =?us-ascii?Q?ePX7m1RR6eGT430y8Sr0FD5owHlmtRZn2kmsADkGdr3UUcvOAFK7TJQrB6/N?=
- =?us-ascii?Q?N2ouJQUXBiaC68cTYBF+jYzCfOC2IL8tAaAhAusU5MiyJpq+56LhJgXWeOL9?=
- =?us-ascii?Q?BM6iHyMpiVz5nEqw0Air2LwcMGbzyWZx87mPkhsdbfmpGdaWjCfMxBlbZ/Bd?=
- =?us-ascii?Q?DIzUnEsMhezlAXEyJptLVwcWo2hsKW7WKOWRNPHhxcsJbObS2DC5OE2GxrXe?=
- =?us-ascii?Q?O1/Rmrj3Ifetr5mge2L95AzfynCeopzSxP3Q9aYBfeWyS+dAvcgAk9UQNB4b?=
- =?us-ascii?Q?o9/m6f7BagZIgQXEtoJPbt8P?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: fe833d82-699c-4ff4-b0cc-08d94060d61b
-X-MS-Exchange-CrossTenant-AuthSource: DB6PR0402MB2760.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Jul 2021 09:31:30.6501
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: S9GLEKGKrIR3ZHXikVnUTK4qjNJkrd6O2fmKBjkg3SZJtfLwfrKSIFupRI0hK3Fg90/vZuy7pyahwnJDsAoDWw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8PR04MB5660
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20210705065833.2ezlhaspkkju4bh7@skn-laptop>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peng Fan <peng.fan@nxp.com>
+On Mon, Jul 05, 2021 at 08:58:38AM +0200, Sean Nyekjaer wrote:
+> Hi Miquel and Sascha,
++ Richard + linux-pm
+> 
+> We are having some trouble when our i.MX6 unsuspends while writes to
+> ubifs is in progess. In the log it looks like it syncing the filesystem
+> before suspend.
+> 
+> The SoC a i.MX6ul/ull, the issue is (lucky for us) quite easy to reproduce.
+> The reproduce script: [0]
+> Kernel log when it happens: [1]
+> 
+> I have bisected the bug to: ef347c0cfd61 ("mtd: rawnand: gpmi: Implement exec_op")
+> 
+> Any idea to where I should start looking? or to what happens?
+> 
+> Esben have posted to patches that relates to suspend/unsuspend but it
+> doesn't seem to releated to this issue.
+> 5bc6bb603b4d ("mtd: rawnand: gpmi: Fix suspend/resume problem")
+> d70486668cdf ("mtd: rawnand: gpmi: Restore nfc timing setup after suspend/resume")
+> 
+> /Sean
 
-When _genpd_power_on fail, the generic power domain status
-should not be changed to GENPD_STATE_ON.
+nand_resume() is called some time after ubi_io_write tries to write. Thats why
+mtd_write() is returning -EBUSY.
 
-Signed-off-by: Peng Fan <peng.fan@nxp.com>
----
- drivers/base/power/domain.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+I have tried patch [3], and it seems to fix it.
+I think it would be okay to add the retry option, but the mdelay is not
+obviously a nogo.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index ab0b740cc0f1..754a5d384479 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1101,6 +1101,7 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
- 				unsigned int depth)
- {
- 	struct gpd_link *link;
-+	int ret;
- 
- 	if (genpd_status_on(genpd))
- 		return;
-@@ -1117,8 +1118,9 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
- 			genpd_unlock(link->parent);
+Any idea to how we could wait here for the nand_resume() to be called?
+
+@linux-pm:
+I have noticed "Filsystems sync" happens before "Freezing user space
+processes".
+If I apply patch [4] (without [3]), it would also fix our issue. But I
+don't have en insight in to what impact the change might have.
+
+/Sean
+
+> 
+> [0]
+> #!/bin/sh
+> dd if=/dev/urandom of=/tmp/test50M bs=1M count=50
+> cp /tmp/test50M /data/ &
+> echo mem > /sys/power/state
+> 
+> [1]
+> root@iwg26-v2:/data/root# ./ubicrash.sh
+> 50+0 records in
+> 50+0 records out
+> PM: suspend entry (deep)
+> Filesystems sync: 33.642 seconds
+> Freezing user space processes ... (elapsed 0.004 seconds) done.
+> OOM killer disabled.
+> Freezing remaining freezable tasks ... (elapsed 0.003 seconds) done.
+> printk: Suspending console(s) (use no_console_suspend to debug)
+> <SUSPEND/WAKE>
+> PM: suspend devices took 0.040 seconds
+> Disabling non-boot CPUs ...
+> ubi0 error: ubi_io_write: error -16 while writing 4096 bytes to PEB 544:53248, written 0 bytes
+> CPU: 0 PID: 69 Comm: kworker/u2:2 Not tainted 5.13.0 #3
+> Hardware name: Freescale i.MX6 Ultralite (Device Tree)
+> Workqueue: writeback wb_workfn (flush-ubifs_0_8)
+> [<c010d9b0>] (unwind_backtrace) from [<c010a28c>] (show_stack+0x10/0x14)
+> [<c010a28c>] (show_stack) from [<c0970798>] (dump_stack+0xc0/0xdc)
+> [<c0970798>] (dump_stack) from [<c05dfe10>] (ubi_io_write+0x510/0x6b0)
+> [<c05dfe10>] (ubi_io_write) from [<c05dcd90>] (ubi_eba_write_leb+0x388/0x910)
+> [<c05dcd90>] (ubi_eba_write_leb) from [<c05daf34>] (ubi_leb_write+0xd0/0xe8)
+> [<c05daf34>] (ubi_leb_write) from [<c03cfeb4>] (ubifs_leb_write+0x68/0x104)
+
+[ ... ]
+
+> UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30
+> UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 10962 of inode 821, error -30
+> UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30
+> UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 10963 of inode 821, error -30
+> UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 696 bytes in jhead 2, error -30
+> UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 0 of inode 819, error -30
+> UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30
+
+[3]:
+diff --git a/drivers/mtd/ubi/io.c b/drivers/mtd/ubi/io.c
+index 14d890b00d2c..b24c571fa022 100644
+--- a/drivers/mtd/ubi/io.c
++++ b/drivers/mtd/ubi/io.c
+@@ -268,8 +269,18 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
  	}
- 
--	_genpd_power_on(genpd, false);
--	genpd->status = GENPD_STATE_ON;
-+	ret = _genpd_power_on(genpd, false);
-+	if (!ret)
-+		genpd->status = GENPD_STATE_ON;
- }
- 
- /**
--- 
-2.30.0
 
+ 	addr = (loff_t)pnum * ubi->peb_size + offset;
++retry:
+ 	err = mtd_write(ubi->mtd, addr, len, &written, buf);
+ 	if (err) {
++		if (retries++ < UBI_IO_RETRIES) {
++			ubi_warn(ubi, "error %d while writing %d bytes to PEB %d:%d, written %zd bytes",
++				 err, len, pnum, offset, written);
++			mdelay(25); yield();
++			goto retry;
++		}
++
+ 		ubi_err(ubi, "error %d while writing %d bytes to PEB %d:%d, written %zd bytes",
+ 			err, len, pnum, offset, written);
+ 		dump_stack();
+
+[4]:
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 32391acc806b..61a213ad5a13 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -563,18 +563,18 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_TO_IDLE)
+ 		s2idle_begin();
+ 
+-	if (sync_on_suspend_enabled) {
+-		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-		ksys_sync_helper();
+-		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-	}
+-
+ 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+ 	pm_suspend_clear_flags();
+ 	error = suspend_prepare(state);
+ 	if (error)
+ 		goto Unlock;
+ 
++	if (sync_on_suspend_enabled) {
++		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
++		ksys_sync_helper();
++		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
++	}
++
+ 	if (suspend_test(TEST_FREEZER))
+ 		goto Finish;
+ 
