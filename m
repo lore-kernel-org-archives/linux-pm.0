@@ -2,334 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB3FFC11F67
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:13:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FDBDC07E95
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:54:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8D3B361A2B
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:13:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 37F1361C89
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:54:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231639AbhGGNQ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jul 2021 09:16:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51702 "EHLO
+        id S231634AbhGGN4l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jul 2021 09:56:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60738 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231583AbhGGNQZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jul 2021 09:16:25 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3211C061766
-        for <linux-pm@vger.kernel.org>; Wed,  7 Jul 2021 06:13:43 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id h18-20020a05600c3512b029020e4ceb9588so4208129wmq.5
-        for <linux-pm@vger.kernel.org>; Wed, 07 Jul 2021 06:13:43 -0700 (PDT)
+        with ESMTP id S231472AbhGGN4l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jul 2021 09:56:41 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2105C061574
+        for <linux-pm@vger.kernel.org>; Wed,  7 Jul 2021 06:54:00 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id q18so4191646lfc.7
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jul 2021 06:54:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=b+ppEpbWRmkGcXeCKQo2IL+aAX51yIlSVHR4b05C1K8=;
-        b=qrkDi2z0KEFxwHixTE+5hcregz3SPAnVZlVlM2tCjltIMgPE289xWale/Yqzzn+aOF
-         Bofy/ZyU9GTmOTDJoD78VFztGTV3BERwWaa/xMb7M9AYEqM4/Ht+DPHuT9suC5nnDw/b
-         qjvaTEAV+B3t7KeAeimR2ecMAm4H3cpaClnAn+7T3QBxLI67OIfxhEsVzqrMH13wh2oz
-         W+1IDVsXGIdP1pLwCeHVUo4fl9BVDClCKUr5ReQYcA5hLSFY3DIhWDRvnT5uOBacTykK
-         a2pJNtE2j5WlKYARgfXLOTEYp9X1XcZh5pos7xsdY1HaOPmLcHsun07d74KBlUrxvU0O
-         lY+Q==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=QcEZkwLs+Fpl1nceNhi+IHsXytH/BS7pSdCOP46nwS8=;
+        b=J9l+mpUMTfvqLDmLvM31KUzyWqn+aq4ujZ6cHj2NZYTanNHIyhxkbIPp9I5M2um5dp
+         jl1a4d/W+zh/syUSDqZjU5/U6kVIbodiqpGXOU7IjWI2k5Y7MD6N5qiNePj9pCihw7kN
+         jHul16Ap7QaZrHNkM7GEPRtJjAnWR4YtHwVGj7rA5G7WoLYmFlSCqlGRV2EeHcgGigk4
+         JOgmf/bg6nkQM3Qj1HGrpY6wuUqz4RujD9vzN+5gFGujq1UEpxVpQyGGpcf1nm8boQZV
+         1pKwikP/goLJ/yeQOTuDfMAo4DDOYo333jmUEgWMzpqxPsks/qWOKc1iG/sxQRXeUHki
+         uZuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=b+ppEpbWRmkGcXeCKQo2IL+aAX51yIlSVHR4b05C1K8=;
-        b=bYqu4fD6IX5hp5fb/L/YX+IATjXraH79YpKrIcdAQ/VLimbVDhMDX+YzEhL9QvPxUc
-         oQoFMJpUB1pG8NE1VkBsEXj4MoXAzrxaRBF78r1AQpBKY0OOcIYZ64dDSpuywHUDg1ig
-         z7FZik+hbp1VGoVaPekcQcgDfXQ/X9rF/J1EEieGs0PoxeywejXlG6kJSNah2jI+fGOg
-         sXfheNaeOGQ/WZVhOYggz5c+iLoXXRQfn98TNZ/N9dLRY4ODffJLTIW0eSLurjJcCYmc
-         T84HUsmFDOfTPbUFnxK0hn8sr/ATfYV0zjr0gD5kRU/eJUdccvL9GyrgMXXBkS4YiKTh
-         8ZwQ==
-X-Gm-Message-State: AOAM531Wdfusu+5FOeeKQ07KFRJDSzgk1wWhstqKW1dk4tk/z42Gwlw4
-        w5jQDPJRtiW9hwWQTWfv+Hk//w==
-X-Google-Smtp-Source: ABdhPJzQfcK5I06QTwGrVPF8P+x3RVJWCIybxr92Wgi8gv3cliCqh0fHDSdOQV8WvXWNa8kE08eiJQ==
-X-Received: by 2002:a1c:f414:: with SMTP id z20mr6954905wma.94.1625663621379;
-        Wed, 07 Jul 2021 06:13:41 -0700 (PDT)
-Received: from bismarck.berto.se (p4fca2710.dip0.t-ipconnect.de. [79.202.39.16])
-        by smtp.googlemail.com with ESMTPSA id l20sm19233670wmq.3.2021.07.07.06.13.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jul 2021 06:13:41 -0700 (PDT)
-From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     linux-renesas-soc@vger.kernel.org,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 2/3] thermal: rcar_gen3_thermal: Add support for hardware trip points
-Date:   Wed,  7 Jul 2021 15:13:05 +0200
-Message-Id: <20210707131306.4098443-3-niklas.soderlund+renesas@ragnatech.se>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210707131306.4098443-1-niklas.soderlund+renesas@ragnatech.se>
-References: <20210707131306.4098443-1-niklas.soderlund+renesas@ragnatech.se>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=QcEZkwLs+Fpl1nceNhi+IHsXytH/BS7pSdCOP46nwS8=;
+        b=O3VcmBPT0QBBlxOLtGExPFrz7GIC8Ltt+0z5XxrUrrOXKDnpphtxuCFvNC1d1DGPfZ
+         ApF3F+Jr1qQg9nA1jLB7WOW1R7nhFuvE2fAV1ISbr61P06BVpgz1jLI5sb2Tl9dbWSQQ
+         4EOQmSWAHA7+wT9B548bEjkZAoQOLwccCZLgI6gjAMlYyGVivfS4ItxBrs9JftKfze2N
+         rphbUgRUYB1PR7E2DKwlmKYF7cCEwQaUoqKUQMPBV4i++8CKjZnkDMikYz40SYBbEtVx
+         x+bSFZ0r9N5X6WBpifNglWp9P6OuQJTIZQSQ2cVI+CX4xvWuEGji2QpY1XcMyqDs/wMb
+         FdJg==
+X-Gm-Message-State: AOAM533KUXujnk+8HCgn6xHWa7Z/5R0Co/BwM8KLO656ABuK9exaXnQP
+        zcFu4W27JH5c5Z1m2lxfKXnb1HV810RqMSX9GcbXQQ==
+X-Google-Smtp-Source: ABdhPJziIHuDk3QTEhNkB8QyPJVN8Tj7rlHy8SnXjNs5Bc05mgG+iHNERzVY//0Dd0SbxT4DXAD+Bsn5Qo7oEv4rbh4=
+X-Received: by 2002:a05:6512:3c99:: with SMTP id h25mr7823582lfv.277.1625666039231;
+ Wed, 07 Jul 2021 06:53:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20210625152603.25960-1-lukasz.luba@arm.com> <20210625152603.25960-2-lukasz.luba@arm.com>
+ <CAKfTPtAV9GjQaXc2FV0OuEzTGQw9hFiKpwMfAxP-JQ_QFCUC3w@mail.gmail.com>
+ <a6a49480-7d5d-fd0e-3940-0b6baac5acc0@arm.com> <CAKfTPtAbck=mTR4g9L1hVGzN2dz4PjKNXoDZeMH19HGwpW3Buw@mail.gmail.com>
+ <2f43b211-da86-9d48-4e41-1c63359865bb@arm.com> <CAKfTPtDk1ANfjR5h_EjErVfQ7=is3n9QOaKKxz81tMHtqUM7jA@mail.gmail.com>
+ <297df159-1681-f0a7-843d-f34d86e51d4c@arm.com> <CAKfTPtCEo+gkV2TMhOHSnuUyu5BC54o-B4Hb=QbzgT6Dft-PhQ@mail.gmail.com>
+ <27916860-33b1-f0a0-acff-4722a733c81b@arm.com> <CAKfTPtB2ogGbGBjJNRBB5jvN24q-tXFR+BpJ31fzsTd2=pDTHQ@mail.gmail.com>
+ <ee3ebbaa-7b6d-416d-2caa-197c2713dd4e@arm.com> <CAKfTPtAN6-ytxa2Qj3=z27e8ZBoqGrWAZce9CojL3wbZSotUsQ@mail.gmail.com>
+ <58cb7ad3-ffff-8940-4c8e-2c46dcc86d54@arm.com> <CAKfTPtCy-dbo0xnW8iKaQy94_iV=JYbMU-X4qanzL6RXcL7xEw@mail.gmail.com>
+ <e3b11a84-9a26-9a7d-cf90-12a7a8fbcc3f@arm.com>
+In-Reply-To: <e3b11a84-9a26-9a7d-cf90-12a7a8fbcc3f@arm.com>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Wed, 7 Jul 2021 15:53:48 +0200
+Message-ID: <CAKfTPtD-i0K=ofKEekoCzAm2eXR+vVzFxR-uc6Em4LMO8W=RFA@mail.gmail.com>
+Subject: Re: [PATCH 1/3] sched/fair: Prepare variables for increased precision
+ of EAS estimated energy
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
+        Chris Redpath <Chris.Redpath@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Quentin Perret <qperret@google.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Steven Rostedt <rostedt@goodmis.org>, segall@google.com,
+        Mel Gorman <mgorman@suse.de>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        CCj.Yeh@mediatek.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All supported hardware except V3U is capable of generating interrupts
-to the CPU when the temperature go below or above a set value. Use this
-to implement support for the set_trip() feature of the thermal core on
-supported hardware.
+On Wed, 7 Jul 2021 at 13:02, Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+>
+>
+> On 7/7/21 11:50 AM, Vincent Guittot wrote:
+> > On Wed, 7 Jul 2021 at 12:41, Lukasz Luba <lukasz.luba@arm.com> wrote:
+> >>
+> >>
+> >>
+> >> On 7/7/21 11:32 AM, Vincent Guittot wrote:
+> >>> On Wed, 7 Jul 2021 at 12:29, Lukasz Luba <lukasz.luba@arm.com> wrote:
+> >>>>
+> >>>>
+> >>>>
+> >>>> On 7/7/21 11:11 AM, Vincent Guittot wrote:
+> >>>>> On Wed, 7 Jul 2021 at 12:06, Lukasz Luba <lukasz.luba@arm.com> wrote:
+> >>>>>>
+> >>>>
+> >>>> [snip]
+> >>>>
+> >>>>>> No. It's in 0.1uW scale, so 800Watts. Which is 16 CPUs * 64Watts
+> >>>>>
+> >>>>> Oh! you want 0.1uW precision .... This doesn't seem realistic at all.
+> >>>>> I'm not even sure that the power model can even reach an accuracy of
+> >>>>> 1mW
+> >>>>>
+> >>>>
+> >>>> True, the EM is registering platform with 1mW precision, but 1uW
+> >>>
+> >>> Do you mean 1uW or 0.1uW ?
+> >>
+> >> In this patch set I've proposed 0.1uW, but I'm open to drop one
+> >> order of magnitude. The 1uW still be good.
+> >
+> > I don't want to underestimate the capabilities of the power model but
+> > I don't see which benefit you will get with 0.1uW precision
+> > With a 1uW precision the long type currently used for the returned
+> > value is fine for 32bits machine AFAICT
+> >
+>
+> For 1uW and 1.2Watts for one core, 4 CPUs in cluster we get:
+> (1200 * 1000) * (4 * 1024) = ~4.9bln
+> so it would need div 64 version
 
-The V3U have its interrupts routed to the ECM module and therefore can
-not be used to implement set_trip() as the driver can't be made aware of
-when the interrupt triggers.
-
-Each TSC is capable of tracking up-to three different temperatures while
-only two are needed to implement the tracking of the thermal window.
-
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_gen3_thermal.c | 130 ++++++++++++++++++++++++++--
- 1 file changed, 123 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 770f1daae5379053..a438e05e7ca7f20e 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -81,6 +81,7 @@ struct equation_coefs {
- 
- struct rcar_gen3_thermal_info {
- 	int ths_tj_1;
-+	bool have_irq;
- };
- 
- struct rcar_gen3_thermal_tsc {
-@@ -95,7 +96,8 @@ struct rcar_gen3_thermal_priv {
- 	const struct rcar_gen3_thermal_info *info;
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
--	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
-+	void (*thermal_init)(struct rcar_gen3_thermal_priv *priv,
-+			     struct rcar_gen3_thermal_tsc *tsc);
- };
- 
- static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc,
-@@ -195,16 +197,75 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
- 	return 0;
- }
- 
-+static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar_gen3_thermal_tsc *tsc,
-+					      int mcelsius)
-+{
-+	int celsius, val;
-+
-+	celsius = DIV_ROUND_CLOSEST(mcelsius, 1000);
-+	if (celsius <= INT_FIXPT(tsc->tj_t))
-+		val = celsius * tsc->coef.a1 + tsc->coef.b1;
-+	else
-+		val = celsius * tsc->coef.a2 + tsc->coef.b2;
-+
-+	return INT_FIXPT(val);
-+}
-+
-+static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
-+{
-+	struct rcar_gen3_thermal_tsc *tsc = devdata;
-+	u32 irqmsk = 0;
-+
-+	if (low != -INT_MAX) {
-+		irqmsk |= IRQ_TEMPD1;
-+		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
-+					rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
-+	}
-+
-+	if (high != INT_MAX) {
-+		irqmsk |= IRQ_TEMP2;
-+		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
-+					rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
-+	}
-+
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, irqmsk);
-+
-+	return 0;
-+}
-+
- static const struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
- 	.get_temp	= rcar_gen3_thermal_get_temp,
-+	.set_trips	= rcar_gen3_thermal_set_trips,
- };
- 
-+static const struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops_no_irq = {
-+	.get_temp	= rcar_gen3_thermal_get_temp,
-+};
-+
-+static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
-+{
-+	struct rcar_gen3_thermal_priv *priv = data;
-+	unsigned int i;
-+	u32 status;
-+
-+	for (i = 0; i < priv->num_tscs; i++) {
-+		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
-+		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
-+		if (status)
-+			thermal_zone_device_update(priv->tscs[i]->zone,
-+						   THERMAL_EVENT_UNSPECIFIED);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
- static const struct soc_device_attribute r8a7795es1[] = {
- 	{ .soc_id = "r8a7795", .revision = "ES1.*" },
- 	{ /* sentinel */ }
- };
- 
--static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
-+static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_priv *priv,
-+					      struct rcar_gen3_thermal_tsc *tsc)
- {
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-@@ -215,6 +276,9 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
- 
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
-+	if (priv->info->have_irq)
-+		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
-+					IRQ_TEMPD1 | IRQ_TEMP2);
- 
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
- 				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
-@@ -228,7 +292,8 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
- 	usleep_range(1000, 2000);
- }
- 
--static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-+static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_priv *priv,
-+				   struct rcar_gen3_thermal_tsc *tsc)
- {
- 	u32 reg_val;
- 
-@@ -240,6 +305,9 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
-+	if (priv->info->have_irq)
-+		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
-+					IRQ_TEMPD1 | IRQ_TEMP2);
- 
- 	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
- 	reg_val |= THCTR_THSST;
-@@ -250,10 +318,16 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 
- static const struct rcar_gen3_thermal_info rcar_gen3_thermal_gen3 = {
- 	.ths_tj_1 = 126,
-+	.have_irq = true,
- };
- 
- static const struct rcar_gen3_thermal_info rcar_gen3_thermal_m3w = {
- 	.ths_tj_1 = 116,
-+	.have_irq = true,
-+};
-+
-+static const struct rcar_gen3_thermal_info rcar_gen3_thermal_v3u = {
-+	.ths_tj_1 = 126,
- };
- 
- static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
-@@ -291,7 +365,7 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
- 	},
- 	{
- 		.compatible = "renesas,r8a779a0-thermal",
--		.data = &rcar_gen3_thermal_gen3,
-+		.data = &rcar_gen3_thermal_v3u,
- 	},
- 	{},
- };
-@@ -314,8 +388,37 @@ static void rcar_gen3_hwmon_action(void *data)
- 	thermal_remove_hwmon_sysfs(zone);
- }
- 
-+static int rcar_gen3_thermal_request_irqs(struct rcar_gen3_thermal_priv *priv,
-+					  struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	unsigned int i;
-+	char *irqname;
-+	int ret, irq;
-+
-+	for (i = 0; i < 2; i++) {
-+		irq = platform_get_irq(pdev, i);
-+		if (irq < 0)
-+			return irq;
-+
-+		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
-+					 dev_name(dev), i);
-+		if (!irqname)
-+			return -ENOMEM;
-+
-+		ret = devm_request_threaded_irq(dev, irq, NULL,
-+						rcar_gen3_thermal_irq,
-+						IRQF_ONESHOT, irqname, priv);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
- static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- {
-+	const struct thermal_zone_of_device_ops *tz_of_ops;
- 	struct rcar_gen3_thermal_priv *priv;
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
-@@ -338,6 +441,15 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 
-+	tz_of_ops = &rcar_gen3_tz_of_ops_no_irq;
-+	if (priv->info->have_irq) {
-+		ret = rcar_gen3_thermal_request_irqs(priv, pdev);
-+		if (ret)
-+			return ret;
-+
-+		tz_of_ops = &rcar_gen3_tz_of_ops;
-+	}
-+
- 	pm_runtime_enable(dev);
- 	pm_runtime_get_sync(dev);
- 
-@@ -363,12 +475,12 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 
- 		priv->tscs[i] = tsc;
- 
--		priv->thermal_init(tsc);
-+		priv->thermal_init(priv, tsc);
- 		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i],
- 					     priv->info->ths_tj_1);
- 
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
--							    &rcar_gen3_tz_of_ops);
-+							    tz_of_ops);
- 		if (IS_ERR(zone)) {
- 			dev_err(dev, "Can't register thermal zone\n");
- 			ret = PTR_ERR(zone);
-@@ -414,8 +526,12 @@ static int __maybe_unused rcar_gen3_thermal_resume(struct device *dev)
- 
- 	for (i = 0; i < priv->num_tscs; i++) {
- 		struct rcar_gen3_thermal_tsc *tsc = priv->tscs[i];
-+		struct thermal_zone_device *zone = tsc->zone;
- 
--		priv->thermal_init(tsc);
-+		priv->thermal_init(priv, tsc);
-+		if (priv->info->have_irq)
-+			rcar_gen3_thermal_set_trips(tsc, zone->prev_low_trip,
-+						    zone->prev_high_trip);
- 	}
- 
- 	return 0;
--- 
-2.32.0
-
+But as stated before, this is an internal computation step and doesn't
+have to be reflected in the returned value which can stay a long
