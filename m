@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C454C07E95
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9894AC07E9E
 	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:13:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4A66B61A24
+	by mail.kernel.org (Postfix) with ESMTP id 7BF5E61A2B
 	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 13:13:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231542AbhGGNQY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S231582AbhGGNQY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 7 Jul 2021 09:16:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51700 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231516AbhGGNQX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jul 2021 09:16:23 -0400
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18B4EC06175F
-        for <linux-pm@vger.kernel.org>; Wed,  7 Jul 2021 06:13:42 -0700 (PDT)
-Received: by mail-wr1-x42e.google.com with SMTP id l7so2076603wrv.7
-        for <linux-pm@vger.kernel.org>; Wed, 07 Jul 2021 06:13:42 -0700 (PDT)
+        with ESMTP id S231545AbhGGNQY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jul 2021 09:16:24 -0400
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DE11C061762
+        for <linux-pm@vger.kernel.org>; Wed,  7 Jul 2021 06:13:43 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id t6so2989514wrm.9
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jul 2021 06:13:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Z/t4CGD6lK/wI3C8RkHXXrZaiSgvDd9+19bQ4kCEFaU=;
-        b=RADpEqNaVLlpROdv1XXCYl2UPFMcx1pM6fbmXGmH+gKqX+9n9pUAgw2G16blT2kcIS
-         ETYb0GOrTGPtISo9U0s8HeDHgHf51VIc/oJlXZ5idYdbWpQ58L/X4ccgm1mxD3sP+pc8
-         3LscWHNBHdA3OF3K0HgEyEOfU+5PnHOrJc7rHIhquJw/t9R2kG6H9EMJES55ElWwxwc7
-         dRYBUj0MiUPWXPbH2nfu9WwAZqKSUekTrK/jIGC27H+15YbPYnMqSVQA6TU18NZeiM74
-         5Rkr46OpspsGC+APoo87gar0TDzQvEXyRD8htfYp5VXOih8i1y8GoTCPuxf4hB1p3ze3
-         d2hg==
+        bh=h+AugMQI9wEQJZOdDBg6Ny4letwAdD9I7PJCkMpNv4o=;
+        b=pefpTcaYn4Nfe7B5MTQmCN1CJH5GS2ZQQJEJpWwaYrdA258XI8yOS0Jn7HPrSxMTdL
+         FtOJbxGSRDTaMTdb1cJKx1ydl6cvODQsUFYW60n8FDL5iCFVw7eFJDOwQLxl0s/rP/+K
+         viHa26MESqX9mbAu60CLuQ75R1xZ5xz7J4go85vd0UNfRnZNhb2HpmfCV/sVgA+U+YIt
+         VOHd3ehtKj/t5OiAADE5nceovLRIk+5M2yDaFKNdpYCbTcmFg4kfSjMs+M4ac99qdgOT
+         urDawe7yYz6y+7DzGwwNbp9rOKLhH2LtI9KOlvfX0yS47RlzEMrhKOiRM1R6NQWcQYt2
+         zjuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Z/t4CGD6lK/wI3C8RkHXXrZaiSgvDd9+19bQ4kCEFaU=;
-        b=EGcrde4u09boOknlnlemWFmhkboNMjhCPZRA/4STdbMJ8HQi/Qyqt6J/aUP8sg1vUi
-         hTBech/A/y3roPrJ3HNuwgionf2xgU/HLAfYLSLifzYkAKcdje5amMUw8J/NNyH79WVH
-         q5mJ7a3BnrA6pS4HGLnFnqYKikNUh1gu7ZVqjRJGd9dI71D/YVuPfa+BEnqYLH4dHDY4
-         4+zr+U9Z+Keuu0+guP37HXkFZQ+3O2jJViFvHRnWHHbqPYdj+LwBZ5O5JTMPoR4WEn/v
-         mjQpNp0V1tfvNgzsVEJN1+QuZ/ErOk3woHWDAGvVpqcBQNGpOMTzwkJ6i9Hvgbh74sIg
-         NoqA==
-X-Gm-Message-State: AOAM533jL21r2uQzNRnwVtnpvsc1tb2QEINc1jPhmOUWO9+u2kNQZEdO
-        N1DZ+kFqnor8Lff2LqMkb9oG0g==
-X-Google-Smtp-Source: ABdhPJydMuikwObnVEYluJdDMfadZYhP/Slwd47Db8z14t/7v79rjFofEaclJbDU+LAWDrfa4J/TEw==
-X-Received: by 2002:adf:ce84:: with SMTP id r4mr15207462wrn.397.1625663620725;
-        Wed, 07 Jul 2021 06:13:40 -0700 (PDT)
+        bh=h+AugMQI9wEQJZOdDBg6Ny4letwAdD9I7PJCkMpNv4o=;
+        b=VOH/49EyUL88OEOL4WPjtCEWRMFcrnpW0p1VfrNlCzKjfFrntssXhGniySACB9F/Xt
+         qXM8YHz8oQb95GXIyfkUeIm6n0xDVKv1anvsvyWCs2Abu1zN/zK4f7J7fYbS99RLAeUK
+         ntZWKsNrrhUCD7J7K6qR649larf0doDFkn5tM0CBDc32UsdpG/Ia1SsUrKDJ/F/anJRx
+         bxOhxNEWqsjpMvTT+FmqRxLuXr8BAxLNSaD7sJHXPlhQFglBmNuih6r0YMl1lcuGRjBa
+         A8guxXoNuDuy18rbQdJbgBkzg1UNkJ7lwDXxn4s01mlrsMFfHIq7CEsBXx+QlZTO0Jee
+         dmlQ==
+X-Gm-Message-State: AOAM5337GLvHWYP1cHkyf/ycnQe2L6pwit8PveYDF/YOfJB2puUa6UvB
+        G/d109vO+yv0Uowgpcn8/wrngQ==
+X-Google-Smtp-Source: ABdhPJzMkC9Mt8OgsxeFtKkKFT+EZttdMm3T3q/B0gsgzmUtD609Ly+wXMVcIQfqj131ccQIgXwSPA==
+X-Received: by 2002:adf:fa4c:: with SMTP id y12mr28402844wrr.302.1625663622019;
+        Wed, 07 Jul 2021 06:13:42 -0700 (PDT)
 Received: from bismarck.berto.se (p4fca2710.dip0.t-ipconnect.de. [79.202.39.16])
-        by smtp.googlemail.com with ESMTPSA id l20sm19233670wmq.3.2021.07.07.06.13.40
+        by smtp.googlemail.com with ESMTPSA id l20sm19233670wmq.3.2021.07.07.06.13.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Jul 2021 06:13:40 -0700 (PDT)
+        Wed, 07 Jul 2021 06:13:41 -0700 (PDT)
 From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -62,9 +62,9 @@ To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
 Cc:     linux-renesas-soc@vger.kernel.org,
         =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 1/3] thermal: rcar_gen3_thermal: Create struct for OF match data
-Date:   Wed,  7 Jul 2021 15:13:04 +0200
-Message-Id: <20210707131306.4098443-2-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 3/3] thermal: rcar_gen3_thermal: Fix datatype for loop counter
+Date:   Wed,  7 Jul 2021 15:13:06 +0200
+Message-Id: <20210707131306.4098443-4-niklas.soderlund+renesas@ragnatech.se>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210707131306.4098443-1-niklas.soderlund+renesas@ragnatech.se>
 References: <20210707131306.4098443-1-niklas.soderlund+renesas@ragnatech.se>
@@ -75,126 +75,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Prepare for storing more information in the OF match data by using a
-struct instead of a single integer value. There is no functional change.
+The loop counter 'i' should be unsigned int to match struct
+rcar_gen3_thermal_priv num_tscs where it's stored.
 
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 39 +++++++++++++++++++----------
- 1 file changed, 26 insertions(+), 13 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index fdf16aa34eb470c7..770f1daae5379053 100644
+index a438e05e7ca7f20e..8ca4bfee7bca4122 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -79,6 +79,10 @@ struct equation_coefs {
- 	int b2;
- };
- 
-+struct rcar_gen3_thermal_info {
-+	int ths_tj_1;
-+};
-+
- struct rcar_gen3_thermal_tsc {
- 	void __iomem *base;
- 	struct thermal_zone_device *zone;
-@@ -88,6 +92,7 @@ struct rcar_gen3_thermal_tsc {
- };
- 
- struct rcar_gen3_thermal_priv {
-+	const struct rcar_gen3_thermal_info *info;
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
- 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
-@@ -243,44 +248,50 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	usleep_range(1000, 2000);
- }
- 
--static const int rcar_gen3_ths_tj_1 = 126;
--static const int rcar_gen3_ths_tj_1_m3_w = 116;
-+static const struct rcar_gen3_thermal_info rcar_gen3_thermal_gen3 = {
-+	.ths_tj_1 = 126,
-+};
-+
-+static const struct rcar_gen3_thermal_info rcar_gen3_thermal_m3w = {
-+	.ths_tj_1 = 116,
-+};
-+
- static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
- 	{
- 		.compatible = "renesas,r8a774a1-thermal",
--		.data = &rcar_gen3_ths_tj_1_m3_w,
-+		.data = &rcar_gen3_thermal_m3w,
- 	},
- 	{
- 		.compatible = "renesas,r8a774b1-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{
- 		.compatible = "renesas,r8a774e1-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{
- 		.compatible = "renesas,r8a7795-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{
- 		.compatible = "renesas,r8a7796-thermal",
--		.data = &rcar_gen3_ths_tj_1_m3_w,
-+		.data = &rcar_gen3_thermal_m3w,
- 	},
- 	{
- 		.compatible = "renesas,r8a77961-thermal",
--		.data = &rcar_gen3_ths_tj_1_m3_w,
-+		.data = &rcar_gen3_thermal_m3w,
- 	},
- 	{
- 		.compatible = "renesas,r8a77965-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{
- 		.compatible = "renesas,r8a77980-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{
- 		.compatible = "renesas,r8a779a0-thermal",
--		.data = &rcar_gen3_ths_tj_1,
-+		.data = &rcar_gen3_thermal_gen3,
- 	},
- 	{},
- };
-@@ -307,7 +318,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- {
- 	struct rcar_gen3_thermal_priv *priv;
+@@ -423,7 +423,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
  	struct device *dev = &pdev->dev;
--	const int *ths_tj_1 = of_device_get_match_data(dev);
  	struct resource *res;
  	struct thermal_zone_device *zone;
- 	int ret, i;
-@@ -320,6 +330,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
+-	int ret, i;
++	unsigned int i;
++	int ret;
  
-+	priv->info = of_device_get_match_data(dev);
-+
- 	priv->thermal_init = rcar_gen3_thermal_init;
- 	if (soc_device_match(r8a7795es1))
- 		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
-@@ -352,7 +364,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		priv->tscs[i] = tsc;
- 
- 		priv->thermal_init(tsc);
--		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
-+		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i],
-+					     priv->info->ths_tj_1);
- 
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
- 							    &rcar_gen3_tz_of_ops);
+ 	/* default values if FUSEs are missing */
+ 	/* TODO: Read values from hardware on supported platforms */
 -- 
 2.32.0
 
