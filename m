@@ -4,58 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA2F5C07E9B
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84BF7C11F67
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8FE2561CC8
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C81B61C53
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232712AbhGGUmu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232810AbhGGUmu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 7 Jul 2021 16:42:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44348 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:44364 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232623AbhGGUmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S232684AbhGGUmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Wed, 7 Jul 2021 16:42:49 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPS id 7418F61CBB;
+Received: by mail.kernel.org (Postfix) with ESMTPS id AE3B161CC3;
         Wed,  7 Jul 2021 20:40:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1625690408;
-        bh=KLPZC0jEKST/yKn/E1tZxGDF0f5yT9/YvUfQoowUaTk=;
+        bh=CGgqv3EPzaHwgQLMZMVOaCsqU9dDrg9p7K0J69o02Cc=;
         h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=QgJpK85EP8PByUV0pOye3w8+e8Bwjuqi1Yy9QqVVT56GKXtehow5JmdHKLlgpLKGe
-         foO3xhXBFqDocOKfTdtUgDSPgWk7YYw8g86QkjzTLG91EI11BYGxHcHhQc2WUAIBWN
-         A9TixIbqvtERNWWEUo+BdBlCNAi/QER2pE+sYxIh883Ap71VNtn450kSbgEJG+kAT3
-         J5RvLZL6yHNYtfgxNemTgkqEcRFaIBaiR8sKG1877ssxMSjpl30sZg8A+CO7TWvD9P
-         UMOXlkgSbDa5sJJQ1F9u7rOAvjwqb45USEEe/kXPMUrwffCkrSqu0+Dztzq1AcaE8U
-         KQBvy22wh8k+A==
-Subject: Re: [GIT PULL] power-supply changes for 5.14
+        b=K+8DmV6fCo9HMU8TeGCT3jv4nqCYNAS2bomWgHV8x/6s3vlV/kh0wNTs2Es7lxhiO
+         L1R86Cy4IEFCrGLX5XjSBJTUZxR4IqsiGqZdfh+ub2zkVuquPSI5Q1ynrbFCUpU70G
+         H9QLjP3ETq3GSEM/EaC9BsLJeNIH0RXoXXIida6PTslTcBU+p9JWItf1JSLAUAfHrU
+         LDoMNoOj+zCzFaBysAI9/Yu8OAs5oD+8rZdI7nqszAeIKXKocj0afnL+pGfbCBFpmQ
+         ZmhsKbugtuzBdHQgqckGMzQ65Fpqx9AoRhdK++aAFaH3xgDVCRGP3SW5ESfWNadtaZ
+         xqbq7JxV5/Cnw==
+Subject: Re: [GIT PULL] More power management updates for v5.14-rc1
 From:   pr-tracker-bot@kernel.org
-In-Reply-To: <20210707164732.4vcivdobkykccrha@earth.universe>
-References: <20210707164732.4vcivdobkykccrha@earth.universe>
+In-Reply-To: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
+References: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
 X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20210707164732.4vcivdobkykccrha@earth.universe>
-X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.14
-X-PR-Tracked-Commit-Id: f1c74a6c07e76fcb31a4bcc1f437c4361a2674ce
+X-PR-Tracked-Message-Id: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1-2
+X-PR-Tracked-Commit-Id: 843372db2e3bf9694e98a1ff9d0da6dc3d53aab8
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: c6e8c51f6978c7aa44641ea4e9071b42d921eb97
-Message-Id: <162569040843.28701.7513514506526436955.pr-tracker-bot@kernel.org>
+X-PR-Merge-Commit-Id: aef4226f914016cc00affa8476ba5164dcca56fd
+Message-Id: <162569040866.28701.241337221814920850.pr-tracker-bot@kernel.org>
 Date:   Wed, 07 Jul 2021 20:40:08 +0000
-To:     Sebastian Reichel <sre@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Wed, 7 Jul 2021 18:47:32 +0200:
+The pull request you sent on Wed, 7 Jul 2021 21:13:33 +0200:
 
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.14
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1-2
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/c6e8c51f6978c7aa44641ea4e9071b42d921eb97
+https://git.kernel.org/torvalds/c/aef4226f914016cc00affa8476ba5164dcca56fd
 
 Thank you!
 
