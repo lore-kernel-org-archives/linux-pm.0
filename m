@@ -2,65 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84BF7C11F67
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10758C07E9C
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 21:12:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5C81B61C53
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 20:40:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E707A6120D
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Jul 2021 21:12:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232810AbhGGUmu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Jul 2021 16:42:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44364 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232684AbhGGUmt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Jul 2021 16:42:49 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPS id AE3B161CC3;
-        Wed,  7 Jul 2021 20:40:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625690408;
-        bh=CGgqv3EPzaHwgQLMZMVOaCsqU9dDrg9p7K0J69o02Cc=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=K+8DmV6fCo9HMU8TeGCT3jv4nqCYNAS2bomWgHV8x/6s3vlV/kh0wNTs2Es7lxhiO
-         L1R86Cy4IEFCrGLX5XjSBJTUZxR4IqsiGqZdfh+ub2zkVuquPSI5Q1ynrbFCUpU70G
-         H9QLjP3ETq3GSEM/EaC9BsLJeNIH0RXoXXIida6PTslTcBU+p9JWItf1JSLAUAfHrU
-         LDoMNoOj+zCzFaBysAI9/Yu8OAs5oD+8rZdI7nqszAeIKXKocj0afnL+pGfbCBFpmQ
-         ZmhsKbugtuzBdHQgqckGMzQ65Fpqx9AoRhdK++aAFaH3xgDVCRGP3SW5ESfWNadtaZ
-         xqbq7JxV5/Cnw==
-Subject: Re: [GIT PULL] More power management updates for v5.14-rc1
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
-References: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0gQhJHNn99sEpen_CK3+7vkn=t-56bG574k_TyTPGy96Q@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1-2
-X-PR-Tracked-Commit-Id: 843372db2e3bf9694e98a1ff9d0da6dc3d53aab8
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: aef4226f914016cc00affa8476ba5164dcca56fd
-Message-Id: <162569040866.28701.241337221814920850.pr-tracker-bot@kernel.org>
-Date:   Wed, 07 Jul 2021 20:40:08 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S232561AbhGGVPD convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Jul 2021 17:15:03 -0400
+Received: from mail-vs1-f42.google.com ([209.85.217.42]:41490 "EHLO
+        mail-vs1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231493AbhGGVPC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jul 2021 17:15:02 -0400
+Received: by mail-vs1-f42.google.com with SMTP id m12so2368185vst.8;
+        Wed, 07 Jul 2021 14:12:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=a0pHH7YFqYf6mvTW+xVsPFQZiAL7vgbf5rSQhrCg33s=;
+        b=Wgb2nUgaCw4JBZ70T/B3ETgmJa6wsZpwCC7+DNo9G3UfFGB3LRIJJZJpgud1cQ2vVt
+         zbvs4B7N/xpGl9UunqgjqTZ+Y1XSqV90ALwVVvFP2FKeefgok8WFWp6uo2i6GYnxCGeP
+         vfMaKE1/ot8lbZTy+JNhKrE2H1SNtXKbwS0r1QxnTL7CWMdUzKz8fuJRKGPcG7su7dAJ
+         EJ2l+j9ilHd1yZhj2iJXZFudvYCKDjjFIno8oQ9KB+u3G76r/2p8LNHKEdEE9Kuy9H5C
+         hNgnvH44fGHQNzPUUctEdmel0Couls7FuStL4aVHKQoIgFenMFrRwfHkM/hUDp3v1Z15
+         u7LQ==
+X-Gm-Message-State: AOAM5336jZLJvBjW/MkuXtxA1x16cqiYaQ4sbNHd+j3FxOJ4mPa+Qz9F
+        i/ufW2Wekud5SsGftQCzIGUm9SB2zq/VQKGGGf1AMXTG
+X-Google-Smtp-Source: ABdhPJwSM3XBNpocc2f7Y3sP4DR7AVFiZu9N6UVcTWWuhGU1FsopdJzYoYn5a0zO3humfy29cd4PS2iduDhHGJ9ig9s=
+X-Received: by 2002:a67:f98c:: with SMTP id b12mr23898767vsq.40.1625692341486;
+ Wed, 07 Jul 2021 14:12:21 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210707131306.4098443-1-niklas.soderlund+renesas@ragnatech.se>
+ <20210707131306.4098443-4-niklas.soderlund+renesas@ragnatech.se>
+ <CAMuHMdUx19uGTX3nddkODwdzLeSGuZbuyac7VMitZv=1tgyPSg@mail.gmail.com> <YOX4vulWqmtjrn14@oden.dyn.berto.se>
+In-Reply-To: <YOX4vulWqmtjrn14@oden.dyn.berto.se>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 7 Jul 2021 23:12:09 +0200
+Message-ID: <CAMuHMdWqebdXqawBn=aGAt6HW4sHB=+U3jAP14tbnTUyXB3xzA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] thermal: rcar_gen3_thermal: Fix datatype for loop counter
+To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Wed, 7 Jul 2021 21:13:33 +0200:
+Hi Niklas,
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.14-rc1-2
+On Wed, Jul 7, 2021 at 8:56 PM Niklas Söderlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> On 2021-07-07 16:42:10 +0200, Geert Uytterhoeven wrote:
+> > On Wed, Jul 7, 2021 at 3:14 PM Niklas Söderlund
+> > <niklas.soderlund+renesas@ragnatech.se> wrote:
+> > > The loop counter 'i' should be unsigned int to match struct
+> > > rcar_gen3_thermal_priv num_tscs where it's stored.
+> >
+> > It is also stored in rcar_gen3_thermal_tsc.id, which is still (signed) int.
+>
+> Thanks.
+>
+> >
+> > > --- a/drivers/thermal/rcar_gen3_thermal.c
+> > > +++ b/drivers/thermal/rcar_gen3_thermal.c
+> > > @@ -423,7 +423,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> > >         struct device *dev = &pdev->dev;
+> > >         struct resource *res;
+> > >         struct thermal_zone_device *zone;
+> > > -       int ret, i;
+> > > +       unsigned int i;
+> > > +       int ret;
+> > >
+> > >         /* default values if FUSEs are missing */
+> > >         /* TODO: Read values from hardware on supported platforms */
+> >
+> > And perhaps:
+> >
+> > -                dev_info(dev, "TSC%d: Loaded %d trip points\n", i, ret);
+> > +                dev_info(dev, "TSC%u: Loaded %d trip points\n", i, ret);
+> >
+> > ?
+>
+> Good catch, why do my compiler not warn for this? Did you catch this by
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/aef4226f914016cc00affa8476ba5164dcca56fd
+Because the types are (somewhat) compatible.
 
-Thank you!
+> review or have you some compiler magic I'm missing?
+
+Review. You changed the type of a variable, I checked all places where
+the variable is used.
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
