@@ -5,40 +5,40 @@ X-Spam-Level:
 X-Spam-Status: No, score=-19.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0C61C07E95
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F5DFC11F6B
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:49:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB4A3610A2
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:49:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0879E6135B
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:49:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229674AbhGJXvs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Jul 2021 19:51:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38426 "EHLO mail.kernel.org"
+        id S231728AbhGJXwG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Jul 2021 19:52:06 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38576 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231139AbhGJXvq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 10 Jul 2021 19:51:46 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 114B3610A2;
-        Sat, 10 Jul 2021 23:48:59 +0000 (UTC)
+        id S231609AbhGJXvy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 10 Jul 2021 19:51:54 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id BF8436135E;
+        Sat, 10 Jul 2021 23:49:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625960940;
-        bh=31Q2SxNVO6mzsD2YnuunmRyukAVykWhnb+sZHX1XplY=;
+        s=k20201202; t=1625960948;
+        bh=zBmnUkv3H49TxzHDaQnu/UzpaRVAJ0fO4BYykpPzPFk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Qd3/Jno1CSgz/s4L8vhAvj0jPtLxBCNbrjPfm8LFSgr4RtMyoXObJwRUDzmauaFtZ
-         9hgf36+xzV9lc8vxXyl4GzGKNcJLhqj6IIzC3jd5d4HpJhxXwQU66vn+VXC1nrjLvz
-         cXsns3bDqLsiJE64B1yrp82cX0yagemOrSZSz10cy3wm273tJvI7wdk2cyhQy6HBB3
-         DCSwFoI8NJOPcDSBdZIZG46IIJp0CQsNp0O1fOkAE4HYiCqDvLbtmI5W2CRoymH5oG
-         21gRBZ6sKoevT47KhnAYVD962gIf8rGp2OV+Lu2jFRTVY/IVOiZWNBO3q9GDQ/kte3
-         yeHX4aaiJBwHw==
+        b=MKO4EOjed6Cie7IXvjwM9KQDgcW3AZP09yh81B3C3S/QALoYA9cDOmaHUTz7PSEEF
+         2IeqHtUnwNWDryQCoxlYBhyZNHfmkeMGj+tsPKL14wQL9GJBybDvNpVi5Y/Nq6YYqT
+         4DdXmrK+M3K1JLYTG5eqN0vtjxUvr06zpL9z0LM8NoZS96KFyigSmukc0S2l+j5cko
+         tXHlLCDMEJmxTZSMA/THLts/AxM8mNDkp7DR31xfJAki/8CG6kqYx802gQ/CY6KJ7q
+         YDHVZqISMhmqJKiF/eMFbWwP6wzh36pQbSzJa6jVSbcDOfnjuENK99l09sMfEleQML
+         wCPos5Dn3eGxA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Zou Wei <zou_wei@huawei.com>, Hulk Robot <hulkci@huawei.com>,
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.13 02/53] power: supply: sc2731_charger: Add missing MODULE_DEVICE_TABLE
-Date:   Sat, 10 Jul 2021 19:48:06 -0400
-Message-Id: <20210710234857.3220040-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.13 07/53] power: supply: ab8500: Avoid NULL pointers
+Date:   Sat, 10 Jul 2021 19:48:11 -0400
+Message-Id: <20210710234857.3220040-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210710234857.3220040-1-sashal@kernel.org>
 References: <20210710234857.3220040-1-sashal@kernel.org>
@@ -50,34 +50,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Zou Wei <zou_wei@huawei.com>
+From: Linus Walleij <linus.walleij@linaro.org>
 
-[ Upstream commit 2aac79d14d76879c8e307820b31876e315b1b242 ]
+[ Upstream commit 5bcb5087c9dd3dca1ff0ebd8002c5313c9332b56 ]
 
-This patch adds missing MODULE_DEVICE_TABLE definition which generates
-correct modalias for automatic loading of this driver when it is built
-as an external module.
+Sometimes the code will crash because we haven't enabled
+AC or USB charging and thus not created the corresponding
+psy device. Fix it by checking that it is there before
+notifying.
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Zou Wei <zou_wei@huawei.com>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/sc2731_charger.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/supply/ab8500_charger.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/sc2731_charger.c b/drivers/power/supply/sc2731_charger.c
-index 335cb857ef30..288b79836c13 100644
---- a/drivers/power/supply/sc2731_charger.c
-+++ b/drivers/power/supply/sc2731_charger.c
-@@ -524,6 +524,7 @@ static const struct of_device_id sc2731_charger_of_match[] = {
- 	{ .compatible = "sprd,sc2731-charger", },
- 	{ }
- };
-+MODULE_DEVICE_TABLE(of, sc2731_charger_of_match);
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index af32cfae9f19..57fbfe3d8c03 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -415,6 +415,14 @@ static void ab8500_enable_disable_sw_fallback(struct ab8500_charger *di,
+ static void ab8500_power_supply_changed(struct ab8500_charger *di,
+ 					struct power_supply *psy)
+ {
++	/*
++	 * This happens if we get notifications or interrupts and
++	 * the platform has been configured not to support one or
++	 * other type of charging.
++	 */
++	if (!psy)
++		return;
++
+ 	if (di->autopower_cfg) {
+ 		if (!di->usb.charger_connected &&
+ 		    !di->ac.charger_connected &&
+@@ -441,7 +449,15 @@ static void ab8500_charger_set_usb_connected(struct ab8500_charger *di,
+ 		if (!connected)
+ 			di->flags.vbus_drop_end = false;
  
- static struct platform_driver sc2731_charger_driver = {
- 	.driver = {
+-		sysfs_notify(&di->usb_chg.psy->dev.kobj, NULL, "present");
++		/*
++		 * Sometimes the platform is configured not to support
++		 * USB charging and no psy has been created, but we still
++		 * will get these notifications.
++		 */
++		if (di->usb_chg.psy) {
++			sysfs_notify(&di->usb_chg.psy->dev.kobj, NULL,
++				     "present");
++		}
+ 
+ 		if (connected) {
+ 			mutex_lock(&di->charger_attached_mutex);
 -- 
 2.30.2
 
