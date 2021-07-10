@@ -5,40 +5,40 @@ X-Spam-Level:
 X-Spam-Status: No, score=-19.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E230C11F6B
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA7A6C11F6D
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7B6CF613D2
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CE5E61184
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233250AbhGJXyD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Jul 2021 19:54:03 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39778 "EHLO mail.kernel.org"
+        id S233616AbhGJXyO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Jul 2021 19:54:14 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40226 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232478AbhGJXxM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 10 Jul 2021 19:53:12 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 8E9B4613B6;
-        Sat, 10 Jul 2021 23:50:26 +0000 (UTC)
+        id S233153AbhGJXxn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 10 Jul 2021 19:53:43 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 25AC8613E3;
+        Sat, 10 Jul 2021 23:50:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625961027;
-        bh=I9NWyjJHAW2z+DIDt60z2A6Gun9QhxQbQHcbEkHjgF8=;
+        s=k20201202; t=1625961051;
+        bh=Msty9ciBjP5m9SthITIk4KQonM2HpjFQVAmZcKQt8cs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=eN/RoR6o0Dd4GJyNdXo6YWVhbvdJe4h8GcoJtPVir1x2xB/0SfqJae0zrQQwV+GhR
-         ko2YZ0AspzcXtS/2w65QWeKbItWnO060win3l8BAW9AGD8ml0K/lZd48XcA5ePjE3l
-         OYGgVg+SU2+aGY4PKm6PviY2PCaFtx/Dj0KcXB39UCMcGMxTzu8EonikxOA4+xMbzV
-         nh5o42ZJY++UURFvMb04IdOBX52UNg2slCjJXmzdaKfsX5Ukaq2ZSzXhW6k2gkUT14
-         KeGdw3h0Q+7oW+glMrldeg6oWa+/vWKrpl+f1DbbhorF/Zj7Oq+3yuUYM82ctSGYBQ
-         WcdTGGy5ENpyw==
+        b=nr+UOQcq+JmIzQt1hR7CrAKoZa9ZuS2Z6WRfe4+fuevdiD+CyqY34/79WwGsLe/9c
+         QsEBTjbBAHnE2PHSdi5IDwxK5OUZpil3TDvSzEb/gArOpZSpuqiTGRpWDjlS6np934
+         Lh3+SPJoeDng7xPaUDF2OCApwZ6HoV3AIUHCWmjBEJH1sGii0+MMgs5uzQkk+ttbVG
+         mwoMdybrshZ9lMTVaD15bnMZdZRZem0Ade8F7DtKMJC/aQhRXWENSY/qFSv3ESf33b
+         W+2zbshWY8ZbmUgKujWnV+Q2vGXJxDkMWWKJKa1iCtZsFP8p4AlfLwc9sG1hZad6Me
+         NpGJeCKpipjEQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
+Cc:     Zou Wei <zou_wei@huawei.com>, Hulk Robot <hulkci@huawei.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 08/37] power: supply: max17042: Do not enforce (incorrect) interrupt trigger type
-Date:   Sat, 10 Jul 2021 19:49:46 -0400
-Message-Id: <20210710235016.3221124-8-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 26/37] power: supply: charger-manager: add missing MODULE_DEVICE_TABLE
+Date:   Sat, 10 Jul 2021 19:50:04 -0400
+Message-Id: <20210710235016.3221124-26-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210710235016.3221124-1-sashal@kernel.org>
 References: <20210710235016.3221124-1-sashal@kernel.org>
@@ -50,44 +50,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Krzysztof Kozlowski <krzk@kernel.org>
+From: Zou Wei <zou_wei@huawei.com>
 
-[ Upstream commit 7fbf6b731bca347700e460d94b130f9d734b33e9 ]
+[ Upstream commit 073b5d5b1f9cc94a3eea25279fbafee3f4f5f097 ]
 
-Interrupt line can be configured on different hardware in different way,
-even inverted.  Therefore driver should not enforce specific trigger
-type - edge falling - but instead rely on Devicetree to configure it.
+This patch adds missing MODULE_DEVICE_TABLE definition which generates
+correct modalias for automatic loading of this driver when it is built
+as an external module.
 
-The Maxim 17047/77693 datasheets describe the interrupt line as active
-low with a requirement of acknowledge from the CPU therefore the edge
-falling is not correct.
-
-The interrupt line is shared between PMIC and RTC driver, so using level
-sensitive interrupt is here especially important to avoid races.  With
-an edge configuration in case if first PMIC signals interrupt followed
-shortly after by the RTC, the interrupt might not be yet cleared/acked
-thus the second one would not be noticed.
-
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Zou Wei <zou_wei@huawei.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/max17042_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/charger-manager.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 2e9672fe4df1..794caf03658d 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -1094,7 +1094,7 @@ static int max17042_probe(struct i2c_client *client,
- 	}
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 6fcebe441552..333349275b96 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1279,6 +1279,7 @@ static const struct of_device_id charger_manager_match[] = {
+ 	},
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, charger_manager_match);
  
- 	if (client->irq) {
--		unsigned int flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
-+		unsigned int flags = IRQF_ONESHOT;
- 
- 		/*
- 		 * On ACPI systems the IRQ may be handled by ACPI-event code,
+ static struct charger_desc *of_cm_parse_desc(struct device *dev)
+ {
 -- 
 2.30.2
 
