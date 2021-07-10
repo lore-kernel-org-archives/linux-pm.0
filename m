@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-19.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B05C5C07E9E
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E43E0C11F6B
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E497613EB
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:50:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C98AD613F2
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Jul 2021 23:51:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232507AbhGJXxn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Jul 2021 19:53:43 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40226 "EHLO mail.kernel.org"
+        id S231880AbhGJXxz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Jul 2021 19:53:55 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41020 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233156AbhGJXxK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 10 Jul 2021 19:53:10 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id ECDB7610CA;
-        Sat, 10 Jul 2021 23:50:23 +0000 (UTC)
+        id S232977AbhGJXxO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 10 Jul 2021 19:53:14 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 9AFC460234;
+        Sat, 10 Jul 2021 23:50:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625961024;
-        bh=23nU0Z0c4ClXTL8Q6dRXQsqs5gKp/AnMZRZMTR7PDeo=;
+        s=k20201202; t=1625961028;
+        bh=HUMXNiWlr+lAzD0WDDX5+BAJHVe2ELrSxvY4d7GcbJg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Jr77CPFc8pgDn2v8FhDg9nMkDg6W/cauj/ZJ6u+rMpbyxPhOoqL8MMs5veX7g+jG3
-         MhCIeaj6rxnm4gjvRi3+Eq4ACePqcgXLyCVDck+qrAI494Yv8T20yhBaMgQR1veWFQ
-         rRztSHKJddaqUAmuJI4omZqG14H2TjkR7ofby6S6WYObLK7i3dT1kyvDQD1KfrNEY4
-         bFjuP0BdBayf34jq8wT4T3sOxBZmMKq3dbyp9EryEjWEiPiuk+uBqrNJ2rPjeEQ7zV
-         gODoKS1ocZWJQpZgb/NOxOpg8a3CV5QOPagIdWYArLTmPi4x+qdKMv55seCCxBoftd
-         fO+CZ+RzfYB0g==
+        b=Bp671Za+a5gQPTL6jsk70sEItXx8HhSXFeOpC8ubYLL4cXT0PzFfJRkJsCi1R34C8
+         U9kwBzsjjsmSE/+gqZIg7WogMuzdXtjc/XthcHHdSSdB7oiOJX1teZ9aqx2Ej6HKUX
+         EsWRCbXguPOLrG7arOugOIX8voYRrcN68Z2mz1Pv2p2qpDXIICkVl3yyGKb8E8xDer
+         M/9zplZOUi9Me4hxOxM13bEdHHU9QMtoPFTWeJHgxFISxznej0wxUzir5xdDKaeJ8W
+         MPukaBAi/RYyi616Qe8ZxE+mbSpc1zgMzfat8XNTko+aUUoc/6KgRSWr6NpW2LK3Jf
+         d/+lCAV+YjwDQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
+Cc:     Bixuan Cui <cuibixuan@huawei.com>, Hulk Robot <hulkci@huawei.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 06/37] power: supply: ab8500: Avoid NULL pointers
-Date:   Sat, 10 Jul 2021 19:49:44 -0400
-Message-Id: <20210710235016.3221124-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 09/37] power: reset: gpio-poweroff: add missing MODULE_DEVICE_TABLE
+Date:   Sat, 10 Jul 2021 19:49:47 -0400
+Message-Id: <20210710235016.3221124-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210710235016.3221124-1-sashal@kernel.org>
 References: <20210710235016.3221124-1-sashal@kernel.org>
@@ -50,58 +50,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Linus Walleij <linus.walleij@linaro.org>
+From: Bixuan Cui <cuibixuan@huawei.com>
 
-[ Upstream commit 5bcb5087c9dd3dca1ff0ebd8002c5313c9332b56 ]
+[ Upstream commit ed3443fb4df4e140a22f65144546c8a8e1e27f4e ]
 
-Sometimes the code will crash because we haven't enabled
-AC or USB charging and thus not created the corresponding
-psy device. Fix it by checking that it is there before
-notifying.
+This patch adds missing MODULE_DEVICE_TABLE definition which generates
+correct modalias for automatic loading of this driver when it is built
+as an external module.
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/ab8500_charger.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/power/reset/gpio-poweroff.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
-index db65be026920..6765d0901320 100644
---- a/drivers/power/supply/ab8500_charger.c
-+++ b/drivers/power/supply/ab8500_charger.c
-@@ -413,6 +413,14 @@ static void ab8500_enable_disable_sw_fallback(struct ab8500_charger *di,
- static void ab8500_power_supply_changed(struct ab8500_charger *di,
- 					struct power_supply *psy)
- {
-+	/*
-+	 * This happens if we get notifications or interrupts and
-+	 * the platform has been configured not to support one or
-+	 * other type of charging.
-+	 */
-+	if (!psy)
-+		return;
-+
- 	if (di->autopower_cfg) {
- 		if (!di->usb.charger_connected &&
- 		    !di->ac.charger_connected &&
-@@ -439,7 +447,15 @@ static void ab8500_charger_set_usb_connected(struct ab8500_charger *di,
- 		if (!connected)
- 			di->flags.vbus_drop_end = false;
+diff --git a/drivers/power/reset/gpio-poweroff.c b/drivers/power/reset/gpio-poweroff.c
+index c5067eb75370..1c5af2fef142 100644
+--- a/drivers/power/reset/gpio-poweroff.c
++++ b/drivers/power/reset/gpio-poweroff.c
+@@ -90,6 +90,7 @@ static const struct of_device_id of_gpio_poweroff_match[] = {
+ 	{ .compatible = "gpio-poweroff", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, of_gpio_poweroff_match);
  
--		sysfs_notify(&di->usb_chg.psy->dev.kobj, NULL, "present");
-+		/*
-+		 * Sometimes the platform is configured not to support
-+		 * USB charging and no psy has been created, but we still
-+		 * will get these notifications.
-+		 */
-+		if (di->usb_chg.psy) {
-+			sysfs_notify(&di->usb_chg.psy->dev.kobj, NULL,
-+				     "present");
-+		}
- 
- 		if (connected) {
- 			mutex_lock(&di->charger_attached_mutex);
+ static struct platform_driver gpio_poweroff_driver = {
+ 	.probe = gpio_poweroff_probe,
 -- 
 2.30.2
 
