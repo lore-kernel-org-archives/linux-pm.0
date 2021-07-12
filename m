@@ -2,113 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.5 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DD6DC07E96
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Jul 2021 10:19:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C263BC07E9B
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jul 2021 00:03:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 123986124C
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Jul 2021 10:19:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A56A66103E
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Jul 2021 00:03:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232001AbhGKKWE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 11 Jul 2021 06:22:04 -0400
-Received: from mail.kernel.org ([198.145.29.99]:36912 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231998AbhGKKWD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 11 Jul 2021 06:22:03 -0400
-Received: from jic23-huawei (cpc108967-cmbg20-2-0-cust86.5-4.cable.virginm.net [81.101.6.87])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B6A2A6124B;
-        Sun, 11 Jul 2021 10:19:14 +0000 (UTC)
-Date:   Sun, 11 Jul 2021 11:21:30 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Andreas Kemnade <andreas@kemnade.info>
-Cc:     lars@metafoo.de, sre@kernel.org, linux-iio@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        letux-kernel@openphoenux.org
-Subject: Re: [PATCH v2 1/2] iio: adc: rn5t618: Add iio map
-Message-ID: <20210711112130.45339212@jic23-huawei>
-In-Reply-To: <20210705113637.28908-2-andreas@kemnade.info>
-References: <20210705113637.28908-1-andreas@kemnade.info>
-        <20210705113637.28908-2-andreas@kemnade.info>
-X-Mailer: Claws Mail 3.18.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        id S229753AbhGLAGc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 11 Jul 2021 20:06:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54624 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229660AbhGLAGc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jul 2021 20:06:32 -0400
+Received: from mail-qk1-x735.google.com (mail-qk1-x735.google.com [IPv6:2607:f8b0:4864:20::735])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C394CC0613DD;
+        Sun, 11 Jul 2021 17:03:43 -0700 (PDT)
+Received: by mail-qk1-x735.google.com with SMTP id i125so16231805qke.12;
+        Sun, 11 Jul 2021 17:03:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wZP7JEhi6SGVJY+/ue8nXOLMpeTVusSKIcLQyU16JXg=;
+        b=cXOe5r67GJcATNgZtt3AAQo92z++Hnldw7a3MVxubMRUnK0nm0NRQJt3S/8Duzqy66
+         yw1VySxqgDaxxae9BOoGL7AhTd0mMoFSo6QYfq03n6sW5n8dkchiz4SgL9V1cnLHs8nD
+         AlrwHUefla14s4ZR3HUmkIXuT9DOvi2xLE1yAnq4h2tL3lcE7D6EQo0xAeH1KU9xUX4m
+         pdCVyPQmnd1ehf7fUPXhO2yDZEAoZ+MhnUxDF1MDsFeQtAm5e0XeUz39K+H7whP0FmJF
+         v7S50CSvNtNV151bdy1LT++4IYDRrdXV4E8yoMQ3eMU46cj1y3J1Mc5gSczu8duXtFHB
+         lsXQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wZP7JEhi6SGVJY+/ue8nXOLMpeTVusSKIcLQyU16JXg=;
+        b=O8NAgqc7/eFCTcrsI2nKsr3r0HYUAb2H9xqVLwErX5RHYqssuAtHGfcqq5AyhC8BUS
+         khv0FVp97de95U2NQX2j7naobHEZ+njw1NZPyjnfxVGfWmkrk+YBfyP56/1Gg4a1UFM1
+         ZJKEsg/sOR/Q9zT1djttSYgxOHBRMII8lqNe3iihYikkHVMvBFQVU0xv8TZLQfjo82NE
+         7bjKf2BYvVf3c2JNV0wc3FQZ/JWLC4p/zoXVFCkVSRFN8qe4gKJLhWE7lSTiiDh6dJJU
+         Nl47RhnSrJM0jjQwJeBrtGXrOWp1H2HCF4m46kKyh9l5y01IFOvpVB37STc/xWL9wRec
+         YAag==
+X-Gm-Message-State: AOAM533Tk8NEVQSYoKlejLEPAjwscoqL1JLVkMnE5oSPYPpSrbNozWzS
+        16b5Tf3YWqJwDvUsTrnHumQ=
+X-Google-Smtp-Source: ABdhPJzRkH06iLaIiKFMkzFGuHIi6nykQXm3IQnIiV6AVKrJT7H7156G1ji8QNyaow/5rbxPiwBF+w==
+X-Received: by 2002:a37:8d85:: with SMTP id p127mr49463454qkd.84.1626048223042;
+        Sun, 11 Jul 2021 17:03:43 -0700 (PDT)
+Received: from localhost.localdomain (94-29-37-113.dynamic.spd-mgts.ru. [94.29.37.113])
+        by smtp.gmail.com with ESMTPSA id h10sm4970290qta.74.2021.07.11.17.03.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 11 Jul 2021 17:03:42 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: [PATCH v2 0/5] Compile-test NVIDIA Tegra CPUIDLE driver
+Date:   Mon, 12 Jul 2021 03:03:17 +0300
+Message-Id: <20210712000322.4224-1-digetx@gmail.com>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon,  5 Jul 2021 13:36:36 +0200
-Andreas Kemnade <andreas@kemnade.info> wrote:
+This series enables compile-testing of the tegra-cpuidle driver.
 
-> Add iio map to allow power driver to read out values as a consumer.
-> This approach does not block later addition of devicetree support
-> which would be helpful if there is an in-kernel consumer for AIN0/1.
-> 
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-Looks good.  I'm assuming this will go via the power tree, perhaps with
-an immutable branch on off chance we have any other changes in the same
-driver this cycle.
+Changelog:
 
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+v2: - Improved ARM_TEGRA_CPUIDLE Kconfig to fix/exclude compile-testing of
+      ARM platforms that don't have MMU. This problem was reported by the
+      Intel's build bot for v1.
 
-> ---
-> Changes in v2:
-> - provide consumer mapping via iio_map instead of devicetree
-> 
->  drivers/iio/adc/rn5t618-adc.c | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
-> 
-> diff --git a/drivers/iio/adc/rn5t618-adc.c b/drivers/iio/adc/rn5t618-adc.c
-> index 7010c4276947..c56fccb2c8e1 100644
-> --- a/drivers/iio/adc/rn5t618-adc.c
-> +++ b/drivers/iio/adc/rn5t618-adc.c
-> @@ -16,6 +16,8 @@
->  #include <linux/completion.h>
->  #include <linux/regmap.h>
->  #include <linux/iio/iio.h>
-> +#include <linux/iio/driver.h>
-> +#include <linux/iio/machine.h>
->  #include <linux/slab.h>
->  
->  #define RN5T618_ADC_CONVERSION_TIMEOUT   (msecs_to_jiffies(500))
-> @@ -189,6 +191,19 @@ static const struct iio_chan_spec rn5t618_adc_iio_channels[] = {
->  	RN5T618_ADC_CHANNEL(AIN0, IIO_VOLTAGE, "AIN0")
->  };
->  
-> +static struct iio_map rn5t618_maps[] = {
-> +	IIO_MAP("VADP", "rn5t618-power", "vadp"),
-> +	IIO_MAP("VUSB", "rn5t618-power", "vusb"),
-> +	{ /* sentinel */ }
-> +};
-> +
-> +static void unregister_map(void *data)
-> +{
-> +	struct iio_dev *iio_dev = (struct iio_dev *) data;
-> +
-> +	iio_map_array_unregister(iio_dev);
-> +}
-> +
->  static int rn5t618_adc_probe(struct platform_device *pdev)
->  {
->  	int ret;
-> @@ -239,6 +254,14 @@ static int rn5t618_adc_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> +	ret = iio_map_array_register(iio_dev, rn5t618_maps);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = devm_add_action_or_reset(adc->dev, unregister_map, iio_dev);
-> +	if (ret < 0)
-> +		return ret;
-> +
->  	return devm_iio_device_register(adc->dev, iio_dev);
->  }
->  
+Dmitry Osipenko (5):
+  soc/tegra: fuse: Add stubs needed for compile testing
+  soc/tegra: irq: Add stubs needed for compile testing
+  soc/tegra: pm: Make stubs usable for compile testing
+  clk: tegra: Add stubs needed for compile testing
+  cpuidle: tegra: Enable compile testing
+
+ drivers/cpuidle/Kconfig.arm |  2 +-
+ include/linux/clk/tegra.h   |  4 ++++
+ include/soc/tegra/fuse.h    | 31 ++++++++++++++++++++++++++-----
+ include/soc/tegra/irq.h     |  9 ++++++++-
+ include/soc/tegra/pm.h      |  2 +-
+ 5 files changed, 40 insertions(+), 8 deletions(-)
+
+-- 
+2.32.0
 
