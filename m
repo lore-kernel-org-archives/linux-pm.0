@@ -2,113 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24651C11F68
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Jul 2021 15:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 659F4C11F67
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Jul 2021 16:19:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0B43F60200
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Jul 2021 15:29:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 52F496136D
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Jul 2021 16:19:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237094AbhGMPcO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Jul 2021 11:32:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57824 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236932AbhGMPcN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jul 2021 11:32:13 -0400
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F4222C0613DD
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jul 2021 08:29:22 -0700 (PDT)
-Received: by mail-lf1-x12a.google.com with SMTP id u13so11745793lfs.11
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jul 2021 08:29:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=5q425n9ymaCPEVjgvM4iZ7bBThsuqoFN+1RD50teW8U=;
-        b=Tj4sP0+yN7IDleqAJWiIE+R0oM1P/yFTSj7PX1wzUikRSNh1pLiGrHlKTQOvICSmXg
-         FATMYvrz9cTVpUJ+9YWpvkjG32c9oX5X5EMNNZOVKDh72DnWRM8CxA8xQlnqf+M8EKrB
-         Pl9H47gn0B+HDbBOC7EYWQEZQoaEBn2v07V6LpZlcaeOP7QIVRY1ou+ol3HGVy7f8gq5
-         tT5A5l+5u1N6+SjgFcM0xaUqEw7cSLzr/NQk8VPNhBWrVadO/6bEun82GI31aboUly0E
-         3ftcrbsB1Ss9MJUdZjKIrng932/HgkS93Lg+BDc2b9ZRgvdluoRMaCFUgXY8T4QbN/oX
-         yHHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=5q425n9ymaCPEVjgvM4iZ7bBThsuqoFN+1RD50teW8U=;
-        b=J6MXajVyynJk1qVPG106CwPafcGN25wh8/uDJ46nCCWEsE8SBHd9cL7avD0kpnrcuZ
-         p+3zjH6zvIygE6FrsDybXeYmP194lc1Br6W3ObaEzkh+RKpitmbHCXOZRKI4QGPnskNU
-         zlAJM91UpxK4FjxtjS8uicsDGeXY0n0By+jmsDmTpCe1rPqCwJpbmonvB6VYxYi3mWib
-         RGY0a9KdxiYAimxyERvcL1ApHdqKaohJUWzOIUZxmSCGnkVysnj/nH919XXd6zy9Lq4c
-         wXxkL5w7Sa4LNu7HiDZkfUG6cSWk8Jx33Qp/2P60kCEUMjpzTZCa0r76pDJZjIjhOof7
-         Utvw==
-X-Gm-Message-State: AOAM531mdxnu7/vZXtgROZlXmqiH11FFlszpBRc27ogsAYm/1aqmikPg
-        pOJI0ZdoB4bW7ODYsjnbPEtjsg==
-X-Google-Smtp-Source: ABdhPJwu0JD8zae5qRb2u/MFlQnpQpfYVml4DDbvxXBr0xG/6AeY2ErUlUAwhCmVSCk7fmBDOppTpg==
-X-Received: by 2002:ac2:4da5:: with SMTP id h5mr3906366lfe.239.1626190161296;
-        Tue, 13 Jul 2021 08:29:21 -0700 (PDT)
-Received: from localhost.localdomain (c-fdcc225c.014-348-6c756e10.bbcust.telenor.se. [92.34.204.253])
-        by smtp.gmail.com with ESMTPSA id d8sm827395ljg.86.2021.07.13.08.29.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Jul 2021 08:29:20 -0700 (PDT)
-From:   Linus Walleij <linus.walleij@linaro.org>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Marcus Cooper <codekipper@gmail.com>
-Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 4/5] power: supply: ab8500: Rename charging algorithm psy
-Date:   Tue, 13 Jul 2021 17:27:08 +0200
-Message-Id: <20210713152709.871833-4-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210713152709.871833-1-linus.walleij@linaro.org>
-References: <20210713152709.871833-1-linus.walleij@linaro.org>
+        id S231153AbhGMQWJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Jul 2021 12:22:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:32588 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230229AbhGMQWI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jul 2021 12:22:08 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1626193157;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=awbwz8Mi1G1+f2fwGt3ZEpkOa0ZEsi8ROYjzYe/Okus=;
+        b=PoxG3ZFQEIknPgusP3jAlPopWFK8MOplxhvPlQ2MYBymohwpwqs7RRESBlrr/PIQ7r1MgN
+        yILgJUWeVdPoaJ6k3pgEBvY9JfrFKROZeJ3IzsQJxrGxSoWecbADwrshRumoIVF7xWhlPn
+        brxHJX0zBCcu+boIfCx7zS3+gHE2gD0=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-456-JG1pSGTjO-m9PADZ5-L7Wg-1; Tue, 13 Jul 2021 12:19:16 -0400
+X-MC-Unique: JG1pSGTjO-m9PADZ5-L7Wg-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 258DB1B2C983;
+        Tue, 13 Jul 2021 16:19:15 +0000 (UTC)
+Received: from localhost (ovpn-112-172.ams2.redhat.com [10.36.112.172])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 9C1F819C44;
+        Tue, 13 Jul 2021 16:19:14 +0000 (UTC)
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Stefano Garzarella <sgarzare@redhat.com>,
+        Ming Lei <ming.lei@redhat.com>,
+        "Michael S . Tsirkin" <mst@redhat.com>,
+        Marcelo Tosatti <mtosatti@redhat.com>,
+        Jens Axboe <axboe@kernel.dk>, Jason Wang <jasowang@redhat.com>,
+        linux-block@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        virtualization@lists.linux-foundation.org,
+        linux-pm@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+        Stefan Hajnoczi <stefanha@redhat.com>
+Subject: [RFC 0/3] cpuidle: add poll_source API and virtio vq polling
+Date:   Tue, 13 Jul 2021 17:19:03 +0100
+Message-Id: <20210713161906.457857-1-stefanha@redhat.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: base64
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If we rename the "abx500_chargalg" supply to "ab8500_chargalg"
-as it should be named, the existing supplies are supplying that
-supply but that was obviously not working since it had the
-wrong name.
-
-Now that the dependency kicks in we get a bunch
-of NULL references from ab8500_chargalg_external_power_changed()
-so check that the workqueue is allocated before we try to
-queue work on it.
-
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/power/supply/ab8500_chargalg.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/ab8500_chargalg.c b/drivers/power/supply/ab8500_chargalg.c
-index 8dd66eb18fd5..4ef34f64e9c0 100644
---- a/drivers/power/supply/ab8500_chargalg.c
-+++ b/drivers/power/supply/ab8500_chargalg.c
-@@ -1275,7 +1275,8 @@ static void ab8500_chargalg_external_power_changed(struct power_supply *psy)
- 	 * Trigger execution of the algorithm instantly and read
- 	 * all power_supply properties there instead
- 	 */
--	queue_work(di->chargalg_wq, &di->chargalg_work);
-+	if (di->chargalg_wq)
-+		queue_work(di->chargalg_wq, &di->chargalg_work);
- }
- 
- /**
-@@ -1949,7 +1950,7 @@ static char *supply_interface[] = {
- };
- 
- static const struct power_supply_desc ab8500_chargalg_desc = {
--	.name			= "abx500_chargalg",
-+	.name			= "ab8500_chargalg",
- 	.type			= POWER_SUPPLY_TYPE_BATTERY,
- 	.properties		= ab8500_chargalg_props,
- 	.num_properties		= ARRAY_SIZE(ab8500_chargalg_props),
--- 
-2.31.1
+VGhlc2UgcGF0Y2hlcyBhcmUgbm90IHBvbGlzaGVkIHlldCBidXQgSSB3b3VsZCBsaWtlIHJlcXVl
+c3QgZmVlZGJhY2sgb24gdGhpcw0KYXBwcm9hY2ggYW5kIHNoYXJlIHBlcmZvcm1hbmNlIHJlc3Vs
+dHMgd2l0aCB5b3UuDQoNCklkbGUgQ1BVcyB0ZW50YXRpdmVseSBlbnRlciBhIGJ1c3kgd2FpdCBs
+b29wIGJlZm9yZSBoYWx0aW5nIHdoZW4gdGhlIGNwdWlkbGUNCmhhbHRwb2xsIGRyaXZlciBpcyBl
+bmFibGVkIGluc2lkZSBhIHZpcnR1YWwgbWFjaGluZS4gVGhpcyByZWR1Y2VzIHdha2V1cA0KbGF0
+ZW5jeSBmb3IgZXZlbnRzIHRoYXQgb2NjdXIgc29vbiBhZnRlciB0aGUgdkNQVSBiZWNvbWVzIGlk
+bGUuDQoNClRoaXMgcGF0Y2ggc2VyaWVzIGV4dGVuZHMgdGhlIGNwdWlkbGUgYnVzeSB3YWl0IGxv
+b3Agd2l0aCB0aGUgbmV3IHBvbGxfc291cmNlDQpBUEkgc28gZHJpdmVycyBjYW4gcGFydGljaXBh
+dGUgaW4gcG9sbGluZy4gU3VjaCBwb2xsaW5nLWF3YXJlIGRyaXZlcnMgZGlzYWJsZQ0KdGhlaXIg
+ZGV2aWNlJ3MgaXJxIGR1cmluZyB0aGUgYnVzeSB3YWl0IGxvb3AgdG8gYXZvaWQgdGhlIGNvc3Qg
+b2YgaW50ZXJydXB0cy4NClRoaXMgcmVkdWNlcyBsYXRlbmN5IGZ1cnRoZXIgdGhhbiByZWd1bGFy
+IGNwdWlkbGUgaGFsdHBvbGwsIHdoaWNoIHN0aWxsIHJlbGllcw0Kb24gaXJxcy4NCg0KVmlydGlv
+IGRyaXZlcnMgYXJlIG1vZGlmaWVkIHRvIHVzZSB0aGUgcG9sbF9zb3VyY2UgQVBJIHNvIGFsbCB2
+aXJ0aW8gZGV2aWNlDQp0eXBlcyBnZXQgdGhpcyBmZWF0dXJlLiBUaGUgZm9sbG93aW5nIHZpcnRp
+by1ibGsgZmlvIGJlbmNobWFyayByZXN1bHRzIHNob3cgdGhlDQppbXByb3ZlbWVudDoNCg0KICAg
+ICAgICAgICAgIElPUFMgKG51bWpvYnM9NCwgaW9kZXB0aD0xLCA0IHZpcnRxdWV1ZXMpDQogICAg
+ICAgICAgICAgICBiZWZvcmUgICBwb2xsX3NvdXJjZSAgICAgIGlvX3BvbGwNCjRrIHJhbmRyZWFk
+ICAgIDE2NzEwMiAgMTg2MDQ5ICgrMTElKSAgMTg2NjU0ICgrMTElKQ0KNGsgcmFuZHdyaXRlICAg
+MTYyMjA0ICAxODEyMTQgKCsxMSUpICAxODE4NTAgKCsxMiUpDQo0ayByYW5kcncgICAgICAxNTk1
+MjAgIDE3NzA3MSAoKzExJSkgIDE3NzkyOCAoKzExJSkNCg0KVGhlIGNvbXBhcmlzb24gYWdhaW5z
+dCBpb19wb2xsIHNob3dzIHRoYXQgY3B1aWRsZSBwb2xsX3NvdXJjZSBhY2hpZXZlcw0KZXF1aXZh
+bGVudCBwZXJmb3JtYW5jZSB0byB0aGUgYmxvY2sgbGF5ZXIncyBpb19wb2xsIGZlYXR1cmUgKHdo
+aWNoIEkNCmltcGxlbWVudGVkIGluIGEgc2VwYXJhdGUgcGF0Y2ggc2VyaWVzIFsxXSkuDQoNClRo
+ZSBhZHZhbnRhZ2Ugb2YgcG9sbF9zb3VyY2UgaXMgdGhhdCBhcHBsaWNhdGlvbnMgZG8gbm90IG5l
+ZWQgdG8gZXhwbGljaXRseSBzZXQNCnRoZSBSV0ZfSElQUkkgSS9PIHJlcXVlc3QgZmxhZy4gVGhl
+IHBvbGxfc291cmNlIGFwcHJvYWNoIGlzIGF0dHJhY3RpdmUgYmVjYXVzZQ0KZmV3IGFwcGxpY2F0
+aW9ucyBhY3R1YWxseSB1c2UgUldGX0hJUFJJIGFuZCBpdCB0YWtlcyBhZHZhbnRhZ2Ugb2YgQ1BV
+IGN5Y2xlcyB3ZQ0Kd291bGQgaGF2ZSBzcGVudCBpbiBjcHVpZGxlIGhhbHRwb2xsIGFueXdheS4N
+Cg0KVGhlIGN1cnJlbnQgc2VyaWVzIGRvZXMgbm90IGltcHJvdmUgdmlydGlvLW5ldC4gSSBoYXZl
+bid0IGludmVzdGlnYXRlZCBkZWVwbHksDQpidXQgaXQgaXMgcG9zc2libGUgdGhhdCBOQVBJIGFu
+ZCBwb2xsX3NvdXJjZSBkbyBub3QgY29tYmluZS4gU2VlIHRoZSBmaW5hbA0KcGF0Y2ggZm9yIGEg
+c3RhcnRpbmcgcG9pbnQgb24gbWFraW5nIHRoZSB0d28gd29yayB0b2dldGhlci4NCg0KSSBoYXZl
+IG5vdCB0cmllZCB0aGlzIG9uIGJhcmUgbWV0YWwgYnV0IGl0IG1pZ2h0IGhlbHAgdGhlcmUgdG9v
+LiBUaGUgY29zdCBvZg0KZGlzYWJsaW5nIGEgZGV2aWNlJ3MgaXJxIG11c3QgYmUgbGVzcyB0aGFu
+IHRoZSBzYXZpbmdzIGZyb20gYXZvaWRpbmcgaXJxDQpoYW5kbGluZyBmb3IgdGhpcyBvcHRpbWl6
+YXRpb24gdG8gbWFrZSBzZW5zZS4NCg0KWzFdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2xpbnV4
+LWJsb2NrLzIwMjEwNTIwMTQxMzA1LjM1NTk2MS0xLXN0ZWZhbmhhQHJlZGhhdC5jb20vDQoNClN0
+ZWZhbiBIYWpub2N6aSAoMyk6DQogIGNwdWlkbGU6IGFkZCBwb2xsX3NvdXJjZSBBUEkNCiAgdmly
+dGlvOiBhZGQgcG9sbF9zb3VyY2UgdmlydHF1ZXVlIHBvbGxpbmcNCiAgc29mdGlycTogcGFydGlj
+aXBhdGUgaW4gY3B1aWRsZSBwb2xsaW5nDQoNCiBkcml2ZXJzL2NwdWlkbGUvTWFrZWZpbGUgICAg
+ICAgICAgIHwgICAxICsNCiBkcml2ZXJzL3ZpcnRpby92aXJ0aW9fcGNpX2NvbW1vbi5oIHwgICA3
+ICsrDQogaW5jbHVkZS9saW51eC9pbnRlcnJ1cHQuaCAgICAgICAgICB8ICAgMiArDQogaW5jbHVk
+ZS9saW51eC9wb2xsX3NvdXJjZS5oICAgICAgICB8ICA1MyArKysrKysrKysrKysrKysNCiBpbmNs
+dWRlL2xpbnV4L3ZpcnRpby5oICAgICAgICAgICAgIHwgICAyICsNCiBpbmNsdWRlL2xpbnV4L3Zp
+cnRpb19jb25maWcuaCAgICAgIHwgICAyICsNCiBkcml2ZXJzL2NwdWlkbGUvcG9sbF9zb3VyY2Uu
+YyAgICAgIHwgMTAyICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQogZHJpdmVycy9jcHVp
+ZGxlL3BvbGxfc3RhdGUuYyAgICAgICB8ICAgNiArKw0KIGRyaXZlcnMvdmlydGlvL3ZpcnRpby5j
+ICAgICAgICAgICAgfCAgMzQgKysrKysrKysrKw0KIGRyaXZlcnMvdmlydGlvL3ZpcnRpb19wY2lf
+Y29tbW9uLmMgfCAgODYgKysrKysrKysrKysrKysrKysrKysrKysrDQogZHJpdmVycy92aXJ0aW8v
+dmlydGlvX3BjaV9tb2Rlcm4uYyB8ICAgMiArDQoga2VybmVsL3NvZnRpcnEuYyAgICAgICAgICAg
+ICAgICAgICB8ICAxNCArKysrDQogMTIgZmlsZXMgY2hhbmdlZCwgMzExIGluc2VydGlvbnMoKykN
+CiBjcmVhdGUgbW9kZSAxMDA2NDQgaW5jbHVkZS9saW51eC9wb2xsX3NvdXJjZS5oDQogY3JlYXRl
+IG1vZGUgMTAwNjQ0IGRyaXZlcnMvY3B1aWRsZS9wb2xsX3NvdXJjZS5jDQoNCi0tIA0KMi4zMS4x
+DQoNCg==
 
