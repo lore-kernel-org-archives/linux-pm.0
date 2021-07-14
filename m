@@ -7,40 +7,38 @@ X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80481C12002
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1C5AC47E48
 	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6AF1C6100A
+	by mail.kernel.org (Postfix) with ESMTP id AC3AE613D8
 	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229978AbhGNT4p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jul 2021 15:56:45 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45690 "EHLO mail.kernel.org"
+        id S231433AbhGNT4q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jul 2021 15:56:46 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45102 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240228AbhGNTtg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Jul 2021 15:49:36 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A6C64613D4;
-        Wed, 14 Jul 2021 19:44:51 +0000 (UTC)
+        id S240347AbhGNTtl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Jul 2021 15:49:41 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 7720F6142E;
+        Wed, 14 Jul 2021 19:45:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1626291892;
-        bh=Ba38WJGVqGtC8P5d4zPWnHTztyf1aMSimuHwSDGgzEg=;
+        s=k20201202; t=1626291908;
+        bh=FQXIRt4S9fKQcn3FknQpuVukK2IJVmAwxwDQPkJ1EHs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=aajzwjdYVX4j9sXbQq9I5wHWknFYHLk2s6eWK1WedlSsYeQnj8SsLMnxEQ/T6hhv/
-         QnbUT4cLOhfyCUgA8Y/Fc1IyKpKnY2xNMrqaL/yEXWZjAKKB4lfBq3Tm+pwAZazZZN
-         skJG85btRiaVlOw/9JeXi6qeyDPb2YNcVii5uSgLsamVBNWF92p+ogwG8U6nqAoQU5
-         gvyYCxNWh4xzsQrekzmuGTCplxnSD1hyt1+ag27KhjBfWLGZnZmU6H/eU8AqWulk8g
-         PRKp5UCTPyYx8e0YJ96hbTsq9c0Y3ZSGzBSKU0cl3KgnpL9ME9DlxK5vkZi0XKJoAo
-         DXkjC6pLfJpDQ==
+        b=aMT+ARkm6PqX6xSgYyPE0KriOIqTtmIc+lADcJl+cUx/toucZFMcbBTG9P18kQ6ks
+         Lz9LtrYM6QRjrY8q3dGLg2SxnrdqtYSkxxbBPkXcanbbBp/7nNojd8H8ZWBKlgXc0b
+         sEW72abrRTuLcJbULAe6OHctx4jLY0OK+FG1RX/GPMpHJsz+OUbxD3WzVHGXEfJ5aD
+         4JaixwUqdm6I5tjQDLmqxCSxxNVEeDyythx6+x8xNtuiBBkFsXdcdgCLeGYF/HD6KF
+         x7CJwH9uKEXAZyGFtNBpzUIyxI2uf9UPLMcFD7kDkR0E/upt1Cy+S7GQKwdeK8rmsB
+         hbhdXmbcnkKkw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Jacky Bai <ping.bai@nxp.com>,
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 5.10 73/88] thermal/drivers/imx_sc: Add missing of_node_put for loop iteration
-Date:   Wed, 14 Jul 2021 15:42:48 -0400
-Message-Id: <20210714194303.54028-73-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.10 85/88] thermal/core/thermal_of: Stop zone device before unregistering it
+Date:   Wed, 14 Jul 2021 15:43:00 -0400
+Message-Id: <20210714194303.54028-85-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210714194303.54028-1-sashal@kernel.org>
 References: <20210714194303.54028-1-sashal@kernel.org>
@@ -52,53 +50,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+From: Dmitry Osipenko <digetx@gmail.com>
 
-[ Upstream commit 3da97620e8d60da4a7eaae46e03e0a494780642d ]
+[ Upstream commit 5e5c9f9a75fc4532980c2e699caf8a36070a3a2e ]
 
-Early exits from for_each_available_child_of_node() should decrement the
-node reference counter.  Reported by Coccinelle:
+Zone device is enabled after thermal_zone_of_sensor_register() completion,
+but it's not disabled before senor is unregistered, leaving temperature
+polling active. This results in accessing a disabled zone device and
+produces a warning about this problem. Stop zone device before
+unregistering it in order to fix this "use-after-free" problem.
 
-  drivers/thermal/imx_sc_thermal.c:93:1-33: WARNING:
-    Function "for_each_available_child_of_node" should have of_node_put() before return around line 97.
-
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-Reviewed-by: Jacky Bai <ping.bai@nxp.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210614192230.19248-1-krzysztof.kozlowski@canonical.com
+Link: https://lore.kernel.org/r/20210616190417.32214-3-digetx@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/imx_sc_thermal.c | 3 +++
+ drivers/thermal/thermal_of.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-index b01d28eca7ee..8d76dbfde6a9 100644
---- a/drivers/thermal/imx_sc_thermal.c
-+++ b/drivers/thermal/imx_sc_thermal.c
-@@ -93,6 +93,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 	for_each_available_child_of_node(np, child) {
- 		sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
- 		if (!sensor) {
-+			of_node_put(child);
- 			of_node_put(sensor_np);
- 			return -ENOMEM;
- 		}
-@@ -104,6 +105,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev,
- 				"failed to get valid sensor resource id: %d\n",
- 				ret);
-+			of_node_put(child);
- 			break;
- 		}
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index 5b76f9a1280d..6379f26a335f 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -559,6 +559,9 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
+ 	if (!tz)
+ 		return;
  
-@@ -114,6 +116,7 @@ static int imx_sc_thermal_probe(struct platform_device *pdev)
- 		if (IS_ERR(sensor->tzd)) {
- 			dev_err(&pdev->dev, "failed to register thermal zone\n");
- 			ret = PTR_ERR(sensor->tzd);
-+			of_node_put(child);
- 			break;
- 		}
- 
++	/* stop temperature polling */
++	thermal_zone_device_disable(tzd);
++
+ 	mutex_lock(&tzd->lock);
+ 	tzd->ops->get_temp = NULL;
+ 	tzd->ops->get_trend = NULL;
 -- 
 2.30.2
 
