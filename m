@@ -7,46 +7,43 @@ X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E953C47E4B
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D68DC1B08C
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:53:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3A123613D8
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:53:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6211A613D8
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:53:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237182AbhGNT4o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jul 2021 15:56:44 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45596 "EHLO mail.kernel.org"
+        id S238260AbhGNT4p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jul 2021 15:56:45 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47272 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240201AbhGNTte (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Jul 2021 15:49:34 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 44F4A61426;
-        Wed, 14 Jul 2021 19:44:50 +0000 (UTC)
+        id S240245AbhGNTth (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Jul 2021 15:49:37 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 2C4B161420;
+        Wed, 14 Jul 2021 19:44:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1626291891;
-        bh=mIX8swcJ0uAWzzsN4a+BRUB24TPb/lMattHRBn0i5a0=;
+        s=k20201202; t=1626291894;
+        bh=MhlHhY1agYYtzBqt09Hw4336F4Nu3+PK1eJjW4GESKE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=upmwXhrAJNCe8ya8z1JfjE1353C5WAXDRtDpzONjtRfNln2CA2lOEo4gp/uQOHNGg
-         gkyn65v70QBLGUUiMKOe+7pn/rKqp5PtDyMLj0dI5ro3wsGBHbVeNlDlZnRoFZucxg
-         kKLAe3pGya2GBLt0lvqz9ulEbw8UEdBuSRgAjIf8njLY7SIdtLazh0hKRYtvNTA3kn
-         vOSkGHMol3WpYdY8u7ER+Ap0vriTn8e7UZuOLU+6JRuog2JPDGrY3LeEIv1Wiwx5IT
-         5Jfkm5vh8QLJ5fVxMgD6+Ykt/U28GLGarSJDvACSXHpbuoLHFD05ZD5OFKA0nY3B3R
-         mnTNqC3wVj8Ng==
+        b=jB/c45ndtVbP7CgV2/qd78bpEaX2Xp2+QSvT1xZDQSuzREHo2cx5ZiEeXbM7c6neT
+         QNmNG2Cj2v54rsLahN3U2/fy/2KTjiEUOqxzi7gDF3zH1OCPrISn09oVKCS4JQMs4k
+         g95wbPPkiYkLTQYoFvvXjsaLnin6Yd1DO9lkX0Ctqi6FY1KnzSeIuSgMJGwy5BWMxE
+         E+0QMYf6jB/wL9xkhd5mKqdXruUvFWAOY5UnjEQlNlGb6cpuC4o4CDeJxQOupY95hj
+         C9uvo1NgCwV4Jfrgb1n8zSSFzaIeVx7IJSTgxq/IOEOdkXldKuVUXU0UA3xpZgXm/d
+         I7IRXkkN48A8Q==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>,
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Sasha Levin <sashal@kernel.org>,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 72/88] thermal/drivers/rcar_gen3_thermal: Do not shadow rcar_gen3_ths_tj_1
-Date:   Wed, 14 Jul 2021 15:42:47 -0400
-Message-Id: <20210714194303.54028-72-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.10 74/88] thermal/drivers/sprd: Add missing of_node_put for loop iteration
+Date:   Wed, 14 Jul 2021 15:42:49 -0400
+Message-Id: <20210714194303.54028-74-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210714194303.54028-1-sashal@kernel.org>
 References: <20210714194303.54028-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -54,56 +51,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
 
-[ Upstream commit 3ae5950db617d1cc3eb4eb55750fa9d138529b49 ]
+[ Upstream commit d8ac5bb4ae653e092d7429a7587b73f1662d6ad7 ]
 
-With -Wshadow:
+Early exits from for_each_available_child_of_node() should decrement the
+node reference counter.  Reported by Coccinelle:
 
-    drivers/thermal/rcar_gen3_thermal.c: In function ‘rcar_gen3_thermal_probe’:
-    drivers/thermal/rcar_gen3_thermal.c:310:13: warning: declaration of ‘rcar_gen3_ths_tj_1’ shadows a global declaration [-Wshadow]
-      310 |  const int *rcar_gen3_ths_tj_1 = of_device_get_match_data(dev);
-	  |             ^~~~~~~~~~~~~~~~~~
-    drivers/thermal/rcar_gen3_thermal.c:246:18: note: shadowed declaration is here
-      246 | static const int rcar_gen3_ths_tj_1 = 126;
-	  |                  ^~~~~~~~~~~~~~~~~~
+  drivers/thermal/sprd_thermal.c:387:1-23: WARNING:
+    Function "for_each_child_of_node" should have of_node_put() before goto around lines 391.
 
-To add to the confusion, the local variable has a different type.
-
-Fix the shadowing by renaming the local variable to ths_tj_1.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Acked-by: Chunyan Zhang <zhang.lyra@gmail.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/9ea7e65d0331daba96f9a7925cb3d12d2170efb1.1623076804.git.geert+renesas@glider.be
+Link: https://lore.kernel.org/r/20210614192230.19248-2-krzysztof.kozlowski@canonical.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/thermal/sprd_thermal.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 0dd47dca3e77..4e826d4b9140 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -366,7 +366,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- {
- 	struct rcar_gen3_thermal_priv *priv;
- 	struct device *dev = &pdev->dev;
--	const int *rcar_gen3_ths_tj_1 = of_device_get_match_data(dev);
-+	const int *ths_tj_1 = of_device_get_match_data(dev);
- 	struct resource *res;
- 	struct thermal_zone_device *zone;
- 	int ret, irq, i;
-@@ -434,8 +434,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		priv->tscs[i] = tsc;
+diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
+index 3682edb2f466..76a2caa9c265 100644
+--- a/drivers/thermal/sprd_thermal.c
++++ b/drivers/thermal/sprd_thermal.c
+@@ -388,7 +388,7 @@ static int sprd_thm_probe(struct platform_device *pdev)
+ 		sen = devm_kzalloc(&pdev->dev, sizeof(*sen), GFP_KERNEL);
+ 		if (!sen) {
+ 			ret = -ENOMEM;
+-			goto disable_clk;
++			goto of_put;
+ 		}
  
- 		priv->thermal_init(tsc);
--		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i],
--					     *rcar_gen3_ths_tj_1);
-+		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
+ 		sen->data = thm;
+@@ -397,13 +397,13 @@ static int sprd_thm_probe(struct platform_device *pdev)
+ 		ret = of_property_read_u32(sen_child, "reg", &sen->id);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "get sensor reg failed");
+-			goto disable_clk;
++			goto of_put;
+ 		}
  
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
- 							    &rcar_gen3_tz_of_ops);
+ 		ret = sprd_thm_sensor_calibration(sen_child, thm, sen);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "efuse cal analysis failed");
+-			goto disable_clk;
++			goto of_put;
+ 		}
+ 
+ 		sprd_thm_sensor_init(thm, sen);
+@@ -416,19 +416,20 @@ static int sprd_thm_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev, "register thermal zone failed %d\n",
+ 				sen->id);
+ 			ret = PTR_ERR(sen->tzd);
+-			goto disable_clk;
++			goto of_put;
+ 		}
+ 
+ 		thm->sensor[sen->id] = sen;
+ 	}
++	/* sen_child set to NULL at this point */
+ 
+ 	ret = sprd_thm_set_ready(thm);
+ 	if (ret)
+-		goto disable_clk;
++		goto of_put;
+ 
+ 	ret = sprd_thm_wait_temp_ready(thm);
+ 	if (ret)
+-		goto disable_clk;
++		goto of_put;
+ 
+ 	for (i = 0; i < thm->nr_sensors; i++)
+ 		sprd_thm_toggle_sensor(thm->sensor[i], true);
+@@ -436,6 +437,8 @@ static int sprd_thm_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, thm);
+ 	return 0;
+ 
++of_put:
++	of_node_put(sen_child);
+ disable_clk:
+ 	clk_disable_unprepare(thm->clk);
+ 	return ret;
 -- 
 2.30.2
 
