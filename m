@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 644D1C47E4D
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B21E3C47E4B
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4F2F9613C3
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9FE69613C3
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Jul 2021 19:54:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240352AbhGNT4z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Jul 2021 15:56:55 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49262 "EHLO mail.kernel.org"
+        id S237203AbhGNT4w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Jul 2021 15:56:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:48360 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239812AbhGNTwV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Jul 2021 15:52:21 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3D0036142C;
-        Wed, 14 Jul 2021 19:48:43 +0000 (UTC)
+        id S238046AbhGNTuw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Jul 2021 15:50:52 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 2DE47613D1;
+        Wed, 14 Jul 2021 19:47:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1626292123;
-        bh=3cBQ7XdQtWKMtan40ktXOh0D1M3y8inbTR4c5OblRIs=;
+        s=k20201202; t=1626292076;
+        bh=YOgllG/rTEmQTDw1A015Rm1sGiBtgaiqWBPhjMR2xtc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=KpUB03ndlnKKKh1iqAPbwmHypk4Sy5wA3k4pgtRk2awf+PkK/Lzhpr7nW9tFcVRf1
-         UiFSu8cRgo3UQ6f2BQ0FRpQ+JotieafHvYuZnWYXgwsaoOJfh76Obc/nmJREjf2k7M
-         KhbwBWTmKMh0b2l7nSDxvecc4tpg3pGfyZEeHBpt+e4x2buRNa8KN/tgco0k7Tn22h
-         f76Y5HrnxBlmpTqQzQ/rRnxPQLTIRh30yYtbq4xLS7FXjThRqNmfWYBoPMFTssVVu3
-         kShyxD+UpkkDHSkjepdgpkCOwglVR+pANWkRPWMQLq6ywDHqEh3yLxQpOZDDjqpDIL
-         3vpsheL2Kc69Q==
+        b=kPfuphhw+PgbVzeTDHqlcd8vMwAfKdb40d8XDw8RwcAhQdglxSGSKpMb2JQr6V/O1
+         1U5Hy77oLUyRE56EXn2axMMutadlvkYdKmb4VxZ3+KYIop6TCigp90Jv50eu2fGJjs
+         uivWzQnXy299fI+YTeDYSBfYXdluoyzbf2VB/xkMmWt4LcWa5iIVaJOW2kRQJENC/i
+         BzXnVYgHDVn4r7rL0wLDjpIPB43rLHfvFM21M/pOdjgZsfe0+G7W0OTECZq9jYx0wR
+         698Qzhk5wRVF62NAkKqjHD1RfFvsT/pbal2uMYXeeQirdnEQdFOwplvF58dmA/5WNz
+         U0qntlGWHfWMg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Yang Yingliang <yangyingliang@huawei.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 07/10] thermal/core: Correct function name thermal_zone_device_unregister()
-Date:   Wed, 14 Jul 2021 15:48:30 -0400
-Message-Id: <20210714194833.56197-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 22/28] thermal/core: Correct function name thermal_zone_device_unregister()
+Date:   Wed, 14 Jul 2021 15:47:17 -0400
+Message-Id: <20210714194723.55677-22-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210714194833.56197-1-sashal@kernel.org>
-References: <20210714194833.56197-1-sashal@kernel.org>
+In-Reply-To: <20210714194723.55677-1-sashal@kernel.org>
+References: <20210714194723.55677-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -67,10 +67,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index a6df07786362..94497787a076 100644
+index fcefafe7df48..2db83b555e59 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1956,7 +1956,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+@@ -1304,7 +1304,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
  EXPORT_SYMBOL_GPL(thermal_zone_device_register);
  
  /**
