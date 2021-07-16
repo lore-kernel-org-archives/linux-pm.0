@@ -2,132 +2,179 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5A5CC636C9
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Jul 2021 19:35:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD620C636CD
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jul 2021 05:14:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8C120610C7
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Jul 2021 19:35:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A78FD613E8
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Jul 2021 05:14:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343872AbhGOTiN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Jul 2021 15:38:13 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39270 "EHLO mail.kernel.org"
+        id S232300AbhGPFRE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Jul 2021 01:17:04 -0400
+Received: from m43-7.mailgun.net ([69.72.43.7]:17126 "EHLO m43-7.mailgun.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1345409AbhGOTgS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Jul 2021 15:36:18 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 55AAB61285;
-        Thu, 15 Jul 2021 19:33:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1626377604;
-        bh=7tNfwApTPzfLfh6RfezcVqTOt5G3e1U8pv8OBwedrhw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=bi5FNPI/pbLZE4d4X5tx5IbWgGU5gYASovT/gmp+gc1BXGnDejR5AZErHpHC7b8oB
-         TlqloOQL5G3sRRzc1lmVw/7FtY7DskW7q5wUj532sQJGVE9ZCeWlkFSib2KhW1g2SX
-         heDO6qeufSXPaGwOF0Im3BhbXUpoXfTSHNtJiKAeVUxFOSN5ku0MXAPD10RmQ+0CKv
-         6BNqROfaM3lzeZMxQoyS3y1ASjHgi3DH77YviH58ypVcvEDdMarHNPdXqqlFuWT6qZ
-         tLnWfoUfZpfHosjFJRliwqQ1u/DQe16k3F46NX04Yz+6o0G5t1Mpqg0sQWv7YUt+o/
-         ybLibHyoyGCow==
-Received: by pali.im (Postfix)
-        id B3C737B5; Thu, 15 Jul 2021 21:33:21 +0200 (CEST)
-Date:   Thu, 15 Jul 2021 21:33:21 +0200
-From:   Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To:     Konstantin Porotchkin <kostap@marvell.com>,
-        Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>,
-        Victor Gu <xigu@marvell.com>,
-        Jason Hung <jhung@globalscaletechnologies.com>
-Cc:     Marek =?utf-8?B?QmVow7pu?= <kabel@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Gregory CLEMENT <gregory.clement@bootlin.com>,
-        Robert Marko <robert.marko@sartura.hr>,
-        Tomasz Maciej Nowak <tmn505@gmail.com>,
-        Anders Trier Olesen <anders.trier.olesen@gmail.com>,
-        Philip Soares <philips@netisense.com>,
-        linux-pm@vger.kernel.org,
-        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-        linux-arm-kernel@lists.infradead.org, nnet <nnet@fastmail.fm>
-Subject: Re: [PATCH v2] cpufreq: armada-37xx: forbid cpufreq for 1.2 GHz
- variant
-Message-ID: <20210715193321.z3vswz6x4rzvw2fd@pali>
-References: <20210630135942.29730-1-kabel@kernel.org>
- <20210630225601.6372-1-kabel@kernel.org>
- <20210702163035.nmb5pniwpqtmaz4b@pali>
- <20210708143451.4htvdop4zvjufrq6@pali>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210708143451.4htvdop4zvjufrq6@pali>
-User-Agent: NeoMutt/20180716
+        id S231348AbhGPFRC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 16 Jul 2021 01:17:02 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1626412448; h=References: In-Reply-To: Message-Id: Date:
+ Subject: Cc: To: From: Sender;
+ bh=dGGcs4wWneJeBPuKYI1ctMQ4QWSlOxg0Xqz9yYP89ds=; b=mMILTXTJUT03g+BzqlNdgV/YGzbMmhzvo80KhPHNmyf+cYzDw3rwbHhh/uFRorWEbVmdpXH2
+ aWTJ6f3a5wMzjf9HxYkQifqIxfwITUCyU/QFrXEU3GVOuGTQmJt73z5xRbkAkWIopMs9WLOl
+ BwFgWm1LPmMBq3PNV2gHQgFahO4=
+X-Mailgun-Sending-Ip: 69.72.43.7
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n02.prod.us-west-2.postgun.com with SMTP id
+ 60f1159dd0100c7cf9b17097 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 16 Jul 2021 05:14:05
+ GMT
+Sender: rnayak=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id A1229C4338A; Fri, 16 Jul 2021 05:14:05 +0000 (UTC)
+Received: from blr-ubuntu-173.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: rnayak)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 6FB2FC4323A;
+        Fri, 16 Jul 2021 05:14:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 6FB2FC4323A
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=rnayak@codeaurora.org
+From:   Rajendra Nayak <rnayak@codeaurora.org>
+To:     ulf.hansson@linaro.org, bjorn.andersson@linaro.org,
+        viresh.kumar@linaro.org
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        swboyd@chromium.org, rojay@codeaurora.org, stephan@gerhold.net,
+        Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v3 1/2] PM / Domains: Add support for 'required-opps' to set default perf state
+Date:   Fri, 16 Jul 2021 10:43:44 +0530
+Message-Id: <1626412425-30715-2-git-send-email-rnayak@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1626412425-30715-1-git-send-email-rnayak@codeaurora.org>
+References: <1626412425-30715-1-git-send-email-rnayak@codeaurora.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Ping! Gentle reminder for Marvell people.
+Some devics within power domains with performance states do not
+support DVFS, but still need to vote on a default/static state
+while they are active. They can express this using the 'required-opps'
+property in device tree, which points to the phandle of the OPP
+supported by the corresponding power-domains.
 
-On Thursday 08 July 2021 16:34:51 Pali Rohár wrote:
-> Konstantin, Nadav, Ken, Victor, Jason: This issue is pretty serious,
-> CPU on 1.2GHz A3720 is crashing. Could you please look at it?
-> 
-> On Friday 02 July 2021 18:30:35 Pali Rohár wrote:
-> > +Jason from GlobalScale as this issue affects GlobalScale Espressobin Ultra and V7 1.2 GHz boards.
-> > 
-> > On Thursday 01 July 2021 00:56:01 Marek Behún wrote:
-> > > The 1.2 GHz variant of the Armada 3720 SOC is unstable with DVFS: when
-> > > the SOC boots, the WTMI firmware sets clocks and AVS values that work
-> > > correctly with 1.2 GHz CPU frequency, but random crashes occur once
-> > > cpufreq driver starts scaling.
-> > > 
-> > > We do not know currently what is the reason:
-> > > - it may be that the voltage value for L0 for 1.2 GHz variant provided
-> > >   by the vendor in the OTP is simply incorrect when scaling is used,
-> > > - it may be that some delay is needed somewhere,
-> > > - it may be something else.
-> > > 
-> > > The most sane solution now seems to be to simply forbid the cpufreq
-> > > driver on 1.2 GHz variant.
-> > > 
-> > > Signed-off-by: Marek Behún <kabel@kernel.org>
-> > > Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-> > > ---
-> > > If someone from Marvell could look into this, it would be great since
-> > > basically 1.2 GHz variant cannot scale, which is a feature that was
-> > > claimed to be supported by the SOC.
-> > > 
-> > > Ken Ma / Victor Gu, you have worked on commit
-> > > https://github.com/MarvellEmbeddedProcessors/linux-marvell/commit/d6719fdc2b3cac58064f41b531f86993c919aa9a
-> > > in linux-marvell.
-> > > Your patch takes away the 1202 mV constant for 1.2 GHz base CPU
-> > > frequency and instead adds code that computes the voltages from the
-> > > voltage found in L0 AVS register (which is filled in by WTMI firmware).
-> > > 
-> > > Do you know why the code does not work correctly for some 1.2 GHz
-> > > boards? Do we need to force the L0 voltage to 1202 mV if it is lower,
-> > > or something?
-> > > ---
-> > >  drivers/cpufreq/armada-37xx-cpufreq.c | 6 +++++-
-> > >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> > > index 3fc98a3ffd91..c10fc33b29b1 100644
-> > > --- a/drivers/cpufreq/armada-37xx-cpufreq.c
-> > > +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> > > @@ -104,7 +104,11 @@ struct armada_37xx_dvfs {
-> > >  };
-> > >  
-> > >  static struct armada_37xx_dvfs armada_37xx_dvfs[] = {
-> > > -	{.cpu_freq_max = 1200*1000*1000, .divider = {1, 2, 4, 6} },
-> > > +	/*
-> > > +	 * The cpufreq scaling for 1.2 GHz variant of the SOC is currently
-> > > +	 * unstable because we do not know how to configure it properly.
-> > > +	 */
-> > > +	/* {.cpu_freq_max = 1200*1000*1000, .divider = {1, 2, 4, 6} }, */
-> > >  	{.cpu_freq_max = 1000*1000*1000, .divider = {1, 2, 4, 5} },
-> > >  	{.cpu_freq_max = 800*1000*1000,  .divider = {1, 2, 3, 4} },
-> > >  	{.cpu_freq_max = 600*1000*1000,  .divider = {2, 4, 5, 6} },
-> > > -- 
-> > > 2.31.1
-> > > 
+Add support to parse this information from DT and then set the
+specified performance state during attach and drop it on detach.
+Also drop/set as part of runtime suspend/resume callbacks.
+
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+---
+ drivers/base/power/domain.c | 29 ++++++++++++++++++++++++++++-
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index a934c67..eef5507 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -917,6 +917,10 @@ static int genpd_runtime_suspend(struct device *dev)
+ 	if (irq_safe_dev_in_no_sleep_domain(dev, genpd))
+ 		return 0;
+ 
++	/* Drop the default performance state */
++	if (dev_gpd_data(dev)->default_pstate)
++		dev_pm_genpd_set_performance_state(dev, 0);
++
+ 	genpd_lock(genpd);
+ 	gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 	genpd_power_off(genpd, true, 0);
+@@ -937,6 +941,7 @@ static int genpd_runtime_resume(struct device *dev)
+ {
+ 	struct generic_pm_domain *genpd;
+ 	struct generic_pm_domain_data *gpd_data = dev_gpd_data(dev);
++	unsigned int default_pstate = gpd_data->default_pstate;
+ 	struct gpd_timing_data *td = &gpd_data->td;
+ 	bool runtime_pm = pm_runtime_enabled(dev);
+ 	ktime_t time_start;
+@@ -968,6 +973,9 @@ static int genpd_runtime_resume(struct device *dev)
+ 	if (ret)
+ 		return ret;
+ 
++	/* Set the default performance state */
++	if (default_pstate)
++		dev_pm_genpd_set_performance_state(dev, default_pstate);
+  out:
+ 	/* Measure resume latency. */
+ 	time_start = 0;
+@@ -1000,6 +1008,8 @@ static int genpd_runtime_resume(struct device *dev)
+ 	genpd_stop_dev(genpd, dev);
+ err_poweroff:
+ 	if (!pm_runtime_is_irq_safe(dev) || genpd_is_irq_safe(genpd)) {
++		if (default_pstate)
++			dev_pm_genpd_set_performance_state(dev, 0);
+ 		genpd_lock(genpd);
+ 		gpd_data->rpm_pstate = genpd_drop_performance_state(dev);
+ 		genpd_power_off(genpd, true, 0);
+@@ -2598,6 +2608,12 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ 
+ 	dev_dbg(dev, "removing from PM domain %s\n", pd->name);
+ 
++	/* Drop the default performance state */
++	if (dev_gpd_data(dev)->default_pstate) {
++		dev_pm_genpd_set_performance_state(dev, 0);
++		dev_gpd_data(dev)->default_pstate = 0;
++	}
++
+ 	for (i = 1; i < GENPD_RETRY_MAX_MS; i <<= 1) {
+ 		ret = genpd_remove_device(pd, dev);
+ 		if (ret != -EAGAIN)
+@@ -2635,9 +2651,10 @@ static void genpd_dev_pm_sync(struct device *dev)
+ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 				 unsigned int index, bool power_on)
+ {
++	struct device_node *np;
+ 	struct of_phandle_args pd_args;
+ 	struct generic_pm_domain *pd;
+-	int ret;
++	int ret, pstate;
+ 
+ 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+ 				"#power-domain-cells", index, &pd_args);
+@@ -2678,6 +2695,16 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+ 	if (ret)
+ 		genpd_remove_device(pd, dev);
+ 
++	/* Set the default performance state */
++	np = base_dev->of_node;
++	if (of_parse_phandle(np, "required-opps", index)) {
++		pstate = of_get_required_opp_performance_state(np, index);
++		if (pstate > 0) {
++			dev_pm_genpd_set_performance_state(dev, pstate);
++			dev_gpd_data(dev)->default_pstate = pstate;
++		}
++	}
++
+ 	return ret ? -EPROBE_DEFER : 1;
+ }
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 21a0577..67017c9 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -198,6 +198,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block *power_nb;
+ 	int cpu;
+ 	unsigned int performance_state;
++	unsigned int default_pstate;
+ 	unsigned int rpm_pstate;
+ 	ktime_t	next_wakeup;
+ 	void *data;
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
+
