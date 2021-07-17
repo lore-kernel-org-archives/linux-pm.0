@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA566C636CD
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Jul 2021 12:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EA95C6377C
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Jul 2021 12:11:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9D915613D8
-	for <linux-pm@archiver.kernel.org>; Sat, 17 Jul 2021 12:11:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 04D8B613DF
+	for <linux-pm@archiver.kernel.org>; Sat, 17 Jul 2021 12:11:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234362AbhGQMOg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 17 Jul 2021 08:14:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47296 "EHLO
+        id S234407AbhGQMOh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 17 Jul 2021 08:14:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47308 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233711AbhGQMOa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Jul 2021 08:14:30 -0400
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 982F5C061766;
-        Sat, 17 Jul 2021 05:11:31 -0700 (PDT)
-Received: by mail-lj1-x230.google.com with SMTP id q4so17857989ljp.13;
-        Sat, 17 Jul 2021 05:11:31 -0700 (PDT)
+        with ESMTP id S233837AbhGQMOb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Jul 2021 08:14:31 -0400
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 106C5C061762;
+        Sat, 17 Jul 2021 05:11:34 -0700 (PDT)
+Received: by mail-lj1-x22a.google.com with SMTP id a6so17919965ljq.3;
+        Sat, 17 Jul 2021 05:11:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=tx+FBtsIpk7hvxer7pRAYtZGSgLlz0FVqFktBev8H5o=;
-        b=HKs37eJ6E8wMQFBgL0U3kTEZfOud/q6TFjaA7R6MRIp9pKOXI3C/E0hzz0vYU1Y5/L
-         uxeXpfVy9zwJdNNFZYNeFeqVR7oGs+cdQYyXIFulXVZjUXi9eCgF/p/kxqMA/u55VRh9
-         xckgcTOamcdlfDaWTd1uTgAENUGQvvMdcRY1BWpCV/6dX4Fg1wrYl6wwh8/aVXc3J8pH
-         A348By9zvzSWsbKRBtTWVYFRbiqO359H2zbuU+5sLvHWCHkVqDCyCoDiNBbLjnByv2hC
-         eUm/dZrMdcCLtlF1u41ReZsTpn7Z5vM/An5aD2/yQAT78V+bJNmqHLW7SDaXma4TzZfL
-         mykw==
+        bh=l8EOJok7gQ/2QjTWWQG3gL5Nl9QBC5D9nB2n0/NrCfQ=;
+        b=krFYklNnqTr+ydt5j0gBvY6WSdtsOKSAnDgz5XPRH25oKBkb6laFdA5dpiu3rr/bEn
+         L9dQZ1Ik4xiZCvprzuDFyNcsnYA/1ypXity5JdNK74VmTyT4nULcSsEb5LYlONpRrrHb
+         dACDN2ZLnscnurDYF7hXmUJf9n2dIxfrl+1gdzXxyj0NqYHBBEyu9rj/prgYKAzcL8Sk
+         iVRsEBvebMk/xyyZGfF5Ug260gBrz800zRqrVuBc4yH9EheWewLudRjAjd8tbq51miTw
+         LnaYIFFZngNBwxJ0QWJyfNawmIxPezLdHnuKx6scbsd5MaxREa2R+IvKC7hKHcj1og0u
+         R+lg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=tx+FBtsIpk7hvxer7pRAYtZGSgLlz0FVqFktBev8H5o=;
-        b=Xl9VnoYym+v/uOJLx4D2a9mgLDwuozSGDKH0ZIrwNg7YQHP0qq+HQHLj42DrsW7o/g
-         ibo6MSWrxsbrZEInwAczAVjDq0CCbWuxovGFpm9wc/kJ0MOLBDJUmE91jjp0N/9tXkLs
-         ZsoVC5wsyBBp4XhFRGgKVzq+2BDPxOtUYIWOVUOZ3yhETt+N/sqCQ8tpK3ZgWFWiuGpE
-         rHt38AwBAvhQhOmVE+V8rvkpVmyJtkwN6D/cyTG+cCF3jtrJjezusElcz/aqaBFWrgpr
-         lAgDvJm9HL9AQpmnJuzU+h+wombdyNJRrUXNMJAfRiCuYYcAKRdKQoeSPORyh3uC1/Pm
-         6l5Q==
-X-Gm-Message-State: AOAM532LZIbLN0m1To5vTnYeYAErU5STjvpzdWMKVK+MgYvvdhWYNS8f
-        PJqwDcUAlcxZsvhFavmxtH8=
-X-Google-Smtp-Source: ABdhPJwea8wsk8Wzm6a+CwqHoTwX3mMu6RJGkSvwEOFYKVBLdzw2NlIbI3pxgfQ3WuSVnKpeT2kaHQ==
-X-Received: by 2002:a05:651c:889:: with SMTP id d9mr6874144ljq.412.1626523890025;
-        Sat, 17 Jul 2021 05:11:30 -0700 (PDT)
+        bh=l8EOJok7gQ/2QjTWWQG3gL5Nl9QBC5D9nB2n0/NrCfQ=;
+        b=pQDjUxWfBgMTDgwp6kwwyooaDvuKsfbpHTEKe1jmmuDKMICeES++KRMsopgFGUs4ZA
+         AuL3VsrHq077gPZh9PoYcpXPnu7HjRQDbG8ThaRCieyR3y/t3FQFBge6DKSMjEdAcLNW
+         cvdiHeYICUl+vc6DtwVloTo2Xsa/cdI532YLpO/kWw3mMPWb7pVZtG5Z8RXOMBqtV6ga
+         EN3lmLGWQdLGrSsvnnAIF43s33bdkA5gfbRO3jb1rVkf/+fnVUZ0U/1czslUVbr2bXIt
+         Uc4+lQ/LzfOX4wdbIaZNyLSrUaTyY2lz6KpavJsLeSYRDERWxNuKMekfdpaEHeNoLrT8
+         /Wqg==
+X-Gm-Message-State: AOAM531ZTKKJM4JOU++9y7QSMGT+exrflUFwBKnLmegjBUDWY9NbX3qS
+        d/wDM/jO0nuIv/ghkEjxWcU=
+X-Google-Smtp-Source: ABdhPJxv5JurXs40vsTu/yjO/+QF1gU58GIUbQflwcKDd/6fVyrYkpga5dNk6RGW3Ud1hLK9xWZlAw==
+X-Received: by 2002:a2e:9009:: with SMTP id h9mr13502791ljg.213.1626523892478;
+        Sat, 17 Jul 2021 05:11:32 -0700 (PDT)
 Received: from localhost.localdomain (46-138-17-250.dynamic.spd-mgts.ru. [46.138.17.250])
-        by smtp.gmail.com with ESMTPSA id m16sm852597lfq.23.2021.07.17.05.11.28
+        by smtp.gmail.com with ESMTPSA id m16sm852597lfq.23.2021.07.17.05.11.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 17 Jul 2021 05:11:29 -0700 (PDT)
+        Sat, 17 Jul 2021 05:11:32 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <treding@nvidia.com>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v4 05/12] usb: otg-fsm: Fix hrtimer list corruption
-Date:   Sat, 17 Jul 2021 15:11:05 +0300
-Message-Id: <20210717121112.3248-6-digetx@gmail.com>
+Subject: [PATCH v4 08/12] power: supply: smb347-charger: Remove caching of charger state
+Date:   Sat, 17 Jul 2021 15:11:08 +0300
+Message-Id: <20210717121112.3248-9-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210717121112.3248-1-digetx@gmail.com>
 References: <20210717121112.3248-1-digetx@gmail.com>
@@ -81,62 +81,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The HNP work can be re-scheduled while it's still in-fly. This results in
-re-initialization of the busy work, resetting the hrtimer's list node of
-the work and crashing kernel with null dereference within kernel/timer
-once work's timer is expired. It's very easy to trigger this problem by
-re-plugging USB cable quickly. Initialize HNP work only once to fix this
-trouble.
+Regmap already provides us with the caching, so remove caching of charger
+state to make code cleaner.
 
- Unable to handle kernel NULL pointer dereference at virtual address 00000126)
- ...
- PC is at __run_timers.part.0+0x150/0x228
- LR is at __next_timer_interrupt+0x51/0x9c
- ...
- (__run_timers.part.0) from [<c0187a2b>] (run_timer_softirq+0x2f/0x50)
- (run_timer_softirq) from [<c01013ad>] (__do_softirq+0xd5/0x2f0)
- (__do_softirq) from [<c012589b>] (irq_exit+0xab/0xb8)
- (irq_exit) from [<c0170341>] (handle_domain_irq+0x45/0x60)
- (handle_domain_irq) from [<c04c4a43>] (gic_handle_irq+0x6b/0x7c)
- (gic_handle_irq) from [<c0100b65>] (__irq_svc+0x65/0xac)
-
-Cc: stable@vger.kernel.org
-Acked-by: Peter Chen <peter.chen@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/usb/common/usb-otg-fsm.c | 6 +++++-
- include/linux/usb/otg-fsm.h      | 1 +
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ drivers/power/supply/smb347-charger.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/usb/common/usb-otg-fsm.c b/drivers/usb/common/usb-otg-fsm.c
-index 3740cf95560e..0697fde51d00 100644
---- a/drivers/usb/common/usb-otg-fsm.c
-+++ b/drivers/usb/common/usb-otg-fsm.c
-@@ -193,7 +193,11 @@ static void otg_start_hnp_polling(struct otg_fsm *fsm)
- 	if (!fsm->host_req_flag)
- 		return;
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index db1378b41f80..f81c60c679a0 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -135,7 +135,6 @@
+  * @id: SMB charger ID
+  * @mains_online: is AC/DC input connected
+  * @usb_online: is USB input connected
+- * @charging_enabled: is charging enabled
+  * @irq_unsupported: is interrupt unsupported by SMB hardware
+  * @max_charge_current: maximum current (in uA) the battery can be charged
+  * @max_charge_voltage: maximum voltage (in uV) the battery can be charged
+@@ -192,7 +191,6 @@ struct smb347_charger {
+ 	unsigned int		id;
+ 	bool			mains_online;
+ 	bool			usb_online;
+-	bool			charging_enabled;
+ 	bool			irq_unsupported;
  
--	INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
-+	if (!fsm->hnp_work_inited) {
-+		INIT_DELAYED_WORK(&fsm->hnp_polling_work, otg_hnp_polling_work);
-+		fsm->hnp_work_inited = true;
-+	}
-+
- 	schedule_delayed_work(&fsm->hnp_polling_work,
- 					msecs_to_jiffies(T_HOST_REQ_POLL));
+ 	unsigned int		max_charge_current;
+@@ -358,21 +356,13 @@ static int smb347_charging_status(struct smb347_charger *smb)
+ 
+ static int smb347_charging_set(struct smb347_charger *smb, bool enable)
+ {
+-	int ret = 0;
+-
+ 	if (smb->enable_control != SMB3XX_CHG_ENABLE_SW) {
+ 		dev_dbg(smb->dev, "charging enable/disable in SW disabled\n");
+ 		return 0;
+ 	}
+ 
+-	if (smb->charging_enabled != enable) {
+-		ret = regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
+-					 enable ? CMD_A_CHG_ENABLED : 0);
+-		if (!ret)
+-			smb->charging_enabled = enable;
+-	}
+-
+-	return ret;
++	return regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
++				  enable ? CMD_A_CHG_ENABLED : 0);
  }
-diff --git a/include/linux/usb/otg-fsm.h b/include/linux/usb/otg-fsm.h
-index 3aee78dda16d..784659d4dc99 100644
---- a/include/linux/usb/otg-fsm.h
-+++ b/include/linux/usb/otg-fsm.h
-@@ -196,6 +196,7 @@ struct otg_fsm {
- 	struct mutex lock;
- 	u8 *host_req_flag;
- 	struct delayed_work hnp_polling_work;
-+	bool hnp_work_inited;
- 	bool state_changed;
- };
  
+ static inline int smb347_charging_enable(struct smb347_charger *smb)
 -- 
 2.32.0
 
