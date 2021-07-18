@@ -2,139 +2,218 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DD3AC636CB
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Jul 2021 20:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E62AC636CA
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Jul 2021 21:28:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0D46E61186
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Jul 2021 20:59:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6438361004
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Jul 2021 21:28:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229853AbhGRVCz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Jul 2021 17:02:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51212 "EHLO
+        id S232898AbhGRVbH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Jul 2021 17:31:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229585AbhGRVCz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jul 2021 17:02:55 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CC2EC061762;
-        Sun, 18 Jul 2021 13:59:56 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id x25so26242357lfu.13;
-        Sun, 18 Jul 2021 13:59:56 -0700 (PDT)
+        with ESMTP id S229853AbhGRVbG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Jul 2021 17:31:06 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5B20C061764;
+        Sun, 18 Jul 2021 14:28:07 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id d17so2897620ljq.12;
+        Sun, 18 Jul 2021 14:28:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=HFfBjstguhvOzoTjqRzCmqrQNY06jti1kOVosp9qHoo=;
-        b=hKBuWzKY3JX+7KJrNfurQ8/4u4vSH2Be1XusWO3tT1ymlg/CffYxjBuK3KcPQ/DkDe
-         LorBjkCpgbFLN1/mmtLQqkgqMFa2VsuRMAvf+0x0+VhBJlzIaNJX1iPcmWL7m5xvBI/f
-         KHpnL9IiltvgeHhZblSBwKHSGgfDwUsWEIDONaN0COpekRLGsSrB+oaD7HyUE9yMnPbK
-         hKqYmKkqvxYpcq9Q5mtmYPMZB2Tib8U4xb9TaiCDkbHOo8kqX19OklZ4VdpXgUTvBtrL
-         pjPU6VZiaqQaQsIQwY6odMiegIscRLBuNZs1G/k6tjOjC9C4UAfHq0M9h6s4hfR74Z5y
-         U06Q==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=tMyH5mYRtff0c/S0OdvmMRx/giOjZ5YO7NbCgFXE6qU=;
+        b=QX9pvz2HhICPsgAtVQ4i4nImjxafpG2eaLSblo+oWouIaK3LAVXI49os1PpoEQHdwi
+         y15vYm4S/9bFV1vkgdFWgpjKC2Vor+v/wbAxJJAJdRsQGdXV3OU9xcMbEDzh5tfLNXQO
+         OxdQ6ctXtBrYj47WvbktKjUf1Wzt9ckvHv0iVcBhfVlZCN7yIw4021fFnxSUYnkn8FZp
+         IQPm9WhGwSgkOGpVDs4emK8WQYWOmQnqFrsuRZm+8D38giNgPs6kZjJbW72eCDXIrbSy
+         XbqXYifcucwMf6f7Ayy7s/PB+cIK1TELIOIWzAJqMnjnuoR96oAPvGRaruah2H4jMyo5
+         EPuA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=HFfBjstguhvOzoTjqRzCmqrQNY06jti1kOVosp9qHoo=;
-        b=pKirlEgZDZfRn0YTDqSmyIx3C2NMzRamkqYsIbbJKhByitFK5tLg4NyiVUF8nlZ0PU
-         P4vvs3s335tnbdrPy0A1Ui4YRIzeXdUoFHLqtL9Uf4kv4IjlNQke2G8nbePosuMmz5GN
-         Lge7oVV0KcXaYL+HLqX2rSbJQ+qZlV4Ado/A8dQ1+nSf4kgSeqgWHpL5f21Rd80wapqV
-         dYqI008wKfFbrR+f+F4SJIT0UF6O1JsQcYXgX4lnNHRDzzEXhj/At3a2iuuJHMzd/kx7
-         aKbdBu195/9tTwT98NzmtgfItax80anMJLAU+b5FEjAbo+Eqr8EMKMWdQEXmB65IVyWk
-         zL2g==
-X-Gm-Message-State: AOAM532j5FR5cVqrbR3Afn3QKpTTuUv+APb/lTXk3g8fUqDVD7BdeHdK
-        moFymOmdGjsGu9Hk7/ePEFs=
-X-Google-Smtp-Source: ABdhPJxBALZlF3LK/9JQ15Hk6fkH/d6PnUFIUPJ8LDiKhARAQwVAxPwIBGGdD6Nc68LnFcbMHak0/g==
-X-Received: by 2002:ac2:5d2f:: with SMTP id i15mr16052400lfb.134.1626641992999;
-        Sun, 18 Jul 2021 13:59:52 -0700 (PDT)
-Received: from [192.168.2.145] (46-138-17-53.dynamic.spd-mgts.ru. [46.138.17.53])
-        by smtp.googlemail.com with ESMTPSA id k21sm1798140lji.107.2021.07.18.13.59.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 18 Jul 2021 13:59:52 -0700 (PDT)
-Subject: Re: [PATCH v18 0/2] Add memory bandwidth management to NVIDIA Tegra
- DRM driver
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=tMyH5mYRtff0c/S0OdvmMRx/giOjZ5YO7NbCgFXE6qU=;
+        b=rEVVKD8+efSBMZZxQ9rM2giEMQxxLfvJPEKClFQX3b92kW7IX9XyfKex1tqaBHsF98
+         5G9zRchu/B4cn9RNZ5FPkQf9+mUNgGIYH+NbYhA7eWzUpbxuOjzLLiTsD9DF07PI6x4d
+         Ec+k21MegQAv0q1RV41VgcxVPHct7GovGHxpRqSBqCv7W3noKfPaI4wJbAP3trgfm/Px
+         BYE0xD6+y16rHhImzPA1FUPG1VkPgb9Ywvl/67QA2LwqUx7TPAnp2pX7b/VOfCyXX1bo
+         88kFYeF/bt6E7F1uSsDdbasVawVNbPFCfEaYXY3p0e0APJnQWVssW4De3N9xXRPMvqsR
+         ZOEw==
+X-Gm-Message-State: AOAM532cfx0to9/vDi5a4UUONIfUnROOBO2/Y0pHrsrJD8WX7vuRbh6G
+        uuWvIS4z0Am3fXTalWrsMoQ=
+X-Google-Smtp-Source: ABdhPJxBWUDGZXhFxf+tjOmTXv+fBX5QSlobYLQT1ZEOgi2Dx2XvArZlU/MgG4FvErY8VtwBligTug==
+X-Received: by 2002:a2e:7a18:: with SMTP id v24mr6828818ljc.420.1626643686301;
+        Sun, 18 Jul 2021 14:28:06 -0700 (PDT)
+Received: from localhost.localdomain (46-138-17-53.dynamic.spd-mgts.ru. [46.138.17.53])
+        by smtp.gmail.com with ESMTPSA id c10sm1229062lfv.10.2021.07.18.14.28.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 18 Jul 2021 14:28:05 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Matt Merhar <mattmerhar@protonmail.com>,
+To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-References: <20210601042108.1942-1-digetx@gmail.com>
- <8accfe1e-fc48-21ca-f7c6-bd2d60162e6d@gmail.com>
- <50912a57-aa43-58b0-02d2-6928578d6286@gmail.com>
- <YNBxiFXMS9rfT93c@orome.fritz.box>
- <af058fc3-8696-a8f9-b52d-8e1b2ee760c3@gmail.com>
-Message-ID: <0e81b357-d631-fcc1-bc54-946825093642@gmail.com>
-Date:   Sun, 18 Jul 2021 23:59:51 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/2] soc/tegra: pmc: Prevent racing with cpuilde driver
+Date:   Mon, 19 Jul 2021 00:27:05 +0300
+Message-Id: <20210718212706.21659-2-digetx@gmail.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210718212706.21659-1-digetx@gmail.com>
+References: <20210718212706.21659-1-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <af058fc3-8696-a8f9-b52d-8e1b2ee760c3@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-21.06.2021 14:43, Dmitry Osipenko пишет:
-> 21.06.2021 14:01, Thierry Reding пишет:
->> On Mon, Jun 21, 2021 at 07:19:15AM +0300, Dmitry Osipenko wrote:
->>> 07.06.2021 01:40, Dmitry Osipenko пишет:
->>>> 01.06.2021 07:21, Dmitry Osipenko пишет:
->>>>> This series adds memory bandwidth management to the NVIDIA Tegra DRM driver,
->>>>> which is done using interconnect framework. It fixes display corruption that
->>>>> happens due to insufficient memory bandwidth.
->>>>>
->>>>> Changelog:
->>>>>
->>>>> v18: - Moved total peak bandwidth from CRTC state to plane state and removed
->>>>>        dummy plane bandwidth state initialization from T186+ plane hub. This
->>>>>        was suggested by Thierry Reding to v17.
->>>>>
->>>>>      - I haven't done anything about the cursor's plane bandwidth which
->>>>>        doesn't contribute to overlapping bandwidths for a small sized
->>>>>        window because it works okay as-is.
->>>>
->>>> Thierry, will you take these patches for 5.14?
->>>>
->>>
->>> The display controller does _NOT_WORK_ properly without bandwidth
->>> management.
->>
->> That's surprising. So either it has never worked before (which I think
->> I'd know) or something has caused this regression recently. In the
->> latter case we need to identify what that was and revert (or fix) it.
-> 
-> The problem is caused by the support of dynamic memory frequency scaling
-> which does a good job at keeping memory in a low power state during idle
-> time. So display controller may not get enough bandwidth at the start of
-> scanout if it won't request BW beforehand. This problem existed for many
-> years on T124 and now T20/30 are also affected. The DC of T20 is the
-> least tolerant to memory bandwidth troubles.
-> 
-> This problem is not critical, but it hurts user experience since high
-> resolution modes may not work at all and display output may become
-> distorted, requiring a DC reset.
-> 
->>> Can we get this patch into 5.14? What is the problem?
->>
->> There was not enough time to review and test this, so I didn't feel
->> comfortable picking it up so close to the -rc6 cut-off. I plan to pick
->> this up early in the v5.14 release cycle and target v5.15.
-> 
-> Thank you for the explanation! It's not uncommon to forget about
-> patches, so the silence worries me. I hoped that both the dynamic freq
-> scaling and display BW support would be merged around the same time, but
-> apparently we got a disconnect here.
-> 
+Both PMC and cpuidle drivers are probed at the same init level and
+cpuidle depends on the PMC suspend mode. Add new default suspend mode
+that indicates whether PMC driver has been probed and reset the mode in
+a case of deferred probe of the PMC driver.
 
-Reminder ping :)
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/mach-tegra/pm.c    |  2 +-
+ arch/arm/mach-tegra/pm.h    |  6 ------
+ arch/arm/mach-tegra/tegra.c |  2 --
+ drivers/soc/tegra/pmc.c     | 14 +++++++++++++-
+ include/soc/tegra/pm.h      |  6 ++++++
+ 5 files changed, 20 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
+index 6452ebf68d40..b21f51b8e19e 100644
+--- a/arch/arm/mach-tegra/pm.c
++++ b/arch/arm/mach-tegra/pm.c
+@@ -403,7 +403,7 @@ static const struct platform_suspend_ops tegra_suspend_ops = {
+ 	.enter		= tegra_suspend_enter,
+ };
+ 
+-void __init tegra_init_suspend(void)
++void tegra_pm_init_suspend(void)
+ {
+ 	enum tegra_suspend_mode mode = tegra_pmc_get_suspend_mode();
+ 
+diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
+index 81525f5f4a44..e63f96de2825 100644
+--- a/arch/arm/mach-tegra/pm.h
++++ b/arch/arm/mach-tegra/pm.h
+@@ -25,10 +25,4 @@ void tegra30_sleep_core_init(void);
+ 
+ extern void (*tegra_tear_down_cpu)(void);
+ 
+-#ifdef CONFIG_PM_SLEEP
+-void tegra_init_suspend(void);
+-#else
+-static inline void tegra_init_suspend(void) {}
+-#endif
+-
+ #endif /* _MACH_TEGRA_PM_H_ */
+diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
+index c011359bcdb4..ab5008f35803 100644
+--- a/arch/arm/mach-tegra/tegra.c
++++ b/arch/arm/mach-tegra/tegra.c
+@@ -84,8 +84,6 @@ static void __init tegra_dt_init(void)
+ 
+ static void __init tegra_dt_init_late(void)
+ {
+-	tegra_init_suspend();
+-
+ 	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
+ 	    of_machine_is_compatible("compal,paz00"))
+ 		tegra_paz00_wifikill_init();
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index ea62f84d1c8b..50091c4ec948 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -436,7 +436,7 @@ struct tegra_pmc {
+ 
+ static struct tegra_pmc *pmc = &(struct tegra_pmc) {
+ 	.base = NULL,
+-	.suspend_mode = TEGRA_SUSPEND_NONE,
++	.suspend_mode = TEGRA_SUSPEND_NOT_READY,
+ };
+ 
+ static inline struct tegra_powergate *
+@@ -1812,6 +1812,7 @@ static int tegra_pmc_parse_dt(struct tegra_pmc *pmc, struct device_node *np)
+ 	u32 value, values[2];
+ 
+ 	if (of_property_read_u32(np, "nvidia,suspend-mode", &value)) {
++		pmc->suspend_mode = TEGRA_SUSPEND_NONE;
+ 	} else {
+ 		switch (value) {
+ 		case 0:
+@@ -2785,6 +2786,11 @@ static int tegra_pmc_regmap_init(struct tegra_pmc *pmc)
+ 	return 0;
+ }
+ 
++static void tegra_pmc_reset_suspend_mode(void *data)
++{
++	pmc->suspend_mode = TEGRA_SUSPEND_NOT_READY;
++}
++
+ static int tegra_pmc_probe(struct platform_device *pdev)
+ {
+ 	void __iomem *base;
+@@ -2803,6 +2809,11 @@ static int tegra_pmc_probe(struct platform_device *pdev)
+ 	if (err < 0)
+ 		return err;
+ 
++	err = devm_add_action_or_reset(&pdev->dev, tegra_pmc_reset_suspend_mode,
++				       NULL);
++	if (err)
++		return err;
++
+ 	/* take over the memory region from the early initialization */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	base = devm_ioremap_resource(&pdev->dev, res);
+@@ -2909,6 +2920,7 @@ static int tegra_pmc_probe(struct platform_device *pdev)
+ 
+ 	tegra_pmc_clock_register(pmc, pdev->dev.of_node);
+ 	platform_set_drvdata(pdev, pmc);
++	tegra_pm_init_suspend();
+ 
+ 	return 0;
+ 
+diff --git a/include/soc/tegra/pm.h b/include/soc/tegra/pm.h
+index 08477d7bfab9..433878927026 100644
+--- a/include/soc/tegra/pm.h
++++ b/include/soc/tegra/pm.h
+@@ -14,6 +14,7 @@ enum tegra_suspend_mode {
+ 	TEGRA_SUSPEND_LP1, /* CPU voltage off, DRAM self-refresh */
+ 	TEGRA_SUSPEND_LP0, /* CPU + core voltage off, DRAM self-refresh */
+ 	TEGRA_MAX_SUSPEND_MODE,
++	TEGRA_SUSPEND_NOT_READY,
+ };
+ 
+ #if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ARM)
+@@ -28,6 +29,7 @@ void tegra_pm_clear_cpu_in_lp2(void);
+ void tegra_pm_set_cpu_in_lp2(void);
+ int tegra_pm_enter_lp2(void);
+ int tegra_pm_park_secondary_cpu(unsigned long cpu);
++void tegra_pm_init_suspend(void);
+ #else
+ static inline enum tegra_suspend_mode
+ tegra_pm_validate_suspend_mode(enum tegra_suspend_mode mode)
+@@ -61,6 +63,10 @@ static inline int tegra_pm_park_secondary_cpu(unsigned long cpu)
+ {
+ 	return -ENOTSUPP;
+ }
++
++static inline void tegra_pm_init_suspend(void)
++{
++}
+ #endif /* CONFIG_PM_SLEEP */
+ 
+ #endif /* __SOC_TEGRA_PM_H__ */
+-- 
+2.32.0
+
