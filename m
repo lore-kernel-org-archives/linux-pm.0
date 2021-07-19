@@ -2,198 +2,144 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91474C636CB
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 06:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88428C12002
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 07:27:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 75BC560BD3
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 06:33:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F49061029
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 07:27:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233632AbhGSGgw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jul 2021 02:36:52 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:28996 "EHLO
-        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233048AbhGSGgu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 02:36:50 -0400
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 16J6SiRh013093;
-        Mon, 19 Jul 2021 02:33:35 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references; s=pp1;
- bh=xhsFBQQhd+v0g2hFgAVn2UjRNynXKnOoX1vUoPJcaTE=;
- b=s+y7PGu3M2MiMUXrnMNBpX157i65jMU/sfF9/j6ZyDw7wfg2w6UKibpRrMrjHMwOyjOA
- v7BlQ4OsOHoZ7T02asfyNUi4n2E8Wd6gpTj45YB7wyTo84N34rfKB6disFl9nCjFHyFF
- OACvM/l/2FLKvmpZXquL3Yzc2VJ/jIe7O7XfK/OcBJWKas//o+GFQiaebXi3ihLyJ7Ir
- 4pQqX+WQh1+y+BbvN8kxzFHt2euHCxwYc6agZhUpM+gFHf1MJ54NA+1alHoWcoPDqWEy
- pUoeC9/f64i7AgHuAtoSnfHvKX1kRrVqEQ2d8M5YnsQ3VlIY3XTe6EU15Gja10c7vRGO 9g== 
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 39w0mt4ar7-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 19 Jul 2021 02:33:35 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
-        by ppma04dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16J6Wvnv009171;
-        Mon, 19 Jul 2021 06:33:34 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
-        by ppma04dal.us.ibm.com with ESMTP id 39upuaddnr-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 19 Jul 2021 06:33:34 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com [9.57.199.109])
-        by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 16J6XXVm19988864
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 19 Jul 2021 06:33:33 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id ABBD26A74D;
-        Mon, 19 Jul 2021 06:33:33 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 179696A74C;
-        Mon, 19 Jul 2021 06:33:33 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.85.122.97])
-        by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
-        Mon, 19 Jul 2021 06:33:32 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
-        id DD1F72E2D40; Mon, 19 Jul 2021 12:03:30 +0530 (IST)
-From:   "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
-        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-        Michal Suchanek <msuchanek@suse.de>
-Cc:     linux-pm@vger.kernel.org, joedecke@de.ibm.com,
-        linuxppc-dev@lists.ozlabs.org,
-        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v5 2/2] cpuidle/pseries: Do not cap the CEDE0 latency in fixup_cede0_latency()
-Date:   Mon, 19 Jul 2021 12:03:19 +0530
-Message-Id: <1626676399-15975-3-git-send-email-ego@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1626676399-15975-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1626676399-15975-1-git-send-email-ego@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: nAKZk-yhKhhOyvD5KGc_zypugulw-9aK
-X-Proofpoint-GUID: nAKZk-yhKhhOyvD5KGc_zypugulw-9aK
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391,18.0.790
- definitions=2021-07-19_02:2021-07-16,2021-07-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- impostorscore=0 malwarescore=0 adultscore=0 clxscore=1011 mlxlogscore=999
- phishscore=0 priorityscore=1501 mlxscore=0 bulkscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107190033
+        id S234819AbhGSHap (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jul 2021 03:30:45 -0400
+Received: from mx1.tq-group.com ([93.104.207.81]:58579 "EHLO mx1.tq-group.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233759AbhGSHap (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Jul 2021 03:30:45 -0400
+X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jul 2021 03:30:44 EDT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1626679666; x=1658215666;
+  h=from:to:cc:subject:date:message-id;
+  bh=uNWl9es6Whwq/2IPyi9HkWJ5Uoe1DW7pH0BDC8R6XAk=;
+  b=mvEbZA/8Z6df1xJ33Oz2hRFelKxI09iGaFyOUVid07NMrVCaqKaN97Ow
+   2vf+5PNJBwBblpNJncNWBM3ati/i5+SgNGI3GqQuLfIm3pRBUQx4zUVSR
+   RGMqEz5OzmqJoeAZ/Utaf57P2eFUaycj167e18+Wiujfd5rFpz/V0S+pT
+   i9wkchwKQodIIOCSL7FmSI4d34e5rqJ61nVrTxTvoDu3SoyKyfL9RuCzG
+   /4qOpAcHhOsKTOh36b686EuNikzRT/gJAFqK/+77pO42PcqfpxE6RyPco
+   Trso2YkHnnxd8pxAz1fOyOPrMQxmY6p6tl30dO7aTQ6WZMF2MnvcbHYFX
+   Q==;
+X-IronPort-AV: E=Sophos;i="5.84,251,1620684000"; 
+   d="scan'208";a="18512869"
+Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
+  by mx1-pgp.tq-group.com with ESMTP; 19 Jul 2021 09:20:36 +0200
+Received: from mx1.tq-group.com ([192.168.6.7])
+  by tq-pgp-pr1.tq-net.de (PGP Universal service);
+  Mon, 19 Jul 2021 09:20:36 +0200
+X-PGP-Universal: processed;
+        by tq-pgp-pr1.tq-net.de on Mon, 19 Jul 2021 09:20:36 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1626679236; x=1658215236;
+  h=from:to:cc:subject:date:message-id;
+  bh=uNWl9es6Whwq/2IPyi9HkWJ5Uoe1DW7pH0BDC8R6XAk=;
+  b=nqxNjwqHR2dUzGzj/H7+Oe0EIhJ5LNbjPo5BZElk9Cw/QZZvty/uwtnq
+   KGS+IlsVxBWitHkso4Fdn35HsjUsK9kIDsGUq2WboxQcyImhBZmwOdVZY
+   etm8bY5Wq0qj7cQkosc1sBClI6TmMVvI5Pgyuhn+C1Q+aSJFZG4fmU6iy
+   c3RlBtKWZxjPjMBp+g8pR/OLuoTgfVlBzwIXmLsXUwAYsvi2YgJugC9rl
+   b+NlV7mayIqkVrep3nMHSSXGanUlkaR9M3B0+Etmiou2OVjvgValMlRnc
+   sYyAearsH19zbK6OYvH+ZfIWXBNFN5i1jbFdqJOIeGTHth7+cRDzT6kCF
+   Q==;
+X-IronPort-AV: E=Sophos;i="5.84,251,1620684000"; 
+   d="scan'208";a="18512865"
+Received: from vtuxmail01.tq-net.de ([10.115.0.20])
+  by mx1.tq-group.com with ESMTP; 19 Jul 2021 09:20:36 +0200
+Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
+        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id 0F6A0280075;
+        Mon, 19 Jul 2021 09:20:36 +0200 (CEST)
+From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+Subject: [PATCH 2/2] power: supply: sbs-battery: add support for time_to_empty_now attribute
+Date:   Mon, 19 Jul 2021 09:20:19 +0200
+Message-Id: <7238b56cca93c8101288b069fd044024da81db1f.1626678985.git.matthias.schiffer@ew.tq-group.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cd466515301fcb19e9b858b2287d8bcc10cc3de1.1626678985.git.matthias.schiffer@ew.tq-group.com>
+References: <cd466515301fcb19e9b858b2287d8bcc10cc3de1.1626678985.git.matthias.schiffer@ew.tq-group.com>
+In-Reply-To: <cd466515301fcb19e9b858b2287d8bcc10cc3de1.1626678985.git.matthias.schiffer@ew.tq-group.com>
+References: <cd466515301fcb19e9b858b2287d8bcc10cc3de1.1626678985.git.matthias.schiffer@ew.tq-group.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+As defined by the Smart Battery Data Specification.
 
-Currently in fixup_cede0_latency() code, we perform the fixup the
-CEDE(0) exit latency value only if minimum advertized extended CEDE
-latency values are less than 10us. This was done so as to not break
-the expected behaviour on POWER8 platforms where the advertised
-latency was higher than the default 10us, which would delay the SMT
-folding on the core.
+An _AVG suffix is added to the enum values REG_TIME_TO_EMPTY and
+REG_TIME_TO_FULL to make the distinction clear.
 
-However, after the earlier patch "cpuidle/pseries: Fixup CEDE0 latency
-only for POWER10 onwards", we can be sure that the fixup of CEDE0
-latency is going to happen only from POWER10 onwards. Hence
-unconditionally use the minimum exit latency provided by the platform.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
 ---
- drivers/cpuidle/cpuidle-pseries.c | 59 ++++++++++++++++++++-------------------
- 1 file changed, 30 insertions(+), 29 deletions(-)
+ drivers/power/supply/sbs-battery.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index e592280d..bba449b 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -346,11 +346,9 @@ static int pseries_cpuidle_driver_init(void)
- static void __init fixup_cede0_latency(void)
- {
- 	struct xcede_latency_payload *payload;
--	u64 min_latency_us;
-+	u64 min_xcede_latency_us = UINT_MAX;
- 	int i;
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 3d6b8247d450..c4a95b01463a 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -31,8 +31,9 @@ enum {
+ 	REG_CURRENT_AVG,
+ 	REG_MAX_ERR,
+ 	REG_CAPACITY,
+-	REG_TIME_TO_EMPTY,
+-	REG_TIME_TO_FULL,
++	REG_TIME_TO_EMPTY_NOW,
++	REG_TIME_TO_EMPTY_AVG,
++	REG_TIME_TO_FULL_AVG,
+ 	REG_STATUS,
+ 	REG_CAPACITY_LEVEL,
+ 	REG_CYCLE_COUNT,
+@@ -119,9 +120,11 @@ static const struct chip_data {
+ 		SBS_DATA(POWER_SUPPLY_PROP_ENERGY_FULL, 0x10, 0, 65535),
+ 	[REG_FULL_CHARGE_CAPACITY_CHARGE] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_CHARGE_FULL, 0x10, 0, 65535),
+-	[REG_TIME_TO_EMPTY] =
++	[REG_TIME_TO_EMPTY_NOW] =
++		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW, 0x11, 0, 65535),
++	[REG_TIME_TO_EMPTY_AVG] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG, 0x12, 0, 65535),
+-	[REG_TIME_TO_FULL] =
++	[REG_TIME_TO_FULL_AVG] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_FULL_AVG, 0x13, 0, 65535),
+ 	[REG_CHARGE_CURRENT] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, 0x14, 0, 65535),
+@@ -165,6 +168,7 @@ static const enum power_supply_property sbs_properties[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN,
+ 	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+ 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+ 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
+@@ -748,6 +752,7 @@ static void  sbs_unit_adjustment(struct i2c_client *client,
+ 		val->intval -= TEMP_KELVIN_TO_CELSIUS;
+ 		break;
  
--	min_latency_us = dedicated_states[1].exit_latency; // CEDE latency
--
- 	if (parse_cede_parameters())
- 		return;
- 
-@@ -358,42 +356,45 @@ static void __init fixup_cede0_latency(void)
- 		nr_xcede_records);
- 
- 	payload = &xcede_latency_parameter.payload;
-+
-+	/*
-+	 * The CEDE idle state maps to CEDE(0). While the hypervisor
-+	 * does not advertise CEDE(0) exit latency values, it does
-+	 * advertise the latency values of the extended CEDE states.
-+	 * We use the lowest advertised exit latency value as a proxy
-+	 * for the exit latency of CEDE(0).
-+	 */
- 	for (i = 0; i < nr_xcede_records; i++) {
- 		struct xcede_latency_record *record = &payload->records[i];
-+		u8 hint = record->hint;
- 		u64 latency_tb = be64_to_cpu(record->latency_ticks);
- 		u64 latency_us = DIV_ROUND_UP_ULL(tb_to_ns(latency_tb), NSEC_PER_USEC);
- 
--		if (latency_us == 0)
--			pr_warn("cpuidle: xcede record %d has an unrealistic latency of 0us.\n", i);
--
--		if (latency_us < min_latency_us)
--			min_latency_us = latency_us;
--	}
--
--	/*
--	 * By default, we assume that CEDE(0) has exit latency 10us,
--	 * since there is no way for us to query from the platform.
--	 *
--	 * However, if the wakeup latency of an Extended CEDE state is
--	 * smaller than 10us, then we can be sure that CEDE(0)
--	 * requires no more than that.
--	 *
--	 * Perform the fix-up.
--	 */
--	if (min_latency_us < dedicated_states[1].exit_latency) {
- 		/*
--		 * We set a minimum of 1us wakeup latency for cede0 to
--		 * distinguish it from snooze
-+		 * We expect the exit latency of an extended CEDE
-+		 * state to be non-zero, it to since it takes at least
-+		 * a few nanoseconds to wakeup the idle CPU and
-+		 * dispatch the virtual processor into the Linux
-+		 * Guest.
-+		 *
-+		 * So we consider only non-zero value for performing
-+		 * the fixup of CEDE(0) latency.
- 		 */
--		u64 cede0_latency = 1;
-+		if (latency_us == 0) {
-+			pr_warn("cpuidle: Skipping xcede record %d [hint=%d]. Exit latency = 0us\n",
-+				i, hint);
-+			continue;
-+		}
- 
--		if (min_latency_us > cede0_latency)
--			cede0_latency = min_latency_us - 1;
-+		if (latency_us < min_xcede_latency_us)
-+			min_xcede_latency_us = latency_us;
-+	}
- 
--		dedicated_states[1].exit_latency = cede0_latency;
--		dedicated_states[1].target_residency = 10 * (cede0_latency);
-+	if (min_xcede_latency_us != UINT_MAX) {
-+		dedicated_states[1].exit_latency = min_xcede_latency_us;
-+		dedicated_states[1].target_residency = 10 * (min_xcede_latency_us);
- 		pr_info("cpuidle: Fixed up CEDE exit latency to %llu us\n",
--			cede0_latency);
-+			min_xcede_latency_us);
- 	}
- 
- }
++	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+ 	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
+ 		/* sbs provides time to empty and time to full in minutes.
+@@ -966,6 +971,7 @@ static int sbs_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_TEMP:
++	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
+ 	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
+ 	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
+ 	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
 -- 
-1.9.4
+2.17.1
 
