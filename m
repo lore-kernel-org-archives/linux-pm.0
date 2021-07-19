@@ -2,97 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF63C636CB
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 07:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB9AFC636CB
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 09:01:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4747561029
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 07:27:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3C37D613F8
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 09:01:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234822AbhGSHar (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jul 2021 03:30:47 -0400
-Received: from mx1.tq-group.com ([93.104.207.81]:58579 "EHLO mx1.tq-group.com"
+        id S235776AbhGSIUU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jul 2021 04:20:20 -0400
+Received: from foss.arm.com ([217.140.110.172]:53032 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234816AbhGSHaq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Jul 2021 03:30:46 -0400
-X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jul 2021 03:30:44 EDT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1626679666; x=1658215666;
-  h=from:to:cc:subject:date:message-id;
-  bh=CVGDaZsDY4PME7/N9mVxnymCvLoRHKYhnkmhynFbYZ0=;
-  b=qgVWG/HqUeQQY10CzxRhZvejEJa6vbyAR39InHDwMB1vdDdEK7AIewG7
-   onttWGp0dkYwzGCXA5HWGlBKfYUImFLZ814u+I1jmR4hCxhMcuIW0SUS9
-   KZIv6L0Y+VWY70w8aRBS4Dh6Z5LYAzMDIehPFfeuDSOpsgVwq3IBtRRPB
-   UqroLVT6UHp46+z3nHhVcaXXBwaq/V2qL9aeBkLI8rRqlIisVHOfrd9AF
-   82SVgi8MMMLaLcBtlWkjsfkP3pKHUkfTS/M/II2CHvDn5jTfWK7svq4VX
-   1PFMzyHy5VMApWTjVbL+J1YHJ1ya3Zbz9mbgf2ig2RViwuD6VcuwuTHDY
-   Q==;
-X-IronPort-AV: E=Sophos;i="5.84,251,1620684000"; 
-   d="scan'208";a="18512868"
-Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
-  by mx1-pgp.tq-group.com with ESMTP; 19 Jul 2021 09:20:36 +0200
-Received: from mx1.tq-group.com ([192.168.6.7])
-  by tq-pgp-pr1.tq-net.de (PGP Universal service);
-  Mon, 19 Jul 2021 09:20:36 +0200
-X-PGP-Universal: processed;
-        by tq-pgp-pr1.tq-net.de on Mon, 19 Jul 2021 09:20:36 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1626679236; x=1658215236;
-  h=from:to:cc:subject:date:message-id;
-  bh=CVGDaZsDY4PME7/N9mVxnymCvLoRHKYhnkmhynFbYZ0=;
-  b=l4VOYMr1/2JFvY5GLPRMcqzAeXcOiDKfkBKWh/T5jlnZDiNsjnmNYjMA
-   rRCkO3EC4/uKTlE6kY79ssSWmWYojXSfua11AoBK8wAr+HIWicxkK456h
-   ry32UZ9P/AD+7pCe3ogNREtGW7TbV/gSPtYo97v1fjAARN5w4f3OC8t5H
-   iAau17G5GoBcSOk9kyNdQFslkjpDkdYxqh0Su3ykqYQ15qViBcyieBLF0
-   6yH/yhe/qCznkmDNV9Ed1nQW7NNmNEZEAQzkrw0s/pPiLvP/uFMC01IaZ
-   bMEJIZ/HhMjbF8MeismwMYY8SlAGHomB2lIP+SSMvHgaXrkifMdtb0P3M
-   w==;
-X-IronPort-AV: E=Sophos;i="5.84,251,1620684000"; 
-   d="scan'208";a="18512862"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 19 Jul 2021 09:20:36 +0200
-Received: from schifferm-ubuntu4.tq-net.de (schifferm-ubuntu4.tq-net.de [10.121.48.12])
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPA id E2568280070;
-        Mon, 19 Jul 2021 09:20:35 +0200 (CEST)
-From:   Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-Subject: [PATCH 1/2] power: supply: sbs-battery: relax voltage limit
-Date:   Mon, 19 Jul 2021 09:20:18 +0200
-Message-Id: <cd466515301fcb19e9b858b2287d8bcc10cc3de1.1626678985.git.matthias.schiffer@ew.tq-group.com>
-X-Mailer: git-send-email 2.17.1
+        id S235728AbhGSIUO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Jul 2021 04:20:14 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D8B06D;
+        Mon, 19 Jul 2021 01:52:10 -0700 (PDT)
+Received: from [10.57.3.138] (unknown [10.57.3.138])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1E93D3F73D;
+        Mon, 19 Jul 2021 01:52:07 -0700 (PDT)
+Subject: Re: [RFC PATCH v2 0/6] Introduce Active Stats framework with CPU
+ performance statistics
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Chris Redpath <Chris.Redpath@arm.com>, Beata.Michalska@arm.com,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Amit Kachhap <amit.kachhap@gmail.com>
+References: <20210706131828.22309-1-lukasz.luba@arm.com>
+ <CAJZ5v0ga1O9Y9Lam=BoXofE7sjTNpYVSTjAWvSGZ+j__aCeXJw@mail.gmail.com>
+ <1de9d474-fdeb-8db6-0b01-53a90f7c20c8@arm.com>
+ <CAJZ5v0gzpfT__EyrVuZSr32ms7-YJZw7qEok0WZECv1iDRRvWA@mail.gmail.com>
+ <4d4801c3-1d84-9754-815c-71a6412cf4f3@arm.com>
+ <CAJZ5v0i3UUKxQbcfTVWHOeje-LTOnuAMda3FX0D5sqHLXEs3Xg@mail.gmail.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <c54c4f02-56a8-9689-abd8-0632a2e3e1d1@arm.com>
+Date:   Mon, 19 Jul 2021 09:52:06 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <CAJZ5v0i3UUKxQbcfTVWHOeje-LTOnuAMda3FX0D5sqHLXEs3Xg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Smart Battery Data Specification allows for values 0..65535 mV,
-there is no reason to limit the value to 20000.
 
-Signed-off-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
----
- drivers/power/supply/sbs-battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index f84dbaab283a..3d6b8247d450 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -102,7 +102,7 @@ static const struct chip_data {
- 	[REG_TEMPERATURE] =
- 		SBS_DATA(POWER_SUPPLY_PROP_TEMP, 0x08, 0, 65535),
- 	[REG_VOLTAGE] =
--		SBS_DATA(POWER_SUPPLY_PROP_VOLTAGE_NOW, 0x09, 0, 20000),
-+		SBS_DATA(POWER_SUPPLY_PROP_VOLTAGE_NOW, 0x09, 0, 65535),
- 	[REG_CURRENT_NOW] =
- 		SBS_DATA(POWER_SUPPLY_PROP_CURRENT_NOW, 0x0A, -32768, 32767),
- 	[REG_CURRENT_AVG] =
--- 
-2.17.1
+On 7/14/21 7:30 PM, Rafael J. Wysocki wrote:
+> Sorry for the delay.
+
+Thank you for coming back with comments.
+No worries, I've been on holidays last week :)
+
+[snip]
+
+>>>>
+>>>> I understand your concerns. If you have another idea than this framework
+>>>> I'm happy to hear it. Maybe better stats in cpuidle, which would be
+>>>> are of the cpufreq?
+>>>
+>>> One idea that I have is outlined above and I'm not seeing a reason to
+>>> put cpufreq statistics into cpuidle.
+>>>
+>>
+>> I'm happy to prepare such RFC if you like.
+> 
+> Well, it should be quite clear that I would prefer this to the
+> original approach, if viable at all. :-)
+
+Sure, let me check if this approach is viable. I'll come back to you
+in next days...
+
+> 
+>> I would just need a bit more information.
+> 
+> OK
+
+For now I have only high level questions:
+1. The stats data structures and related manageable code should
+live in the cpuidle and cpufreq just calls some API to notify about
+freq transition? (no split of data, code between these two frameworks)
+2. The registration/allocation of these structures inside the
+cpuidle could be done using cpufreq_register_notifier() with
+notification mechanism?
+3. CPU hotplug notification (which is needed for these stats) can be
+used inside the cpuidle (cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,...))?
 
