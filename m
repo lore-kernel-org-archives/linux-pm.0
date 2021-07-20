@@ -2,166 +2,191 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EFD1C07E95
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 22:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F79BC636C8
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:28:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1EE0A6113A
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Jul 2021 22:55:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 54D9A611ED
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:28:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239836AbhGSWOi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jul 2021 18:14:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58230 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1441854AbhGSWN7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 18:13:59 -0400
-Received: from mail-qv1-xf32.google.com (mail-qv1-xf32.google.com [IPv6:2607:f8b0:4864:20::f32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CF93C061794
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jul 2021 15:44:31 -0700 (PDT)
-Received: by mail-qv1-xf32.google.com with SMTP id m13so5962002qvh.8
-        for <linux-pm@vger.kernel.org>; Mon, 19 Jul 2021 15:44:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=KsSqPnOKXzUDkjkKz916uS2F4jfUfpSikrt0gPU4ujs=;
-        b=FnDo6BSq5ek6KNmpUa/nNGm0q1xDQdeYnwwcltGagTCUujdDC4OC/gf2xNNinEgrzw
-         4bCtjeq+McwFHwzzbk4VOP8fXyp+rxC1zfo82Rhu7d5UsDr1BrfksI6zId6t1f0X7a1m
-         n6jqBW/PeTHX6ukZoJW7usONW3IP4jEGJGD+B36Iby57j3YjdJ4vwoATivQTorSBe/0u
-         75pLS62JNWtYD5obEQyxV4dBQQHIQpqPzCaIT0RakyEMn6i1ro1b/k7rQIC/PkGzIl6A
-         O+oqFyhFPwCsScGy3HRbPT4Mc1fMFb2OKqtrqxzhGesDFTShHC/25VZX2Vlnptt4JNnO
-         j/Wg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=KsSqPnOKXzUDkjkKz916uS2F4jfUfpSikrt0gPU4ujs=;
-        b=nMN61/xE/+r7POSeFPye1PTt4eX7sRbE5U+yMdXwoL3TUqBVI+fumXQtipYqyvbX6A
-         HmL2Z2yarUNOskdjTpYs6OLhfFAiC9UepvO/QLGCQyS9b3iWmQNLgohbszD19cQ+hvHm
-         8rDaGbrI7sj55/et6HwKinWojenEqhFXZVDsP/44BvLQU9pnxKcJjy1JSmIs0/aYmZP7
-         bxnO/E+kucg58RGZYfKfYTLz4yAhcw05hvaxv6Qt5P8nDdAVkkv/aWdfsvBUioXB0A/L
-         QiryxGGhVlL/E2DUdkGXxfug0g+ka/Y3oTJZrK7v4RAquYkNGyEqXHdB+SZsvAGn4/XA
-         +HKA==
-X-Gm-Message-State: AOAM5311cHq5edU+8Hhcx0fhU29aCN6WwOcD8bjDDsQG+C/gpfqV/GNk
-        d0i/4vZ551yMjEthj/ulsPwjiw==
-X-Google-Smtp-Source: ABdhPJxSKGYNHpkUmKywBNW+LP3z28nthNwVLk+4YBXqefO2jufOKFoWN8phbw3HWG8HcfBr6Df64A==
-X-Received: by 2002:a0c:fa08:: with SMTP id q8mr21918403qvn.8.1626734670372;
-        Mon, 19 Jul 2021 15:44:30 -0700 (PDT)
-Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.gmail.com with ESMTPSA id o2sm6625742qkm.109.2021.07.19.15.44.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 19 Jul 2021 15:44:29 -0700 (PDT)
-Subject: Re: [Patch v3 4/6] arm64: boot: dts: qcom: sdm45: Add support for LMh
- node
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     agross@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        viresh.kumar@linaro.org, rjw@rjwysocki.net, robh+dt@kernel.org,
-        tdas@codeaurora.org, mka@chromium.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-References: <20210708120656.663851-1-thara.gopinath@linaro.org>
- <20210708120656.663851-5-thara.gopinath@linaro.org> <YPWpPt+EfTtAUEOH@yoga>
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <4ae91093-625a-f2fa-f0ce-79ec391f6463@linaro.org>
-Date:   Mon, 19 Jul 2021 18:44:29 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        id S243432AbhGTCrg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jul 2021 22:47:36 -0400
+Received: from angie.orcam.me.uk ([78.133.224.34]:60864 "EHLO
+        angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S242706AbhGTCrW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 22:47:22 -0400
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+        id C65E19200B4; Tue, 20 Jul 2021 05:27:59 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by angie.orcam.me.uk (Postfix) with ESMTP id BF5179200B3;
+        Tue, 20 Jul 2021 05:27:59 +0200 (CEST)
+Date:   Tue, 20 Jul 2021 05:27:59 +0200 (CEST)
+From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
+To:     Nikolai Zhubr <zhubr.2@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Sean Christopherson <seanjc@google.com>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        Wanpeng Li <wanpengli@tencent.com>,
+        Jim Mattson <jmattson@google.com>,
+        Joerg Roedel <joro@8bytes.org>
+cc:     x86@kernel.org, linux-pci@vger.kernel.org,
+        linux-pm@vger.kernel.org, kvm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 3/6] x86/PCI: Add support for the Intel 82374EB/82374SB (ESC)
+ PIRQ router
+In-Reply-To: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2107192023450.9461@angie.orcam.me.uk>
+References: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-In-Reply-To: <YPWpPt+EfTtAUEOH@yoga>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The Intel 82374EB/82374SB EISA System Component (ESC) devices implement 
+PCI interrupt steering with a PIRQ router[1] in the form of four PIRQ 
+Route Control registers, available in the port I/O space accessible 
+indirectly via the index/data register pair at 0x22/0x23, located at 
+indices 0x60/0x61/0x62/0x63 for the PIRQ0/1/2/3# lines respectively.  
 
+The semantics is the same as with the PIIX router, however it is not 
+clear if BIOSes use register indices or line numbers as the cookie to 
+identify PCI interrupts in their routing tables and therefore support 
+either scheme.
 
-On 7/19/21 12:33 PM, Bjorn Andersson wrote:
-> On Thu 08 Jul 07:06 CDT 2021, Thara Gopinath wrote:
-> 
->> Add LMh nodes for cpu cluster0 and cpu cluster1. Also add interrupt
->> support in cpufreq node to capture the LMh interrupt and let the scheduler
->> know of the max frequency throttling.
->>
-> 
-> Just noticed, could you please drop "boot: " from $subject and add the
-> missing '8', as you're resubmitting the series.
+Accesses to the port I/O space concerned here need to be unlocked by 
+writing the value of 0x0f to the ESC ID Register at index 0x02 
+beforehand[2].  Do so then and then lock access after use for safety. 
 
-Sure..
+This locking could possibly interfere with accesses to the Intel MP spec 
+IMCR register, implemented by the 82374SB variant of the ESC only as the 
+PCI/APIC Control Register at index 0x70[3], for which leaving access to 
+the configuration space concerned unlocked may have been a requirement 
+for the BIOS to remain compliant with the MP spec.  However we only poke 
+at the IMCR register if the APIC mode is used, in which case the PIRQ 
+router is not, so this arrangement is not going to interfere with IMCR 
+access code.
 
-Warm Regards
-Thara
-> 
-> Regards,
-> Bjorn
-> 
->> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
->> ---
->>
->> v2->v3:
->> 	- Changed the LMh low and high trip to 94500 and 95000 mC from
->> 	  74500 and 75000 mC. This was a bug that got introduced in v2.
->> v1->v2:
->> 	- Dropped dt property qcom,support-lmh as per Bjorn's review comments.
->> 	- Changed lmh compatible from generic to platform specific.
->> 	- Introduced properties specifying arm, low and high temp thresholds for LMh
->> 	  as per Daniel's suggestion.
->>
->>   arch/arm64/boot/dts/qcom/sdm845.dtsi | 26 ++++++++++++++++++++++++++
->>   1 file changed, 26 insertions(+)
->>
->> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> index 0a86fe71a66d..4da6b8f3dd7b 100644
->> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> @@ -3646,6 +3646,30 @@ swm: swm@c85 {
->>   			};
->>   		};
->>   
->> +		lmh_cluster1: lmh@17d70800 {
->> +			compatible = "qcom,sdm845-lmh";
->> +			reg = <0 0x17d70800 0 0x401>;
->> +			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
->> +			qcom,lmh-cpu-id = <0x4>;
->> +			qcom,lmh-temperature-arm = <65000>;
->> +			qcom,lmh-temperature-low = <94500>;
->> +			qcom,lmh-temperature-high = <95000>;
->> +			interrupt-controller;
->> +			#interrupt-cells = <1>;
->> +		};
->> +
->> +		lmh_cluster0: lmh@17d78800 {
->> +			compatible = "qcom,sdm845-lmh";
->> +			reg = <0 0x17d78800 0 0x401>;
->> +			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
->> +			qcom,lmh-cpu-id = <0x0>;
->> +			qcom,lmh-temperature-arm = <65000>;
->> +			qcom,lmh-temperature-low = <94500>;
->> +			qcom,lmh-temperature-high = <95000>;
->> +			interrupt-controller;
->> +			#interrupt-cells = <1>;
->> +		};
->> +
->>   		sound: sound {
->>   		};
->>   
->> @@ -4911,6 +4935,8 @@ cpufreq_hw: cpufreq@17d43000 {
->>   			reg = <0 0x17d43000 0 0x1400>, <0 0x17d45800 0 0x1400>;
->>   			reg-names = "freq-domain0", "freq-domain1";
->>   
->> +			interrupts-extended = <&lmh_cluster0 0>, <&lmh_cluster1 0>;
->> +
->>   			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
->>   			clock-names = "xo", "alternate";
->>   
->> -- 
->> 2.25.1
->>
+The ESC is implemented as a part of the combined southbridge also made 
+of 82375EB/82375SB PCI-EISA Bridge (PCEB) and does itself appear in the 
+PCI configuration space.  Use the PCEB's device identification then for
+determining the presence of the ESC.
 
+References:
 
+[1] "82374EB/82374SB EISA System Component (ESC)", Intel Corporation, 
+    Order Number: 290476-004, March 1996, Section 3.1.12 
+    "PIRQ[0:3]#--PIRQ Route Control Registers", pp. 44-45
+
+[2] same, Section 3.1.1 "ESCID--ESC ID Register", p. 36
+
+[3] same, Section 3.1.17 "PAC--PCI/APIC Control Register", p. 47
+
+Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
+---
+ arch/x86/pci/irq.c |   73 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+
+linux-x86-pirq-router-esc.diff
+Index: linux-macro-pirq/arch/x86/pci/irq.c
+===================================================================
+--- linux-macro-pirq.orig/arch/x86/pci/irq.c
++++ linux-macro-pirq/arch/x86/pci/irq.c
+@@ -359,6 +359,74 @@ static int pirq_ali_set(struct pci_dev *
+ }
+ 
+ /*
++ *	PIRQ routing for the 82374EB/82374SB EISA System Component (ESC)
++ *	ASIC used with the Intel 82420 and 82430 PCIsets.  The ESC is not
++ *	decoded in the PCI configuration space, so we identify it by the
++ *	accompanying 82375EB/82375SB PCI-EISA Bridge (PCEB) ASIC.
++ *
++ *	There are four PIRQ Route Control registers, available in the
++ *	port I/O space accessible indirectly via the index/data register
++ *	pair at 0x22/0x23, located at indices 0x60/0x61/0x62/0x63 for the
++ *	PIRQ0/1/2/3# lines respectively.  The semantics is the same as
++ *	with the PIIX router.
++ *
++ *	Accesses to the port I/O space concerned here need to be unlocked
++ *	by writing the value of 0x0f to the ESC ID Register at index 0x02
++ *	beforehand.  Any other value written to said register prevents
++ *	further accesses from reaching the register file, except for the
++ *	ESC ID Register being written with 0x0f again.
++ *
++ *	References:
++ *
++ *	"82374EB/82374SB EISA System Component (ESC)", Intel Corporation,
++ *	Order Number: 290476-004, March 1996
++ *
++ *	"82375EB/82375SB PCI-EISA Bridge (PCEB)", Intel Corporation, Order
++ *	Number: 290477-004, March 1996
++ */
++
++#define PC_CONF_I82374_ESC_ID			0x02u
++#define PC_CONF_I82374_PIRQ_ROUTE_CONTROL	0x60u
++
++#define PC_CONF_I82374_ESC_ID_KEY		0x0fu
++
++static int pirq_esc_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
++{
++	unsigned long flags;
++	int reg;
++	u8 x;
++
++	reg = pirq;
++	if (reg >= 1 && reg <= 4)
++		reg += PC_CONF_I82374_PIRQ_ROUTE_CONTROL - 1;
++
++	raw_spin_lock_irqsave(&pc_conf_lock, flags);
++	pc_conf_set(PC_CONF_I82374_ESC_ID, PC_CONF_I82374_ESC_ID_KEY);
++	x = pc_conf_get(reg);
++	pc_conf_set(PC_CONF_I82374_ESC_ID, 0);
++	raw_spin_unlock_irqrestore(&pc_conf_lock, flags);
++	return (x < 16) ? x : 0;
++}
++
++static int pirq_esc_set(struct pci_dev *router, struct pci_dev *dev, int pirq,
++		       int irq)
++{
++	unsigned long flags;
++	int reg;
++
++	reg = pirq;
++	if (reg >= 1 && reg <= 4)
++		reg += PC_CONF_I82374_PIRQ_ROUTE_CONTROL - 1;
++
++	raw_spin_lock_irqsave(&pc_conf_lock, flags);
++	pc_conf_set(PC_CONF_I82374_ESC_ID, PC_CONF_I82374_ESC_ID_KEY);
++	pc_conf_set(reg, irq);
++	pc_conf_set(PC_CONF_I82374_ESC_ID, 0);
++	raw_spin_unlock_irqrestore(&pc_conf_lock, flags);
++	return 1;
++}
++
++/*
+  * The Intel PIIX4 pirq rules are fairly simple: "pirq" is
+  * just a pointer to the config space.
+  */
+@@ -768,6 +836,11 @@ static __init int intel_router_probe(str
+ 
+ 	switch (device) {
+ 		u8 rid;
++	case PCI_DEVICE_ID_INTEL_82375:
++		r->name = "PCEB/ESC";
++		r->get = pirq_esc_get;
++		r->set = pirq_esc_set;
++		return 1;
+ 	case PCI_DEVICE_ID_INTEL_82378:
+ 		pci_read_config_byte(router, PCI_REVISION_ID, &rid);
+ 		/* Tell 82378IB (rev < 3) and 82378ZB/82379AB apart.  */
