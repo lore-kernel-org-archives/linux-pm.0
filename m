@@ -2,226 +2,195 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE40C636CA
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87941C07E9B
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 04:29:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 78DEC6108B
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:29:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A8B7611C1
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 04:29:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346240AbhGTCro (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jul 2021 22:47:44 -0400
-Received: from angie.orcam.me.uk ([78.133.224.34]:60826 "EHLO
-        angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236705AbhGTCrP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 22:47:15 -0400
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-        id 67F0892009D; Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by angie.orcam.me.uk (Postfix) with ESMTP id 609F192009B;
-        Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
-Date:   Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
-From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
-To:     Nikolai Zhubr <zhubr.2@gmail.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Sean Christopherson <seanjc@google.com>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
-        Joerg Roedel <joro@8bytes.org>
-cc:     x86@kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] x86: Add support for 0x22/0x23 port I/O configuration
- space
-In-Reply-To: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
-Message-ID: <alpine.DEB.2.21.2107182353140.9461@angie.orcam.me.uk>
-References: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+        id S232806AbhGTDsm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jul 2021 23:48:42 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:29295 "EHLO
+        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230322AbhGTDsk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 23:48:40 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1626755359; h=Content-Transfer-Encoding: Content-Type:
+ In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
+ Subject: Sender; bh=msSy1SY6hbAs1o6cBCTFy9D9LB4qWd97QuLc6JXLcQ8=; b=OXgk7kgxmvKapglUbGDj/F+c2blCNIFqYM4GDGWV6J32DWASyHOJ+O+iReZGgbDSdl+ImOUY
+ myp+m/qagFkGizkl/Oe+5Uz0Gu2sfHiEcz/9AFjJBZcXSnMxb297JSC3JQpBrm8MQ0jnfKNf
+ M9E0w/VJDHt7ldOWBIvw2i9hcJM=
+X-Mailgun-Sending-Ip: 198.61.254.9
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n04.prod.us-east-1.postgun.com with SMTP id
+ 60f6511d4815712f3a5a6c84 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 20 Jul 2021 04:29:17
+ GMT
+Sender: rnayak=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id B6A39C43217; Tue, 20 Jul 2021 04:29:16 +0000 (UTC)
+Received: from [10.50.42.221] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: rnayak)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id A2B06C433D3;
+        Tue, 20 Jul 2021 04:29:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org A2B06C433D3
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=rnayak@codeaurora.org
+Subject: Re: [PATCH v4 2/2] arm64: dts: sc7180: Add required-opps for i2c
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     Stephen Boyd <swboyd@chromium.org>, ulf.hansson@linaro.org,
+        viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, rojay@codeaurora.org,
+        stephan@gerhold.net
+References: <1626429658-18961-1-git-send-email-rnayak@codeaurora.org>
+ <1626429658-18961-3-git-send-email-rnayak@codeaurora.org>
+ <YPHpsO5LlQRQxj9y@yoga>
+ <CAE-0n53CHD8c7C4ETWRgzmZmFSCcBw46wSs4pKbYMRjA_tD3yg@mail.gmail.com>
+ <YPHxfHPC/faq/y+J@yoga>
+ <CAE-0n50qx80cMFPJ1x9rc+EMR1L+j2CUMyDjWAbnE9mPHjf-TQ@mail.gmail.com>
+ <YPIBK/NJgBNZVI8Y@yoga> <12711a61-e16c-d2bc-6e04-ab94c7551abe@codeaurora.org>
+ <YPXQNFYKfH/xZxFY@yoga>
+From:   Rajendra Nayak <rnayak@codeaurora.org>
+Message-ID: <bc79ea3e-4981-8f9b-f9a7-59cb972047a7@codeaurora.org>
+Date:   Tue, 20 Jul 2021 09:59:09 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <YPXQNFYKfH/xZxFY@yoga>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Define macros and accessors for the configuration space addressed 
-indirectly with an index register and a data register at the port I/O 
-locations of 0x22 and 0x23 respectively.
 
-This space is defined by the Intel MultiProcessor Specification for the 
-IMCR register used to switch between the PIC and the APIC mode[1], by 
-Cyrix processors for their configuration[2][3], and also some chipsets.
 
-Given the lack of atomicity with the indirect addressing a spinlock is 
-required to protect accesses, although for Cyrix processors it is enough 
-if accesses are executed with interrupts locally disabled, because the 
-registers are local to the accessing CPU, and IMCR is only ever poked at 
-by the BSP and early enough for interrupts not to have been configured 
-yet.  Therefore existing code does not have to change or use the new 
-spinlock and neither it does.
+On 7/20/2021 12:49 AM, Bjorn Andersson wrote:
+> On Mon 19 Jul 04:37 CDT 2021, Rajendra Nayak wrote:
+> 
+>>
+>>
+>> On 7/17/2021 3:29 AM, Bjorn Andersson wrote:
+>>> On Fri 16 Jul 16:49 CDT 2021, Stephen Boyd wrote:
+>>>
+>>>> Quoting Bjorn Andersson (2021-07-16 13:52:12)
+>>>>> On Fri 16 Jul 15:21 CDT 2021, Stephen Boyd wrote:
+>>>>>
+>>>>>> Quoting Bjorn Andersson (2021-07-16 13:18:56)
+>>>>>>> On Fri 16 Jul 05:00 CDT 2021, Rajendra Nayak wrote:
+>>>>>>>
+>>>>>>>> qup-i2c devices on sc7180 are clocked with a fixed clock (19.2 MHz)
+>>>>>>>> Though qup-i2c does not support DVFS, it still needs to vote for a
+>>>>>>>> performance state on 'CX' to satisfy the 19.2 Mhz clock frequency
+>>>>>>>> requirement.
+>>>>>>>>
+>>>>>>>
+>>>>>>> Sounds good, but...
+>>>>>>>
+>>>>>>>> Use 'required-opps' to pass this information from
+>>>>>>>> device tree, and also add the power-domains property to specify
+>>>>>>>> the CX power-domain.
+>>>>>>>>
+>>>>>>>
+>>>>>>> ..is the required-opps really needed with my rpmhpd patch in place?
+>>>>>>>
+>>>>>>
+>>>>>> Yes? Because rpmhpd_opp_low_svs is not the lowest performance state for
+>>>>>> CX.
+>>>>>
+>>>>> On e.g. sm8250 the first available non-zero corner presented in cmd-db
+>>>>> is low_svs.
+>>
+>> what rail is this? the mmcx? Perhaps it does not support RET.
+>> cx usually supports both collapse state and RET.
+>>
+> 
+> That was the one I was specifically looking at for the MDSS_GDSC->MMCX
+> issue, so it's likely I didn't look elsewhere.
+> 
+>>>>
+>>>> Indeed. On sc7180 it's not the first non-zero corner. I suppose
+>>>> retention for CX isn't actually used when the SoC is awake so your
+>>>> rpmhpd patch is putting in a vote for something that doesn't do anything
+>>>> at runtime for CX? I imagine that rpmh only sets the aggregate corner to
+>>>> retention when the whole SoC is suspended/sleeping, otherwise things
+>>>> wouldn't go very well. Similarly, min_svs may be VDD minimization? If
+>>>> so, those first two states are basically states that shouldn't be used
+>>>> at runtime, almost like sleep states.
+>>>>
+>>>
+>>> But if that's the case, I don't think it's appropriate for the "enabled
+>>> state" of the domain to use any of those corners.
+>>
+>> I rechecked the downstream kernels where all this voting happens from within
+>> the clock drivers, and I do see votes to min_svs for some clocks, but Stephen is
+>> right that RET is not something that's voted on while in active state.
+>>
+>> But always going with something just above the ret level while active will also
+>> not work for all devices, for instance for i2c on 7180, it needs a cx vote of
+>> low svs while the rail (cx) does support something lower than that which is min svs.
+>> (why can't it just work with min svs?, I don't know, these values and recommendations
+>> come in from the voltage plans published by HW teams for every SoC and we just end up
+>> using them in SW, perhaps something to dig further and understand which I will try and
+>> do but these are the values in voltage plans and downstream kernels which work for now)
+>>
+> 
+> So to some degree this invalidates my argumentation about the
+> enabled_corner in rpmhpd, given that "enabled" means a different corner
+> for each rail - not just the one with lowest non-zero value.
 
-Put the spinlock in a library file then, so that it does not get pulled 
-unnecessarily for configurations that do not refer it.
+Right, it might work in some cases but might not work for all.
 
-Convert Cyrix accessors to wrappers so as to retain the brevity and 
-clarity of the `getCx86' and `setCx86' calls.
+> 
+> So perhaps instead of introducing the enabled_corner we need to
+> introduce your patch and slap a WARN_ON(corner == 0) in
+> rpmhpd_power_on() - to ensure that all clients that uses a rpmhpd domain
+> actually do vote for a high enough corner?
 
-References:
+So this would mean the expectation is that the clients set the perf state/corner
+before they call power_on? I don;t think that's the case today with most clients,
+infact its the opposite, we power on first and then make a call to set the perf
+state of the domain.
 
-[1] "MultiProcessor Specification", Version 1.4, Intel Corporation, 
-    Order Number: 242016-006, May 1997, Section 3.6.2.1 "PIC Mode", pp. 
-    3-7, 3-8
+> 
+> Regards,
+> Bjorn
+> 
+>>>
+>>> As this means that anyone who needs any of the rpmhpd domains active
+>>> also needs to specify required-opps, which wouldn't be needed for any
+>>> other power domain provider.
+>>>
+>>> And more importantly it means that a device sitting in a GDSC, which
+>>> would be parented by a rpmhpd domain has no way to specify the GDSC and
+>>> trickle the minimum-vote up to the rpmhpd domain. (And I know that we
+>>> don't describe the parentship of the GDSCs today, but this patch
+>>> tells me that it's around the corner - for more than MMCX)
+>>>
+>>> Regards,
+>>> Bjorn
+>>>
+>>>>>
+>>>>> And if this (which?) clock requires a higher corner than the lowest
+>>>>> possible in order to tick at this "lowest" frequency, I'm certainly
+>>>>> interested in some more details.
+>>>>>
+>>
+>> -- 
+>> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>> of Code Aurora Forum, hosted by The Linux Foundation
 
-[2] "5x86 Microprocessor", Cyrix Corporation, Order Number: 94192-00, 
-    July 1995, Section 2.3.2.4 "Configuration Registers", p. 2-23
-
-[3] "6x86 Processor", Cyrix Corporation, Order Number: 94175-01, March 
-    1996, Section 2.4.4 "6x86 Configuration Registers", p. 2-23
-
-Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
----
-Verified with `objdump' not to change arch/x86/kernel/apic/apic.o or 
-arch/x86/kernel/cpu/cyrix.o code produced.
----
- arch/x86/include/asm/pc-conf-reg.h     |   33 +++++++++++++++++++++++++++++++++
- arch/x86/include/asm/processor-cyrix.h |    8 ++++----
- arch/x86/kernel/apic/apic.c            |    9 +++------
- arch/x86/lib/Makefile                  |    1 +
- arch/x86/lib/pc-conf-reg.c             |   13 +++++++++++++
- 5 files changed, 54 insertions(+), 10 deletions(-)
-
-linux-x86-pc-conf-reg.diff
-Index: linux-macro-pirq/arch/x86/include/asm/pc-conf-reg.h
-===================================================================
---- /dev/null
-+++ linux-macro-pirq/arch/x86/include/asm/pc-conf-reg.h
-@@ -0,0 +1,33 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Support for the configuration register space at port I/O locations
-+ * 0x22 and 0x23 variously used by PC architectures, e.g. the MP Spec,
-+ * Cyrix CPUs, numerous chipsets.
-+ */
-+#ifndef _ASM_X86_PC_CONF_REG_H
-+#define _ASM_X86_PC_CONF_REG_H
-+
-+#include <linux/io.h>
-+#include <linux/spinlock.h>
-+#include <linux/types.h>
-+
-+#define PC_CONF_INDEX		0x22
-+#define PC_CONF_DATA		0x23
-+
-+#define PC_CONF_MPS_IMCR	0x70
-+
-+extern raw_spinlock_t pc_conf_lock;
-+
-+static inline u8 pc_conf_get(u8 reg)
-+{
-+	outb(reg, PC_CONF_INDEX);
-+	return inb(PC_CONF_DATA);
-+}
-+
-+static inline void pc_conf_set(u8 reg, u8 data)
-+{
-+	outb(reg, PC_CONF_INDEX);
-+	outb(data, PC_CONF_DATA);
-+}
-+
-+#endif /* _ASM_X86_PC_CONF_REG_H */
-Index: linux-macro-pirq/arch/x86/include/asm/processor-cyrix.h
-===================================================================
---- linux-macro-pirq.orig/arch/x86/include/asm/processor-cyrix.h
-+++ linux-macro-pirq/arch/x86/include/asm/processor-cyrix.h
-@@ -5,14 +5,14 @@
-  * Access order is always 0x22 (=offset), 0x23 (=value)
-  */
- 
-+#include <asm/pc-conf-reg.h>
-+
- static inline u8 getCx86(u8 reg)
- {
--	outb(reg, 0x22);
--	return inb(0x23);
-+	return pc_conf_get(reg);
- }
- 
- static inline void setCx86(u8 reg, u8 data)
- {
--	outb(reg, 0x22);
--	outb(data, 0x23);
-+	pc_conf_set(reg, data);
- }
-Index: linux-macro-pirq/arch/x86/kernel/apic/apic.c
-===================================================================
---- linux-macro-pirq.orig/arch/x86/kernel/apic/apic.c
-+++ linux-macro-pirq/arch/x86/kernel/apic/apic.c
-@@ -38,6 +38,7 @@
- 
- #include <asm/trace/irq_vectors.h>
- #include <asm/irq_remapping.h>
-+#include <asm/pc-conf-reg.h>
- #include <asm/perf_event.h>
- #include <asm/x86_init.h>
- #include <linux/atomic.h>
-@@ -132,18 +133,14 @@ static int enabled_via_apicbase __ro_aft
-  */
- static inline void imcr_pic_to_apic(void)
- {
--	/* select IMCR register */
--	outb(0x70, 0x22);
- 	/* NMI and 8259 INTR go through APIC */
--	outb(0x01, 0x23);
-+	pc_conf_set(PC_CONF_MPS_IMCR, 0x01);
- }
- 
- static inline void imcr_apic_to_pic(void)
- {
--	/* select IMCR register */
--	outb(0x70, 0x22);
- 	/* NMI and 8259 INTR go directly to BSP */
--	outb(0x00, 0x23);
-+	pc_conf_set(PC_CONF_MPS_IMCR, 0x00);
- }
- #endif
- 
-Index: linux-macro-pirq/arch/x86/lib/Makefile
-===================================================================
---- linux-macro-pirq.orig/arch/x86/lib/Makefile
-+++ linux-macro-pirq/arch/x86/lib/Makefile
-@@ -44,6 +44,7 @@ obj-$(CONFIG_SMP) += msr-smp.o cache-smp
- lib-y := delay.o misc.o cmdline.o cpu.o
- lib-y += usercopy_$(BITS).o usercopy.o getuser.o putuser.o
- lib-y += memcpy_$(BITS).o
-+lib-y += pc-conf-reg.o
- lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc.o copy_mc_64.o
- lib-$(CONFIG_INSTRUCTION_DECODER) += insn.o inat.o insn-eval.o
- lib-$(CONFIG_RANDOMIZE_BASE) += kaslr.o
-Index: linux-macro-pirq/arch/x86/lib/pc-conf-reg.c
-===================================================================
---- /dev/null
-+++ linux-macro-pirq/arch/x86/lib/pc-conf-reg.c
-@@ -0,0 +1,13 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Support for the configuration register space at port I/O locations
-+ * 0x22 and 0x23 variously used by PC architectures, e.g. the MP Spec,
-+ * Cyrix CPUs, numerous chipsets.  As the space is indirectly addressed
-+ * it may have to be protected with a spinlock, depending on the context.
-+ */
-+
-+#include <linux/spinlock.h>
-+
-+#include <asm/pc-conf-reg.h>
-+
-+DEFINE_RAW_SPINLOCK(pc_conf_lock);
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
