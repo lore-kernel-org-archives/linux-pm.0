@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C8D4C636C8
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE40C636CA
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:29:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 18D366113B
-	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:28:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 78DEC6108B
+	for <linux-pm@archiver.kernel.org>; Tue, 20 Jul 2021 03:29:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346555AbhGTCrs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Jul 2021 22:47:48 -0400
-Received: from angie.orcam.me.uk ([78.133.224.34]:60964 "EHLO
+        id S1346240AbhGTCro (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Jul 2021 22:47:44 -0400
+Received: from angie.orcam.me.uk ([78.133.224.34]:60826 "EHLO
         angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243294AbhGTCri (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 22:47:38 -0400
+        with ESMTP id S236705AbhGTCrP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jul 2021 22:47:15 -0400
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
-        id 611F89200C1; Tue, 20 Jul 2021 05:28:15 +0200 (CEST)
+        id 67F0892009D; Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by angie.orcam.me.uk (Postfix) with ESMTP id 5AF8A9200C0;
-        Tue, 20 Jul 2021 05:28:15 +0200 (CEST)
-Date:   Tue, 20 Jul 2021 05:28:15 +0200 (CEST)
+        by angie.orcam.me.uk (Postfix) with ESMTP id 609F192009B;
+        Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
+Date:   Tue, 20 Jul 2021 05:27:49 +0200 (CEST)
 From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
 To:     Nikolai Zhubr <zhubr.2@gmail.com>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -42,9 +42,10 @@ To:     Nikolai Zhubr <zhubr.2@gmail.com>,
 cc:     x86@kernel.org, linux-pci@vger.kernel.org,
         linux-pm@vger.kernel.org, kvm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] x86: Fix typo s/ECLR/ELCR/ for the PIC register
+Subject: [PATCH 1/6] x86: Add support for 0x22/0x23 port I/O configuration
+ space
 In-Reply-To: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
-Message-ID: <alpine.DEB.2.21.2107200251080.9461@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2107182353140.9461@angie.orcam.me.uk>
 References: <alpine.DEB.2.21.2107171813230.9461@angie.orcam.me.uk>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
@@ -53,112 +54,174 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The proper spelling for the acronym referring to the Edge/Level Control 
-Register is ELCR rather than ECLR.  Adjust references accordingly.  No 
-functional change.
+Define macros and accessors for the configuration space addressed 
+indirectly with an index register and a data register at the port I/O 
+locations of 0x22 and 0x23 respectively.
+
+This space is defined by the Intel MultiProcessor Specification for the 
+IMCR register used to switch between the PIC and the APIC mode[1], by 
+Cyrix processors for their configuration[2][3], and also some chipsets.
+
+Given the lack of atomicity with the indirect addressing a spinlock is 
+required to protect accesses, although for Cyrix processors it is enough 
+if accesses are executed with interrupts locally disabled, because the 
+registers are local to the accessing CPU, and IMCR is only ever poked at 
+by the BSP and early enough for interrupts not to have been configured 
+yet.  Therefore existing code does not have to change or use the new 
+spinlock and neither it does.
+
+Put the spinlock in a library file then, so that it does not get pulled 
+unnecessarily for configurations that do not refer it.
+
+Convert Cyrix accessors to wrappers so as to retain the brevity and 
+clarity of the `getCx86' and `setCx86' calls.
+
+References:
+
+[1] "MultiProcessor Specification", Version 1.4, Intel Corporation, 
+    Order Number: 242016-006, May 1997, Section 3.6.2.1 "PIC Mode", pp. 
+    3-7, 3-8
+
+[2] "5x86 Microprocessor", Cyrix Corporation, Order Number: 94192-00, 
+    July 1995, Section 2.3.2.4 "Configuration Registers", p. 2-23
+
+[3] "6x86 Processor", Cyrix Corporation, Order Number: 94175-01, March 
+    1996, Section 2.4.4 "6x86 Configuration Registers", p. 2-23
 
 Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
 ---
- arch/x86/kernel/acpi/boot.c |    6 +++---
- arch/x86/kvm/i8259.c        |   20 ++++++++++----------
- arch/x86/kvm/irq.h          |    2 +-
- 3 files changed, 14 insertions(+), 14 deletions(-)
+Verified with `objdump' not to change arch/x86/kernel/apic/apic.o or 
+arch/x86/kernel/cpu/cyrix.o code produced.
+---
+ arch/x86/include/asm/pc-conf-reg.h     |   33 +++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/processor-cyrix.h |    8 ++++----
+ arch/x86/kernel/apic/apic.c            |    9 +++------
+ arch/x86/lib/Makefile                  |    1 +
+ arch/x86/lib/pc-conf-reg.c             |   13 +++++++++++++
+ 5 files changed, 54 insertions(+), 10 deletions(-)
 
-linux-x86-pic-elcr-typo.diff
-Index: linux-macro-pirq/arch/x86/kernel/acpi/boot.c
+linux-x86-pc-conf-reg.diff
+Index: linux-macro-pirq/arch/x86/include/asm/pc-conf-reg.h
 ===================================================================
---- linux-macro-pirq.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-macro-pirq/arch/x86/kernel/acpi/boot.c
-@@ -558,10 +558,10 @@ acpi_parse_nmi_src(union acpi_subtable_h
-  * If a PIC-mode SCI is not recognized or gives spurious IRQ7's
-  * it may require Edge Trigger -- use "acpi_sci=edge"
-  *
-- * Port 0x4d0-4d1 are ECLR1 and ECLR2, the Edge/Level Control Registers
-+ * Port 0x4d0-4d1 are ELCR1 and ELCR2, the Edge/Level Control Registers
-  * for the 8259 PIC.  bit[n] = 1 means irq[n] is Level, otherwise Edge.
-- * ECLR1 is IRQs 0-7 (IRQ 0, 1, 2 must be 0)
-- * ECLR2 is IRQs 8-15 (IRQ 8, 13 must be 0)
-+ * ELCR1 is IRQs 0-7 (IRQ 0, 1, 2 must be 0)
-+ * ELCR2 is IRQs 8-15 (IRQ 8, 13 must be 0)
+--- /dev/null
++++ linux-macro-pirq/arch/x86/include/asm/pc-conf-reg.h
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Support for the configuration register space at port I/O locations
++ * 0x22 and 0x23 variously used by PC architectures, e.g. the MP Spec,
++ * Cyrix CPUs, numerous chipsets.
++ */
++#ifndef _ASM_X86_PC_CONF_REG_H
++#define _ASM_X86_PC_CONF_REG_H
++
++#include <linux/io.h>
++#include <linux/spinlock.h>
++#include <linux/types.h>
++
++#define PC_CONF_INDEX		0x22
++#define PC_CONF_DATA		0x23
++
++#define PC_CONF_MPS_IMCR	0x70
++
++extern raw_spinlock_t pc_conf_lock;
++
++static inline u8 pc_conf_get(u8 reg)
++{
++	outb(reg, PC_CONF_INDEX);
++	return inb(PC_CONF_DATA);
++}
++
++static inline void pc_conf_set(u8 reg, u8 data)
++{
++	outb(reg, PC_CONF_INDEX);
++	outb(data, PC_CONF_DATA);
++}
++
++#endif /* _ASM_X86_PC_CONF_REG_H */
+Index: linux-macro-pirq/arch/x86/include/asm/processor-cyrix.h
+===================================================================
+--- linux-macro-pirq.orig/arch/x86/include/asm/processor-cyrix.h
++++ linux-macro-pirq/arch/x86/include/asm/processor-cyrix.h
+@@ -5,14 +5,14 @@
+  * Access order is always 0x22 (=offset), 0x23 (=value)
   */
  
- void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
-Index: linux-macro-pirq/arch/x86/kvm/i8259.c
-===================================================================
---- linux-macro-pirq.orig/arch/x86/kvm/i8259.c
-+++ linux-macro-pirq/arch/x86/kvm/i8259.c
-@@ -541,17 +541,17 @@ static int picdev_slave_read(struct kvm_
- 			    addr, len, val);
- }
- 
--static int picdev_eclr_write(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
-+static int picdev_elcr_write(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
- 			     gpa_t addr, int len, const void *val)
++#include <asm/pc-conf-reg.h>
++
+ static inline u8 getCx86(u8 reg)
  {
--	return picdev_write(container_of(dev, struct kvm_pic, dev_eclr),
-+	return picdev_write(container_of(dev, struct kvm_pic, dev_elcr),
- 			    addr, len, val);
+-	outb(reg, 0x22);
+-	return inb(0x23);
++	return pc_conf_get(reg);
  }
  
--static int picdev_eclr_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
-+static int picdev_elcr_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
- 			    gpa_t addr, int len, void *val)
+ static inline void setCx86(u8 reg, u8 data)
  {
--	return picdev_read(container_of(dev, struct kvm_pic, dev_eclr),
-+	return picdev_read(container_of(dev, struct kvm_pic, dev_elcr),
- 			    addr, len, val);
+-	outb(reg, 0x22);
+-	outb(data, 0x23);
++	pc_conf_set(reg, data);
+ }
+Index: linux-macro-pirq/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-macro-pirq.orig/arch/x86/kernel/apic/apic.c
++++ linux-macro-pirq/arch/x86/kernel/apic/apic.c
+@@ -38,6 +38,7 @@
+ 
+ #include <asm/trace/irq_vectors.h>
+ #include <asm/irq_remapping.h>
++#include <asm/pc-conf-reg.h>
+ #include <asm/perf_event.h>
+ #include <asm/x86_init.h>
+ #include <linux/atomic.h>
+@@ -132,18 +133,14 @@ static int enabled_via_apicbase __ro_aft
+  */
+ static inline void imcr_pic_to_apic(void)
+ {
+-	/* select IMCR register */
+-	outb(0x70, 0x22);
+ 	/* NMI and 8259 INTR go through APIC */
+-	outb(0x01, 0x23);
++	pc_conf_set(PC_CONF_MPS_IMCR, 0x01);
  }
  
-@@ -577,9 +577,9 @@ static const struct kvm_io_device_ops pi
- 	.write    = picdev_slave_write,
- };
+ static inline void imcr_apic_to_pic(void)
+ {
+-	/* select IMCR register */
+-	outb(0x70, 0x22);
+ 	/* NMI and 8259 INTR go directly to BSP */
+-	outb(0x00, 0x23);
++	pc_conf_set(PC_CONF_MPS_IMCR, 0x00);
+ }
+ #endif
  
--static const struct kvm_io_device_ops picdev_eclr_ops = {
--	.read     = picdev_eclr_read,
--	.write    = picdev_eclr_write,
-+static const struct kvm_io_device_ops picdev_elcr_ops = {
-+	.read     = picdev_elcr_read,
-+	.write    = picdev_elcr_write,
- };
- 
- int kvm_pic_init(struct kvm *kvm)
-@@ -602,7 +602,7 @@ int kvm_pic_init(struct kvm *kvm)
- 	 */
- 	kvm_iodevice_init(&s->dev_master, &picdev_master_ops);
- 	kvm_iodevice_init(&s->dev_slave, &picdev_slave_ops);
--	kvm_iodevice_init(&s->dev_eclr, &picdev_eclr_ops);
-+	kvm_iodevice_init(&s->dev_elcr, &picdev_elcr_ops);
- 	mutex_lock(&kvm->slots_lock);
- 	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, 0x20, 2,
- 				      &s->dev_master);
-@@ -613,7 +613,7 @@ int kvm_pic_init(struct kvm *kvm)
- 	if (ret < 0)
- 		goto fail_unreg_2;
- 
--	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, 0x4d0, 2, &s->dev_eclr);
-+	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, 0x4d0, 2, &s->dev_elcr);
- 	if (ret < 0)
- 		goto fail_unreg_1;
- 
-@@ -647,7 +647,7 @@ void kvm_pic_destroy(struct kvm *kvm)
- 	mutex_lock(&kvm->slots_lock);
- 	kvm_io_bus_unregister_dev(vpic->kvm, KVM_PIO_BUS, &vpic->dev_master);
- 	kvm_io_bus_unregister_dev(vpic->kvm, KVM_PIO_BUS, &vpic->dev_slave);
--	kvm_io_bus_unregister_dev(vpic->kvm, KVM_PIO_BUS, &vpic->dev_eclr);
-+	kvm_io_bus_unregister_dev(vpic->kvm, KVM_PIO_BUS, &vpic->dev_elcr);
- 	mutex_unlock(&kvm->slots_lock);
- 
- 	kvm->arch.vpic = NULL;
-Index: linux-macro-pirq/arch/x86/kvm/irq.h
+Index: linux-macro-pirq/arch/x86/lib/Makefile
 ===================================================================
---- linux-macro-pirq.orig/arch/x86/kvm/irq.h
-+++ linux-macro-pirq/arch/x86/kvm/irq.h
-@@ -55,7 +55,7 @@ struct kvm_pic {
- 	int output;		/* intr from master PIC */
- 	struct kvm_io_device dev_master;
- 	struct kvm_io_device dev_slave;
--	struct kvm_io_device dev_eclr;
-+	struct kvm_io_device dev_elcr;
- 	void (*ack_notifier)(void *opaque, int irq);
- 	unsigned long irq_states[PIC_NUM_PINS];
- };
+--- linux-macro-pirq.orig/arch/x86/lib/Makefile
++++ linux-macro-pirq/arch/x86/lib/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_SMP) += msr-smp.o cache-smp
+ lib-y := delay.o misc.o cmdline.o cpu.o
+ lib-y += usercopy_$(BITS).o usercopy.o getuser.o putuser.o
+ lib-y += memcpy_$(BITS).o
++lib-y += pc-conf-reg.o
+ lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc.o copy_mc_64.o
+ lib-$(CONFIG_INSTRUCTION_DECODER) += insn.o inat.o insn-eval.o
+ lib-$(CONFIG_RANDOMIZE_BASE) += kaslr.o
+Index: linux-macro-pirq/arch/x86/lib/pc-conf-reg.c
+===================================================================
+--- /dev/null
++++ linux-macro-pirq/arch/x86/lib/pc-conf-reg.c
+@@ -0,0 +1,13 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Support for the configuration register space at port I/O locations
++ * 0x22 and 0x23 variously used by PC architectures, e.g. the MP Spec,
++ * Cyrix CPUs, numerous chipsets.  As the space is indirectly addressed
++ * it may have to be protected with a spinlock, depending on the context.
++ */
++
++#include <linux/spinlock.h>
++
++#include <asm/pc-conf-reg.h>
++
++DEFINE_RAW_SPINLOCK(pc_conf_lock);
