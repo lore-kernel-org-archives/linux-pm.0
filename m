@@ -2,169 +2,203 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA309C07E9B
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 849B6C07E9B
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 10:01:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 91A1060FDA
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:13:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 663326108B
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 10:01:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234688AbhGUGas (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Jul 2021 02:30:48 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:43420 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S234399AbhGUG2y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jul 2021 02:28:54 -0400
-X-UUID: 5de5902112a34fb3833b30dbcc8800f3-20210721
-X-UUID: 5de5902112a34fb3833b30dbcc8800f3-20210721
-Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1393231659; Wed, 21 Jul 2021 15:09:07 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Wed, 21 Jul 2021 15:09:05 +0800
-Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 21 Jul 2021 15:09:05 +0800
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v20 1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
-Date:   Wed, 21 Jul 2021 15:08:58 +0800
-Message-ID: <20210721070904.15636-2-roger.lu@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20210721070904.15636-1-roger.lu@mediatek.com>
-References: <20210721070904.15636-1-roger.lu@mediatek.com>
+        id S237444AbhGUJU1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Jul 2021 05:20:27 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:60226 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S236733AbhGUJBH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jul 2021 05:01:07 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1626860503;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=TDBluuFB4Emt7468WeyjkHVbK6/rC03Tb1lfcuLDBLU=;
+        b=eCHM8pI+OZtc84DvLBB6pAI6XoYrcV1M/F3HSRDFBSe2Od4loJDG/g8SmkoaxRyNXmeN1d
+        jXLQ+0ugy1HKVQ4GaNcoq+kPY1Q4LyBt6H+PEAqp4tg6w5RmnMD5SB5ag79bR1irXsLdJU
+        SBtwkAimQ/SUVcwB5QOltKQAvFtLhLU=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-562-5kiFAxWbPDm2L0-Gll-sLw-1; Wed, 21 Jul 2021 05:41:40 -0400
+X-MC-Unique: 5kiFAxWbPDm2L0-Gll-sLw-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9DF4C8B94E3;
+        Wed, 21 Jul 2021 09:41:38 +0000 (UTC)
+Received: from localhost (ovpn-114-233.ams2.redhat.com [10.36.114.233])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 1292160E1C;
+        Wed, 21 Jul 2021 09:41:30 +0000 (UTC)
+Date:   Wed, 21 Jul 2021 10:41:29 +0100
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     Jason Wang <jasowang@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Stefano Garzarella <sgarzare@redhat.com>,
+        Ming Lei <ming.lei@redhat.com>,
+        "Michael S . Tsirkin" <mst@redhat.com>,
+        Marcelo Tosatti <mtosatti@redhat.com>,
+        Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        virtualization@lists.linux-foundation.org,
+        linux-pm@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC 0/3] cpuidle: add poll_source API and virtio vq polling
+Message-ID: <YPfryV7qZVRbjNgP@stefanha-x1.localdomain>
+References: <20210713161906.457857-1-stefanha@redhat.com>
+ <1008dee4-fce1-2462-1520-f5432bc89a07@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="U3hY+f6lEQj1AEW4"
+Content-Disposition: inline
+In-Reply-To: <1008dee4-fce1-2462-1520-f5432bc89a07@redhat.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the binding for enabling mtk svs on MediaTek SoC.
 
-Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/soc/mediatek/mtk-svs.yaml        | 84 +++++++++++++++++++
- 1 file changed, 84 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+--U3hY+f6lEQj1AEW4
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-new file mode 100644
-index 000000000000..a855ced410f8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-@@ -0,0 +1,84 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/mediatek/mtk-svs.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Mediatek Smart Voltage Scaling (SVS) Device Tree Bindings
-+
-+maintainers:
-+  - Roger Lu <roger.lu@mediatek.com>
-+  - Matthias Brugger <matthias.bgg@gmail.com>
-+  - Kevin Hilman <khilman@kernel.org>
-+
-+description: |+
-+  The SVS engine is a piece of hardware which has several
-+  controllers(banks) for calculating suitable voltage to
-+  different power domains(CPU/GPU/CCI) according to
-+  chip process corner, temperatures and other factors. Then DVFS
-+  driver could apply SVS bank voltage to PMIC/Buck.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8183-svs
-+
-+  reg:
-+    maxItems: 1
-+    description: Address range of the MTK SVS controller.
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+    description: Main clock for MTK SVS controller to work.
-+
-+  clock-names:
-+    const: main
-+
-+  nvmem-cells:
-+    minItems: 1
-+    maxItems: 2
-+    description:
-+      Phandle to the calibration data provided by a nvmem device.
-+    items:
-+      - description: SVS efuse for SVS controller
-+      - description: Thermal efuse for SVS controller
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: svs-calibration-data
-+      - const: t-calibration-data
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - clocks
-+  - clock-names
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/mt8183-clk.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        svs@1100b000 {
-+            compatible = "mediatek,mt8183-svs";
-+            reg = <0 0x1100b000 0 0x1000>;
-+            interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
-+            clocks = <&infracfg CLK_INFRA_THERM>;
-+            clock-names = "main";
-+            nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
-+            nvmem-cell-names = "svs-calibration-data", "t-calibration-data";
-+        };
-+    };
--- 
-2.18.0
+On Wed, Jul 21, 2021 at 11:29:55AM +0800, Jason Wang wrote:
+>=20
+> =E5=9C=A8 2021/7/14 =E4=B8=8A=E5=8D=8812:19, Stefan Hajnoczi =E5=86=99=E9=
+=81=93:
+> > These patches are not polished yet but I would like request feedback on=
+ this
+> > approach and share performance results with you.
+> >=20
+> > Idle CPUs tentatively enter a busy wait loop before halting when the cp=
+uidle
+> > haltpoll driver is enabled inside a virtual machine. This reduces wakeup
+> > latency for events that occur soon after the vCPU becomes idle.
+> >=20
+> > This patch series extends the cpuidle busy wait loop with the new poll_=
+source
+> > API so drivers can participate in polling. Such polling-aware drivers d=
+isable
+> > their device's irq during the busy wait loop to avoid the cost of inter=
+rupts.
+> > This reduces latency further than regular cpuidle haltpoll, which still=
+ relies
+> > on irqs.
+> >=20
+> > Virtio drivers are modified to use the poll_source API so all virtio de=
+vice
+> > types get this feature. The following virtio-blk fio benchmark results =
+show the
+> > improvement:
+> >=20
+> >               IOPS (numjobs=3D4, iodepth=3D1, 4 virtqueues)
+> >                 before   poll_source      io_poll
+> > 4k randread    167102  186049 (+11%)  186654 (+11%)
+> > 4k randwrite   162204  181214 (+11%)  181850 (+12%)
+> > 4k randrw      159520  177071 (+11%)  177928 (+11%)
+> >=20
+> > The comparison against io_poll shows that cpuidle poll_source achieves
+> > equivalent performance to the block layer's io_poll feature (which I
+> > implemented in a separate patch series [1]).
+> >=20
+> > The advantage of poll_source is that applications do not need to explic=
+itly set
+> > the RWF_HIPRI I/O request flag. The poll_source approach is attractive =
+because
+> > few applications actually use RWF_HIPRI and it takes advantage of CPU c=
+ycles we
+> > would have spent in cpuidle haltpoll anyway.
+> >=20
+> > The current series does not improve virtio-net. I haven't investigated =
+deeply,
+> > but it is possible that NAPI and poll_source do not combine. See the fi=
+nal
+> > patch for a starting point on making the two work together.
+> >=20
+> > I have not tried this on bare metal but it might help there too. The co=
+st of
+> > disabling a device's irq must be less than the savings from avoiding irq
+> > handling for this optimization to make sense.
+> >=20
+> > [1] https://lore.kernel.org/linux-block/20210520141305.355961-1-stefanh=
+a@redhat.com/
+>=20
+>=20
+> Hi Stefan:
+>=20
+> Some questions:
+>=20
+> 1) What's the advantages of introducing polling at virtio level instead of
+> doing it at each subsystems? Polling in virtio level may only work well if
+> all (or most) of the devices are virtio
+
+I'm not sure I understand the question. cpuidle haltpoll benefits all
+devices today, except it incurs interrupt latency. The poll_source API
+eliminates the interrupt latency for drivers that can disable device
+interrupts cheaply.
+
+This patch adds poll_source to core virtio code so that all virtio
+drivers get this feature for free. No driver-specific changes are
+needed.
+
+If you mean networking, block layer, etc by "subsystems" then there's
+nothing those subsystems can do to help. Whether poll_source can be used
+depends on the specific driver, not the subsystem. If you consider
+drivers/virtio/ a subsystem, then that's exactly what the patch series
+is doing.
+
+> 2) What's the advantages of using cpuidle instead of using a thread (and
+> leverage the scheduler)?
+
+In order to combine with the existing cpuidle infrastructure. No new
+polling loop is introduced and no additional CPU cycles are spent on
+polling.
+
+If cpuidle itself is converted to threads then poll_source would
+automatically operate in a thread too, but this patch series doesn't
+change how the core cpuidle code works.
+
+> 3) Any reason it's virtio_pci specific not a general virtio one?
+
+Good idea, it is possible to move the virtio_pci changes into virtio.c.
+
+Other transports can't use this feature yet though. Only virtio_pci
+supports vq irq affinity. But the code can be generic and if other
+transports ever support vq irq affinity they'll get it for free.
+
+> (Btw, do we need to cc scheduler guys?)
+
+I'm not sure. This patch series doesn't change how cpuidle interacts
+with the scheduler. The cpuidle maintainers can pull in more people, if
+necessary.
+
+Stefan
+
+--U3hY+f6lEQj1AEW4
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmD368kACgkQnKSrs4Gr
+c8i8JAf9HH8W0fz2vJuNPKVE0C0NjgfddSwNS/qOC8QlvWYGeNomDImzTeWf04Dg
+F4QU7Mx2cI2kUyxo8bRCPwLp6bsRw6PZyztQSN/GAJw3Y6sGdLhgizW4GKjGwHWs
+0a5UDJ7JQUlg/4d9NNEAf6MhN3jZnvJBUpYXzsbIgEPRkiaJzZG1TpEZa3yxd8qc
+4AWL97LrIbUPV20oZULnlYtaQbEICaG/VO+ORH/3vjioqAXTr7uALXq7w66hMG6I
+gtgH5iq3V/10HSTzAhIiQHizUMQ1b2pdX9Vz4x/+KTcYsgsud2V+TCAJeBKo32bO
+JVo0XAVh6Cl0oUt4xdworkCl46gbrg==
+=U9/g
+-----END PGP SIGNATURE-----
+
+--U3hY+f6lEQj1AEW4--
 
