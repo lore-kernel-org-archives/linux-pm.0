@@ -5,32 +5,32 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0FC8C12002
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA309C07E9B
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:13:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA66161181
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:12:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91A1060FDA
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Jul 2021 07:13:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234363AbhGUGa6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Jul 2021 02:30:58 -0400
-Received: from mailgw01.mediatek.com ([60.244.123.138]:34028 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S234455AbhGUG2y (ORCPT
+        id S234688AbhGUGas (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Jul 2021 02:30:48 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:43420 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S234399AbhGUG2y (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jul 2021 02:28:54 -0400
-X-UUID: ea0a98bceda943ef82fee401793dad4f-20210721
-X-UUID: ea0a98bceda943ef82fee401793dad4f-20210721
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+X-UUID: 5de5902112a34fb3833b30dbcc8800f3-20210721
+X-UUID: 5de5902112a34fb3833b30dbcc8800f3-20210721
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 698625953; Wed, 21 Jul 2021 15:09:13 +0800
+        with ESMTP id 1393231659; Wed, 21 Jul 2021 15:09:07 +0800
 Received: from mtkcas07.mediatek.inc (172.21.101.84) by
  mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Wed, 21 Jul 2021 15:09:06 +0800
+ 15.0.1497.2; Wed, 21 Jul 2021 15:09:05 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 21 Jul 2021 15:09:06 +0800
+ Transport; Wed, 21 Jul 2021 15:09:05 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -53,9 +53,9 @@ CC:     Fan Chen <fan.chen@mediatek.com>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v20 6/7] arm64: dts: mt8192: add svs device information
-Date:   Wed, 21 Jul 2021 15:09:03 +0800
-Message-ID: <20210721070904.15636-7-roger.lu@mediatek.com>
+Subject: [PATCH v20 1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
+Date:   Wed, 21 Jul 2021 15:08:58 +0800
+Message-ID: <20210721070904.15636-2-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20210721070904.15636-1-roger.lu@mediatek.com>
 References: <20210721070904.15636-1-roger.lu@mediatek.com>
@@ -66,72 +66,105 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-add compitable/reg/irq/clock/efuse/reset setting in svs node
+Document the binding for enabling mtk svs on MediaTek SoC.
 
 Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm64/boot/dts/mediatek/mt8192.dtsi | 34 ++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ .../bindings/soc/mediatek/mtk-svs.yaml        | 84 +++++++++++++++++++
+ 1 file changed, 84 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-index 2f0b4824a024..f3a339de8992 100644
---- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-@@ -268,6 +268,14 @@
- 			compatible = "mediatek,mt8192-infracfg", "syscon";
- 			reg = <0 0x10001000 0 0x1000>;
- 			#clock-cells = <1>;
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+new file mode 100644
+index 000000000000..a855ced410f8
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+@@ -0,0 +1,84 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/mediatek/mtk-svs.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+			infracfg_rst: reset-controller {
-+				compatible = "mediatek,infra-reset", "ti,syscon-reset";
-+				#reset-cells = <1>;
-+				ti,reset-bits = <
-+					0x150 5 0x154 5 0 0     (ASSERT_SET | DEASSERT_SET | STATUS_NONE) /* 0: svs */
-+				>;
-+			};
- 		};
- 
- 		pericfg: syscon@10003000 {
-@@ -362,6 +370,20 @@
- 			status = "disabled";
- 		};
- 
-+		svs: svs@1100b000 {
-+			compatible = "mediatek,mt8192-svs";
-+			reg = <0 0x1100b000 0 0x1000>;
-+			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH 0>;
-+			clocks = <&infracfg CLK_INFRA_THERM>;
-+			clock-names = "main";
-+			nvmem-cells = <&svs_calibration>,
-+				      <&lvts_e_data1>;
-+			nvmem-cell-names = "svs-calibration-data",
-+					   "t-calibration-data";
-+			resets = <&infracfg_rst 0>;
-+			reset-names = "svs_rst";
-+		};
++title: Mediatek Smart Voltage Scaling (SVS) Device Tree Bindings
 +
- 		spi1: spi@11010000 {
- 			compatible = "mediatek,mt8192-spi",
- 				     "mediatek,mt6765-spi";
-@@ -473,6 +495,18 @@
- 			status = "disable";
- 		};
- 
-+		efuse: efuse@11c10000 {
-+			compatible = "mediatek,efuse";
-+			reg = <0 0x11c10000 0 0x1000>;
++maintainers:
++  - Roger Lu <roger.lu@mediatek.com>
++  - Matthias Brugger <matthias.bgg@gmail.com>
++  - Kevin Hilman <khilman@kernel.org>
 +
-+			lvts_e_data1: data1 {
-+				reg = <0x1C0 0x58>;
-+			};
-+			svs_calibration: calib@580 {
-+				reg = <0x580 0x68>;
-+			};
-+		};
++description: |+
++  The SVS engine is a piece of hardware which has several
++  controllers(banks) for calculating suitable voltage to
++  different power domains(CPU/GPU/CCI) according to
++  chip process corner, temperatures and other factors. Then DVFS
++  driver could apply SVS bank voltage to PMIC/Buck.
 +
- 		i2c3: i2c3@11cb0000 {
- 			compatible = "mediatek,mt8192-i2c";
- 			reg = <0 0x11cb0000 0 0x1000>,
++properties:
++  compatible:
++    enum:
++      - mediatek,mt8183-svs
++
++  reg:
++    maxItems: 1
++    description: Address range of the MTK SVS controller.
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++    description: Main clock for MTK SVS controller to work.
++
++  clock-names:
++    const: main
++
++  nvmem-cells:
++    minItems: 1
++    maxItems: 2
++    description:
++      Phandle to the calibration data provided by a nvmem device.
++    items:
++      - description: SVS efuse for SVS controller
++      - description: Thermal efuse for SVS controller
++
++  nvmem-cell-names:
++    items:
++      - const: svs-calibration-data
++      - const: t-calibration-data
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - clock-names
++  - nvmem-cells
++  - nvmem-cell-names
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/mt8183-clk.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++
++    soc {
++        #address-cells = <2>;
++        #size-cells = <2>;
++
++        svs@1100b000 {
++            compatible = "mediatek,mt8183-svs";
++            reg = <0 0x1100b000 0 0x1000>;
++            interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
++            clocks = <&infracfg CLK_INFRA_THERM>;
++            clock-names = "main";
++            nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
++            nvmem-cell-names = "svs-calibration-data", "t-calibration-data";
++        };
++    };
 -- 
 2.18.0
 
