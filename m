@@ -2,246 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBD15C43214
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40A00C4338F
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:21:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB5D560F5D
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:01:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 195F460E08
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:21:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232799AbhGZSVX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Jul 2021 14:21:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37148 "EHLO
+        id S230488AbhGZSlN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Jul 2021 14:41:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233441AbhGZSVU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jul 2021 14:21:20 -0400
-Received: from mail-oi1-x235.google.com (mail-oi1-x235.google.com [IPv6:2607:f8b0:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4920C061757
-        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:01:45 -0700 (PDT)
-Received: by mail-oi1-x235.google.com with SMTP id y18so12139559oiv.3
-        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:01:45 -0700 (PDT)
+        with ESMTP id S229680AbhGZSlN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jul 2021 14:41:13 -0400
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3FC0C061757
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:21:41 -0700 (PDT)
+Received: by mail-pl1-x633.google.com with SMTP id f13so2405110plj.2
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:21:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=cB1/AbegbOKUFF7ZFth5GO71zeXj6fXOTx2GEHYhefE=;
-        b=ZrWJGv2wKPV3JOO+Z1opgUMw1SXTdrokunTFWnSzgB0PRYZQ0o6Bukz9iTzAooP/sM
-         NBo2UvlEyrVCMMwaD57BM2agekXiUKjdVWL7n1AgnyPGuVRqgNiNb3V0lclrQ2wy6ci5
-         LOJUCY+DR6K+bYVHIGUnI7AIeVhLsekUI8s80KRf0gFJ0HQK7djfZpJDc7UoOCp6NU06
-         KXqQmenoU07/e+LW9dZNAyAMUh+RkY8lLhZJzaxrLwYswxQVIo9vDgYLkxb9Lmx809zO
-         laJiUi89zxhzRm9Frt4pu1Ys5wNz2QpeHqU0xWfNt9Tj9c9tcBgGeKy65oexRz56Yq7B
-         i/lg==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=kW02NH4JkLTTeQKWGZHEOKD/xfYe3UpcABTowE9yy3Q=;
+        b=00rKTMdeG6mMfOEQf6uZHkD0Dz+Ize89AjPZJV2M+TMonfMSdOB7pzmmnesHgzvyTO
+         wzgizFp3NrqJvT0+H9SMJSlN/lvk+W4wybf1gohRcoHXkBDHBxPUZsLf8h+zFaQN5AT3
+         9k97wZMPlEzBKgRFTjQWRXN6nqSa1GKaEUg6lwdvalUrY0kq7uS8rtdhOSvQKwd0Fo2w
+         UgT5LMGGC0K0KFzfBo9C29ZrLE6T+bw9RKsp46wpmbbeqftbyXccoaZKfel/J+ezryO2
+         +vYewbiEszkcW6vcU0DCmp8oWFwgOPX1cNlb3l130eH8GC7j0SxWNGvlWVhu3flhm9kR
+         a1mA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=cB1/AbegbOKUFF7ZFth5GO71zeXj6fXOTx2GEHYhefE=;
-        b=qmUvTj6y3gXZfX7NZjy6m6R1dBBwuuoCjfMJVY1GMr+esfz8VJ+aqwAXQ87ZswQkH4
-         NRn42w1Eg7kZykc5CYykvlH6tHNyj/ektxlH3cfMVZ4g64ktdhxTOQa5aqeChgMQClSr
-         unKPGMc1bBmFBpye6z1HJ/qUfF1OVpC09iJ0OPbtIcNEOOHhO6M82v2+Np63WL0KR6pI
-         i7ZoibEVaWyDkLI88tMbF/vRu3HlLqKNyz1TZIwwRJpCd7PXTSoBmwPfWQcDFIUWLGqU
-         jQvXIFjiezsiAt4YZw5GRkqz81I2imYmFVbjlgQ0Tt62PtiWvPdlaGUwm+SdPvZI+1yX
-         Y2yw==
-X-Gm-Message-State: AOAM530GU/DlZmI+DAlBRthEhvxJOGWEe5mSe9OJRSvx4G8Ak+LO23Ob
-        RMMqLtZiKwgFeIniBDwspmMSAawC3e0=
-X-Google-Smtp-Source: ABdhPJzYJpCARU3n8Q+mSyLR80NW7MFFLUgl7fsbAZ95NfakJ3zRj21iKCit1X7EAGJOhor3HOjvrg==
-X-Received: by 2002:aca:5d83:: with SMTP id r125mr2650678oib.113.1627326104976;
-        Mon, 26 Jul 2021 12:01:44 -0700 (PDT)
-Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
-        by smtp.gmail.com with ESMTPSA id v7sm106610ooj.46.2021.07.26.12.01.43
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=kW02NH4JkLTTeQKWGZHEOKD/xfYe3UpcABTowE9yy3Q=;
+        b=U7yz0LxHmey4/R71940ODSnV41m5WbJG3pWV8evLDFdOO+WhYnVqr4tUdr65ULsVCK
+         gO8IuhTHJQX+tVRfkB9rw1Dq/WYXREwUFqel48DPQYBHjb3nR/uDMPwxb2NaiIJ+BW4M
+         exERniQdjj3bGDhrydFtn9C7+TcGnwxRx700+0djcrt/FqK8Jrxa+I2mfXumCgjNL0gU
+         xaZkqaTf09z0y9c0xJlGgrQTB6eDj4a71+fPm6SlZxzVUq1VFoZS8Aiw7O+v2iwF/DmY
+         TtX6Yew/kMDx1PVjgYZVFunJwge956xTHwSE0aZ5efd5VZx91brsVyxJADrxB2D5f7hF
+         mOLQ==
+X-Gm-Message-State: AOAM530NCesZkz5FijJyf3T58CCjq3GR2f8QUMtXU87pO6VxUS1uMV88
+        YfXPs3NYUYFs2TScjbLwlzAPyQ==
+X-Google-Smtp-Source: ABdhPJzyrhC6jJm7y2eGc2ejP5omR5jGnycG/iWk224URBOCih5VttIDJ6DCs8AZT853Q17PshCNGw==
+X-Received: by 2002:a17:90a:46c2:: with SMTP id x2mr17888002pjg.197.1627327301525;
+        Mon, 26 Jul 2021 12:21:41 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id t23sm831138pfe.8.2021.07.26.12.21.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Jul 2021 12:01:44 -0700 (PDT)
-From:   Chris Morgan <macroalpha82@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     linux-rockchip@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, maccraft123mc@gmail.com,
-        sre@kernel.org, heiko@sntech.de, robh+dt@kernel.org,
-        lee.jones@linaro.org, Chris Morgan <macromorgan@hotmail.com>
-Subject: [RFC v2 2/4] mfd: Add Rockchip rk817 battery charger support
-Date:   Mon, 26 Jul 2021 14:01:28 -0500
-Message-Id: <20210726190130.1973-3-macroalpha82@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210726190130.1973-1-macroalpha82@gmail.com>
-References: <20210726190130.1973-1-macroalpha82@gmail.com>
+        Mon, 26 Jul 2021 12:21:41 -0700 (PDT)
+Message-ID: <60ff0b45.1c69fb81.9c12a.36ac@mx.google.com>
+Date:   Mon, 26 Jul 2021 12:21:41 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: v5.14-rc3-16-g1dae4a65c011
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+Subject: pm/testing build: 7 builds: 0 failed,
+ 7 passed (v5.14-rc3-16-g1dae4a65c011)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Chris Morgan <macromorgan@hotmail.com>
+pm/testing build: 7 builds: 0 failed, 7 passed (v5.14-rc3-16-g1dae4a65c011)
 
-Add rk817 charger support cell to rk808 mfd driver.
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+14-rc3-16-g1dae4a65c011/
 
-Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
+Tree: pm
+Branch: testing
+Git Describe: v5.14-rc3-16-g1dae4a65c011
+Git Commit: 1dae4a65c01109508ee17281b6d92b734d7bc1f3
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
+tion mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
 ---
- drivers/mfd/rk808.c       | 16 ++++++-
- include/linux/mfd/rk808.h | 87 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 102 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-index 77ccd31ca1d9..edc779aee667 100644
---- a/drivers/mfd/rk808.c
-+++ b/drivers/mfd/rk808.c
-@@ -66,6 +66,10 @@ static bool rk817_is_volatile_reg(struct device *dev, unsigned int reg)
- 	case RK817_SECONDS_REG ... RK817_WEEKS_REG:
- 	case RK817_RTC_STATUS_REG:
- 	case RK817_CODEC_DTOP_LPT_SRST:
-+	case RK817_GAS_GAUGE_ADC_CONFIG0 ... RK817_GAS_GAUGE_CUR_ADC_K0:
-+	case RK817_PMIC_CHRG_STS:
-+	case RK817_PMIC_CHRG_OUT:
-+	case RK817_PMIC_CHRG_IN:
- 	case RK817_INT_STS_REG0:
- 	case RK817_INT_STS_REG1:
- 	case RK817_INT_STS_REG2:
-@@ -73,7 +77,7 @@ static bool rk817_is_volatile_reg(struct device *dev, unsigned int reg)
- 		return true;
- 	}
- 
--	return true;
-+	return false;
- }
- 
- static const struct regmap_config rk818_regmap_config = {
-@@ -126,6 +130,11 @@ static const struct resource rk817_pwrkey_resources[] = {
- 	DEFINE_RES_IRQ(RK817_IRQ_PWRON_FALL),
- };
- 
-+static const struct resource rk817_charger_resources[] = {
-+	DEFINE_RES_IRQ(RK817_IRQ_PLUG_IN),
-+	DEFINE_RES_IRQ(RK817_IRQ_PLUG_OUT),
-+};
-+
- static const struct mfd_cell rk805s[] = {
- 	{ .name = "rk808-clkout", },
- 	{ .name = "rk808-regulator", },
-@@ -165,6 +174,11 @@ static const struct mfd_cell rk817s[] = {
- 		.resources = &rk817_rtc_resources[0],
- 	},
- 	{ .name = "rk817-codec",},
-+	{
-+		.name = "rk817-charger",
-+		.num_resources = ARRAY_SIZE(rk817_charger_resources),
-+		.resources = &rk817_charger_resources[0],
-+	},
- };
- 
- static const struct mfd_cell rk818s[] = {
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index a96e6d43ca06..1390432c0222 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -518,6 +518,74 @@ enum rk809_reg_id {
- #define MIC_DIFF_DIS			(0x0 << 7)
- #define MIC_DIFF_EN			(0x1 << 7)
- 
-+/* RK817 Battery Registers */
-+#define RK817_GAS_GAUGE_ADC_CONFIG0	0x50
-+#define RK817_GG_EN			(0x1 << 7)
-+#define RK817_SYS_VOL_ADC_EN		(0x1 << 6)
-+#define RK817_TS_ADC_EN			(0x1 << 5)
-+#define RK817_USB_VOL_ADC_EN		(0x1 << 4)
-+#define RK817_BAT_VOL_ADC_EN		(0x1 << 3)
-+#define RK817_BAT_CUR_ADC_EN		(0x1 << 2)
-+
-+#define RK817_GAS_GAUGE_ADC_CONFIG1	0x55
-+
-+#define RK817_CUR_CALIB_UPD		(0x1 << 7)
-+#define RK817_VOL_CALIB_UPD		(0x1 << 6)
-+
-+#define RK817_GAS_GAUGE_GG_CON		0x56
-+#define RK817_GAS_GAUGE_GG_STS		0x57
-+
-+#define RK817_RELAX_VOL_UPD		(0x3 << 2)
-+#define RK817_RELAX_STS			(0x1 << 1)
-+
-+#define RK817_GAS_GAUGE_RELAX_THRE_H	0x58
-+#define RK817_GAS_GAUGE_RELAX_THRE_L	0x59
-+#define RK817_GAS_GAUGE_OCV_THRE_VOL	0x62
-+#define RK817_GAS_GAUGE_OCV_VOL_H	0x63
-+#define RK817_GAS_GAUGE_OCV_VOL_L	0x64
-+#define RK817_GAS_GAUGE_PWRON_VOL_H	0x6b
-+#define RK817_GAS_GAUGE_PWRON_VOL_L	0x6c
-+#define RK817_GAS_GAUGE_PWRON_CUR_H	0x6d
-+#define RK817_GAS_GAUGE_PWRON_CUR_L	0x6e
-+#define RK817_GAS_GAUGE_OFF_CNT		0x6f
-+#define RK817_GAS_GAUGE_Q_INIT_H3	0x70
-+#define RK817_GAS_GAUGE_Q_INIT_H2	0x71
-+#define RK817_GAS_GAUGE_Q_INIT_L1	0x72
-+#define RK817_GAS_GAUGE_Q_INIT_L0	0x73
-+#define RK817_GAS_GAUGE_Q_PRES_H3	0x74
-+#define RK817_GAS_GAUGE_Q_PRES_H2	0x75
-+#define RK817_GAS_GAUGE_Q_PRES_L1	0x76
-+#define RK817_GAS_GAUGE_Q_PRES_L0	0x77
-+#define RK817_GAS_GAUGE_BAT_VOL_H	0x78
-+#define RK817_GAS_GAUGE_BAT_VOL_L	0x79
-+#define RK817_GAS_GAUGE_BAT_CUR_H	0x7a
-+#define RK817_GAS_GAUGE_BAT_CUR_L	0x7b
-+#define RK817_GAS_GAUGE_USB_VOL_H	0x7e
-+#define RK817_GAS_GAUGE_USB_VOL_L	0x7f
-+#define RK817_GAS_GAUGE_SYS_VOL_H	0x80
-+#define RK817_GAS_GAUGE_SYS_VOL_L	0x81
-+#define RK817_GAS_GAUGE_Q_MAX_H3	0x82
-+#define RK817_GAS_GAUGE_Q_MAX_H2	0x83
-+#define RK817_GAS_GAUGE_Q_MAX_L1	0x84
-+#define RK817_GAS_GAUGE_Q_MAX_L0	0x85
-+#define RK817_GAS_GAUGE_SLEEP_CON_SAMP_CUR_H	0x8f
-+#define RK817_GAS_GAUGE_SLEEP_CON_SAMP_CUR_L	0x90
-+#define RK817_GAS_GAUGE_CAL_OFFSET_H	0x91
-+#define RK817_GAS_GAUGE_CAL_OFFSET_L	0x92
-+#define RK817_GAS_GAUGE_VCALIB0_H	0x93
-+#define RK817_GAS_GAUGE_VCALIB0_L	0x94
-+#define RK817_GAS_GAUGE_VCALIB1_H	0x95
-+#define RK817_GAS_GAUGE_VCALIB1_L	0x96
-+#define RK817_GAS_GAUGE_IOFFSET_H	0x97
-+#define RK817_GAS_GAUGE_IOFFSET_L	0x98
-+#define RK817_GAS_GAUGE_BAT_R1		0x9a
-+#define RK817_GAS_GAUGE_BAT_R2		0x9b
-+#define RK817_GAS_GAUGE_BAT_R3		0x9c
-+#define RK817_GAS_GAUGE_DATA3		0xa0
-+#define RK817_GAS_GAUGE_DATA4		0xa1
-+#define RK817_GAS_GAUGE_DATA5		0xa2
-+#define RK817_GAS_GAUGE_CUR_ADC_K0	0xb0
-+
- #define RK817_POWER_EN_REG(i)		(0xb1 + (i))
- #define RK817_POWER_SLP_EN_REG(i)	(0xb5 + (i))
- 
-@@ -543,10 +611,29 @@ enum rk809_reg_id {
- #define RK817_LDO_ON_VSEL_REG(idx)	(0xcc + (idx) * 2)
- #define RK817_BOOST_OTG_CFG		(0xde)
- 
-+#define RK817_PMIC_CHRG_OUT		0xe4
-+#define RK817_CHRG_VOL_SEL		(0x07 << 4)
-+#define RK817_CHRG_CUR_SEL		(0x07 << 0)
-+
-+#define RK817_PMIC_CHRG_IN		0xe5
-+#define RK817_USB_VLIM_EN		(0x01 << 7)
-+#define RK817_USB_VLIM_SEL		(0x07 << 4)
-+#define RK817_USB_ILIM_EN		(0x01 << 3)
-+#define RK817_USB_ILIM_SEL		(0x07 << 0)
-+#define RK817_PMIC_CHRG_TERM		0xe6
-+#define RK817_CHRG_TERM_ANA_DIG		(0x01 << 2)
-+#define RK817_CHRG_TERM_ANA_SEL		(0x03 << 0)
-+#define RK817_CHRG_EN			(0x01 << 6)
-+
-+#define RK817_PMIC_CHRG_STS		0xeb
-+#define RK817_CHG_STS			(0x07 << 4)
-+
- #define RK817_ID_MSB			0xed
- #define RK817_ID_LSB			0xee
- 
- #define RK817_SYS_STS			0xf0
-+#define RK817_PLUG_IN_STS		(0x1 << 6)
-+
- #define RK817_SYS_CFG(i)		(0xf1 + (i))
- 
- #define RK817_ON_SOURCE_REG		0xf5
--- 
-2.25.1
-
+For more info write to <info@kernelci.org>
