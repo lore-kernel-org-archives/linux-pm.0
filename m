@@ -2,159 +2,154 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93BC5C4338F
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 17:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 211B7C4338F
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:01:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7741A60FD8
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 17:09:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F1D7F60F6E
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Jul 2021 19:01:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236583AbhGZQ2n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Jul 2021 12:28:43 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:47774 "EHLO
-        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S243335AbhGZQ1v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jul 2021 12:27:51 -0400
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 16QH3nxF161959;
-        Mon, 26 Jul 2021 13:08:07 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : subject :
- date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=PPHIk19j2zkNcxZZlTJxjLDQCtLPXdvL9yQEAb3r99w=;
- b=DF5zbsEl2zweSYSxviPiIHu96bLgGCbx8EjHXo3RZj02fVHMvTFq1OqXDwZT3yg9a88d
- nLQkTvAmmQ1ke/f1pUNM9gwRpzmONnQBuJIJHRoBBN62LmEJcT5nT/E2o5N6yROhfuYB
- KdWHu/XHccHOgoe3xoTFcNktUo0slgO5zayHMguj9gXfTiyz29FbnZkwtPUdBfnNW/mT
- U4rdbDTW9KrC0X588SmQj4yVDOBwEA+8PG83HccoJBS5EZsVUm/CAJz/0DBShEb03Uni
- Z6xYioxWr4PmKzZJXdY42Z/DXYcwsyTFYdKZhRI5mxgB1z0awlprORCE2YeapvynWe7W fw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 3a20e1sn97-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 26 Jul 2021 13:08:06 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
-        by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 16QH3slJ164567;
-        Mon, 26 Jul 2021 13:08:06 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 3a20e1sn8f-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 26 Jul 2021 13:08:06 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-        by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 16QH5vEl004392;
-        Mon, 26 Jul 2021 17:08:04 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
-        by ppma01fra.de.ibm.com with ESMTP id 3a0ag8rstx-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 26 Jul 2021 17:08:04 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
-        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 16QH81SK28705262
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 26 Jul 2021 17:08:02 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id CC98A4C052;
-        Mon, 26 Jul 2021 17:08:01 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 3F0D04C044;
-        Mon, 26 Jul 2021 17:07:59 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.55.176])
-        by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Mon, 26 Jul 2021 17:07:58 +0000 (GMT)
-From:   "Pratik R. Sampat" <psampat@linux.ibm.com>
-To:     mpe@ellerman.id.au, rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org, psampat@linux.ibm.com,
-        pratik.r.sampat@gmail.com
-Subject: [PATCH] cpufreq:powernv: Fix init_chip_info initialization in numa=off
-Date:   Mon, 26 Jul 2021 22:37:57 +0530
-Message-Id: <20210726170758.61041-1-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+        id S233529AbhGZSVR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Jul 2021 14:21:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37144 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231548AbhGZSVQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jul 2021 14:21:16 -0400
+Received: from mail-oo1-xc35.google.com (mail-oo1-xc35.google.com [IPv6:2607:f8b0:4864:20::c35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB5B0C061757
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:01:44 -0700 (PDT)
+Received: by mail-oo1-xc35.google.com with SMTP id k7-20020a4abd870000b029025e4d9b0a3dso2485524oop.6
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jul 2021 12:01:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=xjQq4w89JxvSdKOOfsY9AtY7TN3aPy/MaODSkX355Ug=;
+        b=UngmKHBwhsMSd1k9L9YcJfhTednReksxg+DgmLwELsHoLdvANjLKLnqOZBAps7s0zM
+         M2xWlEArxsY96VjtLd4xp6SoyFgQugQHPoS+tSwTJulBqIExEh37mA67XCaD1PaKeaeg
+         XWahPoH1ncKsKj4DTG+ehgiTxpkbdot+ouqHv7E7wnA6F67kb9Ds0/oOstNV8hXlAb0d
+         R66o6f/WN0jHxp548aBmhb2YrqEy0nG2w5JVazpjjCWOf7269N4e6T7L+YA8FQI/l95P
+         yReocm9HWLPIQEqs36yHcYYRBYwNU11qOfn5DlRhh4kIa2PpgVV7z23WOQVMrQuA3cm+
+         Dlkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=xjQq4w89JxvSdKOOfsY9AtY7TN3aPy/MaODSkX355Ug=;
+        b=deCGIRtGgGtqEGRd87Tu5VwDkApeCD7jnhoKrUyhToPKvg/WbJBv1Apnz50ByEtsiK
+         YZwje2NDFeQIhMguv+2lXVqKyFGBa+ZYE9C4mRvFEdVdVWSqPzvFlEfM2alimMUIfE3P
+         raQ2lMvfDuUtGxnpnoCrReoRCERTI2nyFY+jDQ2VHfuQyW1K2dSbmsaJmB/900aiXLd9
+         KSlWyrgV5PquUabyL7TPkRPrRsx8gitUD7zL8KOQF/szmwN2VU0JjH45I6Z5f42hEX16
+         EP/bWBFT2HFoXoN8fCqOHNNqCBQCLEVFQbEbvcj6dh6cPkxBd6evqC5Jv0sbac1GxY1y
+         AP4w==
+X-Gm-Message-State: AOAM531ELA+cEBEihYnlnfcrUTyt14+V7Ok8pnwPbKgBLqjWhUvQphq6
+        rE9D3adDVQ5Bu5GcWxgAFETH+3aFZUs=
+X-Google-Smtp-Source: ABdhPJyvXA3k5XqWanLGCHj51hHNxgycx5xHgCxTPsmupY+HaT+lZvA91oxoWDYFgZ3xtt9XUCyY5g==
+X-Received: by 2002:a4a:e5c8:: with SMTP id r8mr11420915oov.65.1627326103607;
+        Mon, 26 Jul 2021 12:01:43 -0700 (PDT)
+Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
+        by smtp.gmail.com with ESMTPSA id v7sm106610ooj.46.2021.07.26.12.01.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 26 Jul 2021 12:01:43 -0700 (PDT)
+From:   Chris Morgan <macroalpha82@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-rockchip@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, maccraft123mc@gmail.com,
+        sre@kernel.org, heiko@sntech.de, robh+dt@kernel.org,
+        lee.jones@linaro.org, Chris Morgan <macromorgan@hotmail.com>
+Subject: [RFC v2 1/4] dt-bindings: Add Rockchip rk817 battery charger support
+Date:   Mon, 26 Jul 2021 14:01:27 -0500
+Message-Id: <20210726190130.1973-2-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210726190130.1973-1-macroalpha82@gmail.com>
+References: <20210726190130.1973-1-macroalpha82@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: DPbsWMXae3DWyGROJPGnTZNKQDsvKhsx
-X-Proofpoint-GUID: 8RmMpLKmoHjvsq9AyLbV2F8ZZtX5rtie
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.391,18.0.790
- definitions=2021-07-26_10:2021-07-26,2021-07-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
- impostorscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0
- priorityscore=1501 phishscore=0 clxscore=1011 mlxlogscore=999 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2104190000 definitions=main-2107260099
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the numa=off kernel command-line configuration init_chip_info() loops
-around the number of chips and attempts to copy the cpumask of that node
-which is NULL for all iterations after the first chip.
+From: Chris Morgan <macromorgan@hotmail.com>
 
-Hence, store the cpu mask for each chip instead of derving cpumask from
-node while populating the "chips" struct array and copy that to the
-chips[i].mask
+Create dt-binding documentation to document rk817 battery and charger
+usage. New device-tree properties have been added.
 
-Cc: stable@vger.kernel.org
-Fixes: 053819e0bf84 ("cpufreq: powernv: Handle throttling due to Pmax capping at chip level")
-Signed-off-by: Pratik R. Sampat <psampat@linux.ibm.com>
-Reported-by: Shirisha Ganta <shirisha.ganta1@ibm.com>
+- rockchip,resistor-sense: The value in microohms of the sample
+                           resistor.
+- rockchip,sleep-enter-current: The value in microamps of the sleep
+                                enter current.
+- rockchip,sleep-filter-current: The value in microamps of the sleep
+                                 filter current.
+
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ .../devicetree/bindings/mfd/rk808.txt         | 35 +++++++++++++++++--
+ 1 file changed, 33 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 005600cef273..8ec10d9aed8f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -1046,12 +1046,20 @@ static int init_chip_info(void)
- 	unsigned int *chip;
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id = UINT_MAX;
-+	cpumask_t *chip_cpu_mask;
- 	int ret = 0;
+diff --git a/Documentation/devicetree/bindings/mfd/rk808.txt b/Documentation/devicetree/bindings/mfd/rk808.txt
+index 23a17a6663ec..fa42b6253d26 100644
+--- a/Documentation/devicetree/bindings/mfd/rk808.txt
++++ b/Documentation/devicetree/bindings/mfd/rk808.txt
+@@ -70,13 +70,37 @@ Optional RK817 properties:
  
- 	chip = kcalloc(num_possible_cpus(), sizeof(*chip), GFP_KERNEL);
- 	if (!chip)
- 		return -ENOMEM;
- 
-+	/* Allocate a chip cpu mask large enough to fit mask for all chips */
-+	chip_cpu_mask = kcalloc(32, sizeof(cpumask_t), GFP_KERNEL);
-+	if (!chip_cpu_mask) {
-+		ret = -ENOMEM;
-+		goto free_and_return;
-+	}
+ - vcc8-supply:  The input supply for BOOST
+ - vcc9-supply:  The input supply for OTG_SWITCH
 +
- 	for_each_possible_cpu(cpu) {
- 		unsigned int id = cpu_to_chip_id(cpu);
+ - codec:	The child node for the codec to hold additional properties.
+ 		If no additional properties are required for the codec, this
+ 		node can be omitted.
+-
+-- rockchip,mic-in-differential: Telling if the microphone uses differential
++- rockchip,mic-in-differential:	Telling if the microphone uses differential
+ 				mode. Should be under the codec child node.
  
-@@ -1059,22 +1067,25 @@ static int init_chip_info(void)
- 			prev_chip_id = id;
- 			chip[nr_chips++] = id;
- 		}
-+		cpumask_set_cpu(cpu, &chip_cpu_mask[nr_chips-1]);
- 	}
++- battery:	The child node for the charger to hold additional properties.
++		If a battery is not in use, this node can be omitted. If a
++		battery node is used, the following values are required:
++		rockchip,resistor-sense, rockchip,sleep-enter-current,
++		rockchip,sleep-filter-current, and a phandle to a
++		monitored-battery node that contains a valid value for
++		charge-full-design-microamp-hours,
++		charge-term-current-microamp,
++		constant-charge-current-max-microamp,
++		constant-charge-voltage-max-microvolt,
++		voltage-max-design-microvolt, voltage-min-design-microvolt,
++		and a valid ocv-capacity table.
++- rockchip,resistor-sense: Value in microohms of the battery sense resistor.
++			   The PMIC only supports values of either 10000 or
++			   20000. This value is used by the driver to set
++			   the correct divisor value to translate ADC readings
++			   into the proper units of measure.
++- rockchip,sleep-enter-current: Value in microamps of the sleep enter current
++				for the charger. Value is used by the driver
++				to calibrate the relax threshold.
++- rockchip,sleep-filter-current: Value in microamps of the sleep filter current
++				 for the charger. Value is used by the driver
++				 to derive the sleep sample current.
++
+ Optional RK818 properties:
+ - vcc1-supply:  The input supply for DCDC_REG1
+ - vcc2-supply:  The input supply for DCDC_REG2
+@@ -459,6 +483,13 @@ Example:
+ 			};
+ 		};
  
- 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
- 	if (!chips) {
- 		ret = -ENOMEM;
--		goto free_and_return;
-+		goto out_chip_cpu_mask;
- 	}
- 
- 	for (i = 0; i < nr_chips; i++) {
- 		chips[i].id = chip[i];
--		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
-+		cpumask_copy(&chips[i].mask, &chip_cpu_mask[i]);
- 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
- 		for_each_cpu(cpu, &chips[i].mask)
- 			per_cpu(chip_info, cpu) =  &chips[i];
- 	}
- 
-+out_chip_cpu_mask:
-+	kfree(chip_cpu_mask);
- free_and_return:
- 	kfree(chip);
- 	return ret;
++		rk817_battery: battery {
++			monitored-battery = <&battery_cell>;
++			rockchip,resistor-sense = <10000>;
++			rockchip,sleep-enter-current = <300000>;
++			rockchip,sleep-filter-current = <100000>;
++		};
++
+ 		rk817_codec: codec {
+ 			rockchip,mic-in-differential;
+ 		};
 -- 
-2.31.1
+2.25.1
 
