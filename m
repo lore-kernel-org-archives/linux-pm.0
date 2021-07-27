@@ -2,149 +2,172 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C673EC4320E
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E8EEC4320E
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:29:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AC90161B55
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:28:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 565EC61B4C
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:29:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237122AbhG0P2U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jul 2021 11:28:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33248 "EHLO
+        id S237237AbhG0P3m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jul 2021 11:29:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33832 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237087AbhG0PZu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jul 2021 11:25:50 -0400
-Received: from mail-qt1-x82a.google.com (mail-qt1-x82a.google.com [IPv6:2607:f8b0:4864:20::82a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DE3CC0617A4
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:18 -0700 (PDT)
-Received: by mail-qt1-x82a.google.com with SMTP id b1so9835567qtx.0
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:18 -0700 (PDT)
+        with ESMTP id S237260AbhG0P3i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jul 2021 11:29:38 -0400
+Received: from mail-qv1-xf34.google.com (mail-qv1-xf34.google.com [IPv6:2607:f8b0:4864:20::f34])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0AF3C0617A3
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:29:17 -0700 (PDT)
+Received: by mail-qv1-xf34.google.com with SMTP id s14so7046985qvm.4
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:29:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ntT/Xa5byubQbwDu0urUsSHird8hJ+TeLYM9dR8idTs=;
-        b=TZP49lgPHr9t+TONHDq0g9pLC7alMPadX6iPtOLan+BYDMWWubRFUdq7Zo51D+sA+J
-         6lCb1tDm1Dn81K+NPUXsn4MgrRbVVKtv0clLDfkc/XOPVcBP8xPXHyjdIaGs3peRhh8X
-         6MIYfCHgue8SyQJQ5RPeJYu1saQ0sCGQoeLQ/5nnQUwB7MrWpZWPfjkgavrsyaQQCNDU
-         o3dw5vDgnpIUeVUeCTXIsuS8/ENfhSqRzMkpGiXWTTFly8MRJpbfDTsFknLEfds8L6j9
-         P3zYL5IXzA6f0dxROQGYATyYQVjm/qMbZ+A45ardGB+VNWTEe4JHqTc9leOmE67cAmfm
-         0oTg==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=GT96W2ZOEoojDz5M8pDOb9+CTD0yhAQtMG6GVe4JdkQ=;
+        b=eDL7hgQBA0PqGEhVymQR4EUNmyBuVlMS+hOW9vVkHPrNMZ5p9Y5HgqRd0MEoYfHM6I
+         kR+qSGcRQoIdlaeN58IDQE1rvuLJ1KowYhEm5TKPiQlxaAGBL/VVBSn1YJjOgaqVTrBe
+         RcwfGdbqn7k2nm5QZGte++YY5cyVnn45Wdk/mw9yJndD4M5aFx0q3z8awE/IfnyEEIMw
+         7q/+jEwlrjEKFeLipGYCNB33JZ1siGwdust1Z/kbqqSnKNiVsAyYPyQvI43+VjeSA4Fe
+         V6k+U333Drl+tea60+2SZUcnhbxUsyCAAxdh5qHeJYV2IXuQ3EJ1MCdLte+w+mYiFUDA
+         ue6Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ntT/Xa5byubQbwDu0urUsSHird8hJ+TeLYM9dR8idTs=;
-        b=rzY0DPHN23MKFK/iEmFUbWdy5vKvzJ6hlsXlnqrClTx0Ctg7dS6M+1kBw4iFQCK5ac
-         WN9URh3ihhAhRwe5Vkyk9kMPkfjDA8Ex+bzITdWUy5bqJ+npgbAXq0v6SYmG+imJxuIa
-         70qNlsgKp3LoHX8vlPoHXUyMuIqTibi2Lqt+7422YYf7Orqfo8FbIGiHjJxWcIBUIGYx
-         UytxuBRv5VkietvWWFMs4BaTu252u8mBN9tRlrMvkP+Ioh06Kt0p7Bzu01YrbQG+SrCi
-         PI4wCJA/WXE/oe7H6jhnFw9K6pWWw39FjkxOf3XGkP7ZLYbpmp8S/FN7mB/bVakHg8I2
-         wDiQ==
-X-Gm-Message-State: AOAM5310UqaM4VU1+cGFyUFxpzRAdTsBiLDmjYUuwjoVEujk7WxJVby+
-        Y6mChMHLkcdEKcdneohtJzMygw==
-X-Google-Smtp-Source: ABdhPJyN4xvS7j0iHB/Pemn5TA0Wugvg+mt3bM9okk9yOBDTytyHu8TeKY70pGPGHC06HeTEZ0AO/g==
-X-Received: by 2002:a05:622a:16:: with SMTP id x22mr19935879qtw.90.1627399517548;
-        Tue, 27 Jul 2021 08:25:17 -0700 (PDT)
-Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.googlemail.com with ESMTPSA id q4sm1539663qtr.20.2021.07.27.08.25.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Jul 2021 08:25:17 -0700 (PDT)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     agross@kernel.org, bjorn.andersson@linaro.org, rui.zhang@intel.com,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=GT96W2ZOEoojDz5M8pDOb9+CTD0yhAQtMG6GVe4JdkQ=;
+        b=K9zjue2D1rqwovA6eRax3WR0HOOxxktajSJKWr1V3lJ70rzgh+4eT2XABx9gnODFfM
+         w9Ur85pzYDjveb0YMmiQoSIynJ3MRdLvT1Vcm+c5j+DavyeyYHgrFtpK9qCPscBTAxGW
+         O0m3uh7lqJij4Jt0cXEqBEO2dQDA4OEe8uxrBQ2FRVscXORdlGTBb6gpIhGIOOckqxom
+         xpVggjf+zJCa9aUP4YAx3Twi0xHoEfthVOgmC/D3Az3u8YPH1pwxVUgDxTmdGrqLq/GG
+         TbVnabx8nExmGM5ynGBYTrG2wUwXNo82gUXBvlme4bDnRm03x6OdxfQxTGDjGtebH4bK
+         aKKg==
+X-Gm-Message-State: AOAM532H3KuVJrlqCEUo9Bf1nB7mgOljYWWaH2+6RNb3Hd2jjKHu7xMt
+        PQE8FTOyLYdg5Hyd4sa2r7GDqg==
+X-Google-Smtp-Source: ABdhPJx8HEHjy8IKGExVBE9Pkl3K44AHEqTcbvipdABfAtpKbdA/9Rk+s125Vm+MLt+AcnuaaDjJzg==
+X-Received: by 2002:ad4:5c4a:: with SMTP id a10mr10256122qva.59.1627399757087;
+        Tue, 27 Jul 2021 08:29:17 -0700 (PDT)
+Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
+        by smtp.gmail.com with ESMTPSA id n13sm1415537qtx.92.2021.07.27.08.29.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 27 Jul 2021 08:29:16 -0700 (PDT)
+Subject: Re: [Patch v3 0/6] Introduce LMh driver for Qualcomm SoCs
+To:     Steev Klimaszewski <steev@kali.org>, agross@kernel.org,
+        bjorn.andersson@linaro.org, rui.zhang@intel.com,
         daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
         rjw@rjwysocki.net, robh+dt@kernel.org
-Cc:     steev@kali.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [Patch v4 4/6] arm64: dts: qcom: sdm45: Add support for LMh node
-Date:   Tue, 27 Jul 2021 11:25:10 -0400
-Message-Id: <20210727152512.1098329-5-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210727152512.1098329-1-thara.gopinath@linaro.org>
-References: <20210727152512.1098329-1-thara.gopinath@linaro.org>
+Cc:     tdas@codeaurora.org, mka@chromium.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+References: <20210708120656.663851-1-thara.gopinath@linaro.org>
+ <c630a7a0-d1d0-d04c-8abf-2490c0932661@kali.org>
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+Message-ID: <adfe4d6d-7433-23f2-bc57-d6fba2d8725b@linaro.org>
+Date:   Tue, 27 Jul 2021 11:29:15 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <c630a7a0-d1d0-d04c-8abf-2490c0932661@kali.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add LMh nodes for cpu cluster0 and cpu cluster1. Also add interrupt
-support in cpufreq node to capture the LMh interrupt and let the scheduler
-know of the max frequency throttling.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
 
-v3->v4:
-	- Changed dt property qcom,lmh-cpu-id to qcom,lmh-cpu and made it
-	  a phandle pointing to the cpu node instead of a number as per
-	  Rob Herring's review comments.
-	- Added suffix -millicelsius to all temperature properties as per
-	  Rob Herring's review comments.
+On 7/21/21 11:14 PM, Steev Klimaszewski wrote:
+> Hi Thara!
+> 
+> On 7/8/21 7:06 AM, Thara Gopinath wrote:
+>> Limits Management Hardware(LMh) is a hardware infrastructure on some
+>> Qualcomm SoCs that can enforce temperature and current limits as programmed
+>> by software for certain IPs like CPU. On many newer SoCs LMh is configured
+>> by firmware/TZ and no programming is needed from the kernel side. But on
+>> certain SoCs like sdm845 the firmware does not do a complete programming of
+>> the h/w block. On such SoCs kernel software has to explicitly set up the
+>> temperature limits and turn on various monitoring and enforcing algorithms
+>> on the hardware.
+>>
+>> Introduce support for enabling and programming various limit settings and
+>> monitoring capabilities of Limits Management Hardware(LMh) associated with
+>> cpu clusters. Also introduce support in cpufreq hardware driver to monitor
+>> the interrupt associated with cpu frequency throttling so that this
+>> information can be conveyed to the schdeuler via thermal pressure
+>> interface.
+>>
+>> With this patch series following cpu performance improvement(30-70%) is
+>> observed on sdm845. The reasoning here is that without LMh being programmed
+>> properly from the kernel, the default settings were enabling thermal
+>> mitigation for CPUs at too low a temperature (around 70-75 degree C).  This
+>> in turn meant that many a time CPUs were never actually allowed to hit the
+>> maximum possible/required frequencies.
+>>
+>> UnixBench whets and dhry (./Run whets dhry)
+>> System Benchmarks Index Score
+>>
+>>                  Without LMh Support             With LMh Support
+>> 1 copy test     1353.7                          1773.2
+>>
+>> 8 copy tests    4473.6                          7402.3
+>>
+>> Sysbench cpu
+>> sysbench cpu --threads=8 --time=60 --cpu-max-prime=100000 run
+>>
+>>                  Without LMh Support             With LMh Support
+>> Events per
+>> second                  355                             614
+>>
+>> Avg Latency(ms)         21.84                           13.02
+>>
+>> v2->v3:
+>> 	- Included patch adding dt binding documentation for LMh nodes.
+>> 	- Rebased to v5.13
+>>
+>> Thara Gopinath (6):
+>>    firmware: qcom_scm: Introduce SCM calls to access LMh
+>>    thermal: qcom: Add support for LMh driver
+>>    cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support
+>>    arm64: boot: dts: qcom: sdm45: Add support for LMh node
+>>    arm64: boot: dts: qcom: sdm845: Remove cpufreq cooling devices for CPU
+>>      thermal zones
+>>    dt-bindings: thermal: Add dt binding for QCOM LMh
+>>
+>>   .../devicetree/bindings/thermal/qcom-lmh.yaml | 100 ++++++++
+>>   arch/arm64/boot/dts/qcom/sdm845.dtsi          | 162 ++----------
+>>   drivers/cpufreq/qcom-cpufreq-hw.c             | 118 +++++++++
+>>   drivers/firmware/qcom_scm.c                   |  58 +++++
+>>   drivers/firmware/qcom_scm.h                   |   4 +
+>>   drivers/thermal/qcom/Kconfig                  |  10 +
+>>   drivers/thermal/qcom/Makefile                 |   1 +
+>>   drivers/thermal/qcom/lmh.c                    | 239 ++++++++++++++++++
+>>   include/linux/qcom_scm.h                      |  14 +
+>>   9 files changed, 570 insertions(+), 136 deletions(-)
+>>   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
+>>   create mode 100644 drivers/thermal/qcom/lmh.c
+>>
+> I've been using these patches on a 5.13 kernel
+> (https://github.com/steev/linux/tree/linux-5.13.y - while trying to
+> track down a different issue, while playing a video on youtube, as well
+> as compressing a 9.2GB file with xz, I got the following
 
-v2->v3:
-	- Changed the LMh low and high trip to 94500 and 95000 mC from
-	  74500 and 75000 mC. This was a bug that got introduced in v2.
-v1->v2:
-	- Dropped dt property qcom,support-lmh as per Bjorn's review comments.
-	- Changed lmh compatible from generic to platform specific.
-	- Introduced properties specifying arm, low and high temp thresholds for LMh
-	  as per Daniel's suggestion.
+Hi Steev,
 
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+Thanks for testing this. I was unable to reproduce this. I have posted 
+v4 moving the interrupt handling in qcom-cpufreq-hw to threaded 
+interrupt handler and hopefully this should fix the issue. It will be 
+great if you can test and let me know.
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index 1796ae8372be..0bf98f072921 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -3646,6 +3646,30 @@ swm: swm@c85 {
- 			};
- 		};
- 
-+		lmh_cluster1: lmh@17d70800 {
-+			compatible = "qcom,sdm845-lmh";
-+			reg = <0 0x17d70800 0 0x401>;
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			qcom,lmh-cpu = <&CPU4>;
-+			qcom,lmh-temp-arm-millicelsius = <65000>;
-+			qcom,lmh-temp-low-millicelsius = <94500>;
-+			qcom,lmh-temp-high-millicelsius = <95000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
-+		lmh_cluster0: lmh@17d78800 {
-+			compatible = "qcom,sdm845-lmh";
-+			reg = <0 0x17d78800 0 0x401>;
-+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-+			qcom,lmh-cpu = <&CPU0>;
-+			qcom,lmh-temp-arm-millicelsius = <65000>;
-+			qcom,lmh-temp-low-millicelsius = <94500>;
-+			qcom,lmh-temp-high-millicelsius = <95000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
- 		sound: sound {
- 		};
- 
-@@ -4911,6 +4935,8 @@ cpufreq_hw: cpufreq@17d43000 {
- 			reg = <0 0x17d43000 0 0x1400>, <0 0x17d45800 0 0x1400>;
- 			reg-names = "freq-domain0", "freq-domain1";
- 
-+			interrupts-extended = <&lmh_cluster0 0>, <&lmh_cluster1 0>;
-+
- 			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
- 			clock-names = "xo", "alternate";
- 
 -- 
-2.25.1
+Warm Regards
+Thara (She/Her/Hers)
+
+
+
 
