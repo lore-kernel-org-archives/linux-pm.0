@@ -4,57 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AEDBC432BE
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:26:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CE7DC4338F
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:27:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7433561B5D
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:26:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EB8C361B41
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Jul 2021 15:27:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237165AbhG0P0A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Jul 2021 11:26:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33230 "EHLO
+        id S237179AbhG0P1m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Jul 2021 11:27:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33220 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237112AbhG0PZu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jul 2021 11:25:50 -0400
-Received: from mail-qk1-x733.google.com (mail-qk1-x733.google.com [IPv6:2607:f8b0:4864:20::733])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A4BFC06179C
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:17 -0700 (PDT)
-Received: by mail-qk1-x733.google.com with SMTP id az7so12687703qkb.5
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:17 -0700 (PDT)
+        with ESMTP id S236847AbhG0PZ5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jul 2021 11:25:57 -0400
+Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7286BC0617B9
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:19 -0700 (PDT)
+Received: by mail-qk1-x729.google.com with SMTP id az7so12687831qkb.5
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jul 2021 08:25:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=sYXRmsin0lZAkDq+Kh95rPlhjwCRMubwtEUB8z+tEIA=;
-        b=kcENDf6/ZhUIeHq3mqf3yVzJF1wqz9DYXVv2/eQ+01/6ruBqi6QNSEv3HQOdi3Yn3L
-         mnwFVTqBLtcWT67esviPvNMBjtUNudf9HE7yQoUO6ZphK2Cb0ELsKIXAVtLJU9TDgUfG
-         m04LUtig86XbUw3tgafFbERWNHx+jT9yqpIPquKHM8EpIuICrCtOUhN5aAWXHST6LK6h
-         93b7P0j9VwMVxRhQ7UYrCF9gEv9YQPccjpPI2HSWw1G3CBErgpxS+YfzthEAf/SbmuR9
-         pd/nydkuC9RQHCzc/DAJCESGv8H5VJouJ1fwwhInKjkcOVfYB3qmNaXz0jK+HlWG5dwP
-         5ZSg==
+        bh=dhlhtB6kcTQQKfLKjl8cL2UvZb7eka/OY6vEI3FE4BI=;
+        b=ch3m5I9vvWoJ/eN211uiBVKn0bhgy0z2sv8uDTyS5JAqyv9nUrT2p9VdCtMLgZwt2s
+         j+YULrB+kcoQi2FwA9+Mz785LM8gMTL11IXBtXb+UhiLVcOZEd23034RGEJ6JPhqePrK
+         lPiVbLO3I5+lyi7LiuInHvd9WfcmE9msQYxB4OMdNKuR/PFQvBE2MJjjhSKXGk1sjNSQ
+         DvFHur2ViI3namAnwmn2K6/HCt/mq6laIW4nC9M62zj9y7JMJJBiKJ6izPbFxhcJ8Lyd
+         QQBeqcoWOJ7jjpKqQNBwveHPShUDYfH89sMWQd63MWGrg42wr+ahfFgRZ6JCvqrJc2FU
+         LlRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=sYXRmsin0lZAkDq+Kh95rPlhjwCRMubwtEUB8z+tEIA=;
-        b=suvRCK2E5ntnMC61LLLR5noRw0RzmbQOmQNyIxdIB1UAVoozKLauUYq7YkXhVL0kOz
-         W8R5mYiht+9vlD2thy+2PDICMIFSNNvcmgM4PmwZJuIIpfn7Lh59JaPMMBhBDnad+PqA
-         h/PnNzHacaTrJ+uOUhJ2AwSM9dEjKyYaMCmgTSavMAOUfeSAqVg2A+XCoEQbaAzdYFX5
-         icHeAnFy1aZn+ECmJ2S5odB82zHTFFYBV1UqmcIvyErrEhmcBiJv9jLEsDbkOMhmOsTM
-         EQL414JrD+ihYH2Eu8my9SyEeBeoVa90opZA2++OVNHw7p6L7ZeGdzgs6giPTS9IVnFf
-         dFlQ==
-X-Gm-Message-State: AOAM531AvzE9vDDnqQuFoN5/phtC7IH/WKAGbdqO1HFfgVwCjxKnz1Wk
-        TTqKzC95SJoJdXSKbefOklFM7A==
-X-Google-Smtp-Source: ABdhPJyEvWNIk2itySSkUcdFrJl+La7Zvx7wZIm5HwSwMnwhX1C8IdcZIHHnUOVmjuISOAZcyYwebQ==
-X-Received: by 2002:a05:620a:15f8:: with SMTP id p24mr22206826qkm.251.1627399516421;
-        Tue, 27 Jul 2021 08:25:16 -0700 (PDT)
+        bh=dhlhtB6kcTQQKfLKjl8cL2UvZb7eka/OY6vEI3FE4BI=;
+        b=SceWDsxqnB+sJb6Wjl19dBQJ3pIaJLqTRYZLf4Wfzr/Ng+ciPBCB+4aGQM25xA8iJO
+         HRt+zGHCto+qyiBNdLa0JlZuWyQuSRbQ3xt4SRT9nvvQDQBVSzPRvLQzR0MWB4FF9iBw
+         FCLI/jNTRFjwlBbqy55mTr29Kwtnnup4gH5KqowBisCRgRQMF7CyHSD5fKEZiUREexOY
+         fqZPTCw3hALimcnieiAkKB3r3Jva/YE0k1p1CJ4bPbwmVRahkJ1fOy6h/u/ZDA2dGsnw
+         vSJ+2XFGPg3as1tEOnQ0nP73W7lpcysDxK52m03cABOfGdvlYV1IS1Kh3TrgO6PHyrH8
+         oBAg==
+X-Gm-Message-State: AOAM533X2RTu0JR0z2YE7psxM8ZqGrs6wB7ATh4APZDwmwbMG9aOpEiJ
+        a9o/f3KvWip79gj4eyHcSqkESA==
+X-Google-Smtp-Source: ABdhPJzxnlsUnJKMIHmhyPxDtifd5wNtNbqXOEsV4tRtSIBBGzdd8t6gb2x5el0WmUqn4+KbOUTXCg==
+X-Received: by 2002:a05:620a:448c:: with SMTP id x12mr22864423qkp.39.1627399518539;
+        Tue, 27 Jul 2021 08:25:18 -0700 (PDT)
 Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.googlemail.com with ESMTPSA id q4sm1539663qtr.20.2021.07.27.08.25.15
+        by smtp.googlemail.com with ESMTPSA id q4sm1539663qtr.20.2021.07.27.08.25.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Jul 2021 08:25:15 -0700 (PDT)
+        Tue, 27 Jul 2021 08:25:18 -0700 (PDT)
 From:   Thara Gopinath <thara.gopinath@linaro.org>
 To:     agross@kernel.org, bjorn.andersson@linaro.org, rui.zhang@intel.com,
         daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
@@ -62,9 +63,9 @@ To:     agross@kernel.org, bjorn.andersson@linaro.org, rui.zhang@intel.com,
 Cc:     steev@kali.org, linux-arm-msm@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         devicetree@vger.kernel.org
-Subject: [Patch v4 3/6] cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support
-Date:   Tue, 27 Jul 2021 11:25:09 -0400
-Message-Id: <20210727152512.1098329-4-thara.gopinath@linaro.org>
+Subject: [Patch v4 5/6] arm64: dts: qcom: sdm845: Remove cpufreq cooling devices for CPU thermal zones
+Date:   Tue, 27 Jul 2021 11:25:11 -0400
+Message-Id: <20210727152512.1098329-6-thara.gopinath@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210727152512.1098329-1-thara.gopinath@linaro.org>
 References: <20210727152512.1098329-1-thara.gopinath@linaro.org>
@@ -74,257 +75,223 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interrupt support to notify the kernel of h/w initiated frequency
-throttling by LMh. Convey this to scheduler via thermal presssure
-interface.
+Now that Limits h/w is enabled to monitor thermal events around cpus and
+throttle the cpu frequencies, remove cpufreq cooling device for the CPU
+thermal zones which does software throttling of cpu frequencies.
 
 Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
 
-v3->v4:
-	- Dropped devm_ versions of request_irq and free_irq as per comments on
-	  mailing list.
-	- Introduced locking to prevent race between LMh de-init sequence and
-	  re-enabling of interrupts/polling after a thermal throttle event.
-	- Moved the LMh de-init sequence to qcom_cpufreq_hw_lmh_exit as per
-	  Viresh's review comments
-	- Code rearrangement as per Bjorn's review comments.
-	- Moved the interrupt handling to threaded interrupt handling since Steev
-	  reported some scheduling while atomic bug on the mailing list.
-
 v2->v3:
-	- Cosmetic fixes from review comments on the list.
-	- Moved all LMh initializations to qcom_cpufreq_hw_lmh_init.
-	- Added freeing of LMh interrupt and cancelling the polling worker to
-	  qcom_cpufreq_hw_cpu_exit as per Viresh's suggestion.
-	- LMh interrupts are now tied to cpu dev and not cpufreq dev. This will be
-	  useful for further generation of SoCs where the same interrupt signals
-	  multiple cpu clusters.
+	- Improved the subject header and descrption to better reflect the
+	  patch as per Matthias's review comments.
 
 v1->v2:
-	- Introduced qcom_cpufreq_hw_lmh_init to consolidate LMh related initializations
-	  as per Viresh's review comment.
-	- Moved the piece of code restarting polling/re-enabling LMh interrupt to
-	  qcom_lmh_dcvs_notify therby simplifying isr and timer callback as per Viresh's
-	  suggestion.
-	- Droped cpus from qcom_cpufreq_data and instead using cpus from cpufreq_policy in
-	  qcom_lmh_dcvs_notify as per Viresh's review comment.
-	- Dropped dt property qcom,support-lmh as per Bjorn's suggestion.
-	- Other minor/cosmetic fixes
+	Removing only cooling maps for cpu specific thermal zones keeping the
+	trip point definitions intact as per Daniel's suggestion. This is to
+	ensure that thermal zone temparature and trip violation information is
+	available to any userspace daemon monitoring these zones.
 
- drivers/cpufreq/qcom-cpufreq-hw.c | 142 ++++++++++++++++++++++++++++++
- 1 file changed, 142 insertions(+)
+ arch/arm64/boot/dts/qcom/sdm845.dtsi | 136 ---------------------------
+ 1 file changed, 136 deletions(-)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index f86859bf76f1..3cc27d9e2ed1 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -7,12 +7,14 @@
- #include <linux/cpufreq.h>
- #include <linux/init.h>
- #include <linux/interconnect.h>
-+#include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
- #include <linux/pm_opp.h>
- #include <linux/slab.h>
-+#include <linux/spinlock.h>
+diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+index 0bf98f072921..14dc41c4a98b 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+@@ -4994,23 +4994,6 @@ cpu0_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu0_alert0>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu0_alert1>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
- #define LUT_MAX_ENTRIES			40U
- #define LUT_SRC				GENMASK(31, 30)
-@@ -22,10 +24,13 @@
- #define CLK_HW_DIV			2
- #define LUT_TURBO_IND			1
+ 		cpu1-thermal {
+@@ -5038,23 +5021,6 @@ cpu1_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu1_alert0>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu1_alert1>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
-+#define HZ_PER_KHZ			1000
-+
- struct qcom_cpufreq_soc_data {
- 	u32 reg_enable;
- 	u32 reg_freq_lut;
- 	u32 reg_volt_lut;
-+	u32 reg_current_vote;
- 	u32 reg_perf_state;
- 	u8 lut_row_size;
- };
-@@ -33,7 +38,13 @@ struct qcom_cpufreq_soc_data {
- struct qcom_cpufreq_data {
- 	void __iomem *base;
- 	struct resource *res;
-+	struct delayed_work throttle_work;
- 	const struct qcom_cpufreq_soc_data *soc_data;
-+	struct cpufreq_policy *policy;
-+	/* Lock to synchronize between de-init sequence and re-starting LMh polling/interrupts */
-+	spinlock_t throttle_lock;
-+	int throttle_irq;
-+	bool cancel_throttle;
- };
+ 		cpu2-thermal {
+@@ -5082,23 +5048,6 @@ cpu2_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu2_alert0>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu2_alert1>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
- static unsigned long cpu_hw_rate, xo_rate;
-@@ -251,10 +262,92 @@ static void qcom_get_related_cpus(int index, struct cpumask *m)
- 	}
- }
+ 		cpu3-thermal {
+@@ -5126,23 +5075,6 @@ cpu3_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu3_alert0>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu3_alert1>;
+-					cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
-+static unsigned int qcom_lmh_get_throttle_freq(struct qcom_cpufreq_data *data)
-+{
-+	unsigned int val = readl_relaxed(data->base + data->soc_data->reg_current_vote);
-+
-+	return (val & 0x3FF) * 19200;
-+}
-+
-+static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
-+{
-+	struct cpufreq_policy *policy = data->policy;
-+	struct dev_pm_opp *opp;
-+	struct device *dev;
-+	unsigned long max_capacity, capacity, freq_hz, throttled_freq;
-+	unsigned int freq;
-+
-+	/*
-+	 * Get the h/w throttled frequency, normalize it using the
-+	 * registered opp table and use it to calculate thermal pressure.
-+	 */
-+	freq = qcom_lmh_get_throttle_freq(data);
-+	freq_hz = freq * HZ_PER_KHZ;
-+
-+	dev = get_cpu_device(cpumask_first(policy->cpus));
-+	opp = dev_pm_opp_find_freq_floor(dev, &freq_hz);
-+	if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
-+		opp = dev_pm_opp_find_freq_ceil(dev, &freq_hz);
-+
-+	throttled_freq = freq_hz / HZ_PER_KHZ;
-+
-+	/* Update thermal pressure */
-+
-+	max_capacity = arch_scale_cpu_capacity(cpumask_first(policy->cpus));
-+	capacity = mult_frac(max_capacity, throttled_freq, policy->cpuinfo.max_freq);
-+	/* Don't pass boost capacity to scheduler */
-+	if (capacity > max_capacity)
-+		capacity = max_capacity;
-+
-+	arch_set_thermal_pressure(policy->cpus, max_capacity - capacity);
-+
-+	/* In the unlikely case cpufreq is de-registered do not enable polling or h/w interrupt */
-+
-+	spin_lock(&data->throttle_lock);
-+	if (data->cancel_throttle) {
-+		spin_unlock(&data->throttle_lock);
-+		return;
-+	}
-+	spin_unlock(&data->throttle_lock);
-+
-+	/*
-+	 * If h/w throttled frequency is higher than what cpufreq has requested for, stop
-+	 * polling and switch back to interrupt mechanism
-+	 */
-+
-+	if (throttled_freq >= qcom_cpufreq_hw_get(cpumask_first(policy->cpus)))
-+		/* Clear the existing interrupts and enable it back */
-+		enable_irq(data->throttle_irq);
-+	else
-+		mod_delayed_work(system_highpri_wq, &data->throttle_work,
-+				 msecs_to_jiffies(10));
-+}
-+
-+static void qcom_lmh_dcvs_poll(struct work_struct *work)
-+{
-+	struct qcom_cpufreq_data *data;
-+
-+	data = container_of(work, struct qcom_cpufreq_data, throttle_work.work);
-+
-+	qcom_lmh_dcvs_notify(data);
-+}
-+
-+static irqreturn_t qcom_lmh_dcvs_handle_irq(int irq, void *data)
-+{
-+	struct qcom_cpufreq_data *c_data = data;
-+
-+	/* Disable interrupt and enable polling */
-+	disable_irq_nosync(c_data->throttle_irq);
-+	qcom_lmh_dcvs_notify(c_data);
-+
-+	return 0;
-+}
-+
- static const struct qcom_cpufreq_soc_data qcom_soc_data = {
- 	.reg_enable = 0x0,
- 	.reg_freq_lut = 0x110,
- 	.reg_volt_lut = 0x114,
-+	.reg_current_vote = 0x704,
- 	.reg_perf_state = 0x920,
- 	.lut_row_size = 32,
- };
-@@ -274,6 +367,50 @@ static const struct of_device_id qcom_cpufreq_hw_match[] = {
- };
- MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
+ 		cpu4-thermal {
+@@ -5170,23 +5102,6 @@ cpu4_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu4_alert0>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu4_alert1>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
-+static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
-+{
-+	struct qcom_cpufreq_data *data = policy->driver_data;
-+	struct platform_device *pdev = cpufreq_get_driver_data();
-+	char irq_name[15];
-+	int ret;
-+
-+	/*
-+	 * Look for LMh interrupt. If no interrupt line is specified /
-+	 * if there is an error, allow cpufreq to be enabled as usual.
-+	 */
-+	data->throttle_irq = platform_get_irq(pdev, index);
-+	if (data->throttle_irq <= 0)
-+		return data->throttle_irq == -EPROBE_DEFER ? -EPROBE_DEFER : 0;
-+
-+	data->cancel_throttle = false;
-+	data->policy = policy;
-+
-+	spin_lock_init(&data->throttle_lock);
-+	INIT_DEFERRABLE_WORK(&data->throttle_work, qcom_lmh_dcvs_poll);
-+
-+	snprintf(irq_name, sizeof(irq_name), "dcvsh-irq-%u", policy->cpu);
-+	ret = request_threaded_irq(data->throttle_irq, NULL, qcom_lmh_dcvs_handle_irq,
-+				   IRQF_ONESHOT, irq_name, data);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Error registering %s: %d\n", irq_name, ret);
-+		return 0;
-+	}
-+
-+	return 0;
-+}
-+
-+static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
-+{
-+	if (data->throttle_irq <= 0)
-+		return;
-+
-+	spin_lock(&data->throttle_lock);
-+	data->cancel_throttle = true;
-+	spin_unlock(&data->throttle_lock);
-+	cancel_delayed_work_sync(&data->throttle_work);
-+	free_irq(data->throttle_irq, data);
-+}
-+
- static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct platform_device *pdev = cpufreq_get_driver_data();
-@@ -370,6 +507,10 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 			dev_warn(cpu_dev, "failed to enable boost: %d\n", ret);
- 	}
+ 		cpu5-thermal {
+@@ -5214,23 +5129,6 @@ cpu5_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu5_alert0>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu5_alert1>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
-+	ret = qcom_cpufreq_hw_lmh_init(policy, index);
-+	if (ret)
-+		goto error;
-+
- 	return 0;
- error:
- 	kfree(data);
-@@ -389,6 +530,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+ 		cpu6-thermal {
+@@ -5258,23 +5156,6 @@ cpu6_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu6_alert0>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu6_alert1>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
  
- 	dev_pm_opp_remove_all_dynamic(cpu_dev);
- 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
-+	qcom_cpufreq_hw_lmh_exit(data);
- 	kfree(policy->freq_table);
- 	kfree(data);
- 	iounmap(base);
+ 		cpu7-thermal {
+@@ -5302,23 +5183,6 @@ cpu7_crit: cpu_crit {
+ 					type = "critical";
+ 				};
+ 			};
+-
+-			cooling-maps {
+-				map0 {
+-					trip = <&cpu7_alert0>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-				map1 {
+-					trip = <&cpu7_alert1>;
+-					cooling-device = <&CPU4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+-							 <&CPU7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+-				};
+-			};
+ 		};
+ 
+ 		aoss0-thermal {
 -- 
 2.25.1
 
