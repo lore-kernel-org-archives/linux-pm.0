@@ -2,165 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8BA9C4338F
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 140C3C43216
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:26:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E17F61019
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:19:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF0A36101B
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:26:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232163AbhG1WTL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Jul 2021 18:19:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34038 "EHLO
+        id S232676AbhG1W02 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Jul 2021 18:26:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35626 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232114AbhG1WTK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jul 2021 18:19:10 -0400
-Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 869B9C0613CF
-        for <linux-pm@vger.kernel.org>; Wed, 28 Jul 2021 15:19:08 -0700 (PDT)
-Received: by mail-qk1-x736.google.com with SMTP id 129so3881720qkg.4
-        for <linux-pm@vger.kernel.org>; Wed, 28 Jul 2021 15:19:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Srjf0aL7kHAVVp8xOjNVibfUf0NYqsilKH/clpF6XdM=;
-        b=UsieRyKWGPZS8uLn0zEzD+tYsGMx8iEd2JshbEJ87il9BCsUc5DGd5DDnzaJaJviAF
-         hG6b6fha0xukyKUjebYyRg0RrxT9FsdMzUMZ9jSObEtjydk98dW1tmfkegE6nX7XN4ry
-         Tyv+nRIS+dO8htCj8kgMgdYm0tPiOxAUYo3Dmb9mK7Zp+roGAoZ6rT5MxxklKcrMcoqG
-         E1KUkTurjqjl1U8Yi31iYwNM31HsnJ9UU/Zi/l9TBxNsp6w+GoyhGcXa0qk5uC/hKALu
-         MY8jcdHO5aIbEAiWNOGVUxUE973rDiVItbVoT64OVo2sgpl9ErORVX5OYIlRVahnA7qQ
-         TPHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Srjf0aL7kHAVVp8xOjNVibfUf0NYqsilKH/clpF6XdM=;
-        b=DM8mM3bHp99akyOEM2n9icmQn41WVHhgE0pTsbPosOrIboubSBsdvSuH6ObejDWcN6
-         CdmAoP51XKJQ0S69rOWr6YSy5WHTd+b179cixBC5fA5Oew7Zwk3hpD/ys1+wSYLm/P9K
-         zvlLiUTEAmTN6dm3PS2a3ITlcReYYCYU18N0aKfogEirApDOW0qm1v6B9Hnlva741ato
-         uNyzpxj/EaaZJ7UL5ymFDGx95DGg91AaCc1xWVukm4G3638agk9CfyuTNBlO+Cx542vL
-         bsLRD5kw3dssogQDPsI+0AHilQse5rEboixID+kGYQr7D7WUD4Jk3GG3bBH80Ae7Tclv
-         DpvQ==
-X-Gm-Message-State: AOAM5326kZt2AAo4YV58LwzVJmsvDz4VWwC1Etw3TlYtX60IHUDx3MPd
-        G/GQiP92uMa2KIR8/3D2EKbF4w==
-X-Google-Smtp-Source: ABdhPJygj1RUvPO57MdF67FNVU9lphmm1Rf9eF4v8v5eAw1/v+05x5ILFVQykGw6CtLEzds/4nan8w==
-X-Received: by 2002:a37:a004:: with SMTP id j4mr1950099qke.499.1627510746886;
-        Wed, 28 Jul 2021 15:19:06 -0700 (PDT)
-Received: from [192.168.1.93] (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.gmail.com with ESMTPSA id n188sm745065qke.54.2021.07.28.15.19.05
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 28 Jul 2021 15:19:06 -0700 (PDT)
-Subject: Re: [Patch v4 3/6] cpufreq: qcom-cpufreq-hw: Add dcvs interrupt
- support
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     agross@kernel.org, bjorn.andersson@linaro.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, rjw@rjwysocki.net, robh+dt@kernel.org,
-        steev@kali.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org
-References: <20210727152512.1098329-1-thara.gopinath@linaro.org>
- <20210727152512.1098329-4-thara.gopinath@linaro.org>
- <20210728035014.25mgvrpnraxfslq7@vireshk-i7>
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <9a257605-d282-cd06-cc44-5ad5a5f8484d@linaro.org>
-Date:   Wed, 28 Jul 2021 18:19:05 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        with ESMTP id S232533AbhG1W0R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jul 2021 18:26:17 -0400
+X-Greylist: delayed 326 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 28 Jul 2021 15:26:07 PDT
+Received: from relay03.th.seeweb.it (relay03.th.seeweb.it [IPv6:2001:4b7a:2000:18::164])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9104AC0617BA
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jul 2021 15:26:07 -0700 (PDT)
+Received: from localhost.localdomain (83.6.168.174.neoplus.adsl.tpnet.pl [83.6.168.174])
+        by m-r1.th.seeweb.it (Postfix) with ESMTPA id 2315C1FD04;
+        Thu, 29 Jul 2021 00:26:05 +0200 (CEST)
+From:   Konrad Dybcio <konrad.dybcio@somainline.org>
+To:     ~postmarketos/upstreaming@lists.sr.ht
+Cc:     martin.botka@somainline.org,
+        angelogioacchino.delregno@somainline.org,
+        marijn.suijten@somainline.org, jamipkettunen@somainline.org,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 14/39] arm64: dts: qcom: sdm630: Add TSENS node
+Date:   Thu, 29 Jul 2021 00:25:17 +0200
+Message-Id: <20210728222542.54269-15-konrad.dybcio@somainline.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210728222542.54269-1-konrad.dybcio@somainline.org>
+References: <20210728222542.54269-1-konrad.dybcio@somainline.org>
 MIME-Version: 1.0
-In-Reply-To: <20210728035014.25mgvrpnraxfslq7@vireshk-i7>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This will enable temperature reporting for various SoC
+components.
 
+Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+---
+ .../devicetree/bindings/thermal/qcom-tsens.yaml       |  1 +
+ arch/arm64/boot/dts/qcom/sdm630.dtsi                  | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
-On 7/27/21 11:50 PM, Viresh Kumar wrote:
-> On 27-07-21, 11:25, Thara Gopinath wrote:
->> +static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
->> +{
-> 
->> +	/* In the unlikely case cpufreq is de-registered do not enable polling or h/w interrupt */
->> +
->> +	spin_lock(&data->throttle_lock);
->> +	if (data->cancel_throttle) {
->> +		spin_unlock(&data->throttle_lock);
->> +		return;
->> +	}
->> +	spin_unlock(&data->throttle_lock);
->> +
->> +	/*
->> +	 * If h/w throttled frequency is higher than what cpufreq has requested for, stop
->> +	 * polling and switch back to interrupt mechanism
->> +	 */
->> +
->> +	if (throttled_freq >= qcom_cpufreq_hw_get(cpumask_first(policy->cpus)))
->> +		/* Clear the existing interrupts and enable it back */
->> +		enable_irq(data->throttle_irq);
->> +	else
->> +		mod_delayed_work(system_highpri_wq, &data->throttle_work,
->> +				 msecs_to_jiffies(10));
->> +}
-> 
->> +static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
->> +{
->> +	if (data->throttle_irq <= 0)
->> +		return;
->> +
->> +	spin_lock(&data->throttle_lock);
->> +	data->cancel_throttle = true;
->> +	spin_unlock(&data->throttle_lock);
->> +	cancel_delayed_work_sync(&data->throttle_work);
->> +	free_irq(data->throttle_irq, data);
->> +}
-> 
-> Lets see if we can still make it break :)
-> 
-> CPU0                                            CPU1
-> 
-> qcom_lmh_dcvs_notify()                          qcom_cpufreq_hw_lmh_exit()
-> 
-> spin_unlock()
->                                                  spin_lock(),
->                                                  cancel_throttle = true
->                                                  spin_unlock()
-> 
->                                                  cancel_delayed_work_sync()
-> mod_delayed_work()
->                                                  free_irq()
->                                                  kfree(data)
-> qcom_lmh_dcvs_poll()
-> Uses data.
-> 
-> 
-> Sorry, locking is fun :)
-
-Ha! I was too lazy to write this down! So how about I make this a mutex 
-and put mod_delayed_work() inside the lock. So it will be something like 
-below
-
-qcom_lmh_dcvs_notify()			qcom_cpufreq_hw_lmh_exit()
-
-mutex_lock()				mutex_lock()
-   if (data->cancel_throttle) {		cancel_throttle = true
-	mutex_unlock()			mutex_unlock()
-	return				cancel_delayed_work_sync()
-   }					free_irq()
-   enable_irq() / mod_delayed_work()
-mutex_unlock()
-
-I will let you break it!
-
-> 
-
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index 4a2eaf28e3fd..d3b9e9b600a2 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -48,6 +48,7 @@ properties:
+               - qcom,sc7180-tsens
+               - qcom,sc7280-tsens
+               - qcom,sc8180x-tsens
++              - qcom,sdm630-tsens
+               - qcom,sdm845-tsens
+               - qcom,sm8150-tsens
+               - qcom,sm8250-tsens
+diff --git a/arch/arm64/boot/dts/qcom/sdm630.dtsi b/arch/arm64/boot/dts/qcom/sdm630.dtsi
+index 1e54828817d5..7e9c80e35fba 100644
+--- a/arch/arm64/boot/dts/qcom/sdm630.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm630.dtsi
+@@ -627,6 +627,17 @@ mnoc: interconnect@1745000 {
+ 				 <&mmcc AHB_CLK_SRC>;
+ 		};
+ 
++		tsens: thermal-sensor@10ae000 {
++			compatible = "qcom,sdm630-tsens", "qcom,tsens-v2";
++			reg = <0x010ae000 0x1000>, /* TM */
++				  <0x010ad000 0x1000>; /* SROT */
++			#qcom,sensors = <12>;
++			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>,
++					 <GIC_SPI 430 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "uplow", "critical";
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		tcsr_mutex_regs: syscon@1f40000 {
+ 			compatible = "syscon";
+ 			reg = <0x01f40000 0x20000>;
 -- 
-Warm Regards
-Thara (She/Her/Hers)
+2.32.0
+
