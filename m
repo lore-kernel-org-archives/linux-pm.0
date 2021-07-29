@@ -2,77 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15634C432BE
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 14:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A061C4338F
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 14:50:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 01E5E60EFD
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 14:49:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7D4AF604DC
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 14:50:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237656AbhG2Otw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Jul 2021 10:49:52 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44090 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229864AbhG2Otu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jul 2021 10:49:50 -0400
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
- id 0f8846d825f27bfa; Thu, 29 Jul 2021 16:49:45 +0200
-Received: from kreacher.localnet (89-64-80-223.dynamic.chello.pl [89.64.80.223])
+        id S237801AbhG2Oum (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Jul 2021 10:50:42 -0400
+Received: from smtp-relay-canonical-0.canonical.com ([185.125.188.120]:53056
+        "EHLO smtp-relay-canonical-0.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S237757AbhG2Oum (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jul 2021 10:50:42 -0400
+Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com [209.85.208.71])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 53D6A669F44;
-        Thu, 29 Jul 2021 16:49:44 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PCI <linux-pci@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Utkarsh H Patel <utkarsh.h.patel@intel.com>,
-        Koba Ko <koba.ko@canonical.com>
-Subject: [PATCH v1 0/2] PCI: PM: Fix handling of device that can only signal PME from D3cold
-Date:   Thu, 29 Jul 2021 16:46:27 +0200
-Message-ID: <4668274.31r3eYUQgx@kreacher>
+        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPS id 06D4B3F0A8
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jul 2021 14:50:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1627570237;
+        bh=bU3aJudrCBoWRfseckxJjEUGOPUyIi0wc73ZEH0TAIo=;
+        h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+         To:Cc:Content-Type;
+        b=jCu6Nj6KfmlmQBvAxBB0tSc0zp7GO8uycf4ZWlSDUuGSL2u/4Nb9mGSv6Q/NSjqog
+         BKNsIkMQBJRLZ4QXOCir1TYW8Kx3V9YRWCz2kOX2xYVYGd+GNsDlqw5lNXwZYAubuw
+         2tMt0QS521POL8tLul2FwXUHpxrZscGuDXbunq0lnQm7+cm/l+FOqIe3fs1wWmUCVm
+         /z5K2wHDOSOJopp/k/pLZFfOu4LQhpkBQdG74Ri1bj3RGZnHtR1wJNbdHQr9bo58i5
+         CdTR0pGOj3LVPL/LrOik0/gm08BWnOuVOOZ+rNCQkL0gmU+UUhgM7BN4rCCT9TXI8S
+         lnzrRs56+L2DQ==
+Received: by mail-ed1-f71.google.com with SMTP id k14-20020a05640212ceb02903bc50d32c17so3074632edx.12
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jul 2021 07:50:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=bU3aJudrCBoWRfseckxJjEUGOPUyIi0wc73ZEH0TAIo=;
+        b=Ni8W+Zkzko/Lb+xFK4h4h5kCWx/O5bR/T4oUT9kDW7hAzRHJbWX0KBJBxYsUo3ENvx
+         U0fkqZaJm3U91qACTK45q9HT9FfhGGW3Bh1M53vmpnKADpCw1i4sXnMHjxN4HUUP+PUn
+         QwM0mefPDPT8ffne2JhGGdoXB2cAzBvG10u4EbIE5wqSTKO21+WabOrUV4dQyx3n/8IS
+         DZXp3EH8gUXMt27i0STCKT+dA5ai+k37a19KA97Hdniyi35EYBFI5XiIjDyawbCtb6aB
+         MvB9SkPd4jtpsTLvdrUQeEpvWoXLc3Zco8siz/hKhGyIL0+RKiz1avXmw9OrGKJMGa6M
+         PwOw==
+X-Gm-Message-State: AOAM532AMxksnaRlQ12tN98jeUI1qMXokVohR/2WhnXbJOa0rklIU2ma
+        JvAXgz8yWhjwBu0aGT+8S3dEvDxzO6B6mW+J3cj58SZvy5cg6E8hJ+JT/BJNZ4D2tPWmK5WANMv
+        JlcLOeVv385x6D997fMKvFtYizLrk0JTRoDjDJsbOpYpjsaX239wt
+X-Received: by 2002:a17:906:4e52:: with SMTP id g18mr5068694ejw.432.1627570231829;
+        Thu, 29 Jul 2021 07:50:31 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxLbaFtB4Oa0qb/cXYZ3tKM/1FAsoCdzWz2mqugcIj84Rzh8YIxhE0ygEpBqP7MTQZ+YfzXNAEBEeRHHsZ7qNk=
+X-Received: by 2002:a17:906:4e52:: with SMTP id g18mr5068680ejw.432.1627570231539;
+ Thu, 29 Jul 2021 07:50:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <bug-213873-41252@https.bugzilla.kernel.org/> <20210727155512.GA716431@bjorn-Precision-5520>
+In-Reply-To: <20210727155512.GA716431@bjorn-Precision-5520>
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date:   Thu, 29 Jul 2021 22:50:16 +0800
+Message-ID: <CAAd53p7PCP5uT8ZrM9yYBKmAR7bKcWszEqtq_htP13XzW5jLHg@mail.gmail.com>
+Subject: Re: [Bug 213873] New: Hotplug ethernet cable to runtime suspended
+ Realtek NIC doesn't raise PCIe PME IRQ on Intel ADL
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 89.64.80.223
-X-CLIENT-HOSTNAME: 89-64-80-223.dynamic.chello.pl
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrheefgdegtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdevgfetueetheekudeuvdduteelvefftdfftdejjeeukeffteeikefgiefghedunecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepkeelrdeigedrkedtrddvvdefnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepkeelrdeigedrkedtrddvvdefpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhg
- pdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepkhgrihdrhhgvnhhgrdhfvghnghestggrnhhonhhitggrlhdrtghomhdprhgtphhtthhopehuthhkrghrshhhrdhhrdhprghtvghlsehinhhtvghlrdgtohhmpdhrtghpthhtohepkhhosggrrdhkohestggrnhhonhhitggrlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=9 Fuz1=9 Fuz2=9
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Jul 27, 2021 at 11:55 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> On Tue, Jul 27, 2021 at 06:10:13AM +0000, bugzilla-daemon@bugzilla.kernel.org wrote:
+> > https://bugzilla.kernel.org/show_bug.cgi?id=213873
+> >
+> >             Bug ID: 213873
+> >            Summary: Hotplug ethernet cable to runtime suspended Realtek
+> >                     NIC doesn't raise PCIe PME IRQ on Intel ADL
+> >            Product: Drivers
+> >            Version: 2.5
+> >     Kernel Version: mainline
+> >           Hardware: All
+> >                 OS: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: normal
+> >           Priority: P1
+> >          Component: PCI
+> >           Assignee: drivers_pci@kernel-bugs.osdl.org
+> >           Reporter: kai.heng.feng@canonical.com
+> >         Regression: No
+> >
+> > Both PCIe bridge and Realtek NIC are runtime suspended. When ethernet cable is
+> > plugged, PMEStatus and PMEPending are marked:
+> > RootSta: PME ReqID 0200, PMEStatus+ PMEPending+
+> >
+> > But the IRQ isn't raised:
+> > $ cat /proc/interrupts  | grep PME
+> >  145:          0          0          0          0          0          0
+> >  0          0          0          0          0          0   VMD-MSI  126  PCIe
+> > PME, aerdrv, pcie-dpc
+> >
+> > So the hotplug event isn't detected.
+> >
+> > --
+>
+> From the lspci after cable hotplug (comment #3):
+>
+>   0000:00:1c.0 PCI bridge ...
+>     RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+>     RootSta: PME ReqID 0200, PMEStatus+ PMEPending+
+>
+> So it looks like the root port is not enabled to generate a PME
+> interrupt.  pcie_pme_interrupt_enable() looks like it *could* enable
+> that.  From a quick look, my guess is that pme.c doesn't claim this
+> root port because the platform says it doesn't support it:
+>
+>   acpi PNP0A08:00: _OSC: platform does not support [PCIeHotplug SHPCHotplug PME]
+>   acpi PNP0A08:00: _OSC: OS now controls [AER PCIeCapability LTR]
+>
+> Does booting with "pcie_ports=native" make it work?  That's not a very
+> good solution, of course, because then both the firmware and Linux
+> think they own this functionality.
 
-This series is a replacement for the following patch:
+Yes, thanks for spotting this.
 
-https://patchwork.kernel.org/project/linux-pm/patch/3149540.aeNJFYEL58@kreacher/
+>
+> Is there a BIOS update that would fix this?
 
-allowing devices that only can signal PME from D3cold to be put into
-low-power states and signal wakeup from D3cold (if they get into it).
+This platform is still under enablement so we'll get a BIOS fix.
 
-However, the patch above works by adding a special case to pci_pme_capable()
-which actually is not necessary.
+Kai-Heng
 
-Instead of doing that, it is sufficient to make pci_target_state() handle the
-case in which the device cannot signal PME from D0 consistently (patch [1/2]
-in this series) and make __pci_enable_wake() enable PM signaling for devices
-that can signal PME from D3cold (patch [2/2] in this series).
-
-Please see the patch changelogs for details.
-
-Thanks!
-
-
-
+>
+> Bjorn
