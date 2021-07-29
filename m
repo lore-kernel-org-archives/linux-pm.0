@@ -2,91 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5A3BC4338F
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:29:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B80EC4338F
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 02:29:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C4FCD6103E
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Jul 2021 22:29:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 15C0B6103C
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Jul 2021 02:29:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232300AbhG1W3k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Jul 2021 18:29:40 -0400
-Received: from relay07.th.seeweb.it ([5.144.164.168]:54085 "EHLO
-        relay07.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232143AbhG1W3j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jul 2021 18:29:39 -0400
-X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Jul 2021 18:29:39 EDT
-Received: from localhost.localdomain (83.6.168.174.neoplus.adsl.tpnet.pl [83.6.168.174])
-        by m-r2.th.seeweb.it (Postfix) with ESMTPA id D40053F360;
-        Thu, 29 Jul 2021 00:20:37 +0200 (CEST)
-From:   Konrad Dybcio <konrad.dybcio@somainline.org>
-To:     ~postmarketos/upstreaming@lists.sr.ht
-Cc:     martin.botka@somainline.org,
-        angelogioacchino.delregno@somainline.org,
-        marijn.suijten@somainline.org, jamipkettunen@somainline.org,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers: interconnect: sdm660: Fix up erroneous paths
-Date:   Thu, 29 Jul 2021 00:20:33 +0200
-Message-Id: <20210728222033.52500-1-konrad.dybcio@somainline.org>
-X-Mailer: git-send-email 2.32.0
+        id S233372AbhG2C3n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Jul 2021 22:29:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33734 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233256AbhG2C3n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jul 2021 22:29:43 -0400
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6D2AC061757
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jul 2021 19:29:40 -0700 (PDT)
+Received: by mail-pj1-x102f.google.com with SMTP id a4-20020a17090aa504b0290176a0d2b67aso13235531pjq.2
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jul 2021 19:29:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=E9TA+nWKlXjyVnoR3JHfAb4l8ybX+Ut0WJ6MpFny7gY=;
+        b=qAH76GGU5YxECd96614egoHDpdsmMWmORmWyzqbTt3pZa94KuCqbEHYkznCIitPX49
+         56pQs4eWhm5aIle0bKRFPsY0puyZIyX9ZHOzVl/AFNMLtOK0BhoIbZYZj8NsoA7Cx+dT
+         FW8QxhPac0TqqwTmEwAP8m6Pnk8xn0nslufpvyHjXLrNDDjiomA432thKpPFrJu59NhK
+         nz3zy9v2w/Miiql+/42+dbmB9g5fNdOqPJUoG6vLv1NpU9SRCtLeBxNjatfPv3OIeeM0
+         XxIgG93Xo2XvSY094H0QZJBhBgNSdDgF653Y62j6W6lLmOBRo76nQ6mQGieZSxDxBhtk
+         uQNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=E9TA+nWKlXjyVnoR3JHfAb4l8ybX+Ut0WJ6MpFny7gY=;
+        b=ubKLJZ+sw7rZuyqE4DJaKks0YQcwvtzpSdkOsUbhAfBEFvZrEhoaZnPctwZ+WLvzfP
+         cCBA5RjuUCeZdDTmhdVG5MeIXvUDEbNdL7M9Cxpy/JOgks5U8fndKFicvRUxEy9fCTbI
+         zSJzHmB8omOXCUoaizqyO6R0L3llr4S4RH0ejAkLDytPTIHPtIGrpn1GiUmkeR2RYj9+
+         OlEgjVHqdTpwb7o7614YeN6uvC2W3uoDgjp+Cbx3M8PhpskE6ZgA46d4rKNh7a/EczwI
+         dkS1uv0aau28JwLEVBr1zOAxT0McZuVUr1+f0d+SIQr7N16U2VfxzaRsKB7jke1IPKlJ
+         TIvQ==
+X-Gm-Message-State: AOAM531Iie6xXEpdijiPBvRNNFInKHYZVbMNtvitXGpTQk5crzzzquxc
+        JgJ92fGNUbTo3vNuPKdh6IfJUA==
+X-Google-Smtp-Source: ABdhPJxng5yDmtBQrG4QnSJhZds1/IqoQrYk8wf0srlZ7UMcikw6ZwsR+lvmXdBhzQVVW/BciY/2pQ==
+X-Received: by 2002:a63:c058:: with SMTP id z24mr1798555pgi.220.1627525780307;
+        Wed, 28 Jul 2021 19:29:40 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id x10sm1376546pfr.150.2021.07.28.19.29.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Jul 2021 19:29:39 -0700 (PDT)
+Message-ID: <61021293.1c69fb81.cb9d4.5bf5@mx.google.com>
+Date:   Wed, 28 Jul 2021 19:29:39 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Report-Type: build
+X-Kernelci-Kernel: v5.14-rc3-20-g604483c9d252
+Subject: pm/testing build: 7 builds: 0 failed,
+ 7 passed (v5.14-rc3-20-g604483c9d252)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix the earlier porting mistakes to make interconnect work properly.
+pm/testing build: 7 builds: 0 failed, 7 passed (v5.14-rc3-20-g604483c9d252)
 
-Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+14-rc3-20-g604483c9d252/
+
+Tree: pm
+Branch: testing
+Git Describe: v5.14-rc3-20-g604483c9d252
+Git Commit: 604483c9d25283debe498a972c2b4565581e3aaa
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
+tion mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
 ---
- drivers/interconnect/qcom/sdm660.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
-index 632dbdd21915..93856dd6730b 100644
---- a/drivers/interconnect/qcom/sdm660.c
-+++ b/drivers/interconnect/qcom/sdm660.c
-@@ -264,10 +264,10 @@ DEFINE_QNODE(mas_sdcc_1, SDM660_MASTER_SDCC_1, 8, 33, -1, false, -1, 0, -1, SDM6
- DEFINE_QNODE(mas_sdcc_2, SDM660_MASTER_SDCC_2, 8, 35, -1, false, -1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_blsp_1, SDM660_MASTER_BLSP_1, 4, 41, -1, false, -1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_blsp_2, SDM660_MASTER_BLSP_2, 4, 39, -1, false, -1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(mas_ufs, SDM660_MASTER_UFS, 8, 68, -1, true, NOC_QOS_MODE_FIXED, 1, 4, SDM660_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(mas_usb_hs, SDM660_MASTER_USB_HS, 8, 42, -1, true, NOC_QOS_MODE_FIXED, 1, 1, SDM660_SLAVE_A2NOC_SNOC);
-+DEFINE_QNODE(mas_ufs, SDM660_MASTER_UFS, 8, 68, -1, true, -1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
-+DEFINE_QNODE(mas_usb_hs, SDM660_MASTER_USB_HS, 8, 42, -1, true, -1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_usb3, SDM660_MASTER_USB3, 8, 32, -1, true, NOC_QOS_MODE_FIXED, 1, 2, SDM660_SLAVE_A2NOC_SNOC);
--DEFINE_QNODE(mas_crypto, SDM660_MASTER_CRYPTO_C0, 8, 23, -1, true, NOC_QOS_MODE_FIXED, 1, 11, SDM660_SLAVE_A2NOC_SNOC);
-+DEFINE_QNODE(mas_crypto, SDM660_MASTER_CRYPTO_C0, 8, 23, -1, false, NOC_QOS_MODE_FIXED, 1, 11, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_gnoc_bimc, SDM660_MASTER_GNOC_BIMC, 4, 144, -1, true, NOC_QOS_MODE_FIXED, 0, 0, SDM660_SLAVE_EBI);
- DEFINE_QNODE(mas_oxili, SDM660_MASTER_OXILI, 4, 6, -1, true, NOC_QOS_MODE_BYPASS, 0, 1, SDM660_SLAVE_HMSS_L3, SDM660_SLAVE_EBI, SDM660_SLAVE_BIMC_SNOC);
- DEFINE_QNODE(mas_mnoc_bimc, SDM660_MASTER_MNOC_BIMC, 4, 2, -1, true, NOC_QOS_MODE_BYPASS, 0, 2, SDM660_SLAVE_HMSS_L3, SDM660_SLAVE_EBI, SDM660_SLAVE_BIMC_SNOC);
-@@ -596,7 +596,8 @@ static int qcom_icc_set_bimc_qos(struct icc_node *src, u64 max_bw,
- 	if (qn->qos.qos_mode != -1)
- 		mode = qn->qos.qos_mode;
- 
--	/* QoS Priority: The QoS Health parameters are getting considered
-+	/*
-+	 * QoS Priority: The QoS Health parameters are getting considered
- 	 * only if we are NOT in Bypass Mode.
- 	 */
- 	if (mode != NOC_QOS_MODE_BYPASS) {
-@@ -916,6 +917,7 @@ static struct platform_driver sdm660_noc_driver = {
- 	.driver = {
- 		.name = "qnoc-sdm660",
- 		.of_match_table = sdm660_noc_of_match,
-+		.sync_state = icc_sync_state,
- 	},
- };
- module_platform_driver(sdm660_noc_driver);
--- 
-2.32.0
-
+For more info write to <info@kernelci.org>
