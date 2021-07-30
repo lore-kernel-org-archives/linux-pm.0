@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-4.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 220B6C4338F
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 17:37:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F47BC4338F
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 18:35:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EE52B60F36
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 17:37:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1234160EBD
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 18:35:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229970AbhG3Rh2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Jul 2021 13:37:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34638 "EHLO
+        id S231286AbhG3SfJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Jul 2021 14:35:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48640 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229921AbhG3Rh1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jul 2021 13:37:27 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7376CC061765;
-        Fri, 30 Jul 2021 10:37:22 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id g13so19322801lfj.12;
-        Fri, 30 Jul 2021 10:37:22 -0700 (PDT)
+        with ESMTP id S231214AbhG3Sc0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jul 2021 14:32:26 -0400
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDB72C06179F;
+        Fri, 30 Jul 2021 11:30:30 -0700 (PDT)
+Received: by mail-lj1-x236.google.com with SMTP id f12so13659301ljn.1;
+        Fri, 30 Jul 2021 11:30:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:from:to:cc:references:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=YdD/cQbxE12roUQGUPlpfAtfifyzljBPvXuX8vTuNeQ=;
-        b=OHLEomAUDEdDieEdq+73CDWNR3GZ9sjoIWNZUB6G0iOgneOiKlsjmU2LKmepB4/7K4
-         K4LPYZOpdzackoANKPBCKPSia9gb8vn4s300ngs0LMWAIfTRrTDVJJhtJiOWg0nBfUPb
-         eKLSZuhYp9ZDHfBe3p6i88WWMPgoOuIJ0nMBpExQ3EdpgKYwqhFqIRaXm+fIkApaofk5
-         UzbdScesIb9d1IxiVfstMurv4iaCf4t2R3A/8tHkwUaUWhnfSdGRUu7RauPljNiFgCI5
-         5W2IGaPuJFZqxABEB8Yd0P8suhrCr+LhA5Hg6h+wlJ5AKv5ao5Dt7S/d0gSZUt95NG2P
-         mcrg==
+        bh=kLTRgWW1RC8wwF+L3PsHjCu3c3dwv6n19TzK0kS6YIw=;
+        b=JmvXevrl2LOt3e2KuoIgrvxI8FsQnT84rnrdp2A3VztlrNyh5c1vsG7zuoFx3EF4xZ
+         HRqsdZ+GzSORFsiy9NPqtgKmj2eK455Q4lfZVCpIcVPJmpp7OEeEl6VICGFARdeSDKhW
+         zgGEbAV46pmmaaYP+3mxq3DhTrbKAlgcnyKwlfDeoJSgsAggumBFZqOXPHohkiWU+wpO
+         0ldGo2nZEnT2SNgC03jOYgFKhy1LG9g7Cr5RpGoKVcSAq7x+YZVCYy/mhNWaqgQ6CeBe
+         +g5ySNOu4n0abxLAj1l43W7Z0Bf8qTPvXPLrviji6cgXirp3QGB4BzQSZ9XsHuOng8qG
+         4ZPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:from:to:cc:references:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=YdD/cQbxE12roUQGUPlpfAtfifyzljBPvXuX8vTuNeQ=;
-        b=TqWcts8+gxe9LRLh0RZW55s+NhxHXh8x8KNw6cHnKiLIQxZVWekzB+oF1WppBXeK+J
-         j7I4tAOgm7pxG8DxP0Hz+b95Ps19yPaM8uSJgmocF1kdo3h4UjKpKHhAh/gUGXLyU32z
-         Rdu4huvU28YLVQ2wfYHZFkFmZyjdbJ5JE6o+Z5vQ/bnVdoQQDqXuYq8Rh1b5KnMuc2lf
-         Lunk9gwqUGoJhC8gmwU8fg5rAq+OakctwjqStFxJUtfjP7XxvjvuuCbhj92I3NVb9ab6
-         uC/t+HcIl0pa+GBiXMx/sLk29Mpz+0sO3SpOEcpS5RyVNGasNkHfVALrVHffFb7yuChb
-         B7Mg==
-X-Gm-Message-State: AOAM5316h3VV0WN1kVWRFhMFnuIk+fys0Eb8bkIAN3Xlm39jRsTp0vKa
-        8gpp50Sa+cRrgOSijMZQn9c=
-X-Google-Smtp-Source: ABdhPJwy8rI9+LJQTi6lVK2rpSiGY4hRkUnXqyk7UBMJ1mSAW7CPTJaIXxKYe3Umh7FA/tCTkTv6FA==
-X-Received: by 2002:a05:6512:3e0b:: with SMTP id i11mr2517488lfv.221.1627666640891;
-        Fri, 30 Jul 2021 10:37:20 -0700 (PDT)
+        bh=kLTRgWW1RC8wwF+L3PsHjCu3c3dwv6n19TzK0kS6YIw=;
+        b=K1Fqqd7ITDbUNWCAgJmZTbJhE+gt5Zqvpyj1DdQqnCCq+9xmaovgZS/Qv1dd2u+uQ9
+         WQLr/YAFhX/v0gGpCWjbaf0+RUWpaHLOR2GxxNdWpVuWj55rBu38+uvLRipQtOejo0c/
+         +7tQUUtTgnwOE6Un7TaBbp1i19W8YrPqDQ76A4Dv1xM24zQdz29L01vHORresbZrh6B7
+         1p1rDAfZEKK9975vOal/BWLHk5PTC8EeNnMRJttSRLubWJZeD/93Jkcd+jY1viMZ13FM
+         POTW8DNZKvhjrU+17VsHR/fRx5POsYxHO5m9viEKnYl9fOY904ML/Ir/T2EjIFEJGhm+
+         Yzpg==
+X-Gm-Message-State: AOAM533U5A5JD8EtxDiJFhuWUL90SQLMnx2U+Uwg14YJ+Hg8OrpN+MTR
+        M2Kn6G1d2zL+wtt9aOjRo9Y=
+X-Google-Smtp-Source: ABdhPJwFpji7ox8+1JGfmFGQYduc2n0jdrvImyTMPIbZQej5droNw1BHSHHnopCJYN4bgpXuToS5jg==
+X-Received: by 2002:a05:651c:12c6:: with SMTP id 6mr2445246lje.173.1627669829233;
+        Fri, 30 Jul 2021 11:30:29 -0700 (PDT)
 Received: from [192.168.2.145] (94-29-39-114.dynamic.spd-mgts.ru. [94.29.39.114])
-        by smtp.googlemail.com with ESMTPSA id h34sm201080lfv.231.2021.07.30.10.37.19
+        by smtp.googlemail.com with ESMTPSA id h1sm210020lfk.187.2021.07.30.11.30.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Jul 2021 10:37:20 -0700 (PDT)
+        Fri, 30 Jul 2021 11:30:28 -0700 (PDT)
 Subject: Re: [PATCH v5 00/12] Add OTG mode support to Tegra USB PHY, SMB347
  and Nexus 7
 From:   Dmitry Osipenko <digetx@gmail.com>
@@ -71,12 +71,13 @@ Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Peter Chen <peter.chen@kernel.org>,
         Felipe Balbi <balbi@kernel.org>
 References: <20210717182134.30262-1-digetx@gmail.com>
-Message-ID: <ed3c2a5c-a916-2215-a767-5546fa8cd352@gmail.com>
-Date:   Fri, 30 Jul 2021 20:37:19 +0300
+ <ed3c2a5c-a916-2215-a767-5546fa8cd352@gmail.com>
+Message-ID: <f612e599-42ee-f385-b198-bdab95ab890a@gmail.com>
+Date:   Fri, 30 Jul 2021 21:30:27 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.11.0
 MIME-Version: 1.0
-In-Reply-To: <20210717182134.30262-1-digetx@gmail.com>
+In-Reply-To: <ed3c2a5c-a916-2215-a767-5546fa8cd352@gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -84,10 +85,20 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-17.07.2021 21:21, Dmitry Osipenko пишет:
-...
->   power: supply: smb347-charger: Make smb347_set_writable() IRQ-safe
->   power: supply: smb347-charger: Utilize generic regmap caching
->   power: supply: smb347-charger: Implement USB VBUS regulator
+30.07.2021 20:37, Dmitry Osipenko пишет:
+> 17.07.2021 21:21, Dmitry Osipenko пишет:
+> ...
+>>   power: supply: smb347-charger: Make smb347_set_writable() IRQ-safe
+>>   power: supply: smb347-charger: Utilize generic regmap caching
+>>   power: supply: smb347-charger: Implement USB VBUS regulator
+> 
+> I noticed that charging doesn't work properly now, will fix it in v6.
+> 
 
-I noticed that charging doesn't work properly now, will fix it in v6.
+For the record, it wasn't enough to enable the regmap caching, we also
+need to fill up the cache on init by specifying the num_reg_defaults_raw
+parameter.
+
+This uncovered another problem where the pin control "enable" bit was
+unsettling because the default regmap values were initialized to zeros
+and driver doesn't set the enable bit at all.
