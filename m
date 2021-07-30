@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E8D5C4320A
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 09:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45966C432BE
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 09:56:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 774D761055
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 09:56:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F43060EFF
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Jul 2021 09:56:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238221AbhG3J4X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S238230AbhG3J4X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 30 Jul 2021 05:56:23 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:50030 "EHLO
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:59143 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S238230AbhG3J4W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jul 2021 05:56:22 -0400
+        by vger.kernel.org with ESMTP id S238089AbhG3J4X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jul 2021 05:56:23 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1627638977;
+        s=mimecast20190719; t=1627638978;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NhhFJsN4uaWwrvVc5CNcekyun2R2NhbUY5AUOcH4/A0=;
-        b=bnXx1rL5JVKA70NWnQhtWj0sPnbJizu+Gv10thjyw1V/mW613MmwsqG0jiz27LpLp3/GJN
-        hQrBRK4atK9OTJPX+1w7LEh9oKtiZOsedJfVDoj9m57psYqCW5wWap3Tpf8zyS/Jvm7wUP
-        ts0OSlO2TglrM9QNE0uQrujQ7VjLpwE=
+        bh=x/EFlUrUSiyyZvkPQyfsgFi/ehTLeTbTLNoYuwZk90U=;
+        b=JTJYptp2/sW+IxdRsyOLWvkSFPhXPBvwbBGuyD90rwsX83B+ZhqRJ+lHchW+NrQETpaj/X
+        FFOcEQNhkhuUkzOEke+24+E9GRUeL6yC+p6uzO3ZzYYDi03JzqkAwu50qzFqCE1/hfWJz5
+        h4c2nf27h9U6lPSaV2CIt+wJCCZ68l8=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-300-lTnNQMDwOwWPwPglKWCy0g-1; Fri, 30 Jul 2021 05:56:14 -0400
-X-MC-Unique: lTnNQMDwOwWPwPglKWCy0g-1
+ us-mta-109-4IhZhNJTOlmnjnLUZ71fEQ-1; Fri, 30 Jul 2021 05:56:17 -0400
+X-MC-Unique: 4IhZhNJTOlmnjnLUZ71fEQ-1
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 76D8E8010F4;
-        Fri, 30 Jul 2021 09:56:13 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id DA032801AE7;
+        Fri, 30 Jul 2021 09:56:15 +0000 (UTC)
 Received: from x1.localdomain (unknown [10.39.192.23])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 89ACC9329;
-        Fri, 30 Jul 2021 09:56:12 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id ECCEE399;
+        Fri, 30 Jul 2021 09:56:14 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>, Andrejus Basovas <cpp@gcc.lt>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 02/10] power: supply: axp288_fuel_gauge: Remove debugfs support
-Date:   Fri, 30 Jul 2021 11:55:59 +0200
-Message-Id: <20210730095607.57541-3-hdegoede@redhat.com>
+Subject: [PATCH v2 04/10] power: supply: axp288_fuel_gauge: Report register-address on readb / writeb errors
+Date:   Fri, 30 Jul 2021 11:56:01 +0200
+Message-Id: <20210730095607.57541-5-hdegoede@redhat.com>
 In-Reply-To: <20210730095607.57541-1-hdegoede@redhat.com>
 References: <20210730095607.57541-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -57,191 +57,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The debugfs code is simply just dumping a bunch of registers, the same
-information can also easily be gotten through the regmap debugfs
-interface or through the i2cdump utility.
+When fuel_gauge_reg_readb()/_writeb() fails, report which register we
+were trying to read / write when the error happened.
 
-I've not used the debugfs interface once in all these years that I've
-been working on the axp288_fuel_gauge driver, so lets just remove it.
-
-Note this also removes the temperature-channels from the list of
-IIO ADC channels used by the driver, since these were only used in the
-debugfs interface.
+Also reword the message a bit:
+- Drop the axp288 prefix, dev_err() already prints this
+- Switch from telegram / abbreviated style to a normal sentence, aligning
+  the message with those from fuel_gauge_read_*bit_word()
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_fuel_gauge.c | 123 -----------------------
- 1 file changed, 123 deletions(-)
+ drivers/power/supply/axp288_fuel_gauge.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 99928789040d..d189849564db 100644
+index 43cc171101f1..796153caf5e0 100644
 --- a/drivers/power/supply/axp288_fuel_gauge.c
 +++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -19,8 +19,6 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/iio/consumer.h>
--#include <linux/debugfs.h>
--#include <linux/seq_file.h>
- #include <asm/unaligned.h>
- 
- #define PS_STAT_VBUS_TRIGGER			(1 << 0)
-@@ -98,9 +96,6 @@ enum {
- };
- 
- enum {
--	BAT_TEMP = 0,
--	PMIC_TEMP,
--	SYSTEM_TEMP,
- 	BAT_CHRG_CURR,
- 	BAT_D_CURR,
- 	BAT_VOLT,
-@@ -204,119 +199,6 @@ static int fuel_gauge_read_12bit_word(struct axp288_fg_info *info, int reg)
- 	return (buf[0] << 4) | ((buf[1] >> 4) & 0x0f);
- }
- 
--#ifdef CONFIG_DEBUG_FS
--static int fuel_gauge_debug_show(struct seq_file *s, void *data)
--{
--	struct axp288_fg_info *info = s->private;
--	int raw_val, ret;
--
--	seq_printf(s, " PWR_STATUS[%02x] : %02x\n",
--		AXP20X_PWR_INPUT_STATUS,
--		fuel_gauge_reg_readb(info, AXP20X_PWR_INPUT_STATUS));
--	seq_printf(s, "PWR_OP_MODE[%02x] : %02x\n",
--		AXP20X_PWR_OP_MODE,
--		fuel_gauge_reg_readb(info, AXP20X_PWR_OP_MODE));
--	seq_printf(s, " CHRG_CTRL1[%02x] : %02x\n",
--		AXP20X_CHRG_CTRL1,
--		fuel_gauge_reg_readb(info, AXP20X_CHRG_CTRL1));
--	seq_printf(s, "       VLTF[%02x] : %02x\n",
--		AXP20X_V_LTF_DISCHRG,
--		fuel_gauge_reg_readb(info, AXP20X_V_LTF_DISCHRG));
--	seq_printf(s, "       VHTF[%02x] : %02x\n",
--		AXP20X_V_HTF_DISCHRG,
--		fuel_gauge_reg_readb(info, AXP20X_V_HTF_DISCHRG));
--	seq_printf(s, "    CC_CTRL[%02x] : %02x\n",
--		AXP20X_CC_CTRL,
--		fuel_gauge_reg_readb(info, AXP20X_CC_CTRL));
--	seq_printf(s, "BATTERY CAP[%02x] : %02x\n",
--		AXP20X_FG_RES,
--		fuel_gauge_reg_readb(info, AXP20X_FG_RES));
--	seq_printf(s, "    FG_RDC1[%02x] : %02x\n",
--		AXP288_FG_RDC1_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_RDC1_REG));
--	seq_printf(s, "    FG_RDC0[%02x] : %02x\n",
--		AXP288_FG_RDC0_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_RDC0_REG));
--	seq_printf(s, "     FG_OCV[%02x] : %04x\n",
--		AXP288_FG_OCVH_REG,
--		fuel_gauge_read_12bit_word(info, AXP288_FG_OCVH_REG));
--	seq_printf(s, " FG_DES_CAP[%02x] : %04x\n",
--		AXP288_FG_DES_CAP1_REG,
--		fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG));
--	seq_printf(s, "  FG_CC_MTR[%02x] : %04x\n",
--		AXP288_FG_CC_MTR1_REG,
--		fuel_gauge_read_15bit_word(info, AXP288_FG_CC_MTR1_REG));
--	seq_printf(s, " FG_OCV_CAP[%02x] : %02x\n",
--		AXP288_FG_OCV_CAP_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_OCV_CAP_REG));
--	seq_printf(s, "  FG_CC_CAP[%02x] : %02x\n",
--		AXP288_FG_CC_CAP_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_CC_CAP_REG));
--	seq_printf(s, " FG_LOW_CAP[%02x] : %02x\n",
--		AXP288_FG_LOW_CAP_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_LOW_CAP_REG));
--	seq_printf(s, "TUNING_CTL0[%02x] : %02x\n",
--		AXP288_FG_TUNE0,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE0));
--	seq_printf(s, "TUNING_CTL1[%02x] : %02x\n",
--		AXP288_FG_TUNE1,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE1));
--	seq_printf(s, "TUNING_CTL2[%02x] : %02x\n",
--		AXP288_FG_TUNE2,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE2));
--	seq_printf(s, "TUNING_CTL3[%02x] : %02x\n",
--		AXP288_FG_TUNE3,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE3));
--	seq_printf(s, "TUNING_CTL4[%02x] : %02x\n",
--		AXP288_FG_TUNE4,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE4));
--	seq_printf(s, "TUNING_CTL5[%02x] : %02x\n",
--		AXP288_FG_TUNE5,
--		fuel_gauge_reg_readb(info, AXP288_FG_TUNE5));
--
--	ret = iio_read_channel_raw(info->iio_channel[BAT_TEMP], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-batttemp : %d\n", raw_val);
--	ret = iio_read_channel_raw(info->iio_channel[PMIC_TEMP], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-pmictemp : %d\n", raw_val);
--	ret = iio_read_channel_raw(info->iio_channel[SYSTEM_TEMP], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-systtemp : %d\n", raw_val);
--	ret = iio_read_channel_raw(info->iio_channel[BAT_CHRG_CURR], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-chrgcurr : %d\n", raw_val);
--	ret = iio_read_channel_raw(info->iio_channel[BAT_D_CURR], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-dchrgcur : %d\n", raw_val);
--	ret = iio_read_channel_raw(info->iio_channel[BAT_VOLT], &raw_val);
--	if (ret >= 0)
--		seq_printf(s, "axp288-battvolt : %d\n", raw_val);
--
--	return 0;
--}
--
--DEFINE_SHOW_ATTRIBUTE(fuel_gauge_debug);
--
--static void fuel_gauge_create_debugfs(struct axp288_fg_info *info)
--{
--	info->debug_file = debugfs_create_file("fuelgauge", 0666, NULL,
--		info, &fuel_gauge_debug_fops);
--}
--
--static void fuel_gauge_remove_debugfs(struct axp288_fg_info *info)
--{
--	debugfs_remove(info->debug_file);
--}
--#else
--static inline void fuel_gauge_create_debugfs(struct axp288_fg_info *info)
--{
--}
--static inline void fuel_gauge_remove_debugfs(struct axp288_fg_info *info)
--{
--}
--#endif
--
- static void fuel_gauge_get_status(struct axp288_fg_info *info)
- {
- 	int pwr_stat, fg_res, curr, ret;
-@@ -753,9 +635,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config psy_cfg = {};
- 	static const char * const iio_chan_name[] = {
--		[BAT_TEMP] = "axp288-batt-temp",
--		[PMIC_TEMP] = "axp288-pmic-temp",
--		[SYSTEM_TEMP] = "axp288-system-temp",
- 		[BAT_CHRG_CURR] = "axp288-chrg-curr",
- 		[BAT_D_CURR] = "axp288-chrg-d-curr",
- 		[BAT_VOLT] = "axp288-batt-volt",
-@@ -844,7 +723,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 		goto out_free_iio_chan;
+@@ -142,7 +142,7 @@ static int fuel_gauge_reg_readb(struct axp288_fg_info *info, int reg)
  	}
  
--	fuel_gauge_create_debugfs(info);
- 	fuel_gauge_init_irq(info);
+ 	if (ret < 0) {
+-		dev_err(&info->pdev->dev, "axp288 reg read err:%d\n", ret);
++		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n", reg, ret);
+ 		return ret;
+ 	}
  
- 	return 0;
-@@ -869,7 +747,6 @@ static int axp288_fuel_gauge_remove(struct platform_device *pdev)
- 	int i;
+@@ -156,7 +156,7 @@ static int fuel_gauge_reg_writeb(struct axp288_fg_info *info, int reg, u8 val)
+ 	ret = regmap_write(info->regmap, reg, (unsigned int)val);
  
- 	power_supply_unregister(info->bat);
--	fuel_gauge_remove_debugfs(info);
+ 	if (ret < 0)
+-		dev_err(&info->pdev->dev, "axp288 reg write err:%d\n", ret);
++		dev_err(&info->pdev->dev, "Error writing reg 0x%02x err: %d\n", reg, ret);
  
- 	for (i = 0; i < AXP288_FG_INTR_NUM; i++)
- 		if (info->irq[i] >= 0)
+ 	return ret;
+ }
 -- 
 2.31.1
 
