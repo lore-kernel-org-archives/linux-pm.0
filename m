@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 398C0C432BE
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2267EC4320A
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 21DCA61042
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0A07861042
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232038AbhGaRjW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 31 Jul 2021 13:39:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52120 "EHLO
+        id S231437AbhGaRjd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 31 Jul 2021 13:39:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52114 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231979AbhGaRjO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Jul 2021 13:39:14 -0400
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41735C06179F;
-        Sat, 31 Jul 2021 10:39:04 -0700 (PDT)
-Received: by mail-lj1-x235.google.com with SMTP id e5so17617727ljp.6;
-        Sat, 31 Jul 2021 10:39:04 -0700 (PDT)
+        with ESMTP id S232091AbhGaRjT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Jul 2021 13:39:19 -0400
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADC87C0617BD;
+        Sat, 31 Jul 2021 10:39:07 -0700 (PDT)
+Received: by mail-lf1-x135.google.com with SMTP id m13so24899993lfg.13;
+        Sat, 31 Jul 2021 10:39:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=yP6S2T4oQUXBPJzLj6JChwZNeadgwpgXfp2tQNc6v5U=;
-        b=deUskVg3oSa4TdKJzd3l5DM8ygli4WAPYQlZamdeMEEasb94cUMPSwqi7KIyCwZPk5
-         oLqVZagPxxnvfKaFrg7PjAp0mlPJw+oTel3ipGcrT0KsyLoNskI+/AgeAzZU4qQ8Zp18
-         PWplzL8SQL1/WWW21VUH0MLMo7bMiPvAd03LEWV6etGfi+VxcNI4beAsk1eRmwXbyAEw
-         g/T9IRVp4Nrlmwanbbe4x6Kp3dX8icaqZA2/1w95fMVVb006Kace9dHKDghAIrx4XUHs
-         1YZrzCMBZOTlrip1Xa/m2Dr8eMdYh1KrnW7gfyp6w5RY6SvckYjWOna/lupXt3A/4J92
-         M0mw==
+        bh=y7SaHURNXyUBjsQfPYlKAP5ckfuIlCfIy3J3ukz+tBo=;
+        b=MQujzLlEnO36raJBMAT9fzpDdMWfWGz1uVH0Uu5hA9Xx1PD1KBkSvTCXaTZMVdczJB
+         lPupngVIb+yocPz38kxOOSTCE2JuW4FRTpSclkb/trtdWTNtAjdVZjK51KeNSywI91rZ
+         B2XbRpZVcZqDPgNRmOIIha3gZLsqf/W3CT5mbGXSqXgk98fLFSpdJY+VbOQIi6ZWLwgz
+         hainLQYoyk/fmAg2fjkY90VcNOOYaX4en/B5cB1Pv0qO1Li9IiTIKBDa73v6gSJtlDk4
+         XhSpd2nbbrhi4oQkM5PZVblNumQ//dq2x5BoewCUDF7XgCwaCcRoXbECCg5T+8LWFW4+
+         JhOQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=yP6S2T4oQUXBPJzLj6JChwZNeadgwpgXfp2tQNc6v5U=;
-        b=B1fw/3JHcvTQjvDyRxRfpDO3y0v4x1n17HO/FPS2GPWsX3TIghXzeabrbm04/4jkbv
-         3xFVTjsCPvalIsEUGkFObe/3s2g3BwDEYAlAWkaVPiTN70J3Nqy1RYB79at95HTGUMMN
-         yvsq+JFQ2THoJdjqonHdRczpTinCFpBWVcZqFGedCuExxaO1RXWqveaZMNbyWXDYQkZk
-         j3e1pP3BP2QiroCbLhzk21CgwGr6EL6Mb7mDlGkNr821OCriWo/dkmileEtEdh/voLMZ
-         xgKcya984uUt3GlwltsjgqmAFndwI1oBE/mHqSeJaLjGUeCpAG0uf6s4UoN0jqvAXltN
-         UOnQ==
-X-Gm-Message-State: AOAM532aGBXpUUsyxqKEkxqjbjFtBNwnygYscP0u2OiFwWFXCybSzLLS
-        ezksjJBwdgn2/3XJc1PQvT4=
-X-Google-Smtp-Source: ABdhPJwJwrGb8ek+xMSWKTOXoZWv/E9mHJtnrLRuSutxKVe3f6GUHeavio7Z/94lGrZZ4xXmSYFyRw==
-X-Received: by 2002:a05:651c:235:: with SMTP id z21mr5710651ljn.462.1627753142657;
-        Sat, 31 Jul 2021 10:39:02 -0700 (PDT)
+        bh=y7SaHURNXyUBjsQfPYlKAP5ckfuIlCfIy3J3ukz+tBo=;
+        b=X+p2iCkQ4eH2ELzeiK++M37yU8rKL9ZC7peved9rcbUNFPrgztXlmaYKteXsg3EgWP
+         ROkqo64XyQQ+WCQRwQRh7Mw9hziKPfl0xW8JlhvoXZQVJn4EfG42LAkqoODYmtuXcm6/
+         bjkMyqCxvN9qJa3FpJp/LlHkjRc3pX+fz8epmQMjf5T6vAoHb5n0qxddLWL8irSG0AZy
+         fncW6C86nyYkQ2u9rC596oYDLP6WcgG3uFF7O3+4omuR53e5eCVE313MTt9IlHgblSqV
+         eTKQ7Jjc9WEUilbpMfhdElYBrULD1LKL1LMEJ8Sz+SAmrVnDtz/pTRY+y28P65aSbiPz
+         vGdg==
+X-Gm-Message-State: AOAM531sWc7m8e8EMVGH+YhSvQYh0ks1VbwCtrG60oKcpWGy5vVmbTXA
+        VFqhiS6T8a2XX8bGa1XSun8=
+X-Google-Smtp-Source: ABdhPJzUMpYaCzhlyTvF2sPmwQ/o7m7NJzBlbqGXRAIBp7NvEr3VJpCMhBpsb2K0T7fhVbLfBds4Yg==
+X-Received: by 2002:a05:6512:3ca6:: with SMTP id h38mr6292523lfv.94.1627753146135;
+        Sat, 31 Jul 2021 10:39:06 -0700 (PDT)
 Received: from localhost.localdomain (94-29-22-96.dynamic.spd-mgts.ru. [94.29.22.96])
-        by smtp.gmail.com with ESMTPSA id s15sm445272lfp.216.2021.07.31.10.39.02
+        by smtp.gmail.com with ESMTPSA id s15sm445272lfp.216.2021.07.31.10.39.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 Jul 2021 10:39:02 -0700 (PDT)
+        Sat, 31 Jul 2021 10:39:05 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -68,9 +68,9 @@ To:     Thierry Reding <treding@nvidia.com>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v6 07/12] power: supply: smb347-charger: Utilize generic regmap caching
-Date:   Sat, 31 Jul 2021 20:38:37 +0300
-Message-Id: <20210731173842.19643-8-digetx@gmail.com>
+Subject: [PATCH v6 12/12] arm64: tegra132: Add new properties to USB PHY device-tree node
+Date:   Sat, 31 Jul 2021 20:38:42 +0300
+Message-Id: <20210731173842.19643-13-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210731173842.19643-1-digetx@gmail.com>
 References: <20210731173842.19643-1-digetx@gmail.com>
@@ -80,68 +80,65 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Utilize generic regmap caching in order to avoid unnecessary slow I2C
-accesses to all constant registers each time the supply status updated
-and remove local caching of charger state to make code cleaner.
+Add new properties to USB PHYs needed for enabling USB OTG mode.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/power/supply/smb347-charger.c | 16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
-index db1378b41f80..27254e6efdde 100644
---- a/drivers/power/supply/smb347-charger.c
-+++ b/drivers/power/supply/smb347-charger.c
-@@ -135,7 +135,6 @@
-  * @id: SMB charger ID
-  * @mains_online: is AC/DC input connected
-  * @usb_online: is USB input connected
-- * @charging_enabled: is charging enabled
-  * @irq_unsupported: is interrupt unsupported by SMB hardware
-  * @max_charge_current: maximum current (in uA) the battery can be charged
-  * @max_charge_voltage: maximum voltage (in uV) the battery can be charged
-@@ -192,7 +191,6 @@ struct smb347_charger {
- 	unsigned int		id;
- 	bool			mains_online;
- 	bool			usb_online;
--	bool			charging_enabled;
- 	bool			irq_unsupported;
+diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+index 9928a87f593a..f79a66226457 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+@@ -1123,6 +1123,7 @@ phy1: usb-phy@7d000000 {
+ 		compatible = "nvidia,tegra124-usb-phy", "nvidia,tegra30-usb-phy";
+ 		reg = <0x0 0x7d000000 0x0 0x4000>,
+ 		      <0x0 0x7d000000 0x0 0x4000>;
++		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+ 		phy_type = "utmi";
+ 		clocks = <&tegra_car TEGRA124_CLK_USBD>,
+ 			 <&tegra_car TEGRA124_CLK_PLL_U>,
+@@ -1142,6 +1143,7 @@ phy1: usb-phy@7d000000 {
+ 		nvidia,hsdiscon-level = <5>;
+ 		nvidia,xcvr-hsslew = <12>;
+ 		nvidia,has-utmi-pad-registers;
++		nvidia,pmc = <&tegra_pmc 0>;
+ 		status = "disabled";
+ 	};
  
- 	unsigned int		max_charge_current;
-@@ -358,21 +356,13 @@ static int smb347_charging_status(struct smb347_charger *smb)
+@@ -1162,6 +1164,7 @@ phy2: usb-phy@7d004000 {
+ 		compatible = "nvidia,tegra124-usb-phy", "nvidia,tegra30-usb-phy";
+ 		reg = <0x0 0x7d004000 0x0 0x4000>,
+ 		      <0x0 0x7d000000 0x0 0x4000>;
++		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+ 		phy_type = "utmi";
+ 		clocks = <&tegra_car TEGRA124_CLK_USB2>,
+ 			 <&tegra_car TEGRA124_CLK_PLL_U>,
+@@ -1180,6 +1183,7 @@ phy2: usb-phy@7d004000 {
+ 		nvidia,hssquelch-level = <2>;
+ 		nvidia,hsdiscon-level = <5>;
+ 		nvidia,xcvr-hsslew = <12>;
++		nvidia,pmc = <&tegra_pmc 1>;
+ 		status = "disabled";
+ 	};
  
- static int smb347_charging_set(struct smb347_charger *smb, bool enable)
- {
--	int ret = 0;
--
- 	if (smb->enable_control != SMB3XX_CHG_ENABLE_SW) {
- 		dev_dbg(smb->dev, "charging enable/disable in SW disabled\n");
- 		return 0;
- 	}
+@@ -1200,6 +1204,7 @@ phy3: usb-phy@7d008000 {
+ 		compatible = "nvidia,tegra124-usb-phy", "nvidia,tegra30-usb-phy";
+ 		reg = <0x0 0x7d008000 0x0 0x4000>,
+ 		      <0x0 0x7d000000 0x0 0x4000>;
++		interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+ 		phy_type = "utmi";
+ 		clocks = <&tegra_car TEGRA124_CLK_USB3>,
+ 			 <&tegra_car TEGRA124_CLK_PLL_U>,
+@@ -1218,6 +1223,7 @@ phy3: usb-phy@7d008000 {
+ 		nvidia,hssquelch-level = <2>;
+ 		nvidia,hsdiscon-level = <5>;
+ 		nvidia,xcvr-hsslew = <12>;
++		nvidia,pmc = <&tegra_pmc 2>;
+ 		status = "disabled";
+ 	};
  
--	if (smb->charging_enabled != enable) {
--		ret = regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
--					 enable ? CMD_A_CHG_ENABLED : 0);
--		if (!ret)
--			smb->charging_enabled = enable;
--	}
--
--	return ret;
-+	return regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
-+				  enable ? CMD_A_CHG_ENABLED : 0);
- }
- 
- static inline int smb347_charging_enable(struct smb347_charger *smb)
-@@ -1310,6 +1300,8 @@ static const struct regmap_config smb347_regmap = {
- 	.max_register	= SMB347_MAX_REGISTER,
- 	.volatile_reg	= smb347_volatile_reg,
- 	.readable_reg	= smb347_readable_reg,
-+	.cache_type	= REGCACHE_FLAT,
-+	.num_reg_defaults_raw = SMB347_MAX_REGISTER,
- };
- 
- static const struct power_supply_desc smb347_mains_desc = {
 -- 
 2.32.0
 
