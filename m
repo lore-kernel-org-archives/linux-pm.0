@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7FCEC432BE
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FC3AC4320E
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C7416109D
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1244A61042
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Jul 2021 17:39:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231768AbhGaRjT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 31 Jul 2021 13:39:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52114 "EHLO
+        id S232200AbhGaRjV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 31 Jul 2021 13:39:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52154 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231645AbhGaRjK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Jul 2021 13:39:10 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 213D0C06175F;
-        Sat, 31 Jul 2021 10:39:02 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id r23so17609079lji.3;
-        Sat, 31 Jul 2021 10:39:02 -0700 (PDT)
+        with ESMTP id S232012AbhGaRjP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Jul 2021 13:39:15 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC5D4C0617A4;
+        Sat, 31 Jul 2021 10:39:05 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id g13so24884215lfj.12;
+        Sat, 31 Jul 2021 10:39:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Y3OZLq2rPlmjb4eTZVA72YHD2U1D5fyvvBeZCksHTBM=;
-        b=pFpNtDKdTeHGRCkhR47YREr8k2nhqjgvnUuqi7SUszENmdBgYwiPEhUFV4/CaAYpDL
-         MpaOoW59Zo37GFQLN7BbdJ+LezjODHEIycXinCh3Y/R1b4j5Vo4EQdAy8CihvZl+6GR7
-         v+bfD6o1BsWwT5tRxgOftyqPfJwmed3aNqaMIm1stmduChzjtX5zvQ9NU9LZ510+Nihv
-         ynEVc2Cm93sMx+a147oWRbHRbiv3R9oEUA45jO6Yrvv3A6TwRkSTXCt01Qams9ofXscA
-         tyqpiy/D5giBrRWdm4qZnndwghOn9qsN3DGhEEFHd7oqktJYBORMUsqG9o7TpHpnAobX
-         jAwA==
+        bh=RDICfGHbTY94i4toOgpe7CZZ2fpzvwQMArarHy2h/dI=;
+        b=G2S4pdURWw41y+BR0G8yz0mw2qSD5rCKf5jjKmPH+gBWCg/Xjfx3XKIwrSNRSlWX3S
+         84yZwimEgT2ikAq9ypCyEyImwkjIvKviA9/9CH6++mN7qiOxr7sKt8qE1kkI1ejJtzTY
+         nnVVz4g9tERyfkpzdGHgudfSV5ZrtzWgYsSRJGUl1VxZpsOELvjcXc1gJU581zKLpZVA
+         0pB2dXSM3co20qbnB9iwVsYC4vKKzkGMtZ8YHib+EO+jeM+nnUMzg7jLWst6OkDjDMzg
+         OetJof5IzHlSaN9un801nixhhOTDjr7tGBkxcBApw/vhj8MjSixajpV+uCh+o4kzfHxp
+         BU+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Y3OZLq2rPlmjb4eTZVA72YHD2U1D5fyvvBeZCksHTBM=;
-        b=M2ib00cZf0x3hFYlsaAah9nRtWKgN/HKKHsboyigDQaXVRvSrGnusk1xnakPlm2p3l
-         wlQA+OjghalEh+8IhYURicHluqtdGXtXe9Z0qJLrt9cfIFItU6k32Z8Y/3HBB2UcmbYR
-         UQsDWUOohPO7cLmHia72BZwMwJM7DIqrCThG1386qRkB1dnswfY49f9evh07+vk+nh2q
-         3CRoyefO3PePf/OFMUq4kP+hxnipYxfNz+Gw5r2bkB5YIUJivbmpe7345adOPcCqGThd
-         JLdoozXZloeMV3gIWJ/syxkF4rqepT5xG/IdNDsC+1BFud8iVzhDZMEsU47QGmqiXL3J
-         a4yA==
-X-Gm-Message-State: AOAM533FOFf3bW5Eolmc3TSF83S9Kl4caabdHXcMP5XngjP62rXPdM1H
-        1KdnjgYEzcE3v0fXCjT88fc=
-X-Google-Smtp-Source: ABdhPJwSdbg3Rb/nxEeM1cm6STjQYcs3vBcyFeQD9iLMw1mhQ1Y43ZzMwqSkCXD6Ae9R/4KVJqXI+g==
-X-Received: by 2002:a05:651c:22d:: with SMTP id z13mr5811681ljn.14.1627753140479;
-        Sat, 31 Jul 2021 10:39:00 -0700 (PDT)
+        bh=RDICfGHbTY94i4toOgpe7CZZ2fpzvwQMArarHy2h/dI=;
+        b=hy2H8+uJWMy4zpx+9kETZj692OZdPHI+E1zhd51P81XMEPSevEU3TnTuBsvj089xt9
+         tAmEtiyuH69ChH6TL2T8nEck7PBpVSRYSSCBi1+NaOvmkJqaS7IyMsEPl+IdTPTFIzLq
+         NjUlO/XZjx+8K4ZOLcWhBT/YlEoN71ZEenT2b5aA63aAsWXm8wPjubhMmHD2lolxIuDi
+         b0Y9fIfUadXiBJ6iPPalDmWrd05WbNXan9+A0CfJ0ZBtIF/XpiPz40cjirU3HADuLlUT
+         tJCYWYqZyqA9ecV1J20ualsaxWgaM6SSs99ZiSjLXjADI+vCDTRSx3XTuUlbzOcAunZ0
+         nHVw==
+X-Gm-Message-State: AOAM531OwyohL73o/cTizY4yHzzx27pBTKIJoNJQ7WRr2uzWhQ4yKiqb
+        g5icgDYIWtpNUwQxpud7Ag0=
+X-Google-Smtp-Source: ABdhPJy6OoBaI9qqWE118NO38OcwuZ20hHSGLj6XNqDEWvyOFOMAIRTQueh6wto9cO3BxTHj83paxA==
+X-Received: by 2002:a19:ee1a:: with SMTP id g26mr6045515lfb.141.1627753144087;
+        Sat, 31 Jul 2021 10:39:04 -0700 (PDT)
 Received: from localhost.localdomain (94-29-22-96.dynamic.spd-mgts.ru. [94.29.22.96])
-        by smtp.gmail.com with ESMTPSA id s15sm445272lfp.216.2021.07.31.10.38.59
+        by smtp.gmail.com with ESMTPSA id s15sm445272lfp.216.2021.07.31.10.39.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 Jul 2021 10:39:00 -0700 (PDT)
+        Sat, 31 Jul 2021 10:39:03 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <treding@nvidia.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -68,9 +68,9 @@ To:     Thierry Reding <treding@nvidia.com>,
 Cc:     devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v6 04/12] usb: phy: tegra: Support OTG mode programming
-Date:   Sat, 31 Jul 2021 20:38:34 +0300
-Message-Id: <20210731173842.19643-5-digetx@gmail.com>
+Subject: [PATCH v6 09/12] power: supply: smb347-charger: Implement USB VBUS regulator
+Date:   Sat, 31 Jul 2021 20:38:39 +0300
+Message-Id: <20210731173842.19643-10-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210731173842.19643-1-digetx@gmail.com>
 References: <20210731173842.19643-1-digetx@gmail.com>
@@ -80,359 +80,379 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Support programming USB PHY into OTG mode.
+SMB347 can supply power to USB VBUS, implement the USB VBUS regulator.
+USB VBUS needs to be powered for switching OTG-cable USB port into host
+mode.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/usb/phy/phy-tegra-usb.c   | 197 +++++++++++++++++++++++++++++-
- include/linux/usb/tegra_usb_phy.h |   5 +
- 2 files changed, 197 insertions(+), 5 deletions(-)
+ drivers/power/supply/Kconfig          |   1 +
+ drivers/power/supply/smb347-charger.c | 219 ++++++++++++++++++++++++++
+ 2 files changed, 220 insertions(+)
 
-diff --git a/drivers/usb/phy/phy-tegra-usb.c b/drivers/usb/phy/phy-tegra-usb.c
-index c0f432d509aa..d6197a462749 100644
---- a/drivers/usb/phy/phy-tegra-usb.c
-+++ b/drivers/usb/phy/phy-tegra-usb.c
-@@ -63,6 +63,10 @@
- #define   A_VBUS_VLD_WAKEUP_EN			BIT(30)
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 8543c89a0c1a..e83e9e4d512c 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -694,6 +694,7 @@ config CHARGER_BQ256XX
+ config CHARGER_SMB347
+ 	tristate "Summit Microelectronics SMB3XX Battery Charger"
+ 	depends on I2C
++	depends on REGULATOR
+ 	select REGMAP_I2C
+ 	help
+ 	  Say Y to include support for Summit Microelectronics SMB345,
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index 1c9205ca0993..753944e774c4 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -18,6 +18,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/property.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/driver.h>
  
- #define USB_PHY_VBUS_WAKEUP_ID			0x408
-+#define   ID_INT_EN				BIT(0)
-+#define   ID_CHG_DET				BIT(1)
-+#define   VBUS_WAKEUP_INT_EN			BIT(8)
-+#define   VBUS_WAKEUP_CHG_DET			BIT(9)
- #define   VBUS_WAKEUP_STS			BIT(10)
- #define   VBUS_WAKEUP_WAKEUP_EN			BIT(30)
+ #include <dt-bindings/power/summit,smb347-charger.h>
  
-@@ -158,6 +162,10 @@
- #define   USB_USBMODE_HOST			(3 << 0)
- #define   USB_USBMODE_DEVICE			(2 << 0)
+@@ -63,12 +64,15 @@
+ #define CFG_THERM_SOFT_COLD_COMPENSATION_SHIFT	2
+ #define CFG_THERM_MONITOR_DISABLED		BIT(4)
+ #define CFG_SYSOK				0x08
++#define CFG_SYSOK_INOK_ACTIVE_HIGH		BIT(0)
+ #define CFG_SYSOK_SUSPEND_HARD_LIMIT_DISABLED	BIT(2)
+ #define CFG_OTHER				0x09
+ #define CFG_OTHER_RID_MASK			0xc0
+ #define CFG_OTHER_RID_ENABLED_AUTO_OTG		0xc0
+ #define CFG_OTG					0x0a
+ #define CFG_OTG_TEMP_THRESHOLD_MASK		0x30
++#define CFG_OTG_CURRENT_LIMIT_250mA		BIT(2)
++#define CFG_OTG_CURRENT_LIMIT_750mA		BIT(3)
+ #define CFG_OTG_TEMP_THRESHOLD_SHIFT		4
+ #define CFG_OTG_CC_COMPENSATION_MASK		0xc0
+ #define CFG_OTG_CC_COMPENSATION_SHIFT		6
+@@ -92,6 +96,7 @@
+ #define CMD_A					0x30
+ #define CMD_A_CHG_ENABLED			BIT(1)
+ #define CMD_A_SUSPEND_ENABLED			BIT(2)
++#define CMD_A_OTG_ENABLED			BIT(4)
+ #define CMD_A_ALLOW_WRITE			BIT(7)
+ #define CMD_B					0x31
+ #define CMD_C					0x33
+@@ -133,10 +138,12 @@
+  * @regmap: pointer to driver regmap
+  * @mains: power_supply instance for AC/DC power
+  * @usb: power_supply instance for USB power
++ * @usb_rdev: USB VBUS regulator device
+  * @id: SMB charger ID
+  * @mains_online: is AC/DC input connected
+  * @usb_online: is USB input connected
+  * @irq_unsupported: is interrupt unsupported by SMB hardware
++ * @usb_vbus_enabled: is USB VBUS powered by SMB charger
+  * @max_charge_current: maximum current (in uA) the battery can be charged
+  * @max_charge_voltage: maximum voltage (in uV) the battery can be charged
+  * @pre_charge_current: current (in uA) to use in pre-charging phase
+@@ -167,6 +174,8 @@
+  * @use_usb_otg: USB OTG output can be used (not implemented yet)
+  * @enable_control: how charging enable/disable is controlled
+  *		    (driver/pin controls)
++ * @inok_polarity: polarity of INOK signal which denotes presence of external
++ *		   power supply
+  *
+  * @use_main, @use_usb, and @use_usb_otg are means to enable/disable
+  * hardware support for these. This is useful when we want to have for
+@@ -189,10 +198,12 @@ struct smb347_charger {
+ 	struct regmap		*regmap;
+ 	struct power_supply	*mains;
+ 	struct power_supply	*usb;
++	struct regulator_dev	*usb_rdev;
+ 	unsigned int		id;
+ 	bool			mains_online;
+ 	bool			usb_online;
+ 	bool			irq_unsupported;
++	bool			usb_vbus_enabled;
  
-+#define PMC_USB_AO				0xf0
-+#define   VBUS_WAKEUP_PD_P0			BIT(2)
-+#define   ID_PD_P0				BIT(3)
-+
- static DEFINE_SPINLOCK(utmip_pad_lock);
- static unsigned int utmip_pad_count;
+ 	unsigned int		max_charge_current;
+ 	unsigned int		max_charge_voltage;
+@@ -213,6 +224,7 @@ struct smb347_charger {
+ 	bool			use_usb;
+ 	bool			use_usb_otg;
+ 	unsigned int		enable_control;
++	unsigned int		inok_polarity;
+ };
  
-@@ -533,13 +541,14 @@ static int utmi_phy_power_on(struct tegra_usb_phy *phy)
- 	val &= ~USB_WAKE_ON_RESUME_EN;
- 	writel_relaxed(val, base + USB_SUSP_CTRL);
- 
--	if (phy->mode == USB_DR_MODE_PERIPHERAL) {
-+	if (phy->mode != USB_DR_MODE_HOST) {
- 		val = readl_relaxed(base + USB_SUSP_CTRL);
- 		val &= ~(USB_WAKE_ON_CNNT_EN_DEV | USB_WAKE_ON_DISCON_EN_DEV);
- 		writel_relaxed(val, base + USB_SUSP_CTRL);
- 
- 		val = readl_relaxed(base + USB_PHY_VBUS_WAKEUP_ID);
- 		val &= ~VBUS_WAKEUP_WAKEUP_EN;
-+		val &= ~(ID_CHG_DET | VBUS_WAKEUP_CHG_DET);
- 		writel_relaxed(val, base + USB_PHY_VBUS_WAKEUP_ID);
- 
- 		val = readl_relaxed(base + USB_PHY_VBUS_SENSORS);
-@@ -687,9 +696,10 @@ static int utmi_phy_power_off(struct tegra_usb_phy *phy)
- 		 * Ask VBUS sensor to generate wake event once cable is
- 		 * connected.
- 		 */
--		if (phy->mode == USB_DR_MODE_PERIPHERAL) {
-+		if (phy->mode != USB_DR_MODE_HOST) {
- 			val = readl_relaxed(base + USB_PHY_VBUS_WAKEUP_ID);
- 			val |= VBUS_WAKEUP_WAKEUP_EN;
-+			val &= ~(ID_CHG_DET | VBUS_WAKEUP_CHG_DET);
- 			writel_relaxed(val, base + USB_PHY_VBUS_WAKEUP_ID);
- 
- 			val = readl_relaxed(base + USB_PHY_VBUS_SENSORS);
-@@ -904,26 +914,146 @@ static void tegra_usb_phy_shutdown(struct usb_phy *u_phy)
- 	phy->freq = NULL;
- }
- 
-+static irqreturn_t tegra_usb_phy_isr(int irq, void *data)
-+{
-+	u32 val, int_mask = ID_CHG_DET | VBUS_WAKEUP_CHG_DET;
-+	struct tegra_usb_phy *phy = data;
-+	void __iomem *base = phy->regs;
-+
-+	/*
-+	 * The PHY interrupt also wakes the USB controller driver since
-+	 * interrupt is shared. We don't do anything in the PHY driver,
-+	 * so just clear the interrupt.
-+	 */
-+	val = readl_relaxed(base + USB_PHY_VBUS_WAKEUP_ID);
-+	writel_relaxed(val, base + USB_PHY_VBUS_WAKEUP_ID);
-+
-+	return val & int_mask ? IRQ_HANDLED : IRQ_NONE;
-+}
-+
- static int tegra_usb_phy_set_wakeup(struct usb_phy *u_phy, bool enable)
- {
- 	struct tegra_usb_phy *phy = to_tegra_usb_phy(u_phy);
-+	void __iomem *base = phy->regs;
-+	int ret = 0;
-+	u32 val;
-+
-+	if (phy->wakeup_enabled && phy->mode != USB_DR_MODE_HOST &&
-+	    phy->irq > 0) {
-+		disable_irq(phy->irq);
-+
-+		val = readl_relaxed(base + USB_PHY_VBUS_WAKEUP_ID);
-+		val &= ~(ID_INT_EN | VBUS_WAKEUP_INT_EN);
-+		writel_relaxed(val, base + USB_PHY_VBUS_WAKEUP_ID);
-+
-+		enable_irq(phy->irq);
-+
-+		free_irq(phy->irq, phy);
-+
-+		phy->wakeup_enabled = false;
-+	}
-+
-+	if (enable && phy->mode != USB_DR_MODE_HOST && phy->irq > 0) {
-+		ret = request_irq(phy->irq, tegra_usb_phy_isr, IRQF_SHARED,
-+				  dev_name(phy->u_phy.dev), phy);
-+		if (!ret) {
-+			disable_irq(phy->irq);
-+
-+			/*
-+			 * USB clock will be resumed once wake event will be
-+			 * generated.  The ID-change event requires to have
-+			 * interrupts enabled, otherwise it won't be generated.
-+			 */
-+			val = readl_relaxed(base + USB_PHY_VBUS_WAKEUP_ID);
-+			val |= ID_INT_EN | VBUS_WAKEUP_INT_EN;
-+			writel_relaxed(val, base + USB_PHY_VBUS_WAKEUP_ID);
-+
-+			enable_irq(phy->irq);
-+		} else {
-+			dev_err(phy->u_phy.dev,
-+				"Failed to request interrupt: %d", ret);
-+			enable = false;
-+		}
-+	}
- 
- 	phy->wakeup_enabled = enable;
- 
--	return 0;
-+	return ret;
- }
- 
- static int tegra_usb_phy_set_suspend(struct usb_phy *u_phy, int suspend)
- {
- 	struct tegra_usb_phy *phy = to_tegra_usb_phy(u_phy);
-+	int ret;
- 
- 	if (WARN_ON(!phy->freq))
- 		return -EINVAL;
- 
-+	/*
-+	 * PHY is sharing IRQ with the CI driver, hence here we either
-+	 * disable interrupt for both PHY and CI or for CI only.  The
-+	 * interrupt needs to be disabled while hardware is reprogrammed
-+	 * because interrupt touches the programmed registers, and thus,
-+	 * there could be a race condition.
-+	 */
-+	if (phy->irq > 0)
-+		disable_irq(phy->irq);
-+
- 	if (suspend)
--		return tegra_usb_phy_power_off(phy);
-+		ret = tegra_usb_phy_power_off(phy);
- 	else
--		return tegra_usb_phy_power_on(phy);
-+		ret = tegra_usb_phy_power_on(phy);
-+
-+	if (phy->irq > 0)
-+		enable_irq(phy->irq);
-+
-+	return ret;
-+}
-+
-+static int tegra_usb_phy_configure_pmc(struct tegra_usb_phy *phy)
-+{
-+	int err, val = 0;
-+
-+	/* older device-trees don't have PMC regmap */
-+	if (!phy->pmc_regmap)
-+		return 0;
-+
-+	/*
-+	 * Tegra20 has a different layout of PMC USB register bits and AO is
-+	 * enabled by default after system reset on Tegra20, so assume nothing
-+	 * to do on Tegra20.
-+	 */
-+	if (!phy->soc_config->requires_pmc_ao_power_up)
-+		return 0;
-+
-+	/* enable VBUS wake-up detector */
-+	if (phy->mode != USB_DR_MODE_HOST)
-+		val |= VBUS_WAKEUP_PD_P0 << phy->instance * 4;
-+
-+	/* enable ID-pin ACC detector for OTG mode switching */
-+	if (phy->mode == USB_DR_MODE_OTG)
-+		val |= ID_PD_P0 << phy->instance * 4;
-+
-+	/* disable detectors to reset them */
-+	err = regmap_set_bits(phy->pmc_regmap, PMC_USB_AO, val);
-+	if (err) {
-+		dev_err(phy->u_phy.dev, "Failed to disable PMC AO: %d\n", err);
-+		return err;
-+	}
-+
-+	usleep_range(10, 100);
-+
-+	/* enable detectors */
-+	err = regmap_clear_bits(phy->pmc_regmap, PMC_USB_AO, val);
-+	if (err) {
-+		dev_err(phy->u_phy.dev, "Failed to enable PMC AO: %d\n", err);
-+		return err;
-+	}
-+
-+	/* detectors starts to work after 10ms */
-+	usleep_range(10000, 15000);
-+
-+	return 0;
- }
- 
- static int tegra_usb_phy_init(struct usb_phy *u_phy)
-@@ -967,6 +1097,10 @@ static int tegra_usb_phy_init(struct usb_phy *u_phy)
- 			goto disable_vbus;
+ enum smb_charger_chipid {
+@@ -362,6 +374,11 @@ static int smb347_charging_set(struct smb347_charger *smb, bool enable)
+ 		return 0;
  	}
  
-+	err = tegra_usb_phy_configure_pmc(phy);
-+	if (err)
-+		goto close_phy;
++	if (enable && smb->usb_vbus_enabled) {
++		dev_dbg(smb->dev, "charging not enabled because USB is in host mode\n");
++		return 0;
++	}
 +
- 	err = tegra_usb_phy_power_on(phy);
- 	if (err)
- 		goto close_phy;
-@@ -1135,11 +1269,56 @@ static int utmi_phy_probe(struct tegra_usb_phy *tegra_phy,
+ 	return regmap_update_bits(smb->regmap, CMD_A, CMD_A_CHG_ENABLED,
+ 				  enable ? CMD_A_CHG_ENABLED : 0);
+ }
+@@ -1253,6 +1270,13 @@ static void smb347_dt_parse_dev_info(struct smb347_charger *smb)
+ 	/* Select charging control */
+ 	device_property_read_u32(dev, "summit,enable-charge-control",
+ 				 &smb->enable_control);
++
++	/*
++	 * Polarity of INOK signal indicating presence of external power
++	 * supply connected to the charger.
++	 */
++	device_property_read_u32(dev, "summit,inok-polarity",
++				 &smb->inok_polarity);
+ }
+ 
+ static int smb347_get_battery_info(struct smb347_charger *smb)
+@@ -1304,6 +1328,160 @@ static int smb347_get_battery_info(struct smb347_charger *smb)
  	return 0;
  }
  
-+static void tegra_usb_phy_put_pmc_device(void *dev)
++static int smb347_usb_vbus_get_current_limit(struct regulator_dev *rdev)
 +{
-+	put_device(dev);
-+}
++	struct smb347_charger *smb = rdev_get_drvdata(rdev);
++	unsigned int val;
++	int ret;
 +
-+static int tegra_usb_phy_parse_pmc(struct device *dev,
-+				   struct tegra_usb_phy *phy)
-+{
-+	struct platform_device *pmc_pdev;
-+	struct of_phandle_args args;
-+	int err;
++	ret = regmap_read(smb->regmap, CFG_OTG, &val);
++	if (ret < 0)
++		return ret;
 +
-+	err = of_parse_phandle_with_fixed_args(dev->of_node, "nvidia,pmc",
-+					       1, 0, &args);
-+	if (err) {
-+		if (err != -ENOENT)
-+			return err;
-+
-+		dev_warn_once(dev, "nvidia,pmc is missing, please update your device-tree\n");
++	/*
++	 * It's unknown what happens if this bit is unset due to lack of
++	 * access to the datasheet, assume it's limit-enable.
++	 */
++	if (!(val & CFG_OTG_CURRENT_LIMIT_250mA))
 +		return 0;
-+	}
 +
-+	pmc_pdev = of_find_device_by_node(args.np);
-+	of_node_put(args.np);
-+	if (!pmc_pdev)
-+		return -ENODEV;
-+
-+	err = devm_add_action_or_reset(dev, tegra_usb_phy_put_pmc_device,
-+				       &pmc_pdev->dev);
-+	if (err)
-+		return err;
-+
-+	if (!platform_get_drvdata(pmc_pdev))
-+		return -EPROBE_DEFER;
-+
-+	phy->pmc_regmap = dev_get_regmap(&pmc_pdev->dev, "usb_sleepwalk");
-+	if (!phy->pmc_regmap)
-+		return -EINVAL;
-+
-+	phy->instance = args.args[0];
-+
-+	return 0;
++	return val & CFG_OTG_CURRENT_LIMIT_750mA ? 750000 : 250000;
 +}
 +
- static const struct tegra_phy_soc_config tegra20_soc_config = {
- 	.utmi_pll_config_in_car_module = false,
- 	.has_hostpc = false,
- 	.requires_usbmode_setup = false,
- 	.requires_extra_tuning_parameters = false,
-+	.requires_pmc_ao_power_up = false,
- };
- 
- static const struct tegra_phy_soc_config tegra30_soc_config = {
-@@ -1147,6 +1326,7 @@ static const struct tegra_phy_soc_config tegra30_soc_config = {
- 	.has_hostpc = true,
- 	.requires_usbmode_setup = true,
- 	.requires_extra_tuning_parameters = true,
-+	.requires_pmc_ao_power_up = true,
- };
- 
- static const struct of_device_id tegra_usb_phy_id_table[] = {
-@@ -1172,6 +1352,7 @@ static int tegra_usb_phy_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	tegra_phy->soc_config = of_device_get_match_data(&pdev->dev);
-+	tegra_phy->irq = platform_get_irq_optional(pdev, 0);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
-@@ -1215,6 +1396,12 @@ static int tegra_usb_phy_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	err = tegra_usb_phy_parse_pmc(&pdev->dev, tegra_phy);
-+	if (err) {
-+		dev_err_probe(&pdev->dev, err, "Failed to get PMC regmap\n");
-+		return err;
++static int smb347_usb_vbus_set_new_current_limit(struct smb347_charger *smb,
++						 int max_uA)
++{
++	const unsigned int mask = CFG_OTG_CURRENT_LIMIT_750mA |
++				  CFG_OTG_CURRENT_LIMIT_250mA;
++	unsigned int val = CFG_OTG_CURRENT_LIMIT_250mA;
++	int ret;
++
++	if (max_uA >= 750000)
++		val |= CFG_OTG_CURRENT_LIMIT_750mA;
++
++	ret = regmap_update_bits(smb->regmap, CFG_OTG, mask, val);
++	if (ret < 0)
++		dev_err(smb->dev, "failed to change USB current limit\n");
++
++	return ret;
++}
++
++static int smb347_usb_vbus_set_current_limit(struct regulator_dev *rdev,
++					     int min_uA, int max_uA)
++{
++	struct smb347_charger *smb = rdev_get_drvdata(rdev);
++	int ret;
++
++	ret = smb347_set_writable(smb, true, true);
++	if (ret < 0)
++		return ret;
++
++	ret = smb347_usb_vbus_set_new_current_limit(smb, max_uA);
++	smb347_set_writable(smb, false, true);
++
++	return ret;
++}
++
++static int smb347_usb_vbus_regulator_enable(struct regulator_dev *rdev)
++{
++	struct smb347_charger *smb = rdev_get_drvdata(rdev);
++	int ret, max_uA;
++
++	ret = smb347_set_writable(smb, true, true);
++	if (ret < 0)
++		return ret;
++
++	smb347_charging_disable(smb);
++
++	if (device_property_read_bool(&rdev->dev, "summit,needs-inok-toggle")) {
++		unsigned int sysok = 0;
++
++		if (smb->inok_polarity == SMB3XX_SYSOK_INOK_ACTIVE_LOW)
++			sysok = CFG_SYSOK_INOK_ACTIVE_HIGH;
++
++		/*
++		 * VBUS won't be powered if INOK is active, so we need to
++		 * manually disable INOK on some platforms.
++		 */
++		ret = regmap_update_bits(smb->regmap, CFG_SYSOK,
++					 CFG_SYSOK_INOK_ACTIVE_HIGH, sysok);
++		if (ret < 0) {
++			dev_err(smb->dev, "failed to disable INOK\n");
++			goto done;
++		}
 +	}
 +
- 	phy_type = of_usb_get_phy_mode(np);
- 	switch (phy_type) {
- 	case USBPHY_INTERFACE_MODE_UTMI:
-diff --git a/include/linux/usb/tegra_usb_phy.h b/include/linux/usb/tegra_usb_phy.h
-index fd1c9f6a4e37..d3e65eb9e16f 100644
---- a/include/linux/usb/tegra_usb_phy.h
-+++ b/include/linux/usb/tegra_usb_phy.h
-@@ -18,6 +18,7 @@
- 
- #include <linux/clk.h>
- #include <linux/gpio.h>
-+#include <linux/regmap.h>
- #include <linux/reset.h>
- #include <linux/usb/otg.h>
- 
-@@ -30,6 +31,7 @@
-  *      enter host mode
-  * requires_extra_tuning_parameters: true if xcvr_hsslew, hssquelch_level
-  *      and hsdiscon_level should be set for adequate signal quality
-+ * requires_pmc_ao_power_up: true if USB AO is powered down by default
-  */
- 
- struct tegra_phy_soc_config {
-@@ -37,6 +39,7 @@ struct tegra_phy_soc_config {
- 	bool has_hostpc;
- 	bool requires_usbmode_setup;
- 	bool requires_extra_tuning_parameters;
-+	bool requires_pmc_ao_power_up;
++	ret = smb347_usb_vbus_get_current_limit(rdev);
++	if (ret < 0) {
++		dev_err(smb->dev, "failed to get USB VBUS current limit\n");
++		goto done;
++	}
++
++	max_uA = ret;
++
++	ret = smb347_usb_vbus_set_new_current_limit(smb, 250000);
++	if (ret < 0) {
++		dev_err(smb->dev, "failed to preset USB VBUS current limit\n");
++		goto done;
++	}
++
++	ret = regmap_set_bits(smb->regmap, CMD_A, CMD_A_OTG_ENABLED);
++	if (ret < 0) {
++		dev_err(smb->dev, "failed to enable USB VBUS\n");
++		goto done;
++	}
++
++	smb->usb_vbus_enabled = true;
++
++	ret = smb347_usb_vbus_set_new_current_limit(smb, max_uA);
++	if (ret < 0) {
++		dev_err(smb->dev, "failed to restore USB VBUS current limit\n");
++		goto done;
++	}
++done:
++	smb347_set_writable(smb, false, true);
++
++	return ret;
++}
++
++static int smb347_usb_vbus_regulator_disable(struct regulator_dev *rdev)
++{
++	struct smb347_charger *smb = rdev_get_drvdata(rdev);
++	int ret;
++
++	ret = smb347_set_writable(smb, true, true);
++	if (ret < 0)
++		return ret;
++
++	ret = regmap_clear_bits(smb->regmap, CMD_A, CMD_A_OTG_ENABLED);
++	if (ret < 0) {
++		dev_err(smb->dev, "failed to disable USB VBUS\n");
++		goto done;
++	}
++
++	smb->usb_vbus_enabled = false;
++
++	if (device_property_read_bool(&rdev->dev, "summit,needs-inok-toggle")) {
++		unsigned int sysok = 0;
++
++		if (smb->inok_polarity == SMB3XX_SYSOK_INOK_ACTIVE_HIGH)
++			sysok = CFG_SYSOK_INOK_ACTIVE_HIGH;
++
++		ret = regmap_update_bits(smb->regmap, CFG_SYSOK,
++					 CFG_SYSOK_INOK_ACTIVE_HIGH, sysok);
++		if (ret < 0) {
++			dev_err(smb->dev, "failed to enable INOK\n");
++			goto done;
++		}
++	}
++
++	smb347_start_stop_charging(smb);
++done:
++	smb347_set_writable(smb, false, true);
++
++	return ret;
++}
++
+ static const struct regmap_config smb347_regmap = {
+ 	.reg_bits	= 8,
+ 	.val_bits	= 8,
+@@ -1314,6 +1492,14 @@ static const struct regmap_config smb347_regmap = {
+ 	.num_reg_defaults_raw = SMB347_MAX_REGISTER,
  };
  
- struct tegra_utmip_config {
-@@ -62,6 +65,7 @@ enum tegra_usb_phy_port_speed {
- struct tegra_xtal_freq;
++static const struct regulator_ops smb347_usb_vbus_regulator_ops = {
++	.is_enabled	= regulator_is_enabled_regmap,
++	.enable		= smb347_usb_vbus_regulator_enable,
++	.disable	= smb347_usb_vbus_regulator_disable,
++	.get_current_limit = smb347_usb_vbus_get_current_limit,
++	.set_current_limit = smb347_usb_vbus_set_current_limit,
++};
++
+ static const struct power_supply_desc smb347_mains_desc = {
+ 	.name		= "smb347-mains",
+ 	.type		= POWER_SUPPLY_TYPE_MAINS,
+@@ -1330,10 +1516,24 @@ static const struct power_supply_desc smb347_usb_desc = {
+ 	.num_properties	= ARRAY_SIZE(smb347_properties),
+ };
  
- struct tegra_usb_phy {
-+	int irq;
- 	int instance;
- 	const struct tegra_xtal_freq *freq;
- 	void __iomem *regs;
-@@ -70,6 +74,7 @@ struct tegra_usb_phy {
- 	struct clk *pll_u;
- 	struct clk *pad_clk;
- 	struct regulator *vbus;
-+	struct regmap *pmc_regmap;
- 	enum usb_dr_mode mode;
- 	void *config;
- 	const struct tegra_phy_soc_config *soc_config;
++static const struct regulator_desc smb347_usb_vbus_regulator_desc = {
++	.name		= "smb347-usb-vbus",
++	.of_match	= of_match_ptr("usb-vbus"),
++	.ops		= &smb347_usb_vbus_regulator_ops,
++	.type		= REGULATOR_VOLTAGE,
++	.owner		= THIS_MODULE,
++	.enable_reg	= CMD_A,
++	.enable_mask	= CMD_A_OTG_ENABLED,
++	.enable_val	= CMD_A_OTG_ENABLED,
++	.fixed_uV	= 5000000,
++	.n_voltages	= 1,
++};
++
+ static int smb347_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+ 	struct power_supply_config mains_usb_cfg = {};
++	struct regulator_config usb_rdev_cfg = {};
+ 	struct device *dev = &client->dev;
+ 	struct smb347_charger *smb;
+ 	int ret;
+@@ -1381,6 +1581,18 @@ static int smb347_probe(struct i2c_client *client,
+ 	if (ret)
+ 		return ret;
+ 
++	usb_rdev_cfg.dev = dev;
++	usb_rdev_cfg.driver_data = smb;
++	usb_rdev_cfg.regmap = smb->regmap;
++
++	smb->usb_rdev = devm_regulator_register(dev,
++						&smb347_usb_vbus_regulator_desc,
++						&usb_rdev_cfg);
++	if (IS_ERR(smb->usb_rdev)) {
++		smb347_irq_disable(smb);
++		return PTR_ERR(smb->usb_rdev);
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1388,11 +1600,17 @@ static int smb347_remove(struct i2c_client *client)
+ {
+ 	struct smb347_charger *smb = i2c_get_clientdata(client);
+ 
++	smb347_usb_vbus_regulator_disable(smb->usb_rdev);
+ 	smb347_irq_disable(smb);
+ 
+ 	return 0;
+ }
+ 
++static void smb347_shutdown(struct i2c_client *client)
++{
++	smb347_remove(client);
++}
++
+ static const struct i2c_device_id smb347_id[] = {
+ 	{ "smb345", SMB345 },
+ 	{ "smb347", SMB347 },
+@@ -1416,6 +1634,7 @@ static struct i2c_driver smb347_driver = {
+ 	},
+ 	.probe = smb347_probe,
+ 	.remove = smb347_remove,
++	.shutdown = smb347_shutdown,
+ 	.id_table = smb347_id,
+ };
+ module_i2c_driver(smb347_driver);
 -- 
 2.32.0
 
