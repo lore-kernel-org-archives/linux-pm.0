@@ -5,29 +5,29 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 984F8C432BE
-	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 15:25:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5756C4338F
+	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 15:25:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 78602610A8
-	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 15:25:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98BFD610A5
+	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 15:25:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232265AbhHAPZk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 1 Aug 2021 11:25:40 -0400
-Received: from mail-0201.mail-europe.com ([51.77.79.158]:56757 "EHLO
-        mail-0201.mail-europe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232250AbhHAPZj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Aug 2021 11:25:39 -0400
-Date:   Sun, 01 Aug 2021 15:25:13 +0000
+        id S232280AbhHAPZu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 1 Aug 2021 11:25:50 -0400
+Received: from mail-40140.protonmail.ch ([185.70.40.140]:22557 "EHLO
+        mail-40140.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232248AbhHAPZt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Aug 2021 11:25:49 -0400
+Date:   Sun, 01 Aug 2021 15:25:28 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1627831526;
-        bh=/SuYp7W3mdHiIoostSZgqdDTixWaIDPVquIzFJzzjCE=;
+        s=protonmail; t=1627831536;
+        bh=oWtxywRV21lYzA3CpixGJQihWOLF3ddhJOw6tf7s1Rw=;
         h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=QSTGCg+37Nop25hG+firNWE4E/N2/6LEb71uxBvATW8yUQWJFA2ktY+mjow/jlbbd
-         ZQ+bT4dkE0uvOY9miWIb8Z4yZgYXvEPN9Ob/WNqmOgnLlIdARxI0XKwT+TRYhGvcj4
-         STzYYOlS9/uXvMiiTzb8n5O25nOP4SdhMWLZX1mE=
+        b=GNOdGvqpTT52Vv/rdDa10MP5PrPKApkAOJMsU4bsqruPjTehYxw4FnxqQuanGr+ez
+         KfOPMyth0bfHCJ3egIllQ9YDYF62LOx23XHBcx0dnANBA+B5hiqAFx2blJXwLTZEgu
+         jDzNP/FgEWUVTKMjmDgXtwj3UtnLlTrNuCNscCDo=
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Georgi Djakov <djakov@kernel.org>,
@@ -38,8 +38,8 @@ Cc:     Yassine Oudjana <y.oudjana@protonmail.com>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Reply-To: Yassine Oudjana <y.oudjana@protonmail.com>
-Subject: [PATCH v2 2/6] interconnect: qcom: sdm660: Commonize RPM-QoS
-Message-ID: <20210801152427.475547-3-y.oudjana@protonmail.com>
+Subject: [PATCH v2 4/6] interconnect: qcom: Add MSM8996 interconnect provider driver
+Message-ID: <20210801152427.475547-5-y.oudjana@protonmail.com>
 In-Reply-To: <20210801152427.475547-1-y.oudjana@protonmail.com>
 References: <20210801152427.475547-1-y.oudjana@protonmail.com>
 MIME-Version: 1.0
@@ -49,72 +49,79 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SoCs such as MSM8996 also control bus QoS in a similar fashion to SDM660,
-with some paths being controlled by RPM and others directly by the AP.
-Move relevant functions and defines to a new object so that they can be use=
-d
-in multiple drivers.
+Add a driver for the MSM8996 NoCs. This chip is similar to SDM660 where
+some busses are controlled by RPM, while others directly by the AP with
+writes to QoS registers.
+
+This driver currently supports all NoCs except a0noc.
 
 Signed-off-by: Yassine Oudjana <y.oudjana@protonmail.com>
 ---
- drivers/interconnect/qcom/Kconfig       |   5 +-
- drivers/interconnect/qcom/Makefile      |   2 +
- drivers/interconnect/qcom/icc-rpm-qos.c | 237 ++++++++++++++++
- drivers/interconnect/qcom/icc-rpm-qos.h | 133 +++++++++
- drivers/interconnect/qcom/sdm660.c      | 343 +-----------------------
- 5 files changed, 378 insertions(+), 342 deletions(-)
- create mode 100644 drivers/interconnect/qcom/icc-rpm-qos.c
- create mode 100644 drivers/interconnect/qcom/icc-rpm-qos.h
+ drivers/interconnect/qcom/Kconfig             |   9 +
+ drivers/interconnect/qcom/Makefile            |   2 +
+ drivers/interconnect/qcom/msm8996.c           | 574 ++++++++++++++++++
+ drivers/interconnect/qcom/msm8996.h           | 149 +++++
+ .../dt-bindings/interconnect/qcom,msm8996.h   | 163 +++++
+ 5 files changed, 897 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/msm8996.c
+ create mode 100644 drivers/interconnect/qcom/msm8996.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,msm8996.h
 
 diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/=
 Kconfig
-index 0d7a2500d0b8..a7597763b295 100644
+index a7597763b295..4297d6455626 100644
 --- a/drivers/interconnect/qcom/Kconfig
 +++ b/drivers/interconnect/qcom/Kconfig
-@@ -87,7 +87,7 @@ config INTERCONNECT_QCOM_SDM660
- =09tristate "Qualcomm SDM660 interconnect driver"
- =09depends on INTERCONNECT_QCOM
- =09depends on QCOM_SMD_RPM
--=09select INTERCONNECT_QCOM_SMD_RPM
-+=09select INTERCONNECT_QCOM_SMD_RPM_QOS
- =09help
- =09  This is a driver for the Qualcomm Network-on-Chip on sdm660-based
- =09  platforms.
-@@ -139,3 +139,6 @@ config INTERCONNECT_QCOM_SM8350
+@@ -35,6 +35,15 @@ config INTERCONNECT_QCOM_MSM8974
+ =09 This is a driver for the Qualcomm Network-on-Chip on msm8974-based
+ =09 platforms.
 =20
- config INTERCONNECT_QCOM_SMD_RPM
- =09tristate
++config INTERCONNECT_QCOM_MSM8996
++=09tristate "Qualcomm MSM8996 interconnect driver"
++=09depends on INTERCONNECT_QCOM
++=09depends on QCOM_SMD_RPM
++=09select INTERCONNECT_QCOM_SMD_RPM_QOS
++=09help
++=09  This is a driver for the Qualcomm Network-on-Chip on msm8996-based
++=09  platforms.
 +
-+config INTERCONNECT_QCOM_SMD_RPM_QOS
-+=09tristate
+ config INTERCONNECT_QCOM_OSM_L3
+ =09tristate "Qualcomm OSM L3 interconnect driver"
+ =09depends on INTERCONNECT_QCOM || COMPILE_TEST
 diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom=
 /Makefile
-index 2880129a6fe4..2d04d024f46e 100644
+index 2d04d024f46e..8a198b8b7a45 100644
 --- a/drivers/interconnect/qcom/Makefile
 +++ b/drivers/interconnect/qcom/Makefile
-@@ -16,6 +16,7 @@ qnoc-sm8150-objs=09=09=09:=3D sm8150.o
- qnoc-sm8250-objs=09=09=09:=3D sm8250.o
- qnoc-sm8350-objs=09=09=09:=3D sm8350.o
- icc-smd-rpm-objs=09=09=09:=3D smd-rpm.o icc-rpm.o
-+icc-smd-rpm-qos-objs=09=09=09:=3D smd-rpm.o icc-rpm-qos.o
-=20
- obj-$(CONFIG_INTERCONNECT_QCOM_BCM_VOTER) +=3D icc-bcm-voter.o
+@@ -4,6 +4,7 @@ icc-bcm-voter-objs=09=09=09:=3D bcm-voter.o
+ qnoc-msm8916-objs=09=09=09:=3D msm8916.o
+ qnoc-msm8939-objs=09=09=09:=3D msm8939.o
+ qnoc-msm8974-objs=09=09=09:=3D msm8974.o
++qnoc-msm8996-objs=09=09=09:=3D msm8996.o
+ icc-osm-l3-objs=09=09=09=09:=3D osm-l3.o
+ qnoc-qcs404-objs=09=09=09:=3D qcs404.o
+ icc-rpmh-obj=09=09=09=09:=3D icc-rpmh.o
+@@ -22,6 +23,7 @@ obj-$(CONFIG_INTERCONNECT_QCOM_BCM_VOTER) +=3D icc-bcm-vo=
+ter.o
  obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) +=3D qnoc-msm8916.o
-@@ -33,3 +34,4 @@ obj-$(CONFIG_INTERCONNECT_QCOM_SM8150) +=3D qnoc-sm8150.o
- obj-$(CONFIG_INTERCONNECT_QCOM_SM8250) +=3D qnoc-sm8250.o
- obj-$(CONFIG_INTERCONNECT_QCOM_SM8350) +=3D qnoc-sm8350.o
- obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) +=3D icc-smd-rpm.o
-+obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM_QOS) +=3D icc-smd-rpm-qos.o
-diff --git a/drivers/interconnect/qcom/icc-rpm-qos.c b/drivers/interconnect=
-/qcom/icc-rpm-qos.c
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8939) +=3D qnoc-msm8939.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8974) +=3D qnoc-msm8974.o
++obj-$(CONFIG_INTERCONNECT_QCOM_MSM8996) +=3D qnoc-msm8996.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_OSM_L3) +=3D icc-osm-l3.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_QCS404) +=3D qnoc-qcs404.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_RPMH) +=3D icc-rpmh.o
+diff --git a/drivers/interconnect/qcom/msm8996.c b/drivers/interconnect/qco=
+m/msm8996.c
 new file mode 100644
-index 000000000000..678b347375d8
+index 000000000000..f3cbe0d284ea
 --- /dev/null
-+++ b/drivers/interconnect/qcom/icc-rpm-qos.c
-@@ -0,0 +1,237 @@
++++ b/drivers/interconnect/qcom/msm8996.c
+@@ -0,0 +1,574 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Copyright (C) 2020, AngeloGioacchino Del Regno <kholk11@gmail.com>
++ * Qualcomm MSM8996 Network-on-Chip (NoC) QoS driver
++ *
++ * Copyright (c) 2021 Yassine Oudjana <y.oudjana@protonmail.com>
 + */
 +
 +#include <linux/clk.h>
@@ -126,761 +133,1073 @@ index 000000000000..678b347375d8
 +#include <linux/of_platform.h>
 +#include <linux/platform_device.h>
 +#include <linux/regmap.h>
-+#include <linux/slab.h>
 +
-+#include "smd-rpm.h"
++#include <dt-bindings/interconnect/qcom,msm8996.h>
++
 +#include "icc-rpm-qos.h"
++#include "smd-rpm.h"
++#include "msm8996.h"
 +
-+static int qcom_icc_bimc_set_qos_health(struct regmap *rmap,
-+=09=09=09=09=09struct qcom_icc_qos *qos,
-+=09=09=09=09=09int regnum)
++static const struct clk_bulk_data bus_clocks[] =3D {
++=09{ .id =3D "bus" },
++=09{ .id =3D "bus_a" },
++};
++
++static const struct clk_bulk_data bus_mm_clocks[] =3D {
++=09{ .id =3D "bus" },
++=09{ .id =3D "bus_a" },
++=09{ .id =3D "iface" },
++};
++
++DEFINE_QNODE(mas_cnoc_a1noc, MSM8996_MASTER_CNOC_A1NOC, 8, 116, -1, true, =
+-1, 0, -1, MSM8996_SLAVE_A1NOC_SNOC);
++DEFINE_QNODE(mas_crypto_c0, MSM8996_MASTER_CRYPTO_CORE0, 8, 23, -1, true, =
+NOC_QOS_MODE_FIXED, 1, 0, MSM8996_SLAVE_A1NOC_SNOC);
++DEFINE_QNODE(mas_pnoc_a1noc, MSM8996_MASTER_PNOC_A1NOC, 8, 117, -1, false,=
+ NOC_QOS_MODE_FIXED, 0, 1, MSM8996_SLAVE_A1NOC_SNOC);
++DEFINE_QNODE(mas_usb3, MSM8996_MASTER_USB3, 8, 32, -1, true, NOC_QOS_MODE_=
+FIXED, 1, 3, MSM8996_SLAVE_A2NOC_SNOC);
++DEFINE_QNODE(mas_ipa, MSM8996_MASTER_IPA, 8, 59, -1, true, NOC_QOS_MODE_FI=
+XED, 0, -1, MSM8996_SLAVE_A2NOC_SNOC);
++DEFINE_QNODE(mas_ufs, MSM8996_MASTER_UFS, 8, 68, -1, true, NOC_QOS_MODE_FI=
+XED, 1, 2, MSM8996_SLAVE_A2NOC_SNOC);
++DEFINE_QNODE(mas_apps_proc, MSM8996_MASTER_AMPSS_M0, 8, 0, -1, true, NOC_Q=
+OS_MODE_FIXED, 0, 0, MSM8996_SLAVE_BIMC_SNOC_1, MSM8996_SLAVE_EBI_CH0, MSM8=
+996_SLAVE_BIMC_SNOC_0);
++DEFINE_QNODE(mas_oxili, MSM8996_MASTER_GRAPHICS_3D, 8, 6, -1, true, NOC_QO=
+S_MODE_BYPASS, 0, 1, MSM8996_SLAVE_BIMC_SNOC_1, MSM8996_SLAVE_HMSS_L3, MSM8=
+996_SLAVE_EBI_CH0, MSM8996_SLAVE_BIMC_SNOC_0);
++DEFINE_QNODE(mas_mnoc_bimc, MSM8996_MASTER_MNOC_BIMC, 8, 2, -1, true, NOC_=
+QOS_MODE_BYPASS, 0, 2, MSM8996_SLAVE_BIMC_SNOC_1, MSM8996_SLAVE_HMSS_L3, MS=
+M8996_SLAVE_EBI_CH0, MSM8996_SLAVE_BIMC_SNOC_0);
++DEFINE_QNODE(mas_snoc_bimc, MSM8996_MASTER_SNOC_BIMC, 8, 3, -1, false, NOC=
+_QOS_MODE_BYPASS, 0, -1, MSM8996_SLAVE_HMSS_L3, MSM8996_SLAVE_EBI_CH0);
++DEFINE_QNODE(mas_snoc_cnoc, MSM8996_MASTER_SNOC_CNOC, 8, 52, -1, false, -1=
+, 0, -1, MSM8996_SLAVE_CLK_CTL, MSM8996_SLAVE_RBCPR_CX, MSM8996_SLAVE_A2NOC=
+_SMMU_CFG, MSM8996_SLAVE_A0NOC_MPU_CFG, MSM8996_SLAVE_MESSAGE_RAM, MSM8996_=
+SLAVE_CNOC_MNOC_MMSS_CFG, MSM8996_SLAVE_PCIE_0_CFG, MSM8996_SLAVE_TLMM, MSM=
+8996_SLAVE_MPM, MSM8996_SLAVE_A0NOC_SMMU_CFG, MSM8996_SLAVE_EBI1_PHY_CFG, M=
+SM8996_SLAVE_BIMC_CFG, MSM8996_SLAVE_PIMEM_CFG, MSM8996_SLAVE_RBCPR_MX, MSM=
+8996_SLAVE_PRNG, MSM8996_SLAVE_PCIE20_AHB2PHY, MSM8996_SLAVE_A2NOC_MPU_CFG,=
+ MSM8996_SLAVE_QDSS_CFG, MSM8996_SLAVE_A2NOC_CFG, MSM8996_SLAVE_A0NOC_CFG, =
+MSM8996_SLAVE_UFS_CFG, MSM8996_SLAVE_CRYPTO_0_CFG, MSM8996_SLAVE_PCIE_1_CFG=
+, MSM8996_SLAVE_SNOC_CFG, MSM8996_SLAVE_SNOC_MPU_CFG, MSM8996_SLAVE_A1NOC_M=
+PU_CFG, MSM8996_SLAVE_A1NOC_SMMU_CFG, MSM8996_SLAVE_PCIE_2_CFG, MSM8996_SLA=
+VE_CNOC_MNOC_CFG, MSM8996_SLAVE_QDSS_RBCPR_APU_CFG, MSM8996_SLAVE_PMIC_ARB,=
+ MSM8996_SLAVE_IMEM_CFG, MSM8996_SLAVE_A1NOC_CFG, MSM8996_SLAVE_SSC_CFG, MS=
+M8996_SLAVE_TCSR, MSM8996_SLAVE_LPASS_SMMU_CFG, MSM8996_SLAVE_DCC_CFG);
++DEFINE_QNODE(mas_qdss_dap, MSM8996_MASTER_QDSS_DAP, 8, 49, -1, true, -1, 0=
+, -1, MSM8996_SLAVE_QDSS_RBCPR_APU_CFG, MSM8996_SLAVE_RBCPR_CX, MSM8996_SLA=
+VE_A2NOC_SMMU_CFG, MSM8996_SLAVE_A0NOC_MPU_CFG, MSM8996_SLAVE_MESSAGE_RAM, =
+MSM8996_SLAVE_PCIE_0_CFG, MSM8996_SLAVE_TLMM, MSM8996_SLAVE_MPM, MSM8996_SL=
+AVE_A0NOC_SMMU_CFG, MSM8996_SLAVE_EBI1_PHY_CFG, MSM8996_SLAVE_BIMC_CFG, MSM=
+8996_SLAVE_PIMEM_CFG, MSM8996_SLAVE_RBCPR_MX, MSM8996_SLAVE_CLK_CTL, MSM899=
+6_SLAVE_PRNG, MSM8996_SLAVE_PCIE20_AHB2PHY, MSM8996_SLAVE_A2NOC_MPU_CFG, MS=
+M8996_SLAVE_QDSS_CFG, MSM8996_SLAVE_A2NOC_CFG, MSM8996_SLAVE_A0NOC_CFG, MSM=
+8996_SLAVE_UFS_CFG, MSM8996_SLAVE_CRYPTO_0_CFG, MSM8996_SLAVE_CNOC_A1NOC, M=
+SM8996_SLAVE_PCIE_1_CFG, MSM8996_SLAVE_SNOC_CFG, MSM8996_SLAVE_SNOC_MPU_CFG=
+, MSM8996_SLAVE_A1NOC_MPU_CFG, MSM8996_SLAVE_A1NOC_SMMU_CFG, MSM8996_SLAVE_=
+PCIE_2_CFG, MSM8996_SLAVE_CNOC_MNOC_CFG, MSM8996_SLAVE_CNOC_MNOC_MMSS_CFG, =
+MSM8996_SLAVE_PMIC_ARB, MSM8996_SLAVE_IMEM_CFG, MSM8996_SLAVE_A1NOC_CFG, MS=
+M8996_SLAVE_SSC_CFG, MSM8996_SLAVE_TCSR, MSM8996_SLAVE_LPASS_SMMU_CFG, MSM8=
+996_SLAVE_DCC_CFG);
++DEFINE_QNODE(mas_cnoc_mnoc_mmss_cfg, MSM8996_MASTER_CNOC_MNOC_MMSS_CFG, 8,=
+ 4, -1, true, -1, 0, -1, MSM8996_SLAVE_MMAGIC_CFG, MSM8996_SLAVE_DSA_MPU_CF=
+G, MSM8996_SLAVE_MMSS_CLK_CFG, MSM8996_SLAVE_CAMERA_THROTTLE_CFG, MSM8996_S=
+LAVE_VENUS_CFG, MSM8996_SLAVE_SMMU_VFE_CFG, MSM8996_SLAVE_MISC_CFG, MSM8996=
+_SLAVE_SMMU_CPP_CFG, MSM8996_SLAVE_GRAPHICS_3D_CFG, MSM8996_SLAVE_DISPLAY_T=
+HROTTLE_CFG, MSM8996_SLAVE_VENUS_THROTTLE_CFG, MSM8996_SLAVE_CAMERA_CFG, MS=
+M8996_SLAVE_DISPLAY_CFG, MSM8996_SLAVE_CPR_CFG, MSM8996_SLAVE_SMMU_ROTATOR_=
+CFG, MSM8996_SLAVE_DSA_CFG, MSM8996_SLAVE_SMMU_VENUS_CFG, MSM8996_SLAVE_VME=
+M_CFG, MSM8996_SLAVE_SMMU_JPEG_CFG, MSM8996_SLAVE_SMMU_MDP_CFG, MSM8996_SLA=
+VE_MNOC_MPU_CFG);
++DEFINE_QNODE(mas_cnoc_mnoc_cfg, MSM8996_MASTER_CNOC_MNOC_CFG, 8, 5, -1, tr=
+ue, -1, 0, -1, MSM8996_SLAVE_SERVICE_MNOC);
++DEFINE_QNODE(mas_cpp, MSM8996_MASTER_CPP, 32, 115, -1, true, NOC_QOS_MODE_=
+BYPASS, 0, 5, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_jpeg, MSM8996_MASTER_JPEG, 32, 7, -1, true, NOC_QOS_MODE_=
+BYPASS, 0, 7, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_mdp_p0, MSM8996_MASTER_MDP_PORT0, 32, 8, -1, true, NOC_QO=
+S_MODE_BYPASS, 0, 1, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_mdp_p1, MSM8996_MASTER_MDP_PORT1, 32, 61, -1, true, NOC_Q=
+OS_MODE_BYPASS, 0, 2, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_rotator, MSM8996_MASTER_ROTATOR, 32, 120, -1, true, NOC_Q=
+OS_MODE_BYPASS, 0, 0, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_venus, MSM8996_MASTER_VIDEO_P0, 32, 9, -1, true, NOC_QOS_=
+MODE_BYPASS, 0, 3 /* TODO: 3 4 ?? */, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_vfe, MSM8996_MASTER_VFE, 32, 11, -1, true, NOC_QOS_MODE_B=
+YPASS, 0, 6, MSM8996_SLAVE_MNOC_BIMC);
++DEFINE_QNODE(mas_snoc_vmem, MSM8996_MASTER_SNOC_VMEM, 32, 114, -1, true, -=
+1, 0, -1, MSM8996_SLAVE_VMEM);
++DEFINE_QNODE(mas_venus_vmem, MSM8996_MASTER_VIDEO_P0_OCMEM, 32, 121, -1, t=
+rue, -1, 0, -1, MSM8996_SLAVE_VMEM);
++DEFINE_QNODE(mas_snoc_pnoc, MSM8996_MASTER_SNOC_PNOC, 8, 44, -1, false, -1=
+, 0, -1, MSM8996_SLAVE_BLSP_1, MSM8996_SLAVE_BLSP_2, MSM8996_SLAVE_SDCC_1, =
+MSM8996_SLAVE_SDCC_2, MSM8996_SLAVE_SDCC_4, MSM8996_SLAVE_TSIF, MSM8996_SLA=
+VE_PDM, MSM8996_SLAVE_AHB2PHY);
++DEFINE_QNODE(mas_sdcc_1, MSM8996_MASTER_SDCC_1, 8, 33, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_sdcc_2, MSM8996_MASTER_SDCC_2, 8, 35, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_sdcc_4, MSM8996_MASTER_SDCC_4, 8, 36, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_usb_hs, MSM8996_MASTER_USB_HS, 8, 42, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_blsp_1, MSM8996_MASTER_BLSP_1, 4, 41, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_blsp_2, MSM8996_MASTER_BLSP_2, 4, 39, -1, false, -1, 0, -=
+1, MSM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_tsif, MSM8996_MASTER_TSIF, 4, 37, -1, false, -1, 0, -1, M=
+SM8996_SLAVE_PNOC_A1NOC);
++DEFINE_QNODE(mas_hmss, MSM8996_MASTER_HMSS, 8, 118, -1, true, NOC_QOS_MODE=
+_FIXED, 1, 4, MSM8996_SLAVE_PIMEM, MSM8996_SLAVE_OCIMEM, MSM8996_SLAVE_SNOC=
+_BIMC);
++DEFINE_QNODE(mas_qdss_bam, MSM8996_MASTER_QDSS_BAM, 16, 19, -1, true, NOC_=
+QOS_MODE_FIXED, 1, 2, MSM8996_SLAVE_PIMEM, MSM8996_SLAVE_USB3, MSM8996_SLAV=
+E_OCIMEM, MSM8996_SLAVE_SNOC_BIMC, MSM8996_SLAVE_SNOC_PNOC);
++DEFINE_QNODE(mas_snoc_cfg, MSM8996_MASTER_SNOC_CFG, 16, 20, -1, true, -1, =
+0, -1, MSM8996_SLAVE_SERVICE_SNOC);
++DEFINE_QNODE(mas_bimc_snoc_0, MSM8996_MASTER_BIMC_SNOC_0, 16, 21, -1, true=
+, -1, 0, -1, MSM8996_SLAVE_SNOC_VMEM, MSM8996_SLAVE_USB3, MSM8996_SLAVE_PIM=
+EM, MSM8996_SLAVE_LPASS, MSM8996_SLAVE_APPSS, MSM8996_SLAVE_SNOC_CNOC, MSM8=
+996_SLAVE_SNOC_PNOC, MSM8996_SLAVE_OCIMEM, MSM8996_SLAVE_QDSS_STM);
++DEFINE_QNODE(mas_bimc_snoc_1, MSM8996_MASTER_BIMC_SNOC_1, 16, 109, -1, tru=
+e, -1, 0, -1, MSM8996_SLAVE_PCIE_2, MSM8996_SLAVE_PCIE_1, MSM8996_SLAVE_PCI=
+E_0);
++DEFINE_QNODE(mas_a0noc_snoc, MSM8996_MASTER_A0NOC_SNOC, 16, 110, -1, true,=
+ -1, 0, -1, MSM8996_SLAVE_SNOC_PNOC, MSM8996_SLAVE_OCIMEM, MSM8996_SLAVE_AP=
+PSS, MSM8996_SLAVE_SNOC_BIMC, MSM8996_SLAVE_PIMEM);
++DEFINE_QNODE(mas_a1noc_snoc, MSM8996_MASTER_A1NOC_SNOC, 16, 111, -1, false=
+, -1, 0, -1, MSM8996_SLAVE_SNOC_VMEM, MSM8996_SLAVE_USB3, MSM8996_SLAVE_PCI=
+E_0, MSM8996_SLAVE_PIMEM, MSM8996_SLAVE_PCIE_2, MSM8996_SLAVE_LPASS, MSM899=
+6_SLAVE_PCIE_1, MSM8996_SLAVE_APPSS, MSM8996_SLAVE_SNOC_BIMC, MSM8996_SLAVE=
+_SNOC_CNOC, MSM8996_SLAVE_SNOC_PNOC, MSM8996_SLAVE_OCIMEM, MSM8996_SLAVE_QD=
+SS_STM);
++DEFINE_QNODE(mas_a2noc_snoc, MSM8996_MASTER_A2NOC_SNOC, 16, 112, -1, false=
+, -1, 0, -1, MSM8996_SLAVE_SNOC_VMEM, MSM8996_SLAVE_USB3, MSM8996_SLAVE_PCI=
+E_1, MSM8996_SLAVE_PIMEM, MSM8996_SLAVE_PCIE_2, MSM8996_SLAVE_QDSS_STM, MSM=
+8996_SLAVE_LPASS, MSM8996_SLAVE_SNOC_BIMC, MSM8996_SLAVE_SNOC_CNOC, MSM8996=
+_SLAVE_SNOC_PNOC, MSM8996_SLAVE_OCIMEM, MSM8996_SLAVE_PCIE_0);
++DEFINE_QNODE(mas_qdss_etr, MSM8996_MASTER_QDSS_ETR, 16, 31, -1, true, NOC_=
+QOS_MODE_FIXED, 1, 3, MSM8996_SLAVE_PIMEM, MSM8996_SLAVE_USB3, MSM8996_SLAV=
+E_OCIMEM, MSM8996_SLAVE_SNOC_BIMC, MSM8996_SLAVE_SNOC_PNOC);
++DEFINE_QNODE(slv_a0noc_snoc, MSM8996_SLAVE_A0NOC_SNOC, 8, -1, 141, true, -=
+1, 0, -1, MSM8996_MASTER_A0NOC_SNOC);
++DEFINE_QNODE(slv_a1noc_snoc, MSM8996_SLAVE_A1NOC_SNOC, 8, -1, 142, false, =
+-1, 0, -1, MSM8996_MASTER_A1NOC_SNOC);
++DEFINE_QNODE(slv_a2noc_snoc, MSM8996_SLAVE_A2NOC_SNOC, 8, -1, 143, false, =
+-1, 0, -1, MSM8996_MASTER_A2NOC_SNOC);
++DEFINE_QNODE(slv_ebi, MSM8996_SLAVE_EBI_CH0, 8, -1, 0, false, -1, 0, -1, 0=
+);
++DEFINE_QNODE(slv_hmss_l3, MSM8996_SLAVE_HMSS_L3, 8, -1, 160, false, -1, 0,=
+ -1, 0);
++DEFINE_QNODE(slv_bimc_snoc_0, MSM8996_SLAVE_BIMC_SNOC_0, 8, -1, 2, true, -=
+1, 0, -1, MSM8996_MASTER_BIMC_SNOC_0);
++DEFINE_QNODE(slv_bimc_snoc_1, MSM8996_SLAVE_BIMC_SNOC_1, 8, -1, 138, true,=
+ -1, 0, -1, MSM8996_MASTER_BIMC_SNOC_1);
++DEFINE_QNODE(slv_cnoc_a1noc, MSM8996_SLAVE_CNOC_A1NOC, 4, -1, 75, true, -1=
+, 0, -1, MSM8996_MASTER_CNOC_A1NOC);
++DEFINE_QNODE(slv_clk_ctl, MSM8996_SLAVE_CLK_CTL, 4, -1, 47, false, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_tcsr, MSM8996_SLAVE_TCSR, 4, -1, 50, false, -1, 0, -1, 0)=
+;
++DEFINE_QNODE(slv_tlmm, MSM8996_SLAVE_TLMM, 4, -1, 51, false, -1, 0, -1, 0)=
+;
++DEFINE_QNODE(slv_crypto0_cfg, MSM8996_SLAVE_CRYPTO_0_CFG, 4, -1, 52, true,=
+ -1, 0, -1, 0);
++DEFINE_QNODE(slv_mpm, MSM8996_SLAVE_MPM, 4, -1, 62, true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_pimem_cfg, MSM8996_SLAVE_PIMEM_CFG, 4, -1, 167, true, -1,=
+ 0, -1, 0);
++DEFINE_QNODE(slv_imem_cfg, MSM8996_SLAVE_IMEM_CFG, 4, -1, 54, true, -1, 0,=
+ -1, 0);
++DEFINE_QNODE(slv_message_ram, MSM8996_SLAVE_MESSAGE_RAM, 4, -1, 55, false,=
+ -1, 0, -1, 0);
++DEFINE_QNODE(slv_bimc_cfg, MSM8996_SLAVE_BIMC_CFG, 4, -1, 56, true, -1, 0,=
+ -1, 0);
++DEFINE_QNODE(slv_pmic_arb, MSM8996_SLAVE_PMIC_ARB, 4, -1, 59, false, -1, 0=
+, -1, 0);
++DEFINE_QNODE(slv_prng, MSM8996_SLAVE_PRNG, 4, -1, 127, true, -1, 0, -1, 0)=
+;
++DEFINE_QNODE(slv_dcc_cfg, MSM8996_SLAVE_DCC_CFG, 4, -1, 155, true, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_rbcpr_mx, MSM8996_SLAVE_RBCPR_MX, 4, -1, 170, true, -1, 0=
+, -1, 0);
++DEFINE_QNODE(slv_qdss_cfg, MSM8996_SLAVE_QDSS_CFG, 4, -1, 63, true, -1, 0,=
+ -1, 0);
++DEFINE_QNODE(slv_rbcpr_cx, MSM8996_SLAVE_RBCPR_CX, 4, -1, 169, true, -1, 0=
+, -1, 0);
++DEFINE_QNODE(slv_cpu_apu_cfg, MSM8996_SLAVE_QDSS_RBCPR_APU_CFG, 4, -1, 168=
+, true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_cnoc_mnoc_cfg, MSM8996_SLAVE_CNOC_MNOC_CFG, 4, -1, 66, tr=
+ue, -1, 0, -1, MSM8996_MASTER_CNOC_MNOC_CFG);
++DEFINE_QNODE(slv_snoc_cfg, MSM8996_SLAVE_SNOC_CFG, 4, -1, 70, true, -1, 0,=
+ -1, 0);
++DEFINE_QNODE(slv_snoc_mpu_cfg, MSM8996_SLAVE_SNOC_MPU_CFG, 4, -1, 67, true=
+, -1, 0, -1, 0);
++DEFINE_QNODE(slv_ebi1_phy_cfg, MSM8996_SLAVE_EBI1_PHY_CFG, 4, -1, 73, true=
+, -1, 0, -1, 0);
++DEFINE_QNODE(slv_a0noc_cfg, MSM8996_SLAVE_A0NOC_CFG, 4, -1, 144, true, -1,=
+ 0, -1, 0);
++DEFINE_QNODE(slv_pcie_1_cfg, MSM8996_SLAVE_PCIE_1_CFG, 4, -1, 89, true, -1=
+, 0, -1, 0);
++DEFINE_QNODE(slv_pcie_2_cfg, MSM8996_SLAVE_PCIE_2_CFG, 4, -1, 165, true, -=
+1, 0, -1, 0);
++DEFINE_QNODE(slv_pcie_0_cfg, MSM8996_SLAVE_PCIE_0_CFG, 4, -1, 88, true, -1=
+, 0, -1, 0);
++DEFINE_QNODE(slv_pcie20_ahb2phy, MSM8996_SLAVE_PCIE20_AHB2PHY, 4, -1, 163,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_a0noc_mpu_cfg, MSM8996_SLAVE_A0NOC_MPU_CFG, 4, -1, 145, t=
+rue, -1, 0, -1, 0);
++DEFINE_QNODE(slv_ufs_cfg, MSM8996_SLAVE_UFS_CFG, 4, -1, 92, true, -1, 0, -=
+1, 0);
++DEFINE_QNODE(slv_a1noc_cfg, MSM8996_SLAVE_A1NOC_CFG, 4, -1, 147, true, -1,=
+ 0, -1, 0);
++DEFINE_QNODE(slv_a1noc_mpu_cfg, MSM8996_SLAVE_A1NOC_MPU_CFG, 4, -1, 148, t=
+rue, -1, 0, -1, 0);
++DEFINE_QNODE(slv_a2noc_cfg, MSM8996_SLAVE_A2NOC_CFG, 4, -1, 150, true, -1,=
+ 0, -1, 0);
++DEFINE_QNODE(slv_a2noc_mpu_cfg, MSM8996_SLAVE_A2NOC_MPU_CFG, 4, -1, 151, t=
+rue, -1, 0, -1, 0);
++DEFINE_QNODE(slv_ssc_cfg, MSM8996_SLAVE_SSC_CFG, 4, -1, 177, true, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_a0noc_smmu_cfg, MSM8996_SLAVE_A0NOC_SMMU_CFG, 8, -1, 146,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_a1noc_smmu_cfg, MSM8996_SLAVE_A1NOC_SMMU_CFG, 8, -1, 149,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_a2noc_smmu_cfg, MSM8996_SLAVE_A2NOC_SMMU_CFG, 8, -1, 152,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_lpass_smmu_cfg, MSM8996_SLAVE_LPASS_SMMU_CFG, 8, -1, 161,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_cnoc_mnoc_mmss_cfg, MSM8996_SLAVE_CNOC_MNOC_MMSS_CFG, 8, =
+-1, 58, true, -1, 0, -1, MSM8996_MASTER_CNOC_MNOC_MMSS_CFG);
++DEFINE_QNODE(slv_mmagic_cfg, MSM8996_SLAVE_MMAGIC_CFG, 8, -1, 162, true, -=
+1, 0, -1, 0);
++DEFINE_QNODE(slv_cpr_cfg, MSM8996_SLAVE_CPR_CFG, 8, -1, 6, true, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_misc_cfg, MSM8996_SLAVE_MISC_CFG, 8, -1, 8, true, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_venus_throttle_cfg, MSM8996_SLAVE_VENUS_THROTTLE_CFG, 8, =
+-1, 178, true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_venus_cfg, MSM8996_SLAVE_VENUS_CFG, 8, -1, 10, true, -1, =
+0, -1, 0);
++DEFINE_QNODE(slv_vmem_cfg, MSM8996_SLAVE_VMEM_CFG, 8, -1, 180, true, -1, 0=
+, -1, 0);
++DEFINE_QNODE(slv_dsa_cfg, MSM8996_SLAVE_DSA_CFG, 8, -1, 157, true, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_mnoc_clocks_cfg, MSM8996_SLAVE_MMSS_CLK_CFG, 8, -1, 12, t=
+rue, -1, 0, -1, 0);
++DEFINE_QNODE(slv_dsa_mpu_cfg, MSM8996_SLAVE_DSA_MPU_CFG, 8, -1, 158, true,=
+ -1, 0, -1, 0);
++DEFINE_QNODE(slv_mnoc_mpu_cfg, MSM8996_SLAVE_MNOC_MPU_CFG, 8, -1, 14, true=
+, -1, 0, -1, 0);
++DEFINE_QNODE(slv_display_cfg, MSM8996_SLAVE_DISPLAY_CFG, 8, -1, 4, true, -=
+1, 0, -1, 0);
++DEFINE_QNODE(slv_display_throttle_cfg, MSM8996_SLAVE_DISPLAY_THROTTLE_CFG,=
+ 8, -1, 156, true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_camera_cfg, MSM8996_SLAVE_CAMERA_CFG, 8, -1, 3, true, -1,=
+ 0, -1, 0);
++DEFINE_QNODE(slv_camera_throttle_cfg, MSM8996_SLAVE_CAMERA_THROTTLE_CFG, 8=
+, -1, 154, true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_oxili_cfg, MSM8996_SLAVE_GRAPHICS_3D_CFG, 8, -1, 11, true=
+, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_mdp_cfg, MSM8996_SLAVE_SMMU_MDP_CFG, 8, -1, 173, tru=
+e, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_rot_cfg, MSM8996_SLAVE_SMMU_ROTATOR_CFG, 8, -1, 174,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_venus_cfg, MSM8996_SLAVE_SMMU_VENUS_CFG, 8, -1, 175,=
+ true, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_cpp_cfg, MSM8996_SLAVE_SMMU_CPP_CFG, 8, -1, 171, tru=
+e, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_jpeg_cfg, MSM8996_SLAVE_SMMU_JPEG_CFG, 8, -1, 172, t=
+rue, -1, 0, -1, 0);
++DEFINE_QNODE(slv_smmu_vfe_cfg, MSM8996_SLAVE_SMMU_VFE_CFG, 8, -1, 176, tru=
+e, -1, 0, -1, 0);
++DEFINE_QNODE(slv_mnoc_bimc, MSM8996_SLAVE_MNOC_BIMC, 32, -1, 16, true, -1,=
+ 0, -1, MSM8996_MASTER_MNOC_BIMC);
++DEFINE_QNODE(slv_vmem, MSM8996_SLAVE_VMEM, 32, -1, 179, true, -1, 0, -1, 0=
+);
++DEFINE_QNODE(slv_srvc_mnoc, MSM8996_SLAVE_SERVICE_MNOC, 8, -1, 17, true, -=
+1, 0, -1, 0);
++DEFINE_QNODE(slv_pnoc_a1noc, MSM8996_SLAVE_PNOC_A1NOC, 8, -1, 139, false, =
+-1, 0, -1, MSM8996_MASTER_PNOC_A1NOC);
++DEFINE_QNODE(slv_usb_hs, MSM8996_SLAVE_USB_HS, 4, -1, 40, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_sdcc_2, MSM8996_SLAVE_SDCC_2, 4, -1, 33, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_sdcc_4, MSM8996_SLAVE_SDCC_4, 4, -1, 34, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_tsif, MSM8996_SLAVE_TSIF, 4, -1, 35, false, -1, 0, -1, 0)=
+;
++DEFINE_QNODE(slv_blsp_2, MSM8996_SLAVE_BLSP_2, 4, -1, 37, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_sdcc_1, MSM8996_SLAVE_SDCC_1, 4, -1, 31, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_blsp_1, MSM8996_SLAVE_BLSP_1, 4, -1, 39, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_pdm, MSM8996_SLAVE_PDM, 4, -1, 41, false, -1, 0, -1, 0);
++DEFINE_QNODE(slv_ahb2phy, MSM8996_SLAVE_AHB2PHY, 4, -1, 153, true, -1, 0, =
+-1, 0);
++DEFINE_QNODE(slv_hmss, MSM8996_SLAVE_APPSS, 16, -1, 20, true, -1, 0, -1, 0=
+);
++DEFINE_QNODE(slv_lpass, MSM8996_SLAVE_LPASS, 16, -1, 21, true, -1, 0, -1, =
+0);
++DEFINE_QNODE(slv_usb3, MSM8996_SLAVE_USB3, 16, -1, 22, true, -1, 0, -1, 0)=
+;
++DEFINE_QNODE(slv_snoc_bimc, MSM8996_SLAVE_SNOC_BIMC, 32, -1, 24, false, -1=
+, 0, -1, MSM8996_MASTER_SNOC_BIMC);
++DEFINE_QNODE(slv_snoc_cnoc, MSM8996_SLAVE_SNOC_CNOC, 16, -1, 25, false, -1=
+, 0, -1, MSM8996_MASTER_SNOC_CNOC);
++DEFINE_QNODE(slv_imem, MSM8996_SLAVE_OCIMEM, 16, -1, 26, false, -1, 0, -1,=
+ 0);
++DEFINE_QNODE(slv_pimem, MSM8996_SLAVE_PIMEM, 16, -1, 166, false, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_snoc_vmem, MSM8996_SLAVE_SNOC_VMEM, 16, -1, 140, true, -1=
+, 0, -1, MSM8996_MASTER_SNOC_VMEM);
++DEFINE_QNODE(slv_snoc_pnoc, MSM8996_SLAVE_SNOC_PNOC, 16, -1, 28, false, -1=
+, 0, -1, MSM8996_MASTER_SNOC_PNOC);
++DEFINE_QNODE(slv_qdss_stm, MSM8996_SLAVE_QDSS_STM, 16, -1, 30, false, -1, =
+0, -1, 0);
++DEFINE_QNODE(slv_pcie_0, MSM8996_SLAVE_PCIE_0, 16, -1, 84, true, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_pcie_1, MSM8996_SLAVE_PCIE_1, 16, -1, 85, true, -1, 0, -1=
+, 0);
++DEFINE_QNODE(slv_pcie_2, MSM8996_SLAVE_PCIE_2, 16, -1, 164, true, -1, 0, -=
+1, 0);
++DEFINE_QNODE(slv_srvc_snoc, MSM8996_SLAVE_SERVICE_SNOC, 16, -1, 29, true, =
+-1, 0, -1, 0);
++
++static struct qcom_icc_node *a1noc_nodes[] =3D {
++=09[MASTER_CNOC_A1NOC] =3D &mas_cnoc_a1noc,
++=09[MASTER_CRYPTO_CORE0] =3D &mas_crypto_c0,
++=09[MASTER_PNOC_A1NOC] =3D &mas_pnoc_a1noc,
++};
++
++static const struct regmap_config msm8996_a1noc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x7000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_a1noc =3D {
++=09.nodes =3D a1noc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(a1noc_nodes),
++=09.regmap_cfg =3D &msm8996_a1noc_regmap_config,
++};
++
++static struct qcom_icc_node *a2noc_nodes[] =3D {
++=09[MASTER_USB3] =3D &mas_usb3,
++=09[MASTER_IPA] =3D &mas_ipa,
++=09[MASTER_UFS] =3D &mas_ufs,
++};
++
++static const struct regmap_config msm8996_a2noc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0xa000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_a2noc =3D {
++=09.nodes =3D a2noc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(a2noc_nodes),
++=09.regmap_cfg =3D &msm8996_a2noc_regmap_config,
++};
++
++static struct qcom_icc_node *bimc_nodes[] =3D {
++=09[MASTER_AMPSS_M0] =3D &mas_apps_proc,
++=09[MASTER_GRAPHICS_3D] =3D &mas_oxili,
++=09[MASTER_MNOC_BIMC] =3D &mas_mnoc_bimc,
++=09[MASTER_SNOC_BIMC] =3D &mas_snoc_bimc,
++=09[SLAVE_EBI_CH0] =3D &slv_ebi,
++=09[SLAVE_HMSS_L3] =3D &slv_hmss_l3,
++=09[SLAVE_BIMC_SNOC_0] =3D &slv_bimc_snoc_0,
++=09[SLAVE_BIMC_SNOC_1] =3D &slv_bimc_snoc_1,
++};
++
++static const struct regmap_config msm8996_bimc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x62000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_bimc =3D {
++=09.nodes =3D bimc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(bimc_nodes),
++=09.regmap_cfg =3D &msm8996_bimc_regmap_config,
++};
++
++static struct qcom_icc_node *cnoc_nodes[] =3D {
++=09[MASTER_SNOC_CNOC] =3D &mas_snoc_cnoc,
++=09[MASTER_QDSS_DAP] =3D &mas_qdss_dap,
++=09[SLAVE_CNOC_A1NOC] =3D &slv_cnoc_a1noc,
++=09[SLAVE_CLK_CTL] =3D &slv_clk_ctl,
++=09[SLAVE_TCSR] =3D &slv_tcsr,
++=09[SLAVE_TLMM] =3D &slv_tlmm,
++=09[SLAVE_CRYPTO_0_CFG] =3D &slv_crypto0_cfg,
++=09[SLAVE_MPM] =3D &slv_mpm,
++=09[SLAVE_PIMEM_CFG] =3D &slv_pimem_cfg,
++=09[SLAVE_IMEM_CFG] =3D &slv_imem_cfg,
++=09[SLAVE_MESSAGE_RAM] =3D &slv_message_ram,
++=09[SLAVE_BIMC_CFG] =3D &slv_bimc_cfg,
++=09[SLAVE_PMIC_ARB] =3D &slv_pmic_arb,
++=09[SLAVE_PRNG] =3D &slv_prng,
++=09[SLAVE_DCC_CFG] =3D &slv_dcc_cfg,
++=09[SLAVE_RBCPR_MX] =3D &slv_rbcpr_mx,
++=09[SLAVE_QDSS_CFG] =3D &slv_qdss_cfg,
++=09[SLAVE_RBCPR_CX] =3D &slv_rbcpr_cx,
++=09[SLAVE_QDSS_RBCPR_APU] =3D &slv_cpu_apu_cfg,
++=09[SLAVE_CNOC_MNOC_CFG] =3D &slv_cnoc_mnoc_cfg,
++=09[SLAVE_SNOC_CFG] =3D &slv_snoc_cfg,
++=09[SLAVE_SNOC_MPU_CFG] =3D &slv_snoc_mpu_cfg,
++=09[SLAVE_EBI1_PHY_CFG] =3D &slv_ebi1_phy_cfg,
++=09[SLAVE_A0NOC_CFG] =3D &slv_a0noc_cfg,
++=09[SLAVE_PCIE_1_CFG] =3D &slv_pcie_1_cfg,
++=09[SLAVE_PCIE_2_CFG] =3D &slv_pcie_2_cfg,
++=09[SLAVE_PCIE_0_CFG] =3D &slv_pcie_0_cfg,
++=09[SLAVE_PCIE20_AHB2PHY] =3D &slv_pcie20_ahb2phy,
++=09[SLAVE_A0NOC_MPU_CFG] =3D &slv_a0noc_mpu_cfg,
++=09[SLAVE_UFS_CFG] =3D &slv_ufs_cfg,
++=09[SLAVE_A1NOC_CFG] =3D &slv_a1noc_cfg,
++=09[SLAVE_A1NOC_MPU_CFG] =3D &slv_a1noc_mpu_cfg,
++=09[SLAVE_A2NOC_CFG] =3D &slv_a2noc_cfg,
++=09[SLAVE_A2NOC_MPU_CFG] =3D &slv_a2noc_mpu_cfg,
++=09[SLAVE_SSC_CFG] =3D &slv_ssc_cfg,
++=09[SLAVE_A0NOC_SMMU_CFG] =3D &slv_a0noc_smmu_cfg,
++=09[SLAVE_A1NOC_SMMU_CFG] =3D &slv_a1noc_smmu_cfg,
++=09[SLAVE_A2NOC_SMMU_CFG] =3D &slv_a2noc_smmu_cfg,
++=09[SLAVE_LPASS_SMMU_CFG] =3D &slv_lpass_smmu_cfg,
++=09[SLAVE_CNOC_MNOC_MMSS_CFG] =3D &slv_cnoc_mnoc_mmss_cfg,
++};
++
++static const struct regmap_config msm8996_cnoc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x1000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_cnoc =3D {
++=09.nodes =3D cnoc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(cnoc_nodes),
++=09.regmap_cfg =3D &msm8996_cnoc_regmap_config,
++};
++
++static struct qcom_icc_node *mnoc_nodes[] =3D {
++=09[MASTER_CNOC_MNOC_CFG] =3D &mas_cnoc_mnoc_cfg,
++=09[MASTER_CPP] =3D &mas_cpp,
++=09[MASTER_JPEG] =3D &mas_jpeg,
++=09[MASTER_MDP_PORT0] =3D &mas_mdp_p0,
++=09[MASTER_MDP_PORT1] =3D &mas_mdp_p1,
++=09[MASTER_ROTATOR] =3D &mas_rotator,
++=09[MASTER_VIDEO_P0] =3D &mas_venus,
++=09[MASTER_VFE] =3D &mas_vfe,
++=09[MASTER_SNOC_VMEM] =3D &mas_snoc_vmem,
++=09[MASTER_VIDEO_P0_OCMEM] =3D &mas_venus_vmem,
++=09[MASTER_CNOC_MNOC_MMSS_CFG] =3D &mas_cnoc_mnoc_mmss_cfg,
++=09[SLAVE_MNOC_BIMC] =3D &slv_mnoc_bimc,
++=09[SLAVE_VMEM] =3D &slv_vmem,
++=09[SLAVE_SERVICE_MNOC] =3D &slv_srvc_mnoc,
++=09[SLAVE_MMAGIC_CFG] =3D &slv_mmagic_cfg,
++=09[SLAVE_CPR_CFG] =3D &slv_cpr_cfg,
++=09[SLAVE_MISC_CFG] =3D &slv_misc_cfg,
++=09[SLAVE_VENUS_THROTTLE_CFG] =3D &slv_venus_throttle_cfg,
++=09[SLAVE_VENUS_CFG] =3D &slv_venus_cfg,
++=09[SLAVE_VMEM_CFG] =3D &slv_vmem_cfg,
++=09[SLAVE_DSA_CFG] =3D &slv_dsa_cfg,
++=09[SLAVE_MMSS_CLK_CFG] =3D &slv_mnoc_clocks_cfg,
++=09[SLAVE_DSA_MPU_CFG] =3D &slv_dsa_mpu_cfg,
++=09[SLAVE_MNOC_MPU_CFG] =3D &slv_mnoc_mpu_cfg,
++=09[SLAVE_DISPLAY_CFG] =3D &slv_display_cfg,
++=09[SLAVE_DISPLAY_THROTTLE_CFG] =3D &slv_display_throttle_cfg,
++=09[SLAVE_CAMERA_CFG] =3D &slv_camera_cfg,
++=09[SLAVE_CAMERA_THROTTLE_CFG] =3D &slv_camera_throttle_cfg,
++=09[SLAVE_GRAPHICS_3D_CFG] =3D &slv_oxili_cfg,
++=09[SLAVE_SMMU_MDP_CFG] =3D &slv_smmu_mdp_cfg,
++=09[SLAVE_SMMU_ROT_CFG] =3D &slv_smmu_rot_cfg,
++=09[SLAVE_SMMU_VENUS_CFG] =3D &slv_smmu_venus_cfg,
++=09[SLAVE_SMMU_CPP_CFG] =3D &slv_smmu_cpp_cfg,
++=09[SLAVE_SMMU_JPEG_CFG] =3D &slv_smmu_jpeg_cfg,
++=09[SLAVE_SMMU_VFE_CFG] =3D &slv_smmu_vfe_cfg,
++};
++
++static const struct regmap_config msm8996_mnoc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x20000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_mnoc =3D {
++=09.nodes =3D mnoc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(mnoc_nodes),
++=09.regmap_cfg =3D &msm8996_mnoc_regmap_config,
++};
++
++
++static struct qcom_icc_node *pnoc_nodes[] =3D {
++=09[MASTER_SNOC_PNOC] =3D &mas_snoc_pnoc,
++=09[MASTER_SDCC_1] =3D &mas_sdcc_1,
++=09[MASTER_SDCC_2] =3D &mas_sdcc_2,
++=09[MASTER_SDCC_4] =3D &mas_sdcc_4,
++=09[MASTER_USB_HS] =3D &mas_usb_hs,
++=09[MASTER_BLSP_1] =3D &mas_blsp_1,
++=09[MASTER_BLSP_2] =3D &mas_blsp_2,
++=09[MASTER_TSIF] =3D &mas_tsif,
++=09[SLAVE_PNOC_A1NOC] =3D &slv_pnoc_a1noc,
++=09[SLAVE_USB_HS] =3D &slv_usb_hs,
++=09[SLAVE_SDCC_2] =3D &slv_sdcc_2,
++=09[SLAVE_SDCC_4] =3D &slv_sdcc_4,
++=09[SLAVE_TSIF] =3D &slv_tsif,
++=09[SLAVE_BLSP_2] =3D &slv_blsp_2,
++=09[SLAVE_SDCC_1] =3D &slv_sdcc_1,
++=09[SLAVE_BLSP_1] =3D &slv_blsp_1,
++=09[SLAVE_PDM] =3D &slv_pdm,
++=09[SLAVE_AHB2PHY] =3D &slv_ahb2phy,
++};
++
++static const struct regmap_config msm8996_pnoc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x3000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_pnoc =3D {
++=09.nodes =3D pnoc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(pnoc_nodes),
++=09.regmap_cfg =3D &msm8996_pnoc_regmap_config,
++};
++
++static struct qcom_icc_node *snoc_nodes[] =3D {
++=09[MASTER_HMSS] =3D &mas_hmss,
++=09[MASTER_QDSS_BAM] =3D &mas_qdss_bam,
++=09[MASTER_SNOC_CFG] =3D &mas_snoc_cfg,
++=09[MASTER_BIMC_SNOC_0] =3D &mas_bimc_snoc_0,
++=09[MASTER_BIMC_SNOC_1] =3D &mas_bimc_snoc_1,
++=09[MASTER_A0NOC_SNOC] =3D &mas_a0noc_snoc,
++=09[MASTER_A1NOC_SNOC] =3D &mas_a1noc_snoc,
++=09[MASTER_A2NOC_SNOC] =3D &mas_a2noc_snoc,
++=09[MASTER_QDSS_ETR] =3D &mas_qdss_etr,
++=09[SLAVE_A0NOC_SNOC] =3D &slv_a0noc_snoc,
++=09[SLAVE_A1NOC_SNOC] =3D &slv_a1noc_snoc,
++=09[SLAVE_A2NOC_SNOC] =3D &slv_a2noc_snoc,
++=09[SLAVE_HMSS] =3D &slv_hmss,
++=09[SLAVE_LPASS] =3D &slv_lpass,
++=09[SLAVE_USB3] =3D &slv_usb3,
++=09[SLAVE_SNOC_BIMC] =3D &slv_snoc_bimc,
++=09[SLAVE_SNOC_CNOC] =3D &slv_snoc_cnoc,
++=09[SLAVE_IMEM] =3D &slv_imem,
++=09[SLAVE_PIMEM] =3D &slv_pimem,
++=09[SLAVE_SNOC_VMEM] =3D &slv_snoc_vmem,
++=09[SLAVE_SNOC_PNOC] =3D &slv_snoc_pnoc,
++=09[SLAVE_QDSS_STM] =3D &slv_qdss_stm,
++=09[SLAVE_PCIE_0] =3D &slv_pcie_0,
++=09[SLAVE_PCIE_1] =3D &slv_pcie_1,
++=09[SLAVE_PCIE_2] =3D &slv_pcie_2,
++=09[SLAVE_SERVICE_SNOC] =3D &slv_srvc_snoc,
++};
++
++static const struct regmap_config msm8996_snoc_regmap_config =3D {
++=09.reg_bits=09=3D 32,
++=09.reg_stride=09=3D 4,
++=09.val_bits=09=3D 32,
++=09.max_register=09=3D 0x20000,
++=09.fast_io=09=3D true,
++};
++
++static const struct qcom_icc_desc msm8996_snoc =3D {
++=09.nodes =3D snoc_nodes,
++=09.num_nodes =3D ARRAY_SIZE(snoc_nodes),
++=09.regmap_cfg =3D &msm8996_snoc_regmap_config,
++};
++
++static int qnoc_probe(struct platform_device *pdev)
 +{
-+=09u32 val;
-+=09u32 mask;
-+
-+=09val =3D qos->prio_level;
-+=09mask =3D M_BKE_HEALTH_CFG_PRIOLVL_MASK;
-+
-+=09val |=3D qos->areq_prio << M_BKE_HEALTH_CFG_AREQPRIO_SHIFT;
-+=09mask |=3D M_BKE_HEALTH_CFG_AREQPRIO_MASK;
-+
-+=09/* LIMITCMDS is not present on M_BKE_HEALTH_3 */
-+=09if (regnum !=3D 3) {
-+=09=09val |=3D qos->limit_commands << M_BKE_HEALTH_CFG_LIMITCMDS_SHIFT;
-+=09=09mask |=3D M_BKE_HEALTH_CFG_LIMITCMDS_MASK;
-+=09}
-+
-+=09return regmap_update_bits(rmap,
-+=09=09=09=09  M_BKE_HEALTH_CFG_ADDR(regnum, qos->qos_port),
-+=09=09=09=09  mask, val);
-+}
-+
-+static int qcom_icc_set_bimc_qos(struct icc_node *src, u64 max_bw,
-+=09=09=09=09 bool bypass_mode)
-+{
-+=09struct qcom_icc_provider *qp;
-+=09struct qcom_icc_node *qn;
++=09struct device *dev =3D &pdev->dev;
++=09const struct qcom_icc_desc *desc;
++=09struct icc_onecell_data *data;
 +=09struct icc_provider *provider;
-+=09u32 mode =3D NOC_QOS_MODE_BYPASS;
-+=09u32 val =3D 0;
-+=09int i, rc =3D 0;
-+
-+=09qn =3D src->data;
-+=09provider =3D src->provider;
-+=09qp =3D to_qcom_provider(provider);
-+
-+=09if (qn->qos.qos_mode !=3D -1)
-+=09=09mode =3D qn->qos.qos_mode;
-+
-+=09/* QoS Priority: The QoS Health parameters are getting considered
-+=09 * only if we are NOT in Bypass Mode.
-+=09 */
-+=09if (mode !=3D NOC_QOS_MODE_BYPASS) {
-+=09=09for (i =3D 3; i >=3D 0; i--) {
-+=09=09=09rc =3D qcom_icc_bimc_set_qos_health(qp->regmap,
-+=09=09=09=09=09=09=09  &qn->qos, i);
-+=09=09=09if (rc)
-+=09=09=09=09return rc;
-+=09=09}
-+
-+=09=09/* Set BKE_EN to 1 when Fixed, Regulator or Limiter Mode */
-+=09=09val =3D 1;
-+=09}
-+
-+=09return regmap_update_bits(qp->regmap, M_BKE_EN_ADDR(qn->qos.qos_port),
-+=09=09=09=09  M_BKE_EN_EN_BMASK, val);
-+}
-+
-+static int qcom_icc_noc_set_qos_priority(struct regmap *rmap,
-+=09=09=09=09=09 struct qcom_icc_qos *qos)
-+{
-+=09u32 val;
-+=09int rc;
-+
-+=09/* Must be updated one at a time, P1 first, P0 last */
-+=09val =3D qos->areq_prio << NOC_QOS_PRIORITY_P1_SHIFT;
-+=09rc =3D regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
-+=09=09=09=09NOC_QOS_PRIORITY_MASK, val);
-+=09if (rc)
-+=09=09return rc;
-+
-+=09val =3D qos->prio_level << NOC_QOS_PRIORITY_P0_SHIFT;
-+=09return regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
-+=09=09=09=09  NOC_QOS_PRIORITY_MASK, val);
-+}
-+
-+static int qcom_icc_set_noc_qos(struct icc_node *src, u64 max_bw)
-+{
++=09struct qcom_icc_node **qnodes;
 +=09struct qcom_icc_provider *qp;
-+=09struct qcom_icc_node *qn;
-+=09struct icc_provider *provider;
-+=09u32 mode =3D NOC_QOS_MODE_BYPASS;
-+=09int rc =3D 0;
++=09struct icc_node *node;
++=09struct resource *res;
++=09size_t num_nodes, i;
++=09int ret;
 +
-+=09qn =3D src->data;
-+=09provider =3D src->provider;
-+=09qp =3D to_qcom_provider(provider);
++=09/* wait for the RPM proxy */
++=09if (!qcom_icc_rpm_smd_available())
++=09=09return -EPROBE_DEFER;
 +
-+=09if (qn->qos.qos_port < 0) {
-+=09=09dev_dbg(src->provider->dev,
-+=09=09=09"NoC QoS: Skipping %s: vote aggregated on parent.\n",
-+=09=09=09qn->name);
-+=09=09return 0;
++=09desc =3D of_device_get_match_data(dev);
++=09if (!desc)
++=09=09return -EINVAL;
++
++=09qnodes =3D desc->nodes;
++=09num_nodes =3D desc->num_nodes;
++
++=09qp =3D devm_kzalloc(dev, sizeof(*qp), GFP_KERNEL);
++=09if (!qp)
++=09=09return -ENOMEM;
++
++=09data =3D devm_kzalloc(dev, struct_size(data, nodes, num_nodes),
++=09=09=09    GFP_KERNEL);
++=09if (!data)
++=09=09return -ENOMEM;
++
++=09if (of_device_is_compatible(dev->of_node, "qcom,msm8996-mnoc")) {
++=09=09qp->bus_clks =3D devm_kmemdup(dev, bus_mm_clocks,
++=09=09=09=09=09    sizeof(bus_mm_clocks), GFP_KERNEL);
++=09=09qp->num_clks =3D ARRAY_SIZE(bus_mm_clocks);
++=09} else {
++=09=09if (of_device_is_compatible(dev->of_node, "qcom,msm8996-bimc"))
++=09=09=09qp->is_bimc_node =3D true;
++
++=09=09qp->bus_clks =3D devm_kmemdup(dev, bus_clocks, sizeof(bus_clocks),
++=09=09=09=09=09    GFP_KERNEL);
++=09=09qp->num_clks =3D ARRAY_SIZE(bus_clocks);
++=09}
++=09if (!qp->bus_clks)
++=09=09return -ENOMEM;
++
++=09res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
++=09if (!res)
++=09=09return -ENODEV;
++
++=09qp->mmio =3D devm_ioremap_resource(dev, res);
++=09if (IS_ERR(qp->mmio)) {
++=09=09dev_err(dev, "Cannot ioremap interconnect bus resource\n");
++=09=09return PTR_ERR(qp->mmio);
 +=09}
 +
-+=09if (qn->qos.qos_mode !=3D -1)
-+=09=09mode =3D qn->qos.qos_mode;
-+
-+=09if (mode =3D=3D NOC_QOS_MODE_FIXED) {
-+=09=09dev_dbg(src->provider->dev, "NoC QoS: %s: Set Fixed mode\n",
-+=09=09=09qn->name);
-+=09=09rc =3D qcom_icc_noc_set_qos_priority(qp->regmap, &qn->qos);
-+=09=09if (rc)
-+=09=09=09return rc;
-+=09} else if (mode =3D=3D NOC_QOS_MODE_BYPASS) {
-+=09=09dev_dbg(src->provider->dev, "NoC QoS: %s: Set Bypass mode\n",
-+=09=09=09qn->name);
++=09qp->regmap =3D devm_regmap_init_mmio(dev, qp->mmio, desc->regmap_cfg);
++=09if (IS_ERR(qp->regmap)) {
++=09=09dev_err(dev, "Cannot regmap interconnect bus resource\n");
++=09=09return PTR_ERR(qp->regmap);
 +=09}
 +
-+=09return regmap_update_bits(qp->regmap,
-+=09=09=09=09  NOC_QOS_MODEn_ADDR(qn->qos.qos_port),
-+=09=09=09=09  NOC_QOS_MODEn_MASK, mode);
-+}
++=09ret =3D devm_clk_bulk_get(dev, qp->num_clks, qp->bus_clks);
++=09if (ret)
++=09=09return ret;
 +
-+static int qcom_icc_qos_set(struct icc_node *node, u64 sum_bw)
-+{
-+=09struct qcom_icc_provider *qp =3D to_qcom_provider(node->provider);
-+=09struct qcom_icc_node *qn =3D node->data;
++=09ret =3D clk_bulk_prepare_enable(qp->num_clks, qp->bus_clks);
++=09if (ret)
++=09=09return ret;
 +
-+=09dev_dbg(node->provider->dev, "Setting QoS for %s\n", qn->name);
++=09provider =3D &qp->provider;
++=09INIT_LIST_HEAD(&provider->nodes);
++=09provider->dev =3D dev;
++=09provider->set =3D qcom_icc_rpm_qos_set;
++=09provider->aggregate =3D icc_std_aggregate;
++=09provider->xlate =3D of_icc_xlate_onecell;
++=09provider->data =3D data;
 +
-+=09if (qp->is_bimc_node)
-+=09=09return qcom_icc_set_bimc_qos(node, sum_bw,
-+=09=09=09=09(qn->qos.qos_mode =3D=3D NOC_QOS_MODE_BYPASS));
++=09ret =3D icc_provider_add(provider);
++=09if (ret) {
++=09=09dev_err(dev, "error adding interconnect provider: %d\n", ret);
++=09=09clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++=09=09return ret;
++=09}
 +
-+=09return qcom_icc_set_noc_qos(node, sum_bw);
-+}
++=09for (i =3D 0; i < num_nodes; i++) {
++=09=09size_t j;
 +
-+static int qcom_icc_rpm_set(int mas_rpm_id, int slv_rpm_id, u64 sum_bw)
-+{
-+=09int ret =3D 0;
-+
-+=09if (mas_rpm_id !=3D -1) {
-+=09=09ret =3D qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-+=09=09=09=09=09    RPM_BUS_MASTER_REQ,
-+=09=09=09=09=09    mas_rpm_id,
-+=09=09=09=09=09    sum_bw);
-+=09=09if (ret) {
-+=09=09=09pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
-+=09=09=09       mas_rpm_id, ret);
-+=09=09=09return ret;
++=09=09node =3D icc_node_create(qnodes[i]->id);
++=09=09if (IS_ERR(node)) {
++=09=09=09ret =3D PTR_ERR(node);
++=09=09=09goto err;
 +=09=09}
-+=09}
 +
-+=09if (slv_rpm_id !=3D -1) {
-+=09=09ret =3D qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-+=09=09=09=09=09    RPM_BUS_SLAVE_REQ,
-+=09=09=09=09=09    slv_rpm_id,
-+=09=09=09=09=09    sum_bw);
-+=09=09if (ret) {
-+=09=09=09pr_err("qcom_icc_rpm_smd_send slv %d error %d\n",
-+=09=09=09       slv_rpm_id, ret);
-+=09=09=09return ret;
++=09=09node->name =3D qnodes[i]->name;
++=09=09node->data =3D qnodes[i];
++=09=09icc_node_add(node, provider);
++
++=09=09for (j =3D 0; j < qnodes[i]->num_links; j++) {
++=09=09=09icc_link_create(node, qnodes[i]->links[j]);
 +=09=09}
++
++=09=09data->nodes[i] =3D node;
 +=09}
++=09data->num_nodes =3D num_nodes;
++=09platform_set_drvdata(pdev, qp);
++
++=09return 0;
++err:
++=09icc_nodes_remove(provider);
++=09clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++=09icc_provider_del(provider);
 +
 +=09return ret;
 +}
 +
-+int qcom_icc_rpm_qos_set(struct icc_node *src, struct icc_node *dst)
++static int qnoc_remove(struct platform_device *pdev)
 +{
-+=09struct qcom_icc_provider *qp;
-+=09struct qcom_icc_node *qn;
-+=09struct icc_provider *provider;
-+=09struct icc_node *n;
-+=09u64 sum_bw;
-+=09u64 max_peak_bw;
-+=09u64 rate;
-+=09u32 agg_avg =3D 0;
-+=09u32 agg_peak =3D 0;
-+=09int ret, i;
++=09struct qcom_icc_provider *qp =3D platform_get_drvdata(pdev);
 +
-+=09qn =3D src->data;
-+=09provider =3D src->provider;
-+=09qp =3D to_qcom_provider(provider);
-+
-+=09list_for_each_entry(n, &provider->nodes, node_list)
-+=09=09provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
-+=09=09=09=09    &agg_avg, &agg_peak);
-+
-+=09sum_bw =3D icc_units_to_bps(agg_avg);
-+=09max_peak_bw =3D icc_units_to_bps(agg_peak);
-+
-+=09if (!qn->qos.ap_owned) {
-+=09=09/* send bandwidth request message to the RPM processor */
-+=09=09ret =3D qcom_icc_rpm_set(qn->mas_rpm_id, qn->slv_rpm_id, sum_bw);
-+=09=09if (ret)
-+=09=09=09return ret;
-+=09} else if (qn->qos.qos_mode !=3D -1) {
-+=09=09/* set bandwidth directly from the AP */
-+=09=09ret =3D qcom_icc_qos_set(src, sum_bw);
-+=09=09if (ret)
-+=09=09=09return ret;
-+=09}
-+
-+=09rate =3D max(sum_bw, max_peak_bw);
-+
-+=09do_div(rate, qn->buswidth);
-+
-+=09if (qn->rate =3D=3D rate)
-+=09=09return 0;
-+
-+=09for (i =3D 0; i < qp->num_clks; i++) {
-+=09=09ret =3D clk_set_rate(qp->bus_clks[i].clk, rate);
-+=09=09if (ret) {
-+=09=09=09pr_err("%s clk_set_rate error: %d\n",
-+=09=09=09       qp->bus_clks[i].id, ret);
-+=09=09=09return ret;
-+=09=09}
-+=09}
-+
-+=09qn->rate =3D rate;
-+
-+=09return 0;
++=09icc_nodes_remove(&qp->provider);
++=09clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++=09return icc_provider_del(&qp->provider);
 +}
-+EXPORT_SYMBOL_GPL(qcom_icc_rpm_qos_set);
-diff --git a/drivers/interconnect/qcom/icc-rpm-qos.h b/drivers/interconnect=
-/qcom/icc-rpm-qos.h
++
++static const struct of_device_id qnoc_of_match[] =3D {
++=09{ .compatible =3D "qcom,msm8996-a1noc", .data =3D &msm8996_a1noc},
++=09{ .compatible =3D "qcom,msm8996-a2noc", .data =3D &msm8996_a2noc},
++=09{ .compatible =3D "qcom,msm8996-bimc", .data =3D &msm8996_bimc},
++=09{ .compatible =3D "qcom,msm8996-cnoc", .data =3D &msm8996_cnoc},
++=09{ .compatible =3D "qcom,msm8996-mnoc", .data =3D &msm8996_mnoc},
++=09{ .compatible =3D "qcom,msm8996-pnoc", .data =3D &msm8996_pnoc},
++=09{ .compatible =3D "qcom,msm8996-snoc", .data =3D &msm8996_snoc},
++=09{ }
++};
++MODULE_DEVICE_TABLE(of, qnoc_of_match);
++
++static struct platform_driver qnoc_driver =3D {
++=09.probe =3D qnoc_probe,
++=09.remove =3D qnoc_remove,
++=09.driver =3D {
++=09=09.name =3D "qnoc-msm8996",
++=09=09.of_match_table =3D qnoc_of_match,
++=09=09.sync_state =3D icc_sync_state,
++=09},
++};
++module_platform_driver(qnoc_driver);
++
++MODULE_AUTHOR("Yassine Oudjana <y.oudjana@protonmail.com>");
++MODULE_DESCRIPTION("Qualcomm MSM8996 NoC driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/interconnect/qcom/msm8996.h b/drivers/interconnect/qco=
+m/msm8996.h
 new file mode 100644
-index 000000000000..625ac5f84ebc
+index 000000000000..42725ef37f46
 --- /dev/null
-+++ b/drivers/interconnect/qcom/icc-rpm-qos.h
-@@ -0,0 +1,133 @@
++++ b/drivers/interconnect/qcom/msm8996.h
+@@ -0,0 +1,149 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Copyright (C) 2020, AngeloGioacchino Del Regno <kholk11@gmail.com>
++ * Qualcomm MSM8996 interconnect IDs
++ *
++ * Copyright (c) 2021 Yassine Oudjana <y.oudjana@protonmail.com>
 + */
 +
-+#ifndef __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_QOS_H__
-+#define __DRIVERS_INTERCONNECT_QCOM_ICC_RPM_QOS_H__
++#ifndef __DRIVERS_INTERCONNECT_QCOM_MSM8996_H__
++#define __DRIVERS_INTERCONNECT_QCOM_MSM8996_H__
 +
-+#define RPM_BUS_MASTER_REQ=090x73616d62
-+#define RPM_BUS_SLAVE_REQ=090x766c7362
++#define MSM8996_MASTER_PCIE_0=09=09=09=091
++#define MSM8996_MASTER_PCIE_1=09=09=09=092
++#define MSM8996_MASTER_PCIE_2=09=09=09=093
++#define MSM8996_MASTER_CNOC_A1NOC=09=09=094
++#define MSM8996_MASTER_CRYPTO_CORE0=09=09=095
++#define MSM8996_MASTER_PNOC_A1NOC=09=09=096
++#define MSM8996_MASTER_USB3=09=09=09=097
++#define MSM8996_MASTER_IPA=09=09=09=098
++#define MSM8996_MASTER_UFS=09=09=09=099
++#define MSM8996_MASTER_AMPSS_M0=09=09=09=0910
++#define MSM8996_MASTER_GRAPHICS_3D=09=09=0911
++#define MSM8996_MASTER_MNOC_BIMC=09=09=0912
++#define MSM8996_MASTER_SNOC_BIMC=09=09=0913
++#define MSM8996_MASTER_SNOC_CNOC=09=09=0914
++#define MSM8996_MASTER_QDSS_DAP=09=09=09=0915
++#define MSM8996_MASTER_CNOC_MNOC_MMSS_CFG=09=0916
++#define MSM8996_MASTER_CNOC_MNOC_CFG=09=09=0917
++#define MSM8996_MASTER_CPP=09=09=09=0918
++#define MSM8996_MASTER_JPEG=09=09=09=0919
++#define MSM8996_MASTER_MDP_PORT0=09=09=0920
++#define MSM8996_MASTER_MDP_PORT1=09=09=0921
++#define MSM8996_MASTER_ROTATOR=09=09=09=0922
++#define MSM8996_MASTER_VIDEO_P0=09=09=09=0923
++#define MSM8996_MASTER_VFE=09=09=09=0924
++#define MSM8996_MASTER_SNOC_VMEM=09=09=0925
++#define MSM8996_MASTER_VIDEO_P0_OCMEM=09=09=0926
++#define MSM8996_MASTER_SNOC_PNOC=09=09=0927
++#define MSM8996_MASTER_SDCC_1=09=09=09=0928
++#define MSM8996_MASTER_SDCC_2=09=09=09=0929
++#define MSM8996_MASTER_SDCC_4=09=09=09=0930
++#define MSM8996_MASTER_USB_HS=09=09=09=0931
++#define MSM8996_MASTER_BLSP_1=09=09=09=0932
++#define MSM8996_MASTER_BLSP_2=09=09=09=0933
++#define MSM8996_MASTER_TSIF=09=09=09=0934
++#define MSM8996_MASTER_HMSS=09=09=09=0935
++#define MSM8996_MASTER_QDSS_BAM=09=09=09=0936
++#define MSM8996_MASTER_SNOC_CFG=09=09=09=0937
++#define MSM8996_MASTER_BIMC_SNOC_0=09=09=0938
++#define MSM8996_MASTER_BIMC_SNOC_1=09=09=0939
++#define MSM8996_MASTER_A0NOC_SNOC=09=09=0940
++#define MSM8996_MASTER_A1NOC_SNOC=09=09=0941
++#define MSM8996_MASTER_A2NOC_SNOC=09=09=0942
++#define MSM8996_MASTER_QDSS_ETR=09=09=09=0943
 +
-+/* BIMC QoS */
-+#define M_BKE_REG_BASE(n)=09=09(0x300 + (0x4000 * n))
-+#define M_BKE_EN_ADDR(n)=09=09(M_BKE_REG_BASE(n))
-+#define M_BKE_HEALTH_CFG_ADDR(i, n)=09(M_BKE_REG_BASE(n) + 0x40 + (0x4 * i=
-))
++#define MSM8996_SLAVE_A0NOC_SNOC=09=09=0944
++#define MSM8996_SLAVE_A1NOC_SNOC=09=09=0945
++#define MSM8996_SLAVE_A2NOC_SNOC=09=09=0946
++#define MSM8996_SLAVE_EBI_CH0=09=09=09=0947
++#define MSM8996_SLAVE_HMSS_L3=09=09=09=0948
++#define MSM8996_SLAVE_BIMC_SNOC_0=09=09=0949
++#define MSM8996_SLAVE_BIMC_SNOC_1=09=09=0950
++#define MSM8996_SLAVE_CNOC_A1NOC=09=09=0951
++#define MSM8996_SLAVE_CLK_CTL=09=09=09=0952
++#define MSM8996_SLAVE_TCSR=09=09=09=0953
++#define MSM8996_SLAVE_TLMM=09=09=09=0954
++#define MSM8996_SLAVE_CRYPTO_0_CFG=09=09=0955
++#define MSM8996_SLAVE_MPM=09=09=09=0956
++#define MSM8996_SLAVE_PIMEM_CFG=09=09=09=0957
++#define MSM8996_SLAVE_IMEM_CFG=09=09=09=0958
++#define MSM8996_SLAVE_MESSAGE_RAM=09=09=0959
++#define MSM8996_SLAVE_BIMC_CFG=09=09=09=0960
++#define MSM8996_SLAVE_PMIC_ARB=09=09=09=0961
++#define MSM8996_SLAVE_PRNG=09=09=09=0962
++#define MSM8996_SLAVE_DCC_CFG=09=09=09=0963
++#define MSM8996_SLAVE_RBCPR_MX=09=09=09=0964
++#define MSM8996_SLAVE_QDSS_CFG=09=09=09=0965
++#define MSM8996_SLAVE_RBCPR_CX=09=09=09=0966
++#define MSM8996_SLAVE_QDSS_RBCPR_APU_CFG=09=0967
++#define MSM8996_SLAVE_CNOC_MNOC_CFG=09=09=0968
++#define MSM8996_SLAVE_SNOC_CFG=09=09=09=0969
++#define MSM8996_SLAVE_SNOC_MPU_CFG=09=09=0970
++#define MSM8996_SLAVE_EBI1_PHY_CFG=09=09=0971
++#define MSM8996_SLAVE_A0NOC_CFG=09=09=09=0972
++#define MSM8996_SLAVE_PCIE_1_CFG=09=09=0973
++#define MSM8996_SLAVE_PCIE_2_CFG=09=09=0974
++#define MSM8996_SLAVE_PCIE_0_CFG=09=09=0975
++#define MSM8996_SLAVE_PCIE20_AHB2PHY=09=09=0976
++#define MSM8996_SLAVE_A0NOC_MPU_CFG=09=09=0977
++#define MSM8996_SLAVE_UFS_CFG=09=09=09=0978
++#define MSM8996_SLAVE_A1NOC_CFG=09=09=09=0979
++#define MSM8996_SLAVE_A1NOC_MPU_CFG=09=09=0980
++#define MSM8996_SLAVE_A2NOC_CFG=09=09=09=0981
++#define MSM8996_SLAVE_A2NOC_MPU_CFG=09=09=0982
++#define MSM8996_SLAVE_SSC_CFG=09=09=09=0983
++#define MSM8996_SLAVE_A0NOC_SMMU_CFG=09=09=0984
++#define MSM8996_SLAVE_A1NOC_SMMU_CFG=09=09=0985
++#define MSM8996_SLAVE_A2NOC_SMMU_CFG=09=09=0986
++#define MSM8996_SLAVE_LPASS_SMMU_CFG=09=09=0987
++#define MSM8996_SLAVE_CNOC_MNOC_MMSS_CFG=09=0988
++#define MSM8996_SLAVE_MMAGIC_CFG=09=09=0989
++#define MSM8996_SLAVE_CPR_CFG=09=09=09=0990
++#define MSM8996_SLAVE_MISC_CFG=09=09=09=0991
++#define MSM8996_SLAVE_VENUS_THROTTLE_CFG=09=0992
++#define MSM8996_SLAVE_VENUS_CFG=09=09=09=0993
++#define MSM8996_SLAVE_VMEM_CFG=09=09=09=0994
++#define MSM8996_SLAVE_DSA_CFG=09=09=09=0995
++#define MSM8996_SLAVE_MMSS_CLK_CFG=09=09=0996
++#define MSM8996_SLAVE_DSA_MPU_CFG=09=09=0997
++#define MSM8996_SLAVE_MNOC_MPU_CFG=09=09=0998
++#define MSM8996_SLAVE_DISPLAY_CFG=09=09=0999
++#define MSM8996_SLAVE_DISPLAY_THROTTLE_CFG=09=09100
++#define MSM8996_SLAVE_CAMERA_CFG=09=09=09101
++#define MSM8996_SLAVE_CAMERA_THROTTLE_CFG=09=09102
++#define MSM8996_SLAVE_GRAPHICS_3D_CFG=09=09=09103
++#define MSM8996_SLAVE_SMMU_MDP_CFG=09=09=09104
++#define MSM8996_SLAVE_SMMU_ROTATOR_CFG=09=09=09105
++#define MSM8996_SLAVE_SMMU_VENUS_CFG=09=09=09106
++#define MSM8996_SLAVE_SMMU_CPP_CFG=09=09=09107
++#define MSM8996_SLAVE_SMMU_JPEG_CFG=09=09=09108
++#define MSM8996_SLAVE_SMMU_VFE_CFG=09=09=09109
++#define MSM8996_SLAVE_MNOC_BIMC=09=09=09=09110
++#define MSM8996_SLAVE_VMEM=09=09=09=09111
++#define MSM8996_SLAVE_SERVICE_MNOC=09=09=09112
++#define MSM8996_SLAVE_PNOC_A1NOC=09=09=09113
++#define MSM8996_SLAVE_USB_HS=09=09=09=09114
++#define MSM8996_SLAVE_SDCC_2=09=09=09=09115
++#define MSM8996_SLAVE_SDCC_4=09=09=09=09116
++#define MSM8996_SLAVE_TSIF=09=09=09=09117
++#define MSM8996_SLAVE_BLSP_2=09=09=09=09118
++#define MSM8996_SLAVE_SDCC_1=09=09=09=09119
++#define MSM8996_SLAVE_BLSP_1=09=09=09=09120
++#define MSM8996_SLAVE_PDM=09=09=09=09121
++#define MSM8996_SLAVE_AHB2PHY=09=09=09=09122
++#define MSM8996_SLAVE_APPSS=09=09=09=09123
++#define MSM8996_SLAVE_LPASS=09=09=09=09124
++#define MSM8996_SLAVE_USB3=09=09=09=09125
++#define MSM8996_SLAVE_SNOC_BIMC=09=09=09=09126
++#define MSM8996_SLAVE_SNOC_CNOC=09=09=09=09127
++#define MSM8996_SLAVE_OCIMEM=09=09=09=09128
++#define MSM8996_SLAVE_PIMEM=09=09=09=09129
++#define MSM8996_SLAVE_SNOC_VMEM=09=09=09=09130
++#define MSM8996_SLAVE_SNOC_PNOC=09=09=09=09131
++#define MSM8996_SLAVE_QDSS_STM=09=09=09=09132
++#define MSM8996_SLAVE_PCIE_0=09=09=09=09133
++#define MSM8996_SLAVE_PCIE_1=09=09=09=09134
++#define MSM8996_SLAVE_PCIE_2=09=09=09=09135
++#define MSM8996_SLAVE_SERVICE_SNOC=09=09=09136
 +
-+#define M_BKE_HEALTH_CFG_LIMITCMDS_MASK=090x80000000
-+#define M_BKE_HEALTH_CFG_AREQPRIO_MASK=090x300
-+#define M_BKE_HEALTH_CFG_PRIOLVL_MASK=090x3
-+#define M_BKE_HEALTH_CFG_AREQPRIO_SHIFT=090x8
-+#define M_BKE_HEALTH_CFG_LIMITCMDS_SHIFT 0x1f
-+
-+#define M_BKE_EN_EN_BMASK=09=090x1
-+
-+/* Valid for both NoC and BIMC */
-+#define NOC_QOS_MODE_FIXED=09=090x0
-+#define NOC_QOS_MODE_LIMITER=09=090x1
-+#define NOC_QOS_MODE_BYPASS=09=090x2
-+
-+/* NoC QoS */
-+#define NOC_PERM_MODE_FIXED=09=091
-+#define NOC_PERM_MODE_BYPASS=09=09(1 << NOC_QOS_MODE_BYPASS)
-+
-+#define NOC_QOS_PRIORITYn_ADDR(n)=09(0x8 + (n * 0x1000))
-+#define NOC_QOS_PRIORITY_MASK=09=090xf
-+#define NOC_QOS_PRIORITY_P1_SHIFT=090x2
-+#define NOC_QOS_PRIORITY_P0_SHIFT=090x3
-+
-+#define NOC_QOS_MODEn_ADDR(n)=09=09(0xc + (n * 0x1000))
-+#define NOC_QOS_MODEn_MASK=09=090x3
-+
-+#define to_qcom_provider(_provider) \
-+=09container_of(_provider, struct qcom_icc_provider, provider)
-+
-+/**
-+ * struct qcom_icc_provider - Qualcomm specific interconnect provider
-+ * @provider: generic interconnect provider
-+ * @bus_clks: the clk_bulk_data table of bus clocks
-+ * @num_clks: the total number of clk_bulk_data entries
-+ * @is_bimc_node: indicates whether to use bimc specific setting
-+ * @regmap: regmap for QoS registers read/write access
-+ * @mmio: NoC base iospace
++#endif /* __DRIVERS_INTERCONNECT_QCOM_MSM8996_H__ */
+diff --git a/include/dt-bindings/interconnect/qcom,msm8996.h b/include/dt-b=
+indings/interconnect/qcom,msm8996.h
+new file mode 100644
+index 000000000000..38131dcce142
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,msm8996.h
+@@ -0,0 +1,163 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Qualcomm MSM8996 interconnect IDs
++ *
++ * Copyright (c) 2021 Yassine Oudjana <y.oudjana@protonmail.com>
 + */
-+struct qcom_icc_provider {
-+=09struct icc_provider provider;
-+=09struct clk_bulk_data *bus_clks;
-+=09int num_clks;
-+=09bool is_bimc_node;
-+=09struct regmap *regmap;
-+=09void __iomem *mmio;
-+};
 +
-+/**
-+ * struct qcom_icc_qos - Qualcomm specific interconnect QoS parameters
-+ * @areq_prio: node requests priority
-+ * @prio_level: priority level for bus communication
-+ * @limit_commands: activate/deactivate limiter mode during runtime
-+ * @ap_owned: indicates if the node is owned by the AP or by the RPM
-+ * @qos_mode: default qos mode for this node
-+ * @qos_port: qos port number for finding qos registers of this node
-+ */
-+struct qcom_icc_qos {
-+=09u32 areq_prio;
-+=09u32 prio_level;
-+=09bool limit_commands;
-+=09bool ap_owned;
-+=09int qos_mode;
-+=09int qos_port;
-+};
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_MSM8996_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_MSM8996_H
 +
-+/**
-+ * struct qcom_icc_node - Qualcomm specific interconnect nodes
-+ * @name: the node name used in debugfs
-+ * @id: a unique node identifier
-+ * @links: an array of nodes where we can go next while traversing
-+ * @num_links: the total number of @links
-+ * @buswidth: width of the interconnect between a node and the bus (bytes)
-+ * @mas_rpm_id: RPM id for devices that are bus masters
-+ * @slv_rpm_id: RPM id for devices that are bus slaves
-+ * @qos: NoC QoS setting parameters
-+ * @rate: current bus clock rate in Hz
-+ */
++/* A0NOC */
++#define MASTER_PCIE_0=09=09=090
++#define MASTER_PCIE_1=09=09=091
++#define MASTER_PCIE_2=09=09=092
 +
-+#define MAX_LINKS=0938
++/* A1NOC */
++#define MASTER_CNOC_A1NOC=09=090
++#define MASTER_CRYPTO_CORE0=09=091
++#define MASTER_PNOC_A1NOC=09=092
 +
-+struct qcom_icc_node {
-+=09unsigned char *name;
-+=09u16 id;
-+=09u16 links[MAX_LINKS];
-+=09u16 num_links;
-+=09u16 buswidth;
-+=09int mas_rpm_id;
-+=09int slv_rpm_id;
-+=09struct qcom_icc_qos qos;
-+=09u64 rate;
-+};
++/* A2NOC */
++#define MASTER_USB3=09=09=090
++#define MASTER_IPA=09=09=091
++#define MASTER_UFS =09=09=092
 +
-+struct qcom_icc_desc {
-+=09struct qcom_icc_node **nodes;
-+=09size_t num_nodes;
-+=09const struct regmap_config *regmap_cfg;
-+};
++/* BIMC */
++#define MASTER_AMPSS_M0=09=09=090
++#define MASTER_GRAPHICS_3D=09=091
++#define MASTER_MNOC_BIMC=09=092
++#define MASTER_SNOC_BIMC=09=093
++#define SLAVE_EBI_CH0=09=09=094
++#define SLAVE_HMSS_L3=09=09=095
++#define SLAVE_BIMC_SNOC_0=09=096
++#define SLAVE_BIMC_SNOC_1=09=097
 +
-+#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,=09\
-+=09=09     _ap_owned, _qos_mode, _qos_prio, _qos_port, ...)=09\
-+=09=09static struct qcom_icc_node _name =3D {=09=09=09\
-+=09=09.name =3D #_name,=09=09=09=09=09=09\
-+=09=09.id =3D _id,=09=09=09=09=09=09\
-+=09=09.buswidth =3D _buswidth,=09=09=09=09=09\
-+=09=09.mas_rpm_id =3D _mas_rpm_id,=09=09=09=09\
-+=09=09.slv_rpm_id =3D _slv_rpm_id,=09=09=09=09\
-+=09=09.qos.ap_owned =3D _ap_owned,=09=09=09=09\
-+=09=09.qos.qos_mode =3D _qos_mode,=09=09=09=09\
-+=09=09.qos.areq_prio =3D _qos_prio,=09=09=09=09\
-+=09=09.qos.prio_level =3D _qos_prio,=09=09=09=09\
-+=09=09.qos.qos_port =3D _qos_port,=09=09=09=09\
-+=09=09.num_links =3D ARRAY_SIZE(((int[]){ __VA_ARGS__ })),=09\
-+=09=09.links =3D { __VA_ARGS__ },=09=09=09=09\
-+=09}
++/* CNOC */
++#define MASTER_SNOC_CNOC=09=090
++#define MASTER_QDSS_DAP=09=09=091
++#define SLAVE_CNOC_A1NOC=09=092
++#define SLAVE_CLK_CTL=09=09=093
++#define SLAVE_TCSR=09=09=094
++#define SLAVE_TLMM=09=09=095
++#define SLAVE_CRYPTO_0_CFG=09=096
++#define SLAVE_MPM=09=09=097
++#define SLAVE_PIMEM_CFG=09=09=098
++#define SLAVE_IMEM_CFG=09=09=099
++#define SLAVE_MESSAGE_RAM=09=0910
++#define SLAVE_BIMC_CFG=09=09=0911
++#define SLAVE_PMIC_ARB=09=09=0912
++#define SLAVE_PRNG=09=09=0913
++#define SLAVE_DCC_CFG=09=09=0914
++#define SLAVE_RBCPR_MX=09=09=0915
++#define SLAVE_QDSS_CFG=09=09=0916
++#define SLAVE_RBCPR_CX=09=09=0917
++#define SLAVE_QDSS_RBCPR_APU=09=0918
++#define SLAVE_CNOC_MNOC_CFG=09=0919
++#define SLAVE_SNOC_CFG=09=09=0920
++#define SLAVE_SNOC_MPU_CFG=09=0921
++#define SLAVE_EBI1_PHY_CFG=09=0922
++#define SLAVE_A0NOC_CFG=09=09=0923
++#define SLAVE_PCIE_1_CFG=09=0924
++#define SLAVE_PCIE_2_CFG=09=0925
++#define SLAVE_PCIE_0_CFG=09=0926
++#define SLAVE_PCIE20_AHB2PHY=09=0927
++#define SLAVE_A0NOC_MPU_CFG=09=0928
++#define SLAVE_UFS_CFG=09=09=0929
++#define SLAVE_A1NOC_CFG=09=09=0930
++#define SLAVE_A1NOC_MPU_CFG=09=0931
++#define SLAVE_A2NOC_CFG=09=09=0932
++#define SLAVE_A2NOC_MPU_CFG=09=0933
++#define SLAVE_SSC_CFG=09=09=0934
++#define SLAVE_A0NOC_SMMU_CFG=09=0935
++#define SLAVE_A1NOC_SMMU_CFG=09=0936
++#define SLAVE_A2NOC_SMMU_CFG=09=0937
++#define SLAVE_LPASS_SMMU_CFG=09=0938
++#define SLAVE_CNOC_MNOC_MMSS_CFG=0939
 +
-+int qcom_icc_rpm_qos_set(struct icc_node *src, struct icc_node *dst);
++/* MNOC */
++#define MASTER_CNOC_MNOC_CFG=09=090
++#define MASTER_CPP=09=09=091
++#define MASTER_JPEG=09=09=092
++#define MASTER_MDP_PORT0=09=093
++#define MASTER_MDP_PORT1=09=094
++#define MASTER_ROTATOR=09=09=095
++#define MASTER_VIDEO_P0=09=09=096
++#define MASTER_VFE=09=09=097
++#define MASTER_SNOC_VMEM=09=098
++#define MASTER_VIDEO_P0_OCMEM=09=099
++#define MASTER_CNOC_MNOC_MMSS_CFG=0910
++#define SLAVE_MNOC_BIMC=09=09=0911
++#define SLAVE_VMEM=09=09=0912
++#define SLAVE_SERVICE_MNOC=09=0913
++#define SLAVE_MMAGIC_CFG=09=0914
++#define SLAVE_CPR_CFG=09=09=0915
++#define SLAVE_MISC_CFG=09=09=0916
++#define SLAVE_VENUS_THROTTLE_CFG=0917
++#define SLAVE_VENUS_CFG=09=09=0918
++#define SLAVE_VMEM_CFG=09=09=0919
++#define SLAVE_DSA_CFG=09=09=0920
++#define SLAVE_MMSS_CLK_CFG=09=0921
++#define SLAVE_DSA_MPU_CFG=09=0922
++#define SLAVE_MNOC_MPU_CFG=09=0923
++#define SLAVE_DISPLAY_CFG=09=0924
++#define SLAVE_DISPLAY_THROTTLE_CFG=0925
++#define SLAVE_CAMERA_CFG=09=0926
++#define SLAVE_CAMERA_THROTTLE_CFG=0927
++#define SLAVE_GRAPHICS_3D_CFG=09=0928
++#define SLAVE_SMMU_MDP_CFG=09=0929
++#define SLAVE_SMMU_ROT_CFG=09=0930
++#define SLAVE_SMMU_VENUS_CFG=09=0931
++#define SLAVE_SMMU_CPP_CFG=09=0932
++#define SLAVE_SMMU_JPEG_CFG=09=0933
++#define SLAVE_SMMU_VFE_CFG=09=0934
++
++/* PNOC */
++#define MASTER_SNOC_PNOC=09=090
++#define MASTER_SDCC_1=09=09=091
++#define MASTER_SDCC_2=09=09=092
++#define MASTER_SDCC_4=09=09=093
++#define MASTER_USB_HS=09=09=094
++#define MASTER_BLSP_1=09=09=095
++#define MASTER_BLSP_2=09=09=096
++#define MASTER_TSIF=09=09=097
++#define SLAVE_PNOC_A1NOC=09=098
++#define SLAVE_USB_HS=09=09=099
++#define SLAVE_SDCC_2=09=09=0910
++#define SLAVE_SDCC_4=09=09=0911
++#define SLAVE_TSIF=09=09=0912
++#define SLAVE_BLSP_2=09=09=0913
++#define SLAVE_SDCC_1=09=09=0914
++#define SLAVE_BLSP_1=09=09=0915
++#define SLAVE_PDM=09=09=0916
++#define SLAVE_AHB2PHY=09=09=0917
++
++/* SNOC */
++#define MASTER_HMSS=09=09=090
++#define MASTER_QDSS_BAM=09=09=091
++#define MASTER_SNOC_CFG=09=09=092
++#define MASTER_BIMC_SNOC_0=09=093
++#define MASTER_BIMC_SNOC_1=09=094
++#define MASTER_A0NOC_SNOC=09=095
++#define MASTER_A1NOC_SNOC=09=096
++#define MASTER_A2NOC_SNOC=09=097
++#define MASTER_QDSS_ETR=09=09=098
++#define SLAVE_A0NOC_SNOC=09=099
++#define SLAVE_A1NOC_SNOC=09=0910
++#define SLAVE_A2NOC_SNOC=09=0911
++#define SLAVE_HMSS=09=09=0912
++#define SLAVE_LPASS=09=09=0913
++#define SLAVE_USB3=09=09=0914
++#define SLAVE_SNOC_BIMC=09=09=0915
++#define SLAVE_SNOC_CNOC=09=09=0916
++#define SLAVE_IMEM=09=09=0917
++#define SLAVE_PIMEM=09=09=0918
++#define SLAVE_SNOC_VMEM=09=09=0919
++#define SLAVE_SNOC_PNOC=09=09=0920
++#define SLAVE_QDSS_STM=09=09=0921
++#define SLAVE_PCIE_0=09=09=0922
++#define SLAVE_PCIE_1=09=09=0923
++#define SLAVE_PCIE_2=09=09=0924
++#define SLAVE_SERVICE_SNOC=09=0925
 +
 +#endif
-diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom=
-/sdm660.c
-index 632dbdd21915..a520b1f16e49 100644
---- a/drivers/interconnect/qcom/sdm660.c
-+++ b/drivers/interconnect/qcom/sdm660.c
-@@ -14,43 +14,10 @@
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
--#include <linux/slab.h>
-=20
-+#include "icc-rpm-qos.h"
- #include "smd-rpm.h"
-=20
--#define RPM_BUS_MASTER_REQ=090x73616d62
--#define RPM_BUS_SLAVE_REQ=090x766c7362
--
--/* BIMC QoS */
--#define M_BKE_REG_BASE(n)=09=09(0x300 + (0x4000 * n))
--#define M_BKE_EN_ADDR(n)=09=09(M_BKE_REG_BASE(n))
--#define M_BKE_HEALTH_CFG_ADDR(i, n)=09(M_BKE_REG_BASE(n) + 0x40 + (0x4 * i=
-))
--
--#define M_BKE_HEALTH_CFG_LIMITCMDS_MASK=090x80000000
--#define M_BKE_HEALTH_CFG_AREQPRIO_MASK=090x300
--#define M_BKE_HEALTH_CFG_PRIOLVL_MASK=090x3
--#define M_BKE_HEALTH_CFG_AREQPRIO_SHIFT=090x8
--#define M_BKE_HEALTH_CFG_LIMITCMDS_SHIFT 0x1f
--
--#define M_BKE_EN_EN_BMASK=09=090x1
--
--/* Valid for both NoC and BIMC */
--#define NOC_QOS_MODE_FIXED=09=090x0
--#define NOC_QOS_MODE_LIMITER=09=090x1
--#define NOC_QOS_MODE_BYPASS=09=090x2
--
--/* NoC QoS */
--#define NOC_PERM_MODE_FIXED=09=091
--#define NOC_PERM_MODE_BYPASS=09=09(1 << NOC_QOS_MODE_BYPASS)
--
--#define NOC_QOS_PRIORITYn_ADDR(n)=09(0x8 + (n * 0x1000))
--#define NOC_QOS_PRIORITY_MASK=09=090xf
--#define NOC_QOS_PRIORITY_P1_SHIFT=090x2
--#define NOC_QOS_PRIORITY_P0_SHIFT=090x3
--
--#define NOC_QOS_MODEn_ADDR(n)=09=09(0xc + (n * 0x1000))
--#define NOC_QOS_MODEn_MASK=09=090x3
--
- enum {
- =09SDM660_MASTER_IPA =3D 1,
- =09SDM660_MASTER_CNOC_A2NOC,
-@@ -159,9 +126,6 @@ enum {
- =09SDM660_SNOC,
- };
-=20
--#define to_qcom_provider(_provider) \
--=09container_of(_provider, struct qcom_icc_provider, provider)
--
- static const struct clk_bulk_data bus_clocks[] =3D {
- =09{ .id =3D "bus" },
- =09{ .id =3D "bus_a" },
-@@ -173,91 +137,6 @@ static const struct clk_bulk_data bus_mm_clocks[] =3D =
-{
- =09{ .id =3D "iface" },
- };
-=20
--/**
-- * struct qcom_icc_provider - Qualcomm specific interconnect provider
-- * @provider: generic interconnect provider
-- * @bus_clks: the clk_bulk_data table of bus clocks
-- * @num_clks: the total number of clk_bulk_data entries
-- * @is_bimc_node: indicates whether to use bimc specific setting
-- * @regmap: regmap for QoS registers read/write access
-- * @mmio: NoC base iospace
-- */
--struct qcom_icc_provider {
--=09struct icc_provider provider;
--=09struct clk_bulk_data *bus_clks;
--=09int num_clks;
--=09bool is_bimc_node;
--=09struct regmap *regmap;
--=09void __iomem *mmio;
--};
--
--#define SDM660_MAX_LINKS=0934
--
--/**
-- * struct qcom_icc_qos - Qualcomm specific interconnect QoS parameters
-- * @areq_prio: node requests priority
-- * @prio_level: priority level for bus communication
-- * @limit_commands: activate/deactivate limiter mode during runtime
-- * @ap_owned: indicates if the node is owned by the AP or by the RPM
-- * @qos_mode: default qos mode for this node
-- * @qos_port: qos port number for finding qos registers of this node
-- */
--struct qcom_icc_qos {
--=09u32 areq_prio;
--=09u32 prio_level;
--=09bool limit_commands;
--=09bool ap_owned;
--=09int qos_mode;
--=09int qos_port;
--};
--
--/**
-- * struct qcom_icc_node - Qualcomm specific interconnect nodes
-- * @name: the node name used in debugfs
-- * @id: a unique node identifier
-- * @links: an array of nodes where we can go next while traversing
-- * @num_links: the total number of @links
-- * @buswidth: width of the interconnect between a node and the bus (bytes)
-- * @mas_rpm_id: RPM id for devices that are bus masters
-- * @slv_rpm_id: RPM id for devices that are bus slaves
-- * @qos: NoC QoS setting parameters
-- * @rate: current bus clock rate in Hz
-- */
--struct qcom_icc_node {
--=09unsigned char *name;
--=09u16 id;
--=09u16 links[SDM660_MAX_LINKS];
--=09u16 num_links;
--=09u16 buswidth;
--=09int mas_rpm_id;
--=09int slv_rpm_id;
--=09struct qcom_icc_qos qos;
--=09u64 rate;
--};
--
--struct qcom_icc_desc {
--=09struct qcom_icc_node **nodes;
--=09size_t num_nodes;
--=09const struct regmap_config *regmap_cfg;
--};
--
--#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,=09\
--=09=09     _ap_owned, _qos_mode, _qos_prio, _qos_port, ...)=09\
--=09=09static struct qcom_icc_node _name =3D {=09=09=09\
--=09=09.name =3D #_name,=09=09=09=09=09=09\
--=09=09.id =3D _id,=09=09=09=09=09=09\
--=09=09.buswidth =3D _buswidth,=09=09=09=09=09\
--=09=09.mas_rpm_id =3D _mas_rpm_id,=09=09=09=09\
--=09=09.slv_rpm_id =3D _slv_rpm_id,=09=09=09=09\
--=09=09.qos.ap_owned =3D _ap_owned,=09=09=09=09\
--=09=09.qos.qos_mode =3D _qos_mode,=09=09=09=09\
--=09=09.qos.areq_prio =3D _qos_prio,=09=09=09=09\
--=09=09.qos.prio_level =3D _qos_prio,=09=09=09=09\
--=09=09.qos.qos_port =3D _qos_port,=09=09=09=09\
--=09=09.num_links =3D ARRAY_SIZE(((int[]){ __VA_ARGS__ })),=09\
--=09=09.links =3D { __VA_ARGS__ },=09=09=09=09\
--=09}
--
- DEFINE_QNODE(mas_ipa, SDM660_MASTER_IPA, 8, 59, -1, true, NOC_QOS_MODE_FIX=
-ED, 1, 3, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_cnoc_a2noc, SDM660_MASTER_CNOC_A2NOC, 8, 146, -1, true, -=
-1, 0, -1, SDM660_SLAVE_A2NOC_SNOC);
- DEFINE_QNODE(mas_sdcc_1, SDM660_MASTER_SDCC_1, 8, 33, -1, false, -1, 0, -1=
-, SDM660_SLAVE_A2NOC_SNOC);
-@@ -555,224 +434,6 @@ static struct qcom_icc_desc sdm660_snoc =3D {
- =09.regmap_cfg =3D &sdm660_snoc_regmap_config,
- };
-=20
--static int qcom_icc_bimc_set_qos_health(struct regmap *rmap,
--=09=09=09=09=09struct qcom_icc_qos *qos,
--=09=09=09=09=09int regnum)
--{
--=09u32 val;
--=09u32 mask;
--
--=09val =3D qos->prio_level;
--=09mask =3D M_BKE_HEALTH_CFG_PRIOLVL_MASK;
--
--=09val |=3D qos->areq_prio << M_BKE_HEALTH_CFG_AREQPRIO_SHIFT;
--=09mask |=3D M_BKE_HEALTH_CFG_AREQPRIO_MASK;
--
--=09/* LIMITCMDS is not present on M_BKE_HEALTH_3 */
--=09if (regnum !=3D 3) {
--=09=09val |=3D qos->limit_commands << M_BKE_HEALTH_CFG_LIMITCMDS_SHIFT;
--=09=09mask |=3D M_BKE_HEALTH_CFG_LIMITCMDS_MASK;
--=09}
--
--=09return regmap_update_bits(rmap,
--=09=09=09=09  M_BKE_HEALTH_CFG_ADDR(regnum, qos->qos_port),
--=09=09=09=09  mask, val);
--}
--
--static int qcom_icc_set_bimc_qos(struct icc_node *src, u64 max_bw,
--=09=09=09=09 bool bypass_mode)
--{
--=09struct qcom_icc_provider *qp;
--=09struct qcom_icc_node *qn;
--=09struct icc_provider *provider;
--=09u32 mode =3D NOC_QOS_MODE_BYPASS;
--=09u32 val =3D 0;
--=09int i, rc =3D 0;
--
--=09qn =3D src->data;
--=09provider =3D src->provider;
--=09qp =3D to_qcom_provider(provider);
--
--=09if (qn->qos.qos_mode !=3D -1)
--=09=09mode =3D qn->qos.qos_mode;
--
--=09/* QoS Priority: The QoS Health parameters are getting considered
--=09 * only if we are NOT in Bypass Mode.
--=09 */
--=09if (mode !=3D NOC_QOS_MODE_BYPASS) {
--=09=09for (i =3D 3; i >=3D 0; i--) {
--=09=09=09rc =3D qcom_icc_bimc_set_qos_health(qp->regmap,
--=09=09=09=09=09=09=09  &qn->qos, i);
--=09=09=09if (rc)
--=09=09=09=09return rc;
--=09=09}
--
--=09=09/* Set BKE_EN to 1 when Fixed, Regulator or Limiter Mode */
--=09=09val =3D 1;
--=09}
--
--=09return regmap_update_bits(qp->regmap, M_BKE_EN_ADDR(qn->qos.qos_port),
--=09=09=09=09  M_BKE_EN_EN_BMASK, val);
--}
--
--static int qcom_icc_noc_set_qos_priority(struct regmap *rmap,
--=09=09=09=09=09 struct qcom_icc_qos *qos)
--{
--=09u32 val;
--=09int rc;
--
--=09/* Must be updated one at a time, P1 first, P0 last */
--=09val =3D qos->areq_prio << NOC_QOS_PRIORITY_P1_SHIFT;
--=09rc =3D regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
--=09=09=09=09NOC_QOS_PRIORITY_MASK, val);
--=09if (rc)
--=09=09return rc;
--
--=09val =3D qos->prio_level << NOC_QOS_PRIORITY_P0_SHIFT;
--=09return regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
--=09=09=09=09  NOC_QOS_PRIORITY_MASK, val);
--}
--
--static int qcom_icc_set_noc_qos(struct icc_node *src, u64 max_bw)
--{
--=09struct qcom_icc_provider *qp;
--=09struct qcom_icc_node *qn;
--=09struct icc_provider *provider;
--=09u32 mode =3D NOC_QOS_MODE_BYPASS;
--=09int rc =3D 0;
--
--=09qn =3D src->data;
--=09provider =3D src->provider;
--=09qp =3D to_qcom_provider(provider);
--
--=09if (qn->qos.qos_port < 0) {
--=09=09dev_dbg(src->provider->dev,
--=09=09=09"NoC QoS: Skipping %s: vote aggregated on parent.\n",
--=09=09=09qn->name);
--=09=09return 0;
--=09}
--
--=09if (qn->qos.qos_mode !=3D -1)
--=09=09mode =3D qn->qos.qos_mode;
--
--=09if (mode =3D=3D NOC_QOS_MODE_FIXED) {
--=09=09dev_dbg(src->provider->dev, "NoC QoS: %s: Set Fixed mode\n",
--=09=09=09qn->name);
--=09=09rc =3D qcom_icc_noc_set_qos_priority(qp->regmap, &qn->qos);
--=09=09if (rc)
--=09=09=09return rc;
--=09} else if (mode =3D=3D NOC_QOS_MODE_BYPASS) {
--=09=09dev_dbg(src->provider->dev, "NoC QoS: %s: Set Bypass mode\n",
--=09=09=09qn->name);
--=09}
--
--=09return regmap_update_bits(qp->regmap,
--=09=09=09=09  NOC_QOS_MODEn_ADDR(qn->qos.qos_port),
--=09=09=09=09  NOC_QOS_MODEn_MASK, mode);
--}
--
--static int qcom_icc_qos_set(struct icc_node *node, u64 sum_bw)
--{
--=09struct qcom_icc_provider *qp =3D to_qcom_provider(node->provider);
--=09struct qcom_icc_node *qn =3D node->data;
--
--=09dev_dbg(node->provider->dev, "Setting QoS for %s\n", qn->name);
--
--=09if (qp->is_bimc_node)
--=09=09return qcom_icc_set_bimc_qos(node, sum_bw,
--=09=09=09=09(qn->qos.qos_mode =3D=3D NOC_QOS_MODE_BYPASS));
--
--=09return qcom_icc_set_noc_qos(node, sum_bw);
--}
--
--static int qcom_icc_rpm_set(int mas_rpm_id, int slv_rpm_id, u64 sum_bw)
--{
--=09int ret =3D 0;
--
--=09if (mas_rpm_id !=3D -1) {
--=09=09ret =3D qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
--=09=09=09=09=09    RPM_BUS_MASTER_REQ,
--=09=09=09=09=09    mas_rpm_id,
--=09=09=09=09=09    sum_bw);
--=09=09if (ret) {
--=09=09=09pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
--=09=09=09       mas_rpm_id, ret);
--=09=09=09return ret;
--=09=09}
--=09}
--
--=09if (slv_rpm_id !=3D -1) {
--=09=09ret =3D qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
--=09=09=09=09=09    RPM_BUS_SLAVE_REQ,
--=09=09=09=09=09    slv_rpm_id,
--=09=09=09=09=09    sum_bw);
--=09=09if (ret) {
--=09=09=09pr_err("qcom_icc_rpm_smd_send slv %d error %d\n",
--=09=09=09       slv_rpm_id, ret);
--=09=09=09return ret;
--=09=09}
--=09}
--
--=09return ret;
--}
--
--static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
--{
--=09struct qcom_icc_provider *qp;
--=09struct qcom_icc_node *qn;
--=09struct icc_provider *provider;
--=09struct icc_node *n;
--=09u64 sum_bw;
--=09u64 max_peak_bw;
--=09u64 rate;
--=09u32 agg_avg =3D 0;
--=09u32 agg_peak =3D 0;
--=09int ret, i;
--
--=09qn =3D src->data;
--=09provider =3D src->provider;
--=09qp =3D to_qcom_provider(provider);
--
--=09list_for_each_entry(n, &provider->nodes, node_list)
--=09=09provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
--=09=09=09=09    &agg_avg, &agg_peak);
--
--=09sum_bw =3D icc_units_to_bps(agg_avg);
--=09max_peak_bw =3D icc_units_to_bps(agg_peak);
--
--=09if (!qn->qos.ap_owned) {
--=09=09/* send bandwidth request message to the RPM processor */
--=09=09ret =3D qcom_icc_rpm_set(qn->mas_rpm_id, qn->slv_rpm_id, sum_bw);
--=09=09if (ret)
--=09=09=09return ret;
--=09} else if (qn->qos.qos_mode !=3D -1) {
--=09=09/* set bandwidth directly from the AP */
--=09=09ret =3D qcom_icc_qos_set(src, sum_bw);
--=09=09if (ret)
--=09=09=09return ret;
--=09}
--
--=09rate =3D max(sum_bw, max_peak_bw);
--
--=09do_div(rate, qn->buswidth);
--
--=09if (qn->rate =3D=3D rate)
--=09=09return 0;
--
--=09for (i =3D 0; i < qp->num_clks; i++) {
--=09=09ret =3D clk_set_rate(qp->bus_clks[i].clk, rate);
--=09=09if (ret) {
--=09=09=09pr_err("%s clk_set_rate error: %d\n",
--=09=09=09       qp->bus_clks[i].id, ret);
--=09=09=09return ret;
--=09=09}
--=09}
--
--=09qn->rate =3D rate;
--
--=09return 0;
--}
--
- static int qnoc_probe(struct platform_device *pdev)
- {
- =09struct device *dev =3D &pdev->dev;
-@@ -848,7 +509,7 @@ static int qnoc_probe(struct platform_device *pdev)
- =09provider =3D &qp->provider;
- =09INIT_LIST_HEAD(&provider->nodes);
- =09provider->dev =3D dev;
--=09provider->set =3D qcom_icc_set;
-+=09provider->set =3D qcom_icc_rpm_qos_set;
- =09provider->aggregate =3D icc_std_aggregate;
- =09provider->xlate =3D of_icc_xlate_onecell;
- =09provider->data =3D data;
 --=20
 2.32.0
 
