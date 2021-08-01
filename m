@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-16.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E35B8C4338F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB71C04FE3
 	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 13:31:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CB1B5610D1
+	by mail.kernel.org (Postfix) with ESMTP id D92F7610A2
 	for <linux-pm@archiver.kernel.org>; Sun,  1 Aug 2021 13:31:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231940AbhHANbd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 1 Aug 2021 09:31:33 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:35113 "EHLO
+        id S231951AbhHANbe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 1 Aug 2021 09:31:34 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:45284 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231955AbhHANba (ORCPT
+        by vger.kernel.org with ESMTP id S231992AbhHANba (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Aug 2021 09:31:30 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1627824681;
+        s=mimecast20190719; t=1627824677;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=nv0qlxmWEsIaYuBR2s/acFg+5H+397HISkhkkk33W9o=;
-        b=ekPAhyl/ArVw6phHqrHLQcs6H2/2+IpUVe3FnF+dthDzyWbQciG8x6jLK+Q9emYwkF8t82
-        fazxUGJ2p9dD4tv+mv9miev2iKln/pczoqG+PNi5DyCtReWTFcc4/3VkLL64YE//kp97OM
-        080pq9QqRiH9lDt2PhQv9Ftkeae17rM=
+        bh=WGqluPgr2LjM8dqyoPp3jr62gnepJ6fl22cr3iF8/4g=;
+        b=g53eSUEPZGw87GUsPE6m4Ep29wotoP+MNAIRTnJ9sp2Kxb+F+JzUiBUYAJ7B+jgNpkOfZZ
+        d31YwTQu9V5o8ogTo99DcOeFly32393ABD4nUlN7GAWUzvxccSWyuyYxfArDoGJA5LI1U8
+        ly8jtgGnyZzPAdvwADh74DYetu4K1pY=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-393-I-1q8bFiMfes5viFXarMAg-1; Sun, 01 Aug 2021 09:31:20 -0400
-X-MC-Unique: I-1q8bFiMfes5viFXarMAg-1
+ us-mta-161-MhxgDIGHMsu65I9jNaNlPg-1; Sun, 01 Aug 2021 09:31:16 -0400
+X-MC-Unique: MhxgDIGHMsu65I9jNaNlPg-1
 Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 1025F6409B;
-        Sun,  1 Aug 2021 13:31:19 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 6E551802923;
+        Sun,  1 Aug 2021 13:31:15 +0000 (UTC)
 Received: from x1.localdomain.com (unknown [10.39.192.79])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 23D4A60916;
-        Sun,  1 Aug 2021 13:31:17 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 84DDD60CC4;
+        Sun,  1 Aug 2021 13:31:14 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>, Andrejus Basovas <cpp@gcc.lt>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 09/10] power: supply: axp288_fuel_gauge: Move the AXP20X_CC_CTRL check together with the other checks
-Date:   Sun,  1 Aug 2021 15:31:04 +0200
-Message-Id: <20210801133105.101761-10-hdegoede@redhat.com>
+Subject: [PATCH v3 06/10] power: supply: axp288_fuel_gauge: Store struct device pointer in axp288_fg_info
+Date:   Sun,  1 Aug 2021 15:31:01 +0200
+Message-Id: <20210801133105.101761-7-hdegoede@redhat.com>
 In-Reply-To: <20210801133105.101761-1-hdegoede@redhat.com>
 References: <20210801133105.101761-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -57,61 +57,204 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The I2C-bus to the XPower AXP288 is shared between the Linux kernel and
-the SoCs P-Unit. The P-Unit has a semaphore which the kernel must "lock"
-before it may use the bus. If not explicitly taken by the I2C-driver,
-then this semaphore is automatically taken by the I2C-bus-driver for
-each I2C-transfer.
-
-Move the AXP20X_CC_CTRL check done in probe() together with the other
-register-accesses done in probe, so that we can take the semaphore once
-for the entire set of register-accesses.
+Directly store the struct device pointer in axp288_fg_info, rather then
+storing a pointer to the struct platform_device there and then using
+"&info->pdev->dev" everywhere.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_fuel_gauge.c | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ drivers/power/supply/axp288_fuel_gauge.c | 59 ++++++++++--------------
+ 1 file changed, 24 insertions(+), 35 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 8db8ab0827e4..016d8d6bec40 100644
+index d58a1f81fcea..1366027edf49 100644
 --- a/drivers/power/supply/axp288_fuel_gauge.c
 +++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -627,16 +627,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 	if (dmi_check_system(axp288_no_battery_list))
- 		return -ENODEV;
+@@ -102,7 +102,7 @@ enum {
+ };
  
--	/*
--	 * On some devices the fuelgauge and charger parts of the axp288 are
--	 * not used, check that the fuelgauge is enabled (CC_CTRL != 0).
--	 */
--	ret = regmap_read(axp20x->regmap, AXP20X_CC_CTRL, &val);
--	if (ret < 0)
--		return ret;
--	if (val == 0)
--		return -ENODEV;
--
- 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
- 	if (!info)
- 		return -ENOMEM;
-@@ -671,6 +661,18 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 		}
+ struct axp288_fg_info {
+-	struct platform_device *pdev;
++	struct device *dev;
+ 	struct regmap *regmap;
+ 	struct regmap_irq_chip_data *regmap_irqc;
+ 	int irq[AXP288_FG_INTR_NUM];
+@@ -136,7 +136,7 @@ static int fuel_gauge_reg_readb(struct axp288_fg_info *info, int reg)
+ 
+ 	ret = regmap_read(info->regmap, reg, &val);
+ 	if (ret < 0) {
+-		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n", reg, ret);
++		dev_err(info->dev, "Error reading reg 0x%02x err: %d\n", reg, ret);
+ 		return ret;
  	}
  
-+	/*
-+	 * On some devices the fuelgauge and charger parts of the axp288 are
-+	 * not used, check that the fuelgauge is enabled (CC_CTRL != 0).
-+	 */
-+	ret = regmap_read(axp20x->regmap, AXP20X_CC_CTRL, &val);
-+	if (ret < 0)
-+		goto out_free_iio_chan;
-+	if (val == 0) {
-+		ret = -ENODEV;
-+		goto out_free_iio_chan;
-+	}
-+
- 	ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG);
+@@ -150,7 +150,7 @@ static int fuel_gauge_reg_writeb(struct axp288_fg_info *info, int reg, u8 val)
+ 	ret = regmap_write(info->regmap, reg, (unsigned int)val);
+ 
  	if (ret < 0)
+-		dev_err(&info->pdev->dev, "Error writing reg 0x%02x err: %d\n", reg, ret);
++		dev_err(info->dev, "Error writing reg 0x%02x err: %d\n", reg, ret);
+ 
+ 	return ret;
+ }
+@@ -162,15 +162,13 @@ static int fuel_gauge_read_15bit_word(struct axp288_fg_info *info, int reg)
+ 
+ 	ret = regmap_bulk_read(info->regmap, reg, buf, 2);
+ 	if (ret < 0) {
+-		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n",
+-			reg, ret);
++		dev_err(info->dev, "Error reading reg 0x%02x err: %d\n", reg, ret);
+ 		return ret;
+ 	}
+ 
+ 	ret = get_unaligned_be16(buf);
+ 	if (!(ret & FG_15BIT_WORD_VALID)) {
+-		dev_err(&info->pdev->dev, "Error reg 0x%02x contents not valid\n",
+-			reg);
++		dev_err(info->dev, "Error reg 0x%02x contents not valid\n", reg);
+ 		return -ENXIO;
+ 	}
+ 
+@@ -184,8 +182,7 @@ static int fuel_gauge_read_12bit_word(struct axp288_fg_info *info, int reg)
+ 
+ 	ret = regmap_bulk_read(info->regmap, reg, buf, 2);
+ 	if (ret < 0) {
+-		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n",
+-			reg, ret);
++		dev_err(info->dev, "Error reading reg 0x%02x err: %d\n", reg, ret);
+ 		return ret;
+ 	}
+ 
+@@ -199,8 +196,7 @@ static void fuel_gauge_get_status(struct axp288_fg_info *info)
+ 
+ 	pwr_stat = fuel_gauge_reg_readb(info, AXP20X_PWR_INPUT_STATUS);
+ 	if (pwr_stat < 0) {
+-		dev_err(&info->pdev->dev,
+-			"PWR STAT read failed:%d\n", pwr_stat);
++		dev_err(info->dev, "PWR STAT read failed: %d\n", pwr_stat);
+ 		return;
+ 	}
+ 
+@@ -210,7 +206,7 @@ static void fuel_gauge_get_status(struct axp288_fg_info *info)
+ 
+ 	fg_res = fuel_gauge_reg_readb(info, AXP20X_FG_RES);
+ 	if (fg_res < 0) {
+-		dev_err(&info->pdev->dev, "FG RES read failed: %d\n", fg_res);
++		dev_err(info->dev, "FG RES read failed: %d\n", fg_res);
+ 		return;
+ 	}
+ 	if (!(fg_res & FG_REP_CAP_VALID))
+@@ -232,7 +228,7 @@ static void fuel_gauge_get_status(struct axp288_fg_info *info)
+ 
+ 	ret = iio_read_channel_raw(info->iio_channel[BAT_D_CURR], &curr);
+ 	if (ret < 0) {
+-		dev_err(&info->pdev->dev, "FG get current failed: %d\n", ret);
++		dev_err(info->dev, "FG get current failed: %d\n", ret);
+ 		return;
+ 	}
+ 	if (curr == 0) {
+@@ -355,8 +351,7 @@ static int fuel_gauge_get_property(struct power_supply *ps,
+ 			goto fuel_gauge_read_err;
+ 
+ 		if (!(ret & FG_REP_CAP_VALID))
+-			dev_err(&info->pdev->dev,
+-				"capacity measurement not valid\n");
++			dev_err(info->dev, "capacity measurement not valid\n");
+ 		val->intval = (ret & FG_REP_CAP_VAL_MASK);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
+@@ -455,35 +450,31 @@ static irqreturn_t fuel_gauge_thread_handler(int irq, void *dev)
+ 	}
+ 
+ 	if (i >= AXP288_FG_INTR_NUM) {
+-		dev_warn(&info->pdev->dev, "spurious interrupt!!\n");
++		dev_warn(info->dev, "spurious interrupt!!\n");
+ 		return IRQ_NONE;
+ 	}
+ 
+ 	switch (i) {
+ 	case QWBTU_IRQ:
+-		dev_info(&info->pdev->dev,
+-			"Quit Battery under temperature in work mode IRQ (QWBTU)\n");
++		dev_info(info->dev, "Quit Battery under temperature in work mode IRQ (QWBTU)\n");
+ 		break;
+ 	case WBTU_IRQ:
+-		dev_info(&info->pdev->dev,
+-			"Battery under temperature in work mode IRQ (WBTU)\n");
++		dev_info(info->dev, "Battery under temperature in work mode IRQ (WBTU)\n");
+ 		break;
+ 	case QWBTO_IRQ:
+-		dev_info(&info->pdev->dev,
+-			"Quit Battery over temperature in work mode IRQ (QWBTO)\n");
++		dev_info(info->dev, "Quit Battery over temperature in work mode IRQ (QWBTO)\n");
+ 		break;
+ 	case WBTO_IRQ:
+-		dev_info(&info->pdev->dev,
+-			"Battery over temperature in work mode IRQ (WBTO)\n");
++		dev_info(info->dev, "Battery over temperature in work mode IRQ (WBTO)\n");
+ 		break;
+ 	case WL2_IRQ:
+-		dev_info(&info->pdev->dev, "Low Batt Warning(2) INTR\n");
++		dev_info(info->dev, "Low Batt Warning(2) INTR\n");
+ 		break;
+ 	case WL1_IRQ:
+-		dev_info(&info->pdev->dev, "Low Batt Warning(1) INTR\n");
++		dev_info(info->dev, "Low Batt Warning(1) INTR\n");
+ 		break;
+ 	default:
+-		dev_warn(&info->pdev->dev, "Spurious Interrupt!!!\n");
++		dev_warn(info->dev, "Spurious Interrupt!!!\n");
+ 	}
+ 
+ 	power_supply_changed(info->bat);
+@@ -508,16 +499,15 @@ static const struct power_supply_desc fuel_gauge_desc = {
+ 	.external_power_changed	= fuel_gauge_external_power_changed,
+ };
+ 
+-static void fuel_gauge_init_irq(struct axp288_fg_info *info)
++static void fuel_gauge_init_irq(struct axp288_fg_info *info, struct platform_device *pdev)
+ {
+ 	int ret, i, pirq;
+ 
+ 	for (i = 0; i < AXP288_FG_INTR_NUM; i++) {
+-		pirq = platform_get_irq(info->pdev, i);
++		pirq = platform_get_irq(pdev, i);
+ 		info->irq[i] = regmap_irq_get_virq(info->regmap_irqc, pirq);
+ 		if (info->irq[i] < 0) {
+-			dev_warn(&info->pdev->dev,
+-				"regmap_irq get virq failed for IRQ %d: %d\n",
++			dev_warn(info->dev, "regmap_irq get virq failed for IRQ %d: %d\n",
+ 				pirq, info->irq[i]);
+ 			info->irq[i] = -1;
+ 			goto intr_failed;
+@@ -526,8 +516,7 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
+ 				NULL, fuel_gauge_thread_handler,
+ 				IRQF_ONESHOT, DEV_NAME, info);
+ 		if (ret) {
+-			dev_warn(&info->pdev->dev,
+-				"request irq failed for IRQ %d: %d\n",
++			dev_warn(info->dev, "request irq failed for IRQ %d: %d\n",
+ 				pirq, info->irq[i]);
+ 			info->irq[i] = -1;
+ 			goto intr_failed;
+@@ -649,7 +638,7 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 	if (!info)
+ 		return -ENOMEM;
+ 
+-	info->pdev = pdev;
++	info->dev = &pdev->dev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+ 	info->status = POWER_SUPPLY_STATUS_UNKNOWN;
+@@ -714,7 +703,7 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
  		goto out_free_iio_chan;
+ 	}
+ 
+-	fuel_gauge_init_irq(info);
++	fuel_gauge_init_irq(info, pdev);
+ 
+ 	return 0;
+ 
 -- 
 2.31.1
 
