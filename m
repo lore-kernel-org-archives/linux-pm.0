@@ -2,129 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B89DC4338F
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Aug 2021 03:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E1DC4320A
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Aug 2021 05:45:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 287B860F6E
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Aug 2021 03:28:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 80902610A6
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Aug 2021 05:45:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231828AbhHBD22 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 1 Aug 2021 23:28:28 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:44603 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231361AbhHBD21 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Aug 2021 23:28:27 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1627874899; h=Message-ID: References: In-Reply-To: Subject:
- Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
- MIME-Version: Sender; bh=JCB8vVm40Ygev3lb2qOV67F7cVZ3peAJ9oCE0yR1aSk=;
- b=TcTkiLfAW7p/lk3jQVgXe07DZxTkB7yNLdnAvv1YUmFF65LW9zcxBMGymJSpaZCdBSma9IQl
- zHWBsFvVPF+7P3G4YhxSmkvSKKF5MGHm/BrgyKV02xWcJa8UsfxtxocCfZ8AUVJMtYhKsy62
- N6i+hTvjy3xQId5/O/4We4mWJzM=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n07.prod.us-west-2.postgun.com with SMTP id
- 610766529771b05b24beec4b (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 02 Aug 2021 03:28:18
- GMT
-Sender: sibis=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 3CF53C43460; Mon,  2 Aug 2021 03:28:18 +0000 (UTC)
-Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: sibis)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 7BC38C433F1;
-        Mon,  2 Aug 2021 03:28:17 +0000 (UTC)
+        id S231649AbhHBFp2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Aug 2021 01:45:28 -0400
+Received: from mga11.intel.com ([192.55.52.93]:50717 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230417AbhHBFp1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 2 Aug 2021 01:45:27 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10063"; a="210282397"
+X-IronPort-AV: E=Sophos;i="5.84,288,1620716400"; 
+   d="scan'208";a="210282397"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Aug 2021 22:45:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.84,288,1620716400"; 
+   d="scan'208";a="509840578"
+Received: from ahunter-desktop.fi.intel.com (HELO [10.237.72.79]) ([10.237.72.79])
+  by FMSMGA003.fm.intel.com with ESMTP; 01 Aug 2021 22:44:59 -0700
+Subject: Re: [PATCH V4 2/2] scsi: ufshcd: Fix device links when BOOT WLUN
+ fails to probe
+To:     Avri Altman <Avri.Altman@wdc.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Saravana Kannan <saravanak@google.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        "James E . J . Bottomley" <jejb@linux.ibm.com>,
+        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        Bean Huo <huobean@gmail.com>, Can Guo <cang@codeaurora.org>,
+        Asutosh Das <asutoshd@codeaurora.org>,
+        Bart Van Assche <bvanassche@acm.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20210716114408.17320-1-adrian.hunter@intel.com>
+ <20210716114408.17320-3-adrian.hunter@intel.com>
+ <DM6PR04MB65758A834069CC7B56669905FC109@DM6PR04MB6575.namprd04.prod.outlook.com>
+From:   Adrian Hunter <adrian.hunter@intel.com>
+Organization: Intel Finland Oy, Registered Address: PL 281, 00181 Helsinki,
+ Business Identity Code: 0357606 - 4, Domiciled in Helsinki
+Message-ID: <2a19830e-47cb-4c2a-ddbc-f2370af01452@intel.com>
+Date:   Mon, 2 Aug 2021 08:45:01 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Firefox/78.0 Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+In-Reply-To: <DM6PR04MB65758A834069CC7B56669905FC109@DM6PR04MB6575.namprd04.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-Date:   Mon, 02 Aug 2021 08:58:17 +0530
-From:   Sibi Sankar <sibis@codeaurora.org>
-To:     Doug Anderson <dianders@chromium.org>
-Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v3 2/2] arm64: dts: qcom: sc7280: Add cpu OPP tables
-In-Reply-To: <CAD=FV=VfvW1PqJiR7Lh5RNyR6EQ1E8JK0N+KqJiB8DK49oUZ4A@mail.gmail.com>
-References: <1620807083-5451-1-git-send-email-sibis@codeaurora.org>
- <1620807083-5451-3-git-send-email-sibis@codeaurora.org>
- <CAD=FV=VfvW1PqJiR7Lh5RNyR6EQ1E8JK0N+KqJiB8DK49oUZ4A@mail.gmail.com>
-Message-ID: <db28cb8d8f3057958bb2e059b8ac90ba@codeaurora.org>
-X-Sender: sibis@codeaurora.org
-User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2021-07-31 03:50, Doug Anderson wrote:
-> Hi,
+On 17/07/21 9:02 pm, Avri Altman wrote:
+>> diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
+>> index 708b3b62fc4d..9864a8ee0263 100644
+>> --- a/drivers/scsi/ufs/ufshcd.c
+>> +++ b/drivers/scsi/ufs/ufshcd.c
+>> @@ -5020,15 +5020,34 @@ static int ufshcd_slave_configure(struct scsi_device
+>> *sdev)
+>>  static void ufshcd_slave_destroy(struct scsi_device *sdev)
+>>  {
+>>         struct ufs_hba *hba;
+>> +       unsigned long flags;
+>>
+>>         hba = shost_priv(sdev->host);
+>>         /* Drop the reference as it won't be needed anymore */
+>>         if (ufshcd_scsi_to_upiu_lun(sdev->lun) == UFS_UPIU_UFS_DEVICE_WLUN) {
+>> -               unsigned long flags;
+>> -
+>>                 spin_lock_irqsave(hba->host->host_lock, flags);
+>>                 hba->sdev_ufs_device = NULL;
+>>                 spin_unlock_irqrestore(hba->host->host_lock, flags);
+>> +       } else if (hba->sdev_ufs_device) {
+>> +               struct device *supplier = NULL;
+>> +
+>> +               /* Ensure UFS Device WLUN exists and does not disappear */
+>> +               spin_lock_irqsave(hba->host->host_lock, flags);
+>> +               if (hba->sdev_ufs_device) {
+> Was just checked in the outer clause?
+
+Yes, but need to re-check with the spinlock locked.
+
 > 
-> On Wed, May 12, 2021 at 1:11 AM Sibi Sankar <sibis@codeaurora.org> 
-> wrote:
->> 
->> Add OPP tables required to scale DDR/L3 per freq-domain on SC7280 
->> SoCs.
->> 
->> Reviewed-by: Douglas Anderson <dianders@chromium.org>
->> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
->> ---
->> 
->> V3:
->>  * Rename cpu opp table nodes [Matthias]
->>  * Rename opp phandles [Doug]
->> 
->> Depends on the following patch series:
->> L3 Provider Support: 
->> https://lore.kernel.org/lkml/1618556290-28303-1-git-send-email-okukatla@codeaurora.org/
->> CPUfreq Support: 
->> https://lore.kernel.org/lkml/1618020280-5470-2-git-send-email-tdas@codeaurora.org/
->> RPMH Provider Support: 
->> https://lore.kernel.org/lkml/1619517059-12109-1-git-send-email-okukatla@codeaurora.org/
->> 
-
-Doug,
-
-2 of the above 3 dependencies have
-landed. L3 provider still needs a
-re-spin.
-
-https://patchwork.kernel.org/project/linux-arm-msm/cover/1627581885-32165-1-git-send-email-sibis@codeaurora.org/
-
-We also have a new series ^^ on the
-list which will affect #2 merge.
-
-
->> It also depends on L3 and cpufreq dt nodes from the ^^ series to not 
->> have
->> overlapping memory regions.
->> 
->>  arch/arm64/boot/dts/qcom/sc7280.dtsi | 215 
->> +++++++++++++++++++++++++++++++++++
->>  1 file changed, 215 insertions(+)
+> Thanks,
+> Avri
 > 
-> I see patch #1 in mainline now. Does that mean it's time to land patch
-> #2 in the Qualcomm tree now? ...or maybe it needs to be re-posted?
+>> +                       supplier = &hba->sdev_ufs_device->sdev_gendev;
+>> +                       get_device(supplier);
+>> +               }
+>> +               spin_unlock_irqrestore(hba->host->host_lock, flags);
+>> +
+>> +               if (supplier) {
+>> +                       /*
+>> +                        * If a LUN fails to probe (e.g. absent BOOT WLUN), the
+>> +                        * device will not have been registered but can still
+>> +                        * have a device link holding a reference to the device.
+>> +                        */
+>> +                       device_link_remove(&sdev->sdev_gendev, supplier);
+>> +                       put_device(supplier);
+>> +               }
+>>         }
+>>  }
+>>
+>> --
+>> 2.17.1
 > 
 
-> -Doug
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project.
