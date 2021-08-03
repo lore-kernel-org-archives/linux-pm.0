@@ -2,71 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72F2AC432BE
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 13:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2E3DC4320A
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 13:31:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5B8D860C41
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 13:18:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3F4D60EE8
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 13:31:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236192AbhHCNSk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Aug 2021 09:18:40 -0400
-Received: from mail-oo1-f49.google.com ([209.85.161.49]:36642 "EHLO
-        mail-oo1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235954AbhHCNSk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Aug 2021 09:18:40 -0400
-Received: by mail-oo1-f49.google.com with SMTP id z3-20020a4a98430000b029025f4693434bso5180470ooi.3;
-        Tue, 03 Aug 2021 06:18:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Jzgmo5C/b0+xzlET/lKyhYqyoM2IpN27wZmzahcw0Uw=;
-        b=CtcIu0ZvnHYje+pDG6zVlm4v8+5Ki691e0v89aVwiyCwdkAMWN08StGuj0EBmpGLzD
-         I3dMt0T8lH86KtGEJJ25L9uEBlhAwSS+vOreaRnJMeAbz6f+1yB/YeXLkBDnSI/SUevB
-         L06NbdefgIYIwNF+y92TSzfyleX7Oaz5meTyqqQm2DOSXteYdK4g6i2rAqKhJR3y/mrP
-         hfjdL2lCn3UrJzYjjg987nbA8NJ3tmzbPsabIVe+kaS/LbfrgEkW7YqT0ivuz4zIOk+x
-         YwU8YMu+pRKa2rOl2bp52mRlqfYpZAkbgUXrAiN096IgZrkYU1ntQ2SSstvkv4pSmxx/
-         wSHQ==
-X-Gm-Message-State: AOAM533lptcGeSblBArJKRvRQqsjt3b6enGMVDmQs8Q7GirU21QNRk8u
-        KON9TnaawHuZMXOxnwEf3qiY7Zwp173GpHKflOcFIYOL
-X-Google-Smtp-Source: ABdhPJwUnCpBnG7Hm+qjkkQ1D0gAVQYjd5Q+13WU0ZbW44GFeWdqxs87Bjnlug4/L+rQJcjvsxdtbFL+9lAtCQCCmxE=
-X-Received: by 2002:a05:6820:161f:: with SMTP id bb31mr14245725oob.44.1627996708797;
- Tue, 03 Aug 2021 06:18:28 -0700 (PDT)
+        id S236360AbhHCNbh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Aug 2021 09:31:37 -0400
+Received: from foss.arm.com ([217.140.110.172]:50174 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S236344AbhHCNbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 3 Aug 2021 09:31:37 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DDDA611FB;
+        Tue,  3 Aug 2021 06:31:25 -0700 (PDT)
+Received: from [10.57.9.114] (unknown [10.57.9.114])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8FEB73F70D;
+        Tue,  3 Aug 2021 06:31:20 -0700 (PDT)
+Subject: Re: [PATCH v3] PM: EM: Increase energy calculation precision
+To:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net
+Cc:     Chris.Redpath@arm.com, dietmar.eggemann@arm.com,
+        morten.rasmussen@arm.com, qperret@google.com,
+        linux-pm@vger.kernel.org, stable@vger.kernel.org,
+        peterz@infradead.org, viresh.kumar@linaro.org,
+        vincent.guittot@linaro.org, mingo@redhat.com,
+        juri.lelli@redhat.com, rostedt@goodmis.org, segall@google.com,
+        mgorman@suse.de, bristot@redhat.com, CCj.Yeh@mediatek.com
+References: <20210803102744.23654-1-lukasz.luba@arm.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <4e6b02fb-b421-860b-4a07-ed6cccdc1570@arm.com>
+Date:   Tue, 3 Aug 2021 14:31:10 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <4336554.LvFx2qVVIh@kreacher> <CAAYoRsX+NnOom6f7s6=xOM8rwa_S6tPaQyReYfgDGU4wDkG2uQ@mail.gmail.com>
-In-Reply-To: <CAAYoRsX+NnOom6f7s6=xOM8rwa_S6tPaQyReYfgDGU4wDkG2uQ@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 3 Aug 2021 15:18:11 +0200
-Message-ID: <CAJZ5v0hFZV6xucCmdDhg6=ActBZarr4so9tkAvzA5cuT5WWjMA@mail.gmail.com>
-Subject: Re: [PATCH v1 0/2] cpuidle: teo: Fix selection when idle state 0 is disabled
-To:     Doug Smythies <dsmythies@telus.net>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20210803102744.23654-1-lukasz.luba@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jul 31, 2021 at 6:04 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> On Fri, Jul 30, 2021 at 7:39 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > Hi,
-> >
-> > Patch [1/2] fixes idle state selection in the teo governor when idle state 0
-> > is disabled (which is broken after recent changes in that governor) and patch
-> > [2/2] renames two local variables on top of that change.
-> >
-> > Please see the patch changelogs for details.
->
-> Hi Rafael,
->
-> I tested this version of the patches, and the idle state 0
-> disabled issue has been fixed.
+Hi Rafael,
 
-Thanks for the confirmation!
+On 8/3/21 11:27 AM, Lukasz Luba wrote:
+
+[snip]
+
+> 
+> Fixes: 27871f7a8a341ef ("PM: Introduce an Energy Model management framework")
+> Reported-by: CCJ Yeh <CCj.Yeh@mediatek.com>
+> Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+> 
+> v3 changes:
+> - adjusted patch description according to Dietmar's comments
+> - added Dietmar's review tag
+> - added one empty line in the code to separate them
+> 
+>   include/linux/energy_model.h | 16 ++++++++++++++++
+>   kernel/power/energy_model.c  |  4 +++-
+>   2 files changed, 19 insertions(+), 1 deletion(-)
+> 
+
+Could you take this patch via your PM tree, please?
+
+Regards,
+Lukasz
