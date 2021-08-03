@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB0FC43214
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 072C0C4338F
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A735F60BD3
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E393F6054F
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236626AbhHCOR1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Aug 2021 10:17:27 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:57074 "EHLO
+        id S236538AbhHCORc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Aug 2021 10:17:32 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:57198 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236528AbhHCORW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Aug 2021 10:17:22 -0400
+        with ESMTP id S236604AbhHCOR0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Aug 2021 10:17:26 -0400
 From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1628000230;
+        s=2020; t=1628000234;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=TRsxK9GZ6nFI6VodGYuBnw38AKr/uEtGEHDYZfi69/8=;
-        b=Es6QNFuerxXYMYUmi2dnf/UpUXFOU5BZpPczCx6q1tAs0fs7tXnwnbsb8zJ/eRFge36k7D
-        Nb72Of9GPR2XLFCZzD9JrhcOGyEpHcn1GWMjYAFsCxOQV8ciDov8Nu80hNafkfCwuPNyWm
-        2xol5x1mwYKU0Xfsw9Hn7Aj4WTW/ksY7R1CdUUcbKvNqeO9oGMGyhZFFb8tp6LcuPt8fD5
-        SdCdCUcK7BSyVSUlqMsjqx8hMPfoTPvb0AP05N+ch4CpQRDx5k1VjffwN/vCWTssKwiyrk
-        sf+nHm2AJrcw9RdAA/icEpS3y8azDq9cu3f4TMNprYxgzPiOxq1odUM4jTTHwQ==
+        bh=gWoZ8VMjI9XOXCUXMxpbGRXjBl8AYyLz6obVucNbUhk=;
+        b=FcMAlKjns7BfJQH1d/WJLl9lLRwjIX1a8wcxWxN2xJFXjHQ1JmES99kk68REO+YbBeX3pN
+        ASY+BUrhK19OnqK4Rowa5DksECtui5rWQwaOsyrPRUxsAoU3YA6nH2xE/OKbKNI8A5SgOy
+        xNv+vghKKfyrp5caHDuqCoF19Bu8gEDdtkZIqHRx1pebgTx06cnIlyF08lFexWMavTJG1h
+        lKfVCNFDlXi1Uz73m1UycVVhIAR45i7Lx4SGl3bX/E0Syx1tI2f2KwW1q9DTUtHz+qNLVI
+        QVRsgjyzrfI48q03vZfIxAKQs1/5p30p88ZeHtiNVwB+JW+8aU9PqWAZ9gLyPQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1628000230;
+        s=2020e; t=1628000234;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=TRsxK9GZ6nFI6VodGYuBnw38AKr/uEtGEHDYZfi69/8=;
-        b=Om3BvxS622lBsFKO7++i965k3w6Ba+2i8l7OTBJeWZs5b/6EvqS0Tulk2oUmtbiu7zYwiw
-        M0uJwPgesY/Gu2BA==
+        bh=gWoZ8VMjI9XOXCUXMxpbGRXjBl8AYyLz6obVucNbUhk=;
+        b=ETDk/yxdeTKtrJ2yOSNPR6I3iql5x2sfifnK174w7HWmzVSadD5STKgV3lQqXDOtU8jJhp
+        z/PcuzC57YOnk1BA==
 To:     linux-kernel@vger.kernel.org
 Cc:     tglx@linutronix.de, Peter Zijlstra <peterz@infradead.org>,
         Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH 19/38] thermal: Replace deprecated CPU-hotplug functions.
-Date:   Tue,  3 Aug 2021 16:16:02 +0200
-Message-Id: <20210803141621.780504-20-bigeasy@linutronix.de>
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH 30/38] ACPI: PM: s2idle: Replace deprecated CPU-hotplug functions.
+Date:   Tue,  3 Aug 2021 16:16:13 +0200
+Message-Id: <20210803141621.780504-31-bigeasy@linutronix.de>
 In-Reply-To: <20210803141621.780504-1-bigeasy@linutronix.de>
 References: <20210803141621.780504-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
@@ -65,38 +65,37 @@ cpus_read_lock() and cpus_read_unlock().
 Replace deprecated CPU-hotplug functions with the official version.
 The behavior remains unchanged.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amitk@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/thermal/intel/intel_powerclamp.c | 4 ++--
+ kernel/power/suspend.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/int=
-el/intel_powerclamp.c
-index b0eb5ece9243b..a5b58ea89cc6d 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -528,7 +528,7 @@ static int start_power_clamp(void)
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index d8cae434f9eb5..eb75f394a0590 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -96,7 +96,7 @@ static void s2idle_enter(void)
+ 	s2idle_state =3D S2IDLE_STATE_ENTER;
+ 	raw_spin_unlock_irq(&s2idle_lock);
 =20
- 	set_target_ratio =3D clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
- 	/* prevent cpu hotplug */
 -	get_online_cpus();
 +	cpus_read_lock();
+ 	cpuidle_resume();
 =20
- 	/* prefer BSP */
- 	control_cpu =3D 0;
-@@ -542,7 +542,7 @@ static int start_power_clamp(void)
- 	for_each_online_cpu(cpu) {
- 		start_power_clamp_worker(cpu);
- 	}
+ 	/* Push all the CPUs into the idle loop. */
+@@ -106,7 +106,7 @@ static void s2idle_enter(void)
+ 		    s2idle_state =3D=3D S2IDLE_STATE_WAKE);
+=20
+ 	cpuidle_pause();
 -	put_online_cpus();
 +	cpus_read_unlock();
 =20
- 	return 0;
- }
+ 	raw_spin_lock_irq(&s2idle_lock);
+=20
 --=20
 2.32.0
 
