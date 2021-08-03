@@ -2,235 +2,276 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_RED,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93B89C43214
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F12FAC19F31
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 15:30:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E69360BD3
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 14:17:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DD63A60FC2
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Aug 2021 15:30:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236594AbhHCORm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Aug 2021 10:17:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55028 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236633AbhHCOR2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Aug 2021 10:17:28 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3FB0C06179F;
-        Tue,  3 Aug 2021 07:17:14 -0700 (PDT)
-From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1628000233;
+        id S236755AbhHCPbB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Aug 2021 11:31:01 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:45384 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S236879AbhHCPa5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Aug 2021 11:30:57 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1628004645;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=6Jb5aSxMzJCCyF6vaaPxjKFvUOG34sLHqd3B5PKT6/U=;
-        b=pUvx+vJhiNba79yfpL+zehuhmJa5TOI990ciPa+hYy7hx8fIQs99i3+TpeKa94oop6fn2X
-        jvZksgFOIO6th8lhraKqHBNcY0B02teQtDDJr0wPer1h2GAWTLLQcsBVzG8MXVWknhpDx+
-        YaCvQmkFcTft9dJS1M4imFVnQK5DDRK5gX1mTpxY/0Y1Qky7RcwqPeJ9KKkv1KRc1MEfbl
-        IBCHLM4/YgdEpLmwwG0l7vbB7ZywYIyHLQgjd1FT2c3wTlGTXUhu0DFUjK/XxNHQECCDt2
-        wNyeMTfzcEoqojuuM/PsZxa1YGIH7/u8mpiVuXdfHaFHZBG7ss8z6ATu6rGhRg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1628000233;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=6Jb5aSxMzJCCyF6vaaPxjKFvUOG34sLHqd3B5PKT6/U=;
-        b=TvCnEmaF2DzMdBPuCycd9tPyB6091RfLS4A55N4UfkGjm0zKqgw9aTiVrotM9HJMesM0CD
-        Gj567wT3t0VNgGBw==
-To:     linux-kernel@vger.kernel.org
+        bh=Ef5H/YzWjPRhpmEEex0YbOyxkXYC0ZJIajn0GIxKBlE=;
+        b=Ge5aL2LJYyL7SFUN4/8+uzVsGUyeqEYdDDb48hSvxnjfaSV82T+lIm94FU1RWi9k4TmkFi
+        Cs8tbhGOKi50b6b+XPumM34mHUbCBvRQ2i7U9Zg/fQuoHjG5K2Bb7Wurot1WjYUL9jGlRW
+        00bOvdsFE1cOQxZqw/DPYEXJd+bACuA=
+Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com
+ [209.85.208.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-445-b8QQt9hKPAiiJhATuSb8eg-1; Tue, 03 Aug 2021 11:30:44 -0400
+X-MC-Unique: b8QQt9hKPAiiJhATuSb8eg-1
+Received: by mail-ed1-f72.google.com with SMTP id ay20-20020a0564022034b02903bc515b673dso10640209edb.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Aug 2021 08:30:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=Ef5H/YzWjPRhpmEEex0YbOyxkXYC0ZJIajn0GIxKBlE=;
+        b=dt5AAmxGp2ldlilGOr6Q1xh4tkO+dqg63SrPR+k1cF4xCmF3NeVLWNx2myVLcIbkec
+         B6MwVtIbcFjZA2DSp44MCUQyI2WIOhTmW78hfAEeW953JEKSOa7ZIjnF9N/aglqe3+k1
+         0srT1Ta+epXgqgLY3Acj7LHN4dIaGsD0MDWhOV+x4SHEISVXMkTVWb5emmVrhiGbFpln
+         Om1eXS2k79jPhTXwhuXkgktgn3vJ24ZI/QO1N3n78jh2RoBCybrwDE+k5trwPFiKMEog
+         rEaDSnNkqnLSTKtQHvQESyQPZJ/dGt8iaAhDUZ26rJcQesQvRbYwWmh8++UoEL8x2rLW
+         H2TA==
+X-Gm-Message-State: AOAM5338aK070tOCK5zOPWR6vKq98hBwUkwlSAMtazF0TT+COu0g94dq
+        l/BzJdZywRbJE08qyKSYViZFLavD7HYu8ZdJsxSa+abf8r+0AWZv86XDbLMVW1mXFC1StK3AdPJ
+        K8XBxZoj9saTmGiLptK4=
+X-Received: by 2002:a17:906:1da1:: with SMTP id u1mr20660497ejh.307.1628004643425;
+        Tue, 03 Aug 2021 08:30:43 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxf6rV1ZatT2GQ6a3+XcXIUCr6rut+vBVs6RfI7E2ACDBMkrHwlwXE3OZTZ7a4m4dn8RViNBQ==
+X-Received: by 2002:a17:906:1da1:: with SMTP id u1mr20660382ejh.307.1628004643075;
+        Tue, 03 Aug 2021 08:30:43 -0700 (PDT)
+Received: from x1.localdomain (2001-1c00-0c1e-bf00-1054-9d19-e0f0-8214.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:1054:9d19:e0f0:8214])
+        by smtp.gmail.com with ESMTPSA id b17sm4094598edd.27.2021.08.03.08.30.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 03 Aug 2021 08:30:42 -0700 (PDT)
+Subject: Re: [PATCH 00/38] Replace deprecated CPU-hotplug
+To:     Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        linux-kernel@vger.kernel.org
 Cc:     tglx@linutronix.de, Peter Zijlstra <peterz@infradead.org>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andy Lutomirski <luto@kernel.org>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 28/38] cpufreq: Replace deprecated CPU-hotplug functions.
-Date:   Tue,  3 Aug 2021 16:16:11 +0200
-Message-Id: <20210803141621.780504-29-bigeasy@linutronix.de>
-In-Reply-To: <20210803141621.780504-1-bigeasy@linutronix.de>
+        Ben Segall <bsegall@google.com>,
+        Borislav Petkov <bp@alien8.de>, cgroups@vger.kernel.org,
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        coresight@lists.linaro.org,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        Daniel Jordan <daniel.m.jordan@oracle.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        "David S. Miller" <davem@davemloft.net>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Gonglei <arei.gonglei@huawei.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@kernel.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Jason Wang <jasowang@redhat.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Jiri Kosina <jikos@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
+        Joe Lawrence <joe.lawrence@redhat.com>,
+        Joel Fernandes <joel@joelfernandes.org>,
+        Johannes Weiner <hannes@cmpxchg.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Josh Poimboeuf <jpoimboe@redhat.com>,
+        Josh Triplett <josh@joshtriplett.org>,
+        Julian Wiedmann <jwi@linux.ibm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Karol Herbst <karolherbst@gmail.com>,
+        Karsten Graul <kgraul@linux.ibm.com>, kvm-ppc@vger.kernel.org,
+        Lai Jiangshan <jiangshanlai@gmail.com>,
+        Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>,
+        Leo Yan <leo.yan@linaro.org>, linux-acpi@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-edac@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-mm@kvack.org, linux-pm@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, live-patching@vger.kernel.org,
+        Mark Gross <mgross@linux.intel.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Mel Gorman <mgorman@suse.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Mike Leach <mike.leach@linaro.org>,
+        Mike Travis <mike.travis@hpe.com>,
+        Miroslav Benes <mbenes@suse.cz>,
+        Namhyung Kim <namhyung@kernel.org>, netdev@vger.kernel.org,
+        nouveau@lists.freedesktop.org,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+        Pekka Paalanen <ppaalanen@gmail.com>,
+        Petr Mladek <pmladek@suse.com>,
+        platform-driver-x86@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, rcu@vger.kernel.org,
+        virtualization@lists.linux-foundation.org, x86@kernel.org
 References: <20210803141621.780504-1-bigeasy@linutronix.de>
+From:   Hans de Goede <hdegoede@redhat.com>
+Message-ID: <83dc5dfd-1ed0-f428-826f-fb819911fc89@redhat.com>
+Date:   Tue, 3 Aug 2021 17:30:40 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20210803141621.780504-1-bigeasy@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The functions get_online_cpus() and put_online_cpus() have been
-deprecated during the CPU hotplug rework. They map directly to
-cpus_read_lock() and cpus_read_unlock().
+Hi Sebastien,
 
-Replace deprecated CPU-hotplug functions with the official version.
-The behavior remains unchanged.
+On 8/3/21 4:15 PM, Sebastian Andrzej Siewior wrote:
+> This is a tree wide replacement of the deprecated CPU hotplug functions
+> which are only wrappers around the actual functions.
+> 
+> Each patch is independent and can be picked up by the relevant maintainer.
 
-Cc: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- drivers/cpufreq/acpi-cpufreq.c     | 4 ++--
- drivers/cpufreq/cpufreq.c          | 6 +++---
- drivers/cpufreq/cpufreq_ondemand.c | 4 ++--
- drivers/cpufreq/intel_pstate.c     | 4 ++--
- drivers/cpufreq/powernow-k8.c      | 6 +++---
- drivers/cpufreq/powernv-cpufreq.c  | 4 ++--
- 6 files changed, 14 insertions(+), 14 deletions(-)
+Ok; and I take it that then also is the plan for merging these ?
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 7e7450453714d..b49612895c786 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -163,9 +163,9 @@ static ssize_t store_cpb(struct cpufreq_policy *policy,=
- const char *buf,
- 	if (ret || val > 1)
- 		return -EINVAL;
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	set_boost(policy, val);
--	put_online_cpus();
-+	cpus_read_unlock();
-=20
- 	return count;
- }
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 45f3416988f1a..06c526d66dd38 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2654,18 +2654,18 @@ int cpufreq_boost_trigger_state(int state)
- 	cpufreq_driver->boost_enabled =3D state;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	for_each_active_policy(policy) {
- 		ret =3D cpufreq_driver->set_boost(policy, state);
- 		if (ret)
- 			goto err_reset_state;
- 	}
--	put_online_cpus();
-+	cpus_read_unlock();
-=20
- 	return 0;
-=20
- err_reset_state:
--	put_online_cpus();
-+	cpus_read_unlock();
-=20
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver->boost_enabled =3D !state;
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_o=
-ndemand.c
-index ac361a8b1d3bb..eb4320b619c9c 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -418,7 +418,7 @@ static void od_set_powersave_bias(unsigned int powersav=
-e_bias)
- 	default_powersave_bias =3D powersave_bias;
- 	cpumask_clear(&done);
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	for_each_online_cpu(cpu) {
- 		struct cpufreq_policy *policy;
- 		struct policy_dbs_info *policy_dbs;
-@@ -442,7 +442,7 @@ static void od_set_powersave_bias(unsigned int powersav=
-e_bias)
- 		od_tuners =3D dbs_data->tuners;
- 		od_tuners->powersave_bias =3D default_powersave_bias;
- 	}
--	put_online_cpus();
-+	cpus_read_unlock();
- }
-=20
- void od_register_powersave_bias_handler(unsigned int (*f)
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index bb4549959b113..2d83a9f9651b0 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2969,7 +2969,7 @@ static void intel_pstate_driver_cleanup(void)
- {
- 	unsigned int cpu;
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	for_each_online_cpu(cpu) {
- 		if (all_cpu_data[cpu]) {
- 			if (intel_pstate_driver =3D=3D &intel_pstate)
-@@ -2979,7 +2979,7 @@ static void intel_pstate_driver_cleanup(void)
- 			all_cpu_data[cpu] =3D NULL;
- 		}
- 	}
--	put_online_cpus();
-+	cpus_read_unlock();
-=20
- 	intel_pstate_driver =3D NULL;
- }
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index b9ccb6a3dad98..12ab4014af712 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1180,7 +1180,7 @@ static int powernowk8_init(void)
- 	if (!x86_match_cpu(powernow_k8_ids))
- 		return -ENODEV;
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	for_each_online_cpu(i) {
- 		smp_call_function_single(i, check_supported_cpu, &ret, 1);
- 		if (!ret)
-@@ -1188,10 +1188,10 @@ static int powernowk8_init(void)
- 	}
-=20
- 	if (supported_cpus !=3D num_online_cpus()) {
--		put_online_cpus();
-+		cpus_read_unlock();
- 		return -ENODEV;
- 	}
--	put_online_cpus();
-+	cpus_read_unlock();
-=20
- 	ret =3D cpufreq_register_driver(&cpufreq_amd64_driver);
- 	if (ret)
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cp=
-ufreq.c
-index 005600cef2730..23a06cba392cd 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -918,7 +918,7 @@ static void powernv_cpufreq_work_fn(struct work_struct =
-*work)
- 	unsigned int cpu;
- 	cpumask_t mask;
-=20
--	get_online_cpus();
-+	cpus_read_lock();
- 	cpumask_and(&mask, &chip->mask, cpu_online_mask);
- 	smp_call_function_any(&mask,
- 			      powernv_cpufreq_throttle_check, NULL, 0);
-@@ -939,7 +939,7 @@ static void powernv_cpufreq_work_fn(struct work_struct =
-*work)
- 		cpufreq_cpu_put(policy);
- 	}
- out:
--	put_online_cpus();
-+	cpus_read_unlock();
- }
-=20
- static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
---=20
-2.32.0
+FWIW I'm fine with the drivers/platform/x86 patch going upstream
+through some other tree if its easier to keep the set together ...
+
+Regards,
+
+Hans
+
+
+
+> 
+> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+> Cc: Amit Kucheria <amitk@kernel.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Andy Lutomirski <luto@kernel.org>
+> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Ben Segall <bsegall@google.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: cgroups@vger.kernel.org
+> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+> Cc: coresight@lists.linaro.org
+> Cc: Daniel Bristot de Oliveira <bristot@redhat.com>
+> Cc: Daniel Jordan <daniel.m.jordan@oracle.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Dave Hansen <dave.hansen@linux.intel.com>
+> Cc: Davidlohr Bueso <dave@stgolabs.net>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Gonglei <arei.gonglei@huawei.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Cc: Heiko Carstens <hca@linux.ibm.com>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Jason Wang <jasowang@redhat.com>
+> Cc: Jean Delvare <jdelvare@suse.com>
+> Cc: Jiri Kosina <jikos@kernel.org>
+> Cc: Jiri Olsa <jolsa@redhat.com>
+> Cc: Joe Lawrence <joe.lawrence@redhat.com>
+> Cc: Joel Fernandes <joel@joelfernandes.org>
+> Cc: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Josh Poimboeuf <jpoimboe@redhat.com>
+> Cc: Josh Triplett <josh@joshtriplett.org>
+> Cc: Julian Wiedmann <jwi@linux.ibm.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Karol Herbst <karolherbst@gmail.com>
+> Cc: Karsten Graul <kgraul@linux.ibm.com>
+> Cc: kvm-ppc@vger.kernel.org
+> Cc: Lai Jiangshan <jiangshanlai@gmail.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Leo Yan <leo.yan@linaro.org>
+> Cc: linux-acpi@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-crypto@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-edac@vger.kernel.org
+> Cc: linux-hwmon@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-mm@kvack.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-raid@vger.kernel.org
+> Cc: linux-s390@vger.kernel.org
+> Cc: live-patching@vger.kernel.org
+> Cc: Mark Gross <mgross@linux.intel.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
+> Cc: Mel Gorman <mgorman@suse.de>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Mike Leach <mike.leach@linaro.org>
+> Cc: Mike Travis <mike.travis@hpe.com>
+> Cc: Miroslav Benes <mbenes@suse.cz>
+> Cc: Namhyung Kim <namhyung@kernel.org>
+> Cc: netdev@vger.kernel.org
+> Cc: nouveau@lists.freedesktop.org
+> Cc: "Paul E. McKenney" <paulmck@kernel.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Pekka Paalanen <ppaalanen@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Petr Mladek <pmladek@suse.com>
+> Cc: platform-driver-x86@vger.kernel.org
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: rcu@vger.kernel.org
+> Cc: Robin Holt <robinmholt@gmail.com>
+> Cc: Song Liu <song@kernel.org>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Steffen Klassert <steffen.klassert@secunet.com>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Steve Wahl <steve.wahl@hpe.com>
+> Cc: Stuart Hayes <stuart.w.hayes@gmail.com>
+> Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: virtualization@lists.linux-foundation.org
+> Cc: x86@kernel.org
+> Cc: Zefan Li <lizefan.x@bytedance.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> 
+> Sebastian
+> 
 
