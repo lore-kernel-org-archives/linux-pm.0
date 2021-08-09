@@ -2,172 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD47DC4338F
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Aug 2021 23:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF62EC4338F
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Aug 2021 04:02:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9B8A760E53
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Aug 2021 23:49:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9080A61019
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Aug 2021 04:02:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231168AbhHHXtu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 8 Aug 2021 19:49:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44310 "EHLO
+        id S229483AbhHIECu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Aug 2021 00:02:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43690 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231158AbhHHXtt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Aug 2021 19:49:49 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1694FC061760
-        for <linux-pm@vger.kernel.org>; Sun,  8 Aug 2021 16:49:29 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id A50451F422A7
-Received: by earth.universe (Postfix, from userid 1000)
-        id 7D3F93C0C99; Mon,  9 Aug 2021 01:49:25 +0200 (CEST)
-Date:   Mon, 9 Aug 2021 01:49:25 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Chris Morgan <macroalpha82@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, maccraft123mc@gmail.com,
-        heiko@sntech.de, robh+dt@kernel.org, lee.jones@linaro.org,
-        Chris Morgan <macromorgan@hotmail.com>
-Subject: Re: [RFC v2 1/4] dt-bindings: Add Rockchip rk817 battery charger
- support
-Message-ID: <20210808234925.rgd77x4nheom2bx3@earth.universe>
-References: <20210726190130.1973-1-macroalpha82@gmail.com>
- <20210726190130.1973-2-macroalpha82@gmail.com>
+        with ESMTP id S229456AbhHIECs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Aug 2021 00:02:48 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F138C06175F
+        for <linux-pm@vger.kernel.org>; Sun,  8 Aug 2021 21:02:27 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id u21-20020a17090a8915b02901782c36f543so23570226pjn.4
+        for <linux-pm@vger.kernel.org>; Sun, 08 Aug 2021 21:02:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=AldQEcLU4Bne5/QfBPbwiq3+rOKR/0YKFPDI7z5qWzM=;
+        b=FNfaXUcgjFapEPeJS/coW9Sgr5hM560Gq/sxITmJcpGadngAZXX0UrhUGGU4LJ3z5e
+         WsiaIFTg8RBGVlLiLcQ0H12+LAgs2Xmpt611wcg4qoqe0enkc/yl/hh1M1AVdeC+iadI
+         WxPQ8siqRHbQ4LXP0NYHNPaddy7Wkj+1fXK0rdxxKi8McucbLzPUE8GciicXCZLCLpJx
+         kfPz5G+1GI+kSahLi64QjvW0PeDDFdSm4Nroq8KB1f0fy4O5m9NHeJSMks06IJDhwQen
+         R6rpEXZzxHsFCwKr+TUJhs1uyd8PBeWNIZWuaLdDC2FanVNzRmxO7BX2kDUQOrQGpTNQ
+         6LZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=AldQEcLU4Bne5/QfBPbwiq3+rOKR/0YKFPDI7z5qWzM=;
+        b=KYDqI8eN6CwwvNIAFi1iZrJVdIFEqDeEw9WhsY6Nb0YY6CZMssoLyCPHi2ZXjTMTmH
+         Z91imAncRUVMZ8a6JcJfB4gHCji6bTOyFGFZvsldL394qCUYugcisl7LPT0KKAkML+FG
+         DuJtIDYKqWV5C7g88MSGNUP1CVIvCEuTtOa7vU/dSraJI9dOzuIn/+yb9NQrygSVq+oS
+         4T9c0bGNrayB4zGP+5n5jPHwy+cPMxfKE5izwsyemlrVEtKbknAdu/ndg6ks1KzxbFlY
+         edybiX2MTONWPYgVuJsTTy34cH5htPoSFQwCyLqISGHmyBhb4CSinsbYDAQhYk6Cbe2N
+         FVfw==
+X-Gm-Message-State: AOAM531SgDuhjgEmh5Mbc3cUAEno8++cN5Ezc7F5T18PhHh0AIENKCe5
+        LDvFYi+wvtmfVF8GGoKU7tSTiQ==
+X-Google-Smtp-Source: ABdhPJyNZaMk+UNxY9w3x6CwfBpmJrtsgAchn1G88YMHV5tQRbbeqfL5YxG6ZzhKrjgpcBWfvlubqA==
+X-Received: by 2002:a17:90a:bd18:: with SMTP id y24mr34173222pjr.83.1628481746909;
+        Sun, 08 Aug 2021 21:02:26 -0700 (PDT)
+Received: from localhost ([122.172.201.85])
+        by smtp.gmail.com with ESMTPSA id j15sm18005156pfh.194.2021.08.08.21.02.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Aug 2021 21:02:26 -0700 (PDT)
+Date:   Mon, 9 Aug 2021 09:32:24 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+Cc:     Konstantin Porotchkin <kostap@marvell.com>,
+        Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>,
+        Victor Gu <xigu@marvell.com>, Evan Wang <xswang@marvell.com>,
+        Benjamin Huang <gdhuang@marvell.com>,
+        Igal Liberman <igall@marvell.com>,
+        Jason Hung <jhung@globalscaletechnologies.com>,
+        Marek =?utf-8?B?QmVow7pu?= <kabel@kernel.org>,
+        Gregory CLEMENT <gregory.clement@bootlin.com>,
+        Robert Marko <robert.marko@sartura.hr>,
+        Tomasz Maciej Nowak <tmn505@gmail.com>,
+        Anders Trier Olesen <anders.trier.olesen@gmail.com>,
+        Philip Soares <philips@netisense.com>,
+        linux-pm@vger.kernel.org,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, nnet <nnet@fastmail.fm>
+Subject: Re: [PATCH v2] cpufreq: armada-37xx: forbid cpufreq for 1.2 GHz
+ variant
+Message-ID: <20210809040224.j2rvopmmqda3utc5@vireshk-i7>
+References: <20210630135942.29730-1-kabel@kernel.org>
+ <20210630225601.6372-1-kabel@kernel.org>
+ <20210702163035.nmb5pniwpqtmaz4b@pali>
+ <20210708143451.4htvdop4zvjufrq6@pali>
+ <20210715193321.z3vswz6x4rzvw2fd@pali>
+ <20210808193026.xuyaufi5wqnrcakd@pali>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="pntqqh5scteorx5d"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20210726190130.1973-2-macroalpha82@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210808193026.xuyaufi5wqnrcakd@pali>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 08-08-21, 21:30, Pali Rohár wrote:
+> Gentle reminder. This is really serious issue. Could you please look at it?
+> 
+> Adding more MarvellEmbeddedProcessors people to the loop: Evan, Benjamin an Igal
 
---pntqqh5scteorx5d
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We can not hang forever for something that breaks stuff. Applied this for 5.14
+now.
 
-Hi,
-
-On Mon, Jul 26, 2021 at 02:01:27PM -0500, Chris Morgan wrote:
-> From: Chris Morgan <macromorgan@hotmail.com>
->=20
-> Create dt-binding documentation to document rk817 battery and charger
-> usage. New device-tree properties have been added.
->=20
-> - rockchip,resistor-sense: The value in microohms of the sample
->                            resistor.
-> - rockchip,sleep-enter-current: The value in microamps of the sleep
->                                 enter current.
-> - rockchip,sleep-filter-current: The value in microamps of the sleep
->                                  filter current.
-
-please use common property units:
-
-https://github.com/devicetree-org/dt-schema/blob/master/schemas/property-un=
-its.yaml
-
--- Sebastian
-
-> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
-> ---
->  .../devicetree/bindings/mfd/rk808.txt         | 35 +++++++++++++++++--
->  1 file changed, 33 insertions(+), 2 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/rk808.txt b/Documentat=
-ion/devicetree/bindings/mfd/rk808.txt
-> index 23a17a6663ec..fa42b6253d26 100644
-> --- a/Documentation/devicetree/bindings/mfd/rk808.txt
-> +++ b/Documentation/devicetree/bindings/mfd/rk808.txt
-> @@ -70,13 +70,37 @@ Optional RK817 properties:
-> =20
->  - vcc8-supply:  The input supply for BOOST
->  - vcc9-supply:  The input supply for OTG_SWITCH
-> +
->  - codec:	The child node for the codec to hold additional properties.
->  		If no additional properties are required for the codec, this
->  		node can be omitted.
-> -
-> -- rockchip,mic-in-differential: Telling if the microphone uses different=
-ial
-> +- rockchip,mic-in-differential:	Telling if the microphone uses different=
-ial
->  				mode. Should be under the codec child node.
-> =20
-> +- battery:	The child node for the charger to hold additional properties.
-> +		If a battery is not in use, this node can be omitted. If a
-> +		battery node is used, the following values are required:
-> +		rockchip,resistor-sense, rockchip,sleep-enter-current,
-> +		rockchip,sleep-filter-current, and a phandle to a
-> +		monitored-battery node that contains a valid value for
-> +		charge-full-design-microamp-hours,
-> +		charge-term-current-microamp,
-> +		constant-charge-current-max-microamp,
-> +		constant-charge-voltage-max-microvolt,
-> +		voltage-max-design-microvolt, voltage-min-design-microvolt,
-> +		and a valid ocv-capacity table.
-> +- rockchip,resistor-sense: Value in microohms of the battery sense resis=
-tor.
-> +			   The PMIC only supports values of either 10000 or
-> +			   20000. This value is used by the driver to set
-> +			   the correct divisor value to translate ADC readings
-> +			   into the proper units of measure.
-> +- rockchip,sleep-enter-current: Value in microamps of the sleep enter cu=
-rrent
-> +				for the charger. Value is used by the driver
-> +				to calibrate the relax threshold.
-> +- rockchip,sleep-filter-current: Value in microamps of the sleep filter =
-current
-> +				 for the charger. Value is used by the driver
-> +				 to derive the sleep sample current.
-> +
->  Optional RK818 properties:
->  - vcc1-supply:  The input supply for DCDC_REG1
->  - vcc2-supply:  The input supply for DCDC_REG2
-> @@ -459,6 +483,13 @@ Example:
->  			};
->  		};
-> =20
-> +		rk817_battery: battery {
-> +			monitored-battery =3D <&battery_cell>;
-> +			rockchip,resistor-sense =3D <10000>;
-> +			rockchip,sleep-enter-current =3D <300000>;
-> +			rockchip,sleep-filter-current =3D <100000>;
-> +		};
-> +
->  		rk817_codec: codec {
->  			rockchip,mic-in-differential;
->  		};
-> --=20
-> 2.25.1
->=20
-
---pntqqh5scteorx5d
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmEQbYUACgkQ2O7X88g7
-+pp23A/+LfEKSuvv0Gu++WqrdOYO5aozobC75hO29l/vAooU8hXId98PEDnNiDIi
-kv9WyULSLJxqbDaY6GGyQ8XpVeQbUoE4leuM0kqLpDsa2SK6zLOxQBkIUMXTZd6g
-KGaYYcjmSaBkEDUPLZdjtbP4I+CCOhbbHw7swUrfeqddJu5xiTxn6dgWAdNDAUR0
-XU7PmnUzOaYfHOHPKlhj495dvfX3JPTryLB/jdhCybyTzS2opehTFw+DfQMrHcVH
-Gnt4Cr6cWp0t2w7OcuNUnAvirg1Ct8OnCSt6SgNif0c+/VFQH7/+eGq2dVWuzv0w
-VrGcywG15Y45cbwHGq8XJRcfK0SVUjr3uPZhNVzXQ73hwbf6aGy3w2ELmFLxl6oA
-T7Ja3gIsY90yY0ugundwMF5SudJ7I/QXWPIBxTzYPCQAP9+OqevSeMVNlC6Wd5sK
-p4FrsR5jxHMcPArqIEBjC2ZvSJWqQ+wmfZYxsN94RE18OdAvLEquPG5X8E6YOopA
-nYlNQ1qHXktlCFeDH3nZVly6OLwhrAF1fs9O8LdSZQ+m+tomlcZsnMXRD9QOQ4qq
-MhPm4zCt0j0dKe6G3+3pHBcbeWdPumP6s5c90vjNoUwpgairkdM/wGRgwUpTN85+
-ue0hWagMf9KX7semQ7Pb921i5a49Xwsj3Cdmoy4m+CczBdVIfpk=
-=XGiK
------END PGP SIGNATURE-----
-
---pntqqh5scteorx5d--
+-- 
+viresh
