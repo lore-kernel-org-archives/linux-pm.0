@@ -5,66 +5,66 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FB8AC4320A
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 02:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9EA1C43216
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 02:54:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2453E60FE6
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 02:54:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D40E6101D
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 02:54:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235609AbhHJCzQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Aug 2021 22:55:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44794 "EHLO
+        id S232968AbhHJCzR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Aug 2021 22:55:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235532AbhHJCzP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Aug 2021 22:55:15 -0400
-Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95747C0613D3;
-        Mon,  9 Aug 2021 19:54:54 -0700 (PDT)
-Received: by mail-ot1-x330.google.com with SMTP id d10-20020a9d4f0a0000b02904f51c5004e3so16047397otl.9;
-        Mon, 09 Aug 2021 19:54:54 -0700 (PDT)
+        with ESMTP id S235985AbhHJCzR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Aug 2021 22:55:17 -0400
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB52FC061799;
+        Mon,  9 Aug 2021 19:54:55 -0700 (PDT)
+Received: by mail-ot1-x32d.google.com with SMTP id a7-20020a9d5c870000b029050333abe08aso6637590oti.13;
+        Mon, 09 Aug 2021 19:54:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=NAtkwAyVgtC8y4CNGOEmiC9zMuGUaINxIPtLd7hC3ZU=;
-        b=nr2Mn+JFfuQgrJTysew3cyBVLHxbel8EBlXTXFHOwfoyUvKSdp+qPDdVexnMq+2jW1
-         I6f5s2MI9KLlnAGxRMD67rEIX//yWpmw3nvhmrmJuu17vqQSzVZ9NsTbPPNNev0eAdSV
-         eHQN/yD14mHYbLsW7U9MQhczx0bSmuFgDUAtD0BfU61KnNVXmiMnDf7IxBKC7f8vob6L
-         68CL85g6mQmBE2SaySa3vxBLmnGHrSwyAA180Aar/YFhhTIdRW09ebfvDABv6ujIVd7g
-         4W+AviOh+8Dmn1K9UqeojhBW6rWzCkdyH3TLXlSJXTGVupbTLr4YBMZ4Hlj8Whmvh9te
-         nv+A==
+        bh=CTuSMH4A7Ffb6ZlHMh0V3hg0lEYSc6xST4UQtOrkdPg=;
+        b=Mc8XzRnKYGwBFbKGq0j1Ioq0aMvAl1z7h8aGveQLoAawDFeikygiS+FmjQGTkn26vh
+         4BgmKsfTk5KVrMfxGHzRS3ql0ZXfzscKc49wgFpeZPFjE0V/Yg+McqqW0P39yHbLU+ht
+         uUAQuiDfXpuXiC3CZcmH9eGUDqI6egyuAkbiQmKEZbeb6B2dQ78+1OrW89Xsk0/LwYIQ
+         IAX0+mwqRcmC8f+r13bw5mKSxvfuK6RHEB9Udcjc3ldzIUfso67veXp08xMTdNre26ot
+         4MqAl66bsCfJhxY3IeJFGb93PEVee1q+CrPnuJeFe87a5Yan+kvD16DqNKhXBtoZ/qlO
+         le0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=NAtkwAyVgtC8y4CNGOEmiC9zMuGUaINxIPtLd7hC3ZU=;
-        b=QzuXGAGji7I9IrgxzpI2CFHpqYhf3rJ8KykJq6pPOAlwc5AYl6MPr7/Ede0FHLvZkn
-         7c2kaPejpu/brpY437RpuOmd9qB+xqjHDy2ukmA8rk27c+bZyBw8fnXXLo9Ow77VrRLR
-         cicbvcfJe2Ml3rerxWYTukGo6f6Ywi89lbSCfIBqwxBZNxetHHo07jPZ1W9gUNL/hjgL
-         mH2BBjDOtPU+0CamY9LeEntMd9GmvuYppUv9CMHc/QSubE5/Vsg6Nv4BR/eNGsXDRPRf
-         sbvtcWDY6k/kEkx36jPOYw87KqpHZilR92JgUjzVr3S0ImOanS+xXrAOkjpZG9LFwtBk
-         Fx+w==
-X-Gm-Message-State: AOAM532fatb3TImZlw3IQcBBVrVcfam1/9Y+Fhi+A3hczVWrZ+T+u5IH
-        G41HXAoS2fvGgaIQdoFhALWWtDm23Q8=
-X-Google-Smtp-Source: ABdhPJylPVFvC8qCSFvQbWNv+7rAsfpAM7I+z761noOqStp517rEPEiUYcXFxKW+yiHI22yW3h394A==
-X-Received: by 2002:a9d:de1:: with SMTP id 88mr3436397ots.60.1628564092532;
-        Mon, 09 Aug 2021 19:54:52 -0700 (PDT)
+        bh=CTuSMH4A7Ffb6ZlHMh0V3hg0lEYSc6xST4UQtOrkdPg=;
+        b=TZvy5SMkn81u8XzjFMmclLFVTM0LkCrD6h4tpJc9WPw80jEN15p++7MoiT3C6AI6Ve
+         W+gPIuugyDuBzwKzG9ejX3XKp7nC+eonQMhrjISqQgiF/U1T5rCDY1Q21t4dQMevmpL5
+         BpV1/gbLxlN4BL5kPW9EXbGMgGBADwobHkmGgd0ndMzjt4uH4H+69zrcWmDu5joiWsHu
+         RaaTfkHGDy8uS5NAubktxmcXP1HDuawE6ZplaDn2ld+QAuIT9DrkHhUEDb/kPlzmF2Y8
+         nTK/LFihvqz9ZuoKCCy6CXa0l6cnrxeuP9HvUjjVIRk9GwkWBrDvL50J+xQc3s8/i392
+         Javw==
+X-Gm-Message-State: AOAM530lunSQY3J6K+cuFBONJN4O01+AN3Z2+yJOgTDMr8MYpNdnM+w2
+        BfKKn4IWsBgQ7tYvyA/EXX45Gzsd2+s=
+X-Google-Smtp-Source: ABdhPJwlRVu7yKGk3mooNF1L4OP8yzSS8BwyFARWD8TW5wtBBXh6+oSlKwOLSOpq7w6GK3rgAQJJww==
+X-Received: by 2002:a9d:67d9:: with SMTP id c25mr13471087otn.65.1628564094777;
+        Mon, 09 Aug 2021 19:54:54 -0700 (PDT)
 Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
-        by smtp.gmail.com with ESMTPSA id h187sm3654898oif.48.2021.08.09.19.54.51
+        by smtp.gmail.com with ESMTPSA id h187sm3654898oif.48.2021.08.09.19.54.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Aug 2021 19:54:52 -0700 (PDT)
+        Mon, 09 Aug 2021 19:54:54 -0700 (PDT)
 From:   Chris Morgan <macroalpha82@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
         maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
         robh+dt@kernel.org, lee.jones@linaro.org, pgwipeout@gmail.com,
         Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH v3 2/4] mfd: Add Rockchip rk817 battery charger support
-Date:   Mon,  9 Aug 2021 21:54:34 -0500
-Message-Id: <20210810025436.23367-3-macroalpha82@gmail.com>
+Subject: [PATCH v3 4/4] arm64: dts: rockchip: add rk817 charger to Odroid Go Advance
+Date:   Mon,  9 Aug 2021 21:54:36 -0500
+Message-Id: <20210810025436.23367-5-macroalpha82@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210810025436.23367-1-macroalpha82@gmail.com>
 References: <20210810025436.23367-1-macroalpha82@gmail.com>
@@ -76,173 +76,61 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Chris Morgan <macromorgan@hotmail.com>
 
-Add rk817 charger support cell to rk808 mfd driver.
+Add the new rk817 charger driver to the Odroid Go Advance. Create a
+monitored battery node as well for the charger to use. All values
+from monitored battery are gathered from the BSP kernel for the
+Odroid Go Advance provided by HardKernel.
 
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
 ---
- drivers/mfd/rk808.c       | 16 ++++++-
- include/linux/mfd/rk808.h | 87 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 102 insertions(+), 1 deletion(-)
+ .../boot/dts/rockchip/rk3326-odroid-go2.dts   | 26 +++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
-index 77ccd31ca1d9..edc779aee667 100644
---- a/drivers/mfd/rk808.c
-+++ b/drivers/mfd/rk808.c
-@@ -66,6 +66,10 @@ static bool rk817_is_volatile_reg(struct device *dev, unsigned int reg)
- 	case RK817_SECONDS_REG ... RK817_WEEKS_REG:
- 	case RK817_RTC_STATUS_REG:
- 	case RK817_CODEC_DTOP_LPT_SRST:
-+	case RK817_GAS_GAUGE_ADC_CONFIG0 ... RK817_GAS_GAUGE_CUR_ADC_K0:
-+	case RK817_PMIC_CHRG_STS:
-+	case RK817_PMIC_CHRG_OUT:
-+	case RK817_PMIC_CHRG_IN:
- 	case RK817_INT_STS_REG0:
- 	case RK817_INT_STS_REG1:
- 	case RK817_INT_STS_REG2:
-@@ -73,7 +77,7 @@ static bool rk817_is_volatile_reg(struct device *dev, unsigned int reg)
- 		return true;
- 	}
+diff --git a/arch/arm64/boot/dts/rockchip/rk3326-odroid-go2.dts b/arch/arm64/boot/dts/rockchip/rk3326-odroid-go2.dts
+index 7fc674a99a6c..aff8d0768c5a 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3326-odroid-go2.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3326-odroid-go2.dts
+@@ -52,6 +52,25 @@ backlight: backlight {
+ 		pwms = <&pwm1 0 25000 0>;
+ 	};
  
--	return true;
-+	return false;
- }
++	battery_cell: battery-cell {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <3000000>;
++		charge-term-current-microamp = <300000>;
++		constant-charge-current-max-microamp = <2000000>;
++		constant-charge-voltage-max-microvolt = <4200000>;
++		factory-internal-resistance-micro-ohms = <180000>;
++		voltage-max-design-microvolt = <4100000>;
++		voltage-min-design-microvolt = <3500000>;
++
++		ocv-capacity-celsius = <20>;
++		ocv-capacity-table-0 =	<4106000 100>, <4071000 95>, <4018000 90>, <3975000 85>,
++					<3946000 80>, <3908000 75>, <3877000 70>, <3853000 65>,
++					<3834000 60>, <3816000 55>, <3802000 50>, <3788000 45>,
++					<3774000 40>, <3760000 35>, <3748000 30>, <3735000 25>,
++					<3718000 20>, <3697000 15>, <3685000 10>, <3625000 5>,
++					<3500000 0>;
++	};
++
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 		pinctrl-names = "default";
+@@ -462,6 +481,13 @@ regulator-state-mem {
+ 			};
+ 		};
  
- static const struct regmap_config rk818_regmap_config = {
-@@ -126,6 +130,11 @@ static const struct resource rk817_pwrkey_resources[] = {
- 	DEFINE_RES_IRQ(RK817_IRQ_PWRON_FALL),
- };
- 
-+static const struct resource rk817_charger_resources[] = {
-+	DEFINE_RES_IRQ(RK817_IRQ_PLUG_IN),
-+	DEFINE_RES_IRQ(RK817_IRQ_PLUG_OUT),
-+};
++		rk817_battery: battery {
++			monitored-battery = <&battery_cell>;
++			rockchip,resistor-sense-micro-ohms = <10000>;
++			rockchip,sleep-enter-current-microamp = <300000>;
++			rockchip,sleep-filter-current-microamp = <100000>;
++		};
 +
- static const struct mfd_cell rk805s[] = {
- 	{ .name = "rk808-clkout", },
- 	{ .name = "rk808-regulator", },
-@@ -165,6 +174,11 @@ static const struct mfd_cell rk817s[] = {
- 		.resources = &rk817_rtc_resources[0],
- 	},
- 	{ .name = "rk817-codec",},
-+	{
-+		.name = "rk817-charger",
-+		.num_resources = ARRAY_SIZE(rk817_charger_resources),
-+		.resources = &rk817_charger_resources[0],
-+	},
- };
- 
- static const struct mfd_cell rk818s[] = {
-diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
-index a96e6d43ca06..1390432c0222 100644
---- a/include/linux/mfd/rk808.h
-+++ b/include/linux/mfd/rk808.h
-@@ -518,6 +518,74 @@ enum rk809_reg_id {
- #define MIC_DIFF_DIS			(0x0 << 7)
- #define MIC_DIFF_EN			(0x1 << 7)
- 
-+/* RK817 Battery Registers */
-+#define RK817_GAS_GAUGE_ADC_CONFIG0	0x50
-+#define RK817_GG_EN			(0x1 << 7)
-+#define RK817_SYS_VOL_ADC_EN		(0x1 << 6)
-+#define RK817_TS_ADC_EN			(0x1 << 5)
-+#define RK817_USB_VOL_ADC_EN		(0x1 << 4)
-+#define RK817_BAT_VOL_ADC_EN		(0x1 << 3)
-+#define RK817_BAT_CUR_ADC_EN		(0x1 << 2)
-+
-+#define RK817_GAS_GAUGE_ADC_CONFIG1	0x55
-+
-+#define RK817_CUR_CALIB_UPD		(0x1 << 7)
-+#define RK817_VOL_CALIB_UPD		(0x1 << 6)
-+
-+#define RK817_GAS_GAUGE_GG_CON		0x56
-+#define RK817_GAS_GAUGE_GG_STS		0x57
-+
-+#define RK817_RELAX_VOL_UPD		(0x3 << 2)
-+#define RK817_RELAX_STS			(0x1 << 1)
-+
-+#define RK817_GAS_GAUGE_RELAX_THRE_H	0x58
-+#define RK817_GAS_GAUGE_RELAX_THRE_L	0x59
-+#define RK817_GAS_GAUGE_OCV_THRE_VOL	0x62
-+#define RK817_GAS_GAUGE_OCV_VOL_H	0x63
-+#define RK817_GAS_GAUGE_OCV_VOL_L	0x64
-+#define RK817_GAS_GAUGE_PWRON_VOL_H	0x6b
-+#define RK817_GAS_GAUGE_PWRON_VOL_L	0x6c
-+#define RK817_GAS_GAUGE_PWRON_CUR_H	0x6d
-+#define RK817_GAS_GAUGE_PWRON_CUR_L	0x6e
-+#define RK817_GAS_GAUGE_OFF_CNT		0x6f
-+#define RK817_GAS_GAUGE_Q_INIT_H3	0x70
-+#define RK817_GAS_GAUGE_Q_INIT_H2	0x71
-+#define RK817_GAS_GAUGE_Q_INIT_L1	0x72
-+#define RK817_GAS_GAUGE_Q_INIT_L0	0x73
-+#define RK817_GAS_GAUGE_Q_PRES_H3	0x74
-+#define RK817_GAS_GAUGE_Q_PRES_H2	0x75
-+#define RK817_GAS_GAUGE_Q_PRES_L1	0x76
-+#define RK817_GAS_GAUGE_Q_PRES_L0	0x77
-+#define RK817_GAS_GAUGE_BAT_VOL_H	0x78
-+#define RK817_GAS_GAUGE_BAT_VOL_L	0x79
-+#define RK817_GAS_GAUGE_BAT_CUR_H	0x7a
-+#define RK817_GAS_GAUGE_BAT_CUR_L	0x7b
-+#define RK817_GAS_GAUGE_USB_VOL_H	0x7e
-+#define RK817_GAS_GAUGE_USB_VOL_L	0x7f
-+#define RK817_GAS_GAUGE_SYS_VOL_H	0x80
-+#define RK817_GAS_GAUGE_SYS_VOL_L	0x81
-+#define RK817_GAS_GAUGE_Q_MAX_H3	0x82
-+#define RK817_GAS_GAUGE_Q_MAX_H2	0x83
-+#define RK817_GAS_GAUGE_Q_MAX_L1	0x84
-+#define RK817_GAS_GAUGE_Q_MAX_L0	0x85
-+#define RK817_GAS_GAUGE_SLEEP_CON_SAMP_CUR_H	0x8f
-+#define RK817_GAS_GAUGE_SLEEP_CON_SAMP_CUR_L	0x90
-+#define RK817_GAS_GAUGE_CAL_OFFSET_H	0x91
-+#define RK817_GAS_GAUGE_CAL_OFFSET_L	0x92
-+#define RK817_GAS_GAUGE_VCALIB0_H	0x93
-+#define RK817_GAS_GAUGE_VCALIB0_L	0x94
-+#define RK817_GAS_GAUGE_VCALIB1_H	0x95
-+#define RK817_GAS_GAUGE_VCALIB1_L	0x96
-+#define RK817_GAS_GAUGE_IOFFSET_H	0x97
-+#define RK817_GAS_GAUGE_IOFFSET_L	0x98
-+#define RK817_GAS_GAUGE_BAT_R1		0x9a
-+#define RK817_GAS_GAUGE_BAT_R2		0x9b
-+#define RK817_GAS_GAUGE_BAT_R3		0x9c
-+#define RK817_GAS_GAUGE_DATA3		0xa0
-+#define RK817_GAS_GAUGE_DATA4		0xa1
-+#define RK817_GAS_GAUGE_DATA5		0xa2
-+#define RK817_GAS_GAUGE_CUR_ADC_K0	0xb0
-+
- #define RK817_POWER_EN_REG(i)		(0xb1 + (i))
- #define RK817_POWER_SLP_EN_REG(i)	(0xb5 + (i))
- 
-@@ -543,10 +611,29 @@ enum rk809_reg_id {
- #define RK817_LDO_ON_VSEL_REG(idx)	(0xcc + (idx) * 2)
- #define RK817_BOOST_OTG_CFG		(0xde)
- 
-+#define RK817_PMIC_CHRG_OUT		0xe4
-+#define RK817_CHRG_VOL_SEL		(0x07 << 4)
-+#define RK817_CHRG_CUR_SEL		(0x07 << 0)
-+
-+#define RK817_PMIC_CHRG_IN		0xe5
-+#define RK817_USB_VLIM_EN		(0x01 << 7)
-+#define RK817_USB_VLIM_SEL		(0x07 << 4)
-+#define RK817_USB_ILIM_EN		(0x01 << 3)
-+#define RK817_USB_ILIM_SEL		(0x07 << 0)
-+#define RK817_PMIC_CHRG_TERM		0xe6
-+#define RK817_CHRG_TERM_ANA_DIG		(0x01 << 2)
-+#define RK817_CHRG_TERM_ANA_SEL		(0x03 << 0)
-+#define RK817_CHRG_EN			(0x01 << 6)
-+
-+#define RK817_PMIC_CHRG_STS		0xeb
-+#define RK817_CHG_STS			(0x07 << 4)
-+
- #define RK817_ID_MSB			0xed
- #define RK817_ID_LSB			0xee
- 
- #define RK817_SYS_STS			0xf0
-+#define RK817_PLUG_IN_STS		(0x1 << 6)
-+
- #define RK817_SYS_CFG(i)		(0xf1 + (i))
- 
- #define RK817_ON_SOURCE_REG		0xf5
+ 		rk817_codec: codec {
+ 			rockchip,mic-in-differential;
+ 		};
 -- 
 2.25.1
 
