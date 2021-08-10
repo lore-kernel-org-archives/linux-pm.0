@@ -2,105 +2,197 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FSL_HELO_FAKE,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4164EC4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:54:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12335C4338F
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 14:08:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B25361008
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:54:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE6C560F56
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 14:08:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242075AbhHJNzE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Aug 2021 09:55:04 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:55138 "EHLO m43-7.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S242055AbhHJNzD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Aug 2021 09:55:03 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1628603681; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=k4nrFBYjkENYXFRZoyAl9snMXCad6DKybTDWMgXjTBE=; b=ioJ5uuM/9KUSjYAnbXSvcjOkdXtcpbE929MpO+fd4X2uPNtJF2b2k0dGFJV47zxVaoEOfRbR
- TcPY5oBgPrj/vG2axwB0b7EoK/NXa2KmuNgwgl6G/n1xUGxdwL2Q1Sekhp/MUMFUzdV01+F4
- 8JlMC4a5rQV6om56y+ziDOOb09E=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n04.prod.us-east-1.postgun.com with SMTP id
- 611285137ee6040977480b56 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 10 Aug 2021 13:54:27
- GMT
-Sender: psodagud=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id C8998C4323A; Tue, 10 Aug 2021 13:54:26 +0000 (UTC)
-Received: from th-lint-038.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: psodagud)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 9DE98C4323A;
-        Tue, 10 Aug 2021 13:54:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 9DE98C4323A
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=psodagud@codeaurora.org
-From:   Prasad Sodagudi <psodagud@codeaurora.org>
-To:     gregkh@linuxfoundation.org, rjw@rjwysocki.net
-Cc:     len.brown@intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, pavel@ucw.cz, psodagud@codeaurora.org
-Subject: [PATCH v2] PM: sleep: core: Avoid setting power.must_resume to false
-Date:   Tue, 10 Aug 2021 06:54:17 -0700
-Message-Id: <1628603658-261568-1-git-send-email-psodagud@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
+        id S241769AbhHJOIU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Aug 2021 10:08:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59304 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241765AbhHJOIS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Aug 2021 10:08:18 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D535C0613D3
+        for <linux-pm@vger.kernel.org>; Tue, 10 Aug 2021 07:07:56 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id k29so13680543wrd.7
+        for <linux-pm@vger.kernel.org>; Tue, 10 Aug 2021 07:07:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=SnhsN22T/Wy3BmQFqe6fY1qYL5kndnD8Ki55OXkIv84=;
+        b=PFnMND/LiQSDMGTQc7wyZt3McaUEceGMY+LXW5W7DSgeHhlWKnd7+CQw3LwUggVh5h
+         tcV9tTjYlwkU3nfOEypGRNFEKHRjTX7unhVKPKDcaZ/nbhbaJu2mqbQRYodgnmOUCboi
+         dH9FnFIIOacUffFay8cnHILqzsqh+oXn3PQhteHnM32+/O2fk7bNSJh1fKo3+9jJxbGL
+         v78NRKLZKHP6mfx5w2u6Pl6O6vLwNVSf10OEyLqxUDy3XOBhn9/2aflcj9Sf9K5iHoln
+         rRCvRKt/0x4ukgkYiUqW244lzw0TSwh9BEnlRnaBTtbmJkm7C3j74JDFFiEW+EkmSfAV
+         cJWQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=SnhsN22T/Wy3BmQFqe6fY1qYL5kndnD8Ki55OXkIv84=;
+        b=rhPJ9+SGOEie3aBjuhmVF8+d+vIW9Qlm2cTdVTWmVweEo+erGWyOBS7Cc8WBlOkndt
+         6BF5iBXIlVmWEIQ4vuIjky88t77HGvWxS9jHjJLqfAqgslIqY+9y8+bJocsaMTqHQaXP
+         4n64kZt3LE/hL9+Rt/yEAQsPQoyPQKlTMm447zD7J6EUtI7cl2TcFz+jT68pHdoB2+0R
+         EY1oTVZBAVakohpiNFt2i7c1ogxSXpVhU6mFx88XKxfmbjiTqRcDNRrCZtciFYoOdpR+
+         V7Jlxvo1/SSd79GpHIfJww8As/vNo3I9Ij1n/YB4PD9f57BE3ECdwlJB9VfLLQGHvl02
+         8Nhw==
+X-Gm-Message-State: AOAM531mlBHQkTNWXetlYQT43wBHfsMeQy/xOpu71YyWQuxPNGMI39f1
+        sM121cNbTa6nQ8Z0gs1kmUmoQA==
+X-Google-Smtp-Source: ABdhPJzA5Baa5ighb0wLidXU347ovV5lY6FZ5W73o2T6dJx5Mj16yi38ep7cYWYIuuvD07llCpHoJg==
+X-Received: by 2002:adf:d227:: with SMTP id k7mr2591958wrh.285.1628604474556;
+        Tue, 10 Aug 2021 07:07:54 -0700 (PDT)
+Received: from google.com ([2a00:79e0:d:210:e920:cedf:a082:9d02])
+        by smtp.gmail.com with ESMTPSA id y21sm2968203wma.38.2021.08.10.07.07.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Aug 2021 07:07:54 -0700 (PDT)
+Date:   Tue, 10 Aug 2021 15:07:48 +0100
+From:   Quentin Perret <qperret@google.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Vincent Donnefort <vincent.donnefort@arm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 0/9] Inefficient OPPs
+Message-ID: <YRKINFhDmYqvgxsN@google.com>
+References: <1625738946-295849-1-git-send-email-vincent.donnefort@arm.com>
+ <CAJZ5v0jLzj48-Bu1-i4=r3aratJwRzVYuaPvycUb--4jKSRkHw@mail.gmail.com>
+ <20210810061323.kc5kvy6m6566z3gz@vireshk-i7>
+ <78bc08fe-71c2-398c-9a10-caa54b8bd866@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <78bc08fe-71c2-398c-9a10-caa54b8bd866@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is regarding suspend/resume(s2idle) scenario of devices and difference
-between the LTS kernels 5.4 and 5.10 with respect to devices suspend and
-resume. Observing that devices suspended in suspend_late stage are not
-getting resumed in resume_early stage.
-1) LTS kernel 5.4 kernel do not have this problem but 5.10 kernel
-shows this problem.
-2) 'commit 6e176bf8d461 ("PM: sleep: core: Do not skip callbacks in the resume phase")'
-is skipping the driver early_resume callbacks.
+On Tuesday 10 Aug 2021 at 13:28:21 (+0100), Lukasz Luba wrote:
+> 
+> 
+> On 8/10/21 7:13 AM, Viresh Kumar wrote:
+> > On 04-08-21, 18:21, Rafael J. Wysocki wrote:
+> > > The cpufreq changes are mostly fine by me now, but I would like to
+> > > hear from Viresh regarding this.
+> > 
+> > I have few doubts/concerns here.
+> > 
+> > Just to iterate it again, the idea here is to choose a higher
+> > frequency, which will work in an efficient manner based on energy
+> > consumption. So this _only_ works for the case where the caller asked
+> > for CPUFREQ_RELATION_L.
+> > 
+> > - The new flag being added here, CPUFREQ_RELATION_E, doesn't feel
+> >    complete in this sense to me. It should rather be called as
+> >    CPUFREQ_RELATION_LE instead as it is _always_ used with relation L.
+> > 
+> > - IMO this has made the caller site a bit confusing now, i.e.  why we
+> >    send CPUFREQ_RELATION_E sometimes and CPUFREQ_RELATION_H at other
+> >    times. Why shouldn't the _H freq be efficient as well ? I understand
+> >    that this was done to not do the efficient stuff in case of
+> >    userspace/powersave/performance governors.
+> > 
+> >    What about reusing following for finding all such cases ?
+> > 
+> >          policy->governor->flags & CPUFREQ_GOV_DYNAMIC_SWITCHING
+> > 
+> >    The driver can set a flag to tell if it wants efficient frequencies
+> >    or not, and at runtime we apply efficient algorithm only if the
+> >    current governor does DVFS, which will leave out
+> >    userspace/performance/powersave.
+> > 
+> > 
+> > Now the other thing I didn't like since the beginning, I still don't
+> > like it :)
+> > 
+> > A cpufreq table is provided by the driver, which can have some
+> > inefficient frequencies. The inefficient frequencies can be caught by
+> > many parts of the kernel, the current way (in this series) is via EM.
+> > But this can totally be anything else as well, like a devfreq driver.
+> 
+> Currently devfreq drivers and governors don't support 'inefficient'
+> OPPs idea. They are not even 'utilization' driven yet. I'm not sure
+> if that would make sense for their workloads. For now, they are far
+> behind the CPUFreq/scheduler development in this field.
+> It needs more research and experiments, to even estimate if this brings
+> benefits. So, I would just skip devfreq use case...
+> 
+> > 
+> > The way we have tied this whole thing with EM, via
+> > cpufreq_read_inefficiencies_from_em(), is what I don't like. We have
+> > closely bound the whole thing with one of the ways this can be done
+> > and we shouldn't be polluting the cpufreq core with this IMHO. In a
+> > sane world, the cpufreq core should just provide an API, like
+> > cpufreq_set_freq_invariant() and it can be called by any part of
+> > the kernel.
+> > 
+> > I understand that the current problem is where do we make that call
+> > from and I suggested dev_pm_opp_of_register_em() for the same earlier.
+> > But that doesn't work as the policy isn't properly initialized by that
+> > point.
+> 
+> True, the policy is not initialized yet when cpufreq_driver::init()
+> callback is called, which the current place for scmi-cpufreq.
+> 
+> What about the other callback cpufreq_driver::ready() ?
+> This might solve the two issues I mentioned below.
+> 
+> > 
+> > Now that I see the current implementation, I think we can make it work
+> > in a different way.
+> > 
+> > - Copy what's done for thermal-cooling in cpufreq core, i.e.
+> >    CPUFREQ_IS_COOLING_DEV flag, for the EM core as well. So the cpufreq
+> >    drivers can set a flag, CPUFREQ_REGISTER_EM, and the cpufreq core
+> >    can call dev_pm_opp_of_register_em() on their behalf. This call will
+> >    be made from cpufreq_online(), just before/after
+> >    cpufreq_thermal_control_enabled() stuff. By this point the policy is
+> >    properly initialized and is also updated in
+> >    per_cpu(cpufreq_cpu_data).
+> > 
+> > - Now the cpufreq core can provide an API like
+> >    cpufreq_set_freq_invariant(int cpu, unsigned long freq), which can
+> >    be called from EM core's implementation of
+> >    em_dev_register_perf_domain().
+> > 
+> 
+> I have to point out that there are two issues (which we
+> might solve):
+> 1. Advanced setup, due to per-CPU performance requests,
+> which are not limited to real DVFS domain.
+> The scmi-cpufreq (and possibly some other soon) uses more
+> tricky EM setup. As you might recall, the construction of temporary
+> cpumask is a bit complex, since we want per-CPU policy, but the
+> cpumask pass to EM has not a single bit but is 'spanned' with a few
+> CPUs.
+> 
+> 2. The scmi-cpufreq (and IIRC MTK cpufreq driver soon) requires
+> custom struct em_data_callback, since the power data is coming from FW.
 
-In device_resume_early function dev->power.must_resume is used to skip the
-resume call back. It looks this function is expecting that,
-__device_suspend_noirq() would set dev->power.must_resume = true for the
-devices which does not have DPM_FLAG_MAY_SKIP_RESUME flag set.
++1, we really need this to work.
 
-3) Problematic scenario is as follows -  During the device suspend/resume
-scenario all the devices in  the suspend_late stage are successful and some
-device can fail to suspend in suspend_noirq(device_suspend_noirq->
-__device_suspend_noirq) phase.
-As a device failed in dpm_noirq_suspend_devices phase, dpm_resume_noirq is
-getting called to resume devices in dpm_late_early_list in the noirq phase.
+> If there is a need for complex EM registration, maybe we could
+> do it in the cpufreq_driver::ready(). The policy would be ready
+> during that call, so it might fly.
 
-4) During the Devices_early_resume stage
-dpm_resume_early()-->device_resume_early() functions skipping the devices
-early resume callbacks.
-799         if (dev_pm_skip_resume(dev))
-800                  goto Skip;
-
-5) Devices suspended in suspend_late stage are not getting resumed in
-Devices_early_resume stage because of
-'commit 6e176bf8d461 ("PM: sleep: core: Do not skip callbacks in the resume phase")'
-is skipping the driver early_resume callbacks when dev->power.must_resume is false.
-
-
-Changelog:
-v1 -> v2:
- - Fixed indentation comments.
- - Commit text updated to include scenario.
-
-Prasad Sodagudi (1):
-  PM: sleep: core: Avoid setting power.must_resume to false
-
- drivers/base/power/main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+I remember trying this, but ran into issues as well FWIW. I would need
+to check if this is still relevant, but at the time this was introduced
+we needed to register the EM _before_ the policy notifier is called with
+'CPUFREQ_CREATE_POLICY', because this will trigger a sched domain
+rebuild in the arch_topology driver, which allows the scheduler to pick
+up the newly introduced EM data.
