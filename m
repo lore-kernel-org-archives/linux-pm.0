@@ -2,96 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FSL_HELO_FAKE,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C555C4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 15:47:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D3AAC432BE
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 20:06:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F24B960E97
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 15:47:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1CF5260EC0
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 20:06:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240612AbhHJPsF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Aug 2021 11:48:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54636 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232304AbhHJPsE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Aug 2021 11:48:04 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B449C0613C1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Aug 2021 08:47:42 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id 6so1249689wme.5
-        for <linux-pm@vger.kernel.org>; Tue, 10 Aug 2021 08:47:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=vDaGuwWbiFYHv/+u9xTKhERWor1NRN9LJwDDU43ZPlM=;
-        b=Zw9cPJo1djs0P+aiL4Z/uQBZO7+xZbCaqaA0wZD859awofWDpQew9kIJ+YMvQXP6zf
-         LcLqeVcIrZEC946/btXSi+LIGio8KqU6aPfnAc4R/qVR5DRCEhy/XwoEw4lCAhkHzEjo
-         kC1vUPy81d0ihEi9HNCSB9i60gpv1z0rpmnwCzFuOT0MsjbQoJ7cAp5jscmduHW8TIKf
-         Scfqpm3nnAm4s4eE8xWvnYRXZEZ5rBj/MpJltLRqpgd2ghuSeZriEClDKT9ITheAiepp
-         C0vnmnN81qWxRSnuV9kzDSvUN318xPhBOjtMZEftH591aCQrPbEYvhjACyGyaLXBoWn/
-         d1KA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=vDaGuwWbiFYHv/+u9xTKhERWor1NRN9LJwDDU43ZPlM=;
-        b=ZZ/EjvRCakI1eD+ouZEDI95ujQcKQDtacSVbOa7BelVD+DKWvyIh58DY4lv9sKZkFc
-         PCGuDGu0XrVVcxRk8bX0JeoVOnBWyO5gbFafjsXDWZUI+Z+SXH+tMPF7hoT54v/BneLj
-         di7f8l0+qSvfBN3Vo+ylzg3Iq8Yp3PME97zdm440hzTMN706LsNqWhOZ7F9aC+meADzA
-         hV3sjqd+5cJjZC0J/oxpRoMgUuAGUtt2Qiz19mlgR6LrT1/BOAf72IHMBT3D1lNi0DhL
-         ohrLXeJxvePqFzOSY3e+5JGHbxso6tU6uf6RM90Q8GyTFv6RmA4Bzt2atoMRFR2I75Wa
-         ysTg==
-X-Gm-Message-State: AOAM533QNm37DV8cW5whLtgFeb0l2E5MHcTyWGaHVfFQ4SvqrH+TTZhD
-        HEY3nsLub3ycKJt21e4nxdYnAg==
-X-Google-Smtp-Source: ABdhPJw70tHNLWZeI/EEou5AcrDTftv1+g96Lmw+NLH5xI0MNk7/l3taECzY7vXzOuEm9nwaS+S0Nw==
-X-Received: by 2002:a05:600c:3b15:: with SMTP id m21mr23356236wms.99.1628610461080;
-        Tue, 10 Aug 2021 08:47:41 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:210:e920:cedf:a082:9d02])
-        by smtp.gmail.com with ESMTPSA id z13sm12663882wrs.71.2021.08.10.08.47.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Aug 2021 08:47:40 -0700 (PDT)
-Date:   Tue, 10 Aug 2021 16:47:34 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Lukasz Luba <lukasz.luba@arm.com>, r@google.com
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Vincent Donnefort <vincent.donnefort@arm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v4 0/9] Inefficient OPPs
-Message-ID: <YRKfluMP8G41/P61@google.com>
-References: <1625738946-295849-1-git-send-email-vincent.donnefort@arm.com>
- <CAJZ5v0jLzj48-Bu1-i4=r3aratJwRzVYuaPvycUb--4jKSRkHw@mail.gmail.com>
- <20210810061323.kc5kvy6m6566z3gz@vireshk-i7>
- <78bc08fe-71c2-398c-9a10-caa54b8bd866@arm.com>
- <YRKINFhDmYqvgxsN@google.com>
- <cf9d78fe-cff0-1992-2c15-7053e4431296@arm.com>
- <b888407c-d444-8184-cbb7-ce8e925b254b@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b888407c-d444-8184-cbb7-ce8e925b254b@arm.com>
+        id S232803AbhHJUG1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Aug 2021 16:06:27 -0400
+Received: from m43-7.mailgun.net ([69.72.43.7]:58826 "EHLO m43-7.mailgun.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232176AbhHJUG0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Aug 2021 16:06:26 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1628625964; h=Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=6bfmi8AzrJv9+nPqsBRGQGrcOB34hjItme5M0oX8YAo=; b=Yrz1hwz4GyufpdlLm2SuesiZq+E0LE6opejmNI/NV29vQi8pkmelqmE2D1XV4plIDyWyE80U
+ L/3RxtM7sC5VezQkMFSG3ntfG/fKEAWTHIrQNdkUHJ2K7Le30Xi0wAymjCMoFG68mn8THTGg
+ AnkBQjbFyKRlxgk5Q6FTFDBxXSg=
+X-Mailgun-Sending-Ip: 69.72.43.7
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
+ 6112dc1db14e7e2ecb3c966d (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 10 Aug 2021 20:05:49
+ GMT
+Sender: psodagud=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 76167C4323A; Tue, 10 Aug 2021 20:05:49 +0000 (UTC)
+Received: from th-lint-038.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: psodagud)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 386FEC433F1;
+        Tue, 10 Aug 2021 20:05:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 386FEC433F1
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=psodagud@codeaurora.org
+From:   Prasad Sodagudi <psodagud@codeaurora.org>
+To:     gregkh@linuxfoundation.org, rjw@rjwysocki.net
+Cc:     len.brown@intel.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, pavel@ucw.cz, psodagud@codeaurora.org
+Subject: [PATCH v3] PM: sleep: core: Avoid setting power.must_resume to false
+Date:   Tue, 10 Aug 2021 13:05:38 -0700
+Message-Id: <1628625938-149376-1-git-send-email-psodagud@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday 10 Aug 2021 at 16:12:29 (+0100), Lukasz Luba wrote:
-> I've checked that. It's not the policy notifier and arch_topology which
-> cause an issue, but the cpufreq governor setup code. Anyway, we cannot
-> wait so late with the EM registration, till e.g. ::ready() callback.
+There are variables(power.may_skip_resume and dev->power.must_resume)
+and DPM_FLAG_MAY_SKIP_RESUME flags to control the resume of devices after
+a system wide suspend transition.
 
-Aha, yes, because by the time the arch_topology driver rebuilds the
-sched domains, the governor is not 'installed', which means the
-scheduler is not in a position to enable EAS yet. So we need to wait
-until sched_cpufreq_governor_change() is called for that. Makes sense,
-thanks for checking, and +1 to your conclusion.
+Setting the DPM_FLAG_MAY_SKIP_RESUME flag means that the driver allows
+its "noirq" and "early" resume callbacks to be skipped if the device
+can be left in suspend after a system-wide transition into the working
+state. PM core determines that the driver's "noirq" and "early" resume
+callbacks should be skipped or not with dev_pm_skip_resume() function by
+checking power.may_skip_resume variable.
+
+power.must_resume variable is getting set to false in __device_suspend()
+function without checking device's DPM_FLAG_MAY_SKIP_RESUME and
+dev->power.usage_count variables. In problematic scenario, where
+all the devices in the suspend_late stage are successful and some
+device can fail to suspend in suspend_noirq phase. So some devices
+successfully suspended in suspend_late stage are not getting chance
+to execute __device_suspend_noirq() to set dev->power.must_resume
+variable to true and not getting resumed in early_resume phase.
+
+Add a check for device's DPM_FLAG_MAY_SKIP_RESUME flag before
+setting power.must_resume variable in __device_suspend function.
+
+Fixes: 6e176bf8d461 ("PM: sleep: core: Do not skip callbacks in the resume phase")
+Signed-off-by: Prasad Sodagudi <psodagud@codeaurora.org>
+---
+ V2 -> V3: Format issues patch posting
+ V1 -> V2: Fixed indentation and commit text to include scenario
+ drivers/base/power/main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index d568772..9ee6987 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1642,7 +1642,11 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	}
+ 
+ 	dev->power.may_skip_resume = true;
+-	dev->power.must_resume = false;
++	if ((atomic_read(&dev->power.usage_count) <= 1) &&
++	     (dev_pm_test_driver_flags(dev, DPM_FLAG_MAY_SKIP_RESUME)))
++		dev->power.must_resume = false;
++	else
++		dev->power.must_resume = true;
+ 
+ 	dpm_watchdog_set(&wd, dev);
+ 	device_lock(dev);
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
