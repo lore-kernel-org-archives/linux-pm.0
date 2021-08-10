@@ -5,47 +5,42 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEB00C4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 10:21:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67DA2C432BE
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 10:24:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C4917610FC
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 10:21:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 46707610CB
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 10:24:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232992AbhHJKWN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Aug 2021 06:22:13 -0400
-Received: from foss.arm.com ([217.140.110.172]:53000 "EHLO foss.arm.com"
+        id S229798AbhHJKZS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Aug 2021 06:25:18 -0400
+Received: from foss.arm.com ([217.140.110.172]:53088 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239790AbhHJKUm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Aug 2021 06:20:42 -0400
+        id S229512AbhHJKZS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Aug 2021 06:25:18 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 81DEF6D;
-        Tue, 10 Aug 2021 03:20:20 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5F7586D;
+        Tue, 10 Aug 2021 03:24:56 -0700 (PDT)
 Received: from [10.57.9.181] (unknown [10.57.9.181])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CE5C93F70D;
-        Tue, 10 Aug 2021 03:20:17 -0700 (PDT)
-Subject: Re: [PATCH 3/8] cpufreq: imx6q: Use auto-registration for energy
- model
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7B99F3F70D;
+        Tue, 10 Aug 2021 03:24:54 -0700 (PDT)
+Subject: Re: [PATCH 5/8] cpufreq: omap: Use auto-registration for energy model
 To:     Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
         Vincent Donnefort <vincent.donnefort@arm.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <cover.1628579170.git.viresh.kumar@linaro.org>
- <ba662b10e043e7734eb9d9e9bbc4c75afab9c2a4.1628579170.git.viresh.kumar@linaro.org>
+ <a17b0f64c3a4cd84a126b3315539c13b15b4738c.1628579170.git.viresh.kumar@linaro.org>
 From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <ff0a6452-22b0-8d03-5fc5-4a48e460eb3d@arm.com>
-Date:   Tue, 10 Aug 2021 11:20:16 +0100
+Message-ID: <e1d23a96-d9af-7151-3023-c279f6b0c970@arm.com>
+Date:   Tue, 10 Aug 2021 11:24:53 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <ba662b10e043e7734eb9d9e9bbc4c75afab9c2a4.1628579170.git.viresh.kumar@linaro.org>
+In-Reply-To: <a17b0f64c3a4cd84a126b3315539c13b15b4738c.1628579170.git.viresh.kumar@linaro.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -64,30 +59,31 @@ On 8/10/21 8:36 AM, Viresh Kumar wrote:
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->   drivers/cpufreq/imx6q-cpufreq.c | 4 ++--
+>   drivers/cpufreq/omap-cpufreq.c | 4 ++--
 >   1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 5bf5fc759881..aa8df5b468d7 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -192,14 +192,14 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
->   	policy->clk = clks[ARM].clk;
->   	cpufreq_generic_init(policy, freq_table, transition_latency);
->   	policy->suspend_freq = max_freq;
-> -	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
+> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+> index e035ee216b0f..303136f97773 100644
+> --- a/drivers/cpufreq/omap-cpufreq.c
+> +++ b/drivers/cpufreq/omap-cpufreq.c
+> @@ -131,7 +131,6 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
+>   
+>   	/* FIXME: what's the actual transition time? */
+>   	cpufreq_generic_init(policy, freq_table, 300 * 1000);
+> -	dev_pm_opp_of_register_em(mpu_dev, policy->cpus);
 >   
 >   	return 0;
 >   }
+> @@ -144,7 +143,8 @@ static int omap_cpu_exit(struct cpufreq_policy *policy)
+>   }
 >   
->   static struct cpufreq_driver imx6q_cpufreq_driver = {
->   	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-> -		 CPUFREQ_IS_COOLING_DEV,
-> +		 CPUFREQ_IS_COOLING_DEV |
-> +		 CPUFREQ_REGISTER_WITH_EM,
->   	.verify = cpufreq_generic_frequency_table_verify,
->   	.target_index = imx6q_set_target,
->   	.get = cpufreq_generic_get,
+>   static struct cpufreq_driver omap_driver = {
+> -	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+> +	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> +			  CPUFREQ_REGISTER_WITH_EM,
+>   	.verify		= cpufreq_generic_frequency_table_verify,
+>   	.target_index	= omap_target,
+>   	.get		= cpufreq_generic_get,
 > 
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
