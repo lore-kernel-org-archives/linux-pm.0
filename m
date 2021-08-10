@@ -2,114 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28818C4320A
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80A5FC4320E
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:42:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1427861077
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:25:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 665A361075
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Aug 2021 13:42:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241352AbhHJN0E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Aug 2021 09:26:04 -0400
-Received: from foss.arm.com ([217.140.110.172]:55352 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S241448AbhHJNZn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Aug 2021 09:25:43 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 350041FB;
-        Tue, 10 Aug 2021 06:25:21 -0700 (PDT)
-Received: from [10.57.9.181] (unknown [10.57.9.181])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8EF013F70D;
-        Tue, 10 Aug 2021 06:25:16 -0700 (PDT)
-Subject: Re: [PATCH 0/8] cpufreq: Auto-register with energy model
-To:     Quentin Perret <qperret@google.com>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Vincent Donnefort <vincent.donnefort@arm.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Fabio Estevam <festevam@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-omap@vger.kernel.org
-References: <cover.1628579170.git.viresh.kumar@linaro.org>
- <YRJym+Vn4bbwQzzs@google.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <af06b333-3d8a-807c-9ccb-d491d6a54930@arm.com>
-Date:   Tue, 10 Aug 2021 14:25:15 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
-MIME-Version: 1.0
-In-Reply-To: <YRJym+Vn4bbwQzzs@google.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+        id S240049AbhHJNnB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Aug 2021 09:43:01 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:45690 "EHLO
+        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241695AbhHJNnB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Aug 2021 09:43:01 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1628602959; h=Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=k4nrFBYjkENYXFRZoyAl9snMXCad6DKybTDWMgXjTBE=; b=YQSUcnCFFyu6u8kJ3rhsKqQHKPlazbFrcEgnR9DRaKglP42uFPadCLqd07647p9DXtHlkf2y
+ HImSsT6xwMrLryxLObxG3yAcvVRPSXMrxZpx4B8FI72FyK+6LCj43+zpt/mBmAXxFoWdwiDW
+ LIRxKJH/J6yGxyKL7lBJbIbqCEY=
+X-Mailgun-Sending-Ip: 198.61.254.9
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n03.prod.us-west-2.postgun.com with SMTP id
+ 6112823cf746c298d9fa3845 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 10 Aug 2021 13:42:20
+ GMT
+Sender: psodagud=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id AB898C43217; Tue, 10 Aug 2021 13:42:20 +0000 (UTC)
+Received: from th-lint-038.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: psodagud)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 73329C433D3;
+        Tue, 10 Aug 2021 13:42:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 73329C433D3
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=psodagud@codeaurora.org
+From:   Prasad Sodagudi <psodagud@codeaurora.org>
+To:     gregkh@linuxfoundation.org, rjw@rjwysocki.net
+Cc:     len.brown@intel.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, pavel@ucw.cz, psodagud@codeaurora.org
+Subject: [PATCH v2] PM: sleep: core: Avoid setting power.must_resume to false
+Date:   Tue, 10 Aug 2021 06:42:11 -0700
+Message-Id: <1628602932-246733-1-git-send-email-psodagud@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This is regarding suspend/resume(s2idle) scenario of devices and difference
+between the LTS kernels 5.4 and 5.10 with respect to devices suspend and
+resume. Observing that devices suspended in suspend_late stage are not
+getting resumed in resume_early stage.
+1) LTS kernel 5.4 kernel do not have this problem but 5.10 kernel
+shows this problem.
+2) 'commit 6e176bf8d461 ("PM: sleep: core: Do not skip callbacks in the resume phase")'
+is skipping the driver early_resume callbacks.
+
+In device_resume_early function dev->power.must_resume is used to skip the
+resume call back. It looks this function is expecting that,
+__device_suspend_noirq() would set dev->power.must_resume = true for the
+devices which does not have DPM_FLAG_MAY_SKIP_RESUME flag set.
+
+3) Problematic scenario is as follows -  During the device suspend/resume
+scenario all the devices in  the suspend_late stage are successful and some
+device can fail to suspend in suspend_noirq(device_suspend_noirq->
+__device_suspend_noirq) phase.
+As a device failed in dpm_noirq_suspend_devices phase, dpm_resume_noirq is
+getting called to resume devices in dpm_late_early_list in the noirq phase.
+
+4) During the Devices_early_resume stage
+dpm_resume_early()-->device_resume_early() functions skipping the devices
+early resume callbacks.
+799         if (dev_pm_skip_resume(dev))
+800                  goto Skip;
+
+5) Devices suspended in suspend_late stage are not getting resumed in
+Devices_early_resume stage because of
+'commit 6e176bf8d461 ("PM: sleep: core: Do not skip callbacks in the resume phase")'
+is skipping the driver early_resume callbacks when dev->power.must_resume is false.
 
 
-On 8/10/21 1:35 PM, Quentin Perret wrote:
-> On Tuesday 10 Aug 2021 at 13:06:47 (+0530), Viresh Kumar wrote:
->> Provide a cpufreq driver flag so drivers can ask the cpufreq core to register
->> with the EM core on their behalf.
-> 
-> Hmm, that's not quite what this does. This asks the cpufreq core to
-> use *PM_OPP* to register an EM, which I think is kinda wrong to do from
-> there IMO. The decision to use PM_OPP or another mechanism to register
-> an EM belongs to platform specific code (drivers), so it is odd for the
-> PM_OPP registration to have its own cpufreq flag but not the other ways.
-> 
-> As mentioned in another thread, the very reason to have PM_EM is to not
-> depend on PM_OPP, so I'm worried about the direction of travel with this
-> series TBH.
-> 
->> This allows us to get rid of duplicated code
->> in the drivers and fix the unregistration part as well, which none of the
->> drivers have done until now.
-> 
-> This series adds more code than it removes, and the unregistration is
-> not a fix as we don't ever remove the EM tables by design, so not sure
-> either of these points are valid arguments.
-> 
->> This would also make the registration with EM core to happen only after policy
->> is fully initialized, and the EM core can do other stuff from in there, like
->> marking frequencies as inefficient (WIP). Though this patchset is useful without
->> that work being done and should be merged nevertheless.
->>
->> This doesn't update scmi cpufreq driver for now as it is a special case and need
->> to be handled differently. Though we can make it work with this if required.
-> 
-> Note that we'll have more 'special cases' if other architectures start
-> using PM_EM, which is what we have been trying to allow since the
-> beginning, so that's worth keeping in mind.
-> 
+Changelog:
+v1 -> v2:
+ - Fixed indentation comments.
+ - Commit text updated to include scenario.
 
-The way I see this is that the flag in cpufreq avoids
-mistakes potentially made by driver developer. It will automaticaly
-register the *simple* EM model via dev_pm_opp_of_register_em() on behalf
-of drivers (which is already done manually by drivers). The developer
-would just set the flag similarly to CPUFREQ_IS_COOLING_DEV and be sure
-it will register at the right time. Well tested flag approach should be
-safer, easier to understand, maintain.
+Prasad Sodagudi (1):
+  PM: sleep: core: Avoid setting power.must_resume to false
 
-If there is a need for *advanced* EM model, driver developer would
-have to care about all these things (order, setup-ready-structures,
-fw channels, freeing, etc) while developing custom registration.
-The developer won't set this flag in such case, so the core won't
-try to auto register the EM for that driver.
+ drivers/base/power/main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-I don't see the dependency of PM_EM on PM_OPP in this series.
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
