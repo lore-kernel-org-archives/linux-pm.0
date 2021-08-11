@@ -2,159 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEE85C4320E
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE013C4320A
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:47:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D73D861076
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:45:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C1A7860FD9
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:47:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236618AbhHKJqJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Aug 2021 05:46:09 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:47616 "EHLO m43-7.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236462AbhHKJqI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 11 Aug 2021 05:46:08 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1628675145; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
- Subject: Sender; bh=uSt79frfisEnQoSy8AUSjOVYQKhD134iVOQ+hRTplH0=; b=TKtmcL0fJ0aaEdiBialfeHpc7hxUd/MMtBMDu2hCnCwdF/JPnP1rZONo0oBKvy/3QCrv9xhh
- bqY7FfplYGIG2PDT1Was7YJi3fkxIolfqsM97xENEQMm8zj6Ab8UhgbUKVEzHDqMWIGEuwRd
- U1xAfhEWvaf3CcMA6xiccEE39QM=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n01.prod.us-east-1.postgun.com with SMTP id
- 61139c4866ff107904a6b1bc (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 11 Aug 2021 09:45:44
- GMT
-Sender: rnayak=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 3CE94C43143; Wed, 11 Aug 2021 09:45:44 +0000 (UTC)
-Received: from [192.168.1.100] (unknown [49.207.220.239])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: rnayak)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 515AAC4338A;
-        Wed, 11 Aug 2021 09:45:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 515AAC4338A
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=rnayak@codeaurora.org
-Subject: Re: [PATCH v6 1/2] PM / Domains: Add support for 'required-opps' to
- set default perf state
-To:     Dmitry Osipenko <digetx@gmail.com>, ulf.hansson@linaro.org,
-        bjorn.andersson@linaro.org, viresh.kumar@linaro.org
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        swboyd@chromium.org, rojay@codeaurora.org, stephan@gerhold.net
-References: <1628074696-7979-1-git-send-email-rnayak@codeaurora.org>
- <1628074696-7979-2-git-send-email-rnayak@codeaurora.org>
- <f58e631d-67a7-4981-ce59-6a4772b44564@gmail.com>
- <c43ddc6b-32ca-433d-76f2-901cb594eaf1@gmail.com>
- <9588f01d-1cb6-7ca3-eb41-74259f1678f6@gmail.com>
-From:   Rajendra Nayak <rnayak@codeaurora.org>
-Message-ID: <5f676dbe-6b8a-d302-cd81-2d12fe089e5a@codeaurora.org>
-Date:   Wed, 11 Aug 2021 15:15:37 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        id S236618AbhHKJrz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Aug 2021 05:47:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46640 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236056AbhHKJry (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 05:47:54 -0400
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42EDFC061765;
+        Wed, 11 Aug 2021 02:47:31 -0700 (PDT)
+Received: by mail-wm1-x335.google.com with SMTP id m36-20020a05600c3b24b02902e67543e17aso3449060wms.0;
+        Wed, 11 Aug 2021 02:47:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=b/50RZhI1+HYZXoTkYGUW7jpTP3tDgMGWDF5nGMrgbE=;
+        b=boKFJXAcnB/f2IhrphvG693kYgN3xOKCpq7l+H22gOLKtyBknfg5kGaly1k6u0xIXb
+         BFkfbM10WfK1nK5GG6YOXpfnt7WmaYIxSDjekvU0j9H+AJbKQk2Lvg2o65hoLq5X5/gN
+         UUz4KayTVlVR0k0I0D3QbJTd2njWZQhqb0mQmRbe8wwMQvG6z2xkT9GVqSv+UKnV4bDP
+         511c96jaDh11dnS4SNYV3etxN8Vcd5yEJsuINEcWPIFbmUAYpe5aNRJ5Ta9cRigsm1rl
+         t1mGJoCPTVFO2y5SWIgnLKEAA7h4tyVmJi4hkns52wqYoT0XHqA3GI18Hk7+40K9lyw1
+         6Edg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=b/50RZhI1+HYZXoTkYGUW7jpTP3tDgMGWDF5nGMrgbE=;
+        b=b6F363udYXZd+GpFBFFgsI30ychsIrHYimglpLN5ieTHBwjwh8xuF9P1O0LKo4fAP/
+         0GJD4lBORljVqKZbHxBkxR6TmH0DCUQzDemBVdazNxfGOqKb2EMFXVGR6rwM2zySSqzf
+         ZaF7n/hogx9v37M+dkwLJSz4FHq89hX56L72VHlfJpKRTMQ96N5ldcsroXleiG3rsSmU
+         lADNZa6a1DmLCtp6bTFxtdUHjTmBx6vV83n6M22+RS3ZfsDX40TuDWNRjIwQgbo0PeBs
+         ecnAX1gWsaZx/Z8vaTIB5pNX1PHzj7YDRdcWIupJxnCQhMcCwc5gnDuiudkOtiXJ8LS/
+         JviA==
+X-Gm-Message-State: AOAM532uux3aUfb+6dzygSjQ9+8mAZCTNXphvVLaomLnh11sKiZ3ZyEh
+        aUQVzePCLRvjWpP1PjoipFg=
+X-Google-Smtp-Source: ABdhPJwsPC6MQc/AIkHMzaTLik34/rJmcUUmAgL+QcxYllVVjnX7CwcgpitkBoJgoeDV6L60Y+hBdw==
+X-Received: by 2002:a1c:7214:: with SMTP id n20mr13556931wmc.181.1628675249813;
+        Wed, 11 Aug 2021 02:47:29 -0700 (PDT)
+Received: from localhost ([217.111.27.204])
+        by smtp.gmail.com with ESMTPSA id o17sm25849916wrw.17.2021.08.11.02.47.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Aug 2021 02:47:28 -0700 (PDT)
+Date:   Wed, 11 Aug 2021 11:49:53 +0200
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 2/2] cpuidle: tegra: Check whether PMC is ready
+Message-ID: <YROdQXO4aVLQ8DkP@orome.fritz.box>
+References: <20210718212706.21659-1-digetx@gmail.com>
+ <20210718212706.21659-3-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <9588f01d-1cb6-7ca3-eb41-74259f1678f6@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="2zif2I7f2WOnASNh"
+Content-Disposition: inline
+In-Reply-To: <20210718212706.21659-3-digetx@gmail.com>
+User-Agent: Mutt/2.1.1 (e2a89abc) (2021-07-12)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On 8/10/2021 5:16 AM, Dmitry Osipenko wrote:
-> 10.08.2021 01:44, Dmitry Osipenko пишет:
->> 10.08.2021 01:26, Dmitry Osipenko пишет:
->>> 04.08.2021 13:58, Rajendra Nayak пишет:
->>>> @@ -2637,6 +2643,8 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
->>>>   {
->>>>   	struct of_phandle_args pd_args;
->>>>   	struct generic_pm_domain *pd;
->>>> +	struct device_node *np;
->>>> +	int pstate;
->>>>   	int ret;
->>>>   
->>>>   	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
->>>> @@ -2675,10 +2683,26 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
->>>>   		genpd_unlock(pd);
->>>>   	}
->>>>   
->>>> -	if (ret)
->>>> +	if (ret) {
->>>>   		genpd_remove_device(pd, dev);
->>>> +		return -EPROBE_DEFER;
->>>> +	}
->>>> +
->>>> +	/* Set the default performance state */
->>>> +	np = dev->of_node;
->>>> +	if (of_parse_phandle(np, "required-opps", index)) {
-> 
-> The OF node returned by of_parse_phandle() must be put.
+--2zif2I7f2WOnASNh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for spotting that, I will fix it, though I might just drop
-the use of of_parse_phandle() and call of_get_required_opp_performance_state()
-unconditionally as suggested by Ulf.
+On Mon, Jul 19, 2021 at 12:27:06AM +0300, Dmitry Osipenko wrote:
+> Check whether PMC is ready before proceeding with the cpuidle registratio=
+n.
+> This fixes racing with the PMC driver probe order, which results in a
+> disabled deepest CC6 idling state if cpuidle driver is probed before the
+> PMC.
+>=20
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/cpuidle/cpuidle-tegra.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-> 
->>>> +		pstate = of_get_required_opp_performance_state(np, index);
-> 
-> If you have more than one power domain, then this will override the
-> pstate which was set for a previous domain. This code doesn't feel solid
-> to me, at least a clarifying comment is needed about how it's supposed
-> to work.
+Rafael, Daniel,
 
-I don't quite understand the concern here, this should work with devices
-having multiple power-domains as well. __genpd_dev_pm_attach gets called
-once per power-domain, and we use the index above to identify the power-domain.
-  
->>>> +		if (pstate < 0) {
->>>> +			ret = pstate;
->>>> +			dev_err(dev, "failed to set required performance state for power-domain %s: %d\n",
->>>> +				pd->name, ret);
->>>> +		} else {
->>>> +			dev_pm_genpd_set_performance_state(dev, pstate);
->>
->> Where is error handling?
+would you mind if I took this into the Tegra tree? It's got a dependency
+on the PMC driver, which usually goes via the Tegra tree already, and
+there's nothing cpuidle-specific in here, it's all Tegra-specific
+integration quirks.
 
-Sure, I'll fix that.
+Thierry
 
->>
->>>> +			dev_gpd_data(dev)->default_pstate = pstate;
->>>> +		}
->>>> +	}
->>>
->>> Why performance state is set after genpd_power_on()?
+>=20
+> diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-te=
+gra.c
+> index 508bd9f23792..9845629aeb6d 100644
+> --- a/drivers/cpuidle/cpuidle-tegra.c
+> +++ b/drivers/cpuidle/cpuidle-tegra.c
+> @@ -337,6 +337,9 @@ static void tegra_cpuidle_setup_tegra114_c7_state(voi=
+d)
+> =20
+>  static int tegra_cpuidle_probe(struct platform_device *pdev)
+>  {
+> +	if (tegra_pmc_get_suspend_mode() =3D=3D TEGRA_SUSPEND_NOT_READY)
+> +		return -EPROBE_DEFER;
+> +
+>  	/* LP2 could be disabled in device-tree */
+>  	if (tegra_pmc_get_suspend_mode() < TEGRA_SUSPEND_LP2)
+>  		tegra_cpuidle_disable_state(TEGRA_CC6);
+> --=20
+> 2.32.0
+>=20
 
-The requirement is that the domain is operating at a given performance
-state before the device becomes operational. The driver should ideally wait
-for the attach to complete before expecting the device to be functional.
-So the order here should really not matter, or rather the small amount of time
-while the power-domain is on but not at the right performance state should
-not matter if that's the concern.
+--2zif2I7f2WOnASNh
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> 
-> Should set_performance_state() be invoked when power_on=false?
-> 
-> I assume it should be:
-> 
-> if (power_on) {
-> 	dev_pm_genpd_set_performance_state(dev, pstate);
-> 	dev_gpd_data(dev)->default_pstate = pstate;
-> } else {
-> 	dev_gpd_data(dev)->rpm_pstate = pstate;
-> }
-> 
+-----BEGIN PGP SIGNATURE-----
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmETnT4ACgkQ3SOs138+
+s6GfmRAAtIjuR58BgpKR9AFQHqWiKRZkr0hImMiksmT3JDKPG8pQqNoSwta1c35m
+M9/4OQvR38jsc6egWNF3Ed/t8egKsyDvbbkJdCEQQEUT0fL5mQNFAkDnXBxjbQ27
+twRa5sG5QH77LUP26Tb+J79lf92fRux0pYuSkeZU3viroSmtBGsH78OSi3TYhPE8
+OVWr/PHxllWllnB5YJXXOJ3n22JQpmvuUVhPT0Eipn1PArLsyv+joLBveLss+dsF
+IAcwtI69bich207WwIiCkTQAFjv71WnL9b1hEpTkQpNiPgWd7EcS1mOv6vEL5FGT
+Nj0b8EVcW/8CnFXz67TVZmABUr79Sf2OCiNUKoCtJpUhdYlzwUkFxmetz+acXnr5
+R3bW11Vsgo34iAJ9SthyqKC76/9TsJJaL8QcPGWKeQ5LIS91zWs/JFfhhzvT3hVx
+zYuqWtCHqAEh+LG8gqjorFqcQkuFeC5HFe2yun4JebZLfNtH/o1t5jly1Up2oNe6
+6/tP2H6Cuod5F/gHaTOCDzNjGnKqWvXNldabttnV4zo53maWYVB5FID2jgucHixl
+FCv/Gmy5P51s+lNBUZpHnjgM3RWmZ2CfTOjJUqZW0nE0zfzoFwQlI3pAAVJGQDDq
+jpnrynyZD8LPvVVjlxRM/RrxFYQVR5KWCfhJHLc4j7A1vdZme+k=
+=cB82
+-----END PGP SIGNATURE-----
+
+--2zif2I7f2WOnASNh--
