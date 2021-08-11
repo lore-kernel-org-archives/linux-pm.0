@@ -2,135 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FSL_HELO_FAKE,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBF4C4320A
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:48:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8F27C4320A
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:49:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6DC3C61073
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:48:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CFF376101E
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 09:49:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236726AbhHKJtL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Aug 2021 05:49:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46946 "EHLO
+        id S236521AbhHKJuM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Aug 2021 05:50:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236718AbhHKJtL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 05:49:11 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 840F7C0613D5
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 02:48:47 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id o7-20020a05600c5107b0290257f956e02dso3965021wms.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 02:48:47 -0700 (PDT)
+        with ESMTP id S231508AbhHKJuL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 05:50:11 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BD98C061765;
+        Wed, 11 Aug 2021 02:49:47 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id r6so2197829wrt.4;
+        Wed, 11 Aug 2021 02:49:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
+        d=gmail.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=p4WmlR24/y2/H/iFDZT8SMkW7O2fno0PSDl3vpvyQeE=;
-        b=iaVC7Y7Zmp0QcX38aol/tjPqpn4a9rxsP+5sEfJ55JdRHQf78WhTS54TvYm1QuiZb9
-         Tfv0V+kMCmuN3NlmWiy+TFbkP8Z36BybITbwzyiRLjWOhIIr9BHtWja4KxbVpcBPi/HI
-         HuD68dSvDc/WEbgyaUM8PsEuId/nmfzZ9pPp60bwzZ1zayPm70ShfyqrudfelYC77Hsv
-         lYfsQBRYWFNavWRipVgXXp3YGsoJzSPKV2/B/dz02TFMtktJ/TilyV8Jiu+vO4+FU2Ra
-         CLbILl4Kx7dV2I8iGXshcBeO08NSv6p9CNlc4nncGiFlrwXLzL7ajuNEyVzb/lB2uvJY
-         953w==
+         :content-disposition:in-reply-to:user-agent;
+        bh=InP9e9WSss+4zqBvpjB1Gp8No7Ucwrc7WwdGFVYJuz0=;
+        b=CiaLFTJR+kcHgWHKg5doWB9jQVcCR9DmVQ5ocqm+wbnC17KPScsd4ET9T1cSU5xsWd
+         aEbiCsmxUjVcZmcSEB2XZUd6ClT5covp0XCPWPUEufgDuLHKuIJfMept/gYCYfNF2snN
+         s5NHbmnnXQyw0O/T+xQn+qXplvLvISHqqYAoeYGpSJdUZrAeiPZnCvKxUcY/uCD1s786
+         HwiX4ByQUZVQe1s/8XgzfJB/cQMXReR1KuAGjgLMdcp0WKDldD+3eZZAYSUxrU4eIsoN
+         lzZWTYevf18V6wlU1aU4Ud5xuBcltjw7YmWRo2vvG/2Bvt1mwYa2XS22YhLrvRscwgTP
+         y+Ow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=p4WmlR24/y2/H/iFDZT8SMkW7O2fno0PSDl3vpvyQeE=;
-        b=XDXdL0ItY9WVRl9RPsy1QSZAs8FU/2fMk5KeovT+GtYLLYwNOGSF+BdDtu7TxpgMpd
-         2QY/u1dh2tTdSBs4ktvT9cSzBJ/JOjwNV+ViUycZSlqyciql7G6RtP9hzxXvVrUKqvzg
-         gqcg1hknk5nzZRKw9UypiMSBrE54qAyYEZSaxjiLzfcfKUqjtcJprWQCI5Z/88Tj0iOI
-         cGVblqGirkQBUog3chekB1Le+jzMD+iRdGdRxyA6Ljul+ecq0SL04pBvVmg0KqnrqiuV
-         Y/HLq8yiWKNHKnBAza5BBMreEqN9iwu90sGOcHyCYbBAttCZNsPiKa+hep6+1BsKC7nC
-         v4oQ==
-X-Gm-Message-State: AOAM531BmbTdGcmuFc3kdteDFtG71Cz+kW230xJEVeNPgaeRvRrDSm8b
-        J7R/wYdoKo2vyf5a4dqK4QnRLg==
-X-Google-Smtp-Source: ABdhPJwGyl1imWlJBD9wXE9eHTwazSKJ1G8Ab8pkXMP8KjdfEz4VJdIoamsdZzeXoxBFY1zz1ZxyEw==
-X-Received: by 2002:a7b:c350:: with SMTP id l16mr8974823wmj.151.1628675325873;
-        Wed, 11 Aug 2021 02:48:45 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:210:43fd:e634:73d9:e10e])
-        by smtp.gmail.com with ESMTPSA id p4sm14701093wrq.81.2021.08.11.02.48.45
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=InP9e9WSss+4zqBvpjB1Gp8No7Ucwrc7WwdGFVYJuz0=;
+        b=WWqKq/fLDZjnRmQp1MLiTjK8xlJJMOhoSm+tw3yvmjgfWLCOKDZR+CvTUJyoEZVWg5
+         JLrWxsS2egfIB9gj+vcZdDPTt5/qpq6rWiAgdnFlcg/AWjNjbTKANBW6z60s+5GJ85yH
+         yAFLQzts4+V+WnyJT9wZwi0cMB8OdsRIY84ecP+dv/gN+pP5/PiKnBZeQsrxGYE7CBhq
+         Yym2cw+y+cFs5JCq1OA+Ma4fZXPfaRcUH75q0ixeoUVDPrDls+SWEp0y3NLyPsfoBWYq
+         FbujhdDtE5fGkFFn8NQX5h33XPh+Wx3OreimMF6rYMy3DFNk1Bm3LD7pljyIjpgGhs/i
+         gzFw==
+X-Gm-Message-State: AOAM530DK/JGvBuVUeL2XWrZmJ/Zi6gXW9nzP8FhH6U3UUim1ucSPgrD
+        N1Y2oUmLgxPfOXuscHm4hA0=
+X-Google-Smtp-Source: ABdhPJzcxpNl5KEbAU1AgAatUuCL5jXG9xEZHZlf1qYq7pV03jPHJJNb+AkVZxRFrTsGNJfTVp7ACA==
+X-Received: by 2002:a05:6000:9:: with SMTP id h9mr22221085wrx.396.1628675386236;
+        Wed, 11 Aug 2021 02:49:46 -0700 (PDT)
+Received: from localhost ([217.111.27.204])
+        by smtp.gmail.com with ESMTPSA id c2sm25828931wrs.60.2021.08.11.02.49.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Aug 2021 02:48:45 -0700 (PDT)
-Date:   Wed, 11 Aug 2021 10:48:39 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Vincent Donnefort <vincent.donnefort@arm.com>,
-        lukasz.luba@arm.com, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Fabio Estevam <festevam@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-omap@vger.kernel.org
-Subject: Re: [PATCH 0/8] cpufreq: Auto-register with energy model
-Message-ID: <YROc95YKA1Y/TfYI@google.com>
-References: <cover.1628579170.git.viresh.kumar@linaro.org>
- <YRJym+Vn4bbwQzzs@google.com>
- <20210811051859.ihjzhvrnuct2knvy@vireshk-i7>
- <20210811053406.jqwextgtnxhgsjd2@vireshk-i7>
+        Wed, 11 Aug 2021 02:49:45 -0700 (PDT)
+Date:   Wed, 11 Aug 2021 11:52:10 +0200
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 1/2] soc/tegra: pmc: Prevent racing with cpuilde driver
+Message-ID: <YROdyssO7qQU5kFR@orome.fritz.box>
+References: <20210718212706.21659-1-digetx@gmail.com>
+ <20210718212706.21659-2-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="GO/E5Ljb5DmwgjgQ"
 Content-Disposition: inline
-In-Reply-To: <20210811053406.jqwextgtnxhgsjd2@vireshk-i7>
+In-Reply-To: <20210718212706.21659-2-digetx@gmail.com>
+User-Agent: Mutt/2.1.1 (e2a89abc) (2021-07-12)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wednesday 11 Aug 2021 at 11:04:06 (+0530), Viresh Kumar wrote:
-> On 11-08-21, 10:48, Viresh Kumar wrote:
-> > On 10-08-21, 13:35, Quentin Perret wrote:
-> > > This series adds more code than it removes,
-> > 
-> > Sadly yes :(
-> > 
-> > > and the unregistration is
-> > > not a fix as we don't ever remove the EM tables by design, so not sure
-> > > either of these points are valid arguments.
-> > 
-> > I think that design needs to be looked over again, it looks broken to
-> > me everytime I land onto this code. I wonder why we don't unregister
-> > stuff.
-> 
-> Coming back to this series. We have two options, based on what I
-> proposed here:
-> 
-> https://lore.kernel.org/linux-pm/20210811050327.3yxrk4kqxjjwaztx@vireshk-i7/
-> 
-> 1. Let cpufreq core register with EM on behalf of cpufreq drivers.
 
-If we're going that route, I think we should allow _all_ possible
-EM registration methods (via PM_OPP or else) to be done that way.
-Otherwise we're creating an inconsitency in how the EM is registered
-(e.g. from the ->init() cpufreq callback for some, or from cpufreq core
-for others) which is problematic as we risk building features that
-assume loading is done at a certain time, which won't work for some
-platforms.
+--GO/E5Ljb5DmwgjgQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 2. Update drivers to use ->ready() callback to do this stuff.
+On Mon, Jul 19, 2021 at 12:27:05AM +0300, Dmitry Osipenko wrote:
+> Both PMC and cpuidle drivers are probed at the same init level and
+> cpuidle depends on the PMC suspend mode. Add new default suspend mode
+> that indicates whether PMC driver has been probed and reset the mode in
+> a case of deferred probe of the PMC driver.
+>=20
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  arch/arm/mach-tegra/pm.c    |  2 +-
+>  arch/arm/mach-tegra/pm.h    |  6 ------
+>  arch/arm/mach-tegra/tegra.c |  2 --
+>  drivers/soc/tegra/pmc.c     | 14 +++++++++++++-
+>  include/soc/tegra/pm.h      |  6 ++++++
+>  5 files changed, 20 insertions(+), 10 deletions(-)
 
-I think this should work, but perhaps will be a bit tricky for cpufreq
-driver developers as they need to have a pretty good understanding of
-the stack to know that they should do the registration from here and not
-->init() for instance. Suggested alternative: we introduce a ->register_em()
-callback to cpufreq_driver, and turn dev_pm_opp_of_register_em() into a
-valid handler for this callback. This should 'document' things a bit
-better, avoid some of the problems your other series tried to achieve, and
-allow us to call the EM registration in exactly the right place from
-cpufreq core. On the plus side, we could easily make this work for e.g.
-the SCMI driver which would only need to provide its own version of
-->register_em().
+Applied, thanks.
 
-Thoughts?
+Thierry
+
+--GO/E5Ljb5DmwgjgQ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmETncoACgkQ3SOs138+
+s6G1rg/+Nkee2koAygYhXcPkVKL8bYEaz97g0KV6s6NbEJTNWZz3+vJgXx2KNmvZ
+fn0MbmBiF248O+6x6J076aFF3BPZEQ3E7PYpvQfRz6Wcxe7dyDsJkC1e9WsN6+eM
+o+9oSxklTO0GDyWlxAKQcjYBEOMJchxlR+jI40f8h8ex6c0CRUzjddltq4tbkK5g
+tZReiYugPjKRyGeFGavvwGk4YZ6ZIeIdqmPE2EpVwCL+EBIF+gkMsFchGCDtsYxA
+sCohdR9cfh6IfTAKPyz+Hk+LmbzgnFPchKmDV9WG7WAByWBurvF70EBzrB9DgeEM
+7+AlNDBvzpvRcwqaso+Lw895cLJj9ZA6l4OGBg/0wFdqJyG0WZY8p81/K+budNea
+5ReAKyBSFxiZGnU4Ygds4uOBsgk6LNAgXTjRU5hQSwrXy7TIJvlQ9t94zxSSVtuH
+UrwND34ms56cqKxhH3wyV7fmNigymGPy1rurlBNhNwT39nK20IjjK49qoYCKO2IS
+IogQHySphEHIsEh++ESjcb8zurGIwPQ5MS7V/VwTSLI78SJI3xdKoLPEdU51yHjK
+aKyOZ3KVA6eUUYk5qDAmaYxlkSURm5NHSUQt7d+mArMoWopHvZ93GV+UHc+D8thp
+sYZhN+15y2eAY/b1xdU+oXWLQv9EDQxFrvH75J0NVEp00pDgME0=
+=+7DF
+-----END PGP SIGNATURE-----
+
+--GO/E5Ljb5DmwgjgQ--
