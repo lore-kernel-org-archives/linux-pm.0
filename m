@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5EBEC4320A
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15F20C432BE
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AD11F60FC3
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EEE81610A2
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237665AbhHKMHI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Aug 2021 08:07:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50930 "EHLO
+        id S237639AbhHKMHN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Aug 2021 08:07:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237567AbhHKMHB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 08:07:01 -0400
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF451C0613D5
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:37 -0700 (PDT)
-Received: by mail-pj1-x102b.google.com with SMTP id gz13-20020a17090b0ecdb0290178c0e0ce8bso5745457pjb.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:37 -0700 (PDT)
+        with ESMTP id S237648AbhHKMHH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 08:07:07 -0400
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DEDA8C061798
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:43 -0700 (PDT)
+Received: by mail-pl1-x629.google.com with SMTP id a5so2414360plh.5
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=4ZC+FP75mFAQwlcrfkbIZ+KkPc6ZyFBFhH1NecTG31o=;
-        b=LkS+DJyCHnMxf56bNqFv4JSdLFaYjYrHiVV7mc3191cjFeYU3wHMqGpRM4gdjWsoAp
-         MQJ4C/itAshvVXwGwO0e3Z2SG1ympyGA4sHg5fcQuGy769EMvr48vlOXEDlps+AMmvob
-         2bTZAOPXVOSz7g8rruXoulxOthp3RA6tJlmz9SJLfipbJTG226hE+c+VVrzYKhZypikQ
-         I5OU4VJ3PEwx0lqwyHjDNO9EoYf8i6Krx/tylt0uhBBd4eCiVZha55T4ptkfiWUxRe6E
-         nQOTmEUtmsGA+4cjv2I6J7D3TKxjHdMSkKn3iu0fUmY+nlCfnYG0zRgwcFR3496FyTfu
-         b0NQ==
+        bh=lWMPxMr+0+XtByl7tZGdcG2GFI54dtlZAQg+hT8HCaQ=;
+        b=kNo51Ty287+Kf3xWLJBGIhyPm4y4DKiLm98i3Pq848jWbLqTuUdKifktM6kOb8qJw0
+         F/sq6JVvy/bWf1cOTxFySRV4rHJLp+UX64TZypAKdYtU3JkS7zkMYq95K1YmsZOZIXzT
+         p1rPaHOcyg8Rrm/Y/j3JC6D4bK9jmywwIxlIaGa+a2SByYNW9PkjDxnkDg0CypZrn+em
+         rfZHy34KzjrzNllk+I0kOIjPH8Ror6DiLlRUOOkn2vA5bKpfw4Tsq+QfLy1MeZepCUQ5
+         gOlaSUNNiqSlbAbLb5CvD5r/f6Bm2r/Nhqod+ejhJFCOfHndYqhyTyN7gYra+c46BSff
+         9O9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=4ZC+FP75mFAQwlcrfkbIZ+KkPc6ZyFBFhH1NecTG31o=;
-        b=lGYmqGYDDAHtziGcsHbFgc3/Ab6uzqXBjICNQe67+sAmJ1VUnfCKYhHhXOT9TqkdXW
-         f6RqRzd5WAEXRYsSAyF/p3+0OyFpbYETCLmg9p+9YLfn2qM7KLqEYqCreQMCOb0LRoMk
-         eVkGcSAyB8TrDO2GL3HIqlukNEbUMAygk6SfAo2DAvwi4Vxf8TAhlg8rtwXPSwHJmYD5
-         B5Io4CCAY0trkveWiLkFaQrDrEu9oS9HINXtP/dHdNp6kBKGTkU20yZtlT91iuU/3wek
-         Nf9wtQ8MENfdZ2OjfWJMuB2gKOXH6/ndrWuZUL5Cjws6xPBADJpM2uf1Nu4Czcpilck2
-         /q7w==
-X-Gm-Message-State: AOAM530vKZ3bm5LdancRYM1f1cNuvyywEtcfu2CN4V8/so4fF/LVFfyB
-        DhFGFD8v1it1hofSRxgrmuovNg==
-X-Google-Smtp-Source: ABdhPJzGHtxhmO400NQHWlqt2IjTlmDB9nqX4ApB7X9GkIcCGAOr8yD9hP2gPOMw9DkSYnZsAdZPGQ==
-X-Received: by 2002:aa7:8889:0:b029:3bc:e8a5:50ea with SMTP id z9-20020aa788890000b02903bce8a550eamr28572168pfe.73.1628683597329;
-        Wed, 11 Aug 2021 05:06:37 -0700 (PDT)
+        bh=lWMPxMr+0+XtByl7tZGdcG2GFI54dtlZAQg+hT8HCaQ=;
+        b=LXsu95pkNW928a/jDYNrolusfJYqvQlpdgIS35v9GQXHD5rQeXJhknkl7bvK9kqhLm
+         tKgBtpIdKluF9mOCUFaE3j9i0JnDBDYoRl5H2ZvwraYLuurpeGcupVD8fO6SV2rwVCZS
+         bMsYbh4BtdhhULkzwOyYCUvIlYPCYKdvAmBsZ20boWJ6+vB1JMaZVrNLS4WKm4uAhw27
+         HERTqlrEBjThVfFT/jR+VeiGXTQmGHvkMkf0gakRjMOBgtC62DxiRlB+N9oe/6ccHzG6
+         xdCD3kyq143pIMH0H5ihfyM6aBRoMW22M3OaMSwXhu4Slo1G3MEZfjYJdvTIXxonCcqE
+         L0fg==
+X-Gm-Message-State: AOAM530PfKMDuffl2bbsh/eIZfYVr+eAz3JBS8nPd6w3nECzfdw0dZTQ
+        9d41WHK3SdDe8OzXtTH45AY+msAGnMQ4Ig==
+X-Google-Smtp-Source: ABdhPJzuhNq2gHC1rhespgT1ixci1XjdDZ6D/VCU7fl35v7DEuY2tOp/P3ptzOMUU1RI1LiFg0J9YQ==
+X-Received: by 2002:a65:6a0a:: with SMTP id m10mr744726pgu.82.1628683603490;
+        Wed, 11 Aug 2021 05:06:43 -0700 (PDT)
 Received: from localhost ([122.172.201.85])
-        by smtp.gmail.com with ESMTPSA id 23sm14538606pgk.89.2021.08.11.05.06.36
+        by smtp.gmail.com with ESMTPSA id c9sm26616579pgq.58.2021.08.11.05.06.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Aug 2021 05:06:36 -0700 (PDT)
+        Wed, 11 Aug 2021 05:06:43 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
         Sudeep Holla <sudeep.holla@arm.com>,
@@ -65,9 +65,9 @@ Cc:     linux-pm@vger.kernel.org,
         Lukasz Luba <lukasz.luba@arm.com>,
         Quentin Perret <qperret@google.com>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2 7/9] cpufreq: scpi: Use auto-registration for energy model
-Date:   Wed, 11 Aug 2021 17:28:45 +0530
-Message-Id: <29c65db2dfcbfebdb291a3056cc2adaca8b34cec.1628682874.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 9/9] cpufreq: scmi: Use .register_em() callback
+Date:   Wed, 11 Aug 2021 17:28:47 +0530
+Message-Id: <6094d891b4cb0cba3357e2894c8a4431c4c65e67.1628682874.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1628682874.git.viresh.kumar@linaro.org>
 References: <cover.1628682874.git.viresh.kumar@linaro.org>
@@ -77,36 +77,160 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Set the newly added .register_em() callback with
-cpufreq_register_em_with_opp() to automatically register with the EM
-core.
+Set the newly added .register_em() callback to register with the EM
+after the cpufreq policy is properly initialized.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/scpi-cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/scmi-cpufreq.c | 55 ++++++++++++++++++++--------------
+ 1 file changed, 32 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index d6a698a1b5d1..bda3e7d42964 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -163,8 +163,6 @@ static int scpi_cpufreq_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 75f818d04b48..b916c9e22921 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -22,7 +22,9 @@
  
- 	policy->fast_switch_possible = false;
- 
--	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
--
- 	return 0;
- 
- out_free_cpufreq_table:
-@@ -200,6 +198,7 @@ static struct cpufreq_driver scpi_cpufreq_driver = {
- 	.init	= scpi_cpufreq_init,
- 	.exit	= scpi_cpufreq_exit,
- 	.target_index	= scpi_cpufreq_set_target,
-+	.register_em	= cpufreq_register_em_with_opp,
+ struct scmi_data {
+ 	int domain_id;
++	int nr_opp;
+ 	struct device *cpu_dev;
++	cpumask_var_t opp_shared_cpus;
  };
  
- static int scpi_cpufreq_probe(struct platform_device *pdev)
+ static struct scmi_protocol_handle *ph;
+@@ -123,9 +125,6 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	struct device *cpu_dev;
+ 	struct scmi_data *priv;
+ 	struct cpufreq_frequency_table *freq_table;
+-	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
+-	cpumask_var_t opp_shared_cpus;
+-	bool power_scale_mw;
+ 
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+@@ -133,9 +132,15 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 		return -ENODEV;
+ 	}
+ 
+-	if (!zalloc_cpumask_var(&opp_shared_cpus, GFP_KERNEL))
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv)
+ 		return -ENOMEM;
+ 
++	if (!zalloc_cpumask_var(&priv->opp_shared_cpus, GFP_KERNEL)) {
++		ret = -ENOMEM;
++		goto out_free_priv;
++	}
++
+ 	/* Obtain CPUs that share SCMI performance controls */
+ 	ret = scmi_get_sharing_cpus(cpu_dev, policy->cpus);
+ 	if (ret) {
+@@ -148,14 +153,14 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	 * The OPP 'sharing cpus' info may come from DT through an empty opp
+ 	 * table and opp-shared.
+ 	 */
+-	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, opp_shared_cpus);
+-	if (ret || !cpumask_weight(opp_shared_cpus)) {
++	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, priv->opp_shared_cpus);
++	if (ret || !cpumask_weight(priv->opp_shared_cpus)) {
+ 		/*
+ 		 * Either opp-table is not set or no opp-shared was found.
+ 		 * Use the CPU mask from SCMI to designate CPUs sharing an OPP
+ 		 * table.
+ 		 */
+-		cpumask_copy(opp_shared_cpus, policy->cpus);
++		cpumask_copy(priv->opp_shared_cpus, policy->cpus);
+ 	}
+ 
+ 	 /*
+@@ -180,7 +185,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 			goto out_free_opp;
+ 		}
+ 
+-		ret = dev_pm_opp_set_sharing_cpus(cpu_dev, opp_shared_cpus);
++		ret = dev_pm_opp_set_sharing_cpus(cpu_dev, priv->opp_shared_cpus);
+ 		if (ret) {
+ 			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
+ 				__func__, ret);
+@@ -188,21 +193,13 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 			goto out_free_opp;
+ 		}
+ 
+-		power_scale_mw = perf_ops->power_scale_mw_get(ph);
+-		em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb,
+-					    opp_shared_cpus, power_scale_mw);
+-	}
+-
+-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+-	if (!priv) {
+-		ret = -ENOMEM;
+-		goto out_free_opp;
++		priv->nr_opp = nr_opp;
+ 	}
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto out_free_priv;
++		goto out_free_opp;
+ 	}
+ 
+ 	priv->cpu_dev = cpu_dev;
+@@ -223,17 +220,16 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->fast_switch_possible =
+ 		perf_ops->fast_switch_possible(ph, cpu_dev);
+ 
+-	free_cpumask_var(opp_shared_cpus);
+ 	return 0;
+ 
+-out_free_priv:
+-	kfree(priv);
+-
+ out_free_opp:
+ 	dev_pm_opp_remove_all_dynamic(cpu_dev);
+ 
+ out_free_cpumask:
+-	free_cpumask_var(opp_shared_cpus);
++	free_cpumask_var(priv->opp_shared_cpus);
++
++out_free_priv:
++	kfree(priv);
+ 
+ 	return ret;
+ }
+@@ -244,11 +240,23 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+ 
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
++	free_cpumask_var(priv->opp_shared_cpus);
+ 	kfree(priv);
+ 
+ 	return 0;
+ }
+ 
++static void scmi_cpufreq_register_em(struct cpufreq_policy *policy)
++{
++	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
++	bool power_scale_mw = perf_ops->power_scale_mw_get(ph);
++	struct scmi_data *priv = policy->driver_data;
++
++	em_dev_register_perf_domain(get_cpu_device(policy->cpu), priv->nr_opp,
++				    &em_cb, priv->opp_shared_cpus,
++				    power_scale_mw);
++}
++
+ static struct cpufreq_driver scmi_cpufreq_driver = {
+ 	.name	= "scmi",
+ 	.flags	= CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
+@@ -261,6 +269,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
+ 	.get	= scmi_cpufreq_get_rate,
+ 	.init	= scmi_cpufreq_init,
+ 	.exit	= scmi_cpufreq_exit,
++	.register_em	= scmi_cpufreq_register_em,
+ };
+ 
+ static int scmi_cpufreq_probe(struct scmi_device *sdev)
 -- 
 2.31.1.272.g89b43f80a514
 
