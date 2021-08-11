@@ -7,98 +7,104 @@ X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1C20C432BE
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 10:08:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3F21C4320A
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 10:14:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 89FC56056C
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 10:08:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D8ED860F41
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 10:14:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237003AbhHKKI3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Aug 2021 06:08:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51524 "EHLO
+        id S236999AbhHKKPU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Aug 2021 06:15:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236632AbhHKKIX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 06:08:23 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E59BC061799
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 03:07:52 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id b7so1990250plh.7
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 03:07:52 -0700 (PDT)
+        with ESMTP id S236978AbhHKKPP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 06:15:15 -0400
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85F3CC06179C
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 03:14:52 -0700 (PDT)
+Received: by mail-pj1-x1034.google.com with SMTP id 28-20020a17090a031cb0290178dcd8a4d1so4556713pje.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 03:14:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=tzsS7AZHN5hyd5i/vgo5pHazU+FL6RQAhM9b4mH3Hqc=;
-        b=xrg/dN5zYbriK5itgrKCFqwpt+tinhh9L15HeF9ETxBRpzawjZhN+vtNwQXjjaR8v0
-         MNMTTN+tXhlSPNM8qipa7OYd60SCVukCgd0Y6YJLdEAQw3VYCHFYOqwIUIhhFtERSGZ/
-         wlA8jJ5WT34nwiSSC65FuuGPkxZ9bA4KNM+Q8SJO2JRhovDhAfFR4AWh2MROFe+zVRxN
-         aEHMrJoEpBX3wkLBg1QHKRci/W0t6cSqweFGSE5mbCv9WeypUmZOLaXsntY1KcZfoTnU
-         2S01vgFvBZ82jQ2RvEyU1O+qWzGWsFL7pdIRnc8M2GQWJhVQ/QQxiM0I3dKAh2Xp4Wvc
-         vzqw==
+        bh=Rg+nfqNpN4KVS6P5Kg2kgnadiI4aRZsAUMlE7w6kB2k=;
+        b=ac4casP3kUB13OsUJQcv38FKO7pVIq50bZ6uPGU1NEdpQ0ASqnp8urXzheGfF4JgZJ
+         F0GBVqBxpnRY7eoErIyp2IabG5QIpaejNKNbwc0aQqxzw6oZgMJeXCdM+On3gP7GcwAm
+         Ze6ZM7NUk6+K3utV/jdB+12kqYzQTqBoRF8pt/wvWMKT0t0AejJqeovqCSNaOQMJbO1L
+         dD5NFrhUjhU22SWOPidIBz2QfpP5F/XNnFPgeAwhtmB5nt6HWk+7H9MN4LVZKKuaHvyE
+         KiuTQa4lU4FT+xPngVH2NJUbPObjZ/HoPrBwxQiQRHH+/uoJ61KSOscQQ3Qen6LcUrLD
+         YtkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=tzsS7AZHN5hyd5i/vgo5pHazU+FL6RQAhM9b4mH3Hqc=;
-        b=aIxr876THnrNm+XAnFvEuUGwvEk9GNW+WatbtiY2K2YGkmeic0JapG8KHvGnzUcvDr
-         +uWg+6yajx+4+OpzXsQy8uZWj6U344saQ4Jr7D/rs5y/IK+iS9rKr6tAUbngX5PraOLk
-         y900XpqCQ0pKGFPU4Y9l/6bQzgIBp/LSSSEXZ8cqWfpTcelC0FrqVX/PAzhYweG3iWv0
-         SlXXHgnSmGJHCsyE2q9oyebS5cNiwIt73wRJKAceIx9P0HXoaMsMfn/eNzo2YwLjHk8o
-         feja/wy5CUy5FAE4pZvc2LmGKfaYXjtl2hXQxufKaklsiXCkiUmS1d4zD3WdMjPWGCcR
-         j8tQ==
-X-Gm-Message-State: AOAM531RyPDhue+HZDWE0Oqdh0c6FpytPBY6VW6zo/bwIMVTfL/P8/E5
-        XXxl7EBiRE7/+niw5eDBeYZz/g==
-X-Google-Smtp-Source: ABdhPJxRiSSMq+j2y9GrkjclfC8eCBy4HeC/eBdFwjlqBgsbEfhh24xzyew4tdnIOtXaJlSnoDnklw==
-X-Received: by 2002:a17:902:8301:b029:12c:d401:1b52 with SMTP id bd1-20020a1709028301b029012cd4011b52mr259440plb.10.1628676471746;
-        Wed, 11 Aug 2021 03:07:51 -0700 (PDT)
+        bh=Rg+nfqNpN4KVS6P5Kg2kgnadiI4aRZsAUMlE7w6kB2k=;
+        b=DoVX51A/C8R1pidM7o2qHZMB93UL+MA63r80CY/7Ro3SMP/b6jT0Bdy+jL1c7O7CS7
+         iheUVItodheMNPFZvuEghLM4/iGn3YWgs8LNt+4219eEM808esgQwLcnvgn2uq1mlAud
+         +3JJXEwQButMx8j+f33JF67q7TmjXeo0FnBOUraMVq6NqUTE/4ga3kLBlac0vOKGApsi
+         g/cIQWL/1vIL+Opkk78jYThz+Tpd4xcYnk/GxIDJFLxasUEPtPq8qJV4qx3bXf/toQfc
+         NaCy9CPjPZZzJwBHUu0KSyMqbFAFPvQwewLFlgK+ztOiHhbx2sg9KmgprBlme88d2yd/
+         WPVg==
+X-Gm-Message-State: AOAM530OsT2ZnZC6lvK/FwmU4qYXBiWMlU8zAwDbG6Q6E38cEox06toC
+        T9Xf6I7qzyY8Bs7OlgNWED3YXA==
+X-Google-Smtp-Source: ABdhPJzXjMW9vKhvdq5O6Gt8ct98tc27N2TMRTz0kLhqKVJ5iHf/FGC7+T3yYcwqi1noPFO5FkhCyA==
+X-Received: by 2002:aa7:9f5b:0:b029:3be:2a1f:ca58 with SMTP id h27-20020aa79f5b0000b02903be2a1fca58mr27592438pfr.46.1628676892055;
+        Wed, 11 Aug 2021 03:14:52 -0700 (PDT)
 Received: from localhost ([122.172.201.85])
-        by smtp.gmail.com with ESMTPSA id ci23sm24633791pjb.47.2021.08.11.03.07.50
+        by smtp.gmail.com with ESMTPSA id j25sm27085750pfe.198.2021.08.11.03.14.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Aug 2021 03:07:51 -0700 (PDT)
-Date:   Wed, 11 Aug 2021 15:37:49 +0530
+        Wed, 11 Aug 2021 03:14:51 -0700 (PDT)
+Date:   Wed, 11 Aug 2021 15:44:49 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rajendra Nayak <rnayak@codeaurora.org>
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
+To:     Quentin Perret <qperret@google.com>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Vincent Donnefort <vincent.donnefort@arm.com>,
+        lukasz.luba@arm.com, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Roja Rani Yarubandi <rojay@codeaurora.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: Re: [PATCH v6 1/2] PM / Domains: Add support for 'required-opps' to
- set default perf state
-Message-ID: <20210811100749.kwg6435m7xj7ulwa@vireshk-i7>
-References: <1628074696-7979-1-git-send-email-rnayak@codeaurora.org>
- <1628074696-7979-2-git-send-email-rnayak@codeaurora.org>
- <CAPDyKFrebwt5=S7hqXvcqRvt+-EXLcVmRSRZt1uPf-9n7_pRDg@mail.gmail.com>
- <2afd0fac-ed28-c090-a345-3fd4284b4125@codeaurora.org>
- <20210810024308.gurvzpbe2bc2bhky@vireshk-i7>
- <e452c0b5-5555-d6e2-40da-6aa21a26766d@codeaurora.org>
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Fabio Estevam <festevam@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-omap@vger.kernel.org
+Subject: Re: [PATCH 0/8] cpufreq: Auto-register with energy model
+Message-ID: <20210811101449.c2533ediwboeplqj@vireshk-i7>
+References: <cover.1628579170.git.viresh.kumar@linaro.org>
+ <YRJym+Vn4bbwQzzs@google.com>
+ <20210811051859.ihjzhvrnuct2knvy@vireshk-i7>
+ <20210811053406.jqwextgtnxhgsjd2@vireshk-i7>
+ <YROc95YKA1Y/TfYI@google.com>
+ <20210811095311.e6wnma2ubkqdtuic@vireshk-i7>
+ <YROin5WudmmEPard@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e452c0b5-5555-d6e2-40da-6aa21a26766d@codeaurora.org>
+In-Reply-To: <YROin5WudmmEPard@google.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11-08-21, 15:30, Rajendra Nayak wrote:
-> In my case I don't want to error out if the property is missing, I want to error out
-> only when the property exists but can't be translated into a performance state.
-> 
-> So currently I check if the property exists and *only then* try to translate it, Ulf asked
-> me to skip the check. If I do that and I call of_get_required_opp_performance_state()
-> unconditionally, and if it errors out I will need to put in additional logic (check for
-> return value of ENODEV) to distinguish between the property-does-not-exist vs
-> property-exists-but-cannot-be-translated case.
-> It just seems more straight-forward to call this only when the property exists, Ulf?
+On 11-08-21, 11:12, Quentin Perret wrote:
+> I think using the ready() callback can work just fine as long as we
+> document clearly it is important to register the EM from there and not
+> anywhere else. The dedicated em_register() callback makes that a bit
+> clearer and should avoid a bit of boilerplate in the driver, but it's
+> not a big deal really, so I'm happy either way ;)
 
-The same check will be done by OPP core as well, so it is better to
-optimize for the success case here. I will say, don't error out on
-ENODEV, rest you know well.
+Yeah, I think just the same. It is better to have register_em as a
+separate call. I was just wondering if it is the right choice :)
+
+Anyway, I think ready() will get removed pretty soon, so register_em()
+will work well. I will redo this series and send it.
 
 -- 
 viresh
