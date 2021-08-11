@@ -5,68 +5,68 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55E6AC4320A
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F964C4320E
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3C67260FC3
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 195496109F
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Aug 2021 12:06:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237577AbhHKMHD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Aug 2021 08:07:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50908 "EHLO
+        id S237610AbhHKMHG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Aug 2021 08:07:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237582AbhHKMG6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 08:06:58 -0400
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48AFCC0617A0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:31 -0700 (PDT)
-Received: by mail-pl1-x631.google.com with SMTP id d1so2432358pll.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:31 -0700 (PDT)
+        with ESMTP id S237581AbhHKMHE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Aug 2021 08:07:04 -0400
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5801C06179C
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:40 -0700 (PDT)
+Received: by mail-pl1-x630.google.com with SMTP id d17so2377424plr.12
+        for <linux-pm@vger.kernel.org>; Wed, 11 Aug 2021 05:06:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=BXHghljtL4EI/XqtTqMJz5EFL6+UxuiO/TdGXUvnvkE=;
-        b=pGvvmyLgKXMq/gHVrO+ZoqLit5xJiuyTTDJ8SaKmoTWv2du9Ih0MpPYTsTRPbJlCOV
-         hghx6irrx50AxT5V8KZGbN9uwrEEfCdHXcGxqT1tPcLtEvwg1uP3fpvWgcPdMLullHVH
-         PtE6/eF0rKi+S+kC+vh6dzIr3l1cozoJal4JPPrkJGKni8qrYPFLdCxpQUSLd4lGiYmX
-         1bAIHU3WKZFsNP2BQwCSJYT7kv1RZLcP6QK4/UHlHAQhmZcvVZkCd0ZfOQXY2n+eJ5xG
-         epdcTT1+J31BHoWqBzAblw3GyVFWPT05aqg8VSHsYB81pxYeuwVgIo2zt45f3PpuVAdJ
-         pbYw==
+        bh=ufOzb/yHm+Yy0muA4H19fAJdjtQW7OC7JUKwWc/tDWo=;
+        b=C9FEmgjFCyHEUOJxkqjYRENiWra7tJpf8wDbmNI1upCMG/ARVHHAifgv/ZnJhTgg3R
+         UaSyeUK7cR6CUQ7gEIpyBEmz0yZJronlHOtiOkhy8HTJD7HDIC2Egbkj2df8jpcjkiM6
+         Z2lZ7INFiaX+paBNzkqx3ShGy+TEq9OidaoBaI7yyGw5VFP3//0mZJf5QJzBy++KNoO2
+         002Y3ulPb+Sdez2kGgqsqteBtAqnSe5lBczDjfBDRIIc+8OkzvfMCAfZ7zSYCdT0TMhr
+         9m5xhlK7Fhg1DzjpVeItxBu4kC1BGD145jv9p4RGy6I9KJPaTRPDi0ssLbPznIw88f89
+         dWdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=BXHghljtL4EI/XqtTqMJz5EFL6+UxuiO/TdGXUvnvkE=;
-        b=YZK2QePf+qNmxmBiOdmdwMHfst8vtysj92H4PbacDkUZUiv7CXNSy42tPh0XQDW/gB
-         h5yVSi+Bht7lRJbPYkiy0ZKFIL7Z0QQ5C1aEQ/naNzkq8ncYTR6AYMhDZHtW2c2pIvQw
-         z9E9KIYM7ImsyPMhhTC2PEBtUxVqyzbNRm5sU+/J1VKpbwLm8FHzBb+jEi3Votku+UkU
-         Psi2fpYpQItSicNMz+Aq9hKdokm1muPi43J6cqCu3eRs+AXYo7IQQldRWye5p3Inxv+s
-         SUicweuthwaTCpBOAVL4jdUzN5s9GXOc7zN3ryHPsdMYHfW094cw5vO8PxkdIi7V/pSL
-         vN2g==
-X-Gm-Message-State: AOAM532HFrVrE8Bk3qTmyBjfkaJ9Y08IIZRNmc8aRn0npR2dqLaAyUzm
-        i9dUXzPS8uuDqz0ikA7tJRTvdg==
-X-Google-Smtp-Source: ABdhPJwJ/mGfSpLjHlI0GUojG9K5o+B+piJZ7HN2yU7A5gnjRZVE9IYg888XxbaTktEE/Q6svThKEw==
-X-Received: by 2002:a63:4b20:: with SMTP id y32mr384518pga.382.1628683590823;
-        Wed, 11 Aug 2021 05:06:30 -0700 (PDT)
+        bh=ufOzb/yHm+Yy0muA4H19fAJdjtQW7OC7JUKwWc/tDWo=;
+        b=VBPWsiWp6/CL4+23D41cQEhSzyjP4u+UmmJLCGSg3vW+118D5OgzNqYnh8ZpwUmYG3
+         x0N3Bbvp+g8CMHODIh/ch4qdZilUnU/RRFWJL90GhTUbTtF/Xg81Gtr1XU+k7APugFcv
+         P8/oYtefn7Bq1wIj0STMtbY9JZwKrzpIYIgKcduutXln7z69ylGBRxlYc6hwAWXjrd9m
+         TqO+wBDMKqEDO0K6QkcDcppzhy9XaXrn/05iHJjEQnHJzNaXonZ+GL8+YzSMC7kidYMq
+         6nUVI8v1XB333OReJCF1escOZRZ1lJPzLC829/wtGEV8uFqwz8EWFa1PDUM5L5xc01Im
+         Eg5w==
+X-Gm-Message-State: AOAM532rEa9ggieR7l0qoX3QYdNN8UCeqRGTQ7YKTYG6/r+o4JTynB0e
+        HXZSBwJUBL5dWXjrv/9R6IeB9g==
+X-Google-Smtp-Source: ABdhPJxvHr2moebqTWeOc7YEmfRnU0PSE/Fg2Y67L6NrwCW1hpUZBTGwvdnIfENauclz5a7ivS6BNw==
+X-Received: by 2002:aa7:8d0c:0:b029:3e0:2e32:3148 with SMTP id j12-20020aa78d0c0000b02903e02e323148mr2128487pfe.23.1628683600347;
+        Wed, 11 Aug 2021 05:06:40 -0700 (PDT)
 Received: from localhost ([122.172.201.85])
-        by smtp.gmail.com with ESMTPSA id b20sm26614754pfl.9.2021.08.11.05.06.29
+        by smtp.gmail.com with ESMTPSA id j18sm17649389pfc.98.2021.08.11.05.06.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Aug 2021 05:06:30 -0700 (PDT)
+        Wed, 11 Aug 2021 05:06:39 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>
 Cc:     linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Lukasz Luba <lukasz.luba@arm.com>,
         Quentin Perret <qperret@google.com>,
-        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V2 5/9] cpufreq: omap: Use auto-registration for energy model
-Date:   Wed, 11 Aug 2021 17:28:43 +0530
-Message-Id: <e8279c32418c92880c58422800ecd58533e4cb19.1628682874.git.viresh.kumar@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH V2 8/9] cpufreq: vexpress: Use auto-registration for energy model
+Date:   Wed, 11 Aug 2021 17:28:46 +0530
+Message-Id: <0bc6387893ea7215da658943ddaa2208f5f3e239.1628682874.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1628682874.git.viresh.kumar@linaro.org>
 References: <cover.1628682874.git.viresh.kumar@linaro.org>
@@ -82,29 +82,30 @@ core.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/omap-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index e035ee216b0f..1b50df06c6bc 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -131,7 +131,6 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
+index ab56813b7256..284b6bd040b1 100644
+--- a/drivers/cpufreq/vexpress-spc-cpufreq.c
++++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
+@@ -440,8 +440,6 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->freq_table = freq_table[cur_cluster];
+ 	policy->cpuinfo.transition_latency = 1000000; /* 1 ms */
  
- 	/* FIXME: what's the actual transition time? */
- 	cpufreq_generic_init(policy, freq_table, 300 * 1000);
--	dev_pm_opp_of_register_em(mpu_dev, policy->cpus);
- 
- 	return 0;
- }
-@@ -150,6 +149,7 @@ static struct cpufreq_driver omap_driver = {
- 	.get		= cpufreq_generic_get,
- 	.init		= omap_cpu_init,
- 	.exit		= omap_cpu_exit,
-+	.register_em	= cpufreq_register_em_with_opp,
- 	.name		= "omap",
- 	.attr		= cpufreq_generic_attr,
+-	dev_pm_opp_of_register_em(cpu_dev, policy->cpus);
+-
+ 	if (is_bL_switching_enabled())
+ 		per_cpu(cpu_last_req_freq, policy->cpu) =
+ 						clk_get_cpu_rate(policy->cpu);
+@@ -475,6 +473,7 @@ static struct cpufreq_driver ve_spc_cpufreq_driver = {
+ 	.get			= ve_spc_cpufreq_get_rate,
+ 	.init			= ve_spc_cpufreq_init,
+ 	.exit			= ve_spc_cpufreq_exit,
++	.register_em		= cpufreq_register_em_with_opp,
+ 	.attr			= cpufreq_generic_attr,
  };
+ 
 -- 
 2.31.1.272.g89b43f80a514
 
