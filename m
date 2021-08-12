@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08E99C19F3C
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83404C41537
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB8BD6108C
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 63DEF6103A
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235750AbhHLJBA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Aug 2021 05:01:00 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:59856 "EHLO
+        id S235746AbhHLJA7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Aug 2021 05:00:59 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:59814 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S235577AbhHLJA5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 05:00:57 -0400
-X-UUID: c8b14e9f0d6c457ba17493273c6f2265-20210812
-X-UUID: c8b14e9f0d6c457ba17493273c6f2265-20210812
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
+        with ESMTP id S235683AbhHLJAy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 05:00:54 -0400
+X-UUID: d08153c9055048598303121539400723-20210812
+X-UUID: d08153c9055048598303121539400723-20210812
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 489903549; Thu, 12 Aug 2021 17:00:22 +0800
+        with ESMTP id 1282640428; Thu, 12 Aug 2021 17:00:24 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 12 Aug 2021 17:00:20 +0800
+ mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 12 Aug 2021 17:00:22 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 12 Aug 2021 17:00:21 +0800
+ Transport; Thu, 12 Aug 2021 17:00:22 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -48,9 +48,9 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         James Liao <jamesjj.liao@mediatek.com>,
         Dawei Chien <dawei.chien@mediatek.com>,
         Henry Chen <henryc.chen@mediatek.com>
-Subject: [V11,PATCH 01/19] dt-bindings: soc: Add dvfsrc driver bindings
-Date:   Thu, 12 Aug 2021 16:58:28 +0800
-Message-ID: <20210812085846.2628-2-dawei.chien@mediatek.com>
+Subject: [V11,PATCH 10/19] dt-bindings: interconnect: add MT6873 interconnect dt-bindings
+Date:   Thu, 12 Aug 2021 16:58:37 +0800
+Message-ID: <20210812085846.2628-11-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210812085846.2628-1-dawei.chien@mediatek.com>
 References: <20210812085846.2628-1-dawei.chien@mediatek.com>
@@ -63,116 +63,61 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Henry Chen <henryc.chen@mediatek.com>
 
-Document the binding for enabling dvfsrc on MediaTek SoC.
+Add interconnect provider dt-bindings for MT6873.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/soc/mediatek/dvfsrc.yaml   | 67 ++++++++++++++++++++++
- include/dt-bindings/interconnect/mtk,mt8183-emi.h  | 21 +++++++
- 2 files changed, 88 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
- create mode 100644 include/dt-bindings/interconnect/mtk,mt8183-emi.h
+ include/dt-bindings/interconnect/mtk,mt6873-emi.h | 41 +++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/mtk,mt6873-emi.h
 
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+diff --git a/include/dt-bindings/interconnect/mtk,mt6873-emi.h b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
 new file mode 100644
-index 000000000000..f2b67b99921b
+index 000000000000..0b20011df010
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
-@@ -0,0 +1,67 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/soc/mediatek/dvfsrc.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: MediaTek dynamic voltage and frequency scaling resource collector (DVFSRC)
-+
-+description: |
-+  The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
-+  HW module which is used to collect all the requests from both software and
-+  hardware and turn into the decision of minimum operating voltage and minimum
-+  DRAM frequency to fulfill those requests.
-+
-+maintainers:
-+  - henryc.chen <henryc.chen@mediatek.com>
-+
-+properties:
-+  reg:
-+    maxItems: 1
-+    description: DVFSRC common register address and length.
-+
-+  compatible:
-+    enum:
-+      - mediatek,mt6873-dvfsrc
-+      - mediatek,mt8183-dvfsrc
-+      - mediatek,mt8192-dvfsrc
-+
-+  '#interconnect-cells':
-+    const: 1
-+
-+  dvfsrc-vcore:
-+    type: object
-+    description:
-+      The DVFSRC regulator is modelled as a subdevice of the DVFSRC.
-+      Because DVFSRC can request power directly via register read/write, likes
-+      vcore which is a core power of mt8183. As such, the DVFSRC regulator
-+      requires that DVFSRC nodes be present.
-+    $ref: /schemas/regulator/regulator.yaml#
-+
-+required:
-+  - compatible
-+  - reg
-+  - "#interconnect-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interconnect/mtk,mt8183-emi.h>
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        dvfsrc@10012000 {
-+            compatible = "mediatek,mt8183-dvfsrc";
-+            reg = <0 0x10012000 0 0x1000>;
-+            #interconnect-cells = <1>;
-+            dvfsrc_vcore: dvfsrc-vcore {
-+                    regulator-name = "dvfsrc-vcore";
-+                    regulator-min-microvolt = <725000>;
-+                    regulator-max-microvolt = <800000>;
-+                    regulator-always-on;
-+            };
-+        };
-+    };
-diff --git a/include/dt-bindings/interconnect/mtk,mt8183-emi.h b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-new file mode 100644
-index 000000000000..dfd143f87885
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt8183-emi.h
-@@ -0,0 +1,21 @@
++++ b/include/dt-bindings/interconnect/mtk,mt6873-emi.h
+@@ -0,0 +1,41 @@
 +/* SPDX-License-Identifier: GPL-2.0
 + *
 + * Copyright (c) 2021 MediaTek Inc.
 + */
 +
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT8183_EMI_H
++#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
++#define __DT_BINDINGS_INTERCONNECT_MTK_MT6873_EMI_H
 +
-+#define MT8183_SLAVE_DDR_EMI			0
-+#define MT8183_MASTER_MCUSYS			1
-+#define MT8183_MASTER_GPU			2
-+#define MT8183_MASTER_MMSYS			3
-+#define MT8183_MASTER_MM_VPU			4
-+#define MT8183_MASTER_MM_DISP			5
-+#define MT8183_MASTER_MM_VDEC			6
-+#define MT8183_MASTER_MM_VENC			7
-+#define MT8183_MASTER_MM_CAM			8
-+#define MT8183_MASTER_MM_IMG			9
-+#define MT8183_MASTER_MM_MDP			10
-+
++#define MT6873_SLAVE_DDR_EMI		0
++#define MT6873_MASTER_MCUSYS		1
++#define MT6873_MASTER_GPUSYS		2
++#define MT6873_MASTER_MMSYS		3
++#define MT6873_MASTER_MM_VPU		4
++#define MT6873_MASTER_MM_DISP		5
++#define MT6873_MASTER_MM_VDEC		6
++#define MT6873_MASTER_MM_VENC		7
++#define MT6873_MASTER_MM_CAM		8
++#define MT6873_MASTER_MM_IMG		9
++#define MT6873_MASTER_MM_MDP		10
++#define MT6873_MASTER_VPUSYS		11
++#define MT6873_MASTER_VPU_0		12
++#define MT6873_MASTER_VPU_1		13
++#define MT6873_MASTER_MDLASYS		14
++#define MT6873_MASTER_MDLA_0		15
++#define MT6873_MASTER_UFS		16
++#define MT6873_MASTER_PCIE		17
++#define MT6873_MASTER_USB		18
++#define MT6873_MASTER_DBGIF		19
++#define MT6873_SLAVE_HRT_DDR_EMI	20
++#define MT6873_MASTER_HRT_MMSYS		21
++#define MT6873_MASTER_HRT_MM_DISP	22
++#define MT6873_MASTER_HRT_MM_VDEC	23
++#define MT6873_MASTER_HRT_MM_VENC	24
++#define MT6873_MASTER_HRT_MM_CAM	25
++#define MT6873_MASTER_HRT_MM_IMG	26
++#define MT6873_MASTER_HRT_MM_MDP	27
++#define MT6873_MASTER_HRT_DBGIF		28
++#define MT6873_MASTER_WIFI		29
++#define MT6873_MASTER_BT		30
++#define MT6873_MASTER_NETSYS		31
 +#endif
 -- 
 2.14.1
