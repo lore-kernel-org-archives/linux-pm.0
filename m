@@ -2,109 +2,84 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 641B7C4338F
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 07:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD39C4320A
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4A09E60FC4
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 07:51:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1CF666103A
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234835AbhHLHvq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Aug 2021 03:51:46 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:23647 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234795AbhHLHvp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 03:51:45 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1628754680; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
- Subject: Sender; bh=kksxuIAxFnwR5reAUsynjR7msAT3zsFobFtuiLcro/U=; b=vZ8F/6tS16emoeSandW7rWTscVN6YOaFncqYH3hBFcYqbnxQ33Om72R1AQ1v8J/widBJKQfM
- vyKIYp3OX5/wE9+URMobF+nGMJ3TbAfKyu+pguS7JtUoIaDDLh3m+o2ugbBEWx32I8p0sycg
- QQ3Z84g832+MJnNpwtcGWyflcM8=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n02.prod.us-east-1.postgun.com with SMTP id
- 6114d2f191487ad52097d107 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 12 Aug 2021 07:51:13
- GMT
-Sender: tdas=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 7C763C43460; Thu, 12 Aug 2021 07:51:12 +0000 (UTC)
-Received: from [192.168.0.103] (unknown [49.204.180.145])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: tdas)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id DBEAFC433D3;
-        Thu, 12 Aug 2021 07:51:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org DBEAFC433D3
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=tdas@codeaurora.org
-Subject: Re: [PATCH v1] cpufreq: qcom-hw: Set dvfs_possible_from_any_cpu
- cpufreq driver flag
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Douglas Anderson <dianders@chromium.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Stephen Boyd <swboyd@chromium.org>
-References: <1628645918-12890-1-git-send-email-tdas@codeaurora.org>
- <20210811035745.j6jbufrd2pdrnqdp@vireshk-i7>
-From:   Taniya Das <tdas@codeaurora.org>
-Message-ID: <570078bf-12fc-eab2-39e1-a6cbc4119244@codeaurora.org>
-Date:   Thu, 12 Aug 2021 13:21:05 +0530
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        id S235603AbhHLJAt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Aug 2021 05:00:49 -0400
+Received: from mailgw01.mediatek.com ([60.244.123.138]:37280 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S235447AbhHLJAt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 05:00:49 -0400
+X-UUID: 2328df363348403a9c2e7321a40d8671-20210812
+X-UUID: 2328df363348403a9c2e7321a40d8671-20210812
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+        (envelope-from <dawei.chien@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 79671751; Thu, 12 Aug 2021 17:00:22 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 12 Aug 2021 17:00:21 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 12 Aug 2021 17:00:21 +0800
+From:   Dawei Chien <dawei.chien@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        <devicetree@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        Fan Chen <fan.chen@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Dawei Chien <dawei.chien@mediatek.com>
+Subject: [V11,PATCH 02/19] dt-bindings: mediatek: add compatible for MT8195 dvfsrc
+Date:   Thu, 12 Aug 2021 16:58:29 +0800
+Message-ID: <20210812085846.2628-3-dawei.chien@mediatek.com>
+X-Mailer: git-send-email 2.14.1
+In-Reply-To: <20210812085846.2628-1-dawei.chien@mediatek.com>
+References: <20210812085846.2628-1-dawei.chien@mediatek.com>
 MIME-Version: 1.0
-In-Reply-To: <20210811035745.j6jbufrd2pdrnqdp@vireshk-i7>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Thanks Viresh for the review.
+This adds dt-binding documentation of dvfsrc for Mediatek MT8195
+SoCs Platform.
 
-On 8/11/2021 9:27 AM, Viresh Kumar wrote:
-> On 11-08-21, 07:08, Taniya Das wrote:
->> As remote cpufreq updates are supported on QCOM platforms, set
->> dvfs_possible_from_any_cpu cpufreq driver flag.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   drivers/cpufreq/qcom-cpufreq-hw.c | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
->> index f86859b..20455aa 100644
->> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
->> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
->> @@ -161,6 +161,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
->>   		return ret;
->>   	} else {
->>   		policy->fast_switch_possible = true;
->> +		policy->dvfs_possible_from_any_cpu = true;
->>   		icc_scaling_enabled = false;
->>   	}
-> 
-> Why don't you set it always ?
-> 
+Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+---
+ Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Sure, will move it outside.
->>
->> --
->> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
->> of the Code Aurora Forum, hosted by the  Linux Foundation.
-> 
-
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+index f2b67b99921b..ec3feaf1ef73 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
++++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.yaml
+@@ -25,6 +25,7 @@ properties:
+       - mediatek,mt6873-dvfsrc
+       - mediatek,mt8183-dvfsrc
+       - mediatek,mt8192-dvfsrc
++      - mediatek,mt8195-dvfsrc
+ 
+   '#interconnect-cells':
+     const: 1
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
+2.14.1
 
---
