@@ -5,32 +5,32 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD081C04FE3
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF8FC41537
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9F6896109D
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 242AB610A5
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235676AbhHLJAx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Aug 2021 05:00:53 -0400
-Received: from mailgw01.mediatek.com ([60.244.123.138]:37280 "EHLO
+        id S235695AbhHLJAy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Aug 2021 05:00:54 -0400
+Received: from mailgw01.mediatek.com ([60.244.123.138]:37410 "EHLO
         mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S235621AbhHLJAw (ORCPT
+        with ESMTP id S235640AbhHLJAw (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 05:00:52 -0400
-X-UUID: a8dac708e3ac44deab4057386508b949-20210812
-X-UUID: a8dac708e3ac44deab4057386508b949-20210812
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
+X-UUID: fbd0b11f1bc74afb8c0d166959dae109-20210812
+X-UUID: fbd0b11f1bc74afb8c0d166959dae109-20210812
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 27670280; Thu, 12 Aug 2021 17:00:23 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1784395742; Thu, 12 Aug 2021 17:00:24 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs02n2.mediatek.inc (172.21.101.101) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 12 Aug 2021 17:00:22 +0800
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 12 Aug 2021 17:00:23 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 12 Aug 2021 17:00:22 +0800
+ Transport; Thu, 12 Aug 2021 17:00:23 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -47,9 +47,9 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         Arvin Wang <arvin.wang@mediatek.com>,
         James Liao <jamesjj.liao@mediatek.com>,
         Dawei Chien <dawei.chien@mediatek.com>
-Subject: [V11,PATCH 06/19] soc: mediatek: add support for mt8195
-Date:   Thu, 12 Aug 2021 16:58:33 +0800
-Message-ID: <20210812085846.2628-7-dawei.chien@mediatek.com>
+Subject: [V11,PATCH 14/19] interconnect: mediatek: add initial bandwidth
+Date:   Thu, 12 Aug 2021 16:58:41 +0800
+Message-ID: <20210812085846.2628-15-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210812085846.2628-1-dawei.chien@mediatek.com>
 References: <20210812085846.2628-1-dawei.chien@mediatek.com>
@@ -60,27 +60,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-add support for mt8195
+support get_bw function for suitable initial bandwidth
 
 Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
 ---
- drivers/soc/mediatek/mtk-dvfsrc.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/interconnect/mediatek/mtk-emi.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/soc/mediatek/mtk-dvfsrc.c b/drivers/soc/mediatek/mtk-dvfsrc.c
-index 1f053367eabe..692846d8b233 100644
---- a/drivers/soc/mediatek/mtk-dvfsrc.c
-+++ b/drivers/soc/mediatek/mtk-dvfsrc.c
-@@ -505,6 +505,9 @@ static const struct of_device_id mtk_dvfsrc_of_match[] = {
- 	}, {
- 		.compatible = "mediatek,mt6873-dvfsrc",
- 		.data = &mt6873_data,
-+	}, {
-+		.compatible = "mediatek,mt8195-dvfsrc",
-+		.data = &mt6873_data,
- 	}, {
- 		/* sentinel */
- 	},
+diff --git a/drivers/interconnect/mediatek/mtk-emi.c b/drivers/interconnect/mediatek/mtk-emi.c
+index 379dab77ebfd..80e2707698be 100644
+--- a/drivers/interconnect/mediatek/mtk-emi.c
++++ b/drivers/interconnect/mediatek/mtk-emi.c
+@@ -271,6 +271,14 @@ static int emi_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	return ret;
+ }
+ 
++static int emi_icc_get_bw(struct icc_node *node, u32 *avg, u32 *peak)
++{
++	*avg = 0;
++	*peak = 0;
++
++	return 0;
++}
++
+ static int emi_icc_remove(struct platform_device *pdev);
+ static int emi_icc_probe(struct platform_device *pdev)
+ {
+@@ -308,6 +316,7 @@ static int emi_icc_probe(struct platform_device *pdev)
+ 	provider->set = emi_icc_set;
+ 	provider->aggregate = emi_icc_aggregate;
+ 	provider->xlate = of_icc_xlate_onecell;
++	provider->get_bw = emi_icc_get_bw;
+ 	INIT_LIST_HEAD(&provider->nodes);
+ 	provider->data = data;
+ 
 -- 
 2.14.1
 
