@@ -2,145 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C151DC4320E
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 11:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2277AC432BE
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 11:27:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 951F46109F
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 11:17:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 071EA6103E
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 11:27:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236766AbhHLLSG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Aug 2021 07:18:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60624 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232081AbhHLLSE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 07:18:04 -0400
-Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com [IPv6:2607:f8b0:4864:20::929])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B45BC0613D3
-        for <linux-pm@vger.kernel.org>; Thu, 12 Aug 2021 04:17:38 -0700 (PDT)
-Received: by mail-ua1-x929.google.com with SMTP id a4so2656321uae.6
-        for <linux-pm@vger.kernel.org>; Thu, 12 Aug 2021 04:17:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=L0gyU3vJVuWPU21UXGdxDw4I761rPxaanXf3QMxUC1A=;
-        b=GR9CTz3qnI0sEDXS4Vz2dqqHPs12gPFKs+J+rdjPq/NqF1uywGom54qf5zP5DspdeQ
-         g7ZkfP/SFrc/cxUPSKthVQsTmV0dFWi2OxuJ+7QlubIPUOEkSyMLF/GBvZ5S1vDWtTGh
-         sa+m5oIMYu+5e9fGhuvZIedBm3enJquHi0Anmq6zHo1T/ms2N2i7FQ/1edif0N8YYffS
-         ue56lhAwZ5qvG46WVvcf4bdbanAVY27pKUsweEg9jnSO07vRfyVLi4xAFIY11bFyeauC
-         BU2lBXgG5d7/ddoZSgzVZEkqrroVUBYlqGeLhAL1cnwf4VXqnRsqK4WqPfko9em7W+mZ
-         dMPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=L0gyU3vJVuWPU21UXGdxDw4I761rPxaanXf3QMxUC1A=;
-        b=TZq8mbK5QUGFpvm32Fpgt0ZhJMcnoZB0YwJi7I2Zk9qJApTfmIPyyJvf1Xfeq9lKcU
-         px4slTwX8a+li43nIa7L4hAckvbW2PXbERQZsZ3daz2zy6y70IvDvXmQdtc9pxmzXDlt
-         zeuyZ0SIgcW2Tazc7MA802xpoQLc4TtP+BMmeZ9CcXV0HWV1wHwpD73ZhTvH8u1qoBQZ
-         fZcao626qhY7cMn6mE+EIXeTmTrfko5OQR0G+ZGp+3dNK7FkIz4TEtgPyoAtMi0TjeBK
-         +ClynCfIn17QhkNBHvc1HiFXch49U285l7zBdQ7GmR0k/RsstxunOchw/IIkjWbyZnHP
-         Nmag==
-X-Gm-Message-State: AOAM530zUjn9cnEiMePvXp2jSKJo27IOMbdSRCiXdc0/o5EB/0jhhAIV
-        25Ofhstw/Uc9yi7GVn9TLC7JDOGmp7vICZSpxocRMw==
-X-Google-Smtp-Source: ABdhPJyv6jhv7hsGxlvOXJ+PV6QFW4oGZxDyU7JGoVmm+PciCTwcwMITfVEp6nsx1+OUCwZN0NL2GzejpGySs3XeGIY=
-X-Received: by 2002:ab0:6695:: with SMTP id a21mr1572928uan.19.1628767057184;
- Thu, 12 Aug 2021 04:17:37 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210701232728.23591-1-digetx@gmail.com> <20210701232728.23591-3-digetx@gmail.com>
- <CAPDyKFrtWDYJo_NjS8306Z9ykbg7XZ55jC9hKEBMGkcrx1=4kQ@mail.gmail.com>
- <1034458d-78e0-5036-e278-6fee5d0d75ac@gmail.com> <CAPDyKFoafAk72Kw6X7626Niduaii0V5VM4dGSWmq+e3JTh7VRg@mail.gmail.com>
- <a5dfdf59-f5b5-d28e-6b02-b0c860ba8d80@gmail.com> <CAPDyKFq+ExjbGrN=yUUXPKfN_fGrwY6EAYn9a6VUFFU_VjhC=g@mail.gmail.com>
- <6741262b-386b-7635-fd42-ebd4f877fddd@gmail.com> <CAPDyKFpJhX51rOnvbYTmj9Akd+xX+b7xcSWt87UDrvMEfYOZ7Q@mail.gmail.com>
- <aab38f90-f7b2-900f-897b-470b81d473f2@gmail.com> <8e110e08-1268-464c-6edb-0a3f640d43d6@gmail.com>
- <e21106ab-95ef-fc97-1744-dc58180e321a@gmail.com>
-In-Reply-To: <e21106ab-95ef-fc97-1744-dc58180e321a@gmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Thu, 12 Aug 2021 13:17:00 +0200
-Message-ID: <CAPDyKFpgoBsFOiCGEpgAyeYJyEZQAXSN_2iEJcVJbfV+7rvdMw@mail.gmail.com>
-Subject: Re: [PATCH v7 02/37] soc/tegra: pmc: Implement attach_dev() of power
- domain drivers
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S236700AbhHLL2M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Aug 2021 07:28:12 -0400
+Received: from m43-7.mailgun.net ([69.72.43.7]:56221 "EHLO m43-7.mailgun.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232025AbhHLL2L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Aug 2021 07:28:11 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1628767666; h=References: In-Reply-To: Message-Id: Date:
+ Subject: Cc: To: From: Sender;
+ bh=ulIvF7Kssb3jgwEb0gW09ZO2wOi6cmtsMYz/TWOxlbI=; b=mkMSYJWSath4Abp3xH90oNdK1otOQ8ovcvWHT1WMnNVpt0jvLJ5xFp15zvigY/AANqd5ZtfV
+ +A9/c0QkL/B0V1lubof1e+7xUeNQJcI0i3SX8WrxSXJxFqEIXqm9RqSaHte2HAVx+dBwcucP
+ 23Xr+w5WDw5+4UeMNt5qu2nbLzQ=
+X-Mailgun-Sending-Ip: 69.72.43.7
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n05.prod.us-east-1.postgun.com with SMTP id
+ 611505b291487ad5202f87c1 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 12 Aug 2021 11:27:46
+ GMT
+Sender: rnayak=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 5D32DC43146; Thu, 12 Aug 2021 11:27:45 +0000 (UTC)
+Received: from blr-ubuntu-173.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: rnayak)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id EA2FFC4323A;
+        Thu, 12 Aug 2021 11:27:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org EA2FFC4323A
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=rnayak@codeaurora.org
+From:   Rajendra Nayak <rnayak@codeaurora.org>
+To:     ulf.hansson@linaro.org, bjorn.andersson@linaro.org,
+        viresh.kumar@linaro.org
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        swboyd@chromium.org, rojay@codeaurora.org, stephan@gerhold.net,
+        digetx@gmail.com, Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v7 1/3] opp: Don't print an error if required-opps is missing
+Date:   Thu, 12 Aug 2021 16:57:20 +0530
+Message-Id: <1628767642-4008-2-git-send-email-rnayak@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1628767642-4008-1-git-send-email-rnayak@codeaurora.org>
+References: <1628767642-4008-1-git-send-email-rnayak@codeaurora.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 12 Aug 2021 at 03:40, Dmitry Osipenko <digetx@gmail.com> wrote:
->
-> 12.08.2021 01:41, Dmitry Osipenko =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-> >>> I am not saying you should change the clock rate. The current code
-> >>> path that runs via devm_tegra_core_dev_init_opp_table() just calls
-> >>> clk_get_rate and then dev_pm_opp_set_rate() with the current rate to
-> >>> vote for the corresponding OPP level. Right?
-> >>>
-> >>> Isn't this exactly what you want? No?
-> >> I see now what you meant, it's actually a simpler variant and it works
-> >> too. Thank you for the suggestion, I'll prepare v8.
-> >>
-> > My bad, it doesn't work at all. I actually need to use the rpm_pstate o=
-r
-> > something else because performance state is coupled with the enable
-> > state of the device. If device is never rpm-suspended by consumer
-> > driver, then the initialized performance state is never dropped. Hence =
-I
-> > want to initialize the state which is set only when device is resumed.
-> >
-> > I'll need to think more about it.
->
-> GENPD core has these false assumptions:
->
-> 1. It assumes that by default all devices are at zero performance level
-> at a boot time. This is not true for Tegra because hardware is
-> pre-initialized independently from GENPD.
+The 'required-opps' property is considered optional, hence remove
+the pr_err() in of_parse_required_opp() when we find the property is
+missing.
+While at it, also fix the return value of
+of_get_required_opp_performance_state() when of_parse_required_opp()
+fails, return a -ENODEV instead of the -EINVAL.
 
-Right, which is similar to other SoCs.
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+---
+ drivers/opp/of.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
->
-> 2. It assumes that nothing depends on performance level and devices can
-> operate at any level at any time. Not true for Tegra and other platforms
-> where performance level is coupled with clocks state of attached
-> devices. OPP framework glues clock and performance level together for
-> us, which works good so far.
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index d298e38..9bdabad 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -95,15 +95,7 @@ static struct dev_pm_opp *_find_opp_of_np(struct opp_table *opp_table,
+ static struct device_node *of_parse_required_opp(struct device_node *np,
+ 						 int index)
+ {
+-	struct device_node *required_np;
+-
+-	required_np = of_parse_phandle(np, "required-opps", index);
+-	if (unlikely(!required_np)) {
+-		pr_err("%s: Unable to parse required-opps: %pOF, index: %d\n",
+-		       __func__, np, index);
+-	}
+-
+-	return required_np;
++	return of_parse_phandle(np, "required-opps", index);
+ }
+ 
+ /* The caller must call dev_pm_opp_put_opp_table() after the table is used */
+@@ -1327,7 +1319,7 @@ int of_get_required_opp_performance_state(struct device_node *np, int index)
+ 
+ 	required_np = of_parse_required_opp(np, index);
+ 	if (!required_np)
+-		return -EINVAL;
++		return -ENODEV;
+ 
+ 	opp_table = _find_table_of_opp_np(required_np);
+ 	if (IS_ERR(opp_table)) {
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
 
-Right, OPPs need to be managed differently depending on the SoC.
-That's why genpd is there to help and to model this as "performance
-states" and to allow operations to be set through SoC specific
-callabacks, for example.
-
-More importantly, the assumption is that in general, consumer drivers
-should use the OPP library to vote/set OPP levels, they shouldn't call
-dev_pm_genpd_set_performance_state() - unless they know exactly what
-they are doing.
-
->
-> Hence I either need to patch every driver to use dev_pm_opp_set_rate in
-> order to sync clk rate with the perf level at device runtime, or I need
-> to preset the rpm perf level to allow GENPD core to set the level before
-> device is resumed.
-
-When the device is getting attached to its genpd (during the probe
-sequence and for a single PM domain case), runtime PM is disabled for
-the device. If you would call dev_pm_opp_set_rate() from a genpd
-callback during attach (without changing the rate), this means you
-would update/synchronize the vote. In this way, the vote is set before
-the device is runtime resumed by the driver, right?
-
-On the other hand, patching the driver should also be quite simple and
-you need to do that anyways, don't you?
-
-Kind regards
-Uffe
