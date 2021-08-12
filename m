@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C7E3C43214
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C7B5C4338F
 	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7D2AD6103A
+	by mail.kernel.org (Postfix) with ESMTP id 7119C6109D
 	for <linux-pm@archiver.kernel.org>; Thu, 12 Aug 2021 09:00:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235700AbhHLJAy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Aug 2021 05:00:54 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:59856 "EHLO
+        id S235724AbhHLJA4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Aug 2021 05:00:56 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:59814 "EHLO
         mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S235642AbhHLJAw (ORCPT
+        with ESMTP id S235618AbhHLJAw (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Aug 2021 05:00:52 -0400
-X-UUID: 4f4b54ccfd684bd39521850dc22d145e-20210812
-X-UUID: 4f4b54ccfd684bd39521850dc22d145e-20210812
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+X-UUID: f2b3055771334a0f84d6091939cf67f6-20210812
+X-UUID: f2b3055771334a0f84d6091939cf67f6-20210812
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <dawei.chien@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1248039440; Thu, 12 Aug 2021 17:00:23 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 124246465; Thu, 12 Aug 2021 17:00:22 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 12 Aug 2021 17:00:23 +0800
+ mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 12 Aug 2021 17:00:22 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 12 Aug 2021 17:00:23 +0800
+ Transport; Thu, 12 Aug 2021 17:00:22 +0800
 From:   Dawei Chien <dawei.chien@mediatek.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -46,10 +46,11 @@ CC:     Mark Rutland <mark.rutland@arm.com>,
         Fan Chen <fan.chen@mediatek.com>,
         Arvin Wang <arvin.wang@mediatek.com>,
         James Liao <jamesjj.liao@mediatek.com>,
-        Dawei Chien <dawei.chien@mediatek.com>
-Subject: [V11,PATCH 11/19] dt-bindings: interconnect: add MT8195 interconnect dt-bindings
-Date:   Thu, 12 Aug 2021 16:58:38 +0800
-Message-ID: <20210812085846.2628-12-dawei.chien@mediatek.com>
+        Dawei Chien <dawei.chien@mediatek.com>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [V11,PATCH 08/19] arm64: dts: mt8192: add dvfsrc related nodes
+Date:   Thu, 12 Aug 2021 16:58:35 +0800
+Message-ID: <20210812085846.2628-9-dawei.chien@mediatek.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20210812085846.2628-1-dawei.chien@mediatek.com>
 References: <20210812085846.2628-1-dawei.chien@mediatek.com>
@@ -60,62 +61,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interconnect provider dt-bindings for MT8195
+From: Henry Chen <henryc.chen@mediatek.com>
 
+Enable dvfsrc on mt8192 platform.
+
+Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
 ---
- include/dt-bindings/interconnect/mtk,mt8195-emi.h | 42 +++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/mtk,mt8195-emi.h
+ arch/arm64/boot/dts/mediatek/mt8192.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/include/dt-bindings/interconnect/mtk,mt8195-emi.h b/include/dt-bindings/interconnect/mtk,mt8195-emi.h
-new file mode 100644
-index 000000000000..c7e8b805f8bd
---- /dev/null
-+++ b/include/dt-bindings/interconnect/mtk,mt8195-emi.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (c) 2020 MediaTek Inc.
-+ */
+diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+index 9757138a8bbd..c70a3bf744fa 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
+@@ -282,6 +282,12 @@
+ 			#interrupt-cells = <2>;
+ 		};
+ 
++		ddr_emi: dvfsrc@10012000 {
++			compatible = "mediatek,mt8192-dvfsrc",
++				     "mediatek,mt6873-dvfsrc";
++			reg = <0 0x10012000 0 0x1000>;
++		};
 +
-+#ifndef __DT_BINDINGS_INTERCONNECT_MTK_MT8195_EMI_H
-+#define __DT_BINDINGS_INTERCONNECT_MTK_MT8195_EMI_H
-+
-+#define MT8195_SLAVE_DDR_EMI		0
-+#define MT8195_MASTER_MCUSYS		1
-+#define MT8195_MASTER_GPUSYS		2
-+#define MT8195_MASTER_MMSYS		3
-+#define MT8195_MASTER_MM_VPU		4
-+#define MT8195_MASTER_MM_DISP		5
-+#define MT8195_MASTER_MM_VDEC		6
-+#define MT8195_MASTER_MM_VENC		7
-+#define MT8195_MASTER_MM_CAM		8
-+#define MT8195_MASTER_MM_IMG		9
-+#define MT8195_MASTER_MM_MDP		10
-+#define MT8195_MASTER_VPUSYS		11
-+#define MT8195_MASTER_VPU_0		12
-+#define MT8195_MASTER_VPU_1		13
-+#define MT8195_MASTER_MDLASYS		14
-+#define MT8195_MASTER_MDLA_0		15
-+#define MT8195_MASTER_UFS		16
-+#define MT8195_MASTER_PCIE_0		17
-+#define MT8195_MASTER_PCIE_1		18
-+#define MT8195_MASTER_USB		19
-+#define MT8195_MASTER_DBGIF		20
-+#define MT8195_SLAVE_HRT_DDR_EMI	21
-+#define MT8195_MASTER_HRT_MMSYS		22
-+#define MT8195_MASTER_HRT_MM_DISP	23
-+#define MT8195_MASTER_HRT_MM_VDEC	24
-+#define MT8195_MASTER_HRT_MM_VENC	25
-+#define MT8195_MASTER_HRT_MM_CAM	26
-+#define MT8195_MASTER_HRT_MM_IMG	27
-+#define MT8195_MASTER_HRT_MM_MDP	28
-+#define MT8195_MASTER_HRT_DBGIF		29
-+#define MT8195_MASTER_WIFI		30
-+#define MT8195_MASTER_BT		31
-+#define MT8195_MASTER_NETSYS		32
-+#endif
+ 		systimer: timer@10017000 {
+ 			compatible = "mediatek,mt8192-timer",
+ 				     "mediatek,mt6765-timer";
 -- 
 2.14.1
 
