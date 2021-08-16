@@ -2,85 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E85C4320E
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Aug 2021 16:47:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E9FC4338F
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Aug 2021 16:51:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 731E561042
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Aug 2021 16:47:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 31A4460F11
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Aug 2021 16:51:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229733AbhHPQsV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Aug 2021 12:48:21 -0400
-Received: from mail-ot1-f44.google.com ([209.85.210.44]:41604 "EHLO
-        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229481AbhHPQsV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Aug 2021 12:48:21 -0400
-Received: by mail-ot1-f44.google.com with SMTP id c2-20020a0568303482b029048bcf4c6bd9so21657997otu.8;
-        Mon, 16 Aug 2021 09:47:49 -0700 (PDT)
+        id S229481AbhHPQve (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Aug 2021 12:51:34 -0400
+Received: from mail-oi1-f174.google.com ([209.85.167.174]:44741 "EHLO
+        mail-oi1-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229733AbhHPQvd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Aug 2021 12:51:33 -0400
+Received: by mail-oi1-f174.google.com with SMTP id w6so27508017oiv.11;
+        Mon, 16 Aug 2021 09:51:02 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=sAk+bXSQUScQbdU5hNORsZL/qLSnE93O+ICos9MpVYM=;
-        b=tt+wbufNWHQzQuwt7TZxD1A6hnUUpgfkDK2ood4BtZTGEsKUMu0ZHUoDxIgywO5FZH
-         uMnwCWTM1miT19qEo0sgWHQrsTDS4SRZwHAk9awTu0KPEtHcvZUT5s/UQ/uIZeX+etn0
-         Vs+rU39BLh+CeEUpe0b/nr3luyUIrlQrMQ31Hwc8hukYMcJdrPA0zprVAnToFNk4fAcg
-         OBuKvzjL2kd1VEZzEyFndBWsxhSxPMsHM7AYaEMEaUs9tjG6uXWDCBm44xKDxggy137R
-         smhYoZfWpX+o4x+Aya6l+Sb8T+7P8nyA6c6Jst9NYXxszthThifsf3IZJMbQeYj3yhx1
-         +k6g==
-X-Gm-Message-State: AOAM532JSip88mJMSUsxQxFnB71cMHp0Z/EegTJu4oN42tm0EBCMRBW6
-        UgFxfODZZfi2m89ePHTUJkc8mhYoyJHLEd5ZlAU=
-X-Google-Smtp-Source: ABdhPJzpwRhStifHUxeXzjqKHqeL0dRGj+AgWwaQQGNX6ZnhipsU1pGx0OW1q1o/iokxq6dkwbVrt5/8YqeEpgTQZ+M=
-X-Received: by 2002:a9d:a75:: with SMTP id 108mr13243553otg.260.1629132463966;
- Mon, 16 Aug 2021 09:47:43 -0700 (PDT)
+        bh=AQ0idBXXtrFco3xaPvnnCXSKmRuX4CohDur19kAJhIg=;
+        b=LEh80OXgK7QCi4teG/1ENC9BdGz1am0yu+Mcbut8B7NsVF9eOPUjhZTemqSGMDxaL/
+         tDO26lgoGmoi/5Gm0F6e3UQ2SbDq454grCGNsGpnpShhmdOGgFjc7IStgOiW5uihz7tD
+         GXrLT7oA3W5U7NL+ZhUsEQmIgUAfOKhFQ0RubWAsHAJ2MG44qW26FdkNwg0huDjZq85Q
+         lxqWofdR3IdNF4HiwQ6Pm/4tZyCda59uMxVw4IjPA/JUmHJI7rQ5Fb0QoF7FGb654B1d
+         x4XKSDrxGSrx3s4IeBrkyYOS46BGn5hj+AZ4CMy1x8IwtREhW3QUrnFgqG8XsoUXlWvD
+         +y/g==
+X-Gm-Message-State: AOAM531HmE/2+XDxtw/Z4JttVnTOoV36nsn1m+EbJv9wvdC47nGJxL9x
+        rgx6YtAruasNUAkpFLirPcQjZKdvfmdlXKFdqqE=
+X-Google-Smtp-Source: ABdhPJx3ege31T3c9rfsXiS7wA/hfK5M/UZh2WntN6a6vxSZsSsyiMPYBPmIAI5VKar8QrJc6nPFrcb1/zmyEQC7Zbw=
+X-Received: by 2002:a05:6808:10c1:: with SMTP id s1mr32893ois.69.1629132661639;
+ Mon, 16 Aug 2021 09:51:01 -0700 (PDT)
 MIME-Version: 1.0
-References: <1628767642-4008-1-git-send-email-rnayak@codeaurora.org>
- <1628767642-4008-3-git-send-email-rnayak@codeaurora.org> <CAPDyKFqruKGya1tbPjzAA=eO5v3Gipt2DH6RBbMi6e_vXmA+dw@mail.gmail.com>
-In-Reply-To: <CAPDyKFqruKGya1tbPjzAA=eO5v3Gipt2DH6RBbMi6e_vXmA+dw@mail.gmail.com>
+References: <20210810014442.7446-1-rdunlap@infradead.org>
+In-Reply-To: <20210810014442.7446-1-rdunlap@infradead.org>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 16 Aug 2021 18:47:32 +0200
-Message-ID: <CAJZ5v0gjpkb00hpStw-8LLOYbrht+JWbndVBGLWSWDwTDRW7ww@mail.gmail.com>
-Subject: Re: [PATCH v7 2/3] PM / Domains: Add support for 'required-opps' to
- set default perf state
-To:     Ulf Hansson <ulf.hansson@linaro.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>
-Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Roja Rani Yarubandi <rojay@codeaurora.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Dmitry Osipenko <digetx@gmail.com>
+Date:   Mon, 16 Aug 2021 18:50:50 +0200
+Message-ID: <CAJZ5v0gVpmf3_73f0X6yEWA+vkP2LGjdmU+c6AtofAm_tiEXqg@mail.gmail.com>
+Subject: Re: [PATCH] kernel/power: unmark 'state' functions as kernel-doc
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2021 at 1:46 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Tue, Aug 10, 2021 at 3:44 AM Randy Dunlap <rdunlap@infradead.org> wrote:
 >
-> On Thu, 12 Aug 2021 at 13:28, Rajendra Nayak <rnayak@codeaurora.org> wrote:
-> >
-> > Some devices within power domains with performance states do not
-> > support DVFS, but still need to vote on a default/static state
-> > while they are active. They can express this using the 'required-opps'
-> > property in device tree, which points to the phandle of the OPP
-> > supported by the corresponding power-domains.
-> >
-> > Add support to parse this information from DT and then set the
-> > specified performance state during attach and drop it on detach.
-> > runtime suspend/resume callbacks already have logic to drop/set
-> > the vote as needed and should take care of dropping the default
-> > perf state vote on runtime suspend and restore it back on runtime
-> > resume.
-> >
-> > Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> Fix kernel-doc warnings in kernel/power/main.c by unmarking the
+> comment block as kernel-doc notation. This eliminates the following
+> kernel-doc warnings:
 >
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> kernel/power/main.c:593: warning: expecting prototype for state(). Prototype was for state_show() instead
+> kernel/power/main.c:593: warning: Function parameter or member 'kobj' not described in 'state_show'
+> kernel/power/main.c:593: warning: Function parameter or member 'attr' not described in 'state_show'
+> kernel/power/main.c:593: warning: Function parameter or member 'buf' not described in 'state_show'
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  kernel/power/main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- linux-next-20210809.orig/kernel/power/main.c
+> +++ linux-next-20210809/kernel/power/main.c
+> @@ -577,7 +577,7 @@ static inline void pm_print_times_init(v
+>
+>  struct kobject *power_kobj;
+>
+> -/**
+> +/*
+>   * state - control system sleep states.
+>   *
+>   * show() returns available sleep state labels, which may be "mem", "standby",
 
-All three patches applied as 5.15 material, thanks!
+Applied as 5.15 material, thanks!
