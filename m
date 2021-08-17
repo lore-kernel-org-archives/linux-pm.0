@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F31D8C25AE5
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Aug 2021 01:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F9FCC19F41
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Aug 2021 01:30:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D84F660FC3
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Aug 2021 01:30:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 88B5A60EAF
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Aug 2021 01:30:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236622AbhHQBbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Aug 2021 21:31:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48070 "EHLO
+        id S238381AbhHQBb0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Aug 2021 21:31:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48118 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237491AbhHQBbI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Aug 2021 21:31:08 -0400
-Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com [IPv6:2a00:1450:4864:20::232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3092CC0612A5;
-        Mon, 16 Aug 2021 18:30:35 -0700 (PDT)
-Received: by mail-lj1-x232.google.com with SMTP id h17so30147628ljh.13;
-        Mon, 16 Aug 2021 18:30:35 -0700 (PDT)
+        with ESMTP id S237591AbhHQBbJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Aug 2021 21:31:09 -0400
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7406BC0617AF;
+        Mon, 16 Aug 2021 18:30:37 -0700 (PDT)
+Received: by mail-lj1-x22c.google.com with SMTP id c12so17170400ljr.5;
+        Mon, 16 Aug 2021 18:30:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=pQDzXZvRDUZkLv5x3ImTMmoCkegW1/kgvrYOEYJcZ1E=;
-        b=WnkqPT38iEK+LI2pegQ5CAgZHbUA+4T1HBF1Robs64xHzd2RVVDQL5P2Th1DUqHQmg
-         Bmip5c85v20usxU6l+F6TNpm0oydiIVHub5elxPj9ebjhuRxMMJKJhh1mnjJkJBfCPui
-         t3RNY/nUebYwUEneR0f3mwbtZtB/CmmkPR03QqeUewR3IvqyyyMRHZHKTwRUPOGUnQQw
-         FHGyQFw5JabzhE6WPtOkrekSYjBvD/veH3cIzof6CzoYj45MQmTsKOpvWSA2fZSY8GmA
-         YlKTz9SZ2ABu0XLhuo4N3qRhp1fuwUr3pubXVtg1Z2vckegbLZrvE43sBkYZzT4kyasO
-         fJeQ==
+        bh=Rnq9bkX2ixJQNv9BmFWVHuIOaPxB2jJGC7dZumDQ6+g=;
+        b=OhTLO+vj1vm5lGE+851g2CFGzlzjt3nZpufwJ0JLRj5BVaJqOv5XpnZ4t6FIFykDTe
+         R7eSI4+JQmpLfDJXNvkuLw20a6hVxyEOfc6fYX2JHLYC66lj/UMaHPoHD28QCWb7xsPE
+         ck0QHLrINepJb4SHmmiAjfr61/w6aaL8rUWnwdaj04Gxb+CYF49kFSlCFhp+PAHjBiFv
+         opz07XHUvGSevI2cEHAS1+ua6hVTgr3hXi+elnaFdC1tmCA2ewZFv2BBPNmmsu3P0OH+
+         Lex80AN9h9VtBkYhMDTb94z7cxiyS9kXLrm7WgkKDh0hQquViNyco07WO4wrwg6WoGxn
+         VOLg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=pQDzXZvRDUZkLv5x3ImTMmoCkegW1/kgvrYOEYJcZ1E=;
-        b=ZM0Os8twWd/01Z7GvBcfU6VT5+PE2z5lyWRtMvidq+RgfoUTbxSoBO9q5N2M6cH4bk
-         1DdcXcUaS3JBHrF9OO0obxE1tFpvX223mUzBkDhMoH1MlvNyQMf6yUx0G4z6UTtACg2T
-         1IGblD1UxYDNwc1lXFSQjQz1/wEuvg707PcxorfN+f8QokYi1cvJGkhSGsFelyC+plnB
-         ukLuW+UWT3da2qPOZ31Ap+gvJSLHajvlocRxAT4Y2Q4Z691yT72WjN+6ffxy17VncRvN
-         w9m9qOKbHlFWQsuLQ2KkAaWZtiS7RhhC4H0bsg50k+5Cx0iXy5/ln+5E8D0mZIbAIIap
-         EAeQ==
-X-Gm-Message-State: AOAM533CNR9aufiu9xFUn+HJvPshaMDvO2aY5XgWLUJXNMuKGagvZZ9H
-        vxgKrJOGPbt4e1AkXGptuI0=
-X-Google-Smtp-Source: ABdhPJxafgNSwgi9onfKPo0+LX8+L56eoUxCQoUliGfkte3CyYpPj4Ux16SZvsFjT/VXs0Ws0bfVww==
-X-Received: by 2002:a05:651c:1144:: with SMTP id h4mr847720ljo.396.1629163833587;
-        Mon, 16 Aug 2021 18:30:33 -0700 (PDT)
+        bh=Rnq9bkX2ixJQNv9BmFWVHuIOaPxB2jJGC7dZumDQ6+g=;
+        b=Ugs+4A6TbI7do3S9b2f/ZV9H+LcObJLkCUG1uN1uv7wECOQYOkcqK/mGEKwVUVf+mF
+         FAa9Seg3X7fYtum2RbjM23G75e25qhjY3inT+vyMfljVKQafY1UkVfru+VHzvdnAcTw9
+         TlC3/HKO2U3OgvZdfTRBrut/JCanUECxouuAcS7qJ3yHQwm5Rs/HFjt9J50RdSv72Isu
+         814ei94d2YpwtJdqGOw+YJPOT+9/MPmMOehPTOPCq23W02h9ZrLc8SPDtWdQQ8EYG4AK
+         GsLGIKSXMtebjQfV4Sc6benH3cZy0iLmlkMM/3eG2Kxow/Jfai7EXGXVZQgU21Seb7FL
+         IB2g==
+X-Gm-Message-State: AOAM5310/A3xzstGP5AN3V6KBSEkn5dm6c4VH5kBZbuI4HcGgmyB7omI
+        ulMt5LOU05Zp+htwjJguQWM=
+X-Google-Smtp-Source: ABdhPJz00oZVpSy/+QIJGg2IFpP4EXHyPsIbmUOMC41xOAd6hpvBx6xCs96mwtqe7gvcDuDFogRMBg==
+X-Received: by 2002:a2e:8191:: with SMTP id e17mr865236ljg.226.1629163835893;
+        Mon, 16 Aug 2021 18:30:35 -0700 (PDT)
 Received: from localhost.localdomain (46-138-85-91.dynamic.spd-mgts.ru. [46.138.85.91])
-        by smtp.gmail.com with ESMTPSA id g30sm46607lfj.298.2021.08.16.18.30.32
+        by smtp.gmail.com with ESMTPSA id g30sm46607lfj.298.2021.08.16.18.30.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Aug 2021 18:30:33 -0700 (PDT)
+        Mon, 16 Aug 2021 18:30:35 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -84,9 +84,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-mmc@vger.kernel.org, linux-media@vger.kernel.org,
         dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
         linux-clk@vger.kernel.org
-Subject: [PATCH v8 27/34] soc/tegra: fuse: Reset hardware
-Date:   Tue, 17 Aug 2021 04:27:47 +0300
-Message-Id: <20210817012754.8710-28-digetx@gmail.com>
+Subject: [PATCH v8 29/34] soc/tegra: pmc: Enable core domain support for Tegra20 and Tegra30
+Date:   Tue, 17 Aug 2021 04:27:49 +0300
+Message-Id: <20210817012754.8710-30-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210817012754.8710-1-digetx@gmail.com>
 References: <20210817012754.8710-1-digetx@gmail.com>
@@ -96,70 +96,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The FUSE controller is enabled at a boot time. Reset it in order to put
-hardware and clock into clean and disabled state.
+All device drivers got runtime PM and OPP support. Flip the core domain
+support status for Tegra20 and Tegra30 SoCs.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/soc/tegra/fuse/fuse-tegra.c | 25 +++++++++++++++++++++++++
- drivers/soc/tegra/fuse/fuse.h       |  1 +
- 2 files changed, 26 insertions(+)
+ drivers/soc/tegra/pmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/tegra/fuse/fuse-tegra.c b/drivers/soc/tegra/fuse/fuse-tegra.c
-index d1b66cd9339d..0c2723c2822f 100644
---- a/drivers/soc/tegra/fuse/fuse-tegra.c
-+++ b/drivers/soc/tegra/fuse/fuse-tegra.c
-@@ -15,6 +15,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/pm_runtime.h>
-+#include <linux/reset.h>
- #include <linux/slab.h>
- #include <linux/sys_soc.h>
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index fb8faf7b226a..caf9e72af246 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -3042,7 +3042,7 @@ static void tegra20_pmc_setup_irq_polarity(struct tegra_pmc *pmc,
+ }
  
-@@ -248,6 +249,30 @@ static int tegra_fuse_probe(struct platform_device *pdev)
- 		goto restore;
- 	}
+ static const struct tegra_pmc_soc tegra20_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra20_powergates),
+ 	.powergates = tegra20_powergates,
+ 	.num_cpu_powergates = 0,
+@@ -3103,7 +3103,7 @@ static const char * const tegra30_reset_sources[] = {
+ };
  
-+	fuse->rst = devm_reset_control_get_optional(&pdev->dev, "fuse");
-+	if (IS_ERR(fuse->rst)) {
-+		err = PTR_ERR(fuse->rst);
-+		dev_err(&pdev->dev, "failed to get FUSE reset: %pe\n",
-+			fuse->rst);
-+		goto restore;
-+	}
-+
-+	/*
-+	 * FUSE clock is enabled at a boot time, hence this resume/suspend
-+	 * disables the clock besides the h/w resetting.
-+	 */
-+	err = pm_runtime_resume_and_get(&pdev->dev);
-+	if (err)
-+		goto restore;
-+
-+	err = reset_control_reset(fuse->rst);
-+	pm_runtime_put(&pdev->dev);
-+
-+	if (err < 0) {
-+		dev_err(&pdev->dev, "failed to reset FUSE: %d\n", err);
-+		goto restore;
-+	}
-+
- 	/* release the early I/O memory mapping */
- 	iounmap(base);
- 
-diff --git a/drivers/soc/tegra/fuse/fuse.h b/drivers/soc/tegra/fuse/fuse.h
-index de58feba0435..1b719d85bd04 100644
---- a/drivers/soc/tegra/fuse/fuse.h
-+++ b/drivers/soc/tegra/fuse/fuse.h
-@@ -43,6 +43,7 @@ struct tegra_fuse {
- 	void __iomem *base;
- 	phys_addr_t phys;
- 	struct clk *clk;
-+	struct reset_control *rst;
- 
- 	u32 (*read_early)(struct tegra_fuse *fuse, unsigned int offset);
- 	u32 (*read)(struct tegra_fuse *fuse, unsigned int offset);
+ static const struct tegra_pmc_soc tegra30_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra30_powergates),
+ 	.powergates = tegra30_powergates,
+ 	.num_cpu_powergates = ARRAY_SIZE(tegra30_cpu_powergates),
 -- 
 2.32.0
 
