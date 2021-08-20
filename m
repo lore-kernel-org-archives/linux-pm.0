@@ -2,65 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED99BC432BE
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Aug 2021 20:48:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B928C4320A
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Aug 2021 21:55:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D83246115B
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Aug 2021 20:48:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BC1A61165
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Aug 2021 21:55:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240038AbhHTUsu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Aug 2021 16:48:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40032 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240403AbhHTUst (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Aug 2021 16:48:49 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPS id 49A036115C;
-        Fri, 20 Aug 2021 20:48:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1629492491;
-        bh=DWxz+E9y8QfqSwer/XDINgmlgbDQqH6OFTpIa3LlqdE=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=XHyKusFrCU2tweQhUw7HXSYHeEpCpuYN43xQloQKRHJ4Q3CJNBYvxu765OEsN33Tt
-         e9hWyC4BLkb5EeHh+hgGZQU9gaUDzlyDPNfOBi/aTrQ5ZGBJ/AvocLXhJQ8UKf9sdI
-         XEKP9HODrckdlTOK1D2gYevnpkAbqT7ifWpB0fpyqvSLYaAD6PqCCYTkxnganxZ3oS
-         rPEpwAEZGPH46IiOiI0PE29oBQFXZH2/A20ZzMaGeBHrnyjfUwZ8ZwH5XAkVX1Y9s0
-         occoICyBYWW8mn3Iem8uu1kxX5FNHh0r612bihPpCEKFBfUfKpjghDinpbfDhCHfEs
-         jAuQXVA/0ol2Q==
-Subject: Re: [GIT PULL] ACPI fixes for v5.14-rc7
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0g14eg5PT5+AnKh_Uf+a7Ap5t5+G_LcU8+A-tQS3UY15g@mail.gmail.com>
-References: <CAJZ5v0g14eg5PT5+AnKh_Uf+a7Ap5t5+G_LcU8+A-tQS3UY15g@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0g14eg5PT5+AnKh_Uf+a7Ap5t5+G_LcU8+A-tQS3UY15g@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.14-rc7
-X-PR-Tracked-Commit-Id: 0f09f4c48118ce3c562e1028df7fe0f8150493d6
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: fa54d366a6e4fe3e16322abdb8b5115f8be0da8b
-Message-Id: <162949249124.8168.17683135104906314521.pr-tracker-bot@kernel.org>
-Date:   Fri, 20 Aug 2021 20:48:11 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S231817AbhHTV4U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Aug 2021 17:56:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53682 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231511AbhHTV4T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Aug 2021 17:56:19 -0400
+Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 902FAC061756
+        for <linux-pm@vger.kernel.org>; Fri, 20 Aug 2021 14:55:41 -0700 (PDT)
+Received: by mail-ot1-x334.google.com with SMTP id o16-20020a9d2210000000b0051b1e56c98fso2432823ota.8
+        for <linux-pm@vger.kernel.org>; Fri, 20 Aug 2021 14:55:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=KblwPmiHBhylSYmizpG5xsAGTHqdQ0PFtDpHENws1SA=;
+        b=ud0UkycghEG90duRWw53xDdlOx2cit2bN3o/e5FmKAvXNmS1aGpkaoU1077mIgU95O
+         uPyRk9e/DRfC5CMxAqFeCjvT2HNV/I8i8z9yBf2npG3a2SQIKc5UeLgQifEmianiR3tE
+         iAe66JgiJ7PCBgvxirKT1JAdkuQ1+qYjOyYVUU8DiYHMct030TnCbGLcUyl6019JY3lJ
+         XBWY/+e4s19T2uiOW9ZfcIsRjBM6Kq5JcQg+VUo32M3G82OoQe4GEBeXmhBlaFd5dIya
+         CnyHfZIN0RSYPNVLidPSGgu51e1AcP4aQWpGW8bWz4sAaSvsLugZ2RED+SD2fPtLnT/7
+         BvMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=KblwPmiHBhylSYmizpG5xsAGTHqdQ0PFtDpHENws1SA=;
+        b=AHAkbeVoDWAb9BxHk0K7ECRV7r6XR/mdAsoK4bWj/46lfSkJnYIC6F/HSIWDVhUBfe
+         OyiJD6X30Dtwmab+tcFug1+yd+6FEAHu1ZnjVj2txOMGH48NpA9EiDD4M17aAzMwhMX/
+         737mzl66wcooItiNGQzXNMGTtRL6AOWDj1n1+Bo+HXxc65UC5ceExxsNRw5wXqSyw+qy
+         QBnMZO8BZoye+6Eou6ywARoooqt3s5mrs4o9reUQmPnsLmmEaOwrHfK1Vwnfy8HCWYQE
+         9WLzMeyKhC4fz29WWw5ob+67xhsoZxT9AVs7eqMNLj+IV0tCfUOr/ms1pqgbuQEdejpL
+         TCxQ==
+X-Gm-Message-State: AOAM533r1iCCJ6EaPHBmIg6Lo+PXW2A/QC5GCYwHKoR9Qe72nKsFzZik
+        /BJ/nW+t5VpIiIsw6Alu4aM3akZG2iSP5A==
+X-Google-Smtp-Source: ABdhPJxDcnSXZpY6iwxnZRsIZhUMFzjIxcrKNwrTrcFmM8qXBHhYFof7YBRRiMquso8BMSGWNx54jg==
+X-Received: by 2002:a54:4686:: with SMTP id k6mr4665691oic.54.1629496540907;
+        Fri, 20 Aug 2021 14:55:40 -0700 (PDT)
+Received: from localhost.localdomain (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id i19sm1643630ooe.44.2021.08.20.14.55.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Aug 2021 14:55:40 -0700 (PDT)
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Bhupesh Sharma <bhupesh.sharma@linaro.org>
+Subject: [PATCH] cpufreq: blocklist more Qualcomm platforms in cpufreq-dt-platdev
+Date:   Fri, 20 Aug 2021 14:57:00 -0700
+Message-Id: <20210820215700.130575-1-bjorn.andersson@linaro.org>
+X-Mailer: git-send-email 2.29.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Fri, 20 Aug 2021 21:36:06 +0200:
+The Qualcomm sa8155p, sm6350, sm8250 and sm8350 platforms also uses the
+qcom-cpufreq-hw driver, so add them to the cpufreq-dt-platdev driver's
+blocklist.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.14-rc7
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/fa54d366a6e4fe3e16322abdb8b5115f8be0da8b
-
-Thank you!
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 231e585f6ba2..ca1d103ec449 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -137,11 +137,15 @@ static const struct of_device_id blocklist[] __initconst = {
+ 	{ .compatible = "qcom,apq8096", },
+ 	{ .compatible = "qcom,msm8996", },
+ 	{ .compatible = "qcom,qcs404", },
++	{ .compatible = "qcom,sa8155p" },
+ 	{ .compatible = "qcom,sc7180", },
+ 	{ .compatible = "qcom,sc7280", },
+ 	{ .compatible = "qcom,sc8180x", },
+ 	{ .compatible = "qcom,sdm845", },
++	{ .compatible = "qcom,sm6350", },
+ 	{ .compatible = "qcom,sm8150", },
++	{ .compatible = "qcom,sm8250", },
++	{ .compatible = "qcom,sm8350", },
+ 
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.29.2
+
