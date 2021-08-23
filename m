@@ -2,114 +2,198 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4577CC432BE
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 07:54:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26A16C4338F
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 08:18:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2B6C661362
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 07:54:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 033A96136A
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 08:18:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235417AbhHWHy6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Aug 2021 03:54:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50682 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235168AbhHWHy6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Aug 2021 03:54:58 -0400
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BD6BC061756
-        for <linux-pm@vger.kernel.org>; Mon, 23 Aug 2021 00:54:16 -0700 (PDT)
-Received: by mail-pl1-x631.google.com with SMTP id m17so2602027plc.6
-        for <linux-pm@vger.kernel.org>; Mon, 23 Aug 2021 00:54:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=P2vk1dPujyHe2bA8wdfK7wJXlS4mwNbr7mrDNm9VQV8=;
-        b=dUuW965dWK7Gm+redpLnqPY9wdCCtIQCQnz4YRdFgSqtLLS23ZcQ2y6D2FTNqPKcLZ
-         IM7RBCjsw8iGv2CdKPthaBP+LMnYNfzP3A3LGuHsvL4sSkljIr/ACBJsqG1s29qkOBaZ
-         Oz+dIe8WZ21Eh7qhZNEroFEF6L1+KVl5yGAi69pYka0ReMAc8eF9C2l4oaChltyo0TgA
-         1+Ia7bfHVTD7JzNYZRmWT6lYM3ojl2gpYC0/E944nK4aoA39tZf8TMh9zS0siGTCMmI5
-         6E+7w0Stjs3gNVpqI0dI3+pyhWazIot3OqksmQz66bZwHPYDe6ww6VA8WyBW2budw0NW
-         rPcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=P2vk1dPujyHe2bA8wdfK7wJXlS4mwNbr7mrDNm9VQV8=;
-        b=fFAfzXbe/I14PqBDveb3V9zrBuGbvL05CWKqOVT88OiUQvlTr3a4F5O23hBkPzfQxV
-         7abJBr1cZhdM83qadvOk8cE5bWlBkBf139knFa7BoRnrZ1Wt/sjNi8NwCvQbTtUUoGpd
-         WZCZezg29ShNTgWh5RjoekOurwh2NNzrzJ+y4PVq87YsXYiX4Y4gAabTL1t0LpC7Ci7U
-         0UXKrAHxHcPp9+wLFvYTg4exWOetUJ16L+6RI3U9TJoqc5QMAIue6bS7QV+DuOHKa0vV
-         yVfbDu4SJbgjsS6AYsmrUC/Q+Y7CPaTqaDjt9mu8NcB9ZXWNGZhMdpWPilT9T71mnIjg
-         82aA==
-X-Gm-Message-State: AOAM530bWl86L8J1Lh9UJdjdgz0JF3ckHJLLMRGzsnTnbnLjj7Qn2JFy
-        JHOs/Fnt58KbwIQm+CzYriqjpw==
-X-Google-Smtp-Source: ABdhPJxOx6Me2c5i80oP8llIoKFi+Y/W6XvJbvtM9bIhbsGNP32rdqwEFSNXPZCfsrVLPcXHqYvZ7A==
-X-Received: by 2002:a17:902:7585:b0:135:2585:e261 with SMTP id j5-20020a170902758500b001352585e261mr1309187pll.21.1629705255690;
-        Mon, 23 Aug 2021 00:54:15 -0700 (PDT)
-Received: from localhost.localdomain (80.251.214.228.16clouds.com. [80.251.214.228])
-        by smtp.gmail.com with ESMTPSA id p17sm18587793pjg.54.2021.08.23.00.54.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Aug 2021 00:54:15 -0700 (PDT)
-From:   Shawn Guo <shawn.guo@linaro.org>
-To:     Georgi Djakov <djakov@kernel.org>
-Cc:     AngeloGioacchino Del Regno <kholk11@gmail.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH] interconnect: qcom: sdm660: Correct NOC_QOS_PRIORITY shift and mask
-Date:   Mon, 23 Aug 2021 15:54:05 +0800
-Message-Id: <20210823075405.382-1-shawn.guo@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        id S235442AbhHWISu convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Aug 2021 04:18:50 -0400
+Received: from relay8-d.mail.gandi.net ([217.70.183.201]:39113 "EHLO
+        relay8-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235436AbhHWISt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Aug 2021 04:18:49 -0400
+Received: (Authenticated sender: miquel.raynal@bootlin.com)
+        by relay8-d.mail.gandi.net (Postfix) with ESMTPSA id 24E091BF206;
+        Mon, 23 Aug 2021 08:18:04 +0000 (UTC)
+Date:   Mon, 23 Aug 2021 10:18:02 +0200
+From:   Miquel Raynal <miquel.raynal@bootlin.com>
+To:     Sean Nyekjaer <sean@geanix.com>
+Cc:     s.hauer@pengutronix.de, richard@nod.at, linux-pm@vger.kernel.org,
+        han.xu@nxp.com, linux-mtd@lists.infradead.org
+Subject: Re: [BUG RESEND] unsuspend failure under load
+Message-ID: <20210823101802.27823313@xps13>
+In-Reply-To: <20210706093541.f4kjxqrkft7fqbcx@skn-laptop>
+References: <20210705065833.2ezlhaspkkju4bh7@skn-laptop>
+        <20210706093541.f4kjxqrkft7fqbcx@skn-laptop>
+Organization: Bootlin
+X-Mailer: Claws Mail 3.17.7 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The NOC_QOS_PRIORITY shift and mask do not match what vendor kernel
-defines [1].  Correct them per vendor kernel.
+Hello,
 
-[1] https://source.codeaurora.org/quic/la/kernel/msm-4.4/tree/drivers/soc/qcom/msm_bus/msm_bus_noc_adhoc.c?h=LA.UM.8.2.r1-04800-sdm660.0#n37
+I think we should involve Richard as well in the discussion.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- drivers/interconnect/qcom/sdm660.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+Sean Nyekjaer <sean@geanix.com> wrote on Tue, 6 Jul 2021 11:35:41 +0200:
 
-diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
-index ac13046537e8..c89c991a80a0 100644
---- a/drivers/interconnect/qcom/sdm660.c
-+++ b/drivers/interconnect/qcom/sdm660.c
-@@ -44,9 +44,10 @@
- #define NOC_PERM_MODE_BYPASS		(1 << NOC_QOS_MODE_BYPASS)
- 
- #define NOC_QOS_PRIORITYn_ADDR(n)	(0x8 + (n * 0x1000))
--#define NOC_QOS_PRIORITY_MASK		0xf
-+#define NOC_QOS_PRIORITY_P1_MASK	0xc
-+#define NOC_QOS_PRIORITY_P0_MASK	0x3
- #define NOC_QOS_PRIORITY_P1_SHIFT	0x2
--#define NOC_QOS_PRIORITY_P0_SHIFT	0x3
-+#define NOC_QOS_PRIORITY_P0_SHIFT	0x0
- 
- #define NOC_QOS_MODEn_ADDR(n)		(0xc + (n * 0x1000))
- #define NOC_QOS_MODEn_MASK		0x3
-@@ -624,13 +625,13 @@ static int qcom_icc_noc_set_qos_priority(struct regmap *rmap,
- 	/* Must be updated one at a time, P1 first, P0 last */
- 	val = qos->areq_prio << NOC_QOS_PRIORITY_P1_SHIFT;
- 	rc = regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
--				NOC_QOS_PRIORITY_MASK, val);
-+				NOC_QOS_PRIORITY_P1_MASK, val);
- 	if (rc)
- 		return rc;
- 
- 	val = qos->prio_level << NOC_QOS_PRIORITY_P0_SHIFT;
- 	return regmap_update_bits(rmap, NOC_QOS_PRIORITYn_ADDR(qos->qos_port),
--				  NOC_QOS_PRIORITY_MASK, val);
-+				  NOC_QOS_PRIORITY_P0_MASK, val);
- }
- 
- static int qcom_icc_set_noc_qos(struct icc_node *src, u64 max_bw)
--- 
-2.17.1
+> On Mon, Jul 05, 2021 at 08:58:38AM +0200, Sean Nyekjaer wrote:
+> > Hi Miquel and Sascha,  
+> + Richard + linux-pm
+> > 
+> > We are having some trouble when our i.MX6 unsuspends while writes to
+> > ubifs is in progess. In the log it looks like it syncing the filesystem
+> > before suspend.
+> > 
+> > The SoC a i.MX6ul/ull, the issue is (lucky for us) quite easy to reproduce.
+> > The reproduce script: [0]
+> > Kernel log when it happens: [1]
+> > 
+> > I have bisected the bug to: ef347c0cfd61 ("mtd: rawnand: gpmi: Implement exec_op")
+> > 
+> > Any idea to where I should start looking? or to what happens?
+> > 
+> > Esben have posted to patches that relates to suspend/unsuspend but it
+> > doesn't seem to releated to this issue.
+> > 5bc6bb603b4d ("mtd: rawnand: gpmi: Fix suspend/resume problem")
+> > d70486668cdf ("mtd: rawnand: gpmi: Restore nfc timing setup after suspend/resume")
+> > 
+> > /Sean  
+> 
+> nand_resume() is called some time after ubi_io_write tries to write. Thats why
+> mtd_write() is returning -EBUSY.
 
+Just to be sure:
+- platform resumes
+- your app started a write before being suspended
+- the write gets refused because the suspended state has not been
+  cleared yet
+Am I understanding this issue correctly?
+
+But I would expect "Filesystems sync" to actually let the lower layers
+the time to flush the data to the storage devices, suspending without
+waiting for this to happen looks strange to me.
+
+Sascha, Richard, what's your input?
+
+> I have tried patch [3], and it seems to fix it.
+> I think it would be okay to add the retry option, but the mdelay is not
+> obviously a nogo.
+> 
+> Any idea to how we could wait here for the nand_resume() to be called?
+> 
+> @linux-pm:
+> I have noticed "Filsystems sync" happens before "Freezing user space
+> processes".
+> If I apply patch [4] (without [3]), it would also fix our issue. But I
+> don't have en insight in to what impact the change might have.
+> 
+> /Sean
+> 
+> > 
+> > [0]
+> > #!/bin/sh
+> > dd if=/dev/urandom of=/tmp/test50M bs=1M count=50
+> > cp /tmp/test50M /data/ &
+> > echo mem > /sys/power/state
+> > 
+> > [1]
+> > root@iwg26-v2:/data/root# ./ubicrash.sh
+> > 50+0 records in
+> > 50+0 records out
+> > PM: suspend entry (deep)
+> > Filesystems sync: 33.642 seconds
+> > Freezing user space processes ... (elapsed 0.004 seconds) done.
+> > OOM killer disabled.
+> > Freezing remaining freezable tasks ... (elapsed 0.003 seconds) done.
+> > printk: Suspending console(s) (use no_console_suspend to debug)
+> > <SUSPEND/WAKE>
+> > PM: suspend devices took 0.040 seconds
+> > Disabling non-boot CPUs ...
+> > ubi0 error: ubi_io_write: error -16 while writing 4096 bytes to PEB 544:53248, written 0 bytes
+> > CPU: 0 PID: 69 Comm: kworker/u2:2 Not tainted 5.13.0 #3
+> > Hardware name: Freescale i.MX6 Ultralite (Device Tree)
+> > Workqueue: writeback wb_workfn (flush-ubifs_0_8)
+> > [<c010d9b0>] (unwind_backtrace) from [<c010a28c>] (show_stack+0x10/0x14)
+> > [<c010a28c>] (show_stack) from [<c0970798>] (dump_stack+0xc0/0xdc)
+> > [<c0970798>] (dump_stack) from [<c05dfe10>] (ubi_io_write+0x510/0x6b0)
+> > [<c05dfe10>] (ubi_io_write) from [<c05dcd90>] (ubi_eba_write_leb+0x388/0x910)
+> > [<c05dcd90>] (ubi_eba_write_leb) from [<c05daf34>] (ubi_leb_write+0xd0/0xe8)
+> > [<c05daf34>] (ubi_leb_write) from [<c03cfeb4>] (ubifs_leb_write+0x68/0x104)  
+> 
+> [ ... ]
+> 
+> > UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30
+> > UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 10962 of inode 821, error -30
+> > UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30
+> > UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 10963 of inode 821, error -30
+> > UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 696 bytes in jhead 2, error -30
+> > UBIFS error (ubi0:8 pid 157): do_writepage: cannot write page 0 of inode 819, error -30
+> > UBIFS error (ubi0:8 pid 157): make_reservation: cannot reserve 4144 bytes in jhead 2, error -30  
+> 
+> [3]:
+> diff --git a/drivers/mtd/ubi/io.c b/drivers/mtd/ubi/io.c
+> index 14d890b00d2c..b24c571fa022 100644
+> --- a/drivers/mtd/ubi/io.c
+> +++ b/drivers/mtd/ubi/io.c
+> @@ -268,8 +269,18 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
+>  	}
+> 
+>  	addr = (loff_t)pnum * ubi->peb_size + offset;
+> +retry:
+>  	err = mtd_write(ubi->mtd, addr, len, &written, buf);
+>  	if (err) {
+> +		if (retries++ < UBI_IO_RETRIES) {
+> +			ubi_warn(ubi, "error %d while writing %d bytes to PEB %d:%d, written %zd bytes",
+> +				 err, len, pnum, offset, written);
+> +			mdelay(25); yield();
+> +			goto retry;
+> +		}
+> +
+>  		ubi_err(ubi, "error %d while writing %d bytes to PEB %d:%d, written %zd bytes",
+>  			err, len, pnum, offset, written);
+>  		dump_stack();
+> 
+> [4]:
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 32391acc806b..61a213ad5a13 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -563,18 +563,18 @@ static int enter_state(suspend_state_t state)
+>  	if (state == PM_SUSPEND_TO_IDLE)
+>  		s2idle_begin();
+>  
+> -	if (sync_on_suspend_enabled) {
+> -		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> -		ksys_sync_helper();
+> -		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+> -	}
+> -
+>  	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+>  	pm_suspend_clear_flags();
+>  	error = suspend_prepare(state);
+>  	if (error)
+>  		goto Unlock;
+>  
+> +	if (sync_on_suspend_enabled) {
+> +		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> +		ksys_sync_helper();
+> +		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+> +	}
+> +
+>  	if (suspend_test(TEST_FREEZER))
+>  		goto Finish;
+>  
+
+Thanks,
+Miquèl
