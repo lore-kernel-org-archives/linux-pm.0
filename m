@@ -2,172 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 437FDC43216
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 15:54:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13124C4320E
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 15:56:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 29709613D2
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 15:54:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E6A87613E8
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Aug 2021 15:56:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231795AbhHWPzP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Aug 2021 11:55:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49770 "EHLO
+        id S231781AbhHWP5T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Aug 2021 11:57:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50266 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231734AbhHWPzO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Aug 2021 11:55:14 -0400
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3124DC061757;
-        Mon, 23 Aug 2021 08:54:31 -0700 (PDT)
-Received: by mail-lf1-x135.google.com with SMTP id i9so38834301lfg.10;
-        Mon, 23 Aug 2021 08:54:31 -0700 (PDT)
+        with ESMTP id S231622AbhHWP5T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Aug 2021 11:57:19 -0400
+Received: from mail-ot1-x32e.google.com (mail-ot1-x32e.google.com [IPv6:2607:f8b0:4864:20::32e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CB00C061757
+        for <linux-pm@vger.kernel.org>; Mon, 23 Aug 2021 08:56:36 -0700 (PDT)
+Received: by mail-ot1-x32e.google.com with SMTP id a20-20020a0568300b9400b0051b8ca82dfcso16628300otv.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Aug 2021 08:56:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=7mncJ6pduW/52O6ekhmOFTY3dWeez/jgkRyR/0Vdsyw=;
-        b=GjDLwuw1u5t0huse+wcSUJvd9NlDsq9fLH5ifMhjoFLd/jX7arhT4V0b4pMg9fkZx0
-         SFoXhZrGpDe1zyz7PwMpqtrmGVNRg4uenD426vrzx09jDp5+gZwPaSOWi2CzEdhHZN72
-         biZ9w4cugGtwCB8oOkwmNR+z285tRdqilLSsiYBx3KMs+2gRQ2Qufwsaf9Kkn44cA20t
-         ytzwyZjnYP+KTq05NUlj+435IalTyox6/J6oSbEJjWcMz4NbsCi+r8m8O7scEsRH0iPC
-         mwCHAhLhpQqHYFd7f4axkEH/iwpXUU5wQP5pO5DMDqwE7H45GOLzvXAyvPw0J1h3bnVb
-         85LA==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=3lcZudzQ7vfqb/InrksY2qHfhZLERO9wRMG6pb4Ol/8=;
+        b=jAsAHXLQAnFPW7dQtPCfuuO+9ZvsT/9HyBIrvKpkaCFuvJNqVTlFbwD2fPhhU78VHI
+         D+WMnc3MHh42G6bRD2Yh4n9IU24YYE/3NVZgC2cRg6jLm7VUU6Ir2l113CSPqQcZfoB5
+         rxZaLiPO2ZWc6b2k0z591InfO0UI/25ZwC2v5Epe1ViB+DY7iP0ot5zgAYIn07g9CZeL
+         At2BsrmSgETGqwcw22eiV/AiyqgkII3MGhJaYsUam4FovDMB2aaY3g/E1XmEPaqgkYo5
+         cm6xydqlMnEArK4spzJn4FwSPaCZUvl+zq2hcJ3ak2yc43kORMEGZ6TyNzBQjrLW8wRY
+         qs+Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=7mncJ6pduW/52O6ekhmOFTY3dWeez/jgkRyR/0Vdsyw=;
-        b=IOpKGHvqrd6BLy/vZsEi4QxYtFeeOqNrn5QcSGeZ+5lN/MBYTkGTFqJBOV1k8ly3TM
-         Ojlwfw0HLUc6pT+M3WPK1klUJGn/nzf3dGrbJXhkkoSw8z2d9t1EXb/7S7VhLNsaYZQo
-         e+gfZ69TnaKu99jhOW+Yi8YO3PDNXWflArBxHkhLWHJJktQq/zo6CwEjbB6K/QeIdG46
-         UJMdkfNoGWuJ875iEGA/Twlwv0Ur9cMq2shAGdx4om9hlCR+4KAQLmLHWa7CClMpyoUE
-         BSpjbe32pK64XFoQ9qRh1Io9vewbflVYigrn+6J5eZx/SYiZd+8sUVveS9YHQXdwxCgg
-         EF2A==
-X-Gm-Message-State: AOAM531b3+f8AQBdQ/uobRHY/mYbnT6rZhH/BW/fwpuBAT8yUBQ6fi+k
-        w5w22/1vPJAThf4sjKZK+/fW7k7i+KU=
-X-Google-Smtp-Source: ABdhPJzNDGjnGQzIrcQXTM2iukhjwhqvC5wj3OdYqtfrrWEzlRV302pS9l5Dkjzi+NNxjkL6pb5dHg==
-X-Received: by 2002:a05:6512:3157:: with SMTP id s23mr24865578lfi.247.1629734069444;
-        Mon, 23 Aug 2021 08:54:29 -0700 (PDT)
-Received: from [192.168.2.145] (46-138-120-72.dynamic.spd-mgts.ru. [46.138.120.72])
-        by smtp.googlemail.com with ESMTPSA id u2sm1482543lfr.79.2021.08.23.08.54.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Aug 2021 08:54:28 -0700 (PDT)
-Subject: Re: [PATCH v8 01/34] opp: Add dev_pm_opp_sync() helper
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Peter Chen <peter.chen@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Nishanth Menon <nm@ti.com>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Richard Weinberger <richard@nod.at>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux USB List <linux-usb@vger.kernel.org>,
-        linux-staging@lists.linux.dev, linux-spi@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        DTML <devicetree@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>
-References: <20210818043131.7klajx6drvvkftoc@vireshk-i7>
- <a2a3c41f-c5e4-ee7e-7d48-03af8bac8863@gmail.com>
- <20210818045307.4brb6cafkh3adjth@vireshk-i7>
- <080469b3-612b-3a34-86e5-7037a64de2fe@gmail.com>
- <20210818055849.ybfajzu75ecpdrbn@vireshk-i7>
- <f1c76f23-086d-ef36-54ea-0511b0ebe0e1@gmail.com>
- <20210818062723.dqamssfkf7lf7cf7@vireshk-i7>
- <CAPDyKFrZqWtZOp4MwDN6fShoLLbw5NM039bpE3-shB+fCEZOog@mail.gmail.com>
- <20210818091417.dvlnsxlgybdsn76x@vireshk-i7>
- <CAPDyKFrVxhrWGr2pKduehshpLFd_db2NTPGuD7fSqvuHeyzT4w@mail.gmail.com>
- <20210818095044.e2ntsm45h5cddk7s@vireshk-i7>
- <CAPDyKFrFF00xGDWPCQnPwF0_QkG4TB2UqggpuBpp8LY_CMKP-A@mail.gmail.com>
- <0354acbe-d856-4040-f453-8e8164102045@gmail.com>
- <CAPDyKFoQdn1rm91iFNJwZwpSYcKJBjDLqtJB4KZAkhgY1Grm-Q@mail.gmail.com>
- <87073fc2-d7b3-98f4-0067-29430ea2adef@gmail.com>
- <CAPDyKFqSsAk8a5CTNpRT2z4Wvf8BehJKDbVhUKfHc2Jzj7aTNA@mail.gmail.com>
- <9129a9f0-8c9b-d8e0-ddf5-c8820871fb7f@gmail.com>
- <CAPDyKFrWeQVNgxzmiLBXJ2gQW=iFf4aG16xvZ+ag1MkhXs9-BQ@mail.gmail.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <9a783eb3-786b-a3b2-7854-2be6954527db@gmail.com>
-Date:   Mon, 23 Aug 2021 18:54:26 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=3lcZudzQ7vfqb/InrksY2qHfhZLERO9wRMG6pb4Ol/8=;
+        b=pnnGhAX+IHxQoQJ0H7hjMNG9YH7n5us9SyFiC1kqrr3oM3SNjCHSHv7N2G46YPPH81
+         2Kv+kNOS2dkonZlggSAyAI+qRu02lsKPFGaUCkA+lUtX4ap6SYjN8l62YkL4PYNTb8vJ
+         YdKMT83LbQ6YFjv3T1KqghoYSGHD95fw5VLyuAKPezwe7rMHR3egXCSupjBZEWzTfYfe
+         sqAdTp/VBG3rZ5WiIY3Mj9HMkT4ZqlgYAZIoS7DOQAne4VvQ5Stm4LLWm2j7Q6WL2HVd
+         oe0MzwVKyg/E96txYVcHJjEIfuXp/3PENVHiNDGQn7Vyt00zJMYAXu1X62wXHXnI4h/A
+         bUIg==
+X-Gm-Message-State: AOAM531EYhKRaVYZuQN6t/Rvmu0N8ilzzAd0fJLaxrryGQiBcHuC8Y3q
+        IVHCsqCrTT0nWx8jO1hx3SXuNw==
+X-Google-Smtp-Source: ABdhPJzncQPxjyl/rnDKt15VwxFNkMsr5tahgz2GkveS2Z5VVpYOk4mpJdPuZoBCPTw0Lpkw8BSetA==
+X-Received: by 2002:a9d:730a:: with SMTP id e10mr2467831otk.120.1629734195964;
+        Mon, 23 Aug 2021 08:56:35 -0700 (PDT)
+Received: from ripper (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id 14sm3991315otl.78.2021.08.23.08.56.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Aug 2021 08:56:35 -0700 (PDT)
+Date:   Mon, 23 Aug 2021 08:57:54 -0700
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Shawn Guo <shawn.guo@linaro.org>
+Cc:     Georgi Djakov <djakov@kernel.org>,
+        AngeloGioacchino Del Regno <kholk11@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/3] interconnect: qcom: sdm660: Add missing a2noc qos
+ clocks
+Message-ID: <YSPFgsWVW0pCYvBw@ripper>
+References: <20210823095603.5538-1-shawn.guo@linaro.org>
+ <20210823095603.5538-3-shawn.guo@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFrWeQVNgxzmiLBXJ2gQW=iFf4aG16xvZ+ag1MkhXs9-BQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210823095603.5538-3-shawn.guo@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-23.08.2021 13:46, Ulf Hansson пишет:
->>> ...
->>> dev_pm_opp_set_rate(rate)
->>> pm_runtime_get_noresume()
->>> pm_runtime_set_active()
->>> pm_runtime_enable()
->>> ...
->>> pm_runtime_put()
->>> ...
->>>
->>> We need to call genpd_set_performance_state() independently of whether
->>> the device is runtime suspended or not.
->>
->> I don't see where is the problem in yours example.
->>
->> pm_runtime_suspended() = false while RPM is disabled. When device is
->> resumed, the rpm_pstate=0, so it won't change the pstate on resume.
-> 
-> Yes, you are certainly correct, my bad! I mixed it up with
-> pm_runtime_status_suspended(), which only cares about the status.
-> 
-> So, after a second thought, your suggestion sounds very much
-> reasonable to me! I have also tried to consider all different
-> scenarios, including the system suspend/resume path, but I think it
-> should be fine.
+On Mon 23 Aug 02:56 PDT 2021, Shawn Guo wrote:
 
-It could be improved slightly to cover more cases.
+> It adds the missing a2noc clocks required for QoS registers programming
+> per downstream kernel[1].  Otherwise, qcom_icc_noc_set_qos_priority()
+> call on mas_ufs or mas_usb_hs node will simply result in a hardware hang
+> on SDM660 SoC.
+> 
+> [1] https://source.codeaurora.org/quic/la/kernel/msm-4.4/tree/arch/arm/boot/dts/qcom/sdm660-bus.dtsi?h=LA.UM.8.2.r1-04800-sdm660.0#n43
+> 
 
-> I also think that a patch like the above should be considered as a
-> fix, because it actually fixes a problem, according to what I said in
-> my earlier reply, below.
-> 
-> Fixes : 5937c3ce2122 ("PM: domains: Drop/restore performance state
-> votes for devices at runtime PM").
-> 
->>
->>> Although, it actually seems like good idea to update
->>> dev_gpd_data(dev)->rpm_pstate = state here, as to make sure
->>> genpd_runtime_resume() doesn't restore an old/invalid value that was
->>> saved while dropping the performance state vote for the device in
->>> genpd_runtime_suspend() earlier.
->>>
->>> Let me send a patch for this shortly, to close this window of a possible error.
->>
->> It will also remove the need to resume device just to change the clock
->> rate, like I needed to do it in the PWM patch of this series.
-> 
-> Do you want to send the patch formally? Or do you prefer it if I do it?
+Tested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-I'll send the patch.
+Regards,
+Bjorn
+
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+>  drivers/interconnect/qcom/sdm660.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/drivers/interconnect/qcom/sdm660.c b/drivers/interconnect/qcom/sdm660.c
+> index c89c991a80a0..661eb3635d21 100644
+> --- a/drivers/interconnect/qcom/sdm660.c
+> +++ b/drivers/interconnect/qcom/sdm660.c
+> @@ -174,6 +174,16 @@ static const struct clk_bulk_data bus_mm_clocks[] = {
+>  	{ .id = "iface" },
+>  };
+>  
+> +static const struct clk_bulk_data bus_a2noc_clocks[] = {
+> +	{ .id = "bus" },
+> +	{ .id = "bus_a" },
+> +	{ .id = "ipa" },
+> +	{ .id = "ufs_axi" },
+> +	{ .id = "aggre2_ufs_axi" },
+> +	{ .id = "aggre2_usb3_axi" },
+> +	{ .id = "cfg_noc_usb2_axi" },
+> +};
+> +
+>  /**
+>   * struct qcom_icc_provider - Qualcomm specific interconnect provider
+>   * @provider: generic interconnect provider
+> @@ -811,6 +821,10 @@ static int qnoc_probe(struct platform_device *pdev)
+>  		qp->bus_clks = devm_kmemdup(dev, bus_mm_clocks,
+>  					    sizeof(bus_mm_clocks), GFP_KERNEL);
+>  		qp->num_clks = ARRAY_SIZE(bus_mm_clocks);
+> +	} else if (of_device_is_compatible(dev->of_node, "qcom,sdm660-a2noc")) {
+> +		qp->bus_clks = devm_kmemdup(dev, bus_a2noc_clocks,
+> +					    sizeof(bus_a2noc_clocks), GFP_KERNEL);
+> +		qp->num_clks = ARRAY_SIZE(bus_a2noc_clocks);
+>  	} else {
+>  		if (of_device_is_compatible(dev->of_node, "qcom,sdm660-bimc"))
+>  			qp->is_bimc_node = true;
+> -- 
+> 2.17.1
+> 
