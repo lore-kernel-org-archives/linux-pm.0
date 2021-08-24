@@ -5,43 +5,41 @@ X-Spam-Level:
 X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70AD5C4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE915C4320A
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 598086124B
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D812F6124B
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233725AbhHXA6Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Aug 2021 20:58:24 -0400
-Received: from mail.kernel.org ([198.145.29.99]:47678 "EHLO mail.kernel.org"
+        id S234276AbhHXA61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Aug 2021 20:58:27 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47578 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234239AbhHXAzU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 23 Aug 2021 20:55:20 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 0F9E661504;
-        Tue, 24 Aug 2021 00:54:34 +0000 (UTC)
+        id S234791AbhHXA4d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 23 Aug 2021 20:56:33 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 7CA55613E6;
+        Tue, 24 Aug 2021 00:55:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1629766475;
-        bh=ZZcorKwKzcJ2Pe7iZyvuFq8GrwRmhRqlcU1yR0JcaVg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=V+1vliQWFcGy/IUZNl53df86vyxnvNmoORGgCyOvxHgfKZs7+z2SnLKKmiyc3rhJL
-         6QUnjJC1YmcK85UcByPvkQ+NVWBHlRM2LBfEzRgrai7fppyXaTRXxg7/KE8lqrTZh2
-         BL/nLRtKW8/ep9g7ql2f2bSBGj3I+K937O+HsCIWpw1zmwmttEYlhh87q1xujMc8of
-         FA7I2shk1rKRTvqwT9hDGyF291IQ31vlyj8TBb0wHIOmq+Uyzi+odID3q1c7mk23qG
-         j3ZViADP4KVt1L4HmwN0odg7OmJkbHjTMOjT5P5vOr8HV9oOrnjEr3HzraJm+1jRLB
-         yZHokqyPFSoXQ==
+        s=k20201202; t=1629766530;
+        bh=bnBkk0NiyPqH6Vk3oytWYHUV9E1rehpOcbgz00l6VxE=;
+        h=From:To:Cc:Subject:Date:From;
+        b=F76kt5mQSnzqPxy+6xGNORU3ABh3/Dig7jcCtZHqHPJMzm8wl4LZpAnuRQmHAoGIB
+         OS6P0vatfDBtkReIEXgM8ZOnLIZMRCPy4mGkVI+uqysql07zEEDJ29Q0SMs/Q/p3WS
+         k0817TMeKXPAy3HdLXdsumqd2RjM/AlMKhkX5QClNcr7K8VCL/QVGDaBv3GeYjVc9x
+         2C++v4ZJ5yD+/dN9LllIFWk2DEtaMCWihyznnkLgmqDNZyw+4CjVesfaiFlgfjytNa
+         hS/+vXxBH7ekJ82luL8zcEYDxJPGp+INq3oA3qRVxEVHRq7Mx4rArUbSj2+IzwZYUP
+         hvzN+94jOG3JA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 02/18] opp: remove WARN when no valid OPPs remain
-Date:   Mon, 23 Aug 2021 20:54:16 -0400
-Message-Id: <20210824005432.631154-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 1/7] opp: remove WARN when no valid OPPs remain
+Date:   Mon, 23 Aug 2021 20:55:22 -0400
+Message-Id: <20210824005528.631702-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210824005432.631154-1-sashal@kernel.org>
-References: <20210824005432.631154-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
@@ -62,14 +60,14 @@ Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/opp/of.c | 5 +++--
+ drivers/base/power/opp/of.c | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 363277b31ecb..d92a1bfe1690 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -870,8 +870,9 @@ static int _of_add_opp_table_v2(struct device *dev, struct opp_table *opp_table)
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 87509cb69f79..68ae8e9c1edc 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -402,8 +402,9 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
  		}
  	}
  
@@ -79,7 +77,7 @@ index 363277b31ecb..d92a1bfe1690 100644
 +	if (!count) {
 +		dev_err(dev, "%s: no supported OPPs", __func__);
  		ret = -ENOENT;
- 		goto remove_static_opp;
+ 		goto put_opp_table;
  	}
 -- 
 2.30.2
