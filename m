@@ -7,41 +7,43 @@ X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96D22C4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:56:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 594BAC4338F
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 80E0661165
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:56:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3DDFD61212
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 00:57:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234722AbhHXA5h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Aug 2021 20:57:37 -0400
-Received: from mail.kernel.org ([198.145.29.99]:47872 "EHLO mail.kernel.org"
+        id S233595AbhHXA6W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Aug 2021 20:58:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:48174 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234264AbhHXA4N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 23 Aug 2021 20:56:13 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 5F12561507;
-        Tue, 24 Aug 2021 00:55:14 +0000 (UTC)
+        id S234257AbhHXAzU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 23 Aug 2021 20:55:20 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 39F03614C8;
+        Tue, 24 Aug 2021 00:54:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1629766515;
-        bh=oZLfST+fZeckfbcHYORaBw8qhlYlN8ehRkZ4EU2b5KU=;
-        h=From:To:Cc:Subject:Date:From;
-        b=iqmvV2HSdShB3t6kygaU014jTyvDZ9FFa+3EVVgxN8zmK6Z+z4YaSMjlwGi20p6Hy
-         JwX/jlAZhDdqnLk37uf7E0EoWSRbkOov2oj8D/KIBu9uc0Lpqwz7fp36oAX18/s7S0
-         /2CyMrO8AdC63tugYta06wLenfHqx1PO+uZ7MH0yPCo4jYQYgddxcHJMCj//OP3e+R
-         m88R28hRNOmSixflJ/tVYAb6PTOR2qJXOSiHomP6T2McxUMD3zlctuCIzuTcJ9Zoi9
-         6Ej93U/3tchfBWWddWD6ta+bM/G8Ib9D8HIFlHud65YOgSG8aHhQuidNMHQKtWDgsl
-         /fiWvkPMJ3LUA==
+        s=k20201202; t=1629766477;
+        bh=whuOrwFWr6xhsVwj+mqzCEP9GGY5hWMbZmnfjaxvcZs=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=ZnlXhQCG2wx0gAjHCw9Lrp1BZg050IjFiY6QoEsEax5HLUozsKJN8ExAQgWvSES62
+         EKXHDXjkpkbUROIUwm+TzVK6MC/fUCqe6zbopafC7xaoJpP+c/FvhcO+bKhoAR4TCj
+         VXXqGdFh/UAnHu/QHdSi/9jIE7gWN2+PBmzXhG8/cMZr0OdK3zyw0UVqSBbwa3l81p
+         ptQKwwBZSL2SS9yWblmLmpGYRBHMgpeY2aeKH7IB/z6bPiQ0/HajCUlkmb8oUxWh82
+         3yWtBwQKfrmXrGcsC7eCuU6vJusb4uwLvL+pSFt8Kq7r2LUSeI9Jqj30T7jB7Y0r7o
+         tzwrk4EEnyQ7Q==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 01/10] opp: remove WARN when no valid OPPs remain
-Date:   Mon, 23 Aug 2021 20:55:03 -0400
-Message-Id: <20210824005513.631557-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 03/18] cpufreq: blocklist Qualcomm sm8150 in cpufreq-dt-platdev
+Date:   Mon, 23 Aug 2021 20:54:17 -0400
+Message-Id: <20210824005432.631154-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210824005432.631154-1-sashal@kernel.org>
+References: <20210824005432.631154-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -49,36 +51,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+From: Thara Gopinath <thara.gopinath@linaro.org>
 
-[ Upstream commit 335ffab3ef864539e814b9a2903b0ae420c1c067 ]
+[ Upstream commit 5d79e5ce5489b489cbc4c327305be9dfca0fc9ce ]
 
-This WARN can be triggered per-core and the stack trace is not useful.
-Replace it with plain dev_err(). Fix a comment while at it.
+The Qualcomm sm8150 platform uses the qcom-cpufreq-hw driver, so
+add it to the cpufreq-dt-platdev driver's blocklist.
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/opp/of.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index d64a13d7881b..a53123356697 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -423,8 +423,9 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 		}
- 	}
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 1c192a42f11e..a3734014db47 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -136,6 +136,7 @@ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "qcom,qcs404", },
+ 	{ .compatible = "qcom,sc7180", },
+ 	{ .compatible = "qcom,sdm845", },
++	{ .compatible = "qcom,sm8150", },
  
--	/* There should be one of more OPP defined */
--	if (WARN_ON(!count)) {
-+	/* There should be one or more OPPs defined */
-+	if (!count) {
-+		dev_err(dev, "%s: no supported OPPs", __func__);
- 		ret = -ENOENT;
- 		goto put_opp_table;
- 	}
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
 -- 
 2.30.2
 
