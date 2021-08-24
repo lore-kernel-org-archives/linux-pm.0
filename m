@@ -2,70 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 402F9C4338F
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 05:17:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7A79C4320A
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 05:17:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1BAF561101
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 05:17:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CDAC6113B
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Aug 2021 05:17:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229885AbhHXFSS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Aug 2021 01:18:18 -0400
+        id S229901AbhHXFSU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Aug 2021 01:18:20 -0400
 Received: from mga06.intel.com ([134.134.136.31]:55331 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229646AbhHXFSS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 24 Aug 2021 01:18:18 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10085"; a="278249107"
+        id S229646AbhHXFST (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 24 Aug 2021 01:18:19 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10085"; a="278249111"
 X-IronPort-AV: E=Sophos;i="5.84,346,1620716400"; 
-   d="scan'208";a="278249107"
+   d="scan'208";a="278249111"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
   by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Aug 2021 22:17:35 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.84,346,1620716400"; 
-   d="scan'208";a="515282840"
+   d="scan'208";a="515282852"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
-  by fmsmga004.fm.intel.com with ESMTP; 23 Aug 2021 22:17:34 -0700
+  by fmsmga004.fm.intel.com with ESMTP; 23 Aug 2021 22:17:35 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
         lenb@kernel.org, amitk@kernel.org
 Cc:     linux-pm@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC PATCH 0/3] Reuse cpuidle cooling for non DT/ARM
-Date:   Mon, 23 Aug 2021 22:17:28 -0700
-Message-Id: <20210824051731.2495462-1-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC PATCH 2/3] powercap: idle_inject: Export symbols
+Date:   Mon, 23 Aug 2021 22:17:30 -0700
+Message-Id: <20210824051731.2495462-3-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20210824051731.2495462-1-srinivas.pandruvada@linux.intel.com>
+References: <20210824051731.2495462-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset reused existing cpuidle cooling implementation and
-develops a new driver which can be used in non DT/ARM platforms.
+Export symbols for interfaces used in other files. In this way the
+caller can be a module.
 
-This has added advantage for per cpu idle injection instead of
-a global one using Intel powerclamp driver.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/powercap/idle_inject.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Srinivas Pandruvada (3):
-  thermal/drivers/cpuidle_cooling: Reorganize cpuidle cooling driver
-  powercap: idle_inject: Export symbols
-  thermal/drivers/cpuidle_cooling: cpuidle cooling driver for non DT/ARM
-
- drivers/powercap/idle_inject.c            |   4 +
- drivers/thermal/Kconfig                   |  18 ++-
- drivers/thermal/Makefile                  |   3 +
- drivers/thermal/cpuidle_cooling.c         | 141 +-------------------
- drivers/thermal/cpuidle_cooling_core.c    | 148 +++++++++++++++++++++
- drivers/thermal/cpuidle_cooling_core.h    |  24 ++++
- drivers/thermal/cpuidle_cooling_generic.c | 155 ++++++++++++++++++++++
- 7 files changed, 353 insertions(+), 140 deletions(-)
- create mode 100644 drivers/thermal/cpuidle_cooling_core.c
- create mode 100644 drivers/thermal/cpuidle_cooling_core.h
- create mode 100644 drivers/thermal/cpuidle_cooling_generic.c
-
+diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
+index 6e1a0043c411..204783dfc432 100644
+--- a/drivers/powercap/idle_inject.c
++++ b/drivers/powercap/idle_inject.c
+@@ -159,6 +159,7 @@ void idle_inject_set_duration(struct idle_inject_device *ii_dev,
+ 		WRITE_ONCE(ii_dev->idle_duration_us, idle_duration_us);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(idle_inject_set_duration);
+ 
+ /**
+  * idle_inject_get_duration - idle and run duration retrieval helper
+@@ -182,6 +183,7 @@ void idle_inject_set_latency(struct idle_inject_device *ii_dev,
+ {
+ 	WRITE_ONCE(ii_dev->latency_us, latency_us);
+ }
++EXPORT_SYMBOL(idle_inject_set_latency);
+ 
+ /**
+  * idle_inject_start - start idle injections
+@@ -334,6 +336,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
+ 
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(idle_inject_register);
+ 
+ /**
+  * idle_inject_unregister - unregister idle injection control device
+@@ -354,6 +357,7 @@ void idle_inject_unregister(struct idle_inject_device *ii_dev)
+ 
+ 	kfree(ii_dev);
+ }
++EXPORT_SYMBOL_GPL(idle_inject_unregister);
+ 
+ static struct smp_hotplug_thread idle_inject_threads = {
+ 	.store = &idle_inject_thread.tsk,
 -- 
 2.30.2
 
