@@ -2,132 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9B13C432BE
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Aug 2021 08:36:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BCD1C4320A
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Aug 2021 08:36:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B9D6761052
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Aug 2021 08:36:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0154561052
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Aug 2021 08:36:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240315AbhHZIhI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Aug 2021 04:37:08 -0400
-Received: from foss.arm.com ([217.140.110.172]:41500 "EHLO foss.arm.com"
+        id S240498AbhHZIhL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Aug 2021 04:37:11 -0400
+Received: from foss.arm.com ([217.140.110.172]:41544 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240351AbhHZIhH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 26 Aug 2021 04:37:07 -0400
+        id S240351AbhHZIhK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 26 Aug 2021 04:37:10 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F1CD1D6E;
-        Thu, 26 Aug 2021 01:36:17 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 817001063;
+        Thu, 26 Aug 2021 01:36:23 -0700 (PDT)
 Received: from e120877-lin.cambridge.arm.com (e120877-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5BE563F5A1;
-        Thu, 26 Aug 2021 01:36:16 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DEEEE3F5A1;
+        Thu, 26 Aug 2021 01:36:21 -0700 (PDT)
 From:   Vincent Donnefort <vincent.donnefort@arm.com>
 To:     peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
         vincent.guittot@linaro.org, qperret@google.com
 Cc:     linux-pm@vger.kernel.org, ionela.voinescu@arm.com,
         lukasz.luba@arm.com, dietmar.eggemann@arm.com, mka@chromium.org,
         Vincent Donnefort <vincent.donnefort@arm.com>
-Subject: [PATCH v5 0/8] inefficient OPPs
-Date:   Thu, 26 Aug 2021 09:35:36 +0100
-Message-Id: <1629966944-439570-1-git-send-email-vincent.donnefort@arm.com>
+Subject: [PATCH v5 3/8] PM / EM: Extend em_perf_domain with a flag field
+Date:   Thu, 26 Aug 2021 09:35:39 +0100
+Message-Id: <1629966944-439570-4-git-send-email-vincent.donnefort@arm.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1629966944-439570-1-git-send-email-vincent.donnefort@arm.com>
+References: <1629966944-439570-1-git-send-email-vincent.donnefort@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+Merge the current "milliwatts" option into a "flag" field. This intends to
+prepare the extension of this structure for inefficient states support in
+the Energy Model.
 
-Here's the new version for the inefficient OPPs. This patch-set is based on the
-following series from Viresh:
+Signed-off-by: Vincent Donnefort <vincent.donnefort@arm.com>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 
-  [PATCH V3 0/9] Add callback to register with energy model
-  https://lore.kernel.org/linux-arm-msm/cover.1628742634.git.viresh.kumar@linaro.org/
-
-The main changes are:
-
- 1. The EM inefficiencies reading is now done in the .register_em callback,
-    introduced by the patch-set above.
-
- 2. Inefficiencies will be skipped for all governors declaring
-    CPUFREQ_GOV_DYNAMIC_SWITCHING, no matter the relation.
-
-A bit of context:
-
-We (Power team in Arm) are working with an experimental kernel for the
-Google's Pixel4 to evaluate and improve the current mainline performance
-and energy consumption on a real life device with Android.
-
-The SD855 SoC found in this phone has several OPPs that are inefficient.
-I.e. despite a lower frequency, they have a greater cost. (That cost being
-fmax * OPP power / OPP freq). This issue is twofold. First of course,
-running a specific workload at an inefficient OPP is counterproductive
-since it wastes wasting energy. But also, inefficient OPPs make a
-performance domain less appealing for task placement than it really is.
-
-We evaluated the change presented here by running 30 iterations of Android
-PCMark "Work 2.0 Performance". While we did not see any statistically
-significant performance impact, this change allowed to drastically improve
-the idle time residency.
-
-
-                           |   Running   |  WFI [1]  |    Idle   |
-   ------------------------+-------------+-----------+-----------+
-   Little cluster (4 CPUs) |    -0.35%   |   +0.35%  |   +0.79%  |
-   ------------------------+-------------+-----------+-----------+
-   Medium cluster (3 CPUs) |    -6.3%    |    -18%   |    +12%   |
-   ------------------------+-------------+-----------+-----------+
-   Big cluster    (1 CPU)  |    -6.4%    |    -6.5%  |    +2.8%  |
-   ------------------------+-------------+-----------+-----------+
-
-On the SD855, the inefficient OPPs are found on the little cluster. By
-removing them from the Energy Model, we make the most efficient CPUs more
-appealing for task placement, helping to reduce the running time for the
-medium and big CPUs. Increasing idle time is crucial for this platform due
-to the substantial energy cost differences among the clusters. Also,
-despite not appearing in the statistics (the idle driver used here doesn't
-report it), we can speculate that we also improve the cluster idle time.
-
-[1] WFI: Wait for interrupt.
-
-Changelog since v4:
-  - Remove CPUFREQ_RELATION_E.
-  - Skip inefficient OPPs for all governors with CPUFREQ_GOV_DYNAMIC_SWITCHING
-  - Remove CPUFREQ_READ_ENERGY_MODEL in favor of the register_em callback.
-
-Changelog since v3:
-  - New freq-table relation CPUFREQ_RELATION_E.
-  - New CPUFreq driver flag CPUFREQ_READ_ENERGY_MODEL.
-  - EM flag to skip or not inefficiencies (driven by CPUFreq).
-  - Fix infinite loop in set_freq_table_efficiencies().
-
-Changelog since v2:
-  - Add separated support for inefficiencies into CPUFreq.
-  - Collect Reviewed-by for the first patch.
-
-Changelog since v1:
-  - Remove the Look-up table as the numbers weren't strong enough to
-
-Vincent Donnefort (8):
-  PM / EM: Fix inefficient states detection
-  PM / EM: Mark inefficient states
-  PM / EM: Extend em_perf_domain with a flag field
-  PM / EM: Allow skipping inefficient states
-  cpufreq: Add an interface to mark inefficient frequencies
-  cpufreq: Skip inefficient frequencies
-  cpufreq: Read inefficiencies from EM
-  cpufreq: scmi: Read inefficiencies from EM
-
- drivers/cpufreq/cpufreq.c      | 13 ++++++
- drivers/cpufreq/freq_table.c   | 46 +++++++++++++++++++++
- drivers/cpufreq/scmi-cpufreq.c |  7 ++--
- include/linux/cpufreq.h        | 90 +++++++++++++++++++++++++++++++++++++++---
- include/linux/energy_model.h   | 68 ++++++++++++++++++++++++++-----
- kernel/power/energy_model.c    | 46 ++++++++++++---------
- 6 files changed, 234 insertions(+), 36 deletions(-)
-
+diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+index 629f5f63a7d7..ac2f7d0ab946 100644
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -40,8 +40,7 @@ struct em_perf_state {
+  * em_perf_domain - Performance domain
+  * @table:		List of performance states, in ascending order
+  * @nr_perf_states:	Number of performance states
+- * @milliwatts:		Flag indicating the power values are in milli-Watts
+- *			or some other scale.
++ * @flags:		See "em_perf_domain flags"
+  * @cpus:		Cpumask covering the CPUs of the domain. It's here
+  *			for performance reasons to avoid potential cache
+  *			misses during energy calculations in the scheduler
+@@ -56,10 +55,18 @@ struct em_perf_state {
+ struct em_perf_domain {
+ 	struct em_perf_state *table;
+ 	int nr_perf_states;
+-	int milliwatts;
++	unsigned long flags;
+ 	unsigned long cpus[];
+ };
+ 
++/*
++ *  em_perf_domain flags:
++ *
++ *  EM_PERF_DOMAIN_MILLIWATTS: The power values are in milli-Watts or some
++ *  other scale.
++ */
++#define EM_PERF_DOMAIN_MILLIWATTS BIT(0)
++
+ #define em_span_cpus(em) (to_cpumask((em)->cpus))
+ 
+ #ifdef CONFIG_ENERGY_MODEL
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 6d8438347535..3a7d1573b214 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -56,7 +56,8 @@ DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
+ static int em_debug_units_show(struct seq_file *s, void *unused)
+ {
+ 	struct em_perf_domain *pd = s->private;
+-	char *units = pd->milliwatts ? "milliWatts" : "bogoWatts";
++	char *units = (pd->flags & EM_PERF_DOMAIN_MILLIWATTS) ?
++		"milliWatts" : "bogoWatts";
+ 
+ 	seq_printf(s, "%s\n", units);
+ 
+@@ -330,7 +331,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+ 	if (ret)
+ 		goto unlock;
+ 
+-	dev->em_pd->milliwatts = milliwatts;
++	if (milliwatts)
++		dev->em_pd->flags |= EM_PERF_DOMAIN_MILLIWATTS;
+ 
+ 	em_debug_create_pd(dev);
+ 	dev_info(dev, "EM: created perf domain\n");
 -- 
 2.7.4
 
