@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74E3BC41537
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Aug 2021 01:38:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84CA9C4320A
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Aug 2021 01:38:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 585E560F4F
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Aug 2021 01:38:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B7AC60FD8
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Aug 2021 01:38:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243997AbhH0Bix (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Aug 2021 21:38:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43056 "EHLO
+        id S244018AbhH0Biu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Aug 2021 21:38:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243999AbhH0Bit (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Aug 2021 21:38:49 -0400
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13BD2C0613CF;
-        Thu, 26 Aug 2021 18:38:01 -0700 (PDT)
-Received: by mail-lf1-x132.google.com with SMTP id m28so10939033lfj.6;
-        Thu, 26 Aug 2021 18:38:00 -0700 (PDT)
+        with ESMTP id S243992AbhH0Bis (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Aug 2021 21:38:48 -0400
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 924E7C061757;
+        Thu, 26 Aug 2021 18:37:59 -0700 (PDT)
+Received: by mail-lj1-x22a.google.com with SMTP id d16so8593424ljq.4;
+        Thu, 26 Aug 2021 18:37:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=yDP03amDwCEY6IiivIbDG+60+C+xV/Pv6sR1LEywSYo=;
-        b=KD9YiLyI59N6auovPD9EdqECBN8+LG+i4emXwai8UV2vfa71wjQcqWMU1LGGppM4TA
-         kOQTl7LG3rjCi5fAIo6Z/T/qDkoofGwxkYVQzCdEbmEwF8ObgqZkXTosKH6UDE1ocF83
-         XtGDL0yCVVXZm8yz2vXjfaNeD7321FEVaaF7MmtVj1V5i55/rKQ4x+OamlSHXyLfd/aA
-         /EMV44ML829jByGmcbdy6sDd/Ql7sd7hFcXl3Yvn2umHRx50eU1QMKHiqrrk+be1hk4T
-         huC8yZfrO6uk5HCSTv82M6nhc75IqQrex9AEaP7PeVFl6Bd3FNsVZ36EnwUg7Eer4ODS
-         5I3w==
+        bh=uC5mTv9GIr5hy4zC/Rc4VuhD4bWEaK9tTCVTW2lWVlg=;
+        b=Vf3I9vqGSbQeOavUBCE9oNbJSVO42DxQgR3wjLIddVO97SP+juRUX+SnJlE8j+tyjY
+         jpSmJphVi+hIkRDDFZd3MAvRPw7xOCFZpfrTXz1TeywftL7e8IpFGekFcqIySQpnuh05
+         4TyPWYP+u35Cm83CwTRyAwk7RGaHqF3LG0aARY2lDFdC88SvneJ8rCfrOjIk2gGROwkR
+         ZIXiGccJfhNGIWDIFeoehJSY03F9hXSRhHyb8j9WVJ8C3wI5OQ6pJCzB3LYTIZc2bPQy
+         ovyLnNcZIaOYbHaqc6ZtGfYqjUkg6oRNF5vuKUHt/TatZhBrBaZZr7HgWnRt/XLuq2mB
+         +CWg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=yDP03amDwCEY6IiivIbDG+60+C+xV/Pv6sR1LEywSYo=;
-        b=qwqTakq27D4FerUFg16ZEaKgDCLCiO59vJqjYQyiQ2bsfP3SJ5bGVAci7XWNGlNRRa
-         q6d+uCVhig5O9cI6E9F2phd6E0O5eHamGPGRhVQ3WvqxQWSLJsLMkuVjbjcJhVfBnHis
-         C0BVKsv471rezKIp3l67fgkt7XNeOBuQJBak4w0HpJ+jaIqPkOcD+IwTSGeMNio3GpOj
-         cZmZsMMIQMCcSarKdKAMvzHErv3abzA9GRQbYzPrfi534AvDLjV4zlImgXlqp+oQhQBl
-         IyCDb8hqTWqW/MvVztbsdh7ld816RARLbKo3cOA72o2XAZN198+bG5qqxta6BgUfq+8V
-         aoDg==
-X-Gm-Message-State: AOAM533I/0Ez1TA1Wyo6awfCyIWRc+/qmyugLg1OiY0mOrXS9AR+AnvU
-        UmA2IZnudMEZ4uhH8x2nqOA=
-X-Google-Smtp-Source: ABdhPJwIbBLsghNnVtkXQivhW6qOj3L046ZS0fPLnhAv7OSgju+ZxjHhCHr6g0fVcsrjKbelLKvkwQ==
-X-Received: by 2002:a05:6512:ac9:: with SMTP id n9mr4703705lfu.635.1630028279416;
-        Thu, 26 Aug 2021 18:37:59 -0700 (PDT)
+        bh=uC5mTv9GIr5hy4zC/Rc4VuhD4bWEaK9tTCVTW2lWVlg=;
+        b=Ww5KrV5yLu8+N4QIhR2TJOxdMTXTUDmmQfD/+G61yjPjmtIcXJ60fWG68QaN2tHu2R
+         fK80zsqqE1d9muVFNyrol9Y37+rzB13xYKAX2fRLnwtuP9g2NexwmbP/9fvym0OkVCc4
+         0KHuUtOH0UuhhrMeEG5MVTgoIij7lDQLEU/eTQZ8rrDCdAXWAB3vjAxHXd4MG8+o8mRW
+         6wxSKcMUW8O4JEN89R0l2q2pv2Pd9pjC9gdH0uLt59f9rjwhFjIefI0YxyHkN4Au2amF
+         YbpV3KB/FoyRyuuFdkFJfNvVHHbGlPX3PLUg8A776qZVfl1nsJ8Bvo2Fsau10ev5S+7y
+         SoPQ==
+X-Gm-Message-State: AOAM531/Ry9gVjog2H5uhFa+XEoMupwJeBxy1TusITPRQPFx08V9+jv3
+        6Dz1WzuXLMJCl8KjFIG5ju7hJaSILVk=
+X-Google-Smtp-Source: ABdhPJzDhcr8vCeBSL2PK7U5FqCdcyjRRWnUS+4kq+QJO4rfztt0W9Oj5wPDnQ/7BmlueaXkV87G/Q==
+X-Received: by 2002:a2e:b52c:: with SMTP id z12mr5524273ljm.271.1630028278002;
+        Thu, 26 Aug 2021 18:37:58 -0700 (PDT)
 Received: from localhost.localdomain (94-29-17-251.dynamic.spd-mgts.ru. [94.29.17.251])
-        by smtp.gmail.com with ESMTPSA id y3sm494289lfa.240.2021.08.26.18.37.58
+        by smtp.gmail.com with ESMTPSA id y3sm494289lfa.240.2021.08.26.18.37.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Aug 2021 18:37:59 -0700 (PDT)
+        Thu, 26 Aug 2021 18:37:57 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -66,9 +66,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>
 Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v9 7/8] gpu: host1x: Add host1x_channel_stop()
-Date:   Fri, 27 Aug 2021 04:34:14 +0300
-Message-Id: <20210827013415.24027-8-digetx@gmail.com>
+Subject: [PATCH v9 5/8] soc/tegra: pmc: Implement get_performance_state() callback
+Date:   Fri, 27 Aug 2021 04:34:12 +0300
+Message-Id: <20210827013415.24027-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210827013415.24027-1-digetx@gmail.com>
 References: <20210827013415.24027-1-digetx@gmail.com>
@@ -78,51 +78,125 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add host1x_channel_stop() which waits till channel becomes idle and then
-stops the channel hardware. This is needed for supporting suspend/resume
-by host1x drivers since the hardware state is lost after power-gating,
-thus the channel needs to be stopped before client enters into suspend.
+Implement get_performance_state() callback of power domains to
+initialize theirs performance state in accordance to the clock
+rate of attached device.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Paul Fertser <fercerpav@gmail.com> # PAZ00 T20
-Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/host1x/channel.c | 8 ++++++++
- include/linux/host1x.h       | 1 +
- 2 files changed, 9 insertions(+)
+ drivers/soc/tegra/pmc.c | 86 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 86 insertions(+)
 
-diff --git a/drivers/gpu/host1x/channel.c b/drivers/gpu/host1x/channel.c
-index 4cd212bb570d..2a9a3a8d5931 100644
---- a/drivers/gpu/host1x/channel.c
-+++ b/drivers/gpu/host1x/channel.c
-@@ -75,6 +75,14 @@ struct host1x_channel *host1x_channel_get_index(struct host1x *host,
- 	return ch;
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index 50091c4ec948..ea552f7ed922 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -505,6 +505,90 @@ static void tegra_pmc_scratch_writel(struct tegra_pmc *pmc, u32 value,
+ 		writel(value, pmc->scratch + offset);
  }
  
-+void host1x_channel_stop(struct host1x_channel *channel)
++static const char * const tegra_pd_no_perf_compats[] = {
++	"nvidia,tegra20-sclk",
++	"nvidia,tegra30-sclk",
++	"nvidia,tegra30-pllc",
++	"nvidia,tegra30-plle",
++	"nvidia,tegra30-pllm",
++	"nvidia,tegra20-dc",
++	"nvidia,tegra30-dc",
++	"nvidia,tegra20-emc",
++	"nvidia,tegra30-emc",
++	NULL,
++};
++
++static int tegra_pmc_pd_get_performance_state(struct generic_pm_domain *genpd,
++					      struct device *dev,
++					      bool *dev_suspended)
 +{
-+	struct host1x *host = dev_get_drvdata(channel->dev->parent);
++	struct opp_table *hw_opp_table, *clk_opp_table;
++	struct dev_pm_opp *opp;
++	u32 hw_version;
++	int ret;
 +
-+	host1x_hw_cdma_stop(host, &channel->cdma);
++	/*
++	 * The EMC devices are a special case because we have a protection
++	 * from non-EMC drivers getting clock handle before EMC driver is
++	 * fully initialized.  The goal of the protection is to prevent
++	 * devfreq driver from getting failures if it will try to change
++	 * EMC clock rate until clock is fully initialized.  The EMC drivers
++	 * will initialize the performance state by themselves.
++	 *
++	 * Display controller also is a special case because only controller
++	 * driver could get the clock rate based on configuration of internal
++	 * divider.
++	 *
++	 * Clock driver uses its own state syncing.
++	 */
++	if (of_device_compatible_match(dev->of_node, tegra_pd_no_perf_compats))
++		return 0;
++
++	if (of_machine_is_compatible("nvidia,tegra20"))
++		hw_version = BIT(tegra_sku_info.soc_process_id);
++	else
++		hw_version = BIT(tegra_sku_info.soc_speedo_id);
++
++	hw_opp_table = dev_pm_opp_set_supported_hw(dev, &hw_version, 1);
++	if (IS_ERR(hw_opp_table)) {
++		dev_err(dev, "failed to set OPP supported HW: %pe\n",
++			hw_opp_table);
++		return PTR_ERR(hw_opp_table);
++	}
++
++	clk_opp_table = dev_pm_opp_set_clkname(dev, NULL);
++	if (IS_ERR(clk_opp_table)) {
++		dev_err(dev, "failed to set OPP clk: %pe\n", clk_opp_table);
++		ret = PTR_ERR(clk_opp_table);
++		goto put_hw;
++	}
++
++	ret = devm_pm_opp_of_add_table(dev);
++	if (ret) {
++		dev_err(dev, "failed to add OPP table: %d\n", ret);
++		goto put_clk;
++	}
++
++	opp = dev_pm_opp_from_clk_rate(dev);
++	if (IS_ERR(opp)) {
++		dev_err(dev, "failed to get current OPP: %pe\n", opp);
++		ret = PTR_ERR(opp);
++	} else {
++		ret = dev_pm_opp_get_required_pstate(opp, 0);
++		dev_pm_opp_put(opp);
++	}
++
++	*dev_suspended = true;
++
++	dev_pm_opp_of_remove_table(dev);
++put_clk:
++	dev_pm_opp_put_clkname(clk_opp_table);
++put_hw:
++	dev_pm_opp_put_supported_hw(hw_opp_table);
++
++	return ret;
 +}
-+EXPORT_SYMBOL(host1x_channel_stop);
 +
- static void release_channel(struct kref *kref)
- {
- 	struct host1x_channel *channel =
-diff --git a/include/linux/host1x.h b/include/linux/host1x.h
-index 7bccf589aba7..66473b5be0af 100644
---- a/include/linux/host1x.h
-+++ b/include/linux/host1x.h
-@@ -181,6 +181,7 @@ struct host1x_job;
+ /*
+  * TODO Figure out a way to call this with the struct tegra_pmc * passed in.
+  * This currently doesn't work because readx_poll_timeout() can only operate
+@@ -1237,6 +1321,7 @@ static int tegra_powergate_add(struct tegra_pmc *pmc, struct device_node *np)
  
- struct host1x_channel *host1x_channel_request(struct host1x_client *client);
- struct host1x_channel *host1x_channel_get(struct host1x_channel *channel);
-+void host1x_channel_stop(struct host1x_channel *channel);
- void host1x_channel_put(struct host1x_channel *channel);
- int host1x_job_submit(struct host1x_job *job);
+ 	pg->id = id;
+ 	pg->genpd.name = np->name;
++	pg->genpd.get_performance_state = tegra_pmc_pd_get_performance_state;
+ 	pg->genpd.power_off = tegra_genpd_power_off;
+ 	pg->genpd.power_on = tegra_genpd_power_on;
+ 	pg->pmc = pmc;
+@@ -1353,6 +1438,7 @@ static int tegra_pmc_core_pd_add(struct tegra_pmc *pmc, struct device_node *np)
+ 		return -ENOMEM;
+ 
+ 	genpd->name = np->name;
++	genpd->get_performance_state = tegra_pmc_pd_get_performance_state;
+ 	genpd->set_performance_state = tegra_pmc_core_pd_set_performance_state;
+ 	genpd->opp_to_performance_state = tegra_pmc_core_pd_opp_to_performance_state;
  
 -- 
 2.32.0
