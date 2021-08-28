@@ -2,115 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30316C432BE
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 04:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C0C6C4320E
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 15:01:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0076360ED5
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 04:44:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5CB1D60EBD
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 15:01:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230348AbhH1EpQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Aug 2021 00:45:16 -0400
-Received: from mail-io1-f70.google.com ([209.85.166.70]:49832 "EHLO
-        mail-io1-f70.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230215AbhH1EpQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Aug 2021 00:45:16 -0400
-Received: by mail-io1-f70.google.com with SMTP id k6-20020a6b3c060000b0290568c2302268so5302725iob.16
-        for <linux-pm@vger.kernel.org>; Fri, 27 Aug 2021 21:44:26 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
-        bh=JV7h5CQOr+nuXXZ8H13qPIBPgqFcVEsgvYOpM06/UEI=;
-        b=mA2CKAeexa/ByHXVi+jzPimdkW6GXggLCSTpWivEBWgOjN1SyaJbuEN51J5n1RHgnb
-         lRg3vyq+D+CAyz9+0Okw4WTHbCy1lJuYdB5XktUXFlMPvXbBet3Ah6b9yyo4ZYSH5X6B
-         K6fKXpmO/kVVWtdRxMPd+qruTIKCLRtyTyL3vrvj/9cdQJXZDIlQyvoA62hRBxcyhH7n
-         Y2WJ49wJLocHmpGJM2SaUeddhR9ohu2ID2KD7KNvC/ogRCTzjP5EsnuFf5sqGVY869sO
-         0sFNx9b5zomlJAGj+vJeObChGDaknyuJAZI6uzPmxjlINELBjZ+kUZ+QPS9QtDy1oDkv
-         H0Ng==
-X-Gm-Message-State: AOAM533tx7MtcjkDLpN9Qlpa+3qi+Vcsgmjfd0pUtjdRw9ikvvYlHIcp
-        8ndiMgMJpQO/JighVpmjpyUC9TzpVUTX7YKIwlRz1Uv2cUs8
-X-Google-Smtp-Source: ABdhPJzHxr32HLgq7+E3KnzmlIQt/NZpNY7kLZyt9dJ8h3MgC8vTjHHV/rOjEIiA5zU2eCqbZSevYwX5u6bm+DWQWzT9qEjCUNGz
+        id S234335AbhH1PCO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Aug 2021 11:02:14 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:51226 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S229799AbhH1PCJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Aug 2021 11:02:09 -0400
+X-UUID: 3d2bd27b280b4d1b9955348bd6d2f68b-20210828
+X-UUID: 3d2bd27b280b4d1b9955348bd6d2f68b-20210828
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
+        (envelope-from <hector.yuan@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1609193618; Sat, 28 Aug 2021 23:01:16 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs06n1.mediatek.inc (172.21.101.129) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Sat, 28 Aug 2021 23:01:15 +0800
+Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Sat, 28 Aug 2021 23:01:15 +0800
+From:   Hector Yuan <hector.yuan@mediatek.com>
+To:     <linux-mediatek@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>, <devicetree@vger.kernel.org>
+CC:     <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
+        <hector.yuan@mediatek.com>
+Subject: [PATCH v14] cpufreq: mediatek-hw: Add support for Mediatek cpufreq HW driver
+Date:   Sat, 28 Aug 2021 23:01:09 +0800
+Message-ID: <1630162872-25452-1-git-send-email-hector.yuan@mediatek.com>
+X-Mailer: git-send-email 1.7.9.5
 MIME-Version: 1.0
-X-Received: by 2002:a92:7f0f:: with SMTP id a15mr8811837ild.245.1630125866379;
- Fri, 27 Aug 2021 21:44:26 -0700 (PDT)
-Date:   Fri, 27 Aug 2021 21:44:26 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <00000000000034712e05ca9741e8@google.com>
-Subject: [syzbot] KASAN: null-ptr-deref Write in __pm_runtime_resume
-From:   syzbot <syzbot+7d41312fe3f123a6f605@syzkaller.appspotmail.com>
-To:     gregkh@linuxfoundation.org, len.brown@intel.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        pavel@ucw.cz, rjw@rjwysocki.net, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+The CPUfreq HW present in some Mediatek chipsets offloads the steps necessary for changing the frequency of CPUs. 
+The driver implements the cpufreq driver interface for this hardware engine. 
 
-syzbot found the following issue on:
+From v13 to v14, there are three modifications.
+1. Replace cpu domain map to policy driver data 
+2. Remove dummy performance-domain parsing
+3. Separate modification in cpufreq.h to another patch
 
-HEAD commit:    5e63226c7228 Add linux-next specific files for 20210827
-git tree:       linux-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=123771b1300000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=9c03a8fdabc6b3ae
-dashboard link: https://syzkaller.appspot.com/bug?extid=7d41312fe3f123a6f605
-compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.1
+From v12 to v13, there are two modifications.
+1. Move related_cpus function to common place, so all performance-domain cpufreq driver can refer.
+2. Make cpu resource init to each policy rather than per-cpu
 
-Unfortunately, I don't have any reproducer for this issue yet.
+From v11 to v12, there are two modifications.
+1. Based on patchset[1], align binding with scmi for performance domain(latest version).
+2. Shrink binding example wording. 
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+7d41312fe3f123a6f605@syzkaller.appspotmail.com
+From v8 to v9, there are three more modifications.
+1. Based on patchset[2], align binding with scmi for performance domain.
+2. Add the CPUFREQ fast switch function support and define DVFS latency.
+3. Based on patchser[3], add energy model API parameter for mW.
 
-==================================================================
-BUG: KASAN: null-ptr-deref in instrument_atomic_read_write include/linux/instrumented.h:101 [inline]
-BUG: KASAN: null-ptr-deref in atomic_inc include/linux/atomic/atomic-instrumented.h:181 [inline]
-BUG: KASAN: null-ptr-deref in __pm_runtime_resume+0x154/0x180 drivers/base/power/runtime.c:1105
-Write of size 4 at addr 0000000000000388 by task syz-executor.1/8810
-
-CPU: 0 PID: 8810 Comm: syz-executor.1 Not tainted 5.14.0-rc7-next-20210827-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Call Trace:
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106
- __kasan_report mm/kasan/report.c:446 [inline]
- kasan_report.cold+0x66/0xdf mm/kasan/report.c:459
- check_region_inline mm/kasan/generic.c:183 [inline]
- kasan_check_range+0x13d/0x180 mm/kasan/generic.c:189
- instrument_atomic_read_write include/linux/instrumented.h:101 [inline]
- atomic_inc include/linux/atomic/atomic-instrumented.h:181 [inline]
- __pm_runtime_resume+0x154/0x180 drivers/base/power/runtime.c:1105
- pm_runtime_get include/linux/pm_runtime.h:370 [inline]
- h5_recv+0x2c4/0x680 drivers/bluetooth/hci_h5.c:590
- hci_uart_tty_receive+0x24d/0x710 drivers/bluetooth/hci_ldisc.c:613
- tiocsti drivers/tty/tty_io.c:2311 [inline]
- tty_ioctl+0x8db/0x1600 drivers/tty/tty_io.c:2719
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:874 [inline]
- __se_sys_ioctl fs/ioctl.c:860 [inline]
- __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:860
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x4665f9
-Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 bc ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fc6badab188 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 000000000056bf80 RCX: 00000000004665f9
-RDX: 00000000200000c0 RSI: 0000000000005412 RDI: 0000000000000003
-RBP: 00000000004bfcc4 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 000000000056bf80
-R13: 00007ffe925987cf R14: 00007fc6badab300 R15: 0000000000022000
-==================================================================
+From v7 to v8, there are three more patches based on patchset v8[4].
+This patchset is about to register power table to Energy model for EAS and thermal usage.
+1. EM CPU power table
+- Register energy model table for EAS and thermal cooling device usage.
+- Read the coresponding LUT for power table.
+2. SVS initialization
+- The SVS(Smart Voltage Scaling) engine is a hardware which is
+  used to calculate optimized voltage values for CPU power domain.
+  DVFS driver could apply those optimized voltage values to reduce power consumption.
+- Driver will polling if HW engine is done for SVS initialization.
+  After that, driver will read power table and register it to EAS.
+- CPUs must be in power on state when doing SVS. Use pm_qos to block cpu-idle state for SVS initializing.
+3. Cooling device flag
+- Add cooling device flag for thermal
+[1]  https://lore.kernel.org/linux-devicetree/20210517155458.1016707-1-sudeep.holla@arm.com/
+[2]  https://lore.kernel.org/lkml/20201116181356.804590-1-sudeep.holla@arm.com/
+[3]  https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=c250d50fe2ce627ca9805d9c8ac11cbbf922a4a6
+[4]  https://lkml.org/lkml/2020/9/23/384
 
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+Hector.Yuan (3):
+  ndings: cpufreq: add bindings for MediaTek cpufreq HW
+  cpufreq: Add of_perf_domain_get_sharing_cpumask
+  cpufreq: mediatek-hw: Add support for CPUFREQ HW
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+ .../bindings/cpufreq/cpufreq-mediatek-hw.yaml |  70 ++++
+ drivers/cpufreq/Kconfig.arm                   |  12 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/mediatek-cpufreq-hw.c         | 319 ++++++++++++++++++
+ include/linux/cpufreq.h                       |  39 +++
+ 5 files changed, 441 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
+ create mode 100644 drivers/cpufreq/mediatek-cpufreq-hw.c
+
