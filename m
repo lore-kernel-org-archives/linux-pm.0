@@ -2,142 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22AA4C4320A
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 15:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51FBEC4320A
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Aug 2021 19:10:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 08A17606A5
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Aug 2021 15:01:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2669160295
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Aug 2021 19:10:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234405AbhH1PCP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Aug 2021 11:02:15 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:51282 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S229852AbhH1PCL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Aug 2021 11:02:11 -0400
-X-UUID: 0b4ced830b4a469db5757d88f4a0e869-20210828
-X-UUID: 0b4ced830b4a469db5757d88f4a0e869-20210828
-Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
-        (envelope-from <hector.yuan@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 360118344; Sat, 28 Aug 2021 23:01:17 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs06n2.mediatek.inc (172.21.101.130) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Sat, 28 Aug 2021 23:01:16 +0800
-Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Sat, 28 Aug 2021 23:01:16 +0800
-From:   Hector Yuan <hector.yuan@mediatek.com>
-To:     <linux-mediatek@lists.infradead.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, <devicetree@vger.kernel.org>
-CC:     <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
-        <hector.yuan@mediatek.com>
-Subject: [PATCH v14 1/3] ndings: cpufreq: add bindings for MediaTek cpufreq HW
-Date:   Sat, 28 Aug 2021 23:01:10 +0800
-Message-ID: <1630162872-25452-2-git-send-email-hector.yuan@mediatek.com>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <1630162872-25452-1-git-send-email-hector.yuan@mediatek.com>
-References: <1630162872-25452-1-git-send-email-hector.yuan@mediatek.com>
+        id S233379AbhH2TKx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Aug 2021 15:10:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41510 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232897AbhH2TKw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Aug 2021 15:10:52 -0400
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 095C9C061756
+        for <linux-pm@vger.kernel.org>; Sun, 29 Aug 2021 12:09:59 -0700 (PDT)
+Received: by mail-lj1-x22c.google.com with SMTP id d16so21969093ljq.4
+        for <linux-pm@vger.kernel.org>; Sun, 29 Aug 2021 12:09:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=kZvGZdT6RSA5Fpa57FNTpKBZHVWz2QTfWSfFBXfNFHU=;
+        b=DrCljDdfCo+lBGtGLRmyB4o6rQbv4TeyX4Drm8ehxEz1BJpi+BWVj1E428aI5VjRzT
+         qSbqZmAUe9kgyv8l/JRyu4kCf1Uc0B0J7OXpqPXUFuzehoyQI3ZA9PqzaeMaFYO92KZp
+         npO/c/TbB/6lA4nSF2O3A0jwhCVxH0kGxZZvXSkdXTVpTBiWHPwe4QU4JTs3v113yhCB
+         xPcl1T4UejvU5qHSMoe6n84LYhN1WmQuC4pNoDesszxO63RgVewpD08pv9q47VpAydp7
+         TjUt1kxU6P7ALMFcYSUAJ4FSrCJnFTUGdQ+rS8gAKYNwDpQuF8Pq0lRAR0aEqVK/Gs59
+         Mfig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=kZvGZdT6RSA5Fpa57FNTpKBZHVWz2QTfWSfFBXfNFHU=;
+        b=JFUh67oEVTRG0+wzlTTnEE6bDYriqEDvD1rY6PECgyps9ER7JscQBiL5U0zspUqVog
+         1rQkghrcCVgbMZ90yvH5xVYca3at6VdlZdIbmCGePR0O30a3GFfPhYgblBMWabRmAA0f
+         OVed2IbSntIm0p84kCmPKd31SOBC8fv80tQ6kKUbqhYN9/+9tOgYuQwAhieop8qVPPz0
+         Q8RatdOwR+RM8AYNFo7GXS4B81C4+x70vufw7gK7Wai0OfuZ8kwNWtYunqHoLMvt2QDC
+         Yf2FsGNpuKy2uL1qg+cc+W8NSva7l6geAd0t/cl7q34y16kQ5Iairg3F7dI3xqmkR3Z7
+         5mVA==
+X-Gm-Message-State: AOAM533lr7Cmw2l/gOurswqGZ0QjDbhbdMCdei5z0tBNsA7RU0MO8SVx
+        b6r4ohycK7PSgYCcbPBCHxuxbj4BWGMDPNdY9g1Q1Q==
+X-Google-Smtp-Source: ABdhPJxCSw20sOvXWZzeD9OCjtvjPdcCMXxl2xVeKRRntI5UnzuFb3gKYb5s+B1HPOovLKmDV45JcGagXUjMkhjkD58=
+X-Received: by 2002:a2e:9d88:: with SMTP id c8mr17243245ljj.467.1630264198248;
+ Sun, 29 Aug 2021 12:09:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+References: <20210806090050.3510671-1-linus.walleij@linaro.org>
+In-Reply-To: <20210806090050.3510671-1-linus.walleij@linaro.org>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Sun, 29 Aug 2021 21:09:47 +0200
+Message-ID: <CACRpkdbdgdpg7CNQ+s4SkJBOsWfuOOWmXTar+cx2Eu_Wt5qNfw@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: power: Bindings for Samsung batteries
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Hector.Yuan" <hector.yuan@mediatek.com>
+On Fri, Aug 6, 2021 at 11:02 AM Linus Walleij <linus.walleij@linaro.org> wrote:
 
-Add devicetree bindings for MediaTek HW driver.
+> This adds device tree bindings for Samsung SDI batteries.
+> Everything can be determined from the product number so the entire
+> battery is just a specific compatible string.
+>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-Signed-off-by: Hector.Yuan <hector.yuan@mediatek.com>
----
- .../bindings/cpufreq/cpufreq-mediatek-hw.yaml      |   70 ++++++++++++++++++++
- 1 file changed, 70 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
+Sebastian: can this be merged? I am working on corresponding code
+for Linux to populate Samsung batteries from compatible.
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
-new file mode 100644
-index 0000000..9cd42a6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
-@@ -0,0 +1,70 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/cpufreq/cpufreq-mediatek-hw.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MediaTek's CPUFREQ Bindings
-+
-+maintainers:
-+  - Hector Yuan <hector.yuan@mediatek.com>
-+
-+description:
-+  CPUFREQ HW is a hardware engine used by MediaTek SoCs to
-+  manage frequency in hardware. It is capable of controlling
-+  frequency for multiple clusters.
-+
-+properties:
-+  compatible:
-+    const: mediatek,cpufreq-hw
-+
-+  reg:
-+    minItems: 1
-+    maxItems: 2
-+    description:
-+      Addresses and sizes for the memory of the HW bases in
-+      each frequency domain. Each entry corresponds to
-+      a register bank for each frequency domain present.
-+
-+  "#performance-domain-cells":
-+    description:
-+      Number of cells in a performance domain specifier.
-+      Set const to 1 here for nodes providing multiple
-+      performance domains.
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - "#performance-domain-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    cpus {
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            cpu0: cpu@0 {
-+                device_type = "cpu";
-+                compatible = "arm,cortex-a55";
-+                enable-method = "psci";
-+                performance-domains = <&performance 0>;
-+                reg = <0x000>;
-+            };
-+    };
-+
-+    /* ... */
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        performance: performance-controller@11bc00 {
-+            compatible = "mediatek,cpufreq-hw";
-+            reg = <0 0x0011bc10 0 0x120>, <0 0x0011bd30 0 0x120>;
-+
-+            #performance-domain-cells = <1>;
-+        };
-+    };
--- 
-1.7.9.5
-
+Yours,
+Linus Walleij
