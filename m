@@ -2,132 +2,459 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B0A4C432BE
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Aug 2021 13:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51B89C4320A
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Aug 2021 14:57:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 75DD460C3F
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Aug 2021 13:51:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3131F60462
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Aug 2021 14:57:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233874AbhH3NwO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Aug 2021 09:52:14 -0400
-Received: from mail-vi1eur05on2044.outbound.protection.outlook.com ([40.107.21.44]:38113
-        "EHLO EUR05-VI1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231669AbhH3NwN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 30 Aug 2021 09:52:13 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=VoAoBcSM0rMstJPX0EWIfd1FUOScgcj64yDwVsiHDOizsXZCHoq40pg6TUetcCmfcY51VuZaJvdlhysl4q0ikmp0KWRdugJVf+YpsFpzqaYI+vQdxnQ6xsvB2a8v6PrIQLmNlal1QBUsL+LmyJaI5wokRpzJS2s8PNIYqrSrBNEl0HiJy7bTAHW/sBAH/dhhV7VFhQc4PLRGp3S6aTcjxXEtdS0p3NdVewvC3yD0LyXv5a5WtUWCRivEZ49MG8Ig3FZuS/cNzzREa0++TzaitGLFcmHtU7iMvQ6UsW+VSN2nCgsjxwI4CX2ZSsfvqW5QlTTDZFTj++GcnTORq403cA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=68QXAwfjJ9u44KWMW1egOm4uQM36+EiaxHBedE6DVUY=;
- b=oFyr6ySpWHudUMCrZpjXyBqpJzSpPpv1YJUSEfEHnHx2br7mzVQD1Ru3Ay5gwz3jhZutdc08imbQCewCWZkU8wXVePF/K/sO8s99Cl6EeZFdHwKt4+7ndDVbDWfQ1WrtuK2qr65EmeMnvmoCkIdJ0JHAJNq9vY9tBaXi9AfQpO7EX9ZwOSUFMTz9/d8fc0rn8wMFPBLEDYSeZ8lNKRj4ej1h3YflUDHFLAPyunsXjFcxhEhXmQf3ZyiM73fV0jgnULVdRpYzD8UTCnDt0waxB+pW/trjL9eDArWjhupXymMiazLxRpBd+6GwosXtxg6k3AZJ6e9A0PAf43zDDQ3TFg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=mec.at; dmarc=pass action=none header.from=mec.at; dkim=pass
- header.d=mec.at; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mecat.onmicrosoft.com;
- s=selector2-mecat-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=68QXAwfjJ9u44KWMW1egOm4uQM36+EiaxHBedE6DVUY=;
- b=mblB+1thkoBm10OrgiP44GzNoDs+Jeiv4u/qYH3xjZ2WDpl7pyZiDHv0O6r3PR0LiLRzUrnEzATYwmfxSCvIrZtQhbAhLMiq7PAMXwKe1Kui4HJTjr0EswJyjhtKvhFsvmEbrROf5eiLoI0Q1DnDwKc7BFnNv4hmZ9yzNeIy6Tk=
-Authentication-Results: vger.kernel.org; dkim=none (message not signed)
- header.d=none;vger.kernel.org; dmarc=none action=none header.from=mec.at;
-Received: from AS8PR03MB7079.eurprd03.prod.outlook.com (2603:10a6:20b:291::8)
- by AM6PR03MB4024.eurprd03.prod.outlook.com (2603:10a6:20b:1b::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4457.23; Mon, 30 Aug
- 2021 13:51:17 +0000
-Received: from AS8PR03MB7079.eurprd03.prod.outlook.com
- ([fe80::1c91:76ec:b39a:da43]) by AS8PR03MB7079.eurprd03.prod.outlook.com
- ([fe80::1c91:76ec:b39a:da43%5]) with mapi id 15.20.4457.024; Mon, 30 Aug 2021
- 13:51:17 +0000
-From:   Thomas Marangoni <thomas.marangoni@mec.at>
-Subject: Communication between kernel and user-space
-To:     linux-pm@vger.kernel.org
-Message-ID: <93abc004-eed6-d78b-9311-a6626e7a0ff6@mec.at>
-Date:   Mon, 30 Aug 2021 15:51:16 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-ClientProxiedBy: ZRAP278CA0010.CHEP278.PROD.OUTLOOK.COM
- (2603:10a6:910:10::20) To AS8PR03MB7079.eurprd03.prod.outlook.com
- (2603:10a6:20b:291::8)
+        id S237222AbhH3O6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Aug 2021 10:58:40 -0400
+Received: from mga01.intel.com ([192.55.52.88]:25043 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233162AbhH3O6k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Aug 2021 10:58:40 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10092"; a="240525776"
+X-IronPort-AV: E=Sophos;i="5.84,363,1620716400"; 
+   d="scan'208";a="240525776"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Aug 2021 07:57:35 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.84,363,1620716400"; 
+   d="scan'208";a="689279409"
+Received: from lkp-server01.sh.intel.com (HELO 4fbc2b3ce5aa) ([10.239.97.150])
+  by fmsmga005.fm.intel.com with ESMTP; 30 Aug 2021 07:57:34 -0700
+Received: from kbuild by 4fbc2b3ce5aa with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1mKij7-0005DQ-ET; Mon, 30 Aug 2021 14:57:33 +0000
+Date:   Mon, 30 Aug 2021 22:57:02 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ a93c0039d89d6f11b98f49db841515e65a5dd0ba
+Message-ID: <612cf1be.T4XIgVHNfE5ffyii%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from [192.168.2.176] (213.185.161.83) by ZRAP278CA0010.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:10::20) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4457.17 via Frontend Transport; Mon, 30 Aug 2021 13:51:17 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 1a97061a-705e-432f-2265-08d96bbd3d8d
-X-MS-TrafficTypeDiagnostic: AM6PR03MB4024:
-X-Microsoft-Antispam-PRVS: <AM6PR03MB4024BD699403B3579D0688D3F6CB9@AM6PR03MB4024.eurprd03.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 7eEREYBpPNC4jrfdW6r808u7/ClXLLReo8a5t58JoCIGge2AkFF91Z+uHa7hivLfLXD2yU4CYchRXVDKSMRTb3lVJdfNwkjxmKZEUKVoHuQOFq6dHQkaM40Kga9ekCeXXaL5VLx0JqBp5eo8EptvsebWX4nm/nhw+2adQ5C4ABue+qYuSt5rITWSMrIt28kAspA16eCELgVIxMooqZRzxgor/FIhLwQ0htRZUS5z+B6TlqyMLzT2Gwfoc8cLuHxkNtXPvWmiF5z87BxipwWe93x/7lfxjk4yN55HlhW5dMXU0CSF79/hsqMdIlTjZMA9APVcjltvfmLF3EJi7IrzJbwVWzolBqMAu85j66aVmGBlqZ7qrzdtl9QgOb+5n4bB3k0/HZ4t4Uy8R5frS2axv3oNlY2ouAlGoqb/FxgUEjf3gSJe/TKhoqlN8xu2u/PuLJv53xZ6+w6qzehHmBcF46QBsqCvDnnkfMqe4bHolIDNVNlMkA1cHdHLLAPwV8NJe1t2ijFgYj4nJAQjq2+72D7NHFGS1W+i1Uzq2tv4Nt7jCA2KRpZy3nd5MLJZzwc1ThL9ryCWe9Ak+WCWLz1ZhUX4qgAPC5jbrCHUhqHrA8i4puOrzuRuCgxskHS8Ebgriost+yPryqAj42gadpDiud3f7fxaZuyohv9hqqaYqDCYzzAMQwudf4+7ZwfUsE9LGUDsL128kA/aEqN3dKhYzXI8UaWNtBcgeaEUWSE8LNeVhfU+yW5H6znNfdFWQlV8Ly1OEAr9m5gSJMzl9i3eGQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR03MB7079.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(136003)(346002)(39830400003)(366004)(396003)(376002)(8936002)(66556008)(2906002)(2616005)(5660300002)(36756003)(4744005)(6486002)(38100700002)(66946007)(316002)(16576012)(956004)(44832011)(478600001)(26005)(186003)(31686004)(52116002)(6916009)(86362001)(31696002)(83380400001)(38350700002)(66476007)(8676002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?c0s1M0pPeWdvT0xQWUFaMEp0M0M0ZkFKTnpqRkMwa3lTdU42ZmVMbUIxRFB5?=
- =?utf-8?B?UUs5ZmR0eTdIUVhPM2NmYVcxM1c3ajMySHJRREVFbVNZM0tMK2xsaVB5SURC?=
- =?utf-8?B?YmZSK0gvTW1HWldCMnpaRktlWGxXZTNYTDhFR1V2eVk3WW9TU0VNcStpMVBW?=
- =?utf-8?B?UFBwRFlvTTZLWmI0cWRBQ01iakhsNkg3aDlvVXVVNjBrVzREOVUreVB5eFFR?=
- =?utf-8?B?cFc2Ny83bGdLVjh1K1ZjVXVSZUFTMTVGZExlV01MNXZ4bFZvY3Z2Z29yVEdK?=
- =?utf-8?B?N1lsdUg3TWtmSnd0NkNpeVlUbW1aclFaMFBqNUg3Qk1hbFRBc1N2QWpPU3Ar?=
- =?utf-8?B?QjR6WlNNMEQxa01xSU9UNW5CKzFQeU9yRWVOTFRKdU13SDZXOURhTW5iMVdS?=
- =?utf-8?B?V1lxZ252OHhtYVFxUHpSL05TVUpCYkVtU1JIZk5tY1lWR3VmcFVjUVZhYTdu?=
- =?utf-8?B?dUUxTzNLSVVzTU5Pc2tIMkIxMzYrZ2FwNm10MWVLZStsVFJTdnE4aXMxbGhO?=
- =?utf-8?B?K0dPU3VEMHVJd2lyRDNISEdsbk8vVVVSaWZnbmE5S3FmM3JOc285TndTSHlS?=
- =?utf-8?B?M3JQRTR6S2xuK0VGR1B4ckFkOEJWUTU1WEpOSjNCa3IwRTdzRFdsMUlVOGxL?=
- =?utf-8?B?S3Z1NHQrWllNQXJOOTBNaHpQeHJRTVowQWtBTmY2T1BvN1NrUjVYV2huRURi?=
- =?utf-8?B?bVZia1B0TUpOSjR1RlUrM3E0RWxIWS94aDlCNjNYQXdIUHdnT2N6SFI3Ry9R?=
- =?utf-8?B?aWpQRVZEenk1cWhzR2N2R2RiaVVtbm9LUEw5VkZLV20wQXA5cXpwQWl3MjlF?=
- =?utf-8?B?OTR2Z3pDdjUzd3pudWFNeVRCbG9oYm02S3FjMlpJaXBvdTBRRXg3WmdvbVVM?=
- =?utf-8?B?VnFSUC9uNjV1R3JHck5WZVBoWEliMzFiM0VwSE5yTUFJb0F5a01SOGhZZ1c2?=
- =?utf-8?B?bmoxZWc5TFlXdUVGcG9seVBKWGR4N0taR1hUM2Zvb2pOckxvQ0R1Rkhodm1X?=
- =?utf-8?B?S2haU1cvendRUWw3UitYcExvTUpOeDlSamJ3b25EZUp3dEM2b20yNDl3cGV4?=
- =?utf-8?B?T2tkcE0xNTNqMlZlbWVTaGI1bmV1YmNBQTJJRE4yNWtjZ1pOMk1COHhMQUJu?=
- =?utf-8?B?dnZxRyszSzU3QjAvUFR2RmtEdFhJWUFoME43M2ZqYTJxWWJCVFk3WUc4ZnJW?=
- =?utf-8?B?RlhhV05ScDdYeFptNGNtL3B5MzJlMXM2eFJDOE0wQVNNeWF6NkxQWGhaZmY1?=
- =?utf-8?B?SDdPbHd6NE1MOEIvZWlFdTJ0dGtLZGFiUkwrQ0E3anJtOEFzTEM1NmlGSzUr?=
- =?utf-8?B?NTF2RUl3bDU4a2xlRTdLZUJHUU9TcTlrVHJaemxuZ2FxeWJiazRCTGdPWkhz?=
- =?utf-8?B?Vk1XanBDN0VvdEZZR1B5TllHdk43Q0FEVVNjWUJpQVdzYUpsb2JJMW42bG5N?=
- =?utf-8?B?TnBRaXNpL29RUTI1aDNuNUswb09aakZPdDJ1S2JUSXVqMHZTTjYxa3k4eGdF?=
- =?utf-8?B?c1d6MDVZQ3pqSDNOUndGQTU2aW5WbCt4S05ST3k3OGN6cGVCOWdCaWUrWTlQ?=
- =?utf-8?B?cnZEbVJoL3pXUlJ0WDROUlZoMjZ1cUdmTmRDaFUvM3VvMFh0UDQvZzdwZkYr?=
- =?utf-8?B?NUkzU3RRMFN6a0xnMlhYQkhSam5aajRFbnhHL0lOcTM0WHFUa0dpSTRkWUVJ?=
- =?utf-8?B?bTNENEVRUjJmV1drSzZqdis2MnpHa1p5Q1l6ZlU0TFo1K3YwSzZLKzdZYUJD?=
- =?utf-8?Q?EevfZVrQrg3G6v7lBFvkYfg0Ukn4cxSUfLX4RIE?=
-X-OriginatorOrg: mec.at
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1a97061a-705e-432f-2265-08d96bbd3d8d
-X-MS-Exchange-CrossTenant-AuthSource: AS8PR03MB7079.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Aug 2021 13:51:17.6202
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 0f47e334-58db-4591-b50f-1937a70d1a07
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5TwKwsNTA9KMK1EeJy6Krp+wkIST2U+OjXLcEWAt9zCCTbiyjKrkN1KivZTtRWn6TAhIwJbvq1UL0PbjXu5Lnw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR03MB4024
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: a93c0039d89d6f11b98f49db841515e65a5dd0ba  Merge branch 'acpi-bus' into linux-next
 
-I'm currently working on the axp209 driver. The device has multiple 
-warnings like: temperature too high or low, over-voltage, under-voltage 
-etc. What is the recommended way to communicate such warnings to the 
-user-space, besides dmesg, so programs can handle them? Or should I just 
-create my own attribute for each warning and set it to a specific value 
-from the kernel and let user-space applications reset them to 
-acknowledge them? And if there is a recommended way can you name me a 
-driver that is using it?
+elapsed time: 4062m
 
-Thanks for your help!
+configs tested: 387
+configs skipped: 5
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210827
+i386                 randconfig-c001-20210829
+i386                 randconfig-c001-20210830
+ia64                             allmodconfig
+i386                             allyesconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+ia64                             allyesconfig
+powerpc              randconfig-c003-20210827
+um                           x86_64_defconfig
+riscv                            allyesconfig
+mips                             allyesconfig
+um                             i386_defconfig
+mips                             allmodconfig
+riscv                            allmodconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+m68k                             allmodconfig
+s390                             allmodconfig
+powerpc                          allmodconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+sh                               allmodconfig
+parisc                           allyesconfig
+arc                              allyesconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+mips                 randconfig-c004-20210829
+arm                        mini2440_defconfig
+x86_64                            allnoconfig
+powerpc                      ppc44x_defconfig
+powerpc                     tqm5200_defconfig
+xtensa                    smp_lx200_defconfig
+arm                        realview_defconfig
+arm                          ep93xx_defconfig
+arm                          pxa3xx_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                         cobalt_defconfig
+mips                        qi_lb60_defconfig
+sparc64                          alldefconfig
+arm                          iop32x_defconfig
+sh                           sh2007_defconfig
+arm                          ixp4xx_defconfig
+sh                           se7705_defconfig
+powerpc                        fsp2_defconfig
+sh                              ul2_defconfig
+sh                        sh7785lcr_defconfig
+sh                           se7780_defconfig
+nios2                         10m50_defconfig
+sparc                       sparc64_defconfig
+arm                     am200epdkit_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                 mpc836x_mds_defconfig
+nios2                         3c120_defconfig
+sh                          rsk7264_defconfig
+arm                        spear6xx_defconfig
+arm                           h3600_defconfig
+powerpc                 mpc832x_mds_defconfig
+sh                          polaris_defconfig
+powerpc                     rainier_defconfig
+arm                             rpc_defconfig
+powerpc                     pseries_defconfig
+powerpc                 mpc8315_rdb_defconfig
+mips                           gcw0_defconfig
+sh                          rsk7269_defconfig
+mips                      fuloong2e_defconfig
+sh                        sh7763rdp_defconfig
+m68k                       m5275evb_defconfig
+arm                       spear13xx_defconfig
+arm                      footbridge_defconfig
+um                               alldefconfig
+microblaze                      mmu_defconfig
+m68k                          multi_defconfig
+powerpc                     tqm8541_defconfig
+mips                          ath25_defconfig
+arc                     nsimosci_hs_defconfig
+arm                         nhk8815_defconfig
+arm                         lpc18xx_defconfig
+mips                         mpc30x_defconfig
+mips                           ip32_defconfig
+m68k                        m5272c3_defconfig
+arm                          gemini_defconfig
+powerpc                 xes_mpc85xx_defconfig
+mips                     cu1000-neo_defconfig
+sparc                       sparc32_defconfig
+arm                           sunxi_defconfig
+mips                        workpad_defconfig
+powerpc                    amigaone_defconfig
+powerpc                     sbc8548_defconfig
+arm                         at91_dt_defconfig
+sh                ecovec24-romimage_defconfig
+powerpc                          g5_defconfig
+sh                         ecovec24_defconfig
+xtensa                         virt_defconfig
+arm                         socfpga_defconfig
+powerpc                    mvme5100_defconfig
+arm64                            alldefconfig
+powerpc                       holly_defconfig
+arm                        multi_v5_defconfig
+powerpc                     mpc512x_defconfig
+sh                           se7206_defconfig
+mips                     loongson2k_defconfig
+arm                           h5000_defconfig
+mips                     cu1830-neo_defconfig
+sh                          sdk7780_defconfig
+x86_64                           alldefconfig
+powerpc                   microwatt_defconfig
+sh                           se7724_defconfig
+arm                          pcm027_defconfig
+arm                         palmz72_defconfig
+xtensa                  audio_kc705_defconfig
+powerpc                     ksi8560_defconfig
+m68k                       m5475evb_defconfig
+sh                          kfr2r09_defconfig
+mips                      pic32mzda_defconfig
+arm                            lart_defconfig
+sh                         apsh4a3a_defconfig
+arm                       imx_v4_v5_defconfig
+mips                           xway_defconfig
+mips                        maltaup_defconfig
+openrisc                 simple_smp_defconfig
+sh                   sh7770_generic_defconfig
+sh                            migor_defconfig
+arm                          pxa168_defconfig
+s390                                defconfig
+sh                          r7780mp_defconfig
+arm                          badge4_defconfig
+mips                  decstation_64_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     redwood_defconfig
+arm                           stm32_defconfig
+s390                             alldefconfig
+powerpc                      tqm8xx_defconfig
+mips                     loongson1b_defconfig
+arm                         s5pv210_defconfig
+xtensa                           alldefconfig
+sh                        edosk7705_defconfig
+mips                         tb0219_defconfig
+sh                 kfr2r09-romimage_defconfig
+powerpc                       ebony_defconfig
+sh                             espt_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                      obs600_defconfig
+sh                            shmin_defconfig
+mips                           ip28_defconfig
+openrisc                  or1klitex_defconfig
+mips                      malta_kvm_defconfig
+powerpc                      cm5200_defconfig
+sh                           se7722_defconfig
+sh                           se7751_defconfig
+ia64                        generic_defconfig
+sh                          rsk7201_defconfig
+sh                         microdev_defconfig
+arm                            mmp2_defconfig
+m68k                        m5307c3_defconfig
+powerpc                mpc7448_hpc2_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                        warp_defconfig
+m68k                        mvme147_defconfig
+xtensa                       common_defconfig
+mips                  cavium_octeon_defconfig
+arm                         hackkit_defconfig
+arm                      pxa255-idp_defconfig
+m68k                       bvme6000_defconfig
+mips                    maltaup_xpa_defconfig
+sh                        edosk7760_defconfig
+powerpc                  storcenter_defconfig
+powerpc                      makalu_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                      ppc6xx_defconfig
+sh                           se7721_defconfig
+m68k                                defconfig
+mips                         db1xxx_defconfig
+arm                         vf610m4_defconfig
+xtensa                              defconfig
+um                                  defconfig
+sh                           se7750_defconfig
+powerpc                 mpc834x_itx_defconfig
+mips                            ar7_defconfig
+arc                            hsdk_defconfig
+h8300                               defconfig
+sh                          lboxre2_defconfig
+arm                         shannon_defconfig
+powerpc                     powernv_defconfig
+powerpc                    socrates_defconfig
+arm                       netwinder_defconfig
+arc                           tb10x_defconfig
+arm                        keystone_defconfig
+powerpc                      chrp32_defconfig
+arm                       multi_v4t_defconfig
+mips                         tb0226_defconfig
+m68k                             alldefconfig
+mips                       capcella_defconfig
+arm                         assabet_defconfig
+arm                      integrator_defconfig
+openrisc                         alldefconfig
+arm                           sama5_defconfig
+mips                        bcm47xx_defconfig
+arm                            dove_defconfig
+riscv                          rv32_defconfig
+powerpc                     akebono_defconfig
+arc                        vdk_hs38_defconfig
+sh                         ap325rxa_defconfig
+sh                   rts7751r2dplus_defconfig
+nds32                             allnoconfig
+alpha                               defconfig
+powerpc                      bamboo_defconfig
+powerpc                      ppc64e_defconfig
+arm                  colibri_pxa270_defconfig
+m68k                       m5249evb_defconfig
+powerpc                       ppc64_defconfig
+arm                        cerfcube_defconfig
+sparc                            alldefconfig
+parisc                generic-32bit_defconfig
+m68k                            q40_defconfig
+powerpc               mpc834x_itxgp_defconfig
+arm                    vt8500_v6_v7_defconfig
+powerpc                 mpc837x_mds_defconfig
+xtensa                  nommu_kc705_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                        vexpress_defconfig
+mips                         rt305x_defconfig
+arc                     haps_hs_smp_defconfig
+arm                        shmobile_defconfig
+mips                           rs90_defconfig
+arm                            hisi_defconfig
+powerpc                      pasemi_defconfig
+powerpc                 mpc832x_rdb_defconfig
+m68k                       m5208evb_defconfig
+arm                            pleb_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                         s3c6400_defconfig
+arm                         lubbock_defconfig
+sh                      rts7751r2d1_defconfig
+i386                             alldefconfig
+mips                       rbtx49xx_defconfig
+arm                         bcm2835_defconfig
+sh                           se7343_defconfig
+powerpc                     kilauea_defconfig
+arm                       imx_v6_v7_defconfig
+sh                   secureedge5410_defconfig
+mips                        bcm63xx_defconfig
+microblaze                          defconfig
+openrisc                            defconfig
+powerpc                       eiger_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                        apsh4ad0a_defconfig
+ia64                                defconfig
+nios2                               defconfig
+nds32                               defconfig
+csky                                defconfig
+arc                                 defconfig
+parisc                              defconfig
+sparc                               defconfig
+i386                                defconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210828
+i386                 randconfig-a006-20210828
+i386                 randconfig-a002-20210828
+i386                 randconfig-a005-20210828
+i386                 randconfig-a003-20210828
+i386                 randconfig-a004-20210828
+x86_64               randconfig-a014-20210827
+x86_64               randconfig-a015-20210827
+x86_64               randconfig-a016-20210827
+x86_64               randconfig-a013-20210827
+x86_64               randconfig-a012-20210827
+x86_64               randconfig-a011-20210827
+x86_64               randconfig-a014-20210830
+x86_64               randconfig-a015-20210830
+x86_64               randconfig-a013-20210830
+x86_64               randconfig-a016-20210830
+x86_64               randconfig-a012-20210830
+x86_64               randconfig-a011-20210830
+x86_64               randconfig-a014-20210829
+x86_64               randconfig-a016-20210829
+x86_64               randconfig-a015-20210829
+x86_64               randconfig-a012-20210829
+x86_64               randconfig-a013-20210829
+x86_64               randconfig-a011-20210829
+i386                 randconfig-a011-20210827
+i386                 randconfig-a016-20210827
+i386                 randconfig-a012-20210827
+i386                 randconfig-a014-20210827
+i386                 randconfig-a013-20210827
+i386                 randconfig-a015-20210827
+i386                 randconfig-a011-20210829
+i386                 randconfig-a016-20210829
+i386                 randconfig-a012-20210829
+i386                 randconfig-a014-20210829
+i386                 randconfig-a013-20210829
+i386                 randconfig-a015-20210829
+i386                 randconfig-a016-20210830
+i386                 randconfig-a011-20210830
+i386                 randconfig-a015-20210830
+i386                 randconfig-a014-20210830
+i386                 randconfig-a012-20210830
+i386                 randconfig-a013-20210830
+arc                  randconfig-r043-20210827
+riscv                randconfig-r042-20210827
+s390                 randconfig-r044-20210827
+s390                 randconfig-r044-20210830
+arc                  randconfig-r043-20210830
+riscv                randconfig-r042-20210830
+arc                  randconfig-r043-20210829
+riscv                randconfig-r042-20210829
+s390                 randconfig-r044-20210829
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+s390                 randconfig-c005-20210829
+i386                 randconfig-c001-20210829
+arm                  randconfig-c002-20210829
+riscv                randconfig-c006-20210829
+x86_64               randconfig-c007-20210829
+powerpc              randconfig-c003-20210829
+mips                 randconfig-c004-20210829
+i386                 randconfig-c001-20210828
+s390                 randconfig-c005-20210828
+arm                  randconfig-c002-20210828
+riscv                randconfig-c006-20210828
+x86_64               randconfig-c007-20210828
+mips                 randconfig-c004-20210828
+s390                 randconfig-c005-20210827
+i386                 randconfig-c001-20210827
+arm                  randconfig-c002-20210827
+riscv                randconfig-c006-20210827
+powerpc              randconfig-c003-20210827
+x86_64               randconfig-c007-20210827
+mips                 randconfig-c004-20210827
+i386                 randconfig-c001-20210830
+s390                 randconfig-c005-20210830
+riscv                randconfig-c006-20210830
+powerpc              randconfig-c003-20210830
+mips                 randconfig-c004-20210830
+arm                  randconfig-c002-20210830
+x86_64               randconfig-c007-20210830
+x86_64               randconfig-a005-20210827
+x86_64               randconfig-a001-20210827
+x86_64               randconfig-a006-20210827
+x86_64               randconfig-a003-20210827
+x86_64               randconfig-a004-20210827
+x86_64               randconfig-a002-20210827
+x86_64               randconfig-a001-20210829
+x86_64               randconfig-a006-20210829
+x86_64               randconfig-a005-20210829
+x86_64               randconfig-a003-20210829
+x86_64               randconfig-a004-20210829
+x86_64               randconfig-a002-20210829
+x86_64               randconfig-a005-20210830
+x86_64               randconfig-a001-20210830
+x86_64               randconfig-a003-20210830
+x86_64               randconfig-a002-20210830
+x86_64               randconfig-a004-20210830
+x86_64               randconfig-a006-20210830
+i386                 randconfig-a001-20210829
+i386                 randconfig-a006-20210829
+i386                 randconfig-a005-20210829
+i386                 randconfig-a004-20210829
+i386                 randconfig-a003-20210829
+i386                 randconfig-a006-20210827
+i386                 randconfig-a001-20210827
+i386                 randconfig-a002-20210827
+i386                 randconfig-a005-20210827
+i386                 randconfig-a004-20210827
+i386                 randconfig-a003-20210827
+i386                 randconfig-a002-20210829
+i386                 randconfig-a005-20210830
+i386                 randconfig-a002-20210830
+i386                 randconfig-a003-20210830
+i386                 randconfig-a006-20210830
+i386                 randconfig-a004-20210830
+i386                 randconfig-a001-20210830
+i386                 randconfig-a011-20210828
+i386                 randconfig-a016-20210828
+i386                 randconfig-a012-20210828
+i386                 randconfig-a014-20210828
+i386                 randconfig-a013-20210828
+i386                 randconfig-a015-20210828
+hexagon              randconfig-r041-20210827
+hexagon              randconfig-r045-20210827
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
