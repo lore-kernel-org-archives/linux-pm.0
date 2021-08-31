@@ -2,138 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4335BC4320E
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 10:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17D7CC432BE
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 10:24:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2B6C961027
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 10:21:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E9B5C60FC0
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 10:24:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240982AbhHaKWm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Aug 2021 06:22:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35536 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240975AbhHaKWm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Aug 2021 06:22:42 -0400
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD023C061760
-        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 03:21:46 -0700 (PDT)
-Received: by mail-lj1-x22e.google.com with SMTP id h1so30820221ljl.9
-        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 03:21:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=wQ8kS/+bTV4avdS2tU6jC3f6zz+Ryry/9cKDRK1gufo=;
-        b=jiP1wMEEvsgc3n7vYx1ledvZpCZkUX5FcfCU/d4NmQ10imEb+nTwuV7AvPQyuAhzpe
-         YsP/UU3DHPPh2i10yLbc78f5nCMLrerGJ6O5w2qQxXo1os1R5iEn/nQbRPHBGoAOHkXS
-         1aGLp5y3Z3p+M9xTR3mVec6Ve/Wj+o+zBAE2jyiAeEhGtBnmOfK3J7BHgoO9AKlkFMG8
-         XHtHiuMg1cbBY5AtMl5rgl7rqbMvAu7ThdDV0Pq3/ED5GoRF4shP/c5KQGW9yKirDnmq
-         d2LCC2MTmPF6h0Symi6YMYf/1TDJKL/EaXJSAYRhHwpoTPEraIaRvdsHZ1cUt089Z39h
-         /jrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=wQ8kS/+bTV4avdS2tU6jC3f6zz+Ryry/9cKDRK1gufo=;
-        b=iTiIg6tEPkJ5FXynSz2exjW7wagbEAWSs7U0Unig1ZobTEIWPF5EiK849l8bVLTVv6
-         bc98mxf1ph5fBPZiJ1YtuYmwvDK8xLX+YBiLAQLPVrD64rHjj0xFg1spqJKaf/hKn203
-         sJ7e4mn/TI3Fpk4PVwnTwJqFlhIgRC4Iha+RuqW3ymkrBJKU7QvbgpCcizKDK++XPhlo
-         up8i4wbQl29fZAdnwOisbW6t+eDXRjUMtqJQWiKe9T0OiNkWqa7IvysiMoo3HQhK/l9Y
-         0bp0uizH6CHVlc2BUDoi04CWk3uYCPwr7ZUQ2MFsO7AKHp+hfSKegGwrv85nsBdYRuho
-         jsFw==
-X-Gm-Message-State: AOAM532XTmEekexDQyNAt8tmzuHDuz6/EUZoJYzvkFyzyyELYS3QlZ8Y
-        +vNp4qmZqg12DX6h9/tvdyZarQ==
-X-Google-Smtp-Source: ABdhPJyfAO80CqzIGBt9m8D2PiuI5w5PJosyAgh/JmPeY8WX1k4mcSvpAtqPgpVYTTOGtXaXZQRtog==
-X-Received: by 2002:a05:651c:2ca:: with SMTP id f10mr24621298ljo.211.1630405305074;
-        Tue, 31 Aug 2021 03:21:45 -0700 (PDT)
-Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
-        by smtp.gmail.com with ESMTPSA id d13sm1687864lfk.232.2021.08.31.03.21.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 Aug 2021 03:21:44 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     Saravana Kannan <saravanak@google.com>,
-        Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 2/2] of: property: fw_devlink: Set 'optional_con_dev' for parse_power_domains
-Date:   Tue, 31 Aug 2021 12:21:41 +0200
-Message-Id: <20210831102141.624725-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S240905AbhHaKZ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Aug 2021 06:25:29 -0400
+Received: from foss.arm.com ([217.140.110.172]:52852 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S240895AbhHaKZ2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 31 Aug 2021 06:25:28 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9CD861FB;
+        Tue, 31 Aug 2021 03:24:33 -0700 (PDT)
+Received: from e120877-lin.cambridge.arm.com (e120877-lin.cambridge.arm.com [10.1.194.43])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 309D83F5A1;
+        Tue, 31 Aug 2021 03:24:32 -0700 (PDT)
+From:   Vincent Donnefort <vincent.donnefort@arm.com>
+To:     peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
+        vincent.guittot@linaro.org, qperret@google.com
+Cc:     linux-pm@vger.kernel.org, ionela.voinescu@arm.com,
+        lukasz.luba@arm.com, dietmar.eggemann@arm.com, mka@chromium.org,
+        Vincent Donnefort <vincent.donnefort@arm.com>
+Subject: [PATCH v6 0/7] Inefficient OPPs
+Date:   Tue, 31 Aug 2021 11:24:06 +0100
+Message-Id: <1630405453-275784-1-git-send-email-vincent.donnefort@arm.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The power-domain DT bindings [1] doesn't enforce a compatible string for a
-provider node, even if this is common to use. In particular, when
-describing a hierarchy with parent/child power-domains, as the psci DT
-bindings [2] for example, it's sometimes not applicable to use a compatible
-string.
+Hi all,
 
-Therefore, let's set the 'optional_con_dev' to true to avoid creating
-incorrect fw_devlinks for power-domains.
+Here's the new version for the inefficient OPPs. This patch-set is based on the
+following series from Viresh:
 
-[1] Documentation/devicetree/bindings/power/power-domain.yaml
-[2] Documentation/devicetree/bindings/arm/psci.yaml
+  [PATCH V3 0/9] Add callback to register with energy model
+  https://lore.kernel.org/linux-arm-msm/cover.1628742634.git.viresh.kumar@linaro.org/
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+A bit of context:
 
-Some more details of what goes on here. I have added a debug print in
-of_link_to_phandle() to see the fw_devlinks that gets created.
+We (Power team in Arm) are working with an experimental kernel for the
+Google's Pixel4 to evaluate and improve the current mainline performance
+and energy consumption on a real life device with Android.
 
-This is what happens on Dragonboard 410c when 'optional_con_dev' isn't set:
-...
-[    0.041274] device: 'psci': device_add
-[    0.041366] OF: Linking power-domain-cpu0 (consumer) to psci (supplier)
-[    0.041395] OF: Linking power-domain-cpu1 (consumer) to psci (supplier)
-[    0.041423] OF: Linking power-domain-cpu2 (consumer) to psci (supplier)
-[    0.041451] OF: Linking power-domain-cpu3 (consumer) to psci (supplier)
-[    0.041494] device: 'platform:psci--platform:psci': device_add
-[    0.041556] platform psci: Linked as a sync state only consumer to psci
-...
+The SD855 SoC found in this phone has several OPPs that are inefficient.
+I.e. despite a lower frequency, they have a greater cost. (That cost being
+fmax * OPP power / OPP freq). This issue is twofold. First of course,
+running a specific workload at an inefficient OPP is counterproductive
+since it wastes wasting energy. But also, inefficient OPPs make a
+performance domain less appealing for task placement than it really is.
 
-This is what happens on Dragonboard 410c when 'optional_con_dev' is set:
-...
-[    0.041179] device: 'psci': device_add
-[    0.041265] OF: Not linking psci to psci - is descendant
-[    0.041293] OF: Not linking psci to psci - is descendant
-[    0.041319] OF: Not linking psci to psci - is descendant
-[    0.041346] OF: Not linking psci to psci - is descendant
-...
+We evaluated the change presented here by running 30 iterations of Android
+PCMark "Work 2.0 Performance". While we did not see any statistically
+significant performance impact, this change allowed to drastically improve
+the idle time residency.
 
-The relevant dtsi file:
-arch/arm64/boot/dts/qcom/msm8916.dtsi
 
-Kind regards
-Ulf Hansson
+                           |   Running   |  WFI [1]  |    Idle   |
+   ------------------------+-------------+-----------+-----------+
+   Little cluster (4 CPUs) |    -0.35%   |   +0.35%  |   +0.79%  |
+   ------------------------+-------------+-----------+-----------+
+   Medium cluster (3 CPUs) |    -6.3%    |    -18%   |    +12%   |
+   ------------------------+-------------+-----------+-----------+
+   Big cluster    (1 CPU)  |    -6.4%    |    -6.5%  |    +2.8%  |
+   ------------------------+-------------+-----------+-----------+
 
----
- drivers/of/property.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On the SD855, the inefficient OPPs are found on the little cluster. By
+removing them from the Energy Model, we make the most efficient CPUs more
+appealing for task placement, helping to reduce the running time for the
+medium and big CPUs. Increasing idle time is crucial for this platform due
+to the substantial energy cost differences among the clusters. Also,
+despite not appearing in the statistics (the idle driver used here doesn't
+report it), we can speculate that we also improve the cluster idle time.
 
-diff --git a/drivers/of/property.c b/drivers/of/property.c
-index 2babb1807228..4d607fdbea24 100644
---- a/drivers/of/property.c
-+++ b/drivers/of/property.c
-@@ -1356,7 +1356,7 @@ static const struct supplier_bindings of_supplier_bindings[] = {
- 	{ .parse_prop = parse_io_channels, },
- 	{ .parse_prop = parse_interrupt_parent, },
- 	{ .parse_prop = parse_dmas, .optional = true, },
--	{ .parse_prop = parse_power_domains, },
-+	{ .parse_prop = parse_power_domains, .optional_con_dev = true, },
- 	{ .parse_prop = parse_hwlocks, },
- 	{ .parse_prop = parse_extcon, },
- 	{ .parse_prop = parse_nvmem_cells, },
+[1] WFI: Wait for interrupt.
+
+Changelog since v5:
+  - EM setup inefficient frequencies in CPUFreq, instead of CPUFreq settings its
+    own inefficient frequencies from EM.
+
+Changelog since v4:
+  - Remove CPUFREQ_RELATION_E.
+  - Skip inefficient OPPs for all governors with CPUFREQ_GOV_DYNAMIC_SWITCHING
+  - Remove CPUFREQ_READ_ENERGY_MODEL in favor of the register_em callback.
+
+Changelog since v3:
+  - New freq-table relation CPUFREQ_RELATION_E.
+  - New CPUFreq driver flag CPUFREQ_READ_ENERGY_MODEL.
+  - EM flag to skip or not inefficiencies (driven by CPUFreq).
+  - Fix infinite loop in set_freq_table_efficiencies().
+
+Changelog since v2:
+  - Add separated support for inefficiencies into CPUFreq.
+  - Collect Reviewed-by for the first patch.
+
+Changelog since v1:
+  - Remove the Look-up table as the numbers weren't strong enough to
+
+Vincent Donnefort (7):
+  PM / EM: Fix inefficient states detection
+  PM / EM: Mark inefficient states
+  PM / EM: Extend em_perf_domain with a flag field
+  PM / EM: Allow skipping inefficient states
+  cpufreq: Add an interface to mark inefficient frequencies
+  cpufreq: Skip inefficient frequencies
+  PM / EM: Mark inefficiencies in CPUFreq
+
+ drivers/cpufreq/cpufreq.c    | 39 +++++++++++++++++++
+ drivers/cpufreq/freq_table.c | 53 ++++++++++++++++++++++++++
+ include/linux/cpufreq.h      | 75 ++++++++++++++++++++++++++++++++++---
+ include/linux/energy_model.h | 68 ++++++++++++++++++++++++++++-----
+ kernel/power/energy_model.c  | 89 +++++++++++++++++++++++++++++++++++---------
+ 5 files changed, 291 insertions(+), 33 deletions(-)
+
 -- 
-2.25.1
+2.7.4
 
