@@ -2,131 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CADD2C25AEB
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 13:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B27F6C4320A
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 13:56:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AB5A86056B
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 13:53:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9438660241
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 13:56:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237433AbhHaNyk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Aug 2021 09:54:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57328 "EHLO
+        id S229982AbhHaN5Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Aug 2021 09:57:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238353AbhHaNyi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Aug 2021 09:54:38 -0400
-Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB874C0613A3
-        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 06:53:42 -0700 (PDT)
-Received: by mail-ed1-x532.google.com with SMTP id d6so26966131edt.7
-        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 06:53:42 -0700 (PDT)
+        with ESMTP id S230411AbhHaN5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Aug 2021 09:57:22 -0400
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A08BDC061764
+        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 06:56:25 -0700 (PDT)
+Received: by mail-lj1-x22d.google.com with SMTP id d16so31951338ljq.4
+        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 06:56:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=0KsdRco5g3Rxsur7HnzmWia1aqV1LswyiZ+q0x+vuSY=;
-        b=HQ7YjqNn+GvyrMyaEw4Ts6k7wU5aPcFPAWZ/MvIgnb/b3nJTG/bZDiK6JU5Urc0OGw
-         eYdX1ndiXPm2WmlL+IK4/u/BaFz6AbYdNIgxPmK/jtKVgAB4AXg1YnEwThk50eDSwxKa
-         5zamzfT+Mw9ZsLCNbbSg/KnigE4n5pxUzOD+A/0pPF9mh4JO0EwgAg6tp4mjPp+2ybhC
-         LKwkjJVc1hih9nB2NRvpLDKH15CvIzCDRkybcb8PHSW6J2tGC65jUPq2wh7pHwEv7mh1
-         GGntJW/v2BIHeuezNaO8q8z3cKspObfYA7MpK111176yeraZmzPIIb/SJwoe9ailV5zQ
-         GIEQ==
+        d=linaro.org; s=google;
+        h=mime-version:from:date:message-id:subject:to:cc;
+        bh=GHw91jE4urGzuAZWeCNVF0wY1JmpGNBGveBNe7Ax0Vg=;
+        b=MZggc6Q3tq62yniJQ8TOlxyxADB7u+JwqBceXF7wsT6YU+FvWjjIVhAv28O+nTJFnc
+         BAnGzmLk2zrncJvnt+N5HpmnFQtv1icgAMuC3J1ep8Icf+jOptjTfms8LM/JVorY1SmF
+         EMw+ogP10CHA/34LT886Q32WJthi9VdgJZ7CQi92QqGdZ35NomPUqSjC/ujjL7QJdgR2
+         IrJV5Zisn4wG6Kljqb+uZZ161kfaG/2mpu/nzO+kSjlDCiCoYf7z7Iq6eKqo/5YkYmNX
+         +BVYEwaoP/BH706Me7QnmsxrxrH0bYZxxtXxAl1naF/2qpcwlfvZL8uvmO1awt6prYUV
+         pafg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=0KsdRco5g3Rxsur7HnzmWia1aqV1LswyiZ+q0x+vuSY=;
-        b=cLZihB6hfXC3ZCg7ILi3s6pK1ikHlgiRyXuxpkvLr4Bi8BfXtda9sBjKdluyBC67sO
-         oaVpdBMwUJQIVSJ2qLJUqK7gEEnh/02eGIbrcneZ0YAu/ioB4gTvSC9T5XB6f7w95CXR
-         NuKivy/5FwdgXjrhNIM2YDSf6onNWErlYdNc65VMAR055h5/zSF5foapoBgUCcwUjSAQ
-         q7OJ8a6Iw3u0LMxmJ/ZAio8ppOkmPcEAqOuxm8H6JNxqh4Mi9tQ34RZCytbpnSabcVl+
-         yru9zTVnOEkCHkDpezxilpTicIQDpJeYF4ajSdMrrAxR0+Wvt0YB/TZUQbDVz8iIc/Vk
-         Zakg==
-X-Gm-Message-State: AOAM530/0PChU/Ou8yC3YohLOlJlUH7rcy53HHlpS6KxTB/l47hKm5zj
-        pK1rXU/a93lRyqEjDw/893fl8fP3A14CmJicsilc
-X-Google-Smtp-Source: ABdhPJws3lszVbtjZiLZOptaWsbrL101boZlKAvA+uSpyGqWqgyhydVacfD22Otuw8Ioe1qUU+ZoAgTEh8gbHZtS+70=
-X-Received: by 2002:a05:6402:4cf:: with SMTP id n15mr30419950edw.269.1630418020725;
- Tue, 31 Aug 2021 06:53:40 -0700 (PDT)
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=GHw91jE4urGzuAZWeCNVF0wY1JmpGNBGveBNe7Ax0Vg=;
+        b=aiof4aHVbi7TrIT/nVvF/+vfC1TbYsjBXCMqB9Jw4oRgyHu5fWl9D2aKHqAAWKJ0oh
+         z5LqO/1z/E7uP46+N6Tz3QbzczOjci8kQ0RCcX9fBVI49X+4WpaOuPQn5OXILKHmRbFu
+         K/2X5s3QewbmMrQTHdDAyrv0/atvqcTmXhWjj/S5cZ2wYMDmd7NHZ3+jCR0CQySNjYH6
+         +1YwkrvfzkEIxQMjeJTQ2Rsrz430I5Fc6tsz2JM3/HEcs7YkziMvSRPlxK4QPCK6+1mB
+         WmtFem9vpJfbTBtX3CPXIYK54M7Sv+ibBC9II6aece+ZosGPGwPLFIN1NWONhh9X+J0D
+         bwXg==
+X-Gm-Message-State: AOAM530UxV5o1eRV9ZJhtLrpsfoGBRSPSvtLqJqpevxJnv0/hhsCyBr6
+        8CtFmY/i9czk8+xN9eOhtBof9YF3K72TNP9OP7JixthAvZ3Uob15
+X-Google-Smtp-Source: ABdhPJzIAcRINhNa4Ey0Ec1ehsMZYqqzQVMJpqPtfaXq1kuyy8opAvDt09+49VbqBd6l2Mu4eB3zKNN0aPJfqJss4WY=
+X-Received: by 2002:a05:651c:158f:: with SMTP id h15mr25197229ljq.249.1630418183988;
+ Tue, 31 Aug 2021 06:56:23 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210616085118.1141101-1-omosnace@redhat.com> <CAPcyv4jvR8CT4rYODR5KUHNdiqMwQSwJZ+OkVf61kLT3JfjC_Q@mail.gmail.com>
- <CAFqZXNtuH0329Xvcb415Kar-=o6wwrkFuiP8BZ_2OQhHLqkkAg@mail.gmail.com>
-In-Reply-To: <CAFqZXNtuH0329Xvcb415Kar-=o6wwrkFuiP8BZ_2OQhHLqkkAg@mail.gmail.com>
-From:   Paul Moore <paul@paul-moore.com>
-Date:   Tue, 31 Aug 2021 09:53:29 -0400
-Message-ID: <CAHC9VhTGECM2p+Q8n48aSdfJzY6XrpXQ5tcFurjWc4A3n8Qxjg@mail.gmail.com>
-Subject: Re: [PATCH v3] lockdown,selinux: fix wrong subject in some SELinux
- lockdown checks
-To:     Ondrej Mosnacek <omosnace@redhat.com>
-Cc:     Dan Williams <dan.j.williams@intel.com>,
-        Linux Security Module list 
-        <linux-security-module@vger.kernel.org>,
-        James Morris <jmorris@namei.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Steffen Klassert <steffen.klassert@secunet.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S . Miller" <davem@davemloft.net>,
-        Stephen Smalley <stephen.smalley.work@gmail.com>,
-        SElinux list <selinux@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        X86 ML <x86@kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        linux-cxl@vger.kernel.org, linux-efi <linux-efi@vger.kernel.org>,
-        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux-pm mailing list <linux-pm@vger.kernel.org>,
-        linux-serial@vger.kernel.org, bpf <bpf@vger.kernel.org>,
-        Netdev <netdev@vger.kernel.org>,
-        Kexec Mailing List <kexec@lists.infradead.org>,
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 31 Aug 2021 15:55:47 +0200
+Message-ID: <CAPDyKFo9Bxremkb1dDrr4OcXSpE0keVze94Cm=zrkOVxHHxBmQ@mail.gmail.com>
+Subject: [RFD] drivers: base: A driver's ->sync_state() callback don't get called
+To:     Saravana Kannan <saravanak@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Rob Herring <robh@kernel.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Casey Schaufler <casey@schaufler-ca.com>
+        DTML <devicetree@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 31, 2021 at 5:09 AM Ondrej Mosnacek <omosnace@redhat.com> wrote:
-> On Sat, Jun 19, 2021 at 12:18 AM Dan Williams <dan.j.williams@intel.com> wrote:
-> > On Wed, Jun 16, 2021 at 1:51 AM Ondrej Mosnacek <omosnace@redhat.com> wrote:
+Hi Saravana, Rafael, Stephen,
 
-...
+I have observed an issue with a driver's  ->sync_state() callback that
+doesn't get called, even if consumers/supplier device links conditions
+should have been satisfied. I have narrowed down the problem, but I am
+not sure what is the best solution to fix it, hence I am turning to
+you for some discussion/advice.
 
-> > > diff --git a/drivers/cxl/mem.c b/drivers/cxl/mem.c
-> > > index 2acc6173da36..c1747b6555c7 100644
-> > > --- a/drivers/cxl/mem.c
-> > > +++ b/drivers/cxl/mem.c
-> > > @@ -568,7 +568,7 @@ static bool cxl_mem_raw_command_allowed(u16 opcode)
-> > >         if (!IS_ENABLED(CONFIG_CXL_MEM_RAW_COMMANDS))
-> > >                 return false;
-> > >
-> > > -       if (security_locked_down(LOCKDOWN_NONE))
-> > > +       if (security_locked_down(current_cred(), LOCKDOWN_NONE))
-> >
-> > Acked-by: Dan Williams <dan.j.williams@intel.com>
-> >
-> > ...however that usage looks wrong. The expectation is that if kernel
-> > integrity protections are enabled then raw command access should be
-> > disabled. So I think that should be equivalent to LOCKDOWN_PCI_ACCESS
-> > in terms of the command capabilities to filter.
->
-> Yes, the LOCKDOWN_NONE seems wrong here... but it's a pre-existing bug
-> and I didn't want to go down yet another rabbit hole trying to fix it.
-> I'll look at this again once this patch is settled - it may indeed be
-> as simple as replacing LOCKDOWN_NONE with LOCKDOWN_PCI_ACCESS.
+I have two test platform drivers, one that matches on the
+"test,pm-domains-test" compatible string (this driver also has the
+->sync_state() callback assigned) and another driver that matches on
+"test,runtime-pm-test".
 
-At this point you should be well aware of my distaste for merging
-patches that have known bugs in them.  Yes, this is a pre-existing
-condition, but it seems well within the scope of this work to address
-it as well.
+This is the relevant part in my DTS file:
 
-This isn't something that is going to get merged while the merge
-window is open, so at the very least you've got almost two weeks to
-sort this out - please do that.
+       pm_domain_test {
+                compatible = "test,pm-domains-test";
 
--- 
-paul moore
-www.paul-moore.com
+                pdParent: power-domain-parent {
+                        #power-domain-cells = <0>;
+                };
+
+                pdChild: power-domain-child {
+                        #power-domain-cells = <0>;
+                        power-domains = <&pdParent>;
+                };
+        };
+
+        soctest: soctest {
+                compatible = "simple-bus";
+
+                rpmtest0 {
+                        compatible = "test,runtime-pm-test";
+                        power-domains = <&pdParent>;
+                };
+        };
+
+During boot the fw_devlinks are being created and their corresponding
+links. With some debug enabled this shows some of the interesting
+parts that are being printed to the log:
+
+[    0.041539] device: 'pm_domain_test': device_add
+[    0.041629] OF: Not linking pm_domain_test to pm_domain_test - is descendant
+[    0.041718] device: 'soctest': device_add
+[    0.041803] OF: Linking rpmtest0 (consumer) to pm_domain_test (supplier)
+[    0.041829] device: 'platform:pm_domain_test--platform:soctest': device_add
+[    0.041892] platform soctest: Linked as a sync state only consumer
+to pm_domain_test
+[    0.041957] OF:    create child: /soctest/rpmtest0
+[    0.041995] device: 'soctest:rpmtest0': device_add
+[    0.042072] device:
+'platform:pm_domain_test--platform:soctest:rpmtest0': device_add
+[    0.042132] devices_kset: Moving soctest:rpmtest0 to end of list
+[    0.042141] platform soctest:rpmtest0: Linked as a consumer to pm_domain_test
+
+The interesting thing here is the "sync state only" link that gets
+created. I assume there are good reasons for creating this link, even
+if I fail to understand exactly why.
+
+In any case, the sync state only link never gets dropped, which I
+assume is because there is no driver getting bound for the "soctest"
+device (it has only the "simple-bus" compatible).
+
+In other words, it doesn't matter that both the rpmtest0 and the
+pm_domain_test devices are probed, thus satisfying the
+supplier/consumer conditions, the ->sync_state() callback doesn't get
+called anyway.
+
+Can you perhaps help to point me in a direction of how to best fix this problem?
+
+Kind regards
+Ulf Hansson
