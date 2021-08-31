@@ -2,182 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB972C432BE
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 15:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 704EBC432BE
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 16:15:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C0A4860F42
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 15:33:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A20560F92
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Aug 2021 16:15:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239409AbhHaPeG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Aug 2021 11:34:06 -0400
-Received: from smtprelay0145.hostedemail.com ([216.40.44.145]:47062 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S239158AbhHaPeG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Aug 2021 11:34:06 -0400
-X-Greylist: delayed 445 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Aug 2021 11:34:06 EDT
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com [10.5.19.251])
-        by smtpgrave01.hostedemail.com (Postfix) with ESMTP id EC6011807C27B
-        for <linux-pm@vger.kernel.org>; Tue, 31 Aug 2021 15:25:46 +0000 (UTC)
-Received: from omf16.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
-        by smtprelay02.hostedemail.com (Postfix) with ESMTP id 2552C253D4;
-        Tue, 31 Aug 2021 15:25:44 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by omf16.hostedemail.com (Postfix) with ESMTPA id D7C6A255100;
-        Tue, 31 Aug 2021 15:25:42 +0000 (UTC)
-Message-ID: <1c5b485cc9b8836b09f99278233d9dc0ae991da7.camel@perches.com>
+        id S239810AbhHaQQj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Aug 2021 12:16:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34206 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239136AbhHaQQj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Aug 2021 12:16:39 -0400
+Received: from bombadil.infradead.org (unknown [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 432D6C061575;
+        Tue, 31 Aug 2021 09:15:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+        Subject:Sender:Reply-To:Content-ID:Content-Description;
+        bh=PCQ8ZFnhW5N6IDS6udBJxjrWJnUDnnHP3/qSywcxIl4=; b=iA2ksHgpF7Xjs/fZF89GOdxJpC
+        1EyTedjGzlGjIQkznv3R8r2fu0dJvkqxQCSb1gxOrrAMXlukvb1mdGyQHt0rjzof/XtBEsVEdumm7
+        oyr3R5dmz6ptTExzYPCucW/xplqK+of7f6dqVneI4Sse81+36VRcWpGgENPspNuXPhQxpk5j3IAxG
+        45ZT27LLZImGXG92jpqQEANtlN5UqqbKBoE2p2ZDmY5DB5MxU1XxsTMXc77pr2Vm41rISC0KigeOM
+        wQkqi5FI+liHA4ZUo69y5LoRYfhI/JVwgkumb7fjSHNjtlQLoFb/tkdgn5B51nIzb7YfmnJrkENfg
+        kTjwLzDw==;
+Received: from [2601:1c0:6280:3f0::aa0b]
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1mL6QE-002hKY-7w; Tue, 31 Aug 2021 16:15:38 +0000
 Subject: Re: [PATCH V6 1/1] interconnect: intel: Add Keem Bay noc driver
-From:   Joe Perches <joe@perches.com>
 To:     pandith.n@intel.com, georgi.djakov@linaro.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     mgross@linux.intel.com, furong.zhou@intel.com,
         mallikarjunappa.sangannavar@intel.com,
         lakshmi.bai.raja.subramanian@intel.com
-Date:   Tue, 31 Aug 2021 08:25:40 -0700
-In-Reply-To: <20210831063615.1021-1-pandith.n@intel.com>
 References: <20210831063615.1021-1-pandith.n@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.40.0-1 
+From:   Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <986f25c1-a6ce-f142-018b-88ee0c237943@infradead.org>
+Date:   Tue, 31 Aug 2021 09:15:37 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
+In-Reply-To: <20210831063615.1021-1-pandith.n@intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Stat-Signature: wrt8d4hktnqgu6mjx4hi8abedwxiz8sx
-X-Rspamd-Server: rspamout05
-X-Rspamd-Queue-Id: D7C6A255100
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX19/Ih3lgzedQTxeHUMZmH61JF8v3mnvv2U=
-X-HE-Tag: 1630423542-295277
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2021-08-31 at 12:06 +0530, pandith.n@intel.com wrote:
-> From: Pandith N <pandith.n@intel.com>
-> 
-> Add support for Network on Chip(NOC) counters. Enable features to configure
-> and capture NOC probe counters, needed for DDR bandwidth measurement. NOC
-> driver is specific to Intel Keem Bay SOC. NOC hardware counters are used
-> for DDR statistics profiling, it is not related to timers.
-> Interface details are provided in include/uapi/linux/noc_uapi.h
+Hi--
 
-trivial notes:
-
+On 8/30/21 11:36 PM, pandith.n@intel.com wrote:
 > diff --git a/drivers/interconnect/intel/Kconfig b/drivers/interconnect/intel/Kconfig
-[]
+> new file mode 100644
+> index 000000000000..a2f933773380
+> --- /dev/null
+> +++ b/drivers/interconnect/intel/Kconfig
+> @@ -0,0 +1,19 @@
+> +# Copyright (C) 2019 Intel Corporation
+> +# SPDX-License-Identifier: GPL-2.0-only
+> +config INTERCONNECT_INTEL
+> +	bool "Intel Network-on-chip interconnect drivers"
+> +	help
+> +	  Support for Intel's Network on chip interconnect hardware.
+> +
 > +config INTERCONNECT_INTEL_KEEMBAY
 > +	tristate "Intel Keem Bay Enable DDR profiling using NOC"
 > +	depends on INTERCONNECT_INTEL || ARCH_KEEMBAY || COMPILE_TEST
 > +	help
 > +	  Enable this option for DDR bandwidth measurements using NOC
+
+	                                                          NOC.
+
 > +
 > +	  Add support for Network-on-chip (NOC) in DDR Subsystem(DSS).
+
+	                                               Subsystem (DSS).
+
 > +	  DSS NOC has capabilities to enable and get statistics profiling.
 > +	  NOC driver enables features to configure and capture NOC probe
 > +          counters, needed for DSS bandwidth measurement.
 
-Inconsistent tab/space indentation on this line
+Indent above with tab + 2 spaces instead of many spaces.
 
-> diff --git a/drivers/interconnect/intel/keembay-bwmon.c b/drivers/interconnect/intel/keembay-bwmon.c
-[]
-> +/**
-> + * flex_noc_setup() - Setup two counters for the NOC probe
-> + * @noc: NOC type to setup counters
-> + * @counter: Counter number to set up counter n and n+1
-> + * @trace_port: trace port number to setup counters
-> + *
-> + * This function will setup the counters for the trace port given.
+> +	  Say Y if using a processor that includes the Intel VPU such as
+> +	  Keem Bay.  If unsure, say N.
 
-This seems to be unnecessary kernel-doc and if it is useful,
-the return value isn't described.
 
-> +int flex_noc_setup(enum noc_ss_type noc, enum noc_counter counter, int trace_port)
-> +{
-> +	int offset;
-> +
-> +	if (noc >= NOC_TYPE_MAX || counter >= NOC_COUNTER_MAX)
-> +		return -EINVAL;
-> +
-> +	offset = f_offset[counter / 2];
-> +
-> +	/* Stop ongoing stats */
-> +	noc_writel(MAINCTL, 0);
-> +	noc_writel(CFGCTL, 0);
-> +
-> +	/* Setup trace port and counters port select */
-> +	noc_writel(TRACEPORTSEL, trace_port);
-> +	noc_writel((c_offset[counter] + C_PORTSEL), trace_port);
-
-Lots of unnecessary parentheses
-
-> +	noc_writel((c_offset[counter + 1] + C_PORTSEL), trace_port);
-> +
-> +	/* Setup counter sources & triggers, Alarm mode - OFF */
-> +	noc_writel((c_offset[counter] + C_SRC), COUNTERS_0_SRC_VAL);
-> +	noc_writel((c_offset[counter] + C_ALARMMODE), COUNTERS_ALARMMODE_VAL);
-> +	noc_writel((c_offset[counter + 1] + C_SRC), COUNTERS_1_SRC_VAL);
-> +	noc_writel((c_offset[counter + 1] + C_ALARMMODE),
-> +		   COUNTERS_ALARMMODE_VAL);
-
-[]
-
-> +enum noc_status flexnoc_counter_capture(enum noc_ss_type noc,
-> +					enum noc_counter counter, u32  *value)
-> +{
-> +	unsigned long j0, j1, delay;
-> +	u32 c0_0, c0_1;
-> +
-> +	if (noc >= NOC_TYPE_MAX ||
-> +	    counter >= NOC_COUNTER_MAX  ||
-> +	    !value)
-> +		return NOC_PROBE_ERR_INVALID_ARGS;
-> +
-> +	delay = msecs_to_jiffies(NOC_CAPTURE_TIMEOUT_MSEC);
-> +	j0 = jiffies;
-> +	j1 = j0 + delay;
-
-j0 and j1 seem unnecessary
-
-	timeout = jiffies + msecs_to_jiffies(NOC_CAPTURE_TIMEOUT_MSEC);
-
-> +	do {
-> +		c0_0 = noc_readl((c_offset[counter] + C_VAL));
-> +		usleep_range(10000, 11000);
-
-Seems a long time.
-
-> +		c0_1 = noc_readl((c_offset[counter] + C_VAL));
-> +		/* If mainctrl is zero , return error */
-> +		if (noc_readl(MAINCTL) == 0)
-> +			return NOC_PROBE_ERR_IN_PROGRESS;
-> +		/* If counters are zero, keep reading */
-> +		if (0 == c0_0 && 0 == c0_1) {
-> +			break;
-> +		} else if (c0_0 != c0_1) {
-> +			continue;
-> +		} else {
-> +			/* counters look good break the while */
-> +			break;
-> +		}
-> +	} while (time_before(jiffies, j1));
-
-	} while (time_before(jiffies, timeout);
-
-[]
-
-> +static long noc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-> +{
-> +	struct flexnoc_countercapture capture_data;
-> +	void __user *argp = (void __user *)arg;
-> +	struct flexnoc_probestart probe_data;
-> +	struct flexnoc_setup setup_data;
-> +	int rc;
-> +
-> +	if (!arg) {
-> +		pr_err("NOC: Null pointer from user\n");
-
-Perhaps useful to add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-near the top of the file.
-
+-- 
+~Randy
 
