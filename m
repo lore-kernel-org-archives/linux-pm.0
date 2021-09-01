@@ -8,26 +8,26 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A02CCC43214
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Sep 2021 12:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D83A6C432BE
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Sep 2021 12:16:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8497860BD3
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Sep 2021 12:16:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C317E60F92
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Sep 2021 12:16:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244037AbhIAMRj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Sep 2021 08:17:39 -0400
-Received: from mail-0201.mail-europe.com ([51.77.79.158]:57226 "EHLO
+        id S244039AbhIAMRs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Sep 2021 08:17:48 -0400
+Received: from mail-0201.mail-europe.com ([51.77.79.158]:34869 "EHLO
         mail-0201.mail-europe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244028AbhIAMRg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Sep 2021 08:17:36 -0400
-Date:   Wed, 01 Sep 2021 12:16:29 +0000
+        with ESMTP id S243964AbhIAMRs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Sep 2021 08:17:48 -0400
+Date:   Wed, 01 Sep 2021 12:16:12 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1630498595;
-        bh=gJxYhcWcE6Z1Ka9oTpUEQ6eNRdg3NGC2Xf2gJSDdzCA=;
+        s=protonmail; t=1630498578;
+        bh=ef+pjXzP60XHoE2ZZacOGPrTpkdzajkjIxWt07jDQF4=;
         h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=KgqoJYAeYBvjDqKNhThFACvtuZexzJNVTFyVvpTGrn1vWWig64ySd9s9XjlnzjJBl
-         3VoW53KLr/iSXtvaK/MjJk6U3+L3aiRak3v4ExBNS+wTRDo8vUfqW8qWNsmPYjsdDX
-         Vkfys7MSDbwyE1OpAdc4KJUYH8Lc6MoH/7s7+Hwg=
+        b=ePugciC4EgfrvPU+hOvCm/5fwf5Y+0tZ0v46IAKUiQrnvvCSgRoalAALwsg8Wiaxr
+         zBI+gxFVwDrtnrm5349f1Dx8KMoHu1k/IgEjcVeYg4RG6IlTVhdkzZCshl7Bl7dXT3
+         R3Rjp8oFG9pCnPoultyHVKRc4qIra0Ae10kqpZUI=
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Georgi Djakov <djakov@kernel.org>,
@@ -36,10 +36,11 @@ From:   Yassine Oudjana <y.oudjana@protonmail.com>
 Cc:     Yassine Oudjana <y.oudjana@protonmail.com>,
         AngeloGioacchino Del Regno <kholk11@gmail.com>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Rob Herring <robh@kernel.org>
 Reply-To: Yassine Oudjana <y.oudjana@protonmail.com>
-Subject: [PATCH v4 5/5] arm64: dts: qcom: msm8996: Add interconnect support
-Message-ID: <20210901121518.152481-6-y.oudjana@protonmail.com>
+Subject: [PATCH v4 3/5] dt-bindings: interconnect: Add Qualcomm MSM8996 DT bindings
+Message-ID: <20210901121518.152481-4-y.oudjana@protonmail.com>
 In-Reply-To: <20210901121518.152481-1-y.oudjana@protonmail.com>
 References: <20210901121518.152481-1-y.oudjana@protonmail.com>
 MIME-Version: 1.0
@@ -49,153 +50,229 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interconnect providers for the multiple NoCs available on the platform,
-and assign interconnects used by some blocks.
+Add bindings for interconnects on Qualcomm MSM8996.
 
 Signed-off-by: Yassine Oudjana <y.oudjana@protonmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 Changes since v2:
- - Remove interconnect paths from CPUs since cpufreq driver doesn't support=
- icc scaling yet.
+ - Dual-license qcom,msm8996.h and move it to the dt bindings patch
 
- arch/arm64/boot/dts/qcom/msm8996.dtsi | 80 +++++++++++++++++++++++++++
- 1 file changed, 80 insertions(+)
+ .../bindings/interconnect/qcom,rpm-qos.yaml   |  14 ++
+ .../dt-bindings/interconnect/qcom,msm8996.h   | 163 ++++++++++++++++++
+ 2 files changed, 177 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/qcom,msm8996.h
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qc=
-om/msm8996.dtsi
-index 52df22ab3f6a..6c98869688bc 100644
---- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
-@@ -7,6 +7,7 @@
- #include <dt-bindings/clock/qcom,mmcc-msm8996.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
- #include <dt-bindings/power/qcom-rpmpd.h>
-+#include <dt-bindings/interconnect/qcom,msm8996.h>
- #include <dt-bindings/soc/qcom,apr.h>
- #include <dt-bindings/thermal/thermal.h>
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpm-qos.ya=
+ml b/Documentation/devicetree/bindings/interconnect/qcom,rpm-qos.yaml
+index ea80bd50fd50..3e376ca413bf 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,rpm-qos.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpm-qos.yaml
+@@ -20,6 +20,13 @@ properties:
 =20
-@@ -683,6 +684,15 @@ gcc: clock-controller@300000 {
- =09=09=09clock-names =3D "cxo2";
- =09=09};
-=20
-+=09=09bimc: interconnect@408000 {
-+=09=09=09compatible =3D "qcom,msm8996-bimc";
-+=09=09=09reg =3D <0x00408000 0x5a000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_BIMC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_BIMC_A_CLK>;
-+=09=09};
+   compatible:
+     enum:
++      - qcom,msm8996-a1noc
++      - qcom,msm8996-a2noc
++      - qcom,msm8996-bimc
++      - qcom,msm8996-cnoc
++      - qcom,msm8996-mnoc
++      - qcom,msm8996-pnoc
++      - qcom,msm8996-snoc
+       - qcom,sdm660-a2noc
+       - qcom,sdm660-bimc
+       - qcom,sdm660-cnoc
+@@ -53,6 +60,7 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,msm8996-mnoc
+               - qcom,sdm660-mnoc
+     then:
+       properties:
+@@ -72,6 +80,12 @@ allOf:
+         compatible:
+           contains:
+             enum:
++              - qcom,msm8996-a1noc
++              - qcom,msm8996-a2noc
++              - qcom,msm8996-bimc
++              - qcom,msm8996-cnoc
++              - qcom,msm8996-pnoc
++              - qcom,msm8996-snoc
+               - qcom,sdm660-a2noc
+               - qcom,sdm660-bimc
+               - qcom,sdm660-cnoc
+diff --git a/include/dt-bindings/interconnect/qcom,msm8996.h b/include/dt-b=
+indings/interconnect/qcom,msm8996.h
+new file mode 100644
+index 000000000000..05473e52e0d8
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,msm8996.h
+@@ -0,0 +1,163 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-3-Clause) */
++/*
++ * Qualcomm MSM8996 interconnect IDs
++ *
++ * Copyright (c) 2021 Yassine Oudjana <y.oudjana@protonmail.com>
++ */
 +
- =09=09tsens0: thermal-sensor@4a9000 {
- =09=09=09compatible =3D "qcom,msm8996-tsens", "qcom,tsens-v2";
- =09=09=09reg =3D <0x004a9000 0x1000>, /* TM */
-@@ -705,6 +715,61 @@ tsens1: thermal-sensor@4ad000 {
- =09=09=09#thermal-sensor-cells =3D <1>;
- =09=09};
-=20
-+=09=09cnoc: interconnect@500000 {
-+=09=09=09compatible =3D "qcom,msm8996-cnoc";
-+=09=09=09reg =3D <0x00500000 0x1000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_CNOC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_CNOC_A_CLK>;
-+=09=09};
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_MSM8996_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_MSM8996_H
 +
-+=09=09snoc: interconnect@524000 {
-+=09=09=09compatible =3D "qcom,msm8996-snoc";
-+=09=09=09reg =3D <0x00524000 0x1c000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_SNOC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_SNOC_A_CLK>;
-+=09=09};
++/* A0NOC */
++#define MASTER_PCIE_0=09=09=090
++#define MASTER_PCIE_1=09=09=091
++#define MASTER_PCIE_2=09=09=092
 +
-+=09=09a1noc: interconnect@562000 {
-+=09=09=09compatible =3D "qcom,msm8996-a1noc";
-+=09=09=09reg =3D <0x00562000 0x5000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_AGGR1_NOC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_AGGR1_NOC_A_CLK>;
-+=09=09};
++/* A1NOC */
++#define MASTER_CNOC_A1NOC=09=090
++#define MASTER_CRYPTO_CORE0=09=091
++#define MASTER_PNOC_A1NOC=09=092
 +
-+=09=09a2noc: interconnect@583000 {
-+=09=09=09compatible =3D "qcom,msm8996-a2noc";
-+=09=09=09reg =3D <0x00583000 0x7000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_AGGR2_NOC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_AGGR2_NOC_A_CLK>;
-+=09=09};
++/* A2NOC */
++#define MASTER_USB3=09=09=090
++#define MASTER_IPA=09=09=091
++#define MASTER_UFS =09=09=092
 +
-+=09=09mnoc: interconnect@5a4000 {
-+=09=09=09compatible =3D "qcom,msm8996-mnoc";
-+=09=09=09reg =3D <0x005a4000 0x1c000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a", "iface";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_MMAXI_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_MMAXI_A_CLK>,
-+=09=09=09=09 <&mmcc AHB_CLK_SRC>;
-+=09=09};
++/* BIMC */
++#define MASTER_AMPSS_M0=09=09=090
++#define MASTER_GRAPHICS_3D=09=091
++#define MASTER_MNOC_BIMC=09=092
++#define MASTER_SNOC_BIMC=09=093
++#define SLAVE_EBI_CH0=09=09=094
++#define SLAVE_HMSS_L3=09=09=095
++#define SLAVE_BIMC_SNOC_0=09=096
++#define SLAVE_BIMC_SNOC_1=09=097
 +
-+=09=09pnoc: interconnect@5c0000 {
-+=09=09=09compatible =3D "qcom,msm8996-pnoc";
-+=09=09=09reg =3D <0x005c0000 0x3000>;
-+=09=09=09#interconnect-cells =3D <1>;
-+=09=09=09clock-names =3D "bus", "bus_a";
-+=09=09=09clocks =3D <&rpmcc RPM_SMD_PCNOC_CLK>,
-+=09=09=09=09 <&rpmcc RPM_SMD_PCNOC_A_CLK>;
-+=09=09};
++/* CNOC */
++#define MASTER_SNOC_CNOC=09=090
++#define MASTER_QDSS_DAP=09=09=091
++#define SLAVE_CNOC_A1NOC=09=092
++#define SLAVE_CLK_CTL=09=09=093
++#define SLAVE_TCSR=09=09=094
++#define SLAVE_TLMM=09=09=095
++#define SLAVE_CRYPTO_0_CFG=09=096
++#define SLAVE_MPM=09=09=097
++#define SLAVE_PIMEM_CFG=09=09=098
++#define SLAVE_IMEM_CFG=09=09=099
++#define SLAVE_MESSAGE_RAM=09=0910
++#define SLAVE_BIMC_CFG=09=09=0911
++#define SLAVE_PMIC_ARB=09=09=0912
++#define SLAVE_PRNG=09=09=0913
++#define SLAVE_DCC_CFG=09=09=0914
++#define SLAVE_RBCPR_MX=09=09=0915
++#define SLAVE_QDSS_CFG=09=09=0916
++#define SLAVE_RBCPR_CX=09=09=0917
++#define SLAVE_QDSS_RBCPR_APU=09=0918
++#define SLAVE_CNOC_MNOC_CFG=09=0919
++#define SLAVE_SNOC_CFG=09=09=0920
++#define SLAVE_SNOC_MPU_CFG=09=0921
++#define SLAVE_EBI1_PHY_CFG=09=0922
++#define SLAVE_A0NOC_CFG=09=09=0923
++#define SLAVE_PCIE_1_CFG=09=0924
++#define SLAVE_PCIE_2_CFG=09=0925
++#define SLAVE_PCIE_0_CFG=09=0926
++#define SLAVE_PCIE20_AHB2PHY=09=0927
++#define SLAVE_A0NOC_MPU_CFG=09=0928
++#define SLAVE_UFS_CFG=09=09=0929
++#define SLAVE_A1NOC_CFG=09=09=0930
++#define SLAVE_A1NOC_MPU_CFG=09=0931
++#define SLAVE_A2NOC_CFG=09=09=0932
++#define SLAVE_A2NOC_MPU_CFG=09=0933
++#define SLAVE_SSC_CFG=09=09=0934
++#define SLAVE_A0NOC_SMMU_CFG=09=0935
++#define SLAVE_A1NOC_SMMU_CFG=09=0936
++#define SLAVE_A2NOC_SMMU_CFG=09=0937
++#define SLAVE_LPASS_SMMU_CFG=09=0938
++#define SLAVE_CNOC_MNOC_MMSS_CFG=0939
 +
- =09=09tcsr_mutex_regs: syscon@740000 {
- =09=09=09compatible =3D "syscon";
- =09=09=09reg =3D <0x00740000 0x40000>;
-@@ -784,6 +849,11 @@ mdp: mdp@901000 {
- =09=09=09=09assigned-clock-rates =3D <300000000>,
- =09=09=09=09=09 <19200000>;
-=20
-+=09=09=09=09interconnects =3D <&mnoc MASTER_MDP_PORT0 &bimc SLAVE_EBI_CH0>=
-,
-+=09=09=09=09=09=09<&mnoc MASTER_MDP_PORT1 &bimc SLAVE_EBI_CH0>,
-+=09=09=09=09=09=09<&mnoc MASTER_ROTATOR &bimc SLAVE_EBI_CH0>;
-+=09=09=09=09interconnect-names =3D "mdp0-mem", "mdp1-mem", "rotator-mem";
++/* MNOC */
++#define MASTER_CNOC_MNOC_CFG=09=090
++#define MASTER_CPP=09=09=091
++#define MASTER_JPEG=09=09=092
++#define MASTER_MDP_PORT0=09=093
++#define MASTER_MDP_PORT1=09=094
++#define MASTER_ROTATOR=09=09=095
++#define MASTER_VIDEO_P0=09=09=096
++#define MASTER_VFE=09=09=097
++#define MASTER_SNOC_VMEM=09=098
++#define MASTER_VIDEO_P0_OCMEM=09=099
++#define MASTER_CNOC_MNOC_MMSS_CFG=0910
++#define SLAVE_MNOC_BIMC=09=09=0911
++#define SLAVE_VMEM=09=09=0912
++#define SLAVE_SERVICE_MNOC=09=0913
++#define SLAVE_MMAGIC_CFG=09=0914
++#define SLAVE_CPR_CFG=09=09=0915
++#define SLAVE_MISC_CFG=09=09=0916
++#define SLAVE_VENUS_THROTTLE_CFG=0917
++#define SLAVE_VENUS_CFG=09=09=0918
++#define SLAVE_VMEM_CFG=09=09=0919
++#define SLAVE_DSA_CFG=09=09=0920
++#define SLAVE_MMSS_CLK_CFG=09=0921
++#define SLAVE_DSA_MPU_CFG=09=0922
++#define SLAVE_MNOC_MPU_CFG=09=0923
++#define SLAVE_DISPLAY_CFG=09=0924
++#define SLAVE_DISPLAY_THROTTLE_CFG=0925
++#define SLAVE_CAMERA_CFG=09=0926
++#define SLAVE_CAMERA_THROTTLE_CFG=0927
++#define SLAVE_GRAPHICS_3D_CFG=09=0928
++#define SLAVE_SMMU_MDP_CFG=09=0929
++#define SLAVE_SMMU_ROT_CFG=09=0930
++#define SLAVE_SMMU_VENUS_CFG=09=0931
++#define SLAVE_SMMU_CPP_CFG=09=0932
++#define SLAVE_SMMU_JPEG_CFG=09=0933
++#define SLAVE_SMMU_VFE_CFG=09=0934
 +
- =09=09=09=09ports {
- =09=09=09=09=09#address-cells =3D <1>;
- =09=09=09=09=09#size-cells =3D <0>;
-@@ -959,6 +1029,9 @@ gpu: gpu@b00000 {
- =09=09=09=09"mem",
- =09=09=09=09"mem_iface";
-=20
-+=09=09=09interconnects =3D <&bimc MASTER_GRAPHICS_3D &bimc SLAVE_EBI_CH0>;
-+=09=09=09interconnect-names =3D "gfx-mem";
++/* PNOC */
++#define MASTER_SNOC_PNOC=09=090
++#define MASTER_SDCC_1=09=09=091
++#define MASTER_SDCC_2=09=09=092
++#define MASTER_SDCC_4=09=09=093
++#define MASTER_USB_HS=09=09=094
++#define MASTER_BLSP_1=09=09=095
++#define MASTER_BLSP_2=09=09=096
++#define MASTER_TSIF=09=09=097
++#define SLAVE_PNOC_A1NOC=09=098
++#define SLAVE_USB_HS=09=09=099
++#define SLAVE_SDCC_2=09=09=0910
++#define SLAVE_SDCC_4=09=09=0911
++#define SLAVE_TSIF=09=09=0912
++#define SLAVE_BLSP_2=09=09=0913
++#define SLAVE_SDCC_1=09=09=0914
++#define SLAVE_BLSP_1=09=09=0915
++#define SLAVE_PDM=09=09=0916
++#define SLAVE_AHB2PHY=09=09=0917
 +
- =09=09=09power-domains =3D <&mmcc GPU_GX_GDSC>;
- =09=09=09iommus =3D <&adreno_smmu 0>;
-=20
-@@ -1953,6 +2026,9 @@ venus: video-codec@c00000 {
- =09=09=09=09 <&mmcc VIDEO_AXI_CLK>,
- =09=09=09=09 <&mmcc VIDEO_MAXI_CLK>;
- =09=09=09clock-names =3D "core", "iface", "bus", "mbus";
-+=09=09=09interconnects =3D <&mnoc MASTER_VIDEO_P0 &bimc SLAVE_EBI_CH0>,
-+=09=09=09=09=09<&bimc MASTER_AMPSS_M0 &mnoc SLAVE_VENUS_CFG>;
-+=09=09=09interconnect-names =3D "video-mem", "cpu-cfg";
- =09=09=09iommus =3D <&venus_smmu 0x00>,
- =09=09=09=09 <&venus_smmu 0x01>,
- =09=09=09=09 <&venus_smmu 0x0a>,
-@@ -2569,6 +2645,10 @@ usb3: usb@6af8800 {
- =09=09=09=09=09  <&gcc GCC_USB30_MASTER_CLK>;
- =09=09=09assigned-clock-rates =3D <19200000>, <120000000>;
-=20
-+=09=09=09interconnects =3D <&a2noc MASTER_USB3 &bimc SLAVE_EBI_CH0>,
-+=09=09=09=09=09<&bimc MASTER_AMPSS_M0 &snoc SLAVE_USB3>;
-+=09=09=09interconnect-names =3D "usb-ddr", "apps-usb";
++/* SNOC */
++#define MASTER_HMSS=09=09=090
++#define MASTER_QDSS_BAM=09=09=091
++#define MASTER_SNOC_CFG=09=09=092
++#define MASTER_BIMC_SNOC_0=09=093
++#define MASTER_BIMC_SNOC_1=09=094
++#define MASTER_A0NOC_SNOC=09=095
++#define MASTER_A1NOC_SNOC=09=096
++#define MASTER_A2NOC_SNOC=09=097
++#define MASTER_QDSS_ETR=09=09=098
++#define SLAVE_A0NOC_SNOC=09=099
++#define SLAVE_A1NOC_SNOC=09=0910
++#define SLAVE_A2NOC_SNOC=09=0911
++#define SLAVE_HMSS=09=09=0912
++#define SLAVE_LPASS=09=09=0913
++#define SLAVE_USB3=09=09=0914
++#define SLAVE_SNOC_BIMC=09=09=0915
++#define SLAVE_SNOC_CNOC=09=09=0916
++#define SLAVE_IMEM=09=09=0917
++#define SLAVE_PIMEM=09=09=0918
++#define SLAVE_SNOC_VMEM=09=09=0919
++#define SLAVE_SNOC_PNOC=09=09=0920
++#define SLAVE_QDSS_STM=09=09=0921
++#define SLAVE_PCIE_0=09=09=0922
++#define SLAVE_PCIE_1=09=09=0923
++#define SLAVE_PCIE_2=09=09=0924
++#define SLAVE_SERVICE_SNOC=09=0925
 +
- =09=09=09power-domains =3D <&gcc USB30_GDSC>;
- =09=09=09status =3D "disabled";
-=20
++#endif
 --=20
 2.33.0
 
