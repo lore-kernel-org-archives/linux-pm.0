@@ -2,119 +2,144 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A511C433FE
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 01:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61386C433F5
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 05:37:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 303E960F9C
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 01:08:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 312356056B
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 05:37:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241687AbhIDBJC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Sep 2021 21:09:02 -0400
-Received: from alexa-out-sd-02.qualcomm.com ([199.106.114.39]:36420 "EHLO
-        alexa-out-sd-02.qualcomm.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233140AbhIDBJC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Sep 2021 21:09:02 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1630717681; x=1662253681;
-  h=subject:to:cc:references:from:message-id:date:
-   mime-version:in-reply-to:content-transfer-encoding;
-  bh=7xxHeqae1Sf4qltUF2sS35BhNYC+euCldDo7xBlypfs=;
-  b=sFrG4TPlAHWoeYA3TcitTCN/7KX5BliePCAyDNvBb9n6c+mBStWetES4
-   koO4OgkuKew2s6UGiCvHZrLI8uP1J9UVKZgSBsHQM0HnPyE80lYTcCtXm
-   PB2EopeO/U96G4XtEm+AkYAnEXD4piH3BBgl4Bz8hn1VnxItllw1iacGO
-   c=;
-Received: from unknown (HELO ironmsg05-sd.qualcomm.com) ([10.53.140.145])
-  by alexa-out-sd-02.qualcomm.com with ESMTP; 03 Sep 2021 18:08:01 -0700
-X-QCInternal: smtphost
-Received: from nasanex01b.na.qualcomm.com ([10.46.141.250])
-  by ironmsg05-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Sep 2021 18:08:01 -0700
-Received: from [10.46.160.247] (10.80.80.8) by nasanex01b.na.qualcomm.com
- (10.46.141.250) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.922.7; Fri, 3 Sep 2021
- 18:07:58 -0700
-Subject: Re: [PATCH] thermal: Fix a NULL pointer dereference
-To:     Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Amit Kucheria" <amitk@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <stable@vger.kernel.org>, David Collins <quic_collinsd@quicinc.com>
-References: <1630715659-5058-1-git-send-email-quic_subbaram@quicinc.com>
-From:   David Collins <quic_collinsd@quicinc.com>
-Message-ID: <fe7ba5a5-d39a-dd0a-5cd3-f80ff163162a@quicinc.com>
-Date:   Fri, 3 Sep 2021 18:07:56 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S229998AbhIDFib (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Sep 2021 01:38:31 -0400
+Received: from mga14.intel.com ([192.55.52.115]:39116 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229965AbhIDFia (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 4 Sep 2021 01:38:30 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10096"; a="219283950"
+X-IronPort-AV: E=Sophos;i="5.85,267,1624345200"; 
+   d="scan'208";a="219283950"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Sep 2021 22:37:29 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.85,267,1624345200"; 
+   d="scan'208";a="468193385"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
+  by orsmga007.jf.intel.com with ESMTP; 03 Sep 2021 22:37:29 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        axboe@kernel.dk,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Fix for HWP interrupt before driver is ready
+Date:   Fri,  3 Sep 2021 22:37:03 -0700
+Message-Id: <20210904053703.581297-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <1630715659-5058-1-git-send-email-quic_subbaram@quicinc.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nasanex01b.na.qualcomm.com (10.46.141.250)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 9/3/21 5:34 PM, Subbaraman Narayanamurthy wrote:
-> of_parse_thermal_zones() parses the thermal-zones node and registers a
-> thermal_zone device for each subnode. However, if a thermal zone is
-> consuming a thermal sensor and that thermal sensor device hasn't probed
-> yet, an attempt to set trip_point_*_temp for that thermal zone device
-> can cause a NULL pointer dereference. Fix it.
-> 
->   console:/sys/class/thermal/thermal_zone87 # echo 120000 > trip_point_0_temp
->   ...
->   Unable to handle kernel NULL pointer dereference at virtual address 0000000000000020
->   ...
->   Call trace:
->    of_thermal_set_trip_temp+0x40/0xc4
->    trip_point_temp_store+0xc0/0x1dc
->    dev_attr_store+0x38/0x88
->    sysfs_kf_write+0x64/0xc0
->    kernfs_fop_write_iter+0x108/0x1d0
->    vfs_write+0x2f4/0x368
->    ksys_write+0x7c/0xec
->    __arm64_sys_write+0x20/0x30
->    el0_svc_common.llvm.7279915941325364641+0xbc/0x1bc
->    do_el0_svc+0x28/0xa0
->    el0_svc+0x14/0x24
->    el0_sync_handler+0x88/0xec
->    el0_sync+0x1c0/0x200
-> 
-> Cc: stable@vger.kernel.org
-> Suggested-by: David Collins <quic_collinsd@quicinc.com>
-> Signed-off-by: Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>
-> ---
->   drivers/thermal/thermal_of.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-> index 6379f26..ba53252 100644
-> --- a/drivers/thermal/thermal_of.c
-> +++ b/drivers/thermal/thermal_of.c
-> @@ -301,7 +301,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
->   	if (trip >= data->ntrips || trip < 0)
->   		return -EDOM;
->   
-> -	if (data->ops->set_trip_temp) {
-> +	if (data->ops && data->ops->set_trip_temp) {
->   		int ret;
->   
->   		ret = data->ops->set_trip_temp(data->sensor_data, trip, temp);
-> 
+In Lenovo X1 gen9 laptop, HWP interrupts arrive before driver is ready
+to handle on that CPU. Basically didn't even allocated memory for per
+cpu data structure and not even started interrupt enable process on that
+CPU. So interrupt handler observes a NULL pointer to schedule work.
 
-It looks like the same kind of data->ops null pointer dereference issue is 
-present in three other functions within this file: of_thermal_get_temp(), 
-of_thermal_set_emul_temp(), and of_thermal_get_trend().  Should those be 
-fixed along with of_thermal_set_trip_temp() in a single patch?
+This interrupt was probably for SMM, but since it is redirected to
+OS by OSC call, OS receives it, but not ready to handle. That redirection
+of interrupt to OS was also done to solve one SMM crash on Yoga 260 for
+HWP interrupt a while back.
 
-Thanks,
-David
+To solve this the HWP interrupt handler should ignore such request if the
+driver is not ready. This will require some flag to wait till the driver
+setup a workqueue to handle on a CPU. We can't simply assume cpudata to
+be NULL and avoid processing as it may not be NULL but data structure is
+not in consistent state.
+
+So created a cpumask which sets the CPU on which interrupt was setup. If
+not setup, simply clear the interrupt status and return. Since the
+similar issue can happen during S3 resume, clear the bit during offline.
+
+Since interrupt timing may be before HWP is enabled, use safe MSR read
+writes as before the change for HWP interrupt.
+
+Fixes: d0e936adbd22 ("cpufreq: intel_pstate: Process HWP Guaranteed change notification")
+Reported-and-tested-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b4ffe6c8a0d0..5ac86bfa1080 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -298,6 +298,8 @@ static bool hwp_boost __read_mostly;
+ 
+ static struct cpufreq_driver *intel_pstate_driver __read_mostly;
+ 
++static cpumask_t hwp_intr_enable_mask;
++
+ #ifdef CONFIG_ACPI
+ static bool acpi_ppc;
+ #endif
+@@ -1067,11 +1069,15 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+ 	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
+ }
+ 
++static void intel_pstate_disable_hwp_interrupt(struct cpudata *cpudata);
++
+ static void intel_pstate_hwp_offline(struct cpudata *cpu)
+ {
+ 	u64 value = READ_ONCE(cpu->hwp_req_cached);
+ 	int min_perf;
+ 
++	intel_pstate_disable_hwp_interrupt(cpu);
++
+ 	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+ 		/*
+ 		 * In case the EPP has been set to "performance" by the
+@@ -1645,20 +1651,35 @@ void notify_hwp_interrupt(void)
+ 	if (!hwp_active || !boot_cpu_has(X86_FEATURE_HWP_NOTIFY))
+ 		return;
+ 
+-	rdmsrl(MSR_HWP_STATUS, value);
++	rdmsrl_safe(MSR_HWP_STATUS, &value);
+ 	if (!(value & 0x01))
+ 		return;
+ 
++	if (!cpumask_test_cpu(this_cpu, &hwp_intr_enable_mask)) {
++		wrmsrl_safe(MSR_HWP_STATUS, 0);
++		return;
++	}
++
+ 	cpudata = all_cpu_data[this_cpu];
+ 	schedule_delayed_work_on(this_cpu, &cpudata->hwp_notify_work, msecs_to_jiffies(10));
+ }
+ 
++static void intel_pstate_disable_hwp_interrupt(struct cpudata *cpudata)
++{
++
++	if (cpumask_test_and_clear_cpu(cpudata->cpu, &hwp_intr_enable_mask)) {
++		wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
++		cancel_delayed_work_sync(&cpudata->hwp_notify_work);
++	}
++}
++
+ static void intel_pstate_enable_hwp_interrupt(struct cpudata *cpudata)
+ {
+ 	/* Enable HWP notification interrupt for guaranteed performance change */
+ 	if (boot_cpu_has(X86_FEATURE_HWP_NOTIFY)) {
+ 		INIT_DELAYED_WORK(&cpudata->hwp_notify_work, intel_pstate_notify_work);
+ 		wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x01);
++		cpumask_set_cpu(cpudata->cpu, &hwp_intr_enable_mask);
+ 	}
+ }
+ 
+-- 
+2.31.1
+
