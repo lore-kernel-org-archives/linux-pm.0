@@ -2,61 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95D64C433EF
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 13:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7EC5C433F5
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 15:16:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7B62960F9C
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 13:54:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8DD3F60F55
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Sep 2021 15:16:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236564AbhIDNzC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Sep 2021 09:55:02 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:54298 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234825AbhIDNzC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Sep 2021 09:55:02 -0400
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
- id 668a5ada6cd29530; Sat, 4 Sep 2021 15:53:59 +0200
-Received: from kreacher.localnet (89-77-51-84.dynamic.chello.pl [89.77.51.84])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id DF72A66A3B0;
-        Sat,  4 Sep 2021 15:53:58 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 0/2] cpufreq: intel_pstate: hybrid: Simplify HWP perf levels calibration
-Date:   Sat, 04 Sep 2021 15:49:04 +0200
-Message-ID: <11837325.O9o76ZdvQC@kreacher>
+        id S234956AbhIDPRx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Sep 2021 11:17:53 -0400
+Received: from mout.gmx.net ([212.227.15.18]:43507 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230514AbhIDPRw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 4 Sep 2021 11:17:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1630768607;
+        bh=4ANx2vQH7iUfBjxYEEyIv5InnOcmLlsv7CD1nz2q4jY=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+        b=M2cVjhoh45xX65ta5m4cPtHvdxIPNrpAw1F0G0T1K8Bkjrsb1r737tvEy/imRgV9V
+         R6XY+xNsY6tXNuBrjGwznpZEzzcH0OBexs8PNzLRILuYsXXU7jqJSOjAqwCrbD1v//
+         2q38xp61Cit8nzz/J/uLO6o6up8N1npRmQodOFn4=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from localhost.localdomain ([79.150.72.99]) by mail.gmx.net
+ (mrgmx005 [212.227.17.184]) with ESMTPSA (Nemesis) id
+ 1MEm2D-1mAl2S1mZ9-00GLJd; Sat, 04 Sep 2021 17:16:47 +0200
+From:   Len Baker <len.baker@gmx.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Len Baker <len.baker@gmx.com>, Kees Cook <keescook@chromium.org>,
+        linux-pm@vger.kernel.org, linux-hardening@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: powernow: Prefer kcalloc over open coded arithmetic
+Date:   Sat,  4 Sep 2021 17:16:28 +0200
+Message-Id: <20210904151628.6618-1-len.baker@gmx.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 89.77.51.84
-X-CLIENT-HOSTNAME: 89-77-51-84.dynamic.chello.pl
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddruddvledgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpefhgedtffejheekgeeljeevvedtuefgffeiieejuddutdekgfejvdehueejjeetvdenucfkphepkeelrdejjedrhedurdekgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeekledrjeejrdehuddrkeegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshhrihhnihhvrghsrdhprghnughruhhvrggurgeslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehruhhirdii
- hhgrnhhgsehinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:Fz00f2zl30lePk2hUfI0+vrZgaY3Bl3Wi4wOgZXuYJcsYXGB9a/
+ 1HzQ7AE+uqZMFjtXiuz2uMNtCDKrspCycA1Nrp7Ov+I1k9mtyYnwE9uj6itUvA9IiDWVtgs
+ bjTIqlJk9vDugJ0j9CWus9+Z4u0/te2pNQ0egxgxQ8irvntBuCSAigmw4NB01DVaDFxTHrT
+ UWcbj/wFyHXSf6uSpKjLw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qTf5c/4A6Rs=:xfdaGwvgcm9LZ29ZKYCxNt
+ 6S/WTVipfUO/io6x8Tq29NiZpqNd+/6lhkfV0+xqa001fNV3Xl6A8iq3If/kGmBLigatlqEc+
+ z9NVFjzq9SMhK4v+/gqG8OhTf1LJs2+WSKUzze9T3nofcR1269nhNc0AXZgtn8sYQOMGjblRP
+ cEbiXHr0sAMsamAGcy34/Fu3KI6J9brHdi3irt1fQQ21onQOSfi1urB/x080B3nVgl+KR/NGE
+ 5A/G0hg2aHFfi+DB/6v64GkDTHiaaGyWFDyv2+xU76wnlisuGUB7DCOUgIMEyO0Ic0r+gPJek
+ 7yTIg1vWGwMlkCHOpIksljYTQuefmgqGzAXNrcpYccLPZhqQ6m40ntq12VCd1S3dtKpWJlbL5
+ 0U9r6LGqoFlH4qTanV42DVi2BB57P6CrdHgWtPCBtycz08NE0Eld7vSq3cVrZcfAN3hZGXHt9
+ WFmAzaGupy7Ea1KxF8br2C38UcK1oh6lcufd5M9WMADGavj1ZUQnsv/BpF1ayvf3ktBKqHCRf
+ h9YiAK6e21BhOAUk71pjoBgc14wEhkYst1JonYfkC/7puEHmIcTSdg1iTbv750crQEftt6DHl
+ 43ELQjQ2GJ+q47t46zGamiM+PIVV9oiHSQwqt8hKFM2q42bpMVztI9cHorgpLq4VCsoR7sFjc
+ UKO5reKsD8vYXr836IKc3xDJQTIHsWFCZKNpU/A9bE1PImGqMVAjsJ3AhRB2fPj5Atd2M7oEJ
+ aLmXTKlpLT5kVM79jxHyF5WH3w50CjPRFoG1WtSXJ13RzQrCK6a44Pk8tr2mDUkipnlEpnwu6
+ o6/vE25vsHkbrf29ilNPstZaNA+VBZQ+gK7rDBUEMJPAmVGIiIs19ZsIxySrf8BhgS9jmxTCh
+ zgrkLQ6Xfs4vaFXHs9XxABrDk/fCaiqvS6/ZCceRWYpwjGYv8SoAAlwluRW9gphnNbd8igZ1p
+ lu8ComueqEsShBXy2M3hXMRV+2V69mYVR2Ukccac6Twp/9DU/Oydi3L9fyc9LGyNCInk4LNZW
+ OKnxiHIl0qre4lwAKriSZg5XcrCqiQfVz23RwbutbSU3MtRW1CGJHbb+pZ6NaW+M0NPIUYiO6
+ o5OGeD8vq/w/42ppotMsmCjofADggVaPlEsqj9rPrsDJHgexkyd5LXuAg==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+As noted in the "Deprecated Interfaces, Language Features, Attributes,
+and Conventions" documentation [1], size calculations (especially
+multiplication) should not be performed in memory allocator (or similar)
+function arguments due to the risk of them overflowing. This could lead
+to values wrapping around and a smaller allocation being made than the
+caller was expecting. Using those allocations could lead to linear
+overflows of heap memory and other misbehaviors.
 
-The intel_pstate's code calibrating the HWP performance levels on hybrid
-processors can be made simpler, which is the purpose of this series.
+So, use the purpose specific kcalloc() function instead of the argument
+size * count in the kzalloc() function.
 
-Please refer to the patch changelogs for details.
+[1] https://www.kernel.org/doc/html/v5.14/process/deprecated.html#open-cod=
+ed-arithmetic-in-allocator-arguments
 
-Thanks!
+Signed-off-by: Len Baker <len.baker@gmx.com>
+=2D--
+ drivers/cpufreq/powernow-k7.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
+index 5d515fc34836..a9d2c7bae235 100644
+=2D-- a/drivers/cpufreq/powernow-k7.c
++++ b/drivers/cpufreq/powernow-k7.c
+@@ -174,8 +174,8 @@ static int get_ranges(unsigned char *pst)
+ 	unsigned int speed;
+ 	u8 fid, vid;
 
+-	powernow_table =3D kzalloc((sizeof(*powernow_table) *
+-				(number_scales + 1)), GFP_KERNEL);
++	powernow_table =3D kcalloc(number_scales + 1, sizeof(*powernow_table),
++				 GFP_KERNEL);
+ 	if (!powernow_table)
+ 		return -ENOMEM;
+
+=2D-
+2.25.1
 
