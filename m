@@ -5,57 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43587C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED7CDC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 221B56103C
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C747261039
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241552AbhIFMGp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Sep 2021 08:06:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56690 "EHLO
+        id S241558AbhIFMGq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Sep 2021 08:06:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238832AbhIFMGk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Sep 2021 08:06:40 -0400
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D00CC061757;
-        Mon,  6 Sep 2021 05:05:35 -0700 (PDT)
-Received: by mail-ej1-x62c.google.com with SMTP id h9so13096857ejs.4;
-        Mon, 06 Sep 2021 05:05:35 -0700 (PDT)
+        with ESMTP id S241425AbhIFMGo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Sep 2021 08:06:44 -0400
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C35C4C061575;
+        Mon,  6 Sep 2021 05:05:36 -0700 (PDT)
+Received: by mail-ej1-x62f.google.com with SMTP id n27so13077788eja.5;
+        Mon, 06 Sep 2021 05:05:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=dFqmTVUbeZj2dIyftamndsiUfBvI+zNuJcQH5/mATKY=;
-        b=LBS0SXzwvpin1Biq/q0ftlmnWh0zGEE1fKFGvyQ5WAUvd0bQsduKCHapP6nJ0RdFkI
-         tddeFbrK/BfJQRfzqfNtF3WmzZrYn+kUn/JnXmaSrFiaymoCqQ7K8SsENIbZlTOrGxed
-         kaEcBvqVPkDeXXMFKc7tMTgp/wQeO/ld+7psLUNyz6Ie6mVs4W7RWv+egx02PNcNwFLH
-         weICMOQ3O7vj7o0HaVl4DVZ17vI9Jm+oWPLisK5qo0WdFvo5Lpf4eXpim3EdDycCBK8m
-         5otJweZJVd2cHqFvpOnGzZQ9CteLZu4NEjmyje/U9X+wiKtOeegScZvOHm/+1VTLsFx2
-         2+Lg==
+        bh=1jSWxQD3ZakGUw6t3PqAHw4n2IXaSLh4ZsA1sASlt9o=;
+        b=kIMOOeXQwVNBwDAWMehjWUBA1cnNcm/6CMVB3Y2jTJNPEMNK/XYcBwrw9aSidnM618
+         bwC6jQp7CqXN/7J2CJtBh3byoNxv/o4m7kipxXXr3X/8O0QjIZwaI9gjDskvKOmJPSq7
+         Un0Sx3lAYjfM88gkbhtVC4Au1c1rLuYIe1WMW5law0+SKko8xarqNsEIuCS5BbT64150
+         jYzKIpmlkhsRwcd4wL1elJm9btpPX3NrfLE1OSCt5Ob2zT9Mp1PAmFRPAsDMGnZGlVOg
+         UbTk1n2DMBOoRzKqVot5eggpLzg/dV7JTqjD3hodrGZDbmIm97dn/VNJLi1zahE9gV8l
+         AUyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=dFqmTVUbeZj2dIyftamndsiUfBvI+zNuJcQH5/mATKY=;
-        b=XJ0RwIb4vOXbB8LFiRFhlLugRm/LgmvEbLrB19qgvxp/yOBkhC4KKGuJ4YaUyzvNco
-         8eJLZ1sSRPukzPD6uzxIZR2vqxQjy3UunXvk0whBMe2zQg+VdGy3pTYawpAwzENQdFL4
-         UgLyZfRnaEKBo4oyqZSLkTXizGchx8rTvkpX8tcB2HxdBnf8tTt29PrnG+sSwcd6TT2A
-         SFloqhpehP49tpz7BLf7l+qUoRsBZDtVCn8nHxgrc515gM1+x1Qpkc6u+ramsxNdsv9X
-         Ivnyd2H3WQ5sZO5FG9xoIl11bs0TgdLOgRwbpDe9qJ+BAtwKA14FfRCRJmHrI0vIN/Qa
-         se0Q==
-X-Gm-Message-State: AOAM530oIUhc2k174uI0BanSzlVt7aaq0L3LUoB4vLVhDm4waWDx29rl
-        C4D5krbl6wnJUkf3gBoVKWk=
-X-Google-Smtp-Source: ABdhPJzuZrT4cssp2j/I5kbPw5P3C98PF8K3pfsZ+kWdFZCSGpUz5JGgx2sJuCryTTDwMkNg8BCbnA==
-X-Received: by 2002:a17:906:1913:: with SMTP id a19mr13120478eje.390.1630929933968;
-        Mon, 06 Sep 2021 05:05:33 -0700 (PDT)
+        bh=1jSWxQD3ZakGUw6t3PqAHw4n2IXaSLh4ZsA1sASlt9o=;
+        b=gVL36EEwKMhCzWYdDWDnxAVt3DTKcWa/1egilPEIBBpgm5JPCo/Lw93CHnuOMUNA9k
+         XSHYcnLl4S744cc0BKRSid1k6PIz2xKmVJj9PKaVTtipJ5+h8yrq+kCBTbSphBLLaiFp
+         rJ8uTEOREBKvxm+FAkq7XGLROeN8MAJXc86oJPMTOoR8IzewMEYnObdNoHjZXkSzenjI
+         iDuqNU+hQCtX6HiEo6a2100cVBpx0cyD0bRutCkhHpDziEf1LVR/xAfpY+aQBcBgPGSh
+         TYIYJSHvsFiwSaneZfTONv3D9LYeMEflGOPtLiMf3Yo+JlfJPskHVVHyvGVmVxyDJG+s
+         hdvw==
+X-Gm-Message-State: AOAM533uh17LnEienaRE86sPI/OvHdLvPqDsm/vQ4obaTWOYtZ/1AjQN
+        I7lf5SK5G8sNhWOyohbd4VOgkjOH2CJY/QpX
+X-Google-Smtp-Source: ABdhPJy/cwcqasiNdqkpW55WGrmKCcwe3js4BRGA8fMxCasOSDxAnSs05DUepDolnR8WgP9eoctUOA==
+X-Received: by 2002:a17:906:3497:: with SMTP id g23mr13250953ejb.85.1630929935384;
+        Mon, 06 Sep 2021 05:05:35 -0700 (PDT)
 Received: from debian.home (81-204-249-205.fixed.kpn.net. [81.204.249.205])
-        by smtp.gmail.com with ESMTPSA id b8sm4536954edv.96.2021.09.06.05.05.33
+        by smtp.gmail.com with ESMTPSA id b8sm4536954edv.96.2021.09.06.05.05.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Sep 2021 05:05:33 -0700 (PDT)
+        Mon, 06 Sep 2021 05:05:35 -0700 (PDT)
 From:   Johan Jonker <jbx6244@gmail.com>
 To:     heiko@sntech.de
 Cc:     robh+dt@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
@@ -63,9 +63,9 @@ Cc:     robh+dt@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
         linux-arm-kernel@lists.infradead.org,
         linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 2/4] dt-bindings: thermal: remove redundant comments from rockchip-thermal.yaml
-Date:   Mon,  6 Sep 2021 14:04:02 +0200
-Message-Id: <20210906120404.10005-2-jbx6244@gmail.com>
+Subject: [RFC PATCH 4/4] arm64: dts: fix resets in tsadc node for rk356x.dtsi
+Date:   Mon,  6 Sep 2021 14:04:04 +0200
+Message-Id: <20210906120404.10005-4-jbx6244@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20210906120404.10005-1-jbx6244@gmail.com>
 References: <20210906120404.10005-1-jbx6244@gmail.com>
@@ -75,41 +75,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove redundent comments from rockchip-thermal.yaml
-Sort compatibles in alphabetical order.
+In the rockchip_thermal.c driver we now get the resets with
+a devm_reset_control_array_get() function, so remove
+the reset-names property as it is no longer needed.
+Although no longer required in rockchip-thermal.yaml
+sort tsadc-apb as first item.
 
 Signed-off-by: Johan Jonker <jbx6244@gmail.com>
 ---
- .../bindings/thermal/rockchip-thermal.yaml       | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk356x.dtsi | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-index ee104e451..6ea6c9f7e 100644
---- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-@@ -12,14 +12,14 @@ maintainers:
- properties:
-   compatible:
-     enum:
--      - rockchip,px30-tsadc # PX30 SoCs
--      - rockchip,rv1108-tsadc # RV1108 SoCs
--      - rockchip,rk3228-tsadc # RK3228 SoCs
--      - rockchip,rk3288-tsadc # RK3288 SoCs
--      - rockchip,rk3328-tsadc # RK3328 SoCs
--      - rockchip,rk3368-tsadc # RK3368 SoCs
--      - rockchip,rk3399-tsadc # RK3399 SoCs
--      - rockchip,rk3568-tsadc # RK3568 SoCs
-+      - rockchip,px30-tsadc
-+      - rockchip,rk3228-tsadc
-+      - rockchip,rk3288-tsadc
-+      - rockchip,rk3328-tsadc
-+      - rockchip,rk3368-tsadc
-+      - rockchip,rk3399-tsadc
-+      - rockchip,rk3568-tsadc
-+      - rockchip,rv1108-tsadc
- 
-   reg:
-     maxItems: 1
+diff --git a/arch/arm64/boot/dts/rockchip/rk356x.dtsi b/arch/arm64/boot/dts/rockchip/rk356x.dtsi
+index d89831bee..2dc997eff 100644
+--- a/arch/arm64/boot/dts/rockchip/rk356x.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk356x.dtsi
+@@ -837,9 +837,8 @@
+ 		assigned-clock-rates = <17000000>, <700000>;
+ 		clocks = <&cru CLK_TSADC>, <&cru PCLK_TSADC>;
+ 		clock-names = "tsadc", "apb_pclk";
+-		resets = <&cru SRST_TSADC>, <&cru SRST_P_TSADC>,
++		resets = <&cru SRST_P_TSADC>, <&cru SRST_TSADC>,
+ 			 <&cru SRST_TSADCPHY>;
+-		reset-names = "tsadc", "tsadc-apb", "tsadc-phy";
+ 		rockchip,grf = <&grf>;
+ 		rockchip,hw-tshut-temp = <95000>;
+ 		pinctrl-names = "init", "default", "sleep";
 -- 
 2.20.1
 
