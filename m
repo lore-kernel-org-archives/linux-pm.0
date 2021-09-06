@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 699FFC4167D
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 01:31:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38A69C43219
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 01:31:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4B84B610E9
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 01:31:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D59F61027
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 01:31:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239273AbhIFBcJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Sep 2021 21:32:09 -0400
-Received: from mail.kernel.org ([198.145.29.99]:48340 "EHLO mail.kernel.org"
+        id S240822AbhIFBcK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Sep 2021 21:32:10 -0400
+Received: from mail.kernel.org ([198.145.29.99]:48678 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S245003AbhIFB3o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 5 Sep 2021 21:29:44 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A16C0611C6;
-        Mon,  6 Sep 2021 01:23:28 +0000 (UTC)
+        id S1351564AbhIFBal (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 5 Sep 2021 21:30:41 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 674D6610A1;
+        Mon,  6 Sep 2021 01:23:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1630891409;
-        bh=eP1WFQhf31Lq4TK7PAKnhlXK4e5Ou+XXurZgzDm4qao=;
+        s=k20201202; t=1630891437;
+        bh=4BNyclt2xyuxOPVQDdOFEusbcZXv+dYM7A/mjwdtuoQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=H2etP8TgcM7L2DBPbnpdB5pRtT4q9ODZL6eywncHQbV087mrO+V/0CDpluNI6oeYK
-         WNHyGbfe9g5W/snyUKIaJw29gxoyoAKAIpLiaEK5o1vO3e9u5U3sKwa6oaIzrmq5QM
-         hRToOWcQ7ZIawY57/0Ju5GWX+7OX+p9+pY0aooiI3vE7vZ2UprJb+BlUsWVo5YrnJO
-         iP+bKxGl7xwzcn0LxgDsqx8ySDzVmiJnWTMjbWX3s4zXsCfOTjgbOiAhXx/6esrBGZ
-         yZsv0f5A29ueUemJD9s3s0O+ZLorUlbTGDhDQ3E/1OkJ2fW3/F1o/gm4RyQoh57Ny2
-         +nayv+XaVPPhg==
+        b=nnBqIaZI968mQzz3LXZ+R/GJomBiw92nKSFuPrefM9sr/xzivK0KtF2/eHJZEVESa
+         F+ukcPuJPJkcDojuI8ygz4AV+CnhstD4T1eDfLgn1GfyTCBP6ksHpzxjvdbzK+wyuB
+         wj5Jte3O8Qa60ThMJV7PRXHPM5r5qg1SJfLCn/vgNiitGnkZRO19trodB79oRpYqXZ
+         FdtC/Kl0l/hauAFxY9ku+aXH317WrBoMsp5cJUxlMKH77FZm4Pged9sAgphc2VHhuB
+         BdD4w/Bzp+Qn+FJX7JYu9KIt16TMwke/MNi4Hr68tRJiJRcyBHyDMvNvrLnwLUC7K/
+         TsrQ//13rJHXg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 05/23] power: supply: axp288_fuel_gauge: Report register-address on readb / writeb errors
-Date:   Sun,  5 Sep 2021 21:23:04 -0400
-Message-Id: <20210906012322.930668-5-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 03/17] power: supply: axp288_fuel_gauge: Report register-address on readb / writeb errors
+Date:   Sun,  5 Sep 2021 21:23:38 -0400
+Message-Id: <20210906012352.930954-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210906012322.930668-1-sashal@kernel.org>
-References: <20210906012322.930668-1-sashal@kernel.org>
+In-Reply-To: <20210906012352.930954-1-sashal@kernel.org>
+References: <20210906012352.930954-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -70,10 +70,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 157cf5ec6b02..1641868c345c 100644
+index a8dcabc32721..1fe18c365c87 100644
 --- a/drivers/power/supply/axp288_fuel_gauge.c
 +++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -158,7 +158,7 @@ static int fuel_gauge_reg_readb(struct axp288_fg_info *info, int reg)
+@@ -142,7 +142,7 @@ static int fuel_gauge_reg_readb(struct axp288_fg_info *info, int reg)
  	}
  
  	if (ret < 0) {
@@ -82,7 +82,7 @@ index 157cf5ec6b02..1641868c345c 100644
  		return ret;
  	}
  
-@@ -172,7 +172,7 @@ static int fuel_gauge_reg_writeb(struct axp288_fg_info *info, int reg, u8 val)
+@@ -156,7 +156,7 @@ static int fuel_gauge_reg_writeb(struct axp288_fg_info *info, int reg, u8 val)
  	ret = regmap_write(info->regmap, reg, (unsigned int)val);
  
  	if (ret < 0)
