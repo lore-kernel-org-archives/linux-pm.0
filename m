@@ -2,101 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA87AC4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69BBAC433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:08:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C8746103B
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:05:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DF3660C3E
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Sep 2021 12:08:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241608AbhIFMGq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Sep 2021 08:06:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56706 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241352AbhIFMGo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Sep 2021 08:06:44 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7438BC06175F;
-        Mon,  6 Sep 2021 05:05:36 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id x11so13154739ejv.0;
-        Mon, 06 Sep 2021 05:05:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=J5rWzfawpu0XOsLyVwwYFgYCCr8KgHSAplCrfWcEUCc=;
-        b=KYUpVbsceN24EZchDkkkol2zEry8/zZBvVe/CMNKasw0zP0fQumSMEkppUrrAB+wGv
-         RRfevlklzFRZtH9W/mNoHsu+GG/RjUOIGL6ChoMEHgK7sxD3RvqkLRZAvNQNqvipm7Qr
-         cTQlfIPe1GsNW+UvZK7BNiUuMXdUASH+Aqnla+22Ask9dzyDNc6ehe95YdO2q0n8eCzY
-         ZuJLzMs8RQ/uItFbxCO3WfXsNP5dywIi6b5gkewTZajSIhB6UdA8pR5UEWq9WTFHWKIo
-         1rQjMbJYLu8jsl82JOs/gHoMEf7B+/OHLCbf2CIqSjzSrrFck4NxU3uwEU99O0suf8eT
-         7axQ==
+        id S241947AbhIFMJ5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Sep 2021 08:09:57 -0400
+Received: from mail-ot1-f53.google.com ([209.85.210.53]:43898 "EHLO
+        mail-ot1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241957AbhIFMJ5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Sep 2021 08:09:57 -0400
+Received: by mail-ot1-f53.google.com with SMTP id x10-20020a056830408a00b004f26cead745so8513102ott.10
+        for <linux-pm@vger.kernel.org>; Mon, 06 Sep 2021 05:08:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=J5rWzfawpu0XOsLyVwwYFgYCCr8KgHSAplCrfWcEUCc=;
-        b=hIkNoBkgUSVSdMB417fqYs7H6eWMWjn7Waj2E+oiXW8hH3i06Ev1dX1YYGdHtxwiW8
-         IMy4ZG2qSLqqYtrBxWJGMBAkLTaizXxnYqjY7HDBOzpCVGEZ//JAIdvUzwf4qre4X9oW
-         9HoWE+J6Vro+cqOnjxRl+PfhTYGfd1aCUf5MHPys97ARQX9sgcrUfvNKUXeT7qEkA7Pc
-         +2fgBUx08h/pB5yl9OKMdT0TsC0JlMYVrqRB/b6qHZsqqjJ344ioJ6YYjXE2V2pSfWy8
-         I2WDYX3NMeZKzp5TCYMkuAqrohKaUoSkr3oMQPEUWGitrOiSis2KuSQ/OW20xFbwxcai
-         Bmvg==
-X-Gm-Message-State: AOAM533MBPuz1x7vQUhdXMWM4AWLjl++sUFUcR9WoB0aRD+YQjX8DC+G
-        6qRljWuDsQ7g7IvywW88Wgw=
-X-Google-Smtp-Source: ABdhPJxzUl/7BL4o86N4tIBXw9ehKJmQ0k3lSpIaKtVm3BI+0Af3eaSd4+mihFeqKv7n7AXDOZlSUQ==
-X-Received: by 2002:a17:907:2a85:: with SMTP id fl5mr13028347ejc.91.1630929934659;
-        Mon, 06 Sep 2021 05:05:34 -0700 (PDT)
-Received: from debian.home (81-204-249-205.fixed.kpn.net. [81.204.249.205])
-        by smtp.gmail.com with ESMTPSA id b8sm4536954edv.96.2021.09.06.05.05.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Sep 2021 05:05:34 -0700 (PDT)
-From:   Johan Jonker <jbx6244@gmail.com>
-To:     heiko@sntech.de
-Cc:     robh+dt@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amitk@kernel.org, p.zabel@pengutronix.de, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 3/4] thermal: rockchip_thermal: allow more resets for tsadc node
-Date:   Mon,  6 Sep 2021 14:04:03 +0200
-Message-Id: <20210906120404.10005-3-jbx6244@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20210906120404.10005-1-jbx6244@gmail.com>
-References: <20210906120404.10005-1-jbx6244@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Y5pk5y6gKDVMJwSGFI3AllVU0ilmGCKw8WHHRV/7IxM=;
+        b=qK2UcK9jOydAWP/HpOChaOLWaDKcstjN4EkLUngljFeoHEFOQrzj1o5iNA0tnLqhe2
+         ZX0r5ZQhkkjktHpbJVLixV96euK74H97J7Fm/ws4YFydrwTtth4LTxT4d926qrFU3cz0
+         NKr+xFlAChE5cmCorh7xyZi02Yc7om2vmgydH8F7wfF0c0MxmdNrRShRs73A7LikpobH
+         yIwTFGGkam5TtW7SRdNNPaA+Nz6M1+lkM7S2gkQyeFuSGt6WHQapkFIw5IEKy/ym2BS0
+         auO3+Dq4SCNc4uJlil1bjF5qYV6B5Z8NgFAU0jDNLbi+EDEt/gIsgTZnXUNLJIMIxDlP
+         uacw==
+X-Gm-Message-State: AOAM530vtzKlabjaTMIIShgBCoswD8SP5btWVCmCLe1P49y4iofILqFN
+        gWMLGQXuR3fpYZtxH9db+Hh/paRZLOgUEMOKCKo=
+X-Google-Smtp-Source: ABdhPJzCzfjQZk6dDtswTk2v4e+bEykPiZwx/dbKlbCKaARAHd5FOC7m6IEAK1i2cY13agPmsWZPgDMmmiwV7LDib8c=
+X-Received: by 2002:a05:6830:34b:: with SMTP id h11mr10726670ote.319.1630930132204;
+ Mon, 06 Sep 2021 05:08:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1630405453-275784-1-git-send-email-vincent.donnefort@arm.com>
+ <1630405453-275784-7-git-send-email-vincent.donnefort@arm.com>
+ <CAJZ5v0i5KRkUKvqGbqoxhaNh626bmg3C2F-rZmcqaaqReQF7SQ@mail.gmail.com>
+ <20210902105037.GA136543@e120877-lin.cambridge.arm.com> <CAJZ5v0iRJuyup2M16snP+BdJSKToSQ4QiFnrCoZn1j2KYhLEGA@mail.gmail.com>
+ <20210902134927.GA147718@e120877-lin.cambridge.arm.com> <CAJZ5v0hi=YDiO79YWPDHcHEVypwv7++Qjmz7JAjOs9O6ooGy+g@mail.gmail.com>
+ <20210906081733.GA4151@e120877-lin.cambridge.arm.com>
+In-Reply-To: <20210906081733.GA4151@e120877-lin.cambridge.arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 6 Sep 2021 14:08:36 +0200
+Message-ID: <CAJZ5v0jdF_79nq6z41x52bWfYq58+qrDxcLneXFgxdEwQhaAwA@mail.gmail.com>
+Subject: Re: [PATCH v6 6/7] cpufreq: Skip inefficient frequencies
+To:     Vincent Donnefort <vincent.donnefort@arm.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Quentin Perret <qperret@google.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Matthias Kaehlcke <mka@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The tsadc node in rk356x.dtsi has more resets then currently
-supported by the rockchip_thermal.c driver, so use
-devm_reset_control_array_get() to reset them all.
+On Mon, Sep 6, 2021 at 10:17 AM Vincent Donnefort
+<vincent.donnefort@arm.com> wrote:
+>
+> [...]
+>
+> > > >
+> > > > Moreover, if only efficient frequencies are to be used, RELATION_L
+> > > > needs to return min(policy->max, the closest efficient frequency equal
+> > > > to or above the target).
+> > >
+> > > You mean, never returning an inefficient frequency, unless there are no
+> > > efficient ones in the range policy->min policy->max ?
+> >
+> > No, that's not what I mean.
+> >
+> > First note that the target here is clamped between the policy min and
+> > max.  Also bear in mind that each of them is a frequency from the
+> > table, either efficient or inefficient.
+> >
+> > In the first step, search through the efficient frequencies only.
+> > That will return you something at or above the target.  If it is at
+> > the target, you're done.  If it is above the target, it may be either
+> > within or above the policy max.  If it is within the policy max,
+> > you're done.  If it is above the policy max, you need to search
+> > through the inefficient frequencies between the target and the policy
+> > max (and you know that there is at least one - the policy max itself).
+> >
+> > So what I said previously wasn't particularly precise, sorry about that.
+>
+> I might have missed something but it seems equivalent to what's currently done:
+>
+> Find the appropriate frequency, if inefficient go to the efficient one, if
+> above policy->max return the original inefficient frequency.
 
-Signed-off-by: Johan Jonker <jbx6244@gmail.com>
----
- drivers/thermal/rockchip_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+It may or may not be equivalent depending on what the efficient one is.
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 657d84b99..dc3a9c276 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1383,7 +1383,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	if (IS_ERR(thermal->regs))
- 		return PTR_ERR(thermal->regs);
- 
--	thermal->reset = devm_reset_control_get(&pdev->dev, "tsadc-apb");
-+	thermal->reset = devm_reset_control_array_get(&pdev->dev, false, false);
- 	if (IS_ERR(thermal->reset)) {
- 		error = PTR_ERR(thermal->reset);
- 		dev_err(&pdev->dev, "failed to get tsadc reset: %d\n", error);
--- 
-2.20.1
-
+And what is there now doesn't work for RELATION_H if I'm not mistaken.
