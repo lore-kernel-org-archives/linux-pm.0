@@ -2,173 +2,208 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFBA7C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Sep 2021 21:57:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03A7BC433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Sep 2021 23:29:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BEE5D60238
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Sep 2021 21:57:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E120760F01
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Sep 2021 23:29:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346306AbhIGV6b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Sep 2021 17:58:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33776 "EHLO
+        id S240862AbhIGXaJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Sep 2021 19:30:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346229AbhIGV62 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Sep 2021 17:58:28 -0400
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BBBBC061575
-        for <linux-pm@vger.kernel.org>; Tue,  7 Sep 2021 14:57:21 -0700 (PDT)
-Received: by mail-pj1-x1035.google.com with SMTP id m21-20020a17090a859500b00197688449c4so49655pjn.0
-        for <linux-pm@vger.kernel.org>; Tue, 07 Sep 2021 14:57:21 -0700 (PDT)
+        with ESMTP id S240690AbhIGXaJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Sep 2021 19:30:09 -0400
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BF9AC06175F
+        for <linux-pm@vger.kernel.org>; Tue,  7 Sep 2021 16:29:02 -0700 (PDT)
+Received: by mail-pf1-x436.google.com with SMTP id s29so437016pfw.5
+        for <linux-pm@vger.kernel.org>; Tue, 07 Sep 2021 16:29:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
+        d=google.com; s=20210112;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=UWv6lZCk1njoRineiSM3TW0+5Sxz+XHi+1n+wOw/Lfs=;
-        b=LF90ewmSHX3tGtab+JEX+fD3jiqBMljGIQrnOiOoR+otGO83eE6yt87wkv/Id9RbBN
-         AUZcq7ByXH++uVxQ5DO/ubto9b+w2k+IDsaI/GLy2LX13ezGR8NehSRovIHRNzqlO2/C
-         jVkNbt+oyxjEgL5QlgJhXUmcTDUSEn9LdmNfA=
+        bh=huc226miYakXtQslcOJ5OFd9dcBX+yoxXSmw1/JBDr8=;
+        b=g4QFCzGnJKWqHaVTPchOeRfVnrN2KkPvCP/gI9KbDmC0V7x92NAtrU/9bnOsKqcJv5
+         DBNqQTLuzd/4bv0C4E9Cr28bZNRF0OYpTNgd00YAjWtfjS08ktJsotXMkcW2lnrzTV3q
+         4G9wdJuSLftnVsmdarmsmJ9zUwx4/Gl2ZEbOuhURkRV4CH4A6+fAdexIEeZM13Y4L/au
+         oHk0yxTlw16XOXS/8BNP5gbkx2q3D2WbKCZ0luZtRrY/VRTBVXqM18Kl5cguzhBZvXwn
+         O5a3FOt7R0X+6n/21N+uJfdPD5FIzWWv7NKrpYhbeiWlF0/1snB/CXtefy3SGQoG/JrQ
+         MnTw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=UWv6lZCk1njoRineiSM3TW0+5Sxz+XHi+1n+wOw/Lfs=;
-        b=NC1i6/QzSAnAqh/PbsiLEPt30adysJfY3wWPyBL8Fzu6wfNGf8jOKurlkUUz99uvYX
-         e+26WgxcC7KMjHQ9RBTWtL5e8NSnxn7qOapBm1e9IJOZVdCeabnt40GD9qkT9PWBB0BC
-         r0YPThRobOCyR3vfzrahLyiQsTwWH3Lucm90+VLbDr8VQwMx3sE32Ly2rF9cTHDOh2Ft
-         nKPanWbG3e3q7viqn1gKjwRkAZ1RoGUIleblf4d4I+SSQI2RnolANTm51XAdHeu+8Kxf
-         IDrunhT/QYu8+26PMDpUe5+CsnCYXuTBevROjpR+iWGqEwxgn4Hl6A14k145qCxvbTg6
-         ezqA==
-X-Gm-Message-State: AOAM533y1YzXwAoWhWy9gsMVdx/ULMDvAJwYpQEprSKDD2noe+H8ETRO
-        lo0Ykz7DMsQOtj+6CU7oc6ibmQ==
-X-Google-Smtp-Source: ABdhPJyp91BpVqX+NyOUYvFtBYcXP8qWYZx7lahqDgCsp7jBqmEKqLGNVma4UojWH7cIhX0QMuQAxQ==
-X-Received: by 2002:a17:902:c410:b0:138:ad8f:865b with SMTP id k16-20020a170902c41000b00138ad8f865bmr177803plk.79.1631051841144;
-        Tue, 07 Sep 2021 14:57:21 -0700 (PDT)
-Received: from localhost ([2620:15c:202:201:c6b2:7ae:474d:36f6])
-        by smtp.gmail.com with UTF8SMTPSA id p9sm120188pgn.36.2021.09.07.14.57.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 07 Sep 2021 14:57:20 -0700 (PDT)
-Date:   Tue, 7 Sep 2021 14:57:18 -0700
-From:   Matthias Kaehlcke <mka@chromium.org>
-To:     Ansuel Smith <ansuelsmth@gmail.com>
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] drivers: thermal: tsens: add timeout to
- get_tem_tsens_valid
-Message-ID: <YTfgPmp5gzP6FyqR@google.com>
-References: <20210907212543.20220-1-ansuelsmth@gmail.com>
- <20210907212543.20220-2-ansuelsmth@gmail.com>
+        bh=huc226miYakXtQslcOJ5OFd9dcBX+yoxXSmw1/JBDr8=;
+        b=SzpwE6rpzOXFLdfX1K7DMlYIVtRYdYhMdcLkuGBozsmtdPBL7bmImF73Aq9ClsgRCX
+         RfpgdZEjeGMel/dWDwtH380i+5QF2UfyvLrtf6dtZRkp7HT5g61/Xn0qUShP17Q+J9Rc
+         cQVYqft/Sh7ZGqjoQWf1vier7RMzyaXULSJGaWDxT7EqMudC+8EXk3gmX37yCUN0aCc0
+         nLSbrKMzynlFz90pcCZ00JSkWq9+P9CkUbJ3LMAKBjJRZ1ifao05Qef4skHczCofMY2r
+         yVWTCPDXFR3GXqfj1p5tQWFbJPiGH9FUjRS26z/Y9D9TZ2Xh064qOCZgABEWkSKvJbRN
+         IQug==
+X-Gm-Message-State: AOAM530TNTTyVqwSKLLzGpmcYcN2bwRTpagpbS29G6UF+FYf4RDfCyKj
+        MV9gfeA2nsB5dstjL4sIsfTGlw==
+X-Google-Smtp-Source: ABdhPJxIQ375xdhgXCCw5RZhtV4j3yygstRnelBaCmxFSUWle29yKPlWQoQ44FqgATE53J2mikyPJQ==
+X-Received: by 2002:a63:f050:: with SMTP id s16mr772788pgj.258.1631057340982;
+        Tue, 07 Sep 2021 16:29:00 -0700 (PDT)
+Received: from google.com ([2620:15c:202:201:8525:5337:1a6c:f8af])
+        by smtp.gmail.com with ESMTPSA id z9sm163607pfk.28.2021.09.07.16.28.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Sep 2021 16:28:59 -0700 (PDT)
+Date:   Tue, 7 Sep 2021 16:28:53 -0700
+From:   Benson Leung <bleung@google.com>
+To:     Jack Pham <jackp@codeaurora.org>
+Cc:     Prashant Malani <pmalani@chromium.org>,
+        linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-pm@vger.kernel.org, bleung@chromium.org,
+        heikki.krogerus@linux.intel.com, badhri@google.com,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sebastian Reichel <sre@kernel.org>
+Subject: Re: [RFC PATCH 1/3] usb: pd: Increase max PDO objects to 13
+Message-ID: <YTf1tTvfEMzTawwK@google.com>
+References: <20210902213500.3795948-1-pmalani@chromium.org>
+ <20210902213500.3795948-2-pmalani@chromium.org>
+ <20210903064701.GA3515@jackp-linux.qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="dU2rkRBfuzWCPsob"
 Content-Disposition: inline
-In-Reply-To: <20210907212543.20220-2-ansuelsmth@gmail.com>
+In-Reply-To: <20210903064701.GA3515@jackp-linux.qualcomm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 07, 2021 at 11:25:43PM +0200, Ansuel Smith wrote:
-> The function can loop and lock the system if for whatever reason the bit
-> for the target sensor is NEVER valid. This is the case if a sensor is
-> disabled by the factory and the valid bit is never reported as actually
-> valid. Add a timeout check and exit if a timeout occurs. As this is
-> a very rare condition, handle the timeout only if the first read fails.
-> While at it also rework the function to improve readability.
-> 
-> Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-> ---
->  drivers/thermal/qcom/tsens.c | 40 +++++++++++++++++++++++-------------
->  1 file changed, 26 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index b1162e566a70..1ff244176beb 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -599,26 +599,38 @@ int get_temp_tsens_valid(const struct tsens_sensor *s, int *temp)
->  	int hw_id = s->hw_id;
->  	u32 temp_idx = LAST_TEMP_0 + hw_id;
->  	u32 valid_idx = VALID_0 + hw_id;
-> +	unsigned long timeout;
->  	u32 valid;
->  	int ret;
->  
->  	/* VER_0 doesn't have VALID bit */
-> -	if (tsens_version(priv) >= VER_0_1) {
-> +	if (tsens_version(priv) == VER_0)
-> +		goto get_temp;
-> +
-> +	ret = regmap_field_read(priv->rf[valid_idx], &valid);
-> +	if (ret || valid)
-> +		goto check_valid;
-> +
-> +	timeout = jiffies + msecs_to_jiffies(20);
-> +	do {
-> +		/* Valid bit is 0 for 6 AHB clock cycles.
-> +		 * At 19.2MHz, 1 AHB clock is ~60ns.
-> +		 * We should enter this loop very, very rarely.
-> +		 */
-> +		ndelay(400);
->  		ret = regmap_field_read(priv->rf[valid_idx], &valid);
-> -		if (ret)
-> -			return ret;
-> -		while (!valid) {
-> -			/* Valid bit is 0 for 6 AHB clock cycles.
-> -			 * At 19.2MHz, 1 AHB clock is ~60ns.
-> -			 * We should enter this loop very, very rarely.
-> -			 */
-> -			ndelay(400);
-> -			ret = regmap_field_read(priv->rf[valid_idx], &valid);
-> -			if (ret)
-> -				return ret;
-> -		}
-> -	}
-> +		if (ret || valid)
-> +			goto check_valid;
-> +	} while (time_before(jiffies, timeout));
-> +
-> +	return -ETIMEDOUT;
-> +
-> +check_valid:
-> +	/* Check ret of valid bit read */
-> +	if (ret)
-> +		return ret;
->  
-> +get_temp:
->  	/* Valid bit is set, OK to read the temperature */
->  	*temp = tsens_hw_to_mC(s, temp_idx);
 
-I still think that something like this would be clearer than the
-multiple jumps to 'check_valid':
+--dU2rkRBfuzWCPsob
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jack,
 
-	ret = regmap_field_read(priv->rf[valid_idx], &valid);
-	if (ret)
-		return ret;
+On Thu, Sep 02, 2021 at 11:47:01PM -0700, Jack Pham wrote:
+> Hi Prashant,
+>=20
+> On Thu, Sep 02, 2021 at 02:34:58PM -0700, Prashant Malani wrote:
+> > Increase the max number of PDO objects to 13, to accommodate the extra
+> > PDOs added as a part of EPR (Extended Power Range) operation introduced
+> > in the USB PD Spec Rev 3.1, v 1.0. See Figure 6-54 for details.
+> >=20
+> > Signed-off-by: Prashant Malani <pmalani@chromium.org>
+> > ---
+> >  include/linux/usb/pd.h | 8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
+> > index 96b7ff66f074..7e8bdca1ce6e 100644
+> > --- a/include/linux/usb/pd.h
+> > +++ b/include/linux/usb/pd.h
+> > @@ -201,7 +201,13 @@ struct pd_message {
+> >  } __packed;
+> > =20
+> >  /* PDO: Power Data Object */
+> > -#define PDO_MAX_OBJECTS		7
+> > +
+> > +/*
+> > + * The EPR (Extended Power Range) structure is a superset of the SPR (=
+Standard Power Range)
+> > + * capabilities structure, so set the max number of PDOs to 13 instead=
+ of 7. On SPR-only systems,
+> > + * objects 8 through 13 will just be empty.
+> > + */
+> > +#define PDO_MAX_OBJECTS		13
+>=20
+> Hmm this might break the recent change I made to UCSI in commit
+> 1f4642b72be7 ("usb: typec: ucsi: Retrieve all the PDOs instead of just
+> the first 4").
+>=20
+>  520 static void ucsi_get_src_pdos(struct ucsi_connector *con, int is_par=
+tner)
+>  521 {
+>  522         int ret;
+>  523
+>  524         /* UCSI max payload means only getting at most 4 PDOs at a t=
+ime */
+>  525         ret =3D ucsi_get_pdos(con, 1, con->src_pdos, 0, UCSI_MAX_PDO=
+S);
+>  526         if (ret < 0)
+>  527                 return;
+>  528
+>  529         con->num_pdos =3D ret / sizeof(u32); /* number of bytes to 3=
+2-bit PDOs */
+>  530         if (con->num_pdos < UCSI_MAX_PDOS)
+>  531                 return;
+>  532
+>  533         /* get the remaining PDOs, if any */
+>  534         ret =3D ucsi_get_pdos(con, 1, con->src_pdos, UCSI_MAX_PDOS,
+>  535                             PDO_MAX_OBJECTS - UCSI_MAX_PDOS);
+> 				 ^^^^^^^^^^^^^^^
+> This routine calls the UCSI GET_PDOS command for up to 4 PDOs at a time
+> since that's the most the return payload can carry.  Currently this
+> assumes that we'd only need to request the PPM at most twice to retrieve
+> all the PDOs for up to a maximum of 7 (first request for 4 then again if
+> needed for the remaining 3).  I'm not sure if any existing UCSI FW would
+> be updatable to support more than 7 PDOs in the future, much less
+> support EPR.  In fact, current UCSI 1.2 spec [1] Table 4-34 mentions PDO
+> offset valid values are 0-7 and anything else "shall not be used", so I
+> don't know how UCSI will eventually cope with EPR without a spec update.
+>=20
 
-	timeout = jiffies + msecs_to_jiffies(20);
+I've had a conversation with Dmitriy Berchanskiy at Intel (the UCSI WG Chai=
+r)
+about this, and it sounds like the UCSI spec is planned on being revved
+(post R2.0) in order to support the additional messages and expanded struct=
+ures
+of USB PD R3.1 around EPR.
 
-	while (!valid) {
-		/* Valid bit is 0 for 6 AHB clock cycles.
-		 * At 19.2MHz, 1 AHB clock is ~60ns.
-		 * We should enter this loop very, very rarely.
-		 */
-		ndelay(400);
-		ret = regmap_field_read(priv->rf[valid_idx], &valid);
-		if (ret)
-			return ret;
+> So if this macro changes to 13 then this call would result in a call to
+> the UCSI GET_PDOS command passing num_pdos =3D=3D 13-4 =3D 9 which would
+> probably result in an error from the PPM FW.  So we might need to retain
+> the maximum value of 7 PDOs at least for UCSI here.  Maybe that means
+> this UCSI driver needs to carry its own definition of
+> UCSI_MAX_TOTAL_PDOS=3D7 instead of using PDO_MAX_OBJECTS?
+>=20
 
-		if (time_after(jiffies, timeout))
-			return -ETIMEDOUT;
-	};
+Prashant mentioned this as well, but maybe it makes sense to define a separ=
+ate
+EPR_PDO_MAX_OBJECTS to handle the EPR case, as there are completely separate
+underlying PD messages (EPR_Source_Capabilities) where we expect up to 13
+objects, and the classic SPR Source and Sink capabilities will still have t=
+he
+7 object limit.
 
-That said, I'm just a random dude, so my opinion isn't really important,
-as long as the maintainers are happy with the change :)
+Thanks,
+Benson
+
+> Jack
+> --=20
+> The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+> a Linux Foundation Collaborative Project
+
+--=20
+Benson Leung
+Staff Software Engineer
+Chrome OS Kernel
+Google Inc.
+bleung@google.com
+Chromium OS Project
+bleung@chromium.org
+
+--dU2rkRBfuzWCPsob
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQQCtZK6p/AktxXfkOlzbaomhzOwwgUCYTf1tQAKCRBzbaomhzOw
+wlRvAPwPZTx65uU6EEUXq7sH6/pz2lo/Y6+g2Brgeyph8nhZuAD/U0LKYsc1cWoX
+y/jbqXCGXSm7zQBhJ3Xrs0fDV2B2Mw8=
+=gobX
+-----END PGP SIGNATURE-----
+
+--dU2rkRBfuzWCPsob--
