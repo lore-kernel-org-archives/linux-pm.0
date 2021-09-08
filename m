@@ -4,44 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55EF1C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1142C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:11:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B7D46113D
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9973D60E94
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:11:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348316AbhIHHLK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Sep 2021 03:11:10 -0400
-Received: from mx21.baidu.com ([220.181.3.85]:55046 "EHLO baidu.com"
+        id S1348378AbhIHHMl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Sep 2021 03:12:41 -0400
+Received: from mx20.baidu.com ([111.202.115.85]:57440 "EHLO baidu.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1348015AbhIHHLD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 8 Sep 2021 03:11:03 -0400
-Received: from BC-Mail-HQEX01.internal.baidu.com (unknown [172.31.51.57])
-        by Forcepoint Email with ESMTPS id A91D8B3D176045BE1176;
-        Wed,  8 Sep 2021 15:09:45 +0800 (CST)
+        id S1348183AbhIHHMk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Sep 2021 03:12:40 -0400
+Received: from BC-Mail-Ex32.internal.baidu.com (unknown [172.31.51.26])
+        by Forcepoint Email with ESMTPS id 607D8EDA2FE6260E1176;
+        Wed,  8 Sep 2021 15:11:31 +0800 (CST)
 Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-HQEX01.internal.baidu.com (172.31.51.57) with Microsoft SMTP Server
+ BC-Mail-Ex32.internal.baidu.com (172.31.51.26) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2242.12; Wed, 8 Sep 2021 15:09:45 +0800
+ 15.1.2242.12; Wed, 8 Sep 2021 15:11:31 +0800
 Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:09:45 +0800
+ 15.1.2308.14; Wed, 8 Sep 2021 15:11:30 +0800
 From:   Cai Huoqing <caihuoqing@baidu.com>
 To:     <caihuoqing@baidu.com>
-CC:     Niklas Cassel <nks@flawful.org>, Andy Gross <agross@kernel.org>,
-        "Bjorn Andersson" <bjorn.andersson@linaro.org>,
-        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/6] soc: qcom_aoss: Make use of the helper function devm_platform_ioremap_resource()
-Date:   Wed, 8 Sep 2021 15:09:28 +0800
-Message-ID: <20210908070930.214-4-caihuoqing@baidu.com>
+CC:     Neil Armstrong <narmstrong@baylibre.com>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        "Martin Blumenstingl" <martin.blumenstingl@googlemail.com>,
+        =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Li Yang <leoyang.li@nxp.com>,
+        Krzysztof Halasa <khalasa@piap.pl>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Santosh Shilimkar" <ssantosh@kernel.org>,
+        Nishanth Menon <nm@ti.com>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-amlogic@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-mips@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-sunxi@lists.linux.dev>, <linux-tegra@vger.kernel.org>
+Subject: [PATCH 1/2] soc: amlogic: canvas: Make use of the helper function devm_platform_ioremap_resource()
+Date:   Wed, 8 Sep 2021 15:11:11 +0800
+Message-ID: <20210908071123.348-1-caihuoqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210908070930.214-1-caihuoqing@baidu.com>
-References: <20210908070930.214-1-caihuoqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [172.31.63.8]
@@ -57,30 +74,30 @@ separately
 
 Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/soc/qcom/qcom_aoss.c | 4 +---
+ drivers/soc/amlogic/meson-canvas.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/soc/qcom/qcom_aoss.c b/drivers/soc/qcom/qcom_aoss.c
-index 536c3e4114fb..c42b80ee3920 100644
---- a/drivers/soc/qcom/qcom_aoss.c
-+++ b/drivers/soc/qcom/qcom_aoss.c
-@@ -521,7 +521,6 @@ static void qmp_cooling_devices_remove(struct qmp *qmp)
+diff --git a/drivers/soc/amlogic/meson-canvas.c b/drivers/soc/amlogic/meson-canvas.c
+index d0329ad170d1..383b0cfc584e 100644
+--- a/drivers/soc/amlogic/meson-canvas.c
++++ b/drivers/soc/amlogic/meson-canvas.c
+@@ -168,7 +168,6 @@ EXPORT_SYMBOL_GPL(meson_canvas_free);
  
- static int qmp_probe(struct platform_device *pdev)
+ static int meson_canvas_probe(struct platform_device *pdev)
  {
 -	struct resource *res;
- 	struct qmp *qmp;
- 	int irq;
- 	int ret;
-@@ -534,8 +533,7 @@ static int qmp_probe(struct platform_device *pdev)
- 	init_waitqueue_head(&qmp->event);
- 	mutex_init(&qmp->tx_lock);
+ 	struct meson_canvas *canvas;
+ 	struct device *dev = &pdev->dev;
+ 
+@@ -176,8 +175,7 @@ static int meson_canvas_probe(struct platform_device *pdev)
+ 	if (!canvas)
+ 		return -ENOMEM;
  
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	qmp->msgram = devm_ioremap_resource(&pdev->dev, res);
-+	qmp->msgram = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(qmp->msgram))
- 		return PTR_ERR(qmp->msgram);
+-	canvas->reg_base = devm_ioremap_resource(dev, res);
++	canvas->reg_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(canvas->reg_base))
+ 		return PTR_ERR(canvas->reg_base);
  
 -- 
 2.25.1
