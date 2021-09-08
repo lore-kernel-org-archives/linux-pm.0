@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E88EC4321E
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BA22C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EE9C261154
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 50DA861164
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Sep 2021 07:10:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348243AbhIHHLJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Sep 2021 03:11:09 -0400
-Received: from mx20.baidu.com ([111.202.115.85]:54964 "EHLO baidu.com"
+        id S1348151AbhIHHLI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Sep 2021 03:11:08 -0400
+Received: from mx20.baidu.com ([111.202.115.85]:55092 "EHLO baidu.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1347925AbhIHHLA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1347071AbhIHHLA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Wed, 8 Sep 2021 03:11:00 -0400
-Received: from BC-Mail-HQEx02.internal.baidu.com (unknown [172.31.51.58])
-        by Forcepoint Email with ESMTPS id 74A292494A5EB5041560;
-        Wed,  8 Sep 2021 15:09:43 +0800 (CST)
+Received: from Bc-Mail-Ex13.internal.baidu.com (unknown [172.31.51.53])
+        by Forcepoint Email with ESMTPS id 2109B24A1518C9F52F8A;
+        Wed,  8 Sep 2021 15:09:48 +0800 (CST)
 Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-HQEx02.internal.baidu.com (172.31.51.58) with Microsoft SMTP Server
+ Bc-Mail-Ex13.internal.baidu.com (172.31.51.53) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:09:43 +0800
+ 15.1.2242.12; Wed, 8 Sep 2021 15:09:47 +0800
 Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Wed, 8 Sep 2021 15:09:42 +0800
+ 15.1.2308.14; Wed, 8 Sep 2021 15:09:47 +0800
 From:   Cai Huoqing <caihuoqing@baidu.com>
 To:     <caihuoqing@baidu.com>
 CC:     Niklas Cassel <nks@flawful.org>, Andy Gross <agross@kernel.org>,
         "Bjorn Andersson" <bjorn.andersson@linaro.org>,
         <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/6] soc: qcom-geni-se: Make use of the helper function devm_platform_ioremap_resource()
-Date:   Wed, 8 Sep 2021 15:09:27 +0800
-Message-ID: <20210908070930.214-3-caihuoqing@baidu.com>
+Subject: [PATCH 5/6] soc: qcom_gsbi: Make use of the helper function devm_platform_ioremap_resource()
+Date:   Wed, 8 Sep 2021 15:09:29 +0800
+Message-ID: <20210908070930.214-5-caihuoqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210908070930.214-1-caihuoqing@baidu.com>
 References: <20210908070930.214-1-caihuoqing@baidu.com>
@@ -57,30 +57,30 @@ separately
 
 Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/soc/qcom/qcom-geni-se.c | 4 +---
+ drivers/soc/qcom/qcom_gsbi.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/soc/qcom/qcom-geni-se.c b/drivers/soc/qcom/qcom-geni-se.c
-index 7d649d2cf31e..28a8c0dda66c 100644
---- a/drivers/soc/qcom/qcom-geni-se.c
-+++ b/drivers/soc/qcom/qcom-geni-se.c
-@@ -871,7 +871,6 @@ EXPORT_SYMBOL(geni_icc_disable);
- static int geni_se_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
+diff --git a/drivers/soc/qcom/qcom_gsbi.c b/drivers/soc/qcom/qcom_gsbi.c
+index 304afc223a58..290bdefbf28a 100644
+--- a/drivers/soc/qcom/qcom_gsbi.c
++++ b/drivers/soc/qcom/qcom_gsbi.c
+@@ -127,7 +127,6 @@ static int gsbi_probe(struct platform_device *pdev)
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct device_node *tcsr_node;
+ 	const struct of_device_id *match;
 -	struct resource *res;
- 	struct geni_wrapper *wrapper;
- 	int ret;
- 
-@@ -880,8 +879,7 @@ static int geni_se_probe(struct platform_device *pdev)
+ 	void __iomem *base;
+ 	struct gsbi_info *gsbi;
+ 	int i, ret;
+@@ -139,8 +138,7 @@ static int gsbi_probe(struct platform_device *pdev)
+ 	if (!gsbi)
  		return -ENOMEM;
  
- 	wrapper->dev = dev;
 -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	wrapper->base = devm_ioremap_resource(dev, res);
-+	wrapper->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(wrapper->base))
- 		return PTR_ERR(wrapper->base);
+-	base = devm_ioremap_resource(&pdev->dev, res);
++	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
  
 -- 
 2.25.1
