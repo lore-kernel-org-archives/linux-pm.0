@@ -7,137 +7,274 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B65C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0DE5C433F5
 	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2F27561167
+	by mail.kernel.org (Postfix) with ESMTP id 9B4D661167
 	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237768AbhIIOsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S236448AbhIIOsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 9 Sep 2021 10:48:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48328 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242122AbhIIOru (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:47:50 -0400
+        with ESMTP id S237641AbhIIOrv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:47:51 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39065C0698DB
-        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:41 -0700 (PDT)
-Date:   Thu, 09 Sep 2021 14:38:39 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7C5CC0560C7
+        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:44 -0700 (PDT)
+Date:   Thu, 09 Sep 2021 14:38:42 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1631198319;
+        s=2020; t=1631198323;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OyelhIVlczKhhf0IFRn/DI600Onyf5ztzQI6u+eD0kE=;
-        b=KF71p/AD+RKCm2baApwd2a+3jGFLv+ng+drRFHBXVBlH0/9X0i6R16dFivxQbJDZx/9Y7o
-        XblEM3na30NWVgcPfDWM1+yE/sAHSryJw1EXPSxte4i9CwDD96gnsOX+IYNtukho8+xFBd
-        +M47zQ+4PqETkScufXBI9ocEeIpUdmkKPWVnaqHi64L+fFNH7snS+nel0MV/MTxSc+nlE+
-        QYSK7vsMisG1jR7OT8PmjU7lu00/l/ZLjAvudqL6DqofroJo8stax4bCny7seuvtbVUWtO
-        GvmDMJjd+FTW04WEoayiYfVxyqTSx40IMHx5vVKMRH9xpfz8fqba42ZQIXRcgQ==
+        bh=kSZ2vUyXPgn+DsMr/mZVsIrNwfzkM7dJevM+5yWMgCI=;
+        b=mQ9mviqnuYSr/ts0trke+lko59n+bgcKkotFI/+LZYTH7k54EumxqcFXwIxoP7iDg1MiWA
+        LH358U1711tbkmcjlCYvl+DyEOSs1Y//brhEsWutyKutrw3y5WMajkZWLOofuNZ706sfzq
+        iB80OA2ZIUJssuQtdLD83X47mQM+fYmYvqqUK/pVoH9q7c+PfzGvwzKpweBgwkmOjBra6C
+        q1E/BptAq5Kk476nK5EHd3CyGZkdWKYihLm7qW5nrWZx1fivmGeDo+dXwDujNjKyT10GMG
+        Ek+7gK0c7yWzRqPKgnldQUy4Q28SVol0Os6KC7j1ow2OkuH/EWG5gGzxoUGchQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1631198319;
+        s=2020e; t=1631198323;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=OyelhIVlczKhhf0IFRn/DI600Onyf5ztzQI6u+eD0kE=;
-        b=xGpTbmTuB6txhwZ0/UqzGc0NU7ABysbN3gyKbmW2A7LMaVMvcErxGk2Fa5MFW/bCqc6Qu6
-        HtF3XF83EBGViPBg==
-From:   "thermal-bot for Sumeet Pawnikar" <tip-bot2@linutronix.de>
+        bh=kSZ2vUyXPgn+DsMr/mZVsIrNwfzkM7dJevM+5yWMgCI=;
+        b=8QVKBlHhHtrkY//D8hlDUovCo9FK91hwJoYnpSunxr+udYfwMuRbZccjtHUGY0teqnMIaa
+        SpytVFEQDPWptLCw==
+From:   thermal-bot for Niklas =?utf-8?q?S=C3=B6derlund?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/int340x: Use IMOK independently
-Cc:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org
-In-Reply-To: <20210716163946.3142-1-sumeet.r.pawnikar@intel.com>
-References: <20210716163946.3142-1-sumeet.r.pawnikar@intel.com>
+Subject: [thermal: thermal/next] thermal/drivers/rcar_gen3_thermal: Add
+ support for hardware trip points
+Cc:     niklas.soderlund+renesas@ragnatech.se,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20210804091818.2196806-2-niklas.soderlund+renesas@ragnatech.se>
+References: <20210804091818.2196806-2-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
-Message-ID: <163119831911.25758.10236238464567355110.tip-bot2@tip-bot2>
+Message-ID: <163119832268.25758.5178169044027020483.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     f1b07a14694be02b2b87e2fe6def6cff2f4bd452
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f1b07a14694be02b2b87e2fe6def6cff2f4bd452
-Author:        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-AuthorDate:    Fri, 16 Jul 2021 22:09:46 +05:30
+Commit-ID:     47cf09e0f4fc51200ecea15387bec3584562f55d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//47cf09e0f4fc51200ecea15387bec3584562f55d
+Author:        Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+AuthorDate:    Wed, 04 Aug 2021 11:18:17 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Sat, 14 Aug 2021 15:39:13 +02:00
+CommitterDate: Sat, 14 Aug 2021 12:48:00 +02:00
 
-thermal/drivers/int340x: Use IMOK independently
+thermal/drivers/rcar_gen3_thermal: Add support for hardware trip points
 
-Some chrome platform requires IMOK method in coreboot. But these platforms
-don't use GDDV data vault in coreboot. As per current code flow, to enable
-and use IMOK only, we need to have GDDV support as well in coreboot. This
-patch removes the dependency for IMOK from GDDV to enable and use IMOK
-independently.
+All supported hardware except V3U is capable of generating interrupts
+to the CPU when the temperature go below or above a set value. Use this
+to implement support for the set_trip() feature of the thermal core on
+supported hardware.
 
-Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+The V3U have its interrupts routed to the ECM module and therefore can
+not be used to implement set_trip() as the driver can't be made aware of
+when the interrupt triggers.
+
+Each TSC is capable of tracking up-to three different temperatures while
+only two are needed to implement the tracking of the thermal window.
+
+Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210716163946.3142-1-sumeet.r.pawnikar@intel.com
+Link: https://lore.kernel.org/r/20210804091818.2196806-2-niklas.soderlund+ren=
+esas@ragnatech.se
 ---
- drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 14 +++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/thermal/rcar_gen3_thermal.c | 103 +++++++++++++++++++++++++--
+ 1 file changed, 99 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 823354a..19926be 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -108,9 +108,12 @@ static struct attribute *imok_attr[] = {
- 	NULL
- };
- 
-+static const struct attribute_group imok_attribute_group = {
-+	.attrs = imok_attr,
-+};
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
+thermal.c
+index fdf16aa..e495934 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -190,10 +190,64 @@ static int rcar_gen3_thermal_get_temp(void *devdata, in=
+t *temp)
+ 	return 0;
+ }
+=20
+-static const struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops =3D {
++static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar_gen3_thermal_tsc *=
+tsc,
++					      int mcelsius)
++{
++	int celsius, val;
 +
- static const struct attribute_group data_attribute_group = {
- 	.bin_attrs = data_attributes,
--	.attrs = imok_attr,
- };
- 
- static ssize_t available_uuids_show(struct device *dev,
-@@ -522,6 +525,12 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	if (result)
- 		goto free_rel_misc;
- 
-+	if (acpi_has_method(priv->adev->handle, "IMOK")) {
-+		result = sysfs_create_group(&pdev->dev.kobj, &imok_attribute_group);
-+		if (result)
-+			goto free_imok;
++	celsius =3D DIV_ROUND_CLOSEST(mcelsius, 1000);
++	if (celsius <=3D INT_FIXPT(tsc->tj_t))
++		val =3D celsius * tsc->coef.a1 + tsc->coef.b1;
++	else
++		val =3D celsius * tsc->coef.a2 + tsc->coef.b2;
++
++	return INT_FIXPT(val);
++}
++
++static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
++{
++	struct rcar_gen3_thermal_tsc *tsc =3D devdata;
++	u32 irqmsk =3D 0;
++
++	if (low !=3D -INT_MAX) {
++		irqmsk |=3D IRQ_TEMPD1;
++		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
++					rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
 +	}
 +
- 	if (priv->data_vault) {
- 		result = sysfs_create_group(&pdev->dev.kobj,
- 					    &data_attribute_group);
-@@ -545,6 +554,8 @@ free_sysfs:
++	if (high !=3D INT_MAX) {
++		irqmsk |=3D IRQ_TEMP2;
++		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
++					rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
++	}
++
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, irqmsk);
++
++	return 0;
++}
++
++static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops =3D {
+ 	.get_temp	=3D rcar_gen3_thermal_get_temp,
++	.set_trips	=3D rcar_gen3_thermal_set_trips,
+ };
+=20
++static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
++{
++	struct rcar_gen3_thermal_priv *priv =3D data;
++	unsigned int i;
++	u32 status;
++
++	for (i =3D 0; i < priv->num_tscs; i++) {
++		status =3D rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
++		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
++		if (status)
++			thermal_zone_device_update(priv->tscs[i]->zone,
++						   THERMAL_EVENT_UNSPECIFIED);
++	}
++
++	return IRQ_HANDLED;
++}
++
+ static const struct soc_device_attribute r8a7795es1[] =3D {
+ 	{ .soc_id =3D "r8a7795", .revision =3D "ES1.*" },
+ 	{ /* sentinel */ }
+@@ -210,6 +264,9 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar=
+_gen3_thermal_tsc *tsc)
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
++	if (tsc->zone->ops->set_trips)
++		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
++					IRQ_TEMPD1 | IRQ_TEMP2);
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
+ 				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
+@@ -235,6 +292,9 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_therm=
+al_tsc *tsc)
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0);
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
++	if (tsc->zone->ops->set_trips)
++		rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN,
++					IRQ_TEMPD1 | IRQ_TEMP2);
+=20
+ 	reg_val =3D rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+ 	reg_val |=3D THCTR_THSST;
+@@ -303,6 +363,34 @@ static void rcar_gen3_hwmon_action(void *data)
+ 	thermal_remove_hwmon_sysfs(zone);
+ }
+=20
++static int rcar_gen3_thermal_request_irqs(struct rcar_gen3_thermal_priv *pri=
+v,
++					  struct platform_device *pdev)
++{
++	struct device *dev =3D &pdev->dev;
++	unsigned int i;
++	char *irqname;
++	int ret, irq;
++
++	for (i =3D 0; i < 2; i++) {
++		irq =3D platform_get_irq_optional(pdev, i);
++		if (irq < 0)
++			return irq;
++
++		irqname =3D devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
++					 dev_name(dev), i);
++		if (!irqname)
++			return -ENOMEM;
++
++		ret =3D devm_request_threaded_irq(dev, irq, NULL,
++						rcar_gen3_thermal_irq,
++						IRQF_ONESHOT, irqname, priv);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct rcar_gen3_thermal_priv *priv;
+@@ -326,6 +414,9 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+=20
+ 	platform_set_drvdata(pdev, priv);
+=20
++	if (rcar_gen3_thermal_request_irqs(priv, pdev))
++		rcar_gen3_tz_of_ops.set_trips =3D NULL;
++
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+=20
+@@ -351,9 +442,6 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+=20
+ 		priv->tscs[i] =3D tsc;
+=20
+-		priv->thermal_init(tsc);
+-		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
+-
+ 		zone =3D devm_thermal_zone_of_sensor_register(dev, i, tsc,
+ 							    &rcar_gen3_tz_of_ops);
+ 		if (IS_ERR(zone)) {
+@@ -363,6 +451,9 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 		}
+ 		tsc->zone =3D zone;
+=20
++		priv->thermal_init(tsc);
++		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
++
+ 		tsc->zone->tzp->no_hwmon =3D false;
+ 		ret =3D thermal_add_hwmon_sysfs(tsc->zone);
+ 		if (ret)
+@@ -401,8 +492,12 @@ static int __maybe_unused rcar_gen3_thermal_resume(struc=
+t device *dev)
+=20
+ 	for (i =3D 0; i < priv->num_tscs; i++) {
+ 		struct rcar_gen3_thermal_tsc *tsc =3D priv->tscs[i];
++		struct thermal_zone_device *zone =3D tsc->zone;
+=20
+ 		priv->thermal_init(tsc);
++		if (zone->ops->set_trips)
++			rcar_gen3_thermal_set_trips(tsc, zone->prev_low_trip,
++						    zone->prev_high_trip);
  	}
- free_uuid:
- 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
-+free_imok:
-+	sysfs_remove_group(&pdev->dev.kobj, &imok_attribute_group);
- free_rel_misc:
- 	if (!priv->rel_misc_dev_res)
- 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
-@@ -573,6 +584,7 @@ static int int3400_thermal_remove(struct platform_device *pdev)
- 	if (priv->data_vault)
- 		sysfs_remove_group(&pdev->dev.kobj, &data_attribute_group);
- 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
-+	sysfs_remove_group(&pdev->dev.kobj, &imok_attribute_group);
- 	thermal_zone_device_unregister(priv->thermal);
- 	kfree(priv->data_vault);
- 	kfree(priv->trts);
+=20
+ 	return 0;
