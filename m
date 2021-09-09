@@ -2,123 +2,203 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80410C433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:36:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D480BC433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 61BB26115A
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:36:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E2ED2615A2
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243853AbhIIOh4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 10:37:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46356 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347837AbhIIOhx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:37:53 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B94FC19A46D;
-        Thu,  9 Sep 2021 06:48:52 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id h16so3832223lfk.10;
-        Thu, 09 Sep 2021 06:48:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=eHp4PDRkNj/IiyPBRl6G092rrNkLDcOQ4GlOapiuvhI=;
-        b=BbFppZOfiFglODKD1J3lgNeIsc+hp73abQh1Sa8VG0KLCb9aAtyXRzYQE8ecJRAWL6
-         UfSYVKyMjvQ6ytxwvxw51vB5480c7BvQgulJWL5T9d/dDnr0WKqx7HGNucXZHQJSgiTT
-         wGjw5w4O/eMnuEdXqF8hWMH8+f39m5RQoMPZel27G0HwzEVw0Kzln0uBr2KD2p8Kfkw5
-         YfrITaMRHIHSz4MQVRwJPZ4LSRO5rWqb2sewrZQ0cLNsrdXZr0gtZdTkbG6LpYEojsQf
-         9OeYmNdxA7I2UX13962ZlMW8dKfUDqbRZjsj6Uoty6nL8jtxYTyGG21w4mk9pcn+TeB7
-         3qzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=eHp4PDRkNj/IiyPBRl6G092rrNkLDcOQ4GlOapiuvhI=;
-        b=MoQZxOcAvJhCmAvZZqseQiGO9SQsNJtjm7Gj5sW49IxMrICE51xC7m6JxwmR3ZxNyX
-         tT8iCFmfnkiQto/c2yQ6cwZD1kM82mRkb1HwwaPgWsoHcCK+rxhdpMAhViOoVugNsiFU
-         6UM3zhgQFP2J1PmFfdAjeewbxyM6B5BsOAuJVGKZ9nwMo3K+ePRJXGnR4oRBpzr3XYoh
-         6wKhip1yyd7YFm8gLs+I7XlSqZ4+VRUSjXoHweUG7I/Bgf9TXjAqUm6vDKVKCZlITBGh
-         liYCeO9f+4yfV+g9xRMht4o/DvPQJ2ZXw24yJ5jTh26oFD22ZZieKM/txdITJP0Ok0vu
-         zHsA==
-X-Gm-Message-State: AOAM533Xp6FNzUjKL9A8xXUhVa8Ms+eQM+jFsaz49Jzr6YAirhp2RPGX
-        cNbbIhdXnz1vf9OP9Ik+YwziiDihjss=
-X-Google-Smtp-Source: ABdhPJx28e3JD3c68ORoRj8noGKSKy7C/Ql0cFHQR8T9d5nBTQ2StWcFRZ7iVHfDwnpOPIoRIl2kig==
-X-Received: by 2002:a05:6512:33cd:: with SMTP id d13mr2352279lfg.28.1631195330484;
-        Thu, 09 Sep 2021 06:48:50 -0700 (PDT)
-Received: from [192.168.2.145] (46-138-3-129.dynamic.spd-mgts.ru. [46.138.3.129])
-        by smtp.googlemail.com with ESMTPSA id e4sm206255lfc.141.2021.09.09.06.48.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Sep 2021 06:48:49 -0700 (PDT)
-Subject: Re: [PATCH 1/3] PM: domains: Drop the performance state vote for a
- device at detach
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20210902101634.827187-1-ulf.hansson@linaro.org>
- <20210902101634.827187-2-ulf.hansson@linaro.org>
- <08335cd4-7dc8-3b8b-d63f-374585ffa373@gmail.com>
- <CAPDyKFofrEj2LdqXh-L256b2Tcz=qYQgzTUBVuvx0rOR58SrVg@mail.gmail.com>
- <b597c805-e346-8c23-5014-cbb116e88075@gmail.com>
- <CAPDyKFrWofUKhbhvwTCjiFwJD8-Pzi8UMzU7ZjYLKm2j1HeeBg@mail.gmail.com>
- <6603212d-f36c-afff-6222-8125de5b7b79@gmail.com>
- <CAPDyKFoyszG2Wo3jbXK562XgpqXns_GPqm7nNu8WOdMCXYUOMQ@mail.gmail.com>
- <66fbbc69-3e16-e07c-4e25-48d59d69fd3c@gmail.com>
- <CAPDyKFqqdgr2DHf1Fidj3ksPHe3XgwvCo8SbQ2Cmnc5y1PDvMw@mail.gmail.com>
- <7ee1a2eb-67d7-dcad-6039-05129d3822ec@gmail.com>
- <CAPDyKFoFPpPPd0cUDRhqzXzXaQyNAv7UZToTaHnGXY30QXNB9g@mail.gmail.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <71618f83-de5b-1180-60f4-8561c4f655a9@gmail.com>
-Date:   Thu, 9 Sep 2021 16:48:49 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        id S1350026AbhIIOjw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 10:39:52 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:60054 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1349847AbhIIOjr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:39:47 -0400
+Date:   Thu, 09 Sep 2021 14:38:36 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1631198316;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RPj9RF9dWknZgw857UpddLNWG0Sbh4bc1DzlNc7XJng=;
+        b=Ui7ZuD69GU4BAT+Ci5fiuS6lMxYX238NgC85nFkUxaDLYSYcLCP/2Hre4sRlHFiC5HXbH3
+        8CUBtS9hryKj+V2jPYTqWXNP/ciOThIQgM4DHbQiDMyR63YWy+ZBo5abp3yC2ZZTX0j3mo
+        JiDzS78rilNo2X3MUIjGq5qRgR5eBcXX5PBCqK6MpNBRwpJv/Ap6DFe3UOuhT7kDPkL49I
+        atD1JwWFh/153uyOHxmF9Egd2NIyiAua0RlEYT9Zntuh0BupEMtujmPZPjC0+ASvqp5/p0
+        oD1XLVzdzpVqSRMkLdaieV9ujAMPFEVWrrwpbU7Xvj+lNbnsHdYiPpsgN7COug==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1631198316;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=RPj9RF9dWknZgw857UpddLNWG0Sbh4bc1DzlNc7XJng=;
+        b=27COBVEp9qfriQgkmiw6DIGurVxegvQP0E5I5wIObE/B5U2sdDpjeZvrYFsuIuF2oIgduj
+        05E2+onfaDl41bDg==
+From:   "thermal-bot for Thara Gopinath" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] firmware: qcom_scm: Introduce SCM calls to access LMh
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20210809191605.3742979-2-thara.gopinath@linaro.org>
+References: <20210809191605.3742979-2-thara.gopinath@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFoFPpPPd0cUDRhqzXzXaQyNAv7UZToTaHnGXY30QXNB9g@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Message-ID: <163119831603.25758.5754093529075559015.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-07.09.2021 13:16, Ulf Hansson пишет:
-...
->>> Also note that a very similar problem exists, *before* the device gets
->>> attached in the first place. More precisely, nothing prevents the
->>> performance state from being set to a non-compatible value for an
->>> always-on HW/device that hasn't been attached yet. So maybe you need
->>> to set the maximum performance state at genpd initializations, then
->>> use the ->sync_state() callback to very that all consumers have been
->>> attached to the genpd provider, before allowing the state to be
->>> changed/lowered?
->>
->> That is already done by the PD driver.
->>
->> https://elixir.bootlin.com/linux/latest/source/drivers/soc/tegra/pmc.c#L3790
-> 
-> Yes, I already knew that, but forgot it. :-) Thanks for the pointer.
-> Let me rethink the approach.
-> 
-> In a way, it kind of sounds like this is a generic problem - so
-> perhaps we should think of adding a ->withdraw_sync_state() callback
-> that can be assigned by provider drivers, to get informed when a
-> consumer driver is getting unbinded.
+The following commit has been merged into the thermal/next branch of thermal:
 
-Not sure, doesn't feel to me that this is necessary for today. A bit too
-cumbersome for a simple sanity-check, IMO.
+Commit-ID:     de3438c47a8ddc75548e62a03736a9321c2b7bac
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//de3438c47a8ddc75548e62a03736a9321c2b7bac
+Author:        Thara Gopinath <thara.gopinath@linaro.org>
+AuthorDate:    Mon, 09 Aug 2021 15:15:59 -04:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Wed, 18 Aug 2021 09:31:53 +02:00
+
+firmware: qcom_scm: Introduce SCM calls to access LMh
+
+Introduce SCM calls to access/configure limits management hardware(LMH).
+
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20210809191605.3742979-2-thara.gopinath@linaro.org
+---
+ drivers/firmware/qcom_scm.c | 58 ++++++++++++++++++++++++++++++++++++-
+ drivers/firmware/qcom_scm.h |  4 ++-
+ include/linux/qcom_scm.h    | 14 +++++++++-
+ 3 files changed, 76 insertions(+)
+
+diff --git a/drivers/firmware/qcom_scm.c b/drivers/firmware/qcom_scm.c
+index 47ea2bd..8a50375 100644
+--- a/drivers/firmware/qcom_scm.c
++++ b/drivers/firmware/qcom_scm.c
+@@ -1147,6 +1147,64 @@ int qcom_scm_qsmmu500_wait_safe_toggle(bool en)
+ }
+ EXPORT_SYMBOL(qcom_scm_qsmmu500_wait_safe_toggle);
+ 
++bool qcom_scm_lmh_dcvsh_available(void)
++{
++	return __qcom_scm_is_call_available(__scm->dev, QCOM_SCM_SVC_LMH, QCOM_SCM_LMH_LIMIT_DCVSH);
++}
++EXPORT_SYMBOL(qcom_scm_lmh_dcvsh_available);
++
++int qcom_scm_lmh_profile_change(u32 profile_id)
++{
++	struct qcom_scm_desc desc = {
++		.svc = QCOM_SCM_SVC_LMH,
++		.cmd = QCOM_SCM_LMH_LIMIT_PROFILE_CHANGE,
++		.arginfo = QCOM_SCM_ARGS(1, QCOM_SCM_VAL),
++		.args[0] = profile_id,
++		.owner = ARM_SMCCC_OWNER_SIP,
++	};
++
++	return qcom_scm_call(__scm->dev, &desc, NULL);
++}
++EXPORT_SYMBOL(qcom_scm_lmh_profile_change);
++
++int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
++		       u64 limit_node, u32 node_id, u64 version)
++{
++	dma_addr_t payload_phys;
++	u32 *payload_buf;
++	int ret, payload_size = 5 * sizeof(u32);
++
++	struct qcom_scm_desc desc = {
++		.svc = QCOM_SCM_SVC_LMH,
++		.cmd = QCOM_SCM_LMH_LIMIT_DCVSH,
++		.arginfo = QCOM_SCM_ARGS(5, QCOM_SCM_RO, QCOM_SCM_VAL, QCOM_SCM_VAL,
++					QCOM_SCM_VAL, QCOM_SCM_VAL),
++		.args[1] = payload_size,
++		.args[2] = limit_node,
++		.args[3] = node_id,
++		.args[4] = version,
++		.owner = ARM_SMCCC_OWNER_SIP,
++	};
++
++	payload_buf = dma_alloc_coherent(__scm->dev, payload_size, &payload_phys, GFP_KERNEL);
++	if (!payload_buf)
++		return -ENOMEM;
++
++	payload_buf[0] = payload_fn;
++	payload_buf[1] = 0;
++	payload_buf[2] = payload_reg;
++	payload_buf[3] = 1;
++	payload_buf[4] = payload_val;
++
++	desc.args[0] = payload_phys;
++
++	ret = qcom_scm_call(__scm->dev, &desc, NULL);
++
++	dma_free_coherent(__scm->dev, payload_size, payload_buf, payload_phys);
++	return ret;
++}
++EXPORT_SYMBOL(qcom_scm_lmh_dcvsh);
++
+ static int qcom_scm_find_dload_address(struct device *dev, u64 *addr)
+ {
+ 	struct device_node *tcsr;
+diff --git a/drivers/firmware/qcom_scm.h b/drivers/firmware/qcom_scm.h
+index 632fe31..d92156c 100644
+--- a/drivers/firmware/qcom_scm.h
++++ b/drivers/firmware/qcom_scm.h
+@@ -114,6 +114,10 @@ extern int scm_legacy_call(struct device *dev, const struct qcom_scm_desc *desc,
+ #define QCOM_SCM_SVC_HDCP		0x11
+ #define QCOM_SCM_HDCP_INVOKE		0x01
+ 
++#define QCOM_SCM_SVC_LMH			0x13
++#define QCOM_SCM_LMH_LIMIT_PROFILE_CHANGE	0x01
++#define QCOM_SCM_LMH_LIMIT_DCVSH		0x10
++
+ #define QCOM_SCM_SVC_SMMU_PROGRAM		0x15
+ #define QCOM_SCM_SMMU_CONFIG_ERRATA1		0x03
+ #define QCOM_SCM_SMMU_CONFIG_ERRATA1_CLIENT_ALL	0x02
+diff --git a/include/linux/qcom_scm.h b/include/linux/qcom_scm.h
+index 0165824..c0475d1 100644
+--- a/include/linux/qcom_scm.h
++++ b/include/linux/qcom_scm.h
+@@ -109,6 +109,12 @@ extern int qcom_scm_hdcp_req(struct qcom_scm_hdcp_req *req, u32 req_cnt,
+ 			     u32 *resp);
+ 
+ extern int qcom_scm_qsmmu500_wait_safe_toggle(bool en);
++
++extern int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
++			      u64 limit_node, u32 node_id, u64 version);
++extern int qcom_scm_lmh_profile_change(u32 profile_id);
++extern bool qcom_scm_lmh_dcvsh_available(void);
++
+ #else
+ 
+ #include <linux/errno.h>
+@@ -170,5 +176,13 @@ static inline int qcom_scm_hdcp_req(struct qcom_scm_hdcp_req *req, u32 req_cnt,
+ 
+ static inline int qcom_scm_qsmmu500_wait_safe_toggle(bool en)
+ 		{ return -ENODEV; }
++
++static inline int qcom_scm_lmh_dcvsh(u32 payload_fn, u32 payload_reg, u32 payload_val,
++				     u64 limit_node, u32 node_id, u64 version)
++		{ return -ENODEV; }
++
++static inline int qcom_scm_lmh_profile_change(u32 profile_id) { return -ENODEV; }
++
++static inline bool qcom_scm_lmh_dcvsh_available(void) { return -ENODEV; }
+ #endif
+ #endif
