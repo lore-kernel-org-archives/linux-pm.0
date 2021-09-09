@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBBDFC433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B65C433FE
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D393E61101
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F27561167
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:47:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241324AbhIIOsN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 10:48:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48318 "EHLO
+        id S237768AbhIIOsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 10:48:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230399AbhIIOru (ORCPT
+        with ESMTP id S242122AbhIIOru (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:47:50 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 689C4C0560C1
-        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:42 -0700 (PDT)
-Date:   Thu, 09 Sep 2021 14:38:40 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39065C0698DB
+        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:41 -0700 (PDT)
+Date:   Thu, 09 Sep 2021 14:38:39 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1631198321;
+        s=2020; t=1631198319;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Biq+Q5tBUhmjGuj+qmM5i7ZBgsXMtJFhlxMlWMNYNHU=;
-        b=AqgUzxb7ZWuECuoqybKb+0HSDDv84bFaz0BMpHWx/Eb/okq4Yh+Bef1m3it3Yr4HKmqFkj
-        xMXTkrW7P61HH+JSYx/4L+taKDZxbjWrlBbLl1tUwcdcLnN/prRUTpg6ZBvw8fVpk3ffen
-        IJRdOiJeCqQv5f4bI4puBN418bEjDKnuiFZ1Ckso7C6EHiaFVBTPdIP5Qp95w6t7pkYBj2
-        q7GsFgek+5liYbpmGeXhedyunnJS1l67Xnak5pJW4hfISRieUDRmHqakW33BMt4yt75qdb
-        cusAZgGT9YuYvGj7t1Z7T0VjUvRWISYx7tF1PEUkFpz6pcvrAm8sMuaPShGcLg==
+        bh=OyelhIVlczKhhf0IFRn/DI600Onyf5ztzQI6u+eD0kE=;
+        b=KF71p/AD+RKCm2baApwd2a+3jGFLv+ng+drRFHBXVBlH0/9X0i6R16dFivxQbJDZx/9Y7o
+        XblEM3na30NWVgcPfDWM1+yE/sAHSryJw1EXPSxte4i9CwDD96gnsOX+IYNtukho8+xFBd
+        +M47zQ+4PqETkScufXBI9ocEeIpUdmkKPWVnaqHi64L+fFNH7snS+nel0MV/MTxSc+nlE+
+        QYSK7vsMisG1jR7OT8PmjU7lu00/l/ZLjAvudqL6DqofroJo8stax4bCny7seuvtbVUWtO
+        GvmDMJjd+FTW04WEoayiYfVxyqTSx40IMHx5vVKMRH9xpfz8fqba42ZQIXRcgQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1631198321;
+        s=2020e; t=1631198319;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=Biq+Q5tBUhmjGuj+qmM5i7ZBgsXMtJFhlxMlWMNYNHU=;
-        b=jb37IrorLekpG/f8WhrPeVee4EaXcONag/YC6V6HmnYqgE/GVRY1q76LIO/N8Yct/doFQM
-        XgH+EwTV+k1eMfBw==
-From:   "thermal-bot for Rolf Eike Beer" <tip-bot2@linutronix.de>
+        bh=OyelhIVlczKhhf0IFRn/DI600Onyf5ztzQI6u+eD0kE=;
+        b=xGpTbmTuB6txhwZ0/UqzGc0NU7ABysbN3gyKbmW2A7LMaVMvcErxGk2Fa5MFW/bCqc6Qu6
+        HtF3XF83EBGViPBg==
+From:   "thermal-bot for Sumeet Pawnikar" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/tools/tmon: Improve the Makefile
-Cc:     Rolf Eike Beer <eb@emlix.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <1951386.ZPQrlMDjM2@devpool47>
-References: <1951386.ZPQrlMDjM2@devpool47>
+Subject: [thermal: thermal/next] thermal/drivers/int340x: Use IMOK independently
+Cc:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org
+In-Reply-To: <20210716163946.3142-1-sumeet.r.pawnikar@intel.com>
+References: <20210716163946.3142-1-sumeet.r.pawnikar@intel.com>
 MIME-Version: 1.0
-Message-ID: <163119832031.25758.14075212047149296535.tip-bot2@tip-bot2>
+Message-ID: <163119831911.25758.10236238464567355110.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -68,63 +69,75 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     99d88c30055376b56316d3c431c9873e88208348
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//99d88c30055376b56316d3c431c9873e88208348
-Author:        Rolf Eike Beer <eb@emlix.com>
-AuthorDate:    Fri, 30 Jul 2021 13:49:04 +02:00
+Commit-ID:     f1b07a14694be02b2b87e2fe6def6cff2f4bd452
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f1b07a14694be02b2b87e2fe6def6cff2f4bd452
+Author:        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+AuthorDate:    Fri, 16 Jul 2021 22:09:46 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Sat, 14 Aug 2021 15:30:11 +02:00
+CommitterDate: Sat, 14 Aug 2021 15:39:13 +02:00
 
-thermal/tools/tmon: Improve the Makefile
+thermal/drivers/int340x: Use IMOK independently
 
- - Remove empty macros assignments
- - Use directory creation parameter for the install tool
- - Use $OBJ instead of building the list of object for the 'clean' target
+Some chrome platform requires IMOK method in coreboot. But these platforms
+don't use GDDV data vault in coreboot. As per current code flow, to enable
+and use IMOK only, we need to have GDDV support as well in coreboot. This
+patch removes the dependency for IMOK from GDDV to enable and use IMOK
+independently.
 
-[dlezcano] : Changed title and description
-
-Signed-off-by: Rolf Eike Beer <eb@emlix.com>
+Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/1951386.ZPQrlMDjM2@devpool47
+Link: https://lore.kernel.org/r/20210716163946.3142-1-sumeet.r.pawnikar@intel.com
 ---
- tools/thermal/tmon/Makefile | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 14 +++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/tools/thermal/tmon/Makefile b/tools/thermal/tmon/Makefile
-index 9db867d..3e65087 100644
---- a/tools/thermal/tmon/Makefile
-+++ b/tools/thermal/tmon/Makefile
-@@ -13,7 +13,6 @@ CC?= $(CROSS_COMPILE)gcc
- PKG_CONFIG?= pkg-config
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 823354a..19926be 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -108,9 +108,12 @@ static struct attribute *imok_attr[] = {
+ 	NULL
+ };
  
- override CFLAGS+=-D VERSION=\"$(VERSION)\"
--LDFLAGS+=
- TARGET=tmon
++static const struct attribute_group imok_attribute_group = {
++	.attrs = imok_attr,
++};
++
+ static const struct attribute_group data_attribute_group = {
+ 	.bin_attrs = data_attributes,
+-	.attrs = imok_attr,
+ };
  
- INSTALL_PROGRAM=install -m 755 -p
-@@ -33,7 +32,6 @@ override CFLAGS += $(shell $(PKG_CONFIG) --cflags $(STATIC) panelw ncursesw 2> /
- 		     $(PKG_CONFIG) --cflags $(STATIC) panel ncurses 2> /dev/null)
+ static ssize_t available_uuids_show(struct device *dev,
+@@ -522,6 +525,12 @@ static int int3400_thermal_probe(struct platform_device *pdev)
+ 	if (result)
+ 		goto free_rel_misc;
  
- OBJS = tmon.o tui.o sysfs.o pid.o
--OBJS +=
- 
- tmon: $(OBJS) Makefile tmon.h
- 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS)  -o $(TARGET) $(TMON_LIBS)
-@@ -42,15 +40,13 @@ valgrind: tmon
- 	 sudo valgrind -v --track-origins=yes --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./$(TARGET)  1> /dev/null
- 
- install:
--	- mkdir -p $(INSTALL_ROOT)/$(BINDIR)
--	- $(INSTALL_PROGRAM) "$(TARGET)" "$(INSTALL_ROOT)/$(BINDIR)/$(TARGET)"
-+	- $(INSTALL_PROGRAM) -D "$(TARGET)" "$(INSTALL_ROOT)/$(BINDIR)/$(TARGET)"
- 
- uninstall:
- 	$(DEL_FILE) "$(INSTALL_ROOT)/$(BINDIR)/$(TARGET)"
- 
- clean:
--	find . -name "*.o" | xargs $(DEL_FILE)
--	rm -f $(TARGET)
-+	rm -f $(TARGET) $(OBJS)
- 
- dist:
- 	git tag v$(VERSION)
++	if (acpi_has_method(priv->adev->handle, "IMOK")) {
++		result = sysfs_create_group(&pdev->dev.kobj, &imok_attribute_group);
++		if (result)
++			goto free_imok;
++	}
++
+ 	if (priv->data_vault) {
+ 		result = sysfs_create_group(&pdev->dev.kobj,
+ 					    &data_attribute_group);
+@@ -545,6 +554,8 @@ free_sysfs:
+ 	}
+ free_uuid:
+ 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
++free_imok:
++	sysfs_remove_group(&pdev->dev.kobj, &imok_attribute_group);
+ free_rel_misc:
+ 	if (!priv->rel_misc_dev_res)
+ 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
+@@ -573,6 +584,7 @@ static int int3400_thermal_remove(struct platform_device *pdev)
+ 	if (priv->data_vault)
+ 		sysfs_remove_group(&pdev->dev.kobj, &data_attribute_group);
+ 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
++	sysfs_remove_group(&pdev->dev.kobj, &imok_attribute_group);
+ 	thermal_zone_device_unregister(priv->thermal);
+ 	kfree(priv->data_vault);
+ 	kfree(priv->trts);
