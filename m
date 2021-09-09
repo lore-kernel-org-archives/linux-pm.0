@@ -7,55 +7,56 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 724E2C433FE
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0739FC433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 52B33613D0
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E4C5F61205
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:38:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238662AbhIIOjw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 10:39:52 -0400
+        id S1344725AbhIIOkA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 10:40:00 -0400
 Received: from Galois.linutronix.de ([193.142.43.55]:60060 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238112AbhIIOjr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:39:47 -0400
-Date:   Thu, 09 Sep 2021 14:38:36 -0000
+        with ESMTP id S244879AbhIIOjw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:39:52 -0400
+Date:   Thu, 09 Sep 2021 14:38:41 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1631198317;
+        s=2020; t=1631198322;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/8Mqj62jGaENQmnLjctCcb4fHxNdWaum4ee0ga2G8/8=;
-        b=QMpdoMVgox40ikSc3+uh02E8xhtz7jw8M9u5uXJTXG5CVM1YL7ER4d5ux9VEExnOXdG6O8
-        JIoyDp/vtQ2g9SwZlkianXD6b0w+SaGnT8zv42bAgAw10HEj8Ykwz3nhT+wQm3wvYcrdoz
-        XxerGdjv3eYhZr7uq2VS+pVm2VWuFwxM32Kdq9YK1lKd4+UTGyfnnLBF0q10S6TZEAkTT6
-        yd1500Se7Msc5VixEPRKr21JLZuMRPe+L0t/KzvEJczUMqJWLfBc7zUpvpLwU+bv4535nN
-        Plfeik/sRkgn2xlg3C5ogn8FuZLIdtYw2vFNqp6DkbxBspp+9r7uS1dFOVchTw==
+        bh=l0fBsRaNjLvN8TSv8vAK7C+zHaues0ROUfZtgWDVqUg=;
+        b=1DCV28qgqoJoRqqEBeT6ZPIM+h+/VHeRg8ZwagtQwUd6rMT99bA6MqtKjZlYFWe8jONIZA
+        7SjysyPRlvoyatYBq5/FmWj5YrNEaeLrsqZ5uxDU480fMsAQi/i/oGMRjS+REBqeGVUO15
+        zABGJdU8oKPomhzkvOEF0oTAodhciX6ELYYrjpvjm3szekeMdIofHJw7WfkZ3V3ik1+EE2
+        m8OdpW1h4twatPVlkHCxudoA9bQvkdeGPGxBKs31T0YYVSf8tsC2OWDkKzjo3gceKf7/1f
+        O5FYjHVbIBflKNAKdpKXQs9MrXGzZLJ3qhtT4ihzMDaGlt1M4yS+d4PfQgYMvA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1631198317;
+        s=2020e; t=1631198322;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/8Mqj62jGaENQmnLjctCcb4fHxNdWaum4ee0ga2G8/8=;
-        b=IVmFnJ4NPFmj+viEdTo9P1cDZgWjQ7kgZr3jI5nXHgJWvtRKLhTa0iLaHMOdaa8Ye9v3o2
-        KC7wXobbfavCitBA==
-From:   "thermal-bot for Dmitry Osipenko" <tip-bot2@linutronix.de>
+        bh=l0fBsRaNjLvN8TSv8vAK7C+zHaues0ROUfZtgWDVqUg=;
+        b=oPSKTOmfbWlB3yddNqY8XzAeCML+iQKCPRbeHCogUL92GMOo5zYdECQwfN1bfEI0UbuQYe
+        BS/IFfpVV4S0GsAg==
+From:   "thermal-bot for Sebastian Andrzej Siewior" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/tegra-soctherm: Silence
- message about clamped temperature
-Cc:     Dmitry Osipenko <digetx@gmail.com>,
+Subject: [thermal: thermal/next] thermal/drivers/intel_powerclamp: Replace
+ deprecated CPU-hotplug functions.
+Cc:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210712002353.17276-1-digetx@gmail.com>
-References: <20210712002353.17276-1-digetx@gmail.com>
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In-Reply-To: <20210803141621.780504-20-bigeasy@linutronix.de>
+References: <20210803141621.780504-20-bigeasy@linutronix.de>
 MIME-Version: 1.0
-Message-ID: <163119831665.25758.2530106288475136335.tip-bot2@tip-bot2>
+Message-ID: <163119832150.25758.17104675699410065503.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,39 +67,52 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     16f944291a4ab896895e78934623b9d33af810cf
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//16f944291a4ab896895e78934623b9d33af810cf
-Author:        Dmitry Osipenko <digetx@gmail.com>
-AuthorDate:    Mon, 12 Jul 2021 03:23:53 +03:00
+Commit-ID:     d31eb7c1a2288f61df75558f59328be01a264300
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//d31eb7c1a2288f61df75558f59328be01a264300
+Author:        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+AuthorDate:    Tue, 03 Aug 2021 16:16:02 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Sat, 14 Aug 2021 15:44:15 +02:00
+CommitterDate: Sat, 14 Aug 2021 12:51:42 +02:00
 
-thermal/drivers/tegra-soctherm: Silence message about clamped temperature
+thermal/drivers/intel_powerclamp: Replace deprecated CPU-hotplug functions.
 
-The Tegra soctherm driver prints message about the clamped temperature
-trip each time when thermal core disables the low/high trip. The message
-is confusing and creates illusion that driver is malfunctioning. Turn that
-noisy info message into a debug message.
+The functions get_online_cpus() and put_online_cpus() have been
+deprecated during the CPU hotplug rework. They map directly to
+cpus_read_lock() and cpus_read_unlock().
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Replace deprecated CPU-hotplug functions with the official version.
+The behavior remains unchanged.
+
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Amit Kucheria <amitk@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210712002353.17276-1-digetx@gmail.com
+Link: https://lore.kernel.org/r/20210803141621.780504-20-bigeasy@linutronix.de
 ---
- drivers/thermal/tegra/soctherm.c | 4 ++--
+ drivers/thermal/intel/intel_powerclamp.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 8e303e9..210325f 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -450,8 +450,8 @@ static int enforce_temp_range(struct device *dev, int trip_temp)
+diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+index b0eb5ec..a5b58ea 100644
+--- a/drivers/thermal/intel/intel_powerclamp.c
++++ b/drivers/thermal/intel/intel_powerclamp.c
+@@ -528,7 +528,7 @@ static int start_power_clamp(void)
  
- 	temp = clamp_val(trip_temp, min_low_temp, max_high_temp);
- 	if (temp != trip_temp)
--		dev_info(dev, "soctherm: trip temperature %d forced to %d\n",
--			 trip_temp, temp);
-+		dev_dbg(dev, "soctherm: trip temperature %d forced to %d\n",
-+			trip_temp, temp);
- 	return temp;
+ 	set_target_ratio = clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
+ 	/* prevent cpu hotplug */
+-	get_online_cpus();
++	cpus_read_lock();
+ 
+ 	/* prefer BSP */
+ 	control_cpu = 0;
+@@ -542,7 +542,7 @@ static int start_power_clamp(void)
+ 	for_each_online_cpu(cpu) {
+ 		start_power_clamp_worker(cpu);
+ 	}
+-	put_online_cpus();
++	cpus_read_unlock();
+ 
+ 	return 0;
  }
- 
