@@ -2,89 +2,80 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E480FC433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 07:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B3B7C433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 08:56:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B558E61108
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 07:39:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F8E16109E
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 08:56:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352660AbhIIHlE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 03:41:04 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40068 "EHLO mail.kernel.org"
+        id S231281AbhIII50 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 04:57:26 -0400
+Received: from mail.kernel.org ([198.145.29.99]:59490 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1350893AbhIIHlE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Sep 2021 03:41:04 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A8DBB60F11;
-        Thu,  9 Sep 2021 07:39:54 +0000 (UTC)
+        id S232213AbhIII5Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Sep 2021 04:57:25 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4C768611B0;
+        Thu,  9 Sep 2021 08:56:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631173195;
-        bh=egpCC2/Rz1T8R9MzkBRxG8TPp4Vzys1HYvCrsWdTrVs=;
-        h=In-Reply-To:References:To:From:Cc:Subject:Date:From;
-        b=WqcCUohtKwje7k52/HxLa+sHklaUZkqDjwVmIw93zgsAjS6OeEHxNMtcySYX2gL97
-         mk+8Am8/LDh7ReQtzm14lRMVm7o7eJxSlamlXSxwnfEfHomu1d2oZ4s+HUuk2PQhjY
-         MVwlnLRqY9+AXZtKAupCwgInKHxK2AvPSD2cN3R0O+KieWmv5hQmNKhdWUCTDYHDIj
-         ZzlnI9DDCUdpCYR3+OPqyUfNyDT9l2o5OQ/S/yvq3i45tXeHcpml3XlmE8oMGXN6M0
-         +l06C8mt5kn9YEEiJfXFjmKCJkEqAB9wHA3KafGTID1hij4ZOjt4Ae7W4MPCV/+rGf
-         uPbzW9DEBKyBg==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <2c1a37bcf8cd55c4f9ebb16c876148d9b5ecc78f.camel@linux.intel.com>
-References: <20210908161632.15520-1-atenart@kernel.org> <8bd5406ed111aa3c4dc180a21600811c56c6b809.camel@linux.intel.com> <163117137691.4442.5244464351443466921@kwain> <2c1a37bcf8cd55c4f9ebb16c876148d9b5ecc78f.camel@linux.intel.com>
-To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        amitk@kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com
+        s=k20201202; t=1631177776;
+        bh=ujCdNUpO/qOVpyAN9tlZP7oy3guFkGiQFv5iyV0yKK4=;
+        h=From:To:Cc:Subject:Date:From;
+        b=lKAaeKJDNYhH+hhiTekeu+rWcp14RDK5u/CHH8LPSDpzCabC40DWCOGRFqCyq23KY
+         4cEDVDnoz5NrUQlnuLaIOFJDYj0WMkLmUzRQkV2ZhY3kNINeRrPTGvbP29H6as/Vn7
+         A9Gbzt3hQvg3z/qbvbNTqimcu0NWismRHiKGi+JLSSlTaXxnHmuM+4XhSE5cqWL2du
+         0g0X6gBbGdxUDyv1Vs8Z7RrWIic4Xd0vSBoZOT1BkPaKPBSDXmrESUAWr4FprRs7C3
+         kK7fyQdbAz/2GffwhnPYBnICorq6r7jSP1DPeKEyNBoSsW5+fAAiTfrNUr62E0DZdf
+         aN8E7j3Eqqwkw==
 From:   Antoine Tenart <atenart@kernel.org>
-Cc:     linux-pm@vger.kernel.org
-Subject: Re: [PATCH] thermal: int340x: fix tcc offset on resume
-Message-ID: <163117319244.4442.6983455843812807092@kwain>
-Date:   Thu, 09 Sep 2021 09:39:52 +0200
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org,
+        srinivas.pandruvada@linux.intel.com
+Cc:     Antoine Tenart <atenart@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/2] thermal: int340x: fix tcc offset on resume
+Date:   Thu,  9 Sep 2021 10:56:11 +0200
+Message-Id: <20210909085613.5577-1-atenart@kernel.org>
+X-Mailer: git-send-email 2.31.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Srinivas Pandruvada (2021-09-09 09:30:17)
-> On Thu, 2021-09-09 at 09:09 +0200, Antoine Tenart wrote:
-> > Quoting Srinivas Pandruvada (2021-09-09 07:47:23)
-> > >=20
-> > > We have to mark for stable. But It mayn't cleanly apply. So we have
-> > > to
-> > > submit for 5.12+ kernels.
-> >=20
-> > If this can't be easily applied on stable kernels another approach
-> > could
-> > be to apply a simple fix (similar to the previous logic) for older
-> > kernels[1] and applying this patch only for 5.15+.
-> >=20
-> > [1] Something like:
-> >=20
-> > =C2=A0 -static unsigned int tcc_offset_save;
-> > =C2=A0 +static unsigned int tcc_offset_save =3D -1;
-> >=20
-> > =C2=A0=C2=A0 int proc_thermal_resume(struct device *dev)
-> > =C2=A0=C2=A0 {
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 struct proc_ther=
-mal_device *proc_dev;
-> > =C2=A0 @@ -352,7 +371,9 @@ int proc_thermal_resume(struct device *dev)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 proc_dev =3D dev=
-_get_drvdata(dev);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 proc_thermal_rea=
-d_ppcc(proc_dev);
-> >=20
-> > =C2=A0 -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 tcc_offset_update(tcc_offs=
-et_save);
-> > =C2=A0 +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (tcc_offset_save >=3D 0)
-> > =C2=A0 +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0 tcc_offset_update(tcc_offset_save);
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return 0;
->=20
-> This is a better approach. First submit this change with simple fix and
-> mark for stable and the other fix for 5.15 kernel.
+Hi,
 
-All right, will do.
+This is a follow-up of [1]. As discussed in the initial thread, the fix
+is now split into two commits: the two commits combined are fixing the
+issue in a nice way for 5.15, but only the first one is meant to be
+applied on stable kernels (to avoid conflicts).
 
+The issue this is fixing is described in patch 1. Tl;dr: a
+suspend/resume cycle can end-up in setting a wrong tcc offset value,
+which can lead to machines shutting down because of overheating (when
+they should not).
+
+I've stripped the Acked-by/Tested-by flags from v1 as the patch was
+split. But the end result for 5.15+ kernels should be the same.
+
+Thanks,
 Antoine
+
+[1] https://lore.kernel.org/linux-pm/20210908161632.15520-1-atenart@kernel.org/T/
+
+Antoine Tenart (2):
+  thermal: int340x: do not set a wrong tcc offset on resume
+  thermal: int340x: improve the tcc offset saving for suspend/resume
+
+ .../intel/int340x_thermal/int3401_thermal.c   |  8 +++-
+ .../processor_thermal_device.c                | 39 ++++++++++++++-----
+ .../processor_thermal_device.h                |  1 +
+ .../processor_thermal_device_pci.c            | 18 ++++++++-
+ .../processor_thermal_device_pci_legacy.c     |  8 +++-
+ 5 files changed, 62 insertions(+), 12 deletions(-)
+
+-- 
+2.31.1
+
