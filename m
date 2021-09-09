@@ -7,58 +7,59 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BB66C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2BACC433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:46:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6E40961101
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:46:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A90F1610FF
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Sep 2021 14:46:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244780AbhIIOry (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 10:47:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47476 "EHLO
+        id S236201AbhIIOsF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 10:48:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343879AbhIIOrp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:47:45 -0400
+        with ESMTP id S240885AbhIIOru (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Sep 2021 10:47:50 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E32EAC06122F
-        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:36 -0700 (PDT)
-Date:   Thu, 09 Sep 2021 14:38:34 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FD92C0698D8
+        for <linux-pm@vger.kernel.org>; Thu,  9 Sep 2021 07:38:39 -0700 (PDT)
+Date:   Thu, 09 Sep 2021 14:38:37 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1631198315;
+        s=2020; t=1631198318;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=4I+63PVzAnTJo3Z3/uXn62y4/ZaZiQauFvwxTpIoGY0=;
-        b=NEjTqJGpI4Vxnh0L/eMBw+ja81kxaCDACLj6oknA6ZGABr6lzWLBHMUQWjl1kF8dLIEdLm
-        gofFUzmXKm9XzyLI4PI4uhLyHUBF8se3nuqMUEtmCfFpcTsZhp6+nn7HdGh73pyzUMkSUk
-        9Wm/XX211vSi1PUZHuvHeT73sluOu/vq4eTKvB/aWNdYrV8diIjHhFxj+0NMyNQ8LgBmBw
-        9Vo+2eo1ejU0DS9M6avEQj0xEvj5apOJrhqpPssYot3kCOXMl3IkTmSHDKqVyK8dUt1orK
-        L0MLa2DhhUB46mSyQRBqaGuCk4C27dLXKrX2ybLbKaRvE7KVJcPe+u2DPmZY9w==
+        bh=mQFngEwDuIFr6KWI7VI7YA54UpPS26ihjtUbW+sy1tw=;
+        b=apSZ7TOtHZrd+jpgtBI54oWXvvo7g95zGA5bLLZMTTAjRzYyma5scMuUSIWLoy5pvR2DDC
+        5LVrkyyZ8vjwIwT4lV+MkwlmdWufGV3ftsO59//9MmKaCoqftqsG6SeMegcWl0lmJqVyMi
+        2bMTXrYDJB63xvBThg3XJXSD5QT+EiFkNQvjRmKgehzYO21tt0uSJxLxcZnN7pmZg/MBlI
+        gAMTOhQYeTTB8p2Pvs6xK9ZBNAPX47YQA1sgIm/n2Mby4ip9fKThygZYnuk23mDAB+Q80k
+        V04kKkaJ587MxsiYaibLVYyQPT+6ksWVfCaTQyOiuUkl3kkzI/LspfaS3DMHcQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1631198315;
+        s=2020e; t=1631198318;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=4I+63PVzAnTJo3Z3/uXn62y4/ZaZiQauFvwxTpIoGY0=;
-        b=xXsbqCetf5WVygeonFF1cXcpVMYtWM5w/rBugGNt4MKyDZz+bZ4/cVcDItm1glf0elrUBz
-        BHuW8vYMy64iQMAg==
-From:   "thermal-bot for Thara Gopinath" <tip-bot2@linutronix.de>
+        bh=mQFngEwDuIFr6KWI7VI7YA54UpPS26ihjtUbW+sy1tw=;
+        b=T8CJIRT/rX1GH21QWulTC9F9pCQJxSDaXlLo/WsG6v9SmhOaN3NjOk2GYm4S8gxXemptHY
+        BGw/Gr+O3hhCclAQ==
+From:   "thermal-bot for Geert Uytterhoeven" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: Add dt binding for QCOM LMh
-Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
-        Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] thermal: Spelling s/scallbacks/callbacks/
+Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20210809191605.3742979-8-thara.gopinath@linaro.org>
-References: <20210809191605.3742979-8-thara.gopinath@linaro.org>
+In-Reply-To: =?utf-8?q?=3Cae38372996a23bb67769e2d62ca170ae9457c4df=2E16262?=
+ =?utf-8?q?61946=2Egit=2Egeert+renesas=40glider=2Ebe=3E?=
+References: =?utf-8?q?=3Cae38372996a23bb67769e2d62ca170ae9457c4df=2E162626?=
+ =?utf-8?q?1946=2Egit=2Egeert+renesas=40glider=2Ebe=3E?=
 MIME-Version: 1.0
-Message-ID: <163119831481.25758.15294576140462455549.tip-bot2@tip-bot2>
+Message-ID: <163119831731.25758.4631237606171951869.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,112 +70,34 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     0284b52e85341e3cd4b70c8b2423fd23b8a003a8
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//0284b52e85341e3cd4b70c8b2423fd23b8a003a8
-Author:        Thara Gopinath <thara.gopinath@linaro.org>
-AuthorDate:    Mon, 09 Aug 2021 15:16:05 -04:00
+Commit-ID:     454f2ed4b34f9ef5726d080b1eb5dc47a7f36d6f
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//454f2ed4b34f9ef5726d080b1eb5dc47a7f36d6f
+Author:        Geert Uytterhoeven <geert+renesas@glider.be>
+AuthorDate:    Wed, 14 Jul 2021 13:27:01 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Wed, 18 Aug 2021 17:53:37 +02:00
+CommitterDate: Sat, 14 Aug 2021 15:43:28 +02:00
 
-dt-bindings: thermal: Add dt binding for QCOM LMh
+thermal: Spelling s/scallbacks/callbacks/
 
-Add dt binding documentation to describe Qualcomm
-Limits Management Hardware node.
+Fix a misspelling of the word "callbacks".
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20210809191605.3742979-8-thara.gopinath@linaro.org
+Link: https://lore.kernel.org/r/ae38372996a23bb67769e2d62ca170ae9457c4df.1626261946.git.geert+renesas@glider.be
 ---
- Documentation/devicetree/bindings/thermal/qcom-lmh.yaml | 82 ++++++++-
- 1 file changed, 82 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
+ include/linux/thermal.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-new file mode 100644
-index 0000000..289e9a8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-@@ -0,0 +1,82 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright 2021 Linaro Ltd.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom-lmh.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm Limits Management Hardware(LMh)
-+
-+maintainers:
-+  - Thara Gopinath <thara.gopinath@linaro.org>
-+
-+description:
-+  Limits Management Hardware(LMh) is a hardware infrastructure on some
-+  Qualcomm SoCs that can enforce temperature and current limits as
-+  programmed by software for certain IPs like CPU.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,sdm845-lmh
-+
-+  reg:
-+    items:
-+      - description: core registers
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  '#interrupt-cells':
-+    const: 1
-+
-+  interrupt-controller: true
-+
-+  cpus:
-+    description:
-+      phandle of the first cpu in the LMh cluster
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+  qcom,lmh-temp-arm-millicelsius:
-+    description:
-+      An integer expressing temperature threshold at which the LMh thermal
-+      FSM is engaged.
-+
-+  qcom,lmh-temp-low-millicelsius:
-+    description:
-+      An integer expressing temperature threshold at which the state machine
-+      will attempt to remove frequency throttling.
-+
-+  qcom,lmh-temp-high-millicelsius:
-+    description:
-+      An integer expressing temperature threshold at which the state machine
-+      will attempt to throttle the frequency.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - '#interrupt-cells'
-+  - interrupt-controller
-+  - cpus
-+  - qcom,lmh-temp-arm-millicelsius
-+  - qcom,lmh-temp-low-millicelsius
-+  - qcom,lmh-temp-high-millicelsius
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+
-+    lmh@17d70800 {
-+      compatible = "qcom,sdm845-lmh";
-+      reg = <0x17d70800 0x400>;
-+      interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+      cpus = <&CPU4>;
-+      qcom,lmh-temp-arm-millicelsius = <65000>;
-+      qcom,lmh-temp-low-millicelsius = <94500>;
-+      qcom,lmh-temp-high-millicelsius = <95000>;
-+      interrupt-controller;
-+      #interrupt-cells = <1>;
-+    };
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 8050d92..c314893 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -285,7 +285,7 @@ struct thermal_zone_params {
+ };
+ 
+ /**
+- * struct thermal_zone_of_device_ops - scallbacks for handling DT based zones
++ * struct thermal_zone_of_device_ops - callbacks for handling DT based zones
+  *
+  * Mandatory:
+  * @get_temp: a pointer to a function that reads the sensor temperature.
