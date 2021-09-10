@@ -7,42 +7,42 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D613C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Sep 2021 00:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20C48C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Sep 2021 00:43:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 36E61611B0
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Sep 2021 00:43:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C30260C40
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Sep 2021 00:43:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233680AbhIJAoz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Sep 2021 20:44:55 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46470 "EHLO mail.kernel.org"
+        id S231414AbhIJAo4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Sep 2021 20:44:56 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47722 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233535AbhIJAUS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Sep 2021 20:20:18 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 96F3361101;
-        Fri, 10 Sep 2021 00:18:59 +0000 (UTC)
+        id S233876AbhIJAV6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Sep 2021 20:21:58 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 1817D611BF;
+        Fri, 10 Sep 2021 00:20:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631233140;
+        s=k20201202; t=1631233248;
         bh=bFudKSCOtqCJSbzerv9YL80dTH1IVwrlA8bgY8TI2qs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=CzELwwnqQJtTe2vZsQ/lNM+l157GjJrrkm2BdMQAarZ38WnJo+y0gGCpxfyVU8jy/
-         2z/tVLTnE2nyTqsJY1lYGfbNpBt8dIP9PnarJjUKbbsdDlQe/fbp5BzbLOWdk7kUdF
-         OJMSFWNQkJMnFbNeQlTEw1EAJBwYeDccAPihycjl9OoywJX5reIBVWdJVZW/EdATNp
-         7qaARlYX+yleCZ42mMrIFLGqdtGWHfxzhx/VQ5PXjgzUzoP6PUrBkoDHzLJVFm4wnL
-         pUZNqHhIv27PY43qY41S4bdtnBUiSupfAaUrgiJq5Ko53IhHpZwv28TkJL9MQwMF62
-         KCdxsDmD6gsdQ==
+        b=FrieefCADGWs7dKCpmXIkMyg0HVrcB0qyO6uI8PYR7gNc/13eAmK9wHPF51FQHHPD
+         ANCYzGpso+DLL+XJSKPyWEELQNbBWJLgxONBgDQbiVw1OMK03I3t3UshyMZ9fqs+9v
+         GCTMBbj6Bx333/ln0cHUSdOZXSAnGm2yxYZhI4xt1V3tsltlpwQ38qj+T/jFt23EWx
+         Yesd3ZLSJoi5j44H1PVh7dYatg+T/BASO9Ii1f3q5DAJpxH05DFTO5iU5xJLs4H8ft
+         ZCN3rgO/0nlT5n1vuEhEAIbHlHffhtgsa1KBKRVa7dSAEPEuSDFMsGQFi7ChGdUzmB
+         QJEentlR9qtvw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 5.13 27/88] cpuidle: pseries: Do not cap the CEDE0 latency in fixup_cede0_latency()
-Date:   Thu,  9 Sep 2021 20:17:19 -0400
-Message-Id: <20210910001820.174272-27-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 14/53] cpuidle: pseries: Do not cap the CEDE0 latency in fixup_cede0_latency()
+Date:   Thu,  9 Sep 2021 20:19:49 -0400
+Message-Id: <20210910002028.175174-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210910001820.174272-1-sashal@kernel.org>
-References: <20210910001820.174272-1-sashal@kernel.org>
+In-Reply-To: <20210910002028.175174-1-sashal@kernel.org>
+References: <20210910002028.175174-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
