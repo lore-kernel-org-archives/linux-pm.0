@@ -8,54 +8,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5876FC28B56
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:10:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC2BCC4167D
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:10:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 40B3461050
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:10:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BADD261222
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:10:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236922AbhILUML (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 16:12:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53954 "EHLO
+        id S236493AbhILULI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 16:11:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53868 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236557AbhILULN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:11:13 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96910C06175F;
-        Sun, 12 Sep 2021 13:09:58 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id g16so11354349wrb.3;
-        Sun, 12 Sep 2021 13:09:58 -0700 (PDT)
+        with ESMTP id S236289AbhILULA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:11:00 -0400
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D516C061574;
+        Sun, 12 Sep 2021 13:09:44 -0700 (PDT)
+Received: by mail-wm1-x32d.google.com with SMTP id g128so690641wma.5;
+        Sun, 12 Sep 2021 13:09:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=yDP03amDwCEY6IiivIbDG+60+C+xV/Pv6sR1LEywSYo=;
-        b=dXryPcSyGs3gzqsQTrY9mpA3DCXsy1qtI2Vvgch/dp73DtqX/mRKKohmX0tDJDjEOb
-         22eZzlRqGiaRAQuj5VWO6OdZhB1UwhaliLlSF6kBqXnQg/4+Fuf/F5e840PG8sqkGkL6
-         NdloQJP+NoMUcO7pKodski58EDi76tukzL2Ac9XOWI2ntWI78R17gAoFQwioVnd/FJKd
-         NgO/oxnqYcdVDXiVxkLyt0OfVHo9DhWSvnvh6MZbPy4nse0+Tq07s0ygP2TuTBeMLeVR
-         XmQ3fBl6Xb7JwQuAcAO8vvl3U1To8moeCJGd2IOe0JyjZs//LOlsgy8at16gazH3aoWl
-         oieg==
+        bh=azJO16PBS0aaEX5vOfJpmf9jn1x1mJqiJpQpMZ0azY4=;
+        b=dgfruC3Cp7h5J9EBqCGafMKFXt20sGTs0YsYPkR7d1TWRr8oLswsvyCKcBSxy4nulu
+         0ZbxVa4QFZQfmClH9qJ+sj0/aqr1Oj4x/2i4oRtkgdsKe6uRyet4NtuDNfxNskm/LaL3
+         8G3liXSQkeLLElx3zNZ5Jg4yey7pZ9YhZxU9IXTtiBUnML34vHWNB7u27oXvTml/Yx+T
+         nKYVv/4i3YYIKnpQV2d8M+QJSBaCu5P1QMYCVCbFOiXdv/zaOWdhIPOBsiZBvSYznQTm
+         1cx/B8qabHGSZgtGF8U4kZD8Mq0cMv4HZzfWjRheyzvnTcjs6shxv/6yp7El7CNX7MWp
+         awFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=yDP03amDwCEY6IiivIbDG+60+C+xV/Pv6sR1LEywSYo=;
-        b=2Yzhbz7fEYi/XHMjJYbqtry+QFSCE2ZREcgAJuplHXIyXc/PJbyZt4zaucbmMTwwQa
-         ZfoUuRjA0mRYZPIC8uuz5DceA9qxS2RHF4j2qQkwkr5Dum9BAwJsHIfSbToIMBDEst1C
-         y6YRTFvLXHVLUFXs3BHe2uRSyXauzVnRleIQCFExwIjfMLwLLd20fWTIFKpwu6nYKf3x
-         KkW2w7aIR/sTEnIASvht9Tuh6Li2lS54OWMs7H2B5gHSqED5r8V0UzuEdckImDg2lJoL
-         nS3U99LyOpebgJXl368IgQtNr85rTcLNOdL1BTc6I9Cjk6mAJ2XluGnn9baytBaezHLL
-         IVIw==
-X-Gm-Message-State: AOAM533k3zDeV9L4hkM1vapFyQCZdSFWLXnSp1pnubj+MdlhO7t0mb4r
-        Hk39xFobtFF3a1riSOoxSMQ=
-X-Google-Smtp-Source: ABdhPJwCDhWxV3BpnNX9q3XBX8a/PuihzY2Q6a3tghpwSk7A8GTITDQME8kLH5hVUhZ2lKp57c3mQQ==
-X-Received: by 2002:adf:8170:: with SMTP id 103mr9106701wrm.167.1631477397224;
-        Sun, 12 Sep 2021 13:09:57 -0700 (PDT)
+        bh=azJO16PBS0aaEX5vOfJpmf9jn1x1mJqiJpQpMZ0azY4=;
+        b=buvAiB0gbKTO8OwAMeloqoen7VqAdHe4eXf0XxMVRmbEKbkbFFWr1DkKMkWYllmN5l
+         pFfPsQoAdNimmhPFXG9lIKhl4GbrmKreWNl4gS8gGzX5yoLZ6ph5msy08cjdz0IGeVFr
+         MurPEFKbNEhThfoPPcgJf5eNrd/Cx4hcctoyhZco2uLOJJYKnrVUmVdePDJF1S/Evoj2
+         hHH2D5Rt9okPDCKNmBgbeGPF/cSP4tmr8pVkdizBF/XrYCy57mNJYuXsuD0redRN9dAc
+         KZfu1o7JFh0sGc7UU8zfgOEWm7Y6ki/q118+jgYpop4mxu+JrZqyYoRFfhssx03JgK6a
+         4BsA==
+X-Gm-Message-State: AOAM532QbIPeEZR8wWk3wrJBC3r6qdjd9+5NaBgssPe3s2BtslvIFVMp
+        oMFWAkPtlFyjctmsfYkGUn4=
+X-Google-Smtp-Source: ABdhPJwmxULcCBMXR6BD0JLAazGByGQYAT6BgoTu1ONDbXSqkFAZZJt5z69GiuVGoP2Im9fwPD+HbA==
+X-Received: by 2002:a7b:c3cc:: with SMTP id t12mr7819882wmj.68.1631477382665;
+        Sun, 12 Sep 2021 13:09:42 -0700 (PDT)
 Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id v10sm5463476wrg.15.2021.09.12.13.09.54
+        by smtp.gmail.com with ESMTPSA id v10sm5463476wrg.15.2021.09.12.13.09.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 13:09:57 -0700 (PDT)
+        Sun, 12 Sep 2021 13:09:42 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -84,9 +84,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-mmc@vger.kernel.org, linux-media@vger.kernel.org,
         dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
         linux-clk@vger.kernel.org
-Subject: [PATCH v11 10/34] gpu: host1x: Add host1x_channel_stop()
-Date:   Sun, 12 Sep 2021 23:08:08 +0300
-Message-Id: <20210912200832.12312-11-digetx@gmail.com>
+Subject: [PATCH v11 04/34] soc/tegra: Don't print error message when OPPs not available
+Date:   Sun, 12 Sep 2021 23:08:02 +0300
+Message-Id: <20210912200832.12312-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210912200832.12312-1-digetx@gmail.com>
 References: <20210912200832.12312-1-digetx@gmail.com>
@@ -96,52 +96,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add host1x_channel_stop() which waits till channel becomes idle and then
-stops the channel hardware. This is needed for supporting suspend/resume
-by host1x drivers since the hardware state is lost after power-gating,
-thus the channel needs to be stopped before client enters into suspend.
+Previously we assumed that devm_tegra_core_dev_init_opp_table() will
+be used only by drivers that will always have device with OPP table,
+but this is not true anymore. For example now Tegra30 will have OPP table
+for PWM, but Tegra20 not and both use the same driver. Hence let's not
+print the error message about missing OPP table in the common helper,
+we can print it elsewhere.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Paul Fertser <fercerpav@gmail.com> # PAZ00 T20
-Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/host1x/channel.c | 8 ++++++++
- include/linux/host1x.h       | 1 +
- 2 files changed, 9 insertions(+)
+ drivers/soc/tegra/common.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/host1x/channel.c b/drivers/gpu/host1x/channel.c
-index 4cd212bb570d..2a9a3a8d5931 100644
---- a/drivers/gpu/host1x/channel.c
-+++ b/drivers/gpu/host1x/channel.c
-@@ -75,6 +75,14 @@ struct host1x_channel *host1x_channel_get_index(struct host1x *host,
- 	return ch;
- }
+diff --git a/drivers/soc/tegra/common.c b/drivers/soc/tegra/common.c
+index cd33e99249c3..a42d4f98c078 100644
+--- a/drivers/soc/tegra/common.c
++++ b/drivers/soc/tegra/common.c
+@@ -111,9 +111,7 @@ int devm_tegra_core_dev_init_opp_table(struct device *dev,
+ 	 */
+ 	err = devm_pm_opp_of_add_table(dev);
+ 	if (err) {
+-		if (err == -ENODEV)
+-			dev_err_once(dev, "OPP table not found, please update device-tree\n");
+-		else
++		if (err != -ENODEV)
+ 			dev_err(dev, "failed to add OPP table: %d\n", err);
  
-+void host1x_channel_stop(struct host1x_channel *channel)
-+{
-+	struct host1x *host = dev_get_drvdata(channel->dev->parent);
-+
-+	host1x_hw_cdma_stop(host, &channel->cdma);
-+}
-+EXPORT_SYMBOL(host1x_channel_stop);
-+
- static void release_channel(struct kref *kref)
- {
- 	struct host1x_channel *channel =
-diff --git a/include/linux/host1x.h b/include/linux/host1x.h
-index 7bccf589aba7..66473b5be0af 100644
---- a/include/linux/host1x.h
-+++ b/include/linux/host1x.h
-@@ -181,6 +181,7 @@ struct host1x_job;
- 
- struct host1x_channel *host1x_channel_request(struct host1x_client *client);
- struct host1x_channel *host1x_channel_get(struct host1x_channel *channel);
-+void host1x_channel_stop(struct host1x_channel *channel);
- void host1x_channel_put(struct host1x_channel *channel);
- int host1x_job_submit(struct host1x_job *job);
- 
+ 		return err;
 -- 
 2.32.0
 
