@@ -5,203 +5,141 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 165EAC433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91BB2C433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:51:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F3F8F61026
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 71CB161026
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:51:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235604AbhILSr0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 14:47:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35606 "EHLO
+        id S235168AbhILSwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 14:52:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235364AbhILSrZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 14:47:25 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84EF5C061574;
-        Sun, 12 Sep 2021 11:46:10 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id i25so12205761lfg.6;
-        Sun, 12 Sep 2021 11:46:10 -0700 (PDT)
+        with ESMTP id S234680AbhILSwR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 14:52:17 -0400
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 627A5C061574;
+        Sun, 12 Sep 2021 11:51:03 -0700 (PDT)
+Received: by mail-pl1-x634.google.com with SMTP id bg1so4396931plb.13;
+        Sun, 12 Sep 2021 11:51:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=5KsYfuNRlvMrE9NTZucMYXQywZC0cvfGbwd3TTvoBus=;
-        b=F6/2gZ2lcI7EMAJusRhiZ0/WloKbWLGv7Pqkl0DzVlelronblNjwRQhrRkeh7NZzSO
-         0n4GUizzOJT9eKx/BmqRPdTEchksRuEczSXJ0xqeh5KOEyk4chmy3OqTgdlgaB3DHyjG
-         1mTws3KxM93MjvLe5iHYN/Hgq+5gBuZ+btCVJQJrOM7IRIpdfCeaFTbiY24/sG77Y2Dz
-         GqPsR4hlOxvzqn+pW15Ti0/OCWEMCCnFJl9Gnq8KaOZVJUc4NdCZCUu5XH3K3fsbZnZV
-         T5xzw2UDGOeVixDEh4aLFp/1JiD0hKstcVfhmN0LckyUMJGu4l1m/pJIzfuOCZqM5HA2
-         KBWw==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=N1vLVWi+RFNi6Lt1/29FRDB4TWWMhTl4uyfGG7aD3tY=;
+        b=NlqlbMJiK2E1YWTxgXUdHHmZFjzgEi7dCGaI2G1/NtMvvoFqBEg78eEPwU4VKovhQB
+         AfAYZb8tHbFhVvwh1kOLPcVN6+Mw3Wsn3J9oKC8JdY/a+GanDrcqCjWHXRueOG299gZU
+         biat7dhmd+ie2v7d23iYHNDt+PIFnFgF6kqnlhVQZoNua5lydGOy5lermLb/H9daVhLR
+         KZ5H2RJtcprwsi52mZgdTO7av/jzvNDR1OkWjw28veg76J57X9RmMN53HdT3Xax5sjny
+         j4KX3GtKfoPm74D/cW3pbclN/pWSRFNq1NekkZASgua53GGRT+U9zxzX4tV83gQskHen
+         SOQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=5KsYfuNRlvMrE9NTZucMYXQywZC0cvfGbwd3TTvoBus=;
-        b=by5WzGB4iP/zESgYPLauyljmC55vBMG4g60RyEkZxea4LzRvA4oQGro6QtvRbK/9aF
-         uDPKWNgCRwNSr93jxdMaFH594xPgc1zhgCcSWPSc51yH2sQAI13sY2vhf6XDTJCaQKUG
-         PlIRy7f1AYPHV/tR8arA+a3fJTl6Z/oIQt5jKgUEy4IOnXMOg/L/TtHopfptaj+Jm/o6
-         M7AcmpP+23fTwIX8gdB8zL0DgWvIBzmvuHteyPi0XebH7gWgjpn/RWRTnR72IKFaqRL1
-         y97GwYV3pXFRoM9HOob2Fvwxz98MonKIVN6I18eCynFuzvcOrz/k/mV3BaIeqfCcLjO4
-         VZzA==
-X-Gm-Message-State: AOAM533NJ7nObNYD57yxftjwudIDG2bEcu0Q7jB/GbZF5SvfgAe8m/4T
-        JLsQZ9MuFdLAd13ByNDkPYkgle6+31o=
-X-Google-Smtp-Source: ABdhPJx2aJX677qx18QbIaaMBgBaIgcdcDE4og02j8bJno8wZ2+OMe4JANO5qGz7yOvYXsBWazcVRA==
-X-Received: by 2002:ac2:57cb:: with SMTP id k11mr473082lfo.70.1631472368956;
-        Sun, 12 Sep 2021 11:46:08 -0700 (PDT)
-Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id q5sm588570lfg.36.2021.09.12.11.46.08
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=N1vLVWi+RFNi6Lt1/29FRDB4TWWMhTl4uyfGG7aD3tY=;
+        b=YLpW3QiuDEUR8Sj+DZJhggaEh9QA4Uuv1/W7z6F0maUesJrFU/SBOz8WAuz10C4fN+
+         Fih0dXQnTd/wN1XEmzrOAdxu2a1Cq9BUEqHmbEdBPmqdoai5Kl0i0I3gKuiz1VOoJ8bT
+         SMWdfvX4k6TZiHvnkmtjtty5Fg9CoGU++Nlw5YOSVp6NGbWFzS2HsijGi3arKrOfijiw
+         QZqg5l2khHbiHgRLPYbI12WjbdRL7lqpAVJhWf9ggp6ZzY/OE3JVXAJ2va4URB2rz+vl
+         0EO8QVWzhK2DHMEDBgFsw+OfMd14bH1WRPU5rgl4LZMAG596AB04o5j8Sah5iQoNzg6d
+         DdFQ==
+X-Gm-Message-State: AOAM5316UK4xsQkF505to0cxmaQ3z/HDaexqZHRn9hyGQibj7fZPuRgs
+        ISLTSqo/HYz/T1zgKFocz0s=
+X-Google-Smtp-Source: ABdhPJyQXhCb4Opp7kQdEEOvWhpynEaeqa3gnJ7BNQDwaZLTZpFA4PjcNFtLpF8+C+j0S/AN//TXAw==
+X-Received: by 2002:a17:90a:6c97:: with SMTP id y23mr8877993pjj.117.1631472662929;
+        Sun, 12 Sep 2021 11:51:02 -0700 (PDT)
+Received: from s19.smythies.com ([173.180.45.4])
+        by smtp.gmail.com with ESMTPSA id z8sm4520964pfa.113.2021.09.12.11.51.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 11:46:08 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v1 1/4] opp: Add more resource-managed variants of dev_pm_opp_of_add_table()
-Date:   Sun, 12 Sep 2021 21:44:55 +0300
-Message-Id: <20210912184458.17995-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210912184458.17995-1-digetx@gmail.com>
-References: <20210912184458.17995-1-digetx@gmail.com>
+        Sun, 12 Sep 2021 11:51:02 -0700 (PDT)
+From:   Doug Smythies <doug.smythies@gmail.com>
+X-Google-Original-From: Doug Smythies <dsmythies@telus.net>
+To:     srinivas.pandruvada@linux.intel.com, rafael@kernel.org,
+        len.brown@intel.com
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Doug Smythies <dsmythies@telus.net>
+Subject: [PATCH v2] cpufreq: intel_pstate: Override parameters if HWP forced by BIOS
+Date:   Sun, 12 Sep 2021 11:50:29 -0700
+Message-Id: <20210912185029.5704-1-dsmythies@telus.net>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add resource-managed variants of dev_pm_opp_of_add_table_indexed() and
-dev_pm_opp_of_add_table_noclk(), allowing drivers to remove boilerplate
-code.
+If HWP has been already been enabled by BIOS, it may be
+necessary to override some kernel command line parameters.
+Once it has been enabled it requires a reset to be disabled.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
 ---
- drivers/opp/of.c       | 46 +++++++++++++++++++++++++++++++++++-------
- include/linux/pm_opp.h | 12 +++++++++++
- 2 files changed, 51 insertions(+), 7 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 2a97c6535c4c..bd01ecb1d85c 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -1081,6 +1081,17 @@ static void devm_pm_opp_of_table_release(void *data)
- 	dev_pm_opp_of_remove_table(data);
- }
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1097f826ad70..8c176b7dae41 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3205,11 +3205,15 @@ static int __init intel_pstate_init(void)
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
+ 		return -ENODEV;
  
-+static int devm_of_add_table_indexed(struct device *dev, int index, bool getclk)
-+{
-+	int ret;
-+
-+	ret = _of_add_table_indexed(dev, index, getclk);
-+	if (ret)
-+		return ret;
-+
-+	return devm_add_action_or_reset(dev, devm_pm_opp_of_table_release, dev);
-+}
-+
- /**
-  * devm_pm_opp_of_add_table() - Initialize opp table from device tree
-  * @dev:	device pointer used to lookup OPP table.
-@@ -1102,13 +1113,7 @@ static void devm_pm_opp_of_table_release(void *data)
-  */
- int devm_pm_opp_of_add_table(struct device *dev)
- {
--	int ret;
+-	if (no_load)
+-		return -ENODEV;
 -
--	ret = dev_pm_opp_of_add_table(dev);
--	if (ret)
--		return ret;
--
--	return devm_add_action_or_reset(dev, devm_pm_opp_of_table_release, dev);
-+	return devm_of_add_table_indexed(dev, 0, true);
- }
- EXPORT_SYMBOL_GPL(devm_pm_opp_of_add_table);
- 
-@@ -1151,6 +1156,19 @@ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table_indexed);
- 
-+/**
-+ * devm_pm_opp_of_add_table_indexed() - Initialize indexed opp table from device tree
-+ * @dev:	device pointer used to lookup OPP table.
-+ * @index:	Index number.
-+ *
-+ * This is a resource-managed variant of dev_pm_opp_of_add_table_indexed().
-+ */
-+int devm_pm_opp_of_add_table_indexed(struct device *dev, int index)
-+{
-+	return devm_of_add_table_indexed(dev, index, true);
-+}
-+EXPORT_SYMBOL_GPL(devm_pm_opp_of_add_table_indexed);
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
++		bool hwp_forced = intel_pstate_hwp_is_enabled();
 +
- /**
-  * dev_pm_opp_of_add_table_noclk() - Initialize indexed opp table from device
-  *		tree without getting clk for device.
-@@ -1169,6 +1187,20 @@ int dev_pm_opp_of_add_table_noclk(struct device *dev, int index)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table_noclk);
- 
-+/**
-+ * devm_pm_opp_of_add_table_noclk() - Initialize indexed opp table from device
-+ *		tree without getting clk for device.
-+ * @dev:	device pointer used to lookup OPP table.
-+ * @index:	Index number.
-+ *
-+ * This is a resource-managed variant of dev_pm_opp_of_add_table_noclk().
-+ */
-+int devm_pm_opp_of_add_table_noclk(struct device *dev, int index)
-+{
-+	return devm_of_add_table_indexed(dev, index, false);
-+}
-+EXPORT_SYMBOL_GPL(devm_pm_opp_of_add_table_noclk);
++		if (hwp_forced)
++			pr_info("HWP enabled by BIOS\n");
++		else if (no_load)
++			return -ENODEV;
 +
- /* CPU device specific helpers */
+ 		copy_cpu_funcs(&core_funcs);
+ 		/*
+ 		 * Avoid enabling HWP for processors without EPP support,
+@@ -3219,8 +3223,7 @@ static int __init intel_pstate_init(void)
+ 		 * If HWP is enabled already, though, there is no choice but to
+ 		 * deal with it.
+ 		 */
+-		if ((!no_hwp && boot_cpu_has(X86_FEATURE_HWP_EPP)) ||
+-		    intel_pstate_hwp_is_enabled()) {
++		if ((!no_hwp && boot_cpu_has(X86_FEATURE_HWP_EPP)) || hwp_forced) {
+ 			hwp_active++;
+ 			hwp_mode_bdw = id->driver_data;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+@@ -3235,7 +3238,11 @@ static int __init intel_pstate_init(void)
  
- /**
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 84150a22fd7c..a95d6fdd20b6 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -439,7 +439,9 @@ static inline int dev_pm_opp_sync_regulators(struct device *dev)
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
- int dev_pm_opp_of_add_table(struct device *dev);
- int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
-+int devm_pm_opp_of_add_table_indexed(struct device *dev, int index);
- int dev_pm_opp_of_add_table_noclk(struct device *dev, int index);
-+int devm_pm_opp_of_add_table_noclk(struct device *dev, int index);
- void dev_pm_opp_of_remove_table(struct device *dev);
- int devm_pm_opp_of_add_table(struct device *dev);
- int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
-@@ -465,11 +467,21 @@ static inline int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
- 	return -EOPNOTSUPP;
- }
- 
-+static inline int devm_pm_opp_of_add_table_indexed(struct device *dev, int index)
-+{
-+	return -EOPNOTSUPP;
-+}
+ 			goto hwp_cpu_matched;
+ 		}
++		pr_info("HWP not enabled\n");
+ 	} else {
++		if (no_load)
++			return -ENODEV;
 +
- static inline int dev_pm_opp_of_add_table_noclk(struct device *dev, int index)
- {
- 	return -EOPNOTSUPP;
- }
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+ 		if (!id) {
+ 			pr_info("CPU model not supported\n");
+@@ -3314,10 +3321,9 @@ static int __init intel_pstate_setup(char *str)
+ 	else if (!strcmp(str, "passive"))
+ 		default_driver = &intel_cpufreq;
  
-+static inline int devm_pm_opp_of_add_table_noclk(struct device *dev, int index)
-+{
-+	return -EOPNOTSUPP;
-+}
+-	if (!strcmp(str, "no_hwp")) {
+-		pr_info("HWP disabled\n");
++	if (!strcmp(str, "no_hwp"))
+ 		no_hwp = 1;
+-	}
 +
- static inline void dev_pm_opp_of_remove_table(struct device *dev)
- {
- }
+ 	if (!strcmp(str, "force"))
+ 		force_load = 1;
+ 	if (!strcmp(str, "hwp_only"))
 -- 
-2.32.0
+2.25.1
 
