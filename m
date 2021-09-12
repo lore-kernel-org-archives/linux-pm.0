@@ -2,98 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8EA8C433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D549FC433FE
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:54:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9DB5761050
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B7C2A6103D
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:54:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236584AbhILUav (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 16:30:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58246 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236390AbhILUai (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:30:38 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6BDEC06175F;
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id t18so11411505wrb.0;
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=a0H54VcaSkULvQ0XfRhbooC/ZXW5WM4Ks5Bh/dzSIL8=;
-        b=Hm8kwc9+ak0NQvURspJVzZlnw2P1MvUPDLATWgiisBkeG2XJTi+80RgVDkxolXnBPR
-         CrVUDcXylOqzqU20VLb/ba+VYwJnCjQHeRJ8zWpUOYC0S9X6Gq+C111DBQyMZPOnJlWj
-         bExfAMWsXn3D2tAwuzp/vhBFQQQyX/syil99wuC9M/WyXlFczDSXykBQENS4yWjZ2Zb3
-         Xad8W3kR1vK81VSVkQQkx7CG22w9mKEEG8HW59hVEHtur5PRVITiylNUJQUSnuEn000b
-         vbIgfhJteFP3AYgir4m6tp/ZW2DdIYTqp0aYDV3BplUtPSyAuwgafhGEmz26t1UdHGiZ
-         fG+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=a0H54VcaSkULvQ0XfRhbooC/ZXW5WM4Ks5Bh/dzSIL8=;
-        b=BsWQ7TnhD96u1Xby3+faTLSBnGbZ8MNfn1g/4WawyfQ4NZOjSMTQGXamSWxJkdDbBC
-         LIxV/LL0q+pFW/Y/ObOBwGcuGcJsB6bhbVii547CZw8WarZqnvNjb65Vne5RznjSBQ0Z
-         NA/aoGk1B12uuyLu8XhuBie9EDYcpiNb+zxnwHwYIbrmtxg+vH57YUe6wAy9zTsEI/FE
-         OFamrfbAnZbN4HnqGAR2KjCt+gluUYyF6Xt/2sKp1i5JjAfu0asseE+EyvuZRt/haCzM
-         VloQHlW7cnPUzvo/oa2nw0KgDLwucBD4jqwL5P9ddGujJjkwE7V/Pp6T/ktokQMjSg+A
-         3BCg==
-X-Gm-Message-State: AOAM5309NUvfWzk/m1M0//DBgAIeiHyydA17QD627M3mNp++iV5ZxOxD
-        fZiQEugT5+3bQX/HncbRtJsBWQhs9XY=
-X-Google-Smtp-Source: ABdhPJwh2PUp3Py6hlk1c6sbav2J9iqh9ayK+eVHYQ9Or7wUlnyUeeZgVt0FRJMgGwLgO+R2wWNCCQ==
-X-Received: by 2002:adf:f789:: with SMTP id q9mr8868994wrp.367.1631478561454;
-        Sun, 12 Sep 2021 13:29:21 -0700 (PDT)
-Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 13:29:21 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v1 5/6] cpuidle: tegra: Enable compile testing
-Date:   Sun, 12 Sep 2021 23:29:06 +0300
-Message-Id: <20210912202907.28471-6-digetx@gmail.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210912202907.28471-1-digetx@gmail.com>
-References: <20210912202907.28471-1-digetx@gmail.com>
-MIME-Version: 1.0
+        id S236137AbhILUzk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 16:55:40 -0400
+Received: from comms.puri.sm ([159.203.221.185]:32776 "EHLO comms.puri.sm"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S236129AbhILUzk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Sep 2021 16:55:40 -0400
+Received: from localhost (localhost [127.0.0.1])
+        by comms.puri.sm (Postfix) with ESMTP id 6ED6FE030C;
+        Sun, 12 Sep 2021 13:54:25 -0700 (PDT)
+Received: from comms.puri.sm ([127.0.0.1])
+        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id U2GGkN6HnWPj; Sun, 12 Sep 2021 13:54:24 -0700 (PDT)
+From:   Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
+To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Anton Vorontsov <anton.vorontsov@linaro.org>,
+        Ramakrishna Pallala <ramakrishna.pallala@intel.com>,
+        Dirk Brandewie <dirk.brandewie@gmail.com>,
+        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+        stable@vger.kernel.org
+Subject: [PATCH 1/2] power: supply: max17042_battery: Clear status bits in interrupt handler
+Date:   Sun, 12 Sep 2021 22:54:01 +0200
+Message-Id: <20210912205402.160939-1-sebastian.krzyszkowiak@puri.sm>
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable compile testing of tegra-cpuidle driver.
+The gauge requires us to clear the status bits manually for some alerts
+to be properly dismissed. Previously the IRQ was configured to react only
+on falling edge, which wasn't technically correct (the ALRT line is active
+low), but it had a happy side-effect of preventing interrupt storms
+on uncleared alerts from happening.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Fixes: 7fbf6b731bca ("power: supply: max17042: Do not enforce (incorrect) interrupt trigger type")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
 ---
- drivers/cpuidle/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/max17042_battery.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 334f83e56120..599286fc0b08 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -99,7 +99,7 @@ config ARM_MVEBU_V7_CPUIDLE
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index 8dffae76b6a3..c53980c8432a 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -876,6 +876,9 @@ static irqreturn_t max17042_thread_handler(int id, void *dev)
+ 		max17042_set_soc_threshold(chip, 1);
+ 	}
  
- config ARM_TEGRA_CPUIDLE
- 	bool "CPU Idle Driver for NVIDIA Tegra SoCs"
--	depends on ARCH_TEGRA && !ARM64
-+	depends on (ARCH_TEGRA || COMPILE_TEST) && !ARM64 && MMU
- 	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
- 	select ARM_CPU_SUSPEND
- 	help
++	regmap_clear_bits(chip->regmap, MAX17042_STATUS,
++			  0xFFFF & ~(STATUS_POR_BIT | STATUS_BST_BIT));
++
+ 	power_supply_changed(chip->battery);
+ 	return IRQ_HANDLED;
+ }
 -- 
-2.32.0
+2.33.0
 
