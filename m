@@ -5,66 +5,66 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C6CC4332F
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8EA8C433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7584B61056
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9DB5761050
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236427AbhILUat (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 16:30:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58248 "EHLO
+        id S236584AbhILUav (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 16:30:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58246 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236394AbhILUai (ORCPT
+        with ESMTP id S236390AbhILUai (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:30:38 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3737C061574;
-        Sun, 12 Sep 2021 13:29:23 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id 192-20020a1c04c9000000b002f7a4ab0a49so4092822wme.0;
-        Sun, 12 Sep 2021 13:29:23 -0700 (PDT)
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6BDEC06175F;
+        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id t18so11411505wrb.0;
+        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=AyR2ZkcURDXZDRYrzrABh/RSFyxFVolgF84p/Vdxxs4=;
-        b=PHowcovkSxmFNc7rDqbAaw/nK3EGGSgworhe+XIqHDgcpV4uR5CYEuiVVaSPJLdHm0
-         WhONSaRXZBV/FYrpLbtHGLLuS2bOwIRYDiKZzehqbk3wZzcJTGRFBklJrvyvCq2np4QF
-         55lrWUqMUjsKYh9bVY0wrHy+MvaMmgMeNeWm09/AaQxhk+wi+jk17L56Br+w0YN/WngI
-         mupvOvCAqaNsxOBQJcxw3IpGYf6nqcOynnFWNE5t3XGCaSsmwEz1+QTTRg0JpJcdIuRI
-         7ih6+4MXjWW7KyjjByqtsoFW+GHfSO6DH/5W0mySd4jK7v+81TtQfhTLqp8TfXIh8igq
-         2zSw==
+        bh=a0H54VcaSkULvQ0XfRhbooC/ZXW5WM4Ks5Bh/dzSIL8=;
+        b=Hm8kwc9+ak0NQvURspJVzZlnw2P1MvUPDLATWgiisBkeG2XJTi+80RgVDkxolXnBPR
+         CrVUDcXylOqzqU20VLb/ba+VYwJnCjQHeRJ8zWpUOYC0S9X6Gq+C111DBQyMZPOnJlWj
+         bExfAMWsXn3D2tAwuzp/vhBFQQQyX/syil99wuC9M/WyXlFczDSXykBQENS4yWjZ2Zb3
+         Xad8W3kR1vK81VSVkQQkx7CG22w9mKEEG8HW59hVEHtur5PRVITiylNUJQUSnuEn000b
+         vbIgfhJteFP3AYgir4m6tp/ZW2DdIYTqp0aYDV3BplUtPSyAuwgafhGEmz26t1UdHGiZ
+         fG+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=AyR2ZkcURDXZDRYrzrABh/RSFyxFVolgF84p/Vdxxs4=;
-        b=msZrLQvuoJ6DRC2e6jW/6OyVRQInNR2DYi6vLawj1wwLrZfvLxXc09+LTc9kDmLyG7
-         BZJSa1vity3A9Y5BEEuo9wc/QRBbs+WLpSGFBCAcyS4Kcc9a4FjAEMfrR4u+2IpdFRYl
-         xDXn4UCGXN14oZlQhHRxyfqL4dS6XQbp2eCZ8YaKo7kQcXsHULNz4z7bBgl8C1JFw/QP
-         vbxFJLC+wYVFKjqumwAxmYbZC+D/I+LbRs7MxDvs9dIRilCT8AOLr6BCpIfaTuYf9KAx
-         aSV/3ypy/1XObRhrSF8cAwjZPYRtR99Er01F83L/zm0CsFnMA7cUupPkGcWXZuVUZd+X
-         cPcw==
-X-Gm-Message-State: AOAM533Xujo4ZNP0MlJoJfxmWGMSyiB9gY2OhftOUhTvlRFaXBDlyO/K
-        og1l368mCrEkN8X/5qlZvTU=
-X-Google-Smtp-Source: ABdhPJwaQJpPBxnSEbswZ3ufsNkRQ98oLdVp8bOzBFhqsGULp3N+srvHJAL+Obyl0243K8JIXkf3Gg==
-X-Received: by 2002:a05:600c:2046:: with SMTP id p6mr8193149wmg.132.1631478562295;
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
+        bh=a0H54VcaSkULvQ0XfRhbooC/ZXW5WM4Ks5Bh/dzSIL8=;
+        b=BsWQ7TnhD96u1Xby3+faTLSBnGbZ8MNfn1g/4WawyfQ4NZOjSMTQGXamSWxJkdDbBC
+         LIxV/LL0q+pFW/Y/ObOBwGcuGcJsB6bhbVii547CZw8WarZqnvNjb65Vne5RznjSBQ0Z
+         NA/aoGk1B12uuyLu8XhuBie9EDYcpiNb+zxnwHwYIbrmtxg+vH57YUe6wAy9zTsEI/FE
+         OFamrfbAnZbN4HnqGAR2KjCt+gluUYyF6Xt/2sKp1i5JjAfu0asseE+EyvuZRt/haCzM
+         VloQHlW7cnPUzvo/oa2nw0KgDLwucBD4jqwL5P9ddGujJjkwE7V/Pp6T/ktokQMjSg+A
+         3BCg==
+X-Gm-Message-State: AOAM5309NUvfWzk/m1M0//DBgAIeiHyydA17QD627M3mNp++iV5ZxOxD
+        fZiQEugT5+3bQX/HncbRtJsBWQhs9XY=
+X-Google-Smtp-Source: ABdhPJwh2PUp3Py6hlk1c6sbav2J9iqh9ayK+eVHYQ9Or7wUlnyUeeZgVt0FRJMgGwLgO+R2wWNCCQ==
+X-Received: by 2002:adf:f789:: with SMTP id q9mr8868994wrp.367.1631478561454;
+        Sun, 12 Sep 2021 13:29:21 -0700 (PDT)
 Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.21
+        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
+        Sun, 12 Sep 2021 13:29:21 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v1 6/6] cpuidle: tegra: Check whether PMC is ready
-Date:   Sun, 12 Sep 2021 23:29:07 +0300
-Message-Id: <20210912202907.28471-7-digetx@gmail.com>
+Subject: [PATCH v1 5/6] cpuidle: tegra: Enable compile testing
+Date:   Sun, 12 Sep 2021 23:29:06 +0300
+Message-Id: <20210912202907.28471-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210912202907.28471-1-digetx@gmail.com>
 References: <20210912202907.28471-1-digetx@gmail.com>
@@ -74,31 +74,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Check whether PMC is ready before proceeding with the cpuidle registration.
-This fixes racing with the PMC driver probe order, which results in a
-disabled deepest CC6 idling state if cpuidle driver is probed before the
-PMC.
+Enable compile testing of tegra-cpuidle driver.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/cpuidle/cpuidle-tegra.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpuidle/Kconfig.arm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index 508bd9f23792..9845629aeb6d 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -337,6 +337,9 @@ static void tegra_cpuidle_setup_tegra114_c7_state(void)
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 334f83e56120..599286fc0b08 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -99,7 +99,7 @@ config ARM_MVEBU_V7_CPUIDLE
  
- static int tegra_cpuidle_probe(struct platform_device *pdev)
- {
-+	if (tegra_pmc_get_suspend_mode() == TEGRA_SUSPEND_NOT_READY)
-+		return -EPROBE_DEFER;
-+
- 	/* LP2 could be disabled in device-tree */
- 	if (tegra_pmc_get_suspend_mode() < TEGRA_SUSPEND_LP2)
- 		tegra_cpuidle_disable_state(TEGRA_CC6);
+ config ARM_TEGRA_CPUIDLE
+ 	bool "CPU Idle Driver for NVIDIA Tegra SoCs"
+-	depends on ARCH_TEGRA && !ARM64
++	depends on (ARCH_TEGRA || COMPILE_TEST) && !ARM64 && MMU
+ 	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+ 	select ARM_CPU_SUSPEND
+ 	help
 -- 
 2.32.0
 
