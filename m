@@ -2,201 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13F32C433EF
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:13:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52F04C433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F083261076
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:13:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3D0496103D
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236396AbhILULF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 16:11:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53860 "EHLO
+        id S236377AbhILUaf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 16:30:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236266AbhILUK4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:10:56 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF830C061574;
-        Sun, 12 Sep 2021 13:09:41 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id v20-20020a1cf714000000b002e71f4d2026so4053786wmh.1;
-        Sun, 12 Sep 2021 13:09:41 -0700 (PDT)
+        with ESMTP id S236331AbhILUad (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:30:33 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE3F2C06175F;
+        Sun, 12 Sep 2021 13:29:18 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id t18so11411327wrb.0;
+        Sun, 12 Sep 2021 13:29:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+whg/vR1lDDJUCWuilT5Vzp2lbX9lxYPieEOT99+gTQ=;
-        b=V5Aa4YrasEF2oAFxijDRlvhEgMLA7I6pw6CbcE3pvDx1ziFBju9LNloAq2VknotN7f
-         38aCc6QBuqukFCW3K57M5bZ36l0Re3YLoWL7GWh1vCHdifl5CmsmmBhF152dzXW923Fd
-         Fp4ybtVuWxeHS2oS4y2PC9JXwLwKhnOEdgMIFud5Oa/A1XKFvm5IYhQa3SfZOQGuIcsv
-         XhiBPEkkbdhzx8tuLkBpTD9Az/IRiOWEnOGwvP9Vab8oAbXKPyfW8t6pUhLIRAlv3P2g
-         RfDsnsJlGcDox4xCmFZ/Sa8ZiXr3G0n2BA9fjxFdYbhandYfEorXaDTWbWYKWeiEuhMr
-         fLxw==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=OloBSLKiPPVBBxaWCX+yQgzFVba/9OcJTIhGRQSsgPI=;
+        b=Rvm0/DI3FIv9bkQCQOu/xGVU6Gu+WIhotIlEQtWCeY/yT/z633wFL3W5ZSxBHr2pvt
+         wlDjIolypnPpgAmvH6yB9BuuXTnnhQLjmilqhWjpkop3hdqm/Ylqwp2loD86/vVjYoJ1
+         LRKLhxolnoK6Qi0V1B65a1EFoxJcpqCNswvm6ayqkQlT4bMT4qWe/eTRJ5AomTxFQlKd
+         0oKMv92zN3to5WhI0WSI+vLZjJgsKZ2gIUFQVSxKb6AFl59yTgB1T6GcNCpJi8VyE6gv
+         r6Wh98s3f8CkIhFlnrJvKm+bm8DsR1ij4w+k/Pbj/W0sLqZiuBV98zBKO5fq1kZ4TM5k
+         4plw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+whg/vR1lDDJUCWuilT5Vzp2lbX9lxYPieEOT99+gTQ=;
-        b=4Q2BwsuoZVt5lTEIbN9j8uW3nJmFkKVDyZNi7kmtXzWx3xtulU2ml3ACLf02eUxEpG
-         XEYbOGuGcrcQUnDS73esboU9b3Eo0t8kNJTHmTTzCqbrfVZnELSa8OawD6PjGeqEkJm0
-         P1Dxi27KqAzpeYG+2X4R6ZVc8NgioIHS1LZiOH526abjaG5TEBWTT52ccms1F//pqxUR
-         OWYbU/9KWxKO2GlgfaxDCIuSQ98zbTxRWhH6/wnnbzNzDA7nifK/hp73SCyvWo8gR9RH
-         S481aEseGjg6iseOMJ8mLf3nSgiHay8Jtx0rrnMaHZlQfePqfdzeiffPQFZaE0bUFU9+
-         eYzQ==
-X-Gm-Message-State: AOAM5320wQpf4Rh5oJy/3DpkoUE6r5/TlPjrMsy4QqVPaNgaqRF8iysz
-        AQsAddIleG5DcAGREPTxBvY=
-X-Google-Smtp-Source: ABdhPJyUSupdqTypNZScVZTiK5D0yEZxdKj/mEB3TUIXMX8PnKbwR9X93zXb/+VgwZ4ZoDBHSQSkmA==
-X-Received: by 2002:a1c:28a:: with SMTP id 132mr7935009wmc.101.1631477380517;
-        Sun, 12 Sep 2021 13:09:40 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=OloBSLKiPPVBBxaWCX+yQgzFVba/9OcJTIhGRQSsgPI=;
+        b=AfGnU6vMrDO1i8oLtuOEAsvAXQvEOa4zH+Kp6TToSUK5uFQ0FoQ/QQ0EJ/+fM+m5kI
+         af5C+vqtLUgptnwRjyaVrX+gOh/trwc1PBKflZ8Vrxpm4AeqZTsfTSKv85+WTekoHDOI
+         nZ1FasaEBzkjMUeMo3AuLAS5PwDlFcGGKZv4ilBbExarPmM7U88MQbSIYYImm+Aksj3z
+         8HUsnWa9xvHva1tLDqRViSSqNNbnEkA0yNGnRoqYTTeO4YACTp2279BGAgEMtHzVRdrR
+         ZyKIIhxenic0KUatvAuNcqfnRtORJSXWFDPfJHaa4VqltuOHLYl8ufuiDEgUTKxa9Zho
+         xLFw==
+X-Gm-Message-State: AOAM531yLSvjOK4R6EjWfsqLc6mCTO0wfzBA7beVlVRryU+RmfjxFEz1
+        HE21BRcrFAYrRh9tGwNPYKM=
+X-Google-Smtp-Source: ABdhPJwIZ+xg0z95IiZtTTZi6ktU1TYrJL3slT4Y/bxwOFOYNaHJZhdbNL8AkCYOIfwpG7Z3nKbfog==
+X-Received: by 2002:adf:f185:: with SMTP id h5mr9036231wro.302.1631478557405;
+        Sun, 12 Sep 2021 13:29:17 -0700 (PDT)
 Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id v10sm5463476wrg.15.2021.09.12.13.09.38
+        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 13:09:40 -0700 (PDT)
+        Sun, 12 Sep 2021 13:29:17 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Peter Chen <peter.chen@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Nishanth Menon <nm@ti.com>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Richard Weinberger <richard@nod.at>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-spi@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-mmc@vger.kernel.org, linux-media@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-        linux-clk@vger.kernel.org
-Subject: [PATCH v11 03/34] soc/tegra: pmc: Disable PMC state syncing
-Date:   Sun, 12 Sep 2021 23:08:01 +0300
-Message-Id: <20210912200832.12312-4-digetx@gmail.com>
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v1 0/6] Tegra cpuidle driver fixes and improvements for 5.16
+Date:   Sun, 12 Sep 2021 23:29:01 +0300
+Message-Id: <20210912202907.28471-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210912200832.12312-1-digetx@gmail.com>
-References: <20210912200832.12312-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Disable PMC state syncing in order to ensure that we won't break older
-kernels once device-trees will be updated with the addition of the power
-domains. This also allows to apply device-tree PM patches independently
-from the driver patches.
+This series adds compile-testing support to Tegra cpuidle driver and fixes
+a non-critical problem that should pop up only when power management patches
+[1] will be merged. Previously I sent out these patches separately[2][3],
+but they partially missed recent kernel release. I combined the remaining
+patches into this series and added ack from Daniel Lezcano that he gave
+to the "Check whether PMC is ready" patch [3].
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/soc/tegra/pmc.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+[1] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=261973
+[2] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=252996
+[3] https://patchwork.ozlabs.org/project/linux-tegra/list/?series=254040
 
-diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 50091c4ec948..fb8faf7b226a 100644
---- a/drivers/soc/tegra/pmc.c
-+++ b/drivers/soc/tegra/pmc.c
-@@ -360,6 +360,7 @@ struct tegra_pmc_soc {
- 	unsigned int num_pmc_clks;
- 	bool has_blink_output;
- 	bool has_usb_sleepwalk;
-+	bool supports_core_domain;
- };
- 
- /**
-@@ -3041,6 +3042,7 @@ static void tegra20_pmc_setup_irq_polarity(struct tegra_pmc *pmc,
- }
- 
- static const struct tegra_pmc_soc tegra20_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = ARRAY_SIZE(tegra20_powergates),
- 	.powergates = tegra20_powergates,
- 	.num_cpu_powergates = 0,
-@@ -3101,6 +3103,7 @@ static const char * const tegra30_reset_sources[] = {
- };
- 
- static const struct tegra_pmc_soc tegra30_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = ARRAY_SIZE(tegra30_powergates),
- 	.powergates = tegra30_powergates,
- 	.num_cpu_powergates = ARRAY_SIZE(tegra30_cpu_powergates),
-@@ -3157,6 +3160,7 @@ static const u8 tegra114_cpu_powergates[] = {
- };
- 
- static const struct tegra_pmc_soc tegra114_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = ARRAY_SIZE(tegra114_powergates),
- 	.powergates = tegra114_powergates,
- 	.num_cpu_powergates = ARRAY_SIZE(tegra114_cpu_powergates),
-@@ -3273,6 +3277,7 @@ static const struct pinctrl_pin_desc tegra124_pin_descs[] = {
- };
- 
- static const struct tegra_pmc_soc tegra124_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = ARRAY_SIZE(tegra124_powergates),
- 	.powergates = tegra124_powergates,
- 	.num_cpu_powergates = ARRAY_SIZE(tegra124_cpu_powergates),
-@@ -3398,6 +3403,7 @@ static const struct tegra_wake_event tegra210_wake_events[] = {
- };
- 
- static const struct tegra_pmc_soc tegra210_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = ARRAY_SIZE(tegra210_powergates),
- 	.powergates = tegra210_powergates,
- 	.num_cpu_powergates = ARRAY_SIZE(tegra210_cpu_powergates),
-@@ -3555,6 +3561,7 @@ static const struct tegra_wake_event tegra186_wake_events[] = {
- };
- 
- static const struct tegra_pmc_soc tegra186_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = 0,
- 	.powergates = NULL,
- 	.num_cpu_powergates = 0,
-@@ -3689,6 +3696,7 @@ static const struct tegra_wake_event tegra194_wake_events[] = {
- };
- 
- static const struct tegra_pmc_soc tegra194_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = 0,
- 	.powergates = NULL,
- 	.num_cpu_powergates = 0,
-@@ -3757,6 +3765,7 @@ static const char * const tegra234_reset_sources[] = {
- };
- 
- static const struct tegra_pmc_soc tegra234_pmc_soc = {
-+	.supports_core_domain = false,
- 	.num_powergates = 0,
- 	.powergates = NULL,
- 	.num_cpu_powergates = 0,
-@@ -3803,6 +3812,14 @@ static void tegra_pmc_sync_state(struct device *dev)
- {
- 	int err;
- 
-+	/*
-+	 * Newer device-trees have power domains, but we need to prepare all
-+	 * device drivers with runtime PM and OPP support first, otherwise
-+	 * state syncing is unsafe.
-+	 */
-+	if (!pmc->soc->supports_core_domain)
-+		return;
-+
- 	/*
- 	 * Older device-trees don't have core PD, and thus, there are
- 	 * no dependencies that will block the state syncing. We shouldn't
+Dmitry Osipenko (6):
+  soc/tegra: fuse: Add stubs needed for compile testing
+  soc/tegra: irq: Add stubs needed for compile testing
+  soc/tegra: pm: Make stubs usable for compile testing
+  clk: tegra: Add stubs needed for compile testing
+  cpuidle: tegra: Enable compile testing
+  cpuidle: tegra: Check whether PMC is ready
+
+ drivers/cpuidle/Kconfig.arm     |  2 +-
+ drivers/cpuidle/cpuidle-tegra.c |  3 +++
+ include/linux/clk/tegra.h       |  4 ++++
+ include/soc/tegra/fuse.h        | 31 ++++++++++++++++++++++++++-----
+ include/soc/tegra/irq.h         |  9 ++++++++-
+ include/soc/tegra/pm.h          |  2 +-
+ 6 files changed, 43 insertions(+), 8 deletions(-)
+
 -- 
 2.32.0
 
