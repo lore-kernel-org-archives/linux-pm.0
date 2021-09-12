@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BEE0C433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B21A7C433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C59961076
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9957761076
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 18:46:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235228AbhILSrY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 14:47:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35604 "EHLO
+        id S235872AbhILSr2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 14:47:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234680AbhILSrY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 14:47:24 -0400
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3E8BC061574;
-        Sun, 12 Sep 2021 11:46:09 -0700 (PDT)
-Received: by mail-lj1-x22c.google.com with SMTP id r3so13058274ljc.4;
-        Sun, 12 Sep 2021 11:46:09 -0700 (PDT)
+        with ESMTP id S235826AbhILSr1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 14:47:27 -0400
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD392C061574;
+        Sun, 12 Sep 2021 11:46:12 -0700 (PDT)
+Received: by mail-lj1-x22a.google.com with SMTP id s12so13124275ljg.0;
+        Sun, 12 Sep 2021 11:46:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Q56JrzkcHqlDDYAqTVxBga8cYlObhzJYEpHH2EZ3m9E=;
-        b=mi1+8LsKBCHLkR+4F39hcz+K5JnpEdGR/HM34uZ3Hl6/dxkDRJqAtOUCxqKqoQKtNW
-         MCJlcjBPDy8gEU6M7MnS9mDiWzKpvjomd1LJUX8IgrfX+WCViVzHE+Zg+FZ8kiPn4E0w
-         0pSIcBAXxK91/DkkxuY85mJGgitr9u5cHttnGLo+ImJIEKicMwvRj9cc/c+Z3UJYd5Jf
-         5q4Nfjdh9ebmkUz9qF+S7Bw4UM3H06E4WJhUNOL65K9/7LE1hxyUnGeF90fvBsC7bG2a
-         fHzcimUWihOzigG5i5mR5Ip6kSMVKrBnClCi58CJyjHqTXd0/qDKyycPg6fnhsxz5MZS
-         9PbQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Z2RXcbB3tu0m4WW0OHBxApkMwFU6fLHEdrXt9r4rSKc=;
+        b=CgYuDKKtuJGn0+8ts8VKdkmumCXL7q8NSFw115BOkLGhWNvDq56YpfN9LFPiylzIFH
+         KdFw6zGb42NBBWS2V+FwMNwG5WiwgCjJI17bJIvl8R0xzcicNRyZOgFL77aHHLZRAl+Z
+         OVVqm94poh3lk2Yp3hH9SFTwfawMlRg1795GVNAwkXRcXb+hgEX8P3NaD/0bnxxzWrRp
+         nzsSdfVuseeXhCTFEdkiM8h+4zaggCy0kt5TbxN0uo8VQyxlEGFIwhkT+Qnb69tNq9Qh
+         +CdIeNfBYva2xaJBMb9MBUQ4t53IemnzpQGL2i3x4/rWvVfpqyuqZSCI/co6nlToqv3p
+         tE0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Q56JrzkcHqlDDYAqTVxBga8cYlObhzJYEpHH2EZ3m9E=;
-        b=WakH9yPLZdd47MIbV/HFsCEScNIgFp2y1GoTNhYvM476TG+Bk01hmOEXag6yo+bOs4
-         q/JHiUqc5k1lOGnEVUXdJDNklG9Cw00ENxA0SKUk3bRE2uQg7eVOM7MAv4tRXpG7XOZC
-         EptkCDOkh/ZBgLgf/VW/IWMoTWxyFWeavFahhcO6aFGHWysQWuurWbmCT+PuuXk9YSjS
-         AHceWJ7tYFfyb7g/cM7h1/mhalko95A0sUH6y22LW+YpULqnaviPc5FiIxlCDHvRXVim
-         DiYgL1R3wvixObN/BUV0BvHauHIxeIs5TUPSYVZErzuCJhEP5Zse+czKadE9Gf60ZvdX
-         onBw==
-X-Gm-Message-State: AOAM533rTeUsjL+ePo0TUDUYcxMhzDB/A8M3E5PTt6bMbdCRF9Q7vDw7
-        KvCMSUsOHKfIj19fOL+MhlXjsHTShO8=
-X-Google-Smtp-Source: ABdhPJxPTzAx2s58MURkXqHJUIV52ouK5bUuydkhvZlQyUBpIh4vJ0dRfchw8wAf+23aHJuMVgHT+g==
-X-Received: by 2002:a05:651c:1541:: with SMTP id y1mr6969424ljp.226.1631472368231;
-        Sun, 12 Sep 2021 11:46:08 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Z2RXcbB3tu0m4WW0OHBxApkMwFU6fLHEdrXt9r4rSKc=;
+        b=C8CfK/Pn20rWZdzCtg8FWrbfD2lCH6CMcBMHhkDXrnVhbZ7K/kMR22NqyIMkW3DOsI
+         pehrcMYKs6oo8iRZZ20pZaMb1Rkgd8ucwq8tixtmB9x+sWIN9Qpik3810KPlwZIRGF0P
+         xS2cNCDej0y5aLEBz9NJZ0WuT33+mvgrqHdO6EC/QnrJJCZPC4cubGE3gyDqE6kuiq3g
+         69xGGRXB/5892HIXsmP1ZhqzZIvbSoFl0TVjFZ+5q3rokq+hMDMIRk6KNJXHySDZRP4P
+         M3Reycfv1PEODR+R6jSJIexsro2kSXzMpAQ6vWylxXITGzi/y8M8GoEQlOj4Z++d3bIj
+         82jA==
+X-Gm-Message-State: AOAM53190zzFOPchx+W1l/ede3OgNZs3skuHOPkdwkfxgoSRfCcp/OCk
+        G8GWxBhMnNaqyhdGarwvrgw=
+X-Google-Smtp-Source: ABdhPJyHw+jtKCOivSBI+NMKRt8D7t8dUHjAg9UXh7vHT2KzI9E5J/jMOi7ETCAnPJ3OfY4VF2Gm4g==
+X-Received: by 2002:a05:651c:3dd:: with SMTP id f29mr7301561ljp.69.1631472371136;
+        Sun, 12 Sep 2021 11:46:11 -0700 (PDT)
 Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id q5sm588570lfg.36.2021.09.12.11.46.07
+        by smtp.gmail.com with ESMTPSA id q5sm588570lfg.36.2021.09.12.11.46.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 11:46:07 -0700 (PDT)
+        Sun, 12 Sep 2021 11:46:10 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,33 +66,43 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Chanwoo Choi <cw00.choi@samsung.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v1 0/4] Make probe() of Tegra devfreq driver completely resource-managed
-Date:   Sun, 12 Sep 2021 21:44:54 +0300
-Message-Id: <20210912184458.17995-1-digetx@gmail.com>
+Subject: [PATCH v1 4/4] PM / devfreq: tegra30: Check whether clk_round_rate() returns zero rate
+Date:   Sun, 12 Sep 2021 21:44:58 +0300
+Message-Id: <20210912184458.17995-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210912184458.17995-1-digetx@gmail.com>
+References: <20210912184458.17995-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds new resource-managed helpers and makes Tegra devfreq
-driver to use them, improving the driver's error-handling code.
+EMC clock is always-on and can't be zero. Check whether clk_round_rate()
+returns zero rate and error out if it does. It can return zero if clock
+tree isn't initialized properly.
 
-Dmitry Osipenko (4):
-  opp: Add more resource-managed variants of dev_pm_opp_of_add_table()
-  PM / devfreq: Add devm_devfreq_add_governor()
-  PM / devfreq: tegra30: Use resource-managed helpers
-  PM / devfreq: tegra30: Check whether clk_round_rate() returns zero
-    rate
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra30-devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/devfreq/devfreq.c         |  26 +++++++
- drivers/devfreq/governor.h        |   3 +
- drivers/devfreq/tegra30-devfreq.c | 109 +++++++++++++-----------------
- drivers/opp/of.c                  |  46 +++++++++++--
- include/linux/pm_opp.h            |  12 ++++
- 5 files changed, 127 insertions(+), 69 deletions(-)
-
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index d83fdc2713ed..65ecf17a36f4 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -891,9 +891,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		return err;
+ 
+ 	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
+-	if (rate < 0) {
++	if (rate <= 0) {
+ 		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
+-		return rate;
++		return rate ?: -EINVAL;
+ 	}
+ 
+ 	tegra->max_freq = rate / KHZ;
 -- 
 2.32.0
 
