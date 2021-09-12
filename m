@@ -5,66 +5,66 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A21CC43219
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4238C4332F
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 25DEC6103D
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 94BFE6108E
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Sep 2021 20:29:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236499AbhILUao (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Sep 2021 16:30:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58244 "EHLO
+        id S236396AbhILUai (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Sep 2021 16:30:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58232 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236383AbhILUah (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:30:37 -0400
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73112C061574;
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
-Received: by mail-wr1-x42c.google.com with SMTP id i23so11367674wrb.2;
-        Sun, 12 Sep 2021 13:29:22 -0700 (PDT)
+        with ESMTP id S236372AbhILUaf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Sep 2021 16:30:35 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54B3EC061762;
+        Sun, 12 Sep 2021 13:29:20 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id d6so11341176wrc.11;
+        Sun, 12 Sep 2021 13:29:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=cZO3c0fpnwQfqDRvDUKCPGXMXP2rFLnO7bySGQVOuzg=;
-        b=Ydfa+q6BwqoWYTb3uTbbugDmElpcXeMJKd7IUmktBODwQDdzCtRfN9jEIWR0MegiIY
-         lvx19ENUVFkK8sVlc2wyoaFAQ/ry6evxQ+2/2NSRorWgf17bpechZHo5kEw1ZarcWzJ1
-         nrDfXD0sDq+LVMaaIvptcpaKIC3WIKnkcevHEILQDwIxpmNIRQhgfHJFcSTDtdxa1MPX
-         qxycbTbL1Bz1kOgmiRWh8ZBk+vO9Wfrg3gdR5Uuk6OFfXhF20JNBZvO4Ev9eN/AMrOzQ
-         meGST2SkhQs1zHX9VX0uHYu37bkL5aUIVKV8xhV/noh6IxepvK5zK+Lbm0pWNTiU01Cb
-         RTdQ==
+        bh=JTbm+Ivds98cb9V5q8q1C/zZH2NCdOMIxgLjAuUIi4Y=;
+        b=QdWTkWXDkHr1OL1oUfrE+dECJvDZkBMO98M5MBCU2R8F6tt47tXHBM72yq7z85SzOs
+         b8T/Lgz5zoU/tOWehQFeBfYsFU7xBSPFKMjO+dErY2llrYtII90K67dkk0qVCgqoL/XS
+         KGUjU8e870h2J57SuTHzRDxat/KdQKvk/aFP7TnQclG2P+60qLgV6FRoZLa/k9wHCs8i
+         TCXdOJWrxlpbr6i6KFKYJJxspQqmWeKgPA8kssvCRWoH+w/4jbOnaHh13mVXx0M8mk6t
+         1UrD5h+oNXFl9CTzMXoclhEsy/1hUMmZ83918ADBhOFCt+gpH3yIG3R5iW4eRoQ+ebf/
+         jTrg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=cZO3c0fpnwQfqDRvDUKCPGXMXP2rFLnO7bySGQVOuzg=;
-        b=EATYU66HIFYUIHP03cMecAwyGcZVLwLclyghDB9szF4kKzRqBrWH9se8VoyZzrmbaA
-         QB629CgUHHsz7CO9j9NQiLwEBGS37BboR93ovOKdgwiYyoHvPD7tgVfXghtjWB3D6BY6
-         /jQkyC2ofErHYTQ2YqnbxDw9rZyCKQkmF1RSCadhhJYRshyuMKEebBEfjVQeXfbmqvLr
-         TN4jfk6M2UM/JTy3mRsVYFHDVfgBjGCEVVkUoKLM17+s/ADajgD46sKhgmyc5aWCDAVn
-         1lW0xly4f+XbyGlwTJlZHls2f66Lb7Mna/QA1Ni1i9pRxbX+THrwIxy1DeyEB8bJVLTl
-         r5ww==
-X-Gm-Message-State: AOAM531E7DA1YXVfcKKmHdMvkSAg7MgJ4Xv9PHh4rPlVNMxxo9zqxlwu
-        TWAWGyTGcQOKVttB7SIxmYw=
-X-Google-Smtp-Source: ABdhPJwM0nLTIrYP/wtpMt2yYOSJNezEQsNl15O/3gO37O6ItP2azMWA+DWR30tWaoQ1BhnOMvz2VA==
-X-Received: by 2002:adf:9d45:: with SMTP id o5mr8875561wre.226.1631478560629;
-        Sun, 12 Sep 2021 13:29:20 -0700 (PDT)
+        bh=JTbm+Ivds98cb9V5q8q1C/zZH2NCdOMIxgLjAuUIi4Y=;
+        b=TgdFdWDHvqVdmxlk9GESheysw+LC+BIXXm9IQS/D/1LkL+v7uL+72VtkD7AGiGI18I
+         qd4zeGsF490PtYZHptoCrLnZH+ZsTVDXwq7Pt9Q0apWc6iQmTK/2Z7Z2AVI/YsAMzcaA
+         RlbqttehqdRpSsLzpdGw0fMCCLMBrxRM2/fEMemyVH7BLEEb7vqchIu7LogOjqqbDS85
+         8KmEtZIO2nklPJYkPsm8lIQ0BJ4tNeH6wisNzfLSsZhpeofVBYHmHdNLRNc8ow22N1tl
+         ixBIR+uMRd93ytkjjbbwPKylnozqsl54+gyB1vQvBJNaUVUc/Ph6vhsb7Fv+bXWU4EXZ
+         g6RQ==
+X-Gm-Message-State: AOAM5310hRXSpI28s5sCr8+jdlyPSA9IGK5U6cvXB9NTm+MklJGfHxui
+        JJVwBKBVljdteiU0DRhXvGE=
+X-Google-Smtp-Source: ABdhPJwx6tSscBJiPzgeceppiIUbf4P3AF4lYVjjAILZ4ZG14NRxwmFtq7F+tTtUa6kn6EIHen6JjQ==
+X-Received: by 2002:a5d:67c8:: with SMTP id n8mr1616735wrw.122.1631478559016;
+        Sun, 12 Sep 2021 13:29:19 -0700 (PDT)
 Received: from localhost.localdomain (46-138-83-36.dynamic.spd-mgts.ru. [46.138.83.36])
-        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.19
+        by smtp.gmail.com with ESMTPSA id k29sm4847466wms.24.2021.09.12.13.29.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Sep 2021 13:29:20 -0700 (PDT)
+        Sun, 12 Sep 2021 13:29:18 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v1 4/6] clk: tegra: Add stubs needed for compile testing
-Date:   Sun, 12 Sep 2021 23:29:05 +0300
-Message-Id: <20210912202907.28471-5-digetx@gmail.com>
+Subject: [PATCH v1 2/6] soc/tegra: irq: Add stubs needed for compile testing
+Date:   Sun, 12 Sep 2021 23:29:03 +0300
+Message-Id: <20210912202907.28471-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210912202907.28471-1-digetx@gmail.com>
 References: <20210912202907.28471-1-digetx@gmail.com>
@@ -78,25 +78,30 @@ Add stubs needed for compile-testing of tegra-cpuidle driver.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- include/linux/clk/tegra.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/soc/tegra/irq.h | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/clk/tegra.h b/include/linux/clk/tegra.h
-index d128ad1570aa..9bd06d8a5436 100644
---- a/include/linux/clk/tegra.h
-+++ b/include/linux/clk/tegra.h
-@@ -42,7 +42,11 @@ struct tegra_cpu_car_ops {
- #endif
- };
+diff --git a/include/soc/tegra/irq.h b/include/soc/tegra/irq.h
+index 8eb11a7109e4..94539551c8c1 100644
+--- a/include/soc/tegra/irq.h
++++ b/include/soc/tegra/irq.h
+@@ -6,8 +6,15 @@
+ #ifndef __SOC_TEGRA_IRQ_H
+ #define __SOC_TEGRA_IRQ_H
  
-+#ifdef CONFIG_ARCH_TEGRA
- extern struct tegra_cpu_car_ops *tegra_cpu_car_ops;
+-#if defined(CONFIG_ARM)
++#include <linux/types.h>
++
++#if defined(CONFIG_ARM) && defined(CONFIG_ARCH_TEGRA)
+ bool tegra_pending_sgi(void);
 +#else
-+static struct tegra_cpu_car_ops *tegra_cpu_car_ops __maybe_unused;
-+#endif
++static inline bool tegra_pending_sgi(void)
++{
++	return false;
++}
+ #endif
  
- static inline void tegra_wait_cpu_in_reset(u32 cpu)
- {
+ #endif /* __SOC_TEGRA_IRQ_H */
 -- 
 2.32.0
 
