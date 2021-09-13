@@ -5,29 +5,29 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE7CC43217
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF668C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6668E6113E
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DA403610CE
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345355AbhIMRkE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Sep 2021 13:40:04 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:43672 "EHLO inva020.nxp.com"
+        id S1344334AbhIMRkQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Sep 2021 13:40:16 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:43952 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S244125AbhIMRjo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Sep 2021 13:39:44 -0400
+        id S242897AbhIMRju (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Sep 2021 13:39:50 -0400
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CC4AF1A0396;
-        Mon, 13 Sep 2021 19:38:26 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0CA751A0397;
+        Mon, 13 Sep 2021 19:38:33 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BE23F1A0394;
-        Mon, 13 Sep 2021 19:38:26 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id EA37D1A010C;
+        Mon, 13 Sep 2021 19:38:32 +0200 (CEST)
 Received: from fsr-ub1664-175.ea.freescale.net (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id EF06520363;
-        Mon, 13 Sep 2021 19:38:25 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 131AA20363;
+        Mon, 13 Sep 2021 19:38:32 +0200 (CEST)
 From:   Abel Vesa <abel.vesa@nxp.com>
 To:     Rob Herring <robh@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>,
         Shawn Guo <shawnguo@kernel.org>,
@@ -47,9 +47,9 @@ Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Abel Vesa <abel.vesa@nxp.com>
-Subject: [RFC 05/19] devfreq: imx8m-ddrc: Use the opps acquired from EL3
-Date:   Mon, 13 Sep 2021 20:38:00 +0300
-Message-Id: <1631554694-9599-6-git-send-email-abel.vesa@nxp.com>
+Subject: [RFC 12/19] arm64: dts: imx8mq: Add fsl,icc-id property to ddrc node
+Date:   Mon, 13 Sep 2021 20:38:07 +0300
+Message-Id: <1631554694-9599-13-git-send-email-abel.vesa@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
 References: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
@@ -58,100 +58,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-i.MX8M platforms get their dram OPPs from the EL3.
-We don't need to duplicate that in the kernel dram dts node.
-We should just trust the OPPs provided by the EL3.
+The fsl,icc-id property here is used to link the icc node
+registered by the imx8mq interconnect driver with the ddrc
+device.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- drivers/devfreq/imx8m-ddrc.c | 50 +++---------------------------------
- 1 file changed, 3 insertions(+), 47 deletions(-)
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-index 583123bf2100..f18a5c3c1c03 100644
---- a/drivers/devfreq/imx8m-ddrc.c
-+++ b/drivers/devfreq/imx8m-ddrc.c
-@@ -321,38 +321,9 @@ static int imx8m_ddrc_init_freq_info(struct device *dev)
- 		if (freq->dram_core_parent_index == 2 &&
- 				freq->dram_alt_parent_index == 0)
- 			return -ENODEV;
--	}
--
--	return 0;
--}
--
--static int imx8m_ddrc_check_opps(struct device *dev)
--{
--	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
--	struct imx8m_ddrc_freq *freq_info;
--	struct dev_pm_opp *opp;
--	unsigned long freq;
--	int i, opp_count;
--
--	/* Enumerate DT OPPs and disable those not supported by firmware */
--	opp_count = dev_pm_opp_get_opp_count(dev);
--	if (opp_count < 0)
--		return opp_count;
--	for (i = 0, freq = 0; i < opp_count; ++i, ++freq) {
--		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
--		if (IS_ERR(opp)) {
--			dev_err(dev, "Failed enumerating OPPs: %ld\n",
--				PTR_ERR(opp));
--			return PTR_ERR(opp);
--		}
--		dev_pm_opp_put(opp);
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+index 4066b1612655..8ddbeaddf55a 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -1552,10 +1552,12 @@ ddrc: memory-controller@3d400000 {
+ 			compatible = "fsl,imx8mq-ddrc", "fsl,imx8m-ddrc";
+ 			reg = <0x3d400000 0x400000>;
+ 			clock-names = "core", "pll", "alt", "apb";
++			fsl,icc-id = <IMX8MQ_ICS_DRAM>;
+ 			clocks = <&clk IMX8MQ_CLK_DRAM_CORE>,
+ 				 <&clk IMX8MQ_DRAM_PLL_OUT>,
+ 				 <&clk IMX8MQ_CLK_DRAM_ALT>,
+ 				 <&clk IMX8MQ_CLK_DRAM_APB>;
++			#interconnect-cells = <0>;
+ 		};
  
--		freq_info = imx8m_ddrc_find_freq(priv, freq);
--		if (!freq_info) {
--			dev_info(dev, "Disable unsupported OPP %luHz %luMT/s\n",
--					freq, DIV_ROUND_CLOSEST(freq, 250000));
--			dev_pm_opp_disable(dev, freq);
--		}
-+		if (dev_pm_opp_add(dev, freq->rate * 250000, 0))
-+			return -ENODEV;
- 	}
- 
- 	return 0;
-@@ -360,7 +331,6 @@ static int imx8m_ddrc_check_opps(struct device *dev)
- 
- static void imx8m_ddrc_exit(struct device *dev)
- {
--	dev_pm_opp_of_remove_table(dev);
- }
- 
- static int imx8m_ddrc_probe(struct platform_device *pdev)
-@@ -407,16 +377,7 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	ret = dev_pm_opp_of_add_table(dev);
--	if (ret < 0) {
--		dev_err(dev, "failed to get OPP table\n");
--		return ret;
--	}
--
--	ret = imx8m_ddrc_check_opps(dev);
--	if (ret < 0)
--		goto err;
--
-+	priv->profile.polling_ms = 1000;
- 	priv->profile.target = imx8m_ddrc_target;
- 	priv->profile.exit = imx8m_ddrc_exit;
- 	priv->profile.get_cur_freq = imx8m_ddrc_get_cur_freq;
-@@ -427,13 +388,8 @@ static int imx8m_ddrc_probe(struct platform_device *pdev)
- 	if (IS_ERR(priv->devfreq)) {
- 		ret = PTR_ERR(priv->devfreq);
- 		dev_err(dev, "failed to add devfreq device: %d\n", ret);
--		goto err;
- 	}
- 
--	return 0;
--
--err:
--	dev_pm_opp_of_remove_table(dev);
- 	return ret;
- }
- 
+ 		ddr-pmu@3d800000 {
 -- 
 2.31.1
 
