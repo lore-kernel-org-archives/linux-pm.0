@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A47E0C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A0BBC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 910A0610CF
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 28BE4610CE
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344259AbhIMRkA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Sep 2021 13:40:00 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:44000 "EHLO inva020.nxp.com"
+        id S1344544AbhIMRkC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Sep 2021 13:40:02 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:58796 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S245147AbhIMRjw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Sep 2021 13:39:52 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B7BE31A0393;
-        Mon, 13 Sep 2021 19:38:34 +0200 (CEST)
+        id S244247AbhIMRjp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Sep 2021 13:39:45 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B49E02005E2;
+        Mon, 13 Sep 2021 19:38:27 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id AA73A1A038F;
-        Mon, 13 Sep 2021 19:38:34 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9CD002005DD;
+        Mon, 13 Sep 2021 19:38:27 +0200 (CEST)
 Received: from fsr-ub1664-175.ea.freescale.net (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id DA8BE20363;
-        Mon, 13 Sep 2021 19:38:33 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id CF2F020363;
+        Mon, 13 Sep 2021 19:38:26 +0200 (CEST)
 From:   Abel Vesa <abel.vesa@nxp.com>
 To:     Rob Herring <robh@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>,
         Shawn Guo <shawnguo@kernel.org>,
@@ -47,9 +47,9 @@ Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Abel Vesa <abel.vesa@nxp.com>
-Subject: [RFC 14/19] arm64: dts: imx8mq: Add all pl301 nodes
-Date:   Mon, 13 Sep 2021 20:38:09 +0300
-Message-Id: <1631554694-9599-15-git-send-email-abel.vesa@nxp.com>
+Subject: [RFC 06/19] devfreq: imx8m-ddrc: Add late system sleep PM ops
+Date:   Mon, 13 Sep 2021 20:38:01 +0300
+Message-Id: <1631554694-9599-7-git-send-email-abel.vesa@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
 References: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
@@ -58,227 +58,80 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add all the pl301s found on i.MX8MQ, according to the bus diagram.
-Each pl301 has its own clock, icc id and opp table. They are probed
-by the imx-bus driver.
+Seems that, in order to be able to resume from suspend, the dram rate
+needs to be the highest one available. Therefore, add the late system
+suspend/resume PM ops which set the highest rate on suspend and the
+latest one used before suspending on resume.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/imx8mq.dtsi | 202 ++++++++++++++++++++++
- 1 file changed, 202 insertions(+)
+ drivers/devfreq/imx8m-ddrc.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index ab528665a217..a05bccbb1342 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -1566,5 +1566,207 @@ ddr-pmu@3d800000 {
- 			interrupt-parent = <&gic>;
- 			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
- 		};
-+
-+		pl301_main: pl301@0 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_MAIN_AXI>;
-+			operating-points-v2 = <&pl301_main_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_MAIN>;
-+
-+			pl301_main_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-133M {
-+					opp-hz = /bits/ 64 <133333333>;
-+				};
-+				opp-333M {
-+					opp-hz = /bits/ 64 <333333333>;
-+				};
-+			};
-+		};
-+
-+		pl301_enet: pl301@1 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_ENET_AXI>;
-+			operating-points-v2 = <&pl301_enet_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_ENET>;
-+
-+			pl301_enet_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-266M {
-+					opp-hz = /bits/ 64 <266666666>;
-+				};
-+			};
-+		};
-+
-+		pl301_gpu: pl301@2 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_GPU_AXI>;
-+			operating-points-v2 = <&pl301_gpu_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_GPU>;
-+
-+			pl301_gpu_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
-+		pl301_dc: pl301@3 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_DISP_AXI>;
-+			operating-points-v2 = <&pl301_dc_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_DCSS>;
-+
-+			pl301_dc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
-+		/* PL301_DISPLAY (IPs other than DCSS, inside SUPERMIX) */
-+		pl301_display: pl301@4 {
-+			compatible = "fsl,imx8m-nic";
-+			/* FIXME: don't know which clock yet */
-+			clocks = <&clk IMX8MQ_CLK_DUMMY>;
-+			operating-points-v2 = <&pl301_display_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_DISPLAY>;
-+
-+			pl301_display_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-333M {
-+					opp-hz = /bits/ 64 <333333333>;
-+				};
-+			};
-+		};
-+
-+		pl301_audio: pl301@5 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_AUDIO_AHB>;
-+			operating-points-v2 = <&pl301_audio_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_AUDIO>;
-+
-+			pl301_audio_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-500M {
-+					opp-hz = /bits/ 64 <500000000>;
-+				};
-+			};
-+		};
-+
-+		pl301_video: pl301@6 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_VPU_BUS>;
-+			operating-points-v2 = <&pl301_video_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_VIDEO>;
-+
-+			pl301_video_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-500M {
-+					opp-hz = /bits/ 64 <500000000>;
-+				};
-+			};
-+		};
-+
-+		pl301_usb: pl301@7 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_USB_BUS>;
-+			operating-points-v2 = <&pl301_usb_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_USB>;
-+
-+			pl301_usb_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-128M {
-+					opp-hz = /bits/ 64 <128000000>;
-+				};
-+				opp-500M {
-+					opp-hz = /bits/ 64 <500000000>;
-+				};
-+			};
-+		};
-+
-+		pl301_wakeup: pl301@8 {
-+			compatible = "fsl,imx8m-nic";
-+			/* FIXME: don't know which clock yet */
-+			clocks = <&clk IMX8MQ_CLK_DUMMY>;
-+			operating-points-v2 = <&pl301_wakeup_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_WAKEUP>;
-+
-+			pl301_wakeup_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-133M {
-+					opp-hz = /bits/ 64 <133333333>;
-+				};
-+			};
-+		};
-+
-+		pl301_per_m: pl301@9 {
-+			compatible = "fsl,imx8m-nic";
-+			clocks = <&clk IMX8MQ_CLK_NAND_USDHC_BUS>;
-+			operating-points-v2 = <&pl301_per_m_opp_table>;
-+			#interconnect-cells = <0>;
-+			fsl,icc-id = <IMX8MQ_ICN_PER_M>;
-+
-+			pl301_per_m_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-25M {
-+					opp-hz = /bits/ 64 <25000000>;
-+				};
-+				opp-133M {
-+					opp-hz = /bits/ 64 <133333333>;
-+				};
-+				opp-266M {
-+					opp-hz = /bits/ 64 <266666666>;
-+				};
-+			};
-+		};
- 	};
+diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
+index f18a5c3c1c03..f39741b4a0b0 100644
+--- a/drivers/devfreq/imx8m-ddrc.c
++++ b/drivers/devfreq/imx8m-ddrc.c
+@@ -72,6 +72,8 @@ struct imx8m_ddrc {
+ 	struct clk *dram_alt;
+ 	struct clk *dram_apb;
+ 
++	unsigned long suspend_rate;
++	unsigned long resume_rate;
+ 	int freq_count;
+ 	struct imx8m_ddrc_freq freq_table[IMX8M_DDRC_MAX_FREQ_COUNT];
  };
+@@ -271,6 +273,22 @@ static int imx8m_ddrc_target(struct device *dev, unsigned long *freq, u32 flags)
+ 	return ret;
+ }
+ 
++static int imx8m_ddrc_suspend(struct device *dev)
++{
++	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
++
++	priv->resume_rate = clk_get_rate(priv->dram_core);
++
++	return imx8m_ddrc_target(dev, &priv->suspend_rate, 0);
++}
++
++static int imx8m_ddrc_resume(struct device *dev)
++{
++	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
++
++	return imx8m_ddrc_target(dev, &priv->resume_rate, 0);
++}
++
+ static int imx8m_ddrc_get_cur_freq(struct device *dev, unsigned long *freq)
+ {
+ 	struct imx8m_ddrc *priv = dev_get_drvdata(dev);
+@@ -324,6 +342,9 @@ static int imx8m_ddrc_init_freq_info(struct device *dev)
+ 
+ 		if (dev_pm_opp_add(dev, freq->rate * 250000, 0))
+ 			return -ENODEV;
++
++		if (index ==  0)
++			priv->suspend_rate = freq->rate * 250000;
+ 	}
+ 
+ 	return 0;
+@@ -399,11 +420,16 @@ static const struct of_device_id imx8m_ddrc_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, imx8m_ddrc_of_match);
+ 
++static const struct dev_pm_ops imx8m_ddrc_pm_ops = {
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(imx8m_ddrc_suspend, imx8m_ddrc_resume)
++};
++
+ static struct platform_driver imx8m_ddrc_platdrv = {
+ 	.probe		= imx8m_ddrc_probe,
+ 	.driver = {
+ 		.name	= "imx8m-ddrc-devfreq",
+-		.of_match_table = imx8m_ddrc_of_match,
++		.pm = &imx8m_ddrc_pm_ops,
++		.of_match_table = of_match_ptr(imx8m_ddrc_of_match),
+ 	},
+ };
+ module_platform_driver(imx8m_ddrc_platdrv);
 -- 
 2.31.1
 
