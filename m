@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D00E0C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B410FC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA7DD610CE
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97AFE610CC
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:39:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346154AbhIMRkS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Sep 2021 13:40:18 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:44140 "EHLO inva020.nxp.com"
+        id S1343691AbhIMRkd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Sep 2021 13:40:33 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:59214 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240913AbhIMRj4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Sep 2021 13:39:56 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2572C1A039A;
-        Mon, 13 Sep 2021 19:38:39 +0200 (CEST)
+        id S245000AbhIMRjy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Sep 2021 13:39:54 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 674092005AC;
+        Mon, 13 Sep 2021 19:38:37 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 168711A010C;
-        Mon, 13 Sep 2021 19:38:39 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4F5EE2005E6;
+        Mon, 13 Sep 2021 19:38:37 +0200 (CEST)
 Received: from fsr-ub1664-175.ea.freescale.net (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 3E7AB20363;
-        Mon, 13 Sep 2021 19:38:38 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 80C6820363;
+        Mon, 13 Sep 2021 19:38:36 +0200 (CEST)
 From:   Abel Vesa <abel.vesa@nxp.com>
 To:     Rob Herring <robh@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>,
         Shawn Guo <shawnguo@kernel.org>,
@@ -47,9 +47,9 @@ Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Abel Vesa <abel.vesa@nxp.com>
-Subject: [RFC 19/19] arm64: defconfig: Add necessary configs for icc+devfreq on i.MX8MQ
-Date:   Mon, 13 Sep 2021 20:38:14 +0300
-Message-Id: <1631554694-9599-20-git-send-email-abel.vesa@nxp.com>
+Subject: [RFC 17/19] net: ethernet: fec_main: Add interconnect support
+Date:   Mon, 13 Sep 2021 20:38:12 +0300
+Message-Id: <1631554694-9599-18-git-send-email-abel.vesa@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
 References: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
@@ -58,41 +58,99 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Compile in the interconnect and devfreq drivers for the i.MX8MQ.
-Also compile in the powersave devfreq governor.
+On probe, if the dts node contains a valid icc path, then look for the
+fsl,icc-rate property and get the rate. Also set the icc bandwidth
+for that path to the nominal rate needed for fec to function right.
+Then enable and disable the path every time the fec is used or not.
+This will result in reducing the clock speeds along the icc path
+for each pl301 and NoC, but still meet the requirements for all the
+other icc consumers.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- arch/arm64/configs/defconfig | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/freescale/fec.h      |  3 +++
+ drivers/net/ethernet/freescale/fec_main.c | 19 +++++++++++++++++++
+ 2 files changed, 22 insertions(+)
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 3bf6f8a86aae..b06f1b01714d 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -1063,8 +1063,9 @@ CONFIG_ARCH_TEGRA_186_SOC=y
- CONFIG_ARCH_TEGRA_194_SOC=y
- CONFIG_ARCH_TEGRA_234_SOC=y
- CONFIG_TI_SCI_PM_DOMAINS=y
--CONFIG_ARM_IMX_BUS_DEVFREQ=m
--CONFIG_ARM_IMX8M_DDRC_DEVFREQ=m
-+CONFIG_DEVFREQ_GOV_POWERSAVE=y
-+CONFIG_ARM_IMX_BUS_DEVFREQ=y
-+CONFIG_ARM_IMX8M_DDRC_DEVFREQ=y
- CONFIG_EXTCON_PTN5150=m
- CONFIG_EXTCON_USB_GPIO=y
- CONFIG_EXTCON_USBC_CROS_EC=y
-@@ -1156,8 +1157,8 @@ CONFIG_SLIM_QCOM_CTRL=m
- CONFIG_SLIM_QCOM_NGD_CTRL=m
- CONFIG_MUX_MMIO=y
- CONFIG_INTERCONNECT=y
--CONFIG_INTERCONNECT_IMX=m
--CONFIG_INTERCONNECT_IMX8MQ=m
-+CONFIG_INTERCONNECT_IMX=y
-+CONFIG_INTERCONNECT_IMX8MQ=y
- CONFIG_INTERCONNECT_QCOM=y
- CONFIG_INTERCONNECT_QCOM_MSM8916=m
- CONFIG_INTERCONNECT_QCOM_OSM_L3=m
+diff --git a/drivers/net/ethernet/freescale/fec.h b/drivers/net/ethernet/freescale/fec.h
+index 7b4961daa254..2c5784febbeb 100644
+--- a/drivers/net/ethernet/freescale/fec.h
++++ b/drivers/net/ethernet/freescale/fec.h
+@@ -558,6 +558,9 @@ struct fec_enet_private {
+ 	unsigned int num_tx_queues;
+ 	unsigned int num_rx_queues;
+ 
++	struct icc_path *bus_path;
++	unsigned int bus_rate;
++
+ 	/* The saved address of a sent-in-place packet/buffer, for skfree(). */
+ 	struct fec_enet_priv_tx_q *tx_queue[FEC_ENET_MAX_TX_QS];
+ 	struct fec_enet_priv_rx_q *rx_queue[FEC_ENET_MAX_RX_QS];
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index 80bd5c629fa0..67374d436e73 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -48,6 +48,7 @@
+ #include <linux/bitops.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
++#include <linux/interconnect.h>
+ #include <linux/clk.h>
+ #include <linux/crc32.h>
+ #include <linux/platform_device.h>
+@@ -3805,6 +3806,18 @@ fec_probe(struct platform_device *pdev)
+ 	fep->pdev = pdev;
+ 	fep->dev_id = dev_id++;
+ 
++	fep->bus_path = devm_of_icc_get(&pdev->dev, "path");
++	if (IS_ERR(fep->bus_path)) {
++		return PTR_ERR(fep->bus_path);
++	} else if (fep->bus_path) {
++		if (of_property_read_u32(np, "fsl,icc-rate", &fep->bus_rate)) {
++			dev_err(&pdev->dev, "icc-rate missing\n");
++			return -EINVAL;
++		}
++
++		icc_set_bw(fep->bus_path, 0, fep->bus_rate);
++	}
++
+ 	platform_set_drvdata(pdev, ndev);
+ 
+ 	if ((of_machine_is_compatible("fsl,imx6q") ||
+@@ -4075,6 +4088,8 @@ static int __maybe_unused fec_suspend(struct device *dev)
+ 	if (fep->clk_enet_out || fep->reg_phy)
+ 		fep->link = 0;
+ 
++	icc_disable(fep->bus_path);
++
+ 	return 0;
+ }
+ 
+@@ -4085,6 +4100,8 @@ static int __maybe_unused fec_resume(struct device *dev)
+ 	int ret;
+ 	int val;
+ 
++	icc_enable(fep->bus_path);
++
+ 	if (fep->reg_phy && !(fep->wol_flag & FEC_WOL_FLAG_ENABLE)) {
+ 		ret = regulator_enable(fep->reg_phy);
+ 		if (ret)
+@@ -4134,6 +4151,7 @@ static int __maybe_unused fec_runtime_suspend(struct device *dev)
+ 	clk_disable_unprepare(fep->clk_ahb);
+ 	clk_disable_unprepare(fep->clk_ipg);
+ 
++	icc_disable(fep->bus_path);
+ 	return 0;
+ }
+ 
+@@ -4143,6 +4161,7 @@ static int __maybe_unused fec_runtime_resume(struct device *dev)
+ 	struct fec_enet_private *fep = netdev_priv(ndev);
+ 	int ret;
+ 
++	icc_enable(fep->bus_path);
+ 	ret = clk_prepare_enable(fep->clk_ahb);
+ 	if (ret)
+ 		return ret;
 -- 
 2.31.1
 
