@@ -5,29 +5,29 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 295AEC4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7258C4167D
 	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1291C610CF
+	by mail.kernel.org (Postfix) with ESMTP id AF5EB610CF
 	for <linux-pm@archiver.kernel.org>; Mon, 13 Sep 2021 17:38:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343637AbhIMRj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Sep 2021 13:39:57 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:58994 "EHLO inva021.nxp.com"
+        id S1344077AbhIMRj7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Sep 2021 13:39:59 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:58850 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S243584AbhIMRjv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Sep 2021 13:39:51 -0400
+        id S244469AbhIMRjp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Sep 2021 13:39:45 -0400
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D73F32005BE;
-        Mon, 13 Sep 2021 19:38:33 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8C92E2005E1;
+        Mon, 13 Sep 2021 19:38:28 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C9DB12005AC;
-        Mon, 13 Sep 2021 19:38:33 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7E3C12005D8;
+        Mon, 13 Sep 2021 19:38:28 +0200 (CEST)
 Received: from fsr-ub1664-175.ea.freescale.net (fsr-ub1664-175.ea.freescale.net [10.171.82.40])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id F2A1F2039E;
-        Mon, 13 Sep 2021 19:38:32 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id AD8EB20363;
+        Mon, 13 Sep 2021 19:38:27 +0200 (CEST)
 From:   Abel Vesa <abel.vesa@nxp.com>
 To:     Rob Herring <robh@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>,
         Shawn Guo <shawnguo@kernel.org>,
@@ -47,9 +47,9 @@ Cc:     Pengutronix Kernel Team <kernel@pengutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, Abel Vesa <abel.vesa@nxp.com>
-Subject: [RFC 13/19] arm64: dts: imx8mq: Add fsl,icc-id to noc node
-Date:   Mon, 13 Sep 2021 20:38:08 +0300
-Message-Id: <1631554694-9599-14-git-send-email-abel.vesa@nxp.com>
+Subject: [RFC 07/19] interconnect: imx: Switch from imx_icc_node_adj_desc to fsl,icc-id node assignment
+Date:   Mon, 13 Sep 2021 20:38:02 +0300
+Message-Id: <1631554694-9599-8-git-send-email-abel.vesa@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
 References: <1631554694-9599-1-git-send-email-abel.vesa@nxp.com>
@@ -58,34 +58,128 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The fsl,icc-id property here is used to link the icc node
-registered by the imx8mq interconnect driver with the noc
-device. Remove the fsl,ddrc property since it will not be used
-anymore.
+In order to be able to have more than one NoCs in the interconnect net
+we need to decouple the NoC from the dram. So instead of using the
+imx_icc_node_adj_desc, we use the fsl,icc-id property that is in
+each NoC (or pl301) to the icc node (based on the id) to it.
+Along with all the NoC and pl301 nodes in the dts we will have a
+interconnect dedicated node. This node will be the actual device of the
+icc provider.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/imx8mq.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/interconnect/imx/imx.c | 72 +++++++++++++++-------------------
+ 1 file changed, 32 insertions(+), 40 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index 8ddbeaddf55a..ab528665a217 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -1298,11 +1298,11 @@ fec1: ethernet@30be0000 {
- 			};
- 		};
+diff --git a/drivers/interconnect/imx/imx.c b/drivers/interconnect/imx/imx.c
+index c770951a909c..db048df80011 100644
+--- a/drivers/interconnect/imx/imx.c
++++ b/drivers/interconnect/imx/imx.c
+@@ -34,9 +34,9 @@ static int imx_icc_node_set(struct icc_node *node)
+ 	if (!node_data->qos_dev)
+ 		return 0;
  
--		noc: interconnect@32700000 {
-+		noc: noc@32700000 {
- 			compatible = "fsl,imx8mq-noc", "fsl,imx8m-noc";
- 			reg = <0x32700000 0x100000>;
- 			clocks = <&clk IMX8MQ_CLK_NOC>;
--			fsl,ddrc = <&ddrc>;
-+			fsl,icc-id = <IMX8MQ_ICN_NOC>;
- 			#interconnect-cells = <1>;
- 			operating-points-v2 = <&noc_opp_table>;
+-	freq = (node->avg_bw + node->peak_bw) * node_data->desc->adj->bw_mul;
+-	do_div(freq, node_data->desc->adj->bw_div);
+-	dev_dbg(dev, "node %s device %s avg_bw %ukBps peak_bw %ukBps min_freq %llukHz\n",
++	freq = max(node->avg_bw, node->peak_bw);
++
++	dev_dbg(dev, "	DBG node %s device %s avg_bw %ukBps peak_bw %ukBps min_freq %llukHz\n",
+ 		node->name, dev_name(node_data->qos_dev),
+ 		node->avg_bw, node->peak_bw, freq);
  
+@@ -79,41 +79,35 @@ static int imx_icc_node_init_qos(struct icc_provider *provider,
+ 				 struct icc_node *node)
+ {
+ 	struct imx_icc_node *node_data = node->data;
+-	const struct imx_icc_node_adj_desc *adj = node_data->desc->adj;
+ 	struct device *dev = provider->dev;
+-	struct device_node *dn = NULL;
+ 	struct platform_device *pdev;
++	struct device_node *np = NULL, *dn = NULL;
++	int idx;
+ 
+-	if (adj->main_noc) {
+-		node_data->qos_dev = dev;
+-		dev_dbg(dev, "icc node %s[%d] is main noc itself\n",
+-			node->name, node->id);
+-	} else {
+-		dn = of_parse_phandle(dev->of_node, adj->phandle_name, 0);
+-		if (!dn) {
+-			dev_warn(dev, "Failed to parse %s\n",
+-				 adj->phandle_name);
+-			return -ENODEV;
+-		}
+-		/* Allow scaling to be disabled on a per-node basis */
+-		if (!of_device_is_available(dn)) {
+-			dev_warn(dev, "Missing property %s, skip scaling %s\n",
+-				 adj->phandle_name, node->name);
+-			of_node_put(dn);
+-			return 0;
+-		}
++	for_each_node_with_property(np, "fsl,icc-id") {
++		of_property_read_u32(np, "fsl,icc-id", &idx);
++		if (idx == node_data->desc->id)
++			dn = np;
++	}
+ 
+-		pdev = of_find_device_by_node(dn);
+-		of_node_put(dn);
+-		if (!pdev) {
+-			dev_warn(dev, "node %s[%d] missing device for %pOF\n",
+-				 node->name, node->id, dn);
+-			return -EPROBE_DEFER;
+-		}
+-		node_data->qos_dev = &pdev->dev;
+-		dev_dbg(dev, "node %s[%d] has device node %pOF\n",
+-			node->name, node->id, dn);
++	if (!dn)
++		return 0;
++
++	if (!of_device_is_available(dn)) {
++		dev_warn(dev, "%pOF is disabled\n", dn);
++		return 0;
++	}
++
++	pdev = of_find_device_by_node(dn);
++	of_node_put(dn);
++	if (!pdev) {
++		dev_warn(dev, "node %s[%d] missing device for %pOF\n",
++			 node->name, node->id, dn);
++		return -EPROBE_DEFER;
+ 	}
++	node_data->qos_dev = &pdev->dev;
++	dev_dbg(dev, "node %s[%d] has device node %pOF\n", node->name,
++							node->id, dn);
+ 
+ 	return dev_pm_qos_add_request(node_data->qos_dev,
+ 				      &node_data->qos_req,
+@@ -151,12 +145,10 @@ static struct icc_node *imx_icc_node_add(struct icc_provider *provider,
+ 	node_data->desc = node_desc;
+ 	icc_node_add(node, provider);
+ 
+-	if (node_desc->adj) {
+-		ret = imx_icc_node_init_qos(provider, node);
+-		if (ret < 0) {
+-			imx_icc_node_destroy(node);
+-			return ERR_PTR(ret);
+-		}
++	ret = imx_icc_node_init_qos(provider, node);
++	if (ret < 0) {
++		imx_icc_node_destroy(node);
++		return ERR_PTR(ret);
+ 	}
+ 
+ 	return node;
+@@ -244,7 +236,7 @@ int imx_icc_register(struct platform_device *pdev,
+ 	provider->aggregate = icc_std_aggregate;
+ 	provider->xlate = of_icc_xlate_onecell;
+ 	provider->data = data;
+-	provider->dev = dev->parent;
++	provider->dev = dev;
+ 	platform_set_drvdata(pdev, provider);
+ 
+ 	ret = icc_provider_add(provider);
 -- 
 2.31.1
 
