@@ -2,104 +2,110 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 207D6C28B56
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 08:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4B2CC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 09:38:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD38F60527
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 08:55:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B77A16124D
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 09:38:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236990AbhIOI45 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Sep 2021 04:56:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39084 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232890AbhIOI4z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Sep 2021 04:56:55 -0400
-Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9686CC061767;
-        Wed, 15 Sep 2021 01:55:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-         s=20161220; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
-        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-        List-Post:List-Owner:List-Archive;
-        bh=whKab6yVZsHCNb+jfzC+O9VWLp2UcXan3KaF7i58q9Y=; b=I/nvPsuEBXWBn1/N4zg3fcLznR
-        5s0BeuP8DyHyuLAqjCup6s74vInt/l78C3ya/Tse72eIcbHSh37uF6mury3wsnvClo/Eej9J80PB5
-        y9SU4OiOIu4lzlA0sjeFZ1L0DY5phUBii0HQ8mGOOsOQlFa7VLscRcmAS+XZb51E2KfYUQGNJAY8o
-        7MkPkfZFVG28AmF+bCueSLU3Ua/1t0OLGaHacLxmnSa+05G7fLLe7eQw2RdVWXiREUgTUr6tWij+Z
-        Y0la8lyWNDL0VZaMViXdCaipFgW2aVx9ZVitvVM7VcPGKrVWYDuoVzxZ/JWp66t6RSL07pGYAIdil
-        grWwincw==;
-Received: from dsl-hkibng22-54f986-236.dhcp.inet.fi ([84.249.134.236] helo=toshino.localdomain)
-        by mail.kapsi.fi with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.89)
-        (envelope-from <mperttunen@nvidia.com>)
-        id 1mQQhR-000101-N9; Wed, 15 Sep 2021 11:55:25 +0300
-From:   Mikko Perttunen <mperttunen@nvidia.com>
-To:     rafael@kernel.org, viresh.kumar@linaro.org,
-        thierry.reding@gmail.com, jonathanh@nvidia.com,
-        krzysztof.kozlowski@canonical.com, lorenzo.pieralisi@arm.com,
-        robh@kernel.org, kw@linux.com, p.zabel@pengutronix.de,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH 2/5] reset: tegra-bpmp: Handle errors in BPMP response
-Date:   Wed, 15 Sep 2021 11:55:14 +0300
-Message-Id: <20210915085517.1669675-2-mperttunen@nvidia.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210915085517.1669675-1-mperttunen@nvidia.com>
-References: <20210915085517.1669675-1-mperttunen@nvidia.com>
+        id S232054AbhIOJjg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Sep 2021 05:39:36 -0400
+Received: from mga09.intel.com ([134.134.136.24]:58453 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229785AbhIOJjg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Sep 2021 05:39:36 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10107"; a="222310760"
+X-IronPort-AV: E=Sophos;i="5.85,295,1624345200"; 
+   d="scan'208";a="222310760"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2021 02:38:17 -0700
+X-IronPort-AV: E=Sophos;i="5.85,295,1624345200"; 
+   d="scan'208";a="544766083"
+Received: from singanam-mobl1.gar.corp.intel.com ([10.213.67.66])
+  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2021 02:38:13 -0700
+Message-ID: <48eef209ab34b7885790bf25fd93163f3eea4795.camel@linux.intel.com>
+Subject: Re: [PATCH v2] cpufreq: intel_pstate: Add Icelake servers support
+ in no-HWP mode
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date:   Wed, 15 Sep 2021 02:38:10 -0700
+In-Reply-To: <CAAYoRsUnuNL+orjeXpxEE4fyknGGk3Kngk6Gt+hoCHxLYg9D6A@mail.gmail.com>
+References: <fb6c8a4e284a9b6c043f4ac382387b19bd100976.camel@linux.intel.com>
+         <20210513132051.31465-1-ggherdovich@suse.cz>
+         <CAAYoRsUcyFsFWDE=r+aMgDBa6hcgXgtE2jJ_NHas5e4TdgiBTg@mail.gmail.com>
+         <067ee60e47a0350d01f0c3f216c1032818044b36.camel@suse.cz>
+         <CAAYoRsX0xJf1mm1a_YUCzDy86r8q4QE98iVtS1AMLaUx+KTgQQ@mail.gmail.com>
+         <CAAYoRsXK79PspEUh9pqgj2OGQnxQONkEeK-7af3=5frBzAqULQ@mail.gmail.com>
+         <2a1b000cd101737400f6320ef18c0143d3a5145b.camel@linux.intel.com>
+         <CAAYoRsVeMCivVBp-q_9N23BDOVvkc8ZLS3mubnz+4TREZ9Cz_A@mail.gmail.com>
+         <7abae13c235d74f4789cd93c6c6b0cbf69df243d.camel@linux.intel.com>
+         <CAAYoRsVd4uU7sofcvYWd__evKJTf7HE5mi2ZVDjAYNYWXS3mzQ@mail.gmail.com>
+         <CAAYoRsUnuNL+orjeXpxEE4fyknGGk3Kngk6Gt+hoCHxLYg9D6A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.40.0-1 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 84.249.134.236
-X-SA-Exim-Mail-From: mperttunen@nvidia.com
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The return value from tegra_bpmp_transfer indicates the success or
-failure of the IPC transaction with BPMP. If the transaction
-succeeded, we also need to check the actual command's result code.
-Add code to do this.
+On Tue, 2021-09-14 at 11:41 -0700, Doug Smythies wrote:
+> On Tue, Sep 7, 2021 at 8:43 PM Doug Smythies <dsmythies@telus.net>
+> wrote:
+> > 
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
- drivers/reset/tegra/reset-bpmp.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+[...]
 
-diff --git a/drivers/reset/tegra/reset-bpmp.c b/drivers/reset/tegra/reset-bpmp.c
-index 24d3395964cc..4c5bba52b105 100644
---- a/drivers/reset/tegra/reset-bpmp.c
-+++ b/drivers/reset/tegra/reset-bpmp.c
-@@ -20,6 +20,7 @@ static int tegra_bpmp_reset_common(struct reset_controller_dev *rstc,
- 	struct tegra_bpmp *bpmp = to_tegra_bpmp(rstc);
- 	struct mrq_reset_request request;
- 	struct tegra_bpmp_message msg;
-+	int err;
- 
- 	memset(&request, 0, sizeof(request));
- 	request.cmd = command;
-@@ -30,7 +31,13 @@ static int tegra_bpmp_reset_common(struct reset_controller_dev *rstc,
- 	msg.tx.data = &request;
- 	msg.tx.size = sizeof(request);
- 
--	return tegra_bpmp_transfer(bpmp, &msg);
-+	err = tegra_bpmp_transfer(bpmp, &msg);
-+	if (err)
-+		return err;
-+	if (msg.rx.ret)
-+		return -EINVAL;
-+
-+	return 0;
- }
- 
- static int tegra_bpmp_reset_module(struct reset_controller_dev *rstc,
--- 
-2.32.0
+> > The intel_pstate driver works fine.
+> 
+> Hi Srinivas,
+Hi Doug,
+
+> 
+> I heard back from ASUS, and they now confirm that they
+> did change the behaviour of the "Auto" setting in BIOS
+> version 2103. They say they did it to fix an issue with
+> ITB3.0, which I assume means Intel Turbo Boost 3.0.
+> I'll copy and paste the relevant portion of the email
+> below:
+> 
+> " I am in direct contact with the engineers.
+> Here is the result from their test:
+> 
+> In BIOS 2103,the “Auto” setting transfers control to
+> the OS with HWP available and enabled.
+> 
+> This is side effect to fix ITBM3.0 not work after HWP enabled.
+> We can remove this patch, but ITBM3.0 will not work when HWP enabled"
+> 
+> Are you familiar with this issue?
+No. I think they mean that they need to expose ACPI CPPC information.
+It is possible they only expose ACPI CPPC information when HWP feature
+is available. But not sure why it requires HWP enable also. We (on
+Linux) depend on ACPI CPPC for turbo 3.0, but don't require HWP to be
+enabled by default.
+
+
+Thanks,
+Srinivas
+
+
+
+> 
+> I want the original behaviour of the "Auto" setting, as it is
+> the only way for control to go to the OS with HWP
+> available but disabled.
+> 
+> ... Doug
+
 
