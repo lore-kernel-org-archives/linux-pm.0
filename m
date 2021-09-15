@@ -5,40 +5,40 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99A79C433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B418EC433FE
 	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 08:55:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7D07E611AF
+	by mail.kernel.org (Postfix) with ESMTP id 99EF160FC0
 	for <linux-pm@archiver.kernel.org>; Wed, 15 Sep 2021 08:55:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236951AbhIOI4z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232992AbhIOI4z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 15 Sep 2021 04:56:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39078 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232888AbhIOI4z (ORCPT
+        with ESMTP id S229464AbhIOI4z (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Sep 2021 04:56:55 -0400
 Received: from mail.kapsi.fi (mail.kapsi.fi [IPv6:2001:67c:1be8::25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 852A2C061575;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B4BDC061574;
         Wed, 15 Sep 2021 01:55:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=kapsi.fi;
-         s=20161220; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject
-        :Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
-        Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-        In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+         s=20161220; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To:
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+        :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
         List-Post:List-Owner:List-Archive;
-        bh=GZgd60WrESx2DuwtYGPss1Uw9DuvU+yvrhVYe2f9cRA=; b=sHTDJrIXSoC3UvfuM27ubT+8Hb
-        IeW1e9Fb709cL2+CVWNOaIOrEZasdcRv4a9cBKO062xihPNhCqOiYRAz7lP0zPPkU6SsL4VtiB4hY
-        ZtId0LmB15NOi8h3uOR5dj7MSq2NwMA2NuU5nJTBgSCCPU7qkdmkkXwIqzJeyiD4oZFfzK2a0LF07
-        2rDCtpJE5RsA+kD2jyVDb5fNiARWqlhdZZhB3/AH3rlqcSbcpJYbWjIvJW6J8YDHweJUCkXpHjc20
-        UvXGvnDZV8uI59cAiw+Grw82o4Q+GVJodpTs3cgRzwfUMZ8fth3GKBzN8P/waO1hEh0fe7TvpPvKj
-        zR/ipvOQ==;
+        bh=XhloAPC2I8/41lQmFoV1eMdpU5YKO5vemGoN7QpTFKE=; b=FC3h6A0aFwKbnrSpdKgYbZ56SU
+        YFwQGBOznST8BGnb0HWM5ck45b9iR/2UlttjuJEIM6PgprEBakVTsxbR/wxnfIpzMHPdSDXgU64bV
+        g07G3zSthmjg3NJV9UNFx4KMiDyyQqoa2mUtRLhnTympJYsoa+PMf4H6m+/ysKDsHx401QkqgzF4M
+        eI7sRmZUHDgMFDE3ZqdJTcmDNi2JrvTOWIqqf3sMtKNyY7khakXORIAiXDQ9Y96BtIiFqwJ1ybRWW
+        pDMJErGvSrYCrL4HmlYvUkCaPPcXzcZQ1nl2GI3iXIR4aPrv8xaaya707HevFsThX4rI8n23he8ei
+        D2OCzWDA==;
 Received: from dsl-hkibng22-54f986-236.dhcp.inet.fi ([84.249.134.236] helo=toshino.localdomain)
         by mail.kapsi.fi with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.89)
         (envelope-from <mperttunen@nvidia.com>)
-        id 1mQQhR-000101-KT; Wed, 15 Sep 2021 11:55:25 +0300
+        id 1mQQhR-000101-QA; Wed, 15 Sep 2021 11:55:25 +0300
 From:   Mikko Perttunen <mperttunen@nvidia.com>
 To:     rafael@kernel.org, viresh.kumar@linaro.org,
         thierry.reding@gmail.com, jonathanh@nvidia.com,
@@ -48,10 +48,12 @@ To:     rafael@kernel.org, viresh.kumar@linaro.org,
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
         Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH 1/5] thermal: tegra-bpmp: Handle errors in BPMP response
-Date:   Wed, 15 Sep 2021 11:55:13 +0300
-Message-Id: <20210915085517.1669675-1-mperttunen@nvidia.com>
+Subject: [PATCH 3/5] memory: tegra186-emc: Handle errors in BPMP response
+Date:   Wed, 15 Sep 2021 11:55:15 +0300
+Message-Id: <20210915085517.1669675-3-mperttunen@nvidia.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210915085517.1669675-1-mperttunen@nvidia.com>
+References: <20210915085517.1669675-1-mperttunen@nvidia.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 84.249.134.236
@@ -68,54 +70,24 @@ Add code to do this.
 
 Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
 ---
- drivers/thermal/tegra/tegra-bpmp-thermal.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/memory/tegra/tegra186-emc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/thermal/tegra/tegra-bpmp-thermal.c b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-index 94f1da1dcd69..5affc3d196be 100644
---- a/drivers/thermal/tegra/tegra-bpmp-thermal.c
-+++ b/drivers/thermal/tegra/tegra-bpmp-thermal.c
-@@ -52,6 +52,8 @@ static int tegra_bpmp_thermal_get_temp(void *data, int *out_temp)
- 	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
- 	if (err)
- 		return err;
-+	if (msg.rx.ret)
-+		return -EINVAL;
+diff --git a/drivers/memory/tegra/tegra186-emc.c b/drivers/memory/tegra/tegra186-emc.c
+index d65e7c2a580b..abc0c2eeaab7 100644
+--- a/drivers/memory/tegra/tegra186-emc.c
++++ b/drivers/memory/tegra/tegra186-emc.c
+@@ -197,6 +197,10 @@ static int tegra186_emc_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "failed to EMC DVFS pairs: %d\n", err);
+ 		goto put_bpmp;
+ 	}
++	if (msg.rx.ret < 0) {
++		dev_err(&pdev->dev, "EMC DVFS MRQ failed: %d (BPMP error code)\n", msg.rx.ret);
++		goto put_bpmp;
++	}
  
- 	*out_temp = reply.get_temp.temp;
- 
-@@ -63,6 +65,7 @@ static int tegra_bpmp_thermal_set_trips(void *data, int low, int high)
- 	struct tegra_bpmp_thermal_zone *zone = data;
- 	struct mrq_thermal_host_to_bpmp_request req;
- 	struct tegra_bpmp_message msg;
-+	int err;
- 
- 	memset(&req, 0, sizeof(req));
- 	req.type = CMD_THERMAL_SET_TRIP;
-@@ -76,7 +79,13 @@ static int tegra_bpmp_thermal_set_trips(void *data, int low, int high)
- 	msg.tx.data = &req;
- 	msg.tx.size = sizeof(req);
- 
--	return tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
-+	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
-+	if (err)
-+		return err;
-+	if (msg.rx.ret)
-+		return -EINVAL;
-+
-+	return 0;
- }
- 
- static void tz_device_update_work_fn(struct work_struct *work)
-@@ -140,6 +149,8 @@ static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
- 	err = tegra_bpmp_transfer(bpmp, &msg);
- 	if (err)
- 		return err;
-+	if (msg.rx.ret)
-+		return -EINVAL;
- 
- 	*num_zones = reply.get_num_zones.num;
- 
+ 	emc->debugfs.min_rate = ULONG_MAX;
+ 	emc->debugfs.max_rate = 0;
 -- 
 2.32.0
 
