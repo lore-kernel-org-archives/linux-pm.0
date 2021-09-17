@@ -2,122 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E7EDC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Sep 2021 14:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46ED1C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Sep 2021 18:21:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DDE4D6121F
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Sep 2021 14:03:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F8016124B
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Sep 2021 18:21:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235063AbhIQOFB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Sep 2021 10:05:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58798 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234664AbhIQOFB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Sep 2021 10:05:01 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0A85C061764
-        for <linux-pm@vger.kernel.org>; Fri, 17 Sep 2021 07:03:38 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id i23so15411706wrb.2
-        for <linux-pm@vger.kernel.org>; Fri, 17 Sep 2021 07:03:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=cElMJoeY5hvMr2V5LH+iZNPc0N3os4Ky0d4P23ZLkkE=;
-        b=yxWaRcX1qbRGyttjQa1Pu6jM/hec9mQl0xer5eL4GeQQ+1dn6FvLc3GE/Pvl8V6pyo
-         iOdk9dhgRd02eOwh+gf99oJvQfM0aFqME0t+6q3X9518yk07+yHUqNIbfKmV1/NNbAWF
-         ayqthRKvn7hrFvlohYQuI++mvYKeLN/1WbP7vuq0nsQuLxJRfvFsF7BlW9muZxjzBwhs
-         R1dMP5fTeosIQWA1nXAD/D/YMxHCKisgTYgY6M93GMj7JhbnE6WTr/MijVnMdCoWiIfC
-         wLY9bhR8R09535t3WNqUNITU3Sy7C6jr2QyEzxLTvENgyP+QJvlctIzdasUGkxdzjUur
-         7QhQ==
+        id S1344187AbhIQSXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Sep 2021 14:23:06 -0400
+Received: from mail-ot1-f51.google.com ([209.85.210.51]:39714 "EHLO
+        mail-ot1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230465AbhIQSXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Sep 2021 14:23:03 -0400
+Received: by mail-ot1-f51.google.com with SMTP id m7-20020a9d4c87000000b0051875f56b95so14035899otf.6;
+        Fri, 17 Sep 2021 11:21:40 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=cElMJoeY5hvMr2V5LH+iZNPc0N3os4Ky0d4P23ZLkkE=;
-        b=OrFVpPuRt0u/zR2bRwc1myFvw1FDt8e7N8dz9njGO0XNxT5itT5O00biri1Pc8X5vq
-         aFAsJLz2SNbW8Joul2q4Hi0PRRE1QRpbeClBwYj5GAnGzGalJ+kbMS9ZFQm5R7U3y0qO
-         /kK4u4xgcJMN7QleyIjpRaBIExYgUOLlrwZQgRJKI2AKFmH/3ISC6/KEXX/mCqEFMcb5
-         FGyBnztEIb0umwZpZ+lmF9wXGPCvBL4IWiwSCBs4aUhbr83pPAiV3gAxIkGh+/zLUQk4
-         mRV5Q6jGYgEpf4gFSeoh4risor7bFERTxq8PbLYGMYlyzfAfqSbZ2Y8VGQa17pwrcDCr
-         I99Q==
-X-Gm-Message-State: AOAM530Km0gu3cYWAi0cMzhDPBQPhLCs2/YtjZO9UBsRLbAtTnsAw/I7
-        kWZzWq2LOA3W2zcCfqwiKiV4Gw==
-X-Google-Smtp-Source: ABdhPJyJCWGwOLEV9/kO0UR0P2oMTDL4+28RKANm87Wo3sd4A/skW3G/8EfbBDlafbJo5ujzY7+tuw==
-X-Received: by 2002:a05:6000:104e:: with SMTP id c14mr12301421wrx.130.1631887417274;
-        Fri, 17 Sep 2021 07:03:37 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:6b11:6374:882d:42a0? ([2a01:e34:ed2f:f020:6b11:6374:882d:42a0])
-        by smtp.googlemail.com with ESMTPSA id i18sm6986113wrn.64.2021.09.17.07.03.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 17 Sep 2021 07:03:36 -0700 (PDT)
-Subject: Re: [PATCH v2 0/2] Add a generic virtual thermal sensor
-To:     Alexandre Bailon <abailon@baylibre.com>, rui.zhang@intel.com,
-        amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ben.tseng@mediatek.com, khilman@baylibre.com, mka@chromium.org
-References: <20210917072732.611140-1-abailon@baylibre.com>
- <bd347d14-0b42-f9ed-bf15-080c929e1cb7@linaro.org>
- <7cddcdb7-4efd-bfdb-3d86-f5862ea0b7fe@baylibre.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <8a9e5f13-6253-2d0d-35a8-789090af4521@linaro.org>
-Date:   Fri, 17 Sep 2021 16:03:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=MtTALbtXM6PObJbmnLKEWXd1r3ADFCs2TpTZwf4bkBM=;
+        b=vEIrgd2wyaRWwg3BiCOaiVUthng1KlssjDPPOCyFesFo6inD7IjAB24q2bfZ34ORrw
+         jLb6La9WtUMsE0tYC2y55c6bOGekekTP15CjROu1ylHaDYzF6hmhONg4eQwCJBa4mJ+H
+         tPSPbWEgvNOYJ2Zn9Ny4yoDnS4uJWrAHU9LnEeQZR84UIKpllkQXWndqO+5K2vEFwUiN
+         s1mm/0C7stdwEgt0yDATb3cLF8fUOtslvnqHjvtv/dqFyS/6aJYnl5euSMdr4YRlqS6+
+         bEeQr7r6MmqxBa8+KdaMgm+yAfasDQTURZXc5SUMVDe86fVf+ZUQv7bQGM5jwdJLprAw
+         itZg==
+X-Gm-Message-State: AOAM5334uOLSs9A10hYjOZMf/dQckQh2DqthXUow2tGLop0t1zG6c0oq
+        8MdqwGwsaE4kCXjWDUdDT2/viXK8DIimZTCpxqWdjpXyXMA=
+X-Google-Smtp-Source: ABdhPJxtRPgmy11EJNiV2sYS6uQeTpyeLzJb2JYM7JssdXrRZZwoN2y7dOaYWGAxECQO31Owa2EykqgsNmt89jw2KfE=
+X-Received: by 2002:a05:6830:34b:: with SMTP id h11mr10896232ote.319.1631902900355;
+ Fri, 17 Sep 2021 11:21:40 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <7cddcdb7-4efd-bfdb-3d86-f5862ea0b7fe@baylibre.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 17 Sep 2021 20:21:29 +0200
+Message-ID: <CAJZ5v0jjPkRrtS0qG7vx=Od6MiOixC1UyxjcLeQzfpegGtu9fQ@mail.gmail.com>
+Subject: [GIT PULL] Power management fixes for v5.15-rc2
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 17/09/2021 15:33, Alexandre Bailon wrote:
-> Hi Daniel,
-> 
-> On 9/17/21 2:41 PM, Daniel Lezcano wrote:
->> On 17/09/2021 09:27, Alexandre Bailon wrote:
->>> This series add a virtual thermal sensor.
->>> It could be used to get a temperature using some thermal sensors.
->>> Currently, the supported operations are max, min and avg.
->>> The virtual sensor could be easily extended to support others
->>> operations.
->>>
->>> Note:
->>> Currently, thermal drivers must explicitly register their sensors to
->>> make them
->>> available to the virtual sensor.
->>> This doesn't seem a good solution to me and I think it would be
->>> preferable to
->>> update the framework to register the list of each available sensors.
->> Why must the drivers do that ?
-> Because there are no central place where thermal sensor are registered.
-> The only other way I found was to update thermal_of.c,
-> to register the thermal sensors and make them available later to the
-> virtual thermal sensor.
-> 
-> To work, the virtual thermal need to get the sensor_data the ops from
-> the thermal sensor.
-> And as far I know, this is only registered in thermal_of.c, in the
-> thermal zone data
-> but I can't access it directly from the virtual thermal sensor.
-> 
-> How would you do it ?
+Hi Linus,
 
-Via the phandles when registering the virtual sensor ?
+Please pull from the tag
 
-Or is the problem you are mentioning related to the sensor module
-loading after the virtual sensor ?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.15-rc2
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+with top-most commit cdef1196608892b9a46caa5f2b64095a7f0be60c
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+ cpufreq: schedutil: Destroy mutex before kobject_put() frees the memory
+
+on top of commit 6880fa6c56601bb8ed59df6c30fd390cc5f6dd8f
+
+ Linux 5.15-rc1
+
+to receive power management fixes for 5.15-rc2.
+
+These fix two cpufreq issues, one in the intel_pstate driver and one
+in the core.
+
+Specifics:
+
+ - Prevent intel_pstate from avoiding to use HWP, even if instructed
+   to do so via the kernel command line, when HWP has been enabled
+   already by the platform firmware (Doug Smythies).
+
+ - Prevent use-after-free from occurring in the schedutil cpufreq
+   governor on exit by fixing a core helper function that attempts
+   to access memory associated with a kobject after calling
+   kobject_put() on it (James Morse).
+
+Thanks!
+
+
+---------------
+
+Doug Smythies (1):
+      cpufreq: intel_pstate: Override parameters if HWP forced by BIOS
+
+James Morse (1):
+      cpufreq: schedutil: Destroy mutex before kobject_put() frees the memory
+
+---------------
+
+ drivers/cpufreq/cpufreq_governor_attr_set.c |  2 +-
+ drivers/cpufreq/intel_pstate.c              | 22 ++++++++++++++--------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
