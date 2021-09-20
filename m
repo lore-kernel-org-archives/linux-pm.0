@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D0B1C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 21:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD364C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 21:03:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 17D4F61019
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 21:03:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9403961019
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 21:03:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234562AbhITVEc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S232212AbhITVEc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 20 Sep 2021 17:04:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55126 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54672 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237221AbhITVCa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Sep 2021 17:02:30 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C961C05935E;
-        Mon, 20 Sep 2021 10:23:15 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id p29so69934560lfa.11;
-        Mon, 20 Sep 2021 10:23:15 -0700 (PDT)
+        with ESMTP id S233028AbhITVCb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Sep 2021 17:02:31 -0400
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 574F7C05935F;
+        Mon, 20 Sep 2021 10:23:17 -0700 (PDT)
+Received: by mail-lf1-x136.google.com with SMTP id b15so52295267lfe.7;
+        Mon, 20 Sep 2021 10:23:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=6HY+i9xFe3394dw3mtZ4CqFXOI8zy8KUlBKvEvhmMp8=;
-        b=n3k7TyFqg0XBwNTE2AGgCInmHSWCTj33UHgEliRKebOrsN2m0FTCDpw/xK0HGi0O5P
-         /r888sQrIXBSAo+spsctvLKGo8+PgZi/KDV45LRZvEFy2ALAj2ulsFxoGccr+DgE1SzV
-         sOgVU+sN8IuPdRRSdB7odoc3UArpDpTtqGrcry/YNaeGzpW2eeQ2I58t6iGnFkteHzDL
-         5SeKS/cRWmxhvZyLrHHn3xUkklp0qIHyw+mNuYur52hs8dmSBp2Ji2mVYzV42/rndYR9
-         QzeDf8up+aALvHAgAEeK/qntRBHtIFJxXdElDdJnihwDYZ1Bb/amf8fmGxcj++yfKPP+
-         3t1g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=lpp5P4ugre+3Bt1zcMzEqxuMaP87lFqCuB5qRKv8mNk=;
+        b=g3edkwtY6cLRoMAGjN5XX0Eogof/sYH0pouYGJGAMIpVwVxrHnbU4bKCPFvhqm8Lln
+         MzFnpLDKXQgZNLUCeMJLABIlHoqcBURqrq+iBx00KOWsuYsniwYvBqtXRLfjxG/QSPln
+         iJ0Hyiq3zG3lNjYFwV23+MEXGkp1rLhUIh65x59MFBXBBx48BntuqL3txS25dD0I0HvX
+         6yYzC1ik6n0cDV25c++olY61/6ExeysD604qpmumlSRuYbLasVwKmgKyqJpfNlURWAUp
+         cWhEElCveRwYlbrrhFWIDINK6DtxqID2L3PKQjBWlPBaLjkewn+GR7gC5I8hnEa1RXqI
+         L2gg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=6HY+i9xFe3394dw3mtZ4CqFXOI8zy8KUlBKvEvhmMp8=;
-        b=HSHnDRZylAQfEp6GgEXyBA6bHkN/eVYufDIwVpzGGogd+VP0fiaTnA7qaDUcUAuhlJ
-         gu22rTEKmmnSKvXdfJIl8Ht6NiO1RIjExYJu+FG+lX1lGp4YZos8YtnIlFmPqfhH07Hl
-         ggd3rL3jTJPrrkER8lsVxT/dwUeplml+kky2cp79xMRXUa52Pg/IBTw8KkviV8bpkkvr
-         WSUdf3L9PGbfS7Ncf1IQGp5FTYBLK7kUjSKNnHTnm+7s0kyYyPUhnHHQN8d97ogmbCwl
-         WpkuYYH57E5S1rGcgzBTJM6dytveYRFVRyfjzqTxvRQpWVLtInJiL6RH7gGyqigo8Bee
-         IVZg==
-X-Gm-Message-State: AOAM533v1NMjU8BFtoAlqaMbYoJHehE242zS0v2J5tPgFBMQpmHDBwqJ
-        TH9pn8GbI2Z4RR3Xl5NjwAXtNjhcWic=
-X-Google-Smtp-Source: ABdhPJwTloJA4iBH7B9NOu/+JLk7WaRxunP7Al/3ucERMI1UHOynNHOHAzAjvExvOGSQjVnax2FCww==
-X-Received: by 2002:ac2:5d71:: with SMTP id h17mr19342342lft.670.1632158593940;
-        Mon, 20 Sep 2021 10:23:13 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=lpp5P4ugre+3Bt1zcMzEqxuMaP87lFqCuB5qRKv8mNk=;
+        b=KoVmRtK+5HvluyhiOAjLdBM5XSjqgSryFHxkaf43ViFhlYXTBK1kFNrYNMuL2EukZy
+         f/RfrO7mrVXyvzmtiz7ZPOIkyndTBal4YF/ZayIcQ56OgH79jYO7lyOM1y1cnvYuvhWm
+         4BWxSN7mqI/HSHpyKjSknB9HJtZTVq6mZhYCrhkNLIi8WGGl0m/k2E+JLOJ3O1dyFbWN
+         kBWyI+WcymvKIIZd93f2e0LpcPCIrLa/19hVoJc10PW0RVc5G9EapKi36Hui5aK41VWz
+         G8nYtSMrLH7I0KDFhMOfhgisnjMnGjwlkUbDmkhq+V9PhIDI9gDOvZVscB6U4kADcAvc
+         ZbDA==
+X-Gm-Message-State: AOAM531V+rkxQW+Fi4qZSfK8OogsalrCxFQ5e6eLw97Ea8WjM2gMMxkx
+        h1E/fevQI8rrEVmho98khQc=
+X-Google-Smtp-Source: ABdhPJz9soTFZ2UwBv5pkLAGxgJ1zX159icqD41ZzvHls7eFDm0AN6gTPaTc9tL9vUH5voN27nbaGA==
+X-Received: by 2002:a05:6512:344d:: with SMTP id j13mr20795746lfr.47.1632158595633;
+        Mon, 20 Sep 2021 10:23:15 -0700 (PDT)
 Received: from localhost.localdomain (46-138-151-206.dynamic.spd-mgts.ru. [46.138.151.206])
-        by smtp.gmail.com with ESMTPSA id t13sm1311038lff.279.2021.09.20.10.23.13
+        by smtp.gmail.com with ESMTPSA id t13sm1311038lff.279.2021.09.20.10.23.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Sep 2021 10:23:13 -0700 (PDT)
+        Mon, 20 Sep 2021 10:23:15 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,41 +66,77 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Chanwoo Choi <cw00.choi@samsung.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 0/4] Make probe() of Tegra devfreq driver completely resource-managed
-Date:   Mon, 20 Sep 2021 20:22:45 +0300
-Message-Id: <20210920172249.28206-1-digetx@gmail.com>
+Subject: [PATCH v2 2/4] PM / devfreq: Add devm_devfreq_add_governor()
+Date:   Mon, 20 Sep 2021 20:22:47 +0300
+Message-Id: <20210920172249.28206-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210920172249.28206-1-digetx@gmail.com>
+References: <20210920172249.28206-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds new resource-managed helpers and makes Tegra devfreq
-driver to use them, improving the driver's error-handling code.
+Add resource-managed variant of devfreq_add_governor().
 
-Changelog:
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/devfreq.c  | 26 ++++++++++++++++++++++++++
+ drivers/devfreq/governor.h |  3 +++
+ 2 files changed, 29 insertions(+)
 
-v2: - Added WARN_ON() to devm_devfreq_remove_governor() and moved
-      devm_devfreq_add_governor() as was requested by Chanwoo Choi.
-
-    - Added ack from Chanwoo Choi to the "Check whether clk_round_rate()
-      returns zero rate" patch.
-
-Dmitry Osipenko (4):
-  opp: Add more resource-managed variants of dev_pm_opp_of_add_table()
-  PM / devfreq: Add devm_devfreq_add_governor()
-  PM / devfreq: tegra30: Use resource-managed helpers
-  PM / devfreq: tegra30: Check whether clk_round_rate() returns zero
-    rate
-
- drivers/devfreq/devfreq.c         |  26 +++++++
- drivers/devfreq/governor.h        |   3 +
- drivers/devfreq/tegra30-devfreq.c | 109 +++++++++++++-----------------
- drivers/opp/of.c                  |  46 +++++++++++--
- include/linux/pm_opp.h            |  12 ++++
- 5 files changed, 127 insertions(+), 69 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 85faa7a5c7d1..4579eefb8fe7 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1301,6 +1301,32 @@ int devfreq_add_governor(struct devfreq_governor *governor)
+ }
+ EXPORT_SYMBOL(devfreq_add_governor);
+ 
++static void devm_devfreq_remove_governor(void *governor)
++{
++	WARN_ON(devfreq_remove_governor(governor));
++}
++
++/**
++ * devm_devfreq_add_governor() - Add devfreq governor
++ * @dev:	device which adds devfreq governor
++ * @governor:	the devfreq governor to be added
++ *
++ * This is a resource-managed variant of devfreq_add_governor().
++ */
++int devm_devfreq_add_governor(struct device *dev,
++			      struct devfreq_governor *governor)
++{
++	int err;
++
++	err = devfreq_add_governor(governor);
++	if (err)
++		return err;
++
++	return devm_add_action_or_reset(dev, devm_devfreq_remove_governor,
++					governor);
++}
++EXPORT_SYMBOL(devm_devfreq_add_governor);
++
+ /**
+  * devfreq_remove_governor() - Remove devfreq feature from a device.
+  * @governor:	the devfreq governor to be removed
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index 2d69a0ce6291..002a7d67e39d 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -84,6 +84,9 @@ void devfreq_update_interval(struct devfreq *devfreq, unsigned int *delay);
+ int devfreq_add_governor(struct devfreq_governor *governor);
+ int devfreq_remove_governor(struct devfreq_governor *governor);
+ 
++int devm_devfreq_add_governor(struct device *dev,
++			      struct devfreq_governor *governor);
++
+ int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
+ int devfreq_update_target(struct devfreq *devfreq, unsigned long freq);
+ 
 -- 
 2.32.0
 
