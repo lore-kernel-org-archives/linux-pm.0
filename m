@@ -2,151 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3B0DC433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 13:54:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AD92C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 20:33:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 95542610A0
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 13:54:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 526EF604DC
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Sep 2021 20:33:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235101AbhITN4D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Sep 2021 09:56:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43408 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233461AbhITN4D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Sep 2021 09:56:03 -0400
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D555C061574;
-        Mon, 20 Sep 2021 06:54:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
-        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=Ml6l0rn52QlsFUnOCfmpKHL/TyYLnkrCtmGMxVRDliA=; b=yd65DEFZ25sB3j/ggV0Xl+wDsh
-        phEeQ/Xfp/Ie5T4Emv+TWwNaWVoIe7ZNgyAEWfMmTDNu/nY+MHAGAEoBfMPigvGdh1DQg0FmtdtKK
-        Oo2gOJYUvAqfda08B9g5n6BcoOnN6GGYZvkfenUxmMojG/0LY0BEUw+F5FfCQnmjKl6zvZFrW4B71
-        WaWkKs0Tu8dwAfsYwfsNoYbGoew4mMDznzGpfzGjTMvLToDfCfSioUQc4o9AI4b7FKTbZJ5KQqU/7
-        8T9bAiwzoFOGh2xqQsFW5OQkA2wWLKZisi0iVvUUy5BmkaZ2S0UdPdm2kyaPawR1DIUaI/NfBR+Md
-        0+j7LgZw==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:54674)
-        by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <linux@armlinux.org.uk>)
-        id 1mSJkb-0001fr-D8; Mon, 20 Sep 2021 14:54:29 +0100
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
-        (envelope-from <linux@shell.armlinux.org.uk>)
-        id 1mSJkY-0002LQ-Tm; Mon, 20 Sep 2021 14:54:26 +0100
-Date:   Mon, 20 Sep 2021 14:54:26 +0100
-From:   "Russell King (Oracle)" <linux@armlinux.org.uk>
+        id S230008AbhITUez (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Sep 2021 16:34:55 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51030 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230038AbhITUcz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Sep 2021 16:32:55 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B7039610A0;
+        Mon, 20 Sep 2021 20:31:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1632169888;
+        bh=10ZL7PgHe9lbjtgAcJZmau9cDawPBD9XsDzRb/RyzN8=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=V+/6CwVtDaudm8b/th6Nq7PIALw6HsqHtIajFBJVNKHbPDxgfLzRcp3lL7NXBH7FG
+         ZfIVcH8WEeQ+8fFj+T4ItZDL0Aerbwktyhe3LayI3SNOA9pAT9jdfVWQb4PPrtyXjU
+         C135f2loKqstaEwB28AiE5xL5Tq2QDidS5WrEBq1u2fOY/ThaG6v9SRPRRouc5T11b
+         rZLl5WpATkbnCLH6FlapL7Jb4r73M8dT5svcT0zlqqsKVsr93Gfbs7vn30IAqBxcWx
+         DBSUbDivrQRVnjJU9UJ4+H7BSgDWC5mFy3iVvOf9Kv6HqpIldaLoEyICZp+JJRWXYL
+         3kGBUVAaT4eLQ==
+Date:   Mon, 20 Sep 2021 13:31:26 -0700
+From:   Jakub Kicinski <kuba@kernel.org>
 To:     Horatiu Vultur <horatiu.vultur@microchip.com>
-Cc:     davem@davemloft.net, kuba@kernel.org, robh+dt@kernel.org,
-        andrew@lunn.ch, f.fainelli@gmail.com,
-        alexandre.belloni@bootlin.com, vladimir.oltean@nxp.com,
-        UNGLinuxDriver@microchip.com, netdev@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-phy@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [RFC PATCH net-next 10/12] net: lan966x: add port module support
-Message-ID: <YUiSkpRvvL0fvija@shell.armlinux.org.uk>
+Cc:     <davem@davemloft.net>, <robh+dt@kernel.org>, <andrew@lunn.ch>,
+        <linux@armlinux.org.uk>, <f.fainelli@gmail.com>,
+        <alexandre.belloni@bootlin.com>, <vladimir.oltean@nxp.com>,
+        <UNGLinuxDriver@microchip.com>, <netdev@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-phy@lists.infradead.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [RFC PATCH net-next 12/12] net: lan966x: add ethtool
+ configuration and statistics
+Message-ID: <20210920133126.642449aa@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20210920095218.1108151-13-horatiu.vultur@microchip.com>
 References: <20210920095218.1108151-1-horatiu.vultur@microchip.com>
- <20210920095218.1108151-11-horatiu.vultur@microchip.com>
+        <20210920095218.1108151-13-horatiu.vultur@microchip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210920095218.1108151-11-horatiu.vultur@microchip.com>
-Sender: Russell King (Oracle) <linux@armlinux.org.uk>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Sep 20, 2021 at 11:52:16AM +0200, Horatiu Vultur wrote:
-> +static void lan966x_cleanup_ports(struct lan966x *lan966x)
-> +{
-> +	struct lan966x_port *port;
-> +	int portno;
-> +
-> +	for (portno = 0; portno < lan966x->num_phys_ports; portno++) {
-> +		port = lan966x->ports[portno];
-> +		if (!port)
-> +			continue;
-> +
-> +		if (port->phylink) {
-> +			rtnl_lock();
-> +			lan966x_port_stop(port->dev);
-> +			rtnl_unlock();
-> +			port->phylink = NULL;
+On Mon, 20 Sep 2021 11:52:18 +0200 Horatiu Vultur wrote:
+> +static void lan966x_get_eth_mac_stats(struct net_device *dev,
+> +				      struct ethtool_eth_mac_stats *mac_stats)
 
-This leaks the phylink structure. You need to call phylink_destroy().
-
->  static int lan966x_probe_port(struct lan966x *lan966x, u8 port,
->  			      phy_interface_t phy_mode)
->  {
->  	struct lan966x_port *lan966x_port;
-> +	struct phylink *phylink;
-> +	struct net_device *dev;
-> +	int err;
->  
->  	if (port >= lan966x->num_phys_ports)
->  		return -EINVAL;
->  
-> -	lan966x_port = devm_kzalloc(lan966x->dev, sizeof(*lan966x_port),
-> -				    GFP_KERNEL);
-> +	dev = devm_alloc_etherdev_mqs(lan966x->dev,
-> +				      sizeof(struct lan966x_port), 8, 1);
-> +	if (!dev)
-> +		return -ENOMEM;
->  
-> +	SET_NETDEV_DEV(dev, lan966x->dev);
-> +	lan966x_port = netdev_priv(dev);
-> +	lan966x_port->dev = dev;
->  	lan966x_port->lan966x = lan966x;
->  	lan966x_port->chip_port = port;
->  	lan966x_port->pvid = PORT_PVID;
->  	lan966x->ports[port] = lan966x_port;
->  
-> +	dev->max_mtu = ETH_MAX_MTU;
-> +
-> +	dev->netdev_ops = &lan966x_port_netdev_ops;
-> +	dev->needed_headroom = IFH_LEN * sizeof(u32);
-> +
-> +	err = register_netdev(dev);
-> +	if (err) {
-> +		dev_err(lan966x->dev, "register_netdev failed\n");
-> +		goto err_register_netdev;
-> +	}
-
-register_netdev() publishes the network device.
-
-> +
-> +	lan966x_port->phylink_config.dev = &lan966x_port->dev->dev;
-> +	lan966x_port->phylink_config.type = PHYLINK_NETDEV;
-> +	lan966x_port->phylink_config.pcs_poll = true;
-> +
-> +	phylink = phylink_create(&lan966x_port->phylink_config,
-> +				 lan966x_port->fwnode,
-> +				 phy_mode,
-> +				 &lan966x_phylink_mac_ops);
-
-phylink_create() should always be called _prior_ to the network device
-being published. In any case...
-
-> +	if (IS_ERR(phylink))
-> +		return PTR_ERR(phylink);
-
-If this fails, this function returns an error, but leaves the network
-device published - which is a bug in itself.
-
-> +static void lan966x_phylink_mac_link_down(struct phylink_config *config,
-> +					  unsigned int mode,
-> +					  phy_interface_t interface)
-> +{
-
-Hmm? Shouldn't this do something?
-
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
+Great to see this API used, please also consider adding RMON stats
+since the seem to be present.
