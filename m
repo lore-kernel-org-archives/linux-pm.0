@@ -2,149 +2,187 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B8C7C4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Sep 2021 02:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56EEDC433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Sep 2021 10:53:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 02D3D61211
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Sep 2021 02:43:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30B3761166
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Sep 2021 10:53:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351391AbhIUCox (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Sep 2021 22:44:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35718 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241529AbhIUCDL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Sep 2021 22:03:11 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05649C140936;
-        Mon, 20 Sep 2021 11:12:45 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id t10so64980827lfd.8;
-        Mon, 20 Sep 2021 11:12:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=4IPwObfWulEsKCCQvVJQw75R0yqfJKS73cbuEDacqBA=;
-        b=LISu7mlXcT2tM+RNjzV++qoN96WgfrBy1m4cFGoWWjdIXCiuwlfw9bNX9aHfPxmrLk
-         ikRGrGu4priRVLU0NTVvxGwIpPLQdJLplhx66WIYoVMgKb8MTMQ+dxyALVGHGTwl1hDy
-         vX+ZnUMTxW8wUvWvpZh5gJ+xDUCwsSHDXPKRQ1XZnUC8dtQfI40onXrJQckYikjqYtpu
-         KxHSm4tKsYUiFunMWuBt2eIH5qL3MGmXUUDXO8jeY5TBvHOSZ3lCVutKtfWl+0FjrBWh
-         HaqMU+NKlVaRtOhZXFeluzRWYCfrGh4K6wCDV8WMhuXVpeEilKkoRcOvdvPD40DmNtYF
-         S6qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=4IPwObfWulEsKCCQvVJQw75R0yqfJKS73cbuEDacqBA=;
-        b=HiunM2z/2NSsoRrlXja9+vgWWmMG419wFcAkf2cj0+Hffb69gu4YMDjF6QJTvx0M1g
-         bj6o42NOVJkt3Yihwq9f/4cX0Mk+piIJdLWDuGEoINBw5fmWYd40rKQRXnQW/xb5KDYC
-         fVInTVtuETwosBV2cgZ9l3B9ikzOWr4E3fDhutH3Po9vYVTqg4UG7r2lEAFZQ4likfZc
-         Rb4sPolNIxzV7SsFGrfU8WypJFYGlePoNyrDTFx28LdbbhxHm44V89Xi2HFGUJHMAoXO
-         gKDMM47b8UJLRSrppRcjOS66ASIrtmfNpE5H7hMEosCZooZII+anGREd+vPj/UwL0SJX
-         BxCw==
-X-Gm-Message-State: AOAM533OSqmCY9/Z3tCWZwHU76bVQoIuz7FEhxsE5zBkzZYHBo506ORd
-        TALsGjgoQTWTq0d0vmR4nPw=
-X-Google-Smtp-Source: ABdhPJyCAzs075RdONJPYQgmcqdeEB3ypUUw5h5hpWvfLUZQc7Wv9IeLuSOQcbardmTM1UEHfLaplw==
-X-Received: by 2002:a2e:9e83:: with SMTP id f3mr14183599ljk.309.1632161563819;
-        Mon, 20 Sep 2021 11:12:43 -0700 (PDT)
-Received: from localhost.localdomain (46-138-151-206.dynamic.spd-mgts.ru. [46.138.151.206])
-        by smtp.gmail.com with ESMTPSA id u3sm1775677lju.107.2021.09.20.11.12.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Sep 2021 11:12:43 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Peter Chen <peter.chen@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Nishanth Menon <nm@ti.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-pwm@vger.kernel.org,
-        linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-        Mark Brown <broonie@kernel.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Richard Weinberger <richard@nod.at>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        David Heidelberg <david@ixit.cz>
-Subject: [PATCH v12 34/35] ARM: tegra: Add Memory Client resets to Tegra30 GR2D, GR3D and Host1x
-Date:   Mon, 20 Sep 2021 21:11:44 +0300
-Message-Id: <20210920181145.19543-35-digetx@gmail.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20210920181145.19543-1-digetx@gmail.com>
-References: <20210920181145.19543-1-digetx@gmail.com>
+        id S232025AbhIUKzL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Sep 2021 06:55:11 -0400
+Received: from mga12.intel.com ([192.55.52.136]:26569 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231969AbhIUKzK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 Sep 2021 06:55:10 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10113"; a="202823384"
+X-IronPort-AV: E=Sophos;i="5.85,311,1624345200"; 
+   d="scan'208";a="202823384"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2021 03:53:42 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.85,311,1624345200"; 
+   d="scan'208";a="612931945"
+Received: from kuha.fi.intel.com ([10.237.72.162])
+  by fmsmga001.fm.intel.com with SMTP; 21 Sep 2021 03:53:38 -0700
+Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Tue, 21 Sep 2021 13:53:37 +0300
+Date:   Tue, 21 Sep 2021 13:53:37 +0300
+From:   Heikki Krogerus <heikki.krogerus@linux.intel.com>
+To:     Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc:     Benson Leung <bleung@google.com>,
+        Prashant Malani <pmalani@chromium.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "bleung@chromium.org" <bleung@chromium.org>,
+        "badhri@google.com" <badhri@google.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH 2/3] power: supply: Add support for PDOs props
+Message-ID: <YUm5sdbceMcDTvYj@kuha.fi.intel.com>
+References: <20210902213500.3795948-1-pmalani@chromium.org>
+ <20210902213500.3795948-3-pmalani@chromium.org>
+ <YT9SYMAnOCTWGi5P@kuha.fi.intel.com>
+ <DB9PR10MB4652B4A6A2A2157018307AE380D99@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
+ <YUB16up3JDwi3HfI@kuha.fi.intel.com>
+ <YULwz8NsoA3+vrhA@google.com>
+ <YUMbGp0aemx1HCHv@kuha.fi.intel.com>
+ <DB9PR10MB46525E6CA4C6BB101059D93C80DC9@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <DB9PR10MB46525E6CA4C6BB101059D93C80DC9@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Memory access must be blocked before hardware reset is asserted and before
-power is gated, otherwise a serious hardware fault is inevitable. Add
-reset for memory clients to the GR2D, GR3D and Host1x nodes.
+On Thu, Sep 16, 2021 at 02:12:23PM +0000, Adam Thomson wrote:
+> On 16 September 2021 11:23, Heikki Krogerus wrote:
+> 
+> > > Thanks for providing the clarification. So you're proposing a port-psy and a
+> > > port-partner-psy that are connected to each other (one supplying the other).
+> > > If PD is not present, those two will exist per port and partner, and there
+> > > will be information about Type-C current (and possibly BC 1.2 and other
+> > > methods?)
+> > 
+> > Yes, exactly.
+> > 
+> > > Do you have an example hierarchy you could share that explains what it would
+> > > look like in /sys/class/power_supply with PD with Source Caps and Sink Caps on
+> > > both sides?
+> > 
+> > I don't yet, but I'll prepare something. I did notice already that the
+> > power supply class does not seem to display the suppliers nor
+> > supplicants in sysfs. But we can always improve the class.
+> > 
+> > I probable should not talk about "hierarchy". Maybe taking about
+> > simply "chain" of power supplies is more correct?
+> > 
+> > > I think this all makes sense if the connector class is a read interface
+> > > for this info. Have you considered how the type-c connector class and this pd
+> > > psy support will handle dynamic PDO changes for advertisement FROM the
+> > ports?
+> > >
+> > > For example, let's say you wanted the kernel and user to manage two USB-C
+> > ports
+> > > with higher power support (meaning, 5V, 9V, 15V, 20V capable), but then your
+> > > kernel and user needs to edit the Source Caps on the fly based on load
+> > > balancing.
+> > >
+> > > If caps are represented as a group of psys together, how do you as a kernel
+> > > and user create an modify the set of Source_Caps you put out on a port?
+> > 
+> > My idea is to utilise the "present" property with the ports. You would
+> > always display all the possible supplies, but only the ones that you
+> > expose in your current capabilities will be present.
+> > 
+> > The idea is also that the ports are always supplied by normal power
+> > supplies of type "battery", "AC" and what have you. Those you can use
+> > to see the maximum power your port can get, and to determine the
+> > currently available power by checking the other ports that consume the
+> > same supply.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
-Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/arm/boot/dts/tegra30.dtsi | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+Going back here a bit... It now looks like this second part is not
+possible, which sucks, but it only means registering a separate object
+(psy) for each PDO is even more important.
 
-diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
-index c8130f8f680e..09cb1ab75312 100644
---- a/arch/arm/boot/dts/tegra30.dtsi
-+++ b/arch/arm/boot/dts/tegra30.dtsi
-@@ -123,8 +123,8 @@ host1x@50000000 {
- 		interrupt-names = "syncpt", "host1x";
- 		clocks = <&tegra_car TEGRA30_CLK_HOST1X>;
- 		clock-names = "host1x";
--		resets = <&tegra_car 28>;
--		reset-names = "host1x";
-+		resets = <&tegra_car 28>, <&mc TEGRA30_MC_RESET_HC>;
-+		reset-names = "host1x", "mc";
- 		iommus = <&mc TEGRA_SWGROUP_HC>;
- 		operating-points-v2 = <&host1x_dvfs_opp_table>;
- 		power-domains = <&pd_heg>;
-@@ -190,8 +190,8 @@ gr2d@54140000 {
- 			reg = <0x54140000 0x00040000>;
- 			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&tegra_car TEGRA30_CLK_GR2D>;
--			resets = <&tegra_car 21>;
--			reset-names = "2d";
-+			resets = <&tegra_car 21>, <&mc TEGRA30_MC_RESET_2D>;
-+			reset-names = "2d", "mc";
- 			operating-points-v2 = <&gr2d_dvfs_opp_table>;
- 			power-domains = <&pd_heg>;
- 
-@@ -205,8 +205,10 @@ gr3d@54180000 {
- 				 <&tegra_car TEGRA30_CLK_GR3D2>;
- 			clock-names = "3d", "3d2";
- 			resets = <&tegra_car 24>,
--				 <&tegra_car 98>;
--			reset-names = "3d", "3d2";
-+				 <&tegra_car 98>,
-+				 <&mc TEGRA30_MC_RESET_3D>,
-+				 <&mc TEGRA30_MC_RESET_3D2>;
-+			reset-names = "3d", "3d2", "mc", "mc2";
- 			operating-points-v2 = <&gr3d_dvfs_opp_table>;
- 			power-domains = <&pd_3d0>, <&pd_3d1>;
- 			power-domain-names = "3d0", "3d1";
+> > So if you need more power for one port, you most likely will need to
+> > attempt to adjust the power levels of the source PDO power supplies of
+> > the other ports that share the base supply (like battery), or possibly
+> > disable them, and that way enable (make present) more source supplies
+> > for your port. That is the idea, but I admit I have not thought of
+> > everything, so I'm not completely sure would it work exactly like
+> > that, but the power balancing should in any case be possible with the
+> > chain of power supplies one way or the other.
+> > 
+> > I hope I understood your question correctly, and I hope I was able to
+> > give you an answer :-)
+> 
+> Thanks for the additional updates. So is the intention here to move control of
+> PDO selection away from TCPM, or add more flexibility to it? As I understand it
+> from previous efforts around all of this, the intention was that TCPM makes the
+> decision as to which PDO to select (and which APDO for PPS) based on the offered
+> capabilities of the source and the sink capabilities which are described in FW.
+> Am just trying to envisage the use-cases here and how the kernel/user is
+> involved in selecting PDOs/voltages/currents.
+
+If we can leave the decision about the selection to TCPM, that would
+be great! I'm not against that at all. As I said, I have not though
+through the control aspect. Right now I'm mostly concerned about how
+we expose the information to the user. The only reason why I have
+considered the control part at all is because how ever we decide to
+expose the information to the user, it has to work with control as
+well.
+
+> IIRC there used to be functions for updating source/sink capabilities but these
+> never had users and were subsequently removed. I guess this would be essentially
+> the functional replacement for those APIs?
+> 
+> Personally, I think the idea of source/sink PSY instances supplying each other
+> seems reasonable. Right now we represent the external PD/Type-C supply (partner)
+> through TCPM as a PSY instance which is always present for the associated port,
+> although obviously when no source partner exists we're marked as offline. For
+> the partner side I'm guessing the PSY instance will be dynamically
+> created/destroyed? From previous experience PSY classes have tended to be
+> statically included so would be interested in seeing what this looks like in
+> reality.
+
+If there is anything that should be improved in the PSY class itself
+(and I'm sure there's plenty), then we improve it.
+
+> Am still unsure on using PSY to expose individual PDOs though and this still
+> feels quite heavyweight. I assume we're not wanting to expose everything in PDOs
+> really, just the voltage/current info? Feels like we should be able to do this
+> with individual properties which a user can be notified of changes to through
+> the normal prop notifier, rather than a collection of PSY class instances.
+> However, I'm happy to be convinced the other way so will await further
+> details. :)
+
+The final PSYs and the supply chains they create as well as the
+individual properties I'm more than happy to talk about, but having a
+separate object for the smallest thing that we can see (PDO) is the
+right thing to do here IMO. Trying to concatenate things into single
+objects especially in sysfs, despite how nice it always would seem,
+has taken me to the brink of disaster in the past far too many times.
+
+In this case we don't need to take the risk of having to duplicated
+information or in worst case deprecate something that is also exposed
+to the sysfs in the future.
+
+So the question is not why should we registers every individual PDO
+separately. The question is, why shouldn't we do that? And saying that
+it's "heavyweight" I'm afraid is not good enough. :-)
+
+Right now I simply don't see any other way that would be as flexible,
+or that could even handle all the different platforms in uniform way
+(this needs to work with TCPM, UCSI, and everything else), as
+registering separate object (psy) for every single PDO.
+
+thanks,
+
 -- 
-2.32.0
-
+heikki
