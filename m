@@ -2,92 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BE97C433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 11:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F36FC43219
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 12:47:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 48B3A60EB6
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 11:01:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7800C611B0
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 12:47:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235146AbhIVLDO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Sep 2021 07:03:14 -0400
-Received: from smtp-fw-6001.amazon.com ([52.95.48.154]:61678 "EHLO
-        smtp-fw-6001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235044AbhIVLDN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Sep 2021 07:03:13 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1632308504; x=1663844504;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=ZHWrmmWN4TZxD38ZjRTWdMilYnPPW7deeIc6pKKkvs4=;
-  b=OpjZWWUbdii/4G3rTZMEYYdMhOhwhdpMRBl8umCOqzZ9/hiSkr+PHUzb
-   hN7fVsecfnjcDp6bghDFAGreASmXLmrtYLda93OAFkvjY08CXoCVDntrO
-   X6naoGvCwUK/H0NTAkYWjxP1HaynYhSeehplo5rQwSxIFpUUZRxr5UkUI
-   o=;
-X-IronPort-AV: E=Sophos;i="5.85,313,1624320000"; 
-   d="scan'208";a="143707804"
-Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-iad-1d-1c3c2014.us-east-1.amazon.com) ([10.43.8.6])
-  by smtp-border-fw-6001.iad6.amazon.com with ESMTP; 22 Sep 2021 11:01:36 +0000
-Received: from EX13D01EUB001.ant.amazon.com (iad12-ws-svc-p26-lb9-vlan2.iad.amazon.com [10.40.163.34])
-        by email-inbound-relay-iad-1d-1c3c2014.us-east-1.amazon.com (Postfix) with ESMTPS id 851B1CE3C1;
-        Wed, 22 Sep 2021 11:01:35 +0000 (UTC)
-Received: from [192.168.18.219] (10.43.162.186) by
- EX13D01EUB001.ant.amazon.com (10.43.166.194) with Microsoft SMTP Server (TLS)
- id 15.0.1497.23; Wed, 22 Sep 2021 11:01:31 +0000
-Message-ID: <04e09b28-3b0d-ed64-8bec-f07bc0ddf88e@amazon.com>
-Date:   Wed, 22 Sep 2021 14:01:26 +0300
+        id S236084AbhIVMsw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Sep 2021 08:48:52 -0400
+Received: from mail-ot1-f44.google.com ([209.85.210.44]:33437 "EHLO
+        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236085AbhIVMsr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Sep 2021 08:48:47 -0400
+Received: by mail-ot1-f44.google.com with SMTP id c42-20020a05683034aa00b0051f4b99c40cso3368853otu.0;
+        Wed, 22 Sep 2021 05:47:17 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=UUiCBNielMa38BIb9BHPZtFbJzf43TTIl3svNHNMP3c=;
+        b=JP8z0nVwm7YIp7nzrcav2eoba63+Uw4PoJVnQ0XHEdGui8MMYIku2y79YABCRFz+qz
+         6Cky+6CQpshzbSPP9Dn1CmSbbUecUFznXHpitspSKhT7SUjj4Otw9tktLfJhvCC8GoRu
+         s27fdZgvre5DjtYagTJq++DtqlVeBt2xSg71mzdUP6coLAUsSUId9VniHzHsZuJeeV8Y
+         WEQUe6sdUtgRRlNeHFUN5Oetj05k00tWkDzDn6cYYdj3g54T5KpI/qGrKNACe3o9m1H2
+         9bj2Jo1l2HSyPUTRpvSWKzaFZg49y5e8QB786ppNSzM5vprobFSMOkQImB0Zj8DT6fqc
+         vfEg==
+X-Gm-Message-State: AOAM5311Fz+kkdejyX7vdLNI0RYqL617nhDVUQQsTcXLqBv7JioUO0vl
+        3H+HicRZ/nKyJeP8aPErzoQ6I5iSt6J9rLtGnk0=
+X-Google-Smtp-Source: ABdhPJwd1dnNtMuVX2FgogpdGKAYJqSHyBwQI5zoFV2HKwLYYlUD9SMj/pAlzmOebA3v+NSF9Yby0tSjhZ7PsYz/YAQ=
+X-Received: by 2002:a05:6830:82b:: with SMTP id t11mr2810637ots.319.1632314836721;
+ Wed, 22 Sep 2021 05:47:16 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.1
-Subject: Re: thermal: thermal_mmio: Constify static struct thermal_mmio_ops
-Content-Language: en-US
-To:     Rikard Falkeborn <rikard.falkeborn@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-CC:     Zhang Rui <rui.zhang@intel.com>, Amit Kucheria <amitk@kernel.org>,
-        Ronen Krupnik <ronenk@amazon.com>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-References: <20210920203849.32136-1-rikard.falkeborn@gmail.com>
-From:   "Shenhar, Talel" <talel@amazon.com>
-In-Reply-To: <20210920203849.32136-1-rikard.falkeborn@gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.43.162.186]
-X-ClientProxiedBy: EX13D14UWB003.ant.amazon.com (10.43.161.162) To
- EX13D01EUB001.ant.amazon.com (10.43.166.194)
+References: <20210819004305.20203-1-deepak.sharma@amd.com> <CAJZ5v0jWX=H=aZ25PzHdH05bRJvtYbGHfyTgH_68k4kfYkZc5A@mail.gmail.com>
+ <951c4f8f-30ee-77d3-afb7-46e45c84213d@amd.com> <CAJZ5v0ic+0MKDbebrxnyxr=rRJbqP4LmB4g1fVVAVJWh98e=MA@mail.gmail.com>
+ <a20fc6ba-14fa-e9b9-de69-54b9eaf20e73@amd.com>
+In-Reply-To: <a20fc6ba-14fa-e9b9-de69-54b9eaf20e73@amd.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 22 Sep 2021 14:47:05 +0200
+Message-ID: <CAJZ5v0gp=_T7b9YVDBfdC11DzzY8Xovxm659-X6i_bJxoV1LgQ@mail.gmail.com>
+Subject: Re: [PATCH] x86/ACPI/State: Optimize C3 entry on AMD CPUs
+To:     "Sharma, Deepak" <deesharm@amd.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Deepak Sharma <deepak.sharma@amd.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>,
+        "open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)" 
+        <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The only usage of thermal_mmio_ops is to pass its address to
-> devm_thermal_zone_of_sensor_register(), which has a pointer to const
-> struct thermal_zone_of_device_ops as argument. Make it const to allow
-> the compiler to put it in read-only memory.
+On Wed, Sep 22, 2021 at 5:50 AM Sharma, Deepak <deesharm@amd.com> wrote:
 >
-> Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
-Acked-by: Talel Shenhar <talel@amazon.com>
-> ---
->   drivers/thermal/thermal_mmio.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Hi Rafael,
 >
-> diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
-> index ded1dd0d4ef7..360b0dfdc3b0 100644
-> --- a/drivers/thermal/thermal_mmio.c
-> +++ b/drivers/thermal/thermal_mmio.c
-> @@ -34,7 +34,7 @@ static int thermal_mmio_get_temperature(void *private, int *temp)
->          return 0;
->   }
+> On 9/1/2021 5:45 AM, Rafael J. Wysocki wrote:
+> > On Wed, Sep 1, 2021 at 4:14 AM Deepak Sharma <deesharm@amd.com> wrote:
+> >>
+> >> On 8/25/21 11:07 AM, Rafael J. Wysocki wrote:
+> >>> On Thu, Aug 19, 2021 at 2:43 AM Deepak Sharma <deepak.sharma@amd.com> wrote:
+> >>>> AMD CPU which support C3 shares cache. Its not necessary to flush the
+> >>>> caches in software before entering C3. This will cause performance drop
+> >>>> for the cores which share some caches. ARB_DIS is not used with current
+> >>>> AMD C state implementation. So set related flags correctly.
+> >>>>
+> >>>> Signed-off-by: Deepak Sharma <deepak.sharma@amd.com>
+> >>> Applied as 5.15 material under the edited subject "x86: ACPI: cstate:
+> >>> Optimize C3 entry on AMD CPUs", thanks!
+> >> I might need to send subsequent patch for this. Can you please point me
+> >> to git and branch where this has been merged.
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
 >
-> -static struct thermal_zone_of_device_ops thermal_mmio_ops = {
-> +static const struct thermal_zone_of_device_ops thermal_mmio_ops = {
->          .get_temp = thermal_mmio_get_temperature,
->   };
->
-> --
-> 2.33.0
->
+> Still I am not able to see this patch merged on linux-next branch.
+
+It was there, but got dropped before the merge window due to the
+unclear next steps.
+
+I'd rather see this resent along with the subsequent patch you were
+talking about.
