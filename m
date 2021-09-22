@@ -2,107 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB711C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 09:59:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6250FC433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 10:03:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BC65A61131
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 09:59:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3BA5561131
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Sep 2021 10:03:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234499AbhIVKBG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Sep 2021 06:01:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49606 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234381AbhIVKBF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Sep 2021 06:01:05 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 143EBC061756
-        for <linux-pm@vger.kernel.org>; Wed, 22 Sep 2021 02:59:36 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id t18so5244118wrb.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Sep 2021 02:59:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:subject:to:message-id:date:user-agent:mime-version
-         :content-language:content-transfer-encoding;
-        bh=wVE4R8C/cgi96odywCvgg2C5/wXSs+GANvotR7N/uR8=;
-        b=vIPxreyzdq2HXWtttAy9AphQhkLfK4uZFOBtQWVuzCvfaQaGlSrWfzT6n9N5Pu1YSP
-         Zd7a3y3A3IGxmjlzxIkCpCeIsw7Eq2kpQg0CM1Krp8AgDBTqUiw/OOZHxxjsfBXm45eD
-         Z+8Rfo5CrZawF+BOlX+NfapdsAaLj0Oe1ia7qEIttA25RdJzWdG3KBcfsqExfqTlQwv4
-         iJ/MRD9a2Cydy0LF6BqUeb4De6ZYucwR8khVHCo2vaOpzSERlEr6499w836Fzxg9YV0v
-         Z2P65RxpYuC5rQTq993ssJ0nu7MsFJde5XE4XUrQ7eo75Nhihh4ApWLz1DxRN3J1q2ko
-         Nliw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:subject:to:message-id:date:user-agent
-         :mime-version:content-language:content-transfer-encoding;
-        bh=wVE4R8C/cgi96odywCvgg2C5/wXSs+GANvotR7N/uR8=;
-        b=g5NVStKJXmQkNoXihPK+FdUfhSa0A9vZqhpYwdzEM+md8xl0kfpL3YBlLT3lVnmIlg
-         CR3vf8uPc2K028nR0I9J8VF7IClTYZ7IxxkJ+QClt025vl0sle1eZusP6U1xWYufDT0V
-         WwXDBJgiGFZ1xc9KIlkwmbMEkBLPofv42JU7Cl8K7b3CyB+qPNfv2WbKMm/rlzkf82wa
-         b0MbjvXeehwXOuRRRmRiM5VRw+AzTTPZsIogrvqu08RPwWmEA0KMrVKR/H3t1iVhxYkF
-         3BIilCzBkVKiLcsrgf1HHa+/gRPWotbqL0NaUzvbUmb8XxuRuW2x/gg6i0RZhhjkw7Xk
-         Bm+Q==
-X-Gm-Message-State: AOAM531qNDBqMGitF48/AZm2ayWR0OIrB8Hyhw/sf+Fc9Gxaa/kyLHRZ
-        hrk5ASOPW1MPxedAqXrp0q8psEwheHKtzQ==
-X-Google-Smtp-Source: ABdhPJz19tnF6GcYxfblJoxm65IbrNZux22yI1JyMaQb0d5aKNU5H+vy7Ql/aGtLMcNCedy86Mv2Ig==
-X-Received: by 2002:a05:600c:19cb:: with SMTP id u11mr7114787wmq.185.1632304774391;
-        Wed, 22 Sep 2021 02:59:34 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:4f54:2a4:2d47:4592? ([2a01:e34:ed2f:f020:4f54:2a4:2d47:4592])
-        by smtp.googlemail.com with ESMTPSA id s2sm1631915wrn.77.2021.09.22.02.59.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 22 Sep 2021 02:59:33 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFD] Remove the userspace governor and the cooling device set state
- sysfs entry
-To:     Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM mailing list <linux-pm@vger.kernel.org>
-Message-ID: <d46b5007-428b-5f31-52d9-a964cc60ad92@linaro.org>
-Date:   Wed, 22 Sep 2021 11:59:32 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        id S234614AbhIVKEc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Sep 2021 06:04:32 -0400
+Received: from esa.microchip.iphmx.com ([68.232.154.123]:41944 "EHLO
+        esa.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234585AbhIVKEb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Sep 2021 06:04:31 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1632304982; x=1663840982;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=o84MUAaAl22mDdS3oZhqYx+P4ZTe4XQ7zU9iNgirFVY=;
+  b=MLRqOUFT9kEO8oDbXwjM0fzdt0hwECAj5ObSh37H5Us6cf5z3Q3iGMle
+   WlWIw0Rcxq2hUxWgTcCUp6i4SyTnXHmqZmoaCqPCM8GHgoQvyuHO9AHiF
+   MDK/1dZYceHQVHKZ4Xo/+36pwFUVGDA2o8KzAxJdh3KreJUuq+peHea0R
+   TR2qj6eZgld+EqfdWqvQGa8NtLxwtTMc8zX1ooBt04I0q7Mj0TAPZ8WIY
+   H6Mh5miu4xBxZX7+zIHvxiUh9TNZ0saMPapGQ39WhiDrxR9RKn9+tolfe
+   IlHvXI0J4BUshk/P5snk3Jh7fFJiHMyKx42YVvd1UEIdeFkAiI+ttMwPz
+   g==;
+IronPort-SDR: ibErfwqDhJ2fywgCsuET4CuoS29yy35I7mKoyFBQW1zywnFbkk+Yr2ECx85/edn8JqYt9AP9kK
+ TIKixxgFOCBk89BZNjDdZ3Egk9JxiA77bBYa50SQKGAy9nJl75iGTRv0nE8HYjAo5zBMcRDfBh
+ DMNk6F3O86owaY9pjc6ZMRic1MTZYgcm2aVdLD/byVg1MkN81qvoGsxxVbYfFcunyQRADFnUHW
+ tiPtl31s3soIxQJTwI7dVJPts1sEO4klwtaDI1+kDO5/Hp8Ea6rO4oiZZ3H+bG6f7vljcmDy28
+ BkItikD+KqPesWVE6CDRB//W
+X-IronPort-AV: E=Sophos;i="5.85,313,1624345200"; 
+   d="scan'208";a="132710408"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 22 Sep 2021 03:03:00 -0700
+Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.14; Wed, 22 Sep 2021 03:03:00 -0700
+Received: from localhost (10.10.115.15) by chn-vm-ex03.mchp-main.com
+ (10.10.85.151) with Microsoft SMTP Server id 15.1.2176.14 via Frontend
+ Transport; Wed, 22 Sep 2021 03:03:00 -0700
+Date:   Wed, 22 Sep 2021 12:04:29 +0200
+From:   Horatiu Vultur <horatiu.vultur@microchip.com>
+To:     "Russell King (Oracle)" <linux@armlinux.org.uk>
+CC:     <davem@davemloft.net>, <kuba@kernel.org>, <robh+dt@kernel.org>,
+        <andrew@lunn.ch>, <f.fainelli@gmail.com>,
+        <alexandre.belloni@bootlin.com>, <vladimir.oltean@nxp.com>,
+        <UNGLinuxDriver@microchip.com>, <netdev@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-phy@lists.infradead.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [RFC PATCH net-next 03/12] phy: Add lan966x ethernet serdes PHY
+ driver
+Message-ID: <20210922100429.pjrd2s4y3jbxpjjt@soft-dev3-1.localhost>
+References: <20210920095218.1108151-1-horatiu.vultur@microchip.com>
+ <20210920095218.1108151-4-horatiu.vultur@microchip.com>
+ <YUiPqJjsoBg99VbR@shell.armlinux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+In-Reply-To: <YUiPqJjsoBg99VbR@shell.armlinux.org.uk>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The 09/20/2021 14:42, Russell King (Oracle) wrote:
+> EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
+> 
+> On Mon, Sep 20, 2021 at 11:52:09AM +0200, Horatiu Vultur wrote:
+> > +static int lan966x_calc_sd6g40_setup_lane(struct lan966x_sd6g40_setup_args config,
+> > +                                       struct lan966x_sd6g40_setup *ret_val)
+> > +{
+> > +     struct lan966x_sd6g40_mode_args sd6g40_mode;
+> > +     struct lan966x_sd6g40_mode_args *mode_args = &sd6g40_mode;
+> > +
+> > +     if (lan966x_sd6g40_get_conf_from_mode(config.mode, config.refclk125M,
+> > +                                           mode_args))
+> > +             return -1;
+> 
+> This needs fixing to be a real negative error number.
+> lan966x_sd6g40_setup_lane() propagates this functions non-zero
+> return value, which is then propagated through lan966x_sd6g40_setup(),
+> and then through serdes_set_mode() to the PHY layer.
+> 
+> In general, I would suggest that _all_ int-returning functions in the
+> kernel that return a negative failure value _should_ _always_ return a
+> negative error code, so that your reviewers don't have to chase code
+> paths to work out whether a mistake such as the above exists.
+> 
+> To put it another way: never use "return -1" in the kernel.
 
-Hi,
+Hi Russell,
 
-the userspace governor is sending temperature when polling is active and
-trip point crossed events. Nothing else.
+Thanks for the suggestion. I will fix this in the next version.
 
-In the other side, the cooling device have their cooling device
-set_cur_state read-writable all the time.
-
-The thermal framework is wrongly used by userspace as a power capping
-framework by acting on the cooling device opaque state. This one then
-competes with the in-kernel governor decision.
-
-As the new netlink thermal notification is able to provide the same
-information than the userspace governor.
-
-I propose to remove the userspace governor and the cur_state entry in
-the sysfs exported file.
-
-The DTPM framework is the right framework to do power capping and
-moreover it deals with the aggregation via the dev pm qos.
-
-Does it make sense ?
-
-  -- Daniel
+> 
+> --
+> RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+> FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+/Horatiu
