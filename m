@@ -2,54 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ADC5C433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Sep 2021 22:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D56C0C433FE
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Sep 2021 22:44:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0667960E76
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Sep 2021 22:44:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C314060E76
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Sep 2021 22:44:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232749AbhIZWpx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Sep 2021 18:45:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43328 "EHLO
+        id S232760AbhIZWp4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Sep 2021 18:45:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43406 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231904AbhIZWoW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Sep 2021 18:44:22 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 385A1C061575;
-        Sun, 26 Sep 2021 15:42:45 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id u8so67669922lff.9;
-        Sun, 26 Sep 2021 15:42:45 -0700 (PDT)
+        with ESMTP id S232488AbhIZWpD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Sep 2021 18:45:03 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC52FC0613EC;
+        Sun, 26 Sep 2021 15:43:00 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id m3so68756267lfu.2;
+        Sun, 26 Sep 2021 15:43:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=798UaN2O7BsVLG2b7m1c5jRBaYmhXVVyGNLo4voHgAg=;
-        b=pUEPNMkJQr5NWNa19a7ZyiLQA/ce5o3cooLHQciCTfn7GDvRH6VTTTdD6JKIL4UrmV
-         rrVbAP/wvZWx2J0K2faasFGjzdi1o5y8ezrQGpvdeJIrszdl8ecw8YwEyqDA1MvPawmp
-         0PJ6yycgmc045AsLdgLtVuy8KAgDTFddIzR6xi7P9lXt8qD3EuLmDuxPVs1BY89/wIsV
-         /jXKmHsXeSDJelnpvglMhN0zjnmKIQw2G47uxtN2JI6M3VthPUoP+q02lvNETHoucFHI
-         /JiJckf1QnJt46IeCFDl4rZymcy/0KL5Fowewmc53xoffriJ72cInIZPrF2f831BKUnf
-         nYvA==
+        bh=3cNnrDCgyIBL/irFJrBQOLNlmfmIoiosnZsoOoMlXuE=;
+        b=TsdJMXHsHfNpbWVT9gV90yQiA5oV2D6BAkDJcGD/x14RCxHeGcHH7Eypefd8jtDvwp
+         fi16k07+eB5cwLk6V/14S+KypNPA4ZyipRQwfKQGO9oicD2VxaLlskzRNDvpSmVHJuJh
+         RTUYJc+yrtgrRs8DQomrPUEXtBevu/40wv/fwFYS1AP5EfNy+4QFukgyDwi5nTMYZonY
+         KgSnmjDucf18iJ5WJ5R7dV+xz1LNwFCLbRiWLIK1vTjkOyEc1KX9s13MoiHJAm4QTYHl
+         Swq8VIIZhvwm7o/alKd0IiwbwEc2tBAtUOqDVZs1hmZieTZzvI8nHlKXXN4Mw5WWKzXJ
+         SyPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=798UaN2O7BsVLG2b7m1c5jRBaYmhXVVyGNLo4voHgAg=;
-        b=Zu84eukA81XCjgkbgYfoGU94+Pt4xqt7wRqJoJa30pA3uBm0G8ncCREag+WVtYCQTj
-         RwjPvxIlP+ltsRXarW6eiwAemq34T38dZ/PScYtCaUAWlnnq9rJKmmTG36qvEH0OZKUZ
-         YPbqoFvpGLRF87kQm14bbgr43q7KaqdDOmaTz6vB0r1usxZdwvM7Go4nSwvXIHve017L
-         BDD47LGH1F3o4kzqbGuBqGiCQweJh2ZJ8J2ZEmoSjYo//dMySjqFdzWk1VwWFKWIJe8W
-         Mtt2lvQ6IOqMgrAfFc7iqsAJgeSTuGXwliP5RAgy7eXUa9YMbzCCdi24I6OjbCiq87nq
-         oB3g==
-X-Gm-Message-State: AOAM533lHhjiosFpUuReWpp7rJz1dp8wK+Qd+3BiAyctE87fVdcy2HaT
-        1iZmVZap2zW0tQs7wvo9qM0=
-X-Google-Smtp-Source: ABdhPJy2rzvcK/EpmNkU06oa1ux+Bax5jzq0bb0T3/Dhw3FjdBPfDZTPA9CjLuSUJfe3zuDn+9yAGA==
-X-Received: by 2002:a2e:585c:: with SMTP id x28mr25230381ljd.508.1632696163660;
-        Sun, 26 Sep 2021 15:42:43 -0700 (PDT)
+        bh=3cNnrDCgyIBL/irFJrBQOLNlmfmIoiosnZsoOoMlXuE=;
+        b=0uM+7G63Ptj0yXT9gOk/um2+EqEdR+u98VWgUQMcWAutsAjJHoD0snd+QAiuZh5loH
+         Y9k3oD0TjUVfGj76bqCr1onXALyiQpLoNe8oGyveEx2AHlyN59fK4tmOfa1hRr8u9qtO
+         MbweGrT3CMXsBDeTi9YQHqCYXxO2R8dGtnWF6aVKhZMK+TnjQY3QkcfZKJ4GE+ZOFLXd
+         QmgYx4gS8bR6x1cc7WnuN1rc+tcWShOUilvvP338lPi672/uhRLC+wzTJ4sAAqT0DtVH
+         QtdVkt0q5MsLuEHyTClwFf+XnCs/2UgzqGYbaEfl6yH7pSx70Ss/09TknIf6jhl+d0da
+         yT+w==
+X-Gm-Message-State: AOAM532enGJiayTGvNJ6wJgoeDdZCOrMb7M8yhwlaRcbL/AiiOQ7SaYO
+        bTUEtXL3cm3QrHMEF6AuTzM=
+X-Google-Smtp-Source: ABdhPJzd/49nMsK5usWLYvGqM2QqzsB+PEKiiDaBLoazsQ4m3oZNMQtOdX9oLzlhVvUKUqWoFkl5eg==
+X-Received: by 2002:a2e:bf21:: with SMTP id c33mr14194334ljr.101.1632696179179;
+        Sun, 26 Sep 2021 15:42:59 -0700 (PDT)
 Received: from localhost.localdomain (46-138-80-108.dynamic.spd-mgts.ru. [46.138.80.108])
-        by smtp.gmail.com with ESMTPSA id m10sm1408899lfr.272.2021.09.26.15.42.42
+        by smtp.gmail.com with ESMTPSA id m10sm1408899lfr.272.2021.09.26.15.42.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Sep 2021 15:42:43 -0700 (PDT)
+        Sun, 26 Sep 2021 15:42:58 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
         Mauro Carvalho Chehab <mchehab@kernel.org>,
         David Heidelberg <david@ixit.cz>
-Subject: [PATCH v13 15/35] drm/tegra: vic: Support system suspend
-Date:   Mon, 27 Sep 2021 01:40:38 +0300
-Message-Id: <20210926224058.1252-16-digetx@gmail.com>
+Subject: [PATCH v13 28/35] soc/tegra: pmc: Rename 3d power domains
+Date:   Mon, 27 Sep 2021 01:40:51 +0300
+Message-Id: <20210926224058.1252-29-digetx@gmail.com>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20210926224058.1252-1-digetx@gmail.com>
 References: <20210926224058.1252-1-digetx@gmail.com>
@@ -88,36 +88,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hardware must be stopped before system is suspended. Add suspend-resume
-callbacks.
+Device-tree schema doesn't allow domain name to start with a number.
+We don't use 3d domain yet in device-trees, so rename it to the name
+used by Tegra TRMs: TD, TD2.
 
+Reported-by: David Heidelberg <david@ixit.cz>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/drm/tegra/vic.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/soc/tegra/pmc.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/tegra/vic.c b/drivers/gpu/drm/tegra/vic.c
-index c02010ff2b7f..359dd77f8b85 100644
---- a/drivers/gpu/drm/tegra/vic.c
-+++ b/drivers/gpu/drm/tegra/vic.c
-@@ -315,6 +315,8 @@ static int vic_runtime_suspend(struct device *dev)
- 	struct vic *vic = dev_get_drvdata(dev);
- 	int err;
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index fb8faf7b226a..6759f19b9cd6 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -2964,7 +2964,7 @@ static SIMPLE_DEV_PM_OPS(tegra_pmc_pm_ops, tegra_pmc_suspend, tegra_pmc_resume);
  
-+	host1x_channel_stop(vic->channel);
-+
- 	err = reset_control_assert(vic->rst);
- 	if (err < 0)
- 		return err;
-@@ -517,6 +519,8 @@ static int vic_remove(struct platform_device *pdev)
+ static const char * const tegra20_powergates[] = {
+ 	[TEGRA_POWERGATE_CPU] = "cpu",
+-	[TEGRA_POWERGATE_3D] = "3d",
++	[TEGRA_POWERGATE_3D] = "td",
+ 	[TEGRA_POWERGATE_VENC] = "venc",
+ 	[TEGRA_POWERGATE_VDEC] = "vdec",
+ 	[TEGRA_POWERGATE_PCIE] = "pcie",
+@@ -3072,7 +3072,7 @@ static const struct tegra_pmc_soc tegra20_pmc_soc = {
  
- static const struct dev_pm_ops vic_pm_ops = {
- 	SET_RUNTIME_PM_OPS(vic_runtime_suspend, vic_runtime_resume, NULL)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
+ static const char * const tegra30_powergates[] = {
+ 	[TEGRA_POWERGATE_CPU] = "cpu0",
+-	[TEGRA_POWERGATE_3D] = "3d0",
++	[TEGRA_POWERGATE_3D] = "td",
+ 	[TEGRA_POWERGATE_VENC] = "venc",
+ 	[TEGRA_POWERGATE_VDEC] = "vdec",
+ 	[TEGRA_POWERGATE_PCIE] = "pcie",
+@@ -3084,7 +3084,7 @@ static const char * const tegra30_powergates[] = {
+ 	[TEGRA_POWERGATE_CPU2] = "cpu2",
+ 	[TEGRA_POWERGATE_CPU3] = "cpu3",
+ 	[TEGRA_POWERGATE_CELP] = "celp",
+-	[TEGRA_POWERGATE_3D1] = "3d1",
++	[TEGRA_POWERGATE_3D1] = "td2",
  };
  
- struct platform_driver tegra_vic_driver = {
+ static const u8 tegra30_cpu_powergates[] = {
+@@ -3133,7 +3133,7 @@ static const struct tegra_pmc_soc tegra30_pmc_soc = {
+ 
+ static const char * const tegra114_powergates[] = {
+ 	[TEGRA_POWERGATE_CPU] = "crail",
+-	[TEGRA_POWERGATE_3D] = "3d",
++	[TEGRA_POWERGATE_3D] = "td",
+ 	[TEGRA_POWERGATE_VENC] = "venc",
+ 	[TEGRA_POWERGATE_VDEC] = "vdec",
+ 	[TEGRA_POWERGATE_MPE] = "mpe",
 -- 
 2.32.0
 
