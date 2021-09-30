@@ -2,54 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDB32C43217
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Sep 2021 11:05:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E09C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Sep 2021 11:05:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C55716134F
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Sep 2021 11:05:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 282E4619EE
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Sep 2021 11:05:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350315AbhI3LHS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Sep 2021 07:07:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43802 "EHLO
+        id S1350306AbhI3LHT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Sep 2021 07:07:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350310AbhI3LHI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Sep 2021 07:07:08 -0400
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33C74C06176C;
-        Thu, 30 Sep 2021 04:05:26 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id g8so20784698edt.7;
-        Thu, 30 Sep 2021 04:05:26 -0700 (PDT)
+        with ESMTP id S1350311AbhI3LHK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Sep 2021 07:07:10 -0400
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5B94C06176E;
+        Thu, 30 Sep 2021 04:05:27 -0700 (PDT)
+Received: by mail-ed1-x52c.google.com with SMTP id b26so20760736edt.0;
+        Thu, 30 Sep 2021 04:05:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=YBgiYM1YMUTaur/C3QVNo5tGNXLvclq4l1ZtgjUpd4g=;
-        b=YBqn7GnDNNqpPZm/pAsrfEWR6oNufq3gED9cMWzTOQCUB+JOr2+U09kMI4xKWxRnz8
-         TUE5Nf/xPHO58TzitUkyR1OQFJhhofIcsT9WSupMX4hnXBFc+MkEsZxX7bd2JEBzvx4p
-         vYniaazUeh33JUWXas+vd/VGfciosUEiWR+tDQMbx+P55FZKBBL1MKpxyCIDwaCFRK5D
-         VOSaLqQ816WFVm3HV6mZ6VaRIJn3dyprPKNJyYtwpY24Q9mwNBoOtPdzzNqMJSRCBXDr
-         5P/MD57OedkY+KxKMJdRP2EqZyuybxESuY9B9LhoaBHaY67qB6hNYIlPwNyJgXpqS07L
-         de9Q==
+        bh=3Mqq1EJ2H9lT3Ci5TT8crEf2RCsTlu4B8737O9t40fk=;
+        b=ctXoSjBkvSIYNULZaa1/V0zomtPR9Dg6hGyso+EDovmgaYUAbYEJved1OfeTZDjx6r
+         jsoMIVFfzEgEXtg4ZDNQzkyDlcbUG2cXX28Oor5BNgfMVRzhkznGLlwUKyxC41i0rUlz
+         0qxCqfQm9eeFVI+qQbpRezTR8Zzw7pGb9cpBicROrwpunIC0ncneATZnp28rqnrvYiwA
+         DuLwhPNGZLnTczsAJbUljTCACCW6ADDdxDo9hhnSoHEZLZbp9S36tQaQeppsrDhKPzgI
+         u5iWrGW/oUQ8smSzPXPqamjbW8X8kmCFGoAnobN42fYwMX9AmjY8zJrUluzhcbpqtc93
+         fgjw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=YBgiYM1YMUTaur/C3QVNo5tGNXLvclq4l1ZtgjUpd4g=;
-        b=ONISd4hGauGMqB5v5iOvVKkHBl5isMWc/6ziMIbMuHU7K29BQfxVnLT0ztiKwAon2a
-         QEC7lV1ch4Zm7XRqUhDls4doe4eHcJPG/L1Tnf72alstC6u5J6KVSZzxlZHpVl/m+oNq
-         uxD86SUK383OgZMZFwkQlrm8vM19JSuxdkdRvlM2VH15BD8oqstFHWMXCj6M71dOrnun
-         FDqZKvbakit6PvsZKCj3vU1PY3oXnscZ7PkU5bR0FCroYv7UWUCfHtL65FI914KQiL7o
-         2qJkUMM9CR6H/15O0FeV0s81BFqBX9W5+4UqFTmlmaJgd3OPJU3oWjHZyS6/Xsy3k27Q
-         oDDQ==
-X-Gm-Message-State: AOAM532lrDZfdCbnh2k5NSFjGvNbMxfQPpzToIsj6paWgeJedUCzZbGP
-        CdU+3b/xeoFulUc5spL0uxg=
-X-Google-Smtp-Source: ABdhPJxQcP1chqO/WvyPc81rUAxaSYZBidr29l5CD+EWy0vjVJQ+473yq6yGDaVGnNZoGeer4Kzi9w==
-X-Received: by 2002:a05:6402:1d9c:: with SMTP id dk28mr1144800edb.241.1632999924775;
-        Thu, 30 Sep 2021 04:05:24 -0700 (PDT)
+        bh=3Mqq1EJ2H9lT3Ci5TT8crEf2RCsTlu4B8737O9t40fk=;
+        b=H+IPqSzsuSCZxX9n7qZ+JeF6ar35jIuxcTvsmsobGXv32KBCqDqLDyHDWh0Z8ENnpK
+         Eg95f7pR6twMyRvmCMBvMyqAYdiQvWfrdgD8M7anmMHxX6DYe/ov5socHffPtQvddZAQ
+         0+L9i/PBIl+ZBoPFXyuHzcZ7w6BtBlWhoLVZ0WJojhoQsaU1pmn8sWri0ynYsgA9YU3Z
+         AFe1ewTKYsd1XDlhTi75pTd7K7IN3oNnbqG3DrONAa/VFSlqe9hCkBe4+Qg6/dVM5O1d
+         3kyNyyN2knAGBYa1PuVjv6L4ya0VzLhHfZk9YcGEdAVtnykNA2DpaTJS3I6hwdS+pcS7
+         GgYg==
+X-Gm-Message-State: AOAM5314jNkfb4vrlNAVxBHoFOb1hVkN7sGo1SUI1ivfjJIQ7fcGWvXY
+        f5cM451S4qa0c7vOWu8wzSM=
+X-Google-Smtp-Source: ABdhPJwn+zUQkIe2nFFlWlA6BpEh0kKo3gLy3lRh6spCZ8VNO5YuDcImrQXlufA2biBRs2ZX2uzc7w==
+X-Received: by 2002:a50:fa93:: with SMTP id w19mr6405648edr.365.1632999926386;
+        Thu, 30 Sep 2021 04:05:26 -0700 (PDT)
 Received: from debian.home (81-204-249-205.fixed.kpn.net. [81.204.249.205])
-        by smtp.gmail.com with ESMTPSA id i2sm1305158edv.7.2021.09.30.04.05.24
+        by smtp.gmail.com with ESMTPSA id i2sm1305158edv.7.2021.09.30.04.05.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Sep 2021 04:05:24 -0700 (PDT)
+        Thu, 30 Sep 2021 04:05:26 -0700 (PDT)
 From:   Johan Jonker <jbx6244@gmail.com>
 To:     heiko@sntech.de
 Cc:     robh+dt@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
@@ -57,9 +57,9 @@ Cc:     robh+dt@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
         linux-arm-kernel@lists.infradead.org,
         linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/4] dt-bindings: thermal: remove redundant comments from rockchip-thermal.yaml
-Date:   Thu, 30 Sep 2021 13:05:15 +0200
-Message-Id: <20210930110517.14323-2-jbx6244@gmail.com>
+Subject: [PATCH v2 4/4] arm64: dts: fix resets in tsadc node for rk356x.dtsi
+Date:   Thu, 30 Sep 2021 13:05:17 +0200
+Message-Id: <20210930110517.14323-4-jbx6244@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20210930110517.14323-1-jbx6244@gmail.com>
 References: <20210930110517.14323-1-jbx6244@gmail.com>
@@ -69,42 +69,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove redundent comments from rockchip-thermal.yaml
-Sort compatibles in alphabetical order.
+In the rockchip_thermal.c driver we now get the resets with
+a devm_reset_control_array_get() function, so remove
+the reset-names property as it is no longer needed.
+Although no longer required in rockchip-thermal.yaml
+sort tsadc-apb as first item.
 
 Signed-off-by: Johan Jonker <jbx6244@gmail.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../bindings/thermal/rockchip-thermal.yaml       | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk356x.dtsi | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-index 3c074706e..f6c1be226 100644
---- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
-@@ -12,14 +12,14 @@ maintainers:
- properties:
-   compatible:
-     enum:
--      - rockchip,px30-tsadc # PX30 SoCs
--      - rockchip,rv1108-tsadc # RV1108 SoCs
--      - rockchip,rk3228-tsadc # RK3228 SoCs
--      - rockchip,rk3288-tsadc # RK3288 SoCs
--      - rockchip,rk3328-tsadc # RK3328 SoCs
--      - rockchip,rk3368-tsadc # RK3368 SoCs
--      - rockchip,rk3399-tsadc # RK3399 SoCs
--      - rockchip,rk3568-tsadc # RK3568 SoCs
-+      - rockchip,px30-tsadc
-+      - rockchip,rk3228-tsadc
-+      - rockchip,rk3288-tsadc
-+      - rockchip,rk3328-tsadc
-+      - rockchip,rk3368-tsadc
-+      - rockchip,rk3399-tsadc
-+      - rockchip,rk3568-tsadc
-+      - rockchip,rv1108-tsadc
- 
-   reg:
-     maxItems: 1
+diff --git a/arch/arm64/boot/dts/rockchip/rk356x.dtsi b/arch/arm64/boot/dts/rockchip/rk356x.dtsi
+index e42fbac61..d013348bc 100644
+--- a/arch/arm64/boot/dts/rockchip/rk356x.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk356x.dtsi
+@@ -838,9 +838,8 @@
+ 		assigned-clock-rates = <17000000>, <700000>;
+ 		clocks = <&cru CLK_TSADC>, <&cru PCLK_TSADC>;
+ 		clock-names = "tsadc", "apb_pclk";
+-		resets = <&cru SRST_TSADC>, <&cru SRST_P_TSADC>,
++		resets = <&cru SRST_P_TSADC>, <&cru SRST_TSADC>,
+ 			 <&cru SRST_TSADCPHY>;
+-		reset-names = "tsadc", "tsadc-apb", "tsadc-phy";
+ 		rockchip,grf = <&grf>;
+ 		rockchip,hw-tshut-temp = <95000>;
+ 		pinctrl-names = "init", "default", "sleep";
 -- 
 2.20.1
 
