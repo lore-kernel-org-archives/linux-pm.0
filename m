@@ -2,134 +2,68 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BDDCC433FE
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Oct 2021 15:02:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10540C433F5
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Oct 2021 15:06:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 76CD361ABF
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Oct 2021 15:02:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDDDA611C8
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Oct 2021 15:06:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354780AbhJAPEl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Oct 2021 11:04:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33658 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354781AbhJAPEi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Oct 2021 11:04:38 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A3C2C0613E2
-        for <linux-pm@vger.kernel.org>; Fri,  1 Oct 2021 08:02:54 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id y26so40167493lfa.11
-        for <linux-pm@vger.kernel.org>; Fri, 01 Oct 2021 08:02:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=RRYA+dwntp7uVySc4zhYcXxMP7m3tm96xWjdtz/hFGQ=;
-        b=wEpKAHyG/Z2DV3VekAfpccfohS6GuleXT+sluDZqrLWc4fVXO49fTrUqrSvxv8Zw8s
-         RcDa8OGQoiU5NceOwJQxZmdavoBpaLp5cpZxOY6F+bufDOZ4FaXS7oneoiRNEd91hAaQ
-         fi0ahFYRT+uLqfme/EMkPYKyQOUjJfW1EYU/EWc5+MnERt9ifHnZPT0xlsv79INHvAVa
-         n5iBrHjvoImw38ZK0VwfsIEQXxUdGrUEBOEe3mKZSU/NxPY46J9bjQ5D+37CLL9HCmlI
-         03umH+yMd9J3zUrj55H5Ndk+MkCDMyLMUCaV6SGBRA2cOlVqS1jw5smxfm9J/cnyAziI
-         nodg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=RRYA+dwntp7uVySc4zhYcXxMP7m3tm96xWjdtz/hFGQ=;
-        b=gpkD/9EeUFjvdlHwSfTEmagnx/F8DSyunjzuEo+D7OuCp/ZuQDQXMRCOTsLdXWwU2n
-         bc16BqcaUKNCpDDVk62CFtlmFKRjgYQcF0zoR1Q5+M4a/NlC1zET9o4nX2mExS+oJfpN
-         G0g54KMz40vajb9kvX6SWDkS9dMrSgfO2Y2opx5k/zzu8JCKvB2NBQMINUMUSH2yBB1Z
-         l1gzIcWli26W6gxRWI2lMosKB8Iz17B5K06JZHcAKOaUYv0pw5dRvWgpuQSyfX+tmzOP
-         5CP7gObX/hxm5ynTl9shm2EDi+86b73uTR4nEuIwzbRZ6yAsTwchTrpPM80Qv8UWLJ30
-         6lkg==
-X-Gm-Message-State: AOAM531Na4AjRV1LG5bi7LbGYIcQO8buXTqj08gYXY3+ewg/UePi5lcx
-        3p+Meh3cTEqy4dpmRcs+mHPCRGfAbPcPzc5vaPTvIQ==
-X-Google-Smtp-Source: ABdhPJxxMpC0sB/h1irGfplTvjCJzB8zxjxG16OKRPTRKR56TwhoKCfQgSz0EgtJooAfO/BDyR8+6WRX6Wl2uWGM0Ow=
-X-Received: by 2002:a05:6512:3095:: with SMTP id z21mr5969378lfd.167.1633100572233;
- Fri, 01 Oct 2021 08:02:52 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210926224058.1252-1-digetx@gmail.com> <CAPDyKFog31OatzU0fHUMfN5FRsX+8Thm8TfipA4QisgFepU+rA@mail.gmail.com>
- <662251e0-d1e4-97ce-16f9-703521cc2600@gmail.com>
-In-Reply-To: <662251e0-d1e4-97ce-16f9-703521cc2600@gmail.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Fri, 1 Oct 2021 17:02:15 +0200
-Message-ID: <CAPDyKFoEbemYawwKW_muUKt9W+pGx_pncXvT57K2k4o68Z3P7g@mail.gmail.com>
-Subject: Re: [PATCH v13 00/35] NVIDIA Tegra power management patches for 5.16
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Peter Chen <peter.chen@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Nishanth Menon <nm@ti.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux USB List <linux-usb@vger.kernel.org>,
-        linux-staging@lists.linux.dev, linux-pwm@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        DTML <devicetree@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Richard Weinberger <richard@nod.at>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        David Heidelberg <david@ixit.cz>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S1354959AbhJAPId (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Oct 2021 11:08:33 -0400
+Received: from mail-m17638.qiye.163.com ([59.111.176.38]:46900 "EHLO
+        mail-m17638.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354933AbhJAPIc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Oct 2021 11:08:32 -0400
+X-Greylist: delayed 368 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Oct 2021 11:08:32 EDT
+Received: from localhost.localdomain (unknown [112.48.80.210])
+        by mail-m17638.qiye.163.com (Hmail) with ESMTPA id BEA7A1C0085;
+        Fri,  1 Oct 2021 23:00:37 +0800 (CST)
+From:   Chukun Pan <amadeus@jmu.edu.cn>
+To:     Lin Huang <hl@rock-chips.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Chukun Pan <amadeus@jmu.edu.cn>
+Subject: [PATCH] dt-bindings: devfreq: rk3399_dmc: fix clocks in example
+Date:   Fri,  1 Oct 2021 23:00:24 +0800
+Message-Id: <20211001150024.18672-1-amadeus@jmu.edu.cn>
+X-Mailer: git-send-email 2.17.1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUhPN1dZLVlBSVdZDwkaFQgSH1lBWRlNQh5WQ0xJHk9NTR1JSR
+        pLVRMBExYaEhckFA4PWVdZFhoPEhUdFFlBWVVLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NBw6Eyo*Tj4KFTgpOEhPNi9K
+        PgEaCxdVSlVKTUhISktLT0hDT0hLVTMWGhIXVRoWGh8eDgg7ERYOVR4fDlUYFUVZV1kSC1lBWUpK
+        SVVPQ1VDS1VJSktZV1kIAVlBSUpOSTcG
+X-HM-Tid: 0a7c3c5f1a49d993kuwsbea7a1c0085
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 1 Oct 2021 at 16:41, Dmitry Osipenko <digetx@gmail.com> wrote:
->
-> 01.10.2021 17:36, Ulf Hansson =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-> > On Mon, 27 Sept 2021 at 00:42, Dmitry Osipenko <digetx@gmail.com> wrote=
-:
-> >>
-> >> This series adds runtime PM support to Tegra drivers and enables core
-> >> voltage scaling for Tegra20/30 SoCs, resolving overheating troubles.
-> >>
-> >> All patches in this series are interdependent and should go via Tegra =
-tree.
-> >>
-> >> Changelog:
-> >>
-> >> v13: - Fixed compile-test error reported by build bot by reverting the
-> >>        mmc/ patch to v11. The sdhci_suspend/resume_host() functions ar=
-en't
-> >>        available with the disabled CONFIG_PM_SLEEP, some code needs th=
-e
-> >>        ifdef.
-> >>
-> >>      - Added last r-b from Rob Herring for the DT patches.
-> >>
-> >>      - Corrected clk/ PM domain-support patch by not using the
-> >>        devm_tegra_core_dev_init_opp_table_common() helper, which I
-> >>        utilized in v12. The clk driver implements its own power domain
-> >>        state syncing and common helper shouldn't be used. This fixes d=
-river
-> >>        probing for some clocks on some devices. It was reported by
-> >>        Svyatoslav Ryhel for PLLE OPP error on T30 Asus Transformer tab=
-let.
-> >
-> > Dmitry, I have looked through the series and besides those comments
-> > that I have posted, I have nothing more to add. Overall it looks good
-> > to me.
->
-> Ulf, thank you very much! Yours input is invaluable. I'm happy that this
-> series moving steadily to the final stage.
+The clocks in the example use 'SCLK_DDRCLK', which does not exist in
+the rk3399-cru.h, correct it to 'SCLK_DDRC'.
 
-My pleasure. Let's get the final pieces fixed so we can get this merged! :-=
-)
+Ref: commit 7fbdfcd68783 ("clk: rockchip: add SCLK_DDRC id for rk3399 ddrc")
+Fixes: c1ceb8f7c167 ("Documentation: bindings: add dt documentation for rk3399 dmc")
+Signed-off-by: Chukun Pan <amadeus@jmu.edu.cn>
+---
+ Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kind regards
-Uffe
+diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+index 3fbeb3733c48..58fc8a6cebc7 100644
+--- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
++++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+@@ -174,7 +174,7 @@ Example:
+ 		compatible = "rockchip,rk3399-dmc";
+ 		devfreq-events = <&dfi>;
+ 		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+-		clocks = <&cru SCLK_DDRCLK>;
++		clocks = <&cru SCLK_DDRC>;
+ 		clock-names = "dmc_clk";
+ 		operating-points-v2 = <&dmc_opp_table>;
+ 		center-supply = <&ppvar_centerlogic>;
+-- 
+2.17.1
+
