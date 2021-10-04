@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCFA7C433F5
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAFBC43219
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BD7DE6128A
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE9D361269
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232832AbhJDMdk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Oct 2021 08:33:40 -0400
+        id S231613AbhJDMdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Oct 2021 08:33:41 -0400
 Received: from lelv0142.ext.ti.com ([198.47.23.249]:56238 "EHLO
         lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231613AbhJDMdi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Oct 2021 08:33:38 -0400
+        with ESMTP id S232591AbhJDMdk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Oct 2021 08:33:40 -0400
 X-Greylist: delayed 3934 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Oct 2021 08:33:38 EDT
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 194BQGWE045291;
-        Mon, 4 Oct 2021 06:26:16 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1633346776;
-        bh=Oc4kovP/NYg0BhPcPGQz4tvGA6N0DSPOAm11vK+OoBI=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=ftFB3VYNmVWNT9Irir2Xn7MFRMCqGdDYksztUgGxj52u3ZjdCghqbpaVAsFAP4gRU
-         m2LCCJSuhG1ArO6u6i79lDb2wcAUDtlY+uKCz/RU8fo1omFfgaZFpiITp1Av6qJUJi
-         pZVlu3j/9fJAfW9MwHwimDgyyh5upsG1bOOUJLfo=
-Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 194BQGbm023276
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 4 Oct 2021 06:26:16 -0500
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 4
- Oct 2021 06:26:16 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Mon, 4 Oct 2021 06:26:16 -0500
-Received: from localhost.localdomain (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 194BQ384065426;
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 194BQDV3045283;
         Mon, 4 Oct 2021 06:26:13 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1633346773;
+        bh=mS8BVLRlIi7fwktbrsMtNlnR3R2mN79nOjRs1Jeh88s=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=l6rc9htiG5CU7DElFUMCZ+GaAKd8OYVNkMMi9z4IEqGiGJ5F9OuLdYl5yI7MrbVZ+
+         Wz5OJuErbP4PtUVK04f/GfISforsXswWRgBGtitV8Zhqvm4RTR7aqjpQGgr5gbyKyH
+         RdnBpRagY3zTOTHa0XXayD2m3OlCtTFWkXi0PpI8=
+Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 194BQD8K034416
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 4 Oct 2021 06:26:13 -0500
+Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE100.ent.ti.com
+ (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 4
+ Oct 2021 06:26:13 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE107.ent.ti.com
+ (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
+ Frontend Transport; Mon, 4 Oct 2021 06:26:12 -0500
+Received: from localhost.localdomain (ileax41-snat.itg.ti.com [10.172.224.153])
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 194BQ383065426;
+        Mon, 4 Oct 2021 06:26:10 -0500
 From:   Keerthy <j-keerthy@ti.com>
 To:     <robh+dt@kernel.org>, <daniel.lezcano@linaro.org>,
         <amitk@kernel.org>, <rui.zhang@intel.com>, <kristo@kernel.org>
 CC:     <j-keerthy@ti.com>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4] arm64: dts: ti: j7200: Add VTM node
-Date:   Mon, 4 Oct 2021 16:55:49 +0530
-Message-ID: <20211004112550.27546-4-j-keerthy@ti.com>
+Subject: [PATCH 2/4] arm64: dts: ti: j721e: Add VTM node
+Date:   Mon, 4 Oct 2021 16:55:48 +0530
+Message-ID: <20211004112550.27546-3-j-keerthy@ti.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20211004112550.27546-1-j-keerthy@ti.com>
 References: <20211004112550.27546-1-j-keerthy@ti.com>
@@ -62,23 +62,23 @@ VTM stands for Voltage Thermal Management
 
 Signed-off-by: Keerthy <j-keerthy@ti.com>
 ---
- .../boot/dts/ti/k3-j7200-mcu-wakeup.dtsi      |  9 ++++
- arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi  | 45 +++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-j7200.dtsi          |  4 ++
- 3 files changed, 58 insertions(+)
- create mode 100644 arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
+ .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  9 +++
+ arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi  | 73 +++++++++++++++++++
+ arch/arm64/boot/dts/ti/k3-j721e.dtsi          |  4 +
+ 3 files changed, 86 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
 
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-index 1044ec6c4b0d..2b5c570253cc 100644
---- a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-@@ -375,4 +375,13 @@
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
+index d2dceda72fe9..fafc07848f86 100644
+--- a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
+@@ -390,4 +390,13 @@
  			ti,loczrama = <1>;
  		};
  	};
 +
 +	wkup_vtm0: wkup_vtm0@42040000 {
-+		compatible = "ti,j7200-vtm";
++		compatible = "ti,j721e-vtm";
 +		reg = <0x0 0x42040000 0x0 0x350>,
 +			<0x0 0x42050000 0x0 0x350>,
 +			<0x0 0x43000300 0x0 0x10>;
@@ -86,17 +86,17 @@ index 1044ec6c4b0d..2b5c570253cc 100644
 +		#thermal-sensor-cells = <1>;
 +	};
  };
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
 new file mode 100644
-index 000000000000..1f18f9dcd3e9
+index 000000000000..e922042f356f
 --- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
-@@ -0,0 +1,45 @@
++++ b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
+@@ -0,0 +1,73 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
 +#include <dt-bindings/thermal/thermal.h>
 +
-+mcu_thermal: mcu_thermal {
++wkup_thermal: wkup_thermal {
 +	polling-delay-passive = <250>; /* milliseconds */
 +	polling-delay = <500>; /* milliseconds */
 +	thermal-sensors = <&wkup_vtm0 0>;
@@ -124,7 +124,7 @@ index 000000000000..1f18f9dcd3e9
 +	};
 +};
 +
-+main_thermal: main_thermal {
++c7x_thermal: c7x_thermal {
 +	polling-delay-passive = <250>; /* milliseconds */
 +	polling-delay = <500>; /* milliseconds */
 +	thermal-sensors = <&wkup_vtm0 2>;
@@ -137,17 +137,45 @@ index 000000000000..1f18f9dcd3e9
 +		};
 +	};
 +};
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200.dtsi b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-index b7005b803149..649d1d60f5c7 100644
---- a/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-@@ -165,6 +165,10 @@
- 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3 */
++
++gpu_thermal: gpu_thermal {
++	polling-delay-passive = <250>; /* milliseconds */
++	polling-delay = <500>; /* milliseconds */
++	thermal-sensors = <&wkup_vtm0 3>;
++
++	trips {
++		gpu_crit: gpu_crit {
++			temperature = <125000>; /* milliCelsius */
++			hysteresis = <2000>; /* milliCelsius */
++			type = "critical";
++		};
++	};
++};
++
++r5f_thermal: r5f_thermal {
++	polling-delay-passive = <250>; /* milliseconds */
++	polling-delay = <500>; /* milliseconds */
++	thermal-sensors = <&wkup_vtm0 4>;
++
++	trips {
++		r5f_crit: r5f_crit {
++			temperature = <125000>; /* milliCelsius */
++			hysteresis = <2000>; /* milliCelsius */
++			type = "critical";
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-j721e.dtsi b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
+index f0587fde147e..20e26a359aaf 100644
+--- a/arch/arm64/boot/dts/ti/k3-j721e.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
+@@ -177,6 +177,10 @@
+ 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3*/
  		};
  	};
 +
 +	thermal_zones: thermal-zones {
-+		#include "k3-j7200-thermal.dtsi"
++		#include "k3-j721e-thermal.dtsi"
 +	};
  };
  
