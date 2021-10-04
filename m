@@ -2,184 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCAFBC43219
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14219C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:37:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BE9D361269
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:31:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0121A610FC
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Oct 2021 12:37:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231613AbhJDMdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Oct 2021 08:33:41 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:56238 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232591AbhJDMdk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Oct 2021 08:33:40 -0400
-X-Greylist: delayed 3934 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Oct 2021 08:33:38 EDT
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 194BQDV3045283;
-        Mon, 4 Oct 2021 06:26:13 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1633346773;
-        bh=mS8BVLRlIi7fwktbrsMtNlnR3R2mN79nOjRs1Jeh88s=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=l6rc9htiG5CU7DElFUMCZ+GaAKd8OYVNkMMi9z4IEqGiGJ5F9OuLdYl5yI7MrbVZ+
-         Wz5OJuErbP4PtUVK04f/GfISforsXswWRgBGtitV8Zhqvm4RTR7aqjpQGgr5gbyKyH
-         RdnBpRagY3zTOTHa0XXayD2m3OlCtTFWkXi0PpI8=
-Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 194BQD8K034416
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 4 Oct 2021 06:26:13 -0500
-Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 4
- Oct 2021 06:26:13 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE107.ent.ti.com
- (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Mon, 4 Oct 2021 06:26:12 -0500
-Received: from localhost.localdomain (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 194BQ383065426;
-        Mon, 4 Oct 2021 06:26:10 -0500
-From:   Keerthy <j-keerthy@ti.com>
-To:     <robh+dt@kernel.org>, <daniel.lezcano@linaro.org>,
-        <amitk@kernel.org>, <rui.zhang@intel.com>, <kristo@kernel.org>
-CC:     <j-keerthy@ti.com>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/4] arm64: dts: ti: j721e: Add VTM node
-Date:   Mon, 4 Oct 2021 16:55:48 +0530
-Message-ID: <20211004112550.27546-3-j-keerthy@ti.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20211004112550.27546-1-j-keerthy@ti.com>
-References: <20211004112550.27546-1-j-keerthy@ti.com>
+        id S233098AbhJDMjL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Oct 2021 08:39:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51108 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229486AbhJDMjL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Oct 2021 08:39:11 -0400
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84109C061745
+        for <linux-pm@vger.kernel.org>; Mon,  4 Oct 2021 05:37:22 -0700 (PDT)
+Received: by mail-qt1-x832.google.com with SMTP id b16so15655152qtt.7
+        for <linux-pm@vger.kernel.org>; Mon, 04 Oct 2021 05:37:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=jGP8TVCyTNKC8lYp46gRsaBQwXm6B5JGGuNtiC4p2to=;
+        b=xg7b0UuDwntcgtEAt/AHqlb+K0LE+HZmn1Oqe4wj9ZTl8ACrCiVaPxulOPo7qzXjdH
+         nctGwYnj9vWCI0hSXGYlRTI2GBcOla4sXRzmQUrYYb83H+Kr9FEmWL25y+y/LpgouP+f
+         4rgbquxjLzD84AEaX1HQOsVh4t0JsK/OEae805W4QrbMfzNN9s+WepJf8ouualMpJ94t
+         Q1yY6y81WM5PhMn/gTBbVfYvddoAkDKrdQzuflsINtSuQEfAqZtyKQRuGIIGrqI2jYGq
+         YLtMXXawXGIuJjicJmhByzqJB7ZDpXguKFQ42ASwc2AWuPq3lHn/p9p6hDtxb8wk/Upb
+         OxnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=jGP8TVCyTNKC8lYp46gRsaBQwXm6B5JGGuNtiC4p2to=;
+        b=5lVQv/Iq+A6dqPKwI+Qs1bf2c6izkM4K0wB48LBtS1mPORZKhtZbv8JfgAYiWTrprt
+         99N0L5ORnHZeSj1E1BAuwXr7jg+67t0lOQP6APs2H4r+NuJ/+iqP870fi1/v1lqvVt3n
+         20vh5MxMz0QFLOdfFHAJVCuedubPNP76Re6yVufPdff8KB/4P4W8ksoBVLn7wgHE/Wdd
+         N+7QJy6Mv4uZ1AUlA/iktfGV6H497W84EkhZHBJjuwy4fTKG1bRThFMmvlLQ7c8DMsZC
+         wPAhKO54T6ziZtZVubv+G15DklGdiL4GLZSjtJAX7EQzbZEAolb2fRb2ZVqrukPYROJG
+         Q4qA==
+X-Gm-Message-State: AOAM532qApKOwNvFFVhLjP13FvUFeCeMrwME/ZEhRFshaHMf7C1INSw9
+        B9wRLGm3CS6JMaSPVzsNzeHz6qvpWRvg1pfFcmk+Zw==
+X-Google-Smtp-Source: ABdhPJyZdhtbVrhLrPMBAYTp9LsJkvO2y3XEFNx9DpQIGB9Wr40AxahoMxXtorTA5kV8paCC1Yd9yueJDIKEbs3eXOk=
+X-Received: by 2002:ac8:6690:: with SMTP id d16mr12938010qtp.285.1633351041516;
+ Mon, 04 Oct 2021 05:37:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20210903232421.1384199-1-dmitry.baryshkov@linaro.org>
+ <36128ee3-0dad-dbdb-ca66-0d0e45aa0b9d@linaro.org> <2fe2f8bd-c487-e859-54e1-28e6cb0fdece@kernel.org>
+In-Reply-To: <2fe2f8bd-c487-e859-54e1-28e6cb0fdece@kernel.org>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date:   Mon, 4 Oct 2021 15:37:10 +0300
+Message-ID: <CAA8EJpoozRQ4iq4x8Xnp3rT3=f9svfosi=3PNPOoG=QS-VYLRA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/11] interconnect: merge AP-owned support into icc-rpm
+To:     Georgi Djakov <djakov@kernel.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Shawn Guo <shawn.guo@linaro.org>,
+        Yassine Oudjana <y.oudjana@protonmail.com>,
+        "open list:DRM DRIVER FOR MSM ADRENO GPU" 
+        <linux-arm-msm@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-VTM stands for Voltage Thermal Management
+On Mon, 4 Oct 2021 at 14:56, Georgi Djakov <djakov@kernel.org> wrote:
+>
+> On 25.09.21 22:40, Dmitry Baryshkov wrote:
+> > On 04/09/2021 02:24, Dmitry Baryshkov wrote:
+> >> This patch series merges support for AP-owned and bus QoS from SDM660
+> >> into common code (icc-rpm.c). MSM8916 and MSM8939 support code is
+> >> extended to support these features. As I was touching these drivers, per
+> >> Bjorn's suggestion expand DEFINE_QNODE macros (which makes adding
+> >> QoS support much easier to review).
+> >>
+> >> Dependencies:
+> >>   -
+> >> https://lore.kernel.org/linux-arm-msm/20210902054915.28689-1-shawn.guo@linaro.org/
+> >>
+> >>   -
+> >> https://lore.kernel.org/linux-arm-msm/20210823014003.31391-1-shawn.guo@linaro.org/
+> >>
+> >>   -
+> >> https://lore.kernel.org/linux-arm-msm/20210824043435.23190-1-shawn.guo@linaro.org/
+> >>
+> >>
+> >> Changes since v1:
+> >>   - Rebase on top a2noc clocks support patch.
+> >>   - Expand DEFINE_QNODE
+> >>   - Simplify struct qcom_icc_node by moving links to separate array
+> >
+> > Georgi, since all dependencies were pulled in by you, I wanted to
+> > remind/ask: do you intend to pull this patchset for 5.16?
+>
+> Hi Dmitry,
+> Yes, that's the plan. I just responded with a few minor comments/fixes
+> to some of the patches. I can just fix them before applying, if you are
+> fine with these.
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
- .../boot/dts/ti/k3-j721e-mcu-wakeup.dtsi      |  9 +++
- arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi  | 73 +++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-j721e.dtsi          |  4 +
- 3 files changed, 86 insertions(+)
- create mode 100644 arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
+Yes, I'm fine with your fixes. Please use them and apply the patchset.
+Thank you!
 
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-index d2dceda72fe9..fafc07848f86 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-mcu-wakeup.dtsi
-@@ -390,4 +390,13 @@
- 			ti,loczrama = <1>;
- 		};
- 	};
-+
-+	wkup_vtm0: wkup_vtm0@42040000 {
-+		compatible = "ti,j721e-vtm";
-+		reg = <0x0 0x42040000 0x0 0x350>,
-+			<0x0 0x42050000 0x0 0x350>,
-+			<0x0 0x43000300 0x0 0x10>;
-+		power-domains = <&k3_pds 154 TI_SCI_PD_EXCLUSIVE>;
-+		#thermal-sensor-cells = <1>;
-+	};
- };
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
-new file mode 100644
-index 000000000000..e922042f356f
---- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-j721e-thermal.dtsi
-@@ -0,0 +1,73 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+wkup_thermal: wkup_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 0>;
-+
-+	trips {
-+		wkup_crit: wkup_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+mpu_thermal: mpu_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 1>;
-+
-+	trips {
-+		mpu_crit: mpu_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+c7x_thermal: c7x_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 2>;
-+
-+	trips {
-+		c7x_crit: c7x_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+gpu_thermal: gpu_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 3>;
-+
-+	trips {
-+		gpu_crit: gpu_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+r5f_thermal: r5f_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 4>;
-+
-+	trips {
-+		r5f_crit: r5f_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/ti/k3-j721e.dtsi b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-index f0587fde147e..20e26a359aaf 100644
---- a/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j721e.dtsi
-@@ -177,6 +177,10 @@
- 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3*/
- 		};
- 	};
-+
-+	thermal_zones: thermal-zones {
-+		#include "k3-j721e-thermal.dtsi"
-+	};
- };
- 
- /* Now include the peripherals for each bus segments */
+>
+> Thanks again to all the people involved with this patchset!
+>
+> Thanks,
+> Georgi
+>
+> >
+> >>
+> >> ----------------------------------------------------------------
+> >> Dmitry Baryshkov (11):
+> >>        interconnect: icc-rpm: move bus clocks handling into qnoc_probe
+> >>        interconnect: sdm660: expand DEFINE_QNODE macros
+> >>        interconnect: sdm660: drop default/unused values
+> >>        interconnect: sdm660: merge common code into icc-rpm
+> >>        interconnect: icc-rpm: add support for QoS reg offset
+> >>        interconnect: msm8916: expand DEFINE_QNODE macros
+> >>        interconnect: msm8916: add support for AP-owned nodes
+> >>        interconnect: msm8939: expand DEFINE_QNODE macros
+> >>        interconnect: msm8939: add support for AP-owned nodes
+> >>        interconnect: qcs404: expand DEFINE_QNODE macros
+> >>        interconnect: qcom: drop DEFINE_QNODE macro
+> >>
+> >>   drivers/interconnect/qcom/icc-rpm.c |  263 ++++-
+> >>   drivers/interconnect/qcom/icc-rpm.h |   56 +-
+> >>   drivers/interconnect/qcom/msm8916.c | 1214 ++++++++++++++++++++--
+> >>   drivers/interconnect/qcom/msm8939.c | 1283 +++++++++++++++++++++--
+> >>   drivers/interconnect/qcom/qcs404.c  |  967 +++++++++++++++--
+> >>   drivers/interconnect/qcom/sdm660.c  | 1940
+> >> ++++++++++++++++++++++++-----------
+> >>   6 files changed, 4815 insertions(+), 908 deletions(-)
+> >>
+> >>
+> >
+> >
+>
+
+
 -- 
-2.17.1
-
+With best wishes
+Dmitry
