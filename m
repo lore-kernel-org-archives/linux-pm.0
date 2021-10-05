@@ -2,114 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7686EC433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Oct 2021 16:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BA61C4332F
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Oct 2021 16:15:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 547C361371
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Oct 2021 16:14:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7012A61371
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Oct 2021 16:15:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236078AbhJEQQ1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Oct 2021 12:16:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42528 "EHLO
+        id S236435AbhJEQRU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Oct 2021 12:17:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236205AbhJEQQY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Oct 2021 12:16:24 -0400
-X-Greylist: delayed 1184 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 05 Oct 2021 09:14:33 PDT
-Received: from metanate.com (unknown [IPv6:2001:8b0:1628:5005::111])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 087A8C061749;
-        Tue,  5 Oct 2021 09:14:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=metanate.com; s=stronger; h=Content-Transfer-Encoding:Message-Id:Date:
-        Subject:Cc:To:From:Content-Type:Reply-To:Content-ID:Content-Description:
-        In-Reply-To:References; bh=csrmaSQcoepErVbpC8vwvkqM/QnjnY7CODP5fd4S9m0=; b=RQ
-        SKx6JPMyv/YavFF9kzdaP07GENOkrc0EcHep5YFAuiVV5WR7pFU1bdwF7tGOIxqLFdk8blro7snQz
-        n3IayK3tX/GyJUesI1qFn5BQIK3mjF7XVYqF2IQq1C7TacXdR7Fb9rnq0SfJvws7mfFr0v81KocIJ
-        2wMajU5GVbA/Dsz78+r9JC+UeSCWVriGMwjPwAh4ZlKEO1HboZripUS5PJl2GYOzsWq7RWqjGgT9d
-        niCRTkRDrA24+SFzyjXTxoKUZ8zPyDx9LcWh2PLFERjtKJdLEToT+mcg15z6oYO6mF96kmfSz5V+2
-        QwdvTxqaPSqpJcw565VBHwsK6qN0zYMQ==;
-Received: from [81.174.171.191] (helo=donbot.metanate.com)
-        by email.metanate.com with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <john@metanate.com>)
-        id 1mXmmB-0001ef-7s; Tue, 05 Oct 2021 16:54:43 +0100
-From:   John Keeping <john@metanate.com>
-To:     linux-rt-users@vger.kernel.org
-Cc:     John Keeping <john@metanate.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        with ESMTP id S235077AbhJEQRU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Oct 2021 12:17:20 -0400
+Received: from mail.marcansoft.com (marcansoft.com [IPv6:2a01:298:fe:f::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 91B29C061749;
+        Tue,  5 Oct 2021 09:15:29 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: marcan@marcan.st)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id D599E41EA7;
+        Tue,  5 Oct 2021 16:15:23 +0000 (UTC)
+Subject: Re: [PATCH 3/7] soc: apple: Add driver for Apple PMGR power state
+ controls
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Arnd Bergmann <arnd@kernel.org>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH RT] PM: runtime: avoid retry loops on RT
-Date:   Tue,  5 Oct 2021 16:54:27 +0100
-Message-Id: <20211005155427.1591196-1-john@metanate.com>
-X-Mailer: git-send-email 2.33.0
+        Mark Kettenis <mark.kettenis@xs4all.nl>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>
+References: <20211005155923.173399-1-marcan@marcan.st>
+ <20211005155923.173399-4-marcan@marcan.st>
+ <CACRpkdanbovvXXLAGGZEEiKXXrNnW+8p1sCONQYWmAjVi-m-9A@mail.gmail.com>
+From:   Hector Martin <marcan@marcan.st>
+Message-ID: <3bad7bc3-30ac-851f-57a3-7781dfa23521@marcan.st>
+Date:   Wed, 6 Oct 2021 01:15:21 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Authenticated: YES
+In-Reply-To: <CACRpkdanbovvXXLAGGZEEiKXXrNnW+8p1sCONQYWmAjVi-m-9A@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: es-ES
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With PREEMPT_RT spin_unlock() is identical to spin_unlock_irq() so there
-is no reason to have a special case using the former.  Furthermore,
-spin_unlock() enables preemption meaning that a task in RESUMING or
-SUSPENDING state may be preempted by a higher priority task running
-pm_runtime_get_sync() leading to a livelock.
+Hi Linus,
 
-Use the non-irq_safe path for all waiting so that the waiting task will
-block.
+On 06/10/2021 01.08, Linus Walleij wrote:
+> Hi Hector,
+> 
+> On Tue, Oct 5, 2021 at 6:00 PM Hector Martin <marcan@marcan.st> wrote:
+> 
+>>   drivers/soc/apple/Kconfig               |  21 ++
+>>   drivers/soc/apple/Makefile              |   2 +
+>>   drivers/soc/apple/apple-pmgr-pwrstate.c | 281 ++++++++++++++++++++++++
+> 
+> This is traditionally where we put the ARM SoC drivers, but
+> Mac has traditionally used drivers/macintosh for their custom
+> board etc stuff. Or is that just for any off-chip stuff?
+> 
+> I suppose it doesn't matter much (unless there is code under
+> drivers/macintosh we want to reuse for M1), but it could be a bit
+> confusing?
 
-Note that this changes only the waiting behaviour of irq_safe, other
-uses are left unchanged so that the parent device always remains active
-in the same way as !RT.
+Hmm, it seems that tree is mostly about the PowerPC era Macs; the only 
+thing enabled for x86 there is MAC_EMUMOUSEBTN. There is also 
+platform/x86/apple-gmux.c for an x86 Mac specific thing...
 
-Signed-off-by: John Keeping <john@metanate.com>
----
- drivers/base/power/runtime.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+We already broke tradition with the "apple," DT compatible prefix (used 
+to be AAPL for the PowerPC Macs), and these chips aren't even just used 
+in Macs (e.g. the iPad, which in theory people would be able to run 
+Linux on if someone figures out a jailbreak), so perhaps it's time for 
+another break here?
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 96972d5f6ef3..5e0d349fab4e 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -347,8 +347,9 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
- {
- 	int retval = 0, idx;
- 	bool use_links = dev->power.links_count > 0;
-+	bool irq_safe = dev->power.irq_safe && !IS_ENABLED(CONFIG_PREEMPT_RT);
- 
--	if (dev->power.irq_safe) {
-+	if (irq_safe) {
- 		spin_unlock(&dev->power.lock);
- 	} else {
- 		spin_unlock_irq(&dev->power.lock);
-@@ -376,7 +377,7 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
- 	if (cb)
- 		retval = cb(dev);
- 
--	if (dev->power.irq_safe) {
-+	if (irq_safe) {
- 		spin_lock(&dev->power.lock);
- 	} else {
- 		/*
-@@ -596,7 +597,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 			goto out;
- 		}
- 
--		if (dev->power.irq_safe) {
-+		if (dev->power.irq_safe && !IS_ENABLED(CONFIG_PREEMPT_RT)) {
- 			spin_unlock(&dev->power.lock);
- 
- 			cpu_relax();
-@@ -777,7 +778,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
- 			goto out;
- 		}
- 
--		if (dev->power.irq_safe) {
-+		if (dev->power.irq_safe && !IS_ENABLED(CONFIG_PREEMPT_RT)) {
- 			spin_unlock(&dev->power.lock);
- 
- 			cpu_relax();
 -- 
-2.33.0
-
+Hector Martin (marcan@marcan.st)
+Public Key: https://mrcn.st/pub
