@@ -2,152 +2,85 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF25EC433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Oct 2021 22:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5506AC433F5
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Oct 2021 06:24:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B582F610C8
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Oct 2021 22:32:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3774060F94
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Oct 2021 06:24:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241436AbhJGWed (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Oct 2021 18:34:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56948 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230120AbhJGWed (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Oct 2021 18:34:33 -0400
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4279CC061570
-        for <linux-pm@vger.kernel.org>; Thu,  7 Oct 2021 15:32:39 -0700 (PDT)
-Received: by mail-qt1-x834.google.com with SMTP id e16so7851324qts.4
-        for <linux-pm@vger.kernel.org>; Thu, 07 Oct 2021 15:32:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=bPosGXG6aj5fiHXiB91n2H+d3yhrMgyk6caA7rCYuVE=;
-        b=TyzCOLeOsNH+ATbCv+mObEZBqB2Q+42LxF3uXOIU4JqOxFv0Suf1hxARW3mECKJGbk
-         6W72juLLE8mx0B8j0TBIaZ70diDCJy7C1/EwOenCENtB5NKYV4Zt3tTGu6I9cXLJd6yw
-         tgDL6K6e0bH6GRVNl69irNRt4P+TW75No5eE0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=bPosGXG6aj5fiHXiB91n2H+d3yhrMgyk6caA7rCYuVE=;
-        b=KL08tdUk5C00gDVBL3JMq5V/GJsW8TX73APCfkOxY85/2N7sQjuur1DUP8pH4nj670
-         aN1M7r9Ac5KrI0IcAO0GZ4PTaI0b9v+CMGjuVOFWojqKmcQe6p5Xyz2sOyLPMjYyXtcQ
-         vd4tY9np56h7ugzW0ZJlgliF1sYpzoHIC/ObP8x+eK7j4pZvJip/6p8s/+5Iknioa+3f
-         bjUxJYgxwPO0F/tPBTiirs+VEx4KWSvBLP6hoasDZ2CPLEuJ32X9Rf0FcoJyms4PJVce
-         7+ZV9H83nRt7chz1wXzAoK4lFnbetHjmIOSZ9S0noHV1rOASnwqH/b9Vjwg/5bYvX1zS
-         sgyA==
-X-Gm-Message-State: AOAM531lA3vdeyeqtx+UtcXkxxQCYb+x7AwAwHroPhaSNJqZR/Gd8ywF
-        ddq9TegNoYX79Tkem+eDi/8lC3bM3AvP5bigug2CI9yT3v5jNQ==
-X-Google-Smtp-Source: ABdhPJxtMWrNq05xIwSXYzJOaS9tLcGh48Df1ypUB9oB6RjXV44VM0Ys6C+Vs5hx7Kz9jJbv7p9rXESJopZRntEsEdI=
-X-Received: by 2002:ac8:4347:: with SMTP id a7mr8044529qtn.169.1633645958484;
- Thu, 07 Oct 2021 15:32:38 -0700 (PDT)
+        id S229879AbhJHG0B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Oct 2021 02:26:01 -0400
+Received: from szxga08-in.huawei.com ([45.249.212.255]:24177 "EHLO
+        szxga08-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229664AbhJHG0B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Oct 2021 02:26:01 -0400
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.53])
+        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4HQdQd684cz1DHfX;
+        Fri,  8 Oct 2021 14:22:33 +0800 (CST)
+Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.8; Fri, 8 Oct 2021 14:24:04 +0800
+Received: from huawei.com (10.175.103.91) by dggpeml500017.china.huawei.com
+ (7.185.36.243) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.8; Fri, 8 Oct 2021
+ 14:24:03 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+CC:     <sre@kernel.org>, <iskren.chernev@gmail.com>
+Subject: [PATCH] power: supply: max17040: fix null-ptr-deref in max17040_probe()
+Date:   Fri, 8 Oct 2021 14:31:50 +0800
+Message-ID: <20211008063150.822066-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20210902213500.3795948-1-pmalani@chromium.org>
- <20210902213500.3795948-3-pmalani@chromium.org> <YT9SYMAnOCTWGi5P@kuha.fi.intel.com>
- <DB9PR10MB4652B4A6A2A2157018307AE380D99@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
- <YUB16up3JDwi3HfI@kuha.fi.intel.com> <YULwz8NsoA3+vrhA@google.com>
- <YUMbGp0aemx1HCHv@kuha.fi.intel.com> <DB9PR10MB46525E6CA4C6BB101059D93C80DC9@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
- <YUm5sdbceMcDTvYj@kuha.fi.intel.com> <DB9PR10MB46524E3817FB4D836CDC13E180A49@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
-In-Reply-To: <DB9PR10MB46524E3817FB4D836CDC13E180A49@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
-From:   Prashant Malani <pmalani@chromium.org>
-Date:   Thu, 7 Oct 2021 15:32:27 -0700
-Message-ID: <CACeCKaem93dbJ11qOG=a+MkJhSrp0Nx-UAPG00Q-5WwMriJD0A@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/3] power: supply: Add support for PDOs props
-To:     Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc:     Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        Benson Leung <bleung@google.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "bleung@chromium.org" <bleung@chromium.org>,
-        "badhri@google.com" <badhri@google.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ dggpeml500017.china.huawei.com (7.185.36.243)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi folks,
+Add check the return value of devm_regmap_init_i2c(), otherwise
+later access may cause null-ptr-deref as follows:
 
-Thanks for the comments and discussion on this RFC series.
+KASAN: null-ptr-deref in range [0x0000000000000360-0x0000000000000367]
+RIP: 0010:regmap_read+0x33/0x170
+Call Trace:
+  max17040_probe+0x61b/0xff0 [max17040_battery]
+ ? write_comp_data+0x2a/0x90
+ ? max17040_set_property+0x1d0/0x1d0 [max17040_battery]
+ ? tracer_hardirqs_on+0x33/0x520
+ ? __sanitizer_cov_trace_pc+0x1d/0x50
+ ? _raw_spin_unlock_irqrestore+0x4b/0x60
+ ? trace_hardirqs_on+0x63/0x2d0
+ ? write_comp_data+0x2a/0x90
+ ? __sanitizer_cov_trace_pc+0x1d/0x50
+ ? max17040_set_property+0x1d0/0x1d0 [max17040_battery]
+ i2c_device_probe+0xa31/0xbe0
 
-On Fri, Sep 24, 2021 at 8:38 AM Adam Thomson
-<Adam.Thomson.Opensource@diasemi.com> wrote:
->
-> On 21 September 2021 11:54, Heikki Krogerus wrote:
->
-> > If we can leave the decision about the selection to TCPM, that would
-> > be great! I'm not against that at all. As I said, I have not though
-> > through the control aspect. Right now I'm mostly concerned about how
-> > we expose the information to the user. The only reason why I have
-> > considered the control part at all is because how ever we decide to
-> > expose the information to the user, it has to work with control as
-> > well.
->
-> Well part of the discussion has to be about the role that the user plays in
-> the control. What does and doesn't need to be controlled further up the stack,
-> and what will be taken care of by, for example, TCPM? Surely that dictates to
-> some degree what and how we expose all of this? Right now we have a simple means
-> to read and control voltages and currents through a PSY class, without the need
-> for the user to know any details of what a PDO/APDO is. Do we continue with
-> abstracting away to the user or instead let the user decipher this itself and
-> decide? Am just trying to understand the needs going forward.
->
-> > The final PSYs and the supply chains they create as well as the
-> > individual properties I'm more than happy to talk about, but having a
-> > separate object for the smallest thing that we can see (PDO) is the
-> > right thing to do here IMO. Trying to concatenate things into single
-> > objects especially in sysfs, despite how nice it always would seem,
-> > has taken me to the brink of disaster in the past far too many times.
-> >
-> > In this case we don't need to take the risk of having to duplicated
-> > information or in worst case deprecate something that is also exposed
-> > to the sysfs in the future.
-> >
-> > So the question is not why should we registers every individual PDO
-> > separately. The question is, why shouldn't we do that? And saying that
-> > it's "heavyweight" I'm afraid is not good enough. :-)
->
-> That was my initial feeling on the suggestion based on the idea of a PSY per PDO
-> and I still don't feel that fits as your creating a whole class of resources
-> to expose something that's pretty small. To me the PSY represents the source as
-> whole, and the PDOs are simply options/configurations for that source. If we're
-> needing to expose PDOs then I don't disagree with separating them out
-> individually and I certainly wouldn't want that all concatenated as one
-> property. However I think something like dynamically generated properties
-> might be a nicer solution to expose each PDO, or even groups of properties if
-> you wanted to split PDOs even further into constituent parts to the user.
+Fixes: 6455a8a84bdf ("power: supply: max17040: Use regmap i2c")
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/power/supply/max17040_battery.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-To downscope this issue for the time being, one of our immediate goals
-is to expose the PDOs
-to userspace for metrics reporting and potentially for some power
-policy control through other
-channels (like Chrome OS Embedded Controller).
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index 3cea92e28dc3..a9aef1e8b186 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -449,6 +449,8 @@ static int max17040_probe(struct i2c_client *client,
+ 
+ 	chip->client = client;
+ 	chip->regmap = devm_regmap_init_i2c(client, &max17040_regmap);
++	if (IS_ERR(chip->regmap))
++		return PTR_ERR(chip->regmap);
+ 	chip_id = (enum chip_id) id->driver_data;
+ 	if (client->dev.of_node) {
+ 		ret = max17040_get_of_data(chip);
+-- 
+2.25.1
 
-Would it be acceptable to revise this series to drop the power supply
-support for now (since I don't yet
-see a consensus on how to implement it for the partner), and just add
-sysfs nodes for each PDO ?
-This would be akin to how it's being done for identity VDOs right now.
-
-So we would have :
-
-/sys/class/typec/<port>-partner/source_pdos/pdo{1-13}
-
-and
-
-/sys/class/typec/<port>-partner/sink_pdos/pdo{1-13}
-
-and similarly for the port device.
-
-If we want to add additional parsing of the  Fixed Supply PDO into
-individual properties for the partner/port,
-those can of course be added later.
-
-WDYT?
-
-Thanks,
