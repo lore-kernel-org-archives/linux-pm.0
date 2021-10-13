@@ -2,116 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE0DC433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Oct 2021 11:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4296EC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Oct 2021 12:06:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A70CA61139
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Oct 2021 11:49:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A2F4610C9
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Oct 2021 12:06:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232029AbhJMLv0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Oct 2021 07:51:26 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:56708 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231137AbhJMLv0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Oct 2021 07:51:26 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1634125763;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=eJjX6iP5jQlCHxnRLEuZ4AA4AtdWwT375BFtLCNF4AE=;
-        b=e5jIR4kDoT4367YZZI5v7kP5Z42SN3jVzr6Q0EkWAvAXQOWFJ6LBxC5qF5k33sAWhp79kQ
-        sdKWON22ql3bs8C6PHvi3rhY9pnMwriGNiTmpTAJFCPUUU8puTkPME1pky6UFjgniffcLv
-        evOAoHTZOjEb5FLEyktk1vw6eRyI9Ds=
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-201-PJEdT4R7OlqHVVqgfdh6Kg-1; Wed, 13 Oct 2021 07:49:21 -0400
-X-MC-Unique: PJEdT4R7OlqHVVqgfdh6Kg-1
-Received: by mail-ed1-f70.google.com with SMTP id t18-20020a056402021200b003db9e6b0e57so1969753edv.10
-        for <linux-pm@vger.kernel.org>; Wed, 13 Oct 2021 04:49:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=eJjX6iP5jQlCHxnRLEuZ4AA4AtdWwT375BFtLCNF4AE=;
-        b=kO4G86ptB6mJisyKLp5iJXf8/VyHqE0duhxtUKe6jkaayfvzxSjCMk+UQloGDGUVv2
-         +oNOh0oBEztbLyCrVqh41ab8xvaJUwRn2y31v6HkVZkYnUvTcDLd0D75Ff3MYgfxE5V/
-         CCooQWsnD1vmAPBRa4g/crC7DFlY7cuACmhNFygXijfuxpLIH0dACfnypm5f7NCpiHsb
-         raYetX9aceTcMWP0phK/d/mP4FUh8QSWzciXrK7thbJaH5+3aGJhVl9eylZzY6dZc3lj
-         jPN6CTrD6aI9Tnmzb8LgEAWT4hDgBmJt9fWEurT2zPWi0836ldK08GEilZ1kkM9lbARX
-         FnTg==
-X-Gm-Message-State: AOAM5327Se0WtuMcpSItQ3do289JSwt/h6/DLFMOgS6aphFocWto/g0q
-        vcfXAPiUwjJvkN7+/4ElclOIIyqRH3qH7cnTh5s2Y2TXhUUVZQV5LKBQcD7VmsOGtyxQy5ksBcU
-        qQpX7oXRPQFd/Tan/fZw=
-X-Received: by 2002:a17:906:7ac9:: with SMTP id k9mr18502112ejo.411.1634125760829;
-        Wed, 13 Oct 2021 04:49:20 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJwZvpsePPQnw9IhyB+5gS1lX/EreOcYLH7NI6W+AjHXoDk1vgsss7IWIJ/DRWo5XsSsfEGzFg==
-X-Received: by 2002:a17:906:7ac9:: with SMTP id k9mr18502094ejo.411.1634125760635;
-        Wed, 13 Oct 2021 04:49:20 -0700 (PDT)
-Received: from x1.localdomain (2001-1c00-0c1e-bf00-1054-9d19-e0f0-8214.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:1054:9d19:e0f0:8214])
-        by smtp.gmail.com with ESMTPSA id ke24sm6427207ejc.73.2021.10.13.04.49.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 13 Oct 2021 04:49:20 -0700 (PDT)
-Subject: Re: [PATCH -next] power: supply: axp288_charger: Fix missing
- mutex_init()
-To:     Wei Yongjun <weiyongjun1@huawei.com>, Kate Hsuan <hpa@redhat.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>
-Cc:     linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Hulk Robot <hulkci@huawei.com>
-References: <20211013093115.2841167-1-weiyongjun1@huawei.com>
-From:   Hans de Goede <hdegoede@redhat.com>
-Message-ID: <d3690325-9d55-607b-cf51-048f634ef7b5@redhat.com>
-Date:   Wed, 13 Oct 2021 13:49:19 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        id S229580AbhJMMIk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Oct 2021 08:08:40 -0400
+Received: from szxga02-in.huawei.com ([45.249.212.188]:14345 "EHLO
+        szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229653AbhJMMIj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Oct 2021 08:08:39 -0400
+Received: from dggeme754-chm.china.huawei.com (unknown [172.30.72.56])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4HTrjh1Dqhz90C4;
+        Wed, 13 Oct 2021 20:01:44 +0800 (CST)
+Received: from huawei.com (10.175.127.227) by dggeme754-chm.china.huawei.com
+ (10.3.19.100) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.8; Wed, 13
+ Oct 2021 20:06:34 +0800
+From:   Ye Bin <yebin10@huawei.com>
+To:     <rafael@kernel.org>, <len.brown@intel.com>, <pavel@ucw.cz>,
+        <linux-pm@vger.kernel.org>
+CC:     <tytso@mit.edu>, <linux-kernel@vger.kernel.org>, <jack@suse.cz>,
+        Ye Bin <yebin10@huawei.com>
+Subject: [PATCH -next] PM: hibernate: Get block device exclusively when do swsusp_check
+Date:   Wed, 13 Oct 2021 20:19:14 +0800
+Message-ID: <20211013121914.3146812-1-yebin10@huawei.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <20211013093115.2841167-1-weiyongjun1@huawei.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.127.227]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ dggeme754-chm.china.huawei.com (10.3.19.100)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+We got follow issue:
+[   89.266592] ------------[ cut here ]------------
+[   89.267427] kernel BUG at fs/buffer.c:3020!
+[   89.268264] invalid opcode: 0000 [#1] SMP KASAN PTI
+[   89.269116] CPU: 7 PID: 1750 Comm: kmmpd-loop0 Not tainted 5.10.0-862.14.0.6.x86_64-08610-gc932cda3cef4-dirty #20
+[   89.273169] RIP: 0010:submit_bh_wbc.isra.0+0x538/0x6d0
+[   89.277157] RSP: 0018:ffff888105ddfd08 EFLAGS: 00010246
+[   89.278093] RAX: 0000000000000005 RBX: ffff888124231498 RCX: ffffffffb2772612
+[   89.279332] RDX: 1ffff11024846293 RSI: 0000000000000008 RDI: ffff888124231498
+[   89.280591] RBP: ffff8881248cc000 R08: 0000000000000001 R09: ffffed1024846294
+[   89.281851] R10: ffff88812423149f R11: ffffed1024846293 R12: 0000000000003800
+[   89.283095] R13: 0000000000000001 R14: 0000000000000000 R15: ffff8881161f7000
+[   89.284342] FS:  0000000000000000(0000) GS:ffff88839b5c0000(0000) knlGS:0000000000000000
+[   89.285711] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   89.286701] CR2: 00007f166ebc01a0 CR3: 0000000435c0e000 CR4: 00000000000006e0
+[   89.287919] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   89.289138] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[   89.290368] Call Trace:
+[   89.290842]  write_mmp_block+0x2ca/0x510
+[   89.292218]  kmmpd+0x433/0x9a0
+[   89.294902]  kthread+0x2dd/0x3e0
+[   89.296268]  ret_from_fork+0x22/0x30
+[   89.296906] Modules linked in:
 
-On 10/13/21 11:31 AM, Wei Yongjun wrote:
-> The driver allocates the mutex but not initialize it.
-> Use mutex_init() on it to initialize it correctly.
-> 
-> Fixes: ed229454856e ("power: supply: axp288-charger: Optimize register reading method")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+We can reproduce this issue as follow:
+1. mkfs.ext4 -O mmp  /dev/sda -b 1024
+2. mount /dev/sda /home/test
+3. echo "/dev/sda" > /sys/power/resume
+4. wait a moment we will get exception
 
-Thanks, patch looks good to me
-(I should have catched this myself during review...) :
+The sequence of issue is as follows:
+       Thread1                       Thread2
+mount /dev/sda /home/test
+get s_mmp_bh  --> has mapped flag
+start kmmpd thread
+				echo "/dev/sda" > /sys/power/resume
+				  resume_store
+				    software_resume
+				      swsusp_check
+				        set_blocksize
+					  truncate_inode_pages_range
+					    truncate_cleanup_page
+					      block_invalidatepage
+					        discard_buffer --> clean mapped flag
+write_mmp_block
+  submit_bh
+    submit_bh_wbc
+      BUG_ON(!buffer_mapped(bh)) --> trigger bug_on
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+To solve this issue, get block device exclusively when do swsusp_check.
 
-Regards,
+Signed-off-by: Ye Bin <yebin10@huawei.com>
+---
+ kernel/power/swap.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Hans
-
-
-
-> ---
->  drivers/power/supply/axp288_charger.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-> index fd4983c98fd9..9987b1731e38 100644
-> --- a/drivers/power/supply/axp288_charger.c
-> +++ b/drivers/power/supply/axp288_charger.c
-> @@ -865,6 +865,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
->  	if (!info)
->  		return -ENOMEM;
->  
-> +	mutex_init(&info->lock);
->  	info->pdev = pdev;
->  	info->regmap = axp20x->regmap;
->  	info->regmap_irqc = axp20x->regmap_irqc;
-> 
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 9ec418955556..26c0bd2a50da 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -1521,9 +1521,10 @@ int swsusp_read(unsigned int *flags_p)
+ int swsusp_check(void)
+ {
+ 	int error;
++	void *holder;
+ 
+ 	hib_resume_bdev = blkdev_get_by_dev(swsusp_resume_device,
+-					    FMODE_READ, NULL);
++					    FMODE_READ | FMODE_EXCL, &holder);
+ 	if (!IS_ERR(hib_resume_bdev)) {
+ 		set_blocksize(hib_resume_bdev, PAGE_SIZE);
+ 		clear_page(swsusp_header);
+@@ -1545,7 +1546,7 @@ int swsusp_check(void)
+ 
+ put:
+ 		if (error)
+-			blkdev_put(hib_resume_bdev, FMODE_READ);
++			blkdev_put(hib_resume_bdev, FMODE_READ | FMODE_EXCL);
+ 		else
+ 			pr_debug("Image signature found, resuming\n");
+ 	} else {
+-- 
+2.31.1
 
