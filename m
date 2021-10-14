@@ -2,80 +2,134 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E90BC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 14:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3FCEC43217
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 14:31:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C4F661156
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 14:28:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9018C61167
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 14:31:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229743AbhJNOaR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Oct 2021 10:30:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39820 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230030AbhJNOaQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Oct 2021 10:30:16 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6AB0C061570;
-        Thu, 14 Oct 2021 07:28:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=uWBQfk1iLdKpELGt/qdUWn4KNZxoLSLIiDkZWLgKqtY=; b=IRMmEGeV6uQYDPk4q4aRRoK8oA
-        Q6h8pwuJ0IEY7b2/TNKjpsko+eXuIZwHepatAtQALymBCVjwtrCcDAaBDYFyk7lViD60fxhZvvVNx
-        lNUHSvi/kx4ZPxZSBtjetptMiWcYTVWG/6ALAxHQcH4Kd5B+BKyfQWbzEnu3K42n8r7ZmM//jpwiv
-        39+gXDKtYYaelFbYwW6fGTcAqAbOr9x0WxgNoTsghECJRzsrjBaWN7WyLFIj230wQeqsIWyv7hciA
-        Nl0j/6gj7Oe44Tu3xyQCix1N+1ZEXcvORK0wLcUhyF9kLTjjruyq56wWolaFsOzGADOzS33/fHavV
-        Bcr71R8w==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1mb1i8-009qi2-DH; Thu, 14 Oct 2021 14:27:56 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id F02043004E7;
-        Thu, 14 Oct 2021 16:27:55 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id CE1E82CF42A20; Thu, 14 Oct 2021 16:27:55 +0200 (CEST)
-Date:   Thu, 14 Oct 2021 16:27:55 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Will Deacon <will@kernel.org>
-Cc:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, linux-kernel@vger.kernel.org,
-        tj@kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] ptrace: Order and comment PT_flags
-Message-ID: <YWg+a6PPD5Mpr4c/@hirez.programming.kicks-ass.net>
-References: <20211009100754.690769957@infradead.org>
- <20211009101444.971532166@infradead.org>
- <20211014093121.GA8239@willie-the-truck>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211014093121.GA8239@willie-the-truck>
+        id S231977AbhJNOdV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Oct 2021 10:33:21 -0400
+Received: from mail-ot1-f45.google.com ([209.85.210.45]:43662 "EHLO
+        mail-ot1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231903AbhJNOdP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Oct 2021 10:33:15 -0400
+Received: by mail-ot1-f45.google.com with SMTP id x33-20020a9d37a4000000b0054733a85462so8449070otb.10;
+        Thu, 14 Oct 2021 07:31:09 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=OXi4CKPDh7/N1pN8IG05ZecyGMde2b/PbFQW4WycOgo=;
+        b=VbSzAUG9bA5Z4o0Psg8/+KNL15F5pBTrxRNrfS8gv/hHF56F6cU8xnCDbDR+yHG35Z
+         Pd6pmGvBnjWzyWMTwcy73PB746Bl1mwoMkwNbzAsmKk7HSo9KZTwjkWkLW6UZOQAdAQN
+         QrdM8re6f3A3Ojvz3cRBYZryTt7Y7jlr8VOuMx+8xi7quaylW86h2swrBvfxSQ3ivxQa
+         9sbhJPd5axZ/LUWxig9u613rQYqVxt+TFOmSqKQOnDIDdTjRQz443BlcuNUum41gxYrn
+         DPUxP7HyzNwb82dC2UljCEZJIKMBeKRS9ZJyeTgb6afCYsjgytB8mNnsNibkv2cO134L
+         4pfA==
+X-Gm-Message-State: AOAM531mhrM8LOyl71iuM7zJiUxEOq608n3GZftu5mQaDNi6URup82Cq
+        w+VjzxzgREQQT5dM36bWsA==
+X-Google-Smtp-Source: ABdhPJytJeoNVXGNls7KXBsOhvoCXJSUsHyQu5OFOYc7jd9y/ZqbuQyDwTQefZJcWpgj7LR3FVHKUw==
+X-Received: by 2002:a05:6830:1442:: with SMTP id w2mr2732523otp.76.1634221869460;
+        Thu, 14 Oct 2021 07:31:09 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
+        by smtp.gmail.com with ESMTPSA id h26sm479552oov.28.2021.10.14.07.31.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 Oct 2021 07:31:08 -0700 (PDT)
+Received: (nullmailer pid 3295881 invoked by uid 1000);
+        Thu, 14 Oct 2021 14:31:04 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Yassine Oudjana <y.oudjana@protonmail.com>
+Cc:     devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org,
+        Michael Turquette <mturquette@baylibre.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Nishanth Menon <nm@ti.com>, phone-devel@vger.kernel.org,
+        Viresh Kumar <vireshk@kernel.org>,
+        Loic Poulain <loic.poulain@linaro.org>,
+        linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        linux-clk@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Ilia Lin <ilia.lin@kernel.org>, linux-pm@vger.kernel.org
+In-Reply-To: <20211014083016.137441-2-y.oudjana@protonmail.com>
+References: <20211014083016.137441-1-y.oudjana@protonmail.com> <20211014083016.137441-2-y.oudjana@protonmail.com>
+Subject: Re: [PATCH 1/8] dt-bindings: clk: qcom: msm8996-apcc: Add CBF
+Date:   Thu, 14 Oct 2021 09:31:04 -0500
+Message-Id: <1634221864.186240.3295880.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 14, 2021 at 10:31:22AM +0100, Will Deacon wrote:
-> On Sat, Oct 09, 2021 at 12:07:57PM +0200, Peter Zijlstra wrote:
-> > Add a comment to the PT_flags to indicate their actual value, this
-> > makes it easier to see what bits are used and where there might be a
-> > possible hole to use.
-> > 
-> > Notable PT_SEIZED was placed wrong, also PT_EVENT_FLAG() space seems
-> > ill defined, as written is seems to be meant to cover the entire
-> > PTRACE_O_ range offset by 3 bits, which would then be 3+[0..21],
-> > however PT_SEIZED is in the middle of that.
+On Thu, 14 Oct 2021 08:31:32 +0000, Yassine Oudjana wrote:
+> Add CBF clock and reg.
 > 
-> Why do you think PT_EVENT_FLAG() should cover all the PTRACE_O_* options?
-> Just going by the name and current callers, I'd only expect it to cover
-> the PTRACE_EVENT_* flags, no?
+> Signed-off-by: Yassine Oudjana <y.oudjana@protonmail.com>
+> ---
+>  .../devicetree/bindings/clock/qcom,msm8996-apcc.yaml   | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+> 
 
-Because PT_EXITKILL and PT_SUSPEND_SECCOMP are also exposed in that same
-mapping.
+Running 'make dtbs_check' with the schema in this patch gives the
+following warnings. Consider if they are expected or the schema is
+incorrect. These may not be new warnings.
 
-Ideally we'd change PT_OPT_FLAG_SHIFT to 8 or something and have the
-high 24 bits for OPT and then use the low 8 bits for SEIZED and the new
-flags.
+Note that it is not yet a requirement to have 0 warnings for dtbs_check.
+This will change in the future.
+
+Full log is available here: https://patchwork.ozlabs.org/patch/1540828
+
+
+clock-controller@6400000: clock-names:0: 'pwrcl_pll' was expected
+	arch/arm64/boot/dts/qcom/apq8096-db820c.dt.yaml
+	arch/arm64/boot/dts/qcom/apq8096-ifc6640.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-mtp.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-keyaki.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-keyaki.dt.yaml
+
+clock-controller@6400000: clock-names: ['xo'] is too short
+	arch/arm64/boot/dts/qcom/apq8096-db820c.dt.yaml
+	arch/arm64/boot/dts/qcom/apq8096-ifc6640.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-mtp.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-keyaki.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-keyaki.dt.yaml
+
+clock-controller@6400000: clocks: [[29]] is too short
+	arch/arm64/boot/dts/qcom/msm8996-mtp.dt.yaml
+
+clock-controller@6400000: clocks: [[33]] is too short
+	arch/arm64/boot/dts/qcom/apq8096-ifc6640.dt.yaml
+
+clock-controller@6400000: clocks: [[36]] is too short
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-keyaki.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-keyaki.dt.yaml
+
+clock-controller@6400000: clocks: [[41]] is too short
+	arch/arm64/boot/dts/qcom/apq8096-db820c.dt.yaml
+
+clock-controller@6400000: reg: [[104857600, 589824]] is too short
+	arch/arm64/boot/dts/qcom/apq8096-db820c.dt.yaml
+	arch/arm64/boot/dts/qcom/apq8096-ifc6640.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-mtp.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-pmi8996-sony-xperia-tone-keyaki.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-dora.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-kagura.dt.yaml
+	arch/arm64/boot/dts/qcom/msm8996-sony-xperia-tone-keyaki.dt.yaml
+
