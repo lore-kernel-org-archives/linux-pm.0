@@ -2,89 +2,78 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 918C7C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 266FDC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:19:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72F90610E8
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:16:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0E4EF6108B
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:19:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242129AbhJORSX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Oct 2021 13:18:23 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:53284 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242204AbhJORSW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 13:18:22 -0400
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
- id 2299f938f24327a6; Fri, 15 Oct 2021 19:16:14 +0200
-Received: from kreacher.localnet (unknown [213.134.175.255])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 4C3A866A8C0;
-        Fri, 15 Oct 2021 19:16:13 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        "Andreas K. Huettel" <andreas.huettel@ur.de>
-Subject: [PATCH v1 1/2] ACPI: PM: Do not turn off power resources in unknown state
-Date:   Fri, 15 Oct 2021 19:12:21 +0200
-Message-ID: <3625109.kQq0lBPeGt@kreacher>
-In-Reply-To: <21226252.EfDdHjke4D@kreacher>
-References: <21226252.EfDdHjke4D@kreacher>
+        id S234950AbhJOSV2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Oct 2021 14:21:28 -0400
+Received: from mail-ot1-f53.google.com ([209.85.210.53]:41820 "EHLO
+        mail-ot1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237700AbhJOSV2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 14:21:28 -0400
+Received: by mail-ot1-f53.google.com with SMTP id v2-20020a05683018c200b0054e3acddd91so13974775ote.8;
+        Fri, 15 Oct 2021 11:19:21 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=X8aFAh665RVTVga5uIb4o7VG/MtjiIB5HxboqHwSZfQ=;
+        b=2zUvZK+ZLOsMfb1dpj/WOCDz9Q95J3RIEpbGtN4XF0va9LYV16LokPrewpr2VT0vLP
+         o8aP/pKqSjkCVJY2fYzlGIiKyyxFaIfbKz3Z1cFOm3Mpwi2qMLWu5GD0vWdSra661ibV
+         otwyaPFSSR+YgFr1eqQ9rPebX1EW3mSY7f6I5cpCxvnNiBfiHk/FOE5KOhYL/NCJlvmI
+         6urdgxzptXwNCLRolsm7PUBroDwpPeev913AeUQga8BNNupE8R7lHFFWz7BT5rM7usBt
+         c031YvjlA7HZIiMDyWMlucIwx7HXGYzdGcTXGX+REBxqO5CVWBzCcGRDJ0I0kgDnVDDP
+         ErWQ==
+X-Gm-Message-State: AOAM531ZcMb/tSTzQHghw2bB05L4KbCcgOhpYe9tvvxZ05nKD+vGohfP
+        XgUEtka4zaYgxKGEmyNGPyRHePaf61O/2i+rPsv1E/5CCzc=
+X-Google-Smtp-Source: ABdhPJx3al7aEsKuw2qf1TGILeueUv73Af5gN8i66wme99co2f4Gx+ECXdXQQK5DxhOtN7btqWBtxtMI96c+S9jKq30=
+X-Received: by 2002:a9d:65c1:: with SMTP id z1mr8941767oth.198.1634321961344;
+ Fri, 15 Oct 2021 11:19:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 15 Oct 2021 20:19:10 +0200
+Message-ID: <CAJZ5v0jyqT335x5iB1HWnESR5OZbitHQqc369rffhkO4h3wMCQ@mail.gmail.com>
+Subject: [GIT PULL] ACPI fix for v5.15-rc5
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.175.255
-X-CLIENT-HOSTNAME: 213.134.175.255
-X-VADE-SPAMSTATE: spam:medium
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudeljedgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecuufhprghmkfhppghrthculdeftddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetgefgleetgeduheeugeeikeevudelueelvdeufeejfeffgeefjedugfetfeehhfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvudefrddufeegrddujeehrddvheehnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepvddufedrudefgedrudejhedrvdehhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdho
- rhhgpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopegrnhgurhgvrghsrdhhuhgvthhtvghlsehurhdruggv
-X-DCC--Metrics: v370.home.net.pl 1024; Body=24 Fuz1=24 Fuz2=24
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Linus,
 
-Commit 6381195ad7d0 ("ACPI: power: Rework turning off unused power
-resources") caused power resources in unknown state with reference
-counters equal to zero to be turned off too, but that caused issues
-to appear in the field, so modify the code to only turn off power
-resources that are known to be "on".
+Please pull from the tag
 
-Link: https://lore.kernel.org/linux-acpi/6faf4b92-78d5-47a4-63df-cc2bab7769d0@molgen.mpg.de/
-Fixes: 6381195ad7d0 ("ACPI: power: Rework turning off unused power resources")
-Reported-by: Andreas K. Huettel <andreas.huettel@ur.de>
-Tested-by: Andreas K. Huettel <andreas.huettel@ur.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: 5.14+ <stable@vger.kernel.org> # 5.14+
----
- drivers/acpi/power.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-5.15-rc6
 
-Index: linux-pm/drivers/acpi/power.c
-===================================================================
---- linux-pm.orig/drivers/acpi/power.c
-+++ linux-pm/drivers/acpi/power.c
-@@ -1015,13 +1015,8 @@ void acpi_turn_off_unused_power_resource
- 	list_for_each_entry_reverse(resource, &acpi_power_resource_list, list_node) {
- 		mutex_lock(&resource->resource_lock);
- 
--		/*
--		 * Turn off power resources in an unknown state too, because the
--		 * platform firmware on some system expects the OS to turn off
--		 * power resources without any users unconditionally.
--		 */
- 		if (!resource->ref_count &&
--		    resource->state != ACPI_POWER_RESOURCE_STATE_OFF) {
-+		    resource->state == ACPI_POWER_RESOURCE_STATE_ON) {
- 			acpi_handle_debug(resource->device.handle, "Turning OFF\n");
- 			__acpi_power_off(resource);
- 		}
+with top-most commit 1ea1dbf1f54c3345072c963b3acf8830e2468c1b
+
+ ACPI: PM: Include alternate AMDI0005 id in special behaviour
+
+on top of commit 64570fbc14f8d7cb3fe3995f20e26bc25ce4b2cc
+
+ Linux 5.15-rc5
+
+to receive an ACPI fix for 5.15-rc6.
+
+This adds a missing device ID to a quirk list in the suspend-to-idle
+support code.
+
+Thanks!
 
 
+---------------
 
+Sachi King (1):
+      ACPI: PM: Include alternate AMDI0005 id in special behaviour
+
+---------------
+
+ drivers/acpi/x86/s2idle.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
