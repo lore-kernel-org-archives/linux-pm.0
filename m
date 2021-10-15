@@ -2,78 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 266FDC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AE58C43217
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:58:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E4EF6108B
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:19:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 66E7461090
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 18:58:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234950AbhJOSV2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Oct 2021 14:21:28 -0400
-Received: from mail-ot1-f53.google.com ([209.85.210.53]:41820 "EHLO
-        mail-ot1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237700AbhJOSV2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 14:21:28 -0400
-Received: by mail-ot1-f53.google.com with SMTP id v2-20020a05683018c200b0054e3acddd91so13974775ote.8;
-        Fri, 15 Oct 2021 11:19:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=X8aFAh665RVTVga5uIb4o7VG/MtjiIB5HxboqHwSZfQ=;
-        b=2zUvZK+ZLOsMfb1dpj/WOCDz9Q95J3RIEpbGtN4XF0va9LYV16LokPrewpr2VT0vLP
-         o8aP/pKqSjkCVJY2fYzlGIiKyyxFaIfbKz3Z1cFOm3Mpwi2qMLWu5GD0vWdSra661ibV
-         otwyaPFSSR+YgFr1eqQ9rPebX1EW3mSY7f6I5cpCxvnNiBfiHk/FOE5KOhYL/NCJlvmI
-         6urdgxzptXwNCLRolsm7PUBroDwpPeev913AeUQga8BNNupE8R7lHFFWz7BT5rM7usBt
-         c031YvjlA7HZIiMDyWMlucIwx7HXGYzdGcTXGX+REBxqO5CVWBzCcGRDJ0I0kgDnVDDP
-         ErWQ==
-X-Gm-Message-State: AOAM531ZcMb/tSTzQHghw2bB05L4KbCcgOhpYe9tvvxZ05nKD+vGohfP
-        XgUEtka4zaYgxKGEmyNGPyRHePaf61O/2i+rPsv1E/5CCzc=
-X-Google-Smtp-Source: ABdhPJx3al7aEsKuw2qf1TGILeueUv73Af5gN8i66wme99co2f4Gx+ECXdXQQK5DxhOtN7btqWBtxtMI96c+S9jKq30=
-X-Received: by 2002:a9d:65c1:: with SMTP id z1mr8941767oth.198.1634321961344;
- Fri, 15 Oct 2021 11:19:21 -0700 (PDT)
+        id S242073AbhJOTA6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Oct 2021 15:00:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33978 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S242136AbhJOTA4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 15:00:56 -0400
+X-Greylist: delayed 248 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 15 Oct 2021 11:58:48 PDT
+Received: from relay02.th.seeweb.it (relay02.th.seeweb.it [IPv6:2001:4b7a:2000:18::163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1FF2C061766;
+        Fri, 15 Oct 2021 11:58:48 -0700 (PDT)
+Received: from [192.168.1.101] (83.6.166.47.neoplus.adsl.tpnet.pl [83.6.166.47])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+        (No client certificate requested)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id C660A1F504;
+        Fri, 15 Oct 2021 20:58:43 +0200 (CEST)
+Message-ID: <f4af0e40-9e93-dba9-7401-cdfc76ba667e@somainline.org>
+Date:   Fri, 15 Oct 2021 20:58:42 +0200
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 15 Oct 2021 20:19:10 +0200
-Message-ID: <CAJZ5v0jyqT335x5iB1HWnESR5OZbitHQqc369rffhkO4h3wMCQ@mail.gmail.com>
-Subject: [GIT PULL] ACPI fix for v5.15-rc5
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.1
+Subject: Re: [PATCH 4/8] cpufreq: qcom_cpufreq_nvmem: Simplify reading kryo
+ speedbin
+Content-Language: en-US
+To:     Yassine Oudjana <y.oudjana@protonmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Loic Poulain <loic.poulain@linaro.org>
+Cc:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        phone-devel@vger.kernel.org
+References: <20211014083016.137441-1-y.oudjana@protonmail.com>
+ <20211014083016.137441-5-y.oudjana@protonmail.com>
+From:   Konrad Dybcio <konrad.dybcio@somainline.org>
+In-Reply-To: <20211014083016.137441-5-y.oudjana@protonmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
 
-Please pull from the tag
+On 14.10.2021 10:32, Yassine Oudjana wrote:
+> In preparation for adding a separate device tree for MSM8996 Pro, skip reading
+> msm-id from smem and just read the speedbin efuse.
+>
+While I'd really like for this to be merged, it's gonna totally wreck backwards
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-5.15-rc6
+compatibility.. But then, since APCC was not defined properly before commit
 
-with top-most commit 1ea1dbf1f54c3345072c963b3acf8830e2468c1b
+0a275a35ceab07 arm64: dts: qcom: msm8996: Make CPUCC actually probe (and work)
 
- ACPI: PM: Include alternate AMDI0005 id in special behaviour
+there's only 5.14/5.15 (both of which were non-LTS) which would *actually* break given
 
-on top of commit 64570fbc14f8d7cb3fe3995f20e26bc25ce4b2cc
+somebody decided that "ah yes, pulling in DTs from these specific mainline kernel releases
 
- Linux 5.15-rc5
-
-to receive an ACPI fix for 5.15-rc6.
-
-This adds a missing device ID to a quirk list in the suspend-to-idle
-support code.
-
-Thanks!
+is a good idea"...
 
 
----------------
+If I were to judge, it would probably be fine to rid the old mechanism..
 
-Sachi King (1):
-      ACPI: PM: Include alternate AMDI0005 id in special behaviour
 
----------------
+Konrad
 
- drivers/acpi/x86/s2idle.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
