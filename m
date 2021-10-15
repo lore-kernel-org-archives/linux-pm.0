@@ -2,57 +2,95 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E464DC4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:04:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE56AC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:14:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CB40361244
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:04:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B32A961151
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 17:14:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241952AbhJORHD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Oct 2021 13:07:03 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:60928 "EHLO
+        id S242068AbhJORQ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Oct 2021 13:16:56 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:60030 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241959AbhJORG7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 13:06:59 -0400
+        with ESMTP id S238023AbhJORQz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Oct 2021 13:16:55 -0400
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
- id d8bbbedbf0ea8c7f; Fri, 15 Oct 2021 19:04:51 +0200
+ id 615faa74ca6a96bd; Fri, 15 Oct 2021 19:14:48 +0200
 Received: from kreacher.localnet (unknown [213.134.175.255])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 58FA766A8CC;
-        Fri, 15 Oct 2021 19:04:50 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 2DAE666A8C0;
+        Fri, 15 Oct 2021 19:14:47 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Linux PCI <linux-pci@vger.kernel.org>
-Subject: [PATCH v1 0/3] ACPI: PM: Address issues related to managing wakeup power resources
-Date:   Fri, 15 Oct 2021 18:59:24 +0200
-Message-ID: <4347933.LvFx2qVVIh@kreacher>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        "Andreas K. Huettel" <andreas.huettel@ur.de>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v1 2/2][RFT] ACPI: PM: Check states of power resources during initialization
+Date:   Fri, 15 Oct 2021 19:14:10 +0200
+Message-ID: <8835496.CDJkKcVGEf@kreacher>
+In-Reply-To: <21226252.EfDdHjke4D@kreacher>
+References: <21226252.EfDdHjke4D@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 X-CLIENT-IP: 213.134.175.255
 X-CLIENT-HOSTNAME: 213.134.175.255
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrvddugedguddtjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhephfegtdffjeehkeegleejveevtdeugfffieeijeduuddtkefgjedvheeujeejtedvnecukfhppedvudefrddufeegrddujeehrddvheehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudejhedrvdehhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohep
- lhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
+X-VADE-SPAMSTATE: spam:medium
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudeljedguddtfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucfuphgrmhfkphgprhhtucdlfedttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdejlefghfeiudektdelkeekvddugfeghffggeejgfeukeejleevgffgvdeluddtnecukfhppedvudefrddufeegrddujeehrddvheehnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudejhedrvdehhedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopegrnhgurhgvrghsrdhhuhgvthhtvghlsehurhdruggvpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhg
+ vghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-There are a few issues related to the management of ACPI power resources used
-for signaling wakeup that are addressed by the first two patches in this series
-(please refer to the changelogs of these patches for details) and the last
-patch makes the code a bit more consistent.
+To avoid situations in which the actual states of certain ACPI power
+resources are not known just because they have never been referenced
+by any device configuration objects, check the initial states of all
+power resources as soon as they are found in the ACPI namespace (and
+fall back to turning them on if the state check fails).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+Andreas, please test this patch (on top of the [1/2]) and let me know
+if it works for you.
 
 Thanks!
+
+---
+ drivers/acpi/power.c |   30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
+
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -923,6 +919,7 @@ struct acpi_device *acpi_add_power_resou
+ 	union acpi_object acpi_object;
+ 	struct acpi_buffer buffer = { sizeof(acpi_object), &acpi_object };
+ 	acpi_status status;
++	u8 state_dummy;
+ 	int result;
+ 
+ 	acpi_bus_get_device(handle, &device);
+@@ -951,6 +948,10 @@ struct acpi_device *acpi_add_power_resou
+ 	resource->order = acpi_object.power_resource.resource_order;
+ 	resource->state = ACPI_POWER_RESOURCE_STATE_UNKNOWN;
+ 
++	/* Get the initial state or just flip it on if that fails. */
++	if (acpi_power_get_state(resource, &state_dummy))
++		__acpi_power_on(resource);
++
+ 	pr_info("%s [%s]\n", acpi_device_name(device), acpi_device_bid(device));
+ 
+ 	device->flags.match_driver = true;
 
 
 
