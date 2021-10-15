@@ -2,104 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E78EAC433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 17:02:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3899CC43219
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 00:16:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B5A7561139
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Oct 2021 17:02:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F93A61041
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Oct 2021 00:16:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232742AbhJNREf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Oct 2021 13:04:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47300 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231327AbhJNREf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Oct 2021 13:04:35 -0400
-Received: from mail.marcansoft.com (marcansoft.com [IPv6:2a01:298:fe:f::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CD351C061570;
-        Thu, 14 Oct 2021 10:02:29 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: marcan@marcan.st)
-        by mail.marcansoft.com (Postfix) with ESMTPSA id 1BFD73FA5E;
-        Thu, 14 Oct 2021 17:02:21 +0000 (UTC)
-Subject: Re: [RFC PATCH 4/9] opp: core: Don't warn if required OPP device does
- not exist
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Saravana Kannan <saravanak@google.com>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        Sven Peter <sven@svenpeter.dev>, Marc Zyngier <maz@kernel.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20211011165707.138157-1-marcan@marcan.st>
- <20211011165707.138157-5-marcan@marcan.st>
- <20211012032144.2ltlpat7orrsyr6k@vireshk-i7>
- <b7cd51ec-38e5-11d8-5193-1170c9d60ac9@marcan.st>
- <20211012055143.xmkbvhbnolspgjin@vireshk-i7>
- <caf16a6c-f127-7f27-ed17-0522d9f1fb9e@marcan.st>
- <CAPDyKFoVjVYkc4+v-=eD+JbC10GazGt8A1LtD1so3PKMmVcyMg@mail.gmail.com>
- <bd07f4b3-6ebf-e074-c1cd-0ef501e8324f@marcan.st>
- <CAPDyKFrFX93XV8a7e7oo1N5weWp2auq=_94fTnzr2EkO3c37Ug@mail.gmail.com>
-From:   Hector Martin <marcan@marcan.st>
-Message-ID: <ca820b86-fc12-63b9-ec6b-5823ddd73aba@marcan.st>
-Date:   Fri, 15 Oct 2021 02:02:19 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        id S232815AbhJOASz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Oct 2021 20:18:55 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39988 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230288AbhJOASy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 14 Oct 2021 20:18:54 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id E8CD660FDC;
+        Fri, 15 Oct 2021 00:16:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1634257009;
+        bh=y921IoviWP7ArGzf/NBOMznO7PDvJ8OxA3PyazLbsOc=;
+        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+        b=pCi7obhE30Iv7WDLzDrA4nCqMpadPw7MZJ4gYnNOHFAEalPk0tCfXZ+HvEgIia54U
+         k5+ll1GaVAyg84eUhAyLwhqHOdQKc5j/bZAGSbmkH6qti6sgp8m0qd4S+tgooJBsvi
+         Bfo88sZs4vrSNE0j56eripPvUMf3IBWonfEc+HLOFZ9sxVGaJL8DzHHzYEXwRxWl0r
+         A4rwIYS+vtYWACJUmQ03lxppfSC74ZnEnhHDw/NZDVscNhabCkz2muTRcVOXPhQEjA
+         PJXP+VLbj7pUdDQo23ONQeh2EGBx+EfEgtxggBF7Ue2zJiXRQWWbLOdD60/739HnJ8
+         A6nKTZXjxBrOA==
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFrFX93XV8a7e7oo1N5weWp2auq=_94fTnzr2EkO3c37Ug@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: es-ES
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20210920181145.19543-6-digetx@gmail.com>
+References: <20210920181145.19543-1-digetx@gmail.com> <20210920181145.19543-6-digetx@gmail.com>
+Subject: Re: [PATCH v12 05/35] dt-bindings: clock: tegra-car: Document new clock sub-nodes
+From:   Stephen Boyd <sboyd@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-pwm@vger.kernel.org,
+        linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+        Mark Brown <broonie@kernel.org>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Richard Weinberger <richard@nod.at>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Lucas Stach <dev@lynxeye.de>, Stefan Agner <stefan@agner.ch>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        David Heidelberg <david@ixit.cz>
+To:     Adrian Hunter <adrian.hunter@intel.com>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        Nishanth Menon <nm@ti.com>, Peter Chen <peter.chen@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Uwe =?utf-8?q?Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Viresh Kumar <vireshk@kernel.org>
+Date:   Thu, 14 Oct 2021 17:16:47 -0700
+Message-ID: <163425700766.1688384.4481739110941660602@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.9.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 14/10/2021 21.55, Ulf Hansson wrote:
-> On Thu, 14 Oct 2021 at 13:43, Hector Martin <marcan@marcan.st> wrote:
->> I was poking around and noticed the OPP core can already integrate with
->> interconnect requirements, so perhaps the memory controller can be an
->> interconnect provider, and the CPU nodes can directly reference it as a
->> consumer? This seems like a more accurate model of what the hardware
->> does, and I think I saw some devices doing this already.
-> 
-> Yeah, that could work too. And, yes, I agree, it may be a better
-> description of the HW.
-> 
->>
->> (only problem is I have no idea of the actual bandwidth numbers involved
->> here... I'll have to run some benchmarks to make sure this isn't just
->> completely dummy data)
->>
+Quoting Dmitry Osipenko (2021-09-20 11:11:15)
+> diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra20-car.y=
+aml b/Documentation/devicetree/bindings/clock/nvidia,tegra20-car.yaml
+> index 459d2a525393..f832abb7f11a 100644
+> --- a/Documentation/devicetree/bindings/clock/nvidia,tegra20-car.yaml
+> +++ b/Documentation/devicetree/bindings/clock/nvidia,tegra20-car.yaml
+> @@ -42,6 +42,36 @@ properties:
+>    "#reset-cells":
+>      const: 1
+> =20
+> +patternProperties:
+> +  "^(sclk)|(pll-[cem])$":
+> +    type: object
+> +    properties:
+> +      compatible:
+> +        enum:
+> +          - nvidia,tegra20-sclk
+> +          - nvidia,tegra30-sclk
+> +          - nvidia,tegra30-pllc
+> +          - nvidia,tegra30-plle
+> +          - nvidia,tegra30-pllm
+> +
+> +      operating-points-v2: true
+> +
+> +      clocks:
+> +        items:
+> +          - description: node's clock
+> +
+> +      power-domains:
+> +        maxItems: 1
+> +        description: phandle to the core SoC power domain
 
-So... I tried getting bandwidth numbers and failed. It seems these 
-registers don't actually affect peak performance in any measurable way. 
-I'm also getting almost the same GeekBench scores on macOS with and 
-without this mechanism enabled, although there is one subtest that seems 
-to show a measurable difference.
+Is this done to associate the power domain with a particular clk? And an
+OPP table with a particular clk?
 
-My current guess is this is something more subtle (latencies? idle 
-timers and such?) than a performance state. If that is the case, do you 
-have any ideas as to the best way to model it in Linux? Should we even 
-bother if it mostly has a minimal performance gain for typical workloads?
-
-I'll try to do some latency tests, see if I can make sense of what it's 
-actually doing.
-
--- 
-Hector Martin (marcan@marcan.st)
-Public Key: https://mrcn.st/pub
+> +
+> +    required:
+> +      - compatible
+> +      - operating-points-v2
+> +      - clocks
+> +      - power-domains
+> +
+> +    additionalProperties: false
+> +
+>  required:
+>    - compatible
+>    - reg
