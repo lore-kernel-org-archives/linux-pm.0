@@ -2,234 +2,176 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC552C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0D4FC433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B3FD361353
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BBBA261038
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230434AbhJRLsO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Oct 2021 07:48:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38478 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231349AbhJRLsO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:48:14 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 040B6C06161C
-        for <linux-pm@vger.kernel.org>; Mon, 18 Oct 2021 04:46:03 -0700 (PDT)
-Date:   Mon, 18 Oct 2021 11:46:00 -0000
+        id S231419AbhJRLsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Oct 2021 07:48:16 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:38080 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230470AbhJRLsQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:48:16 -0400
+Date:   Mon, 18 Oct 2021 11:46:02 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1634557561;
+        s=2020; t=1634557564;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=PYWzFa1eJSsBIbpFrxfVI6heeq89CTXsE73LvSDIGn4=;
-        b=tISS4mXmtkZOxCTkKpxNkZzddGkQICvjk/nhpo9mz5Vl0S+ZTtF3dhMbpdDiFOu/A7UgLS
-        LHWH94Az8ddbcCXTfoxgzLoUqvyqkXbZ4xQKQsd2d5dtn7N/pyii3VnaoDCgHwNfI2elDi
-        ffTTtoE6eav1J9qykBqj5eq0vN9UteM/aNc0cg12bnSyyyig8Fvo/SZ3ybG81crxe1dRdx
-        WlSftUQlFD863GfM4duLwy2qkpzr+udlXS6992RZakXZyONF/wK2BsT+Dr7Hws6bUg1PHb
-        CMpwz4Lfks/K2QLbSakm/S1YbpTnua++iI4culoGMrwVqQkHGImu3gfSziFNtw==
+        bh=7UCHsTOUXaegVXYwLcZ8Xdzc+kqsYzZ1rwgGIBkjz1c=;
+        b=TF5y2hX1anV+kx2uIDpdjX6NWcyBs8+PxEqwnAPLF187vFxrVB7IRx9hjIKKsUAsoVpmJW
+        SuaH7fkqCfTrVffTbzPOOenIeybRKDfvmgM6hkWTMUH/mPMqAFT8eacVD3j3tIaAY0nWvN
+        mV1kWStHVWL+XVhVku+jxIOG9fzjIxXiSVBMhIj816uryUn7+ChbJ4CQFJxL8qeWxO9xWD
+        869tcXePktUWhCo4EYiJxbjiOegNBY6jecWQgPEfcA84BpQ2w6wNxLeaZm5eVwuIkSUDve
+        +BBmnHLxjxiUOln1XbgbPBaubfd4+gxOR4WEvyix8yivcXGI9uUTbR0W/MYJsQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1634557561;
+        s=2020e; t=1634557564;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=PYWzFa1eJSsBIbpFrxfVI6heeq89CTXsE73LvSDIGn4=;
-        b=pGrVky2kNPASQ+2ia6MdLzMxVakQkxa8S6PtGbs9+MqQUFyw+jD9C5j7O5bRI1Jig0zLMA
-        3w95E4DOS9UGqPDA==
-From:   thermal-bot for Niklas =?utf-8?q?S=C3=B6derlund?= 
-        <tip-bot2@linutronix.de>
+        bh=7UCHsTOUXaegVXYwLcZ8Xdzc+kqsYzZ1rwgGIBkjz1c=;
+        b=8CdLUxjf9MhCXj3LYVjis+ANxyfkQd1n1fo/VwbcgalxshEhlK5nmMhUzRWSHct+mC/NWk
+        kXlOKUXaZQXLOcDw==
+From:   "thermal-bot for Daniel Lezcano" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: rcar_gen3_thermal: Store thcode and
- ptat in priv data
-Cc:     niklas.soderlund+renesas@ragnatech.se,
-        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20211014103816.1939782-2-niklas.soderlund+renesas@ragnatech.se>
-References: <20211014103816.1939782-2-niklas.soderlund+renesas@ragnatech.se>
+Subject: [thermal: thermal/next] thermal/drivers/netlink: Add the temperature
+ when crossing a trip point
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>, rui.zhang@intel.com,
+        amitk@kernel.org
+In-Reply-To: <20211001223323.1836640-1-daniel.lezcano@linaro.org>
+References: <20211001223323.1836640-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Message-ID: <163455756063.25758.1280932998112405201.tip-bot2@tip-bot2>
+Message-ID: <163455756280.25758.2126616786096568156.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     b8aaf1415a1bc3a61f870366b3f989b3bc3e2824
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
-git//b8aaf1415a1bc3a61f870366b3f989b3bc3e2824
-Author:        Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
-AuthorDate:    Thu, 14 Oct 2021 12:38:15 +02:00
+Commit-ID:     fc656fa14da7865774b4251afa88ffcf22bf02d2
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//fc656fa14da7865774b4251afa88ffcf22bf02d2
+Author:        Daniel Lezcano <daniel.lezcano@linaro.org>
+AuthorDate:    Sat, 02 Oct 2021 00:33:23 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Fri, 15 Oct 2021 09:15:52 +02:00
+CommitterDate: Thu, 07 Oct 2021 15:41:38 +02:00
 
-thermal: rcar_gen3_thermal: Store thcode and ptat in priv data
+thermal/drivers/netlink: Add the temperature when crossing a trip point
 
-Prepare for reading the THCODE and PTAT values from hardware fuses by
-storing the values used during calculations in the drivers private
-data structures.
+The slope of the temperature increase or decrease can be high and when
+the temperature crosses the trip point, there could be a significant
+difference between the trip temperature and the measured temperatures.
 
-As the values are now stored directly in the private data structures
-there is no need to keep track of the TSC channel id as its only usage
-was to lookup the THCODE row, drop it.
+That forces the userspace to read the temperature back right after
+receiving a trip violation notification.
 
-Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
-Tested-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Link: https://lore.kernel.org/r/20211014103816.1939782-2-niklas.soderlund+ren=
-esas@ragnatech.se
+In order to be efficient, give the temperature which resulted in the
+trip violation.
+
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael@kernel.org>
+Link: https://lore.kernel.org/r/20211001223323.1836640-1-daniel.lezcano@linaro.org
 ---
- drivers/thermal/rcar_gen3_thermal.c | 51 +++++++++++++++-------------
- 1 file changed, 28 insertions(+), 23 deletions(-)
+ drivers/thermal/thermal_core.c    |  6 ++++--
+ drivers/thermal/thermal_netlink.c | 11 ++++++-----
+ drivers/thermal/thermal_netlink.h |  8 ++++----
+ 3 files changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
-thermal.c
-index 85228d3..7d7e6eb 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -62,15 +62,6 @@
-=20
- #define TSC_MAX_NUM	5
-=20
--/* default THCODE values if FUSEs are missing */
--static const int thcodes[TSC_MAX_NUM][3] =3D {
--	{ 3397, 2800, 2221 },
--	{ 3393, 2795, 2216 },
--	{ 3389, 2805, 2237 },
--	{ 3415, 2694, 2195 },
--	{ 3356, 2724, 2244 },
--};
--
- /* Structure for thermal temperature calculation */
- struct equation_coefs {
- 	int a1;
-@@ -84,13 +75,14 @@ struct rcar_gen3_thermal_tsc {
- 	struct thermal_zone_device *zone;
- 	struct equation_coefs coef;
- 	int tj_t;
--	unsigned int id; /* thermal channel id */
-+	int thcode[3];
- };
-=20
- struct rcar_gen3_thermal_priv {
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
- 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
-+	int ptat[3];
- };
-=20
- static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc,
-@@ -133,8 +125,8 @@ static inline void rcar_gen3_thermal_write(struct rcar_ge=
-n3_thermal_tsc *tsc,
- /* no idea where these constants come from */
- #define TJ_3 -41
-=20
--static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_tsc *tsc,
--					 int *ptat, const int *thcode,
-+static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_priv *priv,
-+					 struct rcar_gen3_thermal_tsc *tsc,
- 					 int ths_tj_1)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 51374f4..9e243d9 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -375,10 +375,12 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ 	if (tz->last_temperature != THERMAL_TEMP_INVALID) {
+ 		if (tz->last_temperature < trip_temp &&
+ 		    tz->temperature >= trip_temp)
+-			thermal_notify_tz_trip_up(tz->id, trip);
++			thermal_notify_tz_trip_up(tz->id, trip,
++						  tz->temperature);
+ 		if (tz->last_temperature >= trip_temp &&
+ 		    tz->temperature < (trip_temp - hyst))
+-			thermal_notify_tz_trip_down(tz->id, trip);
++			thermal_notify_tz_trip_down(tz->id, trip,
++						    tz->temperature);
+ 	}
+ 
+ 	if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
+diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
+index 1234dbe..a16dd4d 100644
+--- a/drivers/thermal/thermal_netlink.c
++++ b/drivers/thermal/thermal_netlink.c
+@@ -121,7 +121,8 @@ static int thermal_genl_event_tz(struct param *p)
+ static int thermal_genl_event_tz_trip_up(struct param *p)
  {
- 	/* TODO: Find documentation and document constant calculation formula */
-@@ -143,16 +135,16 @@ static void rcar_gen3_thermal_calc_coefs(struct rcar_ge=
-n3_thermal_tsc *tsc,
- 	 * Division is not scaled in BSP and if scaled it might overflow
- 	 * the dividend (4095 * 4095 << 14 > INT_MAX) so keep it unscaled
- 	 */
--	tsc->tj_t =3D (FIXPT_INT((ptat[1] - ptat[2]) * (ths_tj_1 - TJ_3))
--		     / (ptat[0] - ptat[2])) + FIXPT_INT(TJ_3);
-+	tsc->tj_t =3D (FIXPT_INT((priv->ptat[1] - priv->ptat[2]) * (ths_tj_1 - TJ_3=
-))
-+		     / (priv->ptat[0] - priv->ptat[2])) + FIXPT_INT(TJ_3);
-=20
--	tsc->coef.a1 =3D FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[2]),
-+	tsc->coef.a1 =3D FIXPT_DIV(FIXPT_INT(tsc->thcode[1] - tsc->thcode[2]),
- 				 tsc->tj_t - FIXPT_INT(TJ_3));
--	tsc->coef.b1 =3D FIXPT_INT(thcode[2]) - tsc->coef.a1 * TJ_3;
-+	tsc->coef.b1 =3D FIXPT_INT(tsc->thcode[2]) - tsc->coef.a1 * TJ_3;
-=20
--	tsc->coef.a2 =3D FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[0]),
-+	tsc->coef.a2 =3D FIXPT_DIV(FIXPT_INT(tsc->thcode[1] - tsc->thcode[0]),
- 				 tsc->tj_t - FIXPT_INT(ths_tj_1));
--	tsc->coef.b2 =3D FIXPT_INT(thcode[0]) - tsc->coef.a2 * ths_tj_1;
-+	tsc->coef.b2 =3D FIXPT_INT(tsc->thcode[0]) - tsc->coef.a2 * ths_tj_1;
+ 	if (nla_put_u32(p->msg, THERMAL_GENL_ATTR_TZ_ID, p->tz_id) ||
+-	    nla_put_u32(p->msg, THERMAL_GENL_ATTR_TZ_TRIP_ID, p->trip_id))
++	    nla_put_u32(p->msg, THERMAL_GENL_ATTR_TZ_TRIP_ID, p->trip_id) ||
++	    nla_put_u32(p->msg, THERMAL_GENL_ATTR_TZ_TEMP, p->temp))
+ 		return -EMSGSIZE;
+ 
+ 	return 0;
+@@ -285,16 +286,16 @@ int thermal_notify_tz_disable(int tz_id)
+ 	return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_DISABLE, &p);
  }
-=20
- static int rcar_gen3_thermal_round(int temp)
-@@ -174,7 +166,7 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int =
-*temp)
- 	/* Read register and convert to mili Celsius */
- 	reg =3D rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
-=20
--	if (reg <=3D thcodes[tsc->id][1])
-+	if (reg <=3D tsc->thcode[1])
- 		val =3D FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1,
- 				tsc->coef.a1);
- 	else
-@@ -401,9 +393,15 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
-e *pdev)
- 	unsigned int i;
- 	int ret;
-=20
--	/* default values if FUSEs are missing */
-+	/* Default THCODE values in case FUSEs are not set. */
- 	/* TODO: Read values from hardware on supported platforms */
--	int ptat[3] =3D { 2631, 1509, 435 };
-+	static const int thcodes[TSC_MAX_NUM][3] =3D {
-+		{ 3397, 2800, 2221 },
-+		{ 3393, 2795, 2216 },
-+		{ 3389, 2805, 2237 },
-+		{ 3415, 2694, 2195 },
-+		{ 3356, 2724, 2244 },
-+	};
-=20
- 	priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -413,6 +411,10 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
-e *pdev)
- 	if (soc_device_match(r8a7795es1))
- 		priv->thermal_init =3D rcar_gen3_thermal_init_r8a7795es1;
-=20
-+	priv->ptat[0] =3D 2631;
-+	priv->ptat[1] =3D 1509;
-+	priv->ptat[2] =3D 435;
-+
- 	platform_set_drvdata(pdev, priv);
-=20
- 	if (rcar_gen3_thermal_request_irqs(priv, pdev))
-@@ -439,7 +441,10 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
-e *pdev)
- 			ret =3D PTR_ERR(tsc->base);
- 			goto error_unregister;
- 		}
--		tsc->id =3D i;
-+
-+		tsc->thcode[0] =3D thcodes[i][0];
-+		tsc->thcode[1] =3D thcodes[i][1];
-+		tsc->thcode[2] =3D thcodes[i][2];
-=20
- 		priv->tscs[i] =3D tsc;
-=20
-@@ -453,7 +458,7 @@ static int rcar_gen3_thermal_probe(struct platform_device=
- *pdev)
- 		tsc->zone =3D zone;
-=20
- 		priv->thermal_init(tsc);
--		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
-+		rcar_gen3_thermal_calc_coefs(priv, tsc, *ths_tj_1);
-=20
- 		tsc->zone->tzp->no_hwmon =3D false;
- 		ret =3D thermal_add_hwmon_sysfs(tsc->zone);
+ 
+-int thermal_notify_tz_trip_down(int tz_id, int trip_id)
++int thermal_notify_tz_trip_down(int tz_id, int trip_id, int temp)
+ {
+-	struct param p = { .tz_id = tz_id, .trip_id = trip_id };
++	struct param p = { .tz_id = tz_id, .trip_id = trip_id, .temp = temp };
+ 
+ 	return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_TRIP_DOWN, &p);
+ }
+ 
+-int thermal_notify_tz_trip_up(int tz_id, int trip_id)
++int thermal_notify_tz_trip_up(int tz_id, int trip_id, int temp)
+ {
+-	struct param p = { .tz_id = tz_id, .trip_id = trip_id };
++	struct param p = { .tz_id = tz_id, .trip_id = trip_id, .temp = temp };
+ 
+ 	return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_TRIP_UP, &p);
+ }
+diff --git a/drivers/thermal/thermal_netlink.h b/drivers/thermal/thermal_netlink.h
+index 828d1dd..e554f76 100644
+--- a/drivers/thermal/thermal_netlink.h
++++ b/drivers/thermal/thermal_netlink.h
+@@ -11,8 +11,8 @@ int thermal_notify_tz_create(int tz_id, const char *name);
+ int thermal_notify_tz_delete(int tz_id);
+ int thermal_notify_tz_enable(int tz_id);
+ int thermal_notify_tz_disable(int tz_id);
+-int thermal_notify_tz_trip_down(int tz_id, int id);
+-int thermal_notify_tz_trip_up(int tz_id, int id);
++int thermal_notify_tz_trip_down(int tz_id, int id, int temp);
++int thermal_notify_tz_trip_up(int tz_id, int id, int temp);
+ int thermal_notify_tz_trip_delete(int tz_id, int id);
+ int thermal_notify_tz_trip_add(int tz_id, int id, int type,
+ 			       int temp, int hyst);
+@@ -49,12 +49,12 @@ static inline int thermal_notify_tz_disable(int tz_id)
+ 	return 0;
+ }
+ 
+-static inline int thermal_notify_tz_trip_down(int tz_id, int id)
++static inline int thermal_notify_tz_trip_down(int tz_id, int id, int temp)
+ {
+ 	return 0;
+ }
+ 
+-static inline int thermal_notify_tz_trip_up(int tz_id, int id)
++static inline int thermal_notify_tz_trip_up(int tz_id, int id, int temp)
+ {
+ 	return 0;
+ }
