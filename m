@@ -2,244 +2,234 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A74BCC43217
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC552C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 920A7610E8
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B3FD361353
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:46:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231293AbhJRLsP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Oct 2021 07:48:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38482 "EHLO
+        id S230434AbhJRLsO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Oct 2021 07:48:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38478 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231337AbhJRLsP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:48:15 -0400
+        with ESMTP id S231349AbhJRLsO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:48:14 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 534D2C06161C
-        for <linux-pm@vger.kernel.org>; Mon, 18 Oct 2021 04:46:04 -0700 (PDT)
-Date:   Mon, 18 Oct 2021 11:46:02 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 040B6C06161C
+        for <linux-pm@vger.kernel.org>; Mon, 18 Oct 2021 04:46:03 -0700 (PDT)
+Date:   Mon, 18 Oct 2021 11:46:00 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1634557563;
+        s=2020; t=1634557561;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=YIBcUXCwY2J9qebf0j7LSoGgvurufIj+Rvu8t9ytaR4=;
-        b=PyjRfW6XzKZQFSnyner5VpA4nwR/xTFx/xT/8LD5GC8G9QieqruT7PSh+Tar2JMnjDdj47
-        fW0A6TvT69pCHoTsfLXu1lnicJt+3ipX+i7lbJzcmxs9pwPuMpfNfSsLqNCcI7Z/c6/ddX
-        E86pNYMOJ/7oGNriC2X+x9mphl01+w0yhriKFMPYoohKbPz0dXd8NaAx3PKoobHqRL5u1Q
-        klex/cPVVhOGgCD5o9h6+rEwxaqu1C/vYK+bY6724Ig7phQ5x4ie6UKYX0sMZ/v5tsLz3n
-        9EpN0AOjSnI1/9abL3RDsp30r62ffe3W6W21ObpavnF3meXi3rvHOuSzaDhBnA==
+        bh=PYWzFa1eJSsBIbpFrxfVI6heeq89CTXsE73LvSDIGn4=;
+        b=tISS4mXmtkZOxCTkKpxNkZzddGkQICvjk/nhpo9mz5Vl0S+ZTtF3dhMbpdDiFOu/A7UgLS
+        LHWH94Az8ddbcCXTfoxgzLoUqvyqkXbZ4xQKQsd2d5dtn7N/pyii3VnaoDCgHwNfI2elDi
+        ffTTtoE6eav1J9qykBqj5eq0vN9UteM/aNc0cg12bnSyyyig8Fvo/SZ3ybG81crxe1dRdx
+        WlSftUQlFD863GfM4duLwy2qkpzr+udlXS6992RZakXZyONF/wK2BsT+Dr7Hws6bUg1PHb
+        CMpwz4Lfks/K2QLbSakm/S1YbpTnua++iI4culoGMrwVqQkHGImu3gfSziFNtw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1634557563;
+        s=2020e; t=1634557561;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=YIBcUXCwY2J9qebf0j7LSoGgvurufIj+Rvu8t9ytaR4=;
-        b=TzDQeys1TH99x630c7zj6VeL6KjVXkqmwOXle09VFSmAJPWcJ3Q466iEUdx+tBkRnxO8hz
-        sJlynDUBDD7xu+Bw==
-From:   "thermal-bot for Bjorn Andersson" <tip-bot2@linutronix.de>
+        bh=PYWzFa1eJSsBIbpFrxfVI6heeq89CTXsE73LvSDIGn4=;
+        b=pGrVky2kNPASQ+2ia6MdLzMxVakQkxa8S6PtGbs9+MqQUFyw+jD9C5j7O5bRI1Jig0zLMA
+        3w95E4DOS9UGqPDA==
+From:   thermal-bot for Niklas =?utf-8?q?S=C3=B6derlund?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: qcom: add HC variant of
- adc-thermal monitor bindings
-Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] thermal: rcar_gen3_thermal: Store thcode and
+ ptat in priv data
+Cc:     niklas.soderlund+renesas@ragnatech.se,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20211005032531.2251928-2-bjorn.andersson@linaro.org>
-References: <20211005032531.2251928-2-bjorn.andersson@linaro.org>
+In-Reply-To: <20211014103816.1939782-2-niklas.soderlund+renesas@ragnatech.se>
+References: <20211014103816.1939782-2-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
-Message-ID: <163455756206.25758.3202806553805517036.tip-bot2@tip-bot2>
+Message-ID: <163455756063.25758.1280932998112405201.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     db03874b854368c14f21bdc41f1044cf6cda6200
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//db03874b854368c14f21bdc41f1044cf6cda6200
-Author:        Bjorn Andersson <bjorn.andersson@linaro.org>
-AuthorDate:    Mon, 04 Oct 2021 20:25:28 -07:00
+Commit-ID:     b8aaf1415a1bc3a61f870366b3f989b3bc3e2824
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//b8aaf1415a1bc3a61f870366b3f989b3bc3e2824
+Author:        Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+AuthorDate:    Thu, 14 Oct 2021 12:38:15 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Fri, 15 Oct 2021 09:13:55 +02:00
+CommitterDate: Fri, 15 Oct 2021 09:15:52 +02:00
 
-dt-bindings: thermal: qcom: add HC variant of adc-thermal monitor bindings
+thermal: rcar_gen3_thermal: Store thcode and ptat in priv data
 
-The HC generation of the ADC Thermal Monitor is quite similar to the 5th
-generation, but differs in valid values for a few properties. Create a
-new binding for the HC version of the hardware, rather than sprinkle
-conditionals throughout the existing binding.
+Prepare for reading the THCODE and PTAT values from hardware fuses by
+storing the values used during calculations in the drivers private
+data structures.
 
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Link: https://lore.kernel.org/r/20211005032531.2251928-2-bjorn.andersson@linaro.org
+As the values are now stored directly in the private data structures
+there is no need to keep track of the TSC channel id as its only usage
+was to lookup the THCODE row, drop it.
+
+Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+Tested-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Link: https://lore.kernel.org/r/20211014103816.1939782-2-niklas.soderlund+ren=
+esas@ragnatech.se
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml | 149 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 149 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
+ drivers/thermal/rcar_gen3_thermal.c | 51 +++++++++++++++-------------
+ 1 file changed, 28 insertions(+), 23 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
-new file mode 100644
-index 0000000..8273ac5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm-hc.yaml
-@@ -0,0 +1,149 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom-spmi-adc-tm-hc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
+thermal.c
+index 85228d3..7d7e6eb 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -62,15 +62,6 @@
+=20
+ #define TSC_MAX_NUM	5
+=20
+-/* default THCODE values if FUSEs are missing */
+-static const int thcodes[TSC_MAX_NUM][3] =3D {
+-	{ 3397, 2800, 2221 },
+-	{ 3393, 2795, 2216 },
+-	{ 3389, 2805, 2237 },
+-	{ 3415, 2694, 2195 },
+-	{ 3356, 2724, 2244 },
+-};
+-
+ /* Structure for thermal temperature calculation */
+ struct equation_coefs {
+ 	int a1;
+@@ -84,13 +75,14 @@ struct rcar_gen3_thermal_tsc {
+ 	struct thermal_zone_device *zone;
+ 	struct equation_coefs coef;
+ 	int tj_t;
+-	unsigned int id; /* thermal channel id */
++	int thcode[3];
+ };
+=20
+ struct rcar_gen3_thermal_priv {
+ 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+ 	unsigned int num_tscs;
+ 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
++	int ptat[3];
+ };
+=20
+ static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc,
+@@ -133,8 +125,8 @@ static inline void rcar_gen3_thermal_write(struct rcar_ge=
+n3_thermal_tsc *tsc,
+ /* no idea where these constants come from */
+ #define TJ_3 -41
+=20
+-static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_tsc *tsc,
+-					 int *ptat, const int *thcode,
++static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_priv *priv,
++					 struct rcar_gen3_thermal_tsc *tsc,
+ 					 int ths_tj_1)
+ {
+ 	/* TODO: Find documentation and document constant calculation formula */
+@@ -143,16 +135,16 @@ static void rcar_gen3_thermal_calc_coefs(struct rcar_ge=
+n3_thermal_tsc *tsc,
+ 	 * Division is not scaled in BSP and if scaled it might overflow
+ 	 * the dividend (4095 * 4095 << 14 > INT_MAX) so keep it unscaled
+ 	 */
+-	tsc->tj_t =3D (FIXPT_INT((ptat[1] - ptat[2]) * (ths_tj_1 - TJ_3))
+-		     / (ptat[0] - ptat[2])) + FIXPT_INT(TJ_3);
++	tsc->tj_t =3D (FIXPT_INT((priv->ptat[1] - priv->ptat[2]) * (ths_tj_1 - TJ_3=
+))
++		     / (priv->ptat[0] - priv->ptat[2])) + FIXPT_INT(TJ_3);
+=20
+-	tsc->coef.a1 =3D FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[2]),
++	tsc->coef.a1 =3D FIXPT_DIV(FIXPT_INT(tsc->thcode[1] - tsc->thcode[2]),
+ 				 tsc->tj_t - FIXPT_INT(TJ_3));
+-	tsc->coef.b1 =3D FIXPT_INT(thcode[2]) - tsc->coef.a1 * TJ_3;
++	tsc->coef.b1 =3D FIXPT_INT(tsc->thcode[2]) - tsc->coef.a1 * TJ_3;
+=20
+-	tsc->coef.a2 =3D FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[0]),
++	tsc->coef.a2 =3D FIXPT_DIV(FIXPT_INT(tsc->thcode[1] - tsc->thcode[0]),
+ 				 tsc->tj_t - FIXPT_INT(ths_tj_1));
+-	tsc->coef.b2 =3D FIXPT_INT(thcode[0]) - tsc->coef.a2 * ths_tj_1;
++	tsc->coef.b2 =3D FIXPT_INT(tsc->thcode[0]) - tsc->coef.a2 * ths_tj_1;
+ }
+=20
+ static int rcar_gen3_thermal_round(int temp)
+@@ -174,7 +166,7 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int =
+*temp)
+ 	/* Read register and convert to mili Celsius */
+ 	reg =3D rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
+=20
+-	if (reg <=3D thcodes[tsc->id][1])
++	if (reg <=3D tsc->thcode[1])
+ 		val =3D FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1,
+ 				tsc->coef.a1);
+ 	else
+@@ -401,9 +393,15 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
+e *pdev)
+ 	unsigned int i;
+ 	int ret;
+=20
+-	/* default values if FUSEs are missing */
++	/* Default THCODE values in case FUSEs are not set. */
+ 	/* TODO: Read values from hardware on supported platforms */
+-	int ptat[3] =3D { 2631, 1509, 435 };
++	static const int thcodes[TSC_MAX_NUM][3] =3D {
++		{ 3397, 2800, 2221 },
++		{ 3393, 2795, 2216 },
++		{ 3389, 2805, 2237 },
++		{ 3415, 2694, 2195 },
++		{ 3356, 2724, 2244 },
++	};
+=20
+ 	priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -413,6 +411,10 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
+e *pdev)
+ 	if (soc_device_match(r8a7795es1))
+ 		priv->thermal_init =3D rcar_gen3_thermal_init_r8a7795es1;
+=20
++	priv->ptat[0] =3D 2631;
++	priv->ptat[1] =3D 1509;
++	priv->ptat[2] =3D 435;
 +
-+title: Qualcomm's SPMI PMIC ADC HC Thermal Monitoring
-+maintainers:
-+  - Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+ 	platform_set_drvdata(pdev, priv);
+=20
+ 	if (rcar_gen3_thermal_request_irqs(priv, pdev))
+@@ -439,7 +441,10 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
+e *pdev)
+ 			ret =3D PTR_ERR(tsc->base);
+ 			goto error_unregister;
+ 		}
+-		tsc->id =3D i;
 +
-+properties:
-+  compatible:
-+    const: qcom,spmi-adc-tm-hc
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+    description:
-+      Number of cells required to uniquely identify the thermal sensors. Since
-+      we have multiple sensors this is set to 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+  qcom,avg-samples:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Number of samples to be used for measurement.
-+    enum:
-+      - 1
-+      - 2
-+      - 4
-+      - 8
-+      - 16
-+    default: 1
-+
-+  qcom,decimation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: This parameter is used to decrease ADC sampling rate.
-+            Quicker measurements can be made by reducing decimation ratio.
-+    enum:
-+      - 256
-+      - 512
-+      - 1024
-+    default: 1024
-+
-+patternProperties:
-+  "^([-a-z0-9]*)@[0-7]$":
-+    type: object
-+    description:
-+      Represent one thermal sensor.
-+
-+    properties:
-+      reg:
-+        description: Specify the sensor channel. There are 8 channels in PMIC5's ADC TM
-+        minimum: 0
-+        maximum: 7
-+
-+      io-channels:
-+        description:
-+          From common IIO binding. Used to pipe PMIC ADC channel to thermal monitor
-+
-+      qcom,ratiometric:
-+        $ref: /schemas/types.yaml#/definitions/flag
-+        description:
-+          Channel calibration type.
-+          If this property is specified VADC will use the VDD reference
-+          (1.875V) and GND for channel calibration. If property is not found,
-+          channel will be calibrated with 0V and 1.25V reference channels,
-+          also known as absolute calibration.
-+
-+      qcom,hw-settle-time-us:
-+        description: Time between AMUX getting configured and the ADC starting conversion.
-+        enum: [0, 100, 200, 300, 400, 500, 600, 700, 1000, 2000, 4000, 6000, 8000, 10000]
-+
-+      qcom,pre-scaling:
-+        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        description: Used for scaling the channel input signal before the
-+          signal is fed to VADC. The configuration for this node is to know the
-+          pre-determined ratio and use it for post scaling. It is a pair of
-+          integers, denoting the numerator and denominator of the fraction by
-+          which input signal is multiplied. For example, <1 3> indicates the
-+          signal is scaled down to 1/3 of its value before ADC measurement.  If
-+          property is not found default value depending on chip will be used.
-+        items:
-+          - const: 1
-+          - enum: [ 1, 3, 4, 6, 20, 8, 10 ]
-+
-+    required:
-+      - reg
-+      - io-channels
-+
-+    additionalProperties:
-+      false
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - "#address-cells"
-+  - "#size-cells"
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/iio/qcom,spmi-vadc.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    spmi_bus {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        pm8998_adc: adc@3100 {
-+            reg = <0x3100>;
-+            compatible = "qcom,spmi-adc-rev2";
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+            #io-channel-cells = <1>;
-+
-+            /* Other propreties are omitted */
-+            adc-chan@4c {
-+                reg = <ADC5_XO_THERM_100K_PU>;
-+            };
-+        };
-+
-+        pm8998_adc_tm: adc-tm@3400 {
-+            compatible = "qcom,spmi-adc-tm-hc";
-+            reg = <0x3400>;
-+            interrupts = <0x2 0x34 0x0 IRQ_TYPE_EDGE_RISING>;
-+            #thermal-sensor-cells = <1>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            thermistor@1 {
-+                reg = <1>;
-+                io-channels = <&pm8998_adc ADC5_XO_THERM_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time-us = <200>;
-+            };
-+        };
-+    };
-+...
++		tsc->thcode[0] =3D thcodes[i][0];
++		tsc->thcode[1] =3D thcodes[i][1];
++		tsc->thcode[2] =3D thcodes[i][2];
+=20
+ 		priv->tscs[i] =3D tsc;
+=20
+@@ -453,7 +458,7 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 		tsc->zone =3D zone;
+=20
+ 		priv->thermal_init(tsc);
+-		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcodes[i], *ths_tj_1);
++		rcar_gen3_thermal_calc_coefs(priv, tsc, *ths_tj_1);
+=20
+ 		tsc->zone->tzp->no_hwmon =3D false;
+ 		ret =3D thermal_add_hwmon_sysfs(tsc->zone);
