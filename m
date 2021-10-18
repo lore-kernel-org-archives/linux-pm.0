@@ -2,83 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 125F3C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 213CFC433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:45:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAA986103D
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:44:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03BB060F9D
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 11:45:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229699AbhJRLqm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Oct 2021 07:46:42 -0400
-Received: from jabberwock.ucw.cz ([46.255.230.98]:49690 "EHLO
-        jabberwock.ucw.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229665AbhJRLql (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:46:41 -0400
-Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
-        id 723EF1C0B77; Mon, 18 Oct 2021 13:44:29 +0200 (CEST)
-Date:   Mon, 18 Oct 2021 13:44:29 +0200
-From:   Pavel Machek <pavel@ucw.cz>
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
-        hpa@zytor.com, linux-kernel@vger.kernel.org, rafael@kernel.org,
-        len.brown@intel.com, linux-pm@vger.kernel.org,
-        sfr@canb.auug.org.au, gor@linux.ibm.com
-Subject: Re: next-20211015: suspend to ram on x86-32 broken
-Message-ID: <20211018114429.GA13693@duo.ucw.cz>
-References: <20211017093905.GA3069@amd>
- <20211017102547.GA3818@amd>
- <20211018071349.GA16631@duo.ucw.cz>
- <20211018081300.GA18193@duo.ucw.cz>
- <YW07O8ZPLVnbGLR7@hirez.programming.kicks-ass.net>
+        id S231229AbhJRLsH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Oct 2021 07:48:07 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:37976 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230381AbhJRLsG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 07:48:06 -0400
+Date:   Mon, 18 Oct 2021 11:45:53 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1634557554;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=/B3DAjTHDTBu7hiPwMNzbV00pTOtOOC1Nt6L2T526ok=;
+        b=hLeJIJDaKEg5NvHPI/YeW9szWlhUbOIcg8d47YmIEAxHHYW+PvAvbhTf2H3hB2p+J5+tuZ
+        eY0Xez4VTj5JSdu59PEVmaUqp0IPgHQpbIKAd+Vs+VHgDK1DyaqHn8eTR91wMFI0rZoGk3
+        hQU+Jsjh4E241L6SY4O+j5LKgM211Mc8nfU9fbqH9D+Qe3KwOb+W1n3e+B5EAkKvbH5uu6
+        UY4RFPCFDtTow/ED8y2W0kBoJYf0E1hddUmGJVrGMoobdR82qTinijQzSpiPOkvE5FsVv7
+        iPODLGiSzEbs9V+1w3Uy82GUJmfyVpxfOETbIIpzz8hWF92u7+yPfnXr831ydA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1634557554;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=/B3DAjTHDTBu7hiPwMNzbV00pTOtOOC1Nt6L2T526ok=;
+        b=dgg2CcHWYGKnkR7UeR/RLawdDXkEml4E17zOJtnhXyiIOBHDvaXEo+yX+OAD3hJrI0HKsy
+        yOVfIGs1b/IBgWCg==
+From:   "thermal-bot for Johan Jonker" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] dt-bindings: thermal: remove redundant
+ comments from rockchip-thermal.yaml
+Cc:     Johan Jonker <jbx6244@gmail.com>, Rob Herring <robh@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20210930110517.14323-2-jbx6244@gmail.com>
+References: <20210930110517.14323-2-jbx6244@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="4Ckj6UjgE2iN1+kY"
-Content-Disposition: inline
-In-Reply-To: <YW07O8ZPLVnbGLR7@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Message-ID: <163455755359.25758.1616229689764744384.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The following commit has been merged into the thermal/next branch of thermal:
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:     5f553ac2325456f484806df5aa695392364d39f5
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//5f553ac2325456f484806df5aa695392364d39f5
+Author:        Johan Jonker <jbx6244@gmail.com>
+AuthorDate:    Thu, 30 Sep 2021 13:05:15 +02:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Sun, 17 Oct 2021 00:14:55 +02:00
 
-Hi!
+dt-bindings: thermal: remove redundant comments from rockchip-thermal.yaml
 
-> > > commit 8850cb663b5cda04d33f9cfbc38889d73d3c8e24 (HEAD)
-> > > Author: Peter Zijlstra <peterz@infradead.org>
-> > > Date:   Tue Sep 21 22:16:02 2021 +0200
-> > >=20
-> > >     sched: Simplify wake_up_*idle*()
-> > >=20
-> > > is first bad commit.
-> >=20
-> > And reverting that one on the top of -next indeed fixes resume on
-> > thinkpad x60.
->=20
-> Can you try with just reverting the smp.c hunk and leaving the sched
-> hunk in place? I've got a hotplug lock related splat in my inbox from
-> late last week that I didn't get around to yet, I suspect they're
-> related.
+Remove redundent comments from rockchip-thermal.yaml
+Sort compatibles in alphabetical order.
 
-Reverting smp.c hunk is enough to get suspend/resume to work.
+Signed-off-by: Johan Jonker <jbx6244@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20210930110517.14323-2-jbx6244@gmail.com
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Best regards,
-							Pavel
---=20
-http://www.livejournal.com/~pavelmachek
-
---4Ckj6UjgE2iN1+kY
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCYW1eHQAKCRAw5/Bqldv6
-8qLUAJ44hC68Ns4ZdtainJrvmg3ns95K2gCaAuQ9wYGpx9EmdhQb4+COhERMKdU=
-=ocHJ
------END PGP SIGNATURE-----
-
---4Ckj6UjgE2iN1+kY--
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+index 3c07470..f6c1be2 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.yaml
+@@ -12,14 +12,14 @@ maintainers:
+ properties:
+   compatible:
+     enum:
+-      - rockchip,px30-tsadc # PX30 SoCs
+-      - rockchip,rv1108-tsadc # RV1108 SoCs
+-      - rockchip,rk3228-tsadc # RK3228 SoCs
+-      - rockchip,rk3288-tsadc # RK3288 SoCs
+-      - rockchip,rk3328-tsadc # RK3328 SoCs
+-      - rockchip,rk3368-tsadc # RK3368 SoCs
+-      - rockchip,rk3399-tsadc # RK3399 SoCs
+-      - rockchip,rk3568-tsadc # RK3568 SoCs
++      - rockchip,px30-tsadc
++      - rockchip,rk3228-tsadc
++      - rockchip,rk3288-tsadc
++      - rockchip,rk3328-tsadc
++      - rockchip,rk3368-tsadc
++      - rockchip,rk3399-tsadc
++      - rockchip,rk3568-tsadc
++      - rockchip,rv1108-tsadc
+ 
+   reg:
+     maxItems: 1
