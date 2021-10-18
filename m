@@ -2,115 +2,262 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DFB0C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 13:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0434BC433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 14:10:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 11CCC60F11
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 13:53:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E001D60EFE
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Oct 2021 14:10:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233326AbhJRNzP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Oct 2021 09:55:15 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:23669 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234169AbhJRNxQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 09:53:16 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1634565065;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=dbjaDHTrTLCbvIh14r9ttu+A+qP55yZcf8yXCeCOYQs=;
-        b=Y3DzwgDznSBS9Fffoy1gMMb3ALDRqwQabFrvCkLrcSDEp0Mk0k8jiU4V0BmVg76JqJAftv
-        o7wY5a33GKOdDvMaHQ1j08X6nGbRdEfabeESbSTuYkRID1VsVdCKdzqw2/AnMWkcN4rJ+L
-        1Yg65Sj5+IcbC70bMS1UBg2y6csaYHg=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-11-X8dXCel_NsasXEs7kSIpow-1; Mon, 18 Oct 2021 09:51:01 -0400
-X-MC-Unique: X8dXCel_NsasXEs7kSIpow-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B65A1362F8;
-        Mon, 18 Oct 2021 13:51:00 +0000 (UTC)
-Received: from x1.localdomain (unknown [10.39.192.56])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 81B39708E0;
-        Mon, 18 Oct 2021 13:50:59 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, Kate Hsuan <hpa@redhat.com>,
+        id S232653AbhJROM4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Oct 2021 10:12:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43176 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232437AbhJROMx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Oct 2021 10:12:53 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 265B4C0613B0;
+        Mon, 18 Oct 2021 06:37:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=/AJ1aZvoD1O8XJ2XgWz5KdpFOHjRcXj1qqyyjYotoWU=; b=G9+PkVb6L21imdVFvxCbke9v+j
+        u05jBR2JSK5hGt09YAkFeoIEn2xxxMQ0dQ6quDx/xB57zu6iBMhAOaf1IsmNFVmGLJP0GA5NdtYK+
+        MkJ7NAMsfCbtp3YP/4u9QXZOC9iUapeqFNugBiHh3C0Ro3k/JLMfeeTmgmqpJnJjGH8a8De68g5n7
+        aqJ9v2pli1T4DpuCcd57jTUs4mdt4KF2ixc9uOJpF5soGg+lys97+WZVRsJOcYbQZc1yJugXST7MV
+        xbg1wWmadYeoRNHsjnzHAXUvAxrXEcJ0z77uh131B/hjzxFPDSr6yOlIgQypOMx6mZzFusbI/DKS3
+        8OH2AQmA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1mcSot-00AYmx-UB; Mon, 18 Oct 2021 13:36:53 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6199D300221;
+        Mon, 18 Oct 2021 15:36:50 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 227952CF42A2E; Mon, 18 Oct 2021 15:36:50 +0200 (CEST)
+Date:   Mon, 18 Oct 2021 15:36:50 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, Will Deacon <will@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH 2/3] power: supply: axp288-charger: Remove unnecessary is_present and is_online helpers
-Date:   Mon, 18 Oct 2021 15:50:52 +0200
-Message-Id: <20211018135053.213310-3-hdegoede@redhat.com>
-In-Reply-To: <20211018135053.213310-1-hdegoede@redhat.com>
-References: <20211018135053.213310-1-hdegoede@redhat.com>
+Subject: Re: [PATCH v3 6/6] freezer,sched: Rewrite core freezer logic
+Message-ID: <YW14cgrrRWSAzmYn@hirez.programming.kicks-ass.net>
+References: <20211009100754.690769957@infradead.org>
+ <20211009101445.151888246@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211009101445.151888246@infradead.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that axp288_charger_usb_update_property() reads and caches all
-relevant registers, the axp288_charger_is_present() and
-axp288_charger_is_online() helpers are not necessary anymore.
+On Sat, Oct 09, 2021 at 12:08:00PM +0200, Peter Zijlstra wrote:
 
-Directly check the cached input_status instead, allowing the removal
-of these 2 helpers.
+> +static inline unsigned int __can_freeze(struct task_struct *p)
+> +{
+> +	unsigned int state = READ_ONCE(p->__state);
+> +
+> +	if (!(state & (TASK_FREEZABLE | __TASK_STOPPED | __TASK_TRACED)))
+> +		return 0;
+> +
+> +	/*
+> +	 * Only TASK_NORMAL can be augmented with TASK_FREEZABLE, since they
+> +	 * can suffer spurious wakeups.
+> +	 */
+> +	if (state & TASK_FREEZABLE)
+> +		WARN_ON_ONCE(!(state & TASK_NORMAL));
+> +
+> +#ifdef CONFIG_LOCKDEP
+> +	/*
+> +	 * It's dangerous to freeze with locks held; there be dragons there.
+> +	 */
+> +	if (!(state & __TASK_FREEZABLE_UNSAFE))
+> +		WARN_ON_ONCE(debug_locks && p->lockdep_depth);
+> +#endif
+> +
+> +	return TASK_FROZEN;
+> +}
+> +
+> +/* See task_cond_set_special_state(); serializes against ttwu() */
+> +static bool __freeze_task(struct task_struct *p)
+> +{
+> +	return task_cond_set_special_state(p, __can_freeze(p));
+> +}
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 22 ++--------------------
- 1 file changed, 2 insertions(+), 20 deletions(-)
+Will found an issue with this, notably task_cond_set_special() only
+takes ->pi_lock and as such doesn't serialize against __schedule(),
+which then yields the following fun scenario:
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 058e2cd4b4aa..d09c8f36b73a 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -302,24 +302,6 @@ static int axp288_charger_enable_charger(struct axp288_chrg_info *info,
- 	return ret;
+
+	__schedule()					__freeze_task()
+
+
+	prev_state = READ_ONCE(prev->__state); // INTERRUPTIBLE
+
+							task_cond_set_special_state()
+							  ...
+							  WRITE_ONCE(prev->__state, TASK_FROZEN);
+
+	if (signal_pending_state(prev_state, prev)) // SIGPENDING
+	  WRITE_ONCE(prev->__state, TASK_RUNNING)
+
+
+
+
+And *whoopsie*, freezer things we're frozen, but we're back in the game.
+
+
+AFAICT the below, which uses the brand-spanking-new task_call_func()
+which currently sits in tip/sched/core to also serialize against
+rq->lock should avoid this scenario.
+
+
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -233,25 +233,6 @@ struct task_group;
+ 	} while (0)
+ 
+ /*
+- * task_cond_set_special_state() is a cmpxchg like operation on task->state.
+- *
+- * This operation isn't safe in general and should only be used to transform
+- * one (special) blocked state into another, such as:
+- *   TASK_STOPPED <-> TASK_FROZEN.
+- */
+-#define task_cond_set_special_state(task, cond_state)			\
+-	({								\
+-		struct task_struct *__p = (task);			\
+-		unsigned long __flags; /* may shadow */			\
+-		unsigned int __state;					\
+-		raw_spin_lock_irqsave(&__p->pi_lock, __flags);		\
+-		if ((__state = (cond_state)))				\
+-			WRITE_ONCE(__p->__state, __state);		\
+-		raw_spin_unlock_irqrestore(&__p->pi_lock, __flags);	\
+-		!!__state;						\
+-	})
+-
+-/*
+  * PREEMPT_RT specific variants for "sleeping" spin/rwlocks
+  *
+  * RT's spin/rwlock substitutions are state preserving. The state of the
+--- a/kernel/freezer.c
++++ b/kernel/freezer.c
+@@ -101,7 +101,7 @@ static void fake_signal_wake_up(struct t
+ 	}
  }
  
--static int axp288_charger_is_present(struct axp288_chrg_info *info)
--{
--	int present = 0;
--
--	if (info->input_status & PS_STAT_VBUS_PRESENT)
--		present = 1;
--	return present;
--}
--
--static int axp288_charger_is_online(struct axp288_chrg_info *info)
--{
--	int online = 0;
--
--	if (info->input_status & PS_STAT_VBUS_VALID)
--		online = 1;
--	return online;
--}
--
- static int axp288_get_charger_health(struct axp288_chrg_info *info)
+-static inline unsigned int __can_freeze(struct task_struct *p)
++static int __set_task_frozen(struct task_struct *p, void *arg)
  {
- 	int health = POWER_SUPPLY_HEALTH_UNKNOWN;
-@@ -447,7 +429,7 @@ static int axp288_charger_usb_get_property(struct power_supply *psy,
- 			val->intval = 0;
- 			break;
+ 	unsigned int state = READ_ONCE(p->__state);
+ 
+@@ -123,13 +123,14 @@ static inline unsigned int __can_freeze(
+ 		WARN_ON_ONCE(debug_locks && p->lockdep_depth);
+ #endif
+ 
++	WRITE_ONCE(p->__state, TASK_FROZEN);
+ 	return TASK_FROZEN;
+ }
+ 
+-/* See task_cond_set_special_state(); serializes against ttwu() */
+ static bool __freeze_task(struct task_struct *p)
+ {
+-	return task_cond_set_special_state(p, __can_freeze(p));
++	/* TASK_FREEZABLE|TASK_STOPPED|TASK_TRACED -> TASK_FROZEN */
++	return task_call_func(p, __set_task_frozen, NULL);
+ }
+ 
+ /**
+@@ -169,7 +170,7 @@ bool freeze_task(struct task_struct *p)
+  * reflects that and the below will refuse to restore the special state and
+  * instead issue the wakeup.
+  */
+-static inline unsigned int __thaw_special(struct task_struct *p)
++static int __set_task_special(struct task_struct *p, void *arg)
+ {
+ 	unsigned int state = 0;
+ 
+@@ -188,6 +189,9 @@ static inline unsigned int __thaw_specia
+ 		state = TASK_STOPPED;
+ 	}
+ 
++	if (state)
++		WRITE_ONCE(p->__state, state);
++
+ 	return state;
+ }
+ 
+@@ -200,7 +204,8 @@ void __thaw_task(struct task_struct *p)
+ 		goto unlock;
+ 
+ 	if (lock_task_sighand(p, &flags2)) {
+-		bool ret = task_cond_set_special_state(p, __thaw_special(p));
++		/* TASK_FROZEN -> TASK_{STOPPED,TRACED} */
++		bool ret = task_call_func(p, __set_task_special, NULL);
+ 		unlock_task_sighand(p, &flags2);
+ 		if (ret)
+ 			goto unlock;
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -193,6 +193,17 @@ static bool looks_like_a_spurious_pid(st
+ 	return true;
+ }
+ 
++static int __set_task_traced(struct task_struct *task, void *arg)
++{
++	unsigned int *state = arg;
++
++	if (!(task->__state & __TASK_TRACED))
++		return 0;
++
++	WRITE_ONCE(task->__state, *state);
++	return *state;
++}
++
+ /* Ensure that nothing can wake it up, even SIGKILL */
+ static bool ptrace_freeze_traced(struct task_struct *task)
+ {
+@@ -205,10 +216,12 @@ static bool ptrace_freeze_traced(struct
+ 	spin_lock_irq(&task->sighand->siglock);
+ 	if (task_is_traced(task) && !looks_like_a_spurious_pid(task) &&
+ 	    !__fatal_signal_pending(task)) {
++		unsigned int state = __TASK_TRACED;
++
+ 		task->ptrace &= ~PT_STOPPED_MASK;
+ 		task->ptrace |= PT_STOPPED;
+ 		/* *TASK_TRACED -> __TASK_TRACED */
+-		task_cond_set_special_state(task, !!(task->__state & __TASK_TRACED) * __TASK_TRACED);
++		task_call_func(task, __set_task_traced, &state);
+ 		ret = true;
+ 	}
+ 	spin_unlock_irq(&task->sighand->siglock);
+@@ -233,9 +246,11 @@ static void ptrace_unfreeze_traced(struc
+ 			task->ptrace &= ~PT_STOPPED_MASK;
+ 			wake_up_state(task, __TASK_TRACED);
+ 		} else {
++			unsigned int state = TASK_TRACED;
++
+ 			task->ptrace |= PT_STOPPED_MASK;
+ 			/* *TASK_TRACED -> TASK_TRACED */
+-			task_cond_set_special_state(task, !!(task->__state & __TASK_TRACED) * TASK_TRACED);
++			task_call_func(task, __set_task_traced, &state);
  		}
--		val->intval = axp288_charger_is_present(info);
-+		val->intval = (info->input_status & PS_STAT_VBUS_PRESENT) ? 1 : 0;
- 		break;
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		/* Check for OTG case first */
-@@ -455,7 +437,7 @@ static int axp288_charger_usb_get_property(struct power_supply *psy,
- 			val->intval = 0;
- 			break;
- 		}
--		val->intval = axp288_charger_is_online(info);
-+		val->intval = (info->input_status & PS_STAT_VBUS_VALID) ? 1 : 0;
- 		break;
- 	case POWER_SUPPLY_PROP_HEALTH:
- 		val->intval = axp288_get_charger_health(info);
--- 
-2.31.1
-
+ 	}
+ 	spin_unlock_irq(&task->sighand->siglock);
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3181,7 +3181,7 @@ int migrate_swap(struct task_struct *cur
+ }
+ #endif /* CONFIG_NUMA_BALANCING */
+ 
+-static inline __wti_match(struct task_struct *p, unsigned int match_state)
++static inline bool __wti_match(struct task_struct *p, unsigned int match_state)
+ {
+ 	unsigned int state = READ_ONCE(p->__state);
+ 
