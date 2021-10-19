@@ -2,121 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 643DEC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Oct 2021 07:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36E8EC433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Oct 2021 09:36:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4AC046137F
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Oct 2021 07:35:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C1D3613A4
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Oct 2021 09:36:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234520AbhJSHhp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Oct 2021 03:37:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53820 "EHLO
+        id S235045AbhJSJil (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Oct 2021 05:38:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53476 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234506AbhJSHhp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Oct 2021 03:37:45 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9AD85C06161C
-        for <linux-pm@vger.kernel.org>; Tue, 19 Oct 2021 00:35:32 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id m22so46152129wrb.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 Oct 2021 00:35:32 -0700 (PDT)
+        with ESMTP id S235086AbhJSJik (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Oct 2021 05:38:40 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A16EC061749
+        for <linux-pm@vger.kernel.org>; Tue, 19 Oct 2021 02:36:28 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id y3so46745064wrl.1
+        for <linux-pm@vger.kernel.org>; Tue, 19 Oct 2021 02:36:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=LsN013nKThqaG548oxT8eN2kEk6pmD1K6/Ot7iQ/bYg=;
-        b=V9zsPhXNAitiduGUsElE8qwd9XM0yA3jgolBcw22hm/Gi+HYdMI+ynf/ql+EMgtSVa
-         EzpbRqmfXb8+0iq/Tsa8jMixolAJKQNStQg/W+j8mbA2o47ic4UR+d7xc8sxKzcpb7sc
-         JfJNkh9wPihx8z1tRClzTgL9QuZsxEBLe+Nfj7s1cParBnZi48QaiocwH6SLHaG9v64Y
-         cXT0BnzrgmljRgo/GMIK9+c/fDkZwMeUEOZ10iP9ckSYCf11iQmbM5GoL23E4tEec3A1
-         ciZoC8yCvtQ2Lv6bILVzpzhCEZXikFw56z+YJfD2SafVH7RktP78C9PTMoEa1ANfPG4R
-         jAJQ==
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=pAQ3nDSi7GJKEkpq93Gk3fW3GifCTB9f+3J4xNuNsa8=;
+        b=gP8nU56KZdDX/muBPZFm9b5HoHa1FEeoZNaQ2M517z2vjkHquJFNvDOJ/wxnFuRZmc
+         6VEiXjBGNq4woQv9vGa6VmWMg4+aelNiIhZGvrtKs8tMVuO/F2zE7q/+GiEcS94XM2Z8
+         tr3k5LODloiPk6Nmx/iMI9cKoOJH3WKCAMso2klC9XoLZ7Nrihxfs03+3KoLxzRkMNHP
+         qZuUrzT9di/B3Ht8J8NWeW2s+llj+fySzAGXtW1t84ZyvjmbfyusOGnGosqJqftB2Y4T
+         dlNIAEKjZpKNmEP/Tvhkr4ZvQAOlgNK2IKNTeO98tcnmXwoPa9xdhptRLpO9uOvWbOq8
+         S98A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=LsN013nKThqaG548oxT8eN2kEk6pmD1K6/Ot7iQ/bYg=;
-        b=Eg9JNOrI148bwgxBDc4mpvU08HFMaPO4B1B0M8JAYCJCJIdTXr7awhzf2CmLhRKXKR
-         TvqZZCcfudq+glvF0N7pN5zxsKHVCKB1JzI1ALjlGcHE2EQ9jhE4Oq/9GVTFg+ohExv6
-         AxhaO2XW20EZnVDiPNMwmiY/apwIAdE6gNiVFo/8nlRcbjHy+6U49w9wdsBN7utNL1tv
-         xlQMIIIfJ3Tso3murUDMVMh1gVMPAp29B/T30Uei3HjcQm7/wUwZrem88DxgOOTVQUFl
-         4nBzUaf1yzZRMf3BfjF6n3mRz5nrgZIkC9/yP+tvuXJTBFN8cIKb+IJqdUSIfnFao1OH
-         OsRA==
-X-Gm-Message-State: AOAM532pIpngdfcybBuKTm7c4t0P+N2SWKHS2wsjMJvhR9eWyPCDvIF0
-        l+610JPe8UJjuDMp7ryx2jV1lsKyW7qanEwl
-X-Google-Smtp-Source: ABdhPJxejApZ4ndF6pk1lzENhacdizDtjesZCvgm1MmaDuG2zt/pS32F9KSDVicnf3CXVGJa0mapkg==
-X-Received: by 2002:adf:e0cc:: with SMTP id m12mr42701877wri.62.1634628931087;
-        Tue, 19 Oct 2021 00:35:31 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:c590:9206:d20a:23bd? ([2a01:e34:ed2f:f020:c590:9206:d20a:23bd])
-        by smtp.googlemail.com with ESMTPSA id 10sm1723951wme.27.2021.10.19.00.35.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 19 Oct 2021 00:35:30 -0700 (PDT)
-Subject: Re: [PATCH v2] thermal: Fix a NULL pointer dereference
-To:     Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        David Collins <quic_collinsd@quicinc.com>,
-        Manaf Meethalavalappu Pallikunhi <manafm@codeaurora.org>,
-        Ram Chandrasekar <rkumbako@codeaurora.org>,
-        stable@vger.kernel.org
-References: <1631041289-11804-1-git-send-email-quic_subbaram@quicinc.com>
- <003252f2-510f-e9ea-0032-6034f26aad11@linaro.org>
- <16af9946-b662-0bbf-206f-278b7ef98123@quicinc.com>
- <8cda69a6-907b-e09e-ba64-011b0216a4df@quicinc.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <dbf9a03f-6c66-dcfe-6158-d93532272a5c@linaro.org>
-Date:   Tue, 19 Oct 2021 09:35:29 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        bh=pAQ3nDSi7GJKEkpq93Gk3fW3GifCTB9f+3J4xNuNsa8=;
+        b=CmxZdeE8zQNMKq9UOUT1kgh2V2p5nWmq8CdcJ842Hln2uMJ33w1CWv0hNRHgaYeAhp
+         TohRCKMYgRcRJx654u0EhxWD95jTRCHcBC2aL8lpr0AxWoviKaPKfZ5DcyfrFJCJJp5Y
+         UW9mZz5GmqEr9Sg2fKxvWjD7WgLC891X3NPutrU2QtcIslZvtV/nCvetBK7fMZupiWbt
+         O3JbHFf0hvzKgjhKcmDsF0vrDH+i7tb1VuiiWJEH7EFB2YS3I0WlyLT9a+Q20AtjEKYT
+         24qQODE2IUdYOHrYvY9cXrgu7xWs4H/b41zyfadfC9FnyFckvWW8A1f3IS1mYyRxtMyA
+         XiqQ==
+X-Gm-Message-State: AOAM531BKv5EHEcJEU498ag0xHnV1fQKqXkf68fQkqD9bNneBFpiQFP7
+        AoqEv92VvwSpCr45AdcSub1ugw==
+X-Google-Smtp-Source: ABdhPJxOQXjEw6eiRtOB4dRH95sLoz/UAgvA3+DT3VX0bWePwEQwNePyd24CoSoDt1rFoxL8eXWmIA==
+X-Received: by 2002:a5d:6e8d:: with SMTP id k13mr42883919wrz.295.1634636186755;
+        Tue, 19 Oct 2021 02:36:26 -0700 (PDT)
+Received: from blmsp.lan ([2a02:2454:3e6:c900:5142:5fbb:5821:5dc3])
+        by smtp.gmail.com with ESMTPSA id o23sm1765765wms.18.2021.10.19.02.36.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 Oct 2021 02:36:26 -0700 (PDT)
+From:   Markus Schneider-Pargmann <msp@baylibre.com>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, fparent@baylibre.com,
+        khilman@baylibre.com, Markus Schneider-Pargmann <msp@baylibre.com>
+Subject: [PATCH v2 0/4] thermal: mediatek: Add mt8365 support
+Date:   Tue, 19 Oct 2021 11:34:00 +0200
+Message-Id: <20211019093404.1913357-1-msp@baylibre.com>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-In-Reply-To: <8cda69a6-907b-e09e-ba64-011b0216a4df@quicinc.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 19/10/2021 03:21, Subbaraman Narayanamurthy wrote:
-> On 10/8/21 12:50 PM, Subbaraman Narayanamurthy wrote:
->> On 10/6/21 4:08 AM, Daniel Lezcano wrote:
+Hi,
 
-[ ... ]
+this series adds a compatible to the bindings and a specific part for
+the thermal driver.
 
->> /sys/devices/virtual/thermal/thermal_zone87 # echo 120000 > trip_point_0_temp  
->> [  184.290964][  T211] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000020
->> [  184.300896][  T211] Mem abort info:                                         
->> [  184.304486][  T211]   ESR = 0x96000006                                      
->> [  184.308348][  T211]   EC = 0x25: DABT (current EL), IL = 32 bits            
->> [  184.314531][  T211]   SET = 0, FnV = 0                                      
->> [  184.318384][  T211]   EA = 0, S1PTW = 0                                     
->> [  184.322323][  T211] Data abort info:                                        
->> [  184.325993][  T211]   ISV = 0, ISS = 0x00000006                             
->> [  184.330655][  T211]   CM = 0, WnR = 0                                       
->> [  184.334425][  T211] user pgtable: 4k pages, 39-bit VAs, pgdp=000000081a7a2000
->> [  184.341750][  T211] [0000000000000020] pgd=000000081a7a7003, p4d=000000081a7a7003, pud=000000081a7a7003, pmd=0000000000000000
->> [  184.353359][  T211] Internal error: Oops: 96000006 [#1] PREEMPT SMP         
->> [  184.359797][  T211] Dumping ftrace buffer:                                  
->> [  184.364001][  T211]    (ftrace buffer empty)
->>
->> Hope this helps.
-> 
-> Hi Daniel,
-> Have you got a chance to look at this?
+In v2 I added a patch to remove unnecessary (void*) casts and fixed the
+comments I received.
 
-Hi Subbaraman,
+Thanks for any feedback or comments.
 
-Actually, I think the root problem is the thermal zone is showing up
-while there is no sensor associated with it. You can read the
-temperature and get a kernel warning also.
+Best,
+Markus
 
-That's what should be fixed IMO.
 
+Fabien Parent (1):
+  thermal: mediatek: add MT8365 thermal driver support
+
+Markus Schneider-Pargmann (3):
+  dt-bindings: thermal: mediatek: Add mt8365
+  thermal: mediatek: Fix apmixed error message
+  thermal: mediatek: Remove data void casts
+
+ .../bindings/thermal/mediatek-thermal.txt     |   1 +
+ drivers/thermal/mtk_thermal.c                 | 102 +++++++++++++++---
+ 2 files changed, 91 insertions(+), 12 deletions(-)
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.33.0
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
