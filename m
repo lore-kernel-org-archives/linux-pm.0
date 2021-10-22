@@ -2,60 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D014DC4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1B7FC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:54:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B29F561163
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:08:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E95661183
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:54:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233538AbhJVQKv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Oct 2021 12:10:51 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:54164 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233527AbhJVQKu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Oct 2021 12:10:50 -0400
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
- id 178b81b253fecbca; Fri, 22 Oct 2021 18:08:31 +0200
-Received: from kreacher.localnet (unknown [213.134.175.233])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 18FFA66A9A4;
-        Fri, 22 Oct 2021 18:08:31 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 0/2] PM: sleep: Rework cpuidle handling during system-wide PM transitions
-Date:   Fri, 22 Oct 2021 18:02:43 +0200
-Message-ID: <2230995.ElGaqSPkdT@kreacher>
+        id S231942AbhJVQ4R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Oct 2021 12:56:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59130 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231453AbhJVQ4Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Oct 2021 12:56:16 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C99F7C061767
+        for <linux-pm@vger.kernel.org>; Fri, 22 Oct 2021 09:53:58 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id z14so4793827wrg.6
+        for <linux-pm@vger.kernel.org>; Fri, 22 Oct 2021 09:53:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=XBYpLCzxBp4dnqMRtudEayqwtt6586cSrD3vD1zTYK4=;
+        b=ZQa2TulqQuJs13cEwGzAmwTNflFa//aAb1TCujoiZ3w++2Fm+ghOs28w0Zg9izrxc7
+         rz3m+09fm4EdrFzNrqlEfGtjItSLd4+5zUG4JG5QcODmXXFSIxUygRlpx1i2xm/O1hw0
+         Xw2h0a2npU42wE3Ofld/9C6Yr5Ww4gWzFPdXWaMSl6FhfGxtYQRy2Amp02WB1np/6oSd
+         RKiuHAQaEPNmJaTwYCcC9FFUohrTq/yhgkVcE2JKyrqPCf5A2a4nxwwoEn9TvQ3cGAWF
+         nCiUyKJmWHKFtBvTmcwFq8rskye4uu6Fva8HAZUUAhAhKF5Fi7E87+DuDj3ka2oX4yoQ
+         TZvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=XBYpLCzxBp4dnqMRtudEayqwtt6586cSrD3vD1zTYK4=;
+        b=3OnuDShMLzCW64l9VHYRzRAkCxvuIk6A/0tWlJLuTBfOiC5Pvjtppq7++ajkrfXe0q
+         p75qfdacVSIvbFlFPYehwWXTL82JYQSd5mPRQ13mdRJhn4h6uoriubsdPppbPF0yQ33F
+         WbkR67aZOB0mOwsobhs/4m6sMmkATUXNcvJldZVx/YFo5ZVTu6YhoyXmPiATh5vb0iNE
+         c1nyPDxBF+a4xyMEe4JPp+mxAFE307Pwl1Lg17FUZjENksxJ1NAOaUpyznbTT3+X0fGb
+         mpvEjSzk2Pqk/PnPNhwZfvf6uVVRqYqIEgkNIGH+cV2rTW5vM4wnNEb8IdWRTdlsssPC
+         fSnA==
+X-Gm-Message-State: AOAM531NKR9ENz22lbyUldrJ1tshsiHcNIg0Hp3q7H7xPc5MJOFm/+E9
+        kbW2Fv/8cN/po/njA3Sk+a8OXoiJCa7wRn100Z9ZnA==
+X-Google-Smtp-Source: ABdhPJyD3xwrnY7QjdqI3oOap5Bt2wrcAdc89XNctOI16iX51jdRgWFta04EIVXopHJrE0LrTBL/4vDEiv73SO9v3pw=
+X-Received: by 2002:adf:f305:: with SMTP id i5mr1180523wro.155.1634921637042;
+ Fri, 22 Oct 2021 09:53:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20211022022859.1888836-1-rajatja@google.com> <20211022022859.1888836-2-rajatja@google.com>
+ <7d94d015-ebff-ee46-3726-9091fe3cdff4@linux.intel.com>
+In-Reply-To: <7d94d015-ebff-ee46-3726-9091fe3cdff4@linux.intel.com>
+From:   Dmitry Torokhov <dtor@google.com>
+Date:   Fri, 22 Oct 2021 09:53:40 -0700
+Message-ID: <CAE_wzQ8nBBHMr4c=SXVpDq2iz=eu0RbJgTHrKkU1_Hsdj9SLzQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] i2c: designware: Enable async suspend / resume of
+ designware devices
+To:     Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc:     Rajat Jain <rajatja@google.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Wolfram Sang <wsa@kernel.org>, linux-i2c@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rajatxjain@gmail.com, dbasehore@chromium.org
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.175.233
-X-CLIENT-HOSTNAME: 213.134.175.233
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrvddvkedgleehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpefhgedtffejheekgeeljeevvedtuefgffeiieejuddutdekgfejvdehueejjeetvdenucfkphepvddufedrudefgedrudejhedrvdeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddujeehrddvfeefpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+Hi Jarkko,
 
-Currently, cpuidle is paused before the last phase of suspending device
-(suspend_noirq), but first it doesn't make sense to pause it for
-suspend-to-idle, because suspend-to-idle resumes it anyway later, and
-then it need not be paused while suspending devices anyway.
+On Fri, Oct 22, 2021 at 4:37 AM Jarkko Nikula
+<jarkko.nikula@linux.intel.com> wrote:
+>
+> On 10/22/21 5:28 AM, Rajat Jain wrote:
+> > Mark the designware devices for asynchronous suspend. With this, the
+> > resume for designware devices does not get stuck behind other unrelated
+> > devices (e.g. intel_backlight that takes hundreds of ms to resume,
+> > waiting for its parent devices).
+> >
+> > Signed-off-by: Rajat Jain <rajatja@google.com>
+> > ---
+> >   drivers/i2c/busses/i2c-designware-platdrv.c | 2 ++
+> >   1 file changed, 2 insertions(+)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+> > index 21113665ddea..2bd81abc86f6 100644
+> > --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+> > +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+> > @@ -293,6 +293,8 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
+> >                                       DPM_FLAG_MAY_SKIP_RESUME);
+> >       }
+> >
+> > +     device_enable_async_suspend(&pdev->dev);
+> > +
+> >       /* The code below assumes runtime PM to be disabled. */
+> >       WARN_ON(pm_runtime_enabled(&pdev->dev));
+> >
+> I guess same can be done to i2c_dw_pci_probe() too. I don't have any
+> strong opinion should it be done in this patch or somewhere in the future.
 
-Patch [1/2] removes the pausing and resuming of cpuidle from the suspend-to-idle
-path and patch [1/2] combines these operations with the disabling and enabling
-of secondary CPUs (which does not take place in the suspend-to-idle path),
-respectively.
+All PCI devices are marked for asynchronous suspend/resume by default.
+See drivers/pci/pci.c::pci_pm_init().
 
-Thanks!
-
-
-
+Thanks,
+Dmitry
