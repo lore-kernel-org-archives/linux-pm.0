@@ -2,92 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56595C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 00:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27A30C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 02:29:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B88B61381
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 00:52:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0CEAC613C8
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 02:29:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231567AbhJVAzH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Oct 2021 20:55:07 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40870 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229512AbhJVAzH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 21 Oct 2021 20:55:07 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 05DFC6135F;
-        Fri, 22 Oct 2021 00:52:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1634863970;
-        bh=3gGl+p/p7nrAAcGQCrBlZ0+ewM4YLxTwf4TWidy+7po=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=BovWNkfe3c08rlup31Cfgo839P5smFnYqAl19DbqRa7QJrqenf5HrSUb7igGdLEvu
-         6JmqIUTp48zkUi8ETtaxGb6rR+30U0bBKQlKdNAZ6hyJpG5BtBnzoLmIUdUyQBNinr
-         al6E1G0wUl7SM3m5+rewC/eDk4fCD1RX7BdJ+wNXiuSmUKlUa6cLL3GhWd3zNDlEU7
-         4wjMZwguMzRyL8GSwXQOZ5ZoRHPBlBhe4PygNbtnKzWMy0fFlwhpnsqsZV6U/WoEZB
-         hpvyAWxLlGjBvZtntNVmaC1PWlUwq6KyU3sS0vaz0zDay/J0JGhSNP1qz1hvkZCDvs
-         QSQn3uq62hbQw==
-From:   Mark Brown <broonie@kernel.org>
-To:     Alistair Francis <alistair@alistair23.me>, robh+dt@kernel.org,
-        lgirdwood@gmail.com, kernel@pengutronix.de, lee.jones@linaro.org
-Cc:     Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org,
-        alistair23@gmail.com, linux-imx@nxp.com,
-        linux-hwmon@vger.kernel.org, rui.zhang@intel.com,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        s.hauer@pengutronix.de, amitk@kernel.org,
-        linux-kernel@vger.kernel.org, shawnguo@kernel.org
-Subject: Re: (subset) [PATCH v13 0/9] Add support for the silergy,sy7636a
-Date:   Fri, 22 Oct 2021 01:52:44 +0100
-Message-Id: <163486395940.2610269.12381320818786809684.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20211015122551.38951-1-alistair@alistair23.me>
-References: <20211015122551.38951-1-alistair@alistair23.me>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+        id S232131AbhJVCbW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Oct 2021 22:31:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34082 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232125AbhJVCbW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Oct 2021 22:31:22 -0400
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BBCCC061766
+        for <linux-pm@vger.kernel.org>; Thu, 21 Oct 2021 19:29:05 -0700 (PDT)
+Received: by mail-pl1-x64a.google.com with SMTP id o6-20020a170902778600b0013c8ce59005so1041309pll.2
+        for <linux-pm@vger.kernel.org>; Thu, 21 Oct 2021 19:29:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=5ZMpMtjR+wLOolLwIfiGLGJ0aQUfB1I4d9AgzhjDlQE=;
+        b=SMUDcX7nCULVnXJiTLztKbrv7nsnJyfQto4brqP12SZrZqIDlHUN7HpIfWrxUNAuof
+         VNuf9o+sJsUy89BJbqJYJSh88KZVFT7oA7scSZgdfuHoMysrOskKowt22ya+H+bNE2bt
+         7qsqNuAd8mXQyQPPBG4nLL7Pty+MZtKECe9FrIOxjzSpKMDx+kWKn+3C3lm6aV6OHW7d
+         tgf9493Vi78nzGjs9ieoPjidtrct3BeAisWlxFhmqW7BUhixVWMIE32jbK+EFLWgQ8Yh
+         ka5jsqSWrcygTUVRW2aMsbQGwFtJfdZu9zgwhvwlObW9Eub+Xb341Eoh1rlkHi0FfpLu
+         vmMw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=5ZMpMtjR+wLOolLwIfiGLGJ0aQUfB1I4d9AgzhjDlQE=;
+        b=qF4zEsQGkYhBX+pU5DypR6DNdtx5xwrFu9W+WJtVIKuLPhT+doA4dQzgL6/7YQ0Aqt
+         FG5yxkyH1DLImkW3X0FsZ/jn0R3jAe/s3fR6EBUEw4CZKK+p7NVadab1ZZ9MWV3+hSvx
+         Uw+P5TAIJm4RyApaQID7zj/fPYLygU1XM8xvDbPIg+NHLoGjuyeaCHWqwr0bEoRGaXyv
+         uSU2JvDC0wEGGFr3k/VfvG+TPEm8yO0FeWwibR2IjfvUkPkxRH3qM0sx8VeHavYosZ61
+         8JWy92yYCgc6BpFxwTRk7f+nqVFBzTGLRDKX4Va84b3dpVqoXYCtEJbeyCyBiTr5G34i
+         YKIQ==
+X-Gm-Message-State: AOAM531gxlH2T8YdtM/X1E6V1QyRUCH6YfTOUVT+oo+bezU9sh9aj6JK
+        JGOaTkh5HU1UO0/r3nVdz7IlgPhXosTT
+X-Google-Smtp-Source: ABdhPJwtLEwAqBwXo0oxWaUpZCjXEkUjOPQSDHYzyzqFzbJOeWVgvxOVF7Io8wGY6faM+UgPKsjXdcI6RGOG
+X-Received: from rajat2.mtv.corp.google.com ([2620:15c:202:201:cc25:d9a3:4b5:37b9])
+ (user=rajatja job=sendgmr) by 2002:aa7:8bd3:0:b0:44c:68b3:a52e with SMTP id
+ s19-20020aa78bd3000000b0044c68b3a52emr9578300pfd.74.1634869744744; Thu, 21
+ Oct 2021 19:29:04 -0700 (PDT)
+Date:   Thu, 21 Oct 2021 19:28:56 -0700
+Message-Id: <20211022022859.1888836-1-rajatja@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.33.0.1079.g6e70778dc9-goog
+Subject: [PATCH 0/3] i2c: Enable async resume for i2c devices
+From:   Rajat Jain <rajatja@google.com>
+To:     Jarkko Nikula <jarkko.nikula@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Wolfram Sang <wsa@kernel.org>, linux-i2c@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        dtor@google.com
+Cc:     Rajat Jain <rajatja@google.com>, rajatxjain@gmail.com,
+        dbasehore@chromium.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 15 Oct 2021 22:25:42 +1000, Alistair Francis wrote:
-> v13:
->  - Address comments on thermal driver
->  - Rebase on master (without other patches)
-> v12:
->  - Rebase
-> v11:
->  - Address comments on hwmon
->  - Improve "mfd: simple-mfd-i2c: Add a Kconfig name" commit message
-> v10:
->  - Use dev_get_regmap() instead of dev_get_drvdata()
-> v9:
->  - Convert to use the simple-mfd-i2c instead
-> 
-> [...]
+PM Core allows buses and drivers to specify if they'd like their devices
+to suspend/resume synchronously or asynchronously. When resuming:
 
-Applied to
+1) SYNCHRONOUS DEVICES:
+ - All synchronous devices (system wide!) are resumed in a single thread,
+   serially i.e. one after the other. So their resume latencies add up,
+   and also, this results in unnecessary and unnatural waiting order.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
+   In my current system (total resume time ~895ms) and this is the trend
+   on almost all chromebooks in the past 3-4 years (we carry patch3 in
+   our tree already, without which it would be even more worse):
+   https://rajatxjain.github.io/public_shared/resume_before_patches.html
+   As you can see I2C devices do not even begin to resume until 450ms,
+   waiting unnaturally for another device i915 to finish resuming: 
 
-Thanks!
+   I2C touchscreen device (resume latency = 374 ms) - asynchronous
+   -> (waiting on) I2C adapter resume (synchronous)
+     -> (waiting on) Designware resume (synchronous)
+       -> (waiting on) intel_backlight resume (synchronous)
+         -> (waiting on) its PARENT i915 resume (asynchronous resume
+                                                       time = 376ms)
+   As you can see the two biggest resume routines are both run serially
+   after one another (even though they don't have any real dependency)
+   thus increasing the system critical resume path. If we can run them
+   concurrently, we can cut down the system resume time considerably. 
+ 
+2) ASYNCHRONOUS DEVICES: 
+- On the other hand, all asynchronous devices's resume routines are
+  scheduled so they can run in parallel with other asynchronous
+  routines. PM core still ensures for both async/sync devices that:
+   - All parent child relations are honored.
+   - Any device dependencies are honored. Device dependencies between
+     any 2 unrelated devices can be specified using device_link_add().
+   - Async resume devices are sychnronized at the end of each
+     suspend/resume phase, before moving onto next.
 
-[4/9] regulator: sy7636a: Remove requirement on sy7636a mfd
-      commit: cb17820ef71ed70f70ee1eed2b378664746b6fde
+   With these patches in place, the I2C devices can resume in parallel
+   with i915: 
+   https://rajatxjain.github.io/public_shared/resume_after_patch.html
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+As far as I understand, the only reason we might not want a device to be
+marked for asynchronous resume is if we suspect it cannot handle
+concurrent resume with other devices, which does not look to be the
+case. 
+    
+This patchset marks the designware, the I2c adapters, and the i2c 
+clients for asynchronous suspend/resume. In case it helps to gain any
+confidence, the patch 3 (for i2c clients) has been included and shipping
+on all our chromebooks for the past 3+ years, and has not shown any
+issues. The designware and i2c adapters should be easier.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+Derek Basehore (1):
+  i2c: enable async suspend/resume on i2c client devices
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+Rajat Jain (2):
+  i2c: designware: Enable async suspend / resume of designware devices
+  i2c: enable async suspend/resume for i2c adapters
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+ drivers/i2c/busses/i2c-designware-platdrv.c | 2 ++
+ drivers/i2c/i2c-core-base.c                 | 2 ++
+ 2 files changed, 4 insertions(+)
 
-Thanks,
-Mark
+-- 
+2.33.0.1079.g6e70778dc9-goog
+
