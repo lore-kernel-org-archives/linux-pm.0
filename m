@@ -2,155 +2,241 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D2FCC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 15:58:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54358C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:08:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47F0B60F50
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 15:58:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3DA2F61251
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Oct 2021 16:08:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233332AbhJVQAc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Oct 2021 12:00:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46672 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232107AbhJVQAb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Oct 2021 12:00:31 -0400
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAB21C061764
-        for <linux-pm@vger.kernel.org>; Fri, 22 Oct 2021 08:58:13 -0700 (PDT)
-Received: by mail-pl1-x62e.google.com with SMTP id y1so2990021plk.10
-        for <linux-pm@vger.kernel.org>; Fri, 22 Oct 2021 08:58:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=4sndfzRU8pb16Ffjc4smF9baHUuk/g2ApIDB3Hp5VeE=;
-        b=bYtfjinzsxnD4/mdKZ5JDCvbm+AVVCNFnSE5sY2qnn2pGGe1OMP7UqVdHsKAlHRrpK
-         If0Qs0ptAynOIzn5m76c+G4VlY8XQZlt+wG79Z+qQtDRg6P+OUucVFWxb0+h22yM4muz
-         BSUpOxQ1lOwK0h5e9YnwxqDSFDB1BPujZFDWA1agsIGtgC6jJtSYZOItV/sNqzhVb5UJ
-         XQ/tXAG77zsqksgrjCH46XlyQz6KfvP2afq5QlShJRsgJTAFW5CxnFQAPw6kv8I3g/iJ
-         9m76J5BV0PE7mcMnhRsW/OucPHbS08XWOsj5bEYuegESZto1+cnEYG7sE3Yr7niFvgP5
-         B/jg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=4sndfzRU8pb16Ffjc4smF9baHUuk/g2ApIDB3Hp5VeE=;
-        b=c2+i+bijskGRrlmGDH7qjPA4zb0lXx0zFEoNY1Eyn7nSZLEyEJGTOK0J90z9xDXFe4
-         8Hfe/3Kiz+AxePfq51gH+EN9QZyvl0kSHNCxdqTKruiRn4DmZ244hT/3Uf/WbkBdIQZW
-         G1xnCelFID/fzbRd4iHIe1kywpZ5kExebrg+DGA4TqM64fSvOQtd8PABHPlnGYbtrpWG
-         cIm6PmLAaHnSG+/Wx8ZMPocuDwUx6oq3djzNaoGu6x0ihm/g/l19CzuEgX13aXy8C0bb
-         A2IQq7Q44zV6XlF9kNF1658NLO2IvUw5BOl2KcN+JglPue/zFUNOKfrKK9MDpawVg3vU
-         9dUQ==
-X-Gm-Message-State: AOAM530t+sL9VOZv2bqJ1L8Fng5CcX9I8ofbuC7WFmt4L1UghUZUxiZQ
-        bYTKy7mcL4msj17l1ew2xdy1mSFydmCt1TBa
-X-Google-Smtp-Source: ABdhPJwY++x3KQs40tisf65F+paOj92pY2NiRktreCq+RGgIRwWTCN8ZrPV5PEoz6/JlOJJKljN+gA==
-X-Received: by 2002:a17:90b:4f90:: with SMTP id qe16mr840286pjb.137.1634918293479;
-        Fri, 22 Oct 2021 08:58:13 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id u1sm4939259pjy.17.2021.10.22.08.58.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Oct 2021 08:58:13 -0700 (PDT)
-Message-ID: <6172df95.1c69fb81.732e8.cca2@mx.google.com>
-Date:   Fri, 22 Oct 2021 08:58:13 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        id S232835AbhJVQKr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Oct 2021 12:10:47 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:54312 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230187AbhJVQKr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Oct 2021 12:10:47 -0400
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.0)
+ id 39576844557c031d; Fri, 22 Oct 2021 18:08:28 +0200
+Received: from kreacher.localnet (unknown [213.134.175.233])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id B5AE966A9A4;
+        Fri, 22 Oct 2021 18:08:27 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 2/2] PM: sleep: Pause cpuidle later and resume it earlier during system transitions
+Date:   Fri, 22 Oct 2021 18:07:47 +0200
+Message-ID: <2813389.e9J7NaK4W3@kreacher>
+In-Reply-To: <2230995.ElGaqSPkdT@kreacher>
+References: <2230995.ElGaqSPkdT@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.15-rc6-80-g30c7771b41dc
-X-Kernelci-Report-Type: build
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 1 warning (v5.15-rc6-80-g30c7771b41dc)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.175.233
+X-CLIENT-HOSTNAME: 213.134.175.233
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvtddrudeljedgleelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepvddufedrudefgedrudejhedrvdeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddujeehrddvfeefpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepuhhlfhdrhhgrnhhsshhonheslhhinhgrrhhordhorhhgpdhrtghpthhtohepuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=4 Fuz1=4 Fuz2=4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.15-rc6-80-g30=
-c7771b41dc)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-15-rc6-80-g30c7771b41dc/
+Commit 8651f97bd951 ("PM / cpuidle: System resume hang fix with
+cpuidle") that introduced cpuidle pausing during system suspend
+did that to work around a platform firmware issue causing systems
+to hang during resume if CPUs were allowed to enter idle states
+in the system suspend and resume code paths.
 
-Tree: pm
-Branch: testing
-Git Describe: v5.15-rc6-80-g30c7771b41dc
-Git Commit: 30c7771b41dcb03df34307efbc8783ea4d8c28b7
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+However, pausing cpuidle before the last phase of suspending
+devices is the source of an otherwise arbitrary difference between
+the suspend-to-idle path and other system suspend variants, so it is
+cleaner to do that later, before taking secondary CPUs offline (it
+is still safer to take secondary CPUs offline with cpuidle paused,
+though).
 
-Warnings Detected:
+Modify the code accordingly, but in order to avoid code duplication,
+introduce new wrapper functions, pm_sleep_disable_secondary_cpus()
+and pm_sleep_enable_secondary_cpus(), to combine cpuidle_pause()
+and cpuidle_resume(), respectively, with the handling of secondary
+CPUs during system-wide transitions to sleep states.
 
-arc:
-
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-For more info write to <info@kernelci.org>
+ drivers/base/power/main.c |    8 +-------
+ kernel/power/hibernate.c  |   12 +++++++-----
+ kernel/power/power.h      |   14 ++++++++++++++
+ kernel/power/suspend.c    |   10 ++--------
+ 4 files changed, 24 insertions(+), 20 deletions(-)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -403,9 +403,6 @@ static int suspend_enter(suspend_state_t
+ 	if (error)
+ 		goto Devices_early_resume;
+ 
+-	if (state != PM_SUSPEND_TO_IDLE)
+-		cpuidle_pause();
+-
+ 	error = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+ 		pr_err("noirq suspend of devices failed\n");
+@@ -423,7 +420,7 @@ static int suspend_enter(suspend_state_t
+ 		goto Platform_wake;
+ 	}
+ 
+-	error = suspend_disable_secondary_cpus();
++	error = pm_sleep_disable_secondary_cpus();
+ 	if (error || suspend_test(TEST_CPUS))
+ 		goto Enable_cpus;
+ 
+@@ -453,16 +450,13 @@ static int suspend_enter(suspend_state_t
+ 	BUG_ON(irqs_disabled());
+ 
+  Enable_cpus:
+-	suspend_enable_secondary_cpus();
++	pm_sleep_enable_secondary_cpus();
+ 
+  Platform_wake:
+ 	platform_resume_noirq(state);
+ 	dpm_resume_noirq(PMSG_RESUME);
+ 
+  Platform_early_resume:
+-	if (state != PM_SUSPEND_TO_IDLE)
+-		cpuidle_resume();
+-
+ 	platform_resume_early(state);
+ 
+  Devices_early_resume:
+Index: linux-pm/kernel/power/hibernate.c
+===================================================================
+--- linux-pm.orig/kernel/power/hibernate.c
++++ linux-pm/kernel/power/hibernate.c
+@@ -300,7 +300,7 @@ static int create_image(int platform_mod
+ 	if (error || hibernation_test(TEST_PLATFORM))
+ 		goto Platform_finish;
+ 
+-	error = suspend_disable_secondary_cpus();
++	error = pm_sleep_disable_secondary_cpus();
+ 	if (error || hibernation_test(TEST_CPUS))
+ 		goto Enable_cpus;
+ 
+@@ -342,7 +342,7 @@ static int create_image(int platform_mod
+ 	local_irq_enable();
+ 
+  Enable_cpus:
+-	suspend_enable_secondary_cpus();
++	pm_sleep_enable_secondary_cpus();
+ 
+ 	/* Allow architectures to do nosmt-specific post-resume dances */
+ 	if (!in_suspend)
+@@ -466,6 +466,8 @@ static int resume_target_kernel(bool pla
+ 	if (error)
+ 		goto Cleanup;
+ 
++	cpuidle_pause();
++
+ 	error = hibernate_resume_nonboot_cpu_disable();
+ 	if (error)
+ 		goto Enable_cpus;
+@@ -509,7 +511,7 @@ static int resume_target_kernel(bool pla
+ 	local_irq_enable();
+ 
+  Enable_cpus:
+-	suspend_enable_secondary_cpus();
++	pm_sleep_enable_secondary_cpus();
+ 
+  Cleanup:
+ 	platform_restore_cleanup(platform_mode);
+@@ -587,7 +589,7 @@ int hibernation_platform_enter(void)
+ 	if (error)
+ 		goto Platform_finish;
+ 
+-	error = suspend_disable_secondary_cpus();
++	error = pm_sleep_disable_secondary_cpus();
+ 	if (error)
+ 		goto Enable_cpus;
+ 
+@@ -609,7 +611,7 @@ int hibernation_platform_enter(void)
+ 	local_irq_enable();
+ 
+  Enable_cpus:
+-	suspend_enable_secondary_cpus();
++	pm_sleep_enable_secondary_cpus();
+ 
+  Platform_finish:
+ 	hibernation_ops->finish();
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -32,7 +32,6 @@
+ #include <linux/suspend.h>
+ #include <trace/events/power.h>
+ #include <linux/cpufreq.h>
+-#include <linux/cpuidle.h>
+ #include <linux/devfreq.h>
+ #include <linux/timer.h>
+ 
+@@ -879,7 +878,6 @@ void dpm_resume_early(pm_message_t state
+ void dpm_resume_start(pm_message_t state)
+ {
+ 	dpm_resume_noirq(state);
+-	cpuidle_resume();
+ 	dpm_resume_early(state);
+ }
+ EXPORT_SYMBOL_GPL(dpm_resume_start);
+@@ -1518,13 +1516,9 @@ int dpm_suspend_end(pm_message_t state)
+ 	if (error)
+ 		goto out;
+ 
+-	cpuidle_pause();
+-
+ 	error = dpm_suspend_noirq(state);
+-	if (error) {
+-		cpuidle_resume();
++	if (error)
+ 		dpm_resume_early(resume_event(state));
+-	}
+ 
+ out:
+ 	dpm_show_time(starttime, state, error, "end");
+Index: linux-pm/kernel/power/power.h
+===================================================================
+--- linux-pm.orig/kernel/power/power.h
++++ linux-pm/kernel/power/power.h
+@@ -4,6 +4,8 @@
+ #include <linux/utsname.h>
+ #include <linux/freezer.h>
+ #include <linux/compiler.h>
++#include <linux/cpu.h>
++#include <linux/cpuidle.h>
+ 
+ struct swsusp_info {
+ 	struct new_utsname	uts;
+@@ -310,3 +312,15 @@ extern int pm_wake_lock(const char *buf)
+ extern int pm_wake_unlock(const char *buf);
+ 
+ #endif /* !CONFIG_PM_WAKELOCKS */
++
++static inline int pm_sleep_disable_secondary_cpus(void)
++{
++	cpuidle_pause();
++	return suspend_disable_secondary_cpus();
++}
++
++static inline void pm_sleep_enable_secondary_cpus(void)
++{
++	suspend_enable_secondary_cpus();
++	cpuidle_resume();
++}
+
+
+
