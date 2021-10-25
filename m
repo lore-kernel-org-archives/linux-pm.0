@@ -2,155 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12454C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 18:06:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BD93C433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 18:17:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EEAF36103C
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 18:06:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EEB4E60F46
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 18:17:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234217AbhJYSIv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 Oct 2021 14:08:51 -0400
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:53770 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234078AbhJYSIt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Oct 2021 14:08:49 -0400
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 19PI6KnL070269;
-        Mon, 25 Oct 2021 13:06:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1635185180;
-        bh=Oc4kovP/NYg0BhPcPGQz4tvGA6N0DSPOAm11vK+OoBI=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=CpVXNrG76iwNvrgZJ/FlOZyiv1Fxwwa8LCGLiip0BdHxkSM3iujvER0rpYaewe9RG
-         m00k3ZiKTfs6d1L1H7oQycCazto8SjPILzuJo/6coLvMoP3o5aCCJXC4ms2kKlQXse
-         wYSTfJu1z2Lv4Qs8pH8/qNnsk1hBVoF3ptpgUpCE=
-Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 19PI6KQr072143
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 25 Oct 2021 13:06:20 -0500
-Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Mon, 25
- Oct 2021 13:06:19 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE107.ent.ti.com
- (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Mon, 25 Oct 2021 13:06:19 -0500
-Received: from localhost.localdomain (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 19PI65CW056165;
-        Mon, 25 Oct 2021 13:06:16 -0500
-From:   Keerthy <j-keerthy@ti.com>
-To:     <robh+dt@kernel.org>, <daniel.lezcano@linaro.org>,
-        <rui.zhang@intel.com>, <amitk@kernel.org>, <kristo@kernel.org>
-CC:     <j-keerthy@ti.com>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 3/4] arm64: dts: ti: j7200: Add VTM node
-Date:   Mon, 25 Oct 2021 23:36:02 +0530
-Message-ID: <20211025180603.22290-4-j-keerthy@ti.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20211025180603.22290-1-j-keerthy@ti.com>
-References: <20211025180603.22290-1-j-keerthy@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+        id S232381AbhJYSTV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 Oct 2021 14:19:21 -0400
+Received: from mail-oi1-f180.google.com ([209.85.167.180]:46960 "EHLO
+        mail-oi1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231671AbhJYSTV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Oct 2021 14:19:21 -0400
+Received: by mail-oi1-f180.google.com with SMTP id o204so16731923oih.13;
+        Mon, 25 Oct 2021 11:16:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
+         :message-id;
+        bh=c8iDrdrscM2c58XhHr9hAeNjE08nH97DcHB6REi5ScM=;
+        b=MVMb4je/U+cCTo504rqWYnOqCy1cqJD+pgleJIqmP7nhjJ8YxrBp4+fXXe6FcXnBhl
+         eJyBZoRgu6/2TOsL4tiHghjT/qxTJ/Isx06iwalEn96k++a6vFjvr12Mpkkfud775rNR
+         J0tzTCqppreRmWpGt9IRh4ZirYb5OSiE6EskrTIyxMcG6S5GOwogXFYsFFzRh0Cdwr1J
+         XpMKUM4xy5mwjLsMhc8F1eSlRGlJtfGCfhPVJNc0E90+hx+OqZrTbxeilM9Qxy0cRaVV
+         a0mzk/q5g+g9+/SCKYNR45lm0cSs26UYaZpB/p2QVBbcZMPhBT5LwUygrFiMxi4n24UH
+         BDWA==
+X-Gm-Message-State: AOAM5327t8cYkBEgpQimh6rHO9guNz6Pumh60zwfayQo6IhT8vNaNri8
+        mXXx5o5/OPn+X6ckz01+fA==
+X-Google-Smtp-Source: ABdhPJzt9UxcoWWAoSw1waWa4o7cP/4BdO3Lt0f7+VkpxhBaAKmqzO61CJbl9tB6ZxiVOi2kQsPn2g==
+X-Received: by 2002:a05:6808:158c:: with SMTP id t12mr23688907oiw.74.1635185817319;
+        Mon, 25 Oct 2021 11:16:57 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
+        by smtp.gmail.com with ESMTPSA id z8sm3050765oof.47.2021.10.25.11.16.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 Oct 2021 11:16:56 -0700 (PDT)
+Received: (nullmailer pid 824870 invoked by uid 1000);
+        Mon, 25 Oct 2021 18:16:53 -0000
+From:   Rob Herring <robh@kernel.org>
+To:     Hector Martin <marcan@marcan.st>
+Cc:     Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>,
+        linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-serial@vger.kernel.org,
+        devicetree@vger.kernel.org, Marc Zyngier <maz@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Mark Kettenis <kettenis@openbsd.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Arnd Bergmann <arnd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Johan Hovold <johan@kernel.org>
+In-Reply-To: <20211025144718.157794-4-marcan@marcan.st>
+References: <20211025144718.157794-1-marcan@marcan.st> <20211025144718.157794-4-marcan@marcan.st>
+Subject: Re: [PATCH v2 3/8] dt-bindings: power: Add apple,pmgr-pwrstate binding
+Date:   Mon, 25 Oct 2021 13:16:53 -0500
+Message-Id: <1635185813.771483.824869.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-VTM stands for Voltage Thermal Management
+On Mon, 25 Oct 2021 23:47:13 +0900, Hector Martin wrote:
+> This syscon child node represents a single SoC device controlled by the
+> PMGR block. This layout allows us to declare all device power state
+> controls (power/clock gating and reset) in the device tree, including
+> dependencies, instead of hardcoding it into the driver. The register
+> layout is uniform.
+> 
+> Each pmgr-pwrstate node provides genpd and reset features, to be
+> consumed by downstream device nodes.
+> 
+> Future SoCs are expected to use backwards compatible registers, and the
+> "apple,pmgr-pwrstate" represents any such interfaces (possibly with
+> additional features gated by the more specific compatible), allowing
+> them to be bound without driver updates. If a backwards incompatible
+> change is introduced in future SoCs, it will require a new compatible,
+> such as "apple,pmgr-pwrstate-v2".
+> 
+> Reviewed-by: Mark Kettenis <kettenis@openbsd.org>
+> Signed-off-by: Hector Martin <marcan@marcan.st>
+> ---
+>  .../bindings/power/apple,pmgr-pwrstate.yaml   | 69 +++++++++++++++++++
+>  1 file changed, 69 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/apple,pmgr-pwrstate.yaml
+> 
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
- .../boot/dts/ti/k3-j7200-mcu-wakeup.dtsi      |  9 ++++
- arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi  | 45 +++++++++++++++++++
- arch/arm64/boot/dts/ti/k3-j7200.dtsi          |  4 ++
- 3 files changed, 58 insertions(+)
- create mode 100644 arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-index 1044ec6c4b0d..2b5c570253cc 100644
---- a/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j7200-mcu-wakeup.dtsi
-@@ -375,4 +375,13 @@
- 			ti,loczrama = <1>;
- 		};
- 	};
-+
-+	wkup_vtm0: wkup_vtm0@42040000 {
-+		compatible = "ti,j7200-vtm";
-+		reg = <0x0 0x42040000 0x0 0x350>,
-+			<0x0 0x42050000 0x0 0x350>,
-+			<0x0 0x43000300 0x0 0x10>;
-+		power-domains = <&k3_pds 154 TI_SCI_PD_EXCLUSIVE>;
-+		#thermal-sensor-cells = <1>;
-+	};
- };
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
-new file mode 100644
-index 000000000000..1f18f9dcd3e9
---- /dev/null
-+++ b/arch/arm64/boot/dts/ti/k3-j7200-thermal.dtsi
-@@ -0,0 +1,45 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <dt-bindings/thermal/thermal.h>
-+
-+mcu_thermal: mcu_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 0>;
-+
-+	trips {
-+		wkup_crit: wkup_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+mpu_thermal: mpu_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 1>;
-+
-+	trips {
-+		mpu_crit: mpu_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-+
-+main_thermal: main_thermal {
-+	polling-delay-passive = <250>; /* milliseconds */
-+	polling-delay = <500>; /* milliseconds */
-+	thermal-sensors = <&wkup_vtm0 2>;
-+
-+	trips {
-+		c7x_crit: c7x_crit {
-+			temperature = <125000>; /* milliCelsius */
-+			hysteresis = <2000>; /* milliCelsius */
-+			type = "critical";
-+		};
-+	};
-+};
-diff --git a/arch/arm64/boot/dts/ti/k3-j7200.dtsi b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-index b7005b803149..649d1d60f5c7 100644
---- a/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-+++ b/arch/arm64/boot/dts/ti/k3-j7200.dtsi
-@@ -165,6 +165,10 @@
- 				 <0x07 0x00000000 0x07 0x00000000 0x01 0x00000000>; /* FSS OSPI1 data region 3 */
- 		};
- 	};
-+
-+	thermal_zones: thermal-zones {
-+		#include "k3-j7200-thermal.dtsi"
-+	};
- };
- 
- /* Now include the peripherals for each bus segments */
--- 
-2.17.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+
+
+doc reference errors (make refcheckdocs):
+Documentation/devicetree/bindings/power/apple,pmgr-pwrstate.yaml: Documentation/devicetree/bindings/arm/apple/apple,pmgr.yaml
+
+See https://patchwork.ozlabs.org/patch/1545800
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
