@@ -2,170 +2,269 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F88C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 22:50:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAC6CC433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Oct 2021 00:01:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DDC6D61073
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Oct 2021 22:50:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 897AC60F46
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Oct 2021 00:01:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234826AbhJYWwy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 Oct 2021 18:52:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41696 "EHLO
+        id S235097AbhJZADN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 Oct 2021 20:03:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235277AbhJYWvG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Oct 2021 18:51:06 -0400
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4DA5C0432CE;
-        Mon, 25 Oct 2021 15:46:23 -0700 (PDT)
-Received: by mail-lj1-x236.google.com with SMTP id u5so15045497ljo.8;
-        Mon, 25 Oct 2021 15:46:23 -0700 (PDT)
+        with ESMTP id S233399AbhJZADK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Oct 2021 20:03:10 -0400
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89DA1C061243
+        for <linux-pm@vger.kernel.org>; Mon, 25 Oct 2021 17:00:47 -0700 (PDT)
+Received: by mail-pj1-x1033.google.com with SMTP id n11-20020a17090a2bcb00b001a1e7a0a6a6so755298pje.0
+        for <linux-pm@vger.kernel.org>; Mon, 25 Oct 2021 17:00:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=KUl5NgtppOXN7aMrj+VJMJxgtwwCvjbf2LUP4ZJTZHk=;
-        b=dM8HQOakT9lKwnlzX8oDz69wX5j1TjDnrC8XDQpJ3/grT/a5UOQT72pKmmWOeA+nw5
-         hwS1AaicnlAS+Q3JuF+ijqvdVe4Un6yYFhFplrdKyeGItVsGKKcqDiC/7fQHeHpKybn0
-         mi8KXBeDO3NELpLv4ar+VQwjOxNzn0V1FHmGK4K54a2y92lJV8T2Xs4iQadhxe1H5kx8
-         949C5LowvQw9vTNqSPVd5lnBVNk3LEVCdQxC2NHFJOFUZ6q/S9pksA16cLzksRcTmCPm
-         sc8c3tPIr72zAsfojA2oE0GaEnvZY0XTwZQWzo9WhpgugqOWsN43BXToZPztYXToBEiP
-         J7QQ==
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hVtm5VmIX53N/m0Y93GQ8NnzFNcJLh+fSgNJkLUzoBQ=;
+        b=UoV8niq8Fg3t0VgyL/cuMnFIHA75+zfSZlyLNmgbDDuBCJyWdlw1o6lIPq6tD95EXa
+         OMtJAi/LFpQySAmIMbQXKoKwX0xiCeYsAcWJfFgXHiUm8p+7raqYMic/dUCXn7IfksaI
+         fgz8DZ8zfukC1oZPLIAyYkmhQgZ5vZTihtICY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=KUl5NgtppOXN7aMrj+VJMJxgtwwCvjbf2LUP4ZJTZHk=;
-        b=0zg2zSDegl4tp7i+bvht8eXRQpkx8U53cgDudvdOkMBVGOQlxZEdQ2mUXFXJQeEcML
-         50ppoJEJ54N9ul3m3eOBC5KQs1e4lrFsz9svAvMcb4opz8US+end7skFpporsPAJMbUB
-         b+zc66X90Ro8aumET6vQgIZ/tosR/OMLhMIqlZWPc5r8tBr4pYsUEycK1wGY29ML9mMo
-         dw+jKnlEkyvskuMBd1sAVsjBeMGGW0jo9mbiHbNWGK7JYdQ2YPhe8nNzNg53DNWVNnUU
-         xCVs4IqntNJuWCCatpaEKvIE5hsHV/ctiKSbY1AtexWrtGz5ozZEipX+yw4Ep5HVSgFO
-         W9YQ==
-X-Gm-Message-State: AOAM531homEru0Tl/zg2GDlz5rmSslwx8+VgXb0x0/VNWMSdH4ArGLP2
-        8/+dolnOpJmUQ4yZW7dsbLU=
-X-Google-Smtp-Source: ABdhPJznfzGWMyl02ihP30IcAisfmZn0lCnSMUeLm2QIKB/p5f1vAU2HQg628QiAR5z1U8DIPh6cDw==
-X-Received: by 2002:a05:651c:556:: with SMTP id q22mr21587546ljp.314.1635201982105;
-        Mon, 25 Oct 2021 15:46:22 -0700 (PDT)
-Received: from localhost.localdomain (46-138-41-28.dynamic.spd-mgts.ru. [46.138.41.28])
-        by smtp.gmail.com with ESMTPSA id t20sm2040956lft.240.2021.10.25.15.46.21
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hVtm5VmIX53N/m0Y93GQ8NnzFNcJLh+fSgNJkLUzoBQ=;
+        b=zJKHO2+lGQoz1nkp9RD93RZV7EeMVYBO/6pawhRbTt2djWnznuzG3m0QkzuX55T2TZ
+         1/kraUAE5DulXi6S8GTIw/C+ZZVT5cXAUkMk3y376Lt7Tt1r5aftiCVap5cTvbFCoeq/
+         ++kjZ/iIIioDec2CBQinTMGX60ISKgfadXGWQzKC8sA9uGGQ/064+YFKMz20ysgH7UNA
+         uZcc5e8vI9I6ggZu5YPJZmUDBBzAojucbUPVtd6avDVOMp78lJv+XldzfhJJxewfjHMI
+         zh6Nx8joNwBR/tnMeqiEFVMqZdpAiUBxn+DN0cSrcrLGxMC1smeUa/85dgdI+cELFHLk
+         +hGQ==
+X-Gm-Message-State: AOAM530oOlKMOREvjONyPRFDPbypykrnqmjUME4cnYC0grxucVdTp6sk
+        G0eRIsYdshXhS4h71c+QSTL7tg==
+X-Google-Smtp-Source: ABdhPJwZDdpWoXA4SVpIZYuWp3H9Dd3C0JBKQ4wRlria4Rtetrmm7yCucfxPYDMuJfzOx3VYXXkMjQ==
+X-Received: by 2002:a17:902:8bcc:b0:13f:ea68:a135 with SMTP id r12-20020a1709028bcc00b0013fea68a135mr19698483plo.41.1635206446478;
+        Mon, 25 Oct 2021 17:00:46 -0700 (PDT)
+Received: from smtp.gmail.com ([2620:15c:202:201:f5e3:5eb1:d5ee:6893])
+        by smtp.gmail.com with ESMTPSA id b7sm9900747pfm.28.2021.10.25.17.00.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Oct 2021 15:46:21 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Nishanth Menon <nm@ti.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>
-Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: [PATCH v14 39/39] ARM: tegra20/30: Disable unused host1x hardware
-Date:   Tue, 26 Oct 2021 01:40:32 +0300
-Message-Id: <20211025224032.21012-40-digetx@gmail.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20211025224032.21012-1-digetx@gmail.com>
-References: <20211025224032.21012-1-digetx@gmail.com>
+        Mon, 25 Oct 2021 17:00:46 -0700 (PDT)
+From:   Stephen Boyd <swboyd@chromium.org>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?q?Heiko=20St=C3=BCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
+Subject: [PATCH v3 00/34] component: Make into an aggregate bus
+Date:   Mon, 25 Oct 2021 17:00:10 -0700
+Message-Id: <20211026000044.885195-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.33.0.1079.g6e70778dc9-goog
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MPE, VI, EPP and ISP were never used and we don't have drivers for them.
-Since these modules are enabled by default in a device-tree, a device is
-created for them, blocking voltage scaling because there is no driver to
-bind, and thus, state of PMC driver is never synced. Disable them.
+This series is from discussion we had on reordering the device lists for
+drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+the aggregate device onto and then we probe the aggregate device once
+all the components are probed and call component_add(). The probe/remove
+hooks are where the bind/unbind calls go, and then a shutdown hook is
+added that can be used to shutdown the drm display pipeline at the right
+time.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/arm/boot/dts/tegra20.dtsi | 4 ++++
- arch/arm/boot/dts/tegra30.dtsi | 8 ++++++++
- 2 files changed, 12 insertions(+)
+This works for me on my sc7180 board. I no longer get a warning from i2c
+at shutdown that we're trying to make an i2c transaction after the i2c
+bus has been shutdown. There's more work to do on the msm drm driver to
+extract component device resources like clks, regulators, etc. out of
+the component bind function into the driver probe but I wanted to move
+everything over now in other component drivers before tackling that
+problem.
 
-diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
-index 7b69ffc57abe..8010b40d7377 100644
---- a/arch/arm/boot/dts/tegra20.dtsi
-+++ b/arch/arm/boot/dts/tegra20.dtsi
-@@ -59,6 +59,7 @@ mpe@54040000 {
- 			reset-names = "mpe";
- 			power-domains = <&pd_mpe>;
- 			operating-points-v2 = <&mpe_dvfs_opp_table>;
-+			status = "disabled";
- 		};
- 
- 		vi@54080000 {
-@@ -70,6 +71,7 @@ vi@54080000 {
- 			reset-names = "vi";
- 			power-domains = <&pd_venc>;
- 			operating-points-v2 = <&vi_dvfs_opp_table>;
-+			status = "disabled";
- 		};
- 
- 		epp@540c0000 {
-@@ -81,6 +83,7 @@ epp@540c0000 {
- 			reset-names = "epp";
- 			power-domains = <&pd_core>;
- 			operating-points-v2 = <&epp_dvfs_opp_table>;
-+			status = "disabled";
- 		};
- 
- 		isp@54100000 {
-@@ -91,6 +94,7 @@ isp@54100000 {
- 			resets = <&tegra_car 23>;
- 			reset-names = "isp";
- 			power-domains = <&pd_venc>;
-+			status = "disabled";
- 		};
- 
- 		gr2d@54140000 {
-diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
-index c1be136aac7d..d961ce3761e6 100644
---- a/arch/arm/boot/dts/tegra30.dtsi
-+++ b/arch/arm/boot/dts/tegra30.dtsi
-@@ -145,6 +145,8 @@ mpe@54040000 {
- 			operating-points-v2 = <&mpe_dvfs_opp_table>;
- 
- 			iommus = <&mc TEGRA_SWGROUP_MPE>;
-+
-+			status = "disabled";
- 		};
- 
- 		vi@54080000 {
-@@ -158,6 +160,8 @@ vi@54080000 {
- 			operating-points-v2 = <&vi_dvfs_opp_table>;
- 
- 			iommus = <&mc TEGRA_SWGROUP_VI>;
-+
-+			status = "disabled";
- 		};
- 
- 		epp@540c0000 {
-@@ -171,6 +175,8 @@ epp@540c0000 {
- 			operating-points-v2 = <&epp_dvfs_opp_table>;
- 
- 			iommus = <&mc TEGRA_SWGROUP_EPP>;
-+
-+			status = "disabled";
- 		};
- 
- 		isp@54100000 {
-@@ -183,6 +189,8 @@ isp@54100000 {
- 			power-domains = <&pd_venc>;
- 
- 			iommus = <&mc TEGRA_SWGROUP_ISP>;
-+
-+			status = "disabled";
- 		};
- 
- 		gr2d@54140000 {
+Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
+I sent this to gregkh which may be incorrect but I don't know what
+better tree to send it all through.  Maybe drm?
+
+Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
+ - Picked up acks
+ - Fixed build warnings/errors
+ - Reworked patch series to rename 'master' in a different patch
+
+Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+ - Use devlink to connect components to the aggregate device
+ - Don't set the registering device as a parent of the aggregate device
+ - New patch for bind_component/unbind_component ops that takes the
+   aggregate device
+ - Convert all drivers in the tree to use the aggregate driver approach
+ - Allow one aggregate driver to be used for multiple aggregate devices
+
+[1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
+
+Stephen Boyd (34):
+  component: Introduce struct aggregate_device
+  component: Remove most references to 'master'
+  component: Introduce the aggregate bus_type
+  component: Move struct aggregate_device out to header file
+  component: Add {bind,unbind}_component() ops that take aggregate
+    device
+  drm/of: Add a drm_of_aggregate_probe() API
+  drm/msm: Migrate to aggregate driver
+  drm/komeda: Migrate to aggregate driver
+  drm/arm/hdlcd: Migrate to aggregate driver
+  drm/malidp: Migrate to aggregate driver
+  drm/armada: Migrate to aggregate driver
+  drm/etnaviv: Migrate to aggregate driver
+  drm/kirin: Migrate to aggregate driver
+  drm/exynos: Migrate to aggregate driver
+  drm/imx: Migrate to aggregate driver
+  drm/ingenic: Migrate to aggregate driver
+  drm/mcde: Migrate to aggregate driver
+  drm/mediatek: Migrate to aggregate driver
+  drm/meson: Migrate to aggregate driver
+  drm/omap: Migrate to aggregate driver
+  drm/rockchip: Migrate to aggregate driver
+  drm/sti: Migrate to aggregate driver
+  drm/sun4i: Migrate to aggregate driver
+  drm/tilcdc: Migrate to aggregate driver
+  drm/vc4: Migrate to aggregate driver
+  drm/zte: Migrate to aggregate driver
+  iommu/mtk: Migrate to aggregate driver
+  mei: Migrate to aggregate driver
+  power: supply: ab8500: Migrate to aggregate driver
+  fbdev: omap2: Migrate to aggregate driver
+  sound: hdac: Migrate to aggregate driver
+  ASoC: codecs: wcd938x: Migrate to aggregate driver
+  component: Get rid of drm_of_component_probe()
+  component: Remove component_master_ops and friends
+
+ drivers/base/component.c                      | 540 ++++++++++--------
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+ drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_of.c                      |  18 +-
+ drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+ drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  17 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+ drivers/gpu/drm/zte/zx_drm_drv.c              |  20 +-
+ drivers/iommu/mtk_iommu.c                     |  14 +-
+ drivers/iommu/mtk_iommu.h                     |   6 +-
+ drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+ drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+ drivers/power/supply/ab8500_charger.c         |  22 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+ include/drm/drm_of.h                          |  10 +-
+ include/linux/component.h                     |  92 ++-
+ sound/hda/hdac_component.c                    |  21 +-
+ sound/soc/codecs/wcd938x.c                    |  20 +-
+ 33 files changed, 767 insertions(+), 486 deletions(-)
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Cc: Chen Feng <puck.chen@hisilicon.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Heiko Stübner" <heiko@sntech.de>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: Jyri Sarha <jyri.sarha@iki.fi>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Sandy Huang <hjc@rock-chips.com>
+Cc: Saravana Kannan <saravanak@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Tian Tao <tiantao6@hisilicon.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Tomi Valkeinen <tomba@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Xinliang Liu <xinliang.liu@linaro.org>
+Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Cc: Yong Wu <yong.wu@mediatek.com>
+
+
+base-commit: e4e737bb5c170df6135a127739a9e6148ee3da82
 -- 
-2.33.1
+https://chromeos.dev
 
