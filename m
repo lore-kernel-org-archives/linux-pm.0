@@ -2,112 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6879C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 17:57:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 522E3C43217
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 18:17:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E3A060E8F
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 17:57:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A41161106
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 18:17:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230329AbhJ1R7s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Oct 2021 13:59:48 -0400
-Received: from mail-ot1-f51.google.com ([209.85.210.51]:45968 "EHLO
-        mail-ot1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230258AbhJ1R7s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Oct 2021 13:59:48 -0400
-Received: by mail-ot1-f51.google.com with SMTP id l16-20020a9d6a90000000b0054e7ab56f27so9686509otq.12;
-        Thu, 28 Oct 2021 10:57:21 -0700 (PDT)
+        id S230473AbhJ1ST2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Oct 2021 14:19:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56010 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230258AbhJ1ST0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Oct 2021 14:19:26 -0400
+Received: from mail-oo1-xc2f.google.com (mail-oo1-xc2f.google.com [IPv6:2607:f8b0:4864:20::c2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 143B4C061767
+        for <linux-pm@vger.kernel.org>; Thu, 28 Oct 2021 11:16:59 -0700 (PDT)
+Received: by mail-oo1-xc2f.google.com with SMTP id a17-20020a4a6851000000b002b59bfbf669so2424396oof.9
+        for <linux-pm@vger.kernel.org>; Thu, 28 Oct 2021 11:16:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=Wusxu4vVS094WYADHFLACryqXCZAQomcEnv/oqtQUp8=;
+        b=cIHck4f7AU6fCfChVEV2LovuiRMjA9npqq575g7mD6uUXAWIZK7H/dd0FYbkYWvcLw
+         THcW+crPTr8lmtELnV92shgpOg7arjpaszvQRz613ZU/fICX96ZR7nz0A+Zs5ZWX2Kzu
+         3Fxyh0V1kgUIi49NKrpybu+L1b2eGf9O4QvZQI8qc2ZWwFFux0z41haIX4Vcc6wgljWR
+         MDV+4WCiRPJBUi+UaFPrdiEtNHYRNGNAC/yesi/c2odE1ZPoTN4ofOemZsJA0bfvkzro
+         RVFdWyPcFsTjJWMnxm3mzqX74df7+nxkEJqS8WqXZ6DsJcMWEMdTR/QCI0bM6LMkj2JB
+         0REg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=I8S1RsJjseOxeamOtCHDWEESw385GgbZxMc0otlNFT4=;
-        b=omyGcgqioCUdNHKmUBsDXPGb4ZZ4rHvN8dVT5ZvmRbFM7FnpXAM0v3gOYZW+k+VyZo
-         G8nVZbtSMaIB4ED5DGpn+bcAjfpKdwV9DJbasAD30t/mRZP58U7e9X1j7TW6T+A1Q72M
-         oYuHZkjpNDLICSaH4oRpRjBJlQL3YrqdvckJ/DrpkFDRh3rXQa8rtQgw/kMdJd2hsTGb
-         Oi94U6yA5noaEw2KkUX/Nuyr5G+wSPU9IrVTqKWwngEJr+uFQ/PSuxO0DrRI7S+kUUX+
-         h37j+tBCVVnsWu6pJYrvqQYOWoK2CkRu5AQeqPZSbFGpQts14/7COO0FDwIAzY2fUFoE
-         L9SQ==
-X-Gm-Message-State: AOAM5333UTFNmDU4J0lBg/DZpQBZQybWlFqGc0l3S+h3OcKNVu3XoeeK
-        /1ESNvN0sRQBQu3cz8jbnDbrvgoC4loLRb2Gv3U=
-X-Google-Smtp-Source: ABdhPJzXwa3S6rWGIIGi30Zz/DajU0CJ6QC93fCNxo27WalKZOsNfI7lIcTXy2emRKDTsatjL0jlGOyEak+dLddHSEs=
-X-Received: by 2002:a9d:65c1:: with SMTP id z1mr4562340oth.198.1635443840953;
- Thu, 28 Oct 2021 10:57:20 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Wusxu4vVS094WYADHFLACryqXCZAQomcEnv/oqtQUp8=;
+        b=En9xkoBQu5lay7ZZpWJCyfETu1nK05eUVmA56e8p+TABBl4qhMcS4TWJh+S4WvSnK8
+         NDP5XY3EmEFjjcFhJrquQ6GxYewk58OKMm6NdEkFxKKa6/Bb3DFFSJee3lyQAROsuME4
+         oUHJEYpK1K/BOo9Vj9Du1p6c6O8iQxCJiGQagCk8pGu0cbAjt3nAGCqDFvvU17cyGm5g
+         /ywA6IImVKK9R/aprdLCj/64g3MqbJryAY1Q3r6K4huNOyUDiMjR06soCDb+FixhPU6L
+         EFL9bzGfpd07EiY7PXQDu4v1r0gw23MzLgABWW/b8zBEqGR3bVUEHACQr1wogZDUdWDe
+         /S3A==
+X-Gm-Message-State: AOAM5303r4Mhev2YnU2WJFC5lc8t0mIE8tYvbGZ8Ve0uKtF50VgjK30H
+        WqFxkBjcxM3ZhiqQhasm77yU7Q==
+X-Google-Smtp-Source: ABdhPJy7YMoWnmrHfImanNmbs6Unt0iAC5Q17Vv8gEqfdVoObsC06l/dfy2j5VCFf7uWMyZht8j/MQ==
+X-Received: by 2002:a4a:e218:: with SMTP id b24mr4268610oot.36.1635445018092;
+        Thu, 28 Oct 2021 11:16:58 -0700 (PDT)
+Received: from ripper (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id bq10sm1288528oib.25.2021.10.28.11.16.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 Oct 2021 11:16:57 -0700 (PDT)
+Date:   Thu, 28 Oct 2021 11:18:45 -0700
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Konrad Dybcio <konrad.dybcio@somainline.org>
+Cc:     Yassine Oudjana <y.oudjana@protonmail.com>,
+        Andy Gross <agross@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Ilia Lin <ilia.lin@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Loic Poulain <loic.poulain@linaro.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        phone-devel@vger.kernel.org
+Subject: Re: [PATCH 4/8] cpufreq: qcom_cpufreq_nvmem: Simplify reading kryo
+ speedbin
+Message-ID: <YXrphSSG9+zsZbJ9@ripper>
+References: <20211014083016.137441-1-y.oudjana@protonmail.com>
+ <20211014083016.137441-5-y.oudjana@protonmail.com>
+ <f4af0e40-9e93-dba9-7401-cdfc76ba667e@somainline.org>
 MIME-Version: 1.0
-References: <alpine.DEB.2.22.394.2110241452460.2997@hadrien>
- <CAAYoRsXeQravNXKsWAZvacMmE_iBzaQ+mQxNbB5jcD_vkny+Sg@mail.gmail.com>
- <alpine.DEB.2.22.394.2110261658440.3825@hadrien> <CAAYoRsWXew+9Pch_9ux+UK0LFwy+211d2LmNLGKF_UTr3eS2Fw@mail.gmail.com>
- <alpine.DEB.2.22.394.2110281908150.9518@hadrien> <CAJZ5v0ihVdrZ1ogEc34+QgZUJW5-=RzP34-U1_91VTcLhbc4Nw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0ihVdrZ1ogEc34+QgZUJW5-=RzP34-U1_91VTcLhbc4Nw@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 28 Oct 2021 19:57:09 +0200
-Message-ID: <CAJZ5v0ij105B05xPGgfauwFv1KhXRnwh5p28R1y11qKWjxUOhg@mail.gmail.com>
-Subject: Re: problem in changing from active to passive mode
-To:     Julia Lawall <julia.lawall@inria.fr>
-Cc:     Doug Smythies <dsmythies@telus.net>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="00000000000030c37305cf6d71b9"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f4af0e40-9e93-dba9-7401-cdfc76ba667e@somainline.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
---00000000000030c37305cf6d71b9
-Content-Type: text/plain; charset="UTF-8"
+On Fri 15 Oct 11:58 PDT 2021, Konrad Dybcio wrote:
 
-On Thu, Oct 28, 2021 at 7:29 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Oct 28, 2021 at 7:10 PM Julia Lawall <julia.lawall@inria.fr> wrote:
+> 
+> On 14.10.2021 10:32, Yassine Oudjana wrote:
+> > In preparation for adding a separate device tree for MSM8996 Pro, skip reading
+> > msm-id from smem and just read the speedbin efuse.
 > >
-> > > Now, for your graph 3, are you saying this pseudo
-> > > code of the process is repeatable?:
-> > >
-> > > Power up the system, booting kernel 5.9
-> > > switch to passive/schedutil.
-> > > wait X minutes for system to settle
-> > > do benchmark, result ~13 seconds
-> > > re-boot to kernel 5.15-RC
-> > > switch to passive/schedutil.
-> > > wait X minutes for system to settle
-> > > do benchmark, result ~40 seconds
-> > > re-boot to kernel 5.9
-> > > switch to passive/schedutil.
-> > > wait X minutes for system to settle
-> > > do benchmark, result ~28 seconds
-> >
-> > In the first boot of 5.9, the des (desired?) field of the HWP_REQUEST
-> > register is 0 and in the second boot (after booting 5.15 and entering
-> > passive mode) it is 10.  I don't know though if this is a bug or a
-> > feature...
->
-> It looks like a bug.
->
-> I think that the desired value is not cleared on driver exit which
-> should happen.  Let me see if I can do a quick patch for that.
+> While I'd really like for this to be merged, it's gonna totally wreck backwards
+> 
+> compatibility.. But then, since APCC was not defined properly before commit
+> 
+> 0a275a35ceab07 arm64: dts: qcom: msm8996: Make CPUCC actually probe (and work)
+> 
+> there's only 5.14/5.15 (both of which were non-LTS) which would *actually* break given
+> 
+> somebody decided that "ah yes, pulling in DTs from these specific mainline kernel releases
+> 
+> is a good idea"...
+> 
+> 
+> If I were to judge, it would probably be fine to rid the old mechanism..
+> 
 
-Please check the behavior with the attached patch applied.
+Given that various people have reported instabilities on db820c in its
+current form - and prior to that it was too slow - I think it's fine to
+favour getting this sorted out properly over backwards compatibility.
 
---00000000000030c37305cf6d71b9
-Content-Type: text/x-patch; charset="US-ASCII"; 
-	name="intel_pstate-clear-desired-on-offline.patch"
-Content-Disposition: attachment; 
-	filename="intel_pstate-clear-desired-on-offline.patch"
-Content-Transfer-Encoding: base64
-Content-ID: <f_kvb8zh900>
-X-Attachment-Id: f_kvb8zh900
-
-LS0tCiBkcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMgfCAgICAzICsrKwogMSBmaWxlIGNo
-YW5nZWQsIDMgaW5zZXJ0aW9ucygrKQoKSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvY3B1ZnJlcS9p
-bnRlbF9wc3RhdGUuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvY3B1ZnJl
-cS9pbnRlbF9wc3RhdGUuYworKysgbGludXgtcG0vZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0
-ZS5jCkBAIC0xMDE1LDYgKzEwMTUsOSBAQCBzdGF0aWMgdm9pZCBpbnRlbF9wc3RhdGVfaHdwX29m
-ZmxpbmUoc3RyCiAJdmFsdWUgfD0gSFdQX01BWF9QRVJGKG1pbl9wZXJmKTsKIAl2YWx1ZSB8PSBI
-V1BfTUlOX1BFUkYobWluX3BlcmYpOwogCisJLyogQ2xlYXIgREVTSVJFRF9QRVJGICovCisJdmFs
-dWUgJj0gfkhXUF9ERVNJUkVEX1BFUkYofjBMKTsKKwogCS8qIFNldCBFUFAgdG8gbWluICovCiAJ
-aWYgKGJvb3RfY3B1X2hhcyhYODZfRkVBVFVSRV9IV1BfRVBQKSkKIAkJdmFsdWUgfD0gSFdQX0VO
-RVJHWV9QRVJGX1BSRUZFUkVOQ0UoSFdQX0VQUF9QT1dFUlNBVkUpOwo=
---00000000000030c37305cf6d71b9--
+Regards,
+Bjorn
