@@ -2,57 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3D4CC433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 22:13:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16BAFC433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 22:13:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C690160F21
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 22:13:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E730E60F21
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Oct 2021 22:13:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230420AbhJ1WPo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Oct 2021 18:15:44 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42380 "EHLO mail.kernel.org"
+        id S231476AbhJ1WQS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Oct 2021 18:16:18 -0400
+Received: from mail.kernel.org ([198.145.29.99]:42696 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230264AbhJ1WPn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 28 Oct 2021 18:15:43 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3729060E8B;
-        Thu, 28 Oct 2021 22:13:16 +0000 (UTC)
+        id S231322AbhJ1WQR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 28 Oct 2021 18:16:17 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 23FCE60E8B;
+        Thu, 28 Oct 2021 22:13:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1635459196;
-        bh=2zE2wrHzuqiWObO7CRKjG8u0vDoJsalCVCWWAt5ZCTQ=;
+        s=k20201202; t=1635459229;
+        bh=FpWvPrRTCuPTrYLKoitbXloNLhE73DIXWeNg6HD/2wc=;
         h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
-        b=fUq4WbGvI2rgkFX5oHFu5fxoWAYODAENC5Tu4zh98VmDSZ2I1yvAK4CFOVbi09oWO
-         semIU2WchnL8rbff+BUcMUN20Sm8HMaojs2gB4JW1CcCsuB+z2GmhCLsQM+N9AF/I3
-         WWRPnBEpEXJdNYaTZCp9xwwT+UloYAw4SSfC71FQgplQeyGsyoGWiwBmaIiLz7LnsU
-         iXaza0VSeUsA4b9ANbkFY5a0+trs+tvIXwQsTIvSdx3ZG1KqOpnFVJZwRgw6/XBAg0
-         t/ivSDvzotQ4UrC7cXDElSCaCLSjixJ5/y1z1AbZbJAlKR2PJBvcEkLhH+16hHtJ/t
-         Qde9Vht0U0vFg==
+        b=evRyyHCg6G5zJzJDSym16CB2l9mf60mr2ehEz/ll5/2/axld4SPDBm3BcwdSwiwSi
+         5O0BnAcD1KE30+PD7LINVLB+3c5SMqQLFW9v0CAKvBKbSxifpivTv4ZL33/XXKZ/F0
+         qj+3y33Vslq+880QlRgSeeuxFbS4FIN3vMrOjekGirLCYZOtFFTXoPxkZReU4RdM3G
+         qZmsVp0UmcFTYsUX/YHVjiIlw19AHuKHf9NkeGqfKhg4USK4dDjgbRY/ievUo/XRb8
+         Th1cgIbCdC4D6M7+/B/QjlrcXxQUQMaM+fzeLCBXx8KxNdPrMGBUxcK2o7SNS1gzrH
+         XUYM9bZMKUAnw==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1634812857-10676-2-git-send-email-okukatla@codeaurora.org>
-References: <1634812857-10676-1-git-send-email-okukatla@codeaurora.org> <1634812857-10676-2-git-send-email-okukatla@codeaurora.org>
-Subject: Re: [v8 1/3] dt-bindings: interconnect: Add EPSS L3 DT binding on SC7280
+In-Reply-To: <1634812857-10676-3-git-send-email-okukatla@codeaurora.org>
+References: <1634812857-10676-1-git-send-email-okukatla@codeaurora.org> <1634812857-10676-3-git-send-email-okukatla@codeaurora.org>
+Subject: Re: [v8 2/3] interconnect: qcom: Add EPSS L3 support on SC7280
 From:   Stephen Boyd <sboyd@kernel.org>
-Cc:     mdtipton@codeaurora.org, saravanak@google.com,
-        okukatla@codeaurora.org, seansw@qti.qualcomm.com, elder@linaro.org,
+Cc:     mdtipton@codeaurora.org, sibis@codeaurora.org,
+        saravanak@google.com, okukatla@codeaurora.org,
+        seansw@qti.qualcomm.com, elder@linaro.org,
         linux-arm-msm-owner@vger.kernel.org
 To:     Andy Gross <agross@kernel.org>, Georgi Djakov <djakov@kernel.org>,
         Odelu Kukatla <okukatla@codeaurora.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sibi Sankar <sibis@codeaurora.org>, bjorn.andersson@linaro.org,
-        devicetree@vger.kernel.org, evgreen@google.com,
+        bjorn.andersson@linaro.org, evgreen@google.com,
         georgi.djakov@linaro.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Date:   Thu, 28 Oct 2021 15:13:14 -0700
-Message-ID: <163545919495.15791.17514925194518124657@swboyd.mtv.corp.google.com>
+Date:   Thu, 28 Oct 2021 15:13:47 -0700
+Message-ID: <163545922790.15791.7124110557875738156@swboyd.mtv.corp.google.com>
 User-Agent: alot/0.9.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Odelu Kukatla (2021-10-21 03:40:55)
-> Add Epoch Subsystem (EPSS) L3 interconnect provider binding on SC7280
-> SoCs.
+Quoting Odelu Kukatla (2021-10-21 03:40:56)
+> Add Epoch Subsystem (EPSS) L3 interconnect provider support on
+> SC7280 SoCs.
 >=20
 > Signed-off-by: Odelu Kukatla <okukatla@codeaurora.org>
 > ---
