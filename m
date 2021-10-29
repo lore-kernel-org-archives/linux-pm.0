@@ -2,116 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D05DC4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Oct 2021 07:09:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0274BC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Oct 2021 12:39:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E127761130
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Oct 2021 07:09:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DC52F6113E
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Oct 2021 12:39:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232108AbhJ2HLj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Oct 2021 03:11:39 -0400
-Received: from marcansoft.com ([212.63.210.85]:49316 "EHLO mail.marcansoft.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229464AbhJ2HLj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 29 Oct 2021 03:11:39 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: marcan@marcan.st)
-        by mail.marcansoft.com (Postfix) with ESMTPSA id 02A34424B9;
-        Fri, 29 Oct 2021 07:09:04 +0000 (UTC)
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     Rob Herring <robh@kernel.org>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        Marc Zyngier <maz@kernel.org>, Arnd Bergmann <arnd@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Johan Hovold <johan@kernel.org>, devicetree@vger.kernel.org,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
-        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
-        Mark Kettenis <kettenis@openbsd.org>
-References: <20211025144718.157794-1-marcan@marcan.st>
- <20211025144718.157794-3-marcan@marcan.st>
- <YXhINE00HG6hbQI4@robh.at.kernel.org>
- <c0f2587c-ab69-8194-e618-ce7919c1aeb1@marcan.st>
- <CAL_JsqJbVcqy8n0EroV=nFZoJ_WAr+JbrDf-c1jso856NghC2A@mail.gmail.com>
- <CAJKOXPfDAnECHzGDTisuujT-rGvUqVp4a5WTOQ196yTqwLKHuA@mail.gmail.com>
-From:   Hector Martin <marcan@marcan.st>
-Subject: Re: [PATCH v2 2/8] dt-bindings: arm: apple: Add apple,pmgr binding
-Message-ID: <0614b9ba-79f8-afc5-793d-6d465df51bed@marcan.st>
-Date:   Fri, 29 Oct 2021 16:09:02 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        id S231431AbhJ2Ml5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Oct 2021 08:41:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48184 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231409AbhJ2Ml5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Oct 2021 08:41:57 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85AD8C061714
+        for <linux-pm@vger.kernel.org>; Fri, 29 Oct 2021 05:39:28 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id i13so11250526lfe.4
+        for <linux-pm@vger.kernel.org>; Fri, 29 Oct 2021 05:39:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=B2T3v4jXO25JT49qo2reiE0rneUAVuElVzG5JppoEM8=;
+        b=jxD6biwTfe3xu6SqBzLET7VGwK1z+O5kXXr9D9ld+3oXexNknMqaFCW9F2LVUIXD+G
+         ucuVD7vOA4sZwbtUVVm7VzO3veKFGjRJHKI0vsCgqedXMckkcCuS5RX2luse2sdk1Twa
+         WBDj6uMCqZkJ/KYciN73SIqRqEBtCSDSF63zmsvalZsfnmh4tgcEAgjPi9ilrgDdWMVb
+         ZEJT/Qe6glvFD7+mxzhPkUnG56DeqPTqZIJn0EwzCL6fb0mJg+J37Y3J8rVtha2bb88g
+         FhnpS+0RzDdrfPrw09Zk0fIpd8IvICd3VoueJ91jfIvaJiW7UN68emvVY/bbOQyolIXI
+         WutQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=B2T3v4jXO25JT49qo2reiE0rneUAVuElVzG5JppoEM8=;
+        b=q/OczHfHpt0yXVVHs0E2ffZM7rg9NxyFWouW0tUodB+NHSXFg26v06bURdpgRl3mcJ
+         0+j19tLo01WNUS55aFKiZJ3TXrtBfLTXqjfHbTXz2iU71cYGgVFirK9eUnwyV+7YANCz
+         t7ZAYlO4bL5EtQDimgIcy35e5Uz4/8xgvZj58h1dhoWJKupVGuWzjFPhNyB47nzxrOXQ
+         TSw0vCTH8xjnZ4I5QPISDCJ5QjAHt0W1LjJhPLpIGIuxFfTUOC2oLGtR2KwuuucFVhEm
+         YgNUpV+7Mdg62WG8M6EhJqti0reZ1nMKy8DsKEmKOMoC+fnWeiS162ZV2VLT2eASyq2S
+         aNbA==
+X-Gm-Message-State: AOAM531fead4xA9RSXp/DXyrpe3uS+QwVUJU8vu4dNnk8dQ9nByML138
+        PJ2KRUanRjEDr/pU0NOrmIAvaQ==
+X-Google-Smtp-Source: ABdhPJyTjynt3OjUbfPQGjnjOlAGOKmxPdHzyoRf35p2/vo3MySu4coNCsQpIc9on1MRDnXuPapytw==
+X-Received: by 2002:a05:6512:2309:: with SMTP id o9mr10050460lfu.124.1635511166794;
+        Fri, 29 Oct 2021 05:39:26 -0700 (PDT)
+Received: from localhost.localdomain (h-155-4-129-146.NA.cust.bahnhof.se. [155.4.129.146])
+        by smtp.gmail.com with ESMTPSA id y35sm602528lfa.16.2021.10.29.05.39.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 Oct 2021 05:39:25 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org
+Cc:     Maulik Shah <mkshah@codeaurora.org>,
+        Anup Patel <anup.patel@wdc.com>,
+        Len Brown <len.brown@intel.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] PM: sleep: Fix runtime PM based cpuidle support
+Date:   Fri, 29 Oct 2021 14:38:55 +0200
+Message-Id: <20211029123855.80344-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <CAJKOXPfDAnECHzGDTisuujT-rGvUqVp4a5WTOQ196yTqwLKHuA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: es-ES
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 27/10/2021 23.51, Krzysztof Kozlowski wrote:
-> On Wed, 27 Oct 2021 at 16:44, Rob Herring <robh@kernel.org> wrote:
->>
->> On Tue, Oct 26, 2021 at 10:38 PM Hector Martin <marcan@marcan.st> wrote:
->>>
->>> On 27/10/2021 03.25, Rob Herring wrote:
->>>> On Mon, Oct 25, 2021 at 11:47:12PM +0900, Hector Martin wrote:
->>>>> +  compatible:
->>>>> +    items:
->>>>> +      - enum:
->>>>> +          - apple,t8103-pmgr
->>>>> +          - apple,t8103-minipmgr
->>>>> +      - const: apple,pmgr
->>>>> +      - const: syscon
->>>>> +      - const: simple-mfd
->>>>
->>>>
->>>> 'simple-mfd' means 'there's nothing in this node that any of the child
->>>> nodes depend on'. You should be somewhat certain as dropping it later
->>>> creates compatibility issues.
->>>
->>> Hmm, I see simple-mfd turns this into a bus which I guess allows child
->>> nodes to be probed without the parent node doing anything special (then
->>> we use syscon_node_to_regmap to get the syscon instantiated). Do you
->>> have a example use case for doing this without simple-mfd?
->>
->> Drivers calling of_platform_populate or devm_of_platform_populate.
->>
->> That of course does mean you need a driver. We could probably make the
->> syscon driver call these if needed.
->>
-> 
-> Hi Hector,
-> 
-> I thought I mentioned this with your v1, maybe the comment got lost.
-> We have it for Exynos PMU:
-> drivers/soc/samsung/exynos-pmu.c
-> arch/arm/boot/dts/exynos-syscon-restart.dtsi (extending node from
-> arch/arm/boot/dts/exynos5420.dtsi)
-> Maybe you can base on that.
+In the cpuidle-psci case, runtime PM in combination with the generic PM
+domain (genpd), may be used when entering/exiting a shared idlestate. More
+precisely, genpd relies on runtime PM to be enabled for the attached device
+(in this case it belongs to a CPU), to properly manage the reference
+counting of its PM domain.
 
-Ah, I remember the discrete power domains but I missed this syscon.
+This works fine most of the time, but during system suspend in
+dpm_suspend_late(), the PM core disables runtime PM for all devices. Beyond
+this point, calls to pm_runtime_get_sync() to runtime resume a device may
+fail and therefore it could also mess up the reference counting in genpd.
 
-I see this is mostly used for poweroff/reboot, which makes sense in this 
-context. For pmgr though, the binding only describes the uniform power 
-state registers, so I think I'm comfortable leaving it as a simple-mfd. 
-Other pmgr sub-blocks will probably end up as separate nodes with 
-different bindings anyway (e.g. whatever I do for the clock muxes, need 
-to see how that ties in with audio which I think is the only consumer so 
-far).
+To fix this problem, let's call wake_up_all_idle_cpus() in
+dpm_suspend_late(), prior to disabling runtime PM. In this way a device
+that belongs to a CPU, becomes runtime resumed through cpuidle-psci and
+stays like that, because the runtime PM usage count has been bumped in
+device_prepare().
 
-If things get more complicated in future SoCs then we can change how we 
-do it on those, of course :)
+Diagnosed-by: Maulik Shah <mkshah@codeaurora.org>
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
+Changes in v2:
+	- Moved away from using cpuidle_pause|resume() to solve the problem, but
+	instead just waking up idle CPUs is suffient, due to other recent merged
+	changes.
+
+---
+ drivers/base/power/main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index ac4dde8fdb8b..2fb08d4f1aca 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1463,6 +1463,7 @@ int dpm_suspend_late(pm_message_t state)
+ 	int error = 0;
+ 
+ 	trace_suspend_resume(TPS("dpm_suspend_late"), state.event, true);
++	wake_up_all_idle_cpus();
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 	async_error = 0;
 -- 
-Hector Martin (marcan@marcan.st)
-Public Key: https://mrcn.st/pub
+2.25.1
+
