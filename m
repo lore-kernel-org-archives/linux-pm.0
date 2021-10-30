@@ -2,219 +2,226 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C842AC433F5
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 15:31:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07CF9C433F5
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:28:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B357260FC0
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 15:31:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DDE9D61051
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:28:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231995AbhJ3PeM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 30 Oct 2021 11:34:12 -0400
-Received: from mga05.intel.com ([192.55.52.43]:35983 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230285AbhJ3PeL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 30 Oct 2021 11:34:11 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10153"; a="317023221"
-X-IronPort-AV: E=Sophos;i="5.87,195,1631602800"; 
-   d="scan'208";a="317023221"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Oct 2021 08:31:41 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,195,1631602800"; 
-   d="scan'208";a="466826468"
-Received: from lkp-server02.sh.intel.com (HELO c20d8bc80006) ([10.239.97.151])
-  by orsmga002.jf.intel.com with ESMTP; 30 Oct 2021 08:31:39 -0700
-Received: from kbuild by c20d8bc80006 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1mgqKY-0001WX-Rk; Sat, 30 Oct 2021 15:31:38 +0000
-Date:   Sat, 30 Oct 2021 23:31:18 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 5f6ba0ff183c91ef793c5db5da532357e7b0ba5e
-Message-ID: <617d6546.PHVeTb5tmx4hXGQe%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S229788AbhJ3Sa5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Oct 2021 14:30:57 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:49896 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229782AbhJ3Sa5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Oct 2021 14:30:57 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1635618506;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=1cdF+sE/SLgTIc7hDDLi/Ba/YvIkdSSZy+iz0SwSwrw=;
+        b=GFfbNoDWeEW2HzHLyYPxWAQ/sge4deqZCrmgHkRb07GhLHIkRYjEXR0mGlosYxsOculS0D
+        zTjLbcgMXl8Ohxqebx4ge3qChVDF7HOVc15Fhosp3DYZD0F3E/CxqHPa654iEVCqIs0W1F
+        d5h2HsBLRsK5pxD2LoDlI59c7RQjHh0=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-268-BkS4txVNN-GYa76GsBKkJQ-1; Sat, 30 Oct 2021 14:28:22 -0400
+X-MC-Unique: BkS4txVNN-GYa76GsBKkJQ-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B5E4F362F9;
+        Sat, 30 Oct 2021 18:28:20 +0000 (UTC)
+Received: from x1.localdomain (unknown [10.39.192.75])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id E95575F4E1;
+        Sat, 30 Oct 2021 18:28:17 +0000 (UTC)
+From:   Hans de Goede <hdegoede@redhat.com>
+To:     Mark Gross <markgross@kernel.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Wolfram Sang <wsa@the-dreams.de>,
+        Sebastian Reichel <sre@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Ard Biesheuvel <ardb@kernel.org>
+Cc:     Hans de Goede <hdegoede@redhat.com>,
+        Yauhen Kharuzhy <jekhor@gmail.com>,
+        Tsuchiya Yuto <kitakar@gmail.com>,
+        platform-driver-x86@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-efi@vger.kernel.org
+Subject: [PATCH 01/13] platform/x86: Rename touchscreen_dmi to dmi_device_properties
+Date:   Sat, 30 Oct 2021 20:28:01 +0200
+Message-Id: <20211030182813.116672-2-hdegoede@redhat.com>
+In-Reply-To: <20211030182813.116672-1-hdegoede@redhat.com>
+References: <20211030182813.116672-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 5f6ba0ff183c91ef793c5db5da532357e7b0ba5e  Merge branch 'acpi-glue' into linux-next
+The ability to attach device-properties to (I2C) devices based on
+a DMI + I2C device-name match to address the hw-description in
+some ACPI tables being incomplete is useful for more things then just
+touchscreens. Rename the Kconfig option and file to reflect this.
 
-elapsed time: 1242m
+The specific use-case triggering this change is describing the
+hardware surrounding the Whiskey Cove PMIC found on several
+Cherry Trail based devices. At least 3 configs are known:
 
-configs tested: 154
-configs skipped: 3
+1. The WC PMIC is connected to a TI BQ24292i charger, paired with
+   a Maxim MAX17047 fuelgauge + a FUSB302 USB Type-C Controller +
+   a PI3USB30532 USB switch, for a fully functional Type-C port
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+2. The WC PMIC is connected to a TI BQ25890 charger, paired with
+   a TI BQ27520 fuelgauge, for a USB-2 only Type-C port without PD
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211028
-sparc                            allyesconfig
-arc                              allyesconfig
-nios2                            allyesconfig
-alpha                            allyesconfig
-s390                       zfcpdump_defconfig
-powerpc                 mpc8272_ads_defconfig
-arc                              alldefconfig
-sh                            shmin_defconfig
-powerpc                 canyonlands_defconfig
-mips                        vocore2_defconfig
-arm                            lart_defconfig
-arc                 nsimosci_hs_smp_defconfig
-mips                      loongson3_defconfig
-arm                            mps2_defconfig
-mips                   sb1250_swarm_defconfig
-arm                       omap2plus_defconfig
-powerpc                     redwood_defconfig
-um                           x86_64_defconfig
-m68k                          atari_defconfig
-mips                        jmr3927_defconfig
-mips                      fuloong2e_defconfig
-arm                           h3600_defconfig
-arm                         s5pv210_defconfig
-s390                             alldefconfig
-powerpc                 mpc836x_rdk_defconfig
-m68k                            mac_defconfig
-um                               alldefconfig
-arm                             pxa_defconfig
-sh                          polaris_defconfig
-mips                          rm200_defconfig
-mips                malta_qemu_32r6_defconfig
-m68k                        mvme147_defconfig
-arm                         shannon_defconfig
-nios2                         10m50_defconfig
-arm64                            alldefconfig
-powerpc                        warp_defconfig
-mips                          ath25_defconfig
-sh                             shx3_defconfig
-sh                          r7780mp_defconfig
-arm                       aspeed_g5_defconfig
-arc                    vdk_hs38_smp_defconfig
-m68k                          sun3x_defconfig
-powerpc                   microwatt_defconfig
-arm                  randconfig-c002-20211028
-arm                  randconfig-c002-20211029
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-parisc                              defconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20211028
-i386                 randconfig-a003-20211028
-i386                 randconfig-a002-20211028
-i386                 randconfig-a006-20211028
-i386                 randconfig-a001-20211028
-i386                 randconfig-a005-20211028
-x86_64               randconfig-a015-20211029
-x86_64               randconfig-a013-20211029
-x86_64               randconfig-a011-20211029
-x86_64               randconfig-a014-20211029
-x86_64               randconfig-a012-20211029
-x86_64               randconfig-a016-20211029
-i386                 randconfig-a012-20211029
-i386                 randconfig-a013-20211029
-i386                 randconfig-a011-20211029
-i386                 randconfig-a015-20211029
-i386                 randconfig-a016-20211029
-i386                 randconfig-a014-20211029
-x86_64               randconfig-a002-20211028
-x86_64               randconfig-a004-20211028
-x86_64               randconfig-a005-20211028
-x86_64               randconfig-a001-20211028
-x86_64               randconfig-a006-20211028
-x86_64               randconfig-a003-20211028
-arc                  randconfig-r043-20211028
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allyesconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                           allyesconfig
+3. The WC PMIC is connected to a TI BQ25890 charger, paired with
+   a TI BQ27542 fuelgauge, for a micro-USB port
 
-clang tested configs:
-arm                  randconfig-c002-20211029
-powerpc              randconfig-c003-20211029
-riscv                randconfig-c006-20211029
-x86_64               randconfig-c007-20211029
-mips                 randconfig-c004-20211029
-s390                 randconfig-c005-20211029
-i386                 randconfig-c001-20211029
-arm                  randconfig-c002-20211028
-powerpc              randconfig-c003-20211028
-riscv                randconfig-c006-20211028
-x86_64               randconfig-c007-20211028
-mips                 randconfig-c004-20211028
-s390                 randconfig-c005-20211028
-i386                 randconfig-c001-20211028
-x86_64               randconfig-a005-20211030
-x86_64               randconfig-a004-20211030
-x86_64               randconfig-a002-20211030
-x86_64               randconfig-a003-20211030
-x86_64               randconfig-a001-20211030
-x86_64               randconfig-a006-20211030
-x86_64               randconfig-a015-20211028
-x86_64               randconfig-a013-20211028
-x86_64               randconfig-a011-20211028
-x86_64               randconfig-a014-20211028
-x86_64               randconfig-a012-20211028
-x86_64               randconfig-a016-20211028
-i386                 randconfig-a012-20211028
-i386                 randconfig-a013-20211028
-i386                 randconfig-a011-20211028
-i386                 randconfig-a015-20211028
-i386                 randconfig-a016-20211028
-i386                 randconfig-a014-20211028
-hexagon              randconfig-r045-20211028
-riscv                randconfig-r042-20211028
-s390                 randconfig-r044-20211028
-hexagon              randconfig-r041-20211028
-hexagon              randconfig-r045-20211029
-hexagon              randconfig-r041-20211029
+And various drivers (extcon-intel-cht-wc.c, i2c-cht-wc.c, ...) need
+to know which config they are dealing with.
 
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ MAINTAINERS                                   |  2 +-
+ drivers/firmware/efi/embedded-firmware.c      |  4 ++--
+ drivers/platform/x86/Kconfig                  | 20 ++++++++++---------
+ drivers/platform/x86/Makefile                 |  2 +-
+ ...chscreen_dmi.c => dmi_device_properties.c} |  8 ++++----
+ include/linux/efi_embedded_fw.h               |  2 +-
+ 6 files changed, 20 insertions(+), 18 deletions(-)
+ rename drivers/platform/x86/{touchscreen_dmi.c => dmi_device_properties.c} (99%)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 09abc1d84a7f..fe6a952c0232 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17156,7 +17156,7 @@ L:	linux-input@vger.kernel.org
+ L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/input/touchscreen/silead.c
+-F:	drivers/platform/x86/touchscreen_dmi.c
++F:	drivers/platform/x86/dmi_device_properties.c
+ 
+ SILICON LABS WIRELESS DRIVERS (for WFxxx series)
+ M:	Jérôme Pouiller <jerome.pouiller@silabs.com>
+diff --git a/drivers/firmware/efi/embedded-firmware.c b/drivers/firmware/efi/embedded-firmware.c
+index f5be8e22305b..f8212af0ba5e 100644
+--- a/drivers/firmware/efi/embedded-firmware.c
++++ b/drivers/firmware/efi/embedded-firmware.c
+@@ -21,8 +21,8 @@ bool efi_embedded_fw_checked;
+ EXPORT_SYMBOL_NS_GPL(efi_embedded_fw_checked, TEST_FIRMWARE);
+ 
+ static const struct dmi_system_id * const embedded_fw_table[] = {
+-#ifdef CONFIG_TOUCHSCREEN_DMI
+-	touchscreen_dmi_table,
++#ifdef CONFIG_DMI_DEVICE_PROPERTIES
++	dmi_device_properties,
+ #endif
+ 	NULL
+ };
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index b110a2e6b8f3..9cb8d33cc6e1 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -981,17 +981,19 @@ config MLX_PLATFORM
+ 
+ 	  If you have a Mellanox system, say Y or M here.
+ 
+-config TOUCHSCREEN_DMI
+-	bool "DMI based touchscreen configuration info"
+-	depends on ACPI && DMI && I2C=y && TOUCHSCREEN_SILEAD
++config DMI_DEVICE_PROPERTIES
++	bool "DMI based extra device properties"
++	depends on ACPI && DMI && I2C=y
+ 	select EFI_EMBEDDED_FIRMWARE if EFI
+ 	help
+-	  Certain ACPI based tablets with e.g. Silead or Chipone touchscreens
+-	  do not have enough data in ACPI tables for the touchscreen driver to
+-	  handle the touchscreen properly, as OEMs expect the data to be baked
+-	  into the tablet model specific version of the driver shipped with the
+-	  the OS-image for the device. This option supplies the missing info.
+-	  Enable this for x86 tablets with Silead or Chipone touchscreens.
++	  Sometimes ACPI based x86 devices do not have enough data in their ACPI
++	  tables to fully describe the hardware. This option enables support for
++	  supplying the missing info based on DMI (vendor & model string)
++	  matching for devices where this info has been added to the
++	  dmi-device-properties code.
++
++	  This option is often necessary for correct operation of x86 based
++	  tablets and 2-in-1 devices. If in doubt, say Y here.
+ 
+ config FW_ATTR_CLASS
+ 	tristate
+diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+index 219478061683..3f610332b556 100644
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -107,10 +107,10 @@ obj-$(CONFIG_SYSTEM76_ACPI)	+= system76_acpi.o
+ obj-$(CONFIG_TOPSTAR_LAPTOP)	+= topstar-laptop.o
+ 
+ # Platform drivers
++obj-$(CONFIG_DMI_DEVICE_PROPERTIES)	+= dmi_device_properties.o
+ obj-$(CONFIG_FW_ATTR_CLASS)		+= firmware_attributes_class.o
+ obj-$(CONFIG_I2C_MULTI_INSTANTIATE)	+= i2c-multi-instantiate.o
+ obj-$(CONFIG_MLX_PLATFORM)		+= mlx-platform.o
+-obj-$(CONFIG_TOUCHSCREEN_DMI)		+= touchscreen_dmi.o
+ obj-$(CONFIG_WIRELESS_HOTKEY)		+= wireless-hotkey.o
+ 
+ # Intel uncore drivers
+diff --git a/drivers/platform/x86/touchscreen_dmi.c b/drivers/platform/x86/dmi_device_properties.c
+similarity index 99%
+rename from drivers/platform/x86/touchscreen_dmi.c
+rename to drivers/platform/x86/dmi_device_properties.c
+index b5d007875423..1bcd14a0bc78 100644
+--- a/drivers/platform/x86/touchscreen_dmi.c
++++ b/drivers/platform/x86/dmi_device_properties.c
+@@ -1,8 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Touchscreen driver DMI based configuration code
++ * DMI based device-property addition (adding info missing from ACPI tables)
+  *
+- * Copyright (c) 2017 Red Hat Inc.
++ * Copyright (c) 2017-2021 Red Hat Inc.
+  *
+  * Red Hat authors:
+  * Hans de Goede <hdegoede@redhat.com>
+@@ -979,7 +979,7 @@ static const struct ts_dmi_data vinga_twizzle_j116_data = {
+ };
+ 
+ /* NOTE: Please keep this table sorted alphabetically */
+-const struct dmi_system_id touchscreen_dmi_table[] = {
++const struct dmi_system_id dmi_device_properties[] = {
+ 	{
+ 		/* Chuwi Hi8 */
+ 		.driver_data = (void *)&chuwi_hi8_data,
+@@ -1633,7 +1633,7 @@ static int __init ts_dmi_init(void)
+ 	const struct dmi_system_id *dmi_id;
+ 	int error;
+ 
+-	dmi_id = dmi_first_match(touchscreen_dmi_table);
++	dmi_id = dmi_first_match(dmi_device_properties);
+ 	if (!dmi_id)
+ 		return 0; /* Not an error */
+ 
+diff --git a/include/linux/efi_embedded_fw.h b/include/linux/efi_embedded_fw.h
+index a97a12bb2c9e..01105c38a309 100644
+--- a/include/linux/efi_embedded_fw.h
++++ b/include/linux/efi_embedded_fw.h
+@@ -34,7 +34,7 @@ struct efi_embedded_fw_desc {
+ 	u8 sha256[32];
+ };
+ 
+-extern const struct dmi_system_id touchscreen_dmi_table[];
++extern const struct dmi_system_id dmi_device_properties[];
+ 
+ int efi_get_embedded_fw(const char *name, const u8 **dat, size_t *sz);
+ 
+-- 
+2.31.1
+
