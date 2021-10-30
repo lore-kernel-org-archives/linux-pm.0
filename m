@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B2F4C433EF
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:29:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E31BC4332F
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:29:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 28DC761040
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:29:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3CCA061054
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Oct 2021 18:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232114AbhJ3Sbh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 30 Oct 2021 14:31:37 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:38856 "EHLO
+        id S232068AbhJ3Sbq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Oct 2021 14:31:46 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:27604 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232076AbhJ3SbW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Oct 2021 14:31:22 -0400
+        by vger.kernel.org with ESMTP id S232148AbhJ3Sb2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Oct 2021 14:31:28 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1635618530;
+        s=mimecast20190719; t=1635618537;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/bfr/J+hsxQ0Z01UTG2JJSH9Wj47Az2V8snWyLCXfIg=;
-        b=ZrgvTVIRap9Ga8nqI011dodvQADRHGmCz7qmw10KBuSfDrE2xK9UEGrp16CulpwF55y7hX
-        wlBZ1kVxJN4ziaAzt9uDCx0atm235lVN80Xn5qlAmWG5VBLa4G0FhuIUmYFPgkY0/9vsZx
-        wuN3rN9/tj5YDg9bVM8x/n8oEOxXJ9E=
+        bh=EUspNMepzsV3gt9zAr51OvvfE1pc4mjqmhHE949y10A=;
+        b=RV14bmf9MJp//z1Tkl25W9dFKbN5Oi2UQA3Vhei8pXiEkfZCTcIMtljjiETf1ijmWAUEGB
+        ew9JcR2aJkwO0RR1FJRe8JgbwKqVhmiPv+2UqLDChfrZlvpfnPpyjXIiXoHaiQ0ioaODuK
+        3hCb50p+wsztwHZzx0Cm3HU3xMnpXdM=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-506--IRfLJ7hO1a66JEzzKlLJg-1; Sat, 30 Oct 2021 14:28:47 -0400
-X-MC-Unique: -IRfLJ7hO1a66JEzzKlLJg-1
+ us-mta-209-bnG8VKYiNyujiy2At0-kPA-1; Sat, 30 Oct 2021 14:28:53 -0400
+X-MC-Unique: bnG8VKYiNyujiy2At0-kPA-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 579D710A8E07;
-        Sat, 30 Oct 2021 18:28:45 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9B5048018AC;
+        Sat, 30 Oct 2021 18:28:51 +0000 (UTC)
 Received: from x1.localdomain (unknown [10.39.192.75])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 896A55F4E1;
-        Sat, 30 Oct 2021 18:28:42 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id B83845F4E1;
+        Sat, 30 Oct 2021 18:28:48 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Mark Gross <markgross@kernel.org>,
         Andy Shevchenko <andy@infradead.org>,
@@ -50,9 +50,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>,
         platform-driver-x86@vger.kernel.org, linux-i2c@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-efi@vger.kernel.org
-Subject: [PATCH 09/13] power: supply: bq25890: Add bq25890_set_otg_cfg() helper
-Date:   Sat, 30 Oct 2021 20:28:09 +0200
-Message-Id: <20211030182813.116672-10-hdegoede@redhat.com>
+Subject: [PATCH 11/13] i2c: cht-wc: Add support for devices using a bq25890 charger
+Date:   Sat, 30 Oct 2021 20:28:11 +0200
+Message-Id: <20211030182813.116672-12-hdegoede@redhat.com>
 In-Reply-To: <20211030182813.116672-1-hdegoede@redhat.com>
 References: <20211030182813.116672-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -62,66 +62,142 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a bq25890_set_otg_cfg() helper function, this is a preparation
-patch for adding regulator support.
+The i2c-controller on the Cherry Trail - Whiskey Cove PMIC is special
+in that it is always connected to the I2C charger IC of the board on
+which the PMIC is used; and the charger IC is not described in ACPI,
+so the i2c-cht-wc code needs to instantiate an i2c-client for it itself.
+
+So far there has been a rudimentary check to make sure the ACPI tables
+are at least somewhat as expected by checking for the presence of an
+INT33FE device and sofar the code has assumed that if this INT33FE
+device is present that the used charger then is a bq24290i.
+
+But some boards with an INT33FE device in their ACPI tables use a
+different charger IC and some boards don't have an INT33FE device at all.
+
+Since the information about the used charger + fuel-gauge + other chips is
+necessary in other places too, the kernel now adds a "intel,cht-wc-setup"
+string property to the Whiskey Cove PMIC i2c-client based on DMI matching,
+which reliably describes the board's setup of the PMIC.
+
+Switch to using the "intel,cht-wc-setup" property and add support for
+instantiating an i2c-client for either a bq24292i or a bq25890 charger.
+
+This has been tested on a GPD pocket (which uses the old bq24292i setup)
+and on a Xiaomi Mi Pad 2 with a bq25890 charger.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq25890_charger.c | 28 ++++++++++++++------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ drivers/i2c/busses/i2c-cht-wc.c | 77 +++++++++++++++++++++++++--------
+ 1 file changed, 59 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 163ca5d761aa..7504e30f1e4d 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -773,6 +773,17 @@ static int bq25890_power_supply_init(struct bq25890_device *bq)
- 	return PTR_ERR_OR_ZERO(bq->charger);
- }
+diff --git a/drivers/i2c/busses/i2c-cht-wc.c b/drivers/i2c/busses/i2c-cht-wc.c
+index 1cf68f85b2e1..e7d62af6c39d 100644
+--- a/drivers/i2c/busses/i2c-cht-wc.c
++++ b/drivers/i2c/busses/i2c-cht-wc.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/power/bq24190_charger.h>
++#include <linux/power/bq25890_charger.h>
+ #include <linux/slab.h>
  
-+static int bq25890_set_otg_cfg(struct bq25890_device *bq, u8 val)
-+{
-+	int ret;
+ #define CHT_WC_I2C_CTRL			0x5e24
+@@ -304,18 +305,55 @@ static struct bq24190_platform_data bq24190_pdata = {
+ 	.regulator_init_data = &bq24190_vbus_init_data,
+ };
+ 
++static struct i2c_board_info bq24190_board_info = {
++	.type = "bq24190",
++	.addr = 0x6b,
++	.dev_name = "bq24190",
++	.swnode = &bq24190_node,
++	.platform_data = &bq24190_pdata,
++};
 +
-+	ret = bq25890_field_write(bq, F_OTG_CFG, val);
-+	if (ret < 0)
-+		dev_err(bq->dev, "Error switching to boost/charger mode: %d\n", ret);
++static struct regulator_consumer_supply bq25890_vbus_consumer = {
++	.supply = "vbus",
++	.dev_name = "cht_wcove_pwrsrc",
++};
 +
-+	return ret;
-+}
++static const struct regulator_init_data bq25890_vbus_init_data = {
++	.constraints = {
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
++	},
++	.consumer_supplies = &bq25890_vbus_consumer,
++	.num_consumer_supplies = 1,
++};
 +
- static void bq25890_usb_work(struct work_struct *data)
++static struct bq25890_platform_data bq25890_pdata = {
++	.regulator_init_data = &bq25890_vbus_init_data,
++};
++
++static const struct property_entry bq25890_props[] = {
++	PROPERTY_ENTRY_BOOL("ti,skip-init"),
++	{ }
++};
++
++static const struct software_node bq25890_node = {
++	.properties = bq25890_props,
++};
++
++static struct i2c_board_info bq25890_board_info = {
++	.type = "bq25890",
++	.addr = 0x6a,
++	.dev_name = "bq25890",
++	.swnode = &bq25890_node,
++	.platform_data = &bq25890_pdata,
++};
++
+ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
  {
- 	int ret;
-@@ -782,25 +793,16 @@ static void bq25890_usb_work(struct work_struct *data)
- 	switch (bq->usb_event) {
- 	case USB_EVENT_ID:
- 		/* Enable boost mode */
--		ret = bq25890_field_write(bq, F_OTG_CFG, 1);
--		if (ret < 0)
--			goto error;
-+		bq25890_set_otg_cfg(bq, 1);
- 		break;
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
++	struct i2c_board_info *board_info = NULL;
+ 	struct cht_wc_i2c_adap *adap;
+-	struct i2c_board_info board_info = {
+-		.type = "bq24190",
+-		.addr = 0x6b,
+-		.dev_name = "bq24190",
+-		.swnode = &bq24190_node,
+-		.platform_data = &bq24190_pdata,
+-	};
+ 	int ret, reg, irq;
++	const char *str;
  
- 	case USB_EVENT_NONE:
- 		/* Disable boost mode */
--		ret = bq25890_field_write(bq, F_OTG_CFG, 0);
--		if (ret < 0)
--			goto error;
--
--		power_supply_changed(bq->charger);
-+		ret = bq25890_set_otg_cfg(bq, 0);
-+		if (ret == 0)
-+			power_supply_changed(bq->charger);
- 		break;
- 	}
--
--	return;
--
--error:
--	dev_err(bq->dev, "Error switching to boost/charger mode.\n");
- }
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+@@ -379,17 +417,20 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto remove_irq_domain;
  
- static int bq25890_usb_notifier(struct notifier_block *nb, unsigned long val,
+-	/*
+-	 * Normally the Whiskey Cove PMIC is paired with a TI bq24292i charger,
+-	 * connected to this i2c bus, and a max17047 fuel-gauge and a fusb302
+-	 * USB Type-C controller connected to another i2c bus. In this setup
+-	 * the max17047 and fusb302 devices are enumerated through an INT33FE
+-	 * ACPI device. If this device is present register an i2c-client for
+-	 * the TI bq24292i charger.
+-	 */
+-	if (acpi_dev_present("INT33FE", NULL, -1)) {
+-		board_info.irq = adap->client_irq;
+-		adap->client = i2c_new_client_device(&adap->adapter, &board_info);
++	ret = device_property_read_string(pdev->dev.parent, "intel,cht-wc-setup", &str);
++	if (ret)
++		dev_warn(&pdev->dev, "intel,cht-wc-setup not set, not instantiating charger device\n");
++	else if (!strcmp(str, "bq24292i,max17047,fusb302,pi3usb30532"))
++		board_info = &bq24190_board_info;
++	else if (!strcmp(str, "bq25890,bq27520"))
++		board_info = &bq25890_board_info;
++	else
++		dev_warn(&pdev->dev, "Unknown intel,cht-wc-setup value: '%s', not instantiating charger device\n",
++			 str);
++
++	if (board_info) {
++		board_info->irq = adap->client_irq;
++		adap->client = i2c_new_client_device(&adap->adapter, board_info);
+ 		if (IS_ERR(adap->client)) {
+ 			ret = PTR_ERR(adap->client);
+ 			goto del_adapter;
 -- 
 2.31.1
 
