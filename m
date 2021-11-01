@@ -2,159 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9551CC433F5
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Nov 2021 01:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DC4BC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Nov 2021 08:45:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7BC0960EBB
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Nov 2021 01:57:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DDD4B60FC4
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Nov 2021 08:45:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230460AbhKACAG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 31 Oct 2021 22:00:06 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38910 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230234AbhKACAF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 31 Oct 2021 22:00:05 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 96C77610E5;
-        Mon,  1 Nov 2021 01:57:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1635731852;
-        bh=fuaUan8WpsO3AU0Pd876OqdiQB5S59Rz/RFmfxHCqFo=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=WTZ2r/aqsZBJ/SEMp/W5aRRvu0wWWG+qZmM8hZPwjrObwwMpW1TgXwf1zWnw0Qa9i
-         Zv/YGYWGYxl7myNvWxfw0CIgJUc9b2/XePq2AH0H37XLuqx44GHHVjgkb3ys6UwuYH
-         QFUJSlyCI2x3AldpppHi6cKlbUrpf5epTIwYkQ0LyIddZNVrNNmKUj9pq1nkh3vhav
-         ePFznWLS5KXHwuBhRZexeraVkFwzXRLP/38HX/OFwy/5mrR8Hs9LdC9PbwjoOwqbNV
-         ADgrJu7beLvyyJTcpsvn3lAsea5miSCymSsM2dL/H4uMyDHc1oqmdVcUWCHL7cYIF+
-         w+SQ6/88DMfNA==
-Received: by mail-yb1-f173.google.com with SMTP id q74so34927729ybq.11;
-        Sun, 31 Oct 2021 18:57:32 -0700 (PDT)
-X-Gm-Message-State: AOAM532NZZipZ4PmQd8aebdgMaPN+5gcICkzFLd/y8dVP59BicYUBfRR
-        GiO3PJt2T6KiHFhFuW8wOniKZgqQn/AFtYLfgjc=
-X-Google-Smtp-Source: ABdhPJwLzr48xvkbPUYNSwW4wG4jcRHULAsaxHDgvLOaeOhiDi1MY+7mZCeP1WaifSe+QfUYgjKQrdu4XIYT2pTMgvI=
-X-Received: by 2002:ab0:6883:: with SMTP id t3mr16913634uar.66.1635731841194;
- Sun, 31 Oct 2021 18:57:21 -0700 (PDT)
-MIME-Version: 1.0
-References: <20211027211715.12671-1-digetx@gmail.com> <20211027211715.12671-13-digetx@gmail.com>
-In-Reply-To: <20211027211715.12671-13-digetx@gmail.com>
-From:   Guo Ren <guoren@kernel.org>
-Date:   Mon, 1 Nov 2021 09:57:10 +0800
-X-Gmail-Original-Message-ID: <CAJF2gTT+EsLt+pnYyTw_B0C8isho=E4tfOWROe9h-GZpYjET=w@mail.gmail.com>
-Message-ID: <CAJF2gTT+EsLt+pnYyTw_B0C8isho=E4tfOWROe9h-GZpYjET=w@mail.gmail.com>
-Subject: Re: [PATCH v2 12/45] csky: Use do_kernel_power_off()
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Russell King <linux@armlinux.org.uk>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Ungerer <gerg@linux-m68k.org>,
-        Joshua Thompson <funaho@jurai.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Nick Hu <nickhu@andestech.com>,
-        Greentime Hu <green.hu@gmail.com>,
-        Vincent Chen <deanbo422@gmail.com>,
-        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        Len Brown <lenb@kernel.org>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-        Tony Lindgren <tony@atomide.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Avi Fishman <avifishman70@gmail.com>,
-        Tomer Maimon <tmaimon77@gmail.com>,
-        Tali Perry <tali.perry1@gmail.com>,
-        Patrick Venture <venture@google.com>,
-        Nancy Yuen <yuenn@google.com>,
-        Benjamin Fair <benjaminfair@google.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-csky@vger.kernel.org, linux-ia64@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org,
-        linux-acpi@vger.kernel.org, linux-omap@vger.kernel.org,
-        openbmc@lists.ozlabs.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        id S231223AbhKAIrt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Nov 2021 04:47:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34848 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229933AbhKAIrs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Nov 2021 04:47:48 -0400
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6158C061714;
+        Mon,  1 Nov 2021 01:45:14 -0700 (PDT)
+Received: by mail-pg1-x532.google.com with SMTP id a9so6098031pgg.7;
+        Mon, 01 Nov 2021 01:45:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=f1aM0liuQiUnZidsG25E4ygJDFmlMCmn077fjqBMsr4=;
+        b=Zni+oJwmasb76gqTCs14hhZFS1yInjCuykHry5Hw0FUS6SGH0ZvvWDITIlctRG3pVh
+         YH+jxTZDL7vWFNbkKVmO0Vz/mqfj4Fc/WBMB7D/UU3W0SNsQi0ROIap4LyMKa/TlgHAL
+         hY8K6aU/ycrEFiGM6H1vFcEqD2poOu66+bT26MOEzPFxvoIueNl1wdZkwHG5ORhMxFiN
+         MBAtxB31e0sCaj+fle8JLSAP2dpDRCmqZW3IbGLtV7sl/1vg+BpVSiMvmOWY326LcoS7
+         t4g2tA4l0lm1HMYx/vS6f6nty/cpLNwZ/0tJMIiyT70YsmOHag1gIX0O7Eeb5tHIM+ns
+         qNYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=f1aM0liuQiUnZidsG25E4ygJDFmlMCmn077fjqBMsr4=;
+        b=c9oIvH/W6BPUD2DEec0wvNh54inEZETKd4VXw1mYcRkwC+PPUgwkMPK/s39EHqwtfP
+         JCQQUzjf+gd4lxpSTTHrDzszAb90Sme+MEbdUVwOBnCJCQnt56r9NRqWveQS3Xoh2aIE
+         AwdOYMuAaqxqFWXhMTCSXYmpZH36+86+HccS+6tOxLm/k2JrncLcrvOzPJ6aunydBKmo
+         wjEwqOvi9vaJsksjyaQprSqeBm5kwMst4hmEEVsonWbY8+t6Cx8lM8rGPX62waBw8C92
+         /n1/zZpdu5Bc8olcHjTfoomuSYVnSV7EaMqiYynwIzBuvgeZ4LEwLdXimlBB72/XvKRe
+         mQBQ==
+X-Gm-Message-State: AOAM530J4fT2DSm4fZucolSNrhucA4Ogvq26mk2+QA/AaYaWdbU6TbTw
+        PHB2GWRmmuLhgTJniDrStiE=
+X-Google-Smtp-Source: ABdhPJyieHWTTLi1/2UKr+UDFggR2CiUjE9KXutu6HsGJ5HjbZG0HbKvRojJfsaOGUYnv4K24gB6EQ==
+X-Received: by 2002:a63:954a:: with SMTP id t10mr20910388pgn.89.1635756313992;
+        Mon, 01 Nov 2021 01:45:13 -0700 (PDT)
+Received: from scdiu3.sunplus.com ([113.196.136.192])
+        by smtp.googlemail.com with ESMTPSA id nv5sm13406574pjb.10.2021.11.01.01.45.11
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 01 Nov 2021 01:45:13 -0700 (PDT)
+From:   "LH.Kuo" <lhjeff911@gmail.com>
+X-Google-Original-From: "LH.Kuo" <lh.kuo@sunplus.com>
+To:     rafael@kernel.org, daniel.lezcano@linaro.org, amitk@kernel.org,
+        rui.zhang@intel.com, robh+dt@kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     qinjian@cqplus1.com, wells.lu@sunplus.com,
+        "LH.Kuo" <lh.kuo@sunplus.com>
+Subject: [PATCH 0/2] Add THERMAL control driver for Sunplus SP7021 SoC
+Date:   Mon,  1 Nov 2021 16:45:08 +0800
+Message-Id: <1635756310-25415-1-git-send-email-lh.kuo@sunplus.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Only for this patch, Acked-by: Guo Ren <guoren@kernel.org>
+This is a patch series for THERMAL driver for Sunplus SP7021 SoC.
 
-On Thu, Oct 28, 2021 at 5:18 AM Dmitry Osipenko <digetx@gmail.com> wrote:
->
-> Kernel now supports chained power-off handlers. Use do_kernel_power_off()
-> that invokes chained power-off handlers. It also invokes legacy
-> pm_power_off() for now, which will be removed once all drivers will
-> be converted to the new power-off API.
->
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  arch/csky/kernel/power.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/csky/kernel/power.c b/arch/csky/kernel/power.c
-> index 923ee4e381b8..86ee202906f8 100644
-> --- a/arch/csky/kernel/power.c
-> +++ b/arch/csky/kernel/power.c
-> @@ -9,16 +9,14 @@ EXPORT_SYMBOL(pm_power_off);
->  void machine_power_off(void)
->  {
->         local_irq_disable();
-> -       if (pm_power_off)
-> -               pm_power_off();
-> +       do_kernel_power_off();
->         asm volatile ("bkpt");
->  }
->
->  void machine_halt(void)
->  {
->         local_irq_disable();
-> -       if (pm_power_off)
-> -               pm_power_off();
-> +       do_kernel_power_off();
->         asm volatile ("bkpt");
->  }
->
-> --
-> 2.33.1
->
+Sunplus SP7021 is an ARM Cortex A7 (4 cores) based SoC. It integrates
+many peripherals (ex: UART, I2C, SPI, SDIO, eMMC, USB, SD card and
+etc.) into a single chip. It is designed for industrial control.
 
+Refer to:
+https://sunplus-tibbo.atlassian.net/wiki/spaces/doc/overview
+https://tibbo.com/store/plus1.html
+
+LH.Kuo (2):
+  THERMAL: Add THERMAL driver for Sunplus SP7021
+  devicetree bindings THERMAL Add bindings doc for Sunplus SP7021
+
+ .../bindings/thermal/sunplus_thermal.yaml          |  52 ++++
+ MAINTAINERS                                        |   7 +
+ drivers/thermal/Kconfig                            |  10 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/sunplus_thermal.c                  | 287 +++++++++++++++++++++
+ 5 files changed, 357 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sunplus_thermal.yaml
+ create mode 100644 drivers/thermal/sunplus_thermal.c
 
 -- 
-Best Regards
- Guo Ren
+2.7.4
 
-ML: https://lore.kernel.org/linux-csky/
