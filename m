@@ -2,58 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07ADBC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9366C4321E
 	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 23:27:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E7B9060FC2
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 23:27:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF927610C8
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 23:27:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230157AbhKBXaC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Nov 2021 19:30:02 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51668 "EHLO mail.kernel.org"
+        id S231209AbhKBXaD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Nov 2021 19:30:03 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51650 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230054AbhKBXaB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S229747AbhKBXaB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 2 Nov 2021 19:30:01 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPS id 503D4610C8;
+Received: by mail.kernel.org (Postfix) with ESMTPS id 1B17F60EB9;
         Tue,  2 Nov 2021 23:27:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=k20201202; t=1635895646;
-        bh=AZzvbICg6oX/qle33P5Mj8FEVwJ7uNj/Ar0srUdXO5M=;
+        bh=+zP3aXeZUnrEHWlfJCQ0jXmyDaxPAiLydng20BVxsDU=;
         h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=WfxFTn2DstR0Rr6ZipgEU/hs7n9DdsX5R5Lzi7Z0K/W2kRhH1aitGp6Kbs9mhHq4p
-         O7ktjAV0mEOo9Ib5yfxQWl+d6Sx5RoD6PzlGR9NMYrJkhk9G9g7itGWWDRBnqZrRT0
-         wfbHond+qCioOkdgZkpO8Byo0uQAwRw+L+AZhkRdWAdU6a1FSO/925+F39zjTsXgSV
-         VSbEQO3JFhgolUwOr8z5YPmBJTZVMpSiUgyLc13MZlFnxLDNDV3rQqRWbvlNbMvb6h
-         gKPpm0sGOe7GnJMtAJZt05eZf+Y1PDcxIUv3V1xGFDbPwLdf9/Q1vOin+0TXchLVxa
-         aT5pA2xMVv4hw==
-Subject: Re: [GIT PULL] Thermal control updates for v5.16-rc1
+        b=bphAaV0L87flv9TU2MN/oKhkXhAGgMobboPOO2madO1hnMebEtJwWkyFY9iBhbLzU
+         ot8hem09SoGiJ3NiZx1wtLv1PX25oE2aIW63WdpjK7c6Tv23JCWBLFKPiImtNSCAdf
+         fo1zFM4gcQjqtasMIIsoxP7XiASb65UCTNOoDj4GTg5sNWRiWWRYvgPbaCE1GJUg5X
+         nUqQcnD5ALDAxyQc7N9cjLo/ASg8XOS9cX4YH0dxy6HVQD9y2PK3UZkOB67tRTN46e
+         siABbk8dL2HUikKwvmBVr/t1f7UzKmBJRsG2cK6koEwq4cd1jPKNdiOlgiuKsF/2e4
+         36VpzRbNtpuFw==
+Subject: Re: [GIT PULL] ACPI updates for v5.16-rc1
 From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0hnj0zCXsZy0=Ukud3U_cn054GULmHmpz7Qrpg_TkLLqA@mail.gmail.com>
-References: <CAJZ5v0hnj0zCXsZy0=Ukud3U_cn054GULmHmpz7Qrpg_TkLLqA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jT44cw=Ls=imqBs1ErO60tbeDnOhD-wGPjPe9L=aa1=Q@mail.gmail.com>
+References: <CAJZ5v0jT44cw=Ls=imqBs1ErO60tbeDnOhD-wGPjPe9L=aa1=Q@mail.gmail.com>
 X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0hnj0zCXsZy0=Ukud3U_cn054GULmHmpz7Qrpg_TkLLqA@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-5.16-rc1
-X-PR-Tracked-Commit-Id: 46e9f92f31e67385fab8b49c030635415f36b362
+X-PR-Tracked-Message-Id: <CAJZ5v0jT44cw=Ls=imqBs1ErO60tbeDnOhD-wGPjPe9L=aa1=Q@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.16-rc1
+X-PR-Tracked-Commit-Id: 90e17edac46882ee5fa4dfb6a72956b89dd188f3
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: f73cd9c951a9dc23f0ee1260fef5cc61d2825fb3
-Message-Id: <163589564629.24792.5376351556602801863.pr-tracker-bot@kernel.org>
-Date:   Tue, 02 Nov 2021 23:27:26 +0000
+X-PR-Merge-Commit-Id: c0d6586afa3546a3d148cf4b9d9a407b4f79d0bb
+Message-Id: <163589564596.24792.10451054427710528764.pr-tracker-bot@kernel.org>
+Date:   Tue, 02 Nov 2021 23:27:25 +0000
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Tue, 2 Nov 2021 20:54:53 +0100:
+The pull request you sent on Tue, 2 Nov 2021 20:51:24 +0100:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git thermal-5.16-rc1
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.16-rc1
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/f73cd9c951a9dc23f0ee1260fef5cc61d2825fb3
+https://git.kernel.org/torvalds/c/c0d6586afa3546a3d148cf4b9d9a407b4f79d0bb
 
 Thank you!
 
