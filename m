@@ -2,126 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A606C433FE
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 16:41:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00453C433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 16:55:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 61F0F60E90
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 16:41:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DC32A60F24
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Nov 2021 16:55:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234709AbhKBQn5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Nov 2021 12:43:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43720 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234718AbhKBQn4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Nov 2021 12:43:56 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96FE5C061714;
-        Tue,  2 Nov 2021 09:41:21 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id 7A07F1F44D9D
-Received: by earth.universe (Postfix, from userid 1000)
-        id C75243C0F95; Tue,  2 Nov 2021 17:41:17 +0100 (CET)
-Date:   Tue, 2 Nov 2021 17:41:17 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Hans de Goede <hdegoede@redhat.com>
-Cc:     Andy Shevchenko <andy.shevchenko@gmail.com>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Platform Driver <platform-driver-x86@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Andrew F . Davis" <afd@ti.com>
-Subject: Re: [PATCH v2] power: supply: bq27xxx: Fix kernel crash on IRQ
- handler register error
-Message-ID: <20211102164117.pnbpvephlh4wgrwb@earth.universe>
-References: <20211031152522.3911-1-hdegoede@redhat.com>
- <CAHp75Vc6GO4e0_Qp6HfFtd_kbSakaMXsQN4oEPArdmMrxTFb7A@mail.gmail.com>
- <20211102132352.yqazgy2njnbthujb@earth.universe>
- <e74947c4-74c8-a17e-f4cb-752a79851954@redhat.com>
+        id S234634AbhKBQ5v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Nov 2021 12:57:51 -0400
+Received: from mail-ot1-f44.google.com ([209.85.210.44]:42657 "EHLO
+        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230295AbhKBQ5u (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Nov 2021 12:57:50 -0400
+Received: by mail-ot1-f44.google.com with SMTP id v19-20020a9d69d3000000b00555a7318f31so18758998oto.9
+        for <linux-pm@vger.kernel.org>; Tue, 02 Nov 2021 09:55:15 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=To6Ko6Gb52pzhxdQAB06u40uOhTDZbJPfaxQ9g15+Zo=;
+        b=yxZRrKXqS5KsAjp3gldqhIxVxDtzwsiQt8W06bMiSwk90Swa+Aw8WaAdkxNblMkvWT
+         /AaE3GiIsuFlnkX3sfOHMc93p0NK96jz7ZdtSf54LysWhEXZ0yO4ois4T0SD2a3aKfTh
+         6byipt5zSbm7Js8jNTuUlBQ3uXY0CBBMohNm4EUkcATqYsBczvdVfpZH39Jv2BFaoeAZ
+         9yJFYW0o1JO61FqVRwUgIiOReVuRQLh0zmhHCPHUqrfsRYOvfTvEvHIa+w0v5huIPXft
+         OluAWfgABk4yJVy5in/qV/oTtg/9K+IARpJFYgpq5qLfqo+SmWSLhV6Hjaa4tV1geuqr
+         6xYA==
+X-Gm-Message-State: AOAM530reRZUqQVrIWun4ipg6CHCFv9f+ZyNpNz2zTBUkR3CVZ4XuNMq
+        FXOaG5wiM+N3mbiiGnfLgY1Jlf76DBXgc4t5LTA=
+X-Google-Smtp-Source: ABdhPJy6KqWsBfr0nBtiN95IxfF1h68lyAgkrRLFMhi4QDss4cUv/LpIdV1Zl0PRyAhe/v7RiDTKgFQC13K895CYeBM=
+X-Received: by 2002:a05:6830:3484:: with SMTP id c4mr11147573otu.254.1635872115278;
+ Tue, 02 Nov 2021 09:55:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="trige6lnttlhwn57"
-Content-Disposition: inline
-In-Reply-To: <e74947c4-74c8-a17e-f4cb-752a79851954@redhat.com>
+References: <20211102035847.52yvfw4ywbxrtqhf@vireshk-i7>
+In-Reply-To: <20211102035847.52yvfw4ywbxrtqhf@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 2 Nov 2021 17:55:04 +0100
+Message-ID: <CAJZ5v0inzRNAU3SAFahmobEkudHgzRETWHPZED4jgcBFN9S5Xg@mail.gmail.com>
+Subject: Re: OPP updates for 5.16-rc1
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Tue, Nov 2, 2021 at 4:58 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> Hi Rafael,
+>
+> This pull request contains following changes:
+>
+> - Fix return value of _opp_add_static_v2() helper (YueHaibing).
+>
+> - Fix required-opp handle count (Pavankumar Kondeti).
+>
+> - Resource managed OPP helpers, type update to
+>   dev_pm_opp_attach_genpd() and update to their devfreq users, and
+>   minor DT binding change (Dmitry Osipenko).
+>
+> Thanks.
+>
+> --
+> Viresh
+>
+> -------------------------8<-------------------------
+>
+> The following changes since commit 6880fa6c56601bb8ed59df6c30fd390cc5f6dd8f:
+>
+>   Linux 5.15-rc1 (2021-09-12 16:28:37 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/linux-next
+>
+> for you to fetch changes up to 7ca81b690e598fdf16a6c738a466247ef9be7ac7:
+>
+>   dt-bindings: opp: Allow multi-worded OPP entry name (2021-11-02 09:25:05 +0530)
 
---trige6lnttlhwn57
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Hans,
-
-On Tue, Nov 02, 2021 at 03:12:51PM +0100, Hans de Goede wrote:
-> Hi Sebastian,
->=20
-> On 11/2/21 14:23, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > On Sun, Oct 31, 2021 at 09:34:46PM +0200, Andy Shevchenko wrote:
-> >> On Sun, Oct 31, 2021 at 5:25 PM Hans de Goede <hdegoede@redhat.com> wr=
-ote:
-> >>>
-> >>> When registering the IRQ handler fails, do not just return the error =
-code,
-> >>> this will free the devm_kzalloc()-ed data struct while leaving the qu=
-eued
-> >>> work queued and the registered power_supply registered with both of t=
-hem
-> >>> now pointing to free-ed memory, resulting in various kernel crashes
-> >>> soon afterwards.
-> >>>
-> >>> Instead properly tear-down things on IRQ handler register errors.
-> >>
-> >> FWIW,
-> >> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> >=20
-> > Thanks, queued.
->=20
-> Thank you, note these 2 patches (for the bq25980 driver) are also
-> pure bug-fixes, I posted them as part of a larger series, but
-> in hindsight I should have probably posted them separately:
->=20
-> https://lore.kernel.org/platform-driver-x86/20211030182813.116672-4-hdego=
-ede@redhat.com/
-> https://lore.kernel.org/platform-driver-x86/20211030182813.116672-5-hdego=
-ede@redhat.com/
->=20
-> It would be good if you can pick these 2 up too
-> (I'll respin the rest of the series to address various
-> review comments without them then).
-> Let me know if you want me to resend these 2 as a stand alone
-> series.
-
-Thanks for the pointer, I queued both of them. I had to slightly
-rebase, since your base did not include 172d0ccea55c. I have not
-yet reviewed the remaining patchset, but considering there are more
-patches to bq25890 a rebase would be ncie.
-
-Greetings,
-
--- Sebastian
-
---trige6lnttlhwn57
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmGBaiYACgkQ2O7X88g7
-+prPEw/7BK4/d6vHO+t3ZgIuXcTgzREZot5nMRhqnKe5slPDJ32aTn8tdWwIOn0p
-WA6tL0645Ktvkfx/DmDlEnwU9hJq0Bg4EUH8Fo8wrd9DyNtkt/vvtx5NVcEa+W3K
-Lvtawc0+skeicsoOtJP/6qKgbWtZa+RsrCeYzjx9kJm9iqgzFCQH4gzgF+1THcNh
-93EG+EmmZbVHprwvYWXFKroBk5quvT3/1yaiuvgUqSUWgpGSPUpszYDb/K79u0US
-1oKyHXzPS6z9ColrkSwvfxXn8jvfTCPROlJnyhljjkpsxWY2ro6zU58e4zf7mqY+
-OTUr2wbMb7CGhILuj43A+IaPqm4dzBZ5B2zH18spqI3Ogm44x+5PJlDAOGAjRoR6
-P+jsS7aI7+QY3zLVNF1hs/quowAsOwPhaojOumcbp3XtPQhv4HP2vW5B5ndjQNEW
-Ps2c6pKho+MwPSNJAbXGc4BQxAXmLmshfLzTbjoEmiuMbsrPNekauhN5lnrZMqoz
-4xDqy1LEM7evf2p4GXgbfKBtTDZWi7dGJ9gmn8uDCjZXZtO8Rr7NEFOnbCI1hhbz
-HAcjSIgVacBP4wfp3ULGTN3cUbPJNZOcOOxFau5gOmXBMlMz8nt8QdpFxoRmyXOT
-G8ROJ4Pki8DXcrPde3eHzt0bVljTWzDhJwuF6dFpe5/nXIVzpLU=
-=w4zN
------END PGP SIGNATURE-----
-
---trige6lnttlhwn57--
+Pulled, thanks!
