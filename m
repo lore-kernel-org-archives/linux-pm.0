@@ -2,101 +2,157 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0869AC433EF
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Nov 2021 09:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB8C8C433F5
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Nov 2021 11:55:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D1C586124F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Nov 2021 09:46:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 81C086120A
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Nov 2021 11:55:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230175AbhKEJtE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Nov 2021 05:49:04 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:15109 "EHLO m43-7.mailgun.net"
+        id S232467AbhKEL61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Nov 2021 07:58:27 -0400
+Received: from mga14.intel.com ([192.55.52.115]:18600 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232760AbhKEJtD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Nov 2021 05:49:03 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1636105584; h=Message-ID: References: In-Reply-To: Subject:
- Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
- MIME-Version: Sender; bh=R+UMD8HkfHT9XgKs6EYLYkwkLi3PZwCEgoFSlEbrpcM=;
- b=c9EUrHH7vdJGk1/Zuam0eZAyuWlab72djJtNZSlsBm0f3lAouxYyLXNOKfue3IHHFuVF1JJW
- 4Vg/tRRyZjZgFhbmNpWF38f5IEhPweo7wz9zpqY7zSSeP+NvAdZRcmEWau+2cICSpvh9sOsp
- ABaWQ4jjS3PGJVvlNhU0ZjzQuBQ=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n01.prod.us-west-2.postgun.com with SMTP id
- 6184fd6b4d8c23a9d2d10605 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 05 Nov 2021 09:46:19
- GMT
-Sender: manafm=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 0DE73C43460; Fri,  5 Nov 2021 09:46:19 +0000 (UTC)
-Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: manafm)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 6C35AC4338F;
-        Fri,  5 Nov 2021 09:46:18 +0000 (UTC)
+        id S231852AbhKEL60 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Nov 2021 07:58:26 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10158"; a="232134822"
+X-IronPort-AV: E=Sophos;i="5.87,211,1631602800"; 
+   d="scan'208";a="232134822"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Nov 2021 04:55:47 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,211,1631602800"; 
+   d="scan'208";a="490300478"
+Received: from lkp-server02.sh.intel.com (HELO c20d8bc80006) ([10.239.97.151])
+  by orsmga007.jf.intel.com with ESMTP; 05 Nov 2021 04:55:45 -0700
+Received: from kbuild by c20d8bc80006 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1mixou-0007d0-Da; Fri, 05 Nov 2021 11:55:44 +0000
+Date:   Fri, 05 Nov 2021 19:55:09 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ c00ddaa2e79ed178db8f6c06a77ddc41adc06d9e
+Message-ID: <61851b9d.8faa51Pnt3pJfROV%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date:   Fri, 05 Nov 2021 15:16:18 +0530
-From:   manafm@codeaurora.org
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers: thermal: Reset previous low and high trip during
- thermal zone init
-In-Reply-To: <1635883240-24293-1-git-send-email-manafm@codeaurora.org>
-References: <1635883240-24293-1-git-send-email-manafm@codeaurora.org>
-Message-ID: <85d1774df789ec8d528c9b3ea8afef38@codeaurora.org>
-X-Sender: manafm@codeaurora.org
-User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: c00ddaa2e79ed178db8f6c06a77ddc41adc06d9e  Merge branch 'thermal-int340x' into bleeding-edge
 
-Gentle reminder.
+elapsed time: 924m
 
-On 2021-11-03 01:30, Manaf Meethalavalappu Pallikunhi wrote:
-> During the suspend is in process, thermal_zone_device_update bails out
-> thermal zone re-evaluation for any sensor trip violation without
-> setting next valid trip to that sensor. It assumes during resume
-> it will re-evaluate same thermal zone and update trip. But when it is
-> in suspend temperature goes down and on resume path while updating
-> thermal zone if temperature is less than previously violated trip,
-> thermal zone set trip function evaluates the same previous high and
-> previous low trip as new high and low trip. Since there is no change
-> in high/low trip, it bails out from thermal zone set trip API without
-> setting any trip. It leads to a case where sensor high trip or low
-> trip is disabled forever even though thermal zone has a valid high
-> or low trip.
-> 
-> During thermal zone device init, reset thermal zone previous high
-> and low trip. It resolves above mentioned scenario.
-> 
-> Signed-off-by: Manaf Meethalavalappu Pallikunhi <manafm@codeaurora.org>
-> ---
->  drivers/thermal/thermal_core.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.c 
-> b/drivers/thermal/thermal_core.c
-> index 21db445..2b7a0b4 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -477,6 +477,8 @@ static void thermal_zone_device_init(struct
-> thermal_zone_device *tz)
->  {
->  	struct thermal_instance *pos;
->  	tz->temperature = THERMAL_TEMP_INVALID;
-> +	tz->prev_low_trip = -INT_MAX;
-> +	tz->prev_high_trip = INT_MAX;
->  	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
->  		pos->initialized = false;
->  }
+configs tested: 95
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211105
+m68k                          hp300_defconfig
+arm                            qcom_defconfig
+ia64                          tiger_defconfig
+s390                             allmodconfig
+arm                       versatile_defconfig
+mips                       lemote2f_defconfig
+powerpc                      walnut_defconfig
+riscv                            allyesconfig
+sh                           se7712_defconfig
+powerpc                     asp8347_defconfig
+arm                            mmp2_defconfig
+sh                   sh7770_generic_defconfig
+arm                        oxnas_v6_defconfig
+sh                        sh7757lcr_defconfig
+arm                    vt8500_v6_v7_defconfig
+sh                          r7785rp_defconfig
+arm                        cerfcube_defconfig
+mips                      maltasmvp_defconfig
+arm                  randconfig-c002-20211105
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a012-20211105
+x86_64               randconfig-a016-20211105
+x86_64               randconfig-a015-20211105
+x86_64               randconfig-a013-20211105
+x86_64               randconfig-a011-20211105
+x86_64               randconfig-a014-20211105
+i386                 randconfig-a016-20211105
+i386                 randconfig-a014-20211105
+i386                 randconfig-a015-20211105
+i386                 randconfig-a013-20211105
+i386                 randconfig-a011-20211105
+i386                 randconfig-a012-20211105
+arc                  randconfig-r043-20211105
+riscv                randconfig-r042-20211105
+s390                 randconfig-r044-20211105
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20211105
+i386                 randconfig-a005-20211105
+i386                 randconfig-a001-20211105
+i386                 randconfig-a003-20211105
+i386                 randconfig-a004-20211105
+i386                 randconfig-a006-20211105
+i386                 randconfig-a002-20211105
+hexagon              randconfig-r041-20211105
+hexagon              randconfig-r045-20211105
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
