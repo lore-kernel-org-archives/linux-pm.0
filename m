@@ -2,91 +2,164 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9521BC433F5
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Nov 2021 22:02:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 754BDC4321E
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Nov 2021 16:53:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7404F60E78
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Nov 2021 22:02:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F2F061101
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Nov 2021 16:53:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233950AbhKFWEu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 Nov 2021 18:04:50 -0400
-Received: from mga02.intel.com ([134.134.136.20]:10545 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229500AbhKFWEt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 6 Nov 2021 18:04:49 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10160"; a="219270362"
-X-IronPort-AV: E=Sophos;i="5.87,215,1631602800"; 
-   d="scan'208";a="219270362"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2021 15:02:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,215,1631602800"; 
-   d="scan'208";a="502449763"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by orsmga008.jf.intel.com with ESMTP; 06 Nov 2021 15:02:05 -0700
-Date:   Sat, 6 Nov 2021 15:01:21 -0700
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     Borislav Petkov <bp@alien8.de>
-Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        id S235906AbhKGQzx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Nov 2021 11:55:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36250 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235895AbhKGQzr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Nov 2021 11:55:47 -0500
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93E4CC061714;
+        Sun,  7 Nov 2021 08:53:04 -0800 (PST)
+Received: by mail-lf1-x135.google.com with SMTP id b40so1362609lfv.10;
+        Sun, 07 Nov 2021 08:53:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=FuxjUSeidJvAMVHKU9E/d55P+zyTiwTeSCeqf/uVMDo=;
+        b=Lwzfxq5uEYmwUHQaauy1zdfEe4xJydQ9b9Od8uYrwBczi5NJMIekKLJg7wlYTXl+4h
+         aBwFrnzPjUuQZKv1Ia+S222jU8dJElyFhzTX7Y6Z3zgW5uo6fxyJ6Ub7QZuJOpIcD/5G
+         Z5zvDqw9CupdRxfoeBn7XfS8iSTjIzecdpz5R8YfLYHN44fPq2Sj3DZqQfYaE9SGw4KM
+         9QVgWsVoZpReO+np7PVvhGoeoi2Muq2En7xd12JC02FvD5KUvlS8dKa1pfLtqGdyB8C3
+         Q31AQZyOLu3Y3rBXma7EsV9dMapOWW+H7dfnyyasqa2gU34jVZGgiKgGYKDrTdyFanCB
+         8Grw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=FuxjUSeidJvAMVHKU9E/d55P+zyTiwTeSCeqf/uVMDo=;
+        b=3h7BWS4vsfeNsf0u6cAzVWltrHbUiy5pkrxRqklJN0hnSS4vBDCXyZoPdBF3V+jmkP
+         10GGVGqmQEzL50PyvVbH5LIqrxSpwV1cC7tdI+BLQXkOXvu1q0bHtt+8JiQ9XxFdVKst
+         O4+ZbUJttBQl561kl3AWgu6v3bML18ZBxUTIJkG+rBluCHgD0b15oI38w25pvNkJTYaj
+         AFDAl+VF6qxbLisLHPeJgo5dLZ005XN8Fj3oJnSVXfm9SlLUeypKznA9odujmigv1OI3
+         UJqIUMXIVOqSaeBe5MtAqJ37C5HkvtamXB2r3VRO9u7bCyzQFDo7EP7hLOeE2i6ynoS6
+         p1kA==
+X-Gm-Message-State: AOAM532ULEzpzgxyCUvW6BRw4G2YZa2EdEM/UCtsVLRVG/FEx6+x+f8l
+        NaOLZBgPXHSUMzK3sJwjtOTTRckjT6o=
+X-Google-Smtp-Source: ABdhPJyYdIEr6ONtuDBexIQwg75AwiW2LoF8DEUBqYkEbum61pW0vPuGJTsEH8z54RKtLjaAI2MWow==
+X-Received: by 2002:a05:6512:1082:: with SMTP id j2mr64106958lfg.568.1636303982698;
+        Sun, 07 Nov 2021 08:53:02 -0800 (PST)
+Received: from [192.168.2.145] (79-139-182-132.dynamic.spd-mgts.ru. [79.139.182.132])
+        by smtp.googlemail.com with ESMTPSA id c3sm860233lfb.122.2021.11.07.08.53.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 07 Nov 2021 08:53:02 -0800 (PST)
+Subject: Re: [PATCH v2 27/45] mfd: ntxec: Use devm_register_power_handler()
+To:     =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Russell King <linux@armlinux.org.uk>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, x86@kernel.org,
-        linux-doc@vger.kernel.org, Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Aubrey Li <aubrey.li@linux.intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Andi Kleen <ak@linux.intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ricardo Neri <ricardo.neri@intel.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] x86: Add definitions for the Intel Hardware Feedback
- Interface
-Message-ID: <20211106220121.GA29613@ranerica-svr.sc.intel.com>
-References: <20211106013312.26698-1-ricardo.neri-calderon@linux.intel.com>
- <20211106013312.26698-3-ricardo.neri-calderon@linux.intel.com>
- <YYZZWzNWdmeCFBAd@zn.tnic>
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Greg Ungerer <gerg@linux-m68k.org>,
+        Joshua Thompson <funaho@jurai.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Chen-Yu Tsai <wens@csie.org>, Tony Lindgren <tony@atomide.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Vladimir Zapolskiy <vz@mleia.com>,
+        Avi Fishman <avifishman70@gmail.com>,
+        Tomer Maimon <tmaimon77@gmail.com>,
+        Tali Perry <tali.perry1@gmail.com>,
+        Patrick Venture <venture@google.com>,
+        Nancy Yuen <yuenn@google.com>,
+        Benjamin Fair <benjaminfair@google.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+        linux-omap@vger.kernel.org, openbmc@lists.ozlabs.org,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20211027211715.12671-1-digetx@gmail.com>
+ <20211027211715.12671-28-digetx@gmail.com> <YYbqlmOM95q7Hbjo@latitude>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <be0c74c6-05a9-cad5-c285-6626d05f8860@gmail.com>
+Date:   Sun, 7 Nov 2021 19:53:00 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YYZZWzNWdmeCFBAd@zn.tnic>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <YYbqlmOM95q7Hbjo@latitude>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Nov 06, 2021 at 11:30:51AM +0100, Borislav Petkov wrote:
-> On Fri, Nov 05, 2021 at 06:33:07PM -0700, Ricardo Neri wrote:
-> > Add the CPUID feature bit and the model-specific registers needed to
-> > identify and configure the Intel Hardware Feedback Interface.
-> > 
-> > Cc: Andi Kleen <ak@linux.intel.com>
-> > Cc: Aubrey Li <aubrey.li@linux.intel.com>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Cc: Tim Chen <tim.c.chen@linux.intel.com>
-> > Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
-> > Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> > ---
-> >  arch/x86/include/asm/cpufeatures.h | 1 +
-> >  arch/x86/include/asm/msr-index.h   | 6 ++++++
-> >  2 files changed, 7 insertions(+)
-> > 
-> > diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
-> > index d0ce5cfd3ac1..d76d8daf1b2b 100644
-> > --- a/arch/x86/include/asm/cpufeatures.h
-> > +++ b/arch/x86/include/asm/cpufeatures.h
-> > @@ -325,6 +325,7 @@
-> >  #define X86_FEATURE_HWP_ACT_WINDOW	(14*32+ 9) /* HWP Activity Window */
-> >  #define X86_FEATURE_HWP_EPP		(14*32+10) /* HWP Energy Perf. Preference */
-> >  #define X86_FEATURE_HWP_PKG_REQ		(14*32+11) /* HWP Package Level Request */
-> > +#define X86_FEATURE_INTEL_HFI		(14*32+19) /* Hardware Feedback Interface */
+06.11.2021 23:54, Jonathan Neuschäfer пишет:
+> Hi,
 > 
-> X86_FEATURE_HFI
+> On Thu, Oct 28, 2021 at 12:16:57AM +0300, Dmitry Osipenko wrote:
+>> Use devm_register_power_handler() that replaces global pm_power_off
+>> variable and allows to register multiple power-off handlers. It also
+>> provides restart-handler support, i.e. all in one API.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
 > 
-> i.e., without the vendor name is perfectly fine.
+> When I boot with (most of) this patchset applied, I get the warning at
+> kernel/reboot.c:187:
+> 
+> 	/*
+> 	 * Handler must have unique priority. Otherwise call order is
+> 	 * determined by registration order, which is unreliable.
+> 	 */
+> 	WARN_ON(!atomic_notifier_has_unique_priority(&restart_handler_list, nb));
+> 
+> As the NTXEC driver doesn't specify a priority, I think this is an issue
+> to be fixed elsewhere.
+> 
+> Other than that, it works and looks good, as far as I can tell.
+> 
+> 
+> For this patch:
+> 
+> Reviewed-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> Tested-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 
-Thank you very much for looking at the patch Boris! Sure, I can rename
-the feature name.
-
-BR,
-Ricardo
+Thank you. You have conflicting restart handlers, apparently NTXEC
+driver should have higher priority than the watchdog driver. It should
+be a common problem for the watchdog drivers, I will lower watchdog's
+default priority to fix it.
