@@ -2,115 +2,131 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03A6EC433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Nov 2021 06:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AB03C43217
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Nov 2021 07:47:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C499E6137F
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Nov 2021 06:24:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E6CF860F6E
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Nov 2021 07:47:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234628AbhKHG1G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Nov 2021 01:27:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43836 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229807AbhKHG1E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Nov 2021 01:27:04 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2CC57C061570
-        for <linux-pm@vger.kernel.org>; Sun,  7 Nov 2021 22:24:20 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id a20-20020a1c7f14000000b003231d13ee3cso14202828wmd.3
-        for <linux-pm@vger.kernel.org>; Sun, 07 Nov 2021 22:24:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=/mFKB/mv5bkffIro5ePpzmGU5HrIWesOrIj6Lllyq7I=;
-        b=p/lLfn4VmkUyjqCblUK1UM1icSZ7HB9xWt2EY7m40k3TKA/MJt9GjwvG4Tnp5i7O9V
-         Su9/YgvQA/TBGurjWxI0NIkwjXpX89DmV4EU9xC33E0fUw7qIDMk7CKdaKGgU+T2yYFX
-         V2W/cxAvnO+xMRCkZ0FsrSXbAw1cDUf7acfRDwYVqgsotz5jjZf7gqspzVuC2gqINiYk
-         bK1cZwMQ3RFVhXqpxoEu1nMdjrI4x14Rn7gq+c0dzbHeINlIh9oisLcuEyzwNPhqRqr1
-         wLrbWz428RoLr1L0oME1c/midNXV96C8qNTHycRXZctU9B6xIoK5PceRe2mVu1YrVLkz
-         kPyA==
+        id S236560AbhKHHuR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Nov 2021 02:50:17 -0500
+Received: from mail-qk1-f170.google.com ([209.85.222.170]:46929 "EHLO
+        mail-qk1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235081AbhKHHuQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Nov 2021 02:50:16 -0500
+Received: by mail-qk1-f170.google.com with SMTP id bl12so14637691qkb.13;
+        Sun, 07 Nov 2021 23:47:32 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=/mFKB/mv5bkffIro5ePpzmGU5HrIWesOrIj6Lllyq7I=;
-        b=THKrtqej3RX4K26KI30btL5zy2CkR7xL3Fol7Yl6hmCJneCSB4qXVxcIrF6lMoRUfo
-         wJp4k61djhvomd6bhmiu8eg1mNB0qA/wqKgkud4nwNiVWffGfxEdNftLYf7HA4uewT/U
-         Z3IO8ZosUU0FL0zAasgt7WLKyEJCJkjA+fOLRdfsyxkHA4/9eLUknFm8VX1pNBZHavfm
-         ul3IgmDr1XorivOG5XCICZvXmZiM1rlVsWLlH856qdndjmrhZzO8xt6IgbhtG0Odyryy
-         /FINBCuajAMhN9NOcl3JC5buZGIq/JW2us2yGoByD5w7zMTcmMYVrkewmjYmKEHe9685
-         w1aA==
-X-Gm-Message-State: AOAM5319qlmy5Db6Wm68V+mSquSs4nWVvCEjIWb4jajhMrzSWR2tsdV5
-        YQuoYvgxJmovWwaND/x4atfz/g==
-X-Google-Smtp-Source: ABdhPJz5KWW7bCr0dWiMF4ncOh508Su+Z121toq+/l+BBNaBxIps2Q0/RNTAeENjv/6E2iW3PVdDpA==
-X-Received: by 2002:a05:600c:2dc1:: with SMTP id e1mr49881694wmh.170.1636352658107;
-        Sun, 07 Nov 2021 22:24:18 -0800 (PST)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:b284:9762:3896:6957])
-        by smtp.gmail.com with ESMTPSA id j19sm15632779wra.5.2021.11.07.22.24.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Nov 2021 22:24:17 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rafael@kernel.org
-Cc:     linux-pm@vger.kernel.org, daniel.lezcano@linaro.org,
-        "Kenneth R . Crudup" <kenny@panix.com>,
-        kernel test robot <oliver.sang@intel.com>, lkp@lists.01.org,
-        lkp@intel.com, Daniel Lezcano <daniel.lezcano@kernel.org>,
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] powercap/drivers/dtpm_cpu: Fix suspend failure and kernel warning
-Date:   Mon,  8 Nov 2021 07:23:44 +0100
-Message-Id: <20211108062345.273855-1-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20211107095001.GC11442@xsang-OptiPlex-9020>
-References: <20211107095001.GC11442@xsang-OptiPlex-9020>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=niQCVpji9nu8a8Mfie3ofua8MkF1HzpLuS22ys5pvwg=;
+        b=QxhKC3BH6UKmsf+en5LDsE2LBeZaA/X8MZ852CifiBk7lxKwvvQ8DvQzVCJxpn5NLP
+         sUafxXkCujdPkXdjCp08V3qdDG7N1+RyuQ4yRaYSXr9VC8emQREANOjzOZyjMa/6MyZ1
+         ebyXOdDFecNFXOnOI9KCznfXjls9NSdbdlYPIqzXgQKeYmXawyeNbqPk+wpw/iM3p8Qz
+         GYnZJI/gOifPb+tn1N/ez25v3Z+EZKbOTcnsyGCUaB1vQAwldUQHRYwqwJ4JsbCGpA52
+         q/cZpzUYpazcuYCAjvlNWmBhpUmXw2FumJQh7RMmwOl9AidSO6dCrA3Tw6e+d4XChmpJ
+         S2qQ==
+X-Gm-Message-State: AOAM533Ndj5HCg9s4l2OPPgz513/MnYueo8JLiwpRssuUn55AVtH5Ycg
+        pSYGW71BTe5t90Ouy0Kgyqyh+38S0qx3Jg==
+X-Google-Smtp-Source: ABdhPJwQvMewvRjNbN/c0TXq4JonZhcv8d7XAj6/kChLjlMOwqYn6iZDfJo4XDnr1yHj+M1GgRMQ2Q==
+X-Received: by 2002:a05:620a:752:: with SMTP id i18mr6713068qki.453.1636357651412;
+        Sun, 07 Nov 2021 23:47:31 -0800 (PST)
+Received: from mail-qv1-f41.google.com (mail-qv1-f41.google.com. [209.85.219.41])
+        by smtp.gmail.com with ESMTPSA id s13sm5045006qtw.33.2021.11.07.23.47.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 07 Nov 2021 23:47:31 -0800 (PST)
+Received: by mail-qv1-f41.google.com with SMTP id gh1so11375219qvb.8;
+        Sun, 07 Nov 2021 23:47:31 -0800 (PST)
+X-Received: by 2002:a05:6102:3a07:: with SMTP id b7mr71214037vsu.35.1636357641114;
+ Sun, 07 Nov 2021 23:47:21 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20211108004524.29465-1-digetx@gmail.com> <20211108004524.29465-22-digetx@gmail.com>
+In-Reply-To: <20211108004524.29465-22-digetx@gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 8 Nov 2021 08:47:10 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXpW0389_uJR2xg+HCstXanutPxrcRdvgu8kxH1J9T++w@mail.gmail.com>
+Message-ID: <CAMuHMdXpW0389_uJR2xg+HCstXanutPxrcRdvgu8kxH1J9T++w@mail.gmail.com>
+Subject: Re: [PATCH v3 21/25] m68k: Switch to new sys-off handler API
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+        Greg Ungerer <gerg@linux-m68k.org>,
+        Joshua Thompson <funaho@jurai.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+        Helge Deller <deller@gmx.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Lee Jones <lee.jones@linaro.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the ENERGY_MODEL and DTPM_CPU are enabled but actually without
-any energy model, at cpu hotplug time, the dead cpuhp callback fails
-leading to the warning.
+On Mon, Nov 8, 2021 at 1:48 AM Dmitry Osipenko <digetx@gmail.com> wrote:
+> Kernel now supports chained power-off handlers. Use
+> register_power_off_handler() that registers power-off handlers and
+> do_kernel_power_off() that invokes chained power-off handlers. Legacy
+> pm_power_off() will be removed once all drivers will be converted to
+> the new power-off API.
+>
+> Normally arch code should adopt only the do_kernel_power_off() at first,
+> but m68k is a special case because it uses pm_power_off() "inside out",
+> i.e. pm_power_off() invokes machine_power_off() [in fact it does nothing],
+> while it's machine_power_off() that should invoke the pm_power_off(), and
+> thus, we can't convert platforms to the new API separately. There are only
+> two platforms changed here, so it's not a big deal.
+>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 
-Actually, the check could be simplified and we only do an action if
-the dtpm cpu is enabled, otherwise we bail out without error.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Fixes: 7a89d7eacf8e ("powercap/drivers/dtpm: Simplify the dtpm table")
-Reported-by: Kenneth R. Crudup <kenny@panix.com>
-Tested-by: Kenneth R. Crudup <kenny@panix.com>
-Reported-by: kernel test robot <oliver.sang@intel.com>
-Cc: lkp@lists.01.org
-Cc: lkp@intel.com
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/powercap/dtpm_cpu.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index 69eb5101b5c7..477042199d90 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -166,16 +166,13 @@ static struct dtpm_ops dtpm_ops = {
- 
- static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
- {
--	struct em_perf_domain *pd;
- 	struct dtpm_cpu *dtpm_cpu;
- 
--	pd = em_cpu_get(cpu);
--	if (!pd)
--		return -EINVAL;
--
- 	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
-+	if (dtpm_cpu)
-+		dtpm_update_power(&dtpm_cpu->dtpm);
- 
--	return dtpm_update_power(&dtpm_cpu->dtpm);
-+	return 0;
- }
- 
- static int cpuhp_dtpm_cpu_online(unsigned int cpu)
--- 
-2.25.1
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
