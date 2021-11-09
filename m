@@ -2,67 +2,81 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EA6CC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Nov 2021 12:56:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B7A2C433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Nov 2021 13:10:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 53A9F6109F
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Nov 2021 12:56:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 151B661130
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Nov 2021 13:10:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233600AbhKIM66 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Nov 2021 07:58:58 -0500
-Received: from comms.puri.sm ([159.203.221.185]:46434 "EHLO comms.puri.sm"
+        id S233997AbhKINNe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Nov 2021 08:13:34 -0500
+Received: from comms.puri.sm ([159.203.221.185]:47342 "EHLO comms.puri.sm"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233652AbhKIM65 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Nov 2021 07:58:57 -0500
+        id S229998AbhKINNd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Nov 2021 08:13:33 -0500
 Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 90DB7DFE04;
-        Tue,  9 Nov 2021 04:55:41 -0800 (PST)
+        by comms.puri.sm (Postfix) with ESMTP id 1B7C1E03CC;
+        Tue,  9 Nov 2021 05:10:48 -0800 (PST)
 Received: from comms.puri.sm ([127.0.0.1])
         by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id WNnYO0huJ9K0; Tue,  9 Nov 2021 04:55:41 -0800 (PST)
+        with ESMTP id 9rq4FAoVgiPD; Tue,  9 Nov 2021 05:10:47 -0800 (PST)
 From:   Martin Kepplinger <martin.kepplinger@puri.sm>
 To:     sakari.ailus@linux.intel.com, mchehab@kernel.org
-Cc:     linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@puri.sm, linux-pm@vger.kernel.org,
+Cc:     linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel@puri.sm,
         Martin Kepplinger <martin.kepplinger@puri.sm>
-Subject: [PATCH] media: i2c: dw9714: use pm_runtime_force_suspend/resume for system suspend
-Date:   Tue,  9 Nov 2021 13:55:05 +0100
-Message-Id: <20211109125505.2682553-1-martin.kepplinger@puri.sm>
+Subject: [PATCH v1 1/2] media: i2c: hi846: check return value of regulator_bulk_disable()
+Date:   Tue,  9 Nov 2021 14:10:12 +0100
+Message-Id: <20211109131013.2684058-2-martin.kepplinger@puri.sm>
+In-Reply-To: <20211109131013.2684058-1-martin.kepplinger@puri.sm>
+References: <20211109131013.2684058-1-martin.kepplinger@puri.sm>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Using the same suspend function for runtime and system suspend doesn't
-work in this case (when controlling regulators and clocks). suspend() and
-resume() are clearly meant to stay balanced.
-
-Use the pm_runtime_force_* helpers for system suspend and fix error like the
-following when transitioning to system suspend:
-
-[  559.685921] dw9714 3-000c: I2C write fail
-[  559.685941] dw9714 3-000c: dw9714_vcm_suspend I2C failure: -5
+regulator_bulk_disable can fail and thus suspend() can. Handle that error
+gracefully.
 
 Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
 ---
- drivers/media/i2c/dw9714.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/i2c/hi846.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/media/i2c/dw9714.c b/drivers/media/i2c/dw9714.c
-index fcbebb3558b5..f6ddd7c4a1ff 100644
---- a/drivers/media/i2c/dw9714.c
-+++ b/drivers/media/i2c/dw9714.c
-@@ -267,7 +267,8 @@ static const struct of_device_id dw9714_of_table[] = {
- MODULE_DEVICE_TABLE(of, dw9714_of_table);
+diff --git a/drivers/media/i2c/hi846.c b/drivers/media/i2c/hi846.c
+index 4b94bdf2e5cb..ed55c3894284 100644
+--- a/drivers/media/i2c/hi846.c
++++ b/drivers/media/i2c/hi846.c
+@@ -1858,7 +1858,7 @@ static int hi846_power_on(struct hi846 *hi846)
+ 	return ret;
+ }
  
- static const struct dev_pm_ops dw9714_pm_ops = {
--	SET_SYSTEM_SLEEP_PM_OPS(dw9714_vcm_suspend, dw9714_vcm_resume)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
- 	SET_RUNTIME_PM_OPS(dw9714_vcm_suspend, dw9714_vcm_resume, NULL)
- };
+-static void hi846_power_off(struct hi846 *hi846)
++static int hi846_power_off(struct hi846 *hi846)
+ {
+ 	if (hi846->rst_gpio)
+ 		gpiod_set_value_cansleep(hi846->rst_gpio, 1);
+@@ -1867,7 +1867,7 @@ static void hi846_power_off(struct hi846 *hi846)
+ 		gpiod_set_value_cansleep(hi846->shutdown_gpio, 1);
  
+ 	clk_disable_unprepare(hi846->clock);
+-	regulator_bulk_disable(HI846_NUM_SUPPLIES, hi846->supplies);
++	return regulator_bulk_disable(HI846_NUM_SUPPLIES, hi846->supplies);
+ }
+ 
+ static int __maybe_unused hi846_suspend(struct device *dev)
+@@ -1879,9 +1879,7 @@ static int __maybe_unused hi846_suspend(struct device *dev)
+ 	if (hi846->streaming)
+ 		hi846_stop_streaming(hi846);
+ 
+-	hi846_power_off(hi846);
+-
+-	return 0;
++	return hi846_power_off(hi846);
+ }
+ 
+ static int __maybe_unused hi846_resume(struct device *dev)
 -- 
 2.30.2
 
