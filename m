@@ -2,78 +2,169 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C9F2C433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Nov 2021 14:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E144C4167E
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Nov 2021 15:02:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 133A36121F
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Nov 2021 14:40:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B6A561051
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Nov 2021 15:02:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232244AbhKJOmt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Nov 2021 09:42:49 -0500
-Received: from mail.kernel.org ([198.145.29.99]:40590 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232197AbhKJOms (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Nov 2021 09:42:48 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 1378B61106;
-        Wed, 10 Nov 2021 14:39:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1636555201;
-        bh=xqZi6iTYc50vjoO0XtxsyimzxbnA+3z6Sn+/RRjZgtk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=XXVWX7fuRz9fJ47j8xk7hCkr3Lt0XQmfYcrFDGwOaNHgVd1OrZS7Y51zxZeK6N6cQ
-         mzcdnC/kngo0vr7stFva55y6D13ypLXGNr+vc7wG6zkAcyIApK5YI42TE74y1ALbWg
-         92WS+Df4Z2/OuJ9kMdPshfQubomOWn+g+jLab5Ef/+jsxBdhwvMx+NsuUqXyJ2aQsS
-         WCFR6OrsJ+l7TECGzjw2viaFBT4lcWKTev/AIhMb7kqOhqBD6bHJnGLSeUpxdgmDP5
-         xpsyLPHjbrOnT+isXgBhRw/InkgCtvYXNwCWP3uccmRp3s4hygKYCRWy9SNnpwjcYj
-         s8BMumMnSIeow==
-Date:   Wed, 10 Nov 2021 14:39:54 +0000
-From:   Mark Brown <broonie@kernel.org>
-To:     Alistair Francis <alistair@alistair23.me>
-Cc:     lee.jones@linaro.org, kernel@pengutronix.de, lgirdwood@gmail.com,
-        robh+dt@kernel.org, linux-kernel@vger.kernel.org,
-        rui.zhang@intel.com, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, s.hauer@pengutronix.de,
-        linux-hwmon@vger.kernel.org, amitk@kernel.org,
-        linux-pm@vger.kernel.org, linux-imx@nxp.com, alistair23@gmail.com,
-        andreas@kemnade.info, shawnguo@kernel.org
-Subject: Re: [PATCH v15 4/8] regulator: sy7636a: Remove requirement on
- sy7636a mfd
-Message-ID: <YYvZuo+VWhe23fgN@sirena.org.uk>
-References: <20211110122948.188683-1-alistair@alistair23.me>
- <20211110122948.188683-5-alistair@alistair23.me>
+        id S232490AbhKJPFR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Nov 2021 10:05:17 -0500
+Received: from mx07-00178001.pphosted.com ([185.132.182.106]:45778 "EHLO
+        mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232391AbhKJPFI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Nov 2021 10:05:08 -0500
+Received: from pps.filterd (m0241204.ppops.net [127.0.0.1])
+        by mx07-00178001.pphosted.com (8.16.1.2/8.16.1.2) with ESMTP id 1AAEHiPq019003;
+        Wed, 10 Nov 2021 16:01:51 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=selector1;
+ bh=fy0nJ4jsnYOrNbmlnWpKKRsONkGfDSFo37lhgrdZifo=;
+ b=jCblevN4sArT3TbOfud8zxCq510ZtTMzk0aebTHg9A8mMWr4mHYulSD4POfb3PkRdJw/
+ f3psof2GVLL5A0ahcjIdxuKwQh/qmwB/ZHhVdF42ENbIlsAkpaHcrQ44oMs5SNCo1IGs
+ V/1EERuuFD9AZ1eHoARiAxoA59FBLifz03K90sjv2OCsNStKTSdItvQLmsGmZ5udzfc+
+ 2yv9CsZ4R8bb0KKCDBg7iE+p5zfOBhTmpNAMDa4g43gHBCC+iqKjTddE2ktYRpmG3/W1
+ Pg1qPjJR6dr2Vm77FT7oueoLlDUM2+hTpmmSw2ukMZGby9fRv1BY6i9wXixO1xE9c/FN QA== 
+Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
+        by mx07-00178001.pphosted.com (PPS) with ESMTPS id 3c7ufnfufj-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 10 Nov 2021 16:01:51 +0100
+Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 32367100034;
+        Wed, 10 Nov 2021 16:01:51 +0100 (CET)
+Received: from Webmail-eu.st.com (sfhdag2node2.st.com [10.75.127.5])
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 154B5207568;
+        Wed, 10 Nov 2021 16:01:51 +0100 (CET)
+Received: from localhost (10.75.127.49) by SFHDAG2NODE2.st.com (10.75.127.5)
+ with Microsoft SMTP Server (TLS) id 15.0.1497.18; Wed, 10 Nov 2021 16:01:50
+ +0100
+From:   <patrice.chotard@foss.st.com>
+To:     Rob Herring <robh+dt@kernel.org>,
+        maxime coquelin <mcoquelin.stm32@gmail.com>,
+        alexandre torgue <alexandre.torgue@foss.st.com>,
+        michael turquette <mturquette@baylibre.com>,
+        stephen boyd <sboyd@kernel.org>,
+        herbert xu <herbert@gondor.apana.org.au>,
+        "david s . miller" <davem@davemloft.net>,
+        david airlie <airlied@linux.ie>,
+        daniel vetter <daniel@ffwll.ch>,
+        thierry reding <thierry.reding@gmail.com>,
+        sam ravnborg <sam@ravnborg.org>,
+        yannick fertre <yannick.fertre@foss.st.com>,
+        "philippe cornu" <philippe.cornu@foss.st.com>,
+        benjamin gaignard <benjamin.gaignard@linaro.org>,
+        vinod koul <vkoul@kernel.org>,
+        ohad ben-cohen <ohad@wizery.com>,
+        bjorn andersson <bjorn.andersson@linaro.org>,
+        baolin wang <baolin.wang7@gmail.com>,
+        jonathan cameron <jic23@kernel.org>,
+        "lars-peter clausen" <lars@metafoo.de>,
+        olivier moysan <olivier.moysan@foss.st.com>,
+        arnaud pouliquen <arnaud.pouliquen@foss.st.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Marc Zyngier <maz@kernel.org>,
+        Jassi Brar <jassisinghbrar@gmail.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Hugues Fruchet <hugues.fruchet@foss.st.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Fabrice Gasnier <fabrice.gasnier@foss.st.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        "Miquel Raynal" <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Matt Mackall <mpm@selenic.com>,
+        "Alessandro Zummo" <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Patrice Chotard <patrice.chotard@foss.st.com>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ahmad Fatoum <a.fatoum@pengutronix.de>,
+        Jagan Teki <jagan@amarulasolutions.com>,
+        "dillon min" <dillon.minfei@gmail.com>,
+        Marek Vasut <marex@denx.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Fabien Dessenne <fabien.dessenne@foss.st.com>,
+        Christophe Roullier <christophe.roullier@foss.st.com>,
+        Gabriel Fernandez <gabriel.fernandez@foss.st.com>,
+        Lionel Debieve <lionel.debieve@foss.st.com>,
+        Amelie Delaunay <amelie.delaunay@foss.st.com>,
+        Pierre-Yves MORDRET <pierre-yves.mordret@foss.st.com>,
+        Ludovic Barre <ludovic.barre@foss.st.com>,
+        Christophe Kerello <christophe.kerello@foss.st.com>,
+        pascal Paillet <p.paillet@foss.st.com>,
+        Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+        "Jose Abreu" <joabreu@synopsys.com>,
+        Le Ray <erwan.leray@foss.st.com>
+CC:     <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-stm32@st-md-mailman.stormreply.com>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-clk@vger.kernel.org>, <linux-crypto@vger.kernel.org>,
+        <dri-devel@lists.freedesktop.org>, <dmaengine@vger.kernel.org>,
+        <linux-remoteproc@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+        <linux-iio@vger.kernel.org>, <alsa-devel@alsa-project.org>,
+        <linux-media@vger.kernel.org>, <linux-mtd@lists.infradead.org>,
+        <netdev@vger.kernel.org>, <linux-phy@lists.infradead.org>,
+        <linux-gpio@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
+        <linux-serial@vger.kernel.org>, <linux-spi@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+        <linux-watchdog@vger.kernel.org>
+Subject: [PATCH v3 2/5] dt-bindings: mfd: timers: Update maintainers for st,stm32-timers
+Date:   Wed, 10 Nov 2021 16:01:41 +0100
+Message-ID: <20211110150144.18272-3-patrice.chotard@foss.st.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20211110150144.18272-1-patrice.chotard@foss.st.com>
+References: <20211110150144.18272-1-patrice.chotard@foss.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mSiTZPc7Z0AF7E/8"
-Content-Disposition: inline
-In-Reply-To: <20211110122948.188683-5-alistair@alistair23.me>
-X-Cookie: You have junk mail.
+Content-Type: text/plain
+X-Originating-IP: [10.75.127.49]
+X-ClientProxiedBy: SFHDAG2NODE3.st.com (10.75.127.6) To SFHDAG2NODE2.st.com
+ (10.75.127.5)
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.0.607.475
+ definitions=2021-11-10_05,2021-11-08_02,2020-04-07_01
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: Patrice Chotard <patrice.chotard@foss.st.com>
 
---mSiTZPc7Z0AF7E/8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Benjamin has left the company, remove his name from maintainers.
 
-On Wed, Nov 10, 2021 at 10:29:44PM +1000, Alistair Francis wrote:
-> Signed-off-by: Alistair Francis <alistair@alistair23.me>
+Signed-off-by: Patrice Chotard <patrice.chotard@foss.st.com>
+---
+ Documentation/devicetree/bindings/mfd/st,stm32-timers.yaml | 1 -
+ 1 file changed, 1 deletion(-)
 
-Acked-by: Mark Brown <broonie@kernel.org>
+diff --git a/Documentation/devicetree/bindings/mfd/st,stm32-timers.yaml b/Documentation/devicetree/bindings/mfd/st,stm32-timers.yaml
+index dace35362a7a..210a7c85b884 100644
+--- a/Documentation/devicetree/bindings/mfd/st,stm32-timers.yaml
++++ b/Documentation/devicetree/bindings/mfd/st,stm32-timers.yaml
+@@ -17,7 +17,6 @@ description: |
+       programmable prescaler.
+ 
+ maintainers:
+-  - Benjamin Gaignard <benjamin.gaignard@st.com>
+   - Fabrice Gasnier <fabrice.gasnier@st.com>
+ 
+ properties:
+-- 
+2.17.1
 
---mSiTZPc7Z0AF7E/8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmGL2boACgkQJNaLcl1U
-h9Bx3gf/XHLIMEoOui17lfMQpG17TCnihVcc6BYCq5EZQlOOwi5yLEqwMqwFDKc2
-TnbR6hpDO7wm7eUevhDb9E9FRY8vyGXoV/bZE07XaKlJh7C9h7qiJCzdXroJvZVl
-ClLrBTcMBLKRJGVU4Ff8bvohEigK6iH8Oq2b5whh2mZfA9s8ne5A8K+7edsqwl/u
-FWeYyAwXEYFhaRHJ6wkN5iFwX1XftgkTxUMS4jUBypFM68t9qtCrHNo6nNsArfPU
-6gefYO8LS8FvnJtf84F+oWqiiPalOcGJGw30tYGoyjCJwKSn4ilS8Y5Fj+1MUI14
-oUkyet/xZzRwfpGdbO1ZE8k3KHonyA==
-=QAPF
------END PGP SIGNATURE-----
-
---mSiTZPc7Z0AF7E/8--
