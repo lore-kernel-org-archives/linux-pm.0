@@ -2,83 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD4CFC433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Nov 2021 15:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FDFDC43219
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Nov 2021 15:48:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A2392611CE
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Nov 2021 15:48:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B92F61989
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Nov 2021 15:48:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234024AbhKKPvN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Nov 2021 10:51:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46426 "EHLO
+        id S233902AbhKKPvO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Nov 2021 10:51:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232611AbhKKPvN (ORCPT
+        with ESMTP id S233928AbhKKPvN (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Nov 2021 10:51:13 -0500
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FD72C061766
-        for <linux-pm@vger.kernel.org>; Thu, 11 Nov 2021 07:48:21 -0800 (PST)
-Received: by mail-lj1-x22b.google.com with SMTP id z8so12722794ljz.9
-        for <linux-pm@vger.kernel.org>; Thu, 11 Nov 2021 07:48:20 -0800 (PST)
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6457DC061203
+        for <linux-pm@vger.kernel.org>; Thu, 11 Nov 2021 07:48:22 -0800 (PST)
+Received: by mail-lj1-x22a.google.com with SMTP id e11so12699411ljo.13
+        for <linux-pm@vger.kernel.org>; Thu, 11 Nov 2021 07:48:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=bwZrVpKsHF9m8/Tz4wM3VmQNtLlb53/TnN+nzMUhfbI=;
-        b=a2l+kcXfU2iUPQIGSpKCsJxp+U8UdVDT1SJYoNCokyG/D77MICZrxNGHN1rlcdqkT3
-         DKMBU5aa/dyOGw+0s+QNgYkQZd5ZGv71hSZzFJaUAZ2vba6+yBkZP+z85dWNRemOCj73
-         0+ImKLiq30iqC4XjZng/xw0bJRow72TEPbiim1HyPWdTHljGLDprfbbPPMxzK46xa+e/
-         7qa1JORmYzFTANNFeObWjXBwWjyKEIyVBFwTviM9ZkLsRQ5TniK9TpORcHx1qVTMQ0n3
-         1W/5DLe7xruB8Tnv9wsMhquPMGSQIn2fUDPBVice/tcta9cYKrVdWFMzW74/n9saDF/V
-         xuMg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=vm/CQHumQ1uukLhv2xWgernc5RdPc12W87OkHQ+477Y=;
+        b=XxYpt9ltP6c2AopfLgF2vjY1/uR0wJbA6FIaTCU0bHqBNAUESxTcjoMHGcQE44/F49
+         g2/Eqp44C67yN0k1oYUAK0ezbq551E5kWKCklGqv/4Pr5akDOhsXFLcefNkUj1onGca6
+         FFU6u5YoOgl6A9b8ZEuvakwMyXpvUIjzsA0LSJp9JqzP6HIrh8Nlnl3zySVIsTSuIoge
+         y7bPGKFpsGgazAvZzhx4vt8Yym6jNbd8P1tnNGCpCjbCU5GpzrlER9PSeDG0K3TqMjpB
+         cQBCatYgMqx6xvxvZSLmJAIBBF/qri4+U6FAKWejbwGDFOceBM5oW4wqnLlHIawVK3L+
+         emsQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=bwZrVpKsHF9m8/Tz4wM3VmQNtLlb53/TnN+nzMUhfbI=;
-        b=ElpaPov53WK3zYQh5ucIzN93vMHwKIK/8V7vAje2+QWBCqR+UD2QoKQkHjqjpIeRiq
-         F6tDT/4JkTzGy3PG4gnZDHkcz3MolqtnS7aUe3wHvAKgbMfZi2dkRcXbfy2rp0IaJYaL
-         PqwdUhimKkMHRkxyiyUnXw9dQL6SySHEUxj4ba9ZtCr26DTD4dye80ianODShZ7o6VW6
-         WsFEdsPYa92WOvoypnfAqSUyaq3sdEXT7o1QVyEeY85TJiqvFSwgDrrrCI7eG5zvHeq1
-         2u+LmW/tUAJK3ZH1TRxZkYT4mcQtrv6N1atuVvIB0uIyNpWDQ6Kn/polQmJbUF5Zs7H/
-         AZUw==
-X-Gm-Message-State: AOAM530MqlAPap8CKVP6+LkQylLwYCL5/bZFXjBvHJXrS4MKUblchHw+
-        Xw2tfb/X27q+IS0Fi1eZjIQJrQ==
-X-Google-Smtp-Source: ABdhPJw3r5/fB13PeX2iBLu4E359nb3MmDQzwiwVcEyzp1AAQ+GLpxhQaTzn9tBq/9Aef9YvPzdOlQ==
-X-Received: by 2002:a05:651c:1607:: with SMTP id f7mr8538178ljq.104.1636645699411;
-        Thu, 11 Nov 2021 07:48:19 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=vm/CQHumQ1uukLhv2xWgernc5RdPc12W87OkHQ+477Y=;
+        b=B/3uekh+CiWefK00MWBgmCB+t9cyhIQDAI/d/Z0ypLkckfU+kM/3jAOPS03iWPoT+J
+         IlLwWXL801lMo0T8UqgHD8PyYByJaLygrzISFpWyvz0leJFXIgzveaYkZ+ixtfd6dGv7
+         H0zpdnsyEt9dFWJzLlRQZM75LANmHKc8ru2jzsnGZOFSzh+jQvhTAFlILF/B8vkZaZmU
+         syJiUwubF8a8Vyqvv1WcTRVwHEWoNBFrRX+EGLM8i8lNN0BMn/hgHAa3d9kV49xXhcgQ
+         dIfgBrVxnPqBzDiGBvJmgNhsKJiDOPY3TN3c777alSzSzzwtTSYrq76fYPVjsqRIi+Dr
+         HO1w==
+X-Gm-Message-State: AOAM531af63jRt3EbM3Q6zeVi8YaT/2Tun69+g3P5qhJsoDzm8Q4f3Vy
+        xTqvQ3Ud70tVQMW92B+3S8ouxw==
+X-Google-Smtp-Source: ABdhPJwsvEUTrt78lmjoUsS8uiF0aU5osIvGnEd7eZ3BWeyJKnI1IJJEq2bqsGLYoTTheTHAjmVI5w==
+X-Received: by 2002:a2e:869a:: with SMTP id l26mr8408179lji.453.1636645700806;
+        Thu, 11 Nov 2021 07:48:20 -0800 (PST)
 Received: from localhost.localdomain (62-248-207-242.elisa-laajakaista.fi. [62.248.207.242])
-        by smtp.gmail.com with ESMTPSA id t9sm317072lfe.88.2021.11.11.07.48.18
+        by smtp.gmail.com with ESMTPSA id t9sm317072lfe.88.2021.11.11.07.48.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Nov 2021 07:48:19 -0800 (PST)
+        Thu, 11 Nov 2021 07:48:20 -0800 (PST)
 From:   Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
 To:     Viresh Kumar <viresh.kumar@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Thara Gopinath <thara.gopinath@linaro.org>
 Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 0/3] cpufreq: qcom-hw: a few fixes in qcom cpufreq driver
-Date:   Thu, 11 Nov 2021 17:48:05 +0200
-Message-Id: <20211111154808.2024808-1-vladimir.zapolskiy@linaro.org>
+Subject: [PATCH 2/3] cpufreq: qcom-hw: Fix probable nested interrupt handling
+Date:   Thu, 11 Nov 2021 17:48:07 +0200
+Message-Id: <20211111154808.2024808-3-vladimir.zapolskiy@linaro.org>
 X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211111154808.2024808-1-vladimir.zapolskiy@linaro.org>
+References: <20211111154808.2024808-1-vladimir.zapolskiy@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-I find it essential to resend a fix from Ard and also add two more
-lesser fixes to the set, review and comments are more than welcome.
+Re-enabling an interrupt from its own interrupt handler may cause
+an interrupt storm, if there is a pending interrupt and because its
+handling is disabled due to already done entrance into the handler
+above in the stack.
 
-Ard Biesheuvel (1):
-  cpufreq: qcom-cpufreq-hw: Avoid stack buffer for IRQ name
+Also, apparently it is improper to lock a mutex in an interrupt contex.
 
-Vladimir Zapolskiy (2):
-  cpufreq: qcom-hw: Fix probable nested interrupt handling
-  cpufreq: qcom-hw: Set CPU affinity of dcvsh interrupts
+Fixes: 275157b367f4 ("cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support")
+Signed-off-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+---
+ drivers/cpufreq/qcom-cpufreq-hw.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/cpufreq/qcom-cpufreq-hw.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 3b5835336658..5d55217caa8b 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -343,9 +343,9 @@ static irqreturn_t qcom_lmh_dcvs_handle_irq(int irq, void *data)
+ 
+ 	/* Disable interrupt and enable polling */
+ 	disable_irq_nosync(c_data->throttle_irq);
+-	qcom_lmh_dcvs_notify(c_data);
++	schedule_delayed_work(&c_data->throttle_work, 0);
+ 
+-	return 0;
++	return IRQ_HANDLED;
+ }
+ 
+ static const struct qcom_cpufreq_soc_data qcom_soc_data = {
 -- 
 2.32.0
 
