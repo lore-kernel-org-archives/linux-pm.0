@@ -2,40 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E50AEC433EF
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 17:04:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3411C433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 17:05:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D3133611AD
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 17:04:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8E94F60EFD
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 17:05:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236198AbhKNRHo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 14 Nov 2021 12:07:44 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:37463 "EHLO
+        id S236358AbhKNRIj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 14 Nov 2021 12:08:39 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:48158 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S236189AbhKNRGz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Nov 2021 12:06:55 -0500
+        by vger.kernel.org with ESMTP id S236219AbhKNRHW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Nov 2021 12:07:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1636909441;
+        s=mimecast20190719; t=1636909468;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=FfVMrmBQBfsg/z794ziYgV346QpjZYdALcF2KlNGNYI=;
-        b=a3TvO5Ed2oRO4Yjwi8K+VHDzIdUGTN+D+QFsuSMSlTufKd8z+JAz8er4qU1qaawF/eKmHt
-        qVLfLw2/X66D+qA20DT4BhMyLIQk2lfTHFJuwJjck6E0/7fDo9dmnnZMpt8FtCu7bQUAUQ
-        VRlfSUxn98TJ8JJx0SwjY6taoSbG+H4=
+        bh=eQMG15WrD+SpaKEYHtpgquyp9rViWR4bcOU93QQhbm0=;
+        b=Sg5n6zSgVxSHN+SHKlgh7tjmSzqlPTxeUniejQmiOjNlnTeHVrPBgtPBXQgaCy/LwWQQkI
+        F/xwKDsWDvrXP5ClaoSSv3TPpZxkgarudMsd4UKAOS+sOglCMcl5RQENHsZkTY3spMXN6/
+        8g4QuOCxbxGlyW6aAWMUAylpp3kkMQo=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-312-MpC3RtzdPF6YFM1zYo7_4w-1; Sun, 14 Nov 2021 12:03:57 -0500
-X-MC-Unique: MpC3RtzdPF6YFM1zYo7_4w-1
+ us-mta-364-A12mLeL2MYuSc6VUlOazAw-1; Sun, 14 Nov 2021 12:04:24 -0500
+X-MC-Unique: A12mLeL2MYuSc6VUlOazAw-1
 Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 7C38C15722;
-        Sun, 14 Nov 2021 17:03:55 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 65DAD180831E;
+        Sun, 14 Nov 2021 17:04:22 +0000 (UTC)
 Received: from x1.localdomain (unknown [10.39.192.93])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 15B441346F;
-        Sun, 14 Nov 2021 17:03:51 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id B5B301346F;
+        Sun, 14 Nov 2021 17:04:18 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -52,120 +52,180 @@ Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         platform-driver-x86@vger.kernel.org, linux-i2c@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-efi@vger.kernel.org
-Subject: [PATCH v2 04/20] power: supply: bq25890: Reduce reported CONSTANT_CHARGE_CURRENT_MAX for low temperatures
-Date:   Sun, 14 Nov 2021 18:03:19 +0100
-Message-Id: <20211114170335.66994-5-hdegoede@redhat.com>
+Subject: [PATCH v2 11/20] power: supply: bq25890: Add support for registering the Vbus boost converter as a regulator
+Date:   Sun, 14 Nov 2021 18:03:26 +0100
+Message-Id: <20211114170335.66994-12-hdegoede@redhat.com>
 In-Reply-To: <20211114170335.66994-1-hdegoede@redhat.com>
 References: <20211114170335.66994-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yauhen Kharuzhy <jekhor@gmail.com>
+The bq25890_charger code supports enabling/disabling the boost converter
+based on usb-phy notifications. But the usb-phy framework is not used on
+all boards/platforms. At support for registering the Vbus boost converter
+as a standard regulator when there is no usb-phy on the board.
 
-Take into account possible current reduction due to low-temperature when
-reading POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX. As described in
-the datasheet in cool (0-20° Celcius) conditions the current limit is
-decreased to 20% or 50% of ICHG field value depended on JEITA_ISET field.
+Also add support for providing regulator_init_data through platform_data
+for use on boards where device-tree is not used and the platform code must
+thus provide the regulator_init_data.
 
-Also add NTC_FAULT field value to the debug message in
-bq25890_get_chip_state().
-
-Changed by Hans de Goede:
-- Fix reading F_CHG_FAULT instead of F_NTC_FIELD for state->ntc_fault
-- Only read JEITA_ISET field if necessary
-- Tweak commit message a bit
-
-Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq25890_charger.c | 33 +++++++++++++++++++++++---
- 1 file changed, 30 insertions(+), 3 deletions(-)
+Changes in v2:
+- When the usb-phy framework is not used, turn off the Vboost regulator
+  on shutdown
+- Some minor code-tweaks based on Andy's review
+---
+ drivers/power/supply/bq25890_charger.c | 80 ++++++++++++++++++++++++++
+ include/linux/power/bq25890_charger.h  | 15 +++++
+ 2 files changed, 95 insertions(+)
+ create mode 100644 include/linux/power/bq25890_charger.h
 
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index b208cc2193b8..617a653221ab 100644
+index 3c41fe86b3d3..e06ca7b0eb3e 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -94,6 +94,7 @@ struct bq25890_state {
- 	u8 vsys_status;
- 	u8 boost_fault;
- 	u8 bat_fault;
-+	u8 ntc_fault;
- };
+@@ -8,7 +8,9 @@
+ #include <linux/module.h>
+ #include <linux/i2c.h>
+ #include <linux/power_supply.h>
++#include <linux/power/bq25890_charger.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/driver.h>
+ #include <linux/types.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/interrupt.h>
+@@ -845,6 +847,45 @@ static int bq25890_usb_notifier(struct notifier_block *nb, unsigned long val,
+ 	return NOTIFY_OK;
+ }
  
- struct bq25890_device {
-@@ -383,6 +384,14 @@ enum bq25890_chrg_fault {
- 	CHRG_FAULT_TIMER_EXPIRED,
- };
- 
-+enum bq25890_ntc_fault {
-+	NTC_FAULT_NORMAL = 0,
-+	NTC_FAULT_WARM = 2,
-+	NTC_FAULT_COOL = 3,
-+	NTC_FAULT_COLD = 5,
-+	NTC_FAULT_HOT = 6,
++#ifdef CONFIG_REGULATOR
++static int bq25890_vbus_enable(struct regulator_dev *rdev)
++{
++	struct bq25890_device *bq = rdev_get_drvdata(rdev);
++
++	return bq25890_set_otg_cfg(bq, 1);
++}
++
++static int bq25890_vbus_disable(struct regulator_dev *rdev)
++{
++	struct bq25890_device *bq = rdev_get_drvdata(rdev);
++
++	return bq25890_set_otg_cfg(bq, 0);
++}
++
++static int bq25890_vbus_is_enabled(struct regulator_dev *rdev)
++{
++	struct bq25890_device *bq = rdev_get_drvdata(rdev);
++
++	return bq25890_field_read(bq, F_OTG_CFG);
++}
++
++static const struct regulator_ops bq25890_vbus_ops = {
++	.enable = bq25890_vbus_enable,
++	.disable = bq25890_vbus_disable,
++	.is_enabled = bq25890_vbus_is_enabled,
 +};
 +
- static bool bq25890_is_adc_property(enum power_supply_property psp)
++static const struct regulator_desc bq25890_vbus_desc = {
++	.name = "usb_otg_vbus",
++	.of_match = "usb-otg-vbus",
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq25890_vbus_ops,
++	.fixed_uV = 5000000,
++	.n_voltages = 1,
++};
++#endif
++
+ static int bq25890_get_chip_version(struct bq25890_device *bq)
  {
- 	switch (psp) {
-@@ -474,6 +483,18 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
- 		val->intval = bq25890_find_val(bq->init_data.ichg, TBL_ICHG);
-+
-+		/* When temperature is too low, charge current is decreased */
-+		if (bq->state.ntc_fault == NTC_FAULT_COOL) {
-+			ret = bq25890_field_read(bq, F_JEITA_ISET);
-+			if (ret < 0)
-+				return ret;
-+
-+			if (ret)
-+				val->intval /= 5;
-+			else
-+				val->intval /= 2;
-+		}
- 		break;
- 
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
-@@ -486,6 +507,10 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 		if (ret < 0)
- 			return ret;
- 
-+		ret = bq25890_field_read(bq, F_JEITA_VSET);
-+		if (ret < 0)
-+			return ret;
-+
- 		/* converted_val = 2.304V + ADC_val * 20mV (table 10.3.15) */
- 		val->intval = 2304000 + ret * 20000;
- 		break;
-@@ -549,7 +574,8 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
- 		{F_VSYS_STAT,	&state->vsys_status},
- 		{F_BOOST_FAULT, &state->boost_fault},
- 		{F_BAT_FAULT,	&state->bat_fault},
--		{F_CHG_FAULT,	&state->chrg_fault}
-+		{F_CHG_FAULT,	&state->chrg_fault},
-+		{F_NTC_FAULT,	&state->ntc_fault}
- 	};
- 
- 	for (i = 0; i < ARRAY_SIZE(state_fields); i++) {
-@@ -560,9 +586,10 @@ static int bq25890_get_chip_state(struct bq25890_device *bq,
- 		*state_fields[i].data = ret;
+ 	int id, rev;
+@@ -1044,6 +1085,22 @@ static int bq25890_probe(struct i2c_client *client,
+ 		bq->usb_nb.notifier_call = bq25890_usb_notifier;
+ 		usb_register_notifier(bq->usb_phy, &bq->usb_nb);
  	}
++#ifdef CONFIG_REGULATOR
++	else {
++		struct bq25890_platform_data *pdata = dev_get_platdata(dev);
++		struct regulator_config cfg = { };
++		struct regulator_dev *reg;
++
++		cfg.dev = dev;
++		cfg.driver_data = bq;
++		if (pdata)
++			cfg.init_data = pdata->regulator_init_data;
++
++		reg = devm_regulator_register(dev, &bq25890_vbus_desc, &cfg);
++		if (IS_ERR(reg))
++			return dev_err_probe(dev, PTR_ERR(reg), "registering regulator");
++	}
++#endif
  
--	dev_dbg(bq->dev, "S:CHG/PG/VSYS=%d/%d/%d, F:CHG/BOOST/BAT=%d/%d/%d\n",
-+	dev_dbg(bq->dev, "S:CHG/PG/VSYS=%d/%d/%d, F:CHG/BOOST/BAT/NTC=%d/%d/%d/%d\n",
- 		state->chrg_status, state->online, state->vsys_status,
--		state->chrg_fault, state->boost_fault, state->bat_fault);
-+		state->chrg_fault, state->boost_fault, state->bat_fault,
-+		state->ntc_fault);
- 
+ 	ret = bq25890_power_supply_init(bq);
+ 	if (ret < 0) {
+@@ -1082,6 +1139,28 @@ static int bq25890_remove(struct i2c_client *client)
  	return 0;
  }
+ 
++static void bq25890_shutdown(struct i2c_client *client)
++{
++	struct bq25890_device *bq = i2c_get_clientdata(client);
++
++	/*
++	 * TODO this if + return should probably be removed, but that would
++	 * introduce a function change for boards using the usb-phy framework.
++	 * This needs to be tested on such a board before making this change.
++	 */
++	if (!IS_ERR_OR_NULL(bq->usb_phy))
++		return;
++
++	/*
++	 * Turn off the 5v Boost regulator which outputs Vbus to the device's
++	 * Micro-USB or Type-C USB port. Leaving this on drains power and
++	 * this avoids the PMIC on some device-models seeing this as Vbus
++	 * getting inserted after shutdown, causing the device to immediately
++	 * power-up again.
++	 */
++	bq25890_set_otg_cfg(bq, 0);
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static int bq25890_suspend(struct device *dev)
+ {
+@@ -1161,6 +1240,7 @@ static struct i2c_driver bq25890_driver = {
+ 	},
+ 	.probe = bq25890_probe,
+ 	.remove = bq25890_remove,
++	.shutdown = bq25890_shutdown,
+ 	.id_table = bq25890_i2c_ids,
+ };
+ module_i2c_driver(bq25890_driver);
+diff --git a/include/linux/power/bq25890_charger.h b/include/linux/power/bq25890_charger.h
+new file mode 100644
+index 000000000000..c706ddb77a08
+--- /dev/null
++++ b/include/linux/power/bq25890_charger.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Platform data for the TI bq25890 battery charger driver.
++ */
++
++#ifndef _BQ25890_CHARGER_H_
++#define _BQ25890_CHARGER_H_
++
++struct regulator_init_data;
++
++struct bq25890_platform_data {
++	const struct regulator_init_data *regulator_init_data;
++};
++
++#endif
 -- 
 2.31.1
 
