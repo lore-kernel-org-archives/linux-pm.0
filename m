@@ -2,54 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54515C4321E
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0555FC4332F
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:39:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3EF7B61167
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:37:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E3F4F6109E
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:39:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236379AbhKNTja (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 14 Nov 2021 14:39:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57578 "EHLO
+        id S236584AbhKNTly (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 14 Nov 2021 14:41:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236248AbhKNTjJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Nov 2021 14:39:09 -0500
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4D55C061767;
-        Sun, 14 Nov 2021 11:36:13 -0800 (PST)
-Received: by mail-lf1-x12c.google.com with SMTP id m27so13151747lfj.12;
-        Sun, 14 Nov 2021 11:36:13 -0800 (PST)
+        with ESMTP id S236372AbhKNTja (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Nov 2021 14:39:30 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8186C061746;
+        Sun, 14 Nov 2021 11:36:27 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id b1so31690175lfs.13;
+        Sun, 14 Nov 2021 11:36:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=pQQ64DHAwVUDK+O7zZPErxA1rL3KEtXVNyJE4UYdy5Q=;
-        b=RRycqGZwIueXzgKSSOzpwNjNa6o/QJ+QS7jxDbxPJ+hGPatfo5zz8HTxHc2u9t62NH
-         7JOaNBfaZj4waNTd+FUfABgSPWSlQCC2E5ejfGtAUYhhhDqRwCuRCjKc+Ajb9aGFQeNR
-         DdsvjPwCmZltNAdZr0oYyOItqi/KK3HPfaLD6twSiLCuqvZQ4bxvjTQkDAgRY10tDQVT
-         xaYLXs5Hn+Q1JoCQkbivp2aYQKkAt2KTeClhJDfRLWY5eE36FFYlyUQTZLHsA/V51KWL
-         54Z/xObrEUu4htF7XcIWl74EZeRoJuAPh+T6wqIOBr/Fh/SG5+MdVYHSgicWWWKHPTrC
-         R/kw==
+        bh=fItgMJ65iQSV+grlztB0lQCNjAn4l4vCQ8OPUC2n0iM=;
+        b=p7bP1P6r4dEikXS5YUjD4B1/CGf6lvJ6idSQeufZhdoMPZNLSpKj9R6K9ngCLl1aZ6
+         w6FiXIx1EhIKNCySvfZ9dq6eK83Ass5BFjbtVZJxOeyNraegN1qyU1UCHoL073F6P8Jq
+         hCtbPVZN3AHUyFfecXtTr4dj5Mcp/c9x+3SK7N41ST1QsDFdYaRzejn9zUP65Xbt1rdr
+         4X6+EYQ06asjrmCH5HZEJuz8XEX4fBiNCXSCBk4t6/dARk5uivUbY8e5kQ6id6QS039w
+         aepKfzngjEW5flAb9jo/i3puoqlYQwFUXBqEVehix3lbGsr/aQ9Hmi3LWp2clmwno6pn
+         J/BQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=pQQ64DHAwVUDK+O7zZPErxA1rL3KEtXVNyJE4UYdy5Q=;
-        b=1vg3BbWpjwhDegILUkk/ClEdQQJWytjR/MZq59us6NHeDI1TsATA7oyYwix41XgjKN
-         2pDnlDLBgbCMCVg93i3NXbgYP3uGA1Of6MrzDHZkTRqqB5StiJ12/LMZIGlHL13v0iXK
-         au4T0ZPQEubIdl+q5Q7tNlnrxMocHllCYLHDs2Xct04sQHsZ5bv/a/HNCJJoJtgdhhXU
-         TYeeY0xnfvWIDvo2p2d4Tvty540eVZGt+d9L7NONNc5baBr4XoEcq87iPkU15ckV5pAF
-         YDo0iGJ+rXyBaW3fy187jCMWJOBhyDZNxTLEvYZeumyzGEKrp+hcwA6pAvKErur+mE6q
-         KNsQ==
-X-Gm-Message-State: AOAM531CvozmxWLYJaWbXUvmbtgMtb0O2UWIPfLBUvcLzqFJuYgK/2q2
-        WNXOUnKMBYl218K+sqMdqBk=
-X-Google-Smtp-Source: ABdhPJx8rfbMoBXZQtumsweyBh+F01dCj6bDPAYPmXKgdBjuaP6k7Gj2NTx2ugCwz9uGwHNl7tiXxw==
-X-Received: by 2002:a05:6512:3b90:: with SMTP id g16mr28888069lfv.216.1636918572036;
-        Sun, 14 Nov 2021 11:36:12 -0800 (PST)
+        bh=fItgMJ65iQSV+grlztB0lQCNjAn4l4vCQ8OPUC2n0iM=;
+        b=zu9Ed6x5r+Dr+cw6PE+K1pIWdwH6ZC6Vw+koe/v2x7Crd+cY5CsgpPQj1gDVrSi2Id
+         4NNx0iDol4rdNMdJX3JnzhW3pdttq3iat/3ftE08xGWEyJPHbPdXlMpRgpiVKQTtNbJP
+         0upNRbjeWa15oDbxwiWMrTvjp1+SrjyKkq836J5lnH1/noerGDZg/+2aY2Uozn/4wVHd
+         wvSeoJlmM/xugCS4WoZmP5+geOMM108U48frn73kZij+16weamyKColE87I6SS81eHHt
+         +HXW4TpD6UBlxpcFAVABOjQUC54Fl1c/W47aDixds8lVEeFkf07dKs1APhTFLXGgets/
+         LKCg==
+X-Gm-Message-State: AOAM530UR410sVhXSXjkJj62/wd7RJIITc73YpFnpGyKUNXmiPhPaSMJ
+        uT6UdrQvlYclQQQElZE9OQc=
+X-Google-Smtp-Source: ABdhPJzxAEbohXOKyUE7xn/hkXFl/4SfVadu4MW7os0XYNeheDcZ/TU+PAIPqaAHEjm2ORClibXzPg==
+X-Received: by 2002:a05:6512:3d1d:: with SMTP id d29mr30408424lfv.685.1636918586150;
+        Sun, 14 Nov 2021 11:36:26 -0800 (PST)
 Received: from localhost.localdomain (46-138-46-211.dynamic.spd-mgts.ru. [46.138.46.211])
-        by smtp.gmail.com with ESMTPSA id p18sm1191280lfu.127.2021.11.14.11.36.11
+        by smtp.gmail.com with ESMTPSA id p18sm1191280lfu.127.2021.11.14.11.36.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 14 Nov 2021 11:36:11 -0800 (PST)
+        Sun, 14 Nov 2021 11:36:25 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -67,9 +67,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
         linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: [PATCH v15 16/39] drm/tegra: submit: Remove pm_runtime_enabled() checks
-Date:   Sun, 14 Nov 2021 22:34:12 +0300
-Message-Id: <20211114193435.7705-17-digetx@gmail.com>
+Subject: [PATCH v15 31/39] soc/tegra: pmc: Rename core power domain
+Date:   Sun, 14 Nov 2021 22:34:27 +0300
+Message-Id: <20211114193435.7705-32-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211114193435.7705-1-digetx@gmail.com>
 References: <20211114193435.7705-1-digetx@gmail.com>
@@ -79,46 +79,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Runtime PM is now universally available, make it mandatory by removing
-the pm_runtime_enabled() checks.
+CORE power domain uses name of device-tree node, which is inconsistent with
+the names of PMC domains. Set the name to "core" to make it consistent.
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/drm/tegra/submit.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ drivers/soc/tegra/pmc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/tegra/submit.c b/drivers/gpu/drm/tegra/submit.c
-index c32698404e36..3bbd8de5711c 100644
---- a/drivers/gpu/drm/tegra/submit.c
-+++ b/drivers/gpu/drm/tegra/submit.c
-@@ -504,8 +504,7 @@ static void release_job(struct host1x_job *job)
- 	kfree(job_data->used_mappings);
- 	kfree(job_data);
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index e1fae1a5e36a..de6234ec4f9b 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -1369,7 +1369,7 @@ static int tegra_pmc_core_pd_add(struct tegra_pmc *pmc, struct device_node *np)
+ 	if (!genpd)
+ 		return -ENOMEM;
  
--	if (pm_runtime_enabled(client->base.dev))
--		pm_runtime_put_autosuspend(client->base.dev);
-+	pm_runtime_put_autosuspend(client->base.dev);
- }
+-	genpd->name = np->name;
++	genpd->name = "core";
+ 	genpd->set_performance_state = tegra_pmc_core_pd_set_performance_state;
+ 	genpd->opp_to_performance_state = tegra_pmc_core_pd_opp_to_performance_state;
  
- int tegra_drm_ioctl_channel_submit(struct drm_device *drm, void *data,
-@@ -589,12 +588,10 @@ int tegra_drm_ioctl_channel_submit(struct drm_device *drm, void *data,
- 	}
- 
- 	/* Boot engine. */
--	if (pm_runtime_enabled(context->client->base.dev)) {
--		err = pm_runtime_resume_and_get(context->client->base.dev);
--		if (err < 0) {
--			SUBMIT_ERR(context, "could not power up engine: %d", err);
--			goto unpin_job;
--		}
-+	err = pm_runtime_resume_and_get(context->client->base.dev);
-+	if (err < 0) {
-+		SUBMIT_ERR(context, "could not power up engine: %d", err);
-+		goto unpin_job;
- 	}
- 
- 	job->user_data = job_data;
 -- 
 2.33.1
 
