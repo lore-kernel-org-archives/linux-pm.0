@@ -2,54 +2,54 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F32FAC433FE
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:39:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15085C43217
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:39:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D8B2F60FD8
+	by mail.kernel.org (Postfix) with ESMTP id 029AC60EE2
 	for <linux-pm@archiver.kernel.org>; Sun, 14 Nov 2021 19:39:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236591AbhKNTmD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 14 Nov 2021 14:42:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57710 "EHLO
+        id S236594AbhKNTmF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 14 Nov 2021 14:42:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236374AbhKNTja (ORCPT
+        with ESMTP id S236371AbhKNTja (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Nov 2021 14:39:30 -0500
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89979C061207;
-        Sun, 14 Nov 2021 11:36:30 -0800 (PST)
-Received: by mail-lf1-x12e.google.com with SMTP id br15so33785965lfb.9;
-        Sun, 14 Nov 2021 11:36:30 -0800 (PST)
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 930E6C061767;
+        Sun, 14 Nov 2021 11:36:28 -0800 (PST)
+Received: by mail-lj1-x22e.google.com with SMTP id t11so30718995ljh.6;
+        Sun, 14 Nov 2021 11:36:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=nDfKTCKLqf9G6JM8mpqxRAZhh67bMGPfUrf1PMFZnmE=;
-        b=U9lUXFzw+LhuaWEaxuUA4cjMsEa9q1fstmVYcSlHgJO8iH26U05+9jbVKkp1qKcKVj
-         4GJu/hfHsAGvCSsQ1elS4Kmp1ZoKQlyblBEOVfwWxbRPGN8QubcTFqbt2m46InfpV8Ty
-         apF40BJJS7LmsL1g0T5auPLBCrNUkWildIoaOKVVxn3LQmWIis5wWRArJwTVqUIAkXFK
-         5arqBOR+gLRgN8IqK8Q61mEo0IhlqfvXZfnzzjWQMWkRu1cp+QhQVcQbe4FUFVBhTkNj
-         xX2gnkkHvapCra28ehcOYyQ7XpI2UHcoQtUgdicJtWLysRSU3K3EM4DLSjCUPuSEFoL0
-         9gPA==
+        bh=KmcymaX/CCDsjvKZ+BlarVFlOy3iTU1wE2LEPj5HoVo=;
+        b=QVoRPM7LtqDuHOLWm1MC29HEJkjnB72zqcdZUlj53y23OvWuAqa/IjqMWbVKZ1dCe5
+         KTG5iRgMzi3fN4X88vB3VAE7mCDKDoOSZatxoBud+uNXlgb8R0yUAHS6vkSBvV+ZN4LH
+         FShMM+2v7uMr1m7KtxU8iVNPuekvvEh/4z6firy1SY9UTUNSaJACqgbbLytgqSl84dyd
+         VGr06x5Aj7y4WGXuHVeIZp/FtkUSgge03k9K9f5RdyBauclGEjhStvhVPLBhGbD2kTcO
+         V433kEokw1XVUFnMD27FRMCh/gfxqqrI6oeBOI+7OgOl23WH8cReYsCn8zKFa4+CU+QC
+         Uexw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=nDfKTCKLqf9G6JM8mpqxRAZhh67bMGPfUrf1PMFZnmE=;
-        b=pfGX9TZR8iDMCf6hZ3JUUqHwEXtwk3Zt1oRBs4EoioYt3Ta1c+xEag5wyraPVvcri6
-         gh1nzaVpzyUe0Mx7HmbFdh9HNTwqf8WpD08URWjZ6dLP8w0XZggIXbBjje1JnhEWtwDV
-         gJEk3N8HJTGokh+JYUJy1V0WS7Zl7WSmvgNaTXO54oiwAWihzSpvz9/UFo4NAY18bwxn
-         FSoj5SzAnXi5zaIHgzPKY4Yn/TVRcw0pS5g9QcICkGB8l8EtQM7ecHqp1xhI8nLC8JqZ
-         J+l9QqFlcjZTiPVDgCu7UOk+eaHG5TeOacqYXM4fHodzVrpkI9deHq+JYm9xKW5VUf+w
-         lpww==
-X-Gm-Message-State: AOAM531qfOpf4M2lyTCoF6737Mv/LQeXA4/I2Dqg7A7Wlrla3aeII3TX
-        0FnXCMxFLXWYuhYrTbPJb04=
-X-Google-Smtp-Source: ABdhPJyusqVEM1bFGp/6ppX2dZiMhlD13GgviJ+ZpifWluNIUU5CQmBC6K8SfWpu+U2byKbaOvV4Hw==
-X-Received: by 2002:a05:6512:152a:: with SMTP id bq42mr29718650lfb.109.1636918588958;
-        Sun, 14 Nov 2021 11:36:28 -0800 (PST)
+        bh=KmcymaX/CCDsjvKZ+BlarVFlOy3iTU1wE2LEPj5HoVo=;
+        b=7BJpWVuBIijVa+9iCLplCSv7c7WJe/ZMk9rdldSAGdw8AotX0tOcGn/G6lrdXzCOKZ
+         Mr/dfLrfScwg/cff0IWC3osXl+HMMleYwtTzLgcsxIO2dP2TjOfQw+0emZx5QTx+57jA
+         UVwmQnUH1yWPUY5MQPsZJ2fkXL5eKlCqx35TvVDItFLDilSZfR/mEFT5weIZ5MbQmxfB
+         0Eqy2rruomnfgUjCRHRt7tLtYPmWNBroYFU6EhOENEXx1ZtRSWk8ok0K9l2roJmvmGOH
+         XmMwwl7wbH6FfOHnRUksevDmTV94HG0QNV85dZg9lVU7N9VlkP+eu2p8KsKpCkDVz6Zk
+         DRwg==
+X-Gm-Message-State: AOAM531b/djRUsypy3g4ZfLJNx5Y0fbM2cEv110U7BFtedne2Ob2r4vq
+        vMhvNiIASfqGOthopHPY9PA=
+X-Google-Smtp-Source: ABdhPJxb0PhhPD6n8iMAFQeacuKy19PXCB8pzsadQwOzQ8U5DbUiG7dZTWUE+ZwIhVTlV+zNNvtg3Q==
+X-Received: by 2002:a2e:9903:: with SMTP id v3mr31613021lji.143.1636918587036;
+        Sun, 14 Nov 2021 11:36:27 -0800 (PST)
 Received: from localhost.localdomain (46-138-46-211.dynamic.spd-mgts.ru. [46.138.46.211])
-        by smtp.gmail.com with ESMTPSA id p18sm1191280lfu.127.2021.11.14.11.36.28
+        by smtp.gmail.com with ESMTPSA id p18sm1191280lfu.127.2021.11.14.11.36.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 14 Nov 2021 11:36:28 -0800 (PST)
+        Sun, 14 Nov 2021 11:36:26 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -67,9 +67,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
         linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: [PATCH v15 34/39] ARM: tegra: Add 500MHz entry to Tegra30 memory OPP table
-Date:   Sun, 14 Nov 2021 22:34:30 +0300
-Message-Id: <20211114193435.7705-35-digetx@gmail.com>
+Subject: [PATCH v15 32/39] soc/tegra: pmc: Enable core domain support for Tegra20 and Tegra30
+Date:   Sun, 14 Nov 2021 22:34:28 +0300
+Message-Id: <20211114193435.7705-33-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211114193435.7705-1-digetx@gmail.com>
 References: <20211114193435.7705-1-digetx@gmail.com>
@@ -79,50 +79,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Extend memory OPPs with 500MHz entry. This clock rate is used by ASUS
-Transformer tablets.
+All device drivers got runtime PM and OPP support. Flip the core domain
+support status for Tegra20 and Tegra30 SoCs.
 
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra30-peripherals-opp.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/soc/tegra/pmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi b/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
-index ff25350869b3..af9640401402 100644
---- a/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
-+++ b/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
-@@ -216,6 +216,18 @@ opp-450000000-1250 {
- 			opp-supported-hw = <0x0008>;
- 		};
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index de6234ec4f9b..585a05968ea9 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -3070,7 +3070,7 @@ static void tegra20_pmc_setup_irq_polarity(struct tegra_pmc *pmc,
+ }
  
-+		opp-500000000-1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <500000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp-500000000-1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <500000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
- 		opp-533000000-1200 {
- 			opp-microvolt = <1200000 1200000 1350000>;
- 			opp-hz = /bits/ 64 <533000000>;
-@@ -347,6 +359,12 @@ opp-450000000 {
- 			opp-peak-kBps = <3600000>;
- 		};
+ static const struct tegra_pmc_soc tegra20_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra20_powergates),
+ 	.powergates = tegra20_powergates,
+ 	.num_cpu_powergates = 0,
+@@ -3131,7 +3131,7 @@ static const char * const tegra30_reset_sources[] = {
+ };
  
-+		opp-500000000 {
-+			opp-hz = /bits/ 64 <500000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <4000000>;
-+		};
-+
- 		opp-533000000 {
- 			opp-hz = /bits/ 64 <533000000>;
- 			opp-supported-hw = <0x000F>;
+ static const struct tegra_pmc_soc tegra30_pmc_soc = {
+-	.supports_core_domain = false,
++	.supports_core_domain = true,
+ 	.num_powergates = ARRAY_SIZE(tegra30_powergates),
+ 	.powergates = tegra30_powergates,
+ 	.num_cpu_powergates = ARRAY_SIZE(tegra30_cpu_powergates),
 -- 
 2.33.1
 
