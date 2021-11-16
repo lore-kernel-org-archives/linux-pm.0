@@ -2,86 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C831C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Nov 2021 17:42:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33D25C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Nov 2021 17:47:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E091E61BE1
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Nov 2021 17:42:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0BFA361BD4
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Nov 2021 17:47:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238979AbhKPRpU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Nov 2021 12:45:20 -0500
-Received: from mga05.intel.com ([192.55.52.43]:6771 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S238906AbhKPRpT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Nov 2021 12:45:19 -0500
-X-IronPort-AV: E=McAfee;i="6200,9189,10169"; a="319970946"
-X-IronPort-AV: E=Sophos;i="5.87,239,1631602800"; 
-   d="scan'208";a="319970946"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Nov 2021 09:27:51 -0800
-X-IronPort-AV: E=Sophos;i="5.87,239,1631602800"; 
-   d="scan'208";a="567329979"
-Received: from paasikivi.fi.intel.com ([10.237.72.42])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Nov 2021 09:27:49 -0800
-Received: from paasikivi.fi.intel.com (localhost [127.0.0.1])
-        by paasikivi.fi.intel.com (Postfix) with SMTP id 3CF6C206F9;
-        Tue, 16 Nov 2021 19:27:46 +0200 (EET)
-Date:   Tue, 16 Nov 2021 19:27:46 +0200
-From:   Sakari Ailus <sakari.ailus@linux.intel.com>
-To:     Martin Kepplinger <martin.kepplinger@puri.sm>
-Cc:     mchehab@kernel.org, linux-media@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@puri.sm,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH] media: i2c: dw9714: use pm_runtime_force_suspend/resume
- for system suspend
-Message-ID: <YZPqEu4W+JnY6LMY@paasikivi.fi.intel.com>
-References: <20211109125505.2682553-1-martin.kepplinger@puri.sm>
+        id S233081AbhKPRuz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Nov 2021 12:50:55 -0500
+Received: from mail-oi1-f181.google.com ([209.85.167.181]:37808 "EHLO
+        mail-oi1-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231666AbhKPRuy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Nov 2021 12:50:54 -0500
+Received: by mail-oi1-f181.google.com with SMTP id bj13so213439oib.4;
+        Tue, 16 Nov 2021 09:47:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=u8e7hzTw8B2j6N2eJqtuT11zBVR9b0rrryuunla9JsI=;
+        b=4IIALVPc5cYSVp/vaAcDt/fMidapHGh2qhjZzL6UjTo3U2z8E4ozyMFOHMUHvNpevs
+         /ymKovHk8kbwkVgffi2C6dFrZpjeLLWSl7BlTGu96vtmvccdnQ0zZrx3qtpuN0nfIvrB
+         nVBPNjunTfZm8JZac2AtA/TlOq9qMifdadw+0POcZQ5nZd08ybWvEi0Ck31DuGP0dNWx
+         CiqyHyTrBeu57j3/UPrN9qO51N11mvv8U/gQIx6u9o+6YSHwMs46EGhZjwy5xPhTMJ13
+         AtsFtedEus2ywmFMbRAFJ6dZvDEHIP12TFbG6Sbz91u40cINLeK+PUKEJKd5zK+fXFbG
+         iJFQ==
+X-Gm-Message-State: AOAM532Sa7zTPjH38fUn+2ZT4A1H6EYU4Up3+fOOuTMiKkKiR2T2+3Zd
+        6YU5nlmx1aeTeIkT0ly5NdQTyb8Fo0kzzMwjF/biHL0tsJ4=
+X-Google-Smtp-Source: ABdhPJwiFE2QcWklcUZ1lmcx262LXQjyeJUNXjPVxiTg84yya3jCmcIvVEFwQgezqNmiDmcZ3x6MRiogMotvbtg/BiU=
+X-Received: by 2002:a05:6808:14c2:: with SMTP id f2mr8036609oiw.154.1637084876799;
+ Tue, 16 Nov 2021 09:47:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211109125505.2682553-1-martin.kepplinger@puri.sm>
+References: <20211115134017.1257932-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20211115134017.1257932-1-srinivas.pandruvada@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 16 Nov 2021 18:47:45 +0100
+Message-ID: <CAJZ5v0jk3KB6+uynpvdBAO+Q-Qr4HiCam=x4dxzT6NFWjROLzg@mail.gmail.com>
+Subject: Re: [UPDATE][PATCH] cpufreq: intel_pstate: Fix EPP restore after offline/online
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Martin,
-
-On Tue, Nov 09, 2021 at 01:55:05PM +0100, Martin Kepplinger wrote:
-> Using the same suspend function for runtime and system suspend doesn't
-> work in this case (when controlling regulators and clocks). suspend() and
-> resume() are clearly meant to stay balanced.
-> 
-> Use the pm_runtime_force_* helpers for system suspend and fix error like the
-> following when transitioning to system suspend:
-> 
-> [  559.685921] dw9714 3-000c: I2C write fail
-> [  559.685941] dw9714 3-000c: dw9714_vcm_suspend I2C failure: -5
-> 
-> Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
+On Mon, Nov 15, 2021 at 2:40 PM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> When using performance policy, EPP value is restored to non "performance"
+> mode EPP after offline and online.
+>
+> For example:
+> cat /sys/devices/system/cpu/cpu1/cpufreq/energy_performance_preference
+> performance
+> echo 0 > /sys/devices/system/cpu/cpu1/online
+> echo 1 > /sys/devices/system/cpu/cpu1/online
+> cat /sys/devices/system/cpu/cpu1/cpufreq/energy_performance_preference
+> balance_performance
+>
+> The commit 4adcf2e5829f ("cpufreq: intel_pstate: Add ->offline and ->online callbacks")
+> optimized save restore path of the HWP request MSR, when there is no
+> change in the policy. Also added special processing for performance mode
+> EPP. If EPP has been set to "performance" by the active mode "performance"
+> scaling algorithm, replace that value with the cached EPP. This ends up
+> replacing with cached EPP during offline, which is restored during online
+> again.
+>
+> So add a change which will set cpu_data->epp_policy to zero, when in
+> performance policy and has non zero epp. In this way EPP is set to zero
+> again.
+>
+> Fixes: 4adcf2e5829f ("cpufreq: intel_pstate: Add ->offline and ->online callbacks")
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: stable@vger.kernel.org # v5.9+
 > ---
->  drivers/media/i2c/dw9714.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/media/i2c/dw9714.c b/drivers/media/i2c/dw9714.c
-> index fcbebb3558b5..f6ddd7c4a1ff 100644
-> --- a/drivers/media/i2c/dw9714.c
-> +++ b/drivers/media/i2c/dw9714.c
-> @@ -267,7 +267,8 @@ static const struct of_device_id dw9714_of_table[] = {
->  MODULE_DEVICE_TABLE(of, dw9714_of_table);
->  
->  static const struct dev_pm_ops dw9714_pm_ops = {
-> -	SET_SYSTEM_SLEEP_PM_OPS(dw9714_vcm_suspend, dw9714_vcm_resume)
-> +	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-> +				pm_runtime_force_resume)
->  	SET_RUNTIME_PM_OPS(dw9714_vcm_suspend, dw9714_vcm_resume, NULL)
->  };
+> Update: Minor optimization to skip non performance policy code path
+>
+>  drivers/cpufreq/intel_pstate.c | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 815df3daae9d..6d7d73a0c66b 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -936,11 +936,17 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+>         max = cpu_data->max_perf_ratio;
+>         min = cpu_data->min_perf_ratio;
+>
+> -       if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
+> -               min = max;
+> -
+>         rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+>
+> +       if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE) {
+> +               min = max;
+> +               epp = 0;
+> +               if (boot_cpu_has(X86_FEATURE_HWP_EPP))
+> +                       epp = (value >> 24) & 0xff;
+> +               if (epp)
+> +                       cpu_data->epp_policy = 0;
+> +       }
 
-The purpose of the vcm suspend / resume callbacks is to gently move the
-lens to the resting position without hitting the stopper.
+I understand the bug, but it should not be necessary to check this
+every time intel_pstate_hwp_set() runs.
 
-The problem currently appears to be that during system suspend, the VCM may
-well be powered off and the driver isn't checking for that. How about
-adding that check?
+> +
+>         value &= ~HWP_MIN_PERF(~0L);
+>         value |= HWP_MIN_PERF(min);
+>
+> --
 
--- 
-Sakari Ailus
+Isn't the following sufficient (modulo the gmail-induced whitespace damage)?
+
+---
+ drivers/cpufreq/intel_pstate.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1006,6 +1006,12 @@ static void intel_pstate_hwp_offline(str
+          */
+         value &= ~GENMASK_ULL(31, 24);
+         value |= HWP_ENERGY_PERF_PREFERENCE(cpu->epp_cached);
++        /*
++         * However, make sure that EPP will be set to "performance" when
++         * the CPU is brought back online again and the "performance"
++         * scaling algorithm is still in effect.
++         */
++        cpu->epp_policy = CPUFREQ_POLICY_UNKNOWN;
+     }
+
+     /*
