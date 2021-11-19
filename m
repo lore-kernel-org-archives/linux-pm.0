@@ -2,43 +2,44 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BD0FC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 10:32:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16DADC433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 10:32:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 53B8361A64
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 10:32:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F2B98610A1
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 10:32:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234725AbhKSKe7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Nov 2021 05:34:59 -0500
-Received: from mail-dm6nam12on2049.outbound.protection.outlook.com ([40.107.243.49]:60513
-        "EHLO NAM12-DM6-obe.outbound.protection.outlook.com"
+        id S234751AbhKSKfF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Nov 2021 05:35:05 -0500
+Received: from mail-dm6nam10on2047.outbound.protection.outlook.com ([40.107.93.47]:51936
+        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S234711AbhKSKe5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Nov 2021 05:34:57 -0500
+        id S234738AbhKSKfE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Nov 2021 05:35:04 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ODAVKdr7N+r5HS7jzXcV9b+KEoYR/mNqb3RNXDiJ+jAale4jGbgGWzmeS9YMRwnQWm8t3pvhRhzlKcJoxuYlNuMI7ZXBp2nvSSRMP/jAvp4yvyzGdnn97B+YQvOTdP3cjdKpsOhHjotOUoSx0dv4Zo8iaqFaxf0qb/1DCXXVHMUkZADZw4yaiPewyOo909C68vCu018kqBtz0QV3r0LR2RX6Ys3jikTH9QpdchgaWZpjvQcrx5XjYsM+XqcEjkEkfy0DKeSuZ03OsL1bBc/imTRhk3/AYpc0YGLXwB+PmcF5EkQblXvS9oeFD+2dWInChiedt3zPF3h2m/2osAUYpA==
+ b=WdWZ7IWtR85N32RPU254bViMcCa11+MRuRslcWLrCEwjqtKi1oZpQ3YesIGhnOCy4RcK3mvdsflamARcvGfALBQVlTxLQmqBeaKKBWePqahHNDiDcVIv5AtAJksQ+TJs0qt/FKL4626V7IKzab72SGTeVYEGarYl6ymDUQTP1IWAkQjH78yaxWGzVnL6RTxVkH0/4PtDcFcRYAjXYjEYNiublx7yGNbzsTdBv4GUzHEiezLs1KPJadQoRD6qq9ZC6j5rj5liWtfelSzPs9CKwk9qmIVRjZ0qdu9xMdYbCHP1fdWbQCSGn64kepyHAjcGqU4RBGIZrRJvSqL2bz/RCQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=E8kgyOkrddODGeP9fLYswG8P2mhNQkaTgXSoOqeB0ZY=;
- b=BbucXkI9LNXo9obaMB5Wv9f23R7AmY3g0ldiLzyxJLdtRGSoNZVCdEinKxUg86+C0Xhrhkz6o33y4DeDIbxvOOQIpzKmL+Nvw2AmCRXRwBGQrvQVP4c6yuE17mnjWyIpUPPJ3JzzNjLtN7DewEsG3Nn0JFfKlva3qKVDaksfvJhUssyAQ5W4jhBmR1j1SqN1SAhjKV04xD7r7TqgIU5gixfkMG4q4Xjd7GOWNjv9Bhrp2aSIsthkIyRFRTnQOBEMBcZiqfAwUHLf0mkrcGODICJFn5Mo51qqTDpcq/VlNxjNz1lBgnAZxjm+8Jj8cu4KRZE8tkzqJl7mhSFdebmuoQ==
+ bh=hmrJdogSFnhgOG9FgwOU58MPcseoeLMGB3Z6ARKq1WM=;
+ b=d4fj6LnJ8QCp7Al47A8LnkjJ1La1V+IP7xDbdb529FIzTfVgjgzFlurVo7vO0jZncNnD2Psf4excmmPQtaKPJhVwmR+xyu460zNd1tzWhyIslWzvrL6pRvTchI7xX4RGaI2zaod6xZV8IgH1d1dAaH7SHOQ2WG+1Vm1VCm0tIxpd42Hm/+k2iQcZMxWTGKQ//+9QBQfkN3ng1G5HMjXTNzmPbIPyRFYsUw7q9XtTHqXysvnggVgiTrEcgaWFZdrjVZ7jE8XJKM+U6Uxqgadg3aclUbNNbep1Xjaih5aNkn+9tLsk72nCy9xy9fj8Gh79ow9Xbmwf6bUywar3DntRNw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=E8kgyOkrddODGeP9fLYswG8P2mhNQkaTgXSoOqeB0ZY=;
- b=fNBfMepssFmIfDDH/qrAyupou3c15hWJpf4zbYy+1ggQWB6G+PBPYEPYwIv/NVBDnbFEwWnjzN9hMMGwbXqjGT8W/F5HVXRgZ0tv5+32bksSiWJdNDoc9Syc9Zd6Escfrm6Qg6kMgSXKb6MYgOXJQxKfxr9768cM6MbFWiIRQQY=
-Received: from DS7PR03CA0324.namprd03.prod.outlook.com (2603:10b6:8:2b::24) by
- MW2PR12MB2588.namprd12.prod.outlook.com (2603:10b6:907:a::19) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.4713.22; Fri, 19 Nov 2021 10:31:51 +0000
-Received: from DM6NAM11FT003.eop-nam11.prod.protection.outlook.com
- (2603:10b6:8:2b:cafe::b3) by DS7PR03CA0324.outlook.office365.com
- (2603:10b6:8:2b::24) with Microsoft SMTP Server (version=TLS1_2,
+ bh=hmrJdogSFnhgOG9FgwOU58MPcseoeLMGB3Z6ARKq1WM=;
+ b=dguwzSF97pFfhwqQoWqk8UkeuW7oJwvmqeSL7+pcVZtt4yjnRd1d6eP+/bhKUEQLN7YI/htrSCWlpdX4DiwiC4LRLeCjJybC+lO3jAVjbAKncWW9BpMXb6hoFpeRoNZDnuRlQ3O6sYjR2Nf3LyxQooyPMp8roVc8gwmGKItldV8=
+Received: from DM5PR12CA0049.namprd12.prod.outlook.com (2603:10b6:3:103::11)
+ by DM4PR12MB5309.namprd12.prod.outlook.com (2603:10b6:5:39d::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4690.26; Fri, 19 Nov
+ 2021 10:31:59 +0000
+Received: from DM6NAM11FT011.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:3:103:cafe::8f) by DM5PR12CA0049.outlook.office365.com
+ (2603:10b6:3:103::11) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.19 via Frontend
- Transport; Fri, 19 Nov 2021 10:31:51 +0000
+ Transport; Fri, 19 Nov 2021 10:31:59 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +47,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DM6NAM11FT003.mail.protection.outlook.com (10.13.173.162) with Microsoft SMTP
+ DM6NAM11FT011.mail.protection.outlook.com (10.13.172.108) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4713.20 via Frontend Transport; Fri, 19 Nov 2021 10:31:50 +0000
+ 15.20.4713.20 via Frontend Transport; Fri, 19 Nov 2021 10:31:59 +0000
 Received: from hr-amd.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17; Fri, 19 Nov
- 2021 04:31:45 -0600
+ 2021 04:31:54 -0600
 From:   Huang Rui <ray.huang@amd.com>
 To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -71,9 +72,9 @@ CC:     Deepak Sharma <deepak.sharma@amd.com>,
         Xiaojian Du <Xiaojian.Du@amd.com>,
         <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
         Huang Rui <ray.huang@amd.com>
-Subject: [PATCH v4 02/22] x86/msr: add AMD CPPC MSR definitions
-Date:   Fri, 19 Nov 2021 18:30:42 +0800
-Message-ID: <20211119103102.88124-3-ray.huang@amd.com>
+Subject: [PATCH v4 04/22] ACPI: CPPC: Check present CPUs for determining _CPC is valid
+Date:   Fri, 19 Nov 2021 18:30:44 +0800
+Message-ID: <20211119103102.88124-5-ray.huang@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211119103102.88124-1-ray.huang@amd.com>
 References: <20211119103102.88124-1-ray.huang@amd.com>
@@ -85,66 +86,60 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9cd1db08-00f9-4df6-1809-08d9ab47cc34
-X-MS-TrafficTypeDiagnostic: MW2PR12MB2588:
-X-Microsoft-Antispam-PRVS: <MW2PR12MB25886BA52C3FEE2DB092EE55EC9C9@MW2PR12MB2588.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1107;
+X-MS-Office365-Filtering-Correlation-Id: 5e648346-2469-417e-da3b-08d9ab47d15e
+X-MS-TrafficTypeDiagnostic: DM4PR12MB5309:
+X-Microsoft-Antispam-PRVS: <DM4PR12MB5309019A3D90FD5A6AD04B55EC9C9@DM4PR12MB5309.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:7691;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 8WXj9+0PHa3KpitbzlWNQh2F3BNiuGIHCuxNXFS44eCF8MBEhOoXFsbDMXCXIFmMYSvR4eFPe3nBCCHm9hm62z3Z/NPgxduZIJEa2jJ0ZbS417zVsfXy69+PWIaWJti6fWcB767Dcp1ShE0qTm9F5VU0GYuXfKGDg2Lxumg62JidWvoKC9VnbENk0vFH76HvvRTGw9Q6zw2OkOflj8Qy1urh14qXUId7P1XqlMuWwUfd/3yp4i4XKq6oMNLOZ0WBlM2ZbJClHVESsS30uW1yZym8s6NVaDcI6PtVHrUhnyOU0xJl9RWfFzz14/OwxclwLxSgdvXRREgBLEa5/wm+OLoKglURB4MJHYP9lAIOFHGJEKDtbsrzg1EpJT3qdYSppA7Gb33ivQb2iqcYp6J46FwZD64wOLBVTP67JHBG4pgn6+clBvHZdZME45Fy+MYs5p2qry/sPpWC1c7K5WN0hEaqMSEBfN/wv664nkFBZOpteMNyi9f9r3Ps6unhqWi8vFXBnzGm+FWZDoxgwW8mgEoEQ7eBbNkVS0qWJpxWRaYqP6Te0JMsRVoycWB0jpZQ/if/VhFH1KAXDQIe7Ku13+xmunH0r+Ta9A7qe5RH5YrrWe4kmpQ4ckzJGn/mukZNmgs0RSB5yHIXx+S0G4SD/SDDSTdSjhXDhWUVsj0r7rKzT/m2xvZjaHW48KYPc/X5UTJOgkgfASwivAlo4Jxcxckdaj0l3wE/pxPXmDZQkSE=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(46966006)(36840700001)(86362001)(26005)(5660300002)(7696005)(186003)(36860700001)(2616005)(8936002)(4326008)(36756003)(16526019)(508600001)(2906002)(1076003)(8676002)(47076005)(6666004)(336012)(70586007)(70206006)(82310400003)(426003)(54906003)(81166007)(356005)(316002)(110136005)(7416002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 6P5FYd0KBSVMgGGscaDOwn0zd0ANNglIoKLvN8mn1zGkDTmOUJLzULXfsraNxKu7X5so9HA1HcI/+ta3aTnduSyF23Zw41oXsktFRmUyyCheuzoH/MjAnrkg9HupEhaJyoAIRVjMuTAJqQ1msEtyYtvBQU20Tne5W4rvdluRbEEn4irSWEUdCVw5dfZOAm/SsN61LdK7jbvhFx8dHw/WHIdOu7//oRx9KX/4z6aa534QixIX0jmR4UddULxPbk1cYaoZPNf9T+RgfLDf1DfczYRgF8s87IvyTzypG7aRr3i5gDv32tqr9LYzeet6nsDuRMiohXCWX5y0fdNsURbrtm09gaEZLLievJwYxekyLRoJq4rDNqSooKWKE9bIfSEtSXACAjckSjqyQBh2hiWtXnt/OeKad5T49SctwXuFFLi7HpzgNP++yqtBuunBnhFI/clhU3ID3AM+SFQPiLdQmR3NjHmHvx8v3IhGrx4nwkCq8dDkzjAQdw0Gez4U5Pqf2EFI79fiPrgZh1f5UsgwV7E400NMsK+ivuocb1fncKyFgXUj2Ge6IFGsR3VhUZCwjRlfCH8QrEsUnoLo/kJJE6gvxLHZPuiWaVsUMrFopkbE2oy5LViQLBPNh2rIAt7Tzm3U2Cl2RVOphzkZjYci7pKxPPz2zsUH6BJ/feVQEzFb6CrYYW9AtQ9dR9p3GayvuTHs72hpavgxOJaffjjRjDV67DKlIrDcsjZhE68u33w=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(46966006)(36840700001)(8676002)(36860700001)(5660300002)(86362001)(47076005)(82310400003)(356005)(4326008)(2906002)(8936002)(426003)(316002)(81166007)(1076003)(6666004)(16526019)(110136005)(336012)(508600001)(7416002)(2616005)(70206006)(83380400001)(54906003)(186003)(26005)(7696005)(36756003)(70586007)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2021 10:31:50.5760
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Nov 2021 10:31:59.2498
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9cd1db08-00f9-4df6-1809-08d9ab47cc34
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5e648346-2469-417e-da3b-08d9ab47d15e
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT003.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT011.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW2PR12MB2588
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5309
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-AMD CPPC (Collaborative Processor Performance Control) function uses MSR
-registers to manage the performance hints. So add the MSR register macro
-here.
+From: Mario Limonciello <mario.limonciello@amd.com>
 
+As this is a static check, it should be based upon what is currently
+present on the system. This makes probeing more deterministic.
+
+While local APIC flags field (lapic_flags) of cpu core in MADT table is
+0, then the cpu core won't be enabled. In this case, _CPC won't be found
+in this core, and return back to _CPC invalid with walking through
+possible cpus (include disable cpus). This is not expected, so switch to
+check present CPUs instead.
+
+Reported-by: Jinzhou Su <Jinzhou.Su@amd.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: Huang Rui <ray.huang@amd.com>
 ---
- arch/x86/include/asm/msr-index.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/acpi/cppc_acpi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 01e2650b9585..e7945ef6a8df 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -486,6 +486,23 @@
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index ca62c3dc9899..a46f227dc254 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -411,7 +411,7 @@ bool acpi_cpc_valid(void)
+ 	struct cpc_desc *cpc_ptr;
+ 	int cpu;
  
- #define MSR_AMD64_VIRT_SPEC_CTRL	0xc001011f
- 
-+/* AMD Collaborative Processor Performance Control MSRs */
-+#define MSR_AMD_CPPC_CAP1		0xc00102b0
-+#define MSR_AMD_CPPC_ENABLE		0xc00102b1
-+#define MSR_AMD_CPPC_CAP2		0xc00102b2
-+#define MSR_AMD_CPPC_REQ		0xc00102b3
-+#define MSR_AMD_CPPC_STATUS		0xc00102b4
-+
-+#define CAP1_LOWEST_PERF(x)	(((x) >> 0) & 0xff)
-+#define CAP1_LOWNONLIN_PERF(x)	(((x) >> 8) & 0xff)
-+#define CAP1_NOMINAL_PERF(x)	(((x) >> 16) & 0xff)
-+#define CAP1_HIGHEST_PERF(x)	(((x) >> 24) & 0xff)
-+
-+#define REQ_MAX_PERF(x)		(((x) & 0xff) << 0)
-+#define REQ_MIN_PERF(x)		(((x) & 0xff) << 8)
-+#define REQ_DES_PERF(x)		(((x) & 0xff) << 16)
-+#define REQ_ENERGY_PERF_PREF(x)	(((x) & 0xff) << 24)
-+
- /* Fam 17h MSRs */
- #define MSR_F17H_IRPERF			0xc00000e9
- 
+-	for_each_possible_cpu(cpu) {
++	for_each_present_cpu(cpu) {
+ 		cpc_ptr = per_cpu(cpc_desc_ptr, cpu);
+ 		if (!cpc_ptr)
+ 			return false;
 -- 
 2.25.1
 
