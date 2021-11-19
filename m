@@ -2,117 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF50BC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 01:54:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AA40C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 05:18:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 91B9861A09
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 01:54:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7C9B61B30
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 05:18:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233287AbhKSB5X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Nov 2021 20:57:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58934 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231688AbhKSB5X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Nov 2021 20:57:23 -0500
-Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16818C061574
-        for <linux-pm@vger.kernel.org>; Thu, 18 Nov 2021 17:54:22 -0800 (PST)
-Received: by mail-oi1-x22f.google.com with SMTP id m6so18640441oim.2
-        for <linux-pm@vger.kernel.org>; Thu, 18 Nov 2021 17:54:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=2FxdMMSYOAYAU9KFKnHB4GkxuBsvinpK2Vc/6yFivGc=;
-        b=vYmxSd/nIldGJ+S4HR2cLPVGy8eMrqBT2xU1PpQ7aEnwTN6bJZXJDAt45aaAZ1gPOx
-         dy4yOi0bpRShwlw5JX1lGwWwByxgRyXI53vM0fhy/O7rk2wMWufVFGML1OIgxFO+psi+
-         KVkwcjFf8ynREOddSsWjZSq19sDR053lCZa5A6hwRQ41JIsRYwOE4fEbg/6gfA5/9g+B
-         oC1MdqllqoEZMNN9Di7nkaoFqxmCjXqZqaZYoykS6EKY+sFtOvKWK5UyiNC0qFR3rJMt
-         aeoIDBKwK7X7w0C9w+MRHhNs5Mmsa7LI+H+wMQi5Cx0VoyFYKUp6gtoWyVkWRzrVbPKA
-         cP5A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=2FxdMMSYOAYAU9KFKnHB4GkxuBsvinpK2Vc/6yFivGc=;
-        b=lGIArVNVgKdSHlzpFRXD5syGyY22uCnZLpy1PBnGOoTcdNCDZl2njXPBFmxIohLfql
-         2ln+W34DjZksbNY6bP5DmkXGH+TsJ0WYBWcLdbaTjowhO2c0WBhHCaIyXf/iOXn8UhdL
-         JQ4aNDPIja9vljiyps2vjIMvnsqhrFvo6aw2iBO5UYjXlUjjWukEcBME7/SWbqExmwOy
-         KAJ2g2kM3q8P7LG69m3tWNamPGLV9lFKw6eWzWVAxHh+OX7BUfoL5bcbjrWgCGQqpTS4
-         OvF5nCU9t2sqQ8yNrJqwUBnSSluScSlSbJjoj+EpoV037qUC2zSOk2UlxTXlpw2MzTTp
-         xjxg==
-X-Gm-Message-State: AOAM532M9bswAu9sLtBYWvZnYvqVrKRa+H6FdgdG2nNqDiRkyj1Vi8m4
-        WQvtAqYMicFb9PPeDCgWobP1VaXxy3rZi1yBMrCQ/Q==
-X-Google-Smtp-Source: ABdhPJyRBm0fzRDLcJlXEbvREg/ZNXV/7Xm5j6CDTdCOubs2VBCxDSWSKHMSzaj9Lth9V9uE7GejuszIMIjni8F5a6E=
-X-Received: by 2002:a05:6808:60e:: with SMTP id y14mr1561686oih.162.1637286861422;
- Thu, 18 Nov 2021 17:54:21 -0800 (PST)
+        id S230296AbhKSFVI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Nov 2021 00:21:08 -0500
+Received: from mga18.intel.com ([134.134.136.126]:43846 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229675AbhKSFVI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Nov 2021 00:21:08 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10172"; a="221237583"
+X-IronPort-AV: E=Sophos;i="5.87,246,1631602800"; 
+   d="scan'208";a="221237583"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2021 21:18:07 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,246,1631602800"; 
+   d="scan'208";a="536999203"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
+  by orsmga001.jf.intel.com with ESMTP; 18 Nov 2021 21:18:07 -0800
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     lenb@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        ricardo.neri@intel.com, tim.c.chen@intel.com, peterz@infradead.org,
+        Michael@MichaelLarabel.com, arjan@linux.intel.com,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: ITMT support for overclocked system
+Date:   Thu, 18 Nov 2021 21:18:01 -0800
+Message-Id: <20211119051801.1432724-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-References: <cover.1637061794.git.matti.vaittinen@fi.rohmeurope.com> <26a80d9081382976cec58f9c3bc0ecb181c5836e.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
-In-Reply-To: <26a80d9081382976cec58f9c3bc0ecb181c5836e.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Fri, 19 Nov 2021 02:54:09 +0100
-Message-ID: <CACRpkdYLTvBm4OP+VLKaPDOGzem1fakBBqOF1ZVqXBHCzB6Jyg@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 7/9] power: supply: add simple-gauge for SOC
- estimation and CC correction
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc:     Matti Vaittinen <mazziesaccount@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>, rostokus@gmail.com,
-        fan.chen@mediatek.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-power@fi.rohmeurope.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 16, 2021 at 1:28 PM Matti Vaittinen
-<matti.vaittinen@fi.rohmeurope.com> wrote:
+On systems with overclocking enabled, CPPC Highest Performance can be
+hard coded to 0xff. In this case even if we have cores with different
+highest performance, ITMT can't be enabled as the current implementation
+depends on CPPC Highest Performance.
 
-> Add generic 'simple gauge' helper for performing iterative SOC estimation
-> and coulomb counter correction for devices with a (drifting) coulomb
-> counter. This should allow few charger/fuel-gauge drivers to use generic
-> loop instead of implementing their own.
->
-> Charger/fuel-gauge drivers can register 'simple-gauge' which does
-> periodically poll the driver and:
->  - get battery state
->  - adjust coulomb counter value (to fix drifting caused for example by ADC
->    offset) if:
->      - Battery is relaxed and OCV<=>SOC table is given
->      - Battery is full charged
->  - get battery age (cycles) from driver
->  - get battery temperature
->  - do battery capacity correction
->      - by battery temperature
->      - by battery age
->      - by computed Vbat/OCV difference at low-battery condition if
->        low-limit is set and OCV table given
->      - by IC specific low-battery correction if provided
->  - compute current State Of Charge (SOC)
->  - do periodical calibration if IC supports that. (Many ICs do calibration
->    of CC by shorting the ADC pins and getting the offset).
->  - provide the user-space a consistent interface for getting/setting the
->    battery-cycle information for ICs which can't store the battery aging
->    information. Uses POWER_SUPPLY_PROP_CYCLE_COUNT for this.
->
-> The simple gauge provides the last computed SOC as
-> POWER_SUPPLY_PROP_CAPACITY to power_supply_class when requested.
->
-> Things that should/could be added but are missing from this commit:
->  - Support starting calibration in HW when entering to suspend. This
->    is useful for ICs supporting delayed calibration to mitigate CC error
->    during suspend - and to make periodical wake-up less critical.
->  - periodical wake-up for performing SOC estimation computation (RTC
->    integration)
->
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+On such systems we can use MSR_HWP_CAPABILITIES maximum performance field
+when CPPC.Highest Performance is 0xff.
 
-This is the right ambition, I haven't looked close at it but the way
-you use it seem to be what you need, so:
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
-(and the rest of the patches to the Rohm chips)
+Due to legacy reasons, we can't solely depend on MSR_HWP_CAPABILITIES as
+in some older systems CPPC Highest Performance is the only way to identify
+different performing cores.
 
-Yours,
-Linus Walleij
+Reported-by: Michael Larabel <Michael@MichaelLarabel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+This patch was tested on one Alder Lake system by enabling Overclocking.
+Once overclocking is enabled, we see
+$cat /sys/devices/system/cpu/cpu*/acpi_cppc/highest_perf 
+255 (P-Cores)
+255 (P-Cores
+...
+...
+255 (E-Cores)
+255 (E-Cores)
+The real max performance for CPUs on this system was
+0x40 for P-cores and 0x26 for E-cores.
+With this change applied we will see
+$cat /proc/sys/kernel/sched_itmt_enabled 
+1
+The resultant ITMT priorities
+for P-core 0x40, P-core HT sibling 0x10 and E-core 0x26
+
+ drivers/cpufreq/intel_pstate.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 815df3daae9d..3106e62ffb25 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -338,6 +338,8 @@ static void intel_pstste_sched_itmt_work_fn(struct work_struct *work)
+ 
+ static DECLARE_WORK(sched_itmt_work, intel_pstste_sched_itmt_work_fn);
+ 
++#define CPPC_MAX_PERF	U8_MAX
++
+ static void intel_pstate_set_itmt_prio(int cpu)
+ {
+ 	struct cppc_perf_caps cppc_perf;
+@@ -348,6 +350,14 @@ static void intel_pstate_set_itmt_prio(int cpu)
+ 	if (ret)
+ 		return;
+ 
++	/*
++	 * On some systems with overclocking enabled, CPPC.highest_perf is hardcoded to 0xff.
++	 * In this case we can't use CPPC.highest_perf to enable ITMT.
++	 * In this case we can look at MSR_HWP_CAPABILITIES bits [8:0] to decide.
++	 */
++	if (cppc_perf.highest_perf == CPPC_MAX_PERF)
++		cppc_perf.highest_perf = HWP_HIGHEST_PERF(READ_ONCE(all_cpu_data[cpu]->hwp_cap_cached));
++
+ 	/*
+ 	 * The priorities can be set regardless of whether or not
+ 	 * sched_set_itmt_support(true) has been called and it is valid to
+-- 
+2.31.1
+
