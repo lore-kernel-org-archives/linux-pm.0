@@ -2,114 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED8DBC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Nov 2021 22:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47F51C433F5
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Nov 2021 15:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235348AbhKSWWt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Nov 2021 17:22:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53250 "EHLO
+        id S231639AbhKTP6h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 20 Nov 2021 10:58:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58048 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235124AbhKSWWt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Nov 2021 17:22:49 -0500
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACD85C061574;
-        Fri, 19 Nov 2021 14:19:46 -0800 (PST)
-Received: by mail-lf1-x12e.google.com with SMTP id u3so49506980lfl.2;
-        Fri, 19 Nov 2021 14:19:46 -0800 (PST)
+        with ESMTP id S231523AbhKTP6h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 20 Nov 2021 10:58:37 -0500
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7017C061574
+        for <linux-pm@vger.kernel.org>; Sat, 20 Nov 2021 07:55:33 -0800 (PST)
+Received: by mail-lf1-x136.google.com with SMTP id b1so57718623lfs.13
+        for <linux-pm@vger.kernel.org>; Sat, 20 Nov 2021 07:55:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=3Nzbg2EG61wjglaAUxjv2HbmVE4Xv+5yBzHM0E8IZsg=;
-        b=SXIbbN0574L4wXm6E218LgP9PFCcdFNYniGzSbU9VNCAmx4rys3EGBHB0pZtHXsQ0v
-         5DOopnAEeUruILLsRF8g4bP20PDOTcU0wmU2o0up/eJKzKA6q9hdklZxr3KyLgUaVEg6
-         6NSTCmJbJVh0y+ODheunQOEBX0frGj3FLSGAzBDKJEhO3vX6sRomDc5UQQNySOi72gDN
-         IASArMTWwqSSABu89oH+I5KnBR9FP8iJED9maZFRqpkjjAlK4XxhGKHSe3iLDPnnnq4Y
-         n5JnG9/mFVvF3hLwZPZ1ZiLmpDiUAB6/DXuNO1OgWAuZUbkYFzJI29kVF7DOD9YHUn3M
-         ctng==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FzkKIp5Qvi3u4b3fYNXeztV/oQWWS3kAtKNm8Xg2kGI=;
+        b=DV2twTaknybC7oLyMANNWbq/zpLoDi3/kAxloEORRpRqdhuMXTDs3s6umK+S6N+NFK
+         LAAG2999L3lFvFcJl/kovxIi/9Ks7FQAAQAWdXtftGXZysxOk9EHRSQ4P1virtGrfDfC
+         It3KOr7R5O4Pfxl+E6pNs8lUnoOTZca7VEtc8EnKHMk87G92DErz7OzZFUgbphzybAEN
+         bzh5fjBWe+hj7ejDm17J0RSe+J2Yz5/mm2lPgvrO18Bht9zVrHk1a7fl5FVFghQ1ajQg
+         HIeNEOW/BOxUv+dWkiwNtN20GCTshMwjSaegy4OifQwMWVQrXwG8Fod5/sGL6yhQTRpN
+         LpsQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=3Nzbg2EG61wjglaAUxjv2HbmVE4Xv+5yBzHM0E8IZsg=;
-        b=V/8FU6LqLkcn0Xigzkze/4prkZpIxCxjGNdvZOVg71hhxsUNUjYUGS3jyTC6c6SonX
-         5DevVwmenRpXHrx3rwG9L1iwi61FTGxv9/hXRWttrlbNX/Gng7PBTIEf37nBJ6n3deIA
-         tvLSkuIUYJPE61BAa47wb1pF5AOMgNjStlEj760bMLQ6GEV2wQ2EBVhSGJciDiD/Dmv4
-         HMr0kJmIxUwCZYerY0btJcIfy6wX4SMWX4VTO+nfGlpxx/N/rCQg3F9YgYQSMFcABjv1
-         qBrO37ctSSMwW6qws+HE43QWMPS9PpS8Wl80f87yF594Ss2D7+oKkd7DgUQqVDYdF7IA
-         XCEQ==
-X-Gm-Message-State: AOAM533ioegNT6EQlBib3NE7AAasTOPDQhDRcsMl9I0Y8988BNVPOmQw
-        rXVQjWM+Z1d15fJRfFivrCc=
-X-Google-Smtp-Source: ABdhPJwCGLjF1Tj7LtmDCAeHN04dyGLyvsGY7Z/Z0MX7Wq0wDJuM12LsICJS45mawjRFANUPQavgAA==
-X-Received: by 2002:a19:c3d6:: with SMTP id t205mr36620216lff.441.1637360384991;
-        Fri, 19 Nov 2021 14:19:44 -0800 (PST)
-Received: from localhost.localdomain (dsl-trebng21-58c18a-64.dhcp.inet.fi. [88.193.138.64])
-        by smtp.gmail.com with ESMTPSA id 76sm78150ljj.69.2021.11.19.14.19.44
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FzkKIp5Qvi3u4b3fYNXeztV/oQWWS3kAtKNm8Xg2kGI=;
+        b=OhqCqcUmOuD5sNR6OxFqbcsfnqpZtsVyJLRxWlCiJoYc2YjstzRTt9vxopz4cPeCIr
+         /XML5jZ4KoJ14vr5gr1VFt7a9tcL4aRPQ/meGWhdAI5DU/HtEjQ8g2h+ujl5MKzEOl82
+         0QkRjPEbjHG98Yr2dp1sls6M8C1KMVxbwHLBwGKTKbWsUAaAUQcZzfqMPegb/ijuzDWU
+         aKy8xkr+swGWUNTq9QxUNpNZmOec6JbuCNTkXutLKjuLuaa42/iMpD5Q66M+p0PL0p0X
+         g6YUFp1QtOg4SCMyJ9/P/mMqMZmUfvwMr4rFLvkNW3mVsheDP6J/t1ATSKsLOfe29JjI
+         HGRw==
+X-Gm-Message-State: AOAM531GynuCAd6/E19Le25OlPdY4yyFt67ZR9FzbRlhc8aBjNL+/4ll
+        x8wOtxYqXN1TqtvXz6GmfNoNJx5si1pmew==
+X-Google-Smtp-Source: ABdhPJwMVB7GM1khL7ReGg/L25E1yIkNOjYahFOzJDj3LZs2iNpkXm6Dzs80ujYv2QtDYQQgaUJKfw==
+X-Received: by 2002:a19:5018:: with SMTP id e24mr43306271lfb.294.1637423732032;
+        Sat, 20 Nov 2021 07:55:32 -0800 (PST)
+Received: from localhost.localdomain (c-fdcc225c.014-348-6c756e10.bbcust.telenor.se. [92.34.204.253])
+        by smtp.gmail.com with ESMTPSA id t12sm280922ljg.63.2021.11.20.07.55.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 19 Nov 2021 14:19:44 -0800 (PST)
-From:   Juuso Alasuutari <juuso.alasuutari@gmail.com>
-To:     nafonten@amd.com
-Cc:     Jinzhou.Su@amd.com, Xiaojian.Du@amd.com, alexander.deucher@amd.com,
-        bp@suse.de, deepak.sharma@amd.com, ggherdovich@suse.cz,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        mario.limonciello@amd.com, mingo@kernel.org,
-        nathan.fontenot@amd.com, peterz@infradead.org,
-        rafael.j.wysocki@intel.com, ray.huang@amd.com,
-        skhan@linuxfoundation.org, steven@valvesoftware.com,
-        viresh.kumar@linaro.org, x86@kernel.org
-Subject: Re: [PATCH v4 16/22] cpupower: add the function to get the sysfs value from specific table
-Date:   Sat, 20 Nov 2021 00:19:43 +0200
-Message-Id: <20211119221943.92479-1-juuso.alasuutari@gmail.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <152fb29e-c558-ec2f-7ec6-65d7f62274b7@amd.com>
-References: <152fb29e-c558-ec2f-7ec6-65d7f62274b7@amd.com>
+        Sat, 20 Nov 2021 07:55:31 -0800 (PST)
+From:   Linus Walleij <linus.walleij@linaro.org>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH v2 00/16] AB8500 charger to use power_supply_battery_info
+Date:   Sat, 20 Nov 2021 16:53:10 +0100
+Message-Id: <20211120155326.2891664-1-linus.walleij@linaro.org>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 19 Nov 2021 14:38:58 -0600, Nathan Fontenot wrote:
-> On 11/19/21 4:30 AM, Huang Rui wrote:
-> > Expose the helper into cpufreq header, then cpufreq driver can use this
-> > function to get the sysfs value if it has any specific sysfs interfaces.
-> > 
-> > Signed-off-by: Huang Rui <ray.huang@amd.com>
-> > ---
-> >  tools/power/cpupower/lib/cpufreq.c | 21 +++++++++++++++------
-> >  tools/power/cpupower/lib/cpufreq.h | 12 ++++++++++++
-> >  2 files changed, 27 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
-> > index c3b56db8b921..02719cc400a1 100644
-> > --- a/tools/power/cpupower/lib/cpufreq.c
-> > +++ b/tools/power/cpupower/lib/cpufreq.c
-> > @@ -83,20 +83,21 @@ static const char *cpufreq_value_files[MAX_CPUFREQ_VALUE_READ_FILES] = {
-> >  	[STATS_NUM_TRANSITIONS] = "stats/total_trans"
-> >  };
-> >  
-> > -
-> > -static unsigned long sysfs_cpufreq_get_one_value(unsigned int cpu,
-> > -						 enum cpufreq_value which)
-> > +unsigned long cpufreq_get_sysfs_value_from_table(unsigned int cpu,
-> > +						 const char **table,
-> > +						 unsigned index,
-> > +						 unsigned size)
-> >  {
-> >  	unsigned long value;
-> >  	unsigned int len;
-> >  	char linebuf[MAX_LINE_LEN];
-> >  	char *endp;
-> >  
-> > -	if (which >= MAX_CPUFREQ_VALUE_READ_FILES)
-> > +	if (!table && !table[index] && index >= size)
-> 
-> Should you validate the index before accessing table[index]
-> 
->         if (!table && index >= size && !table[index])
+This is the first set of patches starting to migrate the
+AB8500 charging code to use the struct power_supply_battery_info.
+We drop some cruft along the road.
 
-The operator is wrong as well. I believe this is what was originally intended:
+This series does not add anything to the struct, just reuse
+what is already there. Adding new stuff comes in the next
+patch series.
 
-	if (!table || index >= size || !table[index])
+The AB8500 charging code has not been in working condition for
+some time, but it is slowly getting there. Some of this is
+just regular maintenance.
 
-- Juuso
+ChangeLog v1->v2:
+- Fixed review comments on patch 1.
+
+Linus Walleij (16):
+  power: supply: ab8500: Use core battery parser
+  power: supply: ab8500: Sink current tables into charger code
+  power: supply: ab8500: Standardize operating temperature
+  power: supply: ab8500: Drop unused battery types
+  power: supply: ab8500: Use only one battery type
+  power: supply: ab8500: Standardize design capacity
+  power: supply: ab8500: Standardize technology
+  power: supply: ab8500: Standardize voltages
+  power: supply: ab8500_fg: Init battery data in bind()
+  power: supply: ab8500: Standardize internal resistance
+  power: supply: ab8500: Standardize termination current
+  power: supply: ab8500: Make recharge capacity a constant
+  power: supply: ab8500: Standardize CC current
+  power: supply: ab8500: Standardize CV voltage
+  power: supply: ab8500: Standardize temp res lookup
+  power: supply: ab8500: Standardize capacity lookup
+
+ drivers/power/supply/ab8500-bm.h       | 123 ++----
+ drivers/power/supply/ab8500-chargalg.h |   8 +-
+ drivers/power/supply/ab8500_bmdata.c   | 572 ++++++-------------------
+ drivers/power/supply/ab8500_btemp.c    |  61 ++-
+ drivers/power/supply/ab8500_chargalg.c | 315 +++++++-------
+ drivers/power/supply/ab8500_charger.c  | 536 ++++++++++++-----------
+ drivers/power/supply/ab8500_fg.c       | 371 ++++++++--------
+ 7 files changed, 804 insertions(+), 1182 deletions(-)
+
+-- 
+2.31.1
+
