@@ -2,29 +2,29 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6F40C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Nov 2021 15:56:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5000C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Nov 2021 15:56:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240194AbhKVP7X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Nov 2021 10:59:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37602 "EHLO
+        id S240341AbhKVP7g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Nov 2021 10:59:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240280AbhKVP6y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Nov 2021 10:58:54 -0500
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3821C061792
-        for <linux-pm@vger.kernel.org>; Mon, 22 Nov 2021 07:55:40 -0800 (PST)
+        with ESMTP id S240431AbhKVP73 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Nov 2021 10:59:29 -0500
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA14CC061758
+        for <linux-pm@vger.kernel.org>; Mon, 22 Nov 2021 07:56:16 -0800 (PST)
 Received: from ramsan.of.borg ([84.195.186.194])
-        by michel.telenet-ops.be with bizsmtp
-        id MTuz260074C55Sk06TuzF0; Mon, 22 Nov 2021 16:55:40 +0100
+        by albert.telenet-ops.be with bizsmtp
+        id MTvb260044C55Sk06Tvb5d; Mon, 22 Nov 2021 16:56:16 +0100
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1mpBe6-00EL3h-Gu; Mon, 22 Nov 2021 16:54:18 +0100
+        id 1mpBe6-00EL3k-Le; Mon, 22 Nov 2021 16:54:18 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1mpBe5-00HGzF-Od; Mon, 22 Nov 2021 16:54:17 +0100
+        id 1mpBe5-00HH0g-SI; Mon, 22 Nov 2021 16:54:17 +0100
 From:   Geert Uytterhoeven <geert+renesas@glider.be>
 To:     Tony Lindgren <tony@atomide.com>,
         Russell King <linux@armlinux.org.uk>,
@@ -69,9 +69,9 @@ Cc:     linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
         linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
         alsa-devel@alsa-project.org,
         Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 11/17] mmc: sdhci-of-aspeed: Use bitfield helpers
-Date:   Mon, 22 Nov 2021 16:54:04 +0100
-Message-Id: <9e5d21f088c3b571d6a6bdeb8899726f51d5bc47.1637592133.git.geert+renesas@glider.be>
+Subject: [PATCH/RFC 14/17] regulator: ti-abb: Use bitfield helpers
+Date:   Mon, 22 Nov 2021 16:54:07 +0100
+Message-Id: <c8508cae36c52c750dbb12493dd44d92fcf51ad4.1637592133.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1637592133.git.geert+renesas@glider.be>
 References: <cover.1637592133.git.geert+renesas@glider.be>
@@ -81,7 +81,8 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the field_prep() helper, instead open-coding the same operation.
+Use the field_{get,prep}() helpers, instead of open-coding the same
+operations.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
@@ -89,32 +90,48 @@ Compile-tested only.
 Marked RFC, as this depends on [PATCH 01/17], but follows a different
 path to upstream.
 ---
- drivers/mmc/host/sdhci-of-aspeed.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/regulator/ti-abb-regulator.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-index 6e4e132903a6346b..26ac73aafb2ed55d 100644
---- a/drivers/mmc/host/sdhci-of-aspeed.c
-+++ b/drivers/mmc/host/sdhci-of-aspeed.c
-@@ -2,6 +2,7 @@
- /* Copyright (C) 2019 ASPEED Technology Inc. */
- /* Copyright (C) 2019 IBM Corp. */
- 
+diff --git a/drivers/regulator/ti-abb-regulator.c b/drivers/regulator/ti-abb-regulator.c
+index 2931a0b89bffbf7a..3bc6ca5c382a4273 100644
+--- a/drivers/regulator/ti-abb-regulator.c
++++ b/drivers/regulator/ti-abb-regulator.c
+@@ -17,6 +17,7 @@
+  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  */
 +#include <linux/bitfield.h>
  #include <linux/clk.h>
  #include <linux/delay.h>
- #include <linux/device.h>
-@@ -131,8 +132,8 @@ aspeed_sdc_set_phase_tap(const struct aspeed_sdhci_tap_desc *desc,
- {
- 	reg &= ~(desc->enable_mask | desc->tap_mask);
- 	if (enable) {
--		reg |= tap << __ffs(desc->tap_mask);
--		reg |= desc->enable_value << __ffs(desc->enable_mask);
-+		reg |= field_prep(desc->tap_mask, tap);
-+		reg |= field_prep(desc->enable_mask, desc->enable_value);
+ #include <linux/err.h>
+@@ -132,7 +133,7 @@ static inline u32 ti_abb_rmw(u32 mask, u32 value, void __iomem *reg)
+ 
+ 	val = readl(reg);
+ 	val &= ~mask;
+-	val |= (value << __ffs(mask)) & mask;
++	val |= field_prep(mask, value);
+ 	writel(val, reg);
+ 
+ 	return val;
+@@ -229,7 +230,7 @@ static void ti_abb_program_ldovbb(struct device *dev, const struct ti_abb *abb,
+ 	case TI_ABB_SLOW_OPP:
+ 	case TI_ABB_FAST_OPP:
+ 		val |= abb->ldovbb_override_mask;
+-		val |= info->vset << __ffs(abb->ldovbb_vset_mask);
++		val |= field_prep(abb->ldovbb_vset_mask, info->vset);
+ 		break;
  	}
  
- 	return reg;
+@@ -606,7 +607,7 @@ static int ti_abb_init_table(struct device *dev, struct ti_abb *abb,
+ 					pname, *volt_table, vset_mask);
+ 			continue;
+ 		}
+-		info->vset = (efuse_val & vset_mask) >> __ffs(vset_mask);
++		info->vset = field_get(vset_mask, efuse_val);
+ 		dev_dbg(dev, "[%d]v=%d vset=%x\n", i, *volt_table, info->vset);
+ check_abb:
+ 		switch (info->opp_sel) {
 -- 
 2.25.1
 
