@@ -2,122 +2,146 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5AC1C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Nov 2021 11:42:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40DE2C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Nov 2021 15:25:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239197AbhKVLpm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Nov 2021 06:45:42 -0500
-Received: from mx1.tq-group.com ([93.104.207.81]:15303 "EHLO mx1.tq-group.com"
+        id S239932AbhKVP2Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Nov 2021 10:28:25 -0500
+Received: from mail.kernel.org ([198.145.29.99]:56312 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236718AbhKVLpm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 Nov 2021 06:45:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1637581356; x=1669117356;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=vhcTba1ne75WkgRBeSRP/dFHeD0gKaOOhW9fbVsPCMk=;
-  b=hdMv5XImStFiilZGb8zyNDwkjFgEnuTXrbsAkKZFoM5LfL8A6YUZylVi
-   aLPEp7Nt0F8cXEvEVkpHcRWjn7qIC5LQJdvsM09vCgKpVUfR6gEqPW8/m
-   c+kU0PyUuV9PaSqIQjzYzuBWtJIhbQDHevxxknDsFrkrkRzrclOY8Ss4z
-   1GfB/JImcFkYKLzovt79/eaYTHsPQY29H5JFGCkr0Ei9ddAj7D+OILDHw
-   RmO5KD/E4RBB6GZQ0FtCPr9U7+hijImQAD0SAB0N/JWQdgVNsYVwUIXaz
-   eiL657B3maaz2hoprBL5MjugpzlEHN8Pdu4Sjr4V8+qBnLrPlbP63et/W
-   w==;
-X-IronPort-AV: E=Sophos;i="5.87,254,1631570400"; 
-   d="scan'208";a="20594060"
-Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
-  by mx1-pgp.tq-group.com with ESMTP; 22 Nov 2021 12:42:35 +0100
-Received: from mx1.tq-group.com ([192.168.6.7])
-  by tq-pgp-pr1.tq-net.de (PGP Universal service);
-  Mon, 22 Nov 2021 12:42:35 +0100
-X-PGP-Universal: processed;
-        by tq-pgp-pr1.tq-net.de on Mon, 22 Nov 2021 12:42:35 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
-  t=1637581355; x=1669117355;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=vhcTba1ne75WkgRBeSRP/dFHeD0gKaOOhW9fbVsPCMk=;
-  b=f1y8XmGFnvf/5WHvhbn3Wd3AX+MnR2jLYyf8RHG/HDPZTEp3MYomP5+h
-   ByAm/yD2b7gXxTXa4berY0CaCv/60IwZqYpV7MVPauLbw+tfcG8oxvO3S
-   qInO5v61SyiDjhmHJw5xNOW9iqL773LNcAKlDQDgqp/NhUTBfCrywMp2C
-   dE4G6ucu/yUnWEtM0y1ogl1B6pOE3s5zJzXL/4F321nVUo9/c/oJG6gag
-   t8VLQF6oR34RGZLIBaEJMfGJBd/GAzclibr8qwCggwO0KG7oE7tK+UItS
-   1sHCLiyPc+qrq3KCabJLOUcU0NAXz3YVkloID2PIprmiAxVmwFqa3kqyE
-   w==;
-X-IronPort-AV: E=Sophos;i="5.87,254,1631570400"; 
-   d="scan'208";a="20594059"
-Received: from vtuxmail01.tq-net.de ([10.115.0.20])
-  by mx1.tq-group.com with ESMTP; 22 Nov 2021 12:42:35 +0100
-Received: from steina-w.tq-net.de (unknown [10.123.49.12])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
-        (No client certificate requested)
-        by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 22850280065;
-        Mon, 22 Nov 2021 12:42:35 +0100 (CET)
-From:   Alexander Stein <alexander.stein@ew.tq-group.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>
-Cc:     Paul Gerber <Paul.Gerber@tq-group.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        Alexander Stein <alexander.stein@ew.tq-group.com>
-Subject: [PATCH 1/1] thermal: imx8mm: enable ADC when enabling monitor
-Date:   Mon, 22 Nov 2021 12:42:25 +0100
-Message-Id: <20211122114225.196280-1-alexander.stein@ew.tq-group.com>
-X-Mailer: git-send-email 2.25.1
+        id S239945AbhKVP2U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Nov 2021 10:28:20 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 0FD8D60230;
+        Mon, 22 Nov 2021 15:25:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1637594709;
+        bh=GR8LyQtM0ZM0W2FoeSZ0IwjeQhHesgzQ9tX4AHyKytg=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=poGol0emrDdzryc5UnGTptPoklyDE9E2uyhaJuvTRbxXW8bjb2r3pbcg2f6qau1ep
+         NLFh14w9Dxyb54cnIPZ0RuyoxpW7ARmyZCwj8OM8+REfiGWIj66BhiTCliSxcVEcn5
+         Md/FFwSgAejmmIvJas9wpPk2yd8yC5OXp4Nacn0F+i5+6+8OcXLc+LzpMm/XM2i2sn
+         GVTVuipPT1vCc4m1eBs7DAF9QQy0ssy4MjFbj2j2RY2c1xea76lmOb+LizkqKiIZDp
+         Mw6kPv8uOxZY1uhlcs4ucg8ArUdEADm+1GEGeBtsKAXnTzpLT8zcYEqNj7ctkI8MGn
+         edlM05akgLw2w==
+Message-ID: <1b9cdfba-6436-f2bd-d67b-7528758a6c35@kernel.org>
+Date:   Mon, 22 Nov 2021 17:25:03 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Subject: Re: [v8 2/3] interconnect: qcom: Add EPSS L3 support on SC7280
+Content-Language: en-US
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Odelu Kukatla <okukatla@codeaurora.org>,
+        georgi.djakov@linaro.org
+Cc:     evgreen@google.com, Andy Gross <agross@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, sboyd@kernel.org,
+        mdtipton@codeaurora.org, sibis@codeaurora.org,
+        saravanak@google.com, seansw@qti.qualcomm.com, elder@linaro.org,
+        linux-arm-msm-owner@vger.kernel.org
+References: <1634812857-10676-1-git-send-email-okukatla@codeaurora.org>
+ <1634812857-10676-3-git-send-email-okukatla@codeaurora.org>
+ <YZa9SStiYqfp6f7a@builder.lan>
+From:   Georgi Djakov <djakov@kernel.org>
+In-Reply-To: <YZa9SStiYqfp6f7a@builder.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Paul Gerber <Paul.Gerber@tq-group.com>
+On 18.11.21 22:53, Bjorn Andersson wrote:
+> On Thu 21 Oct 05:40 CDT 2021, Odelu Kukatla wrote:
+> 
+>> Add Epoch Subsystem (EPSS) L3 interconnect provider support on
+>> SC7280 SoCs.
+>>
+> 
+> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-The i.MX 8MP has a ADC_PD bit in the TMU_TER register that controls the
-operating mode of the ADC:
-* 0 means normal operating mode
-* 1 means power down mode
+Thanks!
 
-When enabling/disabling the TMU, the ADC operating mode must be set
-accordingly.
+> @Georgi, do you intend to apply the two interconnect patches in this
+> series?
 
-i.MX 8M Mini & Nano are lacking this bit.
+Yes, applied!
 
-Signed-off-by: Paul Gerber <Paul.Gerber@tq-group.com>
-Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
----
-Often this bit is set already by the bootloader, but in case this is not
-done, the file /sys/class/thermal/thermal_zone0/temp will always return
--EAGAIN.
+BR,
+Georgi
 
- drivers/thermal/imx8mm_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
-index 7442e013738f..af666bd9e8d4 100644
---- a/drivers/thermal/imx8mm_thermal.c
-+++ b/drivers/thermal/imx8mm_thermal.c
-@@ -21,6 +21,7 @@
- #define TPS			0x4
- #define TRITSR			0x20	/* TMU immediate temp */
- 
-+#define TER_ADC_PD		BIT(30)
- #define TER_EN			BIT(31)
- #define TRITSR_TEMP0_VAL_MASK	0xff
- #define TRITSR_TEMP1_VAL_MASK	0xff0000
-@@ -113,6 +114,8 @@ static void imx8mm_tmu_enable(struct imx8mm_tmu *tmu, bool enable)
- 
- 	val = readl_relaxed(tmu->base + TER);
- 	val = enable ? (val | TER_EN) : (val & ~TER_EN);
-+	if (tmu->socdata->version == TMU_VER2)
-+		val = enable ? (val & ~TER_ADC_PD) : (val | TER_ADC_PD);
- 	writel_relaxed(val, tmu->base + TER);
- }
- 
--- 
-2.25.1
+> 
+> Regards,
+> Bjorn
+> 
+>> Signed-off-by: Odelu Kukatla <okukatla@codeaurora.org>
+>> ---
+>>   drivers/interconnect/qcom/osm-l3.c | 20 +++++++++++++++++++-
+>>   drivers/interconnect/qcom/sc7280.h |  2 ++
+>>   2 files changed, 21 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
+>> index c7af143..eec1309 100644
+>> --- a/drivers/interconnect/qcom/osm-l3.c
+>> +++ b/drivers/interconnect/qcom/osm-l3.c
+>> @@ -1,6 +1,6 @@
+>>   // SPDX-License-Identifier: GPL-2.0
+>>   /*
+>> - * Copyright (c) 2020, The Linux Foundation. All rights reserved.
+>> + * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+>>    */
+>>   
+>>   #include <linux/bitfield.h>
+>> @@ -15,6 +15,7 @@
+>>   #include <dt-bindings/interconnect/qcom,osm-l3.h>
+>>   
+>>   #include "sc7180.h"
+>> +#include "sc7280.h"
+>>   #include "sc8180x.h"
+>>   #include "sdm845.h"
+>>   #include "sm8150.h"
+>> @@ -114,6 +115,22 @@ static const struct qcom_osm_l3_desc sc7180_icc_osm_l3 = {
+>>   	.reg_perf_state = OSM_REG_PERF_STATE,
+>>   };
+>>   
+>> +DEFINE_QNODE(sc7280_epss_apps_l3, SC7280_MASTER_EPSS_L3_APPS, 32, SC7280_SLAVE_EPSS_L3);
+>> +DEFINE_QNODE(sc7280_epss_l3, SC7280_SLAVE_EPSS_L3, 32);
+>> +
+>> +static const struct qcom_osm_l3_node *sc7280_epss_l3_nodes[] = {
+>> +	[MASTER_EPSS_L3_APPS] = &sc7280_epss_apps_l3,
+>> +	[SLAVE_EPSS_L3_SHARED] = &sc7280_epss_l3,
+>> +};
+>> +
+>> +static const struct qcom_osm_l3_desc sc7280_icc_epss_l3 = {
+>> +	.nodes = sc7280_epss_l3_nodes,
+>> +	.num_nodes = ARRAY_SIZE(sc7280_epss_l3_nodes),
+>> +	.lut_row_size = EPSS_LUT_ROW_SIZE,
+>> +	.reg_freq_lut = EPSS_REG_FREQ_LUT,
+>> +	.reg_perf_state = EPSS_REG_PERF_STATE,
+>> +};
+>> +
+>>   DEFINE_QNODE(sc8180x_osm_apps_l3, SC8180X_MASTER_OSM_L3_APPS, 32, SC8180X_SLAVE_OSM_L3);
+>>   DEFINE_QNODE(sc8180x_osm_l3, SC8180X_SLAVE_OSM_L3, 32);
+>>   
+>> @@ -326,6 +343,7 @@ static int qcom_osm_l3_probe(struct platform_device *pdev)
+>>   
+>>   static const struct of_device_id osm_l3_of_match[] = {
+>>   	{ .compatible = "qcom,sc7180-osm-l3", .data = &sc7180_icc_osm_l3 },
+>> +	{ .compatible = "qcom,sc7280-epss-l3", .data = &sc7280_icc_epss_l3 },
+>>   	{ .compatible = "qcom,sdm845-osm-l3", .data = &sdm845_icc_osm_l3 },
+>>   	{ .compatible = "qcom,sm8150-osm-l3", .data = &sm8150_icc_osm_l3 },
+>>   	{ .compatible = "qcom,sc8180x-osm-l3", .data = &sc8180x_icc_osm_l3 },
+>> diff --git a/drivers/interconnect/qcom/sc7280.h b/drivers/interconnect/qcom/sc7280.h
+>> index 175e400..1fb9839 100644
+>> --- a/drivers/interconnect/qcom/sc7280.h
+>> +++ b/drivers/interconnect/qcom/sc7280.h
+>> @@ -150,5 +150,7 @@
+>>   #define SC7280_SLAVE_PCIE_1			139
+>>   #define SC7280_SLAVE_QDSS_STM			140
+>>   #define SC7280_SLAVE_TCU			141
+>> +#define SC7280_MASTER_EPSS_L3_APPS		142
+>> +#define SC7280_SLAVE_EPSS_L3			143
+>>   
+>>   #endif
+>> -- 
+>> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+>> a Linux Foundation Collaborative Project
+>>
 
