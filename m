@@ -2,277 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 281A8C4167E
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 23:27:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6F0C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 23:35:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240496AbhKWXa2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Nov 2021 18:30:28 -0500
-Received: from todd.t-8ch.de ([159.69.126.157]:41009 "EHLO todd.t-8ch.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240215AbhKWXaY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Nov 2021 18:30:24 -0500
-From:   =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
-        s=mail; t=1637710029;
-        bh=pszJ8TGazGuvxexqpltLSJ+3bJo+VwdtuFcNULoFLfw=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=P/yQm2GufR400nhnNbaNAILFGeznccogxSFIBwXL8dyiEb/rnxraSYiWAK6lr3YFd
-         3gmFR2lCXMVV+l9hj5H7tVW0hFw+YfPnGNxo6IpWofovRVsJ/RdOBRIIjmjGn6zpBz
-         b448HfK3eJ9nKUvfFT5QG9Ftqnv7wEzt8lvzrgh8=
-To:     linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        ibm-acpi-devel@lists.sourceforge.net,
-        platform-driver-x86@vger.kernel.org,
-        Mark Gross <markgross@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc:     =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-        linux-kernel@vger.kernel.org, linrunner@gmx.net, bberg@redhat.com,
-        hadess@hadess.net, markpearson@lenovo.com,
-        nicolopiazzalunga@gmail.com, njoshi1@lenovo.com, smclt30p@gmail.com
-Subject: [PATCH v2 3/4] platform/x86: thinkpad_acpi: support force-discharge
-Date:   Wed, 24 Nov 2021 00:27:03 +0100
-Message-Id: <20211123232704.25394-4-linux@weissschuh.net>
-X-Mailer: git-send-email 2.34.0
-In-Reply-To: <20211123232704.25394-1-linux@weissschuh.net>
-References: <20211123232704.25394-1-linux@weissschuh.net>
+        id S240562AbhKWXis (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Nov 2021 18:38:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48408 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240424AbhKWXiq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 18:38:46 -0500
+Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EEA6C061758
+        for <linux-pm@vger.kernel.org>; Tue, 23 Nov 2021 15:35:36 -0800 (PST)
+Received: by mail-ot1-x333.google.com with SMTP id x43-20020a056830246b00b00570d09d34ebso1349074otr.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Nov 2021 15:35:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Fmou/wuLUJUD4zJclGcPIdJu1KVjJ7yuzM0jDRLa/jU=;
+        b=M1kOjxYtgXgq09yG/Tpxoql00WqAEf+/obBrTLesDBofwRUa7GWFazzYfDKZsB30ME
+         LP42xJGdAe5cnwer5SKD8Etmug0Nt6ulXzhr/sIoE9xx2sYU5ALDWZXfWHpEvjhc83X4
+         /EddGPPSnA96tKQr0ixoO9Iif78PSZQtfyiC4pLlvI90GT05IGmxb/4bv7ckDscOFVa0
+         j8mh7s4sgr6HP2CGrSy/5EINAIynCtUbqRAKwELOEpj3OmmDipt7FyRZkcV3y0yyaOqi
+         RMMwVrDE6PwHAX73yXnvFMVjk1xx32TWcnMG5ytYScelO405R1gRZUvoyiVzX+mFaqbl
+         +gIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Fmou/wuLUJUD4zJclGcPIdJu1KVjJ7yuzM0jDRLa/jU=;
+        b=XS710mbamE/B7b4WUiTalUr3VBx20+EDynSOohHu1J54sA2Az7M6ZCDuJeYRBjUqV5
+         oHucb9UxqgFBb5A+Ko0F0a1KKS+fgDvfIQ13fRiiDbTwbn5Fz5Rv43xxUCzmzgh5BeJk
+         u+vFODRryZGL7kb/OdW+v9kaOjYaWVdxpveKx69Z/BYJ+Pv2H1tCqQ0XKiJxpUiQ4aKV
+         VrnjeYecvo5Ou1LGExrb/jgV5kDiniLEy4HrqHgojf2Ncfqn7e79gZ1ugZwXLawbvKQZ
+         5IgMdvTTl+KTRecpzE6yrDq91VLh/By7X+sJ2JaRVIovVw1RR6/q+oIAehKq0euUsUT1
+         Cbyw==
+X-Gm-Message-State: AOAM533gre/1DOFQYx33OEZKwVl4Z9eAPJTkxZVch1Zs9xCh7mBuTn6g
+        BdfJXaSHZozo4Zt4F477wXuHqpwKgmToDOK7B+zV0A==
+X-Google-Smtp-Source: ABdhPJzM/xqGhHncEHhl2AIgExbTLI27yZdnho4Z+I5VLuYNi5uSlNeNxRyIKiu1OCuHPC8HqiuPUo4+VogT8mYjGlE=
+X-Received: by 2002:a9d:74d0:: with SMTP id a16mr8027979otl.237.1637710535722;
+ Tue, 23 Nov 2021 15:35:35 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637710019; l=7259; s=20211113; h=from:subject; bh=pszJ8TGazGuvxexqpltLSJ+3bJo+VwdtuFcNULoFLfw=; b=HntqHGVYa0z8SXeBLoU7xPhQqyep59YGddMAxVfR3x02Iw4UZD/I7l+gYBx56ghAcUjKJXgZT/JO Nou86YocBy+iNRbb8MMXAP1FWsiIicHV9ipAtpjGvN/ql1CSu/2Z
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
-Content-Transfer-Encoding: 8bit
+References: <cover.1637592133.git.geert+renesas@glider.be> <afb895b597037a635acc4a1dc44b88598268a19b.1637592133.git.geert+renesas@glider.be>
+In-Reply-To: <afb895b597037a635acc4a1dc44b88598268a19b.1637592133.git.geert+renesas@glider.be>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Wed, 24 Nov 2021 00:35:23 +0100
+Message-ID: <CACRpkdZAA_XZQ7KXOsod8r5EZ0F9f1qaz3+FLsuyPfeD_mO5Dw@mail.gmail.com>
+Subject: Re: [PATCH/RFC 07/17] iio: st_sensors: Use bitfield helpers
+To:     Geert Uytterhoeven <geert+renesas@glider.be>
+Cc:     Tony Lindgren <tony@atomide.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Paul Walmsley <paul@pwsan.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Ludovic Desroches <ludovic.desroches@microchip.com>,
+        Tero Kristo <kristo@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Lorenzo Bianconi <lorenzo.bianconi83@gmail.com>,
+        Benoit Parrot <bparrot@ti.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Andrew Jeffery <andrew@aj.id.au>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Joel Stanley <joel@jms.id.au>,
+        Ping-Ke Shih <pkshih@realtek.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>,
+        linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
+        alsa-devel@alsa-project.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds support for the force-discharge charge_behaviour through the
-embedded controller of ThinkPads.
+On Mon, Nov 22, 2021 at 4:55 PM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 
-Co-developed-by: Thomas Koch <linrunner@gmx.net>
-Signed-off-by: Thomas Koch <linrunner@gmx.net>
-Co-developed-by: Nicolò Piazzalunga <nicolopiazzalunga@gmail.com>
-Signed-off-by: Nicolò Piazzalunga <nicolopiazzalunga@gmail.com>
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+> Use the field_prep() helper, instead of open-coding the same operation.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
----
+Clever!
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-This patch is based on https://lore.kernel.org/platform-driver-x86/c2504700-06e9-e7d8-80f7-de90b0b6dfb5@gmail.com/
----
- drivers/platform/x86/thinkpad_acpi.c | 131 ++++++++++++++++++++++++++-
- 1 file changed, 127 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index 9c632df734bb..e3567cc686fa 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -9319,6 +9319,8 @@ static struct ibm_struct mute_led_driver_data = {
- #define SET_START	"BCCS"
- #define GET_STOP	"BCSG"
- #define SET_STOP	"BCSS"
-+#define GET_DISCHARGE	"BDSG"
-+#define SET_DISCHARGE	"BDSS"
- 
- enum {
- 	BAT_ANY = 0,
-@@ -9335,6 +9337,7 @@ enum {
- 	/* This is used in the get/set helpers */
- 	THRESHOLD_START,
- 	THRESHOLD_STOP,
-+	FORCE_DISCHARGE,
- };
- 
- struct tpacpi_battery_data {
-@@ -9342,6 +9345,7 @@ struct tpacpi_battery_data {
- 	int start_support;
- 	int charge_stop;
- 	int stop_support;
-+	unsigned int charge_behaviours;
- };
- 
- struct tpacpi_battery_driver_data {
-@@ -9399,6 +9403,12 @@ static int tpacpi_battery_get(int what, int battery, int *ret)
- 		if (*ret == 0)
- 			*ret = 100;
- 		return 0;
-+	case FORCE_DISCHARGE:
-+		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_DISCHARGE, ret, battery))
-+			return -ENODEV;
-+		/* The force discharge status is in bit 0 */
-+		*ret = *ret & 0x01;
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9427,12 +9437,49 @@ static int tpacpi_battery_set(int what, int battery, int value)
- 			return -ENODEV;
- 		}
- 		return 0;
-+	case FORCE_DISCHARGE:
-+		/* Force discharge is in bit 0,
-+		 * break on AC attach is in bit 1 (won't work on some ThinkPads),
-+		 * battery ID is in bits 8-9, 2 bits.
-+		 */
-+		if (ACPI_FAILURE(tpacpi_battery_acpi_eval(SET_DISCHARGE, &ret, param))) {
-+			pr_err("failed to set force discharge on %d", battery);
-+			return -ENODEV;
-+		}
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
- 	}
- }
- 
-+static int tpacpi_battery_set_validate(int what, int battery, int value)
-+{
-+	int ret, v;
-+
-+	ret = tpacpi_battery_set(what, battery, value);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = tpacpi_battery_get(what, battery, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (v == value)
-+		return 0;
-+
-+	msleep(500);
-+
-+	ret = tpacpi_battery_get(what, battery, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (v == value)
-+		return 0;
-+
-+	return -EIO;
-+}
-+
- static int tpacpi_battery_probe(int battery)
- {
- 	int ret = 0;
-@@ -9445,6 +9492,8 @@ static int tpacpi_battery_probe(int battery)
- 	 * 2) Check for support
- 	 * 3) Get the current stop threshold
- 	 * 4) Check for support
-+	 * 5) Get the current force discharge status
-+	 * 6) Check for support
- 	 */
- 	if (acpi_has_method(hkey_handle, GET_START)) {
- 		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_START, &ret, battery)) {
-@@ -9481,10 +9530,25 @@ static int tpacpi_battery_probe(int battery)
- 			return -ENODEV;
- 		}
- 	}
--	pr_info("battery %d registered (start %d, stop %d)",
--			battery,
--			battery_info.batteries[battery].charge_start,
--			battery_info.batteries[battery].charge_stop);
-+	if (acpi_has_method(hkey_handle, GET_DISCHARGE)) {
-+		if (ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_DISCHARGE, &ret, battery))) {
-+			pr_err("Error probing battery discharge; %d\n", battery);
-+			return -ENODEV;
-+		}
-+		/* Support is marked in bit 8 */
-+		if (ret & BIT(8))
-+			battery_info.batteries[battery].charge_behaviours |=
-+				BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE);
-+	}
-+
-+	battery_info.batteries[battery].charge_behaviours |=
-+		BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO);
-+
-+	pr_info("battery %d registered (start %d, stop %d, behaviours: 0x%x)\n",
-+		battery,
-+		battery_info.batteries[battery].charge_start,
-+		battery_info.batteries[battery].charge_stop,
-+		battery_info.batteries[battery].charge_behaviours);
- 
- 	return 0;
- }
-@@ -9619,6 +9683,28 @@ static ssize_t charge_control_end_threshold_show(struct device *device,
- 	return tpacpi_battery_show(THRESHOLD_STOP, device, buf);
- }
- 
-+static ssize_t charge_behaviour_show(struct device *dev,
-+				     struct device_attribute *attr,
-+				     char *buf)
-+{
-+	enum power_supply_charge_behaviour active = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+	struct power_supply *supply = to_power_supply(dev);
-+	unsigned int available;
-+	int ret, battery;
-+
-+	battery = tpacpi_battery_get_id(supply->desc->name);
-+	available = battery_info.batteries[battery].charge_behaviours;
-+
-+	if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE)) {
-+		if (tpacpi_battery_get(FORCE_DISCHARGE, battery, &ret))
-+			return -ENODEV;
-+		if (ret)
-+			active = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+	}
-+
-+	return power_supply_charge_behaviour_show(dev, available, active, buf);
-+}
-+
- static ssize_t charge_control_start_threshold_store(struct device *dev,
- 				struct device_attribute *attr,
- 				const char *buf, size_t count)
-@@ -9633,8 +9719,44 @@ static ssize_t charge_control_end_threshold_store(struct device *dev,
- 	return tpacpi_battery_store(THRESHOLD_STOP, dev, buf, count);
- }
- 
-+static ssize_t charge_behaviour_store(struct device *dev,
-+				      struct device_attribute *attr,
-+				      const char *buf, size_t count)
-+{
-+	struct power_supply *supply = to_power_supply(dev);
-+	int selected, battery, ret = 0;
-+	unsigned int available;
-+
-+	battery = tpacpi_battery_get_id(supply->desc->name);
-+	available = battery_info.batteries[battery].charge_behaviours;
-+	selected = power_supply_charge_behaviour_parse(available, buf);
-+
-+	if (selected < 0)
-+		return selected;
-+
-+	switch (selected) {
-+	case POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO:
-+		if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE))
-+			ret = tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 0);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE:
-+		ret = tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 1);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	default:
-+		dev_err(dev, "Unexpected charge behaviour: %d\n", selected);
-+		return -EINVAL;
-+	}
-+
-+	return count;
-+}
-+
- static DEVICE_ATTR_RW(charge_control_start_threshold);
- static DEVICE_ATTR_RW(charge_control_end_threshold);
-+static DEVICE_ATTR_RW(charge_behaviour);
- static struct device_attribute dev_attr_charge_start_threshold = __ATTR(
- 	charge_start_threshold,
- 	0644,
-@@ -9653,6 +9775,7 @@ static struct attribute *tpacpi_battery_attrs[] = {
- 	&dev_attr_charge_control_end_threshold.attr,
- 	&dev_attr_charge_start_threshold.attr,
- 	&dev_attr_charge_stop_threshold.attr,
-+	&dev_attr_charge_behaviour.attr,
- 	NULL,
- };
- 
--- 
-2.34.0
-
+Yours,
+Linus Walleij
