@@ -2,46 +2,46 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D172C4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 10:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A535C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 10:40:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235701AbhKWKnv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Nov 2021 05:43:51 -0500
-Received: from new4-smtp.messagingengine.com ([66.111.4.230]:49331 "EHLO
+        id S235650AbhKWKnx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Nov 2021 05:43:53 -0500
+Received: from new4-smtp.messagingengine.com ([66.111.4.230]:57021 "EHLO
         new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S235659AbhKWKnm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 05:43:42 -0500
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 48E895806F6;
-        Tue, 23 Nov 2021 05:40:34 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Tue, 23 Nov 2021 05:40:34 -0500
+        by vger.kernel.org with ESMTP id S235695AbhKWKnq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 05:43:46 -0500
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+        by mailnew.nyi.internal (Postfix) with ESMTP id 0D4745806FA;
+        Tue, 23 Nov 2021 05:40:38 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute6.internal (MEProxy); Tue, 23 Nov 2021 05:40:38 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
         from:to:cc:subject:date:message-id:in-reply-to:references
         :mime-version:content-type:content-transfer-encoding; s=fm1; bh=
-        N0GeWv+SSVyFI2Bbd04l94VO8Ipl0GCHG/xeEKBGPgM=; b=BMTLatmWogetZIwJ
-        WcMqDFIMna77Nt+476GW9ovXzie2hyuWCpKuM9KHM1yl24EwNCyBkyJFh5wS0NUt
-        WweB4lfLfdJW4mLoNM5DkO5Atiip22q88B6Mg3E35RUbAk0VzdO4XYHroAA6tGAC
-        tJmmyglTFV5KZ7YaGN+fr1JVjXzMMpjswyvvxnw4M4EOlocrfCVnxJWQjOOAkp8x
-        oWQiziZ7Rrcfe/IXtUHT0pfL6re2yvJGU1CJgY25p2dGME+RH5jjgqzqxTtPex1X
-        fFZn+BcOkSRoNS4/u6n3DQ/2v5lkqBjCne8NX+ASUXziDqHOo81UhPc/KEfa/0Jh
-        c9BiaQ==
+        ri9AxKMZ0qsSmuA/72NVGfg6k7O8jXADPBV862L6vd8=; b=ZpnmTtpG0YAypvaX
+        tUK6fB6LjzI3jmKVdiG/kC2wXMijEUG6XeHYkAMhVhjsDU+qOCjFVzyWrse6SDid
+        37AROHbjrMybSQ0H5Xt3emfI6pEO8jXCTLz7he6OAOA8l2GUCIq8+1DhVc8H0ohu
+        VVmLCITUAOVOXO7OMrYfJquiAp080PttZNBoa6U8lSdCgpij12+OXGaIfVaOkKm7
+        F8rnmYmpsdntHHRrRdhXdTLugayEwPEQ3HhV3ttg/r0nTMtq+kWzYYOChF+qhDn7
+        HRqD2TgSpgrjF75oUk4i+64VvM1MIvw5oKPNlmspd4M/Rie2z/3rbZoH5CfbtCbg
+        xmNMhA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-transfer-encoding:content-type
         :date:from:in-reply-to:message-id:mime-version:references
         :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm1; bh=N0GeWv+SSVyFI2Bbd04l94VO8Ipl0GCHG/xeEKBGP
-        gM=; b=FxECt8tSbZaI4qLu3s+aeCpGttIXz46LA1HnPQpEsDC2mRNj6B1yx2YFG
-        eNTNl/Q95m1QZSpNDXXU8pRRppLbdTvr/EKbeJNLhAQAL/80FBVvK+tntQMi7dN4
-        nyw7w42pibuO8GGw0WctMio3QDajWiQTdkDKg0rT2/W6B72aKlXejtM4ALqvqmRQ
-        SLG6inCFKBL8619wFjnyoOxq0+20tow3lJoy6bObDyPF8fOyzlDmzE91T33teDZ3
-        JujDtdJp8Xpcc4vjE707/BdLpEm877o6Np4MF4lfPOBUS3L7c69S/+72WuNh9xdt
-        yRi11Rc+cSKwXWexLy1s0a4QfYTgg==
-X-ME-Sender: <xms:IsWcYfnqaOmt4bkSbeWRd1sqyuDMumzAnnH2IpsUSdsmKKPQS4Wa4A>
-    <xme:IsWcYS3eSXh8xgIBS5ZoqdL0-0on6oObxBcR4TzCiLHf0sXVwNGlbxAbSy3nsNy1L
-    9vCnCcwXQXd68Vn410>
-X-ME-Received: <xmr:IsWcYVpf7GP4NICY6SnOrJQ3Pu15Fqxs9NshAntR9q3XsqhM1CRi3Rbq-II9GqZarX1Ec_y9GejRAmpfaDUJnc4ZLBnVE8Rg39A>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrgeeigddukecutefuodetggdotefrodftvf
+        :x-sasl-enc; s=fm1; bh=ri9AxKMZ0qsSmuA/72NVGfg6k7O8jXADPBV862L6v
+        d8=; b=DaB9u8NnexGyi2U3oprxXFLJVAOZ/rbkE0uNtKcNCOPh5nCZLtOipDWE+
+        sD5GZdXdY8TL1FKfjpp8xGWg3PC62Kuy0MHmYP4UH6ygqPj3rb9uQ604BDhQSGeJ
+        30Fz/gRMBTXetYSwBvzTSAo4jPkyjZYReXbnicck4bnbBSFQA4XmJGckRcIaSyP1
+        Zy3PeV8eKlAL+Rpl6/Ed8M06ezZoIBC1oneqVHTi9jseb1jZ+rkID6hVAxP7SciD
+        rXVVdB0X466nVnSW2CXL7xmWaS2MNcVagFrHIJRfIv34iK5wTIiDXrO+4t73jl1d
+        IgQMuRB9CIIxy4vpmsCf0DdjKV7kQ==
+X-ME-Sender: <xms:JcWcYYiJldPBL3bBFGPtPkh22i21ZaMYLVbbsoYdNRQpv2SlfuG46Q>
+    <xme:JcWcYRDbkXE22lDX58fUlNaN1J15x70Z8PvpG36AE-nh8yl5ZCSJz5ZY4CiZlKS5u
+    K_iqgRhK20k1oLQrk8>
+X-ME-Received: <xmr:JcWcYQH-CjApkAlO31wSMWgAXFWxRo3IRos-LrIY0-_asHwrC0ffkooQQ5qbAWCb2cqQSbGeStKgqdqb0wQk8cWiT8kOWJy0cfs>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrgeeigddulecutefuodetggdotefrodftvf
     curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
     uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
     fjughrpefhvffufffkofgjfhggtgfgsehtkeertdertdejnecuhfhrohhmpeforgigihhm
@@ -49,29 +49,29 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrgeeigddukecutefuodetggdote
     htvghrnhepjeeugfegkeffgfeuvedtvddufffhjeffjeejvddvudduteehhfefhfefgeei
     keeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmh
     grgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:IsWcYXnhKiG99ZUjDmcfg_SGOJIGY-nu7KZnwYwe3-o417J0eXE6_g>
-    <xmx:IsWcYd16pKtulKrQIhPW2-ePJpw46M4Jxl0ixUPXBm_il048hYjI6w>
-    <xmx:IsWcYWt6DUaXj_8JMYnuRMZ8Wv9kCCEt51IvQZof68nUkgjaiC3rOg>
-    <xmx:IsWcYbPChefrWENLV1ZS9cvLrkrBtGY3OoBiW5i8t7YBOMk4aaYvQw>
+X-ME-Proxy: <xmx:JcWcYZR4sqA5Be3-xtZiIN5q2-_FiF4j79nLGQN15T-f9ZvIQ-C20A>
+    <xmx:JcWcYVwTBoEBdPgkmk7Fw2enS8lGnl5AzdgxAFNy57t0pWoF3ywYGg>
+    <xmx:JcWcYX6CsYYnp_z0OhIElDlmtYVG4L-HRZBGcNxIYPMFCCHCjCcOMg>
+    <xmx:JsWcYYr4sqpbKykUJkn_aVDfGUCtl_e4kQ_0GO5QCXO7qJ4bN9d9MQ>
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 23 Nov 2021 05:40:33 -0500 (EST)
+ 23 Nov 2021 05:40:37 -0500 (EST)
 From:   Maxime Ripard <maxime@cerno.tech>
 To:     Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <mripard@kernel.org>,
         Kyungmin Park <kyungmin.park@samsung.com>,
         Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
         Rob Herring <robh+dt@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
         Samuel Holland <samuel@sholland.org>
 Cc:     Maxime Ripard <maxime@cerno.tech>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
+        linux-sunxi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: (subset) [PATCH v3 2/6] dt-bindings: arm: sunxi: Expand MBUS binding
-Date:   Tue, 23 Nov 2021 11:40:25 +0100
-Message-Id: <163766402024.90163.12275660075897154076.b4-ty@cerno.tech>
+Subject: Re: (subset) [PATCH v3 4/6] ARM: dts: sunxi: h3/h5: Update MBUS node
+Date:   Tue, 23 Nov 2021 11:40:27 +0100
+Message-Id: <163766402024.90163.15927162800323071725.b4-ty@cerno.tech>
 X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20211118031841.42315-3-samuel@sholland.org>
-References: <20211118031841.42315-1-samuel@sholland.org> <20211118031841.42315-3-samuel@sholland.org>
+In-Reply-To: <20211118031841.42315-5-samuel@sholland.org>
+References: <20211118031841.42315-1-samuel@sholland.org> <20211118031841.42315-5-samuel@sholland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -79,15 +79,13 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 17 Nov 2021 21:18:37 -0600, Samuel Holland wrote:
-> The MBUS provides more than address translation and bandwidth control.
-> It also provides a PMU to measure bandwidth usage by certain masters,
-> and it provides notification via IRQ when they are active or idle.
+On Wed, 17 Nov 2021 21:18:39 -0600, Samuel Holland wrote:
+> In order to support memory dynamic frequency scaling (MDFS), the MBUS
+> binding now requires enumerating more resources. Provide them in the
+> device tree.
 > 
-> The MBUS is also tightly integrated with the DRAM controller to provide
-> a Memory Dynamic Frequency Scaling (MDFS) feature. In view of this, the
-> MBUS binding needs to represent the hardware resources needed for MDFS,
-> which include the clocks and MMIO range of the adjacent DRAM controller.
+> Since the H3 and H5 have different clock divider limits, they need
+> separate compatibles.
 > 
 > [...]
 
