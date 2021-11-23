@@ -2,23 +2,23 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A649EC43217
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 23:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 645C9C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 23:27:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240276AbhKWXa0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Nov 2021 18:30:26 -0500
-Received: from todd.t-8ch.de ([159.69.126.157]:48181 "EHLO todd.t-8ch.de"
+        id S240354AbhKWXa1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Nov 2021 18:30:27 -0500
+Received: from todd.t-8ch.de ([159.69.126.157]:55485 "EHLO todd.t-8ch.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240231AbhKWXaY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S240234AbhKWXaY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 23 Nov 2021 18:30:24 -0500
 From:   =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
-        s=mail; t=1637710029;
-        bh=qU9W2kmHIbsmZrsfsVtyjLYvoHKferUQSNYZI6CIAs4=;
+        s=mail; t=1637710028;
+        bh=ubpC/4tVq2wPO3RjwZsGHEo8sdCshhNkUuFARYO2hlg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uQQfHok7cpILqH8Ek2abRVvBX9IuxjCTbszBlViHa9ibngmrD1hm0cnIkG+PgaLbx
-         BktxrK0jsBJc3CCzpye3UQUJ7sjNMqK2bhVp9+8gwezeY/4RxIxIXpUOktorljvK/g
-         mKZb1hL4LEViC75sEj2o8nq9co9tDXdfnm8a32W0=
+        b=NlNIdkYeXjBMf+ZkMSwEKARWpzUuFtUM2v0++eDFPVXVW4niDr99KpYrElnPCIb8y
+         N9AwJQ4WdlIycMz1wiM/h0BBykWYhxWY2ZpuqmueQ6uwxrno/C7TErErBNovVupROV
+         PozOZri5Xf7+O5KwNKhu4TccJLlP0jNNy7tAz5bA=
 To:     linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
         ibm-acpi-devel@lists.sourceforge.net,
         platform-driver-x86@vger.kernel.org,
@@ -29,168 +29,120 @@ Cc:     =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
         linux-kernel@vger.kernel.org, linrunner@gmx.net, bberg@redhat.com,
         hadess@hadess.net, markpearson@lenovo.com,
         nicolopiazzalunga@gmail.com, njoshi1@lenovo.com, smclt30p@gmail.com
-Subject: [PATCH v2 4/4] platform/x86: thinkpad_acpi: support inhibit-charge
-Date:   Wed, 24 Nov 2021 00:27:04 +0100
-Message-Id: <20211123232704.25394-5-linux@weissschuh.net>
+Subject: [PATCH v2 2/4] power: supply: add helpers for charge_behaviour sysfs
+Date:   Wed, 24 Nov 2021 00:27:02 +0100
+Message-Id: <20211123232704.25394-3-linux@weissschuh.net>
 X-Mailer: git-send-email 2.34.0
 In-Reply-To: <20211123232704.25394-1-linux@weissschuh.net>
 References: <20211123232704.25394-1-linux@weissschuh.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1637710019; l=5442; s=20211113; h=from:subject; bh=qU9W2kmHIbsmZrsfsVtyjLYvoHKferUQSNYZI6CIAs4=; b=ksoSvuT62RgYUS1iFKYKmvHRymOwZNCvPjLR9hfbyGS2g0nIP1vRZzThFutfXDQyTMXSTP125f6P /Z9LcK5TB9W77YtfUFazqgccF6hkT5AoaP4if7su7J+B47lSAf4j
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1637710019; l=3306; s=20211113; h=from:subject; bh=ubpC/4tVq2wPO3RjwZsGHEo8sdCshhNkUuFARYO2hlg=; b=eMMI5CuiEYHqc4kRREJLyPoXw87ZNBQLiFITVqfqWbxdFeYulEM3XuvMKUX/rYNsPq2wSKDvlvgF STKS7sEnB1waXnU7NezjuI2a5lywAbjMtty01u2JVV8nlrWlFBwQ
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds support for the inhibit-charge charge_behaviour through the
-embedded controller of ThinkPads.
+These helper functions can be used by drivers to implement their own
+sysfs-attributes.
+This is useful for ACPI-drivers extending the default ACPI-battery with
+their own charge_behaviour attributes.
 
-Co-developed-by: Thomas Koch <linrunner@gmx.net>
-Signed-off-by: Thomas Koch <linrunner@gmx.net>
-Co-developed-by: Nicolò Piazzalunga <nicolopiazzalunga@gmail.com>
-Signed-off-by: Nicolò Piazzalunga <nicolopiazzalunga@gmail.com>
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-
 ---
+ drivers/power/supply/power_supply_sysfs.c | 55 +++++++++++++++++++++++
+ include/linux/power_supply.h              |  9 ++++
+ 2 files changed, 64 insertions(+)
 
-This patch is based on https://lore.kernel.org/platform-driver-x86/d2808930-5840-6ffb-3a59-d235cdb1fe16@gmail.com/
----
- drivers/platform/x86/thinkpad_acpi.c | 64 +++++++++++++++++++++++++++-
- 1 file changed, 62 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index e3567cc686fa..7f2f46c71482 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -9321,6 +9321,8 @@ static struct ibm_struct mute_led_driver_data = {
- #define SET_STOP	"BCSS"
- #define GET_DISCHARGE	"BDSG"
- #define SET_DISCHARGE	"BDSS"
-+#define GET_INHIBIT	"BICG"
-+#define SET_INHIBIT	"BICS"
- 
- enum {
- 	BAT_ANY = 0,
-@@ -9338,6 +9340,7 @@ enum {
- 	THRESHOLD_START,
- 	THRESHOLD_STOP,
- 	FORCE_DISCHARGE,
-+	INHIBIT_CHARGE,
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index c3d7cbcd4fad..5e3b8c15ddbe 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -133,6 +133,12 @@ static const char * const POWER_SUPPLY_SCOPE_TEXT[] = {
+ 	[POWER_SUPPLY_SCOPE_DEVICE]	= "Device",
  };
  
- struct tpacpi_battery_data {
-@@ -9409,6 +9412,12 @@ static int tpacpi_battery_get(int what, int battery, int *ret)
- 		/* The force discharge status is in bit 0 */
- 		*ret = *ret & 0x01;
- 		return 0;
-+	case INHIBIT_CHARGE:
-+		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_INHIBIT, ret, battery))
-+			return -ENODEV;
-+		/* The inhibit charge status is in bit 0 */
-+		*ret = *ret & 0x01;
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9447,6 +9456,22 @@ static int tpacpi_battery_set(int what, int battery, int value)
- 			return -ENODEV;
- 		}
- 		return 0;
-+	case INHIBIT_CHARGE:
-+		/* When setting inhibit charge, we set a default value of
-+		 * always breaking on AC detach and the effective time is set to
-+		 * be permanent.
-+		 * The battery ID is in bits 4-5, 2 bits,
-+		 * the effective time is in bits 8-23, 2 bytes.
-+		 * A time of FFFF indicates forever.
-+		 */
-+		param = value;
-+		param |= battery << 4;
-+		param |= 0xFFFF << 8;
-+		if (ACPI_FAILURE(tpacpi_battery_acpi_eval(SET_INHIBIT, &ret, param))) {
-+			pr_err("failed to set inhibit charge on %d", battery);
-+			return -ENODEV;
-+		}
-+		return 0;
- 	default:
- 		pr_crit("wrong parameter: %d", what);
- 		return -EINVAL;
-@@ -9494,6 +9519,8 @@ static int tpacpi_battery_probe(int battery)
- 	 * 4) Check for support
- 	 * 5) Get the current force discharge status
- 	 * 6) Check for support
-+	 * 7) Get the current inhibit charge status
-+	 * 8) Check for support
- 	 */
- 	if (acpi_has_method(hkey_handle, GET_START)) {
- 		if ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_START, &ret, battery)) {
-@@ -9540,6 +9567,16 @@ static int tpacpi_battery_probe(int battery)
- 			battery_info.batteries[battery].charge_behaviours |=
- 				BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE);
- 	}
-+	if (acpi_has_method(hkey_handle, GET_INHIBIT)) {
-+		if (ACPI_FAILURE(tpacpi_battery_acpi_eval(GET_INHIBIT, &ret, battery))) {
-+			pr_err("Error probing battery inhibit charge; %d\n", battery);
-+			return -ENODEV;
-+		}
-+		/* Support is marked in bit 5 */
-+		if (ret & BIT(5))
-+			battery_info.batteries[battery].charge_behaviours |=
-+				BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE);
-+	}
++static const char * const POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT[] = {
++	[POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO]		= "auto",
++	[POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE]	= "inhibit-charge",
++	[POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE]	= "force-discharge",
++};
++
+ static struct power_supply_attr power_supply_attrs[] = {
+ 	/* Properties of type `int' */
+ 	POWER_SUPPLY_ENUM_ATTR(STATUS),
+@@ -484,3 +490,52 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
  
- 	battery_info.batteries[battery].charge_behaviours |=
- 		BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO);
-@@ -9698,10 +9735,22 @@ static ssize_t charge_behaviour_show(struct device *dev,
- 	if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE)) {
- 		if (tpacpi_battery_get(FORCE_DISCHARGE, battery, &ret))
- 			return -ENODEV;
--		if (ret)
-+		if (ret) {
- 			active = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+			goto out;
+ 	return ret;
+ }
++
++ssize_t power_supply_charge_behaviour_show(struct device *dev,
++					   unsigned int available_behaviours,
++					   enum power_supply_charge_behaviour current_behaviour,
++					   char *buf)
++{
++	bool match = false, available, active;
++	ssize_t count = 0;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT); i++) {
++		available = available_behaviours & BIT(i);
++		active = i == current_behaviour;
++
++		if (available && active) {
++			count += sysfs_emit_at(buf, count, "[%s] ",
++					       POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT[i]);
++			match = true;
++		} else if (available) {
++			count += sysfs_emit_at(buf, count, "%s ",
++					       POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT[i]);
 +		}
 +	}
 +
-+	if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE)) {
-+		if (tpacpi_battery_get(INHIBIT_CHARGE, battery, &ret))
-+			return -ENODEV;
-+		if (ret) {
-+			active = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+			goto out;
-+		}
- 	}
++	if (!match) {
++		dev_warn(dev, "driver reporting unsupported charge behaviour\n");
++		return -EINVAL;
++	}
++
++	if (count)
++		buf[count - 1] = '\n';
++
++	return count;
++}
++EXPORT_SYMBOL_GPL(power_supply_charge_behaviour_show);
++
++int power_supply_charge_behaviour_parse(unsigned int available_behaviours, const char *buf)
++{
++	int i = sysfs_match_string(POWER_SUPPLY_CHARGE_BEHAVIOUR_TEXT, buf);
++
++	if (i < 0)
++		return i;
++
++	if (available_behaviours & BIT(i))
++		return i;
++
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(power_supply_charge_behaviour_parse);
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 70c333e86293..71f0379c2af8 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -546,4 +546,13 @@ static inline
+ void power_supply_remove_hwmon_sysfs(struct power_supply *psy) {}
+ #endif
  
-+out:
- 	return power_supply_charge_behaviour_show(dev, available, active, buf);
- }
- 
-@@ -9738,11 +9787,22 @@ static ssize_t charge_behaviour_store(struct device *dev,
- 	case POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO:
- 		if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE))
- 			ret = tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 0);
-+		if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE))
-+			ret = min(ret, tpacpi_battery_set_validate(INHIBIT_CHARGE, battery, 0));
- 		if (ret < 0)
- 			return ret;
- 		break;
- 	case POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE:
--		ret = tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 1);
-+		if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE))
-+			ret = tpacpi_battery_set_validate(INHIBIT_CHARGE, battery, 0);
-+		ret = min(ret, tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 1));
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE:
-+		if (available & BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE))
-+			ret = tpacpi_battery_set_validate(FORCE_DISCHARGE, battery, 0);
-+		ret = min(ret, tpacpi_battery_set_validate(INHIBIT_CHARGE, battery, 1));
- 		if (ret < 0)
- 			return ret;
- 		break;
++#ifdef CONFIG_SYSFS
++ssize_t power_supply_charge_behaviour_show(struct device *dev,
++					   unsigned int available_behaviours,
++					   enum power_supply_charge_behaviour behaviour,
++					   char *buf);
++
++int power_supply_charge_behaviour_parse(unsigned int available_behaviours, const char *buf);
++#endif
++
+ #endif /* __LINUX_POWER_SUPPLY_H__ */
 -- 
 2.34.0
 
