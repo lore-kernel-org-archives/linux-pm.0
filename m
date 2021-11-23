@@ -2,92 +2,269 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18646C4321E
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 10:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F12EC433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 10:47:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235793AbhKWKnz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Nov 2021 05:43:55 -0500
-Received: from new4-smtp.messagingengine.com ([66.111.4.230]:51317 "EHLO
-        new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S235763AbhKWKno (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 05:43:44 -0500
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 374825806F5;
-        Tue, 23 Nov 2021 05:40:36 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Tue, 23 Nov 2021 05:40:36 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
-        from:to:cc:subject:date:message-id:in-reply-to:references
-        :mime-version:content-type:content-transfer-encoding; s=fm1; bh=
-        Aw7iT/6kjCk4adthVZ5Jj9aBnaB16c1yy2Up9qTRJW0=; b=BC8Mb4Uz+oUn/yuC
-        n0leNskVfQ3Va5ziqA0NDLkeSJMETYY8uv9o8N+DF3bBXEuzg+J7PVZKXRr9fHC1
-        cmsFwhJL7kyY5xPwmRSDmEh1o2gbXLGGB9SkJs74wBucIk1ATZ7p/ej2Q4Q1Gq48
-        dGCud+6q5dpHXO9OUio48D7cGsXEcfQVMHMVPhNuBjMB9ti2WZh8KlU3VqKm6m2U
-        3IuAWIJMxZQ/KgK+vm2DL4U1V34Pl1pSBiJi1NL8U6vKzy8kqVwvpUh+8SPFNeNH
-        uT7oprR01+mmxeI9/D5OHKWnzgSApxypx10zLTZ00B0Del6WCam/4NiuLcm1UG/3
-        HS/Trw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-transfer-encoding:content-type
-        :date:from:in-reply-to:message-id:mime-version:references
-        :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm1; bh=Aw7iT/6kjCk4adthVZ5Jj9aBnaB16c1yy2Up9qTRJ
-        W0=; b=Adi8fRRn9vN7FZTLi23krvhT8WA0NLorQ/8faOguPNf9pymDUMFBcjLwO
-        LyBrx27+oicXzoN3jo9xU2SnIdYEAznPNFuS2Nr1rTyGgsiyiULBwfQ75bJ0Hmwd
-        FUQYb15rp3cmerA1F2uzdiBU9eiZEfTAusNtFwcNqw3cj8vXcJTvbtUbMsrBt9nn
-        fh1GsR9f1EG3EjC1JhnBosfPgHy134INdyk+yfkdeZa3eWQ79j39ETxVIxoEcegs
-        bWWt1zrZqOzTTgGyta50n0h6kHRB9Q7X3HJdX9lXK0wFsEFngoDvIDU45U7RiWkY
-        0h7zhmDM0bfYexcC8l/MsGj8yoVdg==
-X-ME-Sender: <xms:JMWcYayLpIY1lvqRUOiBXR0LS0j35bZ6oWKy2X_fx7_Zp2cNBBeHuw>
-    <xme:JMWcYWQcElzM0ChMrGeQ3oJFcXfCTFwhoYNtMdYbsT0ZDY7gef7qZZtviP8sB6L84
-    ZPsE34AsgqFRRuwPlg>
-X-ME-Received: <xmr:JMWcYcVGyFQ5qy9d05SmEQN31ehdQoFv0hwP65QV9JWMe-irIiJS5l_x843__Ad270OhQpFU7zU9nfuFumRUStE5gC-ZLc9kYmQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrgeeigddukecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefhvffufffkofgjfhggtgfgsehtkeertdertdejnecuhfhrohhmpeforgigihhm
-    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
-    htvghrnhepjeeugfegkeffgfeuvedtvddufffhjeffjeejvddvudduteehhfefhfefgeei
-    keeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmh
-    grgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:JMWcYQiMWmG29lvDQAjLIWVR-QS1FTnWnrs2yf28MGLMxvcMjUqjwg>
-    <xmx:JMWcYcCTABFMuW8wg8bc1eRQ_JnpH5_EfIlrM1KpxnplMNw6wQDxtA>
-    <xmx:JMWcYRIF5PdvRBXITNTCyTJZOohdf_vRkKfay_GaoZ_08RLFV_QTBg>
-    <xmx:JMWcYQy2_R2xK9WXYkO-FT6ZVn3XSAUhZWvCV_K539nuT-KSASPCCQ>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 23 Nov 2021 05:40:35 -0500 (EST)
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <mripard@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Samuel Holland <samuel@sholland.org>
-Cc:     Maxime Ripard <maxime@cerno.tech>, devicetree@vger.kernel.org,
-        linux-sunxi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: Re: (subset) [PATCH v3 3/6] dt-bindings: arm: sunxi: Add H5 MBUS compatible
-Date:   Tue, 23 Nov 2021 11:40:26 +0100
-Message-Id: <163766402024.90163.3209718802910434311.b4-ty@cerno.tech>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20211118031841.42315-4-samuel@sholland.org>
-References: <20211118031841.42315-1-samuel@sholland.org> <20211118031841.42315-4-samuel@sholland.org>
+        id S234319AbhKWKuz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Nov 2021 05:50:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39506 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231764AbhKWKuy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 05:50:54 -0500
+Received: from mail-qk1-x734.google.com (mail-qk1-x734.google.com [IPv6:2607:f8b0:4864:20::734])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D22CC061574
+        for <linux-pm@vger.kernel.org>; Tue, 23 Nov 2021 02:47:46 -0800 (PST)
+Received: by mail-qk1-x734.google.com with SMTP id b67so7938063qkg.6
+        for <linux-pm@vger.kernel.org>; Tue, 23 Nov 2021 02:47:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fireburn-co-uk.20210112.gappssmtp.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=LMMV7zZ1RZ9LJuOx8fZUgq3jPCgf9H57PGBTOOc/cP4=;
+        b=KHZJZL1rw/UC8XglP1fGxzT62LiaAND7wVjWlcNZGfeEdxlOGOGqxmNzOOgZdsvPRt
+         S092QJextLRqYqSABtih0rQNN2HmnsG5i0Lf+WPtdHf90q0kd3ZZnhlagK0cYC1SJd4r
+         r+k3YMOuruu3KT0j5fl1CDeWkBgREtYVjHMHU8wUwS0eAEIqicuR5M4oThteiNjpM3g1
+         hLFi2Qv5n3asslei6SbyESwySl+Rwt0kba2T0+QFjW9vyv/tiMtOlVMgEEuQy5rswh8H
+         6UjzEcKv3aSiqsv4/Dqp/yAmz9qxjxkdFHnYvcNgOlw0YXLpXDsn34/2mpXA2uEUeghk
+         YJjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=LMMV7zZ1RZ9LJuOx8fZUgq3jPCgf9H57PGBTOOc/cP4=;
+        b=iTmuUxm64eNfn+HHehXrhLGIv7fPuWArb1tWf9YVcBqI7jX1qX04I01XP154q9qZI6
+         /xV9A2JKu8G37UJgogOlN91ab98gOotAds/1Fj4co9MnIBgEKih33n/anwgbBDr7sNV1
+         CEpH/ZRu9UXaPDntC5y6NLvB6ZEqiP2wGyrgJmGFKlYij3zFNRdXZ1bmMHLFfiFWGe80
+         xPYhejgEfMgVAmUNEqjanqfG6TgZ4kkHPEAshjsFVSFn/35NWeI+xDdz4D8A/oPYyHEy
+         tpkEU/gvz8OcL3c3S5SgSAXVf0fXGn452qXItr7IuIx5NIRfad6N2jsQSx2irlx0B4yB
+         W5sg==
+X-Gm-Message-State: AOAM531vljyUFYPXMzPNqvBIFU9PB0WZX24GbUVpyYktuu0d5W3reOky
+        GqKsapALdeFoPgFCKB1dIabgWnHiRLabrRN/TBh93QBI84zOYA==
+X-Google-Smtp-Source: ABdhPJzRkbLHeXnOnfJg8IdodtfeDYsd0JCZXIAesnmJoGz7+w/jUJPsn+qe4c1AAGhD38ThXFLNEkIR3u5QQRgfRUA=
+X-Received: by 2002:a05:620a:430b:: with SMTP id u11mr3697694qko.473.1637664465432;
+ Tue, 23 Nov 2021 02:47:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <CAHbf0-FnmdCAwuML4cxM3UAaOWqZ0sxJSF3iRw_aAmZEq6RfSQ@mail.gmail.com>
+In-Reply-To: <CAHbf0-FnmdCAwuML4cxM3UAaOWqZ0sxJSF3iRw_aAmZEq6RfSQ@mail.gmail.com>
+From:   Mike Lothian <mike@fireburn.co.uk>
+Date:   Tue, 23 Nov 2021 10:47:34 +0000
+Message-ID: <CAHbf0-E5Zrs9-bWYMm8A-RQ7xd0DOCZopzZ2GjtH8xcFf4wVtA@mail.gmail.com>
+Subject: Re: AMD Pstate
+To:     Huang Rui <ray.huang@amd.com>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 17 Nov 2021 21:18:38 -0600, Samuel Holland wrote:
-> The H5 SoC has a MBUS very similar to the H3 SoC, but it has a smaller
-> MDFS divider range (1-4 instead of 1-16). Add a separate compatible for
-> this variant.
-> 
-> 
+Hi again
 
-Applied to sunxi/linux.git (sunxi/dt-for-5.17).
+Do I need to enable something else for shedutil to work, I've tried
+with and without shared_mem? Compiling a kernel with -j16 has the freq
+stuck at 1GHz on all cores - ondemand works fine
 
-Thanks!
-Maxime
+That's on a AMD Ryzen 9 5900HX
+
+Also compiling with Clang-13 gives the following warnings:
+
+drivers/cpufreq/amd-pstate.c:257:6: warning: variable 'amd_des_perf'
+is used uninitialized whenever 'if' condition is false
+[-Wsometimes-uninitialized]
+
+        if (target_perf < capacity)
+
+            ^~~~~~~~~~~~~~~~~~~~~~
+
+drivers/cpufreq/amd-pstate.c:272:40: note: uninitialized use occurs here
+
+        amd_des_perf =3D clamp_t(unsigned long, amd_des_perf,
+
+                                              ^~~~~~~~~~~~
+
+./include/linux/minmax.h:124:60: note: expanded from macro 'clamp_t'
+
+#define clamp_t(type, val, lo, hi) min_t(type, max_t(type, val, lo), hi)
+
+                                                           ^~~
+
+./include/linux/minmax.h:112:48: note: expanded from macro 'max_t'
+
+#define max_t(type, x, y)       __careful_cmp((type)(x), (type)(y), >)
+
+                                                     ^
+
+./include/linux/minmax.h:38:14: note: expanded from macro '__careful_cmp'
+
+                __cmp_once(x, y, __UNIQUE_ID(__x), __UNIQUE_ID(__y), op))
+
+                           ^
+
+note: (skipping 1 expansions in backtrace; use
+-fmacro-backtrace-limit=3D0 to see all)
+
+./include/linux/minmax.h:104:48: note: expanded from macro 'min_t'
+
+#define min_t(type, x, y)       __careful_cmp((type)(x), (type)(y), <)
+
+                                                     ^
+
+./include/linux/minmax.h:38:14: note: expanded from macro '__careful_cmp'
+
+                __cmp_once(x, y, __UNIQUE_ID(__x), __UNIQUE_ID(__y), op))
+
+                           ^
+
+./include/linux/minmax.h:31:25: note: expanded from macro '__cmp_once'
+
+                typeof(x) unique_x =3D (x);               \
+
+                                      ^
+
+drivers/cpufreq/amd-pstate.c:257:2: note: remove the 'if' if its
+condition is always true
+
+        if (target_perf < capacity)
+
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+drivers/cpufreq/amd-pstate.c:249:56: note: initialize the variable
+'amd_des_perf' to silence this warning
+
+        unsigned long amd_max_perf, amd_min_perf, amd_des_perf,
+
+                                                              ^
+
+                                                               =3D 0
+
+On Sun, 21 Nov 2021 at 10:37, Mike Lothian <mike@fireburn.co.uk> wrote:
+>
+> Hi
+>
+> I'm not subscribed to the mailing list so apologies for emailing you dire=
+ctly
+>
+> It looks like something isn't quite right with the kconfig selects
+>
+> SCHED_MC_PRIO can't be enabled without CPU_SUP_INTEL
+>
+>
+>
+> =E2=94=82 Symbol: X86_AMD_PSTATE [=3Dy]
+>
+>                                                               =E2=94=82
+>  =E2=94=82 Type  : bool
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Defined at drivers/cpufreq/Kconfig.x86:37
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Prompt: AMD Processor P-State driver
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Depends on: CPU_FREQ [=3Dy] && X86 [=3Dy]
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Location:
+>
+>                                                                =E2=94=82
+>  =E2=94=82     Main menu
+>
+>                                                                =E2=94=82
+>  =E2=94=82       -> Power management and ACPI options
+>
+>                                                                =E2=94=82
+>  =E2=94=82         -> CPU Frequency scaling
+>
+>                                                                =E2=94=82
+>  =E2=94=82           -> CPU Frequency scaling (CPU_FREQ [=3Dy])
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Selects: ACPI_PROCESSOR [=3Dy] && ACPI_CPPC_LIB [=3Dn] &&
+> CPU_FREQ_GOV_SCHEDUTIL [=3Dy]
+>
+>
+>
+> =E2=94=82 Symbol: ACPI_CPPC_LIB [=3Dn]
+>
+>                                                               =E2=94=82
+>  =E2=94=82 Type  : bool
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Defined at drivers/acpi/Kconfig:268
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Depends on: ACPI [=3Dy] && ACPI_PROCESSOR [=3Dy]
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Selects: MAILBOX [=3Dn] && PCC [=3Dn]
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Selected by [n]:
+>
+>                                                                =E2=94=82
+>  =E2=94=82   - X86_INTEL_PSTATE [=3Dn] && CPU_FREQ [=3Dy] && X86 [=3Dy] &=
+& X86_64
+> [=3Dy] && ACPI [=3Dy] && SCHED_MC_PRIO [=3Dn]
+>                                                                   =E2=94=
+=82
+>  =E2=94=82   - X86_AMD_PSTATE [=3Dy] && CPU_FREQ [=3Dy] && X86 [=3Dy] && =
+X86_64 [=3Dy]
+> && ACPI [=3Dy] && SCHED_MC_PRIO [=3Dn]
+>                                                                =E2=94=82
+>  =E2=94=82   - ACPI_CPPC_CPUFREQ [=3Dn] && CPU_FREQ [=3Dy] && (ARM || ARM=
+64) &&
+> ACPI_PROCESSOR [=3Dy]
+>
+>
+>
+> =E2=94=82 Symbol: SCHED_MC_PRIO [=3Dn]
+>
+>                                                               =E2=94=82
+>  =E2=94=82 Type  : bool
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Defined at arch/x86/Kconfig:1029
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Prompt: CPU core priorities scheduler support
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Depends on: SCHED_MC [=3Dy] && CPU_SUP_INTEL [=3Dn]
+>
+>                                                                =E2=94=82
+>  =E2=94=82   Location:
+>
+>                                                                =E2=94=82
+>  =E2=94=82     Main menu
+>
+>                                                                =E2=94=82
+>  =E2=94=82       -> Processor type and features
+>
+>                                                                =E2=94=82
+>  =E2=94=82 (1)     -> Multi-core scheduler support (SCHED_MC [=3Dy])
+>
+>                                                                =E2=94=82
+>  =E2=94=82 Selects: X86_INTEL_PSTATE [=3Dn] && CPU_FREQ [=3Dy]
+>
+>
+>
+> I've used this patch to work around the issue:
+>
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 95dd1ee01546..bdfcf155f48e 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1028,8 +1028,8 @@ config SCHED_MC
+>
+> config SCHED_MC_PRIO
+>        bool "CPU core priorities scheduler support"
+> -       depends on SCHED_MC && CPU_SUP_INTEL
+> -       select X86_INTEL_PSTATE
+> +       depends on SCHED_MC && CPU_SUP_AMD
+> +       select X86_AMD_PSTATE
+>        select CPU_FREQ
+>        default y
+>        help
+>
+> Which gets things working here
