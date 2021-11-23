@@ -2,166 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA65C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 18:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A547BC433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Nov 2021 19:18:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240011AbhKWSwq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Nov 2021 13:52:46 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:65050 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240012AbhKWSwf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 13:52:35 -0500
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.1)
- id 1ad8e8b56eb6b00b; Tue, 23 Nov 2021 19:49:25 +0100
-Received: from kreacher.localnet (unknown [213.134.175.133])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 1F2EE66AC5B;
-        Tue, 23 Nov 2021 19:49:25 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: [PATCH 02/10] ACPI: EC: Call advance_transaction() from acpi_ec_dispatch_gpe()
-Date:   Tue, 23 Nov 2021 19:37:39 +0100
-Message-ID: <4376198.LvFx2qVVIh@kreacher>
-In-Reply-To: <11887969.O9o76ZdvQC@kreacher>
-References: <11887969.O9o76ZdvQC@kreacher>
+        id S231907AbhKWTV7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Nov 2021 14:21:59 -0500
+Received: from vie01a-dmta-pe04-2.mx.upcmail.net ([62.179.121.164]:57285 "EHLO
+        vie01a-dmta-pe04-2.mx.upcmail.net" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231732AbhKWTV6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Nov 2021 14:21:58 -0500
+Received: from [172.31.216.234] (helo=vie01a-pemc-psmtp-pe11.mail.upcmail.net)
+        by vie01a-dmta-pe04.mx.upcmail.net with esmtp (Exim 4.92)
+        (envelope-from <thomas.zeitlhofer+lkml@ze-it.at>)
+        id 1mpbJX-005Ncw-T4
+        for linux-pm@vger.kernel.org; Tue, 23 Nov 2021 20:18:47 +0100
+Received: from mr2 ([80.108.17.71])
+        by vie01a-pemc-psmtp-pe11.mail.upcmail.net with ESMTP
+        id pbJXmWvuk2A4vpbJXm0HWE; Tue, 23 Nov 2021 20:18:47 +0100
+X-Env-Mailfrom: thomas.zeitlhofer+lkml@ze-it.at
+X-Env-Rcptto: linux-pm@vger.kernel.org
+X-SourceIP: 80.108.17.71
+X-CNFS-Analysis: v=2.3 cv=bNRo382Z c=1 sm=1 tr=0
+ a=dwg5kdmUixIXdJRX1f/MsQ==:117 a=dwg5kdmUixIXdJRX1f/MsQ==:17
+ a=kj9zAlcOel0A:10 a=c1rmdDCgkvaRRWvxFoYA:9 a=CjuIK1q_8ugA:10
+Date:   Tue, 23 Nov 2021 20:18:43 +0100
+From:   Thomas Zeitlhofer <thomas.zeitlhofer+lkml@ze-it.at>
+To:     linux-pm@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ye Bin <yebin10@huawei.com>
+Subject: [PATCH] PM: hibernate: use correct mode for swsusp_close()
+Message-ID: <YZ0+k4Vy7SJ1D8kH@x1.ze-it.at>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.175.133
-X-CLIENT-HOSTNAME: 213.134.175.133
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrgeeigdduudekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepvddufedrudefgedrudejhedrudeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddujeehrddufeefpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=3 Fuz1=3 Fuz2=3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-CMAE-Envelope: MS4wfAHb0jGF07yZv3TJTeIvXA2B0i5C5HK2SAp/VDGyXpWQUijMAR3PsHPUZTaNdUZyseaH1DD00YEaihLlTBtXLKHpKzqiJ32lF0n+0CHUTqU1jIQw5tJ0
+ JhX/xPYAD2rOr36kpI15GHJ6DPxAMyaVttLi0usb7DtTRMFuWaAshu7a/BGuIWTwMQzvydB9gzkOVJeX19bRUnCGECyEQ+P43d2LMak3kryEyy5j6IzpaLZ8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Commit 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in
+swsusp_check()") changed the opening mode of the block device to
+(FMODE_READ | FMODE_EXCL).
 
-Calling acpi_dispatch_gpe() from acpi_ec_dispatch_gpe() is generally
-problematic, because it may cause the spurious interrupt handling in
-advance_transaction() to trigger in theory.
+In the corresponding calls to swsusp_close(), the mode is still just
+FMODE_READ which triggers the warning in blkdev_flush_mapping() on resume
+from hibernate.
 
-However, instead of calling acpi_dispatch_gpe() to dispatch the EC
-GPE, acpi_ec_dispatch_gpe() can call advance_transaction() directly
-on first_ec and it can pass 'false' as its second argument to indicate
-calling it from process context.
+So, use the mode (FMODE_READ | FMODE_EXCL) also when closing the device.
 
-Moreover, if advance_transaction() is modified to return a bool value
-indicating whether or not the EC work needs to be flushed, it can be
-used to avoid unnecessary EC work flushing in acpi_ec_dispatch_gpe(),
-so change the code accordingly.
+Fixes: 39fbef4b0f77 ("PM: hibernate: Get block device exclusively in swsusp_check()")
+Signed-off-by: Thomas Zeitlhofer <thomas.zeitlhofer+lkml@ze-it.at>
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/ec.c |   39 ++++++++++++++++++++++++++++-----------
- 1 file changed, 28 insertions(+), 11 deletions(-)
-
-Index: linux-pm/drivers/acpi/ec.c
-===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -170,7 +170,7 @@ struct acpi_ec_query {
- };
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 559acef3fddb..b0888e9224da 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -691,7 +691,7 @@ static int load_image_and_restore(void)
+ 		goto Unlock;
  
- static int acpi_ec_query(struct acpi_ec *ec, u8 *data);
--static void advance_transaction(struct acpi_ec *ec, bool interrupt);
-+static bool advance_transaction(struct acpi_ec *ec, bool interrupt);
- static void acpi_ec_event_handler(struct work_struct *work);
- static void acpi_ec_event_processor(struct work_struct *work);
+ 	error = swsusp_read(&flags);
+-	swsusp_close(FMODE_READ);
++	swsusp_close(FMODE_READ | FMODE_EXCL);
+ 	if (!error)
+ 		error = hibernation_restore(flags & SF_PLATFORM_MODE);
  
-@@ -444,18 +444,25 @@ static bool acpi_ec_submit_flushable_req
- 	return true;
- }
- 
--static void acpi_ec_submit_query(struct acpi_ec *ec)
-+static bool acpi_ec_submit_query(struct acpi_ec *ec)
- {
- 	acpi_ec_mask_events(ec);
- 	if (!acpi_ec_event_enabled(ec))
--		return;
-+		return false;
-+
- 	if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags)) {
- 		ec_dbg_evt("Command(%s) submitted/blocked",
- 			   acpi_ec_cmd_string(ACPI_EC_COMMAND_QUERY));
- 		ec->nr_pending_queries++;
- 		ec->events_in_progress++;
--		queue_work(ec_wq, &ec->work);
-+		return queue_work(ec_wq, &ec->work);
+@@ -981,7 +981,7 @@ static int software_resume(void)
+ 	/* The snapshot device should not be opened while we're running */
+ 	if (!hibernate_acquire()) {
+ 		error = -EBUSY;
+-		swsusp_close(FMODE_READ);
++		swsusp_close(FMODE_READ | FMODE_EXCL);
+ 		goto Unlock;
  	}
-+
-+	/*
-+	 * The event handling work has not been completed yet, so it needs to be
-+	 * flushed.
-+	 */
-+	return true;
+ 
+@@ -1016,7 +1016,7 @@ static int software_resume(void)
+ 	pm_pr_dbg("Hibernation image not present or could not be loaded.\n");
+ 	return error;
+  Close_Finish:
+-	swsusp_close(FMODE_READ);
++	swsusp_close(FMODE_READ | FMODE_EXCL);
+ 	goto Finish;
  }
  
- static void acpi_ec_complete_query(struct acpi_ec *ec)
-@@ -628,10 +635,11 @@ static void acpi_ec_spurious_interrupt(s
- 		acpi_ec_mask_events(ec);
- }
- 
--static void advance_transaction(struct acpi_ec *ec, bool interrupt)
-+static bool advance_transaction(struct acpi_ec *ec, bool interrupt)
- {
- 	struct transaction *t = ec->curr;
- 	bool wakeup = false;
-+	bool ret = false;
- 	u8 status;
- 
- 	ec_dbg_stm("%s (%d)", interrupt ? "IRQ" : "TASK", smp_processor_id());
-@@ -698,10 +706,12 @@ static void advance_transaction(struct a
- 
- out:
- 	if (status & ACPI_EC_FLAG_SCI)
--		acpi_ec_submit_query(ec);
-+		ret = acpi_ec_submit_query(ec);
- 
- 	if (wakeup && interrupt)
- 		wake_up(&ec->wait);
-+
-+	return ret;
- }
- 
- static void start_transaction(struct acpi_ec *ec)
-@@ -2038,8 +2048,7 @@ void acpi_ec_set_gpe_wake_mask(u8 action
- 
- bool acpi_ec_dispatch_gpe(void)
- {
--	bool work_in_progress;
--	u32 ret;
-+	bool work_in_progress = false;
- 
- 	if (!first_ec)
- 		return acpi_any_gpe_status_set(U32_MAX);
-@@ -2055,9 +2064,17 @@ bool acpi_ec_dispatch_gpe(void)
- 	 * Dispatch the EC GPE in-band, but do not report wakeup in any case
- 	 * to allow the caller to process events properly after that.
- 	 */
--	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
--	if (ret == ACPI_INTERRUPT_HANDLED)
--		pm_pr_dbg("ACPI EC GPE dispatched\n");
-+	spin_lock_irq(&first_ec->lock);
-+
-+	if (acpi_ec_gpe_status_set(first_ec))
-+		work_in_progress = advance_transaction(first_ec, false);
-+
-+	spin_unlock_irq(&first_ec->lock);
-+
-+	if (!work_in_progress)
-+		return false;
-+
-+	pm_pr_dbg("ACPI EC GPE dispatched\n");
- 
- 	/* Drain EC work. */
- 	do {
-
-
-
