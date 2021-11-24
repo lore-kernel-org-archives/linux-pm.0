@@ -2,129 +2,367 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B839C43219
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 14:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09202C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 14:12:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345655AbhKXOKn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Nov 2021 09:10:43 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53830 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1356052AbhKXOIj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 24 Nov 2021 09:08:39 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B124C6135F;
-        Wed, 24 Nov 2021 13:59:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1637762378;
-        bh=qRP+clj8R/VdWhftZ8Y8X7gwjyLiR1Ndt0XMFQ1d99I=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=qwjskdleu3wFs5Bp+wvn7/HQgcncwjzNLbZJvm05oYaNrcYQTwWP5OPt4NA+r19ce
-         xvpj4Ygu81mu+0T0HClP6KV/QWjpcF9snHTHoGaG5tUeLxnTTWkLES0g3C2OG9fyHP
-         3gdMDDzRgjs1FxHFxipNVT3bu4+1WLgAMlUBkLt05N30IajW10WzN8g5y+5eK5i725
-         UrYk6tfyltIEGHPLMkyi6LuRszHy8ZTAL81DcgYxpSc8FxYZIzgFUL244Ub8IMFPQK
-         iyz4glX1RQI/lDwdXU9D49kB+bXi/+6kFMsXGuBY9Lzmn68zgSqocZJHLF6A/zwCj2
-         E8n91Zb/v+PWQ==
-Date:   Wed, 24 Nov 2021 05:59:35 -0800
-From:   Jakub Kicinski <kuba@kernel.org>
-To:     Johannes Berg <johannes@sipsolutions.net>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Paul Walmsley <paul@pwsan.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Ludovic Desroches <ludovic.desroches@microchip.com>,
-        Tero Kristo <kristo@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Lorenzo Bianconi <lorenzo.bianconi83@gmail.com>,
-        Benoit Parrot <bparrot@ti.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Joel Stanley <joel@jms.id.au>,
-        Ping-Ke Shih <pkshih@realtek.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        "David S . Miller" <davem@davemloft.net>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>,
-        linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-renesas-soc@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-        alsa-devel@alsa-project.org
-Subject: Re: [PATCH 01/17] bitfield: Add non-constant field_{prep,get}()
- helpers
-Message-ID: <20211124055935.416dc472@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-In-Reply-To: <05d4673a0343bfd83824d307e9cf8bf92e3814a6.camel@sipsolutions.net>
-References: <cover.1637592133.git.geert+renesas@glider.be>
-        <3a54a6703879d10f08cf0275a2a69297ebd2b1d4.1637592133.git.geert+renesas@glider.be>
-        <01b44b38c087c151171f8d45a2090474c2559306.camel@sipsolutions.net>
-        <20211122171739.03848154@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-        <CAMuHMdWAAGrQUZN18cnDTDUUhuPNTZTFkRMe2Sbf+s7CedPSxA@mail.gmail.com>
-        <637a4183861a1f2cdab52b7652bfa7ed33fbcdd2.camel@sipsolutions.net>
-        <20211123154922.600fd3b5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-        <05d4673a0343bfd83824d307e9cf8bf92e3814a6.camel@sipsolutions.net>
+        id S1348307AbhKXOPQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Nov 2021 09:15:16 -0500
+Received: from mail-oi1-f176.google.com ([209.85.167.176]:35412 "EHLO
+        mail-oi1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1348352AbhKXOMl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Nov 2021 09:12:41 -0500
+Received: by mail-oi1-f176.google.com with SMTP id m6so5600479oim.2;
+        Wed, 24 Nov 2021 06:09:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=PxvgDaZzG6aG91Oqp/cEC4dselvfNvYAb6e+YILhPB8=;
+        b=maHYdHR67f4PJOxqGpF6udDyWWIpl3gv3zlsirL+M8CEGq9JzAmcoAaPVqqSOpNP8d
+         uvDBsK+05vhwBbeB8UQn6EZBm6+Z1Q7FPnHb/f0vpAIHL+F491+rbeARma/uGe+8/SJE
+         p0bXCRk6r9SGtnMI9ivVeAmENo/0aCUwLBoqMR7wBPrpCaJbfsyLsjL2iGu1r18xhzf0
+         G6s6AkKvvdG7oeVqrV69PIC7rd3mvxBor1wn5iRMZqRmUeaY/rftMThwdj9G0UQ1EUEZ
+         ZojgaC3rzKHO/b86FkMMFd2OIPMRU0dgqFuviZPbgmaC5QeOOsekJMlSO7T+t0bbmzDC
+         H32w==
+X-Gm-Message-State: AOAM530r6VZko7gRCktZpuO26IG/K832JeD4pB0e90pfCdOhyk0bWahi
+        eO8W/cJcyL+eQyEBtIAcTAF102M3HYytCduXgijaje9H97o=
+X-Google-Smtp-Source: ABdhPJzl6qxVbY+a4lKLhxm1ZCLL3A7A0CpTaQYSnChhkCuOgY1kMkoowp9B3YxLS0ze1jpI0YVGN6hgHZWC0x0+oBU=
+X-Received: by 2002:a05:6808:14c3:: with SMTP id f3mr6372368oiw.51.1637762971351;
+ Wed, 24 Nov 2021 06:09:31 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20211106013312.26698-1-ricardo.neri-calderon@linux.intel.com> <20211106013312.26698-4-ricardo.neri-calderon@linux.intel.com>
+In-Reply-To: <20211106013312.26698-4-ricardo.neri-calderon@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 24 Nov 2021 15:09:20 +0100
+Message-ID: <CAJZ5v0gd5ZAs4nkbMA4ONt=9ULnrTPqxe_+3M78t9ZC9upEiXw@mail.gmail.com>
+Subject: Re: [PATCH 3/7] thermal: intel: hfi: Minimally initialize the
+ Hardware Feedback Interface
+To:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Aubrey Li <aubrey.li@linux.intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Andi Kleen <ak@linux.intel.com>,
+        Tim Chen <tim.c.chen@linux.intel.com>,
+        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+        Ricardo Neri <ricardo.neri@intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 24 Nov 2021 09:03:24 +0100 Johannes Berg wrote:
-> On Tue, 2021-11-23 at 15:49 -0800, Jakub Kicinski wrote:
-> > > Indeed.
-> > > 
-> > > Also as I said in my other mail, the le32/be32/... variants are
-> > > tremendously useful, and they fundamentally cannot be expressed with the
-> > > FIELD_GET() or field_get() macros. IMHO this is a clear advantage to the  
-> > 
-> > Can you elaborate?  
-> 
-> Well, the way I see it, the only advantage of FIELD_GET() is that it
-> will auto-determine the type (based on the mask type.) This cannot work
-> if you need be/le conversions, because the be/le type annotations are
-> invisible to the compiler.
-> 
-> So obviously you could write a BE32_FIELD_GET(), but then really that's
-> equivalent to be32_get_bits() - note you you have to actually specify
-> the type in the macro name. I guess in theory you could make macros
-> where the type is an argument (like FIELD_GET_TYPE(be32, ...)), but I
-> don't see how that gains anything.
+On Sat, Nov 6, 2021 at 2:34 AM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> The Intel Hardware Feedback Interface provides guidance to the operating
+> system about the performance and energy efficiency capabilities of each
+> CPU in the system. Capabilities are numbers between 0 and 255 where a
+> higher number represents a higher capability. For each CPU, energy
+> efficiency and performance are reported as separate capabilities.
+>
+> Hardware computes these capabilities based on the operating conditions of
+> the system such as power and thermal limits. These capabilities are shared
+> with the operating system in a table resident in memory. Each package in
+> the system has its own HFI instance. Every logical CPU in the package is
+> represented in the table. More than one logical CPUs may be represented in
+> a single table entry. When the hardware updates the table, it generates a
+> package-level thermal interrupt.
+>
+> The size and format of the HFI table depend on the supported features and
+> can only be determined at runtime. To minimally initialize the HFI, parse
+> its features and allocate one instance per package of a data structure with
+> the necessary parameters to read and navigate individual HFI tables.
+>
+> A subsequent changeset will provide per-CPU initialization and interrupt
+> handling.
+>
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Aubrey Li <aubrey.li@linux.intel.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Tim Chen <tim.c.chen@linux.intel.com>
+> Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+> Reviewed-by: Len Brown <len.brown@intel.com>
+> Co-developed by: Aubrey Li <aubrey.li@linux.intel.com>
+> Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
+> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> ---
+>  drivers/thermal/intel/Kconfig       |  12 +++
+>  drivers/thermal/intel/Makefile      |   1 +
+>  drivers/thermal/intel/intel_hfi.c   | 155 ++++++++++++++++++++++++++++
+>  drivers/thermal/intel/intel_hfi.h   |  34 ++++++
+>  drivers/thermal/intel/therm_throt.c |   3 +
+>  5 files changed, 205 insertions(+)
+>  create mode 100644 drivers/thermal/intel/intel_hfi.c
+>  create mode 100644 drivers/thermal/intel/intel_hfi.h
+>
+> diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+> index c83ea5d04a1d..d4c6bdcacddb 100644
+> --- a/drivers/thermal/intel/Kconfig
+> +++ b/drivers/thermal/intel/Kconfig
+> @@ -99,3 +99,15 @@ config INTEL_MENLOW
+>           Intel Menlow platform.
+>
+>           If unsure, say N.
+> +
+> +config INTEL_HFI
+> +       bool "Intel Hardware Feedback Interface"
+> +       depends on CPU_SUP_INTEL
+> +       depends on SCHED_MC && X86_THERMAL_VECTOR
+> +       help
+> +         Select this option to enable the Hardware Feedback Interface. If
+> +         selected, hardware provides guidance to the operating system on
+> +         the performance and energy efficiency capabilities of each CPU.
+> +         These capabilities may change as a result of changes in the operating
+> +         conditions of the system such power and thermal limits. If selected,
+> +         the kernel relays updates in CPUs' capabilities to userspace.
+> diff --git a/drivers/thermal/intel/Makefile b/drivers/thermal/intel/Makefile
+> index 960b56268b4a..1a80bffcd699 100644
+> --- a/drivers/thermal/intel/Makefile
+> +++ b/drivers/thermal/intel/Makefile
+> @@ -13,3 +13,4 @@ obj-$(CONFIG_INTEL_PCH_THERMAL)       += intel_pch_thermal.o
+>  obj-$(CONFIG_INTEL_TCC_COOLING)        += intel_tcc_cooling.o
+>  obj-$(CONFIG_X86_THERMAL_VECTOR) += therm_throt.o
+>  obj-$(CONFIG_INTEL_MENLOW)     += intel_menlow.o
+> +obj-$(CONFIG_INTEL_HFI) += intel_hfi.o
+> diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+> new file mode 100644
+> index 000000000000..edfe343507b3
+> --- /dev/null
+> +++ b/drivers/thermal/intel/intel_hfi.c
+> @@ -0,0 +1,155 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Hardware Feedback Interface Driver
+> + *
+> + * Copyright (c) 2021, Intel Corporation.
+> + *
+> + * Authors: Aubrey Li <aubrey.li@linux.intel.com>
+> + *          Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> + *
+> + *
+> + * The Hardware Feedback Interface provides a performance and energy efficiency
+> + * capability information for each CPU in the system. Depending on the processor
+> + * model, hardware may periodically update these capabilities as a result of
+> + * changes in the operating conditions (e.g., power limits or thermal
+> + * constraints). On other processor models, there is a single HFI update
+> + * at boot.
+> + *
+> + * This file provides functionality to process HFI updates and relay these
+> + * updates to userspace.
+> + */
+> +
+> +#define pr_fmt(fmt)  "intel-hfi: " fmt
+> +
+> +#include <linux/slab.h>
+> +
+> +#include "intel_hfi.h"
+> +
+> +/**
+> + * struct hfi_cpu_data - HFI capabilities per CPU
+> + * @perf_cap:          Performance capability
+> + * @ee_cap:            Energy efficiency capability
+> + *
+> + * Capabilities of a logical processor in the HFI table. These capabilities are
+> + * unitless.
+> + */
+> +struct hfi_cpu_data {
+> +       u8      perf_cap;
+> +       u8      ee_cap;
+> +} __packed;
+> +
+> +/**
+> + * struct hfi_hdr - Header of the HFI table
+> + * @perf_updated:      Hardware updated performance capabilities
+> + * @ee_updated:                Hardware updated energy efficiency capabilities
+> + *
+> + * Properties of the data in an HFI table.
+> + */
+> +struct hfi_hdr {
+> +       u8 perf_updated;
+> +       u8 ee_updated;
+> +} __packed;
+> +
+> +/**
+> + * struct hfi_instance - Representation of an HFI instance (i.e., a table)
+> + * @ts_counter:                Time stamp of the last update of the table
+> + * @hdr:               Base address of the table header
+> + * @data:              Base address of the table data
+> + *
+> + * A set of parameters to parse and navigate a specific HFI table.
+> + */
+> +struct hfi_instance {
+> +       u64                     *ts_counter;
+> +       void                    *hdr;
+> +       void                    *data;
+> +};
+> +
+> +/**
+> + * struct hfi_features - Supported HFI features
+> + * @capabilities:      Bitmask of supported capabilities
+> + * @nr_table_pages:    Size of the HFI table in 4KB pages
+> + * @cpu_stride:                Stride size to locate capability data of a logical
+> + *                     processor within the table (i.e., row stride)
+> + * @hdr_size:          Size of table header
+> + * @parsed:            True if HFI features have been parsed
+> + *
+> + * Parameters and supported features that are common to all HFI instances
+> + */
+> +struct hfi_features {
+> +       unsigned long   capabilities;
+> +       unsigned int    nr_table_pages;
+> +       unsigned int    cpu_stride;
+> +       unsigned int    hdr_size;
+> +       bool            parsed;
 
-Ah, that's what you meant! Thanks for spelling it out.
+I'm not sure why this field is needed.
 
-FWIW I never found the be/le versions useful. Most of the time the data
-comes from bus accessors which swap or is unaligned so you have to do
-be/le_get_unaligned, which swaps. Plus if you access/set multiple
-fields you'd swap them one by one which seems wasteful.
+It looks like it is only checked by hfi_parse_features() which is only
+called by intel_hfi_init() which is invoked by
+thermal_throttle_init_device() which can happen only once if I'm not
+mistaken.
 
-> > > typed versions, and if you ask me we should get rid of the FIELD_GETand
-> > > FIELD_PREP entirely - difficult now, but at least let's not propagate
-> > > that?  
-> > 
-> > I don't see why.  
-> 
-> Just for being more regular, in the spirit of "there's exactly one
-> correct way of doing it" :)
+> +};
+> +
+> +static int max_hfi_instances;
+> +static struct hfi_instance *hfi_instances;
+> +
+> +static struct hfi_features hfi_features;
+> +
+> +static __init int hfi_parse_features(void)
+> +{
+> +       unsigned int nr_capabilities, reg;
+> +
+> +       if (!boot_cpu_has(X86_FEATURE_INTEL_HFI))
+> +               return -ENODEV;
+> +
+> +       if (hfi_features.parsed)
+> +               return 0;
+> +
+> +       /*
+> +        * If we are here we know that CPUID_HFI_LEAF exists. Parse the
+> +        * supported capabilities and the size of the HFI table.
+> +        */
+> +       reg = cpuid_edx(CPUID_HFI_LEAF);
+> +
+> +       hfi_features.capabilities = reg & HFI_CAPABILITIES_MASK;
+> +       if (!(hfi_features.capabilities & HFI_CAPABILITIES_PERFORMANCE)) {
+> +               pr_err("Performance reporting not supported! Not using HFI\n");
 
-Right now it seems the uppercase macros are more prevalent.
+This doesn't need to be pr_err().
 
-Could just be because of the way the "swapping ones" are defined.
+> +               return -ENODEV;
+> +       }
+> +
+> +       /* The number of 4KB pages required by the table */
+> +       hfi_features.nr_table_pages = ((reg & CPUID_HFI_TABLE_SIZE_MASK) >>
+> +                                     CPUID_HFI_TABLE_SIZE_SHIFT) + 1;
+> +
+> +       /*
+> +        * The number of supported capabilities determines the number of
+> +        * columns in the HFI table.
+> +        */
+> +       nr_capabilities = bitmap_weight(&hfi_features.capabilities,
+> +                                       HFI_CAPABILITIES_NR);
+> +
+> +       /*
+> +        * The header contains change indications for each supported feature.
+> +        * The size of the table header is rounded up to be a multiple of 8
+> +        * bytes.
+> +        */
+> +       hfi_features.hdr_size = DIV_ROUND_UP(nr_capabilities, 8) * 8;
+> +
+> +       /*
+> +        * Data of each logical processor is also rounded up to be a multiple
+> +        * of 8 bytes.
+> +        */
+> +       hfi_features.cpu_stride = DIV_ROUND_UP(nr_capabilities, 8) * 8;
+> +
+> +       hfi_features.parsed = true;
+> +       return 0;
+> +}
+> +
+> +void __init intel_hfi_init(void)
+> +{
+> +       if (hfi_parse_features())
+> +               return;
+> +
+> +       max_hfi_instances = topology_max_packages() *
+> +                           topology_max_die_per_package();
+> +
+> +       /*
+> +        * This allocation may fail. CPU hotplug callbacks must check
+> +        * for a null pointer.
+> +        */
+> +       hfi_instances = kcalloc(max_hfi_instances, sizeof(*hfi_instances),
+> +                               GFP_KERNEL);
+> +}
+> diff --git a/drivers/thermal/intel/intel_hfi.h b/drivers/thermal/intel/intel_hfi.h
+> new file mode 100644
+> index 000000000000..42529d3ac92d
+> --- /dev/null
+> +++ b/drivers/thermal/intel/intel_hfi.h
+> @@ -0,0 +1,34 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _INTEL_HFI_H
+> +#define _INTEL_HFI_H
+> +
+> +#include <linux/bits.h>
+> +
+> +/* Hardware Feedback Interface Enumeration */
+> +#define CPUID_HFI_LEAF                 6
+> +#define CPUID_HFI_CAP_MASK             0xff
+> +#define CPUID_HFI_TABLE_SIZE_MASK      0x0f00
+> +#define CPUID_HFI_TABLE_SIZE_SHIFT     8
+> +#define CPUID_HFI_CPU_INDEX_MASK       0xffff0000
+> +#define CPUID_HFI_CPU_INDEX_SHIFT      16
+> +
+> +/* Hardware Feedback Interface Pointer */
+> +#define HFI_PTR_VALID_BIT              BIT(0)
+> +#define HFI_PTR_ADDR_SHIFT             12
+> +
+> +/* Hardware Feedback Interface Configuration */
+> +#define HFI_CONFIG_ENABLE_BIT          BIT(0)
+> +
+> +/* Hardware Feedback Interface Capabilities */
+> +#define HFI_CAPABILITIES_MASK          0xff
+> +#define HFI_CAPABILITIES_NR            8
+> +#define HFI_CAPABILITIES_PERFORMANCE   BIT(0)
+> +#define HFI_CAPABILITIES_ENERGY_EFF    BIT(1)
+> +
+> +#if defined(CONFIG_INTEL_HFI)
+> +void __init intel_hfi_init(void);
+> +#else
+> +static inline void intel_hfi_init(void) { }
+> +#endif
+> +
+> +#endif /* _INTEL_HFI_H */
+> diff --git a/drivers/thermal/intel/therm_throt.c b/drivers/thermal/intel/therm_throt.c
+> index dab7e8fb1059..ac408714d52b 100644
+> --- a/drivers/thermal/intel/therm_throt.c
+> +++ b/drivers/thermal/intel/therm_throt.c
+> @@ -32,6 +32,7 @@
+>  #include <asm/irq.h>
+>  #include <asm/msr.h>
+>
+> +#include "intel_hfi.h"
+>  #include "thermal_interrupt.h"
+>
+>  /* How long to wait between reporting thermal events */
+> @@ -509,6 +510,8 @@ static __init int thermal_throttle_init_device(void)
+>         if (!atomic_read(&therm_throt_en))
+>                 return 0;
+>
+> +       intel_hfi_init();
+> +
+>         ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "x86/therm:online",
+>                                 thermal_throttle_online,
+>                                 thermal_throttle_offline);
+> --
+> 2.17.1
+>
