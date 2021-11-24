@@ -2,114 +2,239 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ACBCC433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 07:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 622E3C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 07:47:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236540AbhKXHt6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Nov 2021 02:49:58 -0500
-Received: from smtp-relay-internal-0.canonical.com ([185.125.188.122]:47564
-        "EHLO smtp-relay-internal-0.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229482AbhKXHt5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Nov 2021 02:49:57 -0500
-Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
+        id S240354AbhKXHuO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Nov 2021 02:50:14 -0500
+Received: from marcansoft.com ([212.63.210.85]:55730 "EHLO mail.marcansoft.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229482AbhKXHuN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Nov 2021 02:50:13 -0500
+Received: from [127.0.0.1] (localhost [127.0.0.1])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
-        by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id B6D403F1B1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Nov 2021 07:46:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1637740007;
-        bh=41d8EvmewBk6qtYJvBs7XURC6hhNsnDFxi4IPnDanww=;
-        h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-         To:Cc:Content-Type;
-        b=UqR9c7oGNZXA0S+16xsqHErQy1ZBEAEVHTHa5iipMGhGydepEKgrltkMfiFJ+iULu
-         3WwFkXuFlltxV7mF5mB/ghnwQ1ibIpIkZYiaqDIFNI3eDZjCzoyPsA8yqIVRYr6/gQ
-         S9aKqCCf01HpcM1CeN/C/wP877wKklD5DgoBoTVXnsnYXH/Cb04gxJ3hchCy8VGyeC
-         /BUG2geueraudw39g+cJjXiu8P1xas3QHJWP6pfzq+HnG++E4e9WMZ7njRmXMFtsM2
-         wCR2UrJ1PRQaxUDSXG4GwMGDjAo0u6ntCqbX7jLKZ/2NXDByKT1ClkDP3K9uQ46/yY
-         B7O3ON6JjpEMQ==
-Received: by mail-oi1-f198.google.com with SMTP id bm27-20020a0568081a9b00b002bd445624cdso1064546oib.11
-        for <linux-pm@vger.kernel.org>; Tue, 23 Nov 2021 23:46:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=41d8EvmewBk6qtYJvBs7XURC6hhNsnDFxi4IPnDanww=;
-        b=TLUwY1ZZ5RJjf9XfCFKJx3qLxIc/Axm0s91azH4hhgvPfnoeEz38b8TkdYdnY7+rIi
-         8VuJwE+bWpAVsCTGNjFX7wZQOtCxwxKYAO8Qoi79MGAH7yl2W8/5VMCMB6P0OpSG3wgH
-         q/Om69ifiCss9sPuHtWRdD9ezJfJjkCZESUgt/ClmpNtc8ac/TcVcv8EeRpTLJe9vU92
-         Jk+eemSJILU5HNvt8j6O6DSLSHwVqKtZx5J1N7F20WWTilXxoW9s846CB0lgadpPuT3J
-         XjBkxNUxYq0Y0EAscrV1XRTQUOuZbTp8O0kClyNQ1M/8vgzMA77b4udI2MuLsY9RaKeE
-         QVSg==
-X-Gm-Message-State: AOAM530znkshi5UTEUPJRD0gxC9eqrR8oe+GkG0lhwNNlipgqhy5i5hs
-        y9Y5IlW3zSFNPvHewL7D92L4PubM5hVVGTH+oXNY+ULDujD03nb1oUHL6JEm1frO0t/cYT4J80w
-        1Dwwzst+qRE+XobofuscBoIh9qgTHBjsv8BYBuArO8J9ch3bSO6Gy
-X-Received: by 2002:aca:1a05:: with SMTP id a5mr4000795oia.146.1637740006601;
-        Tue, 23 Nov 2021 23:46:46 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyM4ycPL4qVHt0LnBtJ22sU+UsiSnwmlB+8bqOrZLqMNyA/ppy7P3eLlCPtz2s+/0I7M+uGLxfmwYchcLstLQ8=
-X-Received: by 2002:aca:1a05:: with SMTP id a5mr4000767oia.146.1637740006367;
- Tue, 23 Nov 2021 23:46:46 -0800 (PST)
+        (Authenticated sender: hector@marcansoft.com)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id 1615E41E57;
+        Wed, 24 Nov 2021 07:46:57 +0000 (UTC)
+From:   Hector Martin <marcan@marcan.st>
+To:     linux-arm-kernel@lists.infradead.org
+Cc:     Hector Martin <marcan@marcan.st>, Marc Zyngier <maz@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Arnd Bergmann <arnd@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Johan Hovold <johan@kernel.org>, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: [PATCH v3 10/11] tty: serial: samsung_tty: Support runtime PM
+Date:   Wed, 24 Nov 2021 16:46:24 +0900
+Message-Id: <20211124074625.182815-11-marcan@marcan.st>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211124073419.181799-1-marcan@marcan.st>
+References: <20211124073419.181799-1-marcan@marcan.st>
 MIME-Version: 1.0
-References: <2611837.mvXUDI8C0e@kreacher> <5521509.DvuYhMxLoT@kreacher>
-In-Reply-To: <5521509.DvuYhMxLoT@kreacher>
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date:   Wed, 24 Nov 2021 15:46:34 +0800
-Message-ID: <CAAd53p6dLkyafdzei-LTmfHtQw-hf6r5Sxx_Gw6FqmnfhQ0aLg@mail.gmail.com>
-Subject: Re: [PATCH v2] ACPI: CPPC: Add NULL pointer check to cppc_get_perf()
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 18, 2021 at 9:37 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] ACPI: CPPC: Add NULL pointer check to cppc_get_perf()
->
-> Check cpc_desc against NULL in cppc_get_perf(), so it doesn't crash
-> down the road if cpc_desc is NULL.
->
-> Fixes: 0654cf05d17b ("ACPI: CPPC: Introduce cppc_get_nominal_perf()")
-> Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: 5.15+ <stable@vger.kernel.org> # 5.15+
+This allows idle UART devices to be suspended using the standard
+runtime-PM framework. The logic is modeled after stm32-usart.
 
-Sorry for the late test, I bricked my previous ADL rig.
-Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Signed-off-by: Hector Martin <marcan@marcan.st>
+---
+ drivers/tty/serial/samsung_tty.c | 93 ++++++++++++++++++++------------
+ 1 file changed, 59 insertions(+), 34 deletions(-)
 
-> ---
->
-> -> v2: Check cpc_desc against NULL before using it to initialize reg.
->
-> ---
->  drivers/acpi/cppc_acpi.c |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/acpi/cppc_acpi.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/cppc_acpi.c
-> +++ linux-pm/drivers/acpi/cppc_acpi.c
-> @@ -998,7 +998,14 @@ static int cpc_write(int cpu, struct cpc
->  static int cppc_get_perf(int cpunum, enum cppc_regs reg_idx, u64 *perf)
->  {
->         struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-> -       struct cpc_register_resource *reg = &cpc_desc->cpc_regs[reg_idx];
-> +       struct cpc_register_resource *reg;
-> +
-> +       if (!cpc_desc) {
-> +               pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
-> +               return -ENODEV;
-> +       }
-> +
-> +       reg = &cpc_desc->cpc_regs[reg_idx];
->
->         if (CPC_IN_PCC(reg)) {
->                 int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
->
->
->
+diff --git a/drivers/tty/serial/samsung_tty.c b/drivers/tty/serial/samsung_tty.c
+index ca084c10d0bb..75c87d7240d9 100644
+--- a/drivers/tty/serial/samsung_tty.c
++++ b/drivers/tty/serial/samsung_tty.c
+@@ -40,6 +40,7 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/of.h>
++#include <linux/pm_runtime.h>
+ #include <asm/irq.h>
+ 
+ /* UART name and device definitions */
+@@ -1381,31 +1382,49 @@ static void exynos_usi_init(struct uart_port *port)
+ 
+ /* power power management control */
+ 
+-static void s3c24xx_serial_pm(struct uart_port *port, unsigned int level,
+-			      unsigned int old)
++static int __maybe_unused s3c24xx_serial_runtime_suspend(struct device *dev)
+ {
++	struct uart_port *port = dev_get_drvdata(dev);
+ 	struct s3c24xx_uart_port *ourport = to_ourport(port);
+ 	int timeout = 10000;
+ 
+-	ourport->pm_level = level;
++	while (--timeout && !s3c24xx_serial_txempty_nofifo(port))
++		udelay(100);
+ 
+-	switch (level) {
+-	case 3:
+-		while (--timeout && !s3c24xx_serial_txempty_nofifo(port))
+-			udelay(100);
++	if (!IS_ERR(ourport->baudclk))
++		clk_disable_unprepare(ourport->baudclk);
+ 
+-		if (!IS_ERR(ourport->baudclk))
+-			clk_disable_unprepare(ourport->baudclk);
++	clk_disable_unprepare(ourport->clk);
++	return 0;
++};
+ 
+-		clk_disable_unprepare(ourport->clk);
+-		break;
++static int __maybe_unused s3c24xx_serial_runtime_resume(struct device *dev)
++{
++	struct uart_port *port = dev_get_drvdata(dev);
++	struct s3c24xx_uart_port *ourport = to_ourport(port);
+ 
+-	case 0:
+-		clk_prepare_enable(ourport->clk);
++	clk_prepare_enable(ourport->clk);
+ 
+-		if (!IS_ERR(ourport->baudclk))
+-			clk_prepare_enable(ourport->baudclk);
++	if (!IS_ERR(ourport->baudclk))
++		clk_prepare_enable(ourport->baudclk);
++	return 0;
++};
+ 
++static void s3c24xx_serial_pm(struct uart_port *port, unsigned int level,
++			      unsigned int old)
++{
++	struct s3c24xx_uart_port *ourport = to_ourport(port);
++
++	ourport->pm_level = level;
++
++	switch (level) {
++	case UART_PM_STATE_OFF:
++		pm_runtime_mark_last_busy(port->dev);
++		pm_runtime_put_sync(port->dev);
++		break;
++
++	case UART_PM_STATE_ON:
++		pm_runtime_get_sync(port->dev);
+ 		exynos_usi_init(port);
+ 		break;
+ 	default:
+@@ -2282,18 +2301,15 @@ static int s3c24xx_serial_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	pm_runtime_get_noresume(&pdev->dev);
++	pm_runtime_set_active(&pdev->dev);
++	pm_runtime_enable(&pdev->dev);
++
+ 	dev_dbg(&pdev->dev, "%s: adding port\n", __func__);
+ 	uart_add_one_port(&s3c24xx_uart_drv, &ourport->port);
+ 	platform_set_drvdata(pdev, &ourport->port);
+ 
+-	/*
+-	 * Deactivate the clock enabled in s3c24xx_serial_init_port here,
+-	 * so that a potential re-enablement through the pm-callback overlaps
+-	 * and keeps the clock enabled in this case.
+-	 */
+-	clk_disable_unprepare(ourport->clk);
+-	if (!IS_ERR(ourport->baudclk))
+-		clk_disable_unprepare(ourport->baudclk);
++	pm_runtime_put_sync(&pdev->dev);
+ 
+ 	ret = s3c24xx_serial_cpufreq_register(ourport);
+ 	if (ret < 0)
+@@ -2307,10 +2323,21 @@ static int s3c24xx_serial_probe(struct platform_device *pdev)
+ static int s3c24xx_serial_remove(struct platform_device *dev)
+ {
+ 	struct uart_port *port = s3c24xx_dev_to_port(&dev->dev);
++	struct s3c24xx_uart_port *ourport = to_ourport(port);
+ 
+ 	if (port) {
++		pm_runtime_get_sync(&dev->dev);
++
+ 		s3c24xx_serial_cpufreq_deregister(to_ourport(port));
+ 		uart_remove_one_port(&s3c24xx_uart_drv, port);
++
++		clk_disable_unprepare(ourport->clk);
++		if (!IS_ERR(ourport->baudclk))
++			clk_disable_unprepare(ourport->baudclk);
++
++		pm_runtime_disable(&dev->dev);
++		pm_runtime_set_suspended(&dev->dev);
++		pm_runtime_put_noidle(&dev->dev);
+ 	}
+ 
+ 	uart_unregister_driver(&s3c24xx_uart_drv);
+@@ -2319,8 +2346,8 @@ static int s3c24xx_serial_remove(struct platform_device *dev)
+ }
+ 
+ /* UART power management code */
+-#ifdef CONFIG_PM_SLEEP
+-static int s3c24xx_serial_suspend(struct device *dev)
++
++static int __maybe_unused s3c24xx_serial_suspend(struct device *dev)
+ {
+ 	struct uart_port *port = s3c24xx_dev_to_port(dev);
+ 
+@@ -2330,7 +2357,7 @@ static int s3c24xx_serial_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int s3c24xx_serial_resume(struct device *dev)
++static int __maybe_unused s3c24xx_serial_resume(struct device *dev)
+ {
+ 	struct uart_port *port = s3c24xx_dev_to_port(dev);
+ 	struct s3c24xx_uart_port *ourport = to_ourport(port);
+@@ -2350,7 +2377,7 @@ static int s3c24xx_serial_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int s3c24xx_serial_resume_noirq(struct device *dev)
++static int __maybe_unused s3c24xx_serial_resume_noirq(struct device *dev)
+ {
+ 	struct uart_port *port = s3c24xx_dev_to_port(dev);
+ 	struct s3c24xx_uart_port *ourport = to_ourport(port);
+@@ -2420,16 +2447,14 @@ static int s3c24xx_serial_resume_noirq(struct device *dev)
+ }
+ 
+ static const struct dev_pm_ops s3c24xx_serial_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
+ 	.suspend = s3c24xx_serial_suspend,
+ 	.resume = s3c24xx_serial_resume,
+ 	.resume_noirq = s3c24xx_serial_resume_noirq,
++#endif
++	SET_RUNTIME_PM_OPS(s3c24xx_serial_runtime_suspend,
++			   s3c24xx_serial_runtime_resume, NULL)
+ };
+-#define SERIAL_SAMSUNG_PM_OPS	(&s3c24xx_serial_pm_ops)
+-
+-#else /* !CONFIG_PM_SLEEP */
+-
+-#define SERIAL_SAMSUNG_PM_OPS	NULL
+-#endif /* CONFIG_PM_SLEEP */
+ 
+ /* Console code */
+ 
+@@ -2921,7 +2946,7 @@ static struct platform_driver samsung_serial_driver = {
+ 	.id_table	= s3c24xx_serial_driver_ids,
+ 	.driver		= {
+ 		.name	= "samsung-uart",
+-		.pm	= SERIAL_SAMSUNG_PM_OPS,
++		.pm	= &s3c24xx_serial_pm_ops,
+ 		.of_match_table	= of_match_ptr(s3c24xx_uart_dt_match),
+ 	},
+ };
+-- 
+2.33.0
+
