@@ -2,124 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F71BC433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 19:52:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF7EFC433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Nov 2021 20:09:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235528AbhKXT4E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Nov 2021 14:56:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38456 "EHLO
+        id S236701AbhKXUM7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Nov 2021 15:12:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235076AbhKXT4D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Nov 2021 14:56:03 -0500
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69363C061574
-        for <linux-pm@vger.kernel.org>; Wed, 24 Nov 2021 11:52:53 -0800 (PST)
-Received: by mail-pg1-x52f.google.com with SMTP id l190so3099011pge.7
-        for <linux-pm@vger.kernel.org>; Wed, 24 Nov 2021 11:52:53 -0800 (PST)
+        with ESMTP id S236059AbhKXUM7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Nov 2021 15:12:59 -0500
+Received: from mail-ot1-x32c.google.com (mail-ot1-x32c.google.com [IPv6:2607:f8b0:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74287C061574;
+        Wed, 24 Nov 2021 12:09:49 -0800 (PST)
+Received: by mail-ot1-x32c.google.com with SMTP id u18-20020a9d7212000000b00560cb1dc10bso6020712otj.11;
+        Wed, 24 Nov 2021 12:09:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=0cWzTmjlHWvd+yWpHsVoThzSR+P+J7m/Nn0KgKishZ0=;
-        b=MgGXZsfNLiJW/pVewOvlirc88nzHpFTvz7+GAZqsNaQTB2wGJ3IgyBT3wCiN+x1rxj
-         /wXVxtgJ2OGb5LqJyyuqZ0WxkvtT7P9EC65aKcsuxafP6v3TrXfLFlYIZjvn7+cBh5vO
-         9osCyAgeER1WOh0k2scXo1nyI7H/lxl5W7CkCF7EkoLYDjga0se5GEZjWT4km/Oe/0BR
-         FswFYl45gip+18uE7dFcxTfF9IarGJOF1BfA23AsHy7A/0+mMCUHT/7GPNPyfWWQMTfY
-         Dm4BTio/8715XkBrzElKc2lBbBM4WLAXc9JMmd6YPF82/6Ze3d4r6fmMGpCjteq+c6nj
-         ctAA==
+        d=gmail.com; s=20210112;
+        h=sender:to:cc:references:from:subject:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=4xNXRuhIBU453ImJBo0Cx8qkVWsTpMmqNZWaGTk7aa0=;
+        b=kgOrqZKZgqiyvjxRBPyF3KQVhyjLrkcvHA6lsKos93OSoL/gH0rHHdB36neF6LrIkc
+         U3XTS1w/zHtTnOAUccH+XHxd9rzCwBbegk36ntd1ZSplBst50yxNkMU2DRQ/eJ/URZb0
+         NSK8PrOtoXFq/PmL3+9zbRstg6QOOvxVerI9gVg5E3BWIyEzH2UipeSn73VhO2gNKlVF
+         AEzEGVO7jqTqK04bmKw4Do/xXkYM+Uz01Yzy2Nj+fpQ5oJGIlr1dojsx4dfVi8XMj4dd
+         80SnUJWlu9i3sHJg1EKZtxbtjtO247aaae0OA5Fb1xbj4KEQmCEF4KY/qsId2yiocFqQ
+         7Y7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=0cWzTmjlHWvd+yWpHsVoThzSR+P+J7m/Nn0KgKishZ0=;
-        b=zmEc0tB6UJyt30U13Nb5gJERWM6tDtfwRajOMW7cVJQTUwdK7gZAHREJTxED4PeYK7
-         VdUd/5JvxMFvzO1hqd79rQlKwS9GS2lkH4ecgw8SbtzBHfTCB3vgRv+MleP01YQzR6SN
-         vYiBeu0bFwKCD7s7YSPe2JdRkKFnaqadz3DHp96VxkAhr30yjzsJnzQlje3qnYkY7jL0
-         s6x+P9G1wbWBuFTqJGrz8700WjQttpS7GsfcaHhzZ7Ure4Qvj7mIb77B3f43s7RvqBmi
-         DF3YvHat04dUBkQfEPMKKLnmijHAK1KsgHcsRzeA22FaUoC2BdpbBu1kp+SRkqtFfSaB
-         SK1Q==
-X-Gm-Message-State: AOAM533jvn/ENLKCNbZ5aKsV8EjzRaWs+aGOd2Eu6VD+jR6CAZXk0OSx
-        r4R7mOKgqnth8ctxpLH/zw2WEsuHtZaghWIzrq4=
-X-Google-Smtp-Source: ABdhPJylpI61oPz48yzy7Vc0bcoSnM3FxSiRur6TZBlMHJT8RkO2n4pq0hBh1TV/Thx6pGU+7VeP5Q==
-X-Received: by 2002:a63:d110:: with SMTP id k16mr11947613pgg.90.1637783572814;
-        Wed, 24 Nov 2021 11:52:52 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id p15sm440906pjh.1.2021.11.24.11.52.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Nov 2021 11:52:52 -0800 (PST)
-Message-ID: <619e9814.1c69fb81.2d75.1939@mx.google.com>
-Date:   Wed, 24 Nov 2021 11:52:52 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:sender:to:cc:references:from:subject:message-id
+         :date:user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=4xNXRuhIBU453ImJBo0Cx8qkVWsTpMmqNZWaGTk7aa0=;
+        b=shUUtNmQaesFHXk19u7jnNvf7OJl7DrHAqqmGhakpt90Jbut6OymV5XuXHJpuwx+u3
+         MNmP2v0io7lODnIqK7ZoBJcisaANtlQx4uSi+DdW7iPTj9eeu8rM7qZaByWSux1dijkz
+         6dy1FqajQQKGn44ye5L2u+IAAe50Ebzw7ucSQhirfNtRSe6s6UzQ0LxiJuWgc80ui40v
+         fbKMZsB7JmI2l/3/BPICRzJheb9NYUGcXfyBhLdkwH640xaEr7kaKAHdRDSWE5nAOqEt
+         R8OlaQj+MV8dLUbzu/a9PlyO0OmY4RNlpn2T/INc4qf6AmUuqybcQwMgi/o/RTb69W1W
+         hMGA==
+X-Gm-Message-State: AOAM532gm6IM977UtWHrI4Vu7KbsEmjDzo7UKIKDUR1OoeVRLFHUobA0
+        5jzLuim/Jnm2O9EKvtyiMjg=
+X-Google-Smtp-Source: ABdhPJyr2zIQORx6RQRObn7/Ddhw3CCbycyekrE8s5E/apgzlTJeH0lPBWhbpP4U1xZ67thg7BrVlg==
+X-Received: by 2002:a05:6830:1049:: with SMTP id b9mr16091463otp.60.1637784588808;
+        Wed, 24 Nov 2021 12:09:48 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id c8sm135240otk.40.2021.11.24.12.09.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 Nov 2021 12:09:47 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+To:     Andreas Kemnade <andreas@kemnade.info>
+Cc:     Alistair Francis <alistair23@gmail.com>,
+        Alistair Francis <alistair@alistair23.me>,
+        Lee Jones <lee.jones@linaro.org>,
+        Mark Brown <broonie@kernel.org>,
+        Sascha Hauer <kernel@pengutronix.de>, lgirdwood@gmail.com,
+        Rob Herring <robh+dt@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        rui.zhang@intel.com, devicetree <devicetree@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        linux-hwmon@vger.kernel.org, amitk@kernel.org,
+        linux-pm@vger.kernel.org, dl-linux-imx <linux-imx@nxp.com>,
+        Shawn Guo <shawnguo@kernel.org>
+References: <20211110122948.188683-1-alistair@alistair23.me>
+ <20211110122948.188683-4-alistair@alistair23.me>
+ <20211116000634.767dcdc0@aktux>
+ <CAKmqyKPFOqWD7t6tC1Act97CVcY+yazrhwMLLr3j_wOyH50GTA@mail.gmail.com>
+ <00d68181-ad3b-17d2-0150-00029d399f0f@roeck-us.net>
+ <20211124203532.30577a50@aktux>
+From:   Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v15 3/8] mfd: simple-mfd-i2c: Enable support for the
+ silergy,sy7636a
+Message-ID: <a2fd5089-14a5-e36e-63ce-d73be3cd99a2@roeck-us.net>
+Date:   Wed, 24 Nov 2021 12:09:44 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.16-rc2-16-ga3f78507f993
-X-Kernelci-Report-Type: test
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing sleep: 2 runs, 1 regressions (v5.16-rc2-16-ga3f78507f993)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+In-Reply-To: <20211124203532.30577a50@aktux>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 2 runs, 1 regressions (v5.16-rc2-16-ga3f78507f993)
+On 11/24/21 11:35 AM, Andreas Kemnade wrote:
+> Hi,
+> 
+> On Tue, 23 Nov 2021 07:39:05 -0800
+> Guenter Roeck <linux@roeck-us.net> wrote:
+> 
+>> On 11/23/21 4:14 AM, Alistair Francis wrote:
+>>> On Tue, Nov 16, 2021 at 9:10 AM Andreas Kemnade <andreas@kemnade.info> wrote:
+>>>>
+>>>> Hi,
+>>>>
+>>>> this all creates a lot of question marks...
+>>>> One of my main question is whether sy7636a = sy7636 (at least the
+>>>> driver in the kobo vendor kernels does not have the "A" at the end,
+>>>> whic does not necessarily mean a difference).
+>>>>
+>>>> https://www.silergy.com/products/panel_pmic
+>>>> lists only a SY7636ARMC, so chances are good that the letters were just
+>>>> stripped away by the driver developers. Printing on chip package is
+>>>> cryptic so it is not that helpful. It is just "BWNBDA"
+>>>
+>>> I don't have a definite answer for you. But I think it's sy7636a
+>>>
+>>> The page you linked to above lists SY7636ARMC as well as SY7627RMC,
+>>> SY7570RMC. That makes me think that the RMC is a generic suffix and
+>>> this actual IC is the SY7636A.
+>>>    
+>>
+>> Almost all chips have an ordering suffix, indicating things like
+>> temperature range or packaging. The datasheet says:
+>>
+> yes, they have. The only question is where it starts. So did you find a
+> public datasheet which you can chere
+> 
 
-Regressions Summary
--------------------
+I registered an account on the Silergy web site, and I was subsequently
+able to download the datasheet. The document has a "confidential"
+watermark, so I can not share it. You should be able to register an
+account and download it yourself, though.
 
-platform         | arch  | lab           | compiler | defconfig | regressio=
-ns
------------------+-------+---------------+----------+-----------+----------=
---
-rk3399-gru-kevin | arm64 | lab-collabora | gcc-10   | defconfig | 1        =
-  =
+>> Ordering Information
+>> SY7636 □(□□)□
+>>               | Temperature Code (C)
+>>            | Package Code (RM)
+>>          | Optional Spec Code (A)
+>>
+>> The datasheet otherwise refers to the chip as SY7636A.
+>>
+> so there is no indication of something like this where the A really
+> makes a difference:
+> 
 
+I may be missing it, but I see nothing in the datasheet that would indicate
+that or if the "A" has any relevance other than "Optional Spec Code",
+and I do not see an explanation for that term either.
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.16-rc=
-2-16-ga3f78507f993/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.16-rc2-16-ga3f78507f993
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      a3f78507f9931f5abe2f8273896e002b59eaeb90 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform         | arch  | lab           | compiler | defconfig | regressio=
-ns
------------------+-------+---------------+----------+-----------+----------=
---
-rk3399-gru-kevin | arm64 | lab-collabora | gcc-10   | defconfig | 1        =
-  =
-
-
-  Details:     https://kernelci.org/test/plan/id/619e94ced6012bebaaf2efb4
-
-  Results:     12 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-10 (aarch64-linux-gnu-gcc (Debian 10.2.1-6) 10.2.1 20210=
-110)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.16-rc2-16-ga3f78=
-507f993/arm64/defconfig/gcc-10/lab-collabora/sleep-rk3399-gru-kevin.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.16-rc2-16-ga3f78=
-507f993/arm64/defconfig/gcc-10/lab-collabora/sleep-rk3399-gru-kevin.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2021=
-1118.0/arm64/rootfs.cpio.gz =
-
-
-
-  * sleep.rtcwake-mem-8: https://kernelci.org/test/case/id/619e94ced6012beb=
-aaf2efb8
-        new failure (last pass: v5.16-rc2-12-gf9efc61a2f28) =
-
- =20
+Guenter
