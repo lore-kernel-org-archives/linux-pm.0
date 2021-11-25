@@ -2,66 +2,57 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2648BC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Nov 2021 09:54:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29EB2C4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Nov 2021 12:28:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353943AbhKYJ5O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Nov 2021 04:57:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54284 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347148AbhKYJzM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Nov 2021 04:55:12 -0500
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF807C061746;
-        Thu, 25 Nov 2021 01:52:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=q9W6nbk9qafMhLY0YqRYIwMk+JEbPSTqLUIMJBGlKXM=; b=Vhewe5zs4XI7v1oVNyYbif7pEw
-        2t4Pi0udOsuQt9qOg2C+Gs3R9B+ydbSzH1omWkU7bQn4/svrrVjabA9t0Xw7424n5NYfRiHiJy1so
-        4NUqjiZOTLLtSv5mB6w3m2C0BWhGSpB+XeSIL5gkyK5V3J5d2hnVF4vxOOtpfZYkc7q6BGVewUBFB
-        urbbXDaCb0oIqrDr1bOmAEuPcdUaLZiZCF5DIu4vItLA14h8/9LdUjuy/MxNlSel0tD6IavmFSWwJ
-        khr5Hm5XP5a9cYdwR33784oE2PSgyRBYKcvJjNcqST1JxT+wrpt6e9nYFmG12qTiNvA4+BbHCVvxh
-        uPHxiDwQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1mqBPy-005mvF-Hb; Thu, 25 Nov 2021 09:51:51 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id C3097300093;
-        Thu, 25 Nov 2021 10:51:50 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id A8C6A2027B00C; Thu, 25 Nov 2021 10:51:50 +0100 (CET)
-Date:   Thu, 25 Nov 2021 10:51:50 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Maulik Shah <quic_mkshah@quicinc.com>
-Cc:     bjorn.andersson@linaro.org, rafael@kernel.org,
-        daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ulf.hansson@linaro.org, quic_lsrao@quicinc.com,
-        rnayak@codeaurora.org, Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH] sched/idle: Export cpu_idle_poll_ctrl() symbol
-Message-ID: <YZ9ctgCBYJEEjuwt@hirez.programming.kicks-ass.net>
-References: <1637831676-32737-1-git-send-email-quic_mkshah@quicinc.com>
+        id S1350482AbhKYMbm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Nov 2021 07:31:42 -0500
+Received: from mail-ot1-f41.google.com ([209.85.210.41]:43749 "EHLO
+        mail-ot1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1348941AbhKYMa1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Nov 2021 07:30:27 -0500
+Received: by mail-ot1-f41.google.com with SMTP id h16-20020a9d7990000000b0055c7ae44dd2so9159078otm.10;
+        Thu, 25 Nov 2021 04:27:16 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9HbXFpIh/y4w8a8eT1ZfLzvqZSm5LG22VgGOZnieP9k=;
+        b=Uf+/MSZdr/WSNXA+QxmwOK6dV/cI28ZbUxOPtkSs2Z0TJ1l6tMHB6+zMsqra9c+QQJ
+         GMLm2mnRfvBfCNIpVAMsKW9DRGFEI2pjPKAT3tbGO++rz5Rystrhqo4ITZFu+VkSQNsN
+         d4y7yorzBail3tgfz6ixXO3JlcFyDduzQdZLtE6fIV4ekKiA/mtbd+KZ0hqW74ii9112
+         zahNjSjO+2PwBRVRCcBUJNmng9O2TWu4y5BLnccI3jDRf94lDPS834M8khYq/PvVCqrJ
+         Qg9EZwFsDshaXRLqHCKxpzAKbUd2EXL0VwkKuvo3rM4R8dxI7tYbCCtsHJcXPxpBIUq1
+         7RJg==
+X-Gm-Message-State: AOAM532wYQ81iSSsVIHhJiLtR9N+8wjyx9CcUiKFfLNHGmzNRpgxIqHN
+        dpgp45MhRdB4n835Lx6/EwrD6r5v/XjrItbCcaU=
+X-Google-Smtp-Source: ABdhPJzXTx2FQb+cCeHwjuDPFTvFkWd0PGZt5EoZW9Ob4rnnSPE2b84X4PkMW0KHIr039bqkSQkbJaOpoWqM9dRX+aA=
+X-Received: by 2002:a9d:4c10:: with SMTP id l16mr10811837otf.198.1637843235097;
+ Thu, 25 Nov 2021 04:27:15 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1637831676-32737-1-git-send-email-quic_mkshah@quicinc.com>
+References: <1637830481-21709-1-git-send-email-quic_mkshah@quicinc.com>
+In-Reply-To: <1637830481-21709-1-git-send-email-quic_mkshah@quicinc.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 25 Nov 2021 13:27:03 +0100
+Message-ID: <CAJZ5v0hhUSjNdHwF4dRUQ1Fgos-jqg1agHBShhhwFUGK6wiedQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] Allow cpuidle governors to be compiled as modules
+To:     Maulik Shah <quic_mkshah@quicinc.com>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>, quic_lsrao@quicinc.com,
+        "Nayak, Rajendra" <rnayak@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 25, 2021 at 02:44:36PM +0530, Maulik Shah wrote:
-> Export cpu_idle_poll_ctrl() so that module drivers can use same.
+On Thu, Nov 25, 2021 at 9:55 AM Maulik Shah <quic_mkshah@quicinc.com> wrote:
+>
+> This series makes changes to allow cpuidle governors menu, ladder and teo
+> to compiled as modules when building with allmodconfig.
 
-This does not seem like a really safe interface to expose to the
-world.
-
-Surely the better solution is to rework things to not rely on this. I'm
-fairly sure it's not hard to write a cpuidle driver that does much the
-same.
+What's the purpose of this?
