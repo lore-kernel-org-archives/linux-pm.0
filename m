@@ -2,98 +2,92 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ABC5C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 16:46:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C992BC433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 17:24:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378433AbhKZQtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 11:49:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36838 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239650AbhKZQrq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 11:47:46 -0500
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEFF6C0613ED;
-        Fri, 26 Nov 2021 08:34:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=uneliOWtZMP7i1QI58GzHZvDj/yxdUW4ods64b/KyKg=; b=IxgNGZpqAKx4V9m5NpisDuE2xs
-        MuCMQXIGt9saJvZ9v9Q8jDFpMIuS7hz8Ju4/CapgBbXI76fEq0OaO2oV9piTp9CLUwGoPu3cou4iI
-        4XzNzTEo/jV/yFkpwH6SUcPR3Rjkj/bIelf8NS4reu0mEwTkzM2CJHv3knoOBQMdhD/+VRG7Hib6p
-        BcG1xSzqHKdV9tLvsDT9u11bb8229O3ltdlbqeUwG0eYyh05Xiw2dw/2wvFjs/Rai7xLgN9fPIT/N
-        QttLihlR1jj/MRpPE5YLGfDsKfnKcaLiZCdvFJMPvZ9zzwvWyYqRpvGAD/DOQ9oVCgEmCXauIOqlg
-        jle0Vhcw==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1mqeAo-000k2v-Bg; Fri, 26 Nov 2021 16:34:06 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1F78D300230;
-        Fri, 26 Nov 2021 17:34:04 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id CC5762DC57755; Fri, 26 Nov 2021 17:34:04 +0100 (CET)
-Date:   Fri, 26 Nov 2021 17:34:04 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Maulik Shah <quic_mkshah@quicinc.com>
-Cc:     bjorn.andersson@linaro.org, rafael@kernel.org,
-        daniel.lezcano@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ulf.hansson@linaro.org, quic_lsrao@quicinc.com,
-        rnayak@codeaurora.org, Ingo Molnar <mingo@redhat.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 2/4] sched/core: Export symbols used by cpuidle governors
-Message-ID: <YaEMfIqBxv350Wjx@hirez.programming.kicks-ass.net>
-References: <1637830481-21709-1-git-send-email-quic_mkshah@quicinc.com>
- <1637830481-21709-3-git-send-email-quic_mkshah@quicinc.com>
- <YZ9Y2w2xIrw39B/K@hirez.programming.kicks-ass.net>
- <f7a1c6de-ae1d-1615-1212-bdb9bdcdbcbc@quicinc.com>
+        id S230167AbhKZR1W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 12:27:22 -0500
+Received: from mail-oi1-f169.google.com ([209.85.167.169]:39817 "EHLO
+        mail-oi1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233020AbhKZRZV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 12:25:21 -0500
+Received: by mail-oi1-f169.google.com with SMTP id bf8so20012925oib.6;
+        Fri, 26 Nov 2021 09:22:08 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=zvQyGhC9jNKoHcK8q/CTH+eU4jPIt6zo0Ot+2Yqpxyo=;
+        b=fW42sNyUp53eV9tMrBvxuVwAI5HbvsdW8brkjJ2NrC2o9ZLwsa+wYiKQCqyqoqJzLI
+         xg5EmQwz+uPgFnpdZEMhhShoxt2eUi9Nt7R4XeeetlOtc6TVwQLY1gZ/G2JOoYkBrZ4X
+         Iai6WPxNJ/sfGqKoaz6tj/kgLSY2vytEnTgJypkDwxBd+aexXFaxJjlcd2iF3KuWVESP
+         9lPgpCHLIUKacqbhYHV9OQki0o83aeHzJCOp8OQTHuPBtibsfcbRBW5otLi0M6xK5JYj
+         QJFpFb6cbJBLNN13MyD2g5ZDKHAuQXWRwRfQAKnZzwKju/oQ6PTRGigau3Gln/FZMxus
+         6IXg==
+X-Gm-Message-State: AOAM532LqcpUHEo1FuSd5jCVXEZinFht2TZlvKl3jyfbpWpyWEeOPhWj
+        cNs9D/d7CDcQcuRMn+bUthuM/tPHpWIz6dBu0QY=
+X-Google-Smtp-Source: ABdhPJwLcV0kvSupFRnxz8RlbUGxq6S++mPRKq7N52fkhN7kg/LrTJJeiTs8xe1nIglW7SWSCcArVKgTQR8AU5+Fdhg=
+X-Received: by 2002:a05:6808:e90:: with SMTP id k16mr24130345oil.166.1637947328431;
+ Fri, 26 Nov 2021 09:22:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f7a1c6de-ae1d-1615-1212-bdb9bdcdbcbc@quicinc.com>
+References: <20210401183654.27214-1-daniel.lezcano@linaro.org>
+ <20210401183654.27214-3-daniel.lezcano@linaro.org> <CAAYoRsURO1tf03nfiki1uaXYEmTKQyYKUeTyKW+vefrVzCO7jg@mail.gmail.com>
+In-Reply-To: <CAAYoRsURO1tf03nfiki1uaXYEmTKQyYKUeTyKW+vefrVzCO7jg@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 26 Nov 2021 18:21:57 +0100
+Message-ID: <CAJZ5v0hcuq0qriHbc=XHbCo8fJMAV1dbCBws3M9GktN17aCE_g@mail.gmail.com>
+Subject: Re: [PATCH v6 3/7] powercap/drivers/dtpm: Simplify the dtpm table
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 25, 2021 at 07:01:44PM +0530, Maulik Shah wrote:
-> Hi Peter,
-> 
-> On 11/25/2021 3:05 PM, Peter Zijlstra wrote:
-> > On Thu, Nov 25, 2021 at 02:24:39PM +0530, Maulik Shah wrote:
-> > > Export symbols that are used by cpuidle menu governor in preparation
-> > > to allow cpuidle governors to be compiled as modules.
-> > > 
-> > > Cc: Ingo Molnar <mingo@redhat.com>
-> > > Cc: Peter Zijlstra <peterz@infradead.org>
-> > > Cc: Juri Lelli <juri.lelli@redhat.com>
-> > > Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> > > Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
-> > > ---
-> > >   kernel/sched/core.c | 1 +
-> > >   1 file changed, 1 insertion(+)
-> > > 
-> > > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > > index 8cffe31..1d031e0 100644
-> > > --- a/kernel/sched/core.c
-> > > +++ b/kernel/sched/core.c
-> > > @@ -5047,6 +5047,7 @@ unsigned int nr_iowait_cpu(int cpu)
-> > >   {
-> > >   	return atomic_read(&cpu_rq(cpu)->nr_iowait);
-> > >   }
-> > > +EXPORT_SYMBOL(nr_iowait_cpu);
-> > NACK, that function is batshit insane, exporting it serves nobody.
-> Thanks for the review.
-> Exporting is to serve cpuidle menu governor when its compiled as module
-> (last patch in this series).
-> 
-> otherwise we get below error during compilation,
-> ERROR: modpost: "nr_iowait_cpu" [drivers/cpuidle/governors/menu.ko]
-> undefined!
-> 
-> Do you suggest to use something else instead of this?
+Hi Doug,
 
-Yeah, schedutil :-)
+On Fri, Nov 26, 2021 at 6:08 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> Hi Daniel,
+>
+> This patch introduces a regression, at least on my test system.
+> I can no longer change CPU frequency scaling drivers, for example
+> from intel_cpufreq (A.K.A intel_pstate in passive mode) to intel_pstate
+> (A.K.A. active mode). The task just hangs forever.
+>
+> I bisected the kernel and got this commit as the result.
+> As a double check, I reverted this commit:
+> 7a89d7eacf8e84f2afb94db5ae9d9f9faa93f01c
+> on kernel 5.16-rc2 and the issue was resolved.
+>
+> While your email is fairly old, I observe that it was only included as of
+> kernel 5.16-rc1.
+>
+> Command Example that never completes:
+>
+> $ echo passive | sudo tee /sys/devices/system/cpu/intel_pstate/status
+>
+> syslog excerpt attached.
+
+This looks like it may be problematic:
+
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index f6076de39540..98841524a782 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+       return ret;
+}
+
+-int dtpm_register_cpu(struct dtpm *parent)
++static int __init dtpm_cpu_init(void)
+{
+       int ret;
+
+so please try to remove the __init annotation from dtpm_cpu_init() and
+see if that helps.
