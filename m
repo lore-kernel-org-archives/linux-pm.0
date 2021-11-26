@@ -2,128 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54D94C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 19:38:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF42AC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 19:40:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237289AbhKZTl7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 14:41:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46590 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236879AbhKZTj7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 14:39:59 -0500
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65921C061191
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 11:10:26 -0800 (PST)
-Received: by mail-lj1-x229.google.com with SMTP id i63so20563384lji.3
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 11:10:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=telus.net; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=v/nUUlQokdOLB5PSt1hTFYmsrGcrpyJxvqeThYufta0=;
-        b=K9WBxs+3np+gSoWZtnavrHrjriDztJXlfxsI+dVokPvfBqmrSfb5XN/a0ceS/YRmwx
-         RTsKXMs91VEb4IYWDICy+Bl/3ZkLpDcIAtgZz2BZ0gb+rpCBHDMqW0ncoau1t1QtUryi
-         9+588tQ+Tz6al9+xOamT/hukkPvcb8c+43yXYg9R8dWHCNdOhzK8j4O/r4CpRLMTRsG/
-         KEoDFJU2hKMh/xhRm+G68JBEBVN+WU67Y5KhDlmvyGwmF+2PjlrLI+yRJAOmbQI565ql
-         czJwKsOe7kG/dfVG2MUAnQz/p6UXOHVj7NUaGpyPTn138d3x1SJuPEnbf94sN6VsC9G4
-         MdpQ==
+        id S234556AbhKZTn3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 14:43:29 -0500
+Received: from mail-oi1-f179.google.com ([209.85.167.179]:42963 "EHLO
+        mail-oi1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234565AbhKZTl3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 14:41:29 -0500
+Received: by mail-oi1-f179.google.com with SMTP id n66so20591567oia.9;
+        Fri, 26 Nov 2021 11:38:16 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=v/nUUlQokdOLB5PSt1hTFYmsrGcrpyJxvqeThYufta0=;
-        b=pIkdT2V1+IRsrWxl+xyJdYKREqefRmNwTwpeCkb60h6Kb72df1V6Xp9cCryPEBbh1i
-         TH60tWbufol/4VmSlxJyxIdzKlFpEkoULXsJYWWoiCH6lZ5VyrgxAh0uYChcfv2kkXpr
-         JwW3+PcgMtEd0kfgQu5rNdgM2CJKhZgEYbmN0cshlYeoLvWpfkp23/8Tg++MtyauzwnL
-         Tq9vZkWEEMeVpL5bcTud/U3xXCzOhTOsLnrrbg9ytXDFg38gAGeBy4gScLN9RjrDo/z0
-         t1Cixo6Wj54H0IvfZUpzGG4UmHIi8U7gOQs8T5ao8s/sh9MtGjirhiOVrbBM6eagHse4
-         kfPA==
-X-Gm-Message-State: AOAM531Lx7aD2aw+yCOtgk/T1F5sMd6HUp2ZVviksfQGCShSGPWTlC/2
-        CFfQJFh3nRWfsHYmNeWjShyCMTKHre/ifx3/BIgIZQ==
-X-Google-Smtp-Source: ABdhPJypBSwqOQ9WVkGSOuyRXqzgnhCvnOD4ehYZQOCksgsTkpoE/ivcICzXSabIi1UMQ2sEmf33ofWhsDG7jedcxpQ=
-X-Received: by 2002:a2e:9e08:: with SMTP id e8mr32848587ljk.472.1637953824609;
- Fri, 26 Nov 2021 11:10:24 -0800 (PST)
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=F9WHBsDLTzuit4FpL95JXqUXCEDgLzm46M8tiPrpblo=;
+        b=IslsSqvKbM35zNe++g6CRj8TJ2wnMyRMiM5UXXGGbsuooazcTucLGvy+bG97Jq6LBt
+         T8FYMKHHavu7A6GvpyIsOYRQtAFGKNc8fOCNv470g6xrtyUqQuMiSp+FBl8cWpDn6d4t
+         YiB3yo76K9c6a180SSHcGG+VR6a6qW7N++NQ7UuEsuwc2f7XlYy1K2noOHpyo71qzIE5
+         AF5EKtmcVI6qDsg0+3FLh0BzCg+wqYI5a92L9YMqCcNWSf/NePj+Hfjh94J73za92rWA
+         3ufjbN5L8c0P3+Yhd7bXKlHxdRVuEiK4DJf80HNbJcKhJlIRsZBALkAKj+Ntq1DepURM
+         JSLQ==
+X-Gm-Message-State: AOAM532KqvM9fhZxvhMJyuYqcKSGrAMw7msNrJWyNASZ6JPEJtiDzGjK
+        pN8g3iQtdgvJCZcJC68XBBzzFW3rhSk7d5JZabIplOJ9RsM=
+X-Google-Smtp-Source: ABdhPJxDuNFd5kP8PSZzKLlxI8I7yqqCWq8JrwFtCZ+uIOI9GIMxK3nSuVvjhKTtdG61/NUxeoKptwCjDCwJ2ahRLAo=
+X-Received: by 2002:a05:6808:14c2:: with SMTP id f2mr24949459oiw.154.1637955496108;
+ Fri, 26 Nov 2021 11:38:16 -0800 (PST)
 MIME-Version: 1.0
-References: <20210401183654.27214-1-daniel.lezcano@linaro.org>
- <20210401183654.27214-3-daniel.lezcano@linaro.org> <CAAYoRsURO1tf03nfiki1uaXYEmTKQyYKUeTyKW+vefrVzCO7jg@mail.gmail.com>
- <CAJZ5v0hcuq0qriHbc=XHbCo8fJMAV1dbCBws3M9GktN17aCE_g@mail.gmail.com>
-In-Reply-To: <CAJZ5v0hcuq0qriHbc=XHbCo8fJMAV1dbCBws3M9GktN17aCE_g@mail.gmail.com>
-From:   Doug Smythies <dsmythies@telus.net>
-Date:   Fri, 26 Nov 2021 11:10:14 -0800
-Message-ID: <CAAYoRsXLTYKGK_doqDqgerQ+uW3UhMYki7FfBy3cAhbfXiCrXA@mail.gmail.com>
-Subject: Re: [PATCH v6 3/7] powercap/drivers/dtpm: Simplify the dtpm table
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 26 Nov 2021 20:38:05 +0100
+Message-ID: <CAJZ5v0hQaF-ANLc4JO=Ub_JMsqLFpZev_gmpb=NPpg=zmqcauA@mail.gmail.com>
+Subject: [GIT PULL] ACPI fixes for v5.16-rc3
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dsmythies <dsmythies@telus.net>
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 26, 2021 at 9:22 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> Hi Doug,
->
-> On Fri, Nov 26, 2021 at 6:08 PM Doug Smythies <dsmythies@telus.net> wrote:
-> >
-> > Hi Daniel,
-> >
-> > This patch introduces a regression, at least on my test system.
-> > I can no longer change CPU frequency scaling drivers, for example
-> > from intel_cpufreq (A.K.A intel_pstate in passive mode) to intel_pstate
-> > (A.K.A. active mode). The task just hangs forever.
-> >
-> > I bisected the kernel and got this commit as the result.
-> > As a double check, I reverted this commit:
-> > 7a89d7eacf8e84f2afb94db5ae9d9f9faa93f01c
-> > on kernel 5.16-rc2 and the issue was resolved.
-> >
-> > While your email is fairly old, I observe that it was only included as of
-> > kernel 5.16-rc1.
-> >
-> > Command Example that never completes:
-> >
-> > $ echo passive | sudo tee /sys/devices/system/cpu/intel_pstate/status
-> >
-> > syslog excerpt attached.
->
-> This looks like it may be problematic:
->
-> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-> index f6076de39540..98841524a782 100644
-> --- a/drivers/powercap/dtpm_cpu.c
-> +++ b/drivers/powercap/dtpm_cpu.c
-> @@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
->        return ret;
-> }
->
-> -int dtpm_register_cpu(struct dtpm *parent)
-> +static int __init dtpm_cpu_init(void)
-> {
->        int ret;
->
-> so please try to remove the __init annotation from dtpm_cpu_init() and
-> see if that helps.
+Hi Linus,
 
-Hi Rafael,
+Please pull from the tag
 
-That did not fix the issue.
-Just to be clear this is what I did, on top of 5.16-rc2:
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-5.16-rc3
 
-$ git diff
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index b740866b228d..26d1a87bdec6 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -231,7 +231,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
-        return ret;
- }
+with top-most commit 2e13e5aeda156f747919c7111723b9302836fb38
 
--static int __init dtpm_cpu_init(void)
-+static int dtpm_cpu_init(void)
- {
-        int ret;
+ Merge branch 'acpi-properties'
+
+on top of commit 136057256686de39cc3a07c2e39ef6bc43003ff6
+
+ Linux 5.16-rc2
+
+to receive ACPI fixes for 5.16-rc3.
+
+These fix a NULL pointer dereference in the CPPC library code and
+a locking issue related to printing the names of ACPI device nodes
+in the device properties framework.
+
+Specifics:
+
+ - Fix NULL pointer dereference in the CPPC library code occurring
+   on hybrid systems without CPPC support (Rafael Wysocki).
+
+ - Avoid attempts to acquire a semaphore with interrupts off when
+   printing the names of ACPI device nodes and clean up code on
+   top of that fix (Sakari Ailus).
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      ACPI: CPPC: Add NULL pointer check to cppc_get_perf()
+
+Sakari Ailus (2):
+      ACPI: Get acpi_device's parent from the parent field
+      ACPI: Make acpi_node_get_parent() local
+
+---------------
+
+ drivers/acpi/cppc_acpi.c |  9 ++++++++-
+ drivers/acpi/property.c  | 14 +++++---------
+ include/linux/acpi.h     |  7 -------
+ 3 files changed, 13 insertions(+), 17 deletions(-)
