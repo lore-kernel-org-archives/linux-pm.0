@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C19BC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 02:36:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9772C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 02:39:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357958AbhKZCjN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Nov 2021 21:39:13 -0500
-Received: from mail.kernel.org ([198.145.29.99]:48164 "EHLO mail.kernel.org"
+        id S1358130AbhKZCmL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Nov 2021 21:42:11 -0500
+Received: from mail.kernel.org ([198.145.29.99]:50034 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S244616AbhKZChK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Nov 2021 21:37:10 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3FD40611C9;
-        Fri, 26 Nov 2021 02:32:39 +0000 (UTC)
+        id S1357808AbhKZCkL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Nov 2021 21:40:11 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id DA58661246;
+        Fri, 26 Nov 2021 02:34:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1637893960;
-        bh=JJ3YwcHOB6bMQkb4axkI40dxO53oFz6vFS8TV7o3ROY=;
+        s=k20201202; t=1637894050;
+        bh=06hdsoMWR+nlY7xtQxV2IWooLhbGfGJIcGNAqt4e7aE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=aKDUzsewHbq1Y3paYXlvrHKSFMK/jknqTROHd6VwXLPKByILBguh4EeuAo5Z0Qake
-         5rAwEQonoD91h4DdVDIkFGCyfGSUtm561HuAFk+HZmtRFJSLSf47gZP0rT3Jix57Oj
-         sG/1RO2x0QBDhXLa1jAf3jVtwnbHtlz2DAhORHK5bcr16ntM24MKvti5s4CYkZQWkl
-         7iGllmtMvv8c8KNGkzg0GKfX2ceUK4++q4mbVdxdEEBtvoiLngtWAGFvMPlsnS0+at
-         TyRODCT0pWodSFP6ckbKPCUxVfOAzA+IU3Wc/fe/Onq0OnrNxPEOz24KzrrttgeafA
-         MKhWqEjlQr5vA==
+        b=l5VTEja/NgDFcTd6KloYPijLJS+6octkho/5BZPbVKQck9dLjlmk3kR4IR7SFQEWg
+         kXggMQTDscJJNjwtg8KWZiJoZ4EvKCxxKa50suy62R/vFsVATV0G6cgr5fIbBKJ4Kc
+         OLhkxqBrRG+VMaKibXIRMyHDub9UiRMkTvDMaSn9Llmmi5/fEo49Of42dI8FDiBGG8
+         APy5w6sfnQfGZdcMf+jvC/PMIpzur367qC12NUosc39nKsnALgSHHlAMRxVweBYIK2
+         hkp63Gha7OWwcxpbrq95N2IwmThg62yYiKYv/reRtXqIX7yBi8TQzNpYF3gOWyZw4k
+         ushCiYguVtBOg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Manaf Meethalavalappu Pallikunhi <manafm@codeaurora.org>,
@@ -30,12 +30,12 @@ Cc:     Manaf Meethalavalappu Pallikunhi <manafm@codeaurora.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 21/39] thermal: core: Reset previous low and high trip during thermal zone init
-Date:   Thu, 25 Nov 2021 21:31:38 -0500
-Message-Id: <20211126023156.441292-21-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 16/28] thermal: core: Reset previous low and high trip during thermal zone init
+Date:   Thu, 25 Nov 2021 21:33:31 -0500
+Message-Id: <20211126023343.442045-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211126023156.441292-1-sashal@kernel.org>
-References: <20211126023156.441292-1-sashal@kernel.org>
+In-Reply-To: <20211126023343.442045-1-sashal@kernel.org>
+References: <20211126023343.442045-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 30134f49b037a..13891745a9719 100644
+index 17de8a9b991e9..d9e34ac376626 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -419,6 +419,8 @@ static void thermal_zone_device_init(struct thermal_zone_device *tz)
+@@ -474,6 +474,8 @@ static void thermal_zone_device_init(struct thermal_zone_device *tz)
  {
  	struct thermal_instance *pos;
  	tz->temperature = THERMAL_TEMP_INVALID;
