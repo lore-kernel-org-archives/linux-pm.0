@@ -2,266 +2,495 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F19ECC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 17:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 997A3C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 18:00:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235804AbhKZRew (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 12:34:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47068 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230202AbhKZRcw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 12:32:52 -0500
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B5F1C0613FB
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 09:08:38 -0800 (PST)
-Received: by mail-lj1-x22b.google.com with SMTP id k23so20052579lje.1
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 09:08:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=telus.net; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=1Z+Aa1ZVdAmfmE1NZueegBa8Pgcv0C9VgAhOiglDc9I=;
-        b=ZgT2rO53QWWA4T0RU51wzkspW3t6DB3im0TxMixGFFCykR6O4rf1HhVCQsm+5pyQRq
-         NTUqJQL/9wuqXdKDACOwwdRZB6f52wftNv+I7a1B+Gs8ddnlmdAh4XkRhniBGEvblYBm
-         h215o983fRGfRNjXtHlyihN/e0+zqE6HLCUeAJFOdBAoNkmvrkqqnOdKMJLYIH1xXlva
-         B8uhkYmluQ229tsBL6Q0Dtqq8Nz/XSeeN5yERhlSVOUO8LPZq+MogNloXed4fKzQp5zH
-         LwMWkhddK2F5Lsznv+w93jCSC4YiMzPsLeYaO8n3oXgjPQohK/fVvJBboWsXzjdrCXHc
-         HiSg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=1Z+Aa1ZVdAmfmE1NZueegBa8Pgcv0C9VgAhOiglDc9I=;
-        b=SLWhl3OyyuxN9OMk8Iw8h18ZoRgErJgevVPfZMi/CViuTiTCYjXDl01LJ+dfoLi+Ol
-         cXbHt0XMs2yfBybp7q0vt0zw4MDP3IVLM4abMAx8f934AEdP0QmowVWbTeKqiDF7RsYI
-         Om/J7szteJCL6l7fekDYJA8cCcaPTeW4aJY9gBmeTnRG7+NN58wk6sFxosvCA4BrnWgi
-         oYPJZEm1O9XZ8RdojFU06Ui2kQQHauL9om9BFSk+jhLIXzMQVHiMLGXxk7yXWcm2Q5kj
-         8Q/kYFxrHCQ65bWKxgJ58oFvi2qOCpQ7YCXoVX2KxpgiepsTBs6ml3PwGwaHfv7WX8lh
-         dEDQ==
-X-Gm-Message-State: AOAM531pOl5qjxNKAgt0O7OKpavE+UCLUrXvSSMVLrhsRL2SThSxuqVL
-        eZJYq9lfqufejMR8ICtkfG8lxnprS0C9yNE0f4dQFQ==
-X-Google-Smtp-Source: ABdhPJxnCbmTYEOAlJ+sG03DlIEvE0POZPGX965bV4Wm9rt0oNTDOocOUUyNHGe2xNvUiK7m0R6T4BF7N3ner6BxgAQ=
-X-Received: by 2002:a2e:80cf:: with SMTP id r15mr32902356ljg.34.1637946516629;
- Fri, 26 Nov 2021 09:08:36 -0800 (PST)
+        id S233429AbhKZSDc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 13:03:32 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:41610 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233632AbhKZSBc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 13:01:32 -0500
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 3.0.1)
+ id 768a16891cab3437; Fri, 26 Nov 2021 18:58:17 +0100
+Received: from kreacher.localnet (unknown [213.134.181.132])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id D773066A91F;
+        Fri, 26 Nov 2021 18:58:15 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Alan Stern <stern@rowland.harvard.edu>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Maulik Shah <mkshah@codeaurora.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PM: runtime: Allow rpm_resume() to succeed when runtime PM is disabled
+Date:   Fri, 26 Nov 2021 18:58:14 +0100
+Message-ID: <4380690.LvFx2qVVIh@kreacher>
+In-Reply-To: <CAPDyKFre=tp4919FLoeU-wjLDJ02zmHaXY4wgTUmfmFbeaCadQ@mail.gmail.com>
+References: <20211026222626.39222-1-ulf.hansson@linaro.org> <CAJZ5v0hrTDsCUn4vgmFrTTgd6H=orh-Kb5b3+_H9St4n8fTxBw@mail.gmail.com> <CAPDyKFre=tp4919FLoeU-wjLDJ02zmHaXY4wgTUmfmFbeaCadQ@mail.gmail.com>
 MIME-Version: 1.0
-References: <20210401183654.27214-1-daniel.lezcano@linaro.org> <20210401183654.27214-3-daniel.lezcano@linaro.org>
-In-Reply-To: <20210401183654.27214-3-daniel.lezcano@linaro.org>
-From:   Doug Smythies <dsmythies@telus.net>
-Date:   Fri, 26 Nov 2021 09:08:25 -0800
-Message-ID: <CAAYoRsURO1tf03nfiki1uaXYEmTKQyYKUeTyKW+vefrVzCO7jg@mail.gmail.com>
-Subject: Re: [PATCH v6 3/7] powercap/drivers/dtpm: Simplify the dtpm table
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        lukasz.luba@arm.com, "Rafael J. Wysocki" <rafael@kernel.org>,
-        gregkh@linuxfoundation.org, dsmythies <dsmythies@telus.net>
-Content-Type: multipart/mixed; boundary="00000000000049780205d1b424f6"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.181.132
+X-CLIENT-HOSTNAME: 213.134.181.132
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvuddrhedvgddutdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepvddufedrudefgedrudekuddrudefvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukedurddufedvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehulhhfrdhhrghnshhsohhnsehlihhnrghrohdrohhrghdprhgtphhtthhopehsthgvrhhnsehrohiflhgrnhgurdhhrghrvhgrrhgurdgvughupdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepkhhhihhlmhgrnheskhgvrhhnvghlrdhorhhgpdhr
+ tghpthhtohepmhhkshhhrghhsegtohguvggruhhrohhrrgdrohhrghdprhgtphhtthhopehlihhnuhigqdgrrhhmqdhkvghrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=16 Fuz1=16 Fuz2=16
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
---00000000000049780205d1b424f6
-Content-Type: text/plain; charset="UTF-8"
+On Friday, November 26, 2021 2:46:02 PM CET Ulf Hansson wrote:
+> On Fri, 26 Nov 2021 at 14:30, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Fri, Nov 26, 2021 at 1:20 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Mon, 1 Nov 2021 at 10:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > >
+> > > > On Fri, 29 Oct 2021 at 20:27, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > > >
+> > > > > On Fri, Oct 29, 2021 at 12:20 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > > > >
+> > > > > > On Wed, 27 Oct 2021 at 16:33, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > > > > >
+> > > > > > > On Wed, Oct 27, 2021 at 12:55:43PM +0200, Ulf Hansson wrote:
+> > > > > > > > On Wed, 27 Oct 2021 at 04:02, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > > > > > > >
+> > > > > > > > > On Wed, Oct 27, 2021 at 12:26:26AM +0200, Ulf Hansson wrote:
+> > > > > > > > > > During system suspend, the PM core sets dev->power.is_suspended for the
+> > > > > > > > > > device that is being suspended. This flag is also being used in
+> > > > > > > > > > rpm_resume(), to allow it to succeed by returning 1, assuming that runtime
+> > > > > > > > > > PM has been disabled and the runtime PM status is RPM_ACTIVE, for the
+> > > > > > > > > > device.
+> > > > > > > > > >
+> > > > > > > > > > To make this behaviour a bit more useful, let's drop the check for the
+> > > > > > > > > > dev->power.is_suspended flag in rpm_resume(), as it doesn't really need to
+> > > > > > > > > > be limited to this anyway.
+> > > > > > > > > >
+> > > > > > > > > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > > > > > > > > > ---
+> > > > > > > > > >  drivers/base/power/runtime.c | 4 ++--
+> > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > > > > > > > >
+> > > > > > > > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > > > > > > > > index ec94049442b9..fadc278e3a66 100644
+> > > > > > > > > > --- a/drivers/base/power/runtime.c
+> > > > > > > > > > +++ b/drivers/base/power/runtime.c
+> > > > > > > > > > @@ -742,8 +742,8 @@ static int rpm_resume(struct device *dev, int rpmflags)
+> > > > > > > > > >   repeat:
+> > > > > > > > > >       if (dev->power.runtime_error)
+> > > > > > > > > >               retval = -EINVAL;
+> > > > > > > > > > -     else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> > > > > > > > > > -         && dev->power.runtime_status == RPM_ACTIVE)
+> > > > > > > > > > +     else if (dev->power.disable_depth > 0 &&
+> > > > > > > > > > +             dev->power.runtime_status == RPM_ACTIVE)
+> > > > > > > > >
+> > > > > > > > > IIRC there was a good reason why the original code checked for
+> > > > > > > > > disable_depth == 1 rather than > 0.  But I don't remember exactly what
+> > > > > > > > > the reason was.  Maybe it had something to do with the fact that during
+> > > > > > > > > a system sleep __device_suspend_late calls __pm_runtime_disable, and the
+> > > > > > > > > code was checking that there were no other disables in effect.
+> > > > > > > >
+> > > > > > > > The check was introduced in the below commit:
+> > > > > > > >
+> > > > > > > > Commit 6f3c77b040fc
+> > > > > > > > Author: Kevin Hilman <khilman@ti.com>
+> > > > > > > > Date:   Fri Sep 21 22:47:34 2012 +0000
+> > > > > > > > PM / Runtime: let rpm_resume() succeed if RPM_ACTIVE, even when disabled, v2
+> > > > > > > >
+> > > > > > > > By reading the commit message it's pretty clear to me that the check
+> > > > > > > > was added to cover only one specific use case, during system suspend.
+> > > > > > > >
+> > > > > > > > That is, that a driver may want to call pm_runtime_get_sync() from a
+> > > > > > > > late/noirq callback (when the PM core has disabled runtime PM), to
+> > > > > > > > understand whether the device is still powered on and accessible.
+> > > > > > > >
+> > > > > > > > > This is
+> > > > > > > > > related to the documented behavior of rpm_resume (it's supposed to fail
+> > > > > > > > > with -EACCES if the device is disabled for runtime PM, no matter what
+> > > > > > > > > power state the device is in).
+> > > > > > > > >
+> > > > > > > > > That probably is also the explanation for why dev->power.is_suspended
+> > > > > > > > > gets checked: It's how the code tells whether a system sleep is in
+> > > > > > > > > progress.
+> > > > > > > >
+> > > > > > > > Yes, you are certainly correct about the current behaviour. It's there
+> > > > > > > > for a reason.
+> > > > > > > >
+> > > > > > > > On the other hand I would be greatly surprised if this change would
+> > > > > > > > cause any issues. Of course, I can't make guarantees, but I am, of
+> > > > > > > > course, willing to help to fix problems if those happen.
+> > > > > > > >
+> > > > > > > > As a matter of fact, I think the current behaviour looks quite
+> > > > > > > > inconsistent, as it depends on whether the device is being system
+> > > > > > > > suspended.
+> > > > > > > >
+> > > > > > > > Moreover, for syscore devices (dev->power.syscore is set for them),
+> > > > > > > > the PM core doesn't set the "is_suspended" flag. Those can benefit
+> > > > > > > > from a common behaviour.
+> > > > > > > >
+> > > > > > > > Finally, I think the "is_suspended" flag actually needs to be
+> > > > > > > > protected by a lock when set by the PM core, as it's being used in two
+> > > > > > > > separate execution paths. Although, rather than adding a lock for
+> > > > > > > > protection, we can just rely on the "disable_depth" in rpm_resume().
+> > > > > > > > It would be easier and makes the behaviour consistent too.
+> > > > > > >
+> > > > > > > As long as is_suspended isn't _written_ in two separate execution paths,
+> > > > > > > we're probably okay without a lock -- provided the code doesn't mind
+> > > > > > > getting an indefinite result when a read races with a write.
+> > > > > >
+> > > > > > Well, indefinite doesn't sound very good to me for these cases, even
+> > > > > > if it most likely never will happen.
+> > > > > >
+> > > > > > >
+> > > > > > > > > So overall, I suspect this change should not be made.  But some other
+> > > > > > > > > improvement (like a nice comment) might be in order.
+> > > > > > > > >
+> > > > > > > > > Alan Stern
+> > > > > > > >
+> > > > > > > > Thanks for reviewing!
+> > > > > > >
+> > > > > > > You're welcome.  Whatever you eventually decide to do should be okay
+> > > > > > > with me.  I just wanted to make sure that you understood the deeper
+> > > > > > > issue here and had given it some thought.  For example, it may turn out
+> > > > > > > that you can resolve matters simply by updating the documentation.
+> > > > > >
+> > > > > > I observed the issue on cpuidle-psci. The devices it operates upon are
+> > > > > > assigned as syscore devices and these are hooked up to a genpd.
+> > > > > >
+> > > > > > A call to pm_runtime_get_sync() can happen even after the PM core has
+> > > > > > disabled runtime PM in the "late" phase. So the error code is received
+> > > > > > for these real use-cases.
+> > > > > >
+> > > > > > Now, as we currently don't check the return value of
+> > > > > > pm_runtime_get_sync() in cpuidle-psci, it's not a big deal. But it
+> > > > > > certainly seems worth fixing in my opinion.
+> > > > > >
+> > > > > > Let's see if Rafael has some thoughts around this.
+> > > > >
+> > > > > Am I thinking correctly that this is mostly about working around the
+> > > > > limitations of pm_runtime_force_suspend()?
+> > > >
+> > > > No, this isn't related at all.
+> > > >
+> > > > The cpuidle-psci driver doesn't have PM callbacks, thus using
+> > > > pm_runtime_force_suspend() would not work here.
+> > >
+> > > Just wanted to send a ping on this to see if we can come to a
+> > > conclusion. Or maybe we did? :-)
+> > >
+> > > I think in the end, what slightly bothers me, is that the behavior is
+> > > a bit inconsistent. Although, maybe it's the best we can do.
+> >
+> > I've been thinking about this and it looks like we can do better, but
+> > instead of talking about this I'd rather send a patch.
+> 
+> Alright.
+> 
+> I was thinking along the lines of make similar changes for
+> rpm_idle|suspend(). That would make the behaviour even more
+> consistent, I think.
+> 
+> Perhaps that's what you have in mind? :-)
 
-Hi Daniel,
+Well, not exactly.
 
-This patch introduces a regression, at least on my test system.
-I can no longer change CPU frequency scaling drivers, for example
-from intel_cpufreq (A.K.A intel_pstate in passive mode) to intel_pstate
-(A.K.A. active mode). The task just hangs forever.
+The idea is to add another counter (called restrain_depth in the patch)
+to prevent rpm_resume() from running the callback when that is potentially
+problematic.  With that, it is possible to actually distinguish devices
+with PM-runtime enabled and it allows the PM-runtime status to be checked
+when it is still known to be meaningful.
 
-I bisected the kernel and got this commit as the result.
-As a double check, I reverted this commit:
-7a89d7eacf8e84f2afb94db5ae9d9f9faa93f01c
-on kernel 5.16-rc2 and the issue was resolved.
+It requires quite a few changes, but is rather straightforward, unless I'm
+missing something.
 
-While your email is fairly old, I observe that it was only included as of
-kernel 5.16-rc1.
+Please see the patch below.  I've only checked that it builds on x86-64.
 
-Command Example that never completes:
+---
+ drivers/base/power/main.c    |   18 +++----
+ drivers/base/power/runtime.c |  105 ++++++++++++++++++++++++++++++++++++-------
+ include/linux/pm.h           |    2 
+ include/linux/pm_runtime.h   |    2 
+ 4 files changed, 101 insertions(+), 26 deletions(-)
 
-$ echo passive | sudo tee /sys/devices/system/cpu/intel_pstate/status
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -598,6 +598,7 @@ struct dev_pm_info {
+ 	atomic_t		usage_count;
+ 	atomic_t		child_count;
+ 	unsigned int		disable_depth:3;
++	unsigned int		restrain_depth:3;	/* PM core private */
+ 	unsigned int		idle_notification:1;
+ 	unsigned int		request_pending:1;
+ 	unsigned int		deferred_resume:1;
+@@ -609,6 +610,7 @@ struct dev_pm_info {
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
+ 	unsigned int		memalloc_noio:1;
++	unsigned int		already_suspended:1;	/* PM core private */
+ 	unsigned int		links_count;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -46,6 +46,8 @@ extern void pm_runtime_enable(struct dev
+ extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+ extern void pm_runtime_allow(struct device *dev);
+ extern void pm_runtime_forbid(struct device *dev);
++extern void pm_runtime_restrain(struct device *dev);
++extern void pm_runtime_relinquish(struct device *dev);
+ extern void pm_runtime_no_callbacks(struct device *dev);
+ extern void pm_runtime_irq_safe(struct device *dev);
+ extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -744,11 +744,11 @@ static int rpm_resume(struct device *dev
+  repeat:
+ 	if (dev->power.runtime_error)
+ 		retval = -EINVAL;
+-	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+-	    && dev->power.runtime_status == RPM_ACTIVE)
+-		retval = 1;
+ 	else if (dev->power.disable_depth > 0)
+ 		retval = -EACCES;
++	else if (dev->power.restrain_depth > 0)
++		retval = dev->power.runtime_status == RPM_ACTIVE ? 1 : -EAGAIN;
++
+ 	if (retval)
+ 		goto out;
+ 
+@@ -1164,9 +1164,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_acti
+  * @dev: Device to handle.
+  * @status: New runtime PM status of the device.
+  *
+- * If runtime PM of the device is disabled or its power.runtime_error field is
+- * different from zero, the status may be changed either to RPM_ACTIVE, or to
+- * RPM_SUSPENDED, as long as that reflects the actual state of the device.
++ * If runtime PM of the device is disabled or restrained, or its
++ * power.runtime_error field is nonzero, the status may be changed either to
++ * RPM_ACTIVE, or to RPM_SUSPENDED, as long as that reflects its actual state.
+  * However, if the device has a parent and the parent is not active, and the
+  * parent's power.ignore_children flag is unset, the device's status cannot be
+  * set to RPM_ACTIVE, so -EBUSY is returned in that case.
+@@ -1195,13 +1195,16 @@ int __pm_runtime_set_status(struct devic
+ 	spin_lock_irq(&dev->power.lock);
+ 
+ 	/*
+-	 * Prevent PM-runtime from being enabled for the device or return an
+-	 * error if it is enabled already and working.
++	 * Prevent PM-runtime from being used for the device or return an
++	 * error if it is in use already.
+ 	 */
+-	if (dev->power.runtime_error || dev->power.disable_depth)
+-		dev->power.disable_depth++;
+-	else
++	if (dev->power.runtime_error || dev->power.disable_depth ||
++	    dev->power.restrain_depth) {
++		pm_runtime_get_noresume(dev);
++		dev->power.restrain_depth++;
++	} else {
+ 		error = -EAGAIN;
++	}
+ 
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+@@ -1278,7 +1281,7 @@ int __pm_runtime_set_status(struct devic
+ 		device_links_read_unlock(idx);
+ 	}
+ 
+-	pm_runtime_enable(dev);
++	pm_runtime_relinquish(dev);
+ 
+ 	return error;
+ }
+@@ -1513,6 +1516,72 @@ void pm_runtime_allow(struct device *dev
+ EXPORT_SYMBOL_GPL(pm_runtime_allow);
+ 
+ /**
++ * pm_runtime_restrain - Temporarily block runtime PM of a device.
++ * @dev: Device to handle.
++ *
++ * Increase the device's usage count and its restrain_dpeth count.  If the
++ * latter was 0 initially, cancel the runtime PM work for @dev if pending and
++ * wait for all of the runtime PM operations on it in progress to complete.
++ *
++ * After this function has been called, attempts to runtime-suspend @dev will
++ * fail with -EAGAIN and attempts to runtime-resume it will succeed if its
++ * runtime PM status is RPM_ACTIVE and will fail with -EAGAIN otherwise.
++ *
++ * This function can only be called by the PM core.
++ */
++void pm_runtime_restrain(struct device *dev)
++{
++	pm_runtime_get_noresume(dev);
++
++	spin_lock_irq(&dev->power.lock);
++
++	if (dev->power.restrain_depth++ > 0)
++		goto out;
++
++	if (dev->power.disable_depth > 0) {
++		dev->power.already_suspended = false;
++		goto out;
++	}
++
++	/* Update time accounting before blocking PM-runtime. */
++	update_pm_runtime_accounting(dev);
++
++	__pm_runtime_barrier(dev);
++
++	dev->power.already_suspended = pm_runtime_status_suspended(dev);
++
++out:
++	spin_unlock_irq(&dev->power.lock);
++}
++
++/**
++ * pm_runtime_relinquish - Unblock runtime PM of a device.
++ * @dev: Device to handle.
++ *
++ * Decrease the device's usage count and its restrain_dpeth count.
++ *
++ * This function can only be called by the PM core.
++ */
++void pm_runtime_relinquish(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++
++	if (dev->power.restrain_depth > 0) {
++		dev->power.restrain_depth--;
++
++		/* About to unbolck runtime PM, set accounting_timestamp to now */
++		if (!dev->power.restrain_depth && !dev->power.disable_depth)
++			dev->power.accounting_timestamp = ktime_get_mono_fast_ns();
++	} else {
++		dev_warn(dev, "Unbalanced %s!\n", __func__);
++	}
++
++	spin_unlock_irq(&dev->power.lock);
++
++	pm_runtime_put_noidle(dev);
++}
++
++/**
+  * pm_runtime_no_callbacks - Ignore runtime PM callbacks for a device.
+  * @dev: Device to handle.
+  *
+@@ -1806,8 +1875,10 @@ int pm_runtime_force_suspend(struct devi
+ 	int (*callback)(struct device *);
+ 	int ret;
+ 
+-	pm_runtime_disable(dev);
+-	if (pm_runtime_status_suspended(dev))
++	pm_runtime_restrain(dev);
++
++	/* No suspend if the device has already been suspended by PM-runtime. */
++	if (!dev->power.already_suspended)
+ 		return 0;
+ 
+ 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+@@ -1832,7 +1903,7 @@ int pm_runtime_force_suspend(struct devi
+ 	return 0;
+ 
+ err:
+-	pm_runtime_enable(dev);
++	pm_runtime_relinquish(dev);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
+@@ -1854,7 +1925,7 @@ int pm_runtime_force_resume(struct devic
+ 	int (*callback)(struct device *);
+ 	int ret = 0;
+ 
+-	if (!pm_runtime_status_suspended(dev) || !dev->power.needs_force_resume)
++	if (!dev->power.already_suspended || !dev->power.needs_force_resume)
+ 		goto out;
+ 
+ 	/*
+@@ -1874,7 +1945,7 @@ int pm_runtime_force_resume(struct devic
+ 	pm_runtime_mark_last_busy(dev);
+ out:
+ 	dev->power.needs_force_resume = 0;
+-	pm_runtime_enable(dev);
++	pm_runtime_relinquish(dev);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_force_resume);
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -809,7 +809,7 @@ Skip:
+ Out:
+ 	TRACE_RESUME(error);
+ 
+-	pm_runtime_enable(dev);
++	pm_runtime_relinquish(dev);
+ 	complete_all(&dev->power.completion);
+ 	return error;
+ }
+@@ -907,8 +907,8 @@ static int device_resume(struct device *
+ 		goto Complete;
+ 
+ 	if (dev->power.direct_complete) {
+-		/* Match the pm_runtime_disable() in __device_suspend(). */
+-		pm_runtime_enable(dev);
++		/* Match the pm_runtime_restrict() in __device_suspend(). */
++		pm_runtime_relinquish(dev);
+ 		goto Complete;
+ 	}
+ 
+@@ -1392,7 +1392,7 @@ static int __device_suspend_late(struct
+ 	TRACE_DEVICE(dev);
+ 	TRACE_SUSPEND(0);
+ 
+-	__pm_runtime_disable(dev, false);
++	pm_runtime_restrain(dev);
+ 
+ 	dpm_wait_for_subordinate(dev, async);
+ 
+@@ -1627,9 +1627,9 @@ static int __device_suspend(struct devic
+ 	 * callbacks for it.
+ 	 *
+ 	 * If the system-wide suspend callbacks below change the configuration
+-	 * of the device, they must disable runtime PM for it or otherwise
+-	 * ensure that its runtime-resume callbacks will not be confused by that
+-	 * change in case they are invoked going forward.
++	 * of the device, they must ensure that its runtime-resume callbacks
++	 * will not be confused by that change in case they are invoked going
++	 * forward.
+ 	 */
+ 	pm_runtime_barrier(dev);
+ 
+@@ -1648,13 +1648,13 @@ static int __device_suspend(struct devic
+ 
+ 	if (dev->power.direct_complete) {
+ 		if (pm_runtime_status_suspended(dev)) {
+-			pm_runtime_disable(dev);
++			pm_runtime_restrain(dev);
+ 			if (pm_runtime_status_suspended(dev)) {
+ 				pm_dev_dbg(dev, state, "direct-complete ");
+ 				goto Complete;
+ 			}
+ 
+-			pm_runtime_enable(dev);
++			pm_runtime_relinquish(dev);
+ 		}
+ 		dev->power.direct_complete = false;
+ 	}
 
-syslog excerpt attached.
 
-... Doug
 
-On Thu, Apr 1, 2021 at 12:24 PM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
-> The dtpm table is an array of pointers, that forces the user of the
-> table to define initdata along with the declaration of the table
-> entry. It is more efficient to create an array of dtpm structure, so
-> the declaration of the table entry can be done by initializing the
-> different fields.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  drivers/powercap/dtpm.c     |  4 ++--
->  drivers/powercap/dtpm_cpu.c |  4 +++-
->  include/linux/dtpm.h        | 20 +++++++++-----------
->  3 files changed, 14 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-> index a707cc2965a1..d9aac107c927 100644
-> --- a/drivers/powercap/dtpm.c
-> +++ b/drivers/powercap/dtpm.c
-> @@ -583,7 +583,7 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
->
->  static int __init dtpm_init(void)
->  {
-> -       struct dtpm_descr **dtpm_descr;
-> +       struct dtpm_descr *dtpm_descr;
->
->         pct = powercap_register_control_type(NULL, "dtpm", NULL);
->         if (IS_ERR(pct)) {
-> @@ -592,7 +592,7 @@ static int __init dtpm_init(void)
->         }
->
->         for_each_dtpm_table(dtpm_descr)
-> -               (*dtpm_descr)->init(*dtpm_descr);
-> +               dtpm_descr->init();
->
->         return 0;
->  }
-> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-> index 9deafd16a197..74b39a1082e5 100644
-> --- a/drivers/powercap/dtpm_cpu.c
-> +++ b/drivers/powercap/dtpm_cpu.c
-> @@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
->         return ret;
->  }
->
-> -int dtpm_register_cpu(struct dtpm *parent)
-> +static int __init dtpm_cpu_init(void)
->  {
->         int ret;
->
-> @@ -241,3 +241,5 @@ int dtpm_register_cpu(struct dtpm *parent)
->
->         return 0;
->  }
-> +
-> +DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init);
-> diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
-> index 577c71d4e098..2ec2821111d1 100644
-> --- a/include/linux/dtpm.h
-> +++ b/include/linux/dtpm.h
-> @@ -33,25 +33,23 @@ struct dtpm_ops {
->         void (*release)(struct dtpm *);
->  };
->
-> -struct dtpm_descr;
-> -
-> -typedef int (*dtpm_init_t)(struct dtpm_descr *);
-> +typedef int (*dtpm_init_t)(void);
->
->  struct dtpm_descr {
-> -       struct dtpm *parent;
-> -       const char *name;
->         dtpm_init_t init;
->  };
->
->  /* Init section thermal table */
-> -extern struct dtpm_descr *__dtpm_table[];
-> -extern struct dtpm_descr *__dtpm_table_end[];
-> +extern struct dtpm_descr __dtpm_table[];
-> +extern struct dtpm_descr __dtpm_table_end[];
->
-> -#define DTPM_TABLE_ENTRY(name)                 \
-> -       static typeof(name) *__dtpm_table_entry_##name  \
-> -       __used __section("__dtpm_table") = &name
-> +#define DTPM_TABLE_ENTRY(name, __init)                         \
-> +       static struct dtpm_descr __dtpm_table_entry_##name      \
-> +       __used __section("__dtpm_table") = {                    \
-> +               .init = __init,                                 \
-> +       }
->
-> -#define DTPM_DECLARE(name)     DTPM_TABLE_ENTRY(name)
-> +#define DTPM_DECLARE(name, init)       DTPM_TABLE_ENTRY(name, init)
->
->  #define for_each_dtpm_table(__dtpm)    \
->         for (__dtpm = __dtpm_table;     \
-> --
-> 2.17.1
->
-
---00000000000049780205d1b424f6
-Content-Type: text/plain; charset="US-ASCII"; name="syslog_example.txt"
-Content-Disposition: attachment; filename="syslog_example.txt"
-Content-Transfer-Encoding: base64
-Content-ID: <f_kwgn0tbv0>
-X-Attachment-Id: f_kwgn0tbv0
-
-Tm92IDI2IDA3OjMxOjEzIHMxOSBzeXN0ZW1kWzFdOiBGaW5pc2hlZCBVcGRhdGUgVVRNUCBhYm91
-dCBTeXN0ZW0gUnVubGV2ZWwgQ2hhbmdlcy4KTm92IDI2IDA3OjMxOjEzIHMxOSBzeXN0ZW1kWzFd
-OiBTdGFydHVwIGZpbmlzaGVkIGluIDEwLjc4OHMgKGZpcm13YXJlKSArIDEyLjM1MXMgKGxvYWRl
-cikgKyAxLjgwOHMgKGtlcm5lbCkgKyAxbWluIDM4LjA0N3MgKHVzZXJzcGFjZSkgPSAybWluIDIu
-OTk1cy4KTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgwMjZdIElORk86IHRh
-c2sgdGVlOjEyNzAgYmxvY2tlZCBmb3IgbW9yZSB0aGFuIDIwIHNlY29uZHMuCk5vdiAyNiAwNzoz
-MTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MDY5XSAgICAgICBOb3QgdGFpbnRlZCA1LjE1LjAt
-cmMxLW4xMyAjOTc3ICAgPDw8PCAxM3RoIGtlcm5lbCBvZiBiaXNlY3Rpb24KTm92IDI2IDA3OjMx
-OjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgwOTZdICJlY2hvIDAgPiAvcHJvYy9zeXMva2VybmVs
-L2h1bmdfdGFza190aW1lb3V0X3NlY3MiIGRpc2FibGVzIHRoaXMgbWVzc2FnZS4KTm92IDI2IDA3
-OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgxMzVdIHRhc2s6dGVlICAgICAgICAgICAgIHN0
-YXRlOkQgc3RhY2s6ICAgIDAgcGlkOiAxMjcwIHBwaWQ6ICAxMjY5IGZsYWdzOjB4MDAwMDQwMDAK
-Tm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgxNDFdIENhbGwgVHJhY2U6Ck5v
-diAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MTQ1XSAgX19zY2hlZHVsZSsweGNl
-OS8weDEzZjAKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgxNTVdICA/IF9f
-c2xhYl9mcmVlKzB4MjE3LzB4NDAwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQu
-NTY4MTYyXSAgPyBfX3NsYWJfZnJlZSsweDIxNy8weDQwMApOb3YgMjYgMDc6MzE6NTggczE5IGtl
-cm5lbDogWyAgMTQ0LjU2ODE2N10gID8gcmFkaXhfdHJlZV9sb29rdXArMHhkLzB4MTAKTm92IDI2
-IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgxNzJdICA/IGlkcl9maW5kKzB4Zi8weDIw
-Ck5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MTc3XSAgPyBnZXRfd29ya19w
-b29sKzB4MmQvMHg0MApOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODE4Ml0g
-IHNjaGVkdWxlKzB4NjcvMHhlMApOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2
-ODE4N10gIHNjaGVkdWxlX3RpbWVvdXQrMHgyMDAvMHgyOTAKTm92IDI2IDA3OjMxOjU4IHMxOSBr
-ZXJuZWw6IFsgIDE0NC41NjgxOTFdICA/IGZyZXFfcW9zX2FwcGx5KzB4MmQvMHg1MApOb3YgMjYg
-MDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODE5OF0gIHdhaXRfZm9yX2NvbXBsZXRpb24r
-MHg4Yi8weGYwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjAyXSAgY3B1
-ZnJlcV9wb2xpY3lfcHV0X2tvYmorMHg0ZC8weDkwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVs
-OiBbICAxNDQuNTY4MjA3XSAgY3B1ZnJlcV9wb2xpY3lfZnJlZSsweDEyZi8weDE2MApOb3YgMjYg
-MDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODIxMV0gIGNwdWZyZXFfcmVtb3ZlX2Rldisw
-eDkxLzB4YjAKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgyMTZdICBzdWJz
-eXNfaW50ZXJmYWNlX3VucmVnaXN0ZXIrMHg5ZC8weDEwMApOb3YgMjYgMDc6MzE6NTggczE5IGtl
-cm5lbDogWyAgMTQ0LjU2ODIyM10gIGNwdWZyZXFfdW5yZWdpc3Rlcl9kcml2ZXIrMHgzNS8weGQw
-Ck5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjI3XSAgc3RvcmVfc3RhdHVz
-KzB4MTAyLzB4MWMwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjMyXSAg
-a29ial9hdHRyX3N0b3JlKzB4Zi8weDIwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAx
-NDQuNTY4MjM3XSAgc3lzZnNfa2Zfd3JpdGUrMHgzYi8weDUwCk5vdiAyNiAwNzozMTo1OCBzMTkg
-a2VybmVsOiBbICAxNDQuNTY4MjQyXSAga2VybmZzX2ZvcF93cml0ZV9pdGVyKzB4MTM1LzB4MWMw
-Ck5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjQ2XSAgbmV3X3N5bmNfd3Jp
-dGUrMHgxMWQvMHgxYjAKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgyNTNd
-ICB2ZnNfd3JpdGUrMHgxYTcvMHgyOTAKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0
-NC41NjgyNTZdICBrc3lzX3dyaXRlKzB4NjcvMHhlMApOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5l
-bDogWyAgMTQ0LjU2ODI1OV0gIF9feDY0X3N5c193cml0ZSsweDFhLzB4MjAKTm92IDI2IDA3OjMx
-OjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgyNjFdICBkb19zeXNjYWxsXzY0KzB4NTkvMHhjMApO
-b3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODI2OF0gID8gdmZzX3dyaXRlKzB4
-MWE3LzB4MjkwCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjcxXSAgPyBl
-eGl0X3RvX3VzZXJfbW9kZV9wcmVwYXJlKzB4M2QvMHgxYzAKTm92IDI2IDA3OjMxOjU4IHMxOSBr
-ZXJuZWw6IFsgIDE0NC41NjgyNzddICA/IGtzeXNfd3JpdGUrMHg2Ny8weGUwCk5vdiAyNiAwNzoz
-MTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MjgwXSAgPyBzeXNjYWxsX2V4aXRfdG9fdXNlcl9t
-b2RlKzB4MjcvMHg1MApOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODI4M10g
-ID8gX194NjRfc3lzX3dyaXRlKzB4MWEvMHgyMApOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDog
-WyAgMTQ0LjU2ODI4Nl0gID8gZG9fc3lzY2FsbF82NCsweDY5LzB4YzAKTm92IDI2IDA3OjMxOjU4
-IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgyOTFdICBlbnRyeV9TWVNDQUxMXzY0X2FmdGVyX2h3ZnJh
-bWUrMHg0NC8weGFlCk5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4Mjk2XSBS
-SVA6IDAwMzM6MHg3ZmNhNTUxY2ExZTcKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0
-NC41NjgzMDBdIFJTUDogMDAyYjowMDAwN2ZmZmFkNDdhNmI4IEVGTEFHUzogMDAwMDAyNDYgT1JJ
-R19SQVg6IDAwMDAwMDAwMDAwMDAwMDEKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0
-NC41NjgzMDRdIFJBWDogZmZmZmZmZmZmZmZmZmZkYSBSQlg6IDAwMDAwMDAwMDAwMDAwMDcgUkNY
-OiAwMDAwN2ZjYTU1MWNhMWU3Ck5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4
-MzA3XSBSRFg6IDAwMDAwMDAwMDAwMDAwMDcgUlNJOiAwMDAwN2ZmZmFkNDdhN2IwIFJESTogMDAw
-MDAwMDAwMDAwMDAwMwpOb3YgMjYgMDc6MzE6NTggczE5IGtlcm5lbDogWyAgMTQ0LjU2ODMwOV0g
-UkJQOiAwMDAwN2ZmZmFkNDdhN2IwIFIwODogMDAwMDAwMDAwMDAwMDAwNyBSMDk6IDAwMDAwMDAw
-MDAwMDAwMDEKTm92IDI2IDA3OjMxOjU4IHMxOSBrZXJuZWw6IFsgIDE0NC41NjgzMTFdIFIxMDog
-MDAwMDAwMDAwMDAwMDFiNiBSMTE6IDAwMDAwMDAwMDAwMDAyNDYgUjEyOiAwMDAwMDAwMDAwMDAw
-MDA3Ck5vdiAyNiAwNzozMTo1OCBzMTkga2VybmVsOiBbICAxNDQuNTY4MzEzXSBSMTM6IDAwMDA1
-NWViMDNhNmY0YTAgUjE0OiAwMDAwMDAwMDAwMDAwMDA3IFIxNTogMDAwMDdmY2E1NTJhNThhMApO
-b3YgMjYgMDc6MzI6MTMgczE5IHN5c3RlbWRbMV06IFN0b3BwaW5nIFNlc3Npb24gMSBvZiB1c2Vy
-IGRvdWcuCk5vdiAyNiAwNzozMjoxMyBzMTkgc3lzdGVtZFsxXTogU3RvcHBpbmcgU2Vzc2lvbiAz
-IG9mIHVzZXIgZG91Zy4KTm92IDI2IDA3OjMyOjEzIHMxOSBzeXN0ZW1kWzFdOiBTdG9wcGluZyBT
-ZXNzaW9uIDQgb2YgdXNlciBkb3VnLgpOb3YgMjYgMDc6MzI6MTMgczE5IHN5c3RlbWRbMV06IFJl
-bW92ZWQgc2xpY2Ugc3lzdGVtLW1vZHByb2JlLnNsaWNlLgouLi4KCg==
---00000000000049780205d1b424f6--
