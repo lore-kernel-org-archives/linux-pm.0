@@ -2,77 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDE25C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 13:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B621BC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 13:18:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238156AbhKZNK1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 08:10:27 -0500
-Received: from mail.kernel.org ([198.145.29.99]:46676 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229737AbhKZNI0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 26 Nov 2021 08:08:26 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4991D610A7;
-        Fri, 26 Nov 2021 13:05:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1637931914;
-        bh=7kWyWOzNhvpzrbyXFw3NApkY4l5o3i0sxnomHklyFkQ=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=UqziiORfQ5oNDPEF5+/34wqiUp9Dn7l/0h8oEgqIpyhwqnyMzePlvT+LvV8FrtqpB
-         7CE6konpS/+G2GKVaz2Gr2+meHnZmgunZfcj7FX5STy/wLF5hFNwvKiVlGDatJeWd5
-         3uT+c9rkrGVZnbR3qFpy3rGOim+/K4EKCW1P9geg1L2XMnr1zXuM7gtHZg/briTrKi
-         k46UFoiZ8kDPNWngXiqg2WPBsLAkuu80c/86IQIAsv9fZW6JHAu1lP/HD1vVHDeZt2
-         J6idDo8+ddG8aGnL0oj3mOpHtgo0lCaif0qytQIXv0hvhgTEI3a4c974l92QkWnfJn
-         CLjWx4CmTjS0A==
-Date:   Fri, 26 Nov 2021 13:05:09 +0000
-From:   Mark Brown <broonie@kernel.org>
-To:     Martin Kepplinger <martin.kepplinger@puri.sm>
-Cc:     mchehab@kernel.org, sakari.ailus@linux.intel.com, kernel@puri.sm,
-        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-pm@vger.kernel.org, Angus Ainslie <angus@akkea.ca>
-Subject: Re: [PATCH v2] media: i2c: dw9714: add optional regulator support
-Message-ID: <YaDbhSsh5vKBsZai@sirena.org.uk>
-References: <20211126090107.1243558-1-martin.kepplinger@puri.sm>
+        id S231215AbhKZNVc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 08:21:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47468 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235464AbhKZNTb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 08:19:31 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3EDEFC08E897;
+        Fri, 26 Nov 2021 04:35:23 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id c32so24005277lfv.4;
+        Fri, 26 Nov 2021 04:35:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:content-language:to:cc
+         :references:from:subject:in-reply-to:content-transfer-encoding;
+        bh=jqeuCZHzeT66ujUYaqAxXooaJuks6pu0YjEfTL9/Z7c=;
+        b=BTcgSMd6YVmVcYLI28V7t1qPSaE77PJuacsBKncVV2l+O+OqB2BxcVjK6eLHQxxVJb
+         YSgltEogTQfdqN84xc7P68wde1lzAjWxEuDLXDq5a5LQbL/nSy/XQFrHr15ImIbBzNnh
+         B+ggVsywLJfepddvhblS9KXXKWzx+igsO7W1JrNTpL0Jg1PY/lW/JS+a+puPn89XSBfu
+         e2aDD3TjMHcDwqw6D8ES6nEqZ/lb4HrnZFAptSEfSOrTP4p0KJs4jSBnQ4C5FJ0KHoR7
+         ov9/N96ySXVseIRAtg+XfCGPpp2JreItc7qxjVbxQCmfw0wLeAhWwmX7NQjCgbrfDot8
+         qn5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent
+         :content-language:to:cc:references:from:subject:in-reply-to
+         :content-transfer-encoding;
+        bh=jqeuCZHzeT66ujUYaqAxXooaJuks6pu0YjEfTL9/Z7c=;
+        b=n3xrorW0x5i1iQy2GxL3GkbnqOiJpWW1G1tMKkWmxQDQ2Mj1Y3s5aGgBeJqjBLQDHR
+         jSog9Gfy2nynmHNiNyy1WFZRtw5X3iE11jbAtfqH/EzqHkgtr2ATHpy8r4SdvwCDFGSn
+         Uopf+TNZPpkB1hfz3veh3QYhUs7Hx+QPGNG+BuvVb3+HA2BhklUAL6kmfHVpsGk6ffNn
+         K/6BokEf8irUmcLTxP+QgOeipEFr4Egrunpxu3K+DqYHbCk8qYA04MK0A04f3gBKYp+c
+         DxVMAV84VZh1tBroQ12eVYwqbFckR2T1Gj26VW0kZahkJOpK8aixZD06aCjI7vSlFusn
+         nYkg==
+X-Gm-Message-State: AOAM532ib8JuEKQiCVr2h/kRnpQftkFfc5eKV5FVKQWDT1I3JfbBxfn3
+        amHlKXne/5ltUfQJRle5P1E=
+X-Google-Smtp-Source: ABdhPJwO6IDiKlprHADj4orVmMF5Vnpj3QD/0XIGqV0vnGOhn3o4aDHxhVIQX5G6/NALqpAv6VkPqA==
+X-Received: by 2002:a05:6512:2618:: with SMTP id bt24mr28715100lfb.46.1637930121494;
+        Fri, 26 Nov 2021 04:35:21 -0800 (PST)
+Received: from ?IPV6:2001:14ba:16ee:fa00::4? (dc73szyyyyyyyyyyyyycy-3.rev.dnainternet.fi. [2001:14ba:16ee:fa00::4])
+        by smtp.gmail.com with ESMTPSA id n7sm495101lfu.116.2021.11.26.04.35.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 26 Nov 2021 04:35:20 -0800 (PST)
+Message-ID: <28df4678-345b-78e0-06f0-1fdcbaff455d@gmail.com>
+Date:   Fri, 26 Nov 2021 14:35:18 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="+3BsLA530vjlUXPc"
-Content-Disposition: inline
-In-Reply-To: <20211126090107.1243558-1-martin.kepplinger@puri.sm>
-X-Cookie: You fill a much-needed gap.
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.0
+Content-Language: en-US
+To:     "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>,
+        Linus Walleij <linus.walleij@linaro.org>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        "rostokus@gmail.com" <rostokus@gmail.com>,
+        "fan.chen@mediatek.com" <fan.chen@mediatek.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        linux-power <linux-power@fi.rohmeurope.com>,
+        "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>
+References: <cover.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
+ <6123f62ac44e6513a498d15034a4b6b22abe5f5b.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
+ <CACRpkdbKeW+pJ8SZ0fPD+9kEtgHgi2A9U=f6XyKTHogKU-9F9g@mail.gmail.com>
+ <7b34e88f-54f3-6d0a-293e-b2b411d1c5c2@fi.rohmeurope.com>
+ <676253b9-ff69-7891-1f26-a8b5bb5a421b@fi.rohmeurope.com>
+From:   Matti Vaittinen <mazziesaccount@gmail.com>
+Subject: Re: [RFC PATCH v3 3/9] power: supply: Support DT originated
+ temperature-capacity tables
+In-Reply-To: <676253b9-ff69-7891-1f26-a8b5bb5a421b@fi.rohmeurope.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 11/26/21 13:56, Vaittinen, Matti wrote:
+> Hi dee Ho again,
+> 
+> On 11/18/21 08:11, Matti Vaittinen wrote:
+>> Hi Linus,
+>>
+>> On 11/18/21 04:10, Linus Walleij wrote:
+>>> On Tue, Nov 16, 2021 at 1:26 PM Matti Vaittinen
+>>> <matti.vaittinen@fi.rohmeurope.com> wrote:
+>>>
+>>>> Support obtaining the "capacity degradation by temperature" - tables
+>>>> from device-tree to batinfo.
+>>>>
+>>>> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+>>>
+>>> Same questions as on the binding patch.
+>>>
+>>> If we already support different degradation by temperature tables,
+>>> why do we need a second mechanism for the same thing?
+>>
+>> Thanks for bringing this up. As I said, I didn't notice that we could
+>> indeed use the CAP-OCV tables for different temperatures to bring in
+>> this information :) I see certain benefit from the possibility of not
+>> requiring to measure the OCV at different temperatures - but it may not
+>> be meaningful. As I replied to your patch 1/9 review - I need to (try
+>> to) do some more research...
+> 
+> 
+> I don't see providing OCV tables at different temperature gives the
+> degradation of battery capacity. Whoah. A big thought for Friday.
+> 
+> We get the OCV => SOC correspondance at different temperatures. I
+> however don't see how this gives the OCV => energy relation.
 
---+3BsLA530vjlUXPc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+After reading what I wrote even I didn't know what I tried to say. Well, 
+I think I tried to explain that I don't see how we can use this 
+information to do any estimation what the Coulomb Counter reading 
+represent at the given temperature. This is what the 
+temperature-degradation tables aim to give us.
 
-On Fri, Nov 26, 2021 at 10:01:07AM +0100, Martin Kepplinger wrote:
+  As far as I
+> know both the OCV and the 'amount of uAhs battery is able to store' are
+> impacted by temperature change. This means, seeing the OCV => SOC at
+> different temperatures does not tell us what is the impact of
+> temperature to the OCV, and what is the impact to SOC.
 
-> +	dw9714_dev->vcc = devm_regulator_get_optional(&client->dev, "vcc");
-> +	if (IS_ERR(dw9714_dev->vcc)) {
-> +		dev_dbg(&client->dev, "No vcc regulator found: %ld\n",
-> +			PTR_ERR(dw9714_dev->vcc));
-> +		dw9714_dev->vcc = NULL;
-> +	}
+I think I tried to say that these curves don't help us to tell how many 
+uAhs we have in battery with different temperatures when battery is 
+empty, or half full or, ... Again, what we would like to know is what 
+SOC our CC value represents - and use OCV to just adjust this further 
+(or in some cases to correct the CC value using OCV - if we can trust 
+the battery to be properly relaxed).
 
-To repeat my original feedback: unless the supply can be physically
-absent you should use regulator_get().   The _optional variants are only
-for cases where the supply might be physically absent.
+Hope this did clarify. Afraid it didn't :)
 
---+3BsLA530vjlUXPc
-Content-Type: application/pgp-signature; name="signature.asc"
+Best Regards
+	-- Matti Vaittinen
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmGg24QACgkQJNaLcl1U
-h9D7uAf/YWhxPh6vIyKOyKhroBRkkkeqy4vHZaGVEcwetiDdf/NkDXbVP6W4QskA
-7GO7fD8SXgrZC6oWqGasy2gx7Qf5lqMFezcpxpzNOulrieEI9XLRKCVj4LRM8iSD
-wLzC88AcEG5uqLt0g/Fi1Lz32VjFVNGA6yq3riz3srXdL+ZV5MOfnX4dDpcoHcuD
-mDsM1tgkhWVG7tLffFk/s5+zr7ZP/szPJul6WRRnj+kcxO9EikkrlVAxKaOLGfgU
-ov1X7FzX6V2iSltnz/g83W+tf/ZYnbw20zyPpi6eElTTDpVYHLZeli4IlnjjMbj/
-em0ysfhJXTVdTJhY7qrq8rg/g2Rr7Q==
-=IhNf
------END PGP SIGNATURE-----
-
---+3BsLA530vjlUXPc--
