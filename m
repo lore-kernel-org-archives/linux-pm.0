@@ -2,91 +2,68 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF42AC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 19:40:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FFCAC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 20:44:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234556AbhKZTn3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 14:43:29 -0500
-Received: from mail-oi1-f179.google.com ([209.85.167.179]:42963 "EHLO
-        mail-oi1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234565AbhKZTl3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 14:41:29 -0500
-Received: by mail-oi1-f179.google.com with SMTP id n66so20591567oia.9;
-        Fri, 26 Nov 2021 11:38:16 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=F9WHBsDLTzuit4FpL95JXqUXCEDgLzm46M8tiPrpblo=;
-        b=IslsSqvKbM35zNe++g6CRj8TJ2wnMyRMiM5UXXGGbsuooazcTucLGvy+bG97Jq6LBt
-         T8FYMKHHavu7A6GvpyIsOYRQtAFGKNc8fOCNv470g6xrtyUqQuMiSp+FBl8cWpDn6d4t
-         YiB3yo76K9c6a180SSHcGG+VR6a6qW7N++NQ7UuEsuwc2f7XlYy1K2noOHpyo71qzIE5
-         AF5EKtmcVI6qDsg0+3FLh0BzCg+wqYI5a92L9YMqCcNWSf/NePj+Hfjh94J73za92rWA
-         3ufjbN5L8c0P3+Yhd7bXKlHxdRVuEiK4DJf80HNbJcKhJlIRsZBALkAKj+Ntq1DepURM
-         JSLQ==
-X-Gm-Message-State: AOAM532KqvM9fhZxvhMJyuYqcKSGrAMw7msNrJWyNASZ6JPEJtiDzGjK
-        pN8g3iQtdgvJCZcJC68XBBzzFW3rhSk7d5JZabIplOJ9RsM=
-X-Google-Smtp-Source: ABdhPJxDuNFd5kP8PSZzKLlxI8I7yqqCWq8JrwFtCZ+uIOI9GIMxK3nSuVvjhKTtdG61/NUxeoKptwCjDCwJ2ahRLAo=
-X-Received: by 2002:a05:6808:14c2:: with SMTP id f2mr24949459oiw.154.1637955496108;
- Fri, 26 Nov 2021 11:38:16 -0800 (PST)
-MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 26 Nov 2021 20:38:05 +0100
-Message-ID: <CAJZ5v0hQaF-ANLc4JO=Ub_JMsqLFpZev_gmpb=NPpg=zmqcauA@mail.gmail.com>
-Subject: [GIT PULL] ACPI fixes for v5.16-rc3
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S240061AbhKZUr0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 15:47:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60838 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240258AbhKZUp0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 15:45:26 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8DEAC0613E1;
+        Fri, 26 Nov 2021 12:40:13 -0800 (PST)
+Received: from mail.kernel.org (unknown [198.145.29.99])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 3640462332;
+        Fri, 26 Nov 2021 20:40:13 +0000 (UTC)
+Received: by mail.kernel.org (Postfix) with ESMTPS id 9DA03601FA;
+        Fri, 26 Nov 2021 20:40:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1637959212;
+        bh=Y3l7rhzbvzIbYv53e/vGdtKXQo96iSNzbA/uoFdp+ig=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=tnm1w2GSE0TgvJBeRtq3qFXSoxc0E6iheAvZ9g/KhtXDFjo6sLOP9n+Vy9IsMc9+0
+         xNPqTXAlX+XMxr5THN/QKyNcS4soJIky7iNHc41f61zsuRiMyD88rvDb1vrU98KZRZ
+         nJQ4wKgcchUVYgy8FQ2Jdt+iAshXQP7Ca5tkvDEpVv6oW0GiIYWBgSAjUfr4hQ0y/y
+         n+hUeMUOIh+OR+mBkGr9LuElcL5ixi0pLy/qea9o41HKQ8DjYO71ZY5n0peMEJ+Cnb
+         gEVZ5VonMHieQkojxkTYRy5daMXs2/TwtPNs7+h2yBoUyO7z94UbNbellr7GYBwWB9
+         tKFOm4p3Xvwlg==
+Received: from pdx-korg-docbuild-2.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by pdx-korg-docbuild-2.ci.codeaurora.org (Postfix) with ESMTP id 76285609D5;
+        Fri, 26 Nov 2021 20:40:12 +0000 (UTC)
+Subject: Re: [GIT PULL] Power management fixes for v5.16-rc3
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jNK=LfKcXDR+ibnczM3+D+GHH_-UCMi=sj47aaLxXoJA@mail.gmail.com>
+References: <CAJZ5v0jNK=LfKcXDR+ibnczM3+D+GHH_-UCMi=sj47aaLxXoJA@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jNK=LfKcXDR+ibnczM3+D+GHH_-UCMi=sj47aaLxXoJA@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.16-rc3
+X-PR-Tracked-Commit-Id: 7803516dbe26518115408d53a500ccb4d6a7d1c7
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 0ce629b15d3c44b2faf6d0cf5122d7fae5ba89bb
+Message-Id: <163795921247.10726.17104000819762329880.pr-tracker-bot@kernel.org>
+Date:   Fri, 26 Nov 2021 20:40:12 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+The pull request you sent on Fri, 26 Nov 2021 20:36:20 +0100:
 
-Please pull from the tag
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.16-rc3
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-5.16-rc3
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/0ce629b15d3c44b2faf6d0cf5122d7fae5ba89bb
 
-with top-most commit 2e13e5aeda156f747919c7111723b9302836fb38
+Thank you!
 
- Merge branch 'acpi-properties'
-
-on top of commit 136057256686de39cc3a07c2e39ef6bc43003ff6
-
- Linux 5.16-rc2
-
-to receive ACPI fixes for 5.16-rc3.
-
-These fix a NULL pointer dereference in the CPPC library code and
-a locking issue related to printing the names of ACPI device nodes
-in the device properties framework.
-
-Specifics:
-
- - Fix NULL pointer dereference in the CPPC library code occurring
-   on hybrid systems without CPPC support (Rafael Wysocki).
-
- - Avoid attempts to acquire a semaphore with interrupts off when
-   printing the names of ACPI device nodes and clean up code on
-   top of that fix (Sakari Ailus).
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (1):
-      ACPI: CPPC: Add NULL pointer check to cppc_get_perf()
-
-Sakari Ailus (2):
-      ACPI: Get acpi_device's parent from the parent field
-      ACPI: Make acpi_node_get_parent() local
-
----------------
-
- drivers/acpi/cppc_acpi.c |  9 ++++++++-
- drivers/acpi/property.c  | 14 +++++---------
- include/linux/acpi.h     |  7 -------
- 3 files changed, 13 insertions(+), 17 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
