@@ -2,105 +2,128 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB48C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 19:38:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54D94C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 19:38:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234901AbhKZTlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 14:41:44 -0500
-Received: from mail-ot1-f49.google.com ([209.85.210.49]:34366 "EHLO
-        mail-ot1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232719AbhKZTjo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 14:39:44 -0500
-Received: by mail-ot1-f49.google.com with SMTP id x19-20020a9d7053000000b0055c8b39420bso15332640otj.1;
-        Fri, 26 Nov 2021 11:36:31 -0800 (PST)
+        id S237289AbhKZTl7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 14:41:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46590 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236879AbhKZTj7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 14:39:59 -0500
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65921C061191
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 11:10:26 -0800 (PST)
+Received: by mail-lj1-x229.google.com with SMTP id i63so20563384lji.3
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 11:10:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=telus.net; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=v/nUUlQokdOLB5PSt1hTFYmsrGcrpyJxvqeThYufta0=;
+        b=K9WBxs+3np+gSoWZtnavrHrjriDztJXlfxsI+dVokPvfBqmrSfb5XN/a0ceS/YRmwx
+         RTsKXMs91VEb4IYWDICy+Bl/3ZkLpDcIAtgZz2BZ0gb+rpCBHDMqW0ncoau1t1QtUryi
+         9+588tQ+Tz6al9+xOamT/hukkPvcb8c+43yXYg9R8dWHCNdOhzK8j4O/r4CpRLMTRsG/
+         KEoDFJU2hKMh/xhRm+G68JBEBVN+WU67Y5KhDlmvyGwmF+2PjlrLI+yRJAOmbQI565ql
+         czJwKsOe7kG/dfVG2MUAnQz/p6UXOHVj7NUaGpyPTn138d3x1SJuPEnbf94sN6VsC9G4
+         MdpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=glw+Kw+qAlQl558xudGtlPvGeHEeJq6ZUeY+roOhbWI=;
-        b=08aHGlvHP/X2JEt4ZybKNSpqGkFpBOT147NPhyYUMT+2NluYGO0FkrNDdA9zEEzhmD
-         WW2b0IGowVyln0pm1667vuu+16c5/MO+5TFbB/m0QFZOgPD9jeVzCNuxQcl+9AC2Dq8z
-         FBReq5aL2GsBodvxv3k6D7KWxQCHFxgARyH+zQOAeAf/f4yX/7A64wmNB9tBkcqWEUY/
-         5EBBWzU2EBX2bj4LZqSXdUgfLP7BdYF08ZxJD3bJHxabx4IbXgKNlPyFSt2ctqoDhImc
-         jXmIxSOrzp/pC41U/f+qsO+7w1kAxjX4kBhDxw4Gjt5WJRt+ziULqO26fyRlF71ZQHPB
-         YoHA==
-X-Gm-Message-State: AOAM530353kqRLIwsCCf0gIRtlB5gFWMN42L9DdsTcMh1cjR1Z5fptbI
-        N/x8+3fjjI2HExGhFL769CGK5AFwhBabod04sNutmUgzE+o=
-X-Google-Smtp-Source: ABdhPJz50cOaIYD3OvSmD107GGMQcdk82DQ6jfjK96cnQ6C+f7ZtYCr5I6GMqROiichrZ1d0qMFhDgSfX6nzzrFTH4I=
-X-Received: by 2002:a05:6830:1e57:: with SMTP id e23mr29606122otj.16.1637955390721;
- Fri, 26 Nov 2021 11:36:30 -0800 (PST)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=v/nUUlQokdOLB5PSt1hTFYmsrGcrpyJxvqeThYufta0=;
+        b=pIkdT2V1+IRsrWxl+xyJdYKREqefRmNwTwpeCkb60h6Kb72df1V6Xp9cCryPEBbh1i
+         TH60tWbufol/4VmSlxJyxIdzKlFpEkoULXsJYWWoiCH6lZ5VyrgxAh0uYChcfv2kkXpr
+         JwW3+PcgMtEd0kfgQu5rNdgM2CJKhZgEYbmN0cshlYeoLvWpfkp23/8Tg++MtyauzwnL
+         Tq9vZkWEEMeVpL5bcTud/U3xXCzOhTOsLnrrbg9ytXDFg38gAGeBy4gScLN9RjrDo/z0
+         t1Cixo6Wj54H0IvfZUpzGG4UmHIi8U7gOQs8T5ao8s/sh9MtGjirhiOVrbBM6eagHse4
+         kfPA==
+X-Gm-Message-State: AOAM531Lx7aD2aw+yCOtgk/T1F5sMd6HUp2ZVviksfQGCShSGPWTlC/2
+        CFfQJFh3nRWfsHYmNeWjShyCMTKHre/ifx3/BIgIZQ==
+X-Google-Smtp-Source: ABdhPJypBSwqOQ9WVkGSOuyRXqzgnhCvnOD4ehYZQOCksgsTkpoE/ivcICzXSabIi1UMQ2sEmf33ofWhsDG7jedcxpQ=
+X-Received: by 2002:a2e:9e08:: with SMTP id e8mr32848587ljk.472.1637953824609;
+ Fri, 26 Nov 2021 11:10:24 -0800 (PST)
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 26 Nov 2021 20:36:20 +0100
-Message-ID: <CAJZ5v0jNK=LfKcXDR+ibnczM3+D+GHH_-UCMi=sj47aaLxXoJA@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v5.16-rc3
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20210401183654.27214-1-daniel.lezcano@linaro.org>
+ <20210401183654.27214-3-daniel.lezcano@linaro.org> <CAAYoRsURO1tf03nfiki1uaXYEmTKQyYKUeTyKW+vefrVzCO7jg@mail.gmail.com>
+ <CAJZ5v0hcuq0qriHbc=XHbCo8fJMAV1dbCBws3M9GktN17aCE_g@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hcuq0qriHbc=XHbCo8fJMAV1dbCBws3M9GktN17aCE_g@mail.gmail.com>
+From:   Doug Smythies <dsmythies@telus.net>
+Date:   Fri, 26 Nov 2021 11:10:14 -0800
+Message-ID: <CAAYoRsXLTYKGK_doqDqgerQ+uW3UhMYki7FfBy3cAhbfXiCrXA@mail.gmail.com>
+Subject: Re: [PATCH v6 3/7] powercap/drivers/dtpm: Simplify the dtpm table
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dsmythies <dsmythies@telus.net>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, Nov 26, 2021 at 9:22 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> Hi Doug,
+>
+> On Fri, Nov 26, 2021 at 6:08 PM Doug Smythies <dsmythies@telus.net> wrote:
+> >
+> > Hi Daniel,
+> >
+> > This patch introduces a regression, at least on my test system.
+> > I can no longer change CPU frequency scaling drivers, for example
+> > from intel_cpufreq (A.K.A intel_pstate in passive mode) to intel_pstate
+> > (A.K.A. active mode). The task just hangs forever.
+> >
+> > I bisected the kernel and got this commit as the result.
+> > As a double check, I reverted this commit:
+> > 7a89d7eacf8e84f2afb94db5ae9d9f9faa93f01c
+> > on kernel 5.16-rc2 and the issue was resolved.
+> >
+> > While your email is fairly old, I observe that it was only included as of
+> > kernel 5.16-rc1.
+> >
+> > Command Example that never completes:
+> >
+> > $ echo passive | sudo tee /sys/devices/system/cpu/intel_pstate/status
+> >
+> > syslog excerpt attached.
+>
+> This looks like it may be problematic:
+>
+> diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+> index f6076de39540..98841524a782 100644
+> --- a/drivers/powercap/dtpm_cpu.c
+> +++ b/drivers/powercap/dtpm_cpu.c
+> @@ -204,7 +204,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+>        return ret;
+> }
+>
+> -int dtpm_register_cpu(struct dtpm *parent)
+> +static int __init dtpm_cpu_init(void)
+> {
+>        int ret;
+>
+> so please try to remove the __init annotation from dtpm_cpu_init() and
+> see if that helps.
 
-Please pull from the tag
+Hi Rafael,
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.16-rc3
+That did not fix the issue.
+Just to be clear this is what I did, on top of 5.16-rc2:
 
-with top-most commit 7803516dbe26518115408d53a500ccb4d6a7d1c7
+$ git diff
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index b740866b228d..26d1a87bdec6 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -231,7 +231,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+        return ret;
+ }
 
- Merge branch 'pm-sleep'
-
-on top of commit 136057256686de39cc3a07c2e39ef6bc43003ff6
-
- Linux 5.16-rc2
-
-to receive power management fixes for 5.16-rc3.
-
-These address 3 issues in the intel_pstate driver and fix 2 problems
-related to hibernation.
-
-Specifics:
-
- - Make intel_pstate work correctly on Ice Lake server systems with
-   out-of-band performance control enabled (Adamos Ttofari).
-
- - Fix EPP handling in intel_pstate during CPU offline and online in
-   the active mode (Rafael Wysocki).
-
- - Make intel_pstate support ITMT on asymmetric systems with
-   overclocking enabled (Srinivas Pandruvada).
-
- - Fix hibernation image saving when using the user space interface
-   based on the snapshot special device file (Evan Green).
-
- - Make the hibernation code release the snapshot block device using
-   the same mode that was used when acquiring it (Thomas Zeitlhofer).
-
-Thanks!
-
-
----------------
-
-Adamos Ttofari (1):
-      cpufreq: intel_pstate: Add Ice Lake server to out-of-band IDs
-
-Evan Green (1):
-      PM: hibernate: Fix snapshot partial write lengths
-
-Rafael J. Wysocki (1):
-      cpufreq: intel_pstate: Fix active mode offline/online EPP handling
-
-Srinivas Pandruvada (1):
-      cpufreq: intel_pstate: ITMT support for overclocked system
-
-Thomas Zeitlhofer (1):
-      PM: hibernate: use correct mode for swsusp_close()
-
----------------
-
- drivers/cpufreq/intel_pstate.c | 17 +++++++++++++++++
- kernel/power/hibernate.c       |  6 +++---
- kernel/power/user.c            |  2 +-
- 3 files changed, 21 insertions(+), 4 deletions(-)
+-static int __init dtpm_cpu_init(void)
++static int dtpm_cpu_init(void)
+ {
+        int ret;
