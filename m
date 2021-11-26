@@ -2,199 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F204C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 13:32:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF3ADC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 13:38:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350888AbhKZNf0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 08:35:26 -0500
-Received: from mail-oo1-f46.google.com ([209.85.161.46]:46868 "EHLO
-        mail-oo1-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242814AbhKZNdY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 08:33:24 -0500
-Received: by mail-oo1-f46.google.com with SMTP id p2-20020a4adfc2000000b002c2676904fdso3117103ood.13;
-        Fri, 26 Nov 2021 05:30:12 -0800 (PST)
+        id S1377645AbhKZNli (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 08:41:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52716 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S243852AbhKZNjh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 08:39:37 -0500
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85FCEC061D71
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 04:53:33 -0800 (PST)
+Received: by mail-wm1-x32c.google.com with SMTP id g191-20020a1c9dc8000000b0032fbf912885so6725789wme.4
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 04:53:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=dlvnTPe3lASdFY+T2t68uKlxKrbSmUU8V1J05NQSw6U=;
+        b=vx3JdoCTTR1Vst52bANM/Z7IW0FbzkICR7KmlAK0Oh18SEu6OAw4QJogoVfZi4orf3
+         umQwcTF2WSvValr0zxAMw/jP6yiRaf2jAvC9TuHopBlsZfevxuU7svcmVz+nvlvly1B7
+         2fbykhH51D7AukLnwsqMn4WDGAQYVkdPU2twltng4xNlNGY7mGxAS4qkDfOyKFxDmD7F
+         SJfT0uvmQVcJPY5+TVzawK1jQ3zzb6idY+b2vmMtmvkhGLKE3pH5kPXchytLEh+e2PyK
+         EKVdRzhKEJwipsolGkXJjc+5Vw+aFATwVzXNu20JQuPP6LDh11ZcRgZ/jYPkYTV2RTQ1
+         oIAA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=YND1cuvYRe7TTQqGVkId2xcoTZHtH/DpO7duew8ET6c=;
-        b=zXIlvw+8aLIyK+A2tjy4adz0tXnhsKjFMdmwrmIsofpxh7/KGyl2/2EUtmrQ8mOfIv
-         jDKvpVlePC8al5iFa4L+YwmNWpgPLcsKOCH6T0sViPa6e5MEn/W5ay56SZVAbyY99Ow4
-         C7Koaf2yXLdjFLUf1wzmG0i1S73vmcsrtqydApxaRTSOly3CjlPFh7G+xYfPvvII2iY/
-         7dNZ2kgfqJaiCZJtHxoDvZDzMDiwGNH9LAjIxNrZ7RNR4+ncpVbhJmx96V7JwV8PqdyV
-         pn8/qHx6YNr1HaMXzaio2SCmKEgz8OUiNwGZ9eScSi51J7yWje2ib9wmLD3r0CdkoRhC
-         7beQ==
-X-Gm-Message-State: AOAM531eajavNb+GuZ3v7qEMvLR8aGfs1quSWXoGgFymK04n3gsDlIM4
-        v+PwlPJT47lByqm6HEVJZA1QfisFtxojKdC28XM=
-X-Google-Smtp-Source: ABdhPJyKfehbyqqov4R7+UrGtd9X4QpeFnmapCnTN68S4qAK8ZRrMAVgb/XnIPqQbJF++Log9g3iZOI9hvwAswyqUBk=
-X-Received: by 2002:a05:6820:388:: with SMTP id r8mr20240227ooj.0.1637933411559;
- Fri, 26 Nov 2021 05:30:11 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=dlvnTPe3lASdFY+T2t68uKlxKrbSmUU8V1J05NQSw6U=;
+        b=1+31JQpfDvOHUps5kVDdH3a/bm7fI2cuo6GchDsGRFWxHkq24cpdQSjC+E/iSdmFy+
+         W0eQ4GYQBW1YZ2SKMFpah0psRjV6ucWXvccYrMnmKfsin+VrNj1RyBFIYri/wEt42L0v
+         kumP6x09UQWbrCUkq5xhHmo1+7FiAI8dKy3DljkG5ZhG6zYYjB740mGJ9g5g849fWvuQ
+         cF/exdRjwhIcWDmNXc6h+Ff77gkZR1VWlACqMo4hq2dbgOsRGXFGEG/yJ+36nw44U+TL
+         8Xpoz/oHRKfW5ZlEWumRptFIvJMZ649x3102JezJJda8oTogq+TlHlWILmusivyBZvNZ
+         1XMw==
+X-Gm-Message-State: AOAM531HR5aDAvVKRyYK0EuVgbmbiZF5xVyAy9iuH1gdb5h4LwQ5Ga0w
+        9r6wiSoTl2dpmWRlycFlO5R15Q==
+X-Google-Smtp-Source: ABdhPJzvOAL7myFEAtrbimp/grrwHLS5GERcVMo6S8I6FeG3H8Y9RpNZEQH2gDYC1I6jeiHaHI/tvA==
+X-Received: by 2002:a1c:f418:: with SMTP id z24mr15612899wma.95.1637931212030;
+        Fri, 26 Nov 2021 04:53:32 -0800 (PST)
+Received: from xps-9300.baylibre.local (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
+        by smtp.gmail.com with ESMTPSA id n15sm11762083wmq.38.2021.11.26.04.53.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Nov 2021 04:53:31 -0800 (PST)
+From:   Alexandre Bailon <abailon@baylibre.com>
+To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amitk@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        ben.tseng@mediatek.com, khilman@baylibre.com, mka@chromium.org,
+        Alexandre Bailon <abailon@baylibre.com>
+Subject: [PATCH v4 0/2] Add a generic virtual thermal sensor
+Date:   Fri, 26 Nov 2021 13:52:42 +0100
+Message-Id: <20211126125244.126300-1-abailon@baylibre.com>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-References: <20211026222626.39222-1-ulf.hansson@linaro.org>
- <20211027020235.GA1306582@rowland.harvard.edu> <CAPDyKFpgHJA-duQSA2uqhccrDxFqWXO1R1DJxo=aOkT5FyX+Ag@mail.gmail.com>
- <20211027143343.GC1319606@rowland.harvard.edu> <CAPDyKFoMS-0WqNjtsrGy5-SV3RRbpgA3_HS5XDtNHH9wFgLhXg@mail.gmail.com>
- <CAJZ5v0iKMKhdxP9htt-fVm1RVBJnRO-pzJ9eySbBOSviSXCAdQ@mail.gmail.com>
- <CAPDyKFqR1S5Hw_RM90b44qETieW1f_59+k3KExdMXPpk_3Yygg@mail.gmail.com> <CAPDyKFrzjxdP0oC2CtuxuRsePyX5Y7mFJe4BttMduk4+WEnfag@mail.gmail.com>
-In-Reply-To: <CAPDyKFrzjxdP0oC2CtuxuRsePyX5Y7mFJe4BttMduk4+WEnfag@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 26 Nov 2021 14:30:00 +0100
-Message-ID: <CAJZ5v0hrTDsCUn4vgmFrTTgd6H=orh-Kb5b3+_H9St4n8fTxBw@mail.gmail.com>
-Subject: Re: [PATCH] PM: runtime: Allow rpm_resume() to succeed when runtime
- PM is disabled
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Maulik Shah <mkshah@codeaurora.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 26, 2021 at 1:20 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Mon, 1 Nov 2021 at 10:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Fri, 29 Oct 2021 at 20:27, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Fri, Oct 29, 2021 at 12:20 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > > >
-> > > > On Wed, 27 Oct 2021 at 16:33, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > > >
-> > > > > On Wed, Oct 27, 2021 at 12:55:43PM +0200, Ulf Hansson wrote:
-> > > > > > On Wed, 27 Oct 2021 at 04:02, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > > > > >
-> > > > > > > On Wed, Oct 27, 2021 at 12:26:26AM +0200, Ulf Hansson wrote:
-> > > > > > > > During system suspend, the PM core sets dev->power.is_suspended for the
-> > > > > > > > device that is being suspended. This flag is also being used in
-> > > > > > > > rpm_resume(), to allow it to succeed by returning 1, assuming that runtime
-> > > > > > > > PM has been disabled and the runtime PM status is RPM_ACTIVE, for the
-> > > > > > > > device.
-> > > > > > > >
-> > > > > > > > To make this behaviour a bit more useful, let's drop the check for the
-> > > > > > > > dev->power.is_suspended flag in rpm_resume(), as it doesn't really need to
-> > > > > > > > be limited to this anyway.
-> > > > > > > >
-> > > > > > > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > > > > > > > ---
-> > > > > > > >  drivers/base/power/runtime.c | 4 ++--
-> > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > > > >
-> > > > > > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > > > > > > index ec94049442b9..fadc278e3a66 100644
-> > > > > > > > --- a/drivers/base/power/runtime.c
-> > > > > > > > +++ b/drivers/base/power/runtime.c
-> > > > > > > > @@ -742,8 +742,8 @@ static int rpm_resume(struct device *dev, int rpmflags)
-> > > > > > > >   repeat:
-> > > > > > > >       if (dev->power.runtime_error)
-> > > > > > > >               retval = -EINVAL;
-> > > > > > > > -     else if (dev->power.disable_depth == 1 && dev->power.is_suspended
-> > > > > > > > -         && dev->power.runtime_status == RPM_ACTIVE)
-> > > > > > > > +     else if (dev->power.disable_depth > 0 &&
-> > > > > > > > +             dev->power.runtime_status == RPM_ACTIVE)
-> > > > > > >
-> > > > > > > IIRC there was a good reason why the original code checked for
-> > > > > > > disable_depth == 1 rather than > 0.  But I don't remember exactly what
-> > > > > > > the reason was.  Maybe it had something to do with the fact that during
-> > > > > > > a system sleep __device_suspend_late calls __pm_runtime_disable, and the
-> > > > > > > code was checking that there were no other disables in effect.
-> > > > > >
-> > > > > > The check was introduced in the below commit:
-> > > > > >
-> > > > > > Commit 6f3c77b040fc
-> > > > > > Author: Kevin Hilman <khilman@ti.com>
-> > > > > > Date:   Fri Sep 21 22:47:34 2012 +0000
-> > > > > > PM / Runtime: let rpm_resume() succeed if RPM_ACTIVE, even when disabled, v2
-> > > > > >
-> > > > > > By reading the commit message it's pretty clear to me that the check
-> > > > > > was added to cover only one specific use case, during system suspend.
-> > > > > >
-> > > > > > That is, that a driver may want to call pm_runtime_get_sync() from a
-> > > > > > late/noirq callback (when the PM core has disabled runtime PM), to
-> > > > > > understand whether the device is still powered on and accessible.
-> > > > > >
-> > > > > > > This is
-> > > > > > > related to the documented behavior of rpm_resume (it's supposed to fail
-> > > > > > > with -EACCES if the device is disabled for runtime PM, no matter what
-> > > > > > > power state the device is in).
-> > > > > > >
-> > > > > > > That probably is also the explanation for why dev->power.is_suspended
-> > > > > > > gets checked: It's how the code tells whether a system sleep is in
-> > > > > > > progress.
-> > > > > >
-> > > > > > Yes, you are certainly correct about the current behaviour. It's there
-> > > > > > for a reason.
-> > > > > >
-> > > > > > On the other hand I would be greatly surprised if this change would
-> > > > > > cause any issues. Of course, I can't make guarantees, but I am, of
-> > > > > > course, willing to help to fix problems if those happen.
-> > > > > >
-> > > > > > As a matter of fact, I think the current behaviour looks quite
-> > > > > > inconsistent, as it depends on whether the device is being system
-> > > > > > suspended.
-> > > > > >
-> > > > > > Moreover, for syscore devices (dev->power.syscore is set for them),
-> > > > > > the PM core doesn't set the "is_suspended" flag. Those can benefit
-> > > > > > from a common behaviour.
-> > > > > >
-> > > > > > Finally, I think the "is_suspended" flag actually needs to be
-> > > > > > protected by a lock when set by the PM core, as it's being used in two
-> > > > > > separate execution paths. Although, rather than adding a lock for
-> > > > > > protection, we can just rely on the "disable_depth" in rpm_resume().
-> > > > > > It would be easier and makes the behaviour consistent too.
-> > > > >
-> > > > > As long as is_suspended isn't _written_ in two separate execution paths,
-> > > > > we're probably okay without a lock -- provided the code doesn't mind
-> > > > > getting an indefinite result when a read races with a write.
-> > > >
-> > > > Well, indefinite doesn't sound very good to me for these cases, even
-> > > > if it most likely never will happen.
-> > > >
-> > > > >
-> > > > > > > So overall, I suspect this change should not be made.  But some other
-> > > > > > > improvement (like a nice comment) might be in order.
-> > > > > > >
-> > > > > > > Alan Stern
-> > > > > >
-> > > > > > Thanks for reviewing!
-> > > > >
-> > > > > You're welcome.  Whatever you eventually decide to do should be okay
-> > > > > with me.  I just wanted to make sure that you understood the deeper
-> > > > > issue here and had given it some thought.  For example, it may turn out
-> > > > > that you can resolve matters simply by updating the documentation.
-> > > >
-> > > > I observed the issue on cpuidle-psci. The devices it operates upon are
-> > > > assigned as syscore devices and these are hooked up to a genpd.
-> > > >
-> > > > A call to pm_runtime_get_sync() can happen even after the PM core has
-> > > > disabled runtime PM in the "late" phase. So the error code is received
-> > > > for these real use-cases.
-> > > >
-> > > > Now, as we currently don't check the return value of
-> > > > pm_runtime_get_sync() in cpuidle-psci, it's not a big deal. But it
-> > > > certainly seems worth fixing in my opinion.
-> > > >
-> > > > Let's see if Rafael has some thoughts around this.
-> > >
-> > > Am I thinking correctly that this is mostly about working around the
-> > > limitations of pm_runtime_force_suspend()?
-> >
-> > No, this isn't related at all.
-> >
-> > The cpuidle-psci driver doesn't have PM callbacks, thus using
-> > pm_runtime_force_suspend() would not work here.
->
-> Just wanted to send a ping on this to see if we can come to a
-> conclusion. Or maybe we did? :-)
->
-> I think in the end, what slightly bothers me, is that the behavior is
-> a bit inconsistent. Although, maybe it's the best we can do.
+This series add a virtual thermal sensor.
+It could be used to get a temperature using some thermal sensors.
+Currently, the supported operations are max, min and avg.
+The virtual sensor could be easily extended to support others operations.
 
-I've been thinking about this and it looks like we can do better, but
-instead of talking about this I'd rather send a patch.
+Changes in v2:
+- Fix some warnings / errors reported by kernel test robot
+- rename some struct and functions with a more accurate name
+- update the dt bindings: rename type attribute to aggregation-function
+- factorize a little bit the aggregation functions
+Changes in v3:
+- Aggregate thermal zone instead of thermal sensors
+- Use try_get_module / put_module to prevent thermal providers to be removed
+- Update the bindings, to be more accurate
+Changes in v4:
+- Fix two warnings reported by kernel test robot
 
-Stay tuned.
+Alexandre Bailon (2):
+  dt-bindings: Add DT bindings for the DT-based virtual sensor driver
+  thermal: add a virtual sensor to aggregate temperatures
+
+Alexandre Bailon (2):
+  dt-bindings: Add DT bindings for the DT-based virtual sensor driver
+  thermal: add a virtual sensor to aggregate temperatures
+
+ .../thermal/virtual,thermal-sensor.yaml       |  86 +++++++
+ drivers/thermal/Kconfig                       |   8 +
+ drivers/thermal/Makefile                      |   1 +
+ drivers/thermal/virtual_thermal_sensor.c      | 218 ++++++++++++++++++
+ include/dt-bindings/thermal/virtual-sensor.h  |  15 ++
+ 5 files changed, 328 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/virtual,thermal-sensor.yaml
+ create mode 100644 drivers/thermal/virtual_thermal_sensor.c
+ create mode 100644 include/dt-bindings/thermal/virtual-sensor.h
+
+-- 
+2.25.1
+
