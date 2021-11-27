@@ -2,82 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70FFFC433EF
-	for <linux-pm@archiver.kernel.org>; Sat, 27 Nov 2021 00:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 863B3C433F5
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Nov 2021 01:15:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344599AbhK0BCH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 20:02:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59566 "EHLO
+        id S1344640AbhK0BSe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 20:18:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344257AbhK0BAG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 20:00:06 -0500
-Received: from mail-oi1-x234.google.com (mail-oi1-x234.google.com [IPv6:2607:f8b0:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8215BC06175D
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 16:56:05 -0800 (PST)
-Received: by mail-oi1-x234.google.com with SMTP id o4so21773714oia.10
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 16:56:05 -0800 (PST)
+        with ESMTP id S1344447AbhK0BQd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 20:16:33 -0500
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A645C061746
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 17:13:20 -0800 (PST)
+Received: by mail-lj1-x22e.google.com with SMTP id v15so21990465ljc.0
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 17:13:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=telus.net; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=TsYDLIp3SURoGlogh4l/OZ4ji0kGf43UvWJ/HDPp9uM=;
-        b=HqSKDi0cjlyrRMTJ1OJ2TaCzVUW0zw8IAjmBi8LvnDSXqq36qpbW0xVhoHS2O1wcOY
-         V9OoKyIB/Vz2FeHHOz2jZDndEbXOlNTBQbLxvDmonhxrk+k8K4gPxXkylROA+XbhP0pz
-         qAc801vn5n1HQyr1+eCwtFjXMfTHyfuIhDVguRFh979KQz8f98aDgWobZ+PHp89dOmyO
-         aiTPe3zFeOdI4ZlT0L74aoyLxfQ/UmeC6MWVbigLuO2H2KqUhcj66mk0vhBijZyqN5E2
-         +pWmjg2YqMLgDCiNU59b7dcj5xs8MybitoEScniznitePjt1uqYwuxeoaZVn+Y4Q6D66
-         Hacw==
+         :cc:content-transfer-encoding;
+        bh=AO9HLiYoJwB3QlxrZnbBFb6xGzf6WT/h97sqqvL5fWE=;
+        b=UhHGX1z7l13n04osAUXesCcrOyPPObEmUe8O7MsAPfed2Udi9QDQ9OPG+Rhy/zLYZl
+         vQizmqPvsYUo9lSLjOd3fNa0q4fVH6Mi/atFWPbRCCFaAGYWlFTskAqcWeGpVZryrP7b
+         A7E13zPDF85SyKHyKB/HalBT39RfZtWXuJbA1zKC98J+OaqXlr7NrNbjbWNbbyGOOwUU
+         ecrxwaQxeCbeRO6UulE9JSqCKCZOTHzfpIWmerK5Fma5FakFKV1oH0Z7qDB2GxNKo6jr
+         zrfuUD49GVWtSKtVDC+AgYFOVLZh7kXyPHu4tWh6V80xh89vEAW22qIVT4vNH2JHmJYJ
+         ZgXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=TsYDLIp3SURoGlogh4l/OZ4ji0kGf43UvWJ/HDPp9uM=;
-        b=pgSX7LfrnfkpG3k/EhRYW2OyHhNQDL1nBbZUPmKIK1cfrjVpS2visg0JWgx+jbHX3u
-         tBU82pRJn/zg/6B5PgS0WyxRfvbYmLaWGHRUPsdp1B3hYFzsmBMpfAeJNPZHQE8phBYb
-         ctuTPAySQUqqosAQB0TQSeE2PcTnzXzq06Tcfk8KbKXwtyybftB4lOBfYFdXqprou8wv
-         A+GlI3UZ5ANUxwg9Qs4tSCya7NADa8EfP8/adVrq7KHPGbZ/uSjg7mMUEKpvIC845ZAU
-         D8YadKvlDFi60E5gKQtGUUdgnnacOnMt4fZjlfpmJvTT0bgwjyCSBs0KE9oONSBbo7+g
-         HhWA==
-X-Gm-Message-State: AOAM530Bcf9uLX1AswQ5njEOnwqpu5+xFk8doKUxtPyJTbXdivuwSO3A
-        lhwZxOc2Cq0Lx8N15Z4e8GLoUTuVhwhwJeUm9xsUfQ==
-X-Google-Smtp-Source: ABdhPJyxv5KKxtYotJxpNvBo5p5sOOCrMcG3RfEH/cdZCtrFgzZb3V1sigF6lw0v79E8hVyzV7kIMFXHY9001AXgILE=
-X-Received: by 2002:a54:4791:: with SMTP id o17mr27567633oic.114.1637974564863;
- Fri, 26 Nov 2021 16:56:04 -0800 (PST)
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=AO9HLiYoJwB3QlxrZnbBFb6xGzf6WT/h97sqqvL5fWE=;
+        b=LET84f7rq+zMjMrno9gj0t+ZjpQ/Pj8c21YPtnhZVEU6WgKpoIyYI5lwbFOMmGAmjl
+         C8ieobhFDXa2otH8EIE5w/HJBAJ73syVkVxbMbiQqes2ncZCRz/CTbM0ebDLnj2En0JB
+         Gq2JkQfSA6Bveazt69oWWVPnZmP4l8jZ4Rpo0Ykx31apSphiYuLum3ERb82CMZ6ULW9/
+         S47XId/LweJFNGrG5Z0m1cyH5DZUkcPYfLHMMpNcpTayrvQbpwLhZGllWNIqf5argWsp
+         hhVVVKIIxDVJtApnT2j2gmX9LXXjYVDgaLcmTU86A5PR2kgq6QrFGAIo3lMBWRUqCFHb
+         s2iw==
+X-Gm-Message-State: AOAM5302hQNIuH6km44vy82XBACuKfutfiSgtkJ65uFHWxo+XT1xPfp1
+        2QiPy3mzoLhaotqafo7cDLcLaD3jnmRgYyHBwHWz7A==
+X-Google-Smtp-Source: ABdhPJxYNZmdCUliZJOvsz8fSpPToRFs44lg7xD62YV+YO3tLMrzxkG7LHTBVF7STBGKgQ6+cZvCcomXYTY6W2QvmKE=
+X-Received: by 2002:a2e:a78c:: with SMTP id c12mr33608112ljf.418.1637975598254;
+ Fri, 26 Nov 2021 17:13:18 -0800 (PST)
 MIME-Version: 1.0
-References: <cover.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
- <6123f62ac44e6513a498d15034a4b6b22abe5f5b.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
- <CACRpkdbKeW+pJ8SZ0fPD+9kEtgHgi2A9U=f6XyKTHogKU-9F9g@mail.gmail.com>
- <7b34e88f-54f3-6d0a-293e-b2b411d1c5c2@fi.rohmeurope.com> <676253b9-ff69-7891-1f26-a8b5bb5a421b@fi.rohmeurope.com>
- <28df4678-345b-78e0-06f0-1fdcbaff455d@gmail.com>
-In-Reply-To: <28df4678-345b-78e0-06f0-1fdcbaff455d@gmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sat, 27 Nov 2021 01:55:53 +0100
-Message-ID: <CACRpkdZEmYWp+KtmYv9HXEH9ikNPB8sE5AuDVs=ipdLOWv9e0Q@mail.gmail.com>
-Subject: Re: [RFC PATCH v3 3/9] power: supply: Support DT originated
- temperature-capacity tables
-To:     Matti Vaittinen <mazziesaccount@gmail.com>
-Cc:     "Vaittinen, Matti" <matti.vaittinen@fi.rohmeurope.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        "rostokus@gmail.com" <rostokus@gmail.com>,
-        "fan.chen@mediatek.com" <fan.chen@mediatek.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        linux-power <linux-power@fi.rohmeurope.com>,
-        "Mutanen, Mikko" <mikko.mutanen@fi.rohmeurope.com>
+References: <9821f60a-c562-12e8-bdd4-45dbfe88a117@linaro.org>
+ <20211126230820.3441863-1-daniel.lezcano@linaro.org> <9e81f795-6d3a-2078-5ef1-13b965e89a2a@linaro.org>
+In-Reply-To: <9e81f795-6d3a-2078-5ef1-13b965e89a2a@linaro.org>
+From:   Doug Smythies <dsmythies@telus.net>
+Date:   Fri, 26 Nov 2021 17:13:09 -0800
+Message-ID: <CAAYoRsWEXoe_LjuHuQUL3Tdov0JVW887T4ciUTVOC410mZjgvA@mail.gmail.com>
+Subject: Re: [PATCH] powercap/drivers/dtpm: Disable dtpm at boot time
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        dsmythies <dsmythies@telus.net>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 26, 2021 at 1:35 PM Matti Vaittinen
-<mazziesaccount@gmail.com> wrote:
+On Fri, Nov 26, 2021 at 3:10 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+>
+> Hi Doug,
+>
+> I was unable to reproduce the issue because I don't have an x86 platform.
+>
+> Is it possible to check if this fix is ok?
 
-> Hope this did clarify. Afraid it didn't :)
+Hi Daniel,
 
-I got it first time, I think. Or I just think I got it but didn't ;)
+Yes, confirmed.
 
-Yours,
-Linus Walleij
+Tested-By: Doug Smythies <dsmythies@telus.net>
+
+>
+>   -- Daniel
+>
+> On 27/11/2021 00:08, Daniel Lezcano wrote:
+> > The DTPM framework misses a mechanism to set it up. That is currently
+> > under review but will come after the next cycle.
+> >
+> > As the distro are enabling all the kernel options, the DTPM framework
+> > is enabled on platforms where the energy model is not implemented,
+> > thus making the framework inconsistent and disrupting the CPU
+> > frequency scaling service.
+> >
+> > Remove the initialization at boot time as a hot fix.
+> >
+> > Fixes: 7a89d7eacf8e ("powercap/drivers/dtpm: Simplify the dtpm table")
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
+> >  drivers/powercap/dtpm.c | 3 ---
+> >  1 file changed, 3 deletions(-)
+> >
+> > diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+> > index b9fac786246a..fb35c5828bfb 100644
+> > --- a/drivers/powercap/dtpm.c
+> > +++ b/drivers/powercap/dtpm.c
+> > @@ -471,9 +471,6 @@ static int __init init_dtpm(void)
+> >               return PTR_ERR(pct);
+> >       }
+> >
+> > -     for_each_dtpm_table(dtpm_descr)
+> > -             dtpm_descr->init();
+> > -
+> >       return 0;
+> >  }
+> >  late_initcall(init_dtpm);
+> >
+>
+>
+> --
+> <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for AR=
+M SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
