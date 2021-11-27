@@ -2,119 +2,204 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F425C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Nov 2021 23:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D8D0C433FE
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Nov 2021 00:58:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343730AbhKZXQJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Nov 2021 18:16:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36730 "EHLO
+        id S236288AbhK0BCC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Nov 2021 20:02:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231723AbhKZXOI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 18:14:08 -0500
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1CBDBC061574
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 15:10:55 -0800 (PST)
-Received: by mail-wr1-x430.google.com with SMTP id t9so4696019wrx.7
-        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 15:10:55 -0800 (PST)
+        with ESMTP id S236441AbhK0BAB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Nov 2021 20:00:01 -0500
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5DABC061758
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 16:54:59 -0800 (PST)
+Received: by mail-ot1-x336.google.com with SMTP id x19-20020a9d7053000000b0055c8b39420bso16217058otj.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Nov 2021 16:54:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=I1bnnvK5wCwVjL86xgRIW2/MDvYRm/MnqOfx6UDxmrQ=;
-        b=T6ef6UAKkY19Ifq8AqrjGV1EeKLhBcdgOYCwUD/WVnctdIWJ9OzISCRt9Yh4dbDNxq
-         0UsDkHzbxTz92F69HS3HuNzkcoQ4wC8hRDcXRzVmuHqDdReNOkx282gr/ZJjoUQsOK8n
-         8bShUZIDd9JI31oc1TPhZI1GjHCWnf0Dpav0GqL6ISC2VqDo4oMLqK1916iNlNbUFOdv
-         +pC8qka5h97zojyqm7AzYsgWfm/o1+eSUTnD7qkX0J02v1/CQMgH1LvZmAW0kLxfeJy1
-         7bCxsRcaBIMQ0lyV76k6/gn8NVjNDwpNJt58XUJEGtB9nTynov0s+u3o5PLBB/y3nDcL
-         YAyQ==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=vLaxgooHi9QLp5Ez0U6aCNHoJaipVjvQ2YI7OPA5KFU=;
+        b=H9aLlRuzRtkoK+WjArGY/UwvwG/EGHEngk12lrcK7UqgVWKmOBZSd9PzTMpYEkWINH
+         qJG/PHekCro6yUIQBPO7Eow8BJU7mwfpRBIukgJHoEsC7TJzV5kiRn/yuNXY0bZdF8K5
+         s4ftZ6Ctlsgss7CUbIBNTgQsNZ1YOPLCDb3OgqzXh/c6o+niwj/eUUIOdFfIgOxEBBJK
+         HCrspG9VqPvyX0TNwU/zKKwtP4XzLefm55S4Goc6rMRX+4yE6Lj5Qtg2L1T4uBT4OteT
+         Qh3deK7KScCK9aQwHy+sRJ3Y1yhaRfkFY4OMOwZPgOmc8fdwHLN2Hm3l7V2IrmCHT0XU
+         VYhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=I1bnnvK5wCwVjL86xgRIW2/MDvYRm/MnqOfx6UDxmrQ=;
-        b=RliQ+oQs9WAl5l5tfNP4kW+ngTaGNAZdQ21KSen2cRGnuZXRYQNOEIHFkuHegh9KTS
-         i7xhdnBs/6QFu+E1xpoxWxwt8e3RI1bqDGQTU7Edoolnf9Y8V48gbuodKwh7OqOWZGwm
-         9rUj4IU4nEnleKrVUNVzngLGYqkanKM2ik7SKYq6RTcy9VyE2Ngs90RsHyKeG2inDcpC
-         uNX1r+hk6e5+q+mauR3t3YpclbaGbHYEFfc8WN5pnvehPPW0OPNaGV/Wj+9X23mcT76c
-         pzYAxsKaYf5BLsAIN/yY2+pR3N63fWyOAMgIW+a9H9HpK2r1g4CPsUriYq/4eTJ6N/y+
-         J9qw==
-X-Gm-Message-State: AOAM531Y/5mFZS4oB6G4FzRR7KnNSIo0HaPakPjTxyKFvQHV8u9a7WBk
-        KESwtXf6pW/lGPT391PO6BWoEQ==
-X-Google-Smtp-Source: ABdhPJwQ3wg2Max5sdq9qjeBJdpZmbw5Z5OWoDy+xKtNjGlOKVmlIZ+lIwohIj9U+snxnQdyIYUyoA==
-X-Received: by 2002:adf:fc90:: with SMTP id g16mr16905199wrr.53.1637968253574;
-        Fri, 26 Nov 2021 15:10:53 -0800 (PST)
-Received: from ?IPv6:2a01:e34:ed2f:f020:70b:e5b5:f868:20cf? ([2a01:e34:ed2f:f020:70b:e5b5:f868:20cf])
-        by smtp.googlemail.com with ESMTPSA id p5sm7054872wrd.13.2021.11.26.15.10.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 26 Nov 2021 15:10:52 -0800 (PST)
-Subject: Re: [PATCH] powercap/drivers/dtpm: Disable dtpm at boot time
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     dsmythies@telus.net, rafael@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        lukasz.luba@arm.com, gregkh@linuxfoundation.org,
-        Daniel Lezcano <daniel.lezcano@kernel.org>
-References: <9821f60a-c562-12e8-bdd4-45dbfe88a117@linaro.org>
- <20211126230820.3441863-1-daniel.lezcano@linaro.org>
-Message-ID: <9e81f795-6d3a-2078-5ef1-13b965e89a2a@linaro.org>
-Date:   Sat, 27 Nov 2021 00:10:50 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=vLaxgooHi9QLp5Ez0U6aCNHoJaipVjvQ2YI7OPA5KFU=;
+        b=ul/w675WPElhH9tjBRfaxU9MiGtBVjwo3d4DAiMC0ZUV4QbzXaK7ecnRPmehoHJ+XO
+         HyNzCNxWJXVhncrma6x8buqIHLruJvTFqYrfRt/niQnZ9PZWO8ZHLQpsOa3N6UkSG+r/
+         eSrgypbYy4hfXVkrbjumX4bbVnC1eLwGBeZgKjzw0FFXVrS8gLQI7kEl10PpjQpUTMoJ
+         tnHSpMR0kH4E5UEyY7SAptRaHodyfXe8PeoJpNhsj1bmas+jVkwdKQsxGjuMHWjLWg77
+         U9j0ZKqzCEFJeuycSTW15gA6ngf0EZXGSnbulFMjcOElqso9Gg0m1Fg4gRqC2KQephV6
+         fsYQ==
+X-Gm-Message-State: AOAM5311FC9wSLrnx9jiMa1d9ohseXMijC6RRMMR2v1LEYzwRsJNq+yc
+        CENFuRrhkc4NgqNoVCLaECfevKyxyv9Zl7i7A7ujGA==
+X-Google-Smtp-Source: ABdhPJyl4CWjfUu5Dd5IBitp9ynLH4Yn5kT8f178Dhs4GP4HnEIYIqKv7X4kU/Y4PsRBVL7QEQUo6Ed+Zhzb1zMW2Fk=
+X-Received: by 2002:a9d:ed6:: with SMTP id 80mr31220877otj.35.1637974499131;
+ Fri, 26 Nov 2021 16:54:59 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20211126230820.3441863-1-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+References: <cover.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
+ <6123f62ac44e6513a498d15034a4b6b22abe5f5b.1637061794.git.matti.vaittinen@fi.rohmeurope.com>
+ <CACRpkdbKeW+pJ8SZ0fPD+9kEtgHgi2A9U=f6XyKTHogKU-9F9g@mail.gmail.com>
+ <7b34e88f-54f3-6d0a-293e-b2b411d1c5c2@fi.rohmeurope.com> <676253b9-ff69-7891-1f26-a8b5bb5a421b@fi.rohmeurope.com>
+In-Reply-To: <676253b9-ff69-7891-1f26-a8b5bb5a421b@fi.rohmeurope.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Sat, 27 Nov 2021 01:54:46 +0100
+Message-ID: <CACRpkdZXhw9+txdLv-k01nzH3+GvGivyAoCO1JCf2VyYK96CnQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v3 3/9] power: supply: Support DT originated
+ temperature-capacity tables
+To:     "Vaittinen, Matti" <matti.vaittinen@fi.rohmeurope.com>
+Cc:     Matti Vaittinen <mazziesaccount@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        "rostokus@gmail.com" <rostokus@gmail.com>,
+        "fan.chen@mediatek.com" <fan.chen@mediatek.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        linux-power <linux-power@fi.rohmeurope.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Matti,
 
-Hi Doug,
+don't worry you are probably right. You are the domain expert working
+on stuff like this inside a company that actually makes charger ICs.
+I am just some guy on the street. So I certainly trust you on this.
 
-I was unable to reproduce the issue because I don't have an x86 platform.
+On Fri, Nov 26, 2021 at 12:56 PM Vaittinen, Matti
+<Matti.Vaittinen@fi.rohmeurope.com> wrote:
 
-Is it possible to check if this fix is ok?
+> I don't see providing OCV tables at different temperature gives the
+> degradation of battery capacity. Whoah. A big thought for Friday.
 
-  -- Daniel
+I think we are getting close to academic definitions of the problem,
+so we'd need input from people who actually work on charging and
+knows how this works? Or we need to read up on it :/
 
-On 27/11/2021 00:08, Daniel Lezcano wrote:
-> The DTPM framework misses a mechanism to set it up. That is currently
-> under review but will come after the next cycle.
-> 
-> As the distro are enabling all the kernel options, the DTPM framework
-> is enabled on platforms where the energy model is not implemented,
-> thus making the framework inconsistent and disrupting the CPU
-> frequency scaling service.
-> 
-> Remove the initialization at boot time as a hot fix.
-> 
-> Fixes: 7a89d7eacf8e ("powercap/drivers/dtpm: Simplify the dtpm table")
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/powercap/dtpm.c | 3 ---
->  1 file changed, 3 deletions(-)
-> 
-> diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-> index b9fac786246a..fb35c5828bfb 100644
-> --- a/drivers/powercap/dtpm.c
-> +++ b/drivers/powercap/dtpm.c
-> @@ -471,9 +471,6 @@ static int __init init_dtpm(void)
->  		return PTR_ERR(pct);
->  	}
->  
-> -	for_each_dtpm_table(dtpm_descr)
-> -		dtpm_descr->init();
-> -
->  	return 0;
->  }
->  late_initcall(init_dtpm);
-> 
+> We get the OCV => SOC correspondance at different temperatures.
 
+I read
+OCV = Open Circuit Voltage (which we can't measure but must calculate)
+and
+SOC = State of Charge (a percentage of the capacity)
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+And we agree what the bindings and code gives today is
+(temp, OCV) -> SoC (%)
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+And this assumption is:
+
+A) wrong as in the earth is flat or it makes the same sens to
+   take a random number and use as capacity
+
+B) wrong as in not good enough and a bit rough around the
+   edges and you have an idea how to improve it
+
+I assume (B) and what we are seeing on the battery indicator on
+most of the worlds mobile phones etc is sometimes a bit so-so
+because they have only used the above. (I think some people can
+attest to experiencing this problem.)
+
+And now we want something better, think medical equipment.
+
+> I
+> however don't see how this gives the OCV => energy relation. As far as I
+> know both the OCV and the 'amount of uAhs battery is able to store' are
+> impacted by temperature change. This means, seeing the OCV => SOC at
+> different temperatures does not tell us what is the impact of
+> temperature to the OCV, and what is the impact to SOC.
+
+It is definitely true that both the OCV and SOC changes according to
+temperature.
+
+But it is also true that these tables for a certain temperature are written
+with an OCV measured at this temperature, so the OCV used in the
+table is already compensated for the temperature, right?
+
+> For cases like the ROHM Chargers, we are interested on how much has the
+> 'ability to store uAhs' changed due to the temperature. When we know the
+> amount of uAhs we can store, we can use the coulomb counter value to
+> estimate what we still have left in the battery.
+>
+> In addition to this we do use the OCV information for the "nearly
+> depleted battery" - to improve the estimation by zero-correction
+> algorithm. I must admit Friday afternoon is not the time I can quite
+> recap this part. I think it was something like:
+>
+> 1. Measure VBat with system load (VBAT)
+> 2. Find OCV corresponding the current SOC estimate (SOC based on coulomb
+> counter value) - OCV_NOW
+> 3. Compute VDROP caused by the load (OCV_NOW - VBAT)
+> 4. Assume VDROP stays constant (or use ROHM VDR parameters if provided)
+> 5. Using VDROP compute the OCV_MIN which matches the minimum battery
+> voltage where system is still operational
+> 6. Use the OCV_MIN and "OCV at SOC0 from calibration data" difference to
+> adjust the battery capacity.
+
+That's a neat trick!
+If you look at drivers/power/supply/ab8500_fg.c function
+ab8500_fg_load_comp_volt_to_capacity() you find how
+someone else chose to do this with a bit of averaging etc.
+
+> >> I'd just calculate a few tables per temperature and be done with
+> >> it.
+> >>
+> >> At least documentation needs to be updated to reflect that the two
+> >> methods
+> >> are exclusive and you can only use one of them.
+>
+> I don't see these exclusive (at Friday afternoon at least). I think they
+> can complement each-others. The temp_degradation table gives us the
+> temperature impact on <energy storing ability>, eg, how much the battery
+> capacity has changed from designed one due to the temperature.
+>
+> OCV-SOC tables at various temperatures tell us how OCV looks like when
+> we have X% of battery left at different temperatures. Estimation of how
+> much the X% is in absolute uAhs can be done by taking into account the
+> designed_cap, aging degradation and the temperature degradation (and the
+> position of moon, amount of muons created by cosmic rays hitting
+> athmosphere at knee energy region and so on...)
+>
+> Or am I just getting something terribly wrong (again)? :)
+> (I still for example like internal functions named as __foo() )
+
+OK so yeah I think you are at something here. Which is generic.
+
+The battery indicator in my Tesla in Swedish winter times looks
+like this:
+
++-------------------+---+
+|       25%         | * |
++-------------------+---+
+
+So the star * indicates some extra capacity that is taken away
+because of the low temperature.
+
+This must be because the system is aware about the impact on
+the battery available uAh of the temperature. As you use the
+battery it will get warmer and the capacity will increase and the
+little star goes away.
+
+Current random mobile phones are not this great and do not
+estimate the capacity fall because of the temperature, just shows
+a percentage of the full capacity at the temperature right now
+whatever that capacity may be, so it is a relative scale and we
+can never show anything as nice as what the Tesla does with
+this.
+
+Then the question is: is the method used by Rohm universal and
+well-known and something many chargers will do exactly this
+way, so it should be in the core, or is it a particularity that should
+be in your driver?
+
+Yours,
+Linus Walleij
