@@ -2,130 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AD8FC433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Nov 2021 20:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B105EC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Nov 2021 20:19:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229935AbhK2UUC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Nov 2021 15:20:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57870 "EHLO
+        id S232804AbhK2UWB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Nov 2021 15:22:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232577AbhK2URp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Nov 2021 15:17:45 -0500
-Received: from mail-il1-x135.google.com (mail-il1-x135.google.com [IPv6:2607:f8b0:4864:20::135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22431C06FD52
-        for <linux-pm@vger.kernel.org>; Mon, 29 Nov 2021 08:50:44 -0800 (PST)
-Received: by mail-il1-x135.google.com with SMTP id j7so18070562ilk.13
-        for <linux-pm@vger.kernel.org>; Mon, 29 Nov 2021 08:50:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=tuXSCi3W5k4YjYyZpaX5+bo97wFIHp81oIVUYJL00SI=;
-        b=UyFcnTVKWLAVQm/9FbeKbsayqMz78WqtkFPrc9up7Rg6PAgQyOYZBDiW6xdgBaTHte
-         a5jAPCEY9vOXO424NLcgUoU766WQrmmXjp6V6U7NH/WL++ftTSLEfk/WyU5IwWMvm2sE
-         n8Boy1Qiz7bHNekvogxyghLcGUCJVbrvZ5AKo=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=tuXSCi3W5k4YjYyZpaX5+bo97wFIHp81oIVUYJL00SI=;
-        b=CtUfjZw6DZtCS83AXcu+fEHONJsVHxwNEzrO29d0Tee2r2ckOWmzgaN0WoArz93OD0
-         oZm71fxmCA6JcUznEE/UA5wgMAv09mWQyCHqvjxnFnml/93Ko3I4/yPUBDONn57rasaF
-         VssJofMDcG8JgL22hVXpx6Amf2hAfxPqqCUmvG1jsdPEm6fcTjvyYpSHLhj8Ss8RlqHg
-         B6fWHgjfd7o7FLZoJWVOHLhNBJmCDYkcJx+YV6sivSoICK17/pLJcOoXQFLbxFTnemd7
-         zvs6fK4bAI5HXPcRW383eCLDpCNGGJnATIiofOuPn1UfX+5rk6TUjn5pue+8un8y6Xkp
-         onNw==
-X-Gm-Message-State: AOAM530smLeiUI+T2X+xGhnpoVQyXcb6/Ck0FvCUXcK6N5iv02HOiDD2
-        YPshQZzqyhxzdJ5p/2l4ie6v3TC2LdyLMw==
-X-Google-Smtp-Source: ABdhPJzUQuSVShro41d3qTa7/WmiJU5mU/n8k3l4+VmJQwAE7iNx62mqk3UXjFKX0RSZwrAHJSA3QA==
-X-Received: by 2002:a05:6e02:1d19:: with SMTP id i25mr54514167ila.9.1638204643378;
-        Mon, 29 Nov 2021 08:50:43 -0800 (PST)
-Received: from mail-il1-f179.google.com (mail-il1-f179.google.com. [209.85.166.179])
-        by smtp.gmail.com with ESMTPSA id t6sm10741064iov.39.2021.11.29.08.50.42
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 29 Nov 2021 08:50:42 -0800 (PST)
-Received: by mail-il1-f179.google.com with SMTP id w4so18057362ilv.12
-        for <linux-pm@vger.kernel.org>; Mon, 29 Nov 2021 08:50:42 -0800 (PST)
-X-Received: by 2002:a05:6e02:190f:: with SMTP id w15mr10809909ilu.114.1638204642437;
- Mon, 29 Nov 2021 08:50:42 -0800 (PST)
+        with ESMTP id S234621AbhK2USW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Nov 2021 15:18:22 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 864EAC06FD58;
+        Mon, 29 Nov 2021 08:51:27 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 4C2EEB8121A;
+        Mon, 29 Nov 2021 16:51:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53BD7C53FC7;
+        Mon, 29 Nov 2021 16:51:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1638204685;
+        bh=/N3hJs+8+g3Nkkrg8lQ2OdQ2KQb16KwS5vn0inTiGlo=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=t+Mq0UkXbA4a6Wt6h0xiiXD4aebndrAF+dVTyMZN88cCwEAqCKOaaAkx3BwsHowCT
+         /XZQdsuqYhDZmBGWFeFv2uftvdb/P1PEC95VCxlG8ORHXW9i+n0Fxc65Q42WZdvCmr
+         bmjobxtLIVNZNxidKOg+8HhfEHJQg0cxaJxA5LEf5RPAhW3oD2YUbPgMGUe+C5hGz6
+         8Tqpgfirm9blVoIYzvxHiQpK+91EXsKSFaDjSY/IduPHkb4WNOI5YfeXoiVqmXdRo7
+         chDRm0wYm23sB90lUmq1W8Z1Fnpl20O8742Xpim7sST8R+bg7cJtAxXy86bOt0x7gf
+         ehm18Ngwf0gGw==
+Date:   Mon, 29 Nov 2021 17:51:22 +0100
+From:   Wolfram Sang <wsa@kernel.org>
+To:     Rajat Jain <rajatja@google.com>
+Cc:     Jarkko Nikula <jarkko.nikula@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, dtor@google.com,
+        Derek Basehore <dbasehore@chromium.org>, rajatxjain@gmail.com
+Subject: Re: [PATCH 3/3] i2c: enable async suspend/resume on i2c client
+ devices
+Message-ID: <YaUFCizDRFbK/3ON@kunai>
+Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
+        Rajat Jain <rajatja@google.com>,
+        Jarkko Nikula <jarkko.nikula@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, dtor@google.com,
+        Derek Basehore <dbasehore@chromium.org>, rajatxjain@gmail.com
+References: <20211025213532.2349161-1-rajatja@google.com>
+ <20211025213532.2349161-4-rajatja@google.com>
 MIME-Version: 1.0
-References: <20211029122359.1.I1e23f382fbd8beb19fe1c06d70798b292012c57a@changeid>
- <CAE=gft4MRvq-VCBW4EX4dGfPi4s7Lco8h6Z_ejRH5A1e-K2-yA@mail.gmail.com>
- <CAJZ5v0hsGFHxcTb8PUkGSm9oas1wdquB=euofS19zriRc1CXYw@mail.gmail.com>
- <CAE=gft6CjUhkcrmcjVEOp5S+rgqN1_ZGTKbK0DierTanu0d16A@mail.gmail.com> <CAJZ5v0gamixc4dkBEXJjjw5zQynuz8BkQ9xv8YpbjkTkdMb2TQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gamixc4dkBEXJjjw5zQynuz8BkQ9xv8YpbjkTkdMb2TQ@mail.gmail.com>
-From:   Evan Green <evgreen@chromium.org>
-Date:   Mon, 29 Nov 2021 08:50:06 -0800
-X-Gmail-Original-Message-ID: <CAE=gft6o0JxhDgazPA5DVbL6hQ+36D_GkzgN-AuR3YA43NSqaw@mail.gmail.com>
-Message-ID: <CAE=gft6o0JxhDgazPA5DVbL6hQ+36D_GkzgN-AuR3YA43NSqaw@mail.gmail.com>
-Subject: Re: [PATCH] PM / hibernate: Fix snapshot partial write lengths
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wQLIdAQj1LoHmbEk"
+Content-Disposition: inline
+In-Reply-To: <20211025213532.2349161-4-rajatja@google.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 24, 2021 at 4:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Tue, Nov 16, 2021 at 9:22 PM Evan Green <evgreen@chromium.org> wrote:
-> >
-> > On Tue, Nov 16, 2021 at 9:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Mon, Nov 15, 2021 at 6:13 PM Evan Green <evgreen@chromium.org> wrote:
-> > > >
-> > > > Gentle bump.
-> > > >
-> > > >
-> > > > On Fri, Oct 29, 2021 at 12:24 PM Evan Green <evgreen@chromium.org> wrote:
-> > > > >
-> > > > > snapshot_write() is inappropriately limiting the amount of data that can
-> > > > > be written in cases where a partial page has already been written. For
-> > > > > example, one would expect to be able to write 1 byte, then 4095 bytes to
-> > > > > the snapshot device, and have both of those complete fully (since now
-> > > > > we're aligned to a page again). But what ends up happening is we write 1
-> > > > > byte, then 4094/4095 bytes complete successfully.
-> > > > >
-> > > > > The reason is that simple_write_to_buffer()'s second argument is the
-> > > > > total size of the buffer, not the size of the buffer minus the offset.
-> > > > > Since simple_write_to_buffer() accounts for the offset in its
-> > > > > implementation, snapshot_write() can just pass the full page size
-> > > > > directly down.
-> > > > >
-> > > > > Signed-off-by: Evan Green <evgreen@chromium.org>
-> > > > > ---
-> > > > >
-> > > > >  kernel/power/user.c | 2 +-
-> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > >
-> > > > > diff --git a/kernel/power/user.c b/kernel/power/user.c
-> > > > > index 740723bb388524..ad241b4ff64c58 100644
-> > > > > --- a/kernel/power/user.c
-> > > > > +++ b/kernel/power/user.c
-> > > > > @@ -177,7 +177,7 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
-> > > > >                 if (res <= 0)
-> > > > >                         goto unlock;
-> > > > >         } else {
-> > > > > -               res = PAGE_SIZE - pg_offp;
-> > > > > +               res = PAGE_SIZE;
-> > > > >         }
-> > > > >
-> > > > >         if (!data_of(data->handle)) {
-> > > > > --
-> > >
-> > > Do you actually see this problem in practice?
-> >
-> > Yes. I may fire up another thread to explain why I'm stuck doing a
-> > partial page write, and how I might be able to stop doing that in the
-> > future with some kernel help. But either way, this is a bug.
->
-> OK, patch applied as 5.16-rc material.
->
-> I guess it should go into -stable kernels too?
 
-Yes, putting it into -stable would make sense also. I should have CCed
-them originally, doing that now.
--Evan
+--wQLIdAQj1LoHmbEk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Oct 25, 2021 at 02:35:31PM -0700, Rajat Jain wrote:
+> From: Derek Basehore <dbasehore@chromium.org>
+>=20
+> This enables the async suspend for i2c client devices. This reduces
+> the suspend/resume time considerably on platforms where i2c devices
+> can take a lot of time (hundreds of ms) to resume.
+>=20
+> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> Signed-off-by: Rajat Jain <rajatja@google.com>
+> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+
+Applied to for-next, thanks!
+
+
+--wQLIdAQj1LoHmbEk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmGlBQkACgkQFA3kzBSg
+Kba8ew//TmsHAD6TPCDx31Bq9oPE2vqGNsvpZsr6eiPRQwIw2eEhpxXZWHwvw/+G
+N2un2Oxs5nnccZGuurO3NheZrj1bRv8kQLgRqM6DagVJy43BbH1/rocsCGstfyui
+HO3XMrooBDXkJJueLYrTqXmsOGdXb2n5bol/sSl3RkUcenFJ8haz5kkDULvHTVUV
+ajbr8EpIiY4kyf99IWPbgYkJvoYbrjsbaR06e9wWB52I1i+POf4o7W8YMgJUzK75
+Qa0qcdgEp/ACnk9BfINd+rF4X0a1NRnvQSnK4HtiqJC/Y/UedguAMhZS0Dt9Lcpb
+H8P2HVz1mqFIzbRec4JCYlCQOikvIWtz2sFbi/qpxANiWAM79YYbkIW6xiKrOkyO
+mPK0SIYkbX4aMcvPcBFMEkIWTnuZC7rPvp+h8bDnDgZ0oIBqG/pjBZwijekd56Lt
+tipzbPngQqqbmnEOb70Zh/GriuI9YEq9LIFNtSYYuW+MeArxrCuMMs74QH0H3ETG
+NMrkXbj02kyLyxSa8I4jzqnOQEqQyifmeRTXGxzTD6IL+MnNrUpKAIOOSu+l8zkF
+AChwzy5TDawjGz/TlzyP60VH3RyGsiV2Bfl3/6zr3oanoXh/hKBnP01iZM3y8Ltk
+/OoIs8m4oCFweI7vFWURaUSYBu1Pvh9u3s8BxFG+b7wf6jq95jg=
+=3k5a
+-----END PGP SIGNATURE-----
+
+--wQLIdAQj1LoHmbEk--
