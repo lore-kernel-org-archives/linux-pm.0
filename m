@@ -2,102 +2,159 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C287C4167B
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Nov 2021 22:05:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB8B4C4321E
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Nov 2021 00:29:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242262AbhK1WIp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Nov 2021 17:08:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50590 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231842AbhK1WGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Nov 2021 17:06:45 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47858C061746;
-        Sun, 28 Nov 2021 14:03:28 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id n12so39510119lfe.1;
-        Sun, 28 Nov 2021 14:03:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=BmJDsI1frubqpSHpwgLMDcWP2GRwtD3Aeu0GDNSS4Ao=;
-        b=JqJrLFejdvwG6EFcUaec1471GQnF4o7rWmB6ZJgoVyHzKIkkY8XPck6x3CHTcSe3mr
-         7c3WWIfu0LFTWTIWtfr1xMf1sIz9hSxmJjNmg5EpOoGtRIqQYrl7w/0PM+7DPJe3Nxtk
-         rN6rxwckbCb/tFQBuTom9QWJWe368iYPCHR6SzKZyxcrZavR0Qvz3FBbGQQWlxES0zx3
-         AyGMKx7T8uiK3LGqvY6k4r/pZaiGv/E3eR+VX0o1y8VwEVOx6vlL8inxXaHnS9nNzCHP
-         /sog83T0MTHqC7MSI4QlW3DNzKcOyj4MQKPD+Rgk5qe7wAw3+rNMhs5lE34rRjfMa9d6
-         m5mQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=BmJDsI1frubqpSHpwgLMDcWP2GRwtD3Aeu0GDNSS4Ao=;
-        b=2IyZfutJKoDVgqLl0NkZ9nNbbLeMeOYzflxGGeJZeU/Nk/wkiRvelTK/KnbHvMUhmY
-         HQVB5hKUlT7BDy2p0ueeoxkDpbmVm0m91JzvvRL5Dr8hk9mVYcDeNuaHI5iiRDPjI+rU
-         FS+9NQfTTCmKdaJscGCTk5m/+HBZM9bh41ZhbZaLm2/iOxwn5hP9EeQ8aIBBX1X/rUUt
-         TfOzH8TIKSdDQLT7+j2dwpQtYVC8Cm4kqT2P1G7jpQzIpEZul+8L2zCojl1DBbVCvAAi
-         UeBfBTTvk157fn9Go7aG+KiiyTmqwOhsHDM5kabyGm7kwpD4N4v5xDUu2DGI5DsHBDaX
-         o4vw==
-X-Gm-Message-State: AOAM532p99SoNYyMqvD0XUfWn1H9VeUXqrvWjaPngyU+cO0DP5GB2+bp
-        +z/C47jDV4HwDwAsbTWlGXI=
-X-Google-Smtp-Source: ABdhPJxrPfjj0n+sgrY4w60/8r91odYTvOOfn9dIP0FlQoVAM5bMvzeBYaBIJ/QlbWNLbD8x9ctRNA==
-X-Received: by 2002:ac2:5fb1:: with SMTP id s17mr6692388lfe.587.1638137006608;
-        Sun, 28 Nov 2021 14:03:26 -0800 (PST)
-Received: from [192.168.2.145] (94-29-46-111.dynamic.spd-mgts.ru. [94.29.46.111])
-        by smtp.googlemail.com with ESMTPSA id s13sm1117685lfg.126.2021.11.28.14.03.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 28 Nov 2021 14:03:26 -0800 (PST)
-Subject: Re: [PATCH v15 00/39] NVIDIA Tegra power management patches for 5.17
-To:     =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+        id S1359856AbhK2AcP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Nov 2021 19:32:15 -0500
+Received: from rere.qmqm.pl ([91.227.64.183]:5612 "EHLO rere.qmqm.pl"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232018AbhK2AaN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 28 Nov 2021 19:30:13 -0500
+Received: from remote.user (localhost [127.0.0.1])
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 4J2R463HYCz9Y;
+        Mon, 29 Nov 2021 01:26:46 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+        t=1638145614; bh=rYhG1/gOEGdeEm/s8Gt8rEBk1iF8QMIsgq7S9tytKm0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=CbL6Dkr0hp6+eWfnOkswWvW2NOKJ79Uh6/l2ZCnK5kWTiOO50iqx187Rg4dryYZZY
+         bxYRz4m9fgWtZVh11lmgMaMMzocpKUJUWIlke/44DEMmzJJm4vDOSxFAyf1Gq25nhd
+         1THlT17c8aj7yKXukSvNxOS2rqgVH1j/XRMa1p7Hswrcs4jJdmmxtpOwmRnm9PweUg
+         dgln8/6i94ET+XVFAx+2l6pzk4WNbL+PWxg255szxizJhOsvQ3eK1ntEQbcIyPN3HU
+         KJwCs9dJC+yqQftWDNSkBS/r4FvpiW2ousq8It65okWyLREqQTSJR+N2Sf4mDmjtBp
+         iZvEDATRHwtcA==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.103.3 at mail
+Date:   Mon, 29 Nov 2021 01:26:42 +0100
+From:   =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To:     Dmitry Osipenko <digetx@gmail.com>
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Greg Ungerer <gerg@linux-m68k.org>,
+        Joshua Thompson <funaho@jurai.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Sebastian Reichel <sre@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+        Helge Deller <deller@gmx.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
         Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Nishanth Menon <nm@ti.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-References: <20211114193435.7705-1-digetx@gmail.com>
- <YaMWaKqQ+c8G08mJ@qmqm.qmqm.pl>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <6e364419-c4ef-a6d6-6538-9b04f1cfe9c7@gmail.com>
-Date:   Mon, 29 Nov 2021 01:03:18 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+        Andrew Morton <akpm@linux-foundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>, alankao@andestech.com,
+        "K . C . Kuen-Chern Lin" <kclin@andestech.com>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-csky@vger.kernel.org, linux-ia64@vger.kernel.org,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Subject: Re: [PATCH v4 05/25] reboot: Warn if restart handler has duplicated
+ priority
+Message-ID: <YaQeQgbW+CjEdsqG@qmqm.qmqm.pl>
+References: <20211126180101.27818-1-digetx@gmail.com>
+ <20211126180101.27818-6-digetx@gmail.com>
+ <YaLNOJTM+lVq+YNS@qmqm.qmqm.pl>
+ <033ddf2a-6223-1a82-ec64-30f17c891f67@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <YaMWaKqQ+c8G08mJ@qmqm.qmqm.pl>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <033ddf2a-6223-1a82-ec64-30f17c891f67@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-28.11.2021 08:40, Michał Mirosław пишет:
-> On Sun, Nov 14, 2021 at 10:33:56PM +0300, Dmitry Osipenko wrote:
->> This series adds runtime PM support to Tegra drivers and enables core
->> voltage scaling for Tegra20/30 SoCs, resolving overheating troubles.
->>
->> All patches in this series are interdependent and should go via Tegra tree
->> for simplicity.
-> [...]
+On Mon, Nov 29, 2021 at 12:06:19AM +0300, Dmitry Osipenko wrote:
+> 28.11.2021 03:28, Michał Mirosław пишет:
+> > On Fri, Nov 26, 2021 at 09:00:41PM +0300, Dmitry Osipenko wrote:
+> >> Add sanity check which ensures that there are no two restart handlers
+> >> registered with the same priority. Normally it's a direct sign of a
+> >> problem if two handlers use the same priority.
+> > 
+> > The patch doesn't ensure the property that there are no duplicated-priority
+> > entries on the chain.
 > 
-> I would suggest pushing all the fixes to the front of the series (those are
-> at least patches 1, 3, 17, 27-31 and 39).
+> It's not the exact point of this patch.
+> 
+> > I'd rather see a atomic_notifier_chain_register_unique() that returns
+> > -EBUSY or something istead of adding an entry with duplicate priority.
+> > That way it would need only one list traversal unless you want to
+> > register the duplicate anyway (then you would call the older
+> > atomic_notifier_chain_register() after reporting the error).
+> 
+> The point of this patch is to warn developers about the problem that
+> needs to be fixed. We already have such troubling drivers in mainline.
+> 
+> It's not critical to register different handlers with a duplicated
+> priorities, but such cases really need to be corrected. We shouldn't
+> break users' machines during transition to the new API, meanwhile
+> developers should take action of fixing theirs drivers.
+> 
+> > (Or you could return > 0 when a duplicate is registered in
+> > atomic_notifier_chain_register() if the callers are prepared
+> > for that. I don't really like this way, though.)
+> 
+> I had a similar thought at some point before and decided that I'm not in
+> favor of this approach. It's nicer to have a dedicated function that
+> verifies the uniqueness, IMO.
 
-All those patches, apart from 17, should be irrelevant to stable kernel.
-There is no real benefit in reordering them, IMO. The patches are
-grouped logically in this series.
+I don't like the part that it traverses the list second time to check
+the uniqueness. But actually you could avoid that if
+notifier_chain_register() would always add equal-priority entries in
+reverse order:
 
-In the case of patch 17, perhaps won't hurt to add stable tag to it.
-Then the "drm/tegra: submit:" patches could be swapped to prioritize the
-fix, though there is no danger of a merge conflict there.
+ static int notifier_chain_register(struct notifier_block **nl,
+ 		struct notifier_block *n)
+ {
+ 	while ((*nl) != NULL) {
+ 		if (unlikely((*nl) == n)) {
+ 			WARN(1, "double register detected");
+ 			return 0;
+ 		}
+-		if (n->priority > (*nl)->priority)
++		if (n->priority >= (*nl)->priority)
+ 			break;
+ 		nl = &((*nl)->next);
+ 	}
+ 	n->next = *nl;
+ 	rcu_assign_pointer(*nl, n);
+ 	return 0;
+ }
+
+Then the check for uniqueness after adding would be:
+
+ WARN(nb->next && nb->priority == nb->next->priority);
+
+Best Regards
+Michał Mirosław
