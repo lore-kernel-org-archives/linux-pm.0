@@ -2,154 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D082C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Nov 2021 11:06:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DBAFC433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Nov 2021 12:10:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229764AbhK2LJR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Nov 2021 06:09:17 -0500
-Received: from comms.puri.sm ([159.203.221.185]:40264 "EHLO comms.puri.sm"
+        id S1344525AbhK2MNa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Nov 2021 07:13:30 -0500
+Received: from comms.puri.sm ([159.203.221.185]:42286 "EHLO comms.puri.sm"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S240713AbhK2LHR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Nov 2021 06:07:17 -0500
+        id S234457AbhK2MLa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Nov 2021 07:11:30 -0500
 Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id DE16CE1137;
-        Mon, 29 Nov 2021 03:03:59 -0800 (PST)
+        by comms.puri.sm (Postfix) with ESMTP id E7310E1151;
+        Mon, 29 Nov 2021 04:08:12 -0800 (PST)
 Received: from comms.puri.sm ([127.0.0.1])
         by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id evOY7719MzEi; Mon, 29 Nov 2021 03:03:59 -0800 (PST)
-From:   Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-To:     linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org,
-        Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, kernel@puri.sm,
-        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-Subject: [PATCH] thermal: qoriq: Only enable sites that actually exist
-Date:   Mon, 29 Nov 2021 12:02:53 +0100
-Message-Id: <20211129110252.1699112-1-sebastian.krzyszkowiak@puri.sm>
+        with ESMTP id ZE6jG0-JRo6j; Mon, 29 Nov 2021 04:08:12 -0800 (PST)
+From:   Martin Kepplinger <martin.kepplinger@puri.sm>
+To:     martin.kepplinger@puri.sm, broonie@kernel.org,
+        sakari.ailus@linux.intel.com
+Cc:     angus@akkea.ca, kernel@puri.sm, linux-kernel@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        mchehab@kernel.org
+Subject: [PATCH v3] media: i2c: dw9714: add optional regulator support
+Date:   Mon, 29 Nov 2021 13:07:54 +0100
+Message-Id: <20211129120754.1766570-1-martin.kepplinger@puri.sm>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On i.MX8MQ, enabling monitoring sites that aren't connected to anything
-can cause unwanted side effects on some units. This seems to happen
-once some of these sites report out-of-range readings and results in
-sensor misbehavior, such as thermal zone readings getting stuck or even
-suddenly reporting an impossibly high value, triggering emergency
-shutdowns.
+From: Angus Ainslie <angus@akkea.ca>
 
-The datasheet lists all non-existent sites as "reserved" and doesn't
-make any guarantees about being able to enable them at all, so let's
-not do that.
+Allow the dw9714 to control a regulator and adjust suspend() and resume()
+to support both runtime and system pm.
 
-Fixes: 45038e03d633 ("thermal: qoriq: Enable all sensors before registering them")
-
-Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
+Signed-off-by: Angus Ainslie <angus@akkea.ca>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
 ---
- drivers/thermal/qoriq_thermal.c | 63 ++++++++++++++++++++++-----------
- 1 file changed, 43 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 73049f9bea25..ef0848849ee2 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -32,7 +32,6 @@
- #define TMR_DISABLE	0x0
- #define TMR_ME		0x80000000
- #define TMR_ALPF	0x0c000000
--#define TMR_MSITE_ALL	GENMASK(15, 0)
+
+revision history
+----------------
+v3: (thank you Mark and Sakari)
+ * use regulator_get() instead of regulator_get_optional()
+
+v2: (thank you Mark)
+ * simplify the regulator_get_optional() error path
+ * fix regulator usage during probe()
+https://lore.kernel.org/linux-media/20211126090107.1243558-1-martin.kepplinger@puri.sm/
+
+v1:
+https://lore.kernel.org/linux-media/20211125080922.978583-1-martin.kepplinger@puri.sm/
+
+
+
+ drivers/media/i2c/dw9714.c | 32 +++++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/dw9714.c b/drivers/media/i2c/dw9714.c
+index 3863dfeb8293..81170bbe0e55 100644
+--- a/drivers/media/i2c/dw9714.c
++++ b/drivers/media/i2c/dw9714.c
+@@ -5,6 +5,7 @@
+ #include <linux/i2c.h>
+ #include <linux/module.h>
+ #include <linux/pm_runtime.h>
++#include <linux/regulator/consumer.h>
+ #include <media/v4l2-ctrls.h>
+ #include <media/v4l2-device.h>
+ #include <media/v4l2-event.h>
+@@ -36,6 +37,7 @@ struct dw9714_device {
+ 	struct v4l2_ctrl_handler ctrls_vcm;
+ 	struct v4l2_subdev sd;
+ 	u16 current_val;
++	struct regulator *vcc;
+ };
  
- #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
- #define TMTMIR_DEFAULT	0x0000000f
-@@ -129,33 +128,51 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
- static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 				       struct qoriq_tmu_data *qdata)
- {
--	int id;
-+	int ret = 0;
-+	struct device_node *np, *child, *sensor_np;
+ static inline struct dw9714_device *to_dw9714_vcm(struct v4l2_ctrl *ctrl)
+@@ -145,6 +147,16 @@ static int dw9714_probe(struct i2c_client *client)
+ 	if (dw9714_dev == NULL)
+ 		return -ENOMEM;
  
--	if (qdata->ver == TMU_VER1) {
--		regmap_write(qdata->regmap, REGS_TMR,
--			     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
--	} else {
--		regmap_write(qdata->regmap, REGS_V2_TMSR, TMR_MSITE_ALL);
--		regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
--	}
-+	np = of_find_node_by_name(NULL, "thermal-zones");
-+	if (!np)
-+		return -ENODEV;
++	dw9714_dev->vcc = devm_regulator_get(&client->dev, "vcc");
++	if (IS_ERR(dw9714_dev->vcc))
++		return PTR_ERR(dw9714_dev->vcc);
 +
-+	sensor_np = of_node_get(dev->of_node);
- 
--	for (id = 0; id < SITES_MAX; id++) {
-+	for_each_available_child_of_node(np, child) {
- 		struct thermal_zone_device *tzd;
--		struct qoriq_sensor *sensor = &qdata->sensor[id];
--		int ret;
-+		struct qoriq_sensor *sensor;
-+		int id, site;
++	rval = regulator_enable(dw9714_dev->vcc);
++	if (rval < 0) {
++		dev_err(&client->dev, "failed to enable vcc: %d\n", rval);
++		return rval;
++	}
 +
-+		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
+ 	v4l2_i2c_subdev_init(&dw9714_dev->sd, client, &dw9714_ops);
+ 	dw9714_dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE |
+ 				V4L2_SUBDEV_FL_HAS_EVENTS;
+@@ -200,6 +212,9 @@ static int __maybe_unused dw9714_vcm_suspend(struct device *dev)
+ 	struct dw9714_device *dw9714_dev = sd_to_dw9714_vcm(sd);
+ 	int ret, val;
+ 
++	if (pm_runtime_suspended(&client->dev))
++		return 0;
 +
-+		if (ret < 0) {
-+			dev_err(dev, "failed to get valid sensor id: %d\n", ret);
-+			of_node_put(child);
-+			break;
-+		}
- 
-+		sensor = &qdata->sensor[id];
- 		sensor->id = id;
- 
-+		/* Enable monitoring */
-+		if (qdata->ver == TMU_VER1) {
-+			site = 0x1 << (15 - id);
-+			regmap_update_bits(qdata->regmap, REGS_TMR,
-+					   site | TMR_ME | TMR_ALPF,
-+					   site | TMR_ME | TMR_ALPF);
-+		} else {
-+			site = 0x1 << id;
-+			regmap_update_bits(qdata->regmap, REGS_V2_TMSR, site, site);
-+			regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
-+		}
-+
- 		tzd = devm_thermal_zone_of_sensor_register(dev, id,
- 							   sensor,
- 							   &tmu_tz_ops);
--		ret = PTR_ERR_OR_ZERO(tzd);
--		if (ret) {
--			if (ret == -ENODEV)
--				continue;
--
--			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
--			return ret;
-+		if (IS_ERR(tzd)) {
-+			ret = PTR_ERR(tzd);
-+			dev_err(dev, "failed to register thermal zone: %d\n", ret);
-+			of_node_put(child);
-+			break;
- 		}
- 
- 		if (devm_thermal_add_hwmon_sysfs(tzd))
-@@ -164,7 +181,13 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 
+ 	for (val = dw9714_dev->current_val & ~(DW9714_CTRL_STEPS - 1);
+ 	     val >= 0; val -= DW9714_CTRL_STEPS) {
+ 		ret = dw9714_i2c_write(client,
+@@ -208,7 +223,12 @@ static int __maybe_unused dw9714_vcm_suspend(struct device *dev)
+ 			dev_err_once(dev, "%s I2C failure: %d", __func__, ret);
+ 		usleep_range(DW9714_CTRL_DELAY_US, DW9714_CTRL_DELAY_US + 10);
  	}
- 
 -	return 0;
-+	of_node_put(sensor_np);
-+	of_node_put(np);
 +
++	ret = regulator_disable(dw9714_dev->vcc);
 +	if (ret)
-+		regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
++		dev_err(dev, "Failed to disable vcc: %d\n", ret);
 +
 +	return ret;
  }
  
- static int qoriq_tmu_calibration(struct device *dev,
+ /*
+@@ -224,6 +244,16 @@ static int  __maybe_unused dw9714_vcm_resume(struct device *dev)
+ 	struct dw9714_device *dw9714_dev = sd_to_dw9714_vcm(sd);
+ 	int ret, val;
+ 
++	if (pm_runtime_suspended(&client->dev))
++		return 0;
++
++	ret = regulator_enable(dw9714_dev->vcc);
++	if (ret) {
++		dev_err(dev, "Failed to enable vcc: %d\n", ret);
++		return ret;
++	}
++	usleep_range(1000, 2000);
++
+ 	for (val = dw9714_dev->current_val % DW9714_CTRL_STEPS;
+ 	     val < dw9714_dev->current_val + DW9714_CTRL_STEPS - 1;
+ 	     val += DW9714_CTRL_STEPS) {
 -- 
-2.34.1
+2.30.2
 
