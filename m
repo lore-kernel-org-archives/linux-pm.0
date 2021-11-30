@@ -2,207 +2,78 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0817DC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 15:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68E21C43217
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 15:58:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232627AbhK3PUk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Nov 2021 10:20:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38292 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244478AbhK3PSi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 10:18:38 -0500
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85FF8C0613D7
-        for <linux-pm@vger.kernel.org>; Tue, 30 Nov 2021 07:13:06 -0800 (PST)
-Received: by mail-wm1-x336.google.com with SMTP id p18so17733646wmq.5
-        for <linux-pm@vger.kernel.org>; Tue, 30 Nov 2021 07:13:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=IiS4gXcieiwHRh30CfBLD5DtuaajJ0EBlCiC0ifH9UE=;
-        b=S4bHKWWNsiRIbQrdnZkJeQwDDYj/eB6dkFyudT5wZl5zUv6G4RoAt1uTW/CoMpC77L
-         Xw66Ax43FuHN/EsOedhnUpsZVfX5YuYj/J34O24C67kjmPOOE4FtTZlP0uiiFQ2rdM2+
-         BuS+DphEsQLMWXvj+KPaITcYDyEHR8sciuYYw7DkPBgaozUYmZiZGZQYs2hgqfuoqYlu
-         6sFYCK9h6eFKxZ7cfqMz4DOggsnkAy7us2PjQQPEu5l9kJoqEJxPel6ClwQA3GppsezB
-         Gxl5xhA2iy35HkLwkMCQSs6OSx5XhrAD3h8a2nZOyt5TLrYBTiXRQXoq0L+XxGA6Mp7h
-         tJDg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=IiS4gXcieiwHRh30CfBLD5DtuaajJ0EBlCiC0ifH9UE=;
-        b=jeMXVOjMQldovHexXqSclZLuNujqPo6gtkKcFf485w3TS15Gw+LIdA9ByzDXBt7Qaz
-         LhcvMGXZP1YdYL73LJiK9cd7psiqXWNBHGnP+ixhyWNAN1lEQESq7IoCtsl9p9XndwNC
-         Mkvlqwj1HGGLRVprtSvKwp8BpkGVY/pV6do6k55rOeOHAXgulxkJFH24cz//+FxczBAH
-         uPguLGmxEdix9aiDcm/DXSOEknSAVKwGQr+RJ59Cu1+iTa28bcv3zl8l4EALJyhIOIb1
-         pKkWh0Hr4go6wpnramLxRYPI+i7HqGS0IEwxfS0Su2mVOL+nDr/cMHH4ebkOu9rubEDE
-         PUUA==
-X-Gm-Message-State: AOAM531B/JbHZmuGuOnNN10zOj8oTK1EvMFyJPCBOkXi5d6c4BPSgGbd
-        C6gUrmykURuni37Ap05e4fti8F1ZexoeAQ==
-X-Google-Smtp-Source: ABdhPJxVSAiBi7i5Qr1WSohC8Mr+dbuwKYwzM31nuLIOanvnl65+v/sEmGRaPG91oFjfdXjaD3ZKnA==
-X-Received: by 2002:a7b:c008:: with SMTP id c8mr5917393wmb.55.1638285184845;
-        Tue, 30 Nov 2021 07:13:04 -0800 (PST)
-Received: from ?IPv6:2a01:e34:ed2f:f020:7880:daae:2d50:bb5e? ([2a01:e34:ed2f:f020:7880:daae:2d50:bb5e])
-        by smtp.googlemail.com with ESMTPSA id q24sm2480860wmj.21.2021.11.30.07.13.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Nov 2021 07:13:04 -0800 (PST)
-Subject: Re: [PATCH] thermal: qoriq: Only enable sites that actually exist
-To:     Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org,
-        Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
+        id S234815AbhK3QBY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Nov 2021 11:01:24 -0500
+Received: from relmlor1.renesas.com ([210.160.252.171]:48449 "EHLO
+        relmlie5.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S240633AbhK3QBY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 11:01:24 -0500
+X-IronPort-AV: E=Sophos;i="5.87,276,1631545200"; 
+   d="scan'208";a="101916626"
+Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
+  by relmlie5.idc.renesas.com with ESMTP; 01 Dec 2021 00:58:03 +0900
+Received: from localhost.localdomain (unknown [10.226.93.28])
+        by relmlir5.idc.renesas.com (Postfix) with ESMTP id 847E3400C440;
+        Wed,  1 Dec 2021 00:58:00 +0900 (JST)
+From:   Biju Das <biju.das.jz@bp.renesas.com>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+Cc:     Biju Das <biju.das.jz@bp.renesas.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Amit Kucheria <amitk@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, kernel@puri.sm
-References: <20211129110252.1699112-1-sebastian.krzyszkowiak@puri.sm>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <4a470e25-b1fa-bf7b-18d2-d21cbfe4fb3a@linaro.org>
-Date:   Tue, 30 Nov 2021 16:13:02 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Chris Paterson <Chris.Paterson2@renesas.com>,
+        Biju Das <biju.das@bp.renesas.com>,
+        Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        linux-renesas-soc@vger.kernel.org
+Subject: [PATCH v3 0/2] Add Thermal support for RZ/G2L
+Date:   Tue, 30 Nov 2021 15:57:55 +0000
+Message-Id: <20211130155757.17837-1-biju.das.jz@bp.renesas.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-In-Reply-To: <20211129110252.1699112-1-sebastian.krzyszkowiak@puri.sm>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+RZ/G2L SoC incorporates a thermal sensor unit (TSU) that measures
+the temperature inside the LSI.
+ 
+The thermal sensor in this unit measures temperatures in the range from
+−40°C to 125°C with an accuracy of ±3°C. The TSU repeats measurement at
+20-µs intervals, and automatically updates the results of measurement.
 
-Hi Sebastian,
+The TSU has no external pins as well as no interrupts.
 
-thanks for the fix.
+This patch series aims to add TSU driver support for RZ/G2L SoC.
+v2->v3:
+ * Added Rb tag from Rob.
+ * Updated commit description with technical description of the sensor
+ * Included math.h and unit.h for round_up() and MILLIDEGREE_PER_DEGREE
+ * Updated the comments.
+v1->v2:
+ * Removed clk patch and dts pthes from this series
+ * Removed devm_add_action_or_reset from probe.
 
-On 29/11/2021 12:02, Sebastian Krzyszkowiak wrote:
-> On i.MX8MQ, enabling monitoring sites that aren't connected to anything
-> can cause unwanted side effects on some units. This seems to happen
-> once some of these sites report out-of-range readings and results in
-> sensor misbehavior, such as thermal zone readings getting stuck or even
-> suddenly reporting an impossibly high value, triggering emergency
-> shutdowns.
-> 
-> The datasheet lists all non-existent sites as "reserved" and doesn't
-> make any guarantees about being able to enable them at all, so let's
-> not do that.
+Biju Das (2):
+  dt-bindings: thermal: Document Renesas RZ/G2L TSU
+  thermal/drivers: Add TSU driver for RZ/G2L
 
-The description of what does the patch is missing here.
-
-> Fixes: 45038e03d633 ("thermal: qoriq: Enable all sensors before registering them")
-> 
-> Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-> ---
->  drivers/thermal/qoriq_thermal.c | 63 ++++++++++++++++++++++-----------
->  1 file changed, 43 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index 73049f9bea25..ef0848849ee2 100644
-> --- a/drivers/thermal/qoriq_thermal.c
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -32,7 +32,6 @@
->  #define TMR_DISABLE	0x0
->  #define TMR_ME		0x80000000
->  #define TMR_ALPF	0x0c000000
-> -#define TMR_MSITE_ALL	GENMASK(15, 0)
->  
->  #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
->  #define TMTMIR_DEFAULT	0x0000000f
-> @@ -129,33 +128,51 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
->  static int qoriq_tmu_register_tmu_zone(struct device *dev,
->  				       struct qoriq_tmu_data *qdata)
->  {
-> -	int id;
-> +	int ret = 0;
-> +	struct device_node *np, *child, *sensor_np;
->  
-> -	if (qdata->ver == TMU_VER1) {
-> -		regmap_write(qdata->regmap, REGS_TMR,
-> -			     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
-> -	} else {
-> -		regmap_write(qdata->regmap, REGS_V2_TMSR, TMR_MSITE_ALL);
-> -		regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
-> -	}
-> +	np = of_find_node_by_name(NULL, "thermal-zones");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	sensor_np = of_node_get(dev->of_node);
->  
-> -	for (id = 0; id < SITES_MAX; id++) {
-> +	for_each_available_child_of_node(np, child) {
->  		struct thermal_zone_device *tzd;
-> -		struct qoriq_sensor *sensor = &qdata->sensor[id];
-> -		int ret;
-> +		struct qoriq_sensor *sensor;
-> +		int id, site;
-> +
-> +		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
-> +
-> +		if (ret < 0) {
-> +			dev_err(dev, "failed to get valid sensor id: %d\n", ret);
-> +			of_node_put(child);
-> +			break;
-> +		}
->  
-> +		sensor = &qdata->sensor[id];
->  		sensor->id = id;
->  
-> +		/* Enable monitoring */
-> +		if (qdata->ver == TMU_VER1) {
-> +			site = 0x1 << (15 - id);
-> +			regmap_update_bits(qdata->regmap, REGS_TMR,
-> +					   site | TMR_ME | TMR_ALPF,
-> +					   site | TMR_ME | TMR_ALPF);
-> +		} else {
-> +			site = 0x1 << id;
-> +			regmap_update_bits(qdata->regmap, REGS_V2_TMSR, site, site);
-> +			regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
-> +		}
-
-Why not create the site mask in the loop and then call once the block
-above out this loop?
-
->  		tzd = devm_thermal_zone_of_sensor_register(dev, id,
->  							   sensor,
->  							   &tmu_tz_ops);
-> -		ret = PTR_ERR_OR_ZERO(tzd);
-> -		if (ret) {
-> -			if (ret == -ENODEV)
-> -				continue;
-> -
-> -			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-> -			return ret;
-> +		if (IS_ERR(tzd)) {
-> +			ret = PTR_ERR(tzd);
-> +			dev_err(dev, "failed to register thermal zone: %d\n", ret);
-> +			of_node_put(child);
-> +			break;
->  		}
->  
->  		if (devm_thermal_add_hwmon_sysfs(tzd))
-> @@ -164,7 +181,13 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
->  
->  	}
->  
-> -	return 0;
-> +	of_node_put(sensor_np);
-> +	of_node_put(np);
-> +
-> +	if (ret)
-> +		regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-> +
-> +	return ret;
->  }
->  
->  static int qoriq_tmu_calibration(struct device *dev,
-> 
-
+ .../bindings/thermal/rzg2l-thermal.yaml       |  76 ++++++
+ drivers/thermal/Kconfig                       |   9 +
+ drivers/thermal/Makefile                      |   1 +
+ drivers/thermal/rzg2l_thermal.c               | 240 ++++++++++++++++++
+ 4 files changed, 326 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml
+ create mode 100644 drivers/thermal/rzg2l_thermal.c
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.17.1
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
