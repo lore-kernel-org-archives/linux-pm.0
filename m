@@ -2,44 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A44FCC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 15:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FDD9C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 15:03:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244986AbhK3PGa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Nov 2021 10:06:30 -0500
-Received: from sin.source.kernel.org ([145.40.73.55]:59378 "EHLO
-        sin.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242762AbhK3O5m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 09:57:42 -0500
+        id S245026AbhK3PGb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Nov 2021 10:06:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33906 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S244205AbhK3PAb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 10:00:31 -0500
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F59EC08C5CD;
+        Tue, 30 Nov 2021 06:52:40 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id 38097CE1A8D;
-        Tue, 30 Nov 2021 14:54:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BC35C53FCF;
-        Tue, 30 Nov 2021 14:54:14 +0000 (UTC)
+        by sin.source.kernel.org (Postfix) with ESMTPS id 9D269CE1A50;
+        Tue, 30 Nov 2021 14:52:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB839C8D184;
+        Tue, 30 Nov 2021 14:52:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1638284055;
-        bh=FffVs0YZYMlJiKC9drWO34HxJwSet7WBPs3qouGbUlE=;
+        s=k20201202; t=1638283956;
+        bh=NnAPbCD7mBQ1Qzi/AdkZz0qT1lf82Yd1rb55YQRD8t4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=VbWeH9QdF1ZE6BRbvfWhswIcqiO6DnUhDcCqZDNAdWfFPSrmI+W2yuKBY3je/5wdf
-         aeaD4FW9VV0rksm8NXQaRaDZgdn59ug3yF7OicaD/eVw3xRHsfgmGgraMgwa7kz0h0
-         U3Yl6wuR8CH+Wxk2cI6QMdCPyKizv4sy4DirUQ5p6llXhWuYnUpNp4cqJhGj4OqHlh
-         mLpwDZ9frGNcIc1PR4PiXZBZOKuiUVO4KhwVau2Xol+QkD4FCGsZZQn1VpGmScnYsc
-         ShFMAQZYhIy9V/4O0GiBq/O1OpjLeqjvcn7ctKpuDWgAkQ6f7EmnrCdu+/RxQnbnZi
-         zWzmMaGbXn6hQ==
+        b=Uqj0FKY7KmEfqFbOtieB+BSkUcWE7YGKaZzqXih+GlckLdv3Q6+5zwbDrIXVvgwXE
+         Y9GceiszGtFD+UFXsBDD88hBu5Uo1nhCXdjs3W9V3XixCnUSgv2Fqulv1ETeM//P71
+         7GilUJQ/lk++9avJ+NGkku/uBJd0CAf7oY5E0uvSHi7ocUxEFT6qiL6Md9FWYfuomu
+         g7V+midFv/U/o3zb5fYZqaCw2yYF6+ZtM0BxVrUuQ2rNsR7m8uFNTZSeC+xsX/TCb4
+         22l+jDw0OjdGwCR2McWRsULAQPyhm9xcIzvb/eBDx+FRzYpLK0kyhePwB1rv27jPvK
+         dk1LOYUzBrN8w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Evan Green <evgreen@chromium.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 7/9] PM: hibernate: Fix snapshot partial write lengths
-Date:   Tue, 30 Nov 2021 09:54:00 -0500
-Message-Id: <20211130145402.947049-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 22/25] PM: hibernate: Fix snapshot partial write lengths
+Date:   Tue, 30 Nov 2021 09:51:52 -0500
+Message-Id: <20211130145156.946083-22-sashal@kernel.org>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211130145402.947049-1-sashal@kernel.org>
-References: <20211130145402.947049-1-sashal@kernel.org>
+In-Reply-To: <20211130145156.946083-1-sashal@kernel.org>
+References: <20211130145156.946083-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +76,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/kernel/power/user.c b/kernel/power/user.c
-index f83c1876b39c0..67659e507747e 100644
+index 77438954cc2b0..8f678cd567a62 100644
 --- a/kernel/power/user.c
 +++ b/kernel/power/user.c
-@@ -181,7 +181,7 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
+@@ -180,7 +180,7 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
  		if (res <= 0)
  			goto unlock;
  	} else {
