@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E622BC4167E
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 23:26:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE539C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 23:26:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345363AbhK3X1h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Nov 2021 18:27:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38952 "EHLO
+        id S1345353AbhK3X3a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Nov 2021 18:29:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39008 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345250AbhK3X13 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 18:27:29 -0500
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66D14C061756;
-        Tue, 30 Nov 2021 15:24:08 -0800 (PST)
-Received: by mail-lj1-x236.google.com with SMTP id p8so30795383ljo.5;
-        Tue, 30 Nov 2021 15:24:08 -0800 (PST)
+        with ESMTP id S1345355AbhK3X1g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 18:27:36 -0500
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CFDBC06174A;
+        Tue, 30 Nov 2021 15:24:16 -0800 (PST)
+Received: by mail-lf1-x12e.google.com with SMTP id l22so57903743lfg.7;
+        Tue, 30 Nov 2021 15:24:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=BUPMWYY4B4RjKlltUXgnFtV9hhuqy47aEg3MTgDplAQ=;
-        b=IQ3EtdM0jdKUmytJHIAa8UHQuvKg3GFTWTgffBbQ6VIdxz7Mp1JidKJf6JoivVWwvM
-         2hJfTQ0PkunPptgLCBBlK2XBNvwqHlkxbaIRzkPJyV8FlxCjsZQwZlCun0IHlPn1rJLr
-         dwlBtOq3xQsKFzcnIIJ4OCHZ1bYMeBhtowdj9k1OY7wr/hXF3Fly/QvCi6VAP8t6B+WG
-         Zy8PigW8k8pp/aMH0P4d92xjr1ptFRZX1a2ZpJJiVlmZFCUU4fptcv/2hIFl2xRWxngY
-         8TpztzKnhecVI9QhRr1Dgf5zXfJjWu4OTP9efC8mIXL3qh6Xev/zG/eG38ulsXuOPXJ+
-         //eg==
+        bh=R96ZVkrOm8k9eme6iC5AQ0TJyD6674Gzc/J8B1BaX4Y=;
+        b=YwYQkon8iN+NiDe/EyeKJxHGIPoPL9A+sgTpR842ZTFcEQB72FZCbbscSUdBvPhcFg
+         hiSiv/3AKmyp4UPcBEDxoVPseNWuD09pXe7BHp9DhRHHlRc33j8rMvy08Z1LAdvSLt/T
+         e2mbiKf0lbEtMohV7PCmBcb2STauLhsOuB9gyLUHviNRthK/8dH4h+PubcVeCcqIwukb
+         QFA6jULjg1ehI0/mvg29ArkdCY7Lg4GyLTFFH7a7LBKJYfreVPnvbeQN6s4PTJQii17Q
+         tc07DtkjfpUYO2pRxPHN6Bj3iP26NZqpwIipOFj8n+gvELyiv8t7cM52UaCcpfKxcnl+
+         HLMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=BUPMWYY4B4RjKlltUXgnFtV9hhuqy47aEg3MTgDplAQ=;
-        b=OSCwy5FJMTsYvFC8Jl/eR/tDKIuTdZuhxERBNude8ZayjyYDFRavUExHy0WoSY0P9V
-         D4HmY0CU9z3aYVUsFF4KOBATbCR0wcAhwQaGLt+gyqna6tvGrOKBsRuGKxhWvBAP0v6B
-         cN/E+vxV+elvpkezUDL1E3B9+4v4DXLObTyiVwXwCNzlLCxEAbHyQhmIKjfXVD52zU/d
-         1fKxil8cYJgTjLTjBy8wHXgbQCTurIvpzvhgcBPMdmrqV5n1NEQpzMcFcTObgkcs6HFV
-         +Y9TUiRwKmcf0/qzNVsWbE3o4diWwPqW4H+ZY75AKPF0OIleyaK6OTvZNOW6+0QVEuem
-         gn3A==
-X-Gm-Message-State: AOAM530bFCFZnx8IDxqqx7OpJshJRtnceJ88+j5gxbm6yanq7Se/3Bzn
-        P4WCRXtl85yrmfdsCtj8h44=
-X-Google-Smtp-Source: ABdhPJy1x4JUGPw6jSGGVQPIy/5wvOS7f5XNpYbhYwejSd6jeed3qTaCBAhQIIqpTx20RCDGKcrleg==
-X-Received: by 2002:a2e:b7d2:: with SMTP id p18mr2055862ljo.104.1638314646770;
-        Tue, 30 Nov 2021 15:24:06 -0800 (PST)
+        bh=R96ZVkrOm8k9eme6iC5AQ0TJyD6674Gzc/J8B1BaX4Y=;
+        b=vH4JlYKIL0Frz3Xp0VWA0SZoCeaZyIPhlV3kARAyPHAeCANDNMUEPsssLanXcIH9W1
+         O60g/PNL6EZXNgTEqsij7ogf4ks8eXEMSwUXc1XU8+yN7EhfZ+HNuZeWQ2hyEdUzj760
+         OpXRzNec5r+7xp9zeDMgnpcSTOhOiKtAggDJXurDsL2aK2SQutIsUm4m7E7BhO2o9zjM
+         +l6et1bK5sUJ3oILS2Awovv8TeeMXU8jN4QruCot3UCmUjsth7TOqXmuAQa76065KiBq
+         miHbmR5RPdd6tmOdiQ8AzOnciignxHtm86pSQ9cij0SHSvHGKpO5S1qssM0FKsQ1BoIp
+         MUiQ==
+X-Gm-Message-State: AOAM530pHYbusbUIqBB1eTbyLnapdPmQNvvLiKYKHv6aoTdcYFi6Aw5r
+        EG1NWynqsma/BKPHx6e7pwQ=
+X-Google-Smtp-Source: ABdhPJziSMuiZmUlmSHwYsWA0HD5rwGgywuMdPzz8KtRoNj81d2gyk1bdG2UUr5x+sfySR5YNluKKA==
+X-Received: by 2002:a19:7417:: with SMTP id v23mr2241897lfe.19.1638314654589;
+        Tue, 30 Nov 2021 15:24:14 -0800 (PST)
 Received: from localhost.localdomain (94-29-46-111.dynamic.spd-mgts.ru. [94.29.46.111])
-        by smtp.gmail.com with ESMTPSA id x199sm1860735lff.284.2021.11.30.15.24.05
+        by smtp.gmail.com with ESMTPSA id x199sm1860735lff.284.2021.11.30.15.24.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Nov 2021 15:24:06 -0800 (PST)
+        Tue, 30 Nov 2021 15:24:14 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,9 +64,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
         linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: [PATCH v16 12/40] drm/tegra: hdmi: Add OPP support
-Date:   Wed,  1 Dec 2021 02:23:19 +0300
-Message-Id: <20211130232347.950-13-digetx@gmail.com>
+Subject: [PATCH v16 20/40] bus: tegra-gmi: Add runtime PM and OPP support
+Date:   Wed,  1 Dec 2021 02:23:27 +0300
+Message-Id: <20211130232347.950-21-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211130232347.950-1-digetx@gmail.com>
 References: <20211130232347.950-1-digetx@gmail.com>
@@ -76,70 +76,129 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The HDMI on Tegra belongs to the core power domain and we're going to
-enable GENPD support for the core domain. Now HDMI driver must use
-OPP API for driving the controller's clock rate because OPP API takes
-care of reconfiguring the domain's performance state based on HDMI clock
-rate. Add OPP support to the HDMI driver.
+The GMI bus on Tegra belongs to the core power domain and we're going to
+enable GENPD support for the core domain. Now GMI must be resumed using
+runtime PM API in order to initialize the GMI power state. Add runtime PM
+and OPP support to the GMI driver.
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/gpu/drm/tegra/hdmi.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ drivers/bus/tegra-gmi.c | 50 ++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 44 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/tegra/hdmi.c b/drivers/gpu/drm/tegra/hdmi.c
-index e5d2a4026028..9a87d351a828 100644
---- a/drivers/gpu/drm/tegra/hdmi.c
-+++ b/drivers/gpu/drm/tegra/hdmi.c
-@@ -11,10 +11,13 @@
- #include <linux/math64.h>
+diff --git a/drivers/bus/tegra-gmi.c b/drivers/bus/tegra-gmi.c
+index a6570789f7af..35b59f92fa66 100644
+--- a/drivers/bus/tegra-gmi.c
++++ b/drivers/bus/tegra-gmi.c
+@@ -13,8 +13,11 @@
+ #include <linux/io.h>
  #include <linux/module.h>
  #include <linux/of_device.h>
-+#include <linux/pm_opp.h>
- #include <linux/pm_runtime.h>
- #include <linux/regulator/consumer.h>
++#include <linux/pm_runtime.h>
  #include <linux/reset.h>
  
 +#include <soc/tegra/common.h>
 +
- #include <drm/drm_atomic_helper.h>
- #include <drm/drm_crtc.h>
- #include <drm/drm_debugfs.h>
-@@ -1195,7 +1198,7 @@ static void tegra_hdmi_encoder_enable(struct drm_encoder *encoder)
- 	h_back_porch = mode->htotal - mode->hsync_end;
- 	h_front_porch = mode->hsync_start - mode->hdisplay;
+ #define TEGRA_GMI_CONFIG		0x00
+ #define TEGRA_GMI_CONFIG_GO		BIT(31)
+ #define TEGRA_GMI_BUS_WIDTH_32BIT	BIT(30)
+@@ -54,9 +57,10 @@ static int tegra_gmi_enable(struct tegra_gmi *gmi)
+ {
+ 	int err;
  
--	err = clk_set_rate(hdmi->clk, hdmi->pixel_clock);
-+	err = dev_pm_opp_set_rate(hdmi->dev, hdmi->pixel_clock);
- 	if (err < 0) {
- 		dev_err(hdmi->dev, "failed to set HDMI clock frequency: %d\n",
- 			err);
-@@ -1732,7 +1735,14 @@ static int tegra_hdmi_probe(struct platform_device *pdev)
+-	err = clk_prepare_enable(gmi->clk);
+-	if (err < 0) {
+-		dev_err(gmi->dev, "failed to enable clock: %d\n", err);
++	pm_runtime_enable(gmi->dev);
++	err = pm_runtime_resume_and_get(gmi->dev);
++	if (err) {
++		pm_runtime_disable(gmi->dev);
+ 		return err;
  	}
  
- 	platform_set_drvdata(pdev, hdmi);
--	pm_runtime_enable(&pdev->dev);
+@@ -83,7 +87,9 @@ static void tegra_gmi_disable(struct tegra_gmi *gmi)
+ 	writel(config, gmi->base + TEGRA_GMI_CONFIG);
+ 
+ 	reset_control_assert(gmi->rst);
+-	clk_disable_unprepare(gmi->clk);
 +
-+	err = devm_pm_runtime_enable(&pdev->dev);
-+	if (err)
-+		return err;
-+
++	pm_runtime_put_sync_suspend(gmi->dev);
++	pm_runtime_force_suspend(gmi->dev);
+ }
+ 
+ static int tegra_gmi_parse_dt(struct tegra_gmi *gmi)
+@@ -213,6 +219,7 @@ static int tegra_gmi_probe(struct platform_device *pdev)
+ 	if (!gmi)
+ 		return -ENOMEM;
+ 
++	platform_set_drvdata(pdev, gmi);
+ 	gmi->dev = dev;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -232,6 +239,10 @@ static int tegra_gmi_probe(struct platform_device *pdev)
+ 		return PTR_ERR(gmi->rst);
+ 	}
+ 
 +	err = devm_tegra_core_dev_init_opp_table_common(&pdev->dev);
 +	if (err)
 +		return err;
++
+ 	err = tegra_gmi_parse_dt(gmi);
+ 	if (err)
+ 		return err;
+@@ -247,8 +258,6 @@ static int tegra_gmi_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
  
- 	INIT_LIST_HEAD(&hdmi->client.list);
- 	hdmi->client.ops = &hdmi_client_ops;
-@@ -1753,8 +1763,6 @@ static int tegra_hdmi_remove(struct platform_device *pdev)
- 	struct tegra_hdmi *hdmi = platform_get_drvdata(pdev);
- 	int err;
- 
--	pm_runtime_disable(&pdev->dev);
+-	platform_set_drvdata(pdev, gmi);
 -
- 	err = host1x_client_unregister(&hdmi->client);
- 	if (err < 0) {
- 		dev_err(&pdev->dev, "failed to unregister host1x client: %d\n",
+ 	return 0;
+ }
+ 
+@@ -262,6 +271,34 @@ static int tegra_gmi_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int __maybe_unused tegra_gmi_runtime_resume(struct device *dev)
++{
++	struct tegra_gmi *gmi = dev_get_drvdata(dev);
++	int err;
++
++	err = clk_prepare_enable(gmi->clk);
++	if (err < 0) {
++		dev_err(gmi->dev, "failed to enable clock: %d\n", err);
++		return err;
++	}
++
++	return 0;
++}
++
++static int __maybe_unused tegra_gmi_runtime_suspend(struct device *dev)
++{
++	struct tegra_gmi *gmi = dev_get_drvdata(dev);
++
++	clk_disable_unprepare(gmi->clk);
++
++	return 0;
++}
++
++static const struct dev_pm_ops tegra_gmi_pm = {
++	SET_RUNTIME_PM_OPS(tegra_gmi_runtime_suspend, tegra_gmi_runtime_resume,
++			   NULL)
++};
++
+ static const struct of_device_id tegra_gmi_id_table[] = {
+ 	{ .compatible = "nvidia,tegra20-gmi", },
+ 	{ .compatible = "nvidia,tegra30-gmi", },
+@@ -275,6 +312,7 @@ static struct platform_driver tegra_gmi_driver = {
+ 	.driver = {
+ 		.name		= "tegra-gmi",
+ 		.of_match_table	= tegra_gmi_id_table,
++		.pm = &tegra_gmi_pm,
+ 	},
+ };
+ module_platform_driver(tegra_gmi_driver);
 -- 
 2.33.1
 
