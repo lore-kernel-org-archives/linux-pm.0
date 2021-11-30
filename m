@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94F44C4167E
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 23:24:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13863C2BA4C
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 23:24:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345271AbhK3X1a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Nov 2021 18:27:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38906 "EHLO
+        id S1345322AbhK3X1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Nov 2021 18:27:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345047AbhK3X1Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 18:27:24 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FE91C061574;
-        Tue, 30 Nov 2021 15:24:03 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id bi37so57905598lfb.5;
-        Tue, 30 Nov 2021 15:24:03 -0800 (PST)
+        with ESMTP id S1345169AbhK3X10 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 18:27:26 -0500
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A15ADC06174A;
+        Tue, 30 Nov 2021 15:24:05 -0800 (PST)
+Received: by mail-lj1-x22b.google.com with SMTP id k2so44336439lji.4;
+        Tue, 30 Nov 2021 15:24:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=uELYhg3LoYYilCBTSAEvuuZR4UEF9kvdsKmUqE/otlI=;
-        b=Iz+By4hMaXHUZwDfNCwQnwHPuCiheJc2NwheZRIW0SCUuZLXO6Kzb0rHCFhXIjvcpq
-         atkOkbTR7AyNqk3eYgRtR4+8TIHgEHeIX5V7awmkDF+cm8HK+xuAU8gwl0EW6OfiFiRd
-         ZJs+lPfBU0yFZXSMvPR7IwR2G9j4BzBRCJUIQfajREXQmUMRjWP4eze74I3lCMdEeJSH
-         uDWKf63VDqvCJUvuOA/yd+zanFwsJBx3KsYcJ7hfFxe/VteDysXft6+ITX5XRPiL2XoN
-         e2UHyFk5KHUy/kdANpCvj2PHfbn3MizqGQaQnW4vf1cJQjiCOZr1biuXiBEMhC4ZbEGt
-         7idg==
+        bh=Oh6QUonw7MrnLiKi5GFBt9OmRLKhM/HqDNHd5NkKg7U=;
+        b=W+xc93Zkk1bw+3A/dpYtj4prTpbCTRMxSBk86PP2rqZQ9t+a377in0swWhYNA8zBuy
+         d8ka9sIfousYLsqWAYfgb2RE0h/MbHYoDRTgXZq8cICNj/oXmS5Icl+00dxUGunQnJyz
+         GHKqDzAQ4d003bOiR25Xay9wSrFsM0aUt6b3TxF+oxfhZRfAVbxPAIkL3uqQrTPkVMJM
+         9b7ga58/r8fUNYBe9ezRsoTNI8Li0tbAAjCcn7LEgJipcrepYw3m0gy3Urpt3JtuC0/C
+         hSwO8yaQlRs69sBLZzh6vZydbE5yQFC93bIaqyLBKQuVeJ8G0GOk+4lwSiijmBQxCHzT
+         LwOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=uELYhg3LoYYilCBTSAEvuuZR4UEF9kvdsKmUqE/otlI=;
-        b=br6EBrRZsacDwQEKljfm5azgBAFGh72lHmWo97cmwezw7VF9PL2RvthgA46arv1gCs
-         bUvCqxlXPcsZkkpcz+WJXACNmjvStvk57ng9xndKx1SD29VuJZ8ULpCQXA4XR7DXJpL5
-         dDGhNb+uUvKhha2eg+dQGXjbr0C0dLYeIeirI58jpMCSuOvxNA9E24xDEJNeMXWlv7zK
-         AV5fajasCdkxVLdX/X3ersTbxl4d8wssVXwkBdqKACR03hf6e2Kr08/Axwx8CAx0Le7h
-         tH7DJL1reFC2NrvxDPJMIAKVUJCDJCHr0XcJjewQ0B5l0tvNfyx0OC4GiWxVwuPnx4oU
-         Mwug==
-X-Gm-Message-State: AOAM533hbmXf36rJ2mf9vDlaoV0lZclWpAIJxE+dRcrsU1kfbCr7gV4k
-        NVoHAOs0BsdNdIGOEfkSGHY=
-X-Google-Smtp-Source: ABdhPJyEYwAI+MOhcdvc/yezPcOl+Jxo64iQcq1EFuIqq6TqVcWs235t3mz+TkeZYw65Aj2HR/gfmA==
-X-Received: by 2002:a05:6512:682:: with SMTP id t2mr2162526lfe.503.1638314641879;
-        Tue, 30 Nov 2021 15:24:01 -0800 (PST)
+        bh=Oh6QUonw7MrnLiKi5GFBt9OmRLKhM/HqDNHd5NkKg7U=;
+        b=YCuAeJB2WxI8tPjvpRykvpT3mZ4Ix4ZKKZKxn+DLyRCAPxwqPhzxVjoDLhz8DsWfoE
+         8qKja60UkDuUGytrNno6auHJkTSpt9uq/Aqj+TkACgyyNnvUqZdUa31GTftZ8IvBXF5t
+         GigRNbJpNlzxfZ1WjaJaz5T5wRx18VgMYKUK1QlysPUbbrjJ9Q5XdqAX4prqxsMhxhb7
+         T8AW9d/Z/r91uYYY0sFSCtDC9iJNBkMN8SktzWV5qXiQmYQ4CP6kf+g7XuKZFkzNx88u
+         38bb+HJxuBcqKEzBZn+MPmNVG1kXhZOk6V/0t8RDzjQ2vbBUmnfRpj9nWuL9LeBnfmSk
+         wiSA==
+X-Gm-Message-State: AOAM530x1+Y3LJP8nCixWB5xXkbnP0mBSvIMZysZF4sDgAhwAY4ahJIM
+        1dbSj79AfP2Smbgs3hRJIB0=
+X-Google-Smtp-Source: ABdhPJxVxIo7wUYLozkf+NW+FFAvxz91eeUJJrgGcg10KppagMhX48rWWV8d4B0ES0rdjmGbUl/roQ==
+X-Received: by 2002:a05:651c:218:: with SMTP id y24mr1918262ljn.50.1638314643936;
+        Tue, 30 Nov 2021 15:24:03 -0800 (PST)
 Received: from localhost.localdomain (94-29-46-111.dynamic.spd-mgts.ru. [94.29.46.111])
-        by smtp.gmail.com with ESMTPSA id x199sm1860735lff.284.2021.11.30.15.24.00
+        by smtp.gmail.com with ESMTPSA id x199sm1860735lff.284.2021.11.30.15.24.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Nov 2021 15:24:01 -0800 (PST)
+        Tue, 30 Nov 2021 15:24:03 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,9 +64,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
         linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: [PATCH v16 07/40] dt-bindings: host1x: Document Memory Client resets of Host1x, GR2D and GR3D
-Date:   Wed,  1 Dec 2021 02:23:14 +0300
-Message-Id: <20211130232347.950-8-digetx@gmail.com>
+Subject: [PATCH v16 09/40] gpu: host1x: Add host1x_channel_stop()
+Date:   Wed,  1 Dec 2021 02:23:16 +0300
+Message-Id: <20211130232347.950-10-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211130232347.950-1-digetx@gmail.com>
 References: <20211130232347.950-1-digetx@gmail.com>
@@ -76,46 +76,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Memory Client should be blocked before hardware reset is asserted in order
-to prevent memory corruption and hanging of memory controller.
+Add host1x_channel_stop() which waits till channel becomes idle and then
+stops the channel hardware. This is needed for supporting suspend/resume
+by host1x drivers since the hardware state is lost after power-gating,
+thus the channel needs to be stopped before client enters into suspend.
 
-Document Memory Client resets of Host1x, GR2D and GR3D hardware units.
-
-Reviewed-by: Rob Herring <robh@kernel.org>
+Tested-by: Peter Geis <pgwipeout@gmail.com> # Ouya T30
+Tested-by: Paul Fertser <fercerpav@gmail.com> # PAZ00 T20
+Tested-by: Nicolas Chauvet <kwizart@gmail.com> # PAZ00 T20 and TK1 T124
+Tested-by: Matt Merhar <mattmerhar@protonmail.com> # Ouya T30
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../bindings/display/tegra/nvidia,tegra20-host1x.txt          | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/gpu/host1x/channel.c | 8 ++++++++
+ include/linux/host1x.h       | 1 +
+ 2 files changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/display/tegra/nvidia,tegra20-host1x.txt b/Documentation/devicetree/bindings/display/tegra/nvidia,tegra20-host1x.txt
-index 62861a8fb5c6..e61999ce54e9 100644
---- a/Documentation/devicetree/bindings/display/tegra/nvidia,tegra20-host1x.txt
-+++ b/Documentation/devicetree/bindings/display/tegra/nvidia,tegra20-host1x.txt
-@@ -19,6 +19,7 @@ Required properties:
-   See ../reset/reset.txt for details.
- - reset-names: Must include the following entries:
-   - host1x
-+  - mc
+diff --git a/drivers/gpu/host1x/channel.c b/drivers/gpu/host1x/channel.c
+index 4cd212bb570d..2a9a3a8d5931 100644
+--- a/drivers/gpu/host1x/channel.c
++++ b/drivers/gpu/host1x/channel.c
+@@ -75,6 +75,14 @@ struct host1x_channel *host1x_channel_get_index(struct host1x *host,
+ 	return ch;
+ }
  
- Optional properties:
- - operating-points-v2: See ../bindings/opp/opp.txt for details.
-@@ -198,6 +199,7 @@ of the following host1x client modules:
-     See ../reset/reset.txt for details.
-   - reset-names: Must include the following entries:
-     - 2d
-+    - mc
++void host1x_channel_stop(struct host1x_channel *channel)
++{
++	struct host1x *host = dev_get_drvdata(channel->dev->parent);
++
++	host1x_hw_cdma_stop(host, &channel->cdma);
++}
++EXPORT_SYMBOL(host1x_channel_stop);
++
+ static void release_channel(struct kref *kref)
+ {
+ 	struct host1x_channel *channel =
+diff --git a/include/linux/host1x.h b/include/linux/host1x.h
+index 2ca53d7ed7ca..e8dc5bc41f79 100644
+--- a/include/linux/host1x.h
++++ b/include/linux/host1x.h
+@@ -226,6 +226,7 @@ struct host1x_job;
  
-   Optional properties:
-   - interconnects: Must contain entry for the GR2D memory clients.
-@@ -224,6 +226,8 @@ of the following host1x client modules:
-   - reset-names: Must include the following entries:
-     - 3d
-     - 3d2 (Only required on SoCs with two 3D clocks)
-+    - mc
-+    - mc2 (Only required on SoCs with two 3D clocks)
+ struct host1x_channel *host1x_channel_request(struct host1x_client *client);
+ struct host1x_channel *host1x_channel_get(struct host1x_channel *channel);
++void host1x_channel_stop(struct host1x_channel *channel);
+ void host1x_channel_put(struct host1x_channel *channel);
+ int host1x_job_submit(struct host1x_job *job);
  
-   Optional properties:
-   - interconnects: Must contain entry for the GR3D memory clients.
 -- 
 2.33.1
 
