@@ -2,159 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D630AC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 18:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 460E4C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Nov 2021 19:00:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245196AbhK3SZG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Nov 2021 13:25:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53972 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239565AbhK3SZG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Nov 2021 13:25:06 -0500
-Received: from mail-io1-xd30.google.com (mail-io1-xd30.google.com [IPv6:2607:f8b0:4864:20::d30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC9F9C061746
-        for <linux-pm@vger.kernel.org>; Tue, 30 Nov 2021 10:21:46 -0800 (PST)
-Received: by mail-io1-xd30.google.com with SMTP id w22so27383088ioa.1
-        for <linux-pm@vger.kernel.org>; Tue, 30 Nov 2021 10:21:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=BEltFXULxNYFVsP4eGm3kbct7+jVmIitoqiNJzsq4Rw=;
-        b=oVveweJbpqMfac0CI2tRpgA9ovwMDwKpWz4+/sBGm+Eai0m1BWi+FfOOTRJFpUtc9J
-         t9/kUK4q/4YG6sWCu+eBdY6AMOT0bbjzCt2gqAvQLmV/gyZhuzh1m/+feYuXSJTiaLb0
-         21JBxcCiv8zL/Vb5pjTbJSCCMnH7+ZEG5IcbY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=BEltFXULxNYFVsP4eGm3kbct7+jVmIitoqiNJzsq4Rw=;
-        b=f1IVFgY1WePAdPJCwqsq/vwIwuEGZpqFrOXirJmQEpVgXpbdkC8sC1Hvp/6gd8Ok+G
-         kYJD3oIcwLzge0WpWhJUgsendPS4ofTkkAELtUxTT5WdYecxuKmOxEekJNO3jEzSKNzR
-         oFrXAoZgCqEecqd53YcwnTtBy52hrTpuWg70PgbO2o8tut/idsBhryFcXGXNheVqFEf0
-         ZHRC1DzAv/6HdI/mLnRwUQ06LyYQjHzBuoxYPBveA7X7NPoXUZi5gJ23WuZ3l7bNBofU
-         1IWLaQB2SiM3acHSirMW1+1kVLwnI/SmZgd/xvLxUYwnzDYiml7czvK4HGaAd85Z2wX1
-         uauw==
-X-Gm-Message-State: AOAM531BrBmlafpMPjCq3sucX5ifGFdjG0T3/pxMBwmqMYqRVOLNWCL4
-        Tieof52W3wXS4lOimyFftTr78oFodl7zgQ==
-X-Google-Smtp-Source: ABdhPJyL5iPyB2tGyxiozFSPz3OMnxo8tj26jE4Jh4cmVX6iY/33/VPO3vSWb8G+DSRO02J0r1rX7A==
-X-Received: by 2002:a05:6638:3a4:: with SMTP id z4mr1437407jap.76.1638296506165;
-        Tue, 30 Nov 2021 10:21:46 -0800 (PST)
-Received: from mail-io1-f44.google.com (mail-io1-f44.google.com. [209.85.166.44])
-        by smtp.gmail.com with ESMTPSA id w10sm7048234ill.36.2021.11.30.10.21.45
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Nov 2021 10:21:45 -0800 (PST)
-Received: by mail-io1-f44.google.com with SMTP id y16so27298592ioc.8
-        for <linux-pm@vger.kernel.org>; Tue, 30 Nov 2021 10:21:45 -0800 (PST)
-X-Received: by 2002:a6b:d904:: with SMTP id r4mr1204199ioc.52.1638296505145;
- Tue, 30 Nov 2021 10:21:45 -0800 (PST)
+        id S236477AbhK3TDd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Nov 2021 14:03:33 -0500
+Received: from mga01.intel.com ([192.55.52.88]:57429 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S234889AbhK3TDa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 30 Nov 2021 14:03:30 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10184"; a="260262544"
+X-IronPort-AV: E=Sophos;i="5.87,276,1631602800"; 
+   d="scan'208";a="260262544"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Nov 2021 11:00:09 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,276,1631602800"; 
+   d="scan'208";a="477231734"
+Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
+  by orsmga002.jf.intel.com with ESMTP; 30 Nov 2021 11:00:05 -0800
+Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1ms8MH-000Dfl-31; Tue, 30 Nov 2021 19:00:05 +0000
+Date:   Wed, 1 Dec 2021 02:59:10 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     pandith.n@intel.com, djakov@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
+        mgross@linux.intel.com, furong.zhou@intel.com,
+        mallikarjunappa.sangannavar@intel.com,
+        lakshmi.bai.raja.subramanian@intel.com,
+        Pandith N <pandith.n@intel.com>
+Subject: Re: [PATCH V8 1/1] interconnect: intel: Add Keem Bay noc driver
+Message-ID: <202112010223.Pb0XZMHN-lkp@intel.com>
+References: <20211129154337.14398-1-pandith.n@intel.com>
 MIME-Version: 1.0
-References: <20211029122359.1.I1e23f382fbd8beb19fe1c06d70798b292012c57a@changeid>
- <CAE=gft4MRvq-VCBW4EX4dGfPi4s7Lco8h6Z_ejRH5A1e-K2-yA@mail.gmail.com>
- <CAJZ5v0hsGFHxcTb8PUkGSm9oas1wdquB=euofS19zriRc1CXYw@mail.gmail.com>
- <CAE=gft6CjUhkcrmcjVEOp5S+rgqN1_ZGTKbK0DierTanu0d16A@mail.gmail.com>
- <CAJZ5v0gamixc4dkBEXJjjw5zQynuz8BkQ9xv8YpbjkTkdMb2TQ@mail.gmail.com>
- <CAE=gft6o0JxhDgazPA5DVbL6hQ+36D_GkzgN-AuR3YA43NSqaw@mail.gmail.com> <CAJZ5v0ixOCnT_JyQ1gpvc9rdH_zK7gLrke0wJSLUagd=-qf0sA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0ixOCnT_JyQ1gpvc9rdH_zK7gLrke0wJSLUagd=-qf0sA@mail.gmail.com>
-From:   Evan Green <evgreen@chromium.org>
-Date:   Tue, 30 Nov 2021 09:44:02 -0800
-X-Gmail-Original-Message-ID: <CAE=gft7WjMJb1NUUrusoaP4YRiz5Sbsb898Yi_ekJTFCBFz_ng@mail.gmail.com>
-Message-ID: <CAE=gft7WjMJb1NUUrusoaP4YRiz5Sbsb898Yi_ekJTFCBFz_ng@mail.gmail.com>
-Subject: Re: [PATCH] PM / hibernate: Fix snapshot partial write lengths
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211129154337.14398-1-pandith.n@intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 30, 2021 at 3:46 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Mon, Nov 29, 2021 at 5:50 PM Evan Green <evgreen@chromium.org> wrote:
-> >
-> > On Wed, Nov 24, 2021 at 4:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Tue, Nov 16, 2021 at 9:22 PM Evan Green <evgreen@chromium.org> wrote:
-> > > >
-> > > > On Tue, Nov 16, 2021 at 9:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > > >
-> > > > > On Mon, Nov 15, 2021 at 6:13 PM Evan Green <evgreen@chromium.org> wrote:
-> > > > > >
-> > > > > > Gentle bump.
-> > > > > >
-> > > > > >
-> > > > > > On Fri, Oct 29, 2021 at 12:24 PM Evan Green <evgreen@chromium.org> wrote:
-> > > > > > >
-> > > > > > > snapshot_write() is inappropriately limiting the amount of data that can
-> > > > > > > be written in cases where a partial page has already been written. For
-> > > > > > > example, one would expect to be able to write 1 byte, then 4095 bytes to
-> > > > > > > the snapshot device, and have both of those complete fully (since now
-> > > > > > > we're aligned to a page again). But what ends up happening is we write 1
-> > > > > > > byte, then 4094/4095 bytes complete successfully.
-> > > > > > >
-> > > > > > > The reason is that simple_write_to_buffer()'s second argument is the
-> > > > > > > total size of the buffer, not the size of the buffer minus the offset.
-> > > > > > > Since simple_write_to_buffer() accounts for the offset in its
-> > > > > > > implementation, snapshot_write() can just pass the full page size
-> > > > > > > directly down.
-> > > > > > >
-> > > > > > > Signed-off-by: Evan Green <evgreen@chromium.org>
-> > > > > > > ---
-> > > > > > >
-> > > > > > >  kernel/power/user.c | 2 +-
-> > > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > > >
-> > > > > > > diff --git a/kernel/power/user.c b/kernel/power/user.c
-> > > > > > > index 740723bb388524..ad241b4ff64c58 100644
-> > > > > > > --- a/kernel/power/user.c
-> > > > > > > +++ b/kernel/power/user.c
-> > > > > > > @@ -177,7 +177,7 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
-> > > > > > >                 if (res <= 0)
-> > > > > > >                         goto unlock;
-> > > > > > >         } else {
-> > > > > > > -               res = PAGE_SIZE - pg_offp;
-> > > > > > > +               res = PAGE_SIZE;
-> > > > > > >         }
-> > > > > > >
-> > > > > > >         if (!data_of(data->handle)) {
-> > > > > > > --
-> > > > >
-> > > > > Do you actually see this problem in practice?
-> > > >
-> > > > Yes. I may fire up another thread to explain why I'm stuck doing a
-> > > > partial page write, and how I might be able to stop doing that in the
-> > > > future with some kernel help. But either way, this is a bug.
-> > >
-> > > OK, patch applied as 5.16-rc material.
-> > >
-> > > I guess it should go into -stable kernels too?
-> >
-> > Yes, putting it into -stable would make sense also. I should have CCed
-> > them originally, doing that now.
->
-> Well, you need to point them to the upstream commit to backport.
->
-> In this particular case it would be
->
-> commit 88a5045f176b78c33a269a30a7b146e99c550bd9 (pm-sleep)
-> Author: Evan Green <evgreen@chromium.org>
-> Date:   Fri Oct 29 12:24:22 2021 -0700
->
->    PM: hibernate: Fix snapshot partial write lengths
->
-> I'll send an inclusion request for this.  I guess it should go into
-> all of the applicable -stable series, right?
+Hi,
 
-Correct. From what I can tell this code and simple_write_to_buffer()
-haven't changed since its introduction in 2010, so my patch should
-have had a fixes tag like:
+I love your patch! Perhaps something to improve:
 
-Fixes: d3c1b24c50e8 ("PM / Hibernate: Snapshot cleanup")
+[auto build test WARNING on linus/master]
+[also build test WARNING on v5.16-rc3 next-20211130]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Thanks for doing that Rafael, sorry for flubbing the stable aspect.
+url:    https://github.com/0day-ci/linux/commits/pandith-n-intel-com/interconnect-intel-Add-Keem-Bay-noc-driver/20211129-235117
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git d58071a8a76d779eedab38033ae4c821c30295a5
+config: i386-randconfig-c001-20211130 (https://download.01.org/0day-ci/archive/20211201/202112010223.Pb0XZMHN-lkp@intel.com/config)
+compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 25eb7fa01d7ebbe67648ea03841cda55b4239ab2)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/724e8829a62d4ae6908d011f927e0c3ae5b0a80c
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review pandith-n-intel-com/interconnect-intel-Add-Keem-Bay-noc-driver/20211129-235117
+        git checkout 724e8829a62d4ae6908d011f927e0c3ae5b0a80c
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/interconnect/intel/
 
--Evan
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/interconnect/intel/keembay-bwmon.c:142: warning: expecting prototype for flexnoc_counterp_capture(). Prototype was for flexnoc_counter_capture() instead
+
+
+vim +142 drivers/interconnect/intel/keembay-bwmon.c
+
+   122	
+   123	/**
+   124	 * flexnoc_counterp_capture() - Capture the counter statistic values
+   125	 * @noc: NOC type to setup counters
+   126	 * @counter:  Counter number to capture statistics values for n and n+1
+   127	 * @value: statistics values read are returned in this address passed
+   128	 *
+   129	 * This function will return the statistics value of started counters.
+   130	 * When this function returns NOC_PROBE_COMPLETED, it is guaranteed that NOC
+   131	 * counters are idle and finished probing.
+   132	 * Algo : The values should not returned when counters are active/running.
+   133	 * Once the counter is frozen, the values are good to read. There is an
+   134	 * iteration logic implemented to check this. An maximum timeout config
+   135	 * is provided to for capture timeout - NOC_CAPTURE_TIMEOUT_MSEC
+   136	 *
+   137	 *  Returns NOC_PROBE_COMPLETED if the counters are stopped or
+   138	 *  NOC_PROBE_ERR_IN_PROGRESS if counters are still running
+   139	 */
+   140	enum noc_status flexnoc_counter_capture(enum noc_ss_type noc,
+   141						enum noc_counter counter, u32  *value)
+ > 142	{
+   143		unsigned long timeout;
+   144		u32 c0_0, c0_1;
+   145	
+   146		if (noc >= NOC_TYPE_MAX ||
+   147		    counter >= NOC_COUNTER_MAX  ||
+   148		    !value)
+   149			return NOC_PROBE_ERR_INVALID_ARGS;
+   150	
+   151		timeout = jiffies + msecs_to_jiffies(NOC_CAPTURE_TIMEOUT_MSEC);
+   152		do {
+   153			c0_0 = noc_readl((c_offset[counter] + C_VAL));
+   154			usleep_range(10000, 11000);
+   155			c0_1 = noc_readl((c_offset[counter] + C_VAL));
+   156			/* If mainctrl is zero , return error */
+   157			if (noc_readl(MAINCTL) == 0)
+   158				return NOC_PROBE_ERR_IN_PROGRESS;
+   159			/* If counters are zero, keep reading */
+   160			if (0 == c0_0 && 0 == c0_1) {
+   161				break;
+   162			} else if (c0_0 != c0_1) {
+   163				continue;
+   164			} else {
+   165				/* counters look good break the while */
+   166				break;
+   167			}
+   168		} while (time_before(jiffies, timeout));
+   169	
+   170		if (c0_0 != c0_1)
+   171			return NOC_PROBE_ERR_IN_PROGRESS;
+   172	
+   173		c0_0 = noc_readl((c_offset[counter] + C_VAL));
+   174		c0_1 = noc_readl((c_offset[counter + 1] + C_VAL));
+   175		*value = (c0_0 | (c0_1 << 16));
+   176	
+   177		return NOC_PROBE_COMPLETED;
+   178	}
+   179	
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
