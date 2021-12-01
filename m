@@ -2,44 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6536FC433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 06:39:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88CDFC433EF
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 06:47:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234603AbhLAGmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Dec 2021 01:42:43 -0500
-Received: from szxga03-in.huawei.com ([45.249.212.189]:28201 "EHLO
-        szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230510AbhLAGmn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 01:42:43 -0500
-Received: from dggpeml500026.china.huawei.com (unknown [172.30.72.54])
-        by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4J3qBn3qWHz8vgK;
-        Wed,  1 Dec 2021 14:37:21 +0800 (CST)
+        id S1346969AbhLAGun (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Dec 2021 01:50:43 -0500
+Received: from szxga08-in.huawei.com ([45.249.212.255]:28136 "EHLO
+        szxga08-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229492AbhLAGum (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 01:50:42 -0500
+Received: from dggpeml500023.china.huawei.com (unknown [172.30.72.55])
+        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4J3qMC3NRKz1DJqt;
+        Wed,  1 Dec 2021 14:44:39 +0800 (CST)
 Received: from dggpeml500006.china.huawei.com (7.185.36.76) by
- dggpeml500026.china.huawei.com (7.185.36.106) with Microsoft SMTP Server
+ dggpeml500023.china.huawei.com (7.185.36.114) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Wed, 1 Dec 2021 14:39:19 +0800
-Received: from [10.174.177.232] (10.174.177.232) by
- dggpeml500006.china.huawei.com (7.185.36.76) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.20; Wed, 1 Dec 2021 14:39:19 +0800
-Subject: Re: [PATCH 1/2] cpufreq: Fix a comment in cpufreq_policy_free
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-CC:     <rafael.j.wysocki@intel.com>, <rafael@kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20211130151526.949-1-tangyizhou@huawei.com>
- <20211130151526.949-2-tangyizhou@huawei.com>
- <20211201042245.amxgyevar6gjbkfb@vireshk-i7>
+ 15.1.2308.20; Wed, 1 Dec 2021 14:47:20 +0800
+Received: from huawei.com (10.175.100.227) by dggpeml500006.china.huawei.com
+ (7.185.36.76) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Wed, 1 Dec
+ 2021 14:47:20 +0800
 From:   Tang Yizhou <tangyizhou@huawei.com>
-Message-ID: <5a895a87-4eee-3dfd-5b86-af436929a068@huawei.com>
-Date:   Wed, 1 Dec 2021 14:39:18 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.1.1
+To:     <viresh.kumar@linaro.org>, <rafael.j.wysocki@intel.com>,
+        <rafael@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Tang Yizhou <tangyizhou@huawei.com>
+Subject: [PATCH v2 0/2] cpufreq: Update function comment and document
+Date:   Wed, 1 Dec 2021 15:14:58 +0800
+Message-ID: <20211201071500.28648-1-tangyizhou@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-In-Reply-To: <20211201042245.amxgyevar6gjbkfb@vireshk-i7>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.177.232]
+Content-Type: text/plain
+X-Originating-IP: [10.175.100.227]
 X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
  dggpeml500006.china.huawei.com (7.185.36.76)
 X-CFilter-Loop: Reflected
@@ -47,39 +41,18 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2021/12/1 12:22, Viresh Kumar wrote:
-> On 30-11-21, 23:15, Tang Yizhou wrote:
->> The comment is inconsistent with the block_notifier_call_chain() call,
->> so fix it.
->>
->> Signed-off-by: Tang Yizhou <tangyizhou@huawei.com>
->> ---
->>  drivers/cpufreq/cpufreq.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index e338d2f010fe..8f753675e4a2 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1296,7 +1296,7 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
->>  
->>  	if (policy->max_freq_req) {
->>  		/*
->> -		 * CPUFREQ_CREATE_POLICY notification is sent only after
->> +		 * CPUFREQ_REMOVE_POLICY notification is sent only after
-> 
-> No, the earlier comment is correct. It says when the CREATE notification was
-> sent and so we need to do the remove here before removing max_freq_req.
+v2:
+1. Take viresh's advice and update the comments in cpufreq.c
+2. Add an Acked-by tag in Patch 2.
 
-I see. I was confused at the first time. Perhaps it is better to both comment when
-CPUFREQ_CREATE_POLICY and CPUFREQ_REMOVE_POLICY notification is sent.
+Tang Yizhou (2):
+  cpufreq: Fix a comment in cpufreq_policy_free
+  doc/cpufreq: Update core.rst
 
-> 
->>  		 * successfully adding max_freq_req request.
->>  		 */
->>  		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->> -- 
->> 2.17.1
-> 
+ Documentation/cpu-freq/core.rst | 6 +++---
+ drivers/cpufreq/cpufreq.c       | 9 +++++++--
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-Tang
+-- 
+2.17.1
+
