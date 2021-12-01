@@ -2,291 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1468CC433FE
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 16:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD6AC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 16:45:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351611AbhLAQrM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Dec 2021 11:47:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48466 "EHLO
+        id S1351662AbhLAQsx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Dec 2021 11:48:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49206 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351496AbhLAQpj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 11:45:39 -0500
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B08F2C06175B
-        for <linux-pm@vger.kernel.org>; Wed,  1 Dec 2021 08:42:05 -0800 (PST)
-Received: by mail-wr1-x429.google.com with SMTP id o13so53507718wrs.12
-        for <linux-pm@vger.kernel.org>; Wed, 01 Dec 2021 08:42:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ghUVEhvOdMPM8hnbGXgb0N6UgUT3EWuYvvMN4JA07EA=;
-        b=oBKUqKPxTG4FnYiKfjO8aT700wr4+GmXaVLb/OAWPVJ8/ev8uJxOVQLvwZAzPQrXoQ
-         jpz8ELIiGP0VBwEsG95FtUM+6bwic6F6ClNTvjRIwq2Ch7qn7S2mvdSJgdQ6CEqQ/BeD
-         7bW7dmIAayEhQ+wX+jBgbYky1FDDmSuj1F80hOJgXIq5pFtWHt8M/a3KBkkFJBIZduO7
-         sgykaj9iGaQzq93GJLFr3hrWB93RfuL8A3Hi4UC14A/QGhjV6hGhPIx+JgJORbyLTzUi
-         d8TBrvDw5BkhgN2LwzmE9MSMs1BqEszz42Kps81dVQaLk2i2chz/BY3dNsk6E53XLByw
-         3wPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ghUVEhvOdMPM8hnbGXgb0N6UgUT3EWuYvvMN4JA07EA=;
-        b=kIQvbyqwtYn0wLp/MAvR1DK0ONy+YWtoVYzH1D3oBF7axyYC0/10HlXk/cZOwaYckY
-         dwsfvUqT4Kz9G6io3Lxe2k8zastiq4t7vKCWqZ+CV3vo1MCDDyF8tTgyUz6kmhPL0Y00
-         PpYlG6xj8M1CiZjRNwj3hP7LuMXEGCXeVE3OQWhJCZWomhA4vNEVhZ3OuL6qEvCb5cse
-         souruvvKlCa3c7sBXA3mP6ZPodulUTFsWZPswaZu5qnzV29bpjH+iA68l/+Z5WccCSSx
-         K7pTjDC0bTDUxc95itbKFNRKgi5NW6F9+xzieT5waQZV4883mo4/b9aBsDU+owZzKt6m
-         aWhg==
-X-Gm-Message-State: AOAM532jkWfEAFU1rm8cPHRSsNyxMk6ZvO0Xkca2ZxJeGEpZZDTMRep0
-        7nhAuisN7YJOXmyAOpKadUFPCQ==
-X-Google-Smtp-Source: ABdhPJzuAt9hJYCr5ln+i1Y0YtnfWzf2yKvdOt0jnrXhy4ncX7TkANBM8t0ChpDhRCX4iTVGfQFJ7g==
-X-Received: by 2002:a5d:6a8f:: with SMTP id s15mr8046895wru.544.1638376924146;
-        Wed, 01 Dec 2021 08:42:04 -0800 (PST)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:72d0:52a1:d4ea:f564])
-        by smtp.gmail.com with ESMTPSA id v8sm255547wrd.84.2021.12.01.08.42.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Dec 2021 08:42:03 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, robh@kernel.org
-Cc:     arnd@linaro.org, heiko@sntech.de, ulf.hansson@linaro.org,
-        rjw@rjwysocki.net, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        lukasz.luba@arm.com, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>
-Subject: [PATCH v3 3/5] powercap/drivers/dtpm: Add DT initialization support
-Date:   Wed,  1 Dec 2021 17:38:52 +0100
-Message-Id: <20211201163856.41419-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20211201163856.41419-1-daniel.lezcano@linaro.org>
-References: <20211201163856.41419-1-daniel.lezcano@linaro.org>
+        with ESMTP id S1351495AbhLAQsl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 11:48:41 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D7087C06175F;
+        Wed,  1 Dec 2021 08:45:14 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 2181EB82040;
+        Wed,  1 Dec 2021 16:45:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E915FC53FAD;
+        Wed,  1 Dec 2021 16:45:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1638377111;
+        bh=Nhf2om/v2NQGCvvM2KbwouBAg91Y+6ySqaNQjBtulLU=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=QQsSJmWheDiKio+d1s7Xfm9eE+UmkkhZdSg6ChxdT0kEFrf2vIJazcg4t8SP4RtgR
+         yY4JvK0Td3JlCiBopx4MQwyPYyB58fcvEtu/7tTHWiZ/8ASwPpK9R/e67MVqEnwj48
+         SiTpTck1b05JgQBdKTgX5TPFnz/OxXBQ5KbflWoaZtxuibVYEPdn0yLm9LLKBYOTpw
+         qcjCsgFSNZIgnJZDOvlB78QE2xwvInFUoBDWiCq2JYs6NmsUXFSgQGZR06dKs8FypK
+         ZA8IiRQQxmjcKwcHfg4YZbgc4xZMwTTYIOuUlkOgLx7+C54SLWWKMeRAVMNJtXGsZ7
+         E7RqMNttjkyvw==
+Message-ID: <77838f03-ef45-114b-bfed-2f12e568a644@kernel.org>
+Date:   Wed, 1 Dec 2021 18:45:06 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Add Qualcomm SM8450 DT
+ bindings
+Content-Language: en-US
+To:     Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Odelu Kukatla <okukatla@codeaurora.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20211201072557.3968915-1-vkoul@kernel.org>
+ <20211201072557.3968915-2-vkoul@kernel.org>
+From:   Georgi Djakov <djakov@kernel.org>
+In-Reply-To: <20211201072557.3968915-2-vkoul@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The DTPM framework is available but without a way to configure it.
+Hi Vinod,
 
-These changes add DT support to initialize the powercap hierarchy via
-the powerzones description.
+On 1.12.21 9:25, Vinod Koul wrote:
+> The Qualcomm SM8450 SoC has several bus fabrics that could be
+> controlled and tuned dynamically according to the bandwidth demand
+> 
+> Signed-off-by: Vinod Koul <vkoul@kernel.org>
+> ---
+>   .../bindings/interconnect/qcom,rpmh.yaml      |  11 ++
+>   .../dt-bindings/interconnect/qcom,sm8450.h    | 171 ++++++++++++++++++
+>   2 files changed, 182 insertions(+)
+>   create mode 100644 include/dt-bindings/interconnect/qcom,sm8450.h
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+> index 3fd1a134162d..cbb24f9bb609 100644
+> --- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+> @@ -104,6 +104,17 @@ properties:
+>         - qcom,sm8350-mmss-noc
+>         - qcom,sm8350-compute-noc
+>         - qcom,sm8350-system-noc
+> +      - qcom,sm8450-aggre1-noc
+> +      - qcom,sm8450-aggre2-noc
+> +      - qcom,sm8450-clk-virt
+> +      - qcom,sm8450-config-noc
+> +      - qcom,sm8450-gem-noc
+> +      - qcom,sm8450-lpass-ag-noc
+> +      - qcom,sm8450-mc-virt
+> +      - qcom,sm8450-mmss-noc
+> +      - qcom,sm8450-nsp-noc
+> +      - qcom,sm8450-pcie-anoc
+> +      - qcom,sm8450-system-noc
+>   
+>     '#interconnect-cells':
+>       enum: [ 1, 2 ]
+> diff --git a/include/dt-bindings/interconnect/qcom,sm8450.h b/include/dt-bindings/interconnect/qcom,sm8450.h
+> new file mode 100644
+> index 000000000000..786fce091c84
+> --- /dev/null
+> +++ b/include/dt-bindings/interconnect/qcom,sm8450.h
+> @@ -0,0 +1,171 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +/*
+> + * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
+> + * Copyright (c) 2021, Linaro Limited
+> + */
+> +
+> +#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SM8450_H
+> +#define __DT_BINDINGS_INTERCONNECT_QCOM_SM8450_H
+> +
+> +#define MASTER_QSPI_0				1
 
-It acts in two steps. First it reads the powerzone dependencies and
-build the DTPM hierarchy. Second, it search for all devices which
-belongs to a powerzone and attach them to the hierarchy.
+Why not start from 0?
 
-This approach makes the initialization self-encapsulated for the DTPM
-components.
-
-In order to ensure a nice self-encapsulation, the DTPM table
-descriptors contains a couple of initialization functions, one to
-setup the DTPM backend and one to initialize it up. With this
-approach, the DTPM framework has a very few functions to export.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/powercap/Kconfig    |  1 +
- drivers/powercap/dtpm.c     | 95 +++++++++++++++++++++++++++++++++++--
- drivers/powercap/dtpm_cpu.c |  2 +-
- include/linux/dtpm.h        | 19 +++++++-
- 4 files changed, 110 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index 8242e8c5ed77..b1ca339957e3 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -46,6 +46,7 @@ config IDLE_INJECT
- 
- config DTPM
- 	bool "Power capping for Dynamic Thermal Power Management (EXPERIMENTAL)"
-+	depends on OF
- 	help
- 	  This enables support for the power capping for the dynamic
- 	  thermal power management userspace engine.
-diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-index 0fe70687c198..ebf08c0f489c 100644
---- a/drivers/powercap/dtpm.c
-+++ b/drivers/powercap/dtpm.c
-@@ -23,6 +23,7 @@
- #include <linux/powercap.h>
- #include <linux/slab.h>
- #include <linux/mutex.h>
-+#include <linux/of.h>
- 
- #define DTPM_POWER_LIMIT_FLAG 0
- 
-@@ -461,9 +462,69 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
- 	return 0;
- }
- 
--static int __init init_dtpm(void)
-+static int dtpm_for_each_child_of(struct device_node *root,
-+				  struct device_node *np, struct dtpm *parent)
- {
-+	struct device_node *child;
-+	struct device_node *pz;
-+	struct dtpm *dtpm;
-+	int ret;
-+
-+	for_each_child_of_node(root, child) {
-+
-+		pz = of_parse_phandle(child, "powerzone", 0);
-+		if (pz != np)
-+			continue;
-+
-+		dtpm = kzalloc(sizeof(*dtpm), GFP_KERNEL);
-+		if (!dtpm)
-+			return -ENOMEM;
-+
-+		dtpm_init(dtpm, NULL);
-+
-+		ret = dtpm_register(child->name, dtpm, parent);
-+		if (ret) {
-+			pr_err("Failed to register dtpm node '%s'\n", child->name);
-+			return ret;
-+		}
-+
-+		dtpm_set_data(dtpm, child);
-+
-+		dtpm_for_each_child_of(root, child, dtpm);
-+	}
-+
-+	return 0;
-+}
-+
-+static int for_each_pz_dtpm(struct dtpm *dtpm, struct device_node *pz,
-+			    struct device_node *np, dtpm_setup_t setup)
-+{
-+	struct dtpm *child;
-+	int ret = 0;
-+
-+	if (dtpm_get_data(dtpm) == pz && setup) {
-+		ret = setup(dtpm, np);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	list_for_each_entry(child, &dtpm->children, sibling)
-+		ret |= for_each_pz_dtpm(child, pz, np, setup);
-+
-+	return ret;
-+}
-+
-+static int dtpm_probe(void)
-+{
-+	struct device_node *np;
-+	struct device_node *pz;
-+
- 	struct dtpm_descr *dtpm_descr;
-+	int ret;
-+
-+	np = of_find_node_by_name(NULL, "powerzones");
-+	if (!np)
-+		return 0;
- 
- 	pct = powercap_register_control_type(NULL, "dtpm", NULL);
- 	if (IS_ERR(pct)) {
-@@ -471,9 +532,35 @@ static int __init init_dtpm(void)
- 		return PTR_ERR(pct);
- 	}
- 
--	for_each_dtpm_table(dtpm_descr)
--		dtpm_descr->init();
-+	ret = dtpm_for_each_child_of(np, NULL, NULL);
-+	if (ret) {
-+		pr_err("Failed to read powerzones hierarchy: %d\n", ret);
-+		goto out_release;
-+	}
- 
-+	for_each_node_with_property(np, "powerzone") {
-+
-+		pz = of_parse_phandle(np, "powerzone", 0);
-+
-+		of_node_put(np);
-+		if (!pz)
-+			continue;
-+
-+		for_each_dtpm_table(dtpm_descr)
-+			for_each_pz_dtpm(root, pz, np, dtpm_descr->setup);
-+
-+		of_node_put(pz);
-+	}
-+
-+	for_each_dtpm_table(dtpm_descr)
-+		if (dtpm_descr->init)
-+			dtpm_descr->init();
-+	
- 	return 0;
-+
-+out_release:
-+	powercap_unregister_control_type(pct);
-+
-+	return ret;
- }
--late_initcall(init_dtpm);
-+late_initcall(dtpm_probe);
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index b740866b228d..6bffb44c75aa 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -269,4 +269,4 @@ static int __init dtpm_cpu_init(void)
- 	return 0;
- }
- 
--DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init);
-+DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init, NULL);
-diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
-index d37e5d06a357..7328682f24c9 100644
---- a/include/linux/dtpm.h
-+++ b/include/linux/dtpm.h
-@@ -32,23 +32,28 @@ struct dtpm_ops {
- 	void (*release)(struct dtpm *);
- };
- 
-+struct device_node;
-+
- typedef int (*dtpm_init_t)(void);
-+typedef int (*dtpm_setup_t)(struct dtpm *, struct device_node *);
- 
- struct dtpm_descr {
- 	dtpm_init_t init;
-+	dtpm_setup_t setup;
- };
- 
- /* Init section thermal table */
- extern struct dtpm_descr __dtpm_table[];
- extern struct dtpm_descr __dtpm_table_end[];
- 
--#define DTPM_TABLE_ENTRY(name, __init)				\
-+#define DTPM_TABLE_ENTRY(name, __init, __setup)			\
- 	static struct dtpm_descr __dtpm_table_entry_##name	\
- 	__used __section("__dtpm_table") = {			\
- 		.init = __init,					\
-+		.setup = __setup,				\
- 	}
- 
--#define DTPM_DECLARE(name, init)	DTPM_TABLE_ENTRY(name, init)
-+#define DTPM_DECLARE(name, init, setup)	DTPM_TABLE_ENTRY(name, init, setup)
- 
- #define for_each_dtpm_table(__dtpm)	\
- 	for (__dtpm = __dtpm_table;	\
-@@ -60,6 +65,16 @@ static inline struct dtpm *to_dtpm(struct powercap_zone *zone)
- 	return container_of(zone, struct dtpm, zone);
- }
- 
-+static inline void dtpm_set_data(struct dtpm *dtpm, void *data)
-+{
-+	powercap_set_zone_data(&dtpm->zone, data);
-+}
-+
-+static inline void *dtpm_get_data(struct dtpm *dtpm)
-+{
-+	return powercap_get_zone_data(&dtpm->zone);
-+}
-+
- int dtpm_update_power(struct dtpm *dtpm);
- 
- int dtpm_release_zone(struct powercap_zone *pcz);
--- 
-2.25.1
+Thanks,
+Georgi
 
