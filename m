@@ -2,68 +2,61 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 536AEC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 16:42:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67C24C433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 16:42:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351498AbhLAQpj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Dec 2021 11:45:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48402 "EHLO
+        id S239694AbhLAQqB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Dec 2021 11:46:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351395AbhLAQpY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 11:45:24 -0500
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96C34C061748
-        for <linux-pm@vger.kernel.org>; Wed,  1 Dec 2021 08:42:03 -0800 (PST)
-Received: by mail-wm1-x331.google.com with SMTP id az34-20020a05600c602200b0033bf8662572so1633214wmb.0
-        for <linux-pm@vger.kernel.org>; Wed, 01 Dec 2021 08:42:03 -0800 (PST)
+        with ESMTP id S1351506AbhLAQpr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 11:45:47 -0500
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8FF4C061763
+        for <linux-pm@vger.kernel.org>; Wed,  1 Dec 2021 08:42:07 -0800 (PST)
+Received: by mail-wr1-x42e.google.com with SMTP id d24so53747953wra.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Dec 2021 08:42:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=3fr5sB/hWF6oqc9m6hzOo1nMZaFOt3GJ2Ovlo132VCQ=;
-        b=edPaqO5xvP3OJ9dsMgrn3NJJjrZSdjdw+30GE0TCznSZCEhE/+IeIqW40S81GY9zcU
-         J3xJVgyr/iCyMG1qVB5Zgtd8y+i0m+BgXLtVSeLhzoO35w5JE1/D1Y8M9zls8skse1fh
-         2j+jmHvmzmXybWpBnu1PTixUOjeMv/1LSyp7iAjj2r6WHt8tY2qVGCCxVWMBMBKDGQ2q
-         IIyTMRqS1f0n0WDX2magPspnVJ6J6Pd1Yg9UvIqNlwo/qBFJtn9Q0WFtJCUFGbP1N2pP
-         B1LFkWomE3Kqvm46T9Zw4g5iQxp4jLYYj7SStbKk9EAOdRLMTvkiyTKsn1bI81oxaYqN
-         acEg==
+        bh=JXIYabK6ZewRD4vP7R+kD9rZl3/XxOM5JXs9rSVNxs0=;
+        b=vw0JVd5y8wu1Jom3pVIs4aR0AIkOBoRl4ZyuxeWSHC22H9wbOYsXqf/HZ48U0MG6Ab
+         r7QoTplk96JO/XpDSkK3+PMiDbR0q6EeTvU8baAbDB/HoPv/2Qfy0/sQV3MCKrBMUFWv
+         sySaPM56q+7Dv7jaj+1Ph9vcpPdVN+N/96H0WYYqW3zs4tjYAppdkv0jLJa9F/kDMvM/
+         v7s9zH503ba0Q/yXPD2b0golaGLTwuyt9Wtj8bTX7FXbOpYoo9c+DbD7dnAHBvZ2MLNG
+         a9Rl7lqLDEI3QJGy2kiE5FlhjlLyEuXcW/T+GE/1z6Y0+0inVdq4/Y6EFvf98EbtRGcp
+         A10g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=3fr5sB/hWF6oqc9m6hzOo1nMZaFOt3GJ2Ovlo132VCQ=;
-        b=gPNu9Pm/6Yx1SvQoXrm3TC+bUz+TwYbOolMGrfFI1IfxD9j8XcCCwRZwzPxZoJOVqg
-         W3jHG17AeXSZvBSQESKo0pVrySIw0oVBomYuZGro2/F7bvISOp2T4QB2xBYkBDlDTj6Q
-         ZYLBPUiLMYoGe9qJIHQpfjvXqnart10sZAxqFJN5+gubI7fw0a0oMPEqNrBPRHd0Togf
-         M9n7P++zeOrOrrTJAL4zFlwboorwUA2JtBUSNys+d5v6lGlOzIewZSkY/7DNVgMAk2w6
-         r7RLkhC/5OdYQYI/jvznYBr2Qx4ZuimC2/0wxwrK9Tihnl5X/7o9fIXt//ZM8oMZUeWD
-         xoAw==
-X-Gm-Message-State: AOAM532ij0Uw7np7hHrAtkOIuLKBbQhZEC0vSnwr4vyYvFCgQnRNgGtt
-        Yfxf1r1sIBoodngmqDDycRRhpA==
-X-Google-Smtp-Source: ABdhPJwZs1Eb9XLIHSC22SB5RhOI84i+Yyfqvzl0zjy3mqksUQU5ZTohyeD569HO712YaEOlrL1fnA==
-X-Received: by 2002:a1c:80c5:: with SMTP id b188mr8663137wmd.57.1638376921939;
-        Wed, 01 Dec 2021 08:42:01 -0800 (PST)
+        bh=JXIYabK6ZewRD4vP7R+kD9rZl3/XxOM5JXs9rSVNxs0=;
+        b=xfhUbnqAq+LWMkS1JyJ4W3g48ZgJ0TEK6Gql/WQNuTJWoJYR56CndzKFqnDU0SuaNA
+         q/OtyLEFH8htgpC2KMNZDtXAPfCHxvnFKhzNWkN6KoSl/PAq6FLXAy4ZN19MAqRN3/kI
+         zryZtKqfkLUEy312qOBRi7vpHFPW/qeiwp0ygFcYOZx6k+M2ZlYkUMXlcEu2PTBpbCzH
+         nYagzMvd6V6vichv9yOAktiRGdDSjq1TJA7whBjYFTJ/Mlxo86HcBJwDv4Wib81g3NCD
+         zySCbEgPC+Tco3HKo++XRwf7Hr2tsRVWMiGe5ihehbJbZ706hqK9i/AwWqkpvP09KtjS
+         tUDA==
+X-Gm-Message-State: AOAM53259pSjIEYZmrpnY4E5qlSvMJMTGax6IaI1Tccjt7zRoC7STpkB
+        VmJyht6THs6+rhX6zFzmTw2TBg==
+X-Google-Smtp-Source: ABdhPJzAwiJRj3MQk6b48MnprU5u3nSh2vpmzSf1Q4wVU0M+t/T8JgexpG2AjM0DPF8D/j0GRGICdg==
+X-Received: by 2002:a5d:53cb:: with SMTP id a11mr8301611wrw.357.1638376926169;
+        Wed, 01 Dec 2021 08:42:06 -0800 (PST)
 Received: from localhost.localdomain ([2a01:e34:ed2f:f020:72d0:52a1:d4ea:f564])
-        by smtp.gmail.com with ESMTPSA id v8sm255547wrd.84.2021.12.01.08.41.59
+        by smtp.gmail.com with ESMTPSA id v8sm255547wrd.84.2021.12.01.08.42.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Dec 2021 08:42:01 -0800 (PST)
+        Wed, 01 Dec 2021 08:42:05 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, robh@kernel.org
 Cc:     arnd@linaro.org, heiko@sntech.de, ulf.hansson@linaro.org,
         rjw@rjwysocki.net, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        lukasz.luba@arm.com, Robin Murphy <robin.murphy@arm.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Johan Jonker <jbx6244@gmail.com>,
-        Helen Koike <helen.koike@collabora.com>,
-        Brian Norris <briannorris@chromium.org>,
-        Elaine Zhang <zhangqing@rock-chips.com>,
-        linux-arm-kernel@lists.infradead.org (moderated list:ARM/Rockchip SoC
-        support),
-        linux-rockchip@lists.infradead.org (open list:ARM/Rockchip SoC support)
-Subject: [PATCH v3 2/5] arm64: dts: rockchip: Add powerzones definition for rock960
-Date:   Wed,  1 Dec 2021 17:38:51 +0100
-Message-Id: <20211201163856.41419-2-daniel.lezcano@linaro.org>
+        lukasz.luba@arm.com, Daniel Lezcano <daniel.lezcano@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v3 4/5] powercap/drivers/dtpm: Add CPU DT initialization support
+Date:   Wed,  1 Dec 2021 17:38:53 +0100
+Message-Id: <20211201163856.41419-4-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211201163856.41419-1-daniel.lezcano@linaro.org>
 References: <20211201163856.41419-1-daniel.lezcano@linaro.org>
@@ -73,92 +66,102 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the powerzones description. This first step introduces the big,
-the little as powerzone places.
+Based on the previous DT changes in the core code, use the 'setup'
+callback to initialize the CPU DTPM backend.
 
-Cc: Robin Murphy <robin.murphy@arm.com>
+Code is reorganized to stick to the DTPM table description. No
+functional changes.
+
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
-   V3:
-     - Remove GPU section as no power is available (yet)
-     - Remove '#powerzone-cells' conforming to the bindings change
-   V2:
-     - Move description in the SoC dtsi specific file
-   V1: Initial post
----
- arch/arm64/boot/dts/rockchip/rk3399.dtsi | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/powercap/dtpm_cpu.c | 35 +++++++++++++++++++++++++++++------
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-index d3cdf6f42a30..c41b20888a44 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-@@ -76,6 +76,7 @@ cpu_l0: cpu@0 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <100>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 		};
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index 6bffb44c75aa..64cec0770803 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -21,6 +21,7 @@
+ #include <linux/cpuhotplug.h>
+ #include <linux/dtpm.h>
+ #include <linux/energy_model.h>
++#include <linux/of.h>
+ #include <linux/pm_qos.h>
+ #include <linux/slab.h>
+ #include <linux/units.h>
+@@ -176,6 +177,17 @@ static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
+ }
  
- 		cpu_l1: cpu@1 {
-@@ -88,6 +89,7 @@ cpu_l1: cpu@1 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <100>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 		};
- 
- 		cpu_l2: cpu@2 {
-@@ -100,6 +102,7 @@ cpu_l2: cpu@2 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <100>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 		};
- 
- 		cpu_l3: cpu@3 {
-@@ -112,6 +115,7 @@ cpu_l3: cpu@3 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <100>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 		};
- 
- 		cpu_b0: cpu@100 {
-@@ -124,6 +128,7 @@ cpu_b0: cpu@100 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <436>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 
- 			thermal-idle {
- 				#cooling-cells = <2>;
-@@ -142,6 +147,7 @@ cpu_b1: cpu@101 {
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <436>;
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			powerzone = <&PKG_PZ>;
- 
- 			thermal-idle {
- 				#cooling-cells = <2>;
-@@ -791,6 +797,17 @@ spi5: spi@ff200000 {
- 		status = "disabled";
- 	};
- 
-+	powerzones {
+ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
++{
++	struct dtpm_cpu *dtpm_cpu;
 +
-+		PKG_PZ: pkg {
-+			#powerzone-cells = <0>;
-+                        powerzone = <&SOC_PZ>;
-+		};
++	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
++	if (dtpm_cpu)
++		return dtpm_update_power(&dtpm_cpu->dtpm);
 +
-+		SOC_PZ: soc {
-+		};
-+	};
++	return 0;
++}
 +
- 	thermal_zones: thermal-zones {
- 		cpu_thermal: cpu-thermal {
- 			polling-delay-passive = <100>;
++static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
+ {
+ 	struct dtpm_cpu *dtpm_cpu;
+ 	struct cpufreq_policy *policy;
+@@ -183,6 +195,10 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	char name[CPUFREQ_NAME_LEN];
+ 	int ret = -ENOMEM;
+ 
++	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
++	if (dtpm_cpu)
++		return 0;
++
+ 	policy = cpufreq_cpu_get(cpu);
+ 	if (!policy)
+ 		return 0;
+@@ -191,10 +207,6 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	if (!pd)
+ 		return -EINVAL;
+ 
+-	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
+-	if (dtpm_cpu)
+-		return dtpm_update_power(&dtpm_cpu->dtpm);
+-
+ 	dtpm_cpu = kzalloc(sizeof(*dtpm_cpu), GFP_KERNEL);
+ 	if (!dtpm_cpu)
+ 		return -ENOMEM;
+@@ -207,7 +219,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 
+ 	snprintf(name, sizeof(name), "cpu%d-cpufreq", dtpm_cpu->cpu);
+ 
+-	ret = dtpm_register(name, &dtpm_cpu->dtpm, NULL);
++	ret = dtpm_register(name, &dtpm_cpu->dtpm, parent);
+ 	if (ret)
+ 		goto out_kfree_dtpm_cpu;
+ 
+@@ -231,6 +243,17 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
+ 	return ret;
+ }
+ 
++static int __init dtpm_cpu_setup(struct dtpm *dtpm, struct device_node *np)
++{
++	int cpu;
++
++	cpu = of_cpu_node_to_id(np);
++	if (cpu < 0)
++		return 0;
++
++	return __dtpm_cpu_setup(cpu, dtpm);
++}
++
+ static int __init dtpm_cpu_init(void)
+ {
+ 	int ret;
+@@ -269,4 +292,4 @@ static int __init dtpm_cpu_init(void)
+ 	return 0;
+ }
+ 
+-DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init, NULL);
++DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init, dtpm_cpu_setup);
 -- 
 2.25.1
 
