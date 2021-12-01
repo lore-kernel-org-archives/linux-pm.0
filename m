@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF710C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 20:54:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16EFDC43219
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 20:54:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353416AbhLAU5d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Dec 2021 15:57:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50728 "EHLO
+        id S240107AbhLAU5W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Dec 2021 15:57:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353231AbhLAUz0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 15:55:26 -0500
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D448C061748;
-        Wed,  1 Dec 2021 12:52:05 -0800 (PST)
-Received: by mail-pf1-x42c.google.com with SMTP id x131so25778735pfc.12;
-        Wed, 01 Dec 2021 12:52:05 -0800 (PST)
+        with ESMTP id S1353227AbhLAUzX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 15:55:23 -0500
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BDE9C061748;
+        Wed,  1 Dec 2021 12:52:01 -0800 (PST)
+Received: by mail-pg1-x535.google.com with SMTP id k4so14706496pgb.8;
+        Wed, 01 Dec 2021 12:52:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=LJ8xAlI4hSswSbvUfQzU0yk70eEsNl8mqXnileditR0=;
-        b=P7jAMatFuO2gBO52H1+kxEvaDz+iyNeFkordEyAJcRi4Vj6kyk3PidSDPqpvTfZgvp
-         z0FwCjDhRVuklEb8hFfxZxI4eYmsNpzAZjhp2ztBRK5oMncDBhoAC6fh5wCepK1gb9uq
-         od8gvMijXnLiphSYcbDV5yZbMdzauBGHZRgFLb9dUXBp17Zvsl9sXOeyWKg9NI310Wij
-         R0hRDeN5JSPrW+NhW4kLS/bIiGD6zMdBhJ2rOjCrS3AX/UxquJbCbm8UTacrcNGZl2An
-         TxfebEUudgws9C5qBG3fU7lhBIPp/tnUK2jRu3dzejlzPLhrP2Nc5xxF9xscoK1z4cSr
-         wpGQ==
+        bh=jaFrCtDyOBQjn78eEwNTMD4fjx9RYha6T+8s8u4JaVg=;
+        b=m8WuaqXum7TlgyUMJql6UwS/PzNafwkv21FvbsYMchVk/M8vBc8EKdhVtMtXVeTNcl
+         luADZO0XWw5zRLtTGo311KBY5TRvjkIJJb+lvc9gyUSP4Fjzkx2uDq4tYSqVecjqwDNb
+         OaniVmM6O4sPNpP/3OlVYmV6OaJlykplsrizrcfCRninjkfkh/4bZgTgzSVB9LNZHv91
+         IKeQY05cSZby7z8NqNX/kXMca8YMD2JouqLBRK4LCqOsOL6IBMvJnUMRfhpamiCDLymh
+         KPQ7gQtIc0m3xwsmTi0Qm10VMTVriNkUCdRZC4oi7+DP1HrX75gxR9/0LR4P+Loz0E8Q
+         0yLg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=LJ8xAlI4hSswSbvUfQzU0yk70eEsNl8mqXnileditR0=;
-        b=PR7GHLzbcE2xfuAg0nFcTC0D9oMemFhPew9EP51nS/RN/YeMFrUXOcCBfjmvOrlQAb
-         5zvdR8UAAWjFDtL1myUP+SimnbXrbQcZGXcf2jWDBjtjbk0qHGLrktxRrzLq96Dl5ojQ
-         I4+2bCHZhRVjRIV3d/H8UWxUJ9vf5I3vpI6sancunOKT6vpQbtwJM48/GYeKnsEBCqet
-         vCNbInzx+U0hMU07rzJV39V+RYcg9AMmks1MDk8xvEQgfQv1AmBGm07dtFc4UtGIgENc
-         lt17FT8bHWbNUwL+138xtkqmcTYQ2WtYGoLYFMLVpKBnZuj9wwfH+9D/Yl5liQxPZ+08
-         CvTQ==
-X-Gm-Message-State: AOAM531Q7Dt1F/eh3ZMo3pQBE7r0YW9a9d0trsEqjiVZUJ2iqn17xV3P
-        A/YwbLIGpcuHSW4/9IL7trlbSdn5QPM=
-X-Google-Smtp-Source: ABdhPJyHG2YWa2WK/7cn66OHUfOMYu2Sve8Z/qUvjukLqZPsVAwBovUicSsfxd27Qj5Rz98JFPE5bQ==
-X-Received: by 2002:a05:6a00:1894:b0:4a4:f2fd:d7b8 with SMTP id x20-20020a056a00189400b004a4f2fdd7b8mr8450851pfh.9.1638391924648;
-        Wed, 01 Dec 2021 12:52:04 -0800 (PST)
+        bh=jaFrCtDyOBQjn78eEwNTMD4fjx9RYha6T+8s8u4JaVg=;
+        b=LHzq2wq9dpZ8mQb7vMsi2L7TJzy4NenJ5Pkv9C5FZMt6KU8JMj0RoEAdZdKPO48CJQ
+         xxWzTtZQRsMtjw1rZs2zNTOm0pi4FnoykdimyNQDolvDaUmJMonDFoUlm7KiwlCN27Nc
+         UdtmkhaXuu0oraJk3hnHxG65cJkcTMstXFqPe28zT23pkA9HSGYfiijV69uQZJTm43Ih
+         d9l7/c74Pd+Q1mqWHQuZXqypjMQ831PBbhd7QIjJkwIFCIEenWYzUoBRKPDudXbueiff
+         RddUAzCjD7VgHRzBwoWqkHbFn2TISJU/W8v1Y/W2fdVqmdHsyXtoWuu2+SSDP1SPd6mw
+         6ueg==
+X-Gm-Message-State: AOAM532PPqGfQGf1+rC0Nc5OnPFNT2wtd5cfZoHQ6m498vnL987CHSpX
+        yCt/NG90NiAbv+3P8rb7eGrk/m13z2g=
+X-Google-Smtp-Source: ABdhPJwiZxHWKnEwVc8U1pBM7nHOOcAx3PSvBztgnEO4bSLjrlbOQ1ZGl7b1BzCUbHjhnWaMhtHYOQ==
+X-Received: by 2002:a05:6a00:1ad0:b0:49f:d04e:78da with SMTP id f16-20020a056a001ad000b0049fd04e78damr8489446pfv.77.1638391920296;
+        Wed, 01 Dec 2021 12:52:00 -0800 (PST)
 Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id p20sm729117pfw.96.2021.12.01.12.52.02
+        by smtp.gmail.com with ESMTPSA id p20sm729117pfw.96.2021.12.01.12.51.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Dec 2021 12:52:04 -0800 (PST)
+        Wed, 01 Dec 2021 12:51:59 -0800 (PST)
 From:   Florian Fainelli <f.fainelli@gmail.com>
 To:     devicetree@vger.kernel.org
 Cc:     Florian Fainelli <f.fainelli@gmail.com>,
@@ -90,9 +90,9 @@ Cc:     Florian Fainelli <f.fainelli@gmail.com>,
         linux-rtc@vger.kernel.org (open list:REAL TIME CLOCK (RTC) SUBSYSTEM),
         linux-pm@vger.kernel.org (open list:THERMAL),
         linux-usb@vger.kernel.org (open list:USB SUBSYSTEM)
-Subject: [PATCH 13/14] dt-bindings: bus: Convert GISB arbiter to YAML
-Date:   Wed,  1 Dec 2021 12:51:09 -0800
-Message-Id: <20211201205110.41656-14-f.fainelli@gmail.com>
+Subject: [PATCH 11/14] dt-bindings: thermal: Convert Broadcom TMON to YAML
+Date:   Wed,  1 Dec 2021 12:51:07 -0800
+Message-Id: <20211201205110.41656-12-f.fainelli@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211201205110.41656-1-f.fainelli@gmail.com>
 References: <20211201205110.41656-1-f.fainelli@gmail.com>
@@ -102,129 +102,123 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the Broadcom STB GISB bus arbiter to YAML to help with
+Convert the Broadcom AVS TMON Device Tree binding to YAML to help with
 validation.
 
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- .../devicetree/bindings/bus/brcm,gisb-arb.txt | 34 ----------
- .../bindings/bus/brcm,gisb-arb.yaml           | 66 +++++++++++++++++++
- 2 files changed, 66 insertions(+), 34 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/bus/brcm,gisb-arb.txt
- create mode 100644 Documentation/devicetree/bindings/bus/brcm,gisb-arb.yaml
+ .../bindings/thermal/brcm,avs-tmon.txt        | 23 --------
+ .../bindings/thermal/brcm,avs-tmon.yaml       | 57 +++++++++++++++++++
+ MAINTAINERS                                   |  2 +-
+ 3 files changed, 58 insertions(+), 24 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
 
-diff --git a/Documentation/devicetree/bindings/bus/brcm,gisb-arb.txt b/Documentation/devicetree/bindings/bus/brcm,gisb-arb.txt
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
 deleted file mode 100644
-index 10f6d0a8159d..000000000000
---- a/Documentation/devicetree/bindings/bus/brcm,gisb-arb.txt
+index 74a9ef09db8b..000000000000
+--- a/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
 +++ /dev/null
-@@ -1,34 +0,0 @@
--Broadcom GISB bus Arbiter controller
+@@ -1,23 +0,0 @@
+-* Broadcom STB thermal management
+-
+-Thermal management core, provided by the AVS TMON hardware block.
 -
 -Required properties:
--
--- compatible:
--    "brcm,bcm7278-gisb-arb" for V7 28nm chips
--    "brcm,gisb-arb" or "brcm,bcm7445-gisb-arb" for other 28nm chips
--    "brcm,bcm7435-gisb-arb" for newer 40nm chips
--    "brcm,bcm7400-gisb-arb" for older 40nm chips and all 65nm chips
--    "brcm,bcm7038-gisb-arb" for 130nm chips
--- reg: specifies the base physical address and size of the registers
--- interrupts: specifies the two interrupts (timeout and TEA) to be used from
--  the parent interrupt controller. A third optional interrupt may be specified
--  for breakpoints.
--
--Optional properties:
--
--- brcm,gisb-arb-master-mask: 32-bits wide bitmask used to specify which GISB
--  masters are valid at the system level
--- brcm,gisb-arb-master-names: string list of the litteral name of the GISB
--  masters. Should match the number of bits set in brcm,gisb-master-mask and
--  the order in which they appear
+-- compatible: must be one of:
+-	"brcm,avs-tmon-bcm7216"
+-	"brcm,avs-tmon-bcm7445"
+-	"brcm,avs-tmon"
+-- reg: address range for the AVS TMON registers
+-- interrupts: temperature monitor interrupt, for high/low threshold triggers,
+-	      required except for "brcm,avs-tmon-bcm7216"
+-- interrupt-names: should be "tmon"
 -
 -Example:
 -
--gisb-arb@f0400000 {
--	compatible = "brcm,gisb-arb";
--	reg = <0xf0400000 0x800>;
--	interrupts = <0>, <2>;
--	interrupt-parent = <&sun_l2_intc>;
--
--	brcm,gisb-arb-master-mask = <0x7>;
--	brcm,gisb-arb-master-names = "bsp_0", "scpu_0", "cpu_0";
--};
-diff --git a/Documentation/devicetree/bindings/bus/brcm,gisb-arb.yaml b/Documentation/devicetree/bindings/bus/brcm,gisb-arb.yaml
+-	thermal@f04d1500 {
+-		compatible = "brcm,avs-tmon-bcm7445", "brcm,avs-tmon";
+-		reg = <0xf04d1500 0x28>;
+-		interrupts = <0x6>;
+-		interrupt-names = "tmon";
+-		interrupt-parent = <&avs_host_l2_intc>;
+-	};
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
 new file mode 100644
-index 000000000000..483b019275cd
+index 000000000000..fb5c273b8bc2
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/bus/brcm,gisb-arb.yaml
-@@ -0,0 +1,66 @@
++++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
+@@ -0,0 +1,57 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/bus/brcm,gisb-arb.yaml#
++$id: http://devicetree.org/schemas/thermal/brcm,avs-tmon.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Broadcom GISB bus Arbiter controller
++title: Broadcom STB thermal management
++
++description: Thermal management core, provided by the AVS TMON hardware block.
 +
 +maintainers:
 +  - Florian Fainelli <f.fainelli@gmail.com>
++
++allOf:
++  - $ref: thermal-sensor.yaml#
 +
 +properties:
 +  compatible:
 +    oneOf:
 +      - items:
 +          - enum:
-+              - brcm,bcm7445-gisb-arb
-+          - const: brcm,gisb-arb
-+      - items:
-+          - const: brcm,bcm7278-gisb-arb
-+      - items:
-+          - const: brcm,bcm7435-gisb-arb
-+      - items:
-+          - const: brcm,bcm7400-gisb-arb
-+      - items:
-+          - const: brcm,bcm7038-gisb-arb
-+      - items:
-+          - const: brcm,gisb-arb
++              - brcm,avs-tmon-bcm7216
++              - brcm,avs-tmon-bcm7445
++          - const: brcm,avs-tmon
 +
 +  reg:
 +    maxItems: 1
++    description: >
++      Address range for the AVS TMON registers
 +
 +  interrupts:
-+    minItems: 2
-+    maxItems: 3
++    maxItems: 1
 +
-+  brcm,gisb-arb-master-mask:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: >
-+      32-bits wide bitmask used to specify which GISB masters are valid at the
-+      system level
++  interrupt-names:
++    items:
++      - const: tmon
 +
-+  brcm,gisb-arb-master-names:
-+    $ref: /schemas/types.yaml#/definitions/string-array
-+    description: >
-+      String list of the litteral name of the GISB masters. Should match the
-+      number of bits set in brcm,gisb-master-mask and the order in which they
-+      appear
++  "#thermal-sensor-cells":
++    const: 0
++
++additionalProperties: false
 +
 +required:
 +  - compatible
 +  - reg
-+  - interrupts
-+
-+additionalProperties: false
++  - "#thermal-sensor-cells"
 +
 +examples:
 +  - |
-+    gisb-arb@f0400000 {
-+      compatible = "brcm,gisb-arb";
-+      reg = <0xf0400000 0x800>;
-+      interrupts = <0>, <2>;
-+      interrupt-parent = <&sun_l2_intc>;
-+      brcm,gisb-arb-master-mask = <0x7>;
-+      brcm,gisb-arb-master-names = "bsp_0", "scpu_0", "cpu_0";
-+    };
++     thermal@f04d1500 {
++          compatible = "brcm,avs-tmon-bcm7445", "brcm,avs-tmon";
++          reg = <0xf04d1500 0x28>;
++          interrupts = <0x6>;
++          interrupt-names = "tmon";
++          interrupt-parent = <&avs_host_l2_intc>;
++          #thermal-sensor-cells = <0>;
++     };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 78161abc384f..11808be8e128 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3947,7 +3947,7 @@ M:	Markus Mayer <mmayer@broadcom.com>
+ M:	bcm-kernel-feedback-list@broadcom.com
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
++F:	Documentation/devicetree/bindings/thermal/brcm,avs-tmon.yaml
+ F:	drivers/thermal/broadcom/brcmstb*
+ 
+ BROADCOM STB DPFE DRIVER
 -- 
 2.25.1
 
