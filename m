@@ -2,77 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35BD9C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 13:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 631F3C433EF
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Dec 2021 13:13:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244690AbhLANPA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Dec 2021 08:15:00 -0500
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.52]:17429 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349508AbhLANO7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 08:14:59 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1638364110;
-    s=strato-dkim-0002; d=gerhold.net;
-    h=Message-Id:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=1FlbcCNhNwqCUtpY2nQHiXO5hf5Y2HFDjbhAdRUzc18=;
-    b=rkY/fWU1azWv8bvgBV3kL2u8uoPrBCKYp4Ghj7PsPLGxojyxHTgjhuEZv4NfTWPcNd
-    Tu29EYXjRS8haOi0e7pWU1qMJcpycHUIc6Mg6twrQNjvXnqDYlk5+XXL0TTjVN7i4oQw
-    i4kTLnYaSGcVn5BzGWf/bebvq2jPMOTkt90PiKoUS7ilCUzRy1FfhAOmA9Q3JQERQfTq
-    RHQZXlr/mNTtY+KvXnDKPtL8OzWuOG6T65x1dLdNDI+I/Wd9bQR4VBxM9epDUOytvkU2
-    0QrnUAS3TBXQzW/qwAxesIA3p4tGsctgARvO/F7dT9l4dyFgUI4D9Rtpj2WhwWdLbiMS
-    mjxw==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVORvLd4SsytBXQ7UOGqRde+a0fyL2moo2"
-X-RZG-CLASS-ID: mo00
-Received: from droid..
-    by smtp.strato.de (RZmta 47.34.10 AUTH)
-    with ESMTPSA id j03bcbxB1D8Tghj
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-    Wed, 1 Dec 2021 14:08:29 +0100 (CET)
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-arm-msm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        Arnd Bergmann <arnd@arndb.de>, Andy Gross <agross@kernel.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-Subject: [PATCH v3 0/4] qcom_scm: Add support for MC boot address API
-Date:   Wed,  1 Dec 2021 14:05:01 +0100
-Message-Id: <20211201130505.257379-1-stephan@gerhold.net>
-X-Mailer: git-send-email 2.34.1
+        id S239722AbhLANRE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Dec 2021 08:17:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55962 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241389AbhLANQQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Dec 2021 08:16:16 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E4B9C06174A;
+        Wed,  1 Dec 2021 05:12:55 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id a18so52244078wrn.6;
+        Wed, 01 Dec 2021 05:12:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=yIEUlYwwjZhie4WfBlBG/NpfH8otfmo5HsnuybLMve8=;
+        b=mQ+FnalR6SWQF6pzza1008JsmNoEsDmM6KSjX6hjpKVYN4zo7BQD4f1ZhFl3dysd9C
+         RhSL+5oIKBeUAUm585UhYPMP/NSY1CLyk9p/Vbp4lm22tR6j0VQB7EltAssqee6w9SeG
+         8bGCknAIghrY15aM1KECmyi4oIrYOshsFWEavkt1geVXpqrp3VsgDtzZmlUGVVeCQwk7
+         4oPWbtYC3j5mhmhUUrEH0e/LSncnX+uOFs0bCsJ5FC91gnTLylYSXrXnl5AdE6ov0MSw
+         BALHZI14w5H8gnApeAb9LGED401tsPKAyh7kxWEfmZ+ccouLdrZN/fuZqNFK0oNsOtKC
+         B2vA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=yIEUlYwwjZhie4WfBlBG/NpfH8otfmo5HsnuybLMve8=;
+        b=OPULV8FTFN6Bt3UQvsXTPFkAuyVY8OZmJC75lD7o4ngBz0h0XhYt2jIGDGJ+iUj2BQ
+         wNpvvsuuWDTl8PMWuU3c9oEoRhd0atig2W2zfg0ydtGKF1WmQ1WRCyImyGknx7VA6D/M
+         YJ7aRYrNKrA7HNdKzCc+CHfWEDVAkO6C6Z8eYXsWsm8KM/uPeEay/DHNR4W0clG6EmBW
+         RNHBk7wZyKLMbXjMvy1tquvPossYQQlWMG1Elm9fu6kQt0UQrilAxp3rdxsml9RLB+NR
+         +gCY1Tm7lRNFFh1M+m1L2viqzLC+6lN9cil7kP0qXIkR4C3C6M6/OEHpnFHqzM53D3RC
+         /TLg==
+X-Gm-Message-State: AOAM533lAughAtNmbhYoaFw3z8nfFu9sNmHOrUJmFYpeToLARc/jRSA/
+        hnwSXM0+jvP8oBEjBc4r8unJ7VIJyGhJ1nfk
+X-Google-Smtp-Source: ABdhPJzzhQEWcLY07TGwbBoaHSNvvx7vNfJqwOhbqX02sgXx9TS5NAfLLtksTpCUdGiS4CpLg+TUFg==
+X-Received: by 2002:adf:a285:: with SMTP id s5mr6879766wra.468.1638364373828;
+        Wed, 01 Dec 2021 05:12:53 -0800 (PST)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id t11sm19689819wrz.97.2021.12.01.05.12.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Dec 2021 05:12:53 -0800 (PST)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org
+Subject: [PATCH][next] thermal/drivers: Fix spelling mistake "caliberation" -> "calibration"
+Date:   Wed,  1 Dec 2021 13:12:52 +0000
+Message-Id: <20211201131252.135535-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The "firmware: qcom: scm: Add support for MC boot address API" commit
-was reverted again in 5.16 [1]. This is a new attempt to add it back
-with much less potential build problems.
+There are spelling mistakes in a comment and a dev_dbg message. Fix them.
 
-For that I first simplify the existing qcom_scm_set_cold/warm_boot_addr()
-implementations. The idea is that cpu_logical_map(), MPIDR_AFFINITY_LEVEL()
-etc are not needed if we just set the entry address for all CPUs.
-Nothing in the mainline tree actually requires setting a different entry
-address for one particular CPU and I cannot really think of a use case for this.
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+---
+ drivers/thermal/rzg2l_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=7db2bc925e4642df6255612e5521af0423ada18a
-
-Stephan Gerhold (4):
-  cpuidle: qcom-spm: Check if any CPU is managed by SPM
-  firmware: qcom: scm: Simplify set_cold/warm_boot_addr()
-  firmware: qcom: scm: Drop cpumask parameter from set_boot_addr()
-  firmware: qcom: scm: Add support for MC boot address API
-
- arch/arm/mach-qcom/platsmp.c       |   3 +-
- drivers/cpuidle/cpuidle-qcom-spm.c |  28 +++++-
- drivers/firmware/qcom_scm.c        | 132 ++++++++++++-----------------
- drivers/firmware/qcom_scm.h        |   5 ++
- include/linux/qcom_scm.h           |   4 +-
- 5 files changed, 84 insertions(+), 88 deletions(-)
-
+diff --git a/drivers/thermal/rzg2l_thermal.c b/drivers/thermal/rzg2l_thermal.c
+index d47d4a30cd6c..8d55e401d185 100644
+--- a/drivers/thermal/rzg2l_thermal.c
++++ b/drivers/thermal/rzg2l_thermal.c
+@@ -99,7 +99,7 @@ static int rzg2l_thermal_get_temp(void *devdata, int *temp)
+ 
+ 	/* The temperature Tj is calculated by the formula
+ 	 * Tj = (dsensor − calib1) * 165/ (calib0 − calib1) − 40
+-	 * where calib0 and calib1 are the caliberation values.
++	 * where calib0 and calib1 are the calibration values.
+ 	 */
+ 	val = ((dsensor - priv->calib1) * (MCELSIUS(165) /
+ 		(priv->calib0 - priv->calib1))) - MCELSIUS(40);
+@@ -209,7 +209,7 @@ static int rzg2l_thermal_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err;
+ 
+-	dev_dbg(dev, "TSU probed with %s caliberation values",
++	dev_dbg(dev, "TSU probed with %s calibration values",
+ 		rzg2l_thermal_read(priv, OTPTSUTRIM_REG(0)) ?  "hw" : "sw");
+ 
+ 	return 0;
 -- 
-2.34.1
+2.33.1
 
