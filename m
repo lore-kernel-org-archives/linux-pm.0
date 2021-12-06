@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA042C433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 09:35:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD86C433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 09:35:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241059AbhLFJit (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Dec 2021 04:38:49 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:30828 "EHLO
+        id S241003AbhLFJix (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Dec 2021 04:38:53 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:55941 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241099AbhLFJhy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:37:54 -0500
+        by vger.kernel.org with ESMTP id S241188AbhLFJio (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:38:44 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1638783266;
+        s=mimecast20190719; t=1638783316;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=V4njHS/l+xCpUU6oJvmynOFwMBGuHnqEE6FG5/Vy8lc=;
-        b=Q9EDw9ytCuSGKVxWmCcJGfjSjnRkwStsTXanwGVRn3cfIhfVwW7kP7MzOd3uaTAbvkLb4H
-        1GqlvLp61iCkd2cK6G1cVqXAibrXfC2838KJgsLmbVV5PnfbnfHK0vp/cfS5hqctaL+gFT
-        mIHCA3uMdHdIr0kczV8UJNTAaxqVMvI=
+        bh=RQA5cpogGVjKAaGvilq+oV9NADw0AzHIQpPB9AjEL5o=;
+        b=cRXAvrsBwiPViOnliZVVvHfPBv7g/IIQAurpdSGubMKmi9eY7GsLDJxjp5p6/gwouKCweq
+        57MMMt49KnQG4rWTsUr0/pVGLLrBa+bZXC40bIkA5n+ID6g8NY39NOcfPRw/L/CYPWJAzc
+        7Yj4d6oupCG55xOUIxNJ+XogWmTXdzg=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-551-QdEb54fbNsKMst9HK9GAHw-1; Mon, 06 Dec 2021 04:34:24 -0500
-X-MC-Unique: QdEb54fbNsKMst9HK9GAHw-1
+ us-mta-488-fdcmUhtJOVCvZVhwlGJk2g-1; Mon, 06 Dec 2021 04:35:11 -0500
+X-MC-Unique: fdcmUhtJOVCvZVhwlGJk2g-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 539281853033;
-        Mon,  6 Dec 2021 09:34:21 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B9C138189F8;
+        Mon,  6 Dec 2021 09:35:08 +0000 (UTC)
 Received: from x1.localdomain.com (unknown [10.39.194.76])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id CA7905E26C;
-        Mon,  6 Dec 2021 09:34:12 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 4AE895DAA5;
+        Mon,  6 Dec 2021 09:35:05 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -49,11 +49,10 @@ Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         linux-acpi@vger.kernel.org, Yauhen Kharuzhy <jekhor@gmail.com>,
         Tsuchiya Yuto <kitakar@gmail.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org,
-        Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: [PATCH v4 08/20] power: supply: bq25890: Drop dev->platform_data == NULL check
-Date:   Mon,  6 Dec 2021 10:33:06 +0100
-Message-Id: <20211206093318.45214-9-hdegoede@redhat.com>
+        linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
+Subject: [PATCH v4 14/20] mfd: intel_soc_pmic_chtwc: Add cht_wc_model data to struct intel_soc_pmic
+Date:   Mon,  6 Dec 2021 10:33:12 +0100
+Message-Id: <20211206093318.45214-15-hdegoede@redhat.com>
 In-Reply-To: <20211206093318.45214-1-hdegoede@redhat.com>
 References: <20211206093318.45214-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -63,48 +62,162 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Drop the "if (!dev->platform_data)" check, this seems to be an attempt
-for allowing loading the driver on devices without devicetree stemming
-from the initial commit of the driver (with the presumed intention being
-the "return -ENODEV" else branch getting replaced with something else).
+Tablet / laptop designs using an Intel Cherry Trail x86 main SoC with
+an Intel Whiskey Cove PMIC do not use a single standard setup for
+the charger, fuel-gauge and other chips surrounding the PMIC /
+charging+data USB port.
 
-With the new "linux,skip-init" and "linux,read-back-settings" properties
-the driver can actually supports devices without devicetree and this
-check no longer makes sense.
+Unlike what is normal on x86 this diversity in designs is not handled
+by the ACPI tables. On 2 of the 3 known designs there are no standard
+(PNP0C0A) ACPI battery devices and on the 3th design the ACPI battery
+device does not work under Linux due to it requiring non-standard
+and undocumented ACPI behavior.
 
-While at it, also switch to dev_err_probe(), which is already used in
-various other places in the driver.
+So to make things work under Linux we use native charger and fuel-gauge
+drivers on these devices, re-using the native drivers used on ARM boards
+with the same charger / fuel-gauge ICs.
 
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+This requires various MFD-cell drivers for the CHT-WC PMIC cells to
+know which model they are exactly running on so that they can e.g.
+instantiate an I2C-client for the right model charger-IC (the charger
+is connected to an I2C-controller which is part of the PMIC).
+
+Rather then duplicating DMI-id matching to check which model we are
+running on in each MFD-cell driver, add a check for this to the
+shared drivers/mfd/intel_soc_pmic_chtwc.c code by using a
+DMI table for all 3 known models:
+
+1. The GPD Win and GPD Pocket mini-laptops, these are really 2 models
+but the Pocket re-uses the GPD Win's design in a different housing:
+
+The WC PMIC is connected to a TI BQ24292i charger, paired with
+a Maxim MAX17047 fuelgauge + a FUSB302 USB Type-C Controller +
+a PI3USB30532 USB switch, for a fully functional Type-C port.
+
+2. The Xiaomi Mi Pad 2:
+
+The WC PMIC is connected to a TI BQ25890 charger, paired with
+a TI BQ27520 fuelgauge, using the TI BQ25890 for BC1.2 charger type
+detection, for a USB-2 only Type-C port without PD.
+
+3. The Lenovo Yoga Book YB1-X90 / Lenovo Yoga Book YB1-X91 series:
+
+The WC PMIC is connected to a TI BQ25892 charger, paired with
+a TI BQ27542 fuelgauge, using the WC PMIC for BC1.2 charger type
+detection and using the BQ25892's Mediatek Pump Express+ (1.0)
+support to enable charging with up to 12V through a micro-USB port.
+
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq25890_charger.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+Changes in v4:
+- Put '{' and comment of DMI entries on separate lines (requested by Lee)
+- Drop comment on terminating empty entry in DMI table
 
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index d185299db9c3..548d1a793e31 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -1048,16 +1048,9 @@ static int bq25890_probe(struct i2c_client *client,
- 		return ret;
- 	}
+Changes in v3:
+- Store the model in struct intel_soc_pmic instead of adding a helper
+  function to retreive it
+
+Changes in v2:
+- New patch in v2 of this patch-set
+---
+ drivers/mfd/intel_soc_pmic_chtwc.c | 40 ++++++++++++++++++++++++++++++
+ include/linux/mfd/intel_soc_pmic.h |  8 ++++++
+ 2 files changed, 48 insertions(+)
+
+diff --git a/drivers/mfd/intel_soc_pmic_chtwc.c b/drivers/mfd/intel_soc_pmic_chtwc.c
+index 49c5f71664bc..4eab191e053a 100644
+--- a/drivers/mfd/intel_soc_pmic_chtwc.c
++++ b/drivers/mfd/intel_soc_pmic_chtwc.c
+@@ -10,6 +10,7 @@
  
--	if (!dev->platform_data) {
--		ret = bq25890_fw_probe(bq);
--		if (ret < 0) {
--			dev_err(dev, "Cannot read device properties: %d\n",
--				ret);
--			return ret;
--		}
--	} else {
--		return -ENODEV;
--	}
-+	ret = bq25890_fw_probe(bq);
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "reading device properties\n");
+ #include <linux/acpi.h>
+ #include <linux/delay.h>
++#include <linux/dmi.h>
+ #include <linux/err.h>
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+@@ -134,9 +135,44 @@ static const struct regmap_irq_chip cht_wc_regmap_irq_chip = {
+ 	.num_regs = 1,
+ };
  
- 	ret = bq25890_hw_init(bq);
- 	if (ret < 0) {
++static const struct dmi_system_id cht_wc_model_dmi_ids[] = {
++	{
++		/* GPD win / GPD pocket mini laptops */
++		.driver_data = (void *)(long)INTEL_CHT_WC_GPD_WIN_POCKET,
++		/*
++		 * This DMI match may not seem unique, but it is. In the 67000+
++		 * DMI decode dumps from linux-hardware.org only 116 have
++		 * board_vendor set to "AMI Corporation" and of those 116 only
++		 * the GPD win's and pocket's board_name is "Default string".
++		 */
++		.matches = {
++			DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
++			DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
++		},
++	}, {
++		/* Xiaomi Mi Pad 2 */
++		.driver_data = (void *)(long)INTEL_CHT_WC_XIAOMI_MIPAD2,
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Xiaomi Inc"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Mipad2"),
++		},
++	}, {
++		/* Lenovo Yoga Book X90F / X91F / X91L */
++		.driver_data = (void *)(long)INTEL_CHT_WC_LENOVO_YOGABOOK1,
++		.matches = {
++			/* Non exact match to match all versions */
++			DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo YB1-X9"),
++		},
++	},
++	{ }
++};
++
+ static int cht_wc_probe(struct i2c_client *client)
+ {
+ 	struct device *dev = &client->dev;
++	const struct dmi_system_id *id;
+ 	struct intel_soc_pmic *pmic;
+ 	acpi_status status;
+ 	unsigned long long hrv;
+@@ -160,6 +196,10 @@ static int cht_wc_probe(struct i2c_client *client)
+ 	if (!pmic)
+ 		return -ENOMEM;
+ 
++	id = dmi_first_match(cht_wc_model_dmi_ids);
++	if (id)
++		pmic->cht_wc_model = (long)id->driver_data;
++
+ 	pmic->irq = client->irq;
+ 	pmic->dev = dev;
+ 	i2c_set_clientdata(client, pmic);
+diff --git a/include/linux/mfd/intel_soc_pmic.h b/include/linux/mfd/intel_soc_pmic.h
+index 6a88e34cb955..945bde1fe55c 100644
+--- a/include/linux/mfd/intel_soc_pmic.h
++++ b/include/linux/mfd/intel_soc_pmic.h
+@@ -13,6 +13,13 @@
+ 
+ #include <linux/regmap.h>
+ 
++enum intel_cht_wc_models {
++	INTEL_CHT_WC_UNKNOWN,
++	INTEL_CHT_WC_GPD_WIN_POCKET,
++	INTEL_CHT_WC_XIAOMI_MIPAD2,
++	INTEL_CHT_WC_LENOVO_YOGABOOK1,
++};
++
+ /**
+  * struct intel_soc_pmic - Intel SoC PMIC data
+  * @irq: Master interrupt number of the parent PMIC device
+@@ -39,6 +46,7 @@ struct intel_soc_pmic {
+ 	struct regmap_irq_chip_data *irq_chip_data_crit;
+ 	struct device *dev;
+ 	struct intel_scu_ipc_dev *scu;
++	enum intel_cht_wc_models cht_wc_model;
+ };
+ 
+ int intel_soc_pmic_exec_mipi_pmic_seq_element(u16 i2c_address, u32 reg_address,
 -- 
 2.33.1
 
