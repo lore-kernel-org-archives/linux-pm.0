@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26160C433F5
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 09:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A973C4332F
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 09:35:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241290AbhLFJil (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Dec 2021 04:38:41 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:27285 "EHLO
+        id S240906AbhLFJir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Dec 2021 04:38:47 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:51608 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241269AbhLFJij (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:38:39 -0500
+        by vger.kernel.org with ESMTP id S241153AbhLFJiL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:38:11 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1638783310;
+        s=mimecast20190719; t=1638783282;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NSFllL0K7X0KVTucBJnSMumxKusMGygWrLDj1HKAn7A=;
-        b=QQ0lxkh7DmjwAd28FR4yQBi3oa6zMHItzvrYJl0bfJUx+T2qcuTZPHSxe5HeQK6+Qg0E6X
-        GvxJ+wsTYPrW5KAzp1QbARGmpWHiezpUc7dCXpgH702L5VQj5f0bP9RH5HM/qfqKueCvLo
-        dmOuvf5Gky0o0vjfdd0P0KGKnVQQQfQ=
+        bh=pN1FjbLFcDO2d9j5qjlwIbSo+FUqNNS/pElCoMXXvWs=;
+        b=Ywj7JT0Xduf9QmBg6YQfQw3i/e6ltGimRnwil6cxRjOLCN6TMKwJg5TnapDBafAF5NKKP3
+        C9R4sYABr/ZI7nIA8s9f5WMkQnfrYNCeKbXIQ7/2iQBgxDuw4oeSL5JwUJHZroGahllNuy
+        Ylocx1LmkQSrqUObRm1Aacsvz62Noys=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-11-iD-Zz3iNMzav62Xi_GAH_A-1; Mon, 06 Dec 2021 04:35:07 -0500
-X-MC-Unique: iD-Zz3iNMzav62Xi_GAH_A-1
+ us-mta-329-ymKv-1beOEmAn71OtYS7nQ-1; Mon, 06 Dec 2021 04:34:37 -0500
+X-MC-Unique: ymKv-1beOEmAn71OtYS7nQ-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id EB7C4101F003;
-        Mon,  6 Dec 2021 09:35:04 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id BB8EB81CCBF;
+        Mon,  6 Dec 2021 09:34:34 +0000 (UTC)
 Received: from x1.localdomain.com (unknown [10.39.194.76])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 309E25DF3F;
-        Mon,  6 Dec 2021 09:34:49 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 33BEF5DF4E;
+        Mon,  6 Dec 2021 09:34:31 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -50,9 +50,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         Tsuchiya Yuto <kitakar@gmail.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: [PATCH v4 13/20] power: supply: bq25890: Use the devm_regmap_field_bulk_alloc() helper
-Date:   Mon,  6 Dec 2021 10:33:11 +0100
-Message-Id: <20211206093318.45214-14-hdegoede@redhat.com>
+Subject: [PATCH v4 11/20] power: supply: bq25890: On the bq25892 set the IINLIM based on external charger detection
+Date:   Mon,  6 Dec 2021 10:33:09 +0100
+Message-Id: <20211206093318.45214-12-hdegoede@redhat.com>
 In-Reply-To: <20211206093318.45214-1-hdegoede@redhat.com>
 References: <20211206093318.45214-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -62,49 +62,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the devm_regmap_field_bulk_alloc() helper function instead of
-open-coding this ourselves.
+The bq25892 does not have builtin charger-type detection like the bq25980,
+there might be some external charger detection capability, which will be
+modelled as a power_supply class-device supplying the bq25892.
+
+Use the usb_type property value from the supplier psy-device to set the
+input-current-limit (when available).
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-Changes in v3:
-- This is a new patch in v3 of this patch-series
----
- drivers/power/supply/bq25890_charger.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/power/supply/bq25890_charger.c | 33 ++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 179abed92f9b..852a6fec4339 100644
+index 637cdd3b6b11..3de72f0fbf3e 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -1165,7 +1165,6 @@ static int bq25890_probe(struct i2c_client *client,
- 	struct device *dev = &client->dev;
- 	struct bq25890_device *bq;
- 	int ret;
--	int i;
+@@ -594,6 +594,38 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
+ 	return 0;
+ }
  
- 	bq = devm_kzalloc(dev, sizeof(*bq), GFP_KERNEL);
- 	if (!bq)
-@@ -1182,15 +1181,10 @@ static int bq25890_probe(struct i2c_client *client,
- 		return dev_err_probe(dev, PTR_ERR(bq->rmap),
- 				     "failed to allocate register map\n");
- 
--	for (i = 0; i < ARRAY_SIZE(bq25890_reg_fields); i++) {
--		const struct reg_field *reg_fields = bq25890_reg_fields;
--
--		bq->rmap_fields[i] = devm_regmap_field_alloc(dev, bq->rmap,
--							     reg_fields[i]);
--		if (IS_ERR(bq->rmap_fields[i]))
--			return dev_err_probe(dev, PTR_ERR(bq->rmap_fields[i]),
--					     "cannot allocate regmap field\n");
--	}
-+	ret = devm_regmap_field_bulk_alloc(dev, bq->rmap, bq->rmap_fields,
-+					   bq25890_reg_fields, F_MAX_FIELDS);
++/* On the BQ25892 try to get charger-type info from our supplier */
++static void bq25890_charger_external_power_changed(struct power_supply *psy)
++{
++	struct bq25890_device *bq = power_supply_get_drvdata(psy);
++	union power_supply_propval val;
++	int input_current_limit, ret;
++
++	if (bq->chip_version != BQ25892)
++		return;
++
++	ret = power_supply_get_property_from_supplier(bq->charger,
++						      POWER_SUPPLY_PROP_USB_TYPE,
++						      &val);
 +	if (ret)
-+		return ret;
++		return;
++
++	switch (val.intval) {
++	case POWER_SUPPLY_USB_TYPE_DCP:
++		input_current_limit = bq25890_find_idx(2000000, TBL_IINLIM);
++		break;
++	case POWER_SUPPLY_USB_TYPE_CDP:
++	case POWER_SUPPLY_USB_TYPE_ACA:
++		input_current_limit = bq25890_find_idx(1500000, TBL_IINLIM);
++		break;
++	case POWER_SUPPLY_USB_TYPE_SDP:
++	default:
++		input_current_limit = bq25890_find_idx(500000, TBL_IINLIM);
++	}
++
++	bq25890_field_write(bq, F_IINLIM, input_current_limit);
++}
++
+ static int bq25890_get_chip_state(struct bq25890_device *bq,
+ 				  struct bq25890_state *state)
+ {
+@@ -818,6 +850,7 @@ static const struct power_supply_desc bq25890_power_supply_desc = {
+ 	.properties = bq25890_power_supply_props,
+ 	.num_properties = ARRAY_SIZE(bq25890_power_supply_props),
+ 	.get_property = bq25890_power_supply_get_property,
++	.external_power_changed	= bq25890_charger_external_power_changed,
+ };
  
- 	i2c_set_clientdata(client, bq);
- 
+ static int bq25890_power_supply_init(struct bq25890_device *bq)
 -- 
 2.33.1
 
