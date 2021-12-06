@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A973C4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C77B0C4321E
 	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 09:35:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240906AbhLFJir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Dec 2021 04:38:47 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:51608 "EHLO
+        id S240972AbhLFJis (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Dec 2021 04:38:48 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:60615 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241153AbhLFJiL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:38:11 -0500
+        by vger.kernel.org with ESMTP id S241127AbhLFJiD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 04:38:03 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1638783282;
+        s=mimecast20190719; t=1638783275;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=pN1FjbLFcDO2d9j5qjlwIbSo+FUqNNS/pElCoMXXvWs=;
-        b=Ywj7JT0Xduf9QmBg6YQfQw3i/e6ltGimRnwil6cxRjOLCN6TMKwJg5TnapDBafAF5NKKP3
-        C9R4sYABr/ZI7nIA8s9f5WMkQnfrYNCeKbXIQ7/2iQBgxDuw4oeSL5JwUJHZroGahllNuy
-        Ylocx1LmkQSrqUObRm1Aacsvz62Noys=
+        bh=rkHMjBM63zGg47ORcfkgLOvjulrZ8Qq0h9KQnMkwKnc=;
+        b=MHBJuS8ge7J21PoglFHkS6nQq515avJY+gDd0Esvrez9R57iwzGWzEIpbrv5FA/Wr+4t7R
+        Jw9A3zYQq204hgfvP2gpl8ugUSP/Uo8XLdxxybEjTrmuOQsByeXut8M4GsLh8aQXmotRP+
+        pPhEFDXAWG5DfnDs61ED5sU5jv5Ml+U=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-329-ymKv-1beOEmAn71OtYS7nQ-1; Mon, 06 Dec 2021 04:34:37 -0500
-X-MC-Unique: ymKv-1beOEmAn71OtYS7nQ-1
+ us-mta-589-cGdrGQugNZ2kBRBMmJDA_g-1; Mon, 06 Dec 2021 04:34:29 -0500
+X-MC-Unique: cGdrGQugNZ2kBRBMmJDA_g-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id BB8EB81CCBF;
-        Mon,  6 Dec 2021 09:34:34 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 04BD981CCB6;
+        Mon,  6 Dec 2021 09:34:27 +0000 (UTC)
 Received: from x1.localdomain.com (unknown [10.39.194.76])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 33BEF5DF4E;
-        Mon,  6 Dec 2021 09:34:31 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 9C5D05ED2C;
+        Mon,  6 Dec 2021 09:34:21 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -50,9 +50,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         Tsuchiya Yuto <kitakar@gmail.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: [PATCH v4 11/20] power: supply: bq25890: On the bq25892 set the IINLIM based on external charger detection
-Date:   Mon,  6 Dec 2021 10:33:09 +0100
-Message-Id: <20211206093318.45214-12-hdegoede@redhat.com>
+Subject: [PATCH v4 09/20] power: supply: bq25890: Add bq25890_set_otg_cfg() helper
+Date:   Mon,  6 Dec 2021 10:33:07 +0100
+Message-Id: <20211206093318.45214-10-hdegoede@redhat.com>
 In-Reply-To: <20211206093318.45214-1-hdegoede@redhat.com>
 References: <20211206093318.45214-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -62,69 +62,66 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The bq25892 does not have builtin charger-type detection like the bq25980,
-there might be some external charger detection capability, which will be
-modelled as a power_supply class-device supplying the bq25892.
-
-Use the usb_type property value from the supplier psy-device to set the
-input-current-limit (when available).
+Add a bq25890_set_otg_cfg() helper function, this is a preparation
+patch for adding regulator support.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq25890_charger.c | 33 ++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ drivers/power/supply/bq25890_charger.c | 28 ++++++++++++++------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 637cdd3b6b11..3de72f0fbf3e 100644
+index 548d1a793e31..162bffb02410 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -594,6 +594,38 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 	return 0;
+@@ -832,6 +832,17 @@ static int bq25890_power_supply_init(struct bq25890_device *bq)
+ 	return PTR_ERR_OR_ZERO(bq->charger);
  }
  
-+/* On the BQ25892 try to get charger-type info from our supplier */
-+static void bq25890_charger_external_power_changed(struct power_supply *psy)
++static int bq25890_set_otg_cfg(struct bq25890_device *bq, u8 val)
 +{
-+	struct bq25890_device *bq = power_supply_get_drvdata(psy);
-+	union power_supply_propval val;
-+	int input_current_limit, ret;
++	int ret;
 +
-+	if (bq->chip_version != BQ25892)
-+		return;
++	ret = bq25890_field_write(bq, F_OTG_CFG, val);
++	if (ret < 0)
++		dev_err(bq->dev, "Error switching to boost/charger mode: %d\n", ret);
 +
-+	ret = power_supply_get_property_from_supplier(bq->charger,
-+						      POWER_SUPPLY_PROP_USB_TYPE,
-+						      &val);
-+	if (ret)
-+		return;
-+
-+	switch (val.intval) {
-+	case POWER_SUPPLY_USB_TYPE_DCP:
-+		input_current_limit = bq25890_find_idx(2000000, TBL_IINLIM);
-+		break;
-+	case POWER_SUPPLY_USB_TYPE_CDP:
-+	case POWER_SUPPLY_USB_TYPE_ACA:
-+		input_current_limit = bq25890_find_idx(1500000, TBL_IINLIM);
-+		break;
-+	case POWER_SUPPLY_USB_TYPE_SDP:
-+	default:
-+		input_current_limit = bq25890_find_idx(500000, TBL_IINLIM);
-+	}
-+
-+	bq25890_field_write(bq, F_IINLIM, input_current_limit);
++	return ret;
 +}
 +
- static int bq25890_get_chip_state(struct bq25890_device *bq,
- 				  struct bq25890_state *state)
+ static void bq25890_usb_work(struct work_struct *data)
  {
-@@ -818,6 +850,7 @@ static const struct power_supply_desc bq25890_power_supply_desc = {
- 	.properties = bq25890_power_supply_props,
- 	.num_properties = ARRAY_SIZE(bq25890_power_supply_props),
- 	.get_property = bq25890_power_supply_get_property,
-+	.external_power_changed	= bq25890_charger_external_power_changed,
- };
+ 	int ret;
+@@ -841,25 +852,16 @@ static void bq25890_usb_work(struct work_struct *data)
+ 	switch (bq->usb_event) {
+ 	case USB_EVENT_ID:
+ 		/* Enable boost mode */
+-		ret = bq25890_field_write(bq, F_OTG_CFG, 1);
+-		if (ret < 0)
+-			goto error;
++		bq25890_set_otg_cfg(bq, 1);
+ 		break;
  
- static int bq25890_power_supply_init(struct bq25890_device *bq)
+ 	case USB_EVENT_NONE:
+ 		/* Disable boost mode */
+-		ret = bq25890_field_write(bq, F_OTG_CFG, 0);
+-		if (ret < 0)
+-			goto error;
+-
+-		power_supply_changed(bq->charger);
++		ret = bq25890_set_otg_cfg(bq, 0);
++		if (ret == 0)
++			power_supply_changed(bq->charger);
+ 		break;
+ 	}
+-
+-	return;
+-
+-error:
+-	dev_err(bq->dev, "Error switching to boost/charger mode.\n");
+ }
+ 
+ static int bq25890_usb_notifier(struct notifier_block *nb, unsigned long val,
 -- 
 2.33.1
 
