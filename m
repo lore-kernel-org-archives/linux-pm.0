@@ -2,86 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF2C5C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 00:37:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE38C433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Dec 2021 07:58:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241737AbhLFAlD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Dec 2021 19:41:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54924 "EHLO
+        id S238616AbhLFICA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Dec 2021 03:02:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39124 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241716AbhLFAlD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Dec 2021 19:41:03 -0500
-Received: from mail-ot1-x331.google.com (mail-ot1-x331.google.com [IPv6:2607:f8b0:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A245C0613F8
-        for <linux-pm@vger.kernel.org>; Sun,  5 Dec 2021 16:37:35 -0800 (PST)
-Received: by mail-ot1-x331.google.com with SMTP id x3-20020a05683000c300b0057a5318c517so11504098oto.13
-        for <linux-pm@vger.kernel.org>; Sun, 05 Dec 2021 16:37:35 -0800 (PST)
+        with ESMTP id S230303AbhLFICA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 03:02:00 -0500
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D367BC061354
+        for <linux-pm@vger.kernel.org>; Sun,  5 Dec 2021 23:58:31 -0800 (PST)
+Received: by mail-pf1-x434.google.com with SMTP id r130so9448993pfc.1
+        for <linux-pm@vger.kernel.org>; Sun, 05 Dec 2021 23:58:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=np4s1nuaKyUdMl2ToIjJIup0qete1o/mPorocqdoQT4=;
-        b=jwpLMf1cJoIr3h7a89wTxen9q945XDMCaI0Tsieb//TNvNAzFKNlg5LY82Ss+05Ugh
-         EY1ha+XXvglTAyoHnCLCnLo48kUI388MNPGFL2OJlVrn9kYg/qkd1NH2bKRJAH8OtRzy
-         aG4roM2YoEnCoinvJ1oD06kclhC78AUxxkCPxtQYv7bKUL8KTYoK7wP2TJmPNMVWIhM/
-         AbLZ/Z7whK3lMTbU8UrQQrzd7qww58RNGlM63hg7DZ1qamU9Qr8L9iohIKsIrcXwQMF5
-         6BxpjjpnqlQNtf+7u4T/0/weuBOoq5HJlMQYM58v6Nkm/UUm/gFnStFezQ5l3rXAehw8
-         FDIg==
+        h=from:to:cc:subject:date:message-id;
+        bh=C4WipaUxfhDiSh2nCvJGYNrM8Bp0J6D2g1Zv1ag3WeE=;
+        b=qjf0ySyuDxctyBJqiBSnM52a191lDIcHBABi9DBQcCOsK/lrGRAWeRyUtLZqSeALIC
+         YS2AOewuAmBRHRlb844cQjQpv0uWJyDcvY94rrSQRf+0WmB3cDRxD41QGvSyecRFrrhq
+         YmgQM+6zRoLvggbv/xLgWM+aEYx5ejwds8fvGJUIPxL/qOPqLp+1IozIAjM34T6a7ZdI
+         cWC1zAPJnHPeuRzH7Faj1TZfQaq/gYpeXyeMDeaBo0PdSDOz6tZtkldN4S3y+5OKZdLy
+         UQSNcIz2K0ixlDqpbdNyhTSY0zkkgiOlo0/4lNbWJ7++/zI09O8CYA+54nqTL/aJlSMP
+         En5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=np4s1nuaKyUdMl2ToIjJIup0qete1o/mPorocqdoQT4=;
-        b=wN9A2GwFqAMRrPNkSPnyf7GQhokOmRtaetZC9oWJ0pyqcMTCNgcBSFgRBLHtMCkQXi
-         jFqOVFbZYmHZgyKdFfWOs3OXQbU4F43/XxKg+kv8N7Kck3bInoJ/t2bH5neig+O/UWOE
-         Y6x69Y/8Qyz9rCNILrNtkHwmCshyrwOMhIYx0NRKRR68EqfcYNWipGz3xlh9fJjzx0jw
-         bQ1iE3F7QGDEOH68iAOHStlhcOqvWfNKw/hQ5n5BZrPMVQ8NKf41rqC8yJGQ1HI9UBA5
-         9opAARJ2P3nSjJJvI9rSvlArwP4C+FozJA4JDvLXOBRayV0V3BdFjkP2yx2LleC94x/F
-         n9iw==
-X-Gm-Message-State: AOAM533G/0zOuerzUm/AJrO6Txj2H9G4EHvPJTV3Cww2dwYsSfQHvntd
-        Gdvx5Ab5Auwe+3H3vTQgBc0vtN3HsebVAWskdohFhg==
-X-Google-Smtp-Source: ABdhPJx0bSOeeWhesBs4XfhMT0LHYZ7nSO1feORKIU9x6ejSMPCX1HcTnhB6EhOYLdvowIFCs+Z9j3kCa8RsCx66LO0=
-X-Received: by 2002:a9d:74d0:: with SMTP id a16mr25852146otl.237.1638751054757;
- Sun, 05 Dec 2021 16:37:34 -0800 (PST)
-MIME-Version: 1.0
-References: <20211122234141.3356340-1-linus.walleij@linaro.org>
- <20211122234141.3356340-3-linus.walleij@linaro.org> <20211203210206.6b5cxb4i63j5jpv7@earth.universe>
-In-Reply-To: <20211203210206.6b5cxb4i63j5jpv7@earth.universe>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Mon, 6 Dec 2021 01:37:23 +0100
-Message-ID: <CACRpkdZVK+Vsd8e-gFmiSapuxGKxOPkX+1yVj9VrU5ah5ARH2g@mail.gmail.com>
-Subject: Re: [PATCH 2/2] power: supply: ab8500: Standardize maintenance charging
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     Marcus Cooper <codekipper@gmail.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org,
-        linux-hwmon@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=C4WipaUxfhDiSh2nCvJGYNrM8Bp0J6D2g1Zv1ag3WeE=;
+        b=ajSjVDOWNqVwiGUrz6FTHc0qQPhoAPsgOo+YlDeA1bh8MBLQxmMIV3RjaMRTxC6XOf
+         0FScyqdv67mxJEedNeskQlgmIqNPZ1gVJX3VrFTVpGmLwnmK0cw5SCBFD4iJ8hz49vvV
+         4gJyygXy/OlfKa5UjE/l8IJnbW1EfDuOdNkQvL/BXUUWx7tvb8Fk2Zbk5J+iddErQlik
+         GgPbkcIQ2c0im0a2h+GtHrrGi71vzQQcYOg4kE+cpMLkHLyH21Bv+e44+RWCX6BEVY2h
+         CdhuWIF6HnHgez6ManFwgK71n7vt1cFgOcHRlQSA8kb1uDk87mZg6CBUktUqYMVYL43Q
+         Qrrg==
+X-Gm-Message-State: AOAM530ojJ4pkg8o1ExST83oo7dd+KAxhX5X7wl8ApJDgR20pHCkl4Q1
+        MaZz+zolO3drE9o09YCr3m1V5Q==
+X-Google-Smtp-Source: ABdhPJxOl0lieK+9Dn12NxkK4IvbwugF7/9+L1O5CCeBBYIxZd4I8Ts6Zegje7N30Tk1z9krpA2MAg==
+X-Received: by 2002:a63:1d60:: with SMTP id d32mr3779976pgm.148.1638777511262;
+        Sun, 05 Dec 2021 23:58:31 -0800 (PST)
+Received: from localhost.localdomain (80.251.214.228.16clouds.com. [80.251.214.228])
+        by smtp.gmail.com with ESMTPSA id p15sm11794476pfo.143.2021.12.05.23.58.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 05 Dec 2021 23:58:30 -0800 (PST)
+From:   Shawn Guo <shawn.guo@linaro.org>
+To:     Georgi Djakov <djakov@kernel.org>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Loic Poulain <loic.poulain@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH v3 0/6] Add QCM2290 interconnect support
+Date:   Mon,  6 Dec 2021 15:58:02 +0800
+Message-Id: <20211206075808.18124-1-shawn.guo@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Dec 3, 2021 at 10:02 PM Sebastian Reichel
-<sebastian.reichel@collabora.com> wrote:
+The series begins with a separate cleanup on icc-rpm, followed by a few
+prep changes for QCM2290 support, and then adds bindings and
+interconnect driver for QCM2290 platform.
 
-> I wonder if this will ever be used by any other driver. Having
-> multiple maintanence states seems to be very specific to the
-> ab8500 driver stack.
+Changes for v3:
+- Update bindings to define child interconnect provider nodes
 
-It's actually coming from Samsung and their way of dealing
-with their Li-Ion batteries. They even have further charging
-states... Like starting the charge with slightly higher current
-etc.
+Changes for v2:
+- Drop unneeded include of <dt-bindings/clock/qcom,gcc-qcm2290.h> from
+  bindings.
 
-> But the code itself looks ok and considering
-> this does not expose any (potentially unfixable) userspace ABI
-> and improves the AB8500 mess I'm fine with it.
+Shawn Guo (6):
+  interconnect: icc-rpm: Use NOC_QOS_MODE_INVALID for qos_mode check
+  interconnect: icc-rpm: Define ICC device type
+  interconnect: icc-rpm: Add QNOC type QoS support
+  interconnect: icc-rpm: Support child NoC device probe
+  dt-bindings: interconnect: Add Qualcomm QCM2290 NoC support
+  interconnect: qcom: Add QCM2290 driver support
 
-I will rebase this patch before the NTC things and send
-it separately so it can be applied. It will better to first merge
-the pointer passing change I iterated though, so I'll wait a
-bit so we can agree to merge that.
-https://lore.kernel.org/linux-pm/20211206000651.4168035-1-linus.walleij@linaro.org/
+ .../bindings/interconnect/qcom,qcm2290.yaml   |  137 ++
+ drivers/interconnect/qcom/Kconfig             |    9 +
+ drivers/interconnect/qcom/Makefile            |    2 +
+ drivers/interconnect/qcom/icc-rpm.c           |   56 +-
+ drivers/interconnect/qcom/icc-rpm.h           |   14 +-
+ drivers/interconnect/qcom/msm8916.c           |    4 +-
+ drivers/interconnect/qcom/msm8939.c           |    5 +-
+ drivers/interconnect/qcom/qcm2290.c           | 1363 +++++++++++++++++
+ drivers/interconnect/qcom/sdm660.c            |    7 +-
+ .../dt-bindings/interconnect/qcom,qcm2290.h   |   94 ++
+ 10 files changed, 1678 insertions(+), 13 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml
+ create mode 100644 drivers/interconnect/qcom/qcm2290.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,qcm2290.h
 
-Yours,
-Linus Walleij
+-- 
+2.17.1
+
