@@ -2,107 +2,179 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A9B4C433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Dec 2021 03:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D31C1C433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Dec 2021 05:18:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234375AbhLGDp2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Dec 2021 22:45:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35154 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234282AbhLGDp0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Dec 2021 22:45:26 -0500
-Received: from mail-ua1-x92e.google.com (mail-ua1-x92e.google.com [IPv6:2607:f8b0:4864:20::92e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4279BC061746;
-        Mon,  6 Dec 2021 19:41:57 -0800 (PST)
-Received: by mail-ua1-x92e.google.com with SMTP id l24so23994291uak.2;
-        Mon, 06 Dec 2021 19:41:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=+WjCLq5iyPbhZoOVbo+nvWb9Wp/JdlLnIPR31C337C8=;
-        b=mZiJ1JWBFc1OWU2CphwdToWib2Fs7VeoMvRyd6OGAUdTYE7JuVX3y18pFnbL9d0SYR
-         qnkGAcFy4HWByFCmfen3y9B+gsUBd2Z4vpiAY8cExnT/X6456PRBzYpHz5lzE8xWOBLE
-         /Opn0hwl+/WEjMpD3cFa2zhWfG+2VM8IZAoAwDwKw4uis+328EKo2LCeWhkZKeKEAT9k
-         n3UXrAemi7nOM0I+lBZxbPlnpXZXWks7fOWw21TwqOUg6+DtBOdhLAZp7S1avVtceNWO
-         6hIZiEiJ4irNSwTkZ0WAOuxz06b1U7vebIqVBU87ZImLwZxD31NuI/0Q7jK48HpCxsG6
-         jbJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=+WjCLq5iyPbhZoOVbo+nvWb9Wp/JdlLnIPR31C337C8=;
-        b=5b7/eFbJEOeL9ZNIuyZyAlpO52UWbGZLaf1bg2jfeQ4GVl9evTE4oJzyD9m1cSI9P/
-         DVPyXnB3/68ID+cisJSTq0toGmcK37hgecZUF+s5nTmSNshi7xyjIvERRCANsf5p2Cef
-         yJcC3400mMfT63OzCTqBEdCLqzU8xaCSeUwhc4bGPHFTFKW2b3+ptNWmWBzWiIc0kMa9
-         vZG8GfYGc42M+t896RoqpVEKnJpiKiqgug+D23TQaG32kECWATHpfW8SP/GLfqEUa5hf
-         WwNhY9eNgtRg13me9cjXzUQuEuMd15/WNRvBlpPMtNKPGOv6A2JBl3sGakYnONJo0rIu
-         Ki8w==
-X-Gm-Message-State: AOAM532t6a257QWxIXJkyZ7p6GAsPVSWe/vD+jR6CfEsncfkwhk3ZcV8
-        X+LhJLOcsUU2w0747qhtduReT7g/GebIhBzAkg0d1blr0+c=
-X-Google-Smtp-Source: ABdhPJx6RQZ3n6olyV3sCz9AbKmYBKhNAk0yZ773fOAPjf8R3q9XrHTi0PcC2P6/Zcqz0XN+NMNLS7cMSGYejK/S3F0=
-X-Received: by 2002:ab0:6813:: with SMTP id z19mr46872879uar.28.1638848516162;
- Mon, 06 Dec 2021 19:41:56 -0800 (PST)
+        id S233035AbhLGFW1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Dec 2021 00:22:27 -0500
+Received: from mga14.intel.com ([192.55.52.115]:64154 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233013AbhLGFW1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Dec 2021 00:22:27 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10190"; a="237724598"
+X-IronPort-AV: E=Sophos;i="5.87,293,1631602800"; 
+   d="scan'208";a="237724598"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Dec 2021 21:18:57 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.87,293,1631602800"; 
+   d="scan'208";a="462165665"
+Received: from rzhang1-workstation.sh.intel.com ([10.239.48.24])
+  by orsmga006.jf.intel.com with ESMTP; 06 Dec 2021 21:18:56 -0800
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     rjw@rjwysocki.net
+Cc:     linux-pm@vger.kernel.org, dana.alkattan@intel.com
+Subject: [PATCH] powercap: intel_rapl: support different layout of Psys PowerLimit Register
+Date:   Tue,  7 Dec 2021 21:17:34 +0800
+Message-Id: <20211207131734.2607104-1-rui.zhang@intel.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-References: <20211206182616.2089677-1-f.fainelli@gmail.com> <20211206182616.2089677-6-f.fainelli@gmail.com>
-In-Reply-To: <20211206182616.2089677-6-f.fainelli@gmail.com>
-From:   Gregory Fong <gregory.0xf0@gmail.com>
-Date:   Mon, 6 Dec 2021 19:41:29 -0800
-Message-ID: <CADtm3G5Sh5sFhq7ye=aJbzd0v_FiqOPt_RAE3v_qWFQ+jH5bEQ@mail.gmail.com>
-Subject: Re: [PATCH v2 05/14] dt-bindings: gpio: Convert Broadcom STB GPIO to YAML
-To:     Florian Fainelli <f.fainelli@gmail.com>
-Cc:     devicetree@vger.kernel.org,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE" 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Marc Zyngier <maz@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Al Cooper <alcooperx@gmail.com>,
-        Doug Berger <opendmb@gmail.com>,
-        "open list:LIBATA SUBSYSTEM (Serial and Parallel ATA drivers)" 
-        <linux-ide@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        "moderated list:BROADCOM BCM7XXX ARM ARCHITECTURE" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "open list:MULTIMEDIA CARD (MMC), SECURE DIGITAL (SD) AND..." 
-        <linux-mmc@vger.kernel.org>,
-        "open list:PWM SUBSYSTEM" <linux-pwm@vger.kernel.org>,
-        "open list:HARDWARE RANDOM NUMBER GENERATOR CORE" 
-        <linux-crypto@vger.kernel.org>,
-        "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" 
-        <linux-rtc@vger.kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        "open list:USB SUBSYSTEM" <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 6, 2021 at 10:26 AM Florian Fainelli <f.fainelli@gmail.com> wrote:
->
-> Convert the Broadcom STB GPIO Device Tree binding to YAML to help with
-> validation.
->
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+On SPR, the Psys domain Power Limit Register has a different layout.
 
-Acked-by: Gregory Fong <gregory.0xf0@gmail.com>
+Enhance the code to support different Psys PL register layout.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Reported-and-tested-by: Alkattan Dana <dana.alkattan@intel.com>
+---
+ drivers/powercap/intel_rapl_common.c | 61 +++++++++++++++++++++++++++-
+ include/linux/intel_rapl.h           |  6 +++
+ 2 files changed, 65 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 7c0099e7a6d7..07611a00b78f 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -61,6 +61,20 @@
+ #define PERF_STATUS_THROTTLE_TIME_MASK 0xffffffff
+ #define PP_POLICY_MASK         0x1F
+ 
++/*
++ * SPR has different layout for Psys Domain PowerLimit registers.
++ * There are 17 bits of PL1 and PL2 instead of 15 bits.
++ * The Enable bits and TimeWindow bits are also shifted as a result.
++ */
++#define PSYS_POWER_LIMIT1_MASK       0x1FFFF
++#define PSYS_POWER_LIMIT1_ENABLE     BIT(17)
++
++#define PSYS_POWER_LIMIT2_MASK       (0x1FFFFULL<<32)
++#define PSYS_POWER_LIMIT2_ENABLE     BIT_ULL(49)
++
++#define PSYS_TIME_WINDOW1_MASK       (0x7FULL<<19)
++#define PSYS_TIME_WINDOW2_MASK       (0x7FULL<<51)
++
+ /* Non HW constants */
+ #define RAPL_PRIMITIVE_DERIVED       BIT(1)	/* not from raw data */
+ #define RAPL_PRIMITIVE_DUMMY         BIT(2)
+@@ -97,6 +111,7 @@ struct rapl_defaults {
+ 				    bool to_raw);
+ 	unsigned int dram_domain_energy_unit;
+ 	unsigned int psys_domain_energy_unit;
++	bool spr_psys_bits;
+ };
+ static struct rapl_defaults *rapl_defaults;
+ 
+@@ -669,12 +684,51 @@ static struct rapl_primitive_info rpi[] = {
+ 			    RAPL_DOMAIN_REG_PERF, TIME_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PRIORITY_LEVEL, PP_POLICY_MASK, 0,
+ 			    RAPL_DOMAIN_REG_POLICY, ARBITRARY_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_POWER_LIMIT1, PSYS_POWER_LIMIT1_MASK, 0,
++			    RAPL_DOMAIN_REG_LIMIT, POWER_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_POWER_LIMIT2, PSYS_POWER_LIMIT2_MASK, 32,
++			    RAPL_DOMAIN_REG_LIMIT, POWER_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_PL1_ENABLE, PSYS_POWER_LIMIT1_ENABLE, 17,
++			    RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_PL2_ENABLE, PSYS_POWER_LIMIT2_ENABLE, 49,
++			    RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_TIME_WINDOW1, PSYS_TIME_WINDOW1_MASK, 19,
++			    RAPL_DOMAIN_REG_LIMIT, TIME_UNIT, 0),
++	PRIMITIVE_INFO_INIT(PSYS_TIME_WINDOW2, PSYS_TIME_WINDOW2_MASK, 51,
++			    RAPL_DOMAIN_REG_LIMIT, TIME_UNIT, 0),
+ 	/* non-hardware */
+ 	PRIMITIVE_INFO_INIT(AVERAGE_POWER, 0, 0, 0, POWER_UNIT,
+ 			    RAPL_PRIMITIVE_DERIVED),
+ 	{NULL, 0, 0, 0},
+ };
+ 
++static enum rapl_primitives
++prim_fixups(struct rapl_domain *rd, enum rapl_primitives prim)
++{
++	if (!rapl_defaults->spr_psys_bits)
++		return prim;
++
++	if (rd->id != RAPL_DOMAIN_PLATFORM)
++		return prim;
++
++	switch (prim) {
++	case POWER_LIMIT1:
++		return PSYS_POWER_LIMIT1;
++	case POWER_LIMIT2:
++		return PSYS_POWER_LIMIT2;
++	case PL1_ENABLE:
++		return PSYS_PL1_ENABLE;
++	case PL2_ENABLE:
++		return PSYS_PL2_ENABLE;
++	case TIME_WINDOW1:
++		return PSYS_TIME_WINDOW1;
++	case TIME_WINDOW2:
++		return PSYS_TIME_WINDOW2;
++	default:
++		return prim;
++	}
++}
++
+ /* Read primitive data based on its related struct rapl_primitive_info.
+  * if xlate flag is set, return translated data based on data units, i.e.
+  * time, energy, and power.
+@@ -692,7 +746,8 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
+ 			      enum rapl_primitives prim, bool xlate, u64 *data)
+ {
+ 	u64 value;
+-	struct rapl_primitive_info *rp = &rpi[prim];
++	enum rapl_primitives prim_fixed = prim_fixups(rd, prim);
++	struct rapl_primitive_info *rp = &rpi[prim_fixed];
+ 	struct reg_action ra;
+ 	int cpu;
+ 
+@@ -738,7 +793,8 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+ 			       enum rapl_primitives prim,
+ 			       unsigned long long value)
+ {
+-	struct rapl_primitive_info *rp = &rpi[prim];
++	enum rapl_primitives prim_fixed = prim_fixups(rd, prim);
++	struct rapl_primitive_info *rp = &rpi[prim_fixed];
+ 	int cpu;
+ 	u64 bits;
+ 	struct reg_action ra;
+@@ -981,6 +1037,7 @@ static const struct rapl_defaults rapl_defaults_spr_server = {
+ 	.compute_time_window = rapl_compute_time_window_core,
+ 	.dram_domain_energy_unit = 15300,
+ 	.psys_domain_energy_unit = 1000000000,
++	.spr_psys_bits = true,
+ };
+ 
+ static const struct rapl_defaults rapl_defaults_byt = {
+diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
+index 93780834fc8f..9f4b6f5b822f 100644
+--- a/include/linux/intel_rapl.h
++++ b/include/linux/intel_rapl.h
+@@ -58,6 +58,12 @@ enum rapl_primitives {
+ 	THROTTLED_TIME,
+ 	PRIORITY_LEVEL,
+ 
++	PSYS_POWER_LIMIT1,
++	PSYS_POWER_LIMIT2,
++	PSYS_PL1_ENABLE,
++	PSYS_PL2_ENABLE,
++	PSYS_TIME_WINDOW1,
++	PSYS_TIME_WINDOW2,
+ 	/* below are not raw primitive data */
+ 	AVERAGE_POWER,
+ 	NR_RAPL_PRIMITIVES,
+-- 
+2.27.0
+
