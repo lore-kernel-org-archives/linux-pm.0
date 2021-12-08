@@ -2,54 +2,56 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D25C1C433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Dec 2021 00:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FEC2C43219
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Dec 2021 00:37:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242895AbhLHAlO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Dec 2021 19:41:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48692 "EHLO
+        id S242939AbhLHAlU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Dec 2021 19:41:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242858AbhLHAlK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Dec 2021 19:41:10 -0500
-Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85BA5C061746;
-        Tue,  7 Dec 2021 16:37:39 -0800 (PST)
-Received: by mail-pg1-x534.google.com with SMTP id j11so597070pgs.2;
-        Tue, 07 Dec 2021 16:37:39 -0800 (PST)
+        with ESMTP id S242860AbhLHAlQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Dec 2021 19:41:16 -0500
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA7EDC0617A1;
+        Tue,  7 Dec 2021 16:37:45 -0800 (PST)
+Received: by mail-pj1-x1033.google.com with SMTP id p18-20020a17090ad31200b001a78bb52876so3138388pju.3;
+        Tue, 07 Dec 2021 16:37:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=fzt07ce1bSe7/IbkVLZBOEgGkOAfA/4NDEECalTgWJE=;
-        b=dE3SBRjaU2Y9Ll3skSCpNRoaLe4U4IgQwCl+p7mQF7mU+RtncumJn6JQcCL3M5md9Z
-         +M9NDu9CqMP1F6b5H5qwfbgm/qELonGxbQBY+SGSePbP/ShSRit/CDi80Wl+AUsqIF6N
-         +qJBU/0Kbn1qthCN2g4RVFpz0r0xD3ybLmhl3v7mlF0KvHLlqcaeMAjGcH4Cs2U24eFg
-         ZBJg672k/LKMq55f6wSeY3WpFwDQEdCocR0AEK/NPUvc/xwuFusvPjvUHZ1A379CN76j
-         CzvvgZ7Z9kuGvV2Y55yea2+H//6w0slmxVdZ2Ui2fNSyJA0NXgIE0OGOidq5PZn436Dl
-         fe0w==
+        bh=xTxDB4eLfNoAt8w3FT+NT9TqqcUIK/yExuWXnv5kEYI=;
+        b=QtOXQEwsCZwXLR9N2JNPW5sYvZJ3Ycv78Bi6/fgcogUX7O+o97aeHlU9rwzEUtBRtm
+         dSJRsv98Uz8OO7rR0EIPRhW+5UNGk2q2hcYnXH80wvu7GqlK8pJM0MSa2u5W0iewhpGD
+         D1vi7jf9LKMIzVbJn9F5ufZt6Keb1IpR0sGCkZKV62MF0vnOisgvzZISbLEBq1UVy/hn
+         R2HudA4F+W+q/RZcgth1iffnzN+6bxwwUUUE7o/Hmfr3c+VM4bSKcFFGDQa3+7EBhEWv
+         XVIu9J39nH+uzdagYdUnXOxM4B7O08Iu5XvfN9qxsVSdeuT+qgyhpEL7JRAQrl/QR62A
+         MYpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=fzt07ce1bSe7/IbkVLZBOEgGkOAfA/4NDEECalTgWJE=;
-        b=A6LfLLhYF7dbdT8Wu0qJUVMVoSGhRIpUxxF3VSLaujhBIvaoYSR8JxC1JAK1VFeckX
-         rxAoSjiKedvbkC1VUF3167sR/xmfWgarLBT8kXUSSx7l4/DawYV9W2q807syqfieTXJI
-         cf0BI3dVmMYPiGOD0JP4ZkunRsR+G4Kurmq3w78FeApPnO6W/WPibz3nv5sScj7Fu9BS
-         RzOvgHE/tFazFUI7F8Vx8CwSpQovPiqHCNKcsOhS1gve5R3eN9ooBLxYLjQ0cuN+uo61
-         99gt3/y4UdGJbOOjpUs3k/oteVhjq0y7vlLllmCVb8lRUFFFILoo4nyyBopDhjrMqQSo
-         V/Ug==
-X-Gm-Message-State: AOAM531NhDeKC8oihnBA6k3/LWDcRoqlU/eN894hIt8nJHl3z3+82mdy
-        GPEdFm9esd7y+opBOAJpy4iZ5cF98ms=
-X-Google-Smtp-Source: ABdhPJyIgeihBB0FcpLgt6ApUyOqXenN/IoOAZWKj7y+zefPUC8iLYH4pidr3M8JIvz4OctUZIcKaA==
-X-Received: by 2002:a63:211b:: with SMTP id h27mr26815869pgh.203.1638923858628;
-        Tue, 07 Dec 2021 16:37:38 -0800 (PST)
+        bh=xTxDB4eLfNoAt8w3FT+NT9TqqcUIK/yExuWXnv5kEYI=;
+        b=s8XIUxi6ojCguhE2vQM3K7e4HbtBgAyvCGoJqqNAGbfzj3EE7MrhZvuyCxXLuPpxWf
+         TIs1o5/BOB7/F8hEmSDU466mpwbW0jKYUzw5ouO5LK5XEscH70XDISeo0T0eXULz/O0g
+         E7eqv5MhIopgupmsK6IyAoxrOjkeLWJZ/WyZVK9QOb9BBgl6o7jdeUiE/wQfENJVitT2
+         iRK6oLWaeYUh/6q/fqrH1Ssv8W1/e9XTt9PH2GKrist22yBB0Gw60KMtIFKPDSvWY4vH
+         zzot+GjSfYn6kzR/AX1tCRXTytFzeBQ2cBDn9E8T8A8Mx9Q/xyU6TNnDwjCYoVuuXhYg
+         iHAA==
+X-Gm-Message-State: AOAM530K8DMvASZK7Vv0+e7goPZGb24pcDUV9BbxcTVlpbkEEL33jkYo
+        j8vpKLRykr6zqn51bqB97T+E9Tkcekg=
+X-Google-Smtp-Source: ABdhPJxAxybBWeUwWPaIqJtAAO7geI00gG0nPgCdizcgBLUXGFphx05S4H/Mm0Liu6HJzj0fI8zexQ==
+X-Received: by 2002:a17:902:7890:b0:143:c4f7:59e6 with SMTP id q16-20020a170902789000b00143c4f759e6mr55886275pll.87.1638923865042;
+        Tue, 07 Dec 2021 16:37:45 -0800 (PST)
 Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id n16sm926379pfv.123.2021.12.07.16.37.35
+        by smtp.gmail.com with ESMTPSA id n16sm926379pfv.123.2021.12.07.16.37.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Dec 2021 16:37:38 -0800 (PST)
+        Tue, 07 Dec 2021 16:37:44 -0800 (PST)
 From:   Florian Fainelli <f.fainelli@gmail.com>
 To:     devicetree@vger.kernel.org
 Cc:     Florian Fainelli <f.fainelli@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
         Damien Le Moal <damien.lemoal@opensource.wdc.com>,
         Rob Herring <robh+dt@kernel.org>,
         Linus Walleij <linus.walleij@linaro.org>,
@@ -60,8 +62,7 @@ Cc:     Florian Fainelli <f.fainelli@gmail.com>,
         Marc Zyngier <maz@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>,
         Philipp Zabel <p.zabel@pengutronix.de>,
         Herbert Xu <herbert@gondor.apana.org.au>,
         Ray Jui <rjui@broadcom.com>,
@@ -89,192 +90,105 @@ Cc:     Florian Fainelli <f.fainelli@gmail.com>,
         linux-rtc@vger.kernel.org (open list:REAL TIME CLOCK (RTC) SUBSYSTEM),
         linux-pm@vger.kernel.org (open list:THERMAL),
         linux-usb@vger.kernel.org (open list:USB SUBSYSTEM)
-Subject: [PATCH v3 01/15] dt-bindings: mmc: Convert Broadcom STB SDHCI binding to YAML
-Date:   Tue,  7 Dec 2021 16:37:12 -0800
-Message-Id: <20211208003727.3596577-2-f.fainelli@gmail.com>
+Subject: [PATCH v3 03/15] dt-bindings: pwm: Convert BCM7038 PWM binding to YAML
+Date:   Tue,  7 Dec 2021 16:37:14 -0800
+Message-Id: <20211208003727.3596577-4-f.fainelli@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211208003727.3596577-1-f.fainelli@gmail.com>
 References: <20211208003727.3596577-1-f.fainelli@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the Broadcom STB SDHCI controller Device Tree binding to YAML.
+Convert the Broadcom STB BCM7038 PWM Device Tree binding to YAML to help
+with validation.
 
+Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- .../bindings/mmc/brcm,sdhci-brcmstb.txt       |  53 ----------
- .../bindings/mmc/brcm,sdhci-brcmstb.yaml      | 100 ++++++++++++++++++
- 2 files changed, 100 insertions(+), 53 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.txt
- create mode 100644 Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.yaml
+ .../bindings/pwm/brcm,bcm7038-pwm.txt         | 20 ---------
+ .../bindings/pwm/brcm,bcm7038-pwm.yaml        | 43 +++++++++++++++++++
+ 2 files changed, 43 insertions(+), 20 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.txt
+ create mode 100644 Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.yaml
 
-diff --git a/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.txt b/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.txt
+diff --git a/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.txt b/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.txt
 deleted file mode 100644
-index ae2074184528..000000000000
---- a/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.txt
+index 0e662d7f6bd1..000000000000
+--- a/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.txt
 +++ /dev/null
-@@ -1,53 +0,0 @@
--* BROADCOM BRCMSTB/BMIPS SDHCI Controller
--
--This file documents differences between the core properties in mmc.txt
--and the properties used by the sdhci-brcmstb driver.
--
--NOTE: The driver disables all UHS speed modes by default and depends
--on Device Tree properties to enable them for SoC/Board combinations
--that support them.
+@@ -1,20 +0,0 @@
+-Broadcom BCM7038 PWM controller (BCM7xxx Set Top Box PWM controller)
 -
 -Required properties:
--- compatible: should be one of the following
--  - "brcm,bcm7425-sdhci"
--  - "brcm,bcm7445-sdhci"
--  - "brcm,bcm7216-sdhci"
 -
--Refer to clocks/clock-bindings.txt for generic clock consumer properties.
+-- compatible: must be "brcm,bcm7038-pwm"
+-- reg: physical base address and length for this controller
+-- #pwm-cells: should be 2. See pwm.yaml in this directory for a description
+-  of the cells format
+-- clocks: a phandle to the reference clock for this block which is fed through
+-  its internal variable clock frequency generator
+-
 -
 -Example:
 -
--	sdhci@84b0000 {
--		sd-uhs-sdr50;
--		sd-uhs-ddr50;
--		sd-uhs-sdr104;
--		sdhci,auto-cmd12;
--		compatible = "brcm,bcm7216-sdhci",
--			   "brcm,bcm7445-sdhci",
--			   "brcm,sdhci-brcmstb";
--		reg = <0x84b0000 0x260 0x84b0300 0x200>;
--		reg-names = "host", "cfg";
--		interrupts = <0x0 0x26 0x4>;
--		interrupt-names = "sdio0_0";
--		clocks = <&scmi_clk 245>;
--		clock-names = "sw_sdio";
+-	pwm: pwm@f0408000 {
+-		compatible = "brcm,bcm7038-pwm";
+-		reg = <0xf0408000 0x28>;
+-		#pwm-cells = <2>;
+-		clocks = <&upg_fixed>;
 -	};
--
--	sdhci@84b1000 {
--		mmc-ddr-1_8v;
--		mmc-hs200-1_8v;
--		mmc-hs400-1_8v;
--		mmc-hs400-enhanced-strobe;
--		supports-cqe;
--		non-removable;
--		bus-width = <0x8>;
--		compatible = "brcm,bcm7216-sdhci",
--			   "brcm,bcm7445-sdhci",
--			   "brcm,sdhci-brcmstb";
--		reg = <0x84b1000 0x260 0x84b1300 0x200>;
--		reg-names = "host", "cfg";
--		interrupts = <0x0 0x27 0x4>;
--		interrupt-names = "sdio1_0";
--		clocks = <&scmi_clk 245>;
--		clock-names = "sw_sdio";
--	};
-diff --git a/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.yaml b/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.yaml
+diff --git a/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.yaml b/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.yaml
 new file mode 100644
-index 000000000000..dccd5ad96981
+index 000000000000..4080e098f746
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/mmc/brcm,sdhci-brcmstb.yaml
-@@ -0,0 +1,100 @@
++++ b/Documentation/devicetree/bindings/pwm/brcm,bcm7038-pwm.yaml
+@@ -0,0 +1,43 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/mmc/brcm,sdhci-brcmstb.yaml#
++$id: http://devicetree.org/schemas/pwm/brcm,bcm7038-pwm.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Broadcom BRCMSTB/BMIPS SDHCI Controller binding
++title: Broadcom BCM7038 PWM controller (BCM7xxx Set Top Box PWM controller)
 +
 +maintainers:
-+  - Al Cooper <alcooperx@gmail.com>
 +  - Florian Fainelli <f.fainelli@gmail.com>
 +
 +allOf:
-+  - $ref: mmc-controller.yaml#
++  - $ref: pwm.yaml#
 +
 +properties:
 +  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - brcm,bcm7216-sdhci
-+          - const: brcm,bcm7445-sdhci
-+          - const: brcm,sdhci-brcmstb
-+      - items:
-+          - enum:
-+              - brcm,bcm7445-sdhci
-+          - const: brcm,sdhci-brcmstb
-+      - items:
-+          - enum:
-+              - brcm,bcm7425-sdhci
-+          - const: brcm,sdhci-brcmstb
++    const: brcm,bcm7038-pwm
 +
 +  reg:
-+    minItems: 2
-+
-+  reg-names:
-+    items:
-+      - const: host
-+      - const: cfg
-+
-+  interrupts:
 +    maxItems: 1
++
++  "#pwm-cells":
++    const: 2
 +
 +  clocks:
 +    maxItems: 1
-+    description:
-+      handle to core clock for the sdhci controller.
-+
-+  clock-names:
-+    items:
-+      - const: sw_sdio
-+
-+  sdhci,auto-cmd12:
-+    type: boolean
-+    description: Specifies that controller should use auto CMD12
 +
 +required:
 +  - compatible
 +  - reg
-+  - interrupts
++  - "#pwm-cells"
 +  - clocks
 +
-+unevaluatedProperties: false
++additionalProperties: false
 +
 +examples:
 +  - |
-+    mmc@84b0000 {
-+      sd-uhs-sdr50;
-+      sd-uhs-ddr50;
-+      sd-uhs-sdr104;
-+      sdhci,auto-cmd12;
-+      compatible = "brcm,bcm7216-sdhci",
-+                   "brcm,bcm7445-sdhci",
-+                   "brcm,sdhci-brcmstb";
-+      reg = <0x84b0000 0x260>, <0x84b0300 0x200>;
-+      reg-names = "host", "cfg";
-+      interrupts = <0x0 0x26 0x4>;
-+      interrupt-names = "sdio0_0";
-+      clocks = <&scmi_clk 245>;
-+      clock-names = "sw_sdio";
-+    };
-+
-+    mmc@84b1000 {
-+      mmc-ddr-1_8v;
-+      mmc-hs200-1_8v;
-+      mmc-hs400-1_8v;
-+      mmc-hs400-enhanced-strobe;
-+      supports-cqe;
-+      non-removable;
-+      bus-width = <0x8>;
-+      compatible = "brcm,bcm7216-sdhci",
-+           "brcm,bcm7445-sdhci",
-+            "brcm,sdhci-brcmstb";
-+      reg = <0x84b1000 0x260>, <0x84b1300 0x200>;
-+      reg-names = "host", "cfg";
-+      interrupts = <0x0 0x27 0x4>;
-+      interrupt-names = "sdio1_0";
-+      clocks = <&scmi_clk 245>;
-+      clock-names = "sw_sdio";
++    pwm: pwm@f0408000 {
++       compatible = "brcm,bcm7038-pwm";
++       reg = <0xf0408000 0x28>;
++       #pwm-cells = <2>;
++       clocks = <&upg_fixed>;
 +    };
 -- 
 2.25.1
