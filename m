@@ -2,102 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2641C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Dec 2021 15:03:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3595DC433FE
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Dec 2021 16:11:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239142AbhLIPG5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Dec 2021 10:06:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41372 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239151AbhLIPGu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Dec 2021 10:06:50 -0500
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31E3FC0617A1
-        for <linux-pm@vger.kernel.org>; Thu,  9 Dec 2021 07:03:16 -0800 (PST)
-Received: by mail-wr1-x429.google.com with SMTP id c4so10156370wrd.9
-        for <linux-pm@vger.kernel.org>; Thu, 09 Dec 2021 07:03:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=DceIKBZdPfWWzEFspshwq/4AFcE8dKQFPMvGqy4h/Bo=;
-        b=VfAKC5JSeTF8Ez8AZKvX4Oo3uelD+ija3DgYdTLltbQiXXSYaNCTw1T56ixnwxNuwp
-         cMBQ3coAIcTKM69H8pTLrhDtTajoXhvosYQ+oDfJ4dSeMNxsAfYloKkA8boeAoaRil8f
-         cPwNfAwwQcH16t4+St+HYwdRmbJGGpiXzajkLtizsv3MWb9tTUENHIsuIhtMFZDM+ar2
-         HZWmPR/cx+myM3qZ5I17OhAUDkqFKxdyCzmVuwPhd6D4IHaNlaRdRzfotEW7LBFI7grc
-         bK1Qoogt85nzeVPJAkH3XQGQ6GAd2ugUA9A5OxtYtVnZyRQ5eHHcA17355MM/4mAHoBn
-         XXsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=DceIKBZdPfWWzEFspshwq/4AFcE8dKQFPMvGqy4h/Bo=;
-        b=wKZe4/W5IYS857P4UiVtWvJx+7ESgaX74HbxlUYUhvT7tmBxoy9WqE8UvYcbbZcuG8
-         sKENVv4AtOYBdNq5dpRIkAlDX/7Zcz67kolwAC5VCk31y4UHJcptEbmT8Ls6h2MFESLI
-         bzTM6XbEx3RaW1l49uXf4tBUcX85l90msHkZRtpMvSiBNDFFNh5UuHjE63ZIMjXD9fHn
-         OyjRgdJxtfT4hZ9BkIstY77eA63RMQT2aZxRjNEk4frNmdZe9wpUUXScmCRb5sTsxN9u
-         flWDgeZ23gj+e7wuWDk+zpQJ+K76LiHhAOw7Ey2xtQmBDSbuB8q84BBjXGEPewyix+2C
-         OoHA==
-X-Gm-Message-State: AOAM531YWHZ5JAEPs7Pjee1FxU2IqfJgmTYXMSZhr9j/hRyfjFZP1sRi
-        qWrAE9HEf2Uhen5bR9CPJAADYQ==
-X-Google-Smtp-Source: ABdhPJy1XiTFFujehS1Js8gTZlxNuKCjNd0fWSEy86Yl1IrdvO4noh13q6pm2f9ohGKmzph+quIPcQ==
-X-Received: by 2002:adf:aa08:: with SMTP id p8mr7001130wrd.572.1639062194508;
-        Thu, 09 Dec 2021 07:03:14 -0800 (PST)
-Received: from ?IPv6:2a01:e34:ed2f:f020:7191:566f:2b5:22f1? ([2a01:e34:ed2f:f020:7191:566f:2b5:22f1])
-        by smtp.googlemail.com with ESMTPSA id a1sm8261698wri.89.2021.12.09.07.03.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Dec 2021 07:03:13 -0800 (PST)
-Subject: Re: [PATCH v2] thermal/drivers: Add error check for
- reset_control_deassert()
-To:     Biju Das <biju.das.jz@bp.renesas.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        id S231924AbhLIQPR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Dec 2021 11:15:17 -0500
+Received: from mga06.intel.com ([134.134.136.31]:40656 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230177AbhLIQPR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Dec 2021 11:15:17 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10193"; a="298924660"
+X-IronPort-AV: E=Sophos;i="5.88,192,1635231600"; 
+   d="scan'208";a="298924660"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2021 08:04:59 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,192,1635231600"; 
+   d="scan'208";a="463291598"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orsmga006.jf.intel.com with ESMTP; 09 Dec 2021 08:04:58 -0800
+Date:   Thu, 9 Dec 2021 08:03:46 -0800
+From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-pm@vger.kernel.org, x86@kernel.org,
+        linux-doc@vger.kernel.org, Len Brown <len.brown@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Aubrey Li <aubrey.li@linux.intel.com>,
         Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Chris Paterson <Chris.Paterson2@renesas.com>,
-        Biju Das <biju.das@bp.renesas.com>,
-        Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-        linux-renesas-soc@vger.kernel.org
-References: <20211208164010.4130-1-biju.das.jz@bp.renesas.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <4a0ab27a-a5ba-5ad8-5ad7-be883b661b67@linaro.org>
-Date:   Thu, 9 Dec 2021 16:03:12 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+        Andi Kleen <ak@linux.intel.com>,
+        Tim Chen <tim.c.chen@linux.intel.com>,
+        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+        Ricardo Neri <ricardo.neri@intel.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] thermal: netlink: Add a new event to notify CPU
+ capabilities change
+Message-ID: <20211209160346.GA7692@ranerica-svr.sc.intel.com>
+References: <20211106013312.26698-1-ricardo.neri-calderon@linux.intel.com>
+ <20211106013312.26698-7-ricardo.neri-calderon@linux.intel.com>
+ <b51c9b2a-40d2-6575-7746-3059eec53519@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20211208164010.4130-1-biju.das.jz@bp.renesas.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b51c9b2a-40d2-6575-7746-3059eec53519@linaro.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 08/12/2021 17:40, Biju Das wrote:
-> If reset_control_deassert() fails, then we won't be able to access
-> the device registers. Therefore check the return code of
-> reset_control_deassert() and bail out in case of error.
+On Tue, Nov 30, 2021 at 10:29:46AM +0100, Daniel Lezcano wrote:
+> On 06/11/2021 02:33, Ricardo Neri wrote:
+> > From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > 
+> > Add a new netlink event to notify change in CPU capabilities in terms of
+> > performance and efficiency.
+> > 
+> > Firmware may change CPU capabilities as a result of thermal events in the
+> > system or to account for changes in the TDP (thermal design power) level.
+> > 
+> > This notification type will allow user space to avoid running workloads
+> > on certain CPUs or proactively adjust power limits to avoid future events.
+> > 
 > 
-> While at it replace the parameter "&pdev->dev" -> "dev" in
-> devm_reset_control_get_exclusive().
+> [ ... ]
 > 
-> Suggested-by: Philipp Zabel <p.zabel@pengutronix.de>
-> Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
-> v1->v2:
->  * removed the cast operation "PTR_ERR(ret)" -> ret
->  * Added Rb tag from Philipp.
-> ---
+> > +	[THERMAL_GENL_ATTR_CPU_CAPABILITY_ID]	= { .type = NLA_U32 },
+> > +	[THERMAL_GENL_ATTR_CPU_CAPABILITY_PERF]	= { .type = NLA_U32 },
+> > +	[THERMAL_GENL_ATTR_CPU_CAPABILITY_EFF]	= { .type = NLA_U32 },
+> >  };
+> 
+> AFAIU, 0 <= perf < 256 and 0 <= eff < 256, right?
+> 
+> Is the following true?
+> 
+> 	0 <= perf + eff < 256
 
-Applied, thanks
+No, they are not. They are set independently.
 
+Thanks and BR,
+Ricardo
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
