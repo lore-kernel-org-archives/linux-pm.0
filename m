@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9498AC433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Dec 2021 21:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B5BC433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Dec 2021 21:22:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230330AbhLLVWF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Dec 2021 16:22:05 -0500
-Received: from mail-ed1-f51.google.com ([209.85.208.51]:45920 "EHLO
-        mail-ed1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230175AbhLLVV5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Dec 2021 16:21:57 -0500
-Received: by mail-ed1-f51.google.com with SMTP id y12so45407528eda.12;
-        Sun, 12 Dec 2021 13:21:55 -0800 (PST)
+        id S230295AbhLLVWT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Dec 2021 16:22:19 -0500
+Received: from mail-wr1-f53.google.com ([209.85.221.53]:40697 "EHLO
+        mail-wr1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229950AbhLLVWO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Dec 2021 16:22:14 -0500
+Received: by mail-wr1-f53.google.com with SMTP id t9so24021055wrx.7;
+        Sun, 12 Dec 2021 13:22:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=032w538UVpeATjNmIAIpxMVbSRQ+KkFSikcjH52Go7E=;
-        b=E9VJGzDO/MjlF9k/luR3Khbhy1NPRGJFu45WGR11yv2Csut15VlFqb3GxfyXiC5K1R
-         KoOjuPxJ74P0WBK6P5Rh4Yk8N3YLtFpHfuaNjG/nuh/tfSGU3NqTk9edZfzSNHKBOR8m
-         kPzSD7yXn2hiHnOuT2WH4wXsn02tbX247vyP+WAbNdjC41aD7suYMkTSBhHb57suBLzg
-         JDCdqG/x0ozFIiafXt1VhOC6hig+lrppFxitm7BNJIhU1ULZzUrjdQMODUqHIbHIv5lc
-         HP4HR2RELBXIYyMaOYQnB3LyrgNZPo6J89xd7q/RgqqbviF8jrhJU82mQviA1Jb3TY/T
-         AUjg==
+        bh=LnM2oqI/P3qkpx3c1EWtD4sLNI6B6gG/+oTBL+kWCNQ=;
+        b=Ti+UtGG8XV6c0zOWqrHGbE59RojWkw4ydpgjMyPnKydCS+/MWggp7Pc9vXP3/dSIcd
+         3jnWTMBd8zv/qBtjyyIl9yIZVhT8x6fyMjQXI7luWmrCTc61AVDnaWwsG+mIfuPQO9dB
+         vcqOllWLO88CRGpuT6+xXO8ZmzEOzeGTj/s4L1fT4s6+Ybm6rqbTcVdA4UXyNrivjGv5
+         UJ6UviXyCjmc4b8nSyi1dpErcal2pEnmBKVfp4o/3mh7A8Qp+zHAUZCcABQgpQssHyoG
+         UiW2FFO7QpKrXAOmKzFmfqtuBRyQuxNiF7hVzSScTIX4m9O5uZ05fsLoNM2XxAyyofSA
+         atBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=032w538UVpeATjNmIAIpxMVbSRQ+KkFSikcjH52Go7E=;
-        b=37U+YBs1RId0OJNLe51/fIBP+s/PuvPg+DUI075slFsrkcgjXhFUWlvZTfs60JtjuD
-         wnWeZCevhY7fGN3v88Neb8dIS2L0gpMrv4GnsiPn9yeggwjdSPLgXw27TA2Tgxxo/Nce
-         UNMGNWnrJopw61hVd7Is0QiyIvcIWUI5vwhdUicF9zORMT+lupJIyPiI16udGGoXQMTn
-         EYu+nIS8+vApMXtmhhsNneyYpjPu/chYfbqblO6PTJo/UypHKV+R4LoAev+DW6CkwGQf
-         83Z0vF9kU594BJ8hBJ7IYlV5Omk8El5VesW3CiI3+QyJGaBGkFaoVb/Nz/vIrMw1wmRK
-         0ZpQ==
-X-Gm-Message-State: AOAM533XVEJpaJDCgcZAuZzDRSr59Zyw0pv1ZNIos91N+VEJpZn070zO
-        1MuoUgsQOFu2+RyI6UkqF/T3vEzKUSQ=
-X-Google-Smtp-Source: ABdhPJxUkKeqtg/YDWyN+6uH7IPe04t5eV8J/9ZVzn0URaLN05uRJEwSyylEX1JQ9jfzKVs+jpVePw==
-X-Received: by 2002:a19:5e59:: with SMTP id z25mr25760424lfi.686.1639343040878;
-        Sun, 12 Dec 2021 13:04:00 -0800 (PST)
+        bh=LnM2oqI/P3qkpx3c1EWtD4sLNI6B6gG/+oTBL+kWCNQ=;
+        b=asJJiaHc5bM7+CB5NpE8eLCw3a4UOw6xsxWUFj1yG5oGQ4u8nQuqZDjxZ0e6Sunh0u
+         DjZ6tQVn/fHe8ftX7m8uji5AFIEnd3JtmIoqFKqbOAkbwkpJrNjkrPFi3FNjwsWgMjK4
+         EvqWzPfhvT1Uqqg3UblIEUrSZh/xZph2NdL3rRoujC6f2VNw3+hSdCAxovxpv9Q4Ui3A
+         AaZivXVRBz5UUsytjITRSyRVYUGoqgSi5wVZ+iQ0z7xejzhilPXRp1bwcncixIF+jzOH
+         PRvno/sDrE1T5vL4ykU9CXZTpbyPzH/M9EDPtkCVRalb78IYeUPqdl1EoWjhlhZTe7Dk
+         OQPQ==
+X-Gm-Message-State: AOAM530gtrAMv8gNA7d64+4EU/4N9tt3Z6vl8xGUSgRbkSuOkwoPfQrk
+        N9i/0S63mtnvxjPWEOXMX/AXUjlik78=
+X-Google-Smtp-Source: ABdhPJzqEv9dTDNrIB5aKtlnsJyeHcmVeske90TevqdWeeks/wIjllK9zuSKBLKrf6g7j5l1fLZDZQ==
+X-Received: by 2002:a05:6512:3c9e:: with SMTP id h30mr24792667lfv.212.1639343056911;
+        Sun, 12 Dec 2021 13:04:16 -0800 (PST)
 Received: from localhost.localdomain (94-29-46-111.dynamic.spd-mgts.ru. [94.29.46.111])
-        by smtp.gmail.com with ESMTPSA id y4sm1197172ljp.16.2021.12.12.13.03.59
+        by smtp.gmail.com with ESMTPSA id y4sm1197172ljp.16.2021.12.12.13.04.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Dec 2021 13:04:00 -0800 (PST)
+        Sun, 12 Dec 2021 13:04:16 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -97,9 +97,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org,
         linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-tegra@vger.kernel.org
-Subject: [PATCH v5 13/21] sh: Use do_kernel_power_off()
-Date:   Mon, 13 Dec 2021 00:03:01 +0300
-Message-Id: <20211212210309.9851-14-digetx@gmail.com>
+Subject: [PATCH v5 21/21] reboot: Remove pm_power_off_prepare()
+Date:   Mon, 13 Dec 2021 00:03:09 +0300
+Message-Id: <20211212210309.9851-22-digetx@gmail.com>
 X-Mailer: git-send-email 2.33.1
 In-Reply-To: <20211212210309.9851-1-digetx@gmail.com>
 References: <20211212210309.9851-1-digetx@gmail.com>
@@ -109,30 +109,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Kernel now supports chained power-off handlers. Use do_kernel_power_off()
-that invokes chained power-off handlers. It also invokes legacy
-pm_power_off() for now, which will be removed once all drivers will
-be converted to the new power-off API.
+All pm_power_off_prepare() users were converted to sys-off handler API.
+Remove the obsolete callback.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/sh/kernel/reboot.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ include/linux/pm.h |  1 -
+ kernel/reboot.c    | 11 -----------
+ 2 files changed, 12 deletions(-)
 
-diff --git a/arch/sh/kernel/reboot.c b/arch/sh/kernel/reboot.c
-index 5c33f036418b..e8eeedc9b182 100644
---- a/arch/sh/kernel/reboot.c
-+++ b/arch/sh/kernel/reboot.c
-@@ -46,8 +46,7 @@ static void native_machine_shutdown(void)
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 1d8209c09686..d9bf1426f81e 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -20,7 +20,6 @@
+  * Callbacks for platform drivers to implement.
+  */
+ extern void (*pm_power_off)(void);
+-extern void (*pm_power_off_prepare)(void);
  
- static void native_machine_power_off(void)
+ struct device; /* we have a circular dep with device.h */
+ #ifdef CONFIG_VT_CONSOLE_SLEEP
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 3085873a876f..2f79d4f7cfaa 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -48,13 +48,6 @@ int reboot_cpu;
+ enum reboot_type reboot_type = BOOT_ACPI;
+ int reboot_force;
+ 
+-/*
+- * If set, this is used for preparing the system to power off.
+- */
+-
+-void (*pm_power_off_prepare)(void);
+-EXPORT_SYMBOL_GPL(pm_power_off_prepare);
+-
+ /**
+  *	emergency_restart - reboot the system
+  *
+@@ -829,10 +822,6 @@ void do_kernel_power_off(void)
+ 
+ static void do_kernel_power_off_prepare(void)
  {
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
+-	/* legacy pm_power_off_prepare() is unchained and has highest priority */
+-	if (pm_power_off_prepare)
+-		return pm_power_off_prepare();
+-
+ 	blocking_notifier_call_chain(&power_off_handler_list, POWEROFF_PREPARE,
+ 				     NULL);
  }
- 
- static void native_machine_halt(void)
 -- 
 2.33.1
 
