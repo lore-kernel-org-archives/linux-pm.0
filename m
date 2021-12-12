@@ -2,56 +2,53 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19F63C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29B29C43217
 	for <linux-pm@archiver.kernel.org>; Sun, 12 Dec 2021 11:20:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230155AbhLLLUi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Dec 2021 06:20:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57104 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230146AbhLLLUh (ORCPT
+        id S230160AbhLLLUj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Dec 2021 06:20:39 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:57770 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229622AbhLLLUh (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Dec 2021 06:20:37 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C98CC061751
-        for <linux-pm@vger.kernel.org>; Sun, 12 Dec 2021 03:20:37 -0800 (PST)
-Date:   Sun, 12 Dec 2021 11:20:33 -0000
+Date:   Sun, 12 Dec 2021 11:20:35 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1639308034;
+        s=2020; t=1639308036;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=JXzSIBUlF3urteQxxQUErhvImJCJhwB07mVfs0lRCck=;
-        b=RAxDOZ4R0GB59kasLd3h9DyUL9N8Skd/wlhK+9rmoKfx+pJtYp7v1eDoFyK83p302imGKN
-        i1Ix2hZUvxz2cIVequxarlXIqcvZu7RiKUV1M1J+arBl0iy4Kb+Q39fSh45IaLAqUKSTo7
-        8VQL5GB+0IW0Fl+CWslJfcLStyVEhY8y3FKKQcCsLNBlojBSCDJjkGv3tIHDqazYO6ZeYH
-        M/VDof+cUh92EPSPApdMSGahRyT+AxBldYCVXqgsy4nOFj4vPqnz8TgcM3/jQdy1QJuhoP
-        4ym8okfWueOJ505j0TqbwbnBmo2ns98DeoBtiu+piZqvAB9MQ9IcxRk0Du343Q==
+        bh=JGLaRYQuITBP7WyEaR88+/eVqc4pQ87kl6EIZ9Tpi34=;
+        b=s2TRmsDrnjEAN94xaVQlJLPpCghde7nhFhJYqxlOgRkuwEWeA+2WIu9AdciJJj5S6EXHA5
+        A4TdLYKA0WQfloaFTCqxC77PKD7Z4lwDe5ymDpj7eTYux3GikYWJ9mRTjUG4az5l4UqhCg
+        5P7yUCI25JAJu5neQdRCQQ+Dm1WtfPxZEIsgwGDD4YDF8IWYQsJ4BW9S65p5BPH2tmEFSw
+        3hoxSywkckKiDYodq35zNN5cED4FWkGzdDi+fKfxhlnoLaVK1YZux2KVys6DySLCZIBMYm
+        LnXRorxccxQ3h5U8uF6ScdvKcwOBkhz0SNAd5wh7g6DlCs3sj9gcg6xrS5OQnQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1639308034;
+        s=2020e; t=1639308036;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=JXzSIBUlF3urteQxxQUErhvImJCJhwB07mVfs0lRCck=;
-        b=lQ7YjR14fDKNRcNURw/JzRp+csZeyfgdQ2q12QfXctKY+d5E0+XOR/t+tOea0rXG1FNtND
-        9cbazndvT2qNWTCg==
+        bh=JGLaRYQuITBP7WyEaR88+/eVqc4pQ87kl6EIZ9Tpi34=;
+        b=yt2hoZ3UhJxnYZVlzSRgkT91P5IDSvpPwuZ777mA8wRQWjrSPEFhO+LB5SBHLNONAwtt80
+        eylm0QUe4KdTvfBw==
 From:   "thermal-bot for Biju Das" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/rz2gl: Add error check for
- reset_control_deassert()
-Cc:     Philipp Zabel <p.zabel@pengutronix.de>,
-        Biju Das <biju.das.jz@bp.renesas.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: Document Renesas RZ/G2L TSU
+Cc:     Biju Das <biju.das.jz@bp.renesas.com>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        Rob Herring <robh@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20211208164010.4130-1-biju.das.jz@bp.renesas.com>
-References: <20211208164010.4130-1-biju.das.jz@bp.renesas.com>
+In-Reply-To: <20211130155757.17837-2-biju.das.jz@bp.renesas.com>
+References: <20211130155757.17837-2-biju.das.jz@bp.renesas.com>
 MIME-Version: 1.0
-Message-ID: <163930803312.23020.13150282411504030063.tip-bot2@tip-bot2>
+Message-ID: <163930803580.23020.16954701211179962674.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -62,49 +59,106 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     8ee1c0f6526ce942b7595951c7bb0165010051c2
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8ee1c0f6526ce942b7595951c7bb0165010051c2
+Commit-ID:     9460347192add5644236d492f79ecab6d83504d4
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//9460347192add5644236d492f79ecab6d83504d4
 Author:        Biju Das <biju.das.jz@bp.renesas.com>
-AuthorDate:    Wed, 08 Dec 2021 16:40:09 
+AuthorDate:    Tue, 30 Nov 2021 15:57:56 
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 09 Dec 2021 15:58:09 +01:00
+CommitterDate: Tue, 30 Nov 2021 17:27:45 +01:00
 
-thermal/drivers/rz2gl: Add error check for reset_control_deassert()
+dt-bindings: thermal: Document Renesas RZ/G2L TSU
 
-If reset_control_deassert() fails, then we won't be able to access
-the device registers. Therefore check the return code of
-reset_control_deassert() and bail out in case of error.
+Document the Thermal Sensor Unit(TSU) in the RZ/G2L SoC.
 
-While at it replace the parameter "&pdev->dev" -> "dev" in
-devm_reset_control_get_exclusive().
-
-Suggested-by: Philipp Zabel <p.zabel@pengutronix.de>
 Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Link: https://lore.kernel.org/r/20211208164010.4130-1-biju.das.jz@bp.renesas.com
+Reviewed-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20211130155757.17837-2-biju.das.jz@bp.renesas.com
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/rzg2l_thermal.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml | 76 +++++++-
+ 1 file changed, 76 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml
 
-diff --git a/drivers/thermal/rzg2l_thermal.c b/drivers/thermal/rzg2l_thermal.c
-index d47d4a3..7a9cdc1 100644
---- a/drivers/thermal/rzg2l_thermal.c
-+++ b/drivers/thermal/rzg2l_thermal.c
-@@ -170,12 +170,14 @@ static int rzg2l_thermal_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->base);
- 
- 	priv->dev = dev;
--	priv->rstc = devm_reset_control_get_exclusive(&pdev->dev, NULL);
-+	priv->rstc = devm_reset_control_get_exclusive(dev, NULL);
- 	if (IS_ERR(priv->rstc))
- 		return dev_err_probe(dev, PTR_ERR(priv->rstc),
- 				     "failed to get cpg reset");
- 
--	reset_control_deassert(priv->rstc);
-+	ret = reset_control_deassert(priv->rstc);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to deassert");
- 
- 	pm_runtime_enable(dev);
- 	pm_runtime_get_sync(dev);
+diff --git a/Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml b/Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml
+new file mode 100644
+index 0000000..ccab951
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/rzg2l-thermal.yaml
+@@ -0,0 +1,76 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/rzg2l-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Renesas RZ/G2L Thermal Sensor Unit
++
++description:
++  On RZ/G2L SoCs, the thermal sensor unit (TSU) measures the
++  temperature(Tj) inside the LSI.
++
++maintainers:
++  - Biju Das <biju.das.jz@bp.renesas.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - renesas,r9a07g044-tsu # RZ/G2{L,LC}
++      - const: renesas,rzg2l-tsu
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  power-domains:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++  "#thermal-sensor-cells":
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - power-domains
++  - resets
++  - "#thermal-sensor-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/r9a07g044-cpg.h>
++
++    tsu: thermal@10059400 {
++            compatible = "renesas,r9a07g044-tsu",
++                         "renesas,rzg2l-tsu";
++            reg = <0x10059400 0x400>;
++            clocks = <&cpg CPG_MOD R9A07G044_TSU_PCLK>;
++            resets = <&cpg R9A07G044_TSU_PRESETN>;
++            power-domains = <&cpg>;
++            #thermal-sensor-cells = <1>;
++    };
++
++    thermal-zones {
++            cpu-thermal {
++                    polling-delay-passive = <250>;
++                    polling-delay = <1000>;
++                    thermal-sensors = <&tsu 0>;
++
++                    trips {
++                            sensor_crit: sensor-crit {
++                                    temperature = <125000>;
++                                    hysteresis = <1000>;
++                                    type = "critical";
++                            };
++                    };
++            };
++    };
