@@ -2,97 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB89BC433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Dec 2021 08:27:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F100C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Dec 2021 09:23:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233076AbhLMI1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Dec 2021 03:27:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38226 "EHLO
+        id S230357AbhLMJXg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Dec 2021 04:23:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231717AbhLMI1T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Dec 2021 03:27:19 -0500
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17D61C061D7E
-        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 00:27:17 -0800 (PST)
-Received: by mail-ed1-x535.google.com with SMTP id r11so48767853edd.9
-        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 00:27:17 -0800 (PST)
+        with ESMTP id S233666AbhLMJXf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Dec 2021 04:23:35 -0500
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 332D0C061574
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 01:23:35 -0800 (PST)
+Received: by mail-lf1-x133.google.com with SMTP id d10so29595918lfg.6
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 01:23:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=taFnq99zQAi88G74QKTyCZlH6WvgNqJiCDDQ9L4lFX4=;
-        b=HzaB8tg68t34rQqDwLi/Z0nDC1TwlNT64YkiMFS6334hVjCHxGZQ+hNJhL3DCP+Xvz
-         dMNw7ZlpvZHmZ8ofZkC/pAedq748nbWyEXfThYMGp5/+8T77Cx3ON6i5PKn6R/bdTzZL
-         HWDxL/cLbG7mFeMf2SqRWEG/VOoZHZjlIIhLVghuyExJhBcwjNfFIiVg8+0c5GTiFtpE
-         Tp1QnU81DfUys/j4zxEKG1TZGYVTmjbcMAPwziGrXa3C1SkZvPrNyVVlcnUv7GR8hCac
-         olqo7kllB2KNEtA5glyULFG9dpa7eRsvB+r5EvgwK87G7PnsGp9dReo4nCoHeOJy+9ei
-         qt+w==
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:content-language:from:to:cc
+         :references:subject:in-reply-to:content-transfer-encoding;
+        bh=iqm6xEHR24DEGP71Dw334SXtVnwmbVG6/wYj4wQS+wE=;
+        b=AeZAqxLdDTlTNEkoMHgl9Bs90sMDvs+wcGUnOtweBW0Uj0KNikARKCMyGRad3rtkus
+         XfRwuH6Nir5cGLvC9BLzy/GA4flYdV+CASqUrIsQ2NKrDBlqlIJMjtsLeQI3ExFc2UPT
+         eSRhGcIE54/GKhWfCgWnhKVWu45s37gUjoUwTM4rWhel4fK91bF+E8GSzfPSFzeuSVmK
+         /e5ADB7bbqxWd0IWDeDvaf95iyre/99aqSRe1BDW1pHz1orAftCu5xpe98EAea/5f3Fp
+         34Fjc1hnlixHubvB5jXp0P8zsVWHQz/t5oKXafK2SsEnKWQvURCYKGZw0oVaV2Iyejgg
+         yBuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=taFnq99zQAi88G74QKTyCZlH6WvgNqJiCDDQ9L4lFX4=;
-        b=jQQmiojIVaFTDlaKbnDF52x55uQD1OXp7D8CLN0GGsziWW+N6DrlY+u+C6zvIgXm0s
-         ExWh7iWEutYO3gGKO9pswutleIgg0sjrmG1zodwYmdqyyt+x4CDTpK9BMunOSTdHyDU7
-         aK164moK2uttZt5P6cGzJvnPqXaMzqn+7oLrWDUyzjPSgPE3ReWAiVoeDVlG2EMAqVyq
-         kRkW5UQiv5GlWOKs0o+XBlES/ElHKv/nJ9pFBu14bZXyVTEuqjN3iffsb9zEDSxaZPt3
-         UdYMhnKIA7MIeEShpao/9vnmiJV32e63zOPawAwWdyoWTa5wPdWIF1dhSgcSeW2kaf1I
-         G3Uw==
-X-Gm-Message-State: AOAM531ipJq7/7enDC+YOOQ9Q/PZ+racfk7B6ugwBIojAzsAbGcWHzxf
-        +zJxWn3eif1T5RTWhcWo/DwUMw==
-X-Google-Smtp-Source: ABdhPJyn/Tqd/Phv4lVk2MwK9UiR50FkW82/th2caR0i+Xc//17eqt7fQmEBRZ33ysREXZYTWqwk0Q==
-X-Received: by 2002:a50:cdc8:: with SMTP id h8mr63090815edj.87.1639384035701;
-        Mon, 13 Dec 2021 00:27:15 -0800 (PST)
-Received: from localhost.localdomain ([2a02:a210:20c5:8c80:7d0a:cd68:c339:f426])
-        by smtp.gmail.com with ESMTPSA id b11sm6062432ede.62.2021.12.13.00.27.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Dec 2021 00:27:15 -0800 (PST)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Luca Weiss <luca.weiss@fairphone.com>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/10] dt-bindings: thermal: tsens: Add SM6350 compatible
-Date:   Mon, 13 Dec 2021 09:26:06 +0100
-Message-Id: <20211213082614.22651-6-luca.weiss@fairphone.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20211213082614.22651-1-luca.weiss@fairphone.com>
-References: <20211213082614.22651-1-luca.weiss@fairphone.com>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent
+         :content-language:from:to:cc:references:subject:in-reply-to
+         :content-transfer-encoding;
+        bh=iqm6xEHR24DEGP71Dw334SXtVnwmbVG6/wYj4wQS+wE=;
+        b=Lwb17fSmX/PPW0rrDhp+/rC+i/zYU40EsvvrLnHuB/wJ5NXO2UcC0hrtk1POHr69pO
+         nu6yl50m2xtFG0/htniWKtd4NqWNN5tFKPlqHKlXchCQfCh9tuiusnTLm4kOcCkDM2mD
+         O/oxzsW/j9twTLpBXA0ZkFs8mqgNf3Cikds8DJmeD+Jn+a5Gk9nP3hz/d4z0tWqfISvB
+         abABHPPyf6NAOGxcN73YY4ghb5jiaig+xssprHhJiUyv6QmjkvK2wKmU/4rxpCGBC3sU
+         7A3FznisLrPbsNQCi6L0ZCddWyz24xyXRrwG2Pp0k1RLrQCpMstmZwKgm6jGLYqUHJS5
+         yqeg==
+X-Gm-Message-State: AOAM5324aYcQOkA+Gfsf6FoYZIffpxnVZE5459O9NeY3U00JjFnAmBTF
+        MTLlcbAhZ7KgAaN8Kgof2Es=
+X-Google-Smtp-Source: ABdhPJxldbZ5cIUlTnkjszQZmbp7FIFxxOdp1TKY5MtYo4lObdF9CAJ0LWRe92FpGO7acS+HzNJNNQ==
+X-Received: by 2002:a05:6512:6c7:: with SMTP id u7mr28008802lff.261.1639387413449;
+        Mon, 13 Dec 2021 01:23:33 -0800 (PST)
+Received: from ?IPV6:2001:14ba:16ee:fa00::4? (dc73szyyyyyyyyyyyyycy-3.rev.dnainternet.fi. [2001:14ba:16ee:fa00::4])
+        by smtp.gmail.com with ESMTPSA id p3sm1349039lfg.205.2021.12.13.01.23.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Dec 2021 01:23:32 -0800 (PST)
+Message-ID: <881a158e-4d2d-b09b-621f-12bfbaf671cd@gmail.com>
+Date:   Mon, 13 Dec 2021 11:23:32 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.1.0
+Content-Language: en-US
+From:   Matti Vaittinen <mazziesaccount@gmail.com>
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+References: <20211206000651.4168035-1-linus.walleij@linaro.org>
+ <7228bbd0-4428-18d2-8cef-df9a9c789d41@gmail.com>
+ <CACRpkdaKmZp62DSB7oMbESRjXAH8ncfLyc3KioSDx2z-_JOK8A@mail.gmail.com>
+ <CANhJrGMHr=VLAwe-Tvyg70nN4ArjHa8UHKZODwrufK1r+rRNcA@mail.gmail.com>
+Subject: Re: [PATCH v2] power: supply_core: Pass pointer to battery info
+In-Reply-To: <CANhJrGMHr=VLAwe-Tvyg70nN4ArjHa8UHKZODwrufK1r+rRNcA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add devicetree compatible for tsens on SM6350 SoC.
+On 12/10/21 07:57, Matti Vaittinen wrote:
+> On Thu, Dec 9, 2021 at 2:46 AM Linus Walleij <linus.walleij@linaro.org> wrote:
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
-Acked-by: Konrad Dybcio <konrad.dybcio@somainline.org>
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+>> Also I would love if you could test v2 on hardware!
+> 
+> I don't have a real device with battery connected - but I thinkI do
+> have a break-out board with BD99954 lying around somewhere. I'll see
+> if I remember how to wire it to a beagle-bone - and if I do, then I
+> can try some very limited testing. Adding automated tests for the
+> BD99954 is still on my TODO-list, somewhere at the bottom of it... :(
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index d3b9e9b600a2..6d48c5ff6bda 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -50,6 +50,7 @@ properties:
-               - qcom,sc8180x-tsens
-               - qcom,sdm630-tsens
-               - qcom,sdm845-tsens
-+              - qcom,sm6350-tsens
-               - qcom,sm8150-tsens
-               - qcom,sm8250-tsens
-               - qcom,sm8350-tsens
--- 
-2.34.1
+I have good and not-so-good news. Good news is that I did indeed find a 
+BD99954 evaluation board from my collection PCBs I have "temporarily" 
+stored in a box under my bed XD
 
+The not-so-good news is that I thought I do remember how to connect the 
+board - but it seems I did not. As a result my beaglebone said "Zzzzap!" 
+- and lost the magic smoke which kept it operational. I have only one 
+spare board left - and I do noeed it for bunch of tasks - so I am afraid 
+I can't re-try testing untill I have ordered and received few 
+replacement boards... So sorry - no testing to be done in the next few 
+days - potentially no testing until year 2022 :(
+
+Best Regards
+	--Matti Vaittinen
