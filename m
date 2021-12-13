@@ -2,146 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F898C433FE
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Dec 2021 21:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A701C43217
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Dec 2021 08:27:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229553AbhLLVY5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Dec 2021 16:24:57 -0500
-Received: from mail-ed1-f47.google.com ([209.85.208.47]:46058 "EHLO
-        mail-ed1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230437AbhLLVWx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Dec 2021 16:22:53 -0500
-Received: by mail-ed1-f47.google.com with SMTP id y12so45411683eda.12;
-        Sun, 12 Dec 2021 13:22:52 -0800 (PST)
+        id S229955AbhLMI1M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Dec 2021 03:27:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38152 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229813AbhLMI1M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Dec 2021 03:27:12 -0500
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99BF5C061756
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 00:27:11 -0800 (PST)
+Received: by mail-ed1-x533.google.com with SMTP id e3so50049870edu.4
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 00:27:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=qRRUcggihxuvvuxXR8avhK/eModbACqCMIG7s3bijm0=;
-        b=cwgMkLRmIC5Jc7bTumRtZfdR/utOuYZMGz1d8ygkTHHtVzgzo42XHF3MxCIlHJHEyT
-         C7LdLWylZ0pNaMDQhDT13J5l+njgSg9TNbzeMmfiPFReiWjuLN3BPKhAAriju1eHl9cw
-         v0xZYrbokM5iV9yDxCHW4tROVpkV6lIWT7CatJGFsO5P7KMEX+3KZoYfdE3quHDnbdkY
-         jpj2wUw+3g4R/1VtteNb23NQNkNZ2V1/PAhs7heDgq209kuV3pPkDwgZ1aWLoWFqzEEX
-         OFHc08yxalGQachdnm1D3b45tSRQQlH3u/KkV4GShGX8mzd5qIB7iZpCyJ01mJBdqNcV
-         pVRA==
+        d=fairphone.com; s=fair;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=9qNVJJUEkc7Dcqq+w3jXBP/JOAXOW45KnRjiowBHvGk=;
+        b=lGsG+RSK6fKMObsJQ7Iti5lpYgJ6YDHFJh2yVwO4XuHD8dveHSTYe/H5vctCR3EceI
+         XqKuogxu2fO0A5lqmYqIOpALu/ZAlwyN5MpiGyuxrhGT4dFdyWMvGpLMx8bvZsddP9hp
+         uygNMnJ/yqA/HLuo9RxL3P+UaNjwUw8FVJxoH5ME1qus3y9LosZQt6MPD+Go9ivr+x+I
+         5NBCzSlBofWA0sfijE46EUYppcRu4UKN9UbgQuwQlhr8/MVWSyaIoK6EGtTLTPMvbQQ1
+         YS5aqS6H4kpadwXpvOh44y1zf//CCrxgItwxZNG/CI17aEzqwFI/8ITqQJIsV4zBY6wg
+         c6OA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=qRRUcggihxuvvuxXR8avhK/eModbACqCMIG7s3bijm0=;
-        b=MnM5fd9o5CYQ7BgAkgoEob/ZkqXMTehB/iN9E4jzKVKC4pmvXQ3I7KqQwe+5RAVT5B
-         boGbYDZ54VArfZ3fK3p30isfmEZ84BSSCfgU/n1aL47XIKRAJWzavdpoD52Q/JQF5Kle
-         TzewIzakG6lt65F3lpBIc2YtCsnZRDkxNE2c/K+AWHaYNA1PcnUbfsrfavoir3O3wUo7
-         ZHtXCyKGH8vKomoabAxMAWgw+/ipbT5GTAK4XkNLmaFj8VbPvdm64NT7GnIYuOBbJhFU
-         TXqVvPeqZxynFaXeFDr96ArMWkPnTdY+IKsiO+GuZL30tn4rhsZ3qY+R9+QOKkOeIZi9
-         cE7A==
-X-Gm-Message-State: AOAM531vhPoRow8DDQImpWnR1q53cp8Ji7RrSp0xplrENTuQjJXTZjgu
-        pNxDJTzG/DFonuUfR21dJAlIMMRXgCs=
-X-Google-Smtp-Source: ABdhPJwkugCxrPdxtc+DUdPqlE8VTgsZlj2PXoqJkSrC88l4/tv/AsdhkMaJuxd6V34n0G6eKbJ/hw==
-X-Received: by 2002:a05:651c:1790:: with SMTP id bn16mr25960176ljb.475.1639343032645;
-        Sun, 12 Dec 2021 13:03:52 -0800 (PST)
-Received: from localhost.localdomain (94-29-46-111.dynamic.spd-mgts.ru. [94.29.46.111])
-        by smtp.gmail.com with ESMTPSA id y4sm1197172ljp.16.2021.12.12.13.03.50
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=9qNVJJUEkc7Dcqq+w3jXBP/JOAXOW45KnRjiowBHvGk=;
+        b=fBReH8OLg54T6VRs8jHfuqQ0/HUvpforE8aKHoS1Cdvt6U4eg7y2wUeenUnrUSpis6
+         r9cSDp4n0DmgVb1UNOuRUfXB2Ywkw2ECFLrQRxYzKnr8/NIJ0OSv5BUEqfWbJAp8e7QY
+         aBotgy65erV+U4MKNtxjOMKOVwTnDFxoDTjajCN1PM8ARJlFIY/dEMgSdAr1BSWdCVl6
+         DuKQPf/GUvfJ11nwiaIViyeGPCjhAZ2z2NaJY0z21jC2PXYRn+iaZQ0YttjoOgtPMjEi
+         p11ZQ6M/na40F1mpKA79aa/Q+7j2zxyh+9LF6lIHpmZDBr0eD92L8dhTjZepHbf9x7dL
+         jGVQ==
+X-Gm-Message-State: AOAM531wnFkv8DPanUjjJtaRJAwsQ6iujyewnVWjAGAlGcr2URdRzs6+
+        RnmQ6YQN6t2cj57Blb7JwYlYEQ==
+X-Google-Smtp-Source: ABdhPJzJQzH9IbD0iKwzxP+OhiHo4OBp+NQ23YW0riJPC6Agdl1/DHF8upIV5V9+Kb8bNnWCgPyEyg==
+X-Received: by 2002:a17:907:608f:: with SMTP id ht15mr41645248ejc.300.1639384030231;
+        Mon, 13 Dec 2021 00:27:10 -0800 (PST)
+Received: from localhost.localdomain ([2a02:a210:20c5:8c80:7d0a:cd68:c339:f426])
+        by smtp.gmail.com with ESMTPSA id b11sm6062432ede.62.2021.12.13.00.27.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Dec 2021 13:03:52 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Ungerer <gerg@linux-m68k.org>,
-        Joshua Thompson <funaho@jurai.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Sebastian Reichel <sre@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Greentime Hu <green.hu@gmail.com>,
-        Vincent Chen <deanbo422@gmail.com>,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <lenb@kernel.org>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Lee Jones <lee.jones@linaro.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>, alankao@andestech.com,
-        "K . C . Kuen-Chern Lin" <kclin@andestech.com>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH v5 09/21] parisc: Use do_kernel_power_off()
-Date:   Mon, 13 Dec 2021 00:02:57 +0300
-Message-Id: <20211212210309.9851-10-digetx@gmail.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20211212210309.9851-1-digetx@gmail.com>
-References: <20211212210309.9851-1-digetx@gmail.com>
+        Mon, 13 Dec 2021 00:27:09 -0800 (PST)
+From:   Luca Weiss <luca.weiss@fairphone.com>
+To:     linux-arm-msm@vger.kernel.org
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Luca Weiss <luca.weiss@fairphone.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Manu Gautam <mgautam@codeaurora.org>,
+        Prakash Ranjan <saiprakash.ranjan@codeaurora.org>,
+        Rishabh Bhatnagar <rishabhb@codeaurora.org>,
+        Rob Herring <robh@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 00/10] dt-binding patches for sm6350
+Date:   Mon, 13 Dec 2021 09:26:01 +0100
+Message-Id: <20211213082614.22651-1-luca.weiss@fairphone.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Kernel now supports chained power-off handlers. Use do_kernel_power_off()
-that invokes chained power-off handlers. It also invokes legacy
-pm_power_off() for now, which will be removed once all drivers will
-be converted to the new power-off API.
+This series adds compatibles to the dt-bindings documentation where it
+was missed before.
 
-Acked-by: Helge Deller <deller@gmx.de> # parisc
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/parisc/kernel/process.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Finally, the last patch solves some further dtbs_check errors by
+modifying the sm6350.dtsi to match the binding docs more closely.
 
-diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
-index ea3d83b6fb62..928201b1f58f 100644
---- a/arch/parisc/kernel/process.c
-+++ b/arch/parisc/kernel/process.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/personality.h>
- #include <linux/ptrace.h>
-+#include <linux/reboot.h>
- #include <linux/sched.h>
- #include <linux/sched/debug.h>
- #include <linux/sched/task.h>
-@@ -114,8 +115,7 @@ void machine_power_off(void)
- 	pdc_chassis_send_status(PDC_CHASSIS_DIRECT_SHUTDOWN);
- 
- 	/* ipmi_poweroff may have been installed. */
--	if (pm_power_off)
--		pm_power_off();
-+	do_kernel_power_off();
- 		
- 	/* It seems we have no way to power the system off via
- 	 * software. The user has to press the button himself. */
+Please note, that the first patch from Konrad is a resend that wasn't
+picked up when sent to the lists in August 2021.
+
+Konrad Dybcio (1):
+  dt-bindings: arm: msm: Add LLCC for SM6350
+
+Luca Weiss (9):
+  dt-bindings: firmware: scm: Add SM6350 compatible
+  dt-bindings: qcom,pdc: Add SM6350 compatible
+  dt-bindings: phy: qcom,qusb2: Add SM6350 compatible
+  dt-bindings: thermal: tsens: Add SM6350 compatible
+  dt-bindings: usb: qcom,dwc3: Add SM6350 compatible
+  dt-bindings: watchdog: Add SM6350 and SM8250 compatible
+  dt-bindings: arm: msm: Don't mark LLCC interrupt as required
+  dt-bindings: simple-framebuffer: allow standalone compatible
+  arm64: dts: qcom: sm6350: Fix validation errors
+
+ .../devicetree/bindings/arm/msm/qcom,llcc.yaml   |  2 +-
+ .../bindings/display/simple-framebuffer.yaml     | 12 +++++++-----
+ .../devicetree/bindings/firmware/qcom,scm.txt    |  1 +
+ .../bindings/interrupt-controller/qcom,pdc.txt   |  5 +++--
+ .../devicetree/bindings/phy/qcom,qusb2-phy.yaml  |  1 +
+ .../devicetree/bindings/thermal/qcom-tsens.yaml  |  1 +
+ .../devicetree/bindings/usb/qcom,dwc3.yaml       |  1 +
+ .../devicetree/bindings/watchdog/qcom-wdt.yaml   |  2 ++
+ arch/arm64/boot/dts/qcom/sm6350.dtsi             | 16 ++++++++--------
+ 9 files changed, 25 insertions(+), 16 deletions(-)
+
 -- 
-2.33.1
+2.34.1
 
