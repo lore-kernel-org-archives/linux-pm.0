@@ -2,62 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75AE9C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 13:44:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD047C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 15:21:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234529AbhLNNos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Dec 2021 08:44:48 -0500
-Received: from comms.puri.sm ([159.203.221.185]:58314 "EHLO comms.puri.sm"
+        id S232942AbhLNPV0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Dec 2021 10:21:26 -0500
+Received: from mga04.intel.com ([192.55.52.120]:23843 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234525AbhLNNor (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Dec 2021 08:44:47 -0500
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 618C6E039C;
-        Tue, 14 Dec 2021 05:44:47 -0800 (PST)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Qy2plum6yCBm; Tue, 14 Dec 2021 05:44:46 -0800 (PST)
-Message-ID: <f08075656c83ff43947942c6f754936ced63dc01.camel@puri.sm>
+        id S232651AbhLNPVZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 14 Dec 2021 10:21:25 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10197"; a="237735217"
+X-IronPort-AV: E=Sophos;i="5.88,205,1635231600"; 
+   d="scan'208";a="237735217"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Dec 2021 07:21:11 -0800
+X-IronPort-AV: E=Sophos;i="5.88,205,1635231600"; 
+   d="scan'208";a="614311910"
+Received: from paasikivi.fi.intel.com ([10.237.72.42])
+  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Dec 2021 07:21:09 -0800
+Received: from paasikivi.fi.intel.com (localhost [127.0.0.1])
+        by paasikivi.fi.intel.com (Postfix) with ESMTP id 7F2A220462;
+        Tue, 14 Dec 2021 17:21:07 +0200 (EET)
+Date:   Tue, 14 Dec 2021 17:21:07 +0200
+From:   Sakari Ailus <sakari.ailus@linux.intel.com>
+To:     Martin Kepplinger <martin.kepplinger@puri.sm>
+Cc:     mchehab@kernel.org, linux-media@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@puri.sm
 Subject: Re: [PATCH v1 0/2] media: i2c: hi846: minor PM fixes
-From:   Martin Kepplinger <martin.kepplinger@puri.sm>
-To:     sakari.ailus@linux.intel.com, mchehab@kernel.org
-Cc:     linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@puri.sm
-Date:   Tue, 14 Dec 2021 14:44:41 +0100
-In-Reply-To: <20211109131013.2684058-1-martin.kepplinger@puri.sm>
+Message-ID: <Ybi2Yylo718i8SLl@paasikivi.fi.intel.com>
 References: <20211109131013.2684058-1-martin.kepplinger@puri.sm>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3-1 
+ <f08075656c83ff43947942c6f754936ced63dc01.camel@puri.sm>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <f08075656c83ff43947942c6f754936ced63dc01.camel@puri.sm>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Am Dienstag, dem 09.11.2021 um 14:10 +0100 schrieb Martin Kepplinger:
-> hi Saraki and all,
+On Tue, Dec 14, 2021 at 02:44:41PM +0100, Martin Kepplinger wrote:
+> Am Dienstag, dem 09.11.2021 um 14:10 +0100 schrieb Martin Kepplinger:
+> > hi Saraki and all,
+> > 
+> > Here are minor PM fixes for the hi846 sensor while testing system
+> > suspend:
+> > 
+> > thank you very much for your time,
+> > 
+> >                              martin
+> > 
+> > 
+> > Martin Kepplinger (2):
+> >   media: i2c: hi846: check return value of regulator_bulk_disable()
+> >   media: i2c: hi846: use pm_runtime_force_suspend/resume for system
+> >     suspend
+> > 
+> >  drivers/media/i2c/hi846.c | 14 ++++++++------
+> >  1 file changed, 8 insertions(+), 6 deletions(-)
+> > 
 > 
-> Here are minor PM fixes for the hi846 sensor while testing system
-> suspend:
-> 
-> thank you very much for your time,
-> 
-> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  martin
-> 
-> 
-> Martin Kepplinger (2):
-> Â  media: i2c: hi846: check return value of regulator_bulk_disable()
-> Â  media: i2c: hi846: use pm_runtime_force_suspend/resume for system
-> Â Â Â  suspend
-> 
-> Â drivers/media/i2c/hi846.c | 14 ++++++++------
-> Â 1 file changed, 8 insertions(+), 6 deletions(-)
-> 
+> hi all. Any objection or other thoughts about this? This fixes system
+> suspend.
 
-hi all. Any objection or other thoughts about this? This fixes system
-suspend.
+Thanks for the ping, Martin.
 
-thank you!
+The patches are in my tree now.
 
-                          martin
-
+-- 
+Sakari Ailus
