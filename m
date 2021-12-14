@@ -2,131 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D89F4C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 06:28:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C3AC433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 06:31:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230514AbhLNG2g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Dec 2021 01:28:36 -0500
-Received: from alexa-out-sd-01.qualcomm.com ([199.106.114.38]:11353 "EHLO
-        alexa-out-sd-01.qualcomm.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230314AbhLNG2f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Dec 2021 01:28:35 -0500
+        id S231138AbhLNGbK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Dec 2021 01:31:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35914 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230314AbhLNGbJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Dec 2021 01:31:09 -0500
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D1C6C061574
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 22:31:09 -0800 (PST)
+Received: by mail-yb1-xb4a.google.com with SMTP id p133-20020a255b8b000000b006086e19f89fso16141670ybb.19
+        for <linux-pm@vger.kernel.org>; Mon, 13 Dec 2021 22:31:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1639463315; x=1670999315;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version;
-  bh=QrxKCeBwZTXbNP65fRV+Ewd57ZwpRFTNZBrJ8NFDDNw=;
-  b=quNS0fBIr1y7fhXmXcCuRN0SiHTw7fN4tAb/SiuARfzyckiHEQ0GrTGI
-   9+jKhrvOLllFXrDXxKQ5n7f/XhQxVqGjLCZtVp03GykiSUl4LUfdm4IWj
-   pBJPUjCkZanNkqY0zHhNcNHLVMAd76RyEEuafQi0ao5yh3145LIWruiD3
-   Q=;
-Received: from unknown (HELO ironmsg02-sd.qualcomm.com) ([10.53.140.142])
-  by alexa-out-sd-01.qualcomm.com with ESMTP; 13 Dec 2021 22:28:35 -0800
-X-QCInternal: smtphost
-Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
-  by ironmsg02-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2021 22:28:34 -0800
-Received: from nalasex01b.na.qualcomm.com (10.47.209.197) by
- nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.922.19; Mon, 13 Dec 2021 22:28:34 -0800
-Received: from codeaurora.org (10.80.80.8) by nalasex01b.na.qualcomm.com
- (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.922.19; Mon, 13 Dec
- 2021 22:28:31 -0800
-From:   Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
-To:     Sebastian Reichel <sre@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        David Collins <quic_collinsd@quicinc.com>,
-        Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "thara . gopinath @ linaro . org" <thara.gopinath@linaro.org>,
-        "Manaf Meethalavalappu Pallikunhi" <quic_manafm@quicinc.com>
-Subject: [PATCH v2 2/2] power_supply: Use of-thermal cdev registration API
-Date:   Tue, 14 Dec 2021 11:57:11 +0530
-Message-ID: <1639463231-24300-2-git-send-email-quic_manafm@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1639463231-24300-1-git-send-email-quic_manafm@quicinc.com>
-References: <1639463231-24300-1-git-send-email-quic_manafm@quicinc.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01b.na.qualcomm.com (10.46.141.250) To
- nalasex01b.na.qualcomm.com (10.47.209.197)
+        d=google.com; s=20210112;
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=4aquuHkNhx64QCRmus/ZeD4x0c+Y/d9J8MF5XvaCktU=;
+        b=ChGuty2N/2029CJlfZ+b7EeyPWo1ibktr/pXOop6SSbwrEsyTKAZo4fNQ1rjIL4mzo
+         kxTAC37PIbQXPgeISetIsa9bLRnuk4NgPjNGKuHsFJlYYLmlNZ6k/O4CpL1fO26F2+r+
+         fx3otRciq3fCpupcTvUU2pgxQ2eIG1AykjvVvGMHXK/4b4k1LYJoFJxUW1NlNkIYaqRp
+         AAkXb32euLE1+CGBBWu4zVtoHP1iWICGAakwBY3YVEQab74aDD8eWMBvJRTJh4Lrqen7
+         Wf0UZgVG9JPYIL6gbpOkLm3kYZo5GwVTbddtf72rSJP/Evv3uGOD9g/5ZMvniHk2fEXB
+         3CrA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=4aquuHkNhx64QCRmus/ZeD4x0c+Y/d9J8MF5XvaCktU=;
+        b=nXqqvArHxg10Q32LKQks5g/N5ylWUPoDCo8Cbl4urhBSttQEFms0qCKAO3f4egyEWh
+         QyrZZBJnnKcO4NOzyXe92odoSYwUj4wPE6z3yvIaoyjYPvWo9ciRvr+3hGbVuZ7lWk3O
+         IYeyH3UAKuMGRmNsxHUhs8Jg7WxJZfweQ2/jyE8Bu090C0t4bGaNOarIKvOw9poSBy1s
+         g5+RAgfTtShycsNUG4aohogg+jkomgnjr7tqNusXzRt8hXU9XeFeji4zjyzCnMX/oXYO
+         K5RqMzGGu75Z2vQv8vJEzFnKwsOXNBUzpszcEZzRbhScvF1wXR9eyrpkPk742zG7OyuM
+         Lk4w==
+X-Gm-Message-State: AOAM530Iro1fpubgv2QJNCMbP5KiEjSnhMjaGQIxUV8Pxf71W+Zc8lTd
+        BA0acQISAaMX2rU04o2R7Hu86BCfMZ8G
+X-Google-Smtp-Source: ABdhPJxPW5uDWSyJXd72mpZ7iA9irUszeWyKPlK6PbbABP1omAcy9nbX7bW/uXhth/GzZvF1756E/gSqeGzC
+X-Received: from tzungbi-z840.tpe.corp.google.com ([2401:fa00:1:10:16cc:acbf:e9c5:6393])
+ (user=tzungbi job=sendgmr) by 2002:a25:38cb:: with SMTP id
+ f194mr4103910yba.446.1639463468788; Mon, 13 Dec 2021 22:31:08 -0800 (PST)
+Date:   Tue, 14 Dec 2021 14:31:00 +0800
+Message-Id: <20211214063100.3066579-1-tzungbi@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.34.1.173.g76aa8bc2d0-goog
+Subject: [PATCH] PM / devfreq: Reduce log severity for informative message
+From:   Tzung-Bi Shih <tzungbi@google.com>
+To:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        cw00.choi@samsung.com
+Cc:     linux-pm@vger.kernel.org, tzungbi@google.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With thermal frameworks of-thermal interface, thermal zone parameters can
-be defined in devicetree. This includes cooling device mitigation levels
-for a thermal zone. To take advantage of this, cooling device should use
-the thermal_of_cooling_device_register API to register a cooling device.
+Suppose devfreq_update_status() failure in devfreq_set_target() is not a
+critical error, reduces the log severity.
 
-Use thermal_of_cooling_device_register API to register the power supply
-cooling device. This enables power supply cooling device be included in the
-thermal zone parameter in devicetree.
-
-Signed-off-by: Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
+Signed-off-by: Tzung-Bi Shih <tzungbi@google.com>
 ---
- drivers/power/supply/power_supply_core.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ drivers/devfreq/devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index ea3e75e..800b8a3 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -132,7 +132,7 @@ void power_supply_changed(struct power_supply *psy)
- }
- EXPORT_SYMBOL_GPL(power_supply_changed);
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 7906220d025c..a525a609dfc6 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -382,8 +382,8 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
  
--static int psy_register_cooler(struct power_supply *psy);
-+static int psy_register_cooler(struct device *dev, struct power_supply *psy);
- /*
-  * Notify that power supply was registered after parent finished the probing.
-  *
-@@ -159,7 +159,7 @@ static void power_supply_deferred_register_work(struct work_struct *work)
- 	}
+ 	if (devfreq_update_status(devfreq, new_freq))
+-		dev_err(&devfreq->dev,
+-			"Couldn't update frequency transition information.\n");
++		dev_warn(&devfreq->dev,
++			 "Couldn't update frequency transition information.\n");
  
- 	power_supply_changed(psy);
--	psy_register_cooler(psy);
-+	psy_register_cooler(psy->dev.parent, psy);
+ 	devfreq->previous_freq = new_freq;
  
- 	if (psy->dev.parent)
- 		mutex_unlock(&psy->dev.parent->mutex);
-@@ -1145,7 +1145,7 @@ static const struct thermal_cooling_device_ops psy_tcd_ops = {
- 	.set_cur_state = ps_set_cur_charge_cntl_limit,
- };
- 
--static int psy_register_cooler(struct power_supply *psy)
-+static int psy_register_cooler(struct device *dev, struct power_supply *psy)
- {
- 	int i;
- 
-@@ -1153,7 +1153,13 @@ static int psy_register_cooler(struct power_supply *psy)
- 	for (i = 0; i < psy->desc->num_properties; i++) {
- 		if (psy->desc->properties[i] ==
- 				POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT) {
--			psy->tcd = thermal_cooling_device_register(
-+			if (dev)
-+				psy->tcd = thermal_of_cooling_device_register(
-+							dev_of_node(dev),
-+							(char *)psy->desc->name,
-+							psy, &psy_tcd_ops);
-+			else
-+				psy->tcd = thermal_cooling_device_register(
- 							(char *)psy->desc->name,
- 							psy, &psy_tcd_ops);
- 			return PTR_ERR_OR_ZERO(psy->tcd);
-@@ -1178,7 +1184,7 @@ static void psy_unregister_thermal(struct power_supply *psy)
- {
- }
- 
--static int psy_register_cooler(struct power_supply *psy)
-+static int psy_register_cooler(struct device *dev, struct power_supply *psy)
- {
- 	return 0;
- }
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.34.1.173.g76aa8bc2d0-goog
 
