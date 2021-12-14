@@ -2,320 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF28FC433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 09:30:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04D34C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Dec 2021 11:24:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232447AbhLNJai (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Dec 2021 04:30:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48064 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232426AbhLNJad (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Dec 2021 04:30:33 -0500
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D41BC061748
-        for <linux-pm@vger.kernel.org>; Tue, 14 Dec 2021 01:30:33 -0800 (PST)
-Received: by mail-pg1-x535.google.com with SMTP id l18so12174607pgj.9
-        for <linux-pm@vger.kernel.org>; Tue, 14 Dec 2021 01:30:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=p7Abiu5YPTk6mF9OJXvuGojCIqoc3uKd3FHkRhinETw=;
-        b=p8vdgF5KZqov5buBQFXcZ3oNPtizjR3s6ruseI+Ik5xx17v1dfmyaAQjSS/XSeQkO1
-         RaOUAZPFgaIjjO2VWwl7Cz2cpVL6wk6K0mgOWVqM6jiYCSkJ3fMjRD3NYNCq9YrAXqrQ
-         nV9pEp2Jdo+O6Oxih7+J0CqHCSMjFy8frjRe1BcyNjUBqODVh6FSc2guug/8lJa+7bLL
-         DIsaJFYDmlalvmlYGT6hZNxJ0Nq52YnFJd8duu7Kh2kU62r6g7IL/0Tt4axJcFuiMvlz
-         PCiAocIl8sVjCqKvMtAaTJWsnUFJWE269tlJFAIWJ+PUdc4BZfxxlx7pyq0MyjnmA5pQ
-         NWIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=p7Abiu5YPTk6mF9OJXvuGojCIqoc3uKd3FHkRhinETw=;
-        b=qR7lqg0gJWHdNh+58SuOtu71aW9TEbcu1Afi1PuR0VmbONb1Gt528avL1mgdF7C3w/
-         CfI3AMQ/LvPWggicSkEgiPxQLMeb5Q8ZZ+CfwXFDDUIdBz8ZiReSmB4nGoD445r0kYjc
-         ETnkZ8DaBvOJGVcBRVjYvYTfSEEC/0aPMQR9763lVAO6P7qoaaoI0OFBtCCpVEkqNM/r
-         av2YIduKwwJ0zwepXDtoqi7JrnoEUX0co1B+CCZgwuAThjbw9gJO8PypLuuqaTYUWtIt
-         CPg//WmhWco/ObzV1ZbvK06dHr6SBq7rX5FA25aIkEos11RvZxKcuuqCZjRMqeZV5SPj
-         SHFA==
-X-Gm-Message-State: AOAM533yS/8H5yyWCkEMufMf6ReXvBpBL9rq5RurlQglLb/zYoE0nDyC
-        g0WtFzarPLLp33AA7JRFSgt/Zw==
-X-Google-Smtp-Source: ABdhPJxfVSB/25cJtKVzJCFaOZZPgLuUW7D0lmA8dFk7+RIGERxohCwOBEFexsYdH/nf9AGtNw9bqA==
-X-Received: by 2002:a63:fc58:: with SMTP id r24mr2851921pgk.342.1639474232507;
-        Tue, 14 Dec 2021 01:30:32 -0800 (PST)
-Received: from localhost.localdomain (80.251.214.228.16clouds.com. [80.251.214.228])
-        by smtp.gmail.com with ESMTPSA id c21sm15143184pfl.138.2021.12.14.01.30.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Dec 2021 01:30:32 -0800 (PST)
-From:   Shawn Guo <shawn.guo@linaro.org>
-To:     Georgi Djakov <djakov@kernel.org>
+        id S233491AbhLNLYo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Dec 2021 06:24:44 -0500
+Received: from ams.source.kernel.org ([145.40.68.75]:52028 "EHLO
+        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233488AbhLNLYn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Dec 2021 06:24:43 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 4FD1FB81899;
+        Tue, 14 Dec 2021 11:24:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C0BA0C34601;
+        Tue, 14 Dec 2021 11:24:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1639481081;
+        bh=5e9V1KFv9vwJ/bLxG0N2DMFYQkTf8Cdc6F0VtrAo7yI=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=qS965GiqUc4P0Xpb6CY46Il1L+A2vTt1xZprkHD38mUtgoxRKGezouekl37EL/gco
+         Jv+HoqDGtWBF0ROP2Hzskan7ykcPbkiAYHPhKU/NCCJCCm+AnvwaFFhsXSzLfdSwmy
+         avUvO9CarQzXq8ve3PN4OB9bbVR6phaCnomooW1buYznpCk3zSsXRtQ8TEAnX0Q121
+         Zgfkr106BZx1MSDJZAJ5t+KtZEBPNmn4pvQ8SWfzzl+x4FcLCehR4TP4V0h4VUeFuQ
+         dd/pTwJh5USiEiRk4qeL5XVEY7bHi0ltWsNrYoL2icrksigKsC88zt68hMu59A+quS
+         Yomr5uwAqj43Q==
+Message-ID: <0549abbb-9e75-70e9-399b-1b3f84dc5c20@kernel.org>
+Date:   Tue, 14 Dec 2021 13:24:37 +0200
+MIME-Version: 1.0
+Subject: Re: [PATCH v3 RESEND 0/5] Add QCM2290 interconnect support
+Content-Language: en-US
+To:     Shawn Guo <shawn.guo@linaro.org>
 Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
         Loic Poulain <loic.poulain@linaro.org>,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH v3 RESEND 4/5] dt-bindings: interconnect: Add Qualcomm QCM2290 NoC support
-Date:   Tue, 14 Dec 2021 17:30:10 +0800
-Message-Id: <20211214093011.19775-5-shawn.guo@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20211214093011.19775-1-shawn.guo@linaro.org>
+        linux-kernel@vger.kernel.org
 References: <20211214093011.19775-1-shawn.guo@linaro.org>
+From:   Georgi Djakov <djakov@kernel.org>
+In-Reply-To: <20211214093011.19775-1-shawn.guo@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add bindings for Qualcomm QCM2290 Network-On-Chip interconnect devices.
+Hi Shawn,
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/interconnect/qcom,qcm2290.yaml   | 137 ++++++++++++++++++
- .../dt-bindings/interconnect/qcom,qcm2290.h   |  94 ++++++++++++
- 2 files changed, 231 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml
- create mode 100644 include/dt-bindings/interconnect/qcom,qcm2290.h
+On 14.12.21 11:30, Shawn Guo wrote:
+> Changes for v3 resend:
+> - Rebase on linux-next
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml b/Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml
-new file mode 100644
-index 000000000000..f65a2fe846de
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml
-@@ -0,0 +1,137 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,qcm2290.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm QCM2290 Network-On-Chip interconnect
-+
-+maintainers:
-+  - Shawn Guo <shawn.guo@linaro.org>
-+
-+description: |
-+  The Qualcomm QCM2290 interconnect providers support adjusting the
-+  bandwidth requirements between the various NoC fabrics.
-+
-+properties:
-+  reg:
-+    maxItems: 1
-+
-+  compatible:
-+    enum:
-+      - qcom,qcm2290-bimc
-+      - qcom,qcm2290-cnoc
-+      - qcom,qcm2290-snoc
-+
-+  '#interconnect-cells':
-+    const: 1
-+
-+  clock-names:
-+    items:
-+      - const: bus
-+      - const: bus_a
-+
-+  clocks:
-+    items:
-+      - description: Bus Clock
-+      - description: Bus A Clock
-+
-+# Child node's properties
-+patternProperties:
-+  '^interconnect-[a-z0-9]+$':
-+    type: object
-+    description:
-+      The interconnect providers do not have a separate QoS register space,
-+      but share parent's space.
-+
-+    properties:
-+      compatible:
-+        enum:
-+          - qcom,qcm2290-qup-virt
-+          - qcom,qcm2290-mmrt-virt
-+          - qcom,qcm2290-mmnrt-virt
-+
-+      '#interconnect-cells':
-+        const: 1
-+
-+      clock-names:
-+        items:
-+          - const: bus
-+          - const: bus_a
-+
-+      clocks:
-+        items:
-+          - description: Bus Clock
-+          - description: Bus A Clock
-+
-+    required:
-+      - compatible
-+      - '#interconnect-cells'
-+      - clock-names
-+      - clocks
-+
-+    additionalProperties: false
-+
-+required:
-+  - compatible
-+  - reg
-+  - '#interconnect-cells'
-+  - clock-names
-+  - clocks
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/qcom,rpmcc.h>
-+
-+    snoc: interconnect@1880000 {
-+        compatible = "qcom,qcm2290-snoc";
-+        reg = <0x01880000 0x60200>;
-+        #interconnect-cells = <1>;
-+        clock-names = "bus", "bus_a";
-+        clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-+                 <&rpmcc RPM_SMD_SNOC_A_CLK>;
-+
-+        qup_virt: interconnect-qup {
-+            compatible = "qcom,qcm2290-qup-virt";
-+            #interconnect-cells = <1>;
-+            clock-names = "bus", "bus_a";
-+            clocks = <&rpmcc RPM_SMD_QUP_CLK>,
-+                     <&rpmcc RPM_SMD_QUP_A_CLK>;
-+        };
-+
-+        mmnrt_virt: interconnect-mmnrt {
-+            compatible = "qcom,qcm2290-mmnrt-virt";
-+            #interconnect-cells = <1>;
-+            clock-names = "bus", "bus_a";
-+            clocks = <&rpmcc RPM_SMD_MMNRT_CLK>,
-+                     <&rpmcc RPM_SMD_MMNRT_A_CLK>;
-+        };
-+
-+        mmrt_virt: interconnect-mmrt {
-+            compatible = "qcom,qcm2290-mmrt-virt";
-+            #interconnect-cells = <1>;
-+            clock-names = "bus", "bus_a";
-+            clocks = <&rpmcc RPM_SMD_MMRT_CLK>,
-+                     <&rpmcc RPM_SMD_MMRT_A_CLK>;
-+        };
-+    };
-+
-+    cnoc: interconnect@1900000 {
-+        compatible = "qcom,qcm2290-cnoc";
-+        reg = <0x01900000 0x8200>;
-+        #interconnect-cells = <1>;
-+        clock-names = "bus", "bus_a";
-+        clocks = <&rpmcc RPM_SMD_CNOC_CLK>,
-+                 <&rpmcc RPM_SMD_CNOC_A_CLK>;
-+    };
-+
-+    bimc: interconnect@4480000 {
-+        compatible = "qcom,qcm2290-bimc";
-+        reg = <0x04480000 0x80000>;
-+        #interconnect-cells = <1>;
-+        clock-names = "bus", "bus_a";
-+        clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-+                 <&rpmcc RPM_SMD_BIMC_A_CLK>;
-+    };
-diff --git a/include/dt-bindings/interconnect/qcom,qcm2290.h b/include/dt-bindings/interconnect/qcom,qcm2290.h
-new file mode 100644
-index 000000000000..6cbbb7fe0bd3
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,qcm2290.h
-@@ -0,0 +1,94 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* QCM2290 interconnect IDs */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_QCM2290_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_QCM2290_H
-+
-+/* BIMC */
-+#define MASTER_APPSS_PROC		0
-+#define MASTER_SNOC_BIMC_RT		1
-+#define MASTER_SNOC_BIMC_NRT		2
-+#define MASTER_SNOC_BIMC		3
-+#define MASTER_TCU_0			4
-+#define MASTER_GFX3D			5
-+#define SLAVE_EBI1			6
-+#define SLAVE_BIMC_SNOC			7
-+
-+/* CNOC */
-+#define MASTER_SNOC_CNOC		0
-+#define MASTER_QDSS_DAP			1
-+#define SLAVE_BIMC_CFG			2
-+#define SLAVE_CAMERA_NRT_THROTTLE_CFG	3
-+#define SLAVE_CAMERA_RT_THROTTLE_CFG	4
-+#define SLAVE_CAMERA_CFG		5
-+#define SLAVE_CLK_CTL			6
-+#define SLAVE_CRYPTO_0_CFG		7
-+#define SLAVE_DISPLAY_CFG		8
-+#define SLAVE_DISPLAY_THROTTLE_CFG	9
-+#define SLAVE_GPU_CFG			10
-+#define SLAVE_HWKM			11
-+#define SLAVE_IMEM_CFG			12
-+#define SLAVE_IPA_CFG			13
-+#define SLAVE_LPASS			14
-+#define SLAVE_MESSAGE_RAM		15
-+#define SLAVE_PDM			16
-+#define SLAVE_PIMEM_CFG			17
-+#define SLAVE_PKA_WRAPPER		18
-+#define SLAVE_PMIC_ARB			19
-+#define SLAVE_PRNG			20
-+#define SLAVE_QDSS_CFG			21
-+#define SLAVE_QM_CFG			22
-+#define SLAVE_QM_MPU_CFG		23
-+#define SLAVE_QPIC			24
-+#define SLAVE_QUP_0			25
-+#define SLAVE_SDCC_1			26
-+#define SLAVE_SDCC_2			27
-+#define SLAVE_SNOC_CFG			28
-+#define SLAVE_TCSR			29
-+#define SLAVE_USB3			30
-+#define SLAVE_VENUS_CFG			31
-+#define SLAVE_VENUS_THROTTLE_CFG	32
-+#define SLAVE_VSENSE_CTRL_CFG		33
-+#define SLAVE_SERVICE_CNOC		34
-+
-+/* SNOC */
-+#define MASTER_CRYPTO_CORE0		0
-+#define MASTER_SNOC_CFG			1
-+#define MASTER_TIC			2
-+#define MASTER_ANOC_SNOC		3
-+#define MASTER_BIMC_SNOC		4
-+#define MASTER_PIMEM			5
-+#define MASTER_QDSS_BAM			6
-+#define MASTER_QUP_0			7
-+#define MASTER_IPA			8
-+#define MASTER_QDSS_ETR			9
-+#define MASTER_SDCC_1			10
-+#define MASTER_SDCC_2			11
-+#define MASTER_QPIC			12
-+#define MASTER_USB3_0			13
-+#define SLAVE_APPSS			14
-+#define SLAVE_SNOC_CNOC			15
-+#define SLAVE_IMEM			16
-+#define SLAVE_PIMEM			17
-+#define SLAVE_SNOC_BIMC			18
-+#define SLAVE_SERVICE_SNOC		19
-+#define SLAVE_QDSS_STM			20
-+#define SLAVE_TCU			21
-+#define SLAVE_ANOC_SNOC			22
-+
-+/* QUP Virtual */
-+#define MASTER_QUP_CORE_0		0
-+#define SLAVE_QUP_CORE_0		1
-+
-+/* MMNRT Virtual */
-+#define MASTER_CAMNOC_SF		0
-+#define MASTER_VIDEO_P0			1
-+#define MASTER_VIDEO_PROC		2
-+#define SLAVE_SNOC_BIMC_NRT		3
-+
-+/* MMRT Virtual */
-+#define MASTER_CAMNOC_HF		0
-+#define MASTER_MDP0			1
-+#define SLAVE_SNOC_BIMC_RT		2
-+
-+#endif
--- 
-2.17.1
+Did you try compiling it? There is one more driver where we need to
+add the QoS type, otherwise I see this error:
+
+drivers/interconnect/qcom/msm8996.c:1884:3: error: ‘const struct 
+qcom_icc_desc’ has no member named ‘is_bimc_node’
+  1884 |  .is_bimc_node = true,
+
+Thanks,
+Georgi
+
+> - Drop NOC_QOS_MODE_INVALID patch which has been applied by Georgi
+> - Pick up Rob's Reviewed-by on the binding patch
+> 
+> Changes for v3:
+> - Update bindings to define child interconnect provider nodes
+> 
+> Changes for v2:
+> - Drop unneeded include of <dt-bindings/clock/qcom,gcc-qcm2290.h> from
+>    bindings.
+> 
+> Shawn Guo (5):
+>    interconnect: icc-rpm: Define ICC device type
+>    interconnect: icc-rpm: Add QNOC type QoS support
+>    interconnect: icc-rpm: Support child NoC device probe
+>    dt-bindings: interconnect: Add Qualcomm QCM2290 NoC support
+>    interconnect: qcom: Add QCM2290 driver support
+> 
+>   .../bindings/interconnect/qcom,qcm2290.yaml   |  137 ++
+>   drivers/interconnect/qcom/Kconfig             |    9 +
+>   drivers/interconnect/qcom/Makefile            |    2 +
+>   drivers/interconnect/qcom/icc-rpm.c           |   52 +-
+>   drivers/interconnect/qcom/icc-rpm.h           |   14 +-
+>   drivers/interconnect/qcom/msm8916.c           |    4 +-
+>   drivers/interconnect/qcom/msm8939.c           |    5 +-
+>   drivers/interconnect/qcom/qcm2290.c           | 1363 +++++++++++++++++
+>   drivers/interconnect/qcom/sdm660.c            |    7 +-
+>   .../dt-bindings/interconnect/qcom,qcm2290.h   |   94 ++
+>   10 files changed, 1676 insertions(+), 11 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcm2290.yaml
+>   create mode 100644 drivers/interconnect/qcom/qcm2290.c
+>   create mode 100644 include/dt-bindings/interconnect/qcom,qcm2290.h
+> 
 
