@@ -2,111 +2,74 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 695B0C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Dec 2021 16:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF2D0C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Dec 2021 20:10:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244886AbhLOQeL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Dec 2021 11:34:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51872 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244882AbhLOQeG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Dec 2021 11:34:06 -0500
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADB58C061401
-        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 08:34:05 -0800 (PST)
-Received: by mail-qt1-x834.google.com with SMTP id q14so22348371qtx.10
-        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 08:34:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=0diK6zWMgOO/TArP/zyW7Q3OH2Ix/QmAaJD5h2ncz4A=;
-        b=mc82jMSfzgK5zWR/xwVHCjSs6aqfCjK17wcc+NRsgWAPP/MLBuk7J312TQpVPXAAeX
-         Kxp8w8JC1So1hoOvvJjK95W1BLOwlMWtSqUSWewA0Y6h73CwTgZc9chAi/0qWCFvmIhf
-         VGow/I0BfZ9ac/zP11FSHtcxXJ209z6lfOnvg+nON6sNvahQj6MTB2QdfXy2licQiOLn
-         iBZ7TFGYF2gBkqoQ0xJjm0g4alScvhCelHrjmZTQwT4KTfVdvfFkR+ZJIRF98vI/GqNI
-         wZIM2TQl4jz4wTJV2YyTzf3oMIET3/rUL7sxMRM4ueQ1l4Nh/ZzZuK38/m1AtUnoSXiL
-         9fkw==
+        id S234799AbhLOUK0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Dec 2021 15:10:26 -0500
+Received: from mail-ot1-f50.google.com ([209.85.210.50]:37706 "EHLO
+        mail-ot1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234820AbhLOUKW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Dec 2021 15:10:22 -0500
+Received: by mail-ot1-f50.google.com with SMTP id h19-20020a9d3e53000000b0056547b797b2so26250382otg.4;
+        Wed, 15 Dec 2021 12:10:21 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=0diK6zWMgOO/TArP/zyW7Q3OH2Ix/QmAaJD5h2ncz4A=;
-        b=HfJ0b62FW6BLJt6ARQX0UnTmrQ7/eCBgsB1aCdHIiQqsdAUuL091lksg1/pHIk4lde
-         55HwcwQziNEPawMAy4xAJ5jDzYDwvqJGK+8luctpsf9W0EkNol3Vy3rDZ7M4eUnRNLZX
-         OKdeqgNd9wyF8Bsacv4OR0y6JtUL9dKrztLs1AqKk2wDVp/PyuWr+xahhHdAXSjKpH/4
-         0J8U6Wajr7AsGicpwN1HlqE7tlWZD+9K4ehnRVRSv9GJJq/QyAEBRaiS/IptX3lziNbb
-         MP+4OTl16VCQnST1aS3DywZgh2ZoxkqA5hYoee1Vn/UZSIg6+nBdpTJrj/Vc9KUbldwB
-         CITw==
-X-Gm-Message-State: AOAM532xCSYiExX4zEt/GJG2KTbOTs8F1FpC0ejc5PHeHkhsdj4Ie5py
-        /8o9R2p+BS3DBLEg3X6hvsvqpQ==
-X-Google-Smtp-Source: ABdhPJy350X5/5YWY27/YU/Cu5RtpyHJHn5jrsr6vBk8zWDP6mT8H5IiPECoRPx6TCZLAmQj2qUx7w==
-X-Received: by 2002:a05:622a:1196:: with SMTP id m22mr13049290qtk.290.1639586044780;
-        Wed, 15 Dec 2021 08:34:04 -0800 (PST)
-Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.googlemail.com with ESMTPSA id w10sm1824832qtj.37.2021.12.15.08.34.03
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=9dQsPLO1RryQ4GS3Rm7QCSUiqYwX3BoVD7lWW/1WJiQ=;
+        b=0ii17zgNfSt6NdhJmFx5/r/gCMUytNGZv943PLyNN75GxKOqGESKy2Mq1IE6CLPMOe
+         q1+Ufp7QD/YGIM5Jr/m1BFx92K0n2LnBBvPsa7wkt/UgYgyZj/uuqJfTlSPV58PMTe1x
+         0RoT00NSEQ0oOPcpGifYz406ziDoFizYS09VQkpbLJHIWKmPBkGCbeb43Zl+KqiXxVcy
+         rV/4AiXSC8OryrI6Fy/CoQN7qmb8KArpxPHsaHIH8s07Vdd9b/odxQ3B4mEC/nIVLXoU
+         ugEGgUW0YS7ipA+SL/GHn0U11U/xd7NZ43ze8OkPPoCLK7TMaJENKKGlQ5ks3khFjI8h
+         VCTg==
+X-Gm-Message-State: AOAM531vOwDHyY80rNpIoi1qa7Oz0kw1ZzNwIa9nFVkFcF0gOgctoBxW
+        DqvBzXdbXiUgRYMf1AyevQ==
+X-Google-Smtp-Source: ABdhPJyORXC1nAXqh3AJEH7Pbin5z5ZEM+t9Sjf4WCm0RcuQowCym0RA1G6XsPG/wRakCEJiRLmOOw==
+X-Received: by 2002:a05:6830:1301:: with SMTP id p1mr10019266otq.337.1639599021230;
+        Wed, 15 Dec 2021 12:10:21 -0800 (PST)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
+        by smtp.gmail.com with ESMTPSA id o6sm621244oou.41.2021.12.15.12.10.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Dec 2021 08:34:04 -0800 (PST)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     agross@kernel.org, bjorn.andersson@linaro.org,
-        daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com,
-        robh+dt@kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [Patch v2 2/3] arm64: dts: qcom: sm8150: Add support for LMh node
-Date:   Wed, 15 Dec 2021 11:33:59 -0500
-Message-Id: <20211215163400.33349-3-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20211215163400.33349-1-thara.gopinath@linaro.org>
-References: <20211215163400.33349-1-thara.gopinath@linaro.org>
+        Wed, 15 Dec 2021 12:10:20 -0800 (PST)
+Received: (nullmailer pid 1754734 invoked by uid 1000);
+        Wed, 15 Dec 2021 20:10:19 -0000
+Date:   Wed, 15 Dec 2021 14:10:19 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Luca Weiss <luca.weiss@fairphone.com>
+Cc:     Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        linux-arm-msm@vger.kernel.org,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, phone-devel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>
+Subject: Re: [PATCH 05/10] dt-bindings: thermal: tsens: Add SM6350 compatible
+Message-ID: <YbpLqwFJI/nfvxd9@robh.at.kernel.org>
+References: <20211213082614.22651-1-luca.weiss@fairphone.com>
+ <20211213082614.22651-6-luca.weiss@fairphone.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211213082614.22651-6-luca.weiss@fairphone.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add LMh nodes for cpu cluster0 and cpu cluster1 for sm8150 SoC.
+On Mon, 13 Dec 2021 09:26:06 +0100, Luca Weiss wrote:
+> Add devicetree compatible for tsens on SM6350 SoC.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> Acked-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- arch/arm64/boot/dts/qcom/sm8150.dtsi | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/sm8150.dtsi b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-index 81b4ff2cc4cd..e755d7ab78dd 100644
---- a/arch/arm64/boot/dts/qcom/sm8150.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-@@ -3650,6 +3650,30 @@ cpufreq_hw: cpufreq@18323000 {
- 			#freq-domain-cells = <1>;
- 		};
- 
-+		lmh_cluster1: lmh@18350800 {
-+			compatible = "qcom,sm8150-lmh";
-+			reg = <0 0x18350800 0 0x400>;
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&CPU4>;
-+			qcom,lmh-temp-arm-millicelsius = <60000>;
-+			qcom,lmh-temp-low-millicelsius = <84500>;
-+			qcom,lmh-temp-high-millicelsius = <85000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
-+		lmh_cluster0: lmh@18358800 {
-+			compatible = "qcom,sm8150-lmh";
-+			reg = <0 0x18358800 0 0x400>;
-+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&CPU0>;
-+			qcom,lmh-temp-arm-millicelsius = <60000>;
-+			qcom,lmh-temp-low-millicelsius = <84500>;
-+			qcom,lmh-temp-high-millicelsius = <85000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
- 		wifi: wifi@18800000 {
- 			compatible = "qcom,wcn3990-wifi";
- 			reg = <0 0x18800000 0 0x800000>;
--- 
-2.25.1
-
+Acked-by: Rob Herring <robh@kernel.org>
