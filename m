@@ -2,141 +2,243 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05AA9C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 09:08:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 457EEC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 11:04:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232755AbhLPJIm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Dec 2021 04:08:42 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:59619 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232732AbhLPJIl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Dec 2021 04:08:41 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1639645720;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=/S2bBf2H4Ywg/G1YUzMTQsACFOpl5qi7kASq0wmmZwk=;
-        b=V4Y/QMOfjRmHBaXd9HnZ9l/HznmfcBDxrYrfbtnTCt5oFguu1BEGcNyhSdSd3UypKQ19p2
-        i9yqAcHhwZTiR+XMkBBvqXwDJ8O3CM0d40/QbGpW/iliPqpS/53F/GeYtcRRy5flmUXpoO
-        DiNYr6SgQx/dGH2MSAGvtqGL7jBd7vs=
-Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com
- [209.85.208.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-372-dLXe2DmxNIiw5ijnErZ8hw-1; Thu, 16 Dec 2021 04:08:39 -0500
-X-MC-Unique: dLXe2DmxNIiw5ijnErZ8hw-1
-Received: by mail-ed1-f72.google.com with SMTP id b15-20020aa7c6cf000000b003e7cf0f73daso22618404eds.22
-        for <linux-pm@vger.kernel.org>; Thu, 16 Dec 2021 01:08:39 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=/S2bBf2H4Ywg/G1YUzMTQsACFOpl5qi7kASq0wmmZwk=;
-        b=UwRxD4ufEGbiVFiVgVxeaWHY4bvNob2fx6eON+QPR5ozGCNS9bNkn8iELr1xtGue/W
-         lpgcn+pE34F2RutwimY2e1SixsGaaOdJrez32g9ipYihED71jXimjiHCJLXTH00IyfPH
-         vooBW07f74ATVhi9/cGS+dVAZD8Sp/bCG0DyD75mFNI4IuT0SNec8873mWMG4eK9EB7D
-         BxcLcDQuNR0EvvA7K9FX/AtOQLvJn9zPFl1jYOW10rWkfaD2Yg4oqo2CC9YLnj7tjlBM
-         cQ3/QCE8ldy+nJRzc7LLxaRXtvrs8uEsrby7Lp8ggcWBUy/ELALjeIPegJyB3VzBDi0N
-         4rLQ==
-X-Gm-Message-State: AOAM533uTaznanq41xyv0W/feEUcSD6x06cu8mvITTV2IfgQzkmji1+v
-        kvPNocf+ENJ5jMRLtFpO3OvTVH3wYpPaSWiUcqog4ySS9qM6BSEx6faQOSrV2K017E8t65+X7tV
-        QfDnmf6xo1z5K362cXjg=
-X-Received: by 2002:a17:907:3f1e:: with SMTP id hq30mr13896368ejc.579.1639645718164;
-        Thu, 16 Dec 2021 01:08:38 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwpoQtb8C3nM8xfkYi5jPPX96MzG1owNVpw3oKsZ+pHTY4AgBMB+VD4ViJdhbRHyy6UcznxMg==
-X-Received: by 2002:a17:907:3f1e:: with SMTP id hq30mr13896352ejc.579.1639645718010;
-        Thu, 16 Dec 2021 01:08:38 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1? (2001-1c00-0c1e-bf00-1db8-22d3-1bc9-8ca1.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1])
-        by smtp.gmail.com with ESMTPSA id s13sm2204024edd.15.2021.12.16.01.08.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 Dec 2021 01:08:37 -0800 (PST)
-Message-ID: <4855a130-b16b-d8d6-ec9b-ab1ac024e4a7@redhat.com>
-Date:   Thu, 16 Dec 2021 10:08:36 +0100
+        id S233664AbhLPLEX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Dec 2021 06:04:23 -0500
+Received: from dfw.source.kernel.org ([139.178.84.217]:54336 "EHLO
+        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229995AbhLPLEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Dec 2021 06:04:23 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7CA2261D49;
+        Thu, 16 Dec 2021 11:04:22 +0000 (UTC)
+Received: from jic23-huawei (cpc108967-cmbg20-2-0-cust86.5-4.cable.virginm.net [81.101.6.87])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by smtp.kernel.org (Postfix) with ESMTPSA id BCE44C36AE4;
+        Thu, 16 Dec 2021 11:04:17 +0000 (UTC)
+Date:   Thu, 16 Dec 2021 11:09:36 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Paul Cercueil <paul@crapouillou.net>
+Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, list@opendingux.net,
+        linux-mips@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 3/5] PM: core: Add new *_PM_OPS macros, deprecate old
+ ones
+Message-ID: <20211216110936.6ccd07d3@jic23-huawei>
+In-Reply-To: <20211207002102.26414-4-paul@crapouillou.net>
+References: <20211207002102.26414-1-paul@crapouillou.net>
+        <20211207002102.26414-4-paul@crapouillou.net>
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.30; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH v2] extcon: fix extcon_get_extcon_dev() error handling
-Content-Language: en-US
-To:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Sebastian Reichel <sre@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>, Felipe Balbi <balbi@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-References: <CGME20211123084357epcas1p14833147710153f9606f14941ac8b0d96@epcas1p1.samsung.com>
- <20211123083925.GA3277@kili>
- <562b12ff-e395-c818-787e-7fd6ee6d53fb@samsung.com>
- <20211216075233.GD1978@kadam>
- <b4d0c326-3122-c5f9-f376-b122f263d92c@samsung.com>
- <20211216080558.GE1978@kadam>
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <20211216080558.GE1978@kadam>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Tue,  7 Dec 2021 00:21:00 +0000
+Paul Cercueil <paul@crapouillou.net> wrote:
 
-On 12/16/21 09:05, Dan Carpenter wrote:
-> On Thu, Dec 16, 2021 at 05:24:30PM +0900, Chanwoo Choi wrote:
->> On 12/16/21 4:52 PM, Dan Carpenter wrote:
->>> On Thu, Dec 16, 2021 at 03:39:46PM +0900, Chanwoo Choi wrote:
->>>> Hi Dan,
->>>>
->>>> First of all,  sorry for late reply.
->>>>
->>>> There is one issue. About this issue, I already discussed on patch[1]
->>>> [1] https://lore.kernel.org/lkml/5BEB63C3.1020504@samsung.com/  
->>>>
->>>> extcon_get_extcon_dev() is used for anywhere except for probe step.
->>>> But EPROBE_DEFER is only used on probe step.
->>>>
->>>> So that it is not clear to return EPROBE_DEFER from extcon_get_extcon_dev()
->>>> because extcon_get_extcon_dev() never know either call it on probe function
->>>> or not.
->>>
->>> Currently extcon_get_extcon_dev() is only called from probe so it's not
->>> an issue.
->>
->> Even if extcon_get_extcon_dev() is used on probe until now,
->> it is possible to use on anywhere as I commented.
->>
->> It is difficult to agree this approach without any other solution.
->>
->> Basically, the subsystem core never know either probe time or not.
->> It means that this issue should be handled in each device driver.
->>
+> This commit introduces the following macros:
+> SYSTEM_SLEEP_PM_OPS()
+> LATE_SYSTEM_SLEEP_PM_OPS()
+> NOIRQ_SYSTEM_SLEEP_PM_OPS()
+> RUNTIME_PM_OPS()
 > 
-> To be honest, I'm not sure how this differs from other functions which
-> return -EPROBE_DEFER.  How do other functions guarantee they will only
-> be called from probe()?
+> These new macros are very similar to their SET_*_PM_OPS() equivalent.
+> They however differ in the fact that the callbacks they set will always
+> be seen as referenced by the compiler. This means that the callback
+> functions don't need to be wrapped with a #ifdef CONFIG_PM guard, or
+> tagged with __maybe_unused, to prevent the compiler from complaining
+> about unused static symbols. The compiler will then simply evaluate at
+> compile time whether or not these symbols are dead code.
+> 
+> The callbacks that are only useful with CONFIG_PM_SLEEP is enabled, are
+> now also wrapped with a new pm_sleep_ptr() macro, which is inspired from
+> pm_ptr(). This is needed for drivers that use different callbacks for
+> sleep and runtime PM, to handle the case where CONFIG_PM is set and
+> CONFIG_PM_SLEEP is not.
+> 
+> This commit also deprecates the following macros:
+> SIMPLE_DEV_PM_OPS()
+> UNIVERSAL_DEV_PM_OPS()
+> 
+> And introduces the following macros:
+> DEFINE_SIMPLE_DEV_PM_OPS()
+> DEFINE_UNIVERSAL_DEV_PM_OPS()
+> 
+> These macros are similar to the functions they were created to replace,
+> with the following differences:
+> - They use the new macros introduced above, and as such always reference
+>   the provided callback functions;
+> - They are not tagged with __maybe_unused. They are meant to be used
+>   with pm_ptr() or pm_sleep_ptr() for DEFINE_UNIVERSAL_DEV_PM_OPS() and
+>   DEFINE_SIMPLE_DEV_PM_OPS() respectively.
+> - They declare the symbol static, since every driver seems to do that
+>   anyway; and if a non-static use-case is needed an indirection pointer
+>   could be used.
 
-Right I have to agree with Dan here, all "get" functons for resources
-like gpios, clks, regulators, phys, pwms, etc. may return -EPROBE_DEFER
-and since these functions may return -EPROBE_DEFER they *must* only be
-called from a driver's probe() function.
+There are non static usecases e.g. drivers/iio/ad7606.c
+where they are shared across a couple of different modules (typically when
+we have a core / i2c / spi module split for a driver or similar).
+As you say, there are ways of working around that.
 
-So I believe that the solution here is to simply add a kernel-doc comment
-on extcon_get_extcon_dev() which documents that it may return -EPROBE_DEFER
-and that it thus *must* only be called from a driver's probe() function.
+So I guess it's a question of what feels more natural + common kernel
+way of doing things.
 
-Regards,
-
-Hans
-
-
+I'll defer to your (+ anyone else who wishes to comment) judgement.
 
 > 
-> regards,
-> dan carpenter
+> The point of this change, is to progressively switch from a code model
+> where PM callbacks are all protected behind CONFIG_PM guards, to a code
+> model where the PM callbacks are always seen by the compiler, but
+> discarded if not used.
 > 
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+
+Great work btw. When the holiday season gets boring I'll redo my IIO
+set to use this + maybe the rest of IIO...
+
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+
+> ---
+>  include/linux/pm.h | 74 +++++++++++++++++++++++++++++++---------------
+>  1 file changed, 50 insertions(+), 24 deletions(-)
+> 
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index b88ac7dcf2a2..fc9691cb01b4 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -300,47 +300,59 @@ struct dev_pm_ops {
+>  	int (*runtime_idle)(struct device *dev);
+>  };
+>  
+> +#define SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	.suspend = pm_sleep_ptr(suspend_fn), \
+> +	.resume = pm_sleep_ptr(resume_fn), \
+> +	.freeze = pm_sleep_ptr(suspend_fn), \
+> +	.thaw = pm_sleep_ptr(resume_fn), \
+> +	.poweroff = pm_sleep_ptr(suspend_fn), \
+> +	.restore = pm_sleep_ptr(resume_fn),
+> +
+> +#define LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	.suspend_late = pm_sleep_ptr(suspend_fn), \
+> +	.resume_early = pm_sleep_ptr(resume_fn), \
+> +	.freeze_late = pm_sleep_ptr(suspend_fn), \
+> +	.thaw_early = pm_sleep_ptr(resume_fn), \
+> +	.poweroff_late = pm_sleep_ptr(suspend_fn), \
+> +	.restore_early = pm_sleep_ptr(resume_fn),
+> +
+> +#define NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	.suspend_noirq = pm_sleep_ptr(suspend_fn), \
+> +	.resume_noirq = pm_sleep_ptr(resume_fn), \
+> +	.freeze_noirq = pm_sleep_ptr(suspend_fn), \
+> +	.thaw_noirq = pm_sleep_ptr(resume_fn), \
+> +	.poweroff_noirq = pm_sleep_ptr(suspend_fn), \
+> +	.restore_noirq = pm_sleep_ptr(resume_fn),
+> +
+> +#define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +	.runtime_suspend = suspend_fn, \
+> +	.runtime_resume = resume_fn, \
+> +	.runtime_idle = idle_fn,
+> +
+>  #ifdef CONFIG_PM_SLEEP
+>  #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> -	.suspend = suspend_fn, \
+> -	.resume = resume_fn, \
+> -	.freeze = suspend_fn, \
+> -	.thaw = resume_fn, \
+> -	.poweroff = suspend_fn, \
+> -	.restore = resume_fn,
+> +	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #else
+>  #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #endif
+>  
+>  #ifdef CONFIG_PM_SLEEP
+>  #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> -	.suspend_late = suspend_fn, \
+> -	.resume_early = resume_fn, \
+> -	.freeze_late = suspend_fn, \
+> -	.thaw_early = resume_fn, \
+> -	.poweroff_late = suspend_fn, \
+> -	.restore_early = resume_fn,
+> +	LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #else
+>  #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #endif
+>  
+>  #ifdef CONFIG_PM_SLEEP
+>  #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> -	.suspend_noirq = suspend_fn, \
+> -	.resume_noirq = resume_fn, \
+> -	.freeze_noirq = suspend_fn, \
+> -	.thaw_noirq = resume_fn, \
+> -	.poweroff_noirq = suspend_fn, \
+> -	.restore_noirq = resume_fn,
+> +	NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #else
+>  #define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+>  #endif
+>  
+>  #ifdef CONFIG_PM
+>  #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> -	.runtime_suspend = suspend_fn, \
+> -	.runtime_resume = resume_fn, \
+> -	.runtime_idle = idle_fn,
+> +	RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
+>  #else
+>  #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
+>  #endif
+> @@ -349,9 +361,9 @@ struct dev_pm_ops {
+>   * Use this if you want to use the same suspend and resume callbacks for suspend
+>   * to RAM and hibernation.
+>   */
+> -#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> -const struct dev_pm_ops __maybe_unused name = { \
+> -	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +#define DEFINE_SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> +static const struct dev_pm_ops name = { \
+> +	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+>  }
+>  
+>  /*
+> @@ -367,6 +379,19 @@ const struct dev_pm_ops __maybe_unused name = { \
+>   * .resume_early(), to the same routines as .runtime_suspend() and
+>   * .runtime_resume(), respectively (and analogously for hibernation).
+>   */
+> +#define DEFINE_UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
+> +static const struct dev_pm_ops name = { \
+> +	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +	RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+> +}
+> +
+> +/* Deprecated. Use DEFINE_SIMPLE_DEV_PM_OPS() instead. */
+> +#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+> +const struct dev_pm_ops __maybe_unused name = { \
+> +	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> +}
+> +
+> +/* Deprecated. Use DEFINE_UNIVERSAL_DEV_PM_OPS() instead. */
+>  #define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
+>  const struct dev_pm_ops __maybe_unused name = { \
+>  	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+> @@ -374,6 +399,7 @@ const struct dev_pm_ops __maybe_unused name = { \
+>  }
+>  
+>  #define pm_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM), (_ptr))
+> +#define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
+>  
+>  /*
+>   * PM_EVENT_ messages
 
