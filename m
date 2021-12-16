@@ -2,155 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9181C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 02:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33A91C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 02:42:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233094AbhLPCci (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Dec 2021 21:32:38 -0500
-Received: from mailout4.samsung.com ([203.254.224.34]:61348 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233202AbhLPCc3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Dec 2021 21:32:29 -0500
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20211216023228epoutp04470bf250fc5bf7d781c5d76567f44a62~BG3mv2Nt80400804008epoutp04I
-        for <linux-pm@vger.kernel.org>; Thu, 16 Dec 2021 02:32:28 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20211216023228epoutp04470bf250fc5bf7d781c5d76567f44a62~BG3mv2Nt80400804008epoutp04I
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1639621948;
-        bh=xu5NdfDMEXF3znzl++/5As5UWccl5/DV/1rVCJK+/Dk=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=tYIcLyXZTRyKmuwwwQ/NSCGKGqeA8vEiVRlZ8kjOtpRJrtikzBqFS3liG9k0PcWAF
-         P7HRAJen2QgLltDtHlj2KAA9w093R7t9DQKDTgC1+nk+N7hJ77HVvOYGFNBnBDl9f1
-         3QuiSxwa7jGR9bxsbfgXPK8Ja5pgixYKP6EbQROE=
-Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
-        20211216023227epcas1p37d6db1cb22b8de18a509ca77556bcc22~BG3l51JWK1412214122epcas1p3-;
-        Thu, 16 Dec 2021 02:32:27 +0000 (GMT)
-Received: from epsmges1p4.samsung.com (unknown [182.195.38.231]) by
-        epsnrtp1.localdomain (Postfix) with ESMTP id 4JDx376Bztz4x9Q3; Thu, 16 Dec
-        2021 02:32:19 +0000 (GMT)
-Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        A7.A9.21932.DE4AAB16; Thu, 16 Dec 2021 11:31:09 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
-        20211216023219epcas1p4a3e4ac07ae62491a5c0871c7afd0c531~BG3d3pF3m1698516985epcas1p4P;
-        Thu, 16 Dec 2021 02:32:19 +0000 (GMT)
-Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20211216023219epsmtrp10a3d72a3ddc714b2a955009532261790~BG3d0Wtob0258602586epsmtrp1m;
-        Thu, 16 Dec 2021 02:32:19 +0000 (GMT)
-X-AuditID: b6c32a38-929ff700000255ac-df-61baa4edfdd9
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        30.32.08738.235AAB16; Thu, 16 Dec 2021 11:32:18 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20211216023218epsmtip107d0161f5f971769c7caa041d3f31de8~BG3djIiI60275402754epsmtip1b;
-        Thu, 16 Dec 2021 02:32:18 +0000 (GMT)
-Subject: Re: [PATCH v4 20/20] extcon: intel-cht-wc: Report RID_A for ACA
- adapters
-To:     Hans de Goede <hdegoede@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Mark Gross <markgross@kernel.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Wolfram Sang <wsa@the-dreams.de>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Ard Biesheuvel <ardb@kernel.org>
-Cc:     Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-        Yauhen Kharuzhy <jekhor@gmail.com>,
-        Tsuchiya Yuto <kitakar@gmail.com>,
-        platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <827d2fe4-e50c-ce4c-9e6c-e10555bbabef@samsung.com>
-Date:   Thu, 16 Dec 2021 11:55:19 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
-MIME-Version: 1.0
-In-Reply-To: <20211206093318.45214-21-hdegoede@redhat.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Te0xTVxze6S23Bce4KyjHzjm4yiK4IoUCBwF1QV2NLsOYkWmysSvctR2l
-        bXpbYFvMytTKU57y6AqaieBwmbzGoxgEhmPViaDBjZcIFhG2yhyaMWfYWi5u/Pf7fb/vO9/5
-        zoOPCaZwIV+h0tFaFaUkcTdu8/f+IpG9ykIFPazxRYVl/2Dor8dzAP3WW8pBXd+ec0FDT3tc
-        0PiTKwC1TdhxVNORB5BxYhigWxYzjuZzewDqPFWCoeKWHh4aST+PowuXHmDop2s3XdC1dh36
-        +kcTtkMgbTON8aSN5wOkDbWZuHT09iVcWmndL53rGMSlTYMnuNKTTbVAar1q40rnG9bHuh1K
-        ipLTVCKt9aFVCepEhUoWTe49EB8THxoWJBaJI1A46aOikulocue+WNFuhdKRifRJoZR6BxRL
-        MQy5ZVuUVq3X0T5yNaOLJmlNolITqglkqGRGr5IFqmjdVnFQUHCog/hhknw2+5mL5iY/rbxw
-        imsAz/As4MqHhAQWTRhBFnDjC4hWAFvu9gPnQED8AeB0XyI7mAdw1FzHe66wptfh7MAC4NGq
-        +zxWMQfgou2ws/YkDsD6zuNLy3oRWRgcKl3kORuMMHBgRfHRJQVOBMDLD35Z2ogH4QsHF+4t
-        ebsT22DGNz87OHw+l/CDBQPRTng1EQetzceWKS9Da7mN66S4ElvhaKWfE8YIbzhsO81h69dg
-        i92MOW0hke0K+3K/4rIJdkLjnarl2hPO9jYtJxPCmTwjjxVUA/i0KJPDNhcBnDFlYiwrBF4+
-        V8RxOmOEP7xo2cLCvrDt7wrAOr8EHz7JcXFSIOEOM4wClrIB3ro7xmHrtfDsiUw8H5CmFXFM
-        KzKYVmQw/W92BnBrwRpawyTLaEaskfx32wnq5Aaw9N4DUCuosP8e2A04fNANIB8jvdxt71ko
-        gXsi9cmntFYdr9UraaYbhDrOtwATrk5QOz6MShcvlkQEScKCQyRIHCYmvd2n3ymlBISM0tFJ
-        NK2htc91HL6r0MAxNNkzunLGrsb4D/8aNp7hms9bk7w2ztIeI8zf3PcYv55mOPm+sjn2SGVF
-        eYp5dKhE/idzWE4kzQim8k9vl714pzC3TqiwTdervGIu5HmAkRxl6m4R98i9iEnbwLsLHZ74
-        GdPGFz64EYKqlQNDP3SdPdizaqIkZ1/6nvx5xXBn3PXjXp6rZiPNYTbvHF515NyMoPXQuv4S
-        zfD9AuGp0sgr7ceK96ZOftc78aZHWs0C+ig1t976SBaxTl06O7jrYErw/uyKj7eH2qsasytb
-        9AbJq2WbHo0sjm8qeX2Otz5qo+iLsvA33vrMPKn3+9zjtsLY2hjxZfvbRmxh865XwmfoG/3E
-        DpLLyClxAKZlqH8BjOjEbXgEAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrPIsWRmVeSWpSXmKPExsWy7bCSnK7R0l2JBtPuqVtMmvGf2eLnl/eM
-        Fm+OT2eyOLhuKavFzV9HWC3ufz3KaLHz4Vs2i+X7+hkt2h7eYrS4vGsOm8Xn3iOMFgemTmO2
-        mLL9CLvF7cYVbBar97xgtjhz+hKrxendJRYrT8xidhDy2DnrLrvH5hVaHptWdbJ53Lm2h81j
-        3slAj/f7rrJ5bLnazuLRt2UVo8fJU09YPD5vkgvgiuKySUnNySxLLdK3S+DKeNX9h7XgEkfF
-        zElPWRoY/7B1MXJySAiYSJxs3ABkc3EICexglJhxq4MZIiEpMe3iUSCbA8gWljh8uBii5i2j
-        xJ9Jk9hBaoQFgiU2HmhlBLFFBHqYJf5N5AcpYhZoYJK4MGESM0THHkaJPWt3g1WxCWhJ7H9x
-        A2w1v4CixNUfj8HivAJ2Eh1rrrODbGMRUJWYeNEWJCwqECaxc8ljJogSQYmTM5+wgJRwClhJ
-        3JmnChJmFlCX+DPvEjOELS5x68l8JghbXmL72znMExiFZyHpnoWkZRaSlllIWhYwsqxilEwt
-        KM5Nzy02LDDKSy3XK07MLS7NS9dLzs/dxAiOcy2tHYx7Vn3QO8TIxMF4iFGCg1lJhPdJxK5E
-        Id6UxMqq1KL8+KLSnNTiQ4zSHCxK4rwXuk7GCwmkJ5akZqemFqQWwWSZODilGphOrJrXvNyL
-        yf2yz6H5nenGy5KtW60/SJtffsl4g8NK5v8HhnD90zc2fPP9c19bNlLsfarqd54wtfOcvsd5
-        HdxffTU4zt1zuX7Xx6ZlzZr31ulwXT2kpZ0qap1dmRP3Q53/9v114jO0XpUnr0ise3SuJ/bB
-        UkevT31bLPJKDjzmqResz/y3Lnvl6U6ZEykK038+uvvkU997zQye+L8SrPU1rQtE1l0vOvv7
-        9efqTr69EbGJShp56kHG3wSVecI3Hr7Px3eg2FUo7FBsrU7eqlj56vrQzSarc2Z38Cf/fxpa
-        3NV6pr57zq4JNx/MOGIUpabclOps+d/CJqt5Y7jY7E0/Ve4xZkzXeHSKZU37ZSWW4oxEQy3m
-        ouJEAPrUT51iAwAA
-X-CMS-MailID: 20211216023219epcas1p4a3e4ac07ae62491a5c0871c7afd0c531
-X-Msg-Generator: CA
+        id S231138AbhLPCmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Dec 2021 21:42:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50794 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230436AbhLPCmR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Dec 2021 21:42:17 -0500
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A009C061574
+        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 18:42:17 -0800 (PST)
+Received: by mail-pl1-x62a.google.com with SMTP id z6so18239966plk.6
+        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 18:42:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=ruSFKYuJWvSSI13PQVNBt4J3FMBiI68WZj57AY3dhYU=;
+        b=iYQNFJ6tnAT0JM3WYPjV8buyvlKkwOIDRXAVb3ef3Jkt52WesObSW2lheXBmnT6CB5
+         jhw0sQ4VKI9LO55dC+CgKVwp3S6LHuEcl7HJV6LMjOeiEsRVTDq3yNYdtQHDZ0xozuKi
+         5PyMjqa1OBELHw+MVrlyyRJ412yUH6r66tIRlKxf9Wdxj6MLShW/+ptQmcx0CHyvtaC2
+         1dsToSrv9NYkp/4DoJAd6sIYamQ3JqLks+kEQlpUtgUI+gGFhj0xSi6V6SzioOOF0uQW
+         f39rVi3wkR6D2zvyOOEizwBiQGRqX/6q/0zlsejo867UuIpfFhOPIRfQ01xxp0YSEfLE
+         1QaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=ruSFKYuJWvSSI13PQVNBt4J3FMBiI68WZj57AY3dhYU=;
+        b=G7gZVGcG2hQCQtImfSmGcagzQUBYuQoBmsjs5QF1/L3RIGfuC5d+aTTvr60vJKjvgb
+         RVp6TgOxXQk/g7WOyg/j43HuGzx7eLbyeoWMBD69K63FagXiP3iM+QduBgzXNlzgBdAu
+         6R+KCxEolalXPQfyj0sRCM4yV2tY8+FezaCLEOeBRZHmgUllj46UGZtnOqN2jIBd/dxZ
+         +nz/mBtvDYy8nKahSIj55Dr3jS/ydcpu/acZQvkKYq3h8LnEwo6BHc47LmEdBa9TK0hB
+         M3+rXE2Va8E5xPGs4YTCHLyyMPSTG5isq6cauyIKx6kca0o2akrfQIVzijEPc/am2a1e
+         /2hg==
+X-Gm-Message-State: AOAM5319M8s9RJLwci5I262wZWaLLDqtvzf3u8uoAsjtwBdZNKkerdKz
+        ZXNSRyQvwPt8grp7Z+rXD3ht+3CsYFQX1DOR
+X-Google-Smtp-Source: ABdhPJxxHmhWnuLhLux5NvrbqlwDsH2ViI+Mr3VGSNfqcJAdqiCX2OBW6+nNGh14ac8RlnJGq8r9SQ==
+X-Received: by 2002:a17:90b:3ec2:: with SMTP id rm2mr3438266pjb.1.1639622536782;
+        Wed, 15 Dec 2021 18:42:16 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id y191sm3660346pfb.124.2021.12.15.18.42.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Dec 2021 18:42:16 -0800 (PST)
+Message-ID: <61baa788.1c69fb81.3a1e6.b1cb@mx.google.com>
+Date:   Wed, 15 Dec 2021 18:42:16 -0800 (PST)
 Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20211206093542epcas1p177d404c7a4889bcd80705fe4f6f30b62
-References: <20211206093318.45214-1-hdegoede@redhat.com>
-        <CGME20211206093542epcas1p177d404c7a4889bcd80705fe4f6f30b62@epcas1p1.samsung.com>
-        <20211206093318.45214-21-hdegoede@redhat.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Kernel: v5.16-rc5-43-g8dff5ac97bf3
+X-Kernelci-Report-Type: test
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing baseline: 88 runs,
+ 1 regressions (v5.16-rc5-43-g8dff5ac97bf3)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/6/21 6:33 PM, Hans de Goede wrote:
-> Make cht_wc_extcon_get_id() report RID_A for ACA adapters, instead of
-> reporting ID_FLOAT.
-> 
-> According to the spec. we should read the USB-ID pin ADC value
-> to determine the resistance of the used pull-down resister and
-> then return RID_A / RID_B / RID_C based on this. But all "Accessory
-> Charger Adapter"s (ACAs) which users can actually buy always use
-> a combination of a charging port with one or more USB-A ports, so
-> they should always use a resistor indicating RID_A. But the spec
-> is hard to read / badly-worded so some of them actually indicate
-> they are a RID_B ACA even though they clearly are a RID_A ACA.
-> 
-> To workaround this simply always return INTEL_USB_RID_A, which
-> matches all the ACAs which users can actually buy.
-> 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
->  drivers/extcon/extcon-intel-cht-wc.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
-[snip]
+pm/testing baseline: 88 runs, 1 regressions (v5.16-rc5-43-g8dff5ac97bf3)
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Regressions Summary
+-------------------
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+platform                 | arch   | lab           | compiler | defconfig   =
+     | regressions
+-------------------------+--------+---------------+----------+-------------=
+-----+------------
+minnowboard-turbot-E3826 | x86_64 | lab-collabora | gcc-10   | x86_64_defco=
+nfig | 1          =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.16-rc=
+5-43-g8dff5ac97bf3/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.16-rc5-43-g8dff5ac97bf3
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      8dff5ac97bf3147fe5caf4c0f21592607ca08416 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform                 | arch   | lab           | compiler | defconfig   =
+     | regressions
+-------------------------+--------+---------------+----------+-------------=
+-----+------------
+minnowboard-turbot-E3826 | x86_64 | lab-collabora | gcc-10   | x86_64_defco=
+nfig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/61ba97de5da29f8e14397131
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: x86_64_defconfig
+  Compiler:    gcc-10 (gcc (Debian 10.2.1-6) 10.2.1 20210110)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.16-rc5-43-g8dff5=
+ac97bf3/x86_64/x86_64_defconfig/gcc-10/lab-collabora/baseline-minnowboard-t=
+urbot-E3826.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.16-rc5-43-g8dff5=
+ac97bf3/x86_64/x86_64_defconfig/gcc-10/lab-collabora/baseline-minnowboard-t=
+urbot-E3826.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/buildroo=
+t-baseline/20211210.0/x86/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/61ba97de5da29f8e14397=
+132
+        new failure (last pass: thermal-5.16-rc5-48-gf1f42573b6f3) =
+
+ =20
