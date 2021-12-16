@@ -2,126 +2,175 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33A91C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 02:42:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65C03C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Dec 2021 05:59:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231138AbhLPCmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Dec 2021 21:42:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50794 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230436AbhLPCmR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Dec 2021 21:42:17 -0500
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A009C061574
-        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 18:42:17 -0800 (PST)
-Received: by mail-pl1-x62a.google.com with SMTP id z6so18239966plk.6
-        for <linux-pm@vger.kernel.org>; Wed, 15 Dec 2021 18:42:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=ruSFKYuJWvSSI13PQVNBt4J3FMBiI68WZj57AY3dhYU=;
-        b=iYQNFJ6tnAT0JM3WYPjV8buyvlKkwOIDRXAVb3ef3Jkt52WesObSW2lheXBmnT6CB5
-         jhw0sQ4VKI9LO55dC+CgKVwp3S6LHuEcl7HJV6LMjOeiEsRVTDq3yNYdtQHDZ0xozuKi
-         5PyMjqa1OBELHw+MVrlyyRJ412yUH6r66tIRlKxf9Wdxj6MLShW/+ptQmcx0CHyvtaC2
-         1dsToSrv9NYkp/4DoJAd6sIYamQ3JqLks+kEQlpUtgUI+gGFhj0xSi6V6SzioOOF0uQW
-         f39rVi3wkR6D2zvyOOEizwBiQGRqX/6q/0zlsejo867UuIpfFhOPIRfQ01xxp0YSEfLE
-         1QaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=ruSFKYuJWvSSI13PQVNBt4J3FMBiI68WZj57AY3dhYU=;
-        b=G7gZVGcG2hQCQtImfSmGcagzQUBYuQoBmsjs5QF1/L3RIGfuC5d+aTTvr60vJKjvgb
-         RVp6TgOxXQk/g7WOyg/j43HuGzx7eLbyeoWMBD69K63FagXiP3iM+QduBgzXNlzgBdAu
-         6R+KCxEolalXPQfyj0sRCM4yV2tY8+FezaCLEOeBRZHmgUllj46UGZtnOqN2jIBd/dxZ
-         +nz/mBtvDYy8nKahSIj55Dr3jS/ydcpu/acZQvkKYq3h8LnEwo6BHc47LmEdBa9TK0hB
-         M3+rXE2Va8E5xPGs4YTCHLyyMPSTG5isq6cauyIKx6kca0o2akrfQIVzijEPc/am2a1e
-         /2hg==
-X-Gm-Message-State: AOAM5319M8s9RJLwci5I262wZWaLLDqtvzf3u8uoAsjtwBdZNKkerdKz
-        ZXNSRyQvwPt8grp7Z+rXD3ht+3CsYFQX1DOR
-X-Google-Smtp-Source: ABdhPJxxHmhWnuLhLux5NvrbqlwDsH2ViI+Mr3VGSNfqcJAdqiCX2OBW6+nNGh14ac8RlnJGq8r9SQ==
-X-Received: by 2002:a17:90b:3ec2:: with SMTP id rm2mr3438266pjb.1.1639622536782;
-        Wed, 15 Dec 2021 18:42:16 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id y191sm3660346pfb.124.2021.12.15.18.42.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Dec 2021 18:42:16 -0800 (PST)
-Message-ID: <61baa788.1c69fb81.3a1e6.b1cb@mx.google.com>
-Date:   Wed, 15 Dec 2021 18:42:16 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S233770AbhLPF7r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Dec 2021 00:59:47 -0500
+Received: from mga18.intel.com ([134.134.136.126]:34135 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231777AbhLPF7q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Dec 2021 00:59:46 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1639634386; x=1671170386;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=7Pts2vllcXRGODxvtjcygX5i28dTbNFsfyPTD1UPfQA=;
+  b=T/sL4EP/1aEuQ8/U/pwzysuFiylsjiivxHQJykyG2AVKwDidBvJB+SxQ
+   NawLedduFfNY8c5H+hg6Ye9jS2evRKqdCnUbY1pu3vf37tep6ZKynwLry
+   SONcg86XfLu6/BAealiCOxKy6sU8qjOGFUsXIxX7KQX+GrgoLCcnVTfaa
+   MNqp3x1MzvEQJpf5QPC6szMPCisnQun30ekatboJ1Lifs9zfNtlOA6E5P
+   8NRRqbWc88eRB88tutMvdTFZJNCoZ+Ib691YjPcWEwXTsOeNEPJsnth6+
+   5AnupSMZwmvsYaL0BAtLodUQ3nHxTa4yTseZMLQuQpXfHC7vRtviOgMuh
+   Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10199"; a="226269928"
+X-IronPort-AV: E=Sophos;i="5.88,210,1635231600"; 
+   d="scan'208";a="226269928"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Dec 2021 21:59:46 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,210,1635231600"; 
+   d="scan'208";a="506142080"
+Received: from lkp-server02.sh.intel.com (HELO 9f38c0981d9f) ([10.239.97.151])
+  by orsmga007.jf.intel.com with ESMTP; 15 Dec 2021 21:59:43 -0800
+Received: from kbuild by 9f38c0981d9f with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1mxjnn-0002oY-IL; Thu, 16 Dec 2021 05:59:39 +0000
+Date:   Thu, 16 Dec 2021 13:58:55 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ aaa3a53c4b473a78e8cc8682c22030674d48fe5f
+Message-ID: <61bad59f.DvT915NBPrMwrPVN%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.16-rc5-43-g8dff5ac97bf3
-X-Kernelci-Report-Type: test
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing baseline: 88 runs,
- 1 regressions (v5.16-rc5-43-g8dff5ac97bf3)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 88 runs, 1 regressions (v5.16-rc5-43-g8dff5ac97bf3)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: aaa3a53c4b473a78e8cc8682c22030674d48fe5f  Merge branch 'acpi-tables' into bleeding-edge
 
-Regressions Summary
--------------------
+elapsed time: 728m
 
-platform                 | arch   | lab           | compiler | defconfig   =
-     | regressions
--------------------------+--------+---------------+----------+-------------=
------+------------
-minnowboard-turbot-E3826 | x86_64 | lab-collabora | gcc-10   | x86_64_defco=
-nfig | 1          =
+configs tested: 103
+configs skipped: 3
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.16-rc=
-5-43-g8dff5ac97bf3/plan/baseline/
+gcc tested configs:
+arm                              allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm64                               defconfig
+arm64                            allyesconfig
+powerpc                      pasemi_defconfig
+arm                          exynos_defconfig
+arm                          lpd270_defconfig
+powerpc                      cm5200_defconfig
+m68k                       m5275evb_defconfig
+arm                            dove_defconfig
+powerpc                        cell_defconfig
+m68k                        stmark2_defconfig
+sh                          lboxre2_defconfig
+m68k                        m5407c3_defconfig
+mips                           jazz_defconfig
+powerpc                     asp8347_defconfig
+m68k                        mvme147_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                         shannon_defconfig
+sh                          landisk_defconfig
+powerpc                    adder875_defconfig
+mips                      pic32mzda_defconfig
+arm                            mmp2_defconfig
+arm                  randconfig-c002-20211214
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+sparc                            allyesconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a001-20211214
+x86_64               randconfig-a002-20211214
+x86_64               randconfig-a003-20211214
+x86_64               randconfig-a004-20211214
+x86_64               randconfig-a006-20211214
+x86_64               randconfig-a005-20211214
+i386                 randconfig-a001-20211214
+i386                 randconfig-a002-20211214
+i386                 randconfig-a005-20211214
+i386                 randconfig-a003-20211214
+i386                 randconfig-a006-20211214
+i386                 randconfig-a004-20211214
+arc                  randconfig-r043-20211214
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                    rhel-8.3-kselftests
 
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.16-rc5-43-g8dff5ac97bf3
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      8dff5ac97bf3147fe5caf4c0f21592607ca08416 =
+clang tested configs:
+x86_64               randconfig-a011-20211214
+x86_64               randconfig-a014-20211214
+x86_64               randconfig-a012-20211214
+x86_64               randconfig-a013-20211214
+x86_64               randconfig-a016-20211214
+x86_64               randconfig-a015-20211214
+i386                 randconfig-a013-20211214
+i386                 randconfig-a011-20211214
+i386                 randconfig-a016-20211214
+i386                 randconfig-a014-20211214
+i386                 randconfig-a015-20211214
+i386                 randconfig-a012-20211214
+hexagon              randconfig-r045-20211214
+s390                 randconfig-r044-20211214
+riscv                randconfig-r042-20211214
+hexagon              randconfig-r041-20211214
 
-
-
-Test Regressions
----------------- =
-
-
-
-platform                 | arch   | lab           | compiler | defconfig   =
-     | regressions
--------------------------+--------+---------------+----------+-------------=
------+------------
-minnowboard-turbot-E3826 | x86_64 | lab-collabora | gcc-10   | x86_64_defco=
-nfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/61ba97de5da29f8e14397131
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: x86_64_defconfig
-  Compiler:    gcc-10 (gcc (Debian 10.2.1-6) 10.2.1 20210110)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.16-rc5-43-g8dff5=
-ac97bf3/x86_64/x86_64_defconfig/gcc-10/lab-collabora/baseline-minnowboard-t=
-urbot-E3826.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.16-rc5-43-g8dff5=
-ac97bf3/x86_64/x86_64_defconfig/gcc-10/lab-collabora/baseline-minnowboard-t=
-urbot-E3826.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/buildroo=
-t-baseline/20211210.0/x86/rootfs.cpio.gz =
-
-
-
-  * baseline.login: https://kernelci.org/test/case/id/61ba97de5da29f8e14397=
-132
-        new failure (last pass: thermal-5.16-rc5-48-gf1f42573b6f3) =
-
- =20
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
