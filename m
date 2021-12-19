@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 860DCC433EF
-	for <linux-pm@archiver.kernel.org>; Sun, 19 Dec 2021 16:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DF77C433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 19 Dec 2021 16:37:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236099AbhLSQhD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 19 Dec 2021 11:37:03 -0500
-Received: from mail-dm6nam11on2049.outbound.protection.outlook.com ([40.107.223.49]:52097
-        "EHLO NAM11-DM6-obe.outbound.protection.outlook.com"
+        id S236228AbhLSQhL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 19 Dec 2021 11:37:11 -0500
+Received: from mail-bn7nam10on2072.outbound.protection.outlook.com ([40.107.92.72]:43744
+        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S236249AbhLSQhC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 19 Dec 2021 11:37:02 -0500
+        id S233242AbhLSQhL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 19 Dec 2021 11:37:11 -0500
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=CpFUjKVf8kpxw0TRXzWqyvZa1x4TlgdPiEaOe8qW8R4lhKoCG6nJZ+UEGi+qEBPWHSfh1Q3O3R0Dim0+F1x8Uzkf63lEMNt5JlFNql/0VCRc7WpF4kzWMZOnPCIwV2vFs7xSgt89leLRp60TbEkEBCTbGER42GFXafRRjII0k0Av/2vXXp2c2O0GZANXzCpmKIJgn0ICq6I/TWrzYaO/Zep8ExYAlIG9JEpwkYqrVTqijEk2aApQuBoAxBt4xpMVy0jECp1g/nifoHAIaqHddJSq2wHkJVBzdNdYaKkv2qspkvfuIMmCLGxHlS/2Cqaawsilgk27dvRZrTjGFDPb8A==
+ b=SgRxyIV/BawkyROCGGvU3gMwYDthCJqMke0TNp2ytZSwqp04UC2XydO0WAOiwVBlePVzIOsVi7/yPEXHylKPwGbhA4RLOeYp0Fcxh2P0/P55MxbdkzYm+hjd8PmDU4fYUkVZEqBbSWptVUB1xCiNB+b5tKe78i5rBkNTGW3fvqEJIR75UcbRUl8y54mfFrdlI/lRz03pOrL7+qr7BTg7bVrF0P82CjjYjjkl8m9L08ll7VLOuRIoOQ7Tnz+R6b9kiY0y1TcDL2Ic7M97Ipr46eWai/VnOY0I3TbLM5dL4X5Ip0K73KlREiPe8/rC0BZhXUbc1EHo1JVEIDULMjKrXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=iw8lIw88TsUzNkCpch3PbhH3RZiBPX3LpCAnucPFsEc=;
- b=JVeOzTCVu2l34kOSWIV0IZzUTl+xISzXl+RDnPFMhM8aF45rWJxX/ddZZ6I5epcE0xS1Vt7WopdQBnIx084f1RrDgU8XKT3zmiLeiD2pBOD21OFo+EdZ1q4ZxHmQj2fhVkYSwLBeOlkoYHMcjLmSZMIhx/BLETvcWHYuRPgjBV0EEvQIeTdY6RGmKne68/isOzxTtkIKzKUpgsXzXvBVHv6t+jlAm2H4oBD2mJWsf+cfjQt4FD1Y6fa1YKU5mebaSX256ktJpgdSzHE3/imPjR/ngSHrlRjLLIEavXuYzrtBcqfs6/VfpOlG5N6iMagorwKLhudyym5nsURVpVaOvw==
+ bh=t/LfjMYioRuigC5rv4WSx+ehE7yjhQnxsEcC3qCNrDc=;
+ b=i3CNcPExjJG/3PFX4RmsB36GTyjnCtIKrLMyGZJ/pz9nZ+2cdrLUrNLCbRWPK7fV+rgxov97gks1QcKvw4W6BlCcUGrHx03k1TTotYrW7h4q69pWJYYuFe4vDwHSjIthYk0XZ9jbK8HD35hXGk7mYxOMLdefOPmaehNEt4bLwMN52EtWQ0cg5mNhj9uDQnN/Zq8CNYJfceLRaM79DlvOZKdHFe0CT5fH9qC4o4/famfWHURw169i7TpgjC2VfN7TXfFhsZt82E1kvyHua5InUZMHX56BhD+x3vMokKovy/HCWPId7YZdb6/Ap2jEWyNr2ATrHkItpDJdIEyHZKDyzA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=iw8lIw88TsUzNkCpch3PbhH3RZiBPX3LpCAnucPFsEc=;
- b=Re9WFMB/Trb27ehkXUYJzK/PytMjQHtxXm/d+2wFdY6fCNqmnFc4c5p2eiST6jZaWAUiNHvG5WAj6Yn2iIIDBuh2vQKXj+pvBCxYQKxZoh4VEtoRGpkVhVtM+uCas8mcQBPeCwFv+MwejEl+ZC8VUCtinEiPbMpBpy8XkxuJmrA=
-Received: from BN6PR17CA0058.namprd17.prod.outlook.com (2603:10b6:405:75::47)
- by DM6PR12MB4844.namprd12.prod.outlook.com (2603:10b6:5:1d0::16) with
+ bh=t/LfjMYioRuigC5rv4WSx+ehE7yjhQnxsEcC3qCNrDc=;
+ b=w+p/GMAtvdUf1Z1Nfj43JS97azgDCh6GKKS+VCOYeGGEHNuhHA7wEhuDoJYMvxTq9xvbtCl5aH5PgRSxWD9M0rJzOdeQiBONQbN2uxfxN8pHR3W2KE4xUtX6z/IFimo2lWEleWr63b4es/oKXiYEGlQbbIQ93GgDEncds2thu90=
+Received: from BN0PR04CA0041.namprd04.prod.outlook.com (2603:10b6:408:e8::16)
+ by DM6PR12MB4516.namprd12.prod.outlook.com (2603:10b6:5:2ac::20) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4801.20; Sun, 19 Dec
- 2021 16:36:58 +0000
-Received: from BN8NAM11FT032.eop-nam11.prod.protection.outlook.com
- (2603:10b6:405:75:cafe::25) by BN6PR17CA0058.outlook.office365.com
- (2603:10b6:405:75::47) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4801.14 via Frontend
- Transport; Sun, 19 Dec 2021 16:36:57 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4801.17; Sun, 19 Dec
+ 2021 16:37:04 +0000
+Received: from BN8NAM11FT020.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:e8:cafe::32) by BN0PR04CA0041.outlook.office365.com
+ (2603:10b6:408:e8::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4801.16 via Frontend
+ Transport; Sun, 19 Dec 2021 16:37:04 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -44,13 +44,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB03.amd.com;
 Received: from SATLEXMB03.amd.com (165.204.84.17) by
- BN8NAM11FT032.mail.protection.outlook.com (10.13.177.88) with Microsoft SMTP
+ BN8NAM11FT020.mail.protection.outlook.com (10.13.176.223) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4801.14 via Frontend Transport; Sun, 19 Dec 2021 16:36:57 +0000
+ 15.20.4801.14 via Frontend Transport; Sun, 19 Dec 2021 16:37:03 +0000
 Received: from hr-amd.amd.com (10.180.168.240) by SATLEXMB03.amd.com
  (10.181.40.144) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17; Sun, 19 Dec
- 2021 10:36:49 -0600
+ 2021 10:36:59 -0600
 From:   Huang Rui <ray.huang@amd.com>
 To:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -70,9 +70,9 @@ CC:     Deepak Sharma <deepak.sharma@amd.com>,
         Xiaojian Du <Xiaojian.Du@amd.com>,
         <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
         Huang Rui <ray.huang@amd.com>
-Subject: [PATCH v6 12/14] cpufreq: amd-pstate: add AMD P-State performance attributes
-Date:   Mon, 20 Dec 2021 00:35:26 +0800
-Message-ID: <20211219163528.1023186-13-ray.huang@amd.com>
+Subject: [PATCH v6 14/14] MAINTAINERS: add AMD P-State driver maintainer entry
+Date:   Mon, 20 Dec 2021 00:35:28 +0800
+Message-ID: <20211219163528.1023186-15-ray.huang@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20211219163528.1023186-1-ray.huang@amd.com>
 References: <20211219163528.1023186-1-ray.huang@amd.com>
@@ -84,72 +84,55 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB03.amd.com
  (10.181.40.144)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9976c41b-c32f-4365-932b-08d9c30dc655
-X-MS-TrafficTypeDiagnostic: DM6PR12MB4844:EE_
-X-Microsoft-Antispam-PRVS: <DM6PR12MB4844467ADB5EC7E1220AF3FBEC7A9@DM6PR12MB4844.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:3513;
+X-MS-Office365-Filtering-Correlation-Id: 5b910686-adf5-432a-6b5d-08d9c30dc9e1
+X-MS-TrafficTypeDiagnostic: DM6PR12MB4516:EE_
+X-Microsoft-Antispam-PRVS: <DM6PR12MB4516010D0FCD979D5A189F84EC7A9@DM6PR12MB4516.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:3968;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: hlmK5qFxpMueLgDWAa6clBimsj2v+TruJekMdAtHZRMWTlKGGv8NMIl7ShRzwtn60dZMXJZxU5xeFN0TRviw+b1k+jO5Jrrv4TzeCnSg28jg9QLe+7R0ry0uQ+0d6ecoFTYTN6GF6DzU+KJtOWbWMaajZqzrILpBbwRKVCasLi6C2bVIuZFQXqHWrwOU9apKevLQ6vmri0B5W1KTnXDXKtInIuMaOo0ggHMQRD7gZPkhegr6wy1WgiLN9QesZ0pr2Q+kUPqnRhCqrhVe0vZUpm3HZ6ByXTbOWCBRsaqW+txQBQDpRfMuUkqd/ayY4dyw9vjb2QUfP9+hK/jfkkO910Z9cqr+Kcw11vKnkNJauhi5+hRJMX09Z0j43xz6vKSA3HhW0m0i4kjMZ1vU0mySAUrHLZUHAhhOWKQGFDeiGodJkaxl3YQWN9KisEaL0m5cy2Gt4dkhsoqeGBbrb1ZeRUATtep+jo0/SuzvX8TX6jPksvt2Yeao1df37vXwzTOUyeHsnFZl/vOXPAjj4K0cghUBbnj//zalo3hEJfgEkypqAtjJVTxscGWF50ALpgbtV7zxnh9YD5GHRSjJM8FUNC+Neq4OTYN2bomeHl54zI9OVCijrjTTpLI5iPZNAl6RkfriIyMlvnxOVJnmnP3YsYoCi43Pyi+ylGSYVRtTGbrVBl15SNL4rFABKaZsD53adnR6+hDzRvh34fFF6UgRMoB7GeEhdmv7O8ZSxyZQ37U1+zGrHRderNpOkBtg9Q/8OW2IqkJRctPBI1s13hlL+N7/rtIWZzDJzEkbzACNIlc=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB03.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(46966006)(36840700001)(40470700001)(8936002)(81166007)(36860700001)(110136005)(54906003)(7696005)(356005)(8676002)(1076003)(6666004)(70206006)(2906002)(7416002)(426003)(86362001)(16526019)(47076005)(336012)(70586007)(508600001)(5660300002)(186003)(26005)(36756003)(4326008)(2616005)(82310400004)(83380400001)(40460700001)(316002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: msZLZJdgT2VA9K8OU4KVxiQgWMBES1otf4jccY11RdkhN7NUABhNPf188D25fkjs1kBCUKfDW3oFcpg2ADzO/zjbLO2M7RdPO/XOfLAwAN2RLGjEvcSb/Q/Z26l5mMaWvIboHhjsXBWniwgpXsRv20zcOzax2oGFgx+lqWD5Sny9HBMEcLnYMqoGEJOdjYkf4h2iwGPmBMTB34aKnoOC/vDjhNT/m3OW10CGGWO5wdkxbIVACvhmTx9U4lxVk2UTeLLxrdCR04V+VBO3UNXuVzL9NCotNw8kKXlc13ikdqNp7wHAZk0LGtm+BnlvRcSDKIY8qlKLWWThrzjyWIEwBUpAmRLcJ25oBBqlIircqefT0JEtbxloA42UJwIMqxzhfT4E0wnfFbNEYIC+tFmlzsem68peQVPFz4jmImOGU5flWsno2sIzDDOr+KGE/k9UPSKW6Ddf7HB7qMr+U/YCV/6OZ9f5l4EeesqUn2eLMHGUwDWNpKa6GUTmXlEMgNxHRN461vv0zyYKy26bf19ygF7EwEkfy+q3dKfn55kBm8eqdxr05GfEgr36WLLaQJ2qquzPr0euCOw7TiEbJoWnBMZhflUcbbz7IUZ/eZgH7RLnim+MdISgBC0u9fI1jUMMrHF18jVZEHsVSB4zTqLTiBeXQY352yKA547wO79WIQQ/Ntdn7+M39Q1OaLYc5JB+XK4wK1k7i2z2frsf9Z4dsYEORatYB24iM7Aj27eBtwYFQWSd96zGXmZNgQYCtxHdR90YsxdYS6a57CuWbNEOzb7soX2AEZj0SAw2Igqr5so=
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB03.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(46966006)(36840700001)(40470700001)(8676002)(16526019)(966005)(356005)(83380400001)(26005)(8936002)(508600001)(4326008)(336012)(110136005)(54906003)(36756003)(70206006)(5660300002)(81166007)(70586007)(7696005)(426003)(36860700001)(2616005)(86362001)(4744005)(2906002)(316002)(7416002)(186003)(82310400004)(40460700001)(6666004)(47076005)(1076003)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Dec 2021 16:36:57.8699
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Dec 2021 16:37:03.8151
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9976c41b-c32f-4365-932b-08d9c30dc655
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5b910686-adf5-432a-6b5d-08d9c30dc9e1
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB03.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT032.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT020.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4844
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4516
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce sysfs attributes to get the different level AMD P-State
-performances.
+I will continue to add new feature and processor support, optimize the
+performance, and handle the issues for AMD P-State driver.
 
 Signed-off-by: Huang Rui <ray.huang@amd.com>
 ---
- drivers/cpufreq/amd-pstate.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index dd8c0e894532..2471a311fb4d 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -546,12 +546,30 @@ static ssize_t show_amd_pstate_lowest_nonlinear_freq(struct cpufreq_policy *poli
- 	return sprintf(&buf[0], "%u\n", freq);
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fe347675fb5c..8e0666a552df 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -975,6 +975,13 @@ S:	Supported
+ T:	git https://gitlab.freedesktop.org/agd5f/linux.git
+ F:	drivers/gpu/drm/amd/pm/
  
-+/*
-+ * In some of ASICs, the highest_perf is not the one in the _CPC table, so we
-+ * need to expose it to sysfs.
-+ */
-+static ssize_t show_amd_pstate_highest_perf(struct cpufreq_policy *policy,
-+					    char *buf)
-+{
-+	u32 perf;
-+	struct amd_cpudata *cpudata = policy->driver_data;
++AMD PSTATE DRIVER
++M:	Huang Rui <ray.huang@amd.com>
++L:	linux-pm@vger.kernel.org
++S:	Supported
++F:	Documentation/admin-guide/pm/amd-pstate.rst
++F:	drivers/cpufreq/amd-pstate*
 +
-+	perf = READ_ONCE(cpudata->highest_perf);
-+
-+	return sprintf(&buf[0], "%u\n", perf);
-+}
-+
- cpufreq_freq_attr_ro(amd_pstate_max_freq);
- cpufreq_freq_attr_ro(amd_pstate_lowest_nonlinear_freq);
- 
-+cpufreq_freq_attr_ro(amd_pstate_highest_perf);
-+
- static struct freq_attr *amd_pstate_attr[] = {
- 	&amd_pstate_max_freq,
- 	&amd_pstate_lowest_nonlinear_freq,
-+	&amd_pstate_highest_perf,
- 	NULL,
- };
- 
+ AMD PTDMA DRIVER
+ M:	Sanjay R Mehta <sanju.mehta@amd.com>
+ L:	dmaengine@vger.kernel.org
 -- 
 2.25.1
 
