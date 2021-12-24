@@ -2,125 +2,84 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 462A7C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 07:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A57C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 08:19:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351815AbhLXHdx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Dec 2021 02:33:53 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:54478 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1351813AbhLXHdx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 02:33:53 -0500
-X-UUID: 642cc6016aae4d9092443f83fa7722ca-20211224
-X-UUID: 642cc6016aae4d9092443f83fa7722ca-20211224
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1548116192; Fri, 24 Dec 2021 15:33:48 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 24 Dec 2021 15:33:48 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 24 Dec 2021 15:33:47 +0800
-Message-ID: <a5c9133e2bc856f8f9cbf6c70bc5196bce61639e.camel@mediatek.com>
-Subject: Re: [PATCH v16 2/7] arm64: dts: mt8183: add svs device information
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 24 Dec 2021 15:33:47 +0800
-In-Reply-To: <70e71210-6d17-92e3-4e3f-01b83380be42@collabora.com>
-References: <20210428065440.3704-1-roger.lu@mediatek.com>
-         <20210428065440.3704-3-roger.lu@mediatek.com>
-         <70e71210-6d17-92e3-4e3f-01b83380be42@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        id S1351926AbhLXITi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Dec 2021 03:19:38 -0500
+Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:48406
+        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S235362AbhLXITh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 03:19:37 -0500
+Received: from HP-EliteBook-840-G7.. (223-136-216-233.emome-ip.hinet.net [223.136.216.233])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 3BD0E3F15D;
+        Fri, 24 Dec 2021 08:19:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1640333975;
+        bh=z4d47WAXt8lxW9JLIGaWJ2E54ayVDgeNLwPy3mvdFmU=;
+        h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+         MIME-Version;
+        b=bO4g8OXXisCbls7zT3GAgwL17didHBsIG3yQH9V2eMWeilwCdcyqTw4tqwtHESqTV
+         j4JsVeCzA8IlK8s1I3+VGpT063+g+joJt3ASp6JuMwpYL/+9j9f14J5WlrUdcR8Muq
+         R2spST8IS0WNFYF/i6CWom4+7W4rAyXd7ACdjjsLh1AeiH76ekYdS8ZfAQimWKRuDX
+         nr9uJJF0Jg1J9F5SYJiaJsqfiLIdAPkXtYBEaL8A/TAY8FGbsiAWZwejvREYwoOS48
+         /Vh9/L3SvIkzV09pEDse5og2QVPC9apG56GfOXunmWZqHw4/O/BCWz8G266zqif3XE
+         YJBArwUb3WJGQ==
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+To:     m.chetan.kumar@intel.com, linuxwwan@intel.com
+Cc:     linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Loic Poulain <loic.poulain@linaro.org>,
+        Sergey Ryazanov <ryazanov.s.a@gmail.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] net: wwan: iosm: Keep device at D0 for s2idle case
+Date:   Fri, 24 Dec 2021 16:19:14 +0800
+Message-Id: <20211224081914.345292-2-kai.heng.feng@canonical.com>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <20211224081914.345292-1-kai.heng.feng@canonical.com>
+References: <20211224081914.345292-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi AngeloGioacchino,
+We are seeing spurious wakeup caused by Intel 7560 WWAN on AMD laptops.
+This prevent those laptops to stay in s2idle state.
 
-Sorry for the late reply. 
+From what I can understand, the intention of ipc_pcie_suspend() is to
+put the device to D3cold, and ipc_pcie_suspend_s2idle() is to keep the
+device at D0. However, the device can still be put to D3hot/D3cold by
+PCI core.
 
-On Wed, 2021-10-20 at 17:20 +0200, AngeloGioacchino Del Regno wrote:
-> Il 28/04/21 08:54, Roger Lu ha scritto:
-> > add compitable/reg/irq/clock/efuse setting in svs node
-> > 
-> > Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> > ---
-> >   arch/arm64/boot/dts/mediatek/mt8183.dtsi | 18 ++++++++++++++++++
-> >   1 file changed, 18 insertions(+)
-> > 
-> > diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > index 80519a145f13..441d617ece43 100644
-> > --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > @@ -657,6 +657,18 @@
-> >   			status = "disabled";
-> >   		};
-> >   
-> > +		svs: svs@1100b000 {
-> > +			compatible = "mediatek,mt8183-svs";
-> > +			reg = <0 0x1100b000 0 0x1000>;
-> > +			interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
-> > +			clocks = <&infracfg CLK_INFRA_THERM>;
-> > +			clock-names = "main";
-> > +			nvmem-cells = <&svs_calibration>,
-> > +				      <&thermal_calibration>;
-> > +			nvmem-cell-names = "svs-calibration-data",
-> > +					   "t-calibration-data";
-> > +		};
-> > +
-> >   		pwm0: pwm@1100e000 {
-> >   			compatible = "mediatek,mt8183-disp-pwm";
-> >   			reg = <0 0x1100e000 0 0x1000>;
-> > @@ -941,9 +953,15 @@
-> >   			reg = <0 0x11f10000 0 0x1000>;
-> >   			#address-cells = <1>;
-> >   			#size-cells = <1>;
-> > +			thermal_calibration: calib@180 {
-> > +				reg = <0x180 0xc>;
-> > +			};
-> >   			mipi_tx_calibration: calib@190 {
-> >   				reg = <0x190 0xc>;
-> >   			};
-> > +			svs_calibration: calib@580 {
-> > +				reg = <0x580 0x64>;
-> > +			};
-> >   		};
-> >   
-> >   		u3phy: usb-phy@11f40000 {
-> > 
-> 
-> This patch doesn't apply on the latest linux-next due to some new commits in
-> mt8183.dtsi, can you please rebase?
+So explicitly let PCI core know this device should stay at D0, to solve
+the spurious wakeup.
 
-Okay. I'll rebase it.
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/net/wwan/iosm/iosm_ipc_pcie.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-> Thanks,
-> - Angelo
+diff --git a/drivers/net/wwan/iosm/iosm_ipc_pcie.c b/drivers/net/wwan/iosm/iosm_ipc_pcie.c
+index d73894e2a84ed..af1d0e837fe99 100644
+--- a/drivers/net/wwan/iosm/iosm_ipc_pcie.c
++++ b/drivers/net/wwan/iosm/iosm_ipc_pcie.c
+@@ -340,6 +340,9 @@ static int __maybe_unused ipc_pcie_suspend_s2idle(struct iosm_pcie *ipc_pcie)
+ 
+ 	ipc_imem_pm_s2idle_sleep(ipc_pcie->imem, true);
+ 
++	/* Let PCI core know this device should stay at D0 */
++	pci_save_state(ipc_pcie->pci);
++
+ 	return 0;
+ }
+ 
+-- 
+2.33.1
 
