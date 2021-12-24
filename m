@@ -2,173 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1D30C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 09:42:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 649F1C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 10:39:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343929AbhLXJmd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Dec 2021 04:42:33 -0500
-Received: from mailgw02.mediatek.com ([210.61.82.184]:56246 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S241614AbhLXJmb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 04:42:31 -0500
-X-UUID: 6bdba6bd9965437d9f088d8dafb4cdaa-20211224
-X-UUID: 6bdba6bd9965437d9f088d8dafb4cdaa-20211224
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 2018012810; Fri, 24 Dec 2021 17:42:27 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 24 Dec 2021 17:42:25 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 24 Dec 2021 17:42:25 +0800
-Message-ID: <60ecf997de03e7426e0e54fc3eb937f95902419c.camel@mediatek.com>
-Subject: Re: [PATCH v16 6/7] arm64: dts: mt8192: add svs device information
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        YT Lee <yt.lee@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Fri, 24 Dec 2021 17:42:25 +0800
-In-Reply-To: <855e004b-b128-70f7-b1d2-9fe957c94e08@somainline.org>
-References: <20210428065440.3704-1-roger.lu@mediatek.com>
-         <20210428065440.3704-7-roger.lu@mediatek.com>
-         <855e004b-b128-70f7-b1d2-9fe957c94e08@somainline.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        id S1352464AbhLXKjx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Dec 2021 05:39:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58550 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1352463AbhLXKjv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 05:39:51 -0500
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7102FC061401;
+        Fri, 24 Dec 2021 02:39:50 -0800 (PST)
+Received: by mail-wr1-x42a.google.com with SMTP id q16so16781974wrg.7;
+        Fri, 24 Dec 2021 02:39:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=2VTxUkTc3HIQTt7B5afXBlxj2AMRCOqLliY7kCfqs+g=;
+        b=TY8fPk9FgTNlJHDIcebaugpRo5I0q9FMiENQTQWqB17aWt79q7UC0cM1ZjTYbhKSPF
+         LpE/SUo7idU0uph7hmplrTa1q6IjbyVE8DNUmP7mPXjPK5/i8/ZVYmJFRAFd/NPDq4pi
+         lOguRr+cIp5aVpzo1+Iq2LU663Il2A0qeJ+k0Iq2r7AIbwjugWbxrWej5YbkVvmhRaZr
+         jBKdCVFsyTvWD/PBWCDphaMWXAsoFf/cgehiAo1gFXNgYaZSNk1aJttQFvCLPQAu7yno
+         sp4bH/zOHo6lYEDnjVhs5ZEd1eSw7Wllw1/+0Kk1h2OBh1xC0JNLIt+ikjgCVnKVEgvO
+         XAlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=2VTxUkTc3HIQTt7B5afXBlxj2AMRCOqLliY7kCfqs+g=;
+        b=7DDWsrIOnwR/Evfks3BLLHofJmlBVU29QCLrGk/hUJESImjqVwU93SUHqOuu2NW7K4
+         /lbvD2WT7kzbXAiI3kkQPVcLVtu+eNnUlh2QIuX2+Em5sOTKhMq/hQC6AvehDZW7gjRX
+         N/E+XMfydDM1cOS/lYCbdRO2oNZPwVp967vzALp2TRYNBWkv6we8PFgx3PH0V6EhWqdB
+         /dlIIPFZZrQzrM07gyvCgQO42b8HzEHkD8idkk20+qWcVeVYHdi4BmHTXfMemPUw+Uvc
+         mBdTzyEr6irL8rqBomPdxKSnZ4XTxF8YKYfhoHeZm5Ox9t6nPg+k3hSvSSoLPwSeKgjS
+         Ihgg==
+X-Gm-Message-State: AOAM532KdLPdIw+ZPb7iPe4O9qmjjhrHbpty7Cxspq+x8OJETCOAvNrk
+        2FO/KOjq/iHO7PGMJfpMwl0VjXvjAHY=
+X-Google-Smtp-Source: ABdhPJz3RFPIcD9zZR5XM7WTKZdOQf0O5QBhZYYNZSuf436szRc8z8XGyzMI++WawKKKE/fx7Sov4w==
+X-Received: by 2002:a5d:4588:: with SMTP id p8mr4350655wrq.106.1640342389019;
+        Fri, 24 Dec 2021 02:39:49 -0800 (PST)
+Received: from fedora.domain.name ([95.70.245.16])
+        by smtp.googlemail.com with ESMTPSA id f6sm11785353wmq.6.2021.12.24.02.39.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Dec 2021 02:39:48 -0800 (PST)
+From:   Onur Ozkan <onurozkan.dev@gmail.com>
+X-Google-Original-From: Onur Ozkan <work@onurozkan.dev>
+To:     trenn@suse.com
+Cc:     shuah@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Onur Ozkan <work@onurozkan.dev>
+Subject: [PATCH v2] tools/power/cpupower/{ToDo => TODO}: Rename the todo file
+Date:   Fri, 24 Dec 2021 13:39:28 +0300
+Message-Id: <20211224103928.29480-1-work@onurozkan.dev>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi AngeloGioacchino,
+Renamed the to-do file to 'TODO' instead of 'ToDo' to
+comply with the naming standard.
 
-Sorry for the late reply.
+Here are the all other todo file references in kernel source code:
+    drivers/accessibility/speakup/TODO
+    drivers/bcma/TODO
+    drivers/comedi/TODO
+    drivers/dma/TODO
+    drivers/gpio/TODO
+    drivers/gpu/drm/amd/display/TODO
+    drivers/gpu/drm/i915/TODO.txt
+    drivers/gpu/drm/omapdrm/TODO
+    drivers/gpu/drm/panfrost/TODO
+    drivers/iio/TODO
+    drivers/leds/TODO
+    drivers/parport/TODO-parport
+    drivers/pci/hotplug/TODO
+    drivers/staging/android/TODO
+    drivers/staging/board/TODO
+    drivers/staging/clocking-wizard/TODO
+    drivers/staging/emxx_udc/TODO
+    drivers/staging/fbtft/TODO
+    drivers/staging/fieldbus/TODO
+    drivers/staging/fwserial/TODO
+    drivers/staging/gdm724x/TODO
+    drivers/staging/greybus/TODO
+    drivers/staging/gs_fpgaboot/TODO
+    drivers/staging/iio/TODO
+    drivers/staging/ks7010/TODO
+    drivers/staging/media/atomisp/TODO
+    drivers/staging/media/av7110/TODO
+    drivers/staging/media/hantro/TODO
+    drivers/staging/media/imx/TODO
+    drivers/staging/media/ipu3/TODO
+    drivers/staging/media/meson/vdec/TODO
+    drivers/staging/media/omap4iss/TODO
+    drivers/staging/media/rkvdec/TODO
+    drivers/staging/media/sunxi/cedrus/TODO
+    drivers/staging/media/tegra-vde/TODO
+    drivers/staging/media/tegra-video/TODO
+    drivers/staging/media/zoran/TODO
+    drivers/staging/most/TODO
+    drivers/staging/mt7621-dma/TODO
+    drivers/staging/mt7621-dts/TODO
+    drivers/staging/nvec/TODO
+    drivers/staging/octeon-usb/TODO
+    drivers/staging/octeon/TODO
+    drivers/staging/olpc_dcon/TODO
+    drivers/staging/pi433/TODO
+    drivers/staging/qlge/TODO
+    drivers/staging/r8188eu/TODO
+    drivers/staging/rtl8192e/TODO
+    drivers/staging/rtl8712/TODO
+    drivers/staging/rtl8723bs/TODO
+    drivers/staging/rts5208/TODO
+    drivers/staging/sm750fb/TODO
+    drivers/staging/unisys/TODO
+    drivers/staging/vc04_services/bcm2835-audio/TODO
+    drivers/staging/vc04_services/bcm2835-camera/TODO
+    drivers/staging/vc04_services/interface/TODO
+    drivers/staging/vt6655/TODO
+    drivers/staging/vt6656/TODO
+    drivers/staging/wfx/TODO
+    drivers/thermal/ti-soc-thermal/TODO
+    tools/testing/selftests/arm64/fp/TODO
+    tools/testing/selftests/arm64/signal/testcases/TODO
+    tools/testing/selftests/tc-testing/TODO.txt
 
-On Wed, 2021-10-20 at 17:16 +0200, AngeloGioacchino Del Regno wrote:
-> Il 28/04/21 08:54, Roger Lu ha scritto:
-> > add compitable/reg/irq/clock/efuse/reset setting in svs node
-> > 
-> > Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> > ---
-> >   arch/arm64/boot/dts/mediatek/mt8192.dtsi | 34 ++++++++++++++++++++++++
-> >   1 file changed, 34 insertions(+)
-> > 
-> 
-> Hello Roger,
-> thanks for this series! However, there is an issue with this patch:
-> 
-> > diff --git a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-> > b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-> > index fe24cc66ff7a..e9816a56d87b 100644
-> > --- a/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-> > +++ b/arch/arm64/boot/dts/mediatek/mt8192.dtsi
-> > @@ -270,6 +270,14 @@
-> >   			compatible = "mediatek,mt8192-infracfg", "syscon";
-> >   			reg = <0 0x10001000 0 0x1000>;
-> >   			#clock-cells = <1>;
-> > +
-> > +			infracfg_rst: reset-controller {
-> > +				compatible = "mediatek,infra-reset", "ti,syscon-
-> > reset";
-> > +				#reset-cells = <1>;
-> > +				ti,reset-bits = <
-> > +					0x150 5 0x154 5 0 0     (ASSERT_SET |
-> > DEASSERT_SET | STATUS_NONE) /* 0: svs */
-> 
-> You are using macros here, which are defined in dt-bindings/reset/ti-syscon.h
-> hovever, you are not including this header in this devicetree, so it's not
-> compiling.
-> 
-> Please fix it.
+Signed-off-by: Onur Ozkan <work@onurozkan.dev>
+---
+ tools/power/cpupower/ToDo | 24 ------------------------
+ 1 file changed, 24 deletions(-)
+ delete mode 100644 tools/power/cpupower/ToDo
 
-Sure, I'll fix it. Thanks for the heads-up.
-
-> 
-> > +				>;
-> > +			};
-> >   		};
-> >   
-> >   		pericfg: syscon@10003000 {
-> > @@ -564,6 +572,20 @@
-> >   			status = "disabled";
-> >   		};
-> >   
-> > +		svs: svs@1100b000 {
-> > +			compatible = "mediatek,mt8192-svs";
-> > +			reg = <0 0x1100b000 0 0x1000>;
-> > +			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH 0>;
-> > +			clocks = <&infracfg CLK_INFRA_THERM>;
-> > +			clock-names = "main";
-> > +			nvmem-cells = <&svs_calibration>,
-> > +				      <&lvts_e_data1>;
-> > +			nvmem-cell-names = "svs-calibration-data",
-> > +					   "t-calibration-data";
-> > +			resets = <&infracfg_rst 0>;
-> > +			reset-names = "svs_rst";
-> > +		};
-> > +
-> >   		spi1: spi@11010000 {
-> >   			compatible = "mediatek,mt8192-spi",
-> >   				     "mediatek,mt6765-spi";
-> > @@ -681,6 +703,18 @@
-> >   			#clock-cells = <1>;
-> >   		};
-> >   
-> > +		efuse: efuse@11c10000 {
-> > +			compatible = "mediatek,efuse";
-> > +			reg = <0 0x11c10000 0 0x1000>;
-> > +
-> 
-> arch/arm64/boot/dts/mediatek/mt8192.dtsi:510.5-24: Warning (reg_format): 
-> /soc/efuse@11c10000/data1:reg: property has invalid length (8 bytes) 
-> (#address-cells == 2, #size-cells == 1)
-> 
-> arch/arm64/boot/dts/mediatek/mt8192.dtsi:513.5-24: Warning (reg_format): 
-> /soc/efuse@11c10000/calib@580:reg: property has invalid length (8 bytes) 
-> (#address-cells == 2, #size-cells == 1)
-> 
-> 
-> In short, you should add here:
-> 			#address-cells = <1>;
-> 			#size-cells = <1>;
-
-Thanks for the example code and I will add them in the latest patch.
-
-> 
-> > +			lvts_e_data1: data1 {
-> > +				reg = <0x1C0 0x58>;
-> > +			};
-> > +			svs_calibration: calib@580 {
-> > +				reg = <0x580 0x68>;
-> > +			};
-> > +		};
-> > +
-> >   		i2c3: i2c3@11cb0000 {
-> >   			compatible = "mediatek,mt8192-i2c";
-> >   			reg = <0 0x11cb0000 0 0x1000>,
-> > 
-> 
-> Regards,
-> - Angelo
+diff --git a/tools/power/cpupower/ToDo b/tools/power/cpupower/ToDo
+deleted file mode 100644
+index b196a139a3e4..000000000000
+--- a/tools/power/cpupower/ToDo
++++ /dev/null
+@@ -1,24 +0,0 @@
+-ToDos sorted by priority:
+-
+-- Use bitmask functions to parse CPU topology more robust
+-  (current implementation has issues on AMD)
+-- Try to read out boost states and frequencies on Intel
+-- Somewhere saw the ability to read power consumption of
+-  RAM from HW on Intel SandyBridge -> another monitor?
+-- Add another c1e debug idle monitor
+-  -> Is by design racy with BIOS, but could be added
+-     with a --force option and some "be careful" messages
+-- Add cpu_start()/cpu_stop() callbacks for monitor
+-  -> This is to move the per_cpu logic from inside the
+-     monitor to outside it. This can be given higher
+-     priority in fork_it.
+-- Fork as many processes as there are CPUs in case the
+-  per_cpu_schedule flag is set.
+-  -> Bind forked process to each cpu.
+-  -> Execute start measures via the forked processes on
+-     each cpu.
+-  -> Run test executable in a forked process.
+-  -> Execute stop measures via the forked processes on
+-     each cpu.
+-  This would be ideal as it will not introduce noise in the
+-  tested executable.
+-- 
+2.33.1
 
