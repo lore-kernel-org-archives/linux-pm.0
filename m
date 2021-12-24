@@ -2,120 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9E8FC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 11:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9587C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Dec 2021 19:47:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229436AbhLXLI5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Dec 2021 06:08:57 -0500
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:43469
-        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230375AbhLXLI4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 06:08:56 -0500
-IronPort-Data: =?us-ascii?q?A9a23=3A1Pb2SajOnN4kMFK2d+OiLfL1X161dxEKZh0ujC4?=
- =?us-ascii?q?5NGQNrF6WrkUHzzcbXDzSP/aINGL8L9t0aNy+9xxUv8TWz4RmGgppr3w8FHgiR?=
- =?us-ascii?q?ejtVY3IdB+oV8+xBpSeFxw/t512huEtnanYd1eEzvuWGuWn/SkUOZ2gHOKmUbe?=
- =?us-ascii?q?eYHwpH2eIdQ964f5ds79g6mJXqYjha++9kYuaT/z3YDdJ6RYsWo4nw/7rRCdUg?=
- =?us-ascii?q?RjHkGhwUmrSyhx8lAS2e3E9VPrzLEwqRpfyatE88uWSH44vwFwll1418SvBCvv?=
- =?us-ascii?q?9+lr6Wk0DTqTTMA7mZnh+C/Xk3EgE/3ZrlP9kb5Lwam8O49mNt9JszNRE85i5V?=
- =?us-ascii?q?g4tOoXNnv4cWl9WCUmSOIUXpeCceifXXcu7iheun2HX6+9nAkg7OaUb9/xxDGU?=
- =?us-ascii?q?I8uYXQBgGcwqZgOC72r+pYvNtnck+NI/tMZ93kmp6zDfYE/89B4jKRanQ+MFR0?=
- =?us-ascii?q?D4YgsFIAOaYZswFZD4pZxPFCzVLN1EdIJEzhuGlgj/4aTIwgEyUv6cs4y7Q0Ql?=
- =?us-ascii?q?4ypDpMdzcYNvMQt9a9m6cp2Tb7yHhBzkEO9GFjzmI6HShgqnIhyyTcIYTEqCos?=
- =?us-ascii?q?/1nmluewkQNBxAME1i2u/+0jgi5Qd03A0kV/CUphbI/+EyiUp/2WBjQiGaJohM?=
- =?us-ascii?q?GSfJRFeMg4Q2Aw6aS5ByWbkAGUyRALtgrsMs3bSYn2l+Ag5XiAjkHmKOUT3mQ8?=
- =?us-ascii?q?KvSoi6zJTQSMUcGZCkNVwxD5MPsyLzfJDqnos1LSfHuyISvQHeuk3ba8W4kiqt?=
- =?us-ascii?q?VlsARkaO24Tj6b/uXjsChZmYICs//BwpJNj9EWbM=3D?=
-IronPort-HdrOrdr: =?us-ascii?q?A9a23=3AQneXvqFKfBizBN2dpLqEiceALOsnbusQ8zAX?=
- =?us-ascii?q?PiFKJyC9Hfb5qynDpoV56faWslkssQ8b+OxoUZPoKRi3yXcf2+Us1NmZMTXbhA?=
- =?us-ascii?q?=3D=3D?=
-X-IronPort-AV: E=Sophos;i="5.88,232,1635199200"; 
-   d="scan'208";a="957337"
-Received: from 173.121.68.85.rev.sfr.net (HELO hadrien) ([85.68.121.173])
-  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 24 Dec 2021 12:08:54 +0100
-Date:   Fri, 24 Dec 2021 12:08:53 +0100 (CET)
-From:   Julia Lawall <julia.lawall@inria.fr>
-X-X-Sender: jll@hadrien
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-cc:     Francisco Jerez <currojerez@riseup.net>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: cpufreq: intel_pstate: map utilization into the pstate range
-In-Reply-To: <CAJZ5v0jyusD4r1eK_hv8CXuaoOXZ6gY8TVdomW5q75dS3wNq5A@mail.gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2112241207410.3217@hadrien>
-References: <alpine.DEB.2.22.394.2112132215060.215073@hadrien> <CAJZ5v0iBU8gw8+-5nxj2cKzf7tyN=p3Adcm4Z5bn=oVYhU28bQ@mail.gmail.com> <alpine.DEB.2.22.394.2112172022100.2968@hadrien> <87r1abt1d2.fsf@riseup.net> <alpine.DEB.2.22.394.2112172258480.2968@hadrien>
- <87fsqqu6by.fsf@riseup.net> <alpine.DEB.2.22.394.2112180654470.3139@hadrien> <878rwitdu3.fsf@riseup.net> <alpine.DEB.2.22.394.2112181138210.3130@hadrien> <871r29tvdj.fsf@riseup.net> <alpine.DEB.2.22.394.2112190734070.3181@hadrien> <87wnk0s0tf.fsf@riseup.net>
- <CAJZ5v0i7gBtm6x+zUUzhxXjmYhPwr=JxvOuMZ0aD9qxnjE9YKw@mail.gmail.com> <878rwdse9o.fsf@riseup.net> <CAJZ5v0jyusD4r1eK_hv8CXuaoOXZ6gY8TVdomW5q75dS3wNq5A@mail.gmail.com>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        id S1344257AbhLXTrT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Dec 2021 14:47:19 -0500
+Received: from relmlor2.renesas.com ([210.160.252.172]:20871 "EHLO
+        relmlie6.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S239476AbhLXTrT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Dec 2021 14:47:19 -0500
+X-IronPort-AV: E=Sophos;i="5.88,233,1635174000"; 
+   d="scan'208";a="105122633"
+Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
+  by relmlie6.idc.renesas.com with ESMTP; 25 Dec 2021 04:47:17 +0900
+Received: from localhost.localdomain (unknown [10.226.36.204])
+        by relmlir5.idc.renesas.com (Postfix) with ESMTP id 7058A40078A8;
+        Sat, 25 Dec 2021 04:47:15 +0900 (JST)
+From:   Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+To:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
+        Prabhakar <prabhakar.csengg@gmail.com>,
+        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH v2] thermal: rcar_thermal: Use platform_get_irq_optional() to get the interrupt
+Date:   Fri, 24 Dec 2021 19:46:48 +0000
+Message-Id: <20211224194649.22328-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+platform_get_resource(pdev, IORESOURCE_IRQ, ..) relies on static
+allocation of IRQ resources in DT core code, this causes an issue
+when using hierarchical interrupt domains using "interrupts" property
+in the node as this bypasses the hierarchical setup and messes up the
+irq chaining.
 
+In preparation for removal of static setup of IRQ resource from DT core
+code use platform_get_irq_optional().
 
-On Wed, 22 Dec 2021, Rafael J. Wysocki wrote:
+This patch break's the for loop if there are no more interrupts instead
+of continuing as done in previous code.
 
-> On Wed, Dec 22, 2021 at 12:57 AM Francisco Jerez <currojerez@riseup.net> wrote:
-> >
-> > "Rafael J. Wysocki" <rafael@kernel.org> writes:
-> >
-> > > On Sun, Dec 19, 2021 at 11:10 PM Francisco Jerez <currojerez@riseup.net> wrote:
-> > >>
-> > >> Julia Lawall <julia.lawall@inria.fr> writes:
-> > >>
-> > >> > On Sat, 18 Dec 2021, Francisco Jerez wrote:
-> > >
-> > > [cut]
-> > >
-> > >> > I did some experiements with forcing different frequencies.  I haven't
-> > >> > finished processing the results, but I notice that as the frequency goes
-> > >> > up, the utilization (specifically the value of
-> > >> > map_util_perf(sg_cpu->util) at the point of the call to
-> > >> > cpufreq_driver_adjust_perf in sugov_update_single_perf) goes up as well.
-> > >> > Is this expected?
-> > >> >
-> > >>
-> > >> Actually, it *is* expected based on our previous hypothesis that these
-> > >> workloads are largely latency-bound: In cases where a given burst of CPU
-> > >> work is not parallelizable with any other tasks the thread needs to
-> > >> complete subsequently, its overall runtime will decrease monotonically
-> > >> with increasing frequency, therefore the number of instructions executed
-> > >> per unit of time will increase monotonically with increasing frequency,
-> > >> and with it its frequency-invariant utilization.
-> > >
-> > > But shouldn't these two effects cancel each other if the
-> > > frequency-invariance mechanism works well?
-> >
-> > No, they won't cancel each other out under our hypothesis that these
-> > workloads are largely latency-bound, since the performance of the
-> > application will increase steadily with increasing frequency, and with
-> > it the amount of computational resources it utilizes per unit of time on
-> > the average, and therefore its frequency-invariant utilization as well.
->
-> OK, so this is a workload in which the maximum performance is only
-> achieved at the maximum available frequency.  IOW, there's no
-> performance saturation point and increasing the frequency (if
-> possible) will always cause more work to be done per unit of time.
->
-> For this type of workloads, requirements regarding performance (for
-> example, upper bound on the expected time of computations) need to be
-> known in order to determine the "most suitable" frequency to run them
-> and I agree that schedutil doesn't help much in that respect.
->
-> It is probably better to run them with intel_pstate in the active mode
-> (ie. "pure HWP") or decrease EPP via sysfs to allow HWP to ramp up
-> turbo more aggressively.
+Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+---
+v1->v2
+* Simplified checking error code
+* Break loop earlier if no interrupts are seen
+---
+ drivers/thermal/rcar_thermal.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-active mode + powersave indeed both gives faster runtimes and less energy
-consumption for these examples.
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index b49f04daaf47..ff9c55999ddf 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -445,7 +445,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	struct rcar_thermal_common *common;
+ 	struct rcar_thermal_priv *priv;
+ 	struct device *dev = &pdev->dev;
+-	struct resource *res, *irq;
++	struct resource *res;
+ 	const struct rcar_thermal_chip *chip = of_device_get_match_data(dev);
+ 	int mres = 0;
+ 	int i;
+@@ -467,9 +467,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	pm_runtime_get_sync(dev);
+ 
+ 	for (i = 0; i < chip->nirqs; i++) {
+-		irq = platform_get_resource(pdev, IORESOURCE_IRQ, i);
+-		if (!irq)
+-			continue;
++		int irq;
++
++		irq = platform_get_irq_optional(pdev, i);
++		if (irq == -ENXIO)
++			break;
++		if (irq < 0) {
++			ret = irq;
++			goto error_unregister;
++		}
++
+ 		if (!common->base) {
+ 			/*
+ 			 * platform has IRQ support.
+@@ -487,7 +494,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 			idle = 0; /* polling delay is not needed */
+ 		}
+ 
+-		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq,
++		ret = devm_request_irq(dev, irq, rcar_thermal_irq,
+ 				       IRQF_SHARED, dev_name(dev), common);
+ 		if (ret) {
+ 			dev_err(dev, "irq request failed\n ");
+-- 
+2.17.1
 
-thanks,
-julia
