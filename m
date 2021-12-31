@@ -2,285 +2,132 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 106EDC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Dec 2021 09:49:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF803C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Dec 2021 13:34:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229498AbhLaJtx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Dec 2021 04:49:53 -0500
-Received: from mga04.intel.com ([192.55.52.120]:24939 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229753AbhLaJtx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Dec 2021 04:49:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1640944192; x=1672480192;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=E9emw0TlSksX88zg6rjmIHedw6o+X6vPYwASFUV6AuQ=;
-  b=eZ+vqLVk5q30bGMPScUxOrl5eW+ZzKQ/8qNXJnezlwoRwNtQMwQkQass
-   GhKKzkqvwRwVPpmv7EJtAkoldDXOdXlQw2cBVLujnVl0CqyYaO8hoink9
-   Nh2QOsubrER2z8iYgwjfThNssC4JeDDTYZo2zAHXQghMiwT3UHHNo73Ol
-   WidEZdesvIFT9ls5bj+5Qxr5kwNu23gPqVLf/Y+/jTfcX//p7b4zn9g7x
-   1uhkYfwjT1Md8eCQW5+Q+9c8mt4dmKYTTkK8Zel43m2Zd+NFTFOSrbOk0
-   7XfiB97FrZK0qa0H3HFxG90VlpqYUQTsA177DQlly9w/WKcohGS0vB1gX
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10213"; a="240582225"
-X-IronPort-AV: E=Sophos;i="5.88,251,1635231600"; 
-   d="scan'208";a="240582225"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Dec 2021 01:49:52 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,251,1635231600"; 
-   d="scan'208";a="470911704"
-Received: from lkp-server01.sh.intel.com (HELO e357b3ef1427) ([10.239.97.150])
-  by orsmga006.jf.intel.com with ESMTP; 31 Dec 2021 01:49:50 -0800
-Received: from kbuild by e357b3ef1427 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1n3EXl-000B9B-R0; Fri, 31 Dec 2021 09:49:49 +0000
-Date:   Fri, 31 Dec 2021 17:49:27 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS WITH WARNING
- 642439a4441150c7ab54db8d54fac1c7fee57b5a
-Message-ID: <61ced227.bwGu6xI7ZBErSpCQ%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S230306AbhLaNeU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Dec 2021 08:34:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58822 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230301AbhLaNeU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Dec 2021 08:34:20 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B3A3EC06173F
+        for <linux-pm@vger.kernel.org>; Fri, 31 Dec 2021 05:34:19 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id x6so7485604lfa.5
+        for <linux-pm@vger.kernel.org>; Fri, 31 Dec 2021 05:34:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Wp/ltEVoPdzx2pRrEQ4BgyolvgNnR0QMjtwXZXnrtlw=;
+        b=iJgVB5rwvhuY7YqV1NkNfAfGGzf3TsdX+4Yvwz+pt4/gquZhGZvP6eouNx6pVtQmQx
+         Y4/cKGy4OMIlCsWlgJMlmX7nXH0J7tkezAKvB70haBI7YFAQXX1VWNAxVLB9GSt/x7zL
+         oj70jZ5FUcOIw5KhZIBQrrZkC5kOT4qLtbmw0fXa6/7cSSmg+VFZjVCarnNUem/Vw/l6
+         3/fMA3eyE/dgMBlhJqkwakQCLWnqmTIYsnzR/Q8w1tHguBwB+c9cPGWV/NXMt03vgf9h
+         RGOemVhzhGdPcStcVEdgzYZGRdXmLMtuEygLD+Q3LljaF4c+tYjJ0OF5YEKAlHfplTMj
+         VfnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Wp/ltEVoPdzx2pRrEQ4BgyolvgNnR0QMjtwXZXnrtlw=;
+        b=WO2FBpvjtnKl/xUYGxHeTtuusSmI/2CCN3PBFp9zgqlNHkTILj5ndX5aeIaeVr/4e6
+         HPu65uc5ocpW5yCFoknMoGqm91R9/mcaj+L8E1JxxtTyUzogXpI68FvvaiMAyCYM2UpB
+         bNrJhSIUX/tD8kftRH4USX4GFaA3ZJyGcMA+cEcDawxvmrzH7HF+phlad6F1LLuac5Qa
+         oAAOvzF7DuyLNXC8fVxOGbg+klLM54jqBjllExbSL+7wWOcujHUrHsycjkCExxW8WwwQ
+         +Lzuxytdt6Oyi+mQC+Iiu9XJbh12BgFMHwEOYwwH/uLvGlBITvO2sBgMl5ayFqMNPzDH
+         iAzQ==
+X-Gm-Message-State: AOAM531LhZ56YVgSAHczyMDI3UK6hg3AdlT79oC849n9n8/9rQQ8t/M/
+        2ExRk2Dkj4IpZh+5753QNqj9mWH4av5ysvD65POZPw==
+X-Google-Smtp-Source: ABdhPJyRGhHv/2JtqLwUHFfFhC+MlVhOY4g6rwByr1LJ1qx2O3WBLs8LcdIWIt/sNquPovNd06q+x9OHrETHj/cwPtw=
+X-Received: by 2002:a05:6512:3d9e:: with SMTP id k30mr31899208lfv.184.1640957657751;
+ Fri, 31 Dec 2021 05:34:17 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <20211218130014.4037640-1-daniel.lezcano@linaro.org> <20211218130014.4037640-2-daniel.lezcano@linaro.org>
+In-Reply-To: <20211218130014.4037640-2-daniel.lezcano@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Fri, 31 Dec 2021 14:33:41 +0100
+Message-ID: <CAPDyKFpY4i0Mtb==8zknsuG0HdhPW2fXFvEN+AJScVmT65A-ow@mail.gmail.com>
+Subject: Re: [PATCH v5 1/6] powercap/drivers/dtpm: Move dtpm table from init
+ to data section
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rjw@rjwysocki.net, lukasz.luba@arm.com, robh@kernel.org,
+        heiko@sntech.de, arnd@linaro.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        "open list:GENERIC INCLUDE/ASM HEADER FILES" 
+        <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 642439a4441150c7ab54db8d54fac1c7fee57b5a  Merge branch 'acpi-processor' into bleeding-edge
+On Sat, 18 Dec 2021 at 14:00, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> The dtpm table is used to let the different dtpm backends to register
+> their setup callbacks in a single place and preventing to export
+> multiple functions all around the kernel. That allows the dtpm code to
+> be self-encapsulated.
 
-Warning reports:
+Well, that's not entirely true. The dtpm code and its backends (or
+ops, whatever we call them) are already maintained from a single
+place, the /drivers/powercap/* directory. I assume we intend to keep
+it like this going forward too, right?
 
-https://lore.kernel.org/llvm/202112280907.gTYYYuB4-lkp@intel.com
+That is also what patch4 with the devfreq backend continues to conform to.
 
-Warning in current branch:
+>
+> The dtpm hierarchy will be passed as a parameter by a platform
+> specific code and that will lead to the creation of the different dtpm
+> nodes.
+>
+> The function creating the hierarchy could be called from a module at
+> init time or when it is loaded. However, at this moment the table is
+> already freed as it belongs to the init section and the creation will
+> lead to a invalid memory access.
+>
+> Fix this by moving the table to the data section.
 
-drivers/acpi/acpica/exregion.c:519:17: warning: performing pointer subtraction with a null pointer has undefined behavior [-Wnull-pointer-subtraction]
+With the above said, I find it a bit odd to put a table in the data
+section like this. Especially, since the only remaining argument for
+why, is to avoid exporting functions, which isn't needed anyway.
 
-possible Warning in current branch (please contact us if interested):
+I mean, it would be silly if we should continue to put subsystem
+specific tables in here, to just let them contain a set of subsystem
+specific callbacks.
 
-sound/soc/sh/rz-ssi.c:1023:9: warning: ignoring return value of 'pm_runtime_resume_and_get' declared with attribute 'warn_unused_result' [-Wunused-result]
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Warning ids grouped by kconfigs:
+Kind regards
+Uffe
 
-gcc_recent_errors
-|-- alpha-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- alpha-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arc-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arc-randconfig-r043-20211230
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arm-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arm-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arm-randconfig-c002-20211230
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arm64-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- arm64-defconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- h8300-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- ia64-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- ia64-buildonly-randconfig-r004-20211231
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- m68k-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- m68k-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- mips-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- mips-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- nios2-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- parisc-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- powerpc-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- powerpc-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- riscv-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- riscv-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- s390-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- sh-allmodconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- sparc-allyesconfig
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-|-- sparc64-randconfig-r005-20211230
-|   `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-`-- xtensa-allyesconfig
-    `-- sound-soc-sh-rz-ssi.c:warning:ignoring-return-value-of-pm_runtime_resume_and_get-declared-with-attribute-warn_unused_result
-
-clang_recent_errors
-|-- i386-randconfig-a001-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a002-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a003-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a004-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a005-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a006-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a011-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a012-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a013-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a014-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a015-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-a016-20211231
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- i386-randconfig-r033-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- x86_64-randconfig-a001-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- x86_64-randconfig-a002-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- x86_64-randconfig-a003-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- x86_64-randconfig-a004-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-|-- x86_64-randconfig-a005-20211230
-|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-`-- x86_64-randconfig-a006-20211230
-    `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
-
-elapsed time: 724m
-
-configs tested: 106
-configs skipped: 3
-
-gcc tested configs:
-arm                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20211230
-sh                         apsh4a3a_defconfig
-arm                       multi_v4t_defconfig
-sh                   rts7751r2dplus_defconfig
-sh                           se7721_defconfig
-powerpc                 mpc8313_rdb_defconfig
-h8300                       h8s-sim_defconfig
-arm                           spitz_defconfig
-arm                          pxa168_defconfig
-powerpc                          g5_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                    ge_imp3a_defconfig
-mips                           mtx1_defconfig
-sh                ecovec24-romimage_defconfig
-arm                        mini2440_defconfig
-xtensa                           alldefconfig
-sh                            migor_defconfig
-arm                            zeus_defconfig
-arm                         at91_dt_defconfig
-m68k                       m5249evb_defconfig
-mips                          ath79_defconfig
-s390                          debug_defconfig
-arm                  randconfig-c002-20211230
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-sparc                            allyesconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a013-20211230
-x86_64               randconfig-a015-20211230
-x86_64               randconfig-a012-20211230
-x86_64               randconfig-a011-20211230
-x86_64               randconfig-a016-20211230
-x86_64               randconfig-a014-20211230
-arc                  randconfig-r043-20211230
-riscv                randconfig-r042-20211230
-s390                 randconfig-r044-20211230
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
-
-clang tested configs:
-x86_64               randconfig-a002-20211230
-x86_64               randconfig-a001-20211230
-x86_64               randconfig-a003-20211230
-x86_64               randconfig-a006-20211230
-x86_64               randconfig-a004-20211230
-x86_64               randconfig-a005-20211230
-i386                 randconfig-a001-20211230
-i386                 randconfig-a004-20211230
-i386                 randconfig-a002-20211230
-i386                 randconfig-a006-20211230
-i386                 randconfig-a003-20211230
-i386                 randconfig-a005-20211230
-i386                 randconfig-a011-20211231
-i386                 randconfig-a012-20211231
-i386                 randconfig-a013-20211231
-i386                 randconfig-a014-20211231
-i386                 randconfig-a015-20211231
-i386                 randconfig-a016-20211231
-hexagon              randconfig-r041-20211230
-hexagon              randconfig-r045-20211230
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> ---
+>  include/asm-generic/vmlinux.lds.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index 42f3866bca69..50d494d94d6c 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -362,7 +362,8 @@
+>         BRANCH_PROFILE()                                                \
+>         TRACE_PRINTKS()                                                 \
+>         BPF_RAW_TP()                                                    \
+> -       TRACEPOINT_STR()
+> +       TRACEPOINT_STR()                                                \
+> +       DTPM_TABLE()
+>
+>  /*
+>   * Data section helpers
+> @@ -723,7 +724,6 @@
+>         ACPI_PROBE_TABLE(irqchip)                                       \
+>         ACPI_PROBE_TABLE(timer)                                         \
+>         THERMAL_TABLE(governor)                                         \
+> -       DTPM_TABLE()                                                    \
+>         EARLYCON_TABLE()                                                \
+>         LSM_TABLE()                                                     \
+>         EARLY_LSM_TABLE()                                               \
+> --
+> 2.25.1
+>
