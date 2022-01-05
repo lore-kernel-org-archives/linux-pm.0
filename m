@@ -2,58 +2,80 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 417AAC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 02:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE1DFC433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 06:42:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237089AbiAEChE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jan 2022 21:37:04 -0500
-Received: from out30-44.freemail.mail.aliyun.com ([115.124.30.44]:47330 "EHLO
-        out30-44.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S236989AbiAEChE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jan 2022 21:37:04 -0500
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R101e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V1-t5Gh_1641350221;
-Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0V1-t5Gh_1641350221)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Wed, 05 Jan 2022 10:37:02 +0800
-From:   Yang Li <yang.lee@linux.alibaba.com>
-To:     t.schramm@manjaro.org
-Cc:     sre@kernel.org, linus.walleij@linaro.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>,
-        Abaci Robot <abaci@linux.alibaba.com>
-Subject: [PATCH -next] power: supply_core: fix application of sizeof to pointer
-Date:   Wed,  5 Jan 2022 10:37:00 +0800
-Message-Id: <20220105023700.10966-1-yang.lee@linux.alibaba.com>
-X-Mailer: git-send-email 2.20.1.7.g153144c
+        id S234825AbiAEGm4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jan 2022 01:42:56 -0500
+Received: from todd.t-8ch.de ([159.69.126.157]:41247 "EHLO todd.t-8ch.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231960AbiAEGmz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jan 2022 01:42:55 -0500
+From:   =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
+        s=mail; t=1641364971;
+        bh=Dq3BHuCbeArfebh5gWrRObPgO7rpTfM1CntbrUioOgY=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=M3LGG4logHlSDHooFM9bvmBY4Yg4NkGRxZKbfsjKpWRvg4qvHvSX+s14V3/wjCnZS
+         HP/T9UKPaXkInSnovq7Un1X7JqUwV2AGrP4ioGdpoDmsdUfpLB4vszycblHgSuaDFf
+         Xxmyx1uiCvP5wLili+KHE2St5wIU6vrdNMe/0Nl0=
+To:     Heiner Kallweit <hkallweit1@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Hans de Goede <hdegoede@redhat.com>
+Cc:     =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] power: supply: validate size of power_supply_attrs at compiletime
+Date:   Wed,  5 Jan 2022 07:42:39 +0100
+Message-Id: <20220105064239.2689-2-linux@weissschuh.net>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <52cedbd4-7db2-7d81-f6c6-e6f6b7436545@gmail.com>
+References: <52cedbd4-7db2-7d81-f6c6-e6f6b7436545@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1641364918; l=1340; s=20211113; h=from:subject; bh=Dq3BHuCbeArfebh5gWrRObPgO7rpTfM1CntbrUioOgY=; b=iPHtX2pwqf8rgip2aL0uLNjIsBufKsFp4xuH7kdLPtpddXf1fDdOMxWUJkqdGPdqZupejU0IKW3/ HXw4KbdVCRihWNbMp61HmSQDqgeLI5RUVN97DzxZDIpE48d+E7d2
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The coccinelle check report:
-./drivers/power/supply/cw2015_battery.c:692:12-18: ERROR: application of
-sizeof to pointer
+For each member of enum power_supply_property a matching entry in
+power_supply_attrs is needed.
+Add a basic test at compiletime to validate this in addition to the
+existing runtime testing.
 
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Fixes: 25fd330370ac ("power: supply_core: Pass pointer to battery info")
-Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/power/supply/cw2015_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/power_supply_sysfs.c | 2 ++
+ include/linux/power_supply.h              | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/power/supply/cw2015_battery.c b/drivers/power/supply/cw2015_battery.c
-index 0c87ad0dbf71..728e2a6cc9c3 100644
---- a/drivers/power/supply/cw2015_battery.c
-+++ b/drivers/power/supply/cw2015_battery.c
-@@ -689,7 +689,7 @@ static int cw_bat_probe(struct i2c_client *client)
- 	if (ret) {
- 		/* Allocate an empty battery */
- 		cw_bat->battery = devm_kzalloc(&client->dev,
--					       sizeof(cw_bat->battery),
-+					       sizeof(*cw_bat->battery),
- 					       GFP_KERNEL);
- 		if (!cw_bat->battery)
- 			return -ENOMEM;
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 491ffec7bf47..2565052a7a8c 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -403,6 +403,8 @@ void power_supply_init_attrs(struct device_type *dev_type)
+ {
+ 	int i;
+ 
++	BUILD_BUG_ON(ARRAY_SIZE(power_supply_attrs) != __POWER_SUPPLY_PROP_CNT);
++
+ 	dev_type->groups = power_supply_attr_groups;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(power_supply_attrs); i++) {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 71f0379c2af8..60853f26e25f 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -172,6 +172,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
++
++	__POWER_SUPPLY_PROP_CNT
+ };
+ 
+ enum power_supply_type {
 -- 
-2.20.1.7.g153144c
+2.34.1
 
