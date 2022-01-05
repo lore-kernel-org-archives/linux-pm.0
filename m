@@ -2,50 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B422AC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 16:10:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12DAAC4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 16:32:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241836AbiAEQKH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jan 2022 11:10:07 -0500
-Received: from slot0.cofercan.com ([194.99.46.247]:47184 "EHLO
-        slot0.cofercan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241844AbiAEQKF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jan 2022 11:10:05 -0500
-X-Greylist: delayed 687 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Jan 2022 11:10:02 EST
-DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; s=dkim; d=cofercan.com;
- h=Reply-To:From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding; i=khi.hod@cofercan.com;
- bh=9hCKVqUC7wuuFDJ3ppTMIOcJUFs=;
- b=DShl+pItj0Q627ZLQ8AeMYEHJYt/76xsOE1FjzDmork/ZZ9gU0E9p+y6jC7fOwsO64kv0SGYID6F
-   KpfmDRzWVYln7EAPEFIXLmDGmPTrkJkTY9WnTBuh78+wj4waHTMn2s5gCZdWIeYVRGzu3UBWTmAA
-   r3EEHWKUSO8zeeV1BPlM1Rf9bBVxOYJ2FEFWfKaa/1ruBZffI8B5j44POjI72YDWuFadAs40t32f
-   tWF4x19BR0eBmbjUHQUzqwAnbYLqhREu7b12B7N5HpZkjYn8lvHEElf+oDTmc1BK92U9ZOAMUYSn
-   b1EE7cIvlIMH1jMDea9x4CwJLTVMqj9BguIA0A==
-DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns; s=dkim; d=cofercan.com;
- b=PEuc4u48QnZRwXj3K6nCun3vDTXzO78abZxmQW13UzH5h1sDjbJcy14g+pIdfgs9raHYvLCMps4x
-   bPOys8eiw4/9/B9BDlff1cZLpIuBqsquFI32EI+fmwcI4Jt99ZqzOuBGTCyjpoI4Ly4MW6dBeMiw
-   0Llh3QN60uF1ThxwOeWJ/Vc0ph8nhBp9kzEGWDA7RWuHLp5d1x/ojLP0iXq2Ya1wJ3hOYfmG40fG
-   ZQa4f3q/cLdC0qWi9wr4AxGzgEDI10ezd3794hPHVIzjhYAtJMDqxB8UVfqJZoPiYd0PDc1+8sM2
-   keZiUEvFqWnUn9Tf7Y93Hn0XZPp87uFz08rMmw==;
-Reply-To: inbox.mustafaa@gmail.com
-From:   "Mustafa Ayvaz" <khi.hod@cofercan.com>
-To:     linux-pm@vger.kernel.org
-Subject: MES: 
-Date:   5 Jan 2022 15:50:09 +0000
-Message-ID: <20220105155009.BFA5E97A4CB644CD@cofercan.com>
+        id S241927AbiAEQcd convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jan 2022 11:32:33 -0500
+Received: from aposti.net ([89.234.176.197]:52366 "EHLO aposti.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S241912AbiAEQcb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jan 2022 11:32:31 -0500
+Date:   Wed, 05 Jan 2022 16:32:17 +0000
+From:   Paul Cercueil <paul@crapouillou.net>
+Subject: Re: [PATCH 0/8] DEV_PM_OPS macros rework
+To:     Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, Len Brown <len.brown@intel.com>,
+        Pavel Machek <pavel@ucw.cz>, list@opendingux.net,
+        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-mips@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Message-Id: <TLW85R.NW4VI31QKSEJ3@crapouillou.net>
+In-Reply-To: <20220105101737.00000957@Huawei.com>
+References: <20220104214214.198843-1-paul@crapouillou.net>
+        <20220105101737.00000957@Huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello linux-pm,
 
-I was only wondering if you got my previous email? I have been=20
-trying to reach you on your email linux-pm@vger.kernel.org ,=20
-kindly get back to me swiftly, it is very important.
 
-Thanks
-Mustafa Ayvaz
-mustafa@ayvazburosu.com
+Le mer., janv. 5 2022 at 10:17:37 +0000, Jonathan Cameron 
+<Jonathan.Cameron@Huawei.com> a écrit :
+> On Tue, 4 Jan 2022 21:42:06 +0000
+> Paul Cercueil <paul@crapouillou.net> wrote:
+> 
+>>  Hi,
+>> 
+>>  This set of commits rework a bit the *_DEV_PM_OPS() macros that were
+>>  introduced recently.
+>> 
+>>  - Remove the DEFINE_UNIVERSAL_DEV_PM_OPS() macro, since I highly 
+>> doubt
+>>    anything is going to use it. The macro it replaces
+>>    (UNIVERSAL_DEV_PM_OPS) seems to only be used incorrectly in code 
+>> that
+>>    hasn't been updated in ages.
+>> 
+>>  - Remove the static qualifier in DEFINE_SIMPLE_DEV_PM_OPS, so that 
+>> the
+>>    macro is more in line with what's done elsewhere in the kernel.
+>> 
+>>  - Add a DEFINE_RUNTIME_DEV_PM_OPS() macro, for use with drivers 
+>> that use
+>>    runtime PM, and use 
+>> runtime_pm_force_suspend/runtime_pm_force_resume
+>>    as their system sleep callbacks.
+>> 
+>>  - Add EXPORT_*_DEV_PM_OPS macros, which can be used for when the
+>>    underlying dev_pm_ops is to be exported. With CONFIG_PM set, the
+>>    symbol is exported as you would expect. With CONFIG_PM disabled, 
+>> the
+>>    dev_pm_ops is garbage-collected along with the suspend/resume
+>>    callbacks.
+>> 
+>>  - Update the two places which used DEFINE_SIMPLE_DEV_PM_OPS, to add 
+>> back
+>>    the "static" qualifier that was stripped from the macro.
+>> 
+>>  - Update one driver to use EXPORT_RUNTIME_DEV_PM_OPS(), just to 
+>> showcase
+>>    how to use this macro in the case where a dev_pm_ops is to be
+>>    exported.
+>>    Note that the driver itself is GPL, and the symbol is only used 
+>> within
+>>    a GPL driver, so I would assume the symbol would be exported as 
+>> GPL.
+>>    But it was not the case in the original code, so I did not change 
+>> the
+>>    behaviour.
+>> 
+>>  Feedback welcome.
+> 
+> Comments on individual patches (in particular bad pick for that final 
+> example ;)
+> 
+> Given how late we are in the cycle, I'd argue we 'need' patches 2 (+ 
+> 5,6 which
+> should probably be all one patch to avoid introducing then fixing a 
+> warning in
+> different patches).  The others could wait for the following cycle if 
+> needed.
+
+Ok, should I V2 with patches 2/5/6 merged together?
+
+-Paul
+
+> It would slow down a few patches I have queued up behind this, but 
+> most of them
+> would be unaffected so it wouldn't annoy me too much. Can't speak for 
+> others
+> however!
+> 
+> Jonathan
+> 
+>> 
+>>  Cheers,
+>>  -Paul
+>> 
+>> 
+>>  Paul Cercueil (8):
+>>    PM: core: Remove DEFINE_UNIVERSAL_DEV_PM_OPS() macro
+>>    PM: core: Remove static qualifier in DEFINE_SIMPLE_DEV_PM_OPS 
+>> macro
+>>    PM: core: Add EXPORT[_GPL]_SIMPLE_DEV_PM_OPS macros
+>>    PM: runtime: Add DEFINE_RUNTIME_DEV_PM_OPS() macro
+>>    PM: runtime: Add EXPORT[_GPL]_RUNTIME_DEV_PM_OPS macros
+>>    mmc: mxc: Make dev_pm_ops struct static
+>>    mmc: jz4740: Make dev_pm_ops struct static
+>>    iio: gyro: mpu3050: Use new PM macros
+>> 
+>>   drivers/iio/gyro/mpu3050-core.c | 13 +++-----
+>>   drivers/iio/gyro/mpu3050-i2c.c  |  2 +-
+>>   drivers/mmc/host/jz4740_mmc.c   |  4 +--
+>>   drivers/mmc/host/mxcmmc.c       |  2 +-
+>>   include/linux/pm.h              | 53 
+>> +++++++++++++++++++++++----------
+>>   include/linux/pm_runtime.h      | 21 +++++++++++++
+>>   6 files changed, 67 insertions(+), 28 deletions(-)
+>> 
+> 
+
+
