@@ -2,71 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0372C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 06:42:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C548C433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jan 2022 06:50:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236505AbiAEGm4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jan 2022 01:42:56 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49096 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233758AbiAEGmz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jan 2022 01:42:55 -0500
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BEA1C061761;
-        Tue,  4 Jan 2022 22:42:55 -0800 (PST)
-From:   =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
+        id S235760AbiAEGuC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jan 2022 01:50:02 -0500
+Received: from todd.t-8ch.de ([159.69.126.157]:40711 "EHLO todd.t-8ch.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229759AbiAEGuC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jan 2022 01:50:02 -0500
+Date:   Wed, 5 Jan 2022 07:49:59 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
-        s=mail; t=1641364971;
-        bh=ckkVZqRjU2EG/o/oxR6lOZ29zluSjUxYnya2PFcqtoY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=IaCeujnF19+xdvQAqh8xdm7sZx4unyLe+552x0V5QlSJmoaEXAZ0dfNS8gu5EfdHt
-         xS5fPZ6zRY1R1u8gWqP4kjP8qwlRxMGJfrv1oTWliT9ugMM8dT6vCU/2b3qUIVVGWI
-         rW12PRVykMEaswY+3MStJsb4cGW8J/0lYaJ2ewh4=
+        s=mail; t=1641365400;
+        bh=afrKCOqNubeiPYf4TQvcYsO4O7woEkun/NZnSzhJmB0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=bSKMNX6/W1IBeitY5sfihEqq17clNJCbw7+sQUR87j5l6I4jTXj6cDC0bH0c6VYDD
+         y2ce/0NzjWIsudlb+MMKJHRBrD4A/rJoOaIcafIKjuVDrvgukBt4IAnQG3JZiy05UR
+         tEKDJ+sdPx5y6LT3BVX3VbJ2P/HMKLzWEmr214hw=
+From:   Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
 To:     Heiner Kallweit <hkallweit1@gmail.com>,
         Sebastian Reichel <sre@kernel.org>,
         Hans de Goede <hdegoede@redhat.com>
-Cc:     =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] power: supply: fix charge_behaviour attribute initialization
-Date:   Wed,  5 Jan 2022 07:42:38 +0100
-Message-Id: <20220105064239.2689-1-linux@weissschuh.net>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <52cedbd4-7db2-7d81-f6c6-e6f6b7436545@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] power: supply: validate size of power_supply_attrs
+ at compiletime
+Message-ID: <5bbd9f31-f6b5-4554-958c-71ec9ebd0363@t-8ch.de>
 References: <52cedbd4-7db2-7d81-f6c6-e6f6b7436545@gmail.com>
+ <20220105064239.2689-2-linux@weissschuh.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1641364918; l=1122; s=20211113; h=from:subject; bh=ckkVZqRjU2EG/o/oxR6lOZ29zluSjUxYnya2PFcqtoY=; b=xCxKEVj/QMBfnfYLlEen2qQsAhWPv9jlsOgU/EVaRaWJQFeOU6yeo5ToQkUzEcsaeWf7SMJLF4gq FbMxqnHoCfdckmTSpZ1VhimCxDrZtmEtWMDF14eCK6u4Cn2lV9Z9
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220105064239.2689-2-linux@weissschuh.net>
+Jabber-ID: thomas@t-8ch.de
+X-Accept: text/plain, text/html;q=0.2, text/*;q=0.1
+X-Accept-Language: en-us, en;q=0.8, de-de;q=0.7, de;q=0.6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All properties have to be added to power_supply_attrs which was missed
-before.
+Hi Sebastian, Hans,
 
-Fixes: 1b0b6cc8030d ("power: supply: add charge_behaviour attributes")
-Reported-by: Heiner Kallweit <hkallweit1@gmail.com>
-Suggested-by: Heiner Kallweit <hkallweit1@gmail.com>
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- drivers/power/supply/power_supply_sysfs.c | 1 +
- 1 file changed, 1 insertion(+)
+On 2022-01-05 07:42+0100, Thomas Weißschuh wrote:
+> For each member of enum power_supply_property a matching entry in
+> power_supply_attrs is needed.
+> Add a basic test at compiletime to validate this in addition to the
+> existing runtime testing.
+> 
+> Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+> ---
+>  drivers/power/supply/power_supply_sysfs.c | 2 ++
+>  include/linux/power_supply.h              | 2 ++
+>  2 files changed, 4 insertions(+)
+> 
+> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+> index 491ffec7bf47..2565052a7a8c 100644
+> --- a/drivers/power/supply/power_supply_sysfs.c
+> +++ b/drivers/power/supply/power_supply_sysfs.c
+> @@ -403,6 +403,8 @@ void power_supply_init_attrs(struct device_type *dev_type)
+>  {
+>  	int i;
+>  
+> +	BUILD_BUG_ON(ARRAY_SIZE(power_supply_attrs) != __POWER_SUPPLY_PROP_CNT);
+> +
+>  	dev_type->groups = power_supply_attr_groups;
+>  
+>  	for (i = 0; i < ARRAY_SIZE(power_supply_attrs); i++) {
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 71f0379c2af8..60853f26e25f 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -172,6 +172,8 @@ enum power_supply_property {
+>  	POWER_SUPPLY_PROP_MODEL_NAME,
+>  	POWER_SUPPLY_PROP_MANUFACTURER,
+>  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
+> +
+> +	__POWER_SUPPLY_PROP_CNT
+>  };
+>  
+>  enum power_supply_type {
+> -- 
+> 2.34.1
+> 
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 5e3b8c15ddbe..491ffec7bf47 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -178,6 +178,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(CHARGE_CONTROL_LIMIT_MAX),
- 	POWER_SUPPLY_ATTR(CHARGE_CONTROL_START_THRESHOLD),
- 	POWER_SUPPLY_ATTR(CHARGE_CONTROL_END_THRESHOLD),
-+	POWER_SUPPLY_ENUM_ATTR(CHARGE_BEHAVIOUR),
- 	POWER_SUPPLY_ATTR(INPUT_CURRENT_LIMIT),
- 	POWER_SUPPLY_ATTR(INPUT_VOLTAGE_LIMIT),
- 	POWER_SUPPLY_ATTR(INPUT_POWER_LIMIT),
+Please ignore this patch. It does not do what is tries to do. Sorry for the
+noise.
 
-base-commit: 998e7ea8c641fc6bbca1acd478c6824733ac9851
--- 
-2.34.1
-
+Thomas
