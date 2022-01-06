@@ -2,111 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2BEFC433FE
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Jan 2022 17:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51807C433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Jan 2022 17:34:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241907AbiAFRbu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Jan 2022 12:31:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41682 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241849AbiAFRbn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jan 2022 12:31:43 -0500
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9EEFC061212
-        for <linux-pm@vger.kernel.org>; Thu,  6 Jan 2022 09:31:42 -0800 (PST)
-Received: by mail-qt1-x835.google.com with SMTP id f17so473747qtf.8
-        for <linux-pm@vger.kernel.org>; Thu, 06 Jan 2022 09:31:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=0diK6zWMgOO/TArP/zyW7Q3OH2Ix/QmAaJD5h2ncz4A=;
-        b=f8L1zEEiexnVRKtN6fQPiHjidl66sG1jd2ZfOr9XaTc8JW50nZibE4qCEoByKN6P0j
-         Jl+yE8+gCv+cRtVosq9mRqIRy3xjP9xA1Xfgu1TKtDLAfNACkDyMXZfE7j8EYBvmDl1T
-         ijlCpapCI03Sh6Aq1+GGYGjDKJwwvBwFwPPcXcjENTeYOG6maFFcGh1Gp5tgU7Szhx+O
-         xdmIg+A+eE4++0WFu1++JjM2qVUKw/RuCbDEdAYtG2QfD0U1mSnv9yu06jTiQ+in0/fQ
-         ypErg59jt6NY/whScnfu69+xMFZHFlBkiNnO+AxAXY/h5Be3LtT3l8k5hFKRqE24vWDD
-         JPdQ==
+        id S241962AbiAFReZ convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 Jan 2022 12:34:25 -0500
+Received: from mail-qv1-f44.google.com ([209.85.219.44]:46750 "EHLO
+        mail-qv1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241922AbiAFReY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jan 2022 12:34:24 -0500
+Received: by mail-qv1-f44.google.com with SMTP id r6so2981325qvr.13;
+        Thu, 06 Jan 2022 09:34:24 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=0diK6zWMgOO/TArP/zyW7Q3OH2Ix/QmAaJD5h2ncz4A=;
-        b=rFk42WIy01J383eT59X0lE/78ntb/uF16ozE20rNMbU2XlxTYqK6xaLm+9z7pjrAPe
-         18qFLNOFvWt1K7saV2T+V2Djhu4N30djmwJy3kz0EL5wR/HThzcrsLJBOttEfoun2RXa
-         pVQlqeEAnH0tHwEkBzhgeeLxF7E9plFUD5pIDVYvVZ9lpZNlyCNSa5n2s/EnoLdwddBt
-         nMbsMG1L9lfhyusZrBsx10zote3PsPp0fvZCm3NRALrzLWD79gyHf/BwyVMBhK/vuqtk
-         7cPasHFN2+zWvahzLbQTzR+J7uV/o9HzpocuoEm2Zx3NxR5DbF46PnPXKpTVIOJ+9yFX
-         /PWw==
-X-Gm-Message-State: AOAM532ndaJhiohFvrjf2GzMJyF9lXylCJCQCxt4Hwcz9VwHhla/9Pq3
-        Hrjt6cIQKp2dUG0qoKQslAiKDg==
-X-Google-Smtp-Source: ABdhPJwSAGXQbxLeiPXRQMP8Z670ynjkc3CpLHmy43dV0YQdxHKg6DTd9LenJq5zw317vAChbc5Nlw==
-X-Received: by 2002:a05:622a:d5:: with SMTP id p21mr51478976qtw.518.1641490301875;
-        Thu, 06 Jan 2022 09:31:41 -0800 (PST)
-Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
-        by smtp.googlemail.com with ESMTPSA id i21sm2126536qti.31.2022.01.06.09.31.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Jan 2022 09:31:41 -0800 (PST)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     agross@kernel.org, bjorn.andersson@linaro.org,
-        daniel.lezcano@linaro.org, rafael@kernel.org, rui.zhang@intel.com,
-        robh+dt@kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [Patch v3 2/3] arm64: dts: qcom: sm8150: Add support for LMh node
-Date:   Thu,  6 Jan 2022 12:31:37 -0500
-Message-Id: <20220106173138.411097-3-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220106173138.411097-1-thara.gopinath@linaro.org>
-References: <20220106173138.411097-1-thara.gopinath@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=PrrcpSOjpVBQjfLKYFTKueeToB19AVYUAAYHWQfgysI=;
+        b=mQRYzmewiWv7qumzannnbrYXeo3AHwkoXkd5TuCwkm02EifG5u55TKwDJDQjx6qahO
+         UJBetc1o3ebszxvsKchssZnPwrLxLNXKtO3iRbJQGBp5Ldq5XTESjQp9e+WiOcgG39w4
+         PMMA45H28z6HMLkNS7hZBwfIR7Mdpudne8srHd3wArXD1jFUCVaPWpIjRNFAibY66df6
+         /zXrGILtyfeqyAGm6PJk9ZKIB04m5mbx/CteBycZVf8bSeGwL07BsO6BMrQZfOU7QT0Y
+         6ZoFzecWlCynjyKEh5Dz6TaglM+zFopgPMQ6OVr5q4Bxng2Io22eLsFi1mhQEl8bzU1N
+         JcUw==
+X-Gm-Message-State: AOAM532qZvUK16UzGny4Odg/p4L+/5Pdz8yBVLUSDE1w/OsPzpYAp9bK
+        fDoISUnKzZMS3X183C+zQYpSr1xDe2PD93orQZ0=
+X-Google-Smtp-Source: ABdhPJwDxMHP0IkOGxFap2RTf2cnVE9AHI228gO5l/l0V9RmqWOeSM9M4liwZOxkXXXZDtiVphrxEUuIBDiaHoluwEs=
+X-Received: by 2002:a05:6214:20a2:: with SMTP id 2mr54554275qvd.52.1641490464220;
+ Thu, 06 Jan 2022 09:34:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220106074306.2712090-1-ray.huang@amd.com>
+In-Reply-To: <20220106074306.2712090-1-ray.huang@amd.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 6 Jan 2022 18:34:13 +0100
+Message-ID: <CAJZ5v0iHo9JMggbJmyFL9XoWS2oTWSugbMtD_C2OBHpmw+ePCQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: amd-pstate: Fix the dependence issue of AMD P-State
+To:     Huang Rui <ray.huang@amd.com>
+Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Perry Yuan <Perry.Yuan@amd.com>,
+        Jinzhou Su <Jinzhou.Su@amd.com>,
+        Xiaojian Du <Xiaojian.Du@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add LMh nodes for cpu cluster0 and cpu cluster1 for sm8150 SoC.
+On Thu, Jan 6, 2022 at 8:43 AM Huang Rui <ray.huang@amd.com> wrote:
+>
+> The AMD P-State driver is based on ACPI CPPC function, so ACPI should be
+> dependence of this driver in the kernel config.
+>
+> In file included from ../drivers/cpufreq/amd-pstate.c:40:0:
+> ../include/acpi/processor.h:226:2: error: unknown type name ‘phys_cpuid_t’
+>   phys_cpuid_t phys_id; /* CPU hardware ID such as APIC ID for x86 */
+>   ^~~~~~~~~~~~
+> ../include/acpi/processor.h:355:1: error: unknown type name ‘phys_cpuid_t’; did you mean ‘phys_addr_t’?
+>  phys_cpuid_t acpi_get_phys_id(acpi_handle, int type, u32 acpi_id);
+>  ^~~~~~~~~~~~
+>  phys_addr_t
+>   CC      drivers/rtc/rtc-rv3029c2.o
+> ../include/acpi/processor.h:356:1: error: unknown type name ‘phys_cpuid_t’; did you mean ‘phys_addr_t’?
+>  phys_cpuid_t acpi_map_madt_entry(u32 acpi_id);
+>  ^~~~~~~~~~~~
+>  phys_addr_t
+> ../include/acpi/processor.h:357:20: error: unknown type name ‘phys_cpuid_t’; did you mean ‘phys_addr_t’?
+>  int acpi_map_cpuid(phys_cpuid_t phys_id, u32 acpi_id);
+>                     ^~~~~~~~~~~~
+>                     phys_addr_t
+>
+> See https://lore.kernel.org/lkml/20e286d4-25d7-fb6e-31a1-4349c805aae3@infradead.org/.
+>
+> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Huang Rui <ray.huang@amd.com>
+> ---
+>  drivers/cpufreq/Kconfig.x86 | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+> index a951768c3ebb..55516043b656 100644
+> --- a/drivers/cpufreq/Kconfig.x86
+> +++ b/drivers/cpufreq/Kconfig.x86
+> @@ -36,9 +36,9 @@ config X86_PCC_CPUFREQ
+>
+>  config X86_AMD_PSTATE
+>         tristate "AMD Processor P-State driver"
+> -       depends on X86
+> -       select ACPI_PROCESSOR if ACPI
+> -       select ACPI_CPPC_LIB if X86_64 && ACPI
+> +       depends on X86 && ACPI
+> +       select ACPI_PROCESSOR
+> +       select ACPI_CPPC_LIB if X86_64
+>         select CPU_FREQ_GOV_SCHEDUTIL if SMP
+>         help
+>           This driver adds a CPUFreq driver which utilizes a fine grain
+> --
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- arch/arm64/boot/dts/qcom/sm8150.dtsi | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/sm8150.dtsi b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-index 81b4ff2cc4cd..e755d7ab78dd 100644
---- a/arch/arm64/boot/dts/qcom/sm8150.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-@@ -3650,6 +3650,30 @@ cpufreq_hw: cpufreq@18323000 {
- 			#freq-domain-cells = <1>;
- 		};
- 
-+		lmh_cluster1: lmh@18350800 {
-+			compatible = "qcom,sm8150-lmh";
-+			reg = <0 0x18350800 0 0x400>;
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&CPU4>;
-+			qcom,lmh-temp-arm-millicelsius = <60000>;
-+			qcom,lmh-temp-low-millicelsius = <84500>;
-+			qcom,lmh-temp-high-millicelsius = <85000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
-+		lmh_cluster0: lmh@18358800 {
-+			compatible = "qcom,sm8150-lmh";
-+			reg = <0 0x18358800 0 0x400>;
-+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&CPU0>;
-+			qcom,lmh-temp-arm-millicelsius = <60000>;
-+			qcom,lmh-temp-low-millicelsius = <84500>;
-+			qcom,lmh-temp-high-millicelsius = <85000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
- 		wifi: wifi@18800000 {
- 			compatible = "qcom,wcn3990-wifi";
- 			reg = <0 0x18800000 0 0x800000>;
--- 
-2.25.1
-
+Applied (under a modified subject), thanks!
