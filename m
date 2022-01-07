@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AB69C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jan 2022 23:53:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFE3CC433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jan 2022 23:53:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231990AbiAGXxy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Jan 2022 18:53:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59060 "EHLO
+        id S231918AbiAGXxw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Jan 2022 18:53:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231890AbiAGXxp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jan 2022 18:53:45 -0500
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB751C061747
-        for <linux-pm@vger.kernel.org>; Fri,  7 Jan 2022 15:53:44 -0800 (PST)
-Received: by mail-pj1-x102b.google.com with SMTP id n30-20020a17090a5aa100b001b2b6509685so8233424pji.3
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jan 2022 15:53:44 -0800 (PST)
+        with ESMTP id S232018AbiAGXxu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jan 2022 18:53:50 -0500
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61450C061747
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jan 2022 15:53:49 -0800 (PST)
+Received: by mail-pg1-x534.google.com with SMTP id v25so7030176pge.2
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jan 2022 15:53:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=vnBEku22nFoYufV2aPCfVzGav/5qYcDVrSLes2E+zqw=;
-        b=Ewu1LJLRf0snQq2dRiaVC6pWWngphFRDTOpkQ8Bi+K49SuQz9c3wIFTwLMNaGYBomH
-         yNxIWv1Kx0I0nutVfCLkOhxETOv6wOcC10qsfblc4uzqdjWaEC9/Yqp38vSsDee7t9aA
-         ilbHQYrt/zmhGPyyze+kyxSVuFvYHNn0WUafk=
+        bh=bLiXD9EPxhuhl4swC8hQ6wdNP1ClmDuHZfS+mTSLPMY=;
+        b=BYk2607hHPmSvHDebgSv5EvoUO2Eu+i/iAiOXw2Ta1ucl/Xw1m3CkSEWSoxLGk+krW
+         8TtKDL2dq86sfn3/TjOaQjddauSgNqwTr6imn4sJv7/DFenryx+A4mrAadJMQkIItgqo
+         NeS17kOoVGXrYbz/o9aQI9i05ftBJHeTTORPw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=vnBEku22nFoYufV2aPCfVzGav/5qYcDVrSLes2E+zqw=;
-        b=1ypAZ6dY3yXl6ro8x9khINmX4SXYAqWPGD9BTNi5UFMzUuI+Qtt3+zwrMxpn5Ntt1q
-         HL901gGxwEQz5v+RmnokS1B3eK+uYHlbZxgTTEVRB2uXujoGaToL0862SdAut/ehtDrV
-         RpPoZwa8+hdqJtZGsjcGEvEWBIuSBsPLT3HSosPB3D1LDqyBZrtVTJlQhPqvYORHvCSa
-         JEwKpNvPw/9JxjJTU1MQ+ku3E9CjgeYjYYYV5p3CqW8oEU7703DTiu2ZRj07srGuBVcD
-         1cSy/UZ6DFNNxrEO/0vh6sy6u4ELgzctjQaChMiqRIsCk0FH4LZZGEQ3Zcr+Av2rXwQ9
-         RhVg==
-X-Gm-Message-State: AOAM530DH4qIicxu4TPrTw8IV1id4NqBAzhnbYMUTujp1Y8Z3jG/W8w3
-        vcCQGvOOjGccC7F8abiuH6asdw==
-X-Google-Smtp-Source: ABdhPJxSHaaq8+P1tjYNngGlMiqekaJ7/jtLTJDL6m/k3iyhZZNI45qDgrBzPEQ7Lddq74fCrB4/Lw==
-X-Received: by 2002:a17:90b:4c06:: with SMTP id na6mr17972774pjb.236.1641599624512;
-        Fri, 07 Jan 2022 15:53:44 -0800 (PST)
+        bh=bLiXD9EPxhuhl4swC8hQ6wdNP1ClmDuHZfS+mTSLPMY=;
+        b=SnU+XR5501IdLVjVZbOEux7tv1FlHWLzQqgVh8biR5pWKL35CSortKQBpXX3XWoRZC
+         UbbX4zQzXFzShs/cOmiR0IGMBapVTeQ91v+vlrylTRllinXvvN9XVTNXjt1M3oymkPHQ
+         3n9yR+OHCOXzsf30eron960MEkPIZMOiePInvfDi7YA8OzU1guDbdHiGN9F3aWWS3jSY
+         L+FgzaPYcL4gSpp4spxP3DQFwduW06SrEfP6HSiVsr950b06uc8u9/fMn0pOI+7UJzlX
+         MCusgx/UaLNv1qAV8nRGaZ1XnJWum3pMhp37YkXWPajcsRPBrSj4RUMesSBv6WWpoVNF
+         BWSg==
+X-Gm-Message-State: AOAM5337mydros7VyrLDgJMnn5GvG4RK6qrCXCiD2j/oBOf9uggTCfM3
+        bF/jc16kCyqc/5wFQtseOp436Q==
+X-Google-Smtp-Source: ABdhPJxec9Iz4K7SGQBxWwH4Aa43xT+erYjwZOOHGJsTnXVxoFwz2OkPS74l+sChFO3DcJQ2WklFNQ==
+X-Received: by 2002:a05:6a00:26c5:b0:4bd:4ad6:9c71 with SMTP id p5-20020a056a0026c500b004bd4ad69c71mr482801pfw.45.1641599628943;
+        Fri, 07 Jan 2022 15:53:48 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:db:1c60:693f:c24e])
-        by smtp.gmail.com with UTF8SMTPSA id q19sm48610pfk.153.2022.01.07.15.53.43
+        by smtp.gmail.com with UTF8SMTPSA id y29sm56068pfa.54.2022.01.07.15.53.47
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 07 Jan 2022 15:53:44 -0800 (PST)
+        Fri, 07 Jan 2022 15:53:48 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -55,119 +55,74 @@ Cc:     Heiko Stuebner <heiko@sntech.de>,
         linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
         Derek Basehore <dbasehore@chromium.org>,
         linux-kernel@vger.kernel.org,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Brian Norris <briannorris@chromium.org>
-Subject: [PATCH 07/10] PM / devfreq: rk3399_dmc: Use bitfield macro definitions for ODT_PD
-Date:   Fri,  7 Jan 2022 15:53:17 -0800
-Message-Id: <20220107155215.7.I0f36da588afd01d0dc9ce5866240efa34bd91e21@changeid>
+Subject: [PATCH 09/10] arm64: dts: rk3399: Add dfi and dmc nodes
+Date:   Fri,  7 Jan 2022 15:53:19 -0800
+Message-Id: <20220107155215.9.Ie97993621975c5463d7928a8646f3737c9f2921d@changeid>
 X-Mailer: git-send-email 2.34.1.575.g55b058a8bb-goog
 In-Reply-To: <20220107235320.965497-1-briannorris@chromium.org>
 References: <20220107235320.965497-1-briannorris@chromium.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We're going to add new usages, and it's cleaner to work with macros
-instead of comments and magic numbers.
+From: Lin Huang <hl@rock-chips.com>
 
+These are required to support DDR DVFS on RK3399 platforms.
+
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
+This is based on a v5 posting from various authors:
+https://lore.kernel.org/lkml/20210308233858.24741-3-daniel.lezcano@linaro.org/
+Much of that series was already merged, so I start over with the
+numbering.
 
- drivers/devfreq/rk3399_dmc.c | 43 ++++++++++++++++++++----------------
- 1 file changed, 24 insertions(+), 19 deletions(-)
+Change since Daniel's posting: reordered by unit address, per existing
+style
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index 8f447217303f..c4efbc15cbb1 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -5,6 +5,7 @@
-  */
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index d3cdf6f42a30..86e2d87e008a 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1295,6 +1295,25 @@ pwm3: pwm@ff420030 {
+ 		status = "disabled";
+ 	};
  
- #include <linux/arm-smccc.h>
-+#include <linux/bitfield.h>
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/devfreq.h>
-@@ -23,6 +24,15 @@
- #include <soc/rockchip/rk3399_grf.h>
- #include <soc/rockchip/rockchip_sip.h>
- 
-+#define RK3399_SET_ODT_PD_0_SR_IDLE			GENMASK(7, 0)
-+#define RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE		GENMASK(15, 8)
-+#define RK3399_SET_ODT_PD_0_STANDBY_IDLE		GENMASK(31, 16)
++	dfi: dfi@ff630000 {
++		reg = <0x00 0xff630000 0x00 0x4000>;
++		compatible = "rockchip,rk3399-dfi";
++		rockchip,pmu = <&pmugrf>;
++		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
++		clocks = <&cru PCLK_DDR_MON>;
++		clock-names = "pclk_ddr_mon";
++		status = "disabled";
++	};
 +
-+#define RK3399_SET_ODT_PD_1_PD_IDLE			GENMASK(11, 0)
-+#define RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE		GENMASK(27, 16)
++	dmc: dmc {
++		compatible = "rockchip,rk3399-dmc";
++		rockchip,pmu = <&pmugrf>;
++		devfreq-events = <&dfi>;
++		clocks = <&cru SCLK_DDRC>;
++		clock-names = "dmc_clk";
++		status = "disabled";
++	};
 +
-+#define RK3399_SET_ODT_PD_2_ODT_ENABLE			BIT(0)
-+
- struct rk3399_dmcfreq {
- 	struct device *dev;
- 	struct devfreq *devfreq;
-@@ -55,7 +65,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 	unsigned long old_clk_rate = dmcfreq->rate;
- 	unsigned long target_volt, target_rate;
- 	struct arm_smccc_res res;
--	bool odt_enable = false;
- 	int err;
- 
- 	opp = devfreq_recommended_opp(dev, freq, flags);
-@@ -72,8 +81,10 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 	mutex_lock(&dmcfreq->lock);
- 
- 	if (dmcfreq->regmap_pmu) {
-+		unsigned int odt_pd_arg2 = 0;
-+
- 		if (target_rate >= dmcfreq->odt_dis_freq)
--			odt_enable = true;
-+			odt_pd_arg2 |= RK3399_SET_ODT_PD_2_ODT_ENABLE;
- 
- 		/*
- 		 * This makes a SMC call to the TF-A to set the DDR PD
-@@ -83,7 +94,7 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 		arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
- 			      dmcfreq->odt_pd_arg1,
- 			      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
--			      odt_enable, 0, 0, 0, &res);
-+			      odt_pd_arg2, 0, 0, 0, &res);
- 	}
- 
- 	/*
-@@ -316,23 +327,17 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	/*
- 	 * In TF-A there is a platform SIP call to set the PD (power-down)
- 	 * timings and to enable or disable the ODT (on-die termination).
--	 * This call needs three arguments as follows:
--	 *
--	 * arg0:
--	 *     bit[0-7]   : sr_idle
--	 *     bit[8-15]  : sr_mc_gate_idle
--	 *     bit[16-31] : standby idle
--	 * arg1:
--	 *     bit[0-11]  : pd_idle
--	 *     bit[16-27] : srpd_lite_idle
--	 * arg2:
--	 *     bit[0]     : odt enable
- 	 */
--	data->odt_pd_arg0 = (data->sr_idle & 0xff) |
--			    ((data->sr_mc_gate_idle & 0xff) << 8) |
--			    ((data->standby_idle & 0xffff) << 16);
--	data->odt_pd_arg1 = (data->pd_idle & 0xfff) |
--			    ((data->srpd_lite_idle & 0xfff) << 16);
-+	data->odt_pd_arg0 =
-+		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_IDLE, data->sr_idle) |
-+		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE,
-+			   data->sr_mc_gate_idle) |
-+		FIELD_PREP(RK3399_SET_ODT_PD_0_STANDBY_IDLE,
-+			   data->standby_idle);
-+	data->odt_pd_arg1 =
-+		FIELD_PREP(RK3399_SET_ODT_PD_1_PD_IDLE, data->pd_idle) |
-+		FIELD_PREP(RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE,
-+			   data->srpd_lite_idle);
- 
- 	/*
- 	 * We add a devfreq driver to our parent since it has a device tree node
+ 	vpu: video-codec@ff650000 {
+ 		compatible = "rockchip,rk3399-vpu";
+ 		reg = <0x0 0xff650000 0x0 0x800>;
 -- 
 2.34.1.575.g55b058a8bb-goog
 
