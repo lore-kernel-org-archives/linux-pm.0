@@ -2,81 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBB70C433EF
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jan 2022 19:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF0F8C433FE
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jan 2022 19:58:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233659AbiAGT61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S233692AbiAGT61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 7 Jan 2022 14:58:27 -0500
-Received: from mx0a-001ae601.pphosted.com ([67.231.149.25]:22418 "EHLO
+Received: from mx0a-001ae601.pphosted.com ([67.231.149.25]:36536 "EHLO
         mx0b-001ae601.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S231377AbiAGT60 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jan 2022 14:58:26 -0500
+        by vger.kernel.org with ESMTP id S233643AbiAGT61 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jan 2022 14:58:27 -0500
 Received: from pps.filterd (m0077473.ppops.net [127.0.0.1])
-        by mx0a-001ae601.pphosted.com (8.16.1.2/8.16.1.2) with ESMTP id 207Fo27U008191;
-        Fri, 7 Jan 2022 13:58:23 -0600
+        by mx0a-001ae601.pphosted.com (8.16.1.2/8.16.1.2) with ESMTP id 207Fo27W008191;
+        Fri, 7 Jan 2022 13:58:25 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding :
- content-type; s=PODMain02222019;
- bh=mtESrcOKgKXQmkilrqoNob9Tn40gKNW7FNM5KPZ6lbo=;
- b=otW07zScz2YLzJEEM/HVrSHwyN2F/djLUeGgSLyX+MTI1HTdb7k7oeTwWuGgvjcztPDw
- pNjphlG2r2jEn98gl1XyqAJBdaPaPYK2Gtw1DO/i3hUN24I2uuKfm+tXQjyEB807WEXW
- pUPTBPipfuGpfVsASbAk8EER42w1jplKdKmyWX5nv45JgIfgY5wcEY0zHAxJ2NUVkIbB
- kJXRbjXbIMpJIetzvjJ0HBfjDqPZvuhsqBKw1u3pAY0XbEd61S/eaDoqqVkZemkuo0wy
- b7/GbOZMHmj/Unq6TKClZ2erIxmOfyPvHSSJ46nhiXhSNl3e0mwlTtpxn7/ya9sKA0gN lQ== 
-Received: from ediex01.ad.cirrus.com ([84.19.233.68])
-        by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3dergng88h-1
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding : content-type; s=PODMain02222019;
+ bh=iAIOic3fs3DHgtceBaD28ld8RhX+XmG05O99KFICyHU=;
+ b=XPWqkznJBIRRv+0nGKG99jyGmAhHuZz25lvG1mbkdTli0NT/f9av32Hzh/UBhG+N70vi
+ vMW1FdKzEwOWId7wOLTlcz+RZRas0YdmiPCCS3x1lS59n7CPv5pFL1l8c/ZyBxwXKA0k
+ +0ZF1/W9ZKuKBZ7a2UtpIf+e+JCTzkTtAH72QB+xrJIpJ/i8WgFF7KZG6IgTo1Xnk6hy
+ Ka74CiIMmVatEwHdxLMVMpOLKDGiRNeP5QHwvi5baS6jUDXMe58b+E1/78svbb/8tvjD
+ iojPFPJstGaaXScW6CyjlhZHPnKLI2kWHFzhzSZ7GRFX+SlQ6DHDtQ23vmrsHXiWafEc qA== 
+Received: from ediex02.ad.cirrus.com ([84.19.233.68])
+        by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3dergng88j-2
         (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
-        Fri, 07 Jan 2022 13:58:23 -0600
-Received: from EDIEX01.ad.cirrus.com (198.61.84.80) by EDIEX01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server (version=TLS1_2,
+        Fri, 07 Jan 2022 13:58:25 -0600
+Received: from EDIEX01.ad.cirrus.com (198.61.84.80) by EDIEX02.ad.cirrus.com
+ (198.61.84.81) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17; Fri, 7 Jan
- 2022 19:58:21 +0000
+ 2022 19:58:23 +0000
 Received: from ediswmail.ad.cirrus.com (198.61.86.93) by EDIEX01.ad.cirrus.com
  (198.61.84.80) with Microsoft SMTP Server id 15.1.2375.17 via Frontend
- Transport; Fri, 7 Jan 2022 19:58:21 +0000
+ Transport; Fri, 7 Jan 2022 19:58:23 +0000
 Received: from ricardo-lws.crystal.cirrus.com (ricardo-lws.ad.cirrus.com [141.131.206.19])
-        by ediswmail.ad.cirrus.com (Postfix) with ESMTP id DBA4E2A9;
-        Fri,  7 Jan 2022 19:58:19 +0000 (UTC)
+        by ediswmail.ad.cirrus.com (Postfix) with ESMTP id B1B322A9;
+        Fri,  7 Jan 2022 19:58:22 +0000 (UTC)
 From:   Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>
 To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>, <patches@opensource.cirrus.com>
 CC:     Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>
-Subject: [PATCH v2 0/2] Introduces bypass charge type property
-Date:   Fri, 7 Jan 2022 13:58:04 -0600
-Message-ID: <20220107195806.100956-1-rriveram@opensource.cirrus.com>
+Subject: [PATCH v2 2/2] power: supply: bq25980: Implements POWER_SUPPLY_CHARGE_TYPE_BYPASS
+Date:   Fri, 7 Jan 2022 13:58:06 -0600
+Message-ID: <20220107195806.100956-3-rriveram@opensource.cirrus.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220107195806.100956-1-rriveram@opensource.cirrus.com>
+References: <20220107195806.100956-1-rriveram@opensource.cirrus.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Proofpoint-GUID: uoxMeuUJ0Ge2r1-NdkQrl5DjQSOZmnNg
-X-Proofpoint-ORIG-GUID: uoxMeuUJ0Ge2r1-NdkQrl5DjQSOZmnNg
+X-Proofpoint-GUID: RxiIQ-00gsJ3Jt_9PZaV9c8XlGmn6LfY
+X-Proofpoint-ORIG-GUID: RxiIQ-00gsJ3Jt_9PZaV9c8XlGmn6LfY
 X-Proofpoint-Spam-Reason: safe
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+This patch remaps the bypass operation from POWER_SUPPLY_CHARGE_TYPE_FAST
+to POWER_SUPPLY_CHARGE_TYPE_BYPASS.
 
-This patch series introduces a new POWER_SUPPLY_CHARGE_TYPE for bypass charging
-operation.
+Signed-off-by: Ricardo Rivera-Matos <rriveram@opensource.cirrus.com>
+---
+ drivers/power/supply/bq25980_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-In fast charging ICs, the bypass operation is used to bypass the charging path
-around the charging IC's integrated power converter to its load. This allows
-for "smart" wall adaptors (such as USB PPS standard power adaptors) to handle
-the power conversion and heat dissipation externally.
-
-Best Regards,
-Ricardo
-
-Ricardo Rivera-Matos (2):
-  power: supply: Introduces bypass charging property
-  power: supply: bq25980: Implements POWER_SUPPLY_CHARGE_TYPE_BYPASS
-
- drivers/power/supply/bq25980_charger.c    | 2 +-
- drivers/power/supply/power_supply_sysfs.c | 1 +
- include/linux/power_supply.h              | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
+index 9daa6d14db4d..9339f5649282 100644
+--- a/drivers/power/supply/bq25980_charger.c
++++ b/drivers/power/supply/bq25980_charger.c
+@@ -764,7 +764,7 @@ static int bq25980_get_charger_property(struct power_supply *psy,
+ 		if (!state.ce)
+ 			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
+ 		else if (state.bypass)
+-			val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_BYPASS;
+ 		else if (!state.bypass)
+ 			val->intval = POWER_SUPPLY_CHARGE_TYPE_STANDARD;
+ 		break;
 -- 
 2.25.1
 
