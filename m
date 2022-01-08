@@ -2,263 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B3C0C433F5
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jan 2022 03:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0255C433EF
+	for <linux-pm@archiver.kernel.org>; Sat,  8 Jan 2022 11:22:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233581AbiAHDqK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Jan 2022 22:46:10 -0500
-Received: from mga09.intel.com ([134.134.136.24]:16918 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233513AbiAHDqC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jan 2022 22:46:02 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1641613562; x=1673149562;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references;
-  bh=dcp1jgBjkoXK8ouSw2P124AAiwrWfLmLyH+goykXgw8=;
-  b=Gs2Y0KOWs/WNupmFU86sCPGauCxZnUB2qsZOkxvut2hzuYc0AmG9j0Pt
-   U3xpY74jeI647+I4Wt+WCRNNxrdHJbTWjgxaj7Qo7HF9T46YkO7OHKrMU
-   3WHipf/WF38TtI2eVv51m53OzPDZKW5xHuY0gDxOJ+PBmgI1yK/pRUqCl
-   +j8NG4tAtSIUiTN8YywZI6lcRn4Iw8rNGBJoezirSqK72CNDJfD3bhQth
-   YJyxLA9eeumiy32Km24lA8QDPYDjTxguHnog6kTyfbsJaCTmatj0/WtYL
-   1eCRq8Ux3/sr6ZkENTOsZiUT6BGf9G+PGI13dGfJFYg68Tii0e+QH2Od7
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10220"; a="242781008"
-X-IronPort-AV: E=Sophos;i="5.88,271,1635231600"; 
-   d="scan'208";a="242781008"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jan 2022 19:46:01 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,271,1635231600"; 
-   d="scan'208";a="514024484"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by orsmga007.jf.intel.com with ESMTP; 07 Jan 2022 19:46:01 -0800
-From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     x86@kernel.org, linux-doc@vger.kernel.org,
-        Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Aubrey Li <aubrey.li@linux.intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Andi Kleen <ak@linux.intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ricardo Neri <ricardo.neri@intel.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v4 6/7] thermal: netlink: Add a new event to notify CPU capabilities change
-Date:   Fri,  7 Jan 2022 19:47:41 -0800
-Message-Id: <20220108034743.31277-7-ricardo.neri-calderon@linux.intel.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220108034743.31277-1-ricardo.neri-calderon@linux.intel.com>
-References: <20220108034743.31277-1-ricardo.neri-calderon@linux.intel.com>
+        id S231586AbiAHLWd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 8 Jan 2022 06:22:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39382 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231538AbiAHLWd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jan 2022 06:22:33 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 414D1C061574;
+        Sat,  8 Jan 2022 03:22:33 -0800 (PST)
+Received: from mail.kernel.org (unknown [198.145.29.99])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C741560EC9;
+        Sat,  8 Jan 2022 11:22:32 +0000 (UTC)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 07BD460F02;
+        Sat,  8 Jan 2022 11:22:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1641640952;
+        bh=rRXvfFxR3p3YXRPs+6mfHzb/NOOpyh9Znem6mMhRwk0=;
+        h=Date:From:To:Cc:Subject:From;
+        b=pbybb7hPl1/zh2gWLasy0e0Z1jo0p997b3oPgm5lsrIHnMcFAkK9kJVhpCWbuTh/4
+         vuS5cqjKlD1nlDoZGc61oXc8GmDe2nemhmF1jkLWwDZUDk4M5Xs3gl3hp1PGqiMAgU
+         7/T1M6fPJGb2mrYAXsfGgJJzOaSyaxeXXvJAiaT+Rrt7le3To7HivzhoUESNzWekL3
+         ANox8dzqWZYsSKc4Rp5juzn4Rnycwp0Al91quLGnecna7IFHLN+XfKtuYtm2+IWmIg
+         FI4x8lL10boJLzkks6xVU4+OichAmxJJMvqyt0Lov0aR2gkZklM3tvmtpN26v87IlQ
+         6Z4UUAHDJQLRQ==
+Received: by earth.universe (Postfix, from userid 1000)
+        id DCE3A3C0CB7; Sat,  8 Jan 2022 12:22:29 +0100 (CET)
+Date:   Sat, 8 Jan 2022 12:22:29 +0100
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [GIT PULL] power-supply fixes for 5.16
+Message-ID: <20220108112229.v3d7enmuibypa5tm@earth.universe>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="umpcgks4hy5n6npl"
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Add a new netlink event to notify change in CPU capabilities in terms of
-performance and efficiency.
+--umpcgks4hy5n6npl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Firmware may change CPU capabilities as a result of thermal events in the
-system or to account for changes in the TDP (thermal design power) level.
+Hi Linus,
 
-This notification type will allow user space to avoid running workloads
-on certain CPUs or proactively adjust power limits to avoid future events.
+The following changes since commit fa55b7dcdc43c1aa1ba12bca9d2dd4318c2a0dbf:
 
-The netlink message consists of a nested attribute
-(THERMAL_GENL_ATTR_CPU_CAPABILITY) with three attributes:
+  Linux 5.16-rc1 (2021-11-14 13:56:52 -0800)
 
- * THERMAL_GENL_ATTR_CPU_CAPABILITY_ID (type u32):
-   -- logical CPU number
- * THERMAL_GENL_ATTR_CPU_CAPABILITY_PERFORMANCE (type u32):
-   -- Scaled performance from 0-1023
- * THERMAL_GENL_ATTR_CPU_CAPABILITY_EFFICIENCY (type u32):
-   -- Scaled efficiency from 0-1023
+are available in the Git repository at:
 
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Aubrey Li <aubrey.li@linux.intel.com>
-Cc: Lukasz Luba <lukasz.luba@arm.com>
-Cc: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
-Reviewed-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-Changes since v3:
-  * None
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.16-rc
 
-Changes since v2:
-  * None
+for you to fetch changes up to 644106cdb89844be2496b21175b7c0c2e0fab381:
 
-Changes since v1:
-  * Reworded commit message.
-  * Reworded the members of struct cpu_capacity for clarity. (Lukasz)
-  * Defined the CPU capability attributes to be scaled in the [0, 1023]
-    interval. (Lukasz)
----
- drivers/thermal/thermal_netlink.c | 55 +++++++++++++++++++++++++++++++
- drivers/thermal/thermal_netlink.h | 13 ++++++++
- include/uapi/linux/thermal.h      |  6 +++-
- 3 files changed, 73 insertions(+), 1 deletion(-)
+  power: reset: ltc2952: Fix use of floating point literals (2021-11-16 15:22:39 +0100)
 
-diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
-index a16dd4d5d710..38e6c20f460c 100644
---- a/drivers/thermal/thermal_netlink.c
-+++ b/drivers/thermal/thermal_netlink.c
-@@ -43,6 +43,11 @@ static const struct nla_policy thermal_genl_policy[THERMAL_GENL_ATTR_MAX + 1] =
- 	[THERMAL_GENL_ATTR_CDEV_MAX_STATE]	= { .type = NLA_U32 },
- 	[THERMAL_GENL_ATTR_CDEV_NAME]		= { .type = NLA_STRING,
- 						    .len = THERMAL_NAME_LENGTH },
-+	/* CPU capabilities */
-+	[THERMAL_GENL_ATTR_CPU_CAPABILITY]		= { .type = NLA_NESTED },
-+	[THERMAL_GENL_ATTR_CPU_CAPABILITY_ID]		= { .type = NLA_U32 },
-+	[THERMAL_GENL_ATTR_CPU_CAPABILITY_PERFORMANCE]	= { .type = NLA_U32 },
-+	[THERMAL_GENL_ATTR_CPU_CAPABILITY_EFFICIENCY]	= { .type = NLA_U32 },
- };
- 
- struct param {
-@@ -58,6 +63,8 @@ struct param {
- 	int temp;
- 	int cdev_state;
- 	int cdev_max_state;
-+	struct cpu_capability *cpu_capabilities;
-+	int cpu_capabilities_count;
- };
- 
- typedef int (*cb_t)(struct param *);
-@@ -190,6 +197,45 @@ static int thermal_genl_event_gov_change(struct param *p)
- 	return 0;
- }
- 
-+static int thermal_genl_event_cpu_capability_change(struct param *p)
-+{
-+	struct cpu_capability *cpu_cap = p->cpu_capabilities;
-+	struct sk_buff *msg = p->msg;
-+	struct nlattr *start_cap;
-+	int i, ret;
-+
-+	start_cap = nla_nest_start(msg, THERMAL_GENL_ATTR_CPU_CAPABILITY);
-+	if (!start_cap)
-+		return -EMSGSIZE;
-+
-+	for (i = 0; i < p->cpu_capabilities_count; ++i) {
-+		if (nla_put_u32(msg, THERMAL_GENL_ATTR_CPU_CAPABILITY_ID,
-+				cpu_cap->cpu)) {
-+			ret = -EMSGSIZE;
-+			goto out_cancel_nest;
-+		}
-+		if (nla_put_u32(msg, THERMAL_GENL_ATTR_CPU_CAPABILITY_PERFORMANCE,
-+				cpu_cap->performance)) {
-+			ret = -EMSGSIZE;
-+			goto out_cancel_nest;
-+		}
-+		if (nla_put_u32(msg, THERMAL_GENL_ATTR_CPU_CAPABILITY_EFFICIENCY,
-+				cpu_cap->efficiency)) {
-+			ret = -EMSGSIZE;
-+			goto out_cancel_nest;
-+		}
-+		++cpu_cap;
-+	}
-+
-+	nla_nest_end(msg, start_cap);
-+
-+	return 0;
-+out_cancel_nest:
-+	nla_nest_cancel(msg, start_cap);
-+
-+	return ret;
-+}
-+
- int thermal_genl_event_tz_delete(struct param *p)
- 	__attribute__((alias("thermal_genl_event_tz")));
- 
-@@ -219,6 +265,7 @@ static cb_t event_cb[] = {
- 	[THERMAL_GENL_EVENT_CDEV_DELETE]	= thermal_genl_event_cdev_delete,
- 	[THERMAL_GENL_EVENT_CDEV_STATE_UPDATE]	= thermal_genl_event_cdev_state_update,
- 	[THERMAL_GENL_EVENT_TZ_GOV_CHANGE]	= thermal_genl_event_gov_change,
-+	[THERMAL_GENL_EVENT_CPU_CAPABILITY_CHANGE] = thermal_genl_event_cpu_capability_change,
- };
- 
- /*
-@@ -356,6 +403,14 @@ int thermal_notify_tz_gov_change(int tz_id, const char *name)
- 	return thermal_genl_send_event(THERMAL_GENL_EVENT_TZ_GOV_CHANGE, &p);
- }
- 
-+int thermal_genl_cpu_capability_event(int count, struct cpu_capability *caps)
-+{
-+	struct param p = { .cpu_capabilities_count = count, .cpu_capabilities = caps };
-+
-+	return thermal_genl_send_event(THERMAL_GENL_EVENT_CPU_CAPABILITY_CHANGE, &p);
-+}
-+EXPORT_SYMBOL_GPL(thermal_genl_cpu_capability_event);
-+
- /*************************** Command encoding ********************************/
- 
- static int __thermal_genl_cmd_tz_get_id(struct thermal_zone_device *tz,
-diff --git a/drivers/thermal/thermal_netlink.h b/drivers/thermal/thermal_netlink.h
-index e554f76291f4..44bc3dec5568 100644
---- a/drivers/thermal/thermal_netlink.h
-+++ b/drivers/thermal/thermal_netlink.h
-@@ -4,6 +4,12 @@
-  *  Author: Daniel Lezcano <daniel.lezcano@linaro.org>
-  */
- 
-+struct cpu_capability {
-+	int cpu;
-+	int performance;
-+	int efficiency;
-+};
-+
- /* Netlink notification function */
- #ifdef CONFIG_THERMAL_NETLINK
- int __init thermal_netlink_init(void);
-@@ -23,6 +29,7 @@ int thermal_notify_cdev_add(int cdev_id, const char *name, int max_state);
- int thermal_notify_cdev_delete(int cdev_id);
- int thermal_notify_tz_gov_change(int tz_id, const char *name);
- int thermal_genl_sampling_temp(int id, int temp);
-+int thermal_genl_cpu_capability_event(int count, struct cpu_capability *caps);
- #else
- static inline int thermal_netlink_init(void)
- {
-@@ -101,4 +108,10 @@ static inline int thermal_genl_sampling_temp(int id, int temp)
- {
- 	return 0;
- }
-+
-+static inline int thermal_genl_cpu_capability_event(int count, struct cpu_capability *caps)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_THERMAL_NETLINK */
-diff --git a/include/uapi/linux/thermal.h b/include/uapi/linux/thermal.h
-index 9aa2fedfa309..fc78bf3aead7 100644
---- a/include/uapi/linux/thermal.h
-+++ b/include/uapi/linux/thermal.h
-@@ -44,7 +44,10 @@ enum thermal_genl_attr {
- 	THERMAL_GENL_ATTR_CDEV_MAX_STATE,
- 	THERMAL_GENL_ATTR_CDEV_NAME,
- 	THERMAL_GENL_ATTR_GOV_NAME,
--
-+	THERMAL_GENL_ATTR_CPU_CAPABILITY,
-+	THERMAL_GENL_ATTR_CPU_CAPABILITY_ID,
-+	THERMAL_GENL_ATTR_CPU_CAPABILITY_PERFORMANCE,
-+	THERMAL_GENL_ATTR_CPU_CAPABILITY_EFFICIENCY,
- 	__THERMAL_GENL_ATTR_MAX,
- };
- #define THERMAL_GENL_ATTR_MAX (__THERMAL_GENL_ATTR_MAX - 1)
-@@ -71,6 +74,7 @@ enum thermal_genl_event {
- 	THERMAL_GENL_EVENT_CDEV_DELETE,		/* Cdev unbound */
- 	THERMAL_GENL_EVENT_CDEV_STATE_UPDATE,	/* Cdev state updated */
- 	THERMAL_GENL_EVENT_TZ_GOV_CHANGE,	/* Governor policy changed  */
-+	THERMAL_GENL_EVENT_CPU_CAPABILITY_CHANGE,	/* CPU capability changed */
- 	__THERMAL_GENL_EVENT_MAX,
- };
- #define THERMAL_GENL_EVENT_MAX (__THERMAL_GENL_EVENT_MAX - 1)
--- 
-2.17.1
+----------------------------------------------------------------
+Power Supply Fixes for 5.16 cycle
 
+Three fixes for the 5.16 cycle:
+
+1. Avoid going beyond last capacity in the power-supply core
+2. Replace 1E6L with NSEC_PER_MSEC to avoid floating point calculation
+   in LLVM resulting in a build failure
+3. Fix ADC measurements in bq25890 charger driver
+
+----------------------------------------------------------------
+Linus Walleij (1):
+      power: supply: core: Break capacity loop
+
+Nathan Chancellor (1):
+      power: reset: ltc2952: Fix use of floating point literals
+
+Yauhen Kharuzhy (1):
+      power: bq25890: Enable continuous conversion for ADC at charging
+
+ drivers/power/reset/ltc2952-poweroff.c   | 4 ++--
+ drivers/power/supply/bq25890_charger.c   | 4 ++--
+ drivers/power/supply/power_supply_core.c | 4 ++++
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+--umpcgks4hy5n6npl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmHZc/UACgkQ2O7X88g7
++pqPHg/+KVJi7sJTL0LeSRIejsqvvGts0bJRT0Q2ZJv4BvcZB/JLMSXX7sxfae2v
+J4r+pbq/KiaRVEWQTdpsYuxPm/HRrUgGi+26y4QbyVDxXzQA3faSPaurWMkgH3F1
+Jf7wXbWp96ZegX5Xy1EBCkZp1xrRFCvs7rm/0Arx9loKyrzO3FcbXDF/Wwm94huM
+gpcJIuunIbD37nSuRsl/ok1ryTmhocupF7PzOr9Do3/xbkjp80ACIE1Ig8kyq1lp
+1YSTzRk23PACDZD0diCgGKVazrIutc4/Vr4/mo1iXIJLbuh4cqK1SxociwGV8My9
+cE0yCPnqAs9Yr31JA8vWrUqieXylck9P6zoX9p1+NaW33ME/PDfyPAxkM2D71RmT
+rhmPseRSf1gBfOlChCR1ArVyajt5Jvwurz1p5OXuHS5jkNSTwekXi69RyHo6YNoO
+h3AiuCtjjW7GTPiQKhj6/lyK3ZeoO4kcOXmEQIHjnwiqC+s24N/Mq8KStneGfk2F
+usrpQBlBtNLlxkTfckfWMyDPud+sIjvD5n+rpTbhc0nli+yT+KcHrIs5NCY7qTJl
+APf7+f9X/eyj4xejNaKoCPRGXC+8cMp+aYQUgVMQrlRqAPU/9ZwY1X948CrDTA4K
+QikttW4+4UEMHPgyEzx3wc7w1dBdMiU6hOFuyMUsUTpAQ3qCz9k=
+=tL27
+-----END PGP SIGNATURE-----
+
+--umpcgks4hy5n6npl--
