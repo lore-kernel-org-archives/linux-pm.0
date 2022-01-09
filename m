@@ -2,201 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82838C43217
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Jan 2022 17:26:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 189E1C433FE
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Jan 2022 18:11:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229528AbiAIR0W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 9 Jan 2022 12:26:22 -0500
-Received: from alexa-out.qualcomm.com ([129.46.98.28]:43026 "EHLO
-        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234292AbiAIR0S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jan 2022 12:26:18 -0500
+        id S236366AbiAISLu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Jan 2022 13:11:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43890 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234535AbiAISLu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jan 2022 13:11:50 -0500
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF76FC06173F;
+        Sun,  9 Jan 2022 10:11:49 -0800 (PST)
+Received: by mail-pj1-x102e.google.com with SMTP id pf13so2922817pjb.0;
+        Sun, 09 Jan 2022 10:11:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1641749178; x=1673285178;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version;
-  bh=NFcYIx9++qhumrrl4CNqWQ3EU5+nnEC/KIO7YgYlBHg=;
-  b=N4IOPPa0JuiLzOWFYS6WciD/muU1urKeB7er/AHexOYHzMh/H+7KrO1o
-   o5Hmr6Miki1cPC/ewrTHMZN5FAhgFyOEjTuu+O+zbYjxXKjeRW5XBv6hW
-   8sYoDkhASUg5EOpy56ueoKXSbZ8/1VLMgUhRkDv3VTP3uOsAQ3mJtdrOb
-   Q=;
-Received: from ironmsg-lv-alpha.qualcomm.com ([10.47.202.13])
-  by alexa-out.qualcomm.com with ESMTP; 09 Jan 2022 09:26:03 -0800
-X-QCInternal: smtphost
-Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
-  by ironmsg-lv-alpha.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Jan 2022 09:26:03 -0800
-Received: from nalasex01a.na.qualcomm.com (10.47.209.196) by
- nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.922.19; Sun, 9 Jan 2022 09:25:42 -0800
-Received: from mkshah-linux.qualcomm.com (10.80.80.8) by
- nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.922.19; Sun, 9 Jan 2022 09:25:39 -0800
-From:   Maulik Shah <quic_mkshah@quicinc.com>
-To:     <bjorn.andersson@linaro.org>, <ulf.hansson@linaro.org>
-CC:     <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <rafael@kernel.org>,
-        <daniel.lezcano@linaro.org>, <quic_lsrao@quicinc.com>,
-        <quic_rjendra@quicinc.com>, Lina Iyer <ilina@codeaurora.org>,
-        Maulik Shah <quic_mkshah@quicinc.com>
-Subject: [PATCH 06/10] soc: qcom: rpmh-rsc: Attach RSC to cluster PM domain
-Date:   Sun, 9 Jan 2022 22:55:03 +0530
-Message-ID: <1641749107-31979-7-git-send-email-quic_mkshah@quicinc.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1641749107-31979-1-git-send-email-quic_mkshah@quicinc.com>
-References: <1641749107-31979-1-git-send-email-quic_mkshah@quicinc.com>
+        d=gmail.com; s=20210112;
+        h=sender:from:to:cc:subject:date:message-id:mime-version:reply-to
+         :organization:content-transfer-encoding;
+        bh=tNvI+a7A8PS5Wd2PToIgDMYPiKE2u7O11qPaKJfdtO8=;
+        b=hFx4PqOcNZK5MuhbcALaswLAWpYR63pmyKMyh3S1r4Dkx2YT9LsxaoSfGDgGTqktAB
+         izsb8drDwggw5idyFf8BE9Yx6Z/c8yjegszok9iAO31xvjdvQgHKJPMkB+bmVambspHc
+         edGrF9kxxltrQOgWkEx4t/iW9GCDaq7dIKgswpbPRWCAnZ3e+wq4b9erEaNphdtClGFP
+         uZZSLB2zsU2s67S2/TBCfDocJUGkJLfaSbNvoI0sbpD1OTkK8103AhbEPjYs4TdsIkw/
+         lzzlNlbbb09ddQ87s3T0ZlaaIxY6wZreQrPPhkVmmMJNYgUWceNQJA0ElerW1/m3Inwe
+         q+PQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :mime-version:reply-to:organization:content-transfer-encoding;
+        bh=tNvI+a7A8PS5Wd2PToIgDMYPiKE2u7O11qPaKJfdtO8=;
+        b=4Pjgb3CPlWtVXA4QwXi1vZnFqUH3BgRvt+Fq9p7YnCVs+qiTeX4DEPZpaOKXO2OUeo
+         r/6psmJP6KsB+qtowYLXwGo8mGaFKQAc+z+huW0o3jtH7xLUAJMPMvKYkpaJOOdcOUuL
+         mJUfIEyCy8rRLxFMR4ThCJoZQGojTOvjgvmiELIHlXt27Vdo3lo2AsPTJHekajP5jRui
+         5TpOrH9mIMKRrtEqEUYcED1IqAnsNvxDqMbnT4ih8Zxq1r6m0LEHaAH5+FOcgrjlPTAQ
+         2LXbUD4RHgYrtR07UyVIH7STwLW04YOO13+GDR8Jh15o7K5wH6PT0F0BHyyJuYBeN1sp
+         cmFg==
+X-Gm-Message-State: AOAM532XbhxYf1awFYQ4UVXWe1u3BOiUgLWZ6Jq3L9Km89PNG2PVmcBb
+        SKt5oIYsyqXMPVPL1sBBLi6D7O0jOgRijg==
+X-Google-Smtp-Source: ABdhPJyh8djCs5KBhtHmWvs+w17xnphZd7/tx119erntsFX9510Pj8MdMJrgE3jzC2Hewn4vcst2iQ==
+X-Received: by 2002:a17:90b:4c11:: with SMTP id na17mr27193063pjb.84.1641751909234;
+        Sun, 09 Jan 2022 10:11:49 -0800 (PST)
+Received: from localhost.localdomain (h69-131-29-103.cntcnh.broadband.dynamic.tds.net. [69.131.29.103])
+        by smtp.gmail.com with ESMTPSA id j4sm4372827pfj.34.2022.01.09.10.11.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 Jan 2022 10:11:48 -0800 (PST)
+Sender: Len Brown <lenb417@gmail.com>
+From:   Len Brown <lenb@kernel.org>
+To:     torvalds@linux-foundation.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Len Brown <len.brown@intel.com>,
+        Guchun Chen <guchun.chen@amd.com>,
+        Andrey Grodzovsky <andrey.grodzovsky@amd.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        stable@vger.kernel.org
+Subject: [PATCH REGRESSION] Revert "drm/amdgpu: stop scheduler when calling hw_fini (v2)"
+Date:   Sun,  9 Jan 2022 13:11:37 -0500
+Message-Id: <8ab406c8bb2e58969668a806a529d5988b447530.1641750730.git.len.brown@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
+Content-Type: text/plain; charset=UTF-8
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Lina Iyer <ilina@codeaurora.org>
+From: Len Brown <len.brown@intel.com>
 
-RSC is part the CPU subsystem and powers off the CPU domains when all
-the CPUs and no RPMH transactions are pending from any of the drivers.
-The RSC needs to flush the 'sleep' and 'wake' votes that are critical
-for saving power when all the CPUs are in idle.
+This reverts commit f7d6779df642720e22bffd449e683bb8690bd3bf.
 
-Let's make RSC part of the CPU PM domains, by attaching it to the
-cluster power domain. Registering for PM domain notifications, RSC
-driver can be notified that the last CPU is powering down. When the last
-CPU is powering down the domain, let's flush the 'sleep' and 'wake'
-votes that are stored in the data buffers into the hardware and also
-write next wakeup in CONTROL_TCS.
+This bisected regression has impacted suspend-resume stability
+since 5.15-rc1. It regressed -stable via 5.14.10.
 
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-Signed-off-by: Maulik Shah <quic_mkshah@quicinc.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=215315
+
+Fixes: f7d6779df64 ("drm/amdgpu: stop scheduler when calling hw_fini (v2)")
+Cc: Guchun Chen <guchun.chen@amd.com>
+Cc: Andrey Grodzovsky <andrey.grodzovsky@amd.com>
+Cc: Christian Koenig <christian.koenig@amd.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: <stable@vger.kernel.org> # 5.14+
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/soc/qcom/rpmh-internal.h |  6 +++-
- drivers/soc/qcom/rpmh-rsc.c      | 60 ++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 62 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-index 344ba68..32ac117 100644
---- a/drivers/soc/qcom/rpmh-internal.h
-+++ b/drivers/soc/qcom/rpmh-internal.h
-@@ -97,7 +97,9 @@ struct rpmh_ctrlr {
-  * @rsc_pm:             CPU PM notifier for controller.
-  *                      Used when solver mode is not present.
-  * @cpus_in_pm:         Number of CPUs not in idle power collapse.
-- *                      Used when solver mode is not present.
-+ *                      Used when solver mode and "power-domains" is not present.
-+ * @genpd_nb:           PM Domain notifier for cluster genpd notifications.
-+ * @genpdb:             PM Domain for cluster genpd.
-  * @tcs:                TCS groups.
-  * @tcs_in_use:         S/W state of the TCS; only set for ACTIVE_ONLY
-  *                      transfers, but might show a sleep/wake TCS in use if
-@@ -117,6 +119,8 @@ struct rsc_drv {
- 	int id;
- 	int num_tcs;
- 	struct notifier_block rsc_pm;
-+	struct notifier_block genpd_nb;
-+	struct generic_pm_domain *genpd;
- 	atomic_t cpus_in_pm;
- 	struct tcs_group tcs[TCS_TYPE_NR];
- 	DECLARE_BITMAP(tcs_in_use, MAX_TCS_NR);
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 01c2f50c..5875ad5 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -14,10 +14,13 @@
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/module.h>
-+#include <linux/notifier.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/wait.h>
-@@ -834,6 +837,51 @@ static int rpmh_rsc_cpu_pm_callback(struct notifier_block *nfb,
- 	return ret;
- }
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c
+index 9afd11ca2709..45977a72b5dd 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c
+@@ -547,9 +547,6 @@ void amdgpu_fence_driver_hw_fini(struct amdgpu_device *adev)
+ 		if (!ring || !ring->fence_drv.initialized)
+ 			continue;
  
-+/**
-+ * rpmh_rsc_pd_callback() - Check if any of the AMCs are busy.
-+ * @nfb:    Pointer to the genpd notifier block in struct rsc_drv.
-+ * @action: GENPD_NOTIFY_PRE_OFF, GENPD_NOTIFY_OFF, GENPD_NOTIFY_PRE_ON or GENPD_NOTIFY_ON.
-+ * @v:      Unused
-+ *
-+ * This function is given to dev_pm_genpd_add_notifier() so we can be informed
-+ * about when cluster-pd is going down. When cluster go down we know no more active
-+ * transfers will be started so we write sleep/wake sets. This function gets
-+ * called from cpuidle code paths and also at system suspend time.
-+ *
-+ * If AMCs are not busy then writes cached sleep and wake messages to TCSes.
-+ * The firmware then takes care of triggering them when entering deepest low power modes.
-+ *
-+ * Return:
-+ * * NOTIFY_OK          - success
-+ * * NOTIFY_BAD         - failure
-+ */
-+static int rpmh_rsc_pd_callback(struct notifier_block *nfb,
-+				unsigned long action, void *v)
-+{
-+	struct rsc_drv *drv = container_of(nfb, struct rsc_drv, genpd_nb);
-+
-+	/* We don't need to lock as domin on/off are serialized */
-+	if ((action == GENPD_NOTIFY_PRE_OFF) &&
-+	    (rpmh_rsc_ctrlr_is_busy(drv) || rpmh_flush(&drv->client)))
-+		return NOTIFY_BAD;
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int rpmh_rsc_pd_attach(struct rsc_drv *drv, struct device *dev)
-+{
-+	int ret;
-+
-+	pm_runtime_enable(dev);
-+	ret = dev_pm_domain_attach(dev, false);
-+	if (ret)
-+		return ret;
-+
-+	drv->genpd = pd_to_genpd(dev->pm_domain);
-+	drv->genpd_nb.notifier_call = rpmh_rsc_pd_callback;
-+	return dev_pm_genpd_add_notifier(dev, &drv->genpd_nb);
-+}
-+
- static int rpmh_probe_tcs_config(struct platform_device *pdev,
- 				 struct rsc_drv *drv, void __iomem *base)
- {
-@@ -963,7 +1011,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
- 		return ret;
+-		if (!ring->no_scheduler)
+-			drm_sched_stop(&ring->sched, NULL);
+-
+ 		/* You can't wait for HW to signal if it's gone */
+ 		if (!drm_dev_is_unplugged(adev_to_drm(adev)))
+ 			r = amdgpu_fence_wait_empty(ring);
+@@ -609,11 +606,6 @@ void amdgpu_fence_driver_hw_init(struct amdgpu_device *adev)
+ 		if (!ring || !ring->fence_drv.initialized)
+ 			continue;
  
- 	/*
--	 * CPU PM notification are not required for controllers that support
-+	 * CPU PM/genpd notification are not required for controllers that support
- 	 * 'HW solver' mode where they can be in autonomous mode executing low
- 	 * power mode to power down.
- 	 */
-@@ -971,8 +1019,14 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
- 	solver_config &= DRV_HW_SOLVER_MASK << DRV_HW_SOLVER_SHIFT;
- 	solver_config = solver_config >> DRV_HW_SOLVER_SHIFT;
- 	if (!solver_config) {
--		drv->rsc_pm.notifier_call = rpmh_rsc_cpu_pm_callback;
--		cpu_pm_register_notifier(&drv->rsc_pm);
-+		if (of_find_property(dn, "power-domains", NULL)) {
-+			ret = rpmh_rsc_pd_attach(drv, &pdev->dev);
-+			if (ret)
-+				return ret;
-+		} else {
-+			drv->rsc_pm.notifier_call = rpmh_rsc_cpu_pm_callback;
-+			cpu_pm_register_notifier(&drv->rsc_pm);
-+		}
- 	}
- 
- 	/* Enable the active TCS to send requests immediately */
+-		if (!ring->no_scheduler) {
+-			drm_sched_resubmit_jobs(&ring->sched);
+-			drm_sched_start(&ring->sched, true);
+-		}
+-
+ 		/* enable the interrupt */
+ 		if (ring->fence_drv.irq_src)
+ 			amdgpu_irq_get(adev, ring->fence_drv.irq_src,
 -- 
-2.7.4
+2.25.1
 
