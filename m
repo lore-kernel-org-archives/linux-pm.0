@@ -2,191 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B2EBC43217
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jan 2022 23:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 051DCC433EF
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Jan 2022 07:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234973AbiAHXff (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 8 Jan 2022 18:35:35 -0500
-Received: from rere.qmqm.pl ([91.227.64.183]:6635 "EHLO rere.qmqm.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230502AbiAHXfe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 8 Jan 2022 18:35:34 -0500
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 4JWbzn6Bf4z9c;
-        Sun,  9 Jan 2022 00:35:17 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1641684931; bh=PlUOfTOJmz/Ue3/EDBlVUxJ2DxqecfDU18/1xQbQtoA=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=FscL30pAUhiOa20r1Aci5nnOyAPPM7+JoY4I/TdvClRTh0U4D6S+wg1hl5DP6lTxY
-         uXsR1x49ZX58OBDSXL5QGeKh44OE5Qx3HX+fhAHnzzl6d2Bb3RMolFLW/CZs7ANyT9
-         2B2bqDVSaDvrnFLV9W4laov2KVjSpYZyXNNSx0uhvIf6/Ty/Jc6im2Ya6WtOK+mKnU
-         8tBa912YBdNEWU6kN5XGlGndW+KwbfYMSoJHIv4OJWOXoW7NdW+vFlXd5iG2C0Sl5t
-         yLjrrdYJpGeB9xfuugFJFXVZkd4+VRh97hWFY+LEwPEsT5kUEeN00fOMl2F0IbFH2g
-         x9nJQfgC6GmfA==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.103.4 at mail
-Date:   Sun, 9 Jan 2022 00:35:15 +0100
-From:   =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Ungerer <gerg@linux-m68k.org>,
-        Joshua Thompson <funaho@jurai.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Sebastian Reichel <sre@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Greentime Hu <green.hu@gmail.com>,
-        Vincent Chen <deanbo422@gmail.com>,
-        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Len Brown <lenb@kernel.org>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Lee Jones <lee.jones@linaro.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>, alankao@andestech.com,
-        "K . C . Kuen-Chern Lin" <kclin@andestech.com>,
-        linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
-        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-        linux-sh@vger.kernel.org, xen-devel@lists.xenproject.org,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: Re: [PATCH v5 04/21] kernel: Add combined power-off+restart handler
- call chain API
-Message-ID: <Ydofs2CIfA+r5KAz@qmqm.qmqm.pl>
-References: <20211212210309.9851-1-digetx@gmail.com>
- <20211212210309.9851-5-digetx@gmail.com>
+        id S231473AbiAIH7c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Jan 2022 02:59:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52302 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231585AbiAIH7b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jan 2022 02:59:31 -0500
+Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com [IPv6:2607:f8b0:4864:20::d33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 881D8C06173F
+        for <linux-pm@vger.kernel.org>; Sat,  8 Jan 2022 23:59:31 -0800 (PST)
+Received: by mail-io1-xd33.google.com with SMTP id y70so13452351iof.2
+        for <linux-pm@vger.kernel.org>; Sat, 08 Jan 2022 23:59:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+         :subject:to:cc;
+        bh=o1vLp5DTY9ymBiRWyr8ydS/8R5S2aODL3XlSJX0ORAc=;
+        b=TjirW4RGiSGJ1QNGk4lo0ghfgu/XTWMTlTm33Fh6zkW7uu9vqobiY3VdtwNUONX04Z
+         Bn2WfqPtGYk9NGeknhhbeFt8jsL+bm0wJ5uUzMJCpttLNXya59OgEOhq/rS9q/qZduVY
+         WKPf4ChqCN9cJL483OsSBDqqPTzs3caGwmvhl3ei+gcASRj0c+I9Er2vBX+QLOFtcfd9
+         NbqPSiOF0x8XQfykuj/LRo9MCRz9OcUlXowsh7HxOz0o/bsemfqp00XiaPKAq+uzNt70
+         bDRdMrXlx6BjUNeFhxFEINhnAxCInXFJ3hm9FKXjgaMCdD4JW0YY9Vi4B+zHIaDeo7ug
+         KGkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+         :from:date:message-id:subject:to:cc;
+        bh=o1vLp5DTY9ymBiRWyr8ydS/8R5S2aODL3XlSJX0ORAc=;
+        b=j4ouWURLSOoHQuLSUBdO/aT6UkMMfxujaZj4IxZBIz49GW1d9L9eT/4cyVOUo09r5Q
+         B+CZ1xwTQvecTHVGi0ZDTcLMP4f0jul3V8OlZXk1GcXNTsvQfhg8FhZpjwACQ3z3MtfL
+         P2tp1FA1Azk/F3MnMXDaRFAFnLtGUT4NlJ3g8+DcQBcG+EH2ZpJI8N1fj12QXKfwRert
+         QkJXyiG9yFdLsA6SPmjSGlHpVUtm/9HYxc4X/fQnXQ3bY/uUZW+T4f1tEEj154+Kxa39
+         giexyBG/rX4/j+3hC1xmxODQrWHce1JyCoUfIJsDpVKce7E8TqetWOsveswodbH2GNAV
+         C8ag==
+X-Gm-Message-State: AOAM530JRXZiPp1AP2omm/QC7RXoOj+e93qG7emS+PhsZ4359JBhybPq
+        m/9UtMbpWbRSYKG6ssms+9aOCRaauQwyli9pTtI=
+X-Google-Smtp-Source: ABdhPJzlCjSS595rxva7WREWWVg7j9czlHuIpXj0v297on11wCE0vSY0LkjIaI/tWf/RUDudfGZ4uiSbSJIDLYtyxaQ=
+X-Received: by 2002:a05:6638:8:: with SMTP id z8mr33910382jao.199.1641715170864;
+ Sat, 08 Jan 2022 23:59:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211212210309.9851-5-digetx@gmail.com>
+References: <CA+icZUWoKBL9DYY8dcNMvKMV-UgfdEsPrvwzueE85N6PqMOK1A@mail.gmail.com>
+In-Reply-To: <CA+icZUWoKBL9DYY8dcNMvKMV-UgfdEsPrvwzueE85N6PqMOK1A@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
+From:   Sedat Dilek <sedat.dilek@gmail.com>
+Date:   Sun, 9 Jan 2022 08:58:54 +0100
+Message-ID: <CA+icZUXg-P15y48+tr_twfq9Lvhx_R8n+y2XnW3RME5Fv-0Oeg@mail.gmail.com>
+Subject: Re: [Linux-v5.16] power-supply git-pull request?
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 13, 2021 at 12:02:52AM +0300, Dmitry Osipenko wrote:
-[...]
-> +/**
-> + * struct power_off_data - Power-off callback argument
-> + *
-> + * @cb_data: Callback data.
-> + */
-> +struct power_off_data {
-> +	void *cb_data;
-> +};
-> +
-> +/**
-> + * struct power_off_prep_data - Power-off preparation callback argument
-> + *
-> + * @cb_data: Callback data.
-> + */
-> +struct power_off_prep_data {
-> +	void *cb_data;
-> +};
+See upstream commit 644106cdb89844be2496b21175b7c0c2e0fab381.
 
-Why two exactly same structures? Why only a single pointer instead? If
-it just to enable type-checking callbacks, then thouse could be opaque
-or zero-sized structs that would be embedded or casted away in
-respective callbacks.
+- sed@ -
 
-> +
-> +/**
-> + * struct restart_data - Restart callback argument
-> + *
-> + * @cb_data: Callback data.
-> + * @cmd: Restart command string.
-> + * @stop_chain: Further lower priority callbacks won't be executed if set to
-> + *		true. Can be changed within callback. Default is false.
-> + * @mode: Reboot mode ID.
-> + */
-> +struct restart_data {
-> +	void *cb_data;
-> +	const char *cmd;
-> +	bool stop_chain;
-> +	enum reboot_mode mode;
-> +};
-> +
-> +/**
-> + * struct reboot_prep_data - Reboot and shutdown preparation callback argument
-> + *
-> + * @cb_data: Callback data.
-> + * @cmd: Restart command string.
-> + * @stop_chain: Further lower priority callbacks won't be executed if set to
-> + *		true. Can be changed within callback. Default is false.
+[1] https://git.kernel.org/linus/644106cdb89844be2496b21175b7c0c2e0fab381
+[2] https://github.com/ClangBuiltLinux/linux/issues/1497#issuecomment-1008182373
 
-Why would we want to stop power-off or erboot chain? If the callback
-succeded, then further calls won't be made. If it doesn't succeed, but
-possibly breaks the system somehow, it shouldn't return. Then the only
-case left would be to just try the next method of shutting down.
-
-> + * @mode: Preparation mode ID.
-> + */
-> +struct reboot_prep_data {
-> +	void *cb_data;
-> +	const char *cmd;
-> +	bool stop_chain;
-> +	enum reboot_prepare_mode mode;
-> +};
-> +
-> +struct sys_off_handler_private_data {
-> +	struct notifier_block power_off_nb;
-> +	struct notifier_block restart_nb;
-> +	struct notifier_block reboot_nb;
-
-What's the difference between restart and reboot?
-
-> +	void (*platform_power_off_cb)(void);
-> +	void (*simple_power_off_cb)(void *data);
-> +	void *simple_power_off_cb_data;
-> +	bool registered;
-> +};
-
-BTW, I couldn't find a right description of my idea of unifying the
-chains before, so let me sketch it now.
-
-The idea is to have a single system-off chain in which the callback
-gets a mode ({QUERY_*, PREP_*, DO_*} for each of {*_REBOOT, *_POWEROFF, ...?).
-The QUERY_* calls would be made in can_kernel_reboot/poweroff(): all
-would be called, and if at least one returned true, then the shutdown
-mode would continue. All of PREP_* would be called then. After that
-all DO_* would be tried until one doesn't return (succeeded or broke
-the system hard). Classic for(;;); could be a final fallback for the
-case where arch/machine (lowest priority) call would return instead
-of halting the system in machine-dependent way. The QUERY and PREP
-stages could be combined, but I haven't thought about it enough to
-see what conditions would need to be imposed on the callbacks in
-that case (maybe it's not worth the trouble, since it isn't a fast
-path anyway?). The goal here is to have less (duplicated) code in
-kernel, but otherwise it seems equivalent to your API proposal.
-
-Best Regards
-Micha³ Miros³aw
+On Thu, Dec 16, 2021 at 1:02 AM Sedat Dilek <sedat.dilek@gmail.com> wrote:
+>
+> Hi Sebastian,
+>
+> was there a recent pull-request for your linux-power-supply.git#fixes
+> Git branch?
+>
+> Restarting my activities in the ClangBuiltLinux project I am
+> interested in Nathan's "power: reset: ltc2952: Fix use of floating
+> point literals" patch.
+>
+> Thanks.
+>
+> Regards,
+> - Sedat -
+>
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?h=fixes&id=644106cdb89844be2496b21175b7c0c2e0fab381
