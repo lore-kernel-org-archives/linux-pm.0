@@ -2,110 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA2A5C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Jan 2022 14:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 032D5C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Jan 2022 15:51:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235669AbiAJOkt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Jan 2022 09:40:49 -0500
-Received: from relmlor1.renesas.com ([210.160.252.171]:13349 "EHLO
-        relmlie5.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S235678AbiAJOks (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jan 2022 09:40:48 -0500
-X-IronPort-AV: E=Sophos;i="5.88,277,1635174000"; 
-   d="scan'208";a="106017083"
-Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
-  by relmlie5.idc.renesas.com with ESMTP; 10 Jan 2022 23:40:47 +0900
-Received: from localhost.localdomain (unknown [10.226.36.204])
-        by relmlir5.idc.renesas.com (Postfix) with ESMTP id F3829400194A;
-        Mon, 10 Jan 2022 23:40:44 +0900 (JST)
-From:   Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-To:     =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Prabhakar <prabhakar.csengg@gmail.com>,
-        Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v4] thermal: rcar_thermal: Use platform_get_irq_optional() to get the interrupt
-Date:   Mon, 10 Jan 2022 14:40:39 +0000
-Message-Id: <20220110144039.5810-1-prabhakar.mahadev-lad.rj@bp.renesas.com>
-X-Mailer: git-send-email 2.17.1
+        id S236655AbiAJPvB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Jan 2022 10:51:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53118 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236555AbiAJPvA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jan 2022 10:51:00 -0500
+Received: from mail-oi1-x232.google.com (mail-oi1-x232.google.com [IPv6:2607:f8b0:4864:20::232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD0ACC06173F
+        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 07:51:00 -0800 (PST)
+Received: by mail-oi1-x232.google.com with SMTP id s73so19313030oie.5
+        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 07:51:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=2n4Mxe58gHLUEnPXE5oeDtI7K/YB+n1aglZeR3Rn/W4=;
+        b=QyaqqwhPNk2QapI3TCYdd0SyoXpwXXIqLTKkB6NI/+njxuIWipqu1/dUbfIhl4DRce
+         dAmrxVJ8Cko1MhjzEyO3v89+dSA3U6BAmArjcinBB/50+AOIaFJT7KaatxLWmkKDJnPH
+         bQINXIG6QWR1tLDzbcI0tpIFFkFQ01WJsm+uMXjDvxAZHbXSI+iaqtKH2RVa0MxNh1Rs
+         MIAz6i/jLdx/Kz/OvoNOnU9NjOhrqvSbl+Wtj3Hgmpkks1B68ec3xP4QublKnCOFiZLW
+         oKaLjmmXTpCFOgt94wJYgqStV/z+6vAsJ4V8d8bQV6dPHFcYxh4PExMVrX+hvxXKOGr3
+         OM9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=2n4Mxe58gHLUEnPXE5oeDtI7K/YB+n1aglZeR3Rn/W4=;
+        b=sImAbjr/Rq8I9/ILD1Vm5Uu7RM4xu1+iwVABlA1G8fFOM242dEvKN7+OiQ2gK53RyZ
+         QSYmFQxXEKOwCAb63AajA0J+KN8+6Lgvc3EBQ2NqdEBCE67L5A0RmiCox4ooiMQ7F+LL
+         WxsFQItNMAoWCMN5EOxV9BpIdA1+N9mb1wfYAKeqtC0SlEhmRzf8h5amrJl2jB2Xdpul
+         1nsjR4iVBUtbQ/bSLIlhO0AVTqDwez9LBkT9Vl/h1Aeo5fyAZfSAbKnKaBviYutcQbsF
+         0UohoKHIc6BkXmBQMq2T1YggN6p1cKKgn5ydQEZtKFesxzgr9Lr80f/EZIqF3jl/wd8l
+         iLgw==
+X-Gm-Message-State: AOAM531wPXIU3ShEAzSEPn7Q0c+iArgDSl3QkC+W8Bi/H3930OxL3De7
+        VQkTYCC0zrlYGCW4VhJQ3MxVy2qEeNA/Dew7OotOeA==
+X-Google-Smtp-Source: ABdhPJxVjlxJzkR+kQYNgsdp35b6EFDFfGPq6nn0DGflwGrWihs76DtzgvQWoCz2iSVqgsXWVzILrPNDQyQPzS4VZ2w=
+X-Received: by 2002:a05:6808:19a5:: with SMTP id bj37mr63940oib.132.1641829860102;
+ Mon, 10 Jan 2022 07:51:00 -0800 (PST)
+MIME-Version: 1.0
+References: <20220106131931.GA32698@kili>
+In-Reply-To: <20220106131931.GA32698@kili>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Mon, 10 Jan 2022 16:50:48 +0100
+Message-ID: <CACRpkdZZ+LXW5RF=xfFciZX3LshpGHh7uOReVzWCE3M2rCVgeQ@mail.gmail.com>
+Subject: Re: [bug report] power: supply_core: Pass pointer to battery info
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-platform_get_resource(pdev, IORESOURCE_IRQ, ..) relies on static
-allocation of IRQ resources in DT core code, this causes an issue
-when using hierarchical interrupt domains using "interrupts" property
-in the node as this bypasses the hierarchical setup and messes up the
-irq chaining.
+On Thu, Jan 6, 2022 at 2:19 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
 
-In preparation for removal of static setup of IRQ resource from DT core
-code use platform_get_irq_optional().
+> The patch 25fd330370ac: "power: supply_core: Pass pointer to battery
+> info" from Dec 15, 2021, leads to the following Smatch static checker
+> warning:
+>
+>         drivers/power/supply/bq256xx_charger.c:1529 bq256xx_hw_init()
+>         error: potentially dereferencing uninitialized 'bat_info'.
+(...)
+>     1525         ret = power_supply_get_battery_info(bq->charger, &bat_info);
+>
+> If the first allocation in power_supply_get_battery_info() fails then
+> bat_info is uninitialized.  (It's not really possible unless you do
+> failure injection).
+>
+>     1526         if (ret) {
+>     1527                 dev_warn(bq->dev, "battery info missing, default values will be applied\n");
+>     1528
+> --> 1529                 bat_info->constant_charge_current_max_ua =
 
-Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
----
-v3->v4:
-* Updated check as suggested by Andy
+Ouch, that one was easy to miss! I sent a fixup patch.
 
-v2->v3:
-* Fixed review comment pointed by Andy
-
-v1->v2
-* Simplified checking error code
-* Break loop earlier if no interrupts are seen
-
-v1: https://lkml.org/lkml/2021/12/18/163
----
- drivers/thermal/rcar_thermal.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index b49f04daaf47..1d729ed4d685 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -445,7 +445,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	struct rcar_thermal_common *common;
- 	struct rcar_thermal_priv *priv;
- 	struct device *dev = &pdev->dev;
--	struct resource *res, *irq;
-+	struct resource *res;
- 	const struct rcar_thermal_chip *chip = of_device_get_match_data(dev);
- 	int mres = 0;
- 	int i;
-@@ -467,9 +467,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	pm_runtime_get_sync(dev);
- 
- 	for (i = 0; i < chip->nirqs; i++) {
--		irq = platform_get_resource(pdev, IORESOURCE_IRQ, i);
--		if (!irq)
--			continue;
-+		int irq;
-+
-+		ret = platform_get_irq_optional(pdev, i);
-+		if (ret < 0 && ret != -ENXIO)
-+			goto error_unregister;
-+		if (ret > 0)
-+			irq = ret;
-+		else
-+			break;
-+
- 		if (!common->base) {
- 			/*
- 			 * platform has IRQ support.
-@@ -487,7 +494,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 			idle = 0; /* polling delay is not needed */
- 		}
- 
--		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq,
-+		ret = devm_request_irq(dev, irq, rcar_thermal_irq,
- 				       IRQF_SHARED, dev_name(dev), common);
- 		if (ret) {
- 			dev_err(dev, "irq request failed\n ");
--- 
-2.17.1
-
+Yours,
+Linus Walleij
