@@ -2,152 +2,159 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84CC5C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Jan 2022 12:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8680DC433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Jan 2022 13:33:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245461AbiAJMVW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Jan 2022 07:21:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60700 "EHLO
+        id S232476AbiAJNdn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Jan 2022 08:33:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245439AbiAJMU3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jan 2022 07:20:29 -0500
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F542C06175B
-        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 04:20:28 -0800 (PST)
-Received: by mail-lf1-x129.google.com with SMTP id i31so43527465lfv.10
-        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 04:20:28 -0800 (PST)
+        with ESMTP id S232339AbiAJNdn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jan 2022 08:33:43 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 332B1C061751
+        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 05:33:43 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id q8so26718595wra.12
+        for <linux-pm@vger.kernel.org>; Mon, 10 Jan 2022 05:33:43 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=e+gczxkrQRD/dQ/jBxW7gRFcfdkPGHbr2WDGhZJZLJk=;
-        b=DQ6s1LJZPoFp6X8JefkipbzDh1yGPvq/kl1jdeBlsANQVeciRIMsENC9zSQpWhq78S
-         DkLgBNC+TfpIiuLamGmaYI/Vw+fFUzv/+tb+8WxqADvgFfapxzYO4Y8o9htnFCBX5XVo
-         OkoRHRNuvnooWK+eUM4gZoQbnEN8JAsKaL10RXyO2vt8XnLdQYPDpo7tZCO6GM3DYVOm
-         tjfM6SUY+MOaFz4ShgbZ/qWOxrpITTHFtNmjLiv35EOj/NFFeExH71NRmpgJ5F8Tu46A
-         vdgmSyZmLYeu7KK0Gm99B96rrE4Ktc0hKeRwx7PDGEbuDL1cXCMk8lJnFm6c9CCgcdez
-         CFJw==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=wykY6RVdYGo3LCViVwH8y47ACjO/I+ljCrJ3y0UU7JI=;
+        b=v1Zcv9HlWrtnmwH4thsDg6vrRCwzTZ5N6M/GatTtutfPZRit5EBvmKTBFZPCgPTJKW
+         ovkE2K8C4JhfsZPyursJLwrLenN+sCROvchDrLPWtois83nNe6YYbIe/BCDgQcK+0l/p
+         tTIDGwkBM8KEPu415OviYoXRz8J1Z1kCPc0bqLx/PlI/4s8PxAovVHHB+l8qXpsKgRQL
+         wBDQYezTgMUITDf96ffPgD+YzjzwSGEcIzcoTGVRnZJIvAC+PsFiacF21s/8pDE3ngmT
+         46HZdvjWelj18UoR1KCCNUrAaU//W3ki8ACtpxocSZOpGzpDxp3KsRx1sE1oE08S/plk
+         +57A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=e+gczxkrQRD/dQ/jBxW7gRFcfdkPGHbr2WDGhZJZLJk=;
-        b=Yrfxn8000wPnAEbt8TbrlinwqITFySYFgH3ZGY1Q2WdVId3DGx/gVfTt15/iakCNXA
-         +9FhY21IA9GZoBd4SnqoiQKfEPKgaFn9+X5y8R+asBq23F1rGS+6VG/k3PCOOgHtrD72
-         vr9lKf+/4ovuw/CyhEI4lQLGi1+1WONZQVge1TZiA8tctXXsCUHBny7oHa2vakoCs7MM
-         60raOp0BWhoRF2Q7MYKTi39ajfhOttc6i8Fkf5HjVVKZ/uOgUBmUlf0oNXjyJTfmfwew
-         QM1KH7UFZE+OTKc/D2NppHit+rgwM19fYhzUWXJ2xadLri1VfcB2mT1CW3SluacmJ7N/
-         cqvw==
-X-Gm-Message-State: AOAM533R5jrMNzx9nUvaMPCFq7aNmNzXVbBK88cORcyzShXn/gVKU2p7
-        M3XIQzTj6ZspjH/m59mtKLuTjXq3Wwoz+jd58B1cHg==
-X-Google-Smtp-Source: ABdhPJwHuXQxrdr9hK3bUVDPLAm90cjss/wNF/ISoPLrywRMtIzRfPeLJ7C3G8WRGhNdQHZCB3M+ZVJPLMsNh8wGOzg=
-X-Received: by 2002:a2e:9659:: with SMTP id z25mr59418630ljh.16.1641817226570;
- Mon, 10 Jan 2022 04:20:26 -0800 (PST)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=wykY6RVdYGo3LCViVwH8y47ACjO/I+ljCrJ3y0UU7JI=;
+        b=U6LclG3EKY2Qm3qgNl0C4deWbNclLYDCajJn2u1Eqg61ZCnQe06oAQrTRP1e2a+RVF
+         G55TNE53TUE2Cl/JWa4M+AS0yPKnShMKTx1lPrZkNPVPuc+V4qKXkg7usZezVVDh3o6t
+         F5B7y3s6Q9UwIpsGJCjSj+G1SGW2Bc+Qc9HbLPOv2TkJWqG9fVPletO2TuwNOp0ByWVQ
+         m8SCKWDqqssIIQapRIzGRf5xRf0UTAEuPQEuCcd6xxJ+SVg5+N97z8lI4srcxetTQQxJ
+         HUsUmxxf0fHTbVq1HorukZlf5XudsKQ4Mp77MZnPeXMzx5rY8OQT1tR/TvmUzRmd57rp
+         t05A==
+X-Gm-Message-State: AOAM5309b6sunYFfOIbYjE+/EyClFTGcahLfffaqbC78p0VmRlehq9mv
+        lvOkBw2iaLrMrAJwUdXBzki9oWk87cPvZ8Tw
+X-Google-Smtp-Source: ABdhPJx1Hj2+aXURh9tvHBF3KCs98lyOQJ6RXC4QdC+VRwtBLAb5wjpVXh0T8OgzHl7S46JpaQ8bpg==
+X-Received: by 2002:a05:6000:18a5:: with SMTP id b5mr66369168wri.267.1641821621565;
+        Mon, 10 Jan 2022 05:33:41 -0800 (PST)
+Received: from ?IPv6:2a01:e34:ed2f:f020:18f0:2692:14f:d8fd? ([2a01:e34:ed2f:f020:18f0:2692:14f:d8fd])
+        by smtp.googlemail.com with ESMTPSA id 5sm7563904wrb.77.2022.01.10.05.33.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 10 Jan 2022 05:33:40 -0800 (PST)
+Subject: Re: [PATCH v5 1/6] powercap/drivers/dtpm: Move dtpm table from init
+ to data section
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     rjw@rjwysocki.net, lukasz.luba@arm.com, robh@kernel.org,
+        heiko@sntech.de, arnd@linaro.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        "open list:GENERIC INCLUDE/ASM HEADER FILES" 
+        <linux-arch@vger.kernel.org>
+References: <20211218130014.4037640-1-daniel.lezcano@linaro.org>
+ <20211218130014.4037640-2-daniel.lezcano@linaro.org>
+ <CAPDyKFpY4i0Mtb==8zknsuG0HdhPW2fXFvEN+AJScVmT65A-ow@mail.gmail.com>
+ <556eca9c-4ce8-1c79-cc6d-08d0ec603bd4@linaro.org>
+ <CAPDyKFpWtVFoqhFrhMQOgHUjggvg_GPYwmeK-jkphQpA7KQZRw@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <a4581b79-c2b2-c2bd-b96c-98389ea15a1e@linaro.org>
+Date:   Mon, 10 Jan 2022 14:33:39 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-References: <20220107181723.54392-1-paul@crapouillou.net> <20220107181723.54392-7-paul@crapouillou.net>
-In-Reply-To: <20220107181723.54392-7-paul@crapouillou.net>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Mon, 10 Jan 2022 13:19:50 +0100
-Message-ID: <CAPDyKFoA6Jj_xdRtvgahue7cSWrW1HOX=1=-9COwiZqRrRd7bw@mail.gmail.com>
-Subject: Re: [PATCH v3 6/6] iio: pressure: bmp280: Use new PM macros
-To:     Paul Cercueil <paul@crapouillou.net>
-Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>, Len Brown <len.brown@intel.com>,
-        Pavel Machek <pavel@ucw.cz>, list@opendingux.net,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Jonathan Cameron <jonathan.cameron@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAPDyKFpWtVFoqhFrhMQOgHUjggvg_GPYwmeK-jkphQpA7KQZRw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 7 Jan 2022 at 19:18, Paul Cercueil <paul@crapouillou.net> wrote:
+On 07/01/2022 15:49, Ulf Hansson wrote:
+> On Fri, 7 Jan 2022 at 14:15, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 31/12/2021 14:33, Ulf Hansson wrote:
+>>> On Sat, 18 Dec 2021 at 14:00, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>>>
+>>>> The dtpm table is used to let the different dtpm backends to register
+>>>> their setup callbacks in a single place and preventing to export
+>>>> multiple functions all around the kernel. That allows the dtpm code to
+>>>> be self-encapsulated.
+>>>
+>>> Well, that's not entirely true. The dtpm code and its backends (or
+>>> ops, whatever we call them) are already maintained from a single
+>>> place, the /drivers/powercap/* directory. I assume we intend to keep
+>>> it like this going forward too, right?
+>>>
+>>> That is also what patch4 with the devfreq backend continues to conform to.
+>>>
+>>>>
+>>>> The dtpm hierarchy will be passed as a parameter by a platform
+>>>> specific code and that will lead to the creation of the different dtpm
+>>>> nodes.
+>>>>
+>>>> The function creating the hierarchy could be called from a module at
+>>>> init time or when it is loaded. However, at this moment the table is
+>>>> already freed as it belongs to the init section and the creation will
+>>>> lead to a invalid memory access.
+>>>>
+>>>> Fix this by moving the table to the data section.
+>>>
+>>> With the above said, I find it a bit odd to put a table in the data
+>>> section like this. Especially, since the only remaining argument for
+>>> why, is to avoid exporting functions, which isn't needed anyway.
+>>>
+>>> I mean, it would be silly if we should continue to put subsystem
+>>> specific tables in here, to just let them contain a set of subsystem
+>>> specific callbacks.
+>>
+>> So I tried to change the approach and right now I was not able to find
+>> an alternative keeping the code self-encapsulate and without introducing
+>> cyclic dependencies.
+>>
+>> I suggest to keep the patch as it is and double check if it makes sense
+>> to change it after adding more dtpm backends
+>>
+>> Alternatively I can copy the table to a dynamically allocated table.
+> 
+> I am not sure I understand the problem. You don't need a "table of
+> callbacks" at all, at least to start with.
+> 
+> Instead, what you need is to make a call to a function, or actually
+> one call per supported dtpm type from dtpm_setup_dt() (introduced in
+> patch2).
+> 
+> For CPUs, you would simply call dtpm_cpu_setup() (introduced in
+> patch3) from dtpm_setup_dt(), rather than walking the dtpm table an
+> invoking the ->setup() callback.
 >
-> Use the new EXPORT_RUNTIME_DEV_PM_OPS() macro. It allows the underlying
-> dev_pm_ops struct as well as the suspend/resume callbacks to be detected
-> as dead code in the case where CONFIG_PM is disabled, without having to
-> wrap everything inside #ifdef CONFIG_PM guards.
->
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Did that make sense to you?
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Yeah, I already got the point ;)
 
-Kind regards
-Uffe
+I'll convert it to something else, and we will see in the future if that
+needs to be converted back to the table.
 
-> ---
->
-> Notes:
->     v2: New patch
->     v3: No change
->
->  drivers/iio/pressure/bmp280-core.c | 11 ++---------
->  drivers/iio/pressure/bmp280-i2c.c  |  2 +-
->  drivers/iio/pressure/bmp280-spi.c  |  2 +-
->  3 files changed, 4 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/iio/pressure/bmp280-core.c b/drivers/iio/pressure/bmp280-core.c
-> index 6b7da40f99c8..bf8167f43c56 100644
-> --- a/drivers/iio/pressure/bmp280-core.c
-> +++ b/drivers/iio/pressure/bmp280-core.c
-> @@ -1138,7 +1138,6 @@ int bmp280_common_probe(struct device *dev,
->  }
->  EXPORT_SYMBOL(bmp280_common_probe);
->
-> -#ifdef CONFIG_PM
->  static int bmp280_runtime_suspend(struct device *dev)
->  {
->         struct iio_dev *indio_dev = dev_get_drvdata(dev);
-> @@ -1159,15 +1158,9 @@ static int bmp280_runtime_resume(struct device *dev)
->         usleep_range(data->start_up_time, data->start_up_time + 100);
->         return data->chip_info->chip_config(data);
->  }
-> -#endif /* CONFIG_PM */
->
-> -const struct dev_pm_ops bmp280_dev_pm_ops = {
-> -       SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-> -                               pm_runtime_force_resume)
-> -       SET_RUNTIME_PM_OPS(bmp280_runtime_suspend,
-> -                          bmp280_runtime_resume, NULL)
-> -};
-> -EXPORT_SYMBOL(bmp280_dev_pm_ops);
-> +EXPORT_RUNTIME_DEV_PM_OPS(bmp280_dev_pm_ops, bmp280_runtime_suspend,
-> +                         bmp280_runtime_resume, NULL);
->
->  MODULE_AUTHOR("Vlad Dogaru <vlad.dogaru@intel.com>");
->  MODULE_DESCRIPTION("Driver for Bosch Sensortec BMP180/BMP280 pressure and temperature sensor");
-> diff --git a/drivers/iio/pressure/bmp280-i2c.c b/drivers/iio/pressure/bmp280-i2c.c
-> index 8b03ea15c0d0..35045bd92846 100644
-> --- a/drivers/iio/pressure/bmp280-i2c.c
-> +++ b/drivers/iio/pressure/bmp280-i2c.c
-> @@ -58,7 +58,7 @@ static struct i2c_driver bmp280_i2c_driver = {
->         .driver = {
->                 .name   = "bmp280",
->                 .of_match_table = bmp280_of_i2c_match,
-> -               .pm = &bmp280_dev_pm_ops,
-> +               .pm = pm_ptr(&bmp280_dev_pm_ops),
->         },
->         .probe          = bmp280_i2c_probe,
->         .id_table       = bmp280_i2c_id,
-> diff --git a/drivers/iio/pressure/bmp280-spi.c b/drivers/iio/pressure/bmp280-spi.c
-> index 625b86878ad8..41f6cc56d229 100644
-> --- a/drivers/iio/pressure/bmp280-spi.c
-> +++ b/drivers/iio/pressure/bmp280-spi.c
-> @@ -109,7 +109,7 @@ static struct spi_driver bmp280_spi_driver = {
->         .driver = {
->                 .name = "bmp280",
->                 .of_match_table = bmp280_of_spi_match,
-> -               .pm = &bmp280_dev_pm_ops,
-> +               .pm = pm_ptr(&bmp280_dev_pm_ops),
->         },
->         .id_table = bmp280_spi_id,
->         .probe = bmp280_spi_probe,
-> --
-> 2.34.1
->
+
+> Going forward, when we decide to introduce the option to add/remove
+> support for dtpm types dynamically, you can then convert to a
+> dynamically allocated table.
+> 
+> [...]
+> 
+> Kind regards
+> Uffe
+> 
+
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
