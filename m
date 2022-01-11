@@ -2,102 +2,334 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7213CC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jan 2022 10:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D19B2C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jan 2022 10:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348912AbiAKKeA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jan 2022 05:34:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58776 "EHLO
+        id S1349129AbiAKKeC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jan 2022 05:34:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58784 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348522AbiAKKeA (ORCPT
+        with ESMTP id S1349092AbiAKKeA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jan 2022 05:34:00 -0500
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF383C061748
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jan 2022 02:33:58 -0800 (PST)
-Received: by mail-wr1-x42e.google.com with SMTP id a5so28109043wrh.5
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jan 2022 02:33:58 -0800 (PST)
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70A50C061748
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jan 2022 02:34:00 -0800 (PST)
+Received: by mail-wr1-x429.google.com with SMTP id k18so31999871wrg.11
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jan 2022 02:34:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dlvnTPe3lASdFY+T2t68uKlxKrbSmUU8V1J05NQSw6U=;
-        b=kFZHjxBqak04QecvDE2NLpVra0DHWksVsM+UYYxryGtHYHXrRSQWq1/xX9A+ZsO93M
-         rhwTwSrvVZrQkeHIRa1TxI4azHBBS0Zk6HLOjRdFBHyJHXYIMKAwOCchTXp35Qd2V8qd
-         /cZJXXl9E0B7ZMWaCVf19hdhB/drQhSEuY9rEEvWE/0HNNhg+4lJTlV+Zg4PoRCxVR1F
-         gt0qdlAskSDXGLVhdbk5nwi2G/xccxm/5fH6oLS+tZv8cMQeI6H+wTzrZ1pchceJj6Jk
-         x0croQongRyfddXEMEK0VaxWIeQQqMSMvF9X2hIlxWqCN0BunojhMGYG/77YcYElVabB
-         laOA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=XUjj1RE5dBBUa1ZWEnoK1axgok9F759obl3L2a0UOZI=;
+        b=ZEnEc1+E8TAUABuwGbc3jjjzWx8pPgMt9+6B9t1MpV3Df9stEl+uyHuM58y73KQAQP
+         cwRz1NkTmDRmrIq49qyXqp2RK58WcRG16CR8QYdGWrv5VNcIzHc9/4JiL4fhUOW1IL40
+         5CPT7TTjBXEytwp1ZxiEJrO5T/8kO4Wcqh6rl7jnq8Oa9uitNDT6t43qVhxFo0p2QPaQ
+         +2+vS2AtKWkdwQ78+Y8MkxcLw1n9ZUmtC2awun1yDgeLe2mS+jpKfrieBq10P8dKIIzV
+         xIss/xxixi62rLR3I/t1rgFmgZZ++dWeyUYp03EgPz4SwJ4Z0noGd8zZ+bFMGYyomQHT
+         21ng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dlvnTPe3lASdFY+T2t68uKlxKrbSmUU8V1J05NQSw6U=;
-        b=ev3ZkKKmfO3L6QRbwQ0ziIdY2sLEcT1rZGpF5PAaP16OMy0jY3HPB/JgMa03cvst+6
-         fzTxyntfkfIy0AUe5SIujgDCGd3SUTEoSyIQmaRHQ00TE9D5oOw0uHHkwrFGTzEp2QAo
-         0q84NUC0vz4eiZ/o49AN4zRmKIww7FpScLyakcRHwg7oMaxjgmgp/2rd7WYp//2hidwC
-         bWSZUnwYEEQ0OOfke2rHEXjm+WPcpfUMEYvFm2BFdklIfDbXqbFiYJ9OAzdH5WDDkYYP
-         ow2lUuukcMrea/OLOiciTW6XN+HpYvg5WzhH7epkv2+pCta39U5bKNGlmW0lJuQjzyt1
-         RCWA==
-X-Gm-Message-State: AOAM533ZN/Yrn+ZpuNXD+pQVE9hQ40H21/JYvpT2qkWKWiLomKeO09x6
-        ez83V1sp1iZouso9+G88HKgR4Q==
-X-Google-Smtp-Source: ABdhPJwTazpdHrgr+MgipqzrdPRu4Vt8uCoZ/sH/0PYCwESlfQYlVUTG3LeTI2N/8eVmiKSo9w/aEQ==
-X-Received: by 2002:a5d:588f:: with SMTP id n15mr3282791wrf.279.1641897237487;
-        Tue, 11 Jan 2022 02:33:57 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=XUjj1RE5dBBUa1ZWEnoK1axgok9F759obl3L2a0UOZI=;
+        b=ThdelJXjF29zV45nFOY/+DBy7Fo7gCKK0Q/GLc6KZhEu2rg8ib25DYAYRFO7FwuCPD
+         9XkNYW5yCTB/nO1fvB9r5c2FSldIptywVoo4k35uXeFf3c0txg4ReI+5TmZHps2FW2FJ
+         rrIVUdcCkHzXvqjaZzM4eqdJEUkaYoVytCWrWI3OmOZ7ah0t2HMzk+QG3swzL0uk/gKY
+         Gl7VUIGxsEiwtd05+ckU1SkW3FLpGYFE9tBuLMKsA2G0NmeXywck6IXXvO2mw/atbIOe
+         TmIrPNPCzfoDGXncnbXx/Tkr998G9REccV+k+vyTLMoxIQZ8fS9Dk32DXppR/bzZ/m4Z
+         Vj+A==
+X-Gm-Message-State: AOAM530Qpx9wasSYx2f3kUtTf4dXpg/7Lp06KjIe+LeCXd8+7iA86tLg
+        7OLTmXI4w05d3jjIXMg2eb+3Bw==
+X-Google-Smtp-Source: ABdhPJxFoXafrsFCIVbDq3SDjluLGverX8M1bZL1a2ve/AuQAfWynNpsbKozrHDoT2i/ez3gTM7kVQ==
+X-Received: by 2002:a5d:6784:: with SMTP id v4mr3263819wru.275.1641897238983;
+        Tue, 11 Jan 2022 02:33:58 -0800 (PST)
 Received: from xps-9300.baylibre.local (laubervilliers-658-1-213-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id u16sm8803470wrn.24.2022.01.11.02.33.56
+        by smtp.gmail.com with ESMTPSA id u16sm8803470wrn.24.2022.01.11.02.33.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jan 2022 02:33:57 -0800 (PST)
+        Tue, 11 Jan 2022 02:33:58 -0800 (PST)
 From:   Alexandre Bailon <abailon@baylibre.com>
 To:     rafael@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
         amitk@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         ben.tseng@mediatek.com, khilman@baylibre.com, mka@chromium.org,
         Alexandre Bailon <abailon@baylibre.com>
-Subject: [PATCH v4 RESEND 0/2] Add a generic virtual thermal sensor
-Date:   Tue, 11 Jan 2022 11:33:44 +0100
-Message-Id: <20220111103346.2660639-1-abailon@baylibre.com>
+Subject: [PATCH v4 RESEND 2/2] thermal: add a virtual sensor to aggregate temperatures
+Date:   Tue, 11 Jan 2022 11:33:46 +0100
+Message-Id: <20220111103346.2660639-3-abailon@baylibre.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220111103346.2660639-1-abailon@baylibre.com>
+References: <20220111103346.2660639-1-abailon@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series add a virtual thermal sensor.
-It could be used to get a temperature using some thermal sensors.
-Currently, the supported operations are max, min and avg.
-The virtual sensor could be easily extended to support others operations.
+This adds a virtual thermal sensor driver that reads temperature from
+multiple hardware sensors and returns an aggregated temperature.
+Currently, this supports three aggregations:
+the minimum, maximum and average temperature.
 
-Changes in v2:
-- Fix some warnings / errors reported by kernel test robot
-- rename some struct and functions with a more accurate name
-- update the dt bindings: rename type attribute to aggregation-function
-- factorize a little bit the aggregation functions
-Changes in v3:
-- Aggregate thermal zone instead of thermal sensors
-- Use try_get_module / put_module to prevent thermal providers to be removed
-- Update the bindings, to be more accurate
-Changes in v4:
-- Fix two warnings reported by kernel test robot
-
-Alexandre Bailon (2):
-  dt-bindings: Add DT bindings for the DT-based virtual sensor driver
-  thermal: add a virtual sensor to aggregate temperatures
-
-Alexandre Bailon (2):
-  dt-bindings: Add DT bindings for the DT-based virtual sensor driver
-  thermal: add a virtual sensor to aggregate temperatures
-
- .../thermal/virtual,thermal-sensor.yaml       |  86 +++++++
- drivers/thermal/Kconfig                       |   8 +
- drivers/thermal/Makefile                      |   1 +
- drivers/thermal/virtual_thermal_sensor.c      | 218 ++++++++++++++++++
- include/dt-bindings/thermal/virtual-sensor.h  |  15 ++
- 5 files changed, 328 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/virtual,thermal-sensor.yaml
+Signed-off-by: Alexandre Bailon <abailon@baylibre.com>
+---
+ drivers/thermal/Kconfig                  |   8 +
+ drivers/thermal/Makefile                 |   1 +
+ drivers/thermal/virtual_thermal_sensor.c | 218 +++++++++++++++++++++++
+ 3 files changed, 227 insertions(+)
  create mode 100644 drivers/thermal/virtual_thermal_sensor.c
- create mode 100644 include/dt-bindings/thermal/virtual-sensor.h
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index d7f44deab5b1..b326fae5ad1d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -228,6 +228,14 @@ config THERMAL_MMIO
+ 	  register or shared memory, is a potential candidate to work with this
+ 	  driver.
+ 
++config VIRTUAL_THERMAL
++	tristate "DT-based virtual thermal sensor driver"
++	depends on THERMAL_OF || COMPILE_TEST
++	help
++	  This option enables the generic DT-based thermal sensor aggregator.
++	  This driver creates a thermal sensor that reads multiple hardware
++	  sensors and aggregates their output.
++
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on ARCH_HISI || COMPILE_TEST
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 82fc3e616e54..8bf55973059c 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -60,3 +60,4 @@ obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
+ obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
+ obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
+ obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
++obj-$(CONFIG_VIRTUAL_THERMAL) += virtual_thermal_sensor.o
+diff --git a/drivers/thermal/virtual_thermal_sensor.c b/drivers/thermal/virtual_thermal_sensor.c
+new file mode 100644
+index 000000000000..9f38af925fd1
+--- /dev/null
++++ b/drivers/thermal/virtual_thermal_sensor.c
+@@ -0,0 +1,218 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * virtual_thermal_sensor.c - DT-based virtual thermal sensor driver.
++ *
++ * Copyright (c) 2021 BayLibre
++ */
++
++#include <linux/err.h>
++#include <linux/export.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/slab.h>
++#include <linux/thermal.h>
++#include <linux/types.h>
++#include <linux/string.h>
++
++#include <dt-bindings/thermal/virtual-sensor.h>
++
++struct virtual_thermal_zone_device {
++	struct thermal_zone_device *zone;
++	struct module *owner;
++};
++
++struct virtual_thermal_sensor {
++	int count;
++	struct virtual_thermal_zone_device *zones;
++	struct thermal_zone_device *tzd;
++	int (*aggr_temp)(int temp1, int temp2);
++
++	struct list_head node;
++};
++
++static int max_temp(int temp1, int temp2)
++{
++	return max(temp1, temp2);
++}
++
++static int min_temp(int temp1, int temp2)
++{
++	return min(temp1, temp2);
++}
++
++static int avg_temp(int temp1, int temp2)
++{
++	return (temp1 + temp2) / 2;
++}
++
++static int virtual_thermal_sensor_get_temp(void *data, int *temperature)
++{
++	struct virtual_thermal_sensor *sensor = data;
++	int max_temp = INT_MIN;
++	int temp;
++	int i;
++
++	for (i = 0; i < sensor->count; i++) {
++		struct thermal_zone_device *zone;
++
++		zone = sensor->zones[i].zone;
++		zone->ops->get_temp(zone, &temp);
++		max_temp = sensor->aggr_temp(max_temp, temp);
++	}
++
++	*temperature = max_temp;
++
++	return 0;
++}
++
++static const struct thermal_zone_of_device_ops virtual_thermal_sensor_ops = {
++	.get_temp = virtual_thermal_sensor_get_temp,
++};
++
++static int virtual_thermal_sensor_get_module(struct virtual_thermal_zone_device *zone,
++					     const char *name)
++{
++		struct platform_device *sensor_pdev;
++		struct device_node *node;
++
++		node = of_find_node_by_name(NULL, name);
++		if (!node)
++			return -ENODEV;
++
++		node = of_parse_phandle(node, "thermal-sensors", 0);
++		if (!node)
++			return -ENODEV;
++
++		sensor_pdev = of_find_device_by_node(node);
++		if (!sensor_pdev)
++			return -ENODEV;
++
++		if (!sensor_pdev->dev.driver)
++			return -EPROBE_DEFER;
++
++		if (!try_module_get(sensor_pdev->dev.driver->owner))
++			return -ENODEV;
++
++		zone->owner = sensor_pdev->dev.driver->owner;
++
++		return 0;
++}
++
++static void virtual_thermal_sensor_put_modules(struct virtual_thermal_sensor *sensor)
++{
++	int i;
++
++	for (i = 0; i < sensor->count; i++) {
++		if (sensor->zones[i].zone)
++			module_put(sensor->zones[i].owner);
++	}
++}
++
++static int virtual_thermal_sensor_probe(struct platform_device *pdev)
++{
++	struct virtual_thermal_sensor *sensor;
++	struct device *dev = &pdev->dev;
++	struct property *prop;
++	const char *name;
++	u32 type;
++	int ret;
++	int i = 0;
++
++	sensor = devm_kzalloc(dev, sizeof(*sensor), GFP_KERNEL);
++	if (!sensor)
++		return -ENOMEM;
++	sensor->count = of_property_count_strings(dev->of_node, "thermal-sensors");
++	if (sensor->count <= 0)
++		return -EINVAL;
++
++	sensor->zones = devm_kmalloc_array(dev, sensor->count,
++					     sizeof(*sensor->zones),
++					     GFP_KERNEL);
++	if (!sensor->zones)
++		return -ENOMEM;
++
++	of_property_for_each_string(dev->of_node, "thermal-sensors", prop, name) {
++		struct virtual_thermal_zone_device *virtual_zone;
++		struct thermal_zone_device *zone;
++
++		virtual_zone = &sensor->zones[i++];
++
++		zone = thermal_zone_get_zone_by_name(name);
++		if (IS_ERR(zone))
++			return PTR_ERR(zone);
++
++		ret = virtual_thermal_sensor_get_module(virtual_zone, name);
++		if (ret)
++			goto err;
++
++		virtual_zone->zone = zone;
++	}
++
++	ret = of_property_read_u32(dev->of_node, "aggregation-function", &type);
++	if (ret)
++		return ret;
++
++	switch (type) {
++	case VIRTUAL_THERMAL_SENSOR_MAX_VAL:
++		sensor->aggr_temp = max_temp;
++		break;
++	case VIRTUAL_THERMAL_SENSOR_MIN_VAL:
++		sensor->aggr_temp = min_temp;
++		break;
++	case VIRTUAL_THERMAL_SENSOR_AVG_VAL:
++		sensor->aggr_temp = avg_temp;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	sensor->tzd = devm_thermal_zone_of_sensor_register(dev, 0, sensor,
++							   &virtual_thermal_sensor_ops);
++	if (IS_ERR(sensor->tzd))
++		return PTR_ERR(sensor->tzd);
++
++	platform_set_drvdata(pdev, sensor);
++
++	return 0;
++
++err:
++	virtual_thermal_sensor_put_modules(sensor);
++
++	return ret;
++}
++
++static int virtual_thermal_sensor_remove(struct platform_device *pdev)
++{
++	struct virtual_thermal_sensor *sensor;
++
++	sensor = platform_get_drvdata(pdev);
++	list_del(&sensor->node);
++
++	virtual_thermal_sensor_put_modules(sensor);
++
++	return 0;
++}
++
++static const struct of_device_id virtual_thermal_sensor_of_match[] = {
++	{
++		.compatible = "virtual,thermal-sensor",
++	},
++	{
++	},
++};
++MODULE_DEVICE_TABLE(of, virtual_thermal_sensor_of_match);
++
++static struct platform_driver virtual_thermal_sensor = {
++	.probe = virtual_thermal_sensor_probe,
++	.remove = virtual_thermal_sensor_remove,
++	.driver = {
++		.name = "virtual-thermal-sensor",
++		.of_match_table = virtual_thermal_sensor_of_match,
++	},
++};
++
++module_platform_driver(virtual_thermal_sensor);
++MODULE_AUTHOR("Alexandre Bailon <abailon@baylibre.com>");
++MODULE_DESCRIPTION("Virtual thermal sensor");
++MODULE_LICENSE("GPL v2");
 -- 
 2.25.1
 
