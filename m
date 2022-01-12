@@ -2,99 +2,217 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AB26C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jan 2022 19:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B095C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Jan 2022 19:56:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357495AbiALTwr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Jan 2022 14:52:47 -0500
-Received: from mail.z3ntu.xyz ([128.199.32.197]:33198 "EHLO mail.z3ntu.xyz"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1356987AbiALTv6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Jan 2022 14:51:58 -0500
-Received: from localhost.localdomain (ip-213-127-106-2.ip.prioritytelecom.net [213.127.106.2])
-        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 99ECDCDF9F;
-        Wed, 12 Jan 2022 19:42:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=z3ntu.xyz; s=z3ntu;
-        t=1642016544; bh=0kWYHyQ+FdQZVfHCIbfLblrDXNannTFucaCQYt2r6LQ=;
-        h=From:To:Cc:Subject:Date;
-        b=miax10sWCxLcvuPulMRI9I8OxkGClnhZ7on8fnVVyuxu3eLoIzlmYgDUW+CcsPSnK
-         Cz95AHMYXfk4vBg0yIPTahxcsi7xikZlNOJK59DxWJKpylDH8bAjfHzKVFpB2OfNoy
-         ookhq+C83s4UtZgJGkb6zXdZKvG7GFw/47b1tpAI=
-From:   Luca Weiss <luca@z3ntu.xyz>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Luca Weiss <luca@z3ntu.xyz>, Amit Kucheria <amitk@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Manu Gautam <mgautam@codeaurora.org>,
-        Stephen Boyd <sboyd@codeaurora.org>,
-        Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-phy@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-usb@vger.kernel.org
-Subject: [PATCH 00/15] Initial MSM8953 & Fairphone 3 support
-Date:   Wed, 12 Jan 2022 20:40:49 +0100
-Message-Id: <20220112194118.178026-1-luca@z3ntu.xyz>
-X-Mailer: git-send-email 2.34.1
+        id S1357117AbiALT4o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Jan 2022 14:56:44 -0500
+Received: from mail-qt1-f171.google.com ([209.85.160.171]:34468 "EHLO
+        mail-qt1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1357611AbiALTx3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jan 2022 14:53:29 -0500
+Received: by mail-qt1-f171.google.com with SMTP id y10so4348895qtw.1;
+        Wed, 12 Jan 2022 11:53:26 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=jJL3a71hY/nIwYviaKdD0vj8/3ycQ9lxEe2C9EyccVc=;
+        b=Ylar9exRu551mNaY4W3Sd7U7Xnfjid77R5n4mEK6GFThYSaSpvcd6YcK1Hg4DhNhqG
+         FBXbN3xrKet2j56S20N6TmRp5m+0Xq00ATCnbvsO5pwerIYvG/S/pfLdq5Jff4SCz3sF
+         GIwRpEYYdU31LisB3NxeJJVHvLD7QOQ93v2u4GI+MLw9bytd0pUOJnN/aNLrnIyYmLCy
+         jojCS0y2uLv49ZmXDbxBdH9F2Kas0xDfoRY9HoZyHwAw+3s09vxH7TDKWeULWGVMUPCm
+         Y1zs2zzwa/yx+nnMXAWafpvuvCSpFGPdF78LsIP+mhohTxWLhtpC+d2uk/FBNPqtlu3X
+         YWZA==
+X-Gm-Message-State: AOAM533jjgF531SdJnb+YOElh71qX+OWLLWTl+9RB/Io5X2MHsYfs0FP
+        mEp1VkwBoBKuMvHyzfYRVcL7YPr4SGttwxQmt38=
+X-Google-Smtp-Source: ABdhPJx5zwgQ74maWpzMxiGzXPIhbW5qJVbcYv7mpeVaPuWtmbIFVDwd5M/M7e3UNzJ3LorIJTmXP4RiV5qtZHbcGAM=
+X-Received: by 2002:ac8:5795:: with SMTP id v21mr1007664qta.472.1642017206293;
+ Wed, 12 Jan 2022 11:53:26 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220108034743.31277-1-ricardo.neri-calderon@linux.intel.com> <20220108034743.31277-8-ricardo.neri-calderon@linux.intel.com>
+In-Reply-To: <20220108034743.31277-8-ricardo.neri-calderon@linux.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 12 Jan 2022 20:53:15 +0100
+Message-ID: <CAJZ5v0h5-xsYCfs=c+wE4tWrcmvkdbgrc+fnwytSghwuAWnu0A@mail.gmail.com>
+Subject: Re: [PATCH v4 7/7] thermal: intel: hfi: Notify user space for HFI events
+To:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Aubrey Li <aubrey.li@linux.intel.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Andi Kleen <ak@linux.intel.com>,
+        Tim Chen <tim.c.chen@linux.intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+        Ricardo Neri <ricardo.neri@intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds initial support for MSM8953 (and SDM632 which is based
-on MSM8953) and the Fairphone 3 smartphone.
+On Sat, Jan 8, 2022 at 4:46 AM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>
+> When the hardware issues an HFI event, relay a notification to user space.
+> This allows user space to respond by reading performance and efficiency of
+> each CPU and take appropriate action.
+>
+> For example, when performance and efficiency of a CPU is 0, user space can
+> either offline the CPU or inject idle. Also, if user space notices a
+> downward trend in performance, it may proactively adjust power limits to
+> avoid future situations in which performance drops to 0.
+>
+> To avoid excessive notifications, the rate is limited by one HZ per event.
+> To limit the netlink message size, parameters for only 16 CPUs at max are
+> sent in one message. If there are more than 16 CPUs, issue as many messages
+> as needed to notify the status of all CPUs.
+>
+> In the HFI specification, both performance and efficiency capabilities are
+> set in the [0, 255] range. The existing implementations of HFI hardware
+> do not scale the maximum values to 255. Since userspace cares about
+> capability values that are either 0 or show a downward/upward trend, this
+> fact does not matter much. Relative changes in capabilities are enough. To
+> comply with the thermal netlink ABI, scale both performance and efficiency
+> capabilities to the [0, 1023] interval.
+>
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Aubrey Li <aubrey.li@linux.intel.com>
+> Cc: Lukasz Luba <lukasz.luba@arm.com>
+> Cc: Tim Chen <tim.c.chen@linux.intel.com>
+> Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+> Reviewed-by: Len Brown <len.brown@intel.com>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+> Changes since v3:
+>   * None
+>
+> Changes since v2:
+>   * None
+>
+> Changes since v1:
+>   * Made get_one_hfi_cap() return void. Removed unnecessary checks.
+>     (Rafael)
+>   * Replaced raw_spin_[un]lock_irq[restore|save]() with raw_spin_
+>     [un]lock_irq() in get_one_hfi_cap(). This function is only called from
+>     a workqueue and there is no need to save and restore irq flags.
+>   * Scaled performance and energy efficiency values to a [0, 1023] interval
+>     when reporting values to user space via thermal netlink notifications.
+>     (Lucasz).
+>   * Reworded commit message to comment on the scaling of HFI capabilities
+>     to comply with the proposed thermal netlink ABI.
+> ---
+>  drivers/thermal/intel/Kconfig     |  1 +
+>  drivers/thermal/intel/intel_hfi.c | 57 ++++++++++++++++++++++++++++++-
+>  2 files changed, 57 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+> index e9d2925227d4..6cf3fe36a4ae 100644
+> --- a/drivers/thermal/intel/Kconfig
+> +++ b/drivers/thermal/intel/Kconfig
+> @@ -104,6 +104,7 @@ config INTEL_HFI_THERMAL
+>         bool "Intel Hardware Feedback Interface"
+>         depends on CPU_SUP_INTEL
+>         depends on X86_THERMAL_VECTOR
+> +       select THERMAL_NETLINK
+>         help
+>           Select this option to enable the Hardware Feedback Interface. If
+>           selected, hardware provides guidance to the operating system on
+> diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+> index 1a08c58f26f6..9fd66f176948 100644
+> --- a/drivers/thermal/intel/intel_hfi.c
+> +++ b/drivers/thermal/intel/intel_hfi.c
+> @@ -40,6 +40,7 @@
+>
+>  #include <asm/msr.h>
+>
+> +#include "../thermal_core.h"
+>  #include "intel_hfi.h"
+>
+>  #define THERM_STATUS_CLEAR_PKG_MASK (BIT(1) | BIT(3) | BIT(5) | BIT(7) | \
+> @@ -162,6 +163,60 @@ static struct hfi_features hfi_features;
+>  static DEFINE_MUTEX(hfi_instance_lock);
+>
+>  #define HFI_UPDATE_INTERVAL    HZ
+> +#define HFI_MAX_THERM_NOTIFY_COUNT     16
+> +
+> +static void get_one_hfi_cap(struct hfi_instance *hfi_instance, s16 index,
+> +                           struct hfi_cpu_data *hfi_caps)
+> +{
+> +       struct hfi_cpu_data *caps;
+> +
+> +       /* Find the capabilities of @cpu */
+> +       raw_spin_lock_irq(&hfi_instance->table_lock);
+> +       caps = hfi_instance->data + index * hfi_features.cpu_stride;
+> +       memcpy(hfi_caps, caps, sizeof(*hfi_caps));
+> +       raw_spin_unlock_irq(&hfi_instance->table_lock);
+> +}
+> +
+> +/*
+> + * Call update_capabilities() when there are changes in the HFI table.
+> + */
+> +static void update_capabilities(struct hfi_instance *hfi_instance)
+> +{
+> +       struct cpu_capability cpu_caps[HFI_MAX_THERM_NOTIFY_COUNT];
+> +       int i = 0, cpu;
+> +
 
-Only relatively basic functionality is supported like storage, volume
-keys and USB.
+Wouldn't it be better to hold hfi_instance_lock for the duration of this loop?
 
-There is currently close-to-mainline support for other components for
-this SoC including GPU, WiFi and audio, this series adds only basic
-support so that the other components can start getting upstreamed
-easier.
+Surely, CPU offline or online during it can be confusing.
 
-Luca Weiss (10):
-  dt-bindings: phy: qcom,qusb2: Document msm8953 compatible
-  phy: qcom-qusb2: Add compatible for MSM8953
-  dt-bindings: mfd: qcom,tcsr: Document msm8953 compatible
-  mfd: qcom-spmi-pmic: Add pm8953 compatible
-  dt-bindings: mmc: sdhci-msm: Add msm8953 compatible
-  dt-bindings: thermal: tsens: Add msm8953 compatible
-  dt-bindings: usb: qcom,dwc3: Add msm8953 compatible
-  dt-bindings: pinctrl: qcom: msm8953: allow gpio-reserved-ranges
-  dt-bindings: arm: qcom: Document sdm632 and fairphone,fp3 board
-  arm64: dts: qcom: sdm632: Add device tree for Fairphone 3
-
-Vladimir Lypak (5):
-  rpmsg: smd: Drop unnecessary condition for channel creation
-  arm64: dts: qcom: Add MSM8953 device tree
-  arm64: dts: qcom: Add PM8953 PMIC
-  arm64: dts: qcom: Add SDM632 device tree
-  arm64: dts: qcom: Add MSM8953+PM8953 device tree
-
- .../devicetree/bindings/arm/qcom.yaml         |    6 +
- .../bindings/mfd/qcom,spmi-pmic.txt           |    1 +
- .../devicetree/bindings/mfd/qcom,tcsr.txt     |    1 +
- .../devicetree/bindings/mmc/sdhci-msm.txt     |    1 +
- .../bindings/phy/qcom,qusb2-phy.yaml          |    1 +
- .../pinctrl/qcom,msm8953-pinctrl.yaml         |    2 +
- .../bindings/thermal/qcom-tsens.yaml          |    1 +
- .../devicetree/bindings/usb/qcom,dwc3.yaml    |    1 +
- arch/arm64/boot/dts/qcom/Makefile             |    1 +
- arch/arm64/boot/dts/qcom/msm8953-pm8953.dtsi  |   50 +
- arch/arm64/boot/dts/qcom/msm8953.dtsi         | 1337 +++++++++++++++++
- arch/arm64/boot/dts/qcom/pm8953.dtsi          |   90 ++
- .../boot/dts/qcom/sdm632-fairphone-fp3.dts    |  189 +++
- arch/arm64/boot/dts/qcom/sdm632.dtsi          |  125 ++
- drivers/phy/qualcomm/phy-qcom-qusb2.c         |    3 +
- drivers/rpmsg/qcom_smd.c                      |    8 +-
- 16 files changed, 1810 insertions(+), 7 deletions(-)
- create mode 100644 arch/arm64/boot/dts/qcom/msm8953-pm8953.dtsi
- create mode 100644 arch/arm64/boot/dts/qcom/msm8953.dtsi
- create mode 100644 arch/arm64/boot/dts/qcom/pm8953.dtsi
- create mode 100644 arch/arm64/boot/dts/qcom/sdm632-fairphone-fp3.dts
- create mode 100644 arch/arm64/boot/dts/qcom/sdm632.dtsi
-
--- 
-2.34.1
-
+> +       for_each_cpu(cpu, hfi_instance->cpus) {
+> +               struct hfi_cpu_data caps;
+> +               s16 index;
+> +
+> +               /*
+> +                * We know index is valid because this CPU is present
+> +                * in this instance.
+> +                */
+> +               index = per_cpu(hfi_cpu_info, cpu).index;
+> +
+> +               get_one_hfi_cap(hfi_instance, index, &caps);
+> +
+> +               cpu_caps[i].cpu = cpu;
+> +
+> +               /*
+> +                * Scale performance and energy efficiency to
+> +                * the [0, 1023] interval that thermal netlink uses.
+> +                */
+> +               cpu_caps[i].performance = caps.perf_cap << 2;
+> +               cpu_caps[i].efficiency = caps.ee_cap << 2;
+> +               ++i;
+> +
+> +               if (i >= HFI_MAX_THERM_NOTIFY_COUNT) {
+> +                       thermal_genl_cpu_capability_event(HFI_MAX_THERM_NOTIFY_COUNT,
+> +                                                         cpu_caps);
+> +                       i = 0;
+> +               }
+> +       }
+> +
+> +       if (i)
+> +               thermal_genl_cpu_capability_event(i, cpu_caps);
+> +}
+>
+>  static void hfi_update_work_fn(struct work_struct *work)
+>  {
+> @@ -172,7 +227,7 @@ static void hfi_update_work_fn(struct work_struct *work)
+>         if (!hfi_instance)
+>                 return;
+>
+> -       /* TODO: Consume update here. */
+> +       update_capabilities(hfi_instance);
+>  }
+>
+>  void intel_hfi_process_event(__u64 pkg_therm_status_msr_val)
+> --
+> 2.17.1
+>
