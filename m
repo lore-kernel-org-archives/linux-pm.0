@@ -2,84 +2,218 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6887AC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jan 2022 15:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E630C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jan 2022 17:42:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236392AbiAMP4I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jan 2022 10:56:08 -0500
-Received: from [194.99.46.92] ([194.99.46.92]:50737 "EHLO
-        slot0.bluewaterleisure.com" rhost-flags-FAIL-FAIL-OK-OK)
-        by vger.kernel.org with ESMTP id S236386AbiAMP4H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jan 2022 10:56:07 -0500
-X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Jan 2022 10:56:06 EST
-DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/relaxed; s=dkim; d=bluewaterleisure.com;
- h=Reply-To:From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding; i=ker.mon@bluewaterleisure.com;
- bh=GFgTTFrXlQ8OyySq4PoNy0Dlx64=;
- b=ccLbV3H0W0ZBpoDC9ph9eVP9uvFWdjOCDq1EAb35B7HPMOMSfnZbeVxMrvIlHyzfY5cDh6Anwf/s
-   D/bzjNW8PcW5PUdNfhTpIN/5FPE5HEmlSksSGW2Fe11Hq+a1iOSAboLD/VxTp65f3Sz1I9EAfe55
-   9aqXwfqWxkF7kvEWdfErIJqdJWlbb/S1TSG8I2NTlnZh2oEFWB5a4Y68Bvxa3AcJDVKxm/u7xaYM
-   KuU9Vr3fqEoB7/D7Ec8LBvc5jvVbpXBFeAyoaeEHyeSRP71lOrXd1LW3YNhY5eGcAsjFnTAhZsRL
-   Dbulgx4IGvdcFUEajJJBzNqbvEtCxIYqPBKfzA==
-DomainKey-Signature: a=rsa-sha1; c=nofws; q=dns; s=dkim; d=bluewaterleisure.com;
- b=dgPTuRZLxZMKpO+nVzZiHkQdDpGdcLHdllpOvW17UMIlUdScRF1AJJxRvwellHqYCWl8gNRQHdZp
-   OniJIr+LmsELfe85gcdw39p7DkHHa0RBcZv0JNXe6dFwkV3EOOvsLhKEfjqaLxQG6znNXja97UnM
-   hNcO5x0pbnu+RlT4pQIC5y2AeSEB76VWELbsFpKQFr5I6DsvfGjK+P3Z8N56Ze9RbZ9O8lmp8PbR
-   RBpvcA1ZlseqIATDMilfODvZYsCLV3wIsaKRpbcQ3debLPV1XWEG6X9/0NE/yOMyXvjt+9r3IBkb
-   iSN/HcIftmlrQEZoPIwcXDiJoNvU+7LZShCK+Q==;
-Reply-To: mustafa.ayvaz@ayvazburosu.com
-From:   "Barrister Mustafa" <ker.mon@bluewaterleisure.com>
-To:     linux-pm@vger.kernel.org
-Subject: Achtung:
-Date:   13 Jan 2022 16:36:24 +0100
-Message-ID: <20220113163624.74FBFD85F9278724@bluewaterleisure.com>
+        id S237209AbiAMRm1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jan 2022 12:42:27 -0500
+Received: from mga04.intel.com ([192.55.52.120]:54400 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229702AbiAMRm0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jan 2022 12:42:26 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1642095746; x=1673631746;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=7vvfp8QEIFWemWmYZbPUkb7BTfnB33/a8QpFyM2EwNM=;
+  b=XopSoiwv5FPkVweHh+vckZtb+SV5fdkSl616gpBW7k1yHWL1D1pGHDx/
+   ojUhbHmDfBJilflWSzveUz1JTrk8UX147aB/kPJZQ/NidIPrv71UPYnhA
+   2vgXklnXBPfEgfeSLFsn7oKBCBbrehl/mZdE1xFHYSQJbxJsetbg6gi3P
+   S6+dAEKxM7/OXvAM9SMXLDDNI9Y5PcCpzhNolQXgLeCb4/1Gz+yo37ZRb
+   lq0hHy9FxV+k0A7ettxZVDk5ARddBS7eo4Ng9gD9tUHk3RWxIey5fL33u
+   qni2BVUR+Xmssbi9lmOqDGCWiJedP60KQL7H7q6dUIFp73/vOKxRibzsB
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10226"; a="242887674"
+X-IronPort-AV: E=Sophos;i="5.88,286,1635231600"; 
+   d="scan'208";a="242887674"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jan 2022 09:42:01 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,286,1635231600"; 
+   d="scan'208";a="593415788"
+Received: from lkp-server01.sh.intel.com (HELO 276f1b88eecb) ([10.239.97.150])
+  by fmsmga004.fm.intel.com with ESMTP; 13 Jan 2022 09:41:59 -0800
+Received: from kbuild by 276f1b88eecb with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1n846o-0007VF-FP; Thu, 13 Jan 2022 17:41:58 +0000
+Date:   Fri, 14 Jan 2022 01:41:13 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS WITH WARNING
+ 625b47dd50305ce992adb54412e7294c9a9a6468
+Message-ID: <61e06439.qy0uOpPWwP7XQiav%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dear linux-pm,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 625b47dd50305ce992adb54412e7294c9a9a6468  Merge branch 'pm-core' into bleeding-edge
 
-Ich bin Barrister Mustafa Ayvaz, ein pers=C3=B6nlicher Anwalt des=20
-verstorbenen Mr.
-Anderson, der an der Coronavirus-Krankheit starb, die er
-w=C3=A4hrend seiner Gesch=C3=A4ftsreise in China unter Vertrag genommen.=20=
+Warning reports:
 
-Ich m=C3=B6chte, dass Sie freundlich sind und mit mir=20
-zusammenarbeiten, um das Geld zu sichern, das er hier in der=20
-T=C3=BCrkei auf der Bank hinterlassen hat, das sind drei Millionen=20
-dreihundertneunzigtausend Dollar.
+https://lore.kernel.org/llvm/202112280907.gTYYYuB4-lkp@intel.com
 
-Ich habe nach den n=C3=A4chsten Angeh=C3=B6rigen meines Verstorbenen=20
-gesucht
-Kunde, sind aber gescheitert, da ich seinen aktuellen Wohnsitz=20
-nicht habe
-und Kontaktdaten. Auf der Suche bin ich auf dich gesto=C3=9Fen
-Profil mit dem gleichen Nachnamen und am gleichen Ort mit
-die n=C3=A4chsten Angeh=C3=B6rigen. Ich habe mich entschieden, dich zu=20
-kontaktieren und dich als den
-Bonafide n=C3=A4chster Verwandter.
+Warning in current branch:
 
-Ich erbitte Ihre Zustimmung, Sie als N=C3=A4chsten meiner Verwandten=20
-hervorzubringen
-verstorbener Kunde, da Sie beide denselben Nachnamen tragen. Der
-das Geld wird dann an Sie als Beg=C3=BCnstigten =C3=BCberwiesen und
-geteilt gem=C3=A4=C3=9F einem vorgeschlagenen Sharing-Muster/Verh=C3=A4ltni=
-s von=20
-60:40
-das sind 60 % f=C3=BCr mich und 40 % f=C3=BCr dich. Freundlich
-kontaktieren Sie mich sofort f=C3=BCr weitere Informationen.
+drivers/acpi/acpica/exregion.c:519:17: warning: performing pointer subtraction with a null pointer has undefined behavior [-Wnull-pointer-subtraction]
 
-Danach schicke ich Ihnen die Details der Transaktion
-wird beginnen, Kontaktieren Sie mich f=C3=BCr weitere Informationen=20
-=C3=BCber mein
-E-Mail-Adressen unten.
+Warning ids grouped by kconfigs:
 
-Gr=C3=BC=C3=9Fe
-Mustafa Ayvaz
+clang_recent_errors
+|-- i386-randconfig-a002
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-a004
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-a006
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-a011
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-a013
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-a015
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- i386-randconfig-c001
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a001
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a003
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a005
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a012
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a014
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+|-- x86_64-randconfig-a016
+|   `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
+`-- x86_64-randconfig-c007
+    `-- drivers-acpi-acpica-exregion.c:warning:performing-pointer-subtraction-with-a-null-pointer-has-undefined-behavior
 
-E-Mail: mustafa.ayvaz@ayvazburosu.com
-oder
-ayvazmustafa231@gmail.com
+elapsed time: 1350m
+
+configs tested: 107
+configs skipped: 3
+
+gcc tested configs:
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+arm64                            allyesconfig
+i386                          randconfig-c001
+mips                 randconfig-c004-20220112
+mips                  maltasmvp_eva_defconfig
+powerpc                      mgcoge_defconfig
+openrisc                            defconfig
+powerpc                         wii_defconfig
+arm                       omap2plus_defconfig
+h8300                     edosk2674_defconfig
+sh                        sh7763rdp_defconfig
+m68k                       m5275evb_defconfig
+sparc                       sparc64_defconfig
+powerpc                   currituck_defconfig
+arm                  randconfig-c002-20220113
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allmodconfig
+s390                                defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+sparc                            allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arc                  randconfig-r043-20220112
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+x86_64                          rhel-8.3-func
+
+clang tested configs:
+arm                  randconfig-c002-20220113
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220113
+i386                          randconfig-c001
+s390                 randconfig-c005-20220113
+mips                 randconfig-c004-20220113
+riscv                randconfig-c006-20220113
+mips                  cavium_octeon_defconfig
+powerpc                     skiroot_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                    socrates_defconfig
+arm                           spitz_defconfig
+powerpc                          g5_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+x86_64                        randconfig-a005
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220112
+s390                 randconfig-r044-20220112
+hexagon              randconfig-r041-20220112
+riscv                randconfig-r042-20220112
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
