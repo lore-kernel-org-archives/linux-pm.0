@@ -2,71 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8D83C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jan 2022 23:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB346C43217
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jan 2022 23:24:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229800AbiANXVm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jan 2022 18:21:42 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:34116 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229572AbiANXVm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jan 2022 18:21:42 -0500
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: nfraprado)
-        with ESMTPSA id 56AB71F46D79
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1642202501;
-        bh=IG6R5uw0yb3VLWtgH6sIypdBw8QjZrLQPe1BTwKhfbI=;
-        h=From:To:Cc:Subject:Date:From;
-        b=hIfQ6LPv3hxOBrIzE+2fY+y+U+gAwIVNKl5BeY1UMT2Tzf/VfiKoelgFvpydPfVeu
-         YOgyyYx/a3JMIQnw1tpFjjmhNLc+1cye4D6C0e9/o8WFtEpO4Nl0CKYnIazi2QlyAX
-         EZc7ApWAQ/t0NTFv6RCOah2tBe/Y9iEHMrdiFlmUnNJWzyTs0HA65nOWdNbY+VSeWp
-         YMcuwxnEjxUkQhzm0ODVW2R8a+RYWiJlfUndo/JP9VAomYg6iu3T5DDC3fO2bwXPx/
-         NDdONaiKwFH9C4KUbkZjpHERQVv0HHyd0F4gNI3SsnOLqwiOusXcRKpIQ/3kX+5Wz7
-         yPHG312/z/VmQ==
-From:   =?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= 
-        <nfraprado@collabora.com>
-To:     Shuah Khan <shuah@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@collabora.com,
-        =?UTF-8?q?N=C3=ADcolas=20F=2E=20R=2E=20A=2E=20Prado?= 
-        <nfraprado@collabora.com>
-Subject: [PATCH] selftests: cpufreq: Write test output to stdout as well
-Date:   Fri, 14 Jan 2022 18:21:26 -0500
-Message-Id: <20220114232126.92043-1-nfraprado@collabora.com>
-X-Mailer: git-send-email 2.34.1
+        id S229946AbiANXYs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jan 2022 18:24:48 -0500
+Received: from mga01.intel.com ([192.55.52.88]:33182 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229865AbiANXYr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Jan 2022 18:24:47 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1642202687; x=1673738687;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=+57jmJGipD0NVrM4oIQsgoZMVZ6PC/LhLcEpTUfLqew=;
+  b=l6i8JyKTlrDsARADBeg5CnYN0O6FB06ZtJ311YR3a7e3curczwZ9+jnL
+   uRAqV84TmAMpP9Tl4RrretvCKzzK51WYZFaTtAUTCOcAVMU1xpD6ClYI9
+   q49H442AXHhYtW7QXPIYFxhH5xDr8yG6lrNJCwgzuWtpsqwfXYAe/7XJ5
+   72dQCmTS4XR2uZwTBVi+cJ39oj/bmA4rn9FksmAEuhjXWRNKbVWsHTjs7
+   I0AAW1oiSzy4oqUuYy3sqM0j96acChG3tokmrt38nhF4FXE2XLIDCSOO0
+   FtfeNILwUb6rOYemAU5/bo+JtLEvuiwLqGM/U++iAR7t9MOeS4afyh/NB
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10227"; a="268718349"
+X-IronPort-AV: E=Sophos;i="5.88,290,1635231600"; 
+   d="scan'208";a="268718349"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jan 2022 15:24:46 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,290,1635231600"; 
+   d="scan'208";a="491682054"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
+  by orsmga002.jf.intel.com with ESMTP; 14 Jan 2022 15:24:46 -0800
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rafael@kernel.org, lenb@kernel.org, daniel.lezcano@linaro.org
+Cc:     linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, amitk@kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/3] ACPI: DPTF: Support Raptor Lake
+Date:   Fri, 14 Jan 2022 15:24:33 -0800
+Message-Id: <20220114232435.448340-2-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20220114232435.448340-1-srinivas.pandruvada@linux.intel.com>
+References: <20220114232435.448340-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use 'tee' to send the test output to stdout in addition to the current
-output file. This makes the output easier to handle in automated test
-systems and is superior to only later dumping the output file contents
-to stdout, since this way the test output can be interleaved with other
-log messages, like from the kernel, so that chronology is preserved,
-making it easier to detect issues.
+Add Raptor Lake ACPI IDs for DPTF devices.
 
-Signed-off-by: Nícolas F. R. A. Prado <nfraprado@collabora.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- tools/testing/selftests/cpufreq/main.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/dptf/dptf_pch_fivr.c   | 1 +
+ drivers/acpi/dptf/dptf_power.c      | 2 ++
+ drivers/acpi/dptf/int340x_thermal.c | 6 ++++++
+ drivers/acpi/fan.h                  | 1 +
+ 4 files changed, 10 insertions(+)
 
-diff --git a/tools/testing/selftests/cpufreq/main.sh b/tools/testing/selftests/cpufreq/main.sh
-index 31f8c9a76c5f..60ce18ed0666 100755
---- a/tools/testing/selftests/cpufreq/main.sh
-+++ b/tools/testing/selftests/cpufreq/main.sh
-@@ -194,5 +194,5 @@ prerequisite
+diff --git a/drivers/acpi/dptf/dptf_pch_fivr.c b/drivers/acpi/dptf/dptf_pch_fivr.c
+index e7ab0fc90db9..c0da24c9f8c3 100644
+--- a/drivers/acpi/dptf/dptf_pch_fivr.c
++++ b/drivers/acpi/dptf/dptf_pch_fivr.c
+@@ -151,6 +151,7 @@ static int pch_fivr_remove(struct platform_device *pdev)
+ static const struct acpi_device_id pch_fivr_device_ids[] = {
+ 	{"INTC1045", 0},
+ 	{"INTC1049", 0},
++	{"INTC10A3", 0},
+ 	{"", 0},
+ };
+ MODULE_DEVICE_TABLE(acpi, pch_fivr_device_ids);
+diff --git a/drivers/acpi/dptf/dptf_power.c b/drivers/acpi/dptf/dptf_power.c
+index a24d5d7aa117..dc1f52a5b3f4 100644
+--- a/drivers/acpi/dptf/dptf_power.c
++++ b/drivers/acpi/dptf/dptf_power.c
+@@ -231,6 +231,8 @@ static const struct acpi_device_id int3407_device_ids[] = {
+ 	{"INTC1050", 0},
+ 	{"INTC1060", 0},
+ 	{"INTC1061", 0},
++	{"INTC10A4", 0},
++	{"INTC10A5", 0},
+ 	{"", 0},
+ };
+ MODULE_DEVICE_TABLE(acpi, int3407_device_ids);
+diff --git a/drivers/acpi/dptf/int340x_thermal.c b/drivers/acpi/dptf/int340x_thermal.c
+index da5d5f0be2f2..42a556346548 100644
+--- a/drivers/acpi/dptf/int340x_thermal.c
++++ b/drivers/acpi/dptf/int340x_thermal.c
+@@ -37,6 +37,12 @@ static const struct acpi_device_id int340x_thermal_device_ids[] = {
+ 	{"INTC1050"},
+ 	{"INTC1060"},
+ 	{"INTC1061"},
++	{"INTC10A0"},
++	{"INTC10A1"},
++	{"INTC10A2"},
++	{"INTC10A3"},
++	{"INTC10A4"},
++	{"INTC10A5"},
+ 	{""},
+ };
  
- # Run requested functions
- clear_dumps $OUTFILE
--do_test >> $OUTFILE.txt
-+do_test | tee -a $OUTFILE.txt
- dmesg_dumps $OUTFILE
+diff --git a/drivers/acpi/fan.h b/drivers/acpi/fan.h
+index dc9a6efa514b..dd9bb8ca2244 100644
+--- a/drivers/acpi/fan.h
++++ b/drivers/acpi/fan.h
+@@ -10,4 +10,5 @@
+ 	{"INT3404", }, /* Fan */ \
+ 	{"INTC1044", }, /* Fan for Tiger Lake generation */ \
+ 	{"INTC1048", }, /* Fan for Alder Lake generation */ \
++	{"INTC10A2", }, /* Fan for Raptor Lake generation */ \
+ 	{"PNP0C0B", } /* Generic ACPI fan */
 -- 
 2.34.1
 
