@@ -2,45 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF31BC433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:47:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB1A5C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:47:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347568AbiARCrH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jan 2022 21:47:07 -0500
-Received: from dfw.source.kernel.org ([139.178.84.217]:34546 "EHLO
-        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245507AbiARCnO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:43:14 -0500
+        id S1345561AbiARCrJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jan 2022 21:47:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33276 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1346336AbiARCoj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:44:39 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B097C061244;
+        Mon, 17 Jan 2022 18:37:43 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 2DB5161269;
-        Tue, 18 Jan 2022 02:43:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89B11C36B04;
-        Tue, 18 Jan 2022 02:43:10 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2883F6120D;
+        Tue, 18 Jan 2022 02:37:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77337C36AEB;
+        Tue, 18 Jan 2022 02:37:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1642473791;
-        bh=lMEBuMlvnB1Pwb+Tnv2fUmVQFddWQ68uoefQrCW//Rg=;
+        s=k20201202; t=1642473462;
+        bh=CnrwTehG9YW6BhiZw6t6jc8f53zGWef6UsPNAyd9KW8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rKujjtFabwLhlY+x96Ww23TWMGxQPpEBZwySAdALSrZbneAax2YnI6fFOwIVnkPKl
-         WwpN0iQ9BBaofs4OBVfPKXUfEdarbDNFnAakbevmGR+fBv2YAUxPzqP1DbtEBsmueO
-         LQuuJCtOqRTXfYcHclPPtJyB3h53Id1oEibQOGHDsiFpwFlqDq6voyiYOilFfOHJ/P
-         TDpjxQVWWmYliO/SlbzU1adlyGQNgO+LknCGvUS8vyjh7l9aixhOwROK73UdFdROOJ
-         KyW3rtdAAjfvNjjD0AzERrbRYRcGUk6X+MUXzyaxINGRVS4CpTcPxtktKvwTdBj6CZ
-         ZNd+ks1OJMCag==
+        b=U5jwyL7F+uGrSI7rKjbvBgEOqH0EB7IF2QfqUqp2oDw2W75ZnW1B6pIYpzkJWbJFU
+         Ez0E3HIASxNJUokCD9Wu735AUYAL9cRj5GQPIj3W1zhWy46D92UhMNm+2LAsRC6Ro/
+         4Ju5tzbfz/DN0nH8req6bBOMaVfdFMVMwJMOFk+4lLs/2mZIjrYniNazgLQVJ4Cqjx
+         u3ZWoRBCOCFkTYJFWvzH6rBBcQFSFU/jGEw6m5joWCE43lVw4mUk+7GmYLdNmwHCto
+         mjcArfkOo1qct/2lyGhZJjQiLvxiHp2C4zqyk4yf0/NkeTm2yxT+a+lunfRFZNvOxJ
+         BdqjYDomIcPzQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 074/116] PM: runtime: Add safety net to supplier device release
-Date:   Mon, 17 Jan 2022 21:39:25 -0500
-Message-Id: <20220118024007.1950576-74-sashal@kernel.org>
+        len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.15 127/188] PM: runtime: Add safety net to supplier device release
+Date:   Mon, 17 Jan 2022 21:30:51 -0500
+Message-Id: <20220118023152.1948105-127-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220118024007.1950576-1-sashal@kernel.org>
-References: <20220118024007.1950576-1-sashal@kernel.org>
+In-Reply-To: <20220118023152.1948105-1-sashal@kernel.org>
+References: <20220118023152.1948105-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -80,10 +83,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  3 files changed, 34 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 389d13616d1df..c0566aff53551 100644
+index 63577de268565..8e73a34e10055 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -348,8 +348,7 @@ static void device_link_release_fn(struct work_struct *work)
+@@ -485,8 +485,7 @@ static void device_link_release_fn(struct work_struct *work)
  	/* Ensure that all references to the link object have been dropped. */
  	device_link_synchronize_removal();
  
@@ -94,7 +97,7 @@ index 389d13616d1df..c0566aff53551 100644
  	put_device(link->consumer);
  	put_device(link->supplier);
 diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index bc649da4899a0..1573319404888 100644
+index ec94049442b99..44ae3909e64bb 100644
 --- a/drivers/base/power/runtime.c
 +++ b/drivers/base/power/runtime.c
 @@ -305,19 +305,40 @@ static int rpm_get_suppliers(struct device *dev)
@@ -146,7 +149,7 @@ index bc649da4899a0..1573319404888 100644
  }
  
  static void rpm_put_suppliers(struct device *dev)
-@@ -1755,9 +1776,7 @@ void pm_runtime_drop_link(struct device_link *link)
+@@ -1770,9 +1791,7 @@ void pm_runtime_drop_link(struct device_link *link)
  		return;
  
  	pm_runtime_drop_link_count(link->consumer);
@@ -158,7 +161,7 @@ index bc649da4899a0..1573319404888 100644
  
  static bool pm_runtime_need_not_resume(struct device *dev)
 diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 161acd4ede448..30091ab5de287 100644
+index eddd66d426caf..016de5776b6db 100644
 --- a/include/linux/pm_runtime.h
 +++ b/include/linux/pm_runtime.h
 @@ -58,6 +58,7 @@ extern void pm_runtime_get_suppliers(struct device *dev);
@@ -167,9 +170,9 @@ index 161acd4ede448..30091ab5de287 100644
  extern void pm_runtime_drop_link(struct device_link *link);
 +extern void pm_runtime_release_supplier(struct device_link *link, bool check_idle);
  
- /**
-  * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
-@@ -279,6 +280,8 @@ static inline void pm_runtime_get_suppliers(struct device *dev) {}
+ extern int devm_pm_runtime_enable(struct device *dev);
+ 
+@@ -283,6 +284,8 @@ static inline void pm_runtime_get_suppliers(struct device *dev) {}
  static inline void pm_runtime_put_suppliers(struct device *dev) {}
  static inline void pm_runtime_new_link(struct device *dev) {}
  static inline void pm_runtime_drop_link(struct device_link *link) {}
