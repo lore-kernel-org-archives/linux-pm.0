@@ -2,73 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF3DBC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43F2EC4332F
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:34:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244194AbiARCP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jan 2022 21:15:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55374 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236398AbiARCP2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:15:28 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA082C061574;
-        Mon, 17 Jan 2022 18:15:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=nrC9v5TH5mhwcYLw5MQgkFk0+L190zpoOd9ftRKCwRI=; b=fiA9taDxGDlpNEyMgBxG+r8mcG
-        sQqY4MeaBicL8wGkJpLgSa9oIDEteMyNcCIGKzJU2+HQKxuRtgsj+Vg2DxQEoRt+dEe2fnz+zw3Zk
-        yIv2SIstLoUOep60Xv3fSXA91Dqm7V9EioiPdMFiCD9em4Qqk+a4vcLIQ+CqDsalnt6dFeTGB5kb0
-        6V4NAHDGah8IZuFUtAwUVWoDmwf9eCVfaxz3ci5Bev7AYOaYeuu3razOLnK93WsTNpCcpN3enmn2+
-        K8rgbg5v98w8WNzL1xxPL6vEE/69XSkVv/dQmMwrtvFvJCDldO9Mjrm455jY3TQ/1UwwYc5eX6E3J
-        9DL1fSMA==;
-Received: from [2601:1c0:6280:3f0::aa0b] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1n9e1r-00Gs6a-OI; Tue, 18 Jan 2022 02:15:23 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH -next] power: supply: fix table problem in sysfs-class-power
-Date:   Mon, 17 Jan 2022 18:15:22 -0800
-Message-Id: <20220118021522.1672-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.31.1
+        id S240385AbiARCeY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jan 2022 21:34:24 -0500
+Received: from ams.source.kernel.org ([145.40.68.75]:37908 "EHLO
+        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S245038AbiARC1T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:27:19 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 792B7B81258;
+        Tue, 18 Jan 2022 02:27:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 973B5C36AF2;
+        Tue, 18 Jan 2022 02:27:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1642472835;
+        bh=vSKcjvq/Z801tcIbfVH/qsw6/1cZTbZfIZH7fbF8u1s=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=DCA08F2FzL0bfMGKB6ZYPoKBdJg9K0hLq0F+jYGQlVyVCPy15LDNAjLmuLaMVOM/A
+         YYzsCLGhnZ6aHSKwLzhHbiSkmA6mK53xaAcXSc2yjBwTWvrOmsySWYee7NBPdK7HLH
+         BKS3sZ0PqYuR+X0AVuGTBibO7ZvOdgVaRPaRw9JvPfka4OVYCj5iC7x/lTEasco3B5
+         WfsGWI7VbSBzro7aLib++TGEhpWe+ut7MsIkYeQfkK1FAi+XAeI/Oib4Y7S6bTQVLQ
+         6NG8+qZx2S1Q0g21stpE6VIli26acAamk1VF1h3iOmtzaHsuSyH5p4kM0nfTFb/1rC
+         esEqGWVPOSYAA==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.16 150/217] cpufreq: Fix initialization of min and max frequency QoS requests
+Date:   Mon, 17 Jan 2022 21:18:33 -0500
+Message-Id: <20220118021940.1942199-150-sashal@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220118021940.1942199-1-sashal@kernel.org>
+References: <20220118021940.1942199-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a bottom table border to complete the table format and prevent
-a documentation build warning.
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Documentation/ABI/testing/sysfs-class-power:459: WARNING: Malformed table.
-No bottom table border found.
+[ Upstream commit 521223d8b3ec078f670c7c35a1a04b1b2af07966 ]
 
-Fixes: 1b0b6cc8030d0 ("power: supply: add charge_behaviour attributes")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Thomas Weißschuh <linux@weissschuh.net>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+The min and max frequency QoS requests in the cpufreq core are
+initialized to whatever the current min and max frequency values are
+at the init time, but if any of these values change later (for
+example, cpuinfo.max_freq is updated by the driver), these initial
+request values will be limiting the CPU frequency unnecessarily
+unless they are changed by user space via sysfs.
+
+To address this, initialize min_freq_req and max_freq_req to
+FREQ_QOS_MIN_DEFAULT_VALUE and FREQ_QOS_MAX_DEFAULT_VALUE,
+respectively, so they don't really limit anything until user
+space updates them.
+
+Reported-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Tested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- Documentation/ABI/testing/sysfs-class-power |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-next-20220117.orig/Documentation/ABI/testing/sysfs-class-power
-+++ linux-next-20220117/Documentation/ABI/testing/sysfs-class-power
-@@ -468,6 +468,7 @@ Description:
- 			auto:            Charge normally, respect thresholds
- 			inhibit-charge:  Do not charge while AC is attached
- 			force-discharge: Force discharge while AC is attached
-+			================ ====================================
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 096c3848fa415..76ffdaf8c8b5e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1403,7 +1403,7 @@ static int cpufreq_online(unsigned int cpu)
  
- What:		/sys/class/power_supply/<supply_name>/technology
- Date:		May 2007
+ 		ret = freq_qos_add_request(&policy->constraints,
+ 					   policy->min_freq_req, FREQ_QOS_MIN,
+-					   policy->min);
++					   FREQ_QOS_MIN_DEFAULT_VALUE);
+ 		if (ret < 0) {
+ 			/*
+ 			 * So we don't call freq_qos_remove_request() for an
+@@ -1423,7 +1423,7 @@ static int cpufreq_online(unsigned int cpu)
+ 
+ 		ret = freq_qos_add_request(&policy->constraints,
+ 					   policy->max_freq_req, FREQ_QOS_MAX,
+-					   policy->max);
++					   FREQ_QOS_MAX_DEFAULT_VALUE);
+ 		if (ret < 0) {
+ 			policy->max_freq_req = NULL;
+ 			goto out_destroy_policy;
+-- 
+2.34.1
+
