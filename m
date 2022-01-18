@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C12CEC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:59:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01F71C4332F
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jan 2022 02:59:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348007AbiARC7C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jan 2022 21:59:02 -0500
-Received: from dfw.source.kernel.org ([139.178.84.217]:34574 "EHLO
+        id S1352123AbiARC7D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jan 2022 21:59:03 -0500
+Received: from dfw.source.kernel.org ([139.178.84.217]:38644 "EHLO
         dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347845AbiARCnO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:43:14 -0500
+        with ESMTP id S1348805AbiARCqI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jan 2022 21:46:08 -0500
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 64DD860AB1;
-        Tue, 18 Jan 2022 02:43:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 108D2C36AEB;
-        Tue, 18 Jan 2022 02:43:11 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id EDB1C6130A;
+        Tue, 18 Jan 2022 02:46:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97E7FC36AEF;
+        Tue, 18 Jan 2022 02:46:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1642473792;
-        bh=qxKAY0lHjDaFDfgLk83pfnzmbbzeEt3hIFCB9qqI01Y=;
+        s=k20201202; t=1642473967;
+        bh=dCmLun5k8+53l0a2rmKskLmjLJcPJKfcQnoQY+F6V1Q=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=CJj0ObyrajEBFwJar5Jqb869D991jsF4hC3Sryh6gsyUAxxWeUASIF7czC/Avqrj2
-         Zrr8ttDskU8wY0b0d0FnXgdcU2OPAMMwmn+KalxJ6e4t5KvY8jaiY39L6Ds4dllNJz
-         EXIIdSNlI3VAuMkIbMtI5suBneqLWnSSfTFq2AtvBD8AjIK/3GZhA8GQjx0bP1oXE8
-         QPY9BkwhtFR8DOE9E0FWVlJNzLRdA+TCHayudLI5Gh3/XJYloUl/1pim17uBaaTMCI
-         vfq8qEWpycjYFfllb8c+5BhDYC+xzZzKOBaaJmYE8LNa+jLsvnWEoSmtJG6MaoQRTH
-         pmAsG8f8c3aNA==
+        b=p2PQAOqyFHbhc0577d2W0iXTv108CAwuog6d3zNACNWtWgf89Os8ZnU2mW5UKeSHH
+         wqiPZ0+rX/hqqEJ1JjShoS7IfJwlG5Tz9eCdE206FRUwp80+dIygvDxq3Iiz8oR6kB
+         htv6CUu3u0oqJ+jlv6f0lp0Shw/xV3q0LjklZA19ajVOaxTthUMVK5HM3nceXHOV/d
+         ayi3JzKeqRyR0gG2lgPJ2hc5n0hGvjVWMdl1j9rV5f7IF6DglgjEk/fqe3mh6PmMGG
+         0ZwbltRAoxVsGw5cyhfzCHNiinQHfk3e/zRC6TUHjEUojQnOyI3F9usqUXskPV3bSg
+         LHCpJLrRxDmJg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 075/116] cpufreq: Fix initialization of min and max frequency QoS requests
-Date:   Mon, 17 Jan 2022 21:39:26 -0500
-Message-Id: <20220118024007.1950576-75-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 46/73] cpufreq: Fix initialization of min and max frequency QoS requests
+Date:   Mon, 17 Jan 2022 21:44:05 -0500
+Message-Id: <20220118024432.1952028-46-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220118024007.1950576-1-sashal@kernel.org>
-References: <20220118024007.1950576-1-sashal@kernel.org>
+In-Reply-To: <20220118024432.1952028-1-sashal@kernel.org>
+References: <20220118024432.1952028-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 8e159fb6af9cd..30dafe8fc5054 100644
+index cb7949a2ac0ca..af9f348048629 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1400,7 +1400,7 @@ static int cpufreq_online(unsigned int cpu)
+@@ -1393,7 +1393,7 @@ static int cpufreq_online(unsigned int cpu)
  
  		ret = freq_qos_add_request(&policy->constraints,
  					   policy->min_freq_req, FREQ_QOS_MIN,
@@ -85,7 +85,7 @@ index 8e159fb6af9cd..30dafe8fc5054 100644
  		if (ret < 0) {
  			/*
  			 * So we don't call freq_qos_remove_request() for an
-@@ -1420,7 +1420,7 @@ static int cpufreq_online(unsigned int cpu)
+@@ -1413,7 +1413,7 @@ static int cpufreq_online(unsigned int cpu)
  
  		ret = freq_qos_add_request(&policy->constraints,
  					   policy->max_freq_req, FREQ_QOS_MAX,
