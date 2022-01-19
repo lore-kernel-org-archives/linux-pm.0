@@ -2,121 +2,132 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6BE2C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jan 2022 15:05:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6239C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jan 2022 15:21:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355477AbiASPFe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jan 2022 10:05:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53310 "EHLO
+        id S1355514AbiASPVC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jan 2022 10:21:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57032 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355616AbiASPFT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jan 2022 10:05:19 -0500
-Received: from mail-ot1-x332.google.com (mail-ot1-x332.google.com [IPv6:2607:f8b0:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1DBFC061574
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jan 2022 07:05:18 -0800 (PST)
-Received: by mail-ot1-x332.google.com with SMTP id a10-20020a9d260a000000b005991bd6ae3eso3421103otb.11
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jan 2022 07:05:18 -0800 (PST)
+        with ESMTP id S238769AbiASPVA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jan 2022 10:21:00 -0500
+Received: from mail-oo1-xc34.google.com (mail-oo1-xc34.google.com [IPv6:2607:f8b0:4864:20::c34])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 072D8C061574
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jan 2022 07:21:00 -0800 (PST)
+Received: by mail-oo1-xc34.google.com with SMTP id k15-20020a4a850f000000b002dc3cdb0256so833414ooh.3
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jan 2022 07:21:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=rT9FJ0j7/GR3QV3pYKP9vdE5VbXyREPL1/JFSj49N9s=;
-        b=TkP0onxPtD5jB1gt+D1/yPotxgObqZuoJ/oopIGNyr03TMDZ7ffUflSnGXNAV0hBNY
-         BNwV6mQbgB6X6N1lGoQnuS3jSZr3RFboo+vWCYPZ7/Auy9axTIv6HvhunxexwcEsulex
-         TXvAqRxLAMXqpjBfp/a3bOjQ4fvrv1DATGjwX5CjV/byPb+y5ESE3Y5Mb78UYIy+VXSZ
-         1je7N4dc4VJZ3qCyrJ/0MO2YrAYFMOQ4E/lSrau8JkqGfzbBbrrsMMxazFTSCI4UQqGN
-         cNfBwEAtOLJxHzE6fYt9uGIk7onUWOkr8hJG57D8d0ukqepWeoTI8A+a1kkktS9KWcBM
-         JSBQ==
+        bh=u+VlURNkFbcvnlcKAhj9AzbW+2y4iy8uqcT2Hg3D05w=;
+        b=PqjhB4OWRy0R4raPT4KWqqKggpggvSj3ieBshqWNHsD7eJ2VhpM0J+6sma/iN9cnrr
+         P6q5ecnenTFRFEe7xPoOjA7I1JJI1LR4oawI6wX5gbUKMSFx+nULv+CaqPels7MY7/3j
+         BWNJI0aeFuNyNFTjOgHg1WkTN/5lANvt9aD0OSB6sikWDRxr2FMJEG6QqxFlIk+RS9Rs
+         pbsV8UyArjhyPAPwq+JYLNjCKEI+ByurR5j86Py7nEUw0cqIh4ttim+FsEUEqT648Aex
+         fFVcIyM2Az5ny/EhEF5PKOWAkrR25/yOaN5gMu/tDcfh7oMAS6zhvdz6ECDSpI+0YH5m
+         HxPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=rT9FJ0j7/GR3QV3pYKP9vdE5VbXyREPL1/JFSj49N9s=;
-        b=cbQ6vm5eSP3zZkNKHgtxcjMU39TuS5prmJ9ZczpdASTO6SEYvq7w2w3p1QSjT3eZ7z
-         FgbKxqlLL2vWG4ddRpUCG1Q6LkOkOv72yafzv2mbPioRalp8wu8LHnL/79Y5dEx7pdil
-         LRLUcGRekeZ+qHEDeHWFEgZYeZTPPV9ZhAmBTiC5wFNR/my/QLMZVhMT+sPFdmTqo5yd
-         zX65jG3iCbPVRE62yvtx3rRxRZyPHuHoA4omcCOmfqG+yLsl/lT8X8hhLDImI4jJ3aW7
-         ij3099mDU3oqRe0F78aTjIhjNp3zAIuSCXeMIb3zUEOOrgx+ZC8ua+MnHrAVDtwU3MAN
-         dEaA==
-X-Gm-Message-State: AOAM5300QNt8NBXcUkdOn/wX/lnvSpdyYIl+90kFuVUaJ8YdZRdn0PCd
-        UlZZ06i4gEI7SoyAtxHNA1F+cA==
-X-Google-Smtp-Source: ABdhPJzUIi3KXQuwlo8bH34JPGPPIl8ckdmaGpfQ9ZMEiW7t0Q0G9kj77P/h92SFPMEX42ha38Va0Q==
-X-Received: by 2002:a05:6830:2684:: with SMTP id l4mr14282953otu.79.1642604717967;
-        Wed, 19 Jan 2022 07:05:17 -0800 (PST)
+        bh=u+VlURNkFbcvnlcKAhj9AzbW+2y4iy8uqcT2Hg3D05w=;
+        b=8RV2iXH25Y+UAbtHmmz2QnEso7rpWKbn72A78+IEIWLBaOCz/9eCzm9wSLsB2FICk1
+         eAu7o9Wx0WCr2f3IT+ONphhyxix4U08JBsIJSzC6Ggwz5odCOpLL9tOZ4QsWUKvQAIdx
+         ubGZ+wxDQgZ3Q1wdpUPjqi9AkZTzk8jVQVcjxbDF76+4reGSoG3x6xRW/r/Dv5nW6bxU
+         0ELE6cMEw8AYYqZQzHHlNP2dQJPv3kWWYvZJ8hOzDaJaJt92KpuI16RWn8a9w9cDUUna
+         nVoqYqjX/D3xS+iPpgfnzFW42j9stDmLeIrZOPOuUYwHzRO1M0BMV9Mq7f6jQ0BKKi4S
+         zlEQ==
+X-Gm-Message-State: AOAM533r10m+wm8bwaNrR56A3PQhdUqMNZCh6jvwKxPCiHTujxuk+ASm
+        VI1bNbtQTkKrJaEEUlIJMhNyVg==
+X-Google-Smtp-Source: ABdhPJzciEV+DLP4ljYzj4If36zEm4Yn76ryBLFy7hYXn+XWNeljTJgFZOKilcrC59nl8wBqkg4Qaw==
+X-Received: by 2002:a4a:3e53:: with SMTP id t80mr22119292oot.74.1642605659248;
+        Wed, 19 Jan 2022 07:20:59 -0800 (PST)
 Received: from ripper ([2600:1700:a0:3dc8:205:1bff:fec0:b9b3])
-        by smtp.gmail.com with ESMTPSA id w22sm9105oov.24.2022.01.19.07.05.17
+        by smtp.gmail.com with ESMTPSA id d15sm40204oiw.4.2022.01.19.07.20.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Jan 2022 07:05:17 -0800 (PST)
-Date:   Wed, 19 Jan 2022 07:05:52 -0800
+        Wed, 19 Jan 2022 07:20:58 -0800 (PST)
+Date:   Wed, 19 Jan 2022 07:21:34 -0800
 From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
-        Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>,
         Thara Gopinath <thara.gopinath@gmail.com>,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/2] cpufreq: qcom-hw: Use initialized cpumask for
- thermal pressure update
-Message-ID: <Yego0BwrVXkqqJOm@ripper>
+Subject: Re: [PATCH 2/2] arch_topology: Sanity check cpumask in thermal
+ pressure update
+Message-ID: <YegsfuLPJDqYPr0n@ripper>
 References: <20220118185612.2067031-1-bjorn.andersson@linaro.org>
- <20220119063547.hktwzbycf7trqjju@vireshk-i7>
- <20220119064029.b2yhqcazhpdbhasc@vireshk-i7>
+ <20220118185612.2067031-2-bjorn.andersson@linaro.org>
+ <20220119144328.cvt76mhsufxg7qbr@bogus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220119064029.b2yhqcazhpdbhasc@vireshk-i7>
+In-Reply-To: <20220119144328.cvt76mhsufxg7qbr@bogus>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue 18 Jan 22:40 PST 2022, Viresh Kumar wrote:
+On Wed 19 Jan 06:43 PST 2022, Sudeep Holla wrote:
 
-> On 19-01-22, 12:05, Viresh Kumar wrote:
-> > policy->cpus keeps on changing with CPU hotplug and this can leave
-> > your platform in an inconsistent state. For example, in case where you
-> > offline a CPU from policy, other CPUs get their thermal pressure
-> > updated, online the CPU back and all CPUs of a policy don't have the
-> > same settings anymore.
+> On Tue, Jan 18, 2022 at 10:56:12AM -0800, Bjorn Andersson wrote:
+> > Occasionally during boot the Qualcomm cpufreq driver was able to cause
+> > an invalid memory access in topology_update_thermal_pressure() on the
+> > line:
 > > 
-
-Oh, I didn't know that. Then my proposal doesn't seem that awesome.
-
-> > There are few things we can do here now:
+> > 	if (max_freq <= capped_freq)
 > > 
-> > - Check for empty related_cpus and return early. Since related_cpus is
-> >   updated only once, this shall work just fine and must not be racy.
+> > It turns out that this was caused by a race, which resulted in the
+> > cpumask passed to the function being empty, in which case
+> > cpumask_first() will return a cpu beyond the number of valid cpus, which
+> > when used to access the per_cpu max_freq would return invalid pointer.
 > > 
-> >   While at it, I think we can also do something like this in
-> >   topology_update_thermal_pressure() instead:
+> > The bug in the Qualcomm cpufreq driver is being fixed, but having a
+> > sanity check of the arguments would have saved quite a bit of time and
+> > it's not unlikely that others will run into the same issue.
 > > 
-> >   	cpu = cpumask_first(cpus);
-> >         if (unlikely(cpu >= NR_CPUS))
-> >                 return;
+> > Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> > ---
+> >  drivers/base/arch_topology.c | 3 +++
+> >  1 file changed, 3 insertions(+)
 > > 
-> > - And while writing this email, I dropped all other ideas in favor of
-> >   change to topology_update_thermal_pressure() :)
+> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> > index 976154140f0b..6560a0c3b969 100644
+> > --- a/drivers/base/arch_topology.c
+> > +++ b/drivers/base/arch_topology.c
+> > @@ -177,6 +177,9 @@ void topology_update_thermal_pressure(const struct cpumask *cpus,
+> >  	u32 max_freq;
+> >  	int cpu;
+> >  
+> > +	if (WARN_ON(cpumask_empty(cpus)))
+> > +		return;
+> > +
 > 
-> And then I saw your second patch, which looks good as otherwise we
-> will not be able to catch the bug in our system where we are sending
-> the empty cpumask :)
-> 
-> So the other idea is:
-> 
-> - Revert, or bring back a new version of this and register the
->   interrupt from there. But that is also not a very clean solution.
-> 
->   commit 4bf8e582119e ("cpufreq: Remove ready() callback")
+> Why can't the caller check and call this only when cpus is not empty ?
+> IIUC there are many such APIs that use cpumask and could result in similar
+> issues if called with empty cpus. Probably we could add a note that cpus
+> must not be empty if that helps the callers ?
 > 
 
-We could do this and keep the interrupt disabled until we hit ready().
+As indicated in the commit message, it took me a while to conclude that
+the cause for a memory fault on what seemed to be a comparison between
+two variables on the stack was actually caused by this race - which
+isn't trivially reproducible, unless you know what the bug is.
 
-But I found the resulting issue non-trivial to debug, so I would prefer
-if arch_update_thermal_pressure() dealt with the empty cpumask. So as
-you suggest in your first reply, I'll respin the second patch alone,
-without the WARN_ON().
+Now _I_ know better and will hopefully recognize the oops signature
+right away, but my hope was to put the sanity check on this side to save
+the next caller of this API some time. Updating the comment probably
+would have saved me a minute or two at the end, probably as confirmation
+of my findings after the fact...
 
-Thanks,
+If you prefer to keep topology_update_thermal_pressure() clean(er) and
+exciting I can hack around the issue in the Qualcomm driver.
+
+PS. I'm onboard with Greg's objection to the WARN_ON()...
+
+Regards,
 Bjorn
