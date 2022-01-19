@@ -2,140 +2,158 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 279B4C433FE
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jan 2022 19:27:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64513C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jan 2022 19:38:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239862AbiAST1R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jan 2022 14:27:17 -0500
-Received: from mga12.intel.com ([192.55.52.136]:65533 "EHLO mga12.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229593AbiAST1P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 19 Jan 2022 14:27:15 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1642620434; x=1674156434;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=dmpN7qUU9C3uIKfow/OKVaXBm34Ban3OqHYGXm/yruw=;
-  b=HuENwB+KiblncFi7b4ON8zpexWmy7WU8DzDmU80D+4f8eqK/gg8Q75yk
-   Fxk0LTVozkuRFOz6PZ/hBfLXCp6A9IqxFmqz9kh/GNYg/pSw+9GSuwtxH
-   ySsBO8OAw2DIx2N35p8KdU4NUjboDk9LI7T2lboXoCo2IELMjjsBvaxcm
-   qKj+/WrMzbl0YYiefehGa4zlCYl17AGNDGFhHi7e22yzIPUX1Jk5exYGs
-   MQ96dqY187LazQn1+mrLDB1ZoNbAOhCEWuWiGifYSxJgruofVfTeKPLof
-   6Nsgx8bClFHPny7/ZzfTJE6e92SGxOZtQH5RU232m3SZNTvBYrXrYSsJp
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10231"; a="225147777"
-X-IronPort-AV: E=Sophos;i="5.88,300,1635231600"; 
-   d="scan'208";a="225147777"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2022 11:07:45 -0800
-X-IronPort-AV: E=Sophos;i="5.88,300,1635231600"; 
-   d="scan'208";a="477498862"
-Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Jan 2022 11:07:29 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nAGHg-00CEIt-Ug;
-        Wed, 19 Jan 2022 21:06:16 +0200
-Date:   Wed, 19 Jan 2022 21:06:16 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>, linux-iio@vger.kernel.org,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>, alsa-devel@alsa-project.org,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-phy@lists.infradead.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
-        linux-gpio@vger.kernel.org,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Guenter Roeck <groeck@chromium.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        openipmi-developer@lists.sourceforge.net,
-        Saravanan Sekar <sravanhome@gmail.com>,
-        Khuong Dinh <khuong@os.amperecomputing.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
-        kvm@vger.kernel.org, Kamal Dasu <kdasu.kdev@gmail.com>,
-        Richard Weinberger <richard@nod.at>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        bcm-kernel-feedback-list@broadcom.com,
-        linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        platform-driver-x86@vger.kernel.org, linux-pwm@vger.kernel.org,
-        John Garry <john.garry@huawei.com>,
-        Robert Richter <rric@kernel.org>,
-        Zha Qipeng <qipeng.zha@intel.com>,
-        Corey Minyard <minyard@acm.org>, linux-pm@vger.kernel.org,
-        Peter Korsgaard <peter@korsgaard.com>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>,
-        Mark Gross <markgross@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Mark Brown <broonie@kernel.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Takashi Iwai <tiwai@suse.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Benson Leung <bleung@chromium.org>,
-        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
-        Tony Luck <tony.luck@intel.com>,
-        Mun Yew Tham <mun.yew.tham@intel.com>,
-        Eric Auger <eric.auger@redhat.com>, netdev@vger.kernel.org,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Cornelia Huck <cohuck@redhat.com>, linux-mmc@vger.kernel.org,
-        Joakim Zhang <qiangqing.zhang@nxp.com>,
-        linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        Vinod Koul <vkoul@kernel.org>,
-        James Morse <james.morse@arm.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Niklas =?iso-8859-1?Q?S=F6derlund?= 
-        <niklas.soderlund@ragnatech.se>,
-        linux-mediatek@lists.infradead.org,
-        Brian Norris <computersforpeace@gmail.com>,
-        "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] platform: make platform_get_irq_optional() optional
- (summary)
-Message-ID: <YehhKMl9ZIydj1fJ@smile.fi.intel.com>
-References: <20220110195449.12448-1-s.shtylyov@omp.ru>
- <20220110195449.12448-2-s.shtylyov@omp.ru>
- <20220115183643.6zxalxqxrhkfgdfq@pengutronix.de>
+        id S241988AbiASTiU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jan 2022 14:38:20 -0500
+Received: from mail-qt1-f169.google.com ([209.85.160.169]:46762 "EHLO
+        mail-qt1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232741AbiASTiU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jan 2022 14:38:20 -0500
+Received: by mail-qt1-f169.google.com with SMTP id v7so3074622qtw.13;
+        Wed, 19 Jan 2022 11:38:19 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=kubu8IvDNwwME1j4zVCQMiONGCZPxPM8rnY5h07fCRo=;
+        b=54aHOnyGU2YTScI5iPeiZGhLjGbxM7uiNmcCOWFvMHUZy1WhF7AIw9s1sxc5HmLEVD
+         yhxAIjnZsmCYbeHW7wA/Dg8+MoFuny7l96vcrzJ/FTZZ7lxUQ9MZwLGz5uZRqCPzldtO
+         sfpzX666SzP72pUBZ+9w2szAKbXCivgYzYQkwaGNSmEeatgSCKa5TtZPLd7b3KTJydwh
+         ylGve/gw2BLU0oFqUnz1lx7iY//Wqq+W2dI7oPxUUICNZONENjS/8uhi8mM+T4TK84CT
+         4l/QBYILW/OWqINMcL41Pzx7Ipp2DT9Jq/Kujyr3y5Hv8tLDOvPsjh0UIJ6fdh9vmFUQ
+         3USA==
+X-Gm-Message-State: AOAM5323r8Y64kDMYtZeSYiA6Fh+vKROuOn4j7pGVyDeVljjglg9bcdV
+        CtiyvUyK5yXui6VduRf2+W8Jn14NGF8Or+H46ZQ5XNMOV2w=
+X-Google-Smtp-Source: ABdhPJww649KQAvU5MHy9ei2oMvkYYYf3yQmYqCCV4BNCnFgjZZF+6JFo7HalQlVXdTB1xMaPlTG7mymsomqoM+lOI8=
+X-Received: by 2002:a05:622a:293:: with SMTP id z19mr377959qtw.302.1642621099179;
+ Wed, 19 Jan 2022 11:38:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220115183643.6zxalxqxrhkfgdfq@pengutronix.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <cadbd4eb-40bb-1fa8-1e00-dc95dab62295@gmail.com>
+ <CAJZ5v0gH3xK3g01S0CLe235QTF6=A0EB+Zwuv50=WaJaRsCT+w@mail.gmail.com>
+ <28e851d8-50cf-ee58-b340-1138a37990f6@gmail.com> <CAJZ5v0jKBSxHXf_N8BgtiOYnoxz9UUCZP8UwAHcFt_-6z4TozQ@mail.gmail.com>
+ <46bbb2e4-4d51-990b-1ca4-f7fdfda9489d@gmail.com>
+In-Reply-To: <46bbb2e4-4d51-990b-1ca4-f7fdfda9489d@gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 19 Jan 2022 20:38:08 +0100
+Message-ID: <CAJZ5v0jc5kBzz3Rmf3e2QOsC9jwfk-vGQ4kkXWBjYJgHBXAynQ@mail.gmail.com>
+Subject: Re: [PATCH] PCI: Forbid RPM on ACPI systems before 5.0 only
+To:     Heiner Kallweit <hkallweit1@gmail.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jan 15, 2022 at 07:36:43PM +0100, Uwe Kleine-König wrote:
-> Hello,
-> 
-> I'm trying to objectively summarize the discussions in this thread in
-> the hope this helps finding a way that most people can live with.
-> 
-> First a description of the status quo:
+On Tue, Jan 18, 2022 at 6:42 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+>
+> On 18.01.2022 18:11, Rafael J. Wysocki wrote:
+> > On Tue, Jan 18, 2022 at 5:57 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+> >>
+> >> On 18.01.2022 17:28, Rafael J. Wysocki wrote:
+> >>> On Mon, Jan 17, 2022 at 11:52 AM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+> >>>>
+> >>>> Currently PCI core forbids RPM and requires opt-in from userspace,
+> >>>> apart from few drivers calling pm_runtime_allow(). Reason is that some
+> >>>> early ACPI PM implementations conflict with RPM, see [0].
+> >>>> Note that as of today pm_runtime_forbid() is also called for non-ACPI
+> >>>> systems. Maybe it's time to allow RPM per default for non-ACPI systems
+> >>>> and recent enough ACPI versions. Let's allow RPM from ACPI 5.0 which
+> >>>> was published in 2011.
+> >>>>
+> >>>> [0] https://lkml.org/lkml/2020/11/17/1548
+> >>>>
+> >>>> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> >>>> ---
+> >>>>  drivers/pci/pci.c | 7 ++++++-
+> >>>>  1 file changed, 6 insertions(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> >>>> index 428afd459..26e3a500c 100644
+> >>>> --- a/drivers/pci/pci.c
+> >>>> +++ b/drivers/pci/pci.c
+> >>>> @@ -3101,7 +3101,12 @@ void pci_pm_init(struct pci_dev *dev)
+> >>>>         u16 status;
+> >>>>         u16 pmc;
+> >>>>
+> >>>> -       pm_runtime_forbid(&dev->dev);
+> >>>> +#ifdef CONFIG_ACPI
+> >>>> +       /* Some early ACPI PM implementations conflict with RPM. */
+> >>>> +       if (acpi_gbl_FADT.header.revision > 0 &&
+> >>>> +           acpi_gbl_FADT.header.revision < 5)
+> >>>> +               pm_runtime_forbid(&dev->dev);
+> >>>> +#endif
+> >>>
+> >>> Well, there are two things here.
+> >>>
+> >>> First, there were systems in which ACPI PM was not ready for changing
+> >>> power states in the S0 system state (ie. run-time) and it was assuming
+> >>> that power states would only be changed during transitions to sleep
+> >>> states (S1 - S4) and to S5.  This can be covered by the ACPI revicion
+> >>> check, but I'm not sure if ACPI 5.0 is the right one.  Why ACPI 5 and
+> >>> not ACPI 6, for instance?
+> >>>
+> >> Just based on the assumption that ACPI 5.0 should be recent enough.
+> >> We can also go with ACPI 6.
+> >
+> > I know that we can, the question is whether or not we should.
+> >
+> > IOW, there needs to be at least some technical grounds on which to
+> > assume that a given ACPI release is safe enough.
+> >
+> When ACPI 5 was published the workaround to disable RPM in general
+> was in place already. I'd assume that the majority of users does not
+> opt in for RPM, therefore it may be hard to find out whether any
+> system with ACPI 5 or ACPI 6 suffers from the same problem as the
+> affected old systems.
 
-I do not really understand why we put an equal sign in all implications between
-meaning of the 0 cookie and NULL as an (non-existed) instance of an object?
+Which kind of demonstrates the problem with the proposed approach
+which is based on speculation.
 
-It's like comparing None object in Python to False.
+> >>> Second, there were PCI devices without ACPI PM where the PCI standard
+> >>> PM didn't work correctly.  This is not related to ACPI at all and I'm
+> >>> not sure why the ACPI revision check would be sufficient to cover
+> >>> these cases.
+> >>>
+> >> Didn't know that there were such cases. Can you provide any examples or
+> >> links to reports about such misbehaving devices?
+> >
+> > Admittedly, I don't have a list of them, so I would need to look them
+> > up and not just in the mailing lists.
+> >
+> >>>>         pm_runtime_set_active(&dev->dev);
+> >>>>         pm_runtime_enable(&dev->dev);
+> >>>>         device_enable_async_suspend(&dev->dev);
+> >>>> --
+> >
+> > Also note that this change will allow PM-runtime to be used on PCI
+> > devices without drivers by default and that may not be entirely safe
+> > either.  It didn't work really well in the past IIRC, so I'm wondering
+> > what's the reason to believe that it will work just fine this time.
+>
+> >From "Documentation/power/pci.rst":
+> If a PCI driver implements the runtime PM callbacks and intends to use the
+> runtime PM framework provided by the PM core and the PCI subsystem, it needs
+> to decrement the device's runtime PM usage counter in its probe callback
+> function.  If it doesn't do that, the counter will always be different from
+> zero for the device and it will never be runtime-suspended.
 
--- 
-With Best Regards,
-Andy Shevchenko
+I'm not sure how this is related to what I said above.
 
+> Having said that I don't see how there can be a RPM-related problem w/o
+> the driver calling one of the RPM put functions. Maybe some of the problems
+> in the past were caused by PCI core bugs that have long been fixed.
+>
+> To reduce the risk we could enable RPM for a certain subset of PCI devices
+> only in a first step, e.g. for PCIe devices.
 
+I'm still not sure if runtime-suspending them when they have no
+drivers is a good idea.
+
+It might be better to somehow do the pm_runtime_allow() automatically
+in local_pci_probe() if the usage counter is 1 and power.runtime_auto
+is false after running the driver's ->probe() callback.
