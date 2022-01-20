@@ -2,92 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A1EFC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jan 2022 10:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1FF3C4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jan 2022 10:58:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229487AbiATKuj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Jan 2022 05:50:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37102 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1376397AbiATKrA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jan 2022 05:47:00 -0500
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64AF8C061574;
-        Thu, 20 Jan 2022 02:47:00 -0800 (PST)
-Received: by mail-pj1-x102e.google.com with SMTP id pf13so5423587pjb.0;
-        Thu, 20 Jan 2022 02:47:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id;
-        bh=68FjrFR3RAqjKzyB55RwMegw/F7hpuSuK3Z6kMQ5ujo=;
-        b=Jy0i0rxSQWFnZ9dvw8ADJX4zh1/M2PYcsgwOhj28oB3k+lvPLLswsgu04yP0bgUsZD
-         BUG3tF9L2GrjUyi4bOv+6EhWJRC5fahH08O/PahLEyFFlUpAdzSQ6Zo3aVFL9d2qaxHU
-         N2vtHGFAPD0YW0scU5Jv732bwxonidvz7PZpknMfPXBkq9olfzc5H/gtQgPJUctPPFQy
-         xGKKieX1rDFDiBRCX4bi8/IW2c7KdLJwXwRAFPFcMAf0BOJP/PEqAmnsb7hTIKB6kTMO
-         YccsVaE93RYUP6SC3SOX/0CMGsvySHsEDfc398en0lqxFzI8jW+4WEsm7XEFAeqBzakl
-         ZUUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=68FjrFR3RAqjKzyB55RwMegw/F7hpuSuK3Z6kMQ5ujo=;
-        b=ShM4/VGzIr/vs+8bvoAXpFKZPX4JEstblxyDMHDHykqGRNHZnbkP21z/YYk/zF9IFW
-         Q2SsbPi63tFU/GAqKsjN3uYOR5oLV0BXYXhFfesFfJao4rixjdGtTbsNAIa9GRsD6tKe
-         dB5iN9iH0Dpdsdo/Y41WOEGOHNRkuYIw1mDFlsXVmu6q6AxJuJL9tthzTY2JN66fOwab
-         HvhEsranRgpjugtJ2/x66A/4xquN7Z/c+qJ4F5LsOpMPw+pMCcZ/Vw1pDoQOpRffYkTE
-         m0wrPZss09vJgAl7Rm5EqXoWjNIDcosZFDQTwm3P0G2L1sSInt0C1uO5shXFRd6Fu/Hy
-         oWeA==
-X-Gm-Message-State: AOAM533dqa03uGY0NRrSiMf9FRpYqsC23wYmoqbonHEDLACRYJL+Dwvu
-        ZizRnxV5Nwup9Ix+nJrjgBI=
-X-Google-Smtp-Source: ABdhPJzQe3MgRhhwhK8NOwf4Ko1k9iTRtYxZj3qrTjIccBz0OsVHMg7leRGxVfMXws11YBCNxbscqw==
-X-Received: by 2002:a17:902:a404:b0:148:bdd6:d752 with SMTP id p4-20020a170902a40400b00148bdd6d752mr37413179plq.20.1642675619936;
-        Thu, 20 Jan 2022 02:46:59 -0800 (PST)
-Received: from localhost.localdomain ([159.226.95.43])
-        by smtp.googlemail.com with ESMTPSA id kx11sm1572575pjb.1.2022.01.20.02.46.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Jan 2022 02:46:59 -0800 (PST)
-From:   Miaoqian Lin <linmq006@gmail.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     linmq006@gmail.com
-Subject: [PATCH] power: gemini-poweroff: Fix IRQ check in gemini_poweroff_probe
-Date:   Thu, 20 Jan 2022 10:46:54 +0000
-Message-Id: <20220120104654.3467-1-linmq006@gmail.com>
-X-Mailer: git-send-email 2.17.1
+        id S230024AbiATK6z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Jan 2022 05:58:55 -0500
+Received: from dfw.source.kernel.org ([139.178.84.217]:37966 "EHLO
+        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230014AbiATK6y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jan 2022 05:58:54 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 78CA96153F
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jan 2022 10:58:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF0B4C340EA
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jan 2022 10:58:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1642676333;
+        bh=+jkyxXMoEk5+hwtBJlffpwJ8aa4wwzoRMO9NurvgCWU=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=g8YoZlVkh/8k178K0nLX3wCKHTyTeisRKNVJwPT8ky5ra7t+9c50Mymp49zx4hvA8
+         KHG361Br503LtIHzpMLGQLbZMXsdBX693wh56U+kx0ISfnb6z9MQMTqNP0l1UhAd/l
+         bbbMRpdJVPc0t9bvSJchRS4xLi/FEhhXqVcJNG8RunmVPOt5fy6bbjIeopq0p6gT2l
+         djl1pvdmppC8+L1diVcoUFU4czH0IuGEr197CKK0n8anbhUm5I3BeZHaj9h8l6KmH6
+         FC2NJ3rqvC+y3cInKFDY2Kudu9DgHl0Sj6pn+GwwsB0aTg+aC5bjg7tKG4mA7SDR9S
+         NTcYYDYcTdevg==
+Received: by mail-lf1-f46.google.com with SMTP id x11so20145687lfa.2
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jan 2022 02:58:53 -0800 (PST)
+X-Gm-Message-State: AOAM532k7qGNVJANAi/bV3Mo1pa3DNlGq672etiUKQLKI/RM5D+jpzgk
+        0v/rN/mnjRExA2Ud00Ocp9e/ot/X5IWKysvoth7rLg==
+X-Google-Smtp-Source: ABdhPJzCBCnJZ3oIXFukCi1Pa6f/1m/OuPcJzRFUfboLxTs9Ofigs2PhdSiU3aU8RkHR44+n8gnJLTI4QW+JwXe3GT4=
+X-Received: by 2002:a05:6512:986:: with SMTP id w6mr31394398lft.201.1642676331951;
+ Thu, 20 Jan 2022 02:58:51 -0800 (PST)
+MIME-Version: 1.0
+References: <20220112194118.178026-1-luca@z3ntu.xyz> <20220112194118.178026-7-luca@z3ntu.xyz>
+In-Reply-To: <20220112194118.178026-7-luca@z3ntu.xyz>
+From:   Amit Kucheria <amitk@kernel.org>
+Date:   Thu, 20 Jan 2022 16:28:40 +0530
+X-Gmail-Original-Message-ID: <CAHLCerMEvDyrxkwpd+POUSjspkEfw=-FhPCS1=nX5WOVH4=bcw@mail.gmail.com>
+Message-ID: <CAHLCerMEvDyrxkwpd+POUSjspkEfw=-FhPCS1=nX5WOVH4=bcw@mail.gmail.com>
+Subject: Re: [PATCH 06/15] dt-bindings: thermal: tsens: Add msm8953 compatible
+To:     Luca Weiss <luca@z3ntu.xyz>
+Cc:     linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-platform_get_irq() returns negative error number instead 0 on failure.
-And the doc of platform_get_irq() provides a usage example:
+On Thu, Jan 13, 2022 at 1:12 AM Luca Weiss <luca@z3ntu.xyz> wrote:
+>
+> Document the compatible string for tsens found in msm8953.
+>
+> Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+> Acked-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 
-    int irq = platform_get_irq(pdev, 0);
-    if (irq < 0)
-        return irq;
+Acked-by: Amit Kucheria <amitk@kernel.org>
 
-Fix the check of return value to catch errors correctly.
-
-Fixes: f7a388d6cd1c ("power: reset: Add a driver for the Gemini poweroff")
-Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
----
- drivers/power/reset/gemini-poweroff.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/reset/gemini-poweroff.c b/drivers/power/reset/gemini-poweroff.c
-index 90e35c07240a..b7f7a8225f22 100644
---- a/drivers/power/reset/gemini-poweroff.c
-+++ b/drivers/power/reset/gemini-poweroff.c
-@@ -107,8 +107,8 @@ static int gemini_poweroff_probe(struct platform_device *pdev)
- 		return PTR_ERR(gpw->base);
- 
- 	irq = platform_get_irq(pdev, 0);
--	if (!irq)
--		return -EINVAL;
-+	if (irq < 0)
-+		return irq;
- 
- 	gpw->dev = dev;
- 
--- 
-2.17.1
-
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> index d3b9e9b600a2..b6406bcc683f 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> @@ -43,6 +43,7 @@ properties:
+>        - description: v2 of TSENS
+>          items:
+>            - enum:
+> +              - qcom,msm8953-tsens
+>                - qcom,msm8996-tsens
+>                - qcom,msm8998-tsens
+>                - qcom,sc7180-tsens
+> --
+> 2.34.1
+>
