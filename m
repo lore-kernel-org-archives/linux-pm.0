@@ -2,113 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60062C43219
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Jan 2022 13:26:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E803C433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Jan 2022 01:01:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231774AbiAVN0G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 22 Jan 2022 08:26:06 -0500
-Received: from smtp-relay-internal-1.canonical.com ([185.125.188.123]:44492
-        "EHLO smtp-relay-internal-1.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233108AbiAVN0D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 22 Jan 2022 08:26:03 -0500
-Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com [209.85.218.70])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 1D3313FFDE
-        for <linux-pm@vger.kernel.org>; Sat, 22 Jan 2022 13:26:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1642857962;
-        bh=BqbA7EkPEkiPvdyZCRRPSvgPxXK4nwiMlYWc8IskYBk=;
-        h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-         MIME-Version;
-        b=JVBmnUZdohntqKv6YtehxcysFpATEpMPwbqJ4y0e7blCiQ7sOaAuQ86HNrRAxm6KR
-         xXIEhrQgYgahfRWcXCiw9N4GuOjsBRps3gEGzxnNrCtJd+IS6+2r21uuYzuYlOcGv0
-         vG/f60nsu7ahNpiTWYfPueseavLefye7LoOfHsqrdoFNdGyDdFTBYq6acCo56OST/H
-         aUUeIw1zQq0oELscqYytUzJ3ajosbUzjl+ZfqVJlo3J3lUmoOTupGnWd0Nbpi9kuCU
-         hdNqIpJJcHnUoZZkttmbwA0l1vaYBa/YdRIABZ5kRRYNSQa2glv2+DTNiZm9U3ctGH
-         PB1s2nPyPMq3A==
-Received: by mail-ej1-f70.google.com with SMTP id d18-20020a1709063ed200b006a5eeb2ee4dso943404ejj.3
-        for <linux-pm@vger.kernel.org>; Sat, 22 Jan 2022 05:26:01 -0800 (PST)
+        id S231803AbiAWBBP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 22 Jan 2022 20:01:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47682 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230326AbiAWBBO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 22 Jan 2022 20:01:14 -0500
+Received: from mail-yb1-xb36.google.com (mail-yb1-xb36.google.com [IPv6:2607:f8b0:4864:20::b36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8254C06173B
+        for <linux-pm@vger.kernel.org>; Sat, 22 Jan 2022 17:01:14 -0800 (PST)
+Received: by mail-yb1-xb36.google.com with SMTP id p5so39292487ybd.13
+        for <linux-pm@vger.kernel.org>; Sat, 22 Jan 2022 17:01:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=fvjIHzoYjX2wrs+EpzMBjfsTjarifS+awxMyAGX77+c=;
+        b=icZbSbAmMydOl2Lfh9/+QWimtCNVaKajeqB22HdXuG20nsP2qvlOHr0ZXqR12bQaRa
+         6THaCHTNdTiILsj8W2oMq/Gajn+J+3je19fwojwy376TurxKHscJ66fabnlY7GQPFwu+
+         IZdvBgTYHcw/UtGA8KuXyQis0rqVaXd3WWc+o5mkISfA3Gq+XYX98RNhE3H0XZD86FyT
+         YhJcecRRdsqF4lc0d+33JV+kjrK0yenicrpHodrZ1DSmZ3JKR+cv5O/DPJHwx/Tp8vJT
+         eYSYRuQGocZtmIrJ0kP9s3y+V+atWqx//BqvWTVrK44h0mX1rZtOo+qetBXVR5Kr8mQh
+         Ul7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=BqbA7EkPEkiPvdyZCRRPSvgPxXK4nwiMlYWc8IskYBk=;
-        b=gEdeCvI0Z/w5o2+SKdP572KIH8a1uYMpIki1vdRWDzfX3W7FWwu0fq/ooTQQ6ODkZm
-         YJ94Hdo3W2Muh7UWnaHaEa/EC5Bful9MnTxFfPMF8rqTIzr5MkoY1dy4crs/7ZbtXB7H
-         lt4g7BSDg+ZweQ67aCWIJe+zjvXHO8yrnGTzKZfYdLrdsstefRgLssOwZtB2CmvbEGSu
-         WzcvzPtKkk374KOuLnDxdbcZkYtxOprxlZwQNYw80qkzbjeqZBz4Thum9CAtrwpnz3kK
-         Tun67WpHCx6fl3G+OLpkl4lcMrI+XuUSUf47Lvl+CQf3LJkmVNULTY4nFNoIso7MvA5k
-         MsAw==
-X-Gm-Message-State: AOAM531Jtc0NZrnScNw2i05zvZ5hFabF/XxbTlovPG/+xcPsuNdvy+7K
-        VZpr9847cDxKxvJgGOzv+N3Dq+4Q2lPbAgISP0LUzXBagjOHGUx00JsOmRNYxRNJWBuPGIWZ+NO
-        JUWv7jnrXZ+V0fyiiQXz16TMEBo+qiPdOwHr0
-X-Received: by 2002:a17:907:96a3:: with SMTP id hd35mr6710104ejc.54.1642857961536;
-        Sat, 22 Jan 2022 05:26:01 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyCIMPDmVKcXXxAx4iet6N1pLQk9bbQfelsIWrYapFJ3WqFqZr3kDLh7HQhhUY2Ppfihyu2OQ==
-X-Received: by 2002:a17:907:96a3:: with SMTP id hd35mr6710090ejc.54.1642857961371;
-        Sat, 22 Jan 2022 05:26:01 -0800 (PST)
-Received: from localhost.localdomain (xdsl-188-155-168-84.adslplus.ch. [188.155.168.84])
-        by smtp.gmail.com with ESMTPSA id v2sm2373060ejb.114.2022.01.22.05.25.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 22 Jan 2022 05:26:00 -0800 (PST)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] MAINTAINERS: thermal: samsung: drop obsolete properties
-Date:   Sat, 22 Jan 2022 14:25:54 +0100
-Message-Id: <20220122132554.65192-3-krzysztof.kozlowski@canonical.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220122132554.65192-1-krzysztof.kozlowski@canonical.com>
-References: <20220122132554.65192-1-krzysztof.kozlowski@canonical.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=fvjIHzoYjX2wrs+EpzMBjfsTjarifS+awxMyAGX77+c=;
+        b=ZPqQy71+qmxT6LnanMk2GvlYiAxoSSiK30G4ttkV3lJMwUFMNIIaidqjlYpCBun9kx
+         llnXOKhfJ9nBO9klcG87NB6RKOwxy5lLTD/ssHB+G8jzEokXHKiARoOlfhptUkTn9m1+
+         13wIfVMsKG4NoeJantemZhBY2wt5l1vwrT/rUnz7wICHEUR2ENJAM7fGM9WF6GgWRxAX
+         HWDxdWNVuJmVmuSf7YSZAyPrF6CFZHxD+45gYYTtGS5c401i0yWUtZ6rFIra6XoS+P11
+         wuFJrtblUl5NHatDRU9QTmNz3bH9nIhDI7xzD4zmQ3FpG3fF7UNRsxhh3TD+4TtQmuJp
+         X5cA==
+X-Gm-Message-State: AOAM530CqHrmql3On9C2HGkpVSf1HpCTZPIAj5hZ8SWB9ZefahFy3mTk
+        ALgYwIYq1PNDSwTK5uY4BjQRBfQ+9hSUziQnA+ZkI2lqJwA=
+X-Google-Smtp-Source: ABdhPJzcFq5FLHHPy0k5FGDVTqtTPkpyeCAFkkn4StwSpMeNSwCm9BWFgXu2HHWL0bNrGeGZBGZz0ZkoFoFwPwCYmjA=
+X-Received: by 2002:a25:8e89:: with SMTP id q9mr16586053ybl.520.1642899673159;
+ Sat, 22 Jan 2022 17:01:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220120104654.3467-1-linmq006@gmail.com>
+In-Reply-To: <20220120104654.3467-1-linmq006@gmail.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Sun, 23 Jan 2022 02:01:01 +0100
+Message-ID: <CACRpkdbKyg3wAqvbCH0nm4uOByr2P14=iabOcXTAvz85qgdYiw@mail.gmail.com>
+Subject: Re: [PATCH] power: gemini-poweroff: Fix IRQ check in gemini_poweroff_probe
+To:     Miaoqian Lin <linmq006@gmail.com>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Update the Samsung Exynos SoC thermal driver entry to match reality and
-add Krzysztof Kozlowski as co-maintainer (as he maintains entire Samsung
-SoC).  The rationale:
-1. Bartlomiej's Samsung email bounces, since he is not working in
-   Samsung for some time.
-2. The mentioned Lukasz Majewski's Git tree was not updated
-   since 2015.
+On Thu, Jan 20, 2022 at 11:47 AM Miaoqian Lin <linmq006@gmail.com> wrote:
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
----
- MAINTAINERS | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+> platform_get_irq() returns negative error number instead 0 on failure.
+> And the doc of platform_get_irq() provides a usage example:
+>
+>     int irq = platform_get_irq(pdev, 0);
+>     if (irq < 0)
+>         return irq;
+>
+> Fix the check of return value to catch errors correctly.
+>
+> Fixes: f7a388d6cd1c ("power: reset: Add a driver for the Gemini poweroff")
+> Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 27730a5a6345..928fb4cebe09 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -17118,11 +17118,12 @@ S:	Supported
- F:	drivers/net/ethernet/samsung/sxgbe/
- 
- SAMSUNG THERMAL DRIVER
--M:	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-+M:	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-+M:	Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
- L:	linux-pm@vger.kernel.org
- L:	linux-samsung-soc@vger.kernel.org
--S:	Supported
--T:	git https://github.com/lmajewski/linux-samsung-thermal.git
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/thermal/samsung,exynos-thermal.yaml
- F:	drivers/thermal/samsung/
- 
- SAMSUNG USB2 PHY DRIVER
--- 
-2.32.0
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
+Yours,
+Linus Walleij
