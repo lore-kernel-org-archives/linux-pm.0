@@ -2,225 +2,190 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22339C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ED72C4332F
 	for <linux-pm@archiver.kernel.org>; Mon, 24 Jan 2022 21:09:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1444538AbiAXVIy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jan 2022 16:08:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45170 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351679AbiAXU7G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jan 2022 15:59:06 -0500
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD0DDC05487D
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jan 2022 12:01:03 -0800 (PST)
-Received: by mail-lf1-x12c.google.com with SMTP id z19so15559741lfq.13
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jan 2022 12:01:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=9d/LljxdQFk/8v03A59TsFaR9pVRTvDbBagxt/vWhj8=;
-        b=Ntri0HCzdk31bT7UnQbWab1+vHBzqQ+fXAefDkzolzabvzJIxSfnO2MmF3vDrvc99D
-         eJ68tMf0fD/4+vtwn993CD+sEdfpx/Ab0z/QgdqY5KQ+NcCbAJ7MkAE9h7zp5VZ6WhW5
-         aIMVMUrQQdxB1PLNOmXXJP0im8vEctusN2yO/hawcQrBBatbuF7XQQDPIK4dFlsAcoob
-         eJe5RzJuHQXVDPe+RSX03Ro5EtiWcf5VBre2uQLkoMBKJ9I1ZlED/pm3f8M0cxNfXD35
-         Ud6xxmBMa6bMnBXpg12yy87XHxpGt2mIiK/7fqaww6rzDzV4Iau9OACXi2o3k3jqqh1N
-         cTNA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=9d/LljxdQFk/8v03A59TsFaR9pVRTvDbBagxt/vWhj8=;
-        b=IMQL6aruAMXzR1hLeEVpUX7TFia9W3OMnmL6wJuEGBgfBEUP50YwNyXNKtNlGRpkQ3
-         YtG8J7vczeUqakabCm2X3hHD55vKpCwHym744xC5Na7H/3/8DdgZJgqYL9VL7lIAS1ro
-         htiN6YJTWUy4SGdb/nSXsvo3FZSRu1h9kpLYucy5BGWoKK+u/oDoWg3wBzez9bc/p7ip
-         TtK9SDqlJK5nYTNja5PrTRHq/pA938WQSTGqkod0s3tbP0H8yWYHCv7459jA7uAQUr4E
-         0VY2E1tTrTj816IE6d78NyLeB+ODmfCZwehAoNxs6sI/ae5jKNLXxAG1SUneEp6ZW9JA
-         Qf3w==
-X-Gm-Message-State: AOAM532r85kq84Su7GSAPILKTx69QL17/6EMke2x+xVuYZlstMB9m3hx
-        dVDxPIORUI9Hn9JQkjt+Lh7LoLZiPIkIH5LiUp3rIwTiCRA=
-X-Google-Smtp-Source: ABdhPJz3vOMKc7w8t/aRtiTShdqmYvLtD3vHMppmryVlYq5BmMuK5OPb2pEke6T5vpI2Cn5jVPUOkZMMggaNlqqQxnk=
-X-Received: by 2002:a05:6512:2348:: with SMTP id p8mr2992234lfu.71.1643054462040;
- Mon, 24 Jan 2022 12:01:02 -0800 (PST)
+        id S1352029AbiAXVIz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jan 2022 16:08:55 -0500
+Received: from mxout02.lancloud.ru ([45.84.86.82]:57190 "EHLO
+        mxout02.lancloud.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1445138AbiAXVCV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jan 2022 16:02:21 -0500
+Received: from LanCloud
+DKIM-Filter: OpenDKIM Filter v2.11.0 mxout02.lancloud.ru 817A9209B103
+Received: from LanCloud
+Received: from LanCloud
+Received: from LanCloud
+Subject: Re: [PATCH] driver core: platform: Rename platform_get_irq_optional()
+ to platform_get_irq_silent()
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
+CC:     Andrew Lunn <andrew@lunn.ch>, Ulf Hansson <ulf.hansson@linaro.org>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        KVM list <kvm@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        <linux-iio@vger.kernel.org>,
+        "Linus Walleij" <linus.walleij@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "ALSA Development Mailing List" <alsa-devel@alsa-project.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Guenter Roeck <groeck@chromium.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        MTD Maling List <linux-mtd@lists.infradead.org>,
+        Linux I2C <linux-i2c@vger.kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        <linux-phy@lists.infradead.org>, Jiri Slaby <jirislaby@kernel.org>,
+        <openipmi-developer@lists.sourceforge.net>,
+        "Khuong Dinh" <khuong@os.amperecomputing.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
+        Joakim Zhang <qiangqing.zhang@nxp.com>,
+        Kamal Dasu <kdasu.kdev@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        "Bartosz Golaszewski" <brgl@bgdev.pl>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Linux PWM List <linux-pwm@vger.kernel.org>,
+        Robert Richter <rric@kernel.org>,
+        Saravanan Sekar <sravanhome@gmail.com>,
+        Corey Minyard <minyard@acm.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        John Garry <john.garry@huawei.com>,
+        Peter Korsgaard <peter@korsgaard.com>,
+        William Breathitt Gray <vilhelm.gray@gmail.com>,
+        Mark Gross <markgross@kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Mark Brown <broonie@kernel.org>,
+        Borislav Petkov <bp@alien8.de>,
+        "Sebastian Reichel" <sre@kernel.org>,
+        Eric Auger <eric.auger@redhat.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        <platform-driver-x86@vger.kernel.org>,
+        Benson Leung <bleung@chromium.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        <linux-edac@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
+        Mun Yew Tham <mun.yew.tham@intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        <netdev@vger.kernel.org>,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        "Linux MMC List" <linux-mmc@vger.kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        linux-spi <linux-spi@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        Vinod Koul <vkoul@kernel.org>,
+        "James Morse" <james.morse@arm.com>,
+        Zha Qipeng <qipeng.zha@intel.com>,
+        "Pengutronix Kernel Team" <kernel@pengutronix.de>,
+        Richard Weinberger <richard@nod.at>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        <linux-mediatek@lists.infradead.org>,
+        Brian Norris <computersforpeace@gmail.com>,
+        "David S. Miller" <davem@davemloft.net>
+References: <CAMuHMdWsMGPiQaPS0-PJ_+Mc5VQ37YdLfbHr_aS40kB+SfW-aw@mail.gmail.com>
+ <20220112213121.5ruae5mxwj6t3qiy@pengutronix.de>
+ <Yd9L9SZ+g13iyKab@sirena.org.uk>
+ <20220113110831.wvwbm75hbfysbn2d@pengutronix.de>
+ <YeA7CjOyJFkpuhz/@sirena.org.uk>
+ <20220113194358.xnnbhsoyetihterb@pengutronix.de>
+ <YeF05vBOzkN+xYCq@smile.fi.intel.com>
+ <20220115154539.j3tsz5ioqexq2yuu@pengutronix.de>
+ <YehdsUPiOTwgZywq@smile.fi.intel.com>
+ <20220120075718.5qtrpc543kkykaow@pengutronix.de>
+ <Ye6/NgfxsZnpXE09@smile.fi.intel.com>
+From:   Sergey Shtylyov <s.shtylyov@omp.ru>
+Organization: Open Mobile Platform
+Message-ID: <15796e57-f7d4-9c66-3b53-0b026eaf31d8@omp.ru>
+Date:   Tue, 25 Jan 2022 00:02:06 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-References: <20220119085719.1357874-1-daniel.lezcano@linaro.org> <20220119085719.1357874-3-daniel.lezcano@linaro.org>
-In-Reply-To: <20220119085719.1357874-3-daniel.lezcano@linaro.org>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Mon, 24 Jan 2022 21:00:25 +0100
-Message-ID: <CAPDyKFrtq0J2O0WBwLr7Zb+WkomhLcR1h+eDzzV-SxpiJmm_yQ@mail.gmail.com>
-Subject: Re: [PATCH v6 2/5] powercap/drivers/dtpm: Add hierarchy creation
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rjw@rjwysocki.net, robh@kernel.org, lukasz.luba@arm.com,
-        heiko@sntech.de, arnd@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <Ye6/NgfxsZnpXE09@smile.fi.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [192.168.11.198]
+X-ClientProxiedBy: LFEXT01.lancloud.ru (fd00:f066::141) To
+ LFEX1907.lancloud.ru (fd00:f066::207)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 19 Jan 2022 at 09:58, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> The DTPM framework is available but without a way to configure it.
->
-> This change provides a way to create a hierarchy of DTPM node where
-> the power consumption reflects the sum of the children's power
-> consumption.
->
-> It is up to the platform to specify an array of dtpm nodes where each
-> element has a pointer to its parent, except the top most one. The type
-> of the node gives the indication of which initialization callback to
-> call. At this time, we can create a virtual node, where its purpose is
-> to be a parent in the hierarchy, and a DT node where the name
-> describes its path.
->
-> In order to ensure a nice self-encapsulation, the DTPM subsys array
-> contains a couple of initialization functions, one to setup the DTPM
-> backend and one to initialize it up. With this approach, the DTPM
-> framework has a very few material to export.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/powercap/Kconfig |   1 +
->  drivers/powercap/dtpm.c  | 168 ++++++++++++++++++++++++++++++++++++++-
->  include/linux/dtpm.h     |  15 ++++
->  3 files changed, 181 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-> index 8242e8c5ed77..b1ca339957e3 100644
-> --- a/drivers/powercap/Kconfig
-> +++ b/drivers/powercap/Kconfig
-> @@ -46,6 +46,7 @@ config IDLE_INJECT
->
->  config DTPM
->         bool "Power capping for Dynamic Thermal Power Management (EXPERIMENTAL)"
-> +       depends on OF
->         help
->           This enables support for the power capping for the dynamic
->           thermal power management userspace engine.
-> diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
-> index 0e5c93443c70..10032f7132c4 100644
-> --- a/drivers/powercap/dtpm.c
-> +++ b/drivers/powercap/dtpm.c
-> @@ -23,6 +23,7 @@
->  #include <linux/powercap.h>
->  #include <linux/slab.h>
->  #include <linux/mutex.h>
-> +#include <linux/of.h>
->
->  #include "dtpm_subsys.h"
->
-> @@ -463,14 +464,175 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
->         return 0;
->  }
->
-> -static int __init init_dtpm(void)
-> +static struct dtpm *dtpm_setup_virtual(const struct dtpm_node *hierarchy,
-> +                                      struct dtpm *parent)
->  {
-> +       struct dtpm *dtpm;
-> +       int ret;
-> +
-> +       dtpm = kzalloc(sizeof(*dtpm), GFP_KERNEL);
-> +       if (!dtpm)
-> +               return ERR_PTR(-ENOMEM);
-> +       dtpm_init(dtpm, NULL);
-> +
-> +       ret = dtpm_register(hierarchy->name, dtpm, parent);
-> +       if (ret) {
-> +               pr_err("Failed to register dtpm node '%s': %d\n",
-> +                      hierarchy->name, ret);
-> +               kfree(dtpm);
-> +               return ERR_PTR(ret);
-> +       }
-> +
-> +       return dtpm;
-> +}
-> +
-> +static struct dtpm *dtpm_setup_dt(const struct dtpm_node *hierarchy,
-> +                                 struct dtpm *parent)
-> +{
-> +       struct device_node *np;
-> +       int i, ret;
-> +
-> +       np = of_find_node_by_path(hierarchy->name);
-> +       if (!np) {
-> +               pr_err("Failed to find '%s'\n", hierarchy->name);
-> +               return ERR_PTR(-ENXIO);
-> +       }
-> +
-> +       for (i = 0; i < ARRAY_SIZE(dtpm_subsys); i++) {
-> +
-> +               if (!dtpm_subsys[i]->setup)
-> +                       continue;
-> +
-> +               ret = dtpm_subsys[i]->setup(parent, np);
-> +               if (ret) {
-> +                       pr_err("Failed to setup '%s': %d\n", dtpm_subsys[i]->name, ret);
-> +                       of_node_put(np);
-> +                       return ERR_PTR(ret);
-> +               }
-> +       }
-> +
-> +       of_node_put(np);
-> +
-> +       /*
-> +        * By returning a NULL pointer, we let know the caller there
-> +        * is no child for us as we are a leaf of the tree
-> +        */
-> +       return NULL;
-> +}
-> +
-> +typedef struct dtpm * (*dtpm_node_callback_t)(const struct dtpm_node *, struct dtpm *);
-> +
-> +dtpm_node_callback_t dtpm_node_callback[] = {
-> +       [DTPM_NODE_VIRTUAL] = dtpm_setup_virtual,
-> +       [DTPM_NODE_DT] = dtpm_setup_dt,
-> +};
-> +
-> +static int dtpm_for_each_child(const struct dtpm_node *hierarchy,
-> +                              const struct dtpm_node *it, struct dtpm *parent)
-> +{
-> +       struct dtpm *dtpm;
-> +       int i, ret;
-> +
-> +       for (i = 0; hierarchy[i].name; i++) {
-> +
-> +               if (hierarchy[i].parent != it)
-> +                       continue;
-> +
-> +               dtpm = dtpm_node_callback[hierarchy[i].type](&hierarchy[i], parent);
-> +               if (!dtpm || IS_ERR(dtpm))
+Hello!
 
-This can be tested with the "IS_ERR_OR_NULL()" macro.
+On 1/24/22 6:01 PM, Andy Shevchenko wrote:
 
-> +                       continue;
+>>>>>>> It'd certainly be good to name anything that doesn't correspond to one
+>>>>>>> of the existing semantics for the API (!) something different rather
+>>>>>>> than adding yet another potentially overloaded meaning.
+>>>>>>
+>>>>>> It seems we're (at least) three who agree about this. Here is a patch
+>>>>>> fixing the name.
+>>>>>
+>>>>> And similar number of people are on the other side.
+>>>>
+>>>> If someone already opposed to the renaming (and not only the name) I
+>>>> must have missed that.
+>>>>
+>>>> So you think it's a good idea to keep the name
+>>>> platform_get_irq_optional() despite the "not found" value returned by it
+>>>> isn't usable as if it were a normal irq number?
+>>>
+>>> I meant that on the other side people who are in favour of Sergey's patch.
+>>> Since that I commented already that I opposed the renaming being a standalone
+>>> change.
+>>>
+>>> Do you agree that we have several issues with platform_get_irq*() APIs?
+[...]
+>>> 2. The vIRQ0 handling: a) WARN() followed by b) returned value 0
+>>
+>> I'm happy with the vIRQ0 handling. Today platform_get_irq() and it's
+>> silent variant returns either a valid and usuable irq number or a
+>> negative error value. That's totally fine.
+> 
+> It might return 0.
+> Actually it seems that the WARN() can only be issued in two cases:
+> - SPARC with vIRQ0 in one of the array member
+> - fallback to ACPI for GPIO IRQ resource with index 0
 
-We have discussed the error path previously. Just ignoring errors here
-and continuing with the initialization, isn't normally how we design
-good kernel code.
+   You have probably missed the recent discovery that arch/sh/boards/board-aps4*.c
+causes IRQ0 to be passed as a direct IRQ resource?
 
-However, you have also explained that the error path is special and
-somewhat non-trivial to manage in this case. I get that now and thanks
-for clarifying.
+> But the latter is bogus, because it would mean a bug in the ACPI code.
 
-Nevertheless, I think it deserves to be explained a bit with a comment
-in the code of what goes on here. Otherwise another developer that
-looks at this code in the future, may think it looks suspicious too.
+   Worth changing >= 0 to > 0 there, maybe?
 
-> +
-> +               ret = dtpm_for_each_child(hierarchy, &hierarchy[i], dtpm);
-> +               if (ret)
-> +                       return ret;
-> +       }
-> +
-> +       return 0;
-> +}
+> The bottom line here is the SPARC case. Anybody familiar with the platform
+> can shed a light on this. If there is no such case, we may remove warning
+> along with ret = 0 case from platfrom_get_irq().
+
+   I'm afraid you're too fast here... :-)
+   We'll have a really hard time if we continue to allow IRQ0 to be returned by
+platform_get_irq() -- we'll have oto fileter it out in the callers then...
+
+>>> 3. The specific cookie for "IRQ not found, while no error happened" case
+>>
+>> Not sure what you mean here. I have no problem that a situation I can
+>> cope with is called an error for the query function. I just do error
+>> handling and continue happily. So the part "while no error happened" is
+>> irrelevant to me.
+> 
+> I meant that instead of using special error code, 0 is very much good for
+> the cases when IRQ is not found. It allows to distinguish -ENXIO from the
+> low layer from -ENXIO with this magic meaning.
+
+   I don't see how -ENXIO can trickle from the lower layers, frankly...
 
 [...]
 
-Other than the above, this looks good to me!
-
-Kind regards
-Uffe
+MBR, Sergey
