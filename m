@@ -2,301 +2,154 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9F35C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jan 2022 07:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F046C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jan 2022 08:28:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241896AbiAXH2n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jan 2022 02:28:43 -0500
-Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:41218
-        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241813AbiAXH2k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jan 2022 02:28:40 -0500
-Received: from HP-EliteBook-840-G7.. (36-229-235-192.dynamic-ip.hinet.net [36.229.235.192])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 0FC403F165;
-        Mon, 24 Jan 2022 07:28:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1643009319;
-        bh=/P4GM/HjZ9otcaPnYgwHZvVXprLdcfNklxr7iOYHDzQ=;
-        h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-         MIME-Version;
-        b=kc7ZB4pwkGIwfAO2p0ruXNoqesrQPsnHj5x52Qh+hMjefN5ABwUVieTpprjuo2+l2
-         FSbwK7qXmtembBdCn6iL5RGuEL+ZCv/YTw4Ztdg1PE+nfDcz+m45RvCaRWo7et+Ty1
-         rqMzkeQDlaHJIFBhuI7qxriaZhmLAYiBq1jRdI7Y9Wb1EZ+bsigdX/TUwrFkNDMae7
-         M+no7P+8Q1sEuXddyqw7vo2sDE1D1RgBJlk+v0cjAu0VMiAMGsNUuhxAcIY4ybrMJD
-         GS2W8snJnhbKf7Bs8RAV0is2eFIV8+lcWN460s7hJvZLNDqr+Eo72XOejb/nftn9tP
-         FoPzol/OTOOWw==
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-To:     arnd@arndb.de, gregkh@linuxfoundation.org, ulf.hansson@linaro.org
-Cc:     linux-pm@vger.kernel.org,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Ricky WU <ricky_wu@realtek.com>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Yang Li <yang.lee@linux.alibaba.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v5 4/4] misc: rtsx: Quiesce rts5249 on system suspend
-Date:   Mon, 24 Jan 2022 15:28:03 +0800
-Message-Id: <20220124072804.1811690-4-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20220124072804.1811690-1-kai.heng.feng@canonical.com>
-References: <20220121014039.1693208-1-kai.heng.feng@canonical.com>
- <20220124072804.1811690-1-kai.heng.feng@canonical.com>
-MIME-Version: 1.0
+        id S236332AbiAXI2T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jan 2022 03:28:19 -0500
+Received: from mail-gv0che01on2128.outbound.protection.outlook.com ([40.107.23.128]:41184
+        "EHLO CHE01-GV0-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S229800AbiAXI2S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Jan 2022 03:28:18 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=kOmP72pNET/H0mWKoP3y2X/SEcfJtFfLyFmbmsGl0f9uzhwDQb2IvIRJFwfZ9OkBZnhdKZYMSOgwK9SSK5UQRdlP8sjOxHJBp4t8ZEFozP7uvwWnzoUcP4k3gnv0aaWwQPMOPTI2XmsAP8ChI/a84eE1C6JteO+vW2GkHTYwIDiRC6e3qU3dzQw9EeU0RqmlABVOJyd0dl9p5nwKVdaCzxfiISmFd7uxJ8UXxRRGJmT6zMSN+CK22TiCLOWbKge6nTlzE17kcxbL4R5IURmE42ZpDXtzc75sG1+xUIcAWuHhu463p1GFMLiFOm/BOOF/pwBa8f0uyjkamIATTkefOw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=pnVzTx2385A4jfz4t0Uoq12PQFUqYmBXCStZwmMGciY=;
+ b=Qol6TcROUMFfJj8p9ZimJSllYzs2Ce8Tysl0IFMFwtYBQXRRsPItTsDJs2ACQ1/p+OoNCt1sv4lfKodJ7+/3Zm2gIjoTE0WggVJ0P6hnwJu8pdj/DnRhdSITye6PuGfD2yFUji+MUIuYRfBr27JwHIRfOEOffuE2wYKQb2amYWKjEAADJ7TCrQrGZyTE7bti3DO1c0gczGSvJLEMS0fVdewMM0WRzCry66JVQGkhJb1ehthpgxDThS98s4PmXv4db05EqeL9z421fyeU7+tayiASNS+mjPv46jQGERoBaPgjsCnp2S+0gHFT6kT5HG0R1/H3a3dU99pMPjzv26cyHQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=toradex.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=pnVzTx2385A4jfz4t0Uoq12PQFUqYmBXCStZwmMGciY=;
+ b=n6UvDuid/xA3sUDCdj2MMBa0Td4JRX9Ouf5RAFtWe+HUQsGG1bF1ZbIvUwlSqGagrPrMiFUXBOQmQ57tWtPkegktcoplZ2kjGxN4VnokutUX+EjXk6BLertOENJSHgFdRWw5vZcR7kgQVl+rsSOR31YHLJeP+NQyIihBcwAm+YI=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=toradex.com;
+Received: from ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:3d::11)
+ by GV0P278MB0227.CHEP278.PROD.OUTLOOK.COM (2603:10a6:710:31::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4909.7; Mon, 24 Jan
+ 2022 08:28:16 +0000
+Received: from ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM
+ ([fe80::d837:7398:e400:25f0]) by ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM
+ ([fe80::d837:7398:e400:25f0%2]) with mapi id 15.20.4909.017; Mon, 24 Jan 2022
+ 08:28:16 +0000
+From:   Francesco Dolcini <francesco.dolcini@toradex.com>
+To:     Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Francesco Dolcini <francesco.dolcini@toradex.com>,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+        Denys Drozdov <denys.drozdov@toradex.com>,
+        Stefan Agner <stefan@agner.ch>
+Subject: [PATCH v2 0/2] Enable i.MX7 SOLO temperature sensor
+Date:   Mon, 24 Jan 2022 09:28:01 +0100
+Message-Id: <20220124082803.94286-1-francesco.dolcini@toradex.com>
+X-Mailer: git-send-email 2.25.1
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: GV0P278CA0051.CHEP278.PROD.OUTLOOK.COM
+ (2603:10a6:710:29::20) To ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM
+ (2603:10a6:910:3d::11)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 633aa44a-b036-4957-347e-08d9df1377f8
+X-MS-TrafficTypeDiagnostic: GV0P278MB0227:EE_
+X-Microsoft-Antispam-PRVS: <GV0P278MB02273DFBCE18C438195B8D1AE25E9@GV0P278MB0227.CHEP278.PROD.OUTLOOK.COM>
+X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: VzvHZ6XlIDWXwk6iP3nbM6HLiDpfCKzV+mYphbKV11kKrRNWPhIo0gSZefarSJH0+Izm938bW5+gel8FH35b15f62eMQhPCL4T+3D2EeuZNsa+D5Z0FWiLNJ+J4lYoFO9Hho6yKB6PqtU2Z7p7fz340RaYwxn6D/VzupRN3SImk1rKMBnzJiqp4VOhtQ/QYi0zBDVmiVflg7ja6tbRrZcT2oA7ik8LpfKLHxnTStEMoO0NoZnIpvaJoJtoDw+1fujFu2ecQg9e786qj+eoK0htVVSUm9IfO3tqveQQiRlqWVASE64OMeLoSkhDezlrQGQs4qcc2HuHrAmFZPskdHe/UEDVXlG4e8T453yCyJHcK4XIYNAe0uDNUx1tiS3N0Y5WN/kyQLSzL7wKqPs7He5x8NdndGY2A0ODkh4RQhH3Jc84kaa+dRBOKbW6DwltShxZvToOOt+5Xc5xbC19zYs3fBqd8x4Zj14+3Q+Y/J7/a6nyNmINmDDaxwQrOOqCiOgCgC8+/PvFmwOA9jmOvH5Nv/IzMYqirXZAD4pxklyEqD7eZN27XNv9E/p/DTTRBxjGr6HtWy5zxeFPfGkTQXSsP3PI65oGlZ6spWo7N+hPRWvIOuevs0grazY41teFbhxF8oJD454lg9y2mDCH6J6BI2ERDue3jsNzwrfCugzL8TEg67nhJgYtEo/9kIpItlOXR526GIhekNTGFD64L4gA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(4636009)(136003)(346002)(39840400004)(366004)(396003)(376002)(54906003)(52116002)(26005)(1076003)(44832011)(110136005)(83380400001)(5660300002)(38100700002)(186003)(38350700002)(4326008)(8936002)(8676002)(66476007)(2906002)(66556008)(6666004)(316002)(86362001)(7416002)(36756003)(2616005)(6506007)(508600001)(6486002)(66946007)(6512007);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?zKhiZpWA2gYiAoqw8f7y7cVRs/os+lSn2bak+tEYXZx/ititcaK+yjWNrCP7?=
+ =?us-ascii?Q?0MJMGo1C2zSOXSsOx2fWV5hrBAWAw3ZUNF+o1alWoDUOGkAS804snN3ooRct?=
+ =?us-ascii?Q?y366loETPmD234j1MCWBB2n0a5tmhZYNtiAcAf2dfv4FCU1ccVBOM9eB6dMA?=
+ =?us-ascii?Q?4794OClpPDy2hY6osLntgB02chzc4WaXOee46U8M95EnxhlnpJCOlQlGI1fe?=
+ =?us-ascii?Q?eitXAEMIXVlxNogNDLu7BTByZS6VxJ8mgLdmJHBeIntahQrMmyFTtKh146DC?=
+ =?us-ascii?Q?aqKZTgWZeq/Iv8fM2FLgCYxKRI1RGarmb0JdbJZQZ6sPbxoNYuBcBqEtZkkw?=
+ =?us-ascii?Q?4/fqklkE6ra8Qy3T5vD59ndcXt+pMWagflg2P7IzkCF5LbfxyOq5EnVkWFqZ?=
+ =?us-ascii?Q?YqIOV8Kkh3rShys54R7IoH2WXTD06Y3tHzOI9PAhbEc8B1ZPK3TnetVBm3LD?=
+ =?us-ascii?Q?N+eY+v7DrMEYpQTKOy6bpynWxFFhvIT/iyKO/yU86/lElfWztgArQt2wd/DQ?=
+ =?us-ascii?Q?0+bn+bvwOv07yqUpYXCsD+PsdT+5xsISvLJhlB9QJ3NAgzo6yHm5sQoiF+jL?=
+ =?us-ascii?Q?y0VlQ5lYnc2yl2Hl7cdxiSTF7XGWXBvZCT073Ywuh4ZUTP6h/YxlS0fWuKNN?=
+ =?us-ascii?Q?UUcxmxXPkBZpp0smdSZt4U3CZgIVaCueAbldsbTovg76heNWSF8LTRBgJZ9j?=
+ =?us-ascii?Q?2DvHxhVpegZbdy9/vsfcE8XQYG3MbUFvryQPqpHKT2l1QeUHMiBH1h5iCBwT?=
+ =?us-ascii?Q?Iumpl3B5iLggUs4XS2a7G0xTHK3pk2e38i6Mlc6VNGJ3jC6YqjC4F54A7H2L?=
+ =?us-ascii?Q?KJe0WHbL9MdcjsPR0sepspnRii2t/kH4AhtwvgztvJFNWg+CsRwc5KUkg5JC?=
+ =?us-ascii?Q?S6vXJc4Ht2vQhqX4LqMELZJOwxSQAN7gScalPCQDfdR1xOfsi+77sZ/pcqPK?=
+ =?us-ascii?Q?fYwVNVEmLZp4J4i2v5NS3hDq2QcV4vktVbPt3Mz857G4PIpAx+X859MGZGHb?=
+ =?us-ascii?Q?tdhY/hsuHTk96zwlP4xQFpJAOrhn8KBjB8TlI2dCloGCTRUlufRCgEChXrk+?=
+ =?us-ascii?Q?rRpXIenOsI9ELGNc93MRstTabxW4VV4GUNVgZGZfaBf2mM0Shje38D70XFRH?=
+ =?us-ascii?Q?6M/uuLQxwgaLhEN7ZNvpIjp6RQ9lJYOSh4RsT4B1oi9vAfSVu6pmIBJ2KLg9?=
+ =?us-ascii?Q?T/AOt4qXiuKJxePSLZW00ZCIoyELGrn9jP1uXKYRCjuuqDqWdDtUheJCRXMQ?=
+ =?us-ascii?Q?XN7osvwcvCDCTwfp7drn16LHOCX0eHaJnbm1z1d1p7jRPvsGJsdpjJDGRIZ9?=
+ =?us-ascii?Q?eYg9+9ebxXx4CHVmjKiSB9GVRz3HDVkpttwep3IliszRJmwU0uZqs2R0ai9M?=
+ =?us-ascii?Q?9uwm0Ror7KJLYY1p5SLnFe+C0nPa8u9gIDKwupOI4Lk2QJy0tRyMB6Hr2xKM?=
+ =?us-ascii?Q?ETG4f6dWHDh0GRmik9U0uRqNw0Rlw585F7eGdJmpteJXts3C2855jURZaR1W?=
+ =?us-ascii?Q?ffl1SLpgx2Gpyij1QcQvqan/gc0Bw/XM+KPrnySHdhoGeqMoMAzIRn8/oZmL?=
+ =?us-ascii?Q?UO2m193JJg1U5HmGVG3DTG04p2U+yZgadZbid5E7b1WBD1cmIY4zFRt61etM?=
+ =?us-ascii?Q?Wo5lluMGh+pq75VqFOesOx+GI04vxTQWrXs6M989pSUyP+jxTTXecjwSF+Tu?=
+ =?us-ascii?Q?g2soMw=3D=3D?=
+X-OriginatorOrg: toradex.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 633aa44a-b036-4957-347e-08d9df1377f8
+X-MS-Exchange-CrossTenant-AuthSource: ZRAP278MB0642.CHEP278.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jan 2022 08:28:16.0769
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: d9995866-0d9b-4251-8315-093f062abab4
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ZpDwYKDhphfwBEaQFqz5Z+iYuUd049kWQoDuNQX44MC6cdE2qCSWJuvgmHB9JVBTJL5Z8MIDV4w4P7pef08QSm4Z2GiRA0WbCv51/R22pwU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV0P278MB0227
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Set more registers in force_power_down callback to avoid S3 wakeup from
-hotplugging cards.
+To be able to read the T junction on i.MX CPU the imx-cpufreq-dt needs to be
+loaded, however this is currently not the case for i.MX7S given that it does
+have only one operating frequency.
 
-This is originally written by Ricky WU.
+Add "fsl,imx7s" to cpufreq-dt-platdev blocklist and a single frequency
+operating point to the CPU.
 
-Link: https://lore.kernel.org/lkml/c4525b4738f94483b9b8f8571fc80646@realtek.com/
-Cc: Ricky WU <ricky_wu@realtek.com>
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v5:
-v4:
-v3:
+With that it is now possible to correctly read the CPU T junction.
+
+Tested on Toradex Colibri iMX7S
+
+[    6.232577] imx-cpufreq-dt imx-cpufreq-dt: cpu speed grade 0 mkt segment 1 supported-hw 0x1 0x2
+...
+[    6.880624] imx_thermal 30360000.anatop:tempmon: Extended Commercial CPU temperature grade - max:105C critical:100C passive:95C
+
+root@colibri-imx7-02983025:~# cat /sys/class/thermal/thermal_zone0/temp 
+38000
+
 v2:
- - No change.
+ - removed empty new line
+ - rebased and tested on v5.17-rc1
 
- drivers/misc/cardreader/rtl8411.c  |  2 +-
- drivers/misc/cardreader/rts5209.c  |  2 +-
- drivers/misc/cardreader/rts5228.c  |  2 +-
- drivers/misc/cardreader/rts5229.c  |  2 +-
- drivers/misc/cardreader/rts5249.c  | 31 ++++++++++++++++++++++++++++--
- drivers/misc/cardreader/rts5261.c  |  2 +-
- drivers/misc/cardreader/rtsx_pcr.c | 14 +++++++-------
- drivers/misc/cardreader/rtsx_pcr.h |  1 +
- include/linux/rtsx_pci.h           |  2 +-
- 9 files changed, 43 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/misc/cardreader/rtl8411.c b/drivers/misc/cardreader/rtl8411.c
-index 4c5621b17a6fb..06457e875a90c 100644
---- a/drivers/misc/cardreader/rtl8411.c
-+++ b/drivers/misc/cardreader/rtl8411.c
-@@ -76,7 +76,7 @@ static void rtl8411b_fetch_vendor_settings(struct rtsx_pcr *pcr)
- 		map_sd_drive(rtl8411b_reg_to_sd30_drive_sel_3v3(reg));
- }
- 
--static void rtl8411_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rtl8411_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	rtsx_pci_write_register(pcr, FPDCTL, 0x07, 0x07);
- }
-diff --git a/drivers/misc/cardreader/rts5209.c b/drivers/misc/cardreader/rts5209.c
-index 29f5414072bf1..52b0a476ba51f 100644
---- a/drivers/misc/cardreader/rts5209.c
-+++ b/drivers/misc/cardreader/rts5209.c
-@@ -47,7 +47,7 @@ static void rts5209_fetch_vendor_settings(struct rtsx_pcr *pcr)
- 	}
- }
- 
--static void rts5209_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rts5209_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	rtsx_pci_write_register(pcr, FPDCTL, 0x07, 0x07);
- }
-diff --git a/drivers/misc/cardreader/rts5228.c b/drivers/misc/cardreader/rts5228.c
-index ffc128278613b..ffe3afbf8bfed 100644
---- a/drivers/misc/cardreader/rts5228.c
-+++ b/drivers/misc/cardreader/rts5228.c
-@@ -91,7 +91,7 @@ static int rts5228_optimize_phy(struct rtsx_pcr *pcr)
- 	return rtsx_pci_write_phy_register(pcr, 0x07, 0x8F40);
- }
- 
--static void rts5228_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rts5228_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	/* Set relink_time to 0 */
- 	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 1, MASK_8_BIT_DEF, 0);
-diff --git a/drivers/misc/cardreader/rts5229.c b/drivers/misc/cardreader/rts5229.c
-index c748eaf1ec1f9..b0edd8006d52f 100644
---- a/drivers/misc/cardreader/rts5229.c
-+++ b/drivers/misc/cardreader/rts5229.c
-@@ -44,7 +44,7 @@ static void rts5229_fetch_vendor_settings(struct rtsx_pcr *pcr)
- 		map_sd_drive(rtsx_reg_to_sd30_drive_sel_3v3(reg));
- }
- 
--static void rts5229_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rts5229_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	rtsx_pci_write_register(pcr, FPDCTL, 0x03, 0x03);
- }
-diff --git a/drivers/misc/cardreader/rts5249.c b/drivers/misc/cardreader/rts5249.c
-index 53f3a1f45c4a7..91d240dd68faa 100644
---- a/drivers/misc/cardreader/rts5249.c
-+++ b/drivers/misc/cardreader/rts5249.c
-@@ -74,7 +74,8 @@ static void rtsx_base_fetch_vendor_settings(struct rtsx_pcr *pcr)
- 	pci_read_config_dword(pdev, PCR_SETTING_REG2, &reg);
- 	pcr_dbg(pcr, "Cfg 0x%x: 0x%x\n", PCR_SETTING_REG2, reg);
- 
--	pcr->rtd3_en = rtsx_reg_to_rtd3_uhsii(reg);
-+	if (CHK_PCI_PID(pcr, PID_524A) || CHK_PCI_PID(pcr, PID_525A))
-+		pcr->rtd3_en = rtsx_reg_to_rtd3_uhsii(reg);
- 
- 	if (rtsx_check_mmc_support(reg))
- 		pcr->extra_caps |= EXTRA_CAPS_NO_MMC;
-@@ -143,6 +144,27 @@ static int rts5249_init_from_hw(struct rtsx_pcr *pcr)
- 	return 0;
- }
- 
-+static void rts52xa_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
-+{
-+	/* Set relink_time to 0 */
-+	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 1, MASK_8_BIT_DEF, 0);
-+	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 2, MASK_8_BIT_DEF, 0);
-+	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 3,
-+				RELINK_TIME_MASK, 0);
-+
-+	rtsx_pci_write_register(pcr, RTS524A_PM_CTRL3,
-+			D3_DELINK_MODE_EN, D3_DELINK_MODE_EN);
-+
-+	if (!runtime) {
-+		rtsx_pci_write_register(pcr, RTS524A_AUTOLOAD_CFG1,
-+				CD_RESUME_EN_MASK, 0);
-+		rtsx_pci_write_register(pcr, RTS524A_PM_CTRL3, 0x01, 0x00);
-+		rtsx_pci_write_register(pcr, RTS524A_PME_FORCE_CTL, 0x30, 0x20);
-+	}
-+
-+	rtsx_pci_write_register(pcr, FPDCTL, ALL_POWER_DOWN, ALL_POWER_DOWN);
-+}
-+
- static void rts52xa_save_content_from_efuse(struct rtsx_pcr *pcr)
- {
- 	u8 cnt, sv;
-@@ -281,8 +303,11 @@ static int rts5249_extra_init_hw(struct rtsx_pcr *pcr)
- 
- 	rtsx_pci_send_cmd(pcr, CMD_TIMEOUT_DEF);
- 
--	if (CHK_PCI_PID(pcr, PID_524A) || CHK_PCI_PID(pcr, PID_525A))
-+	if (CHK_PCI_PID(pcr, PID_524A) || CHK_PCI_PID(pcr, PID_525A)) {
- 		rtsx_pci_write_register(pcr, REG_VREF, PWD_SUSPND_EN, PWD_SUSPND_EN);
-+		rtsx_pci_write_register(pcr, RTS524A_AUTOLOAD_CFG1,
-+			CD_RESUME_EN_MASK, CD_RESUME_EN_MASK);
-+	}
- 
- 	if (pcr->rtd3_en) {
- 		if (CHK_PCI_PID(pcr, PID_524A) || CHK_PCI_PID(pcr, PID_525A)) {
-@@ -724,6 +749,7 @@ static const struct pcr_ops rts524a_pcr_ops = {
- 	.card_power_on = rtsx_base_card_power_on,
- 	.card_power_off = rtsx_base_card_power_off,
- 	.switch_output_voltage = rtsx_base_switch_output_voltage,
-+	.force_power_down = rts52xa_force_power_down,
- 	.set_l1off_cfg_sub_d0 = rts5250_set_l1off_cfg_sub_d0,
- };
- 
-@@ -841,6 +867,7 @@ static const struct pcr_ops rts525a_pcr_ops = {
- 	.card_power_on = rts525a_card_power_on,
- 	.card_power_off = rtsx_base_card_power_off,
- 	.switch_output_voltage = rts525a_switch_output_voltage,
-+	.force_power_down = rts52xa_force_power_down,
- 	.set_l1off_cfg_sub_d0 = rts5250_set_l1off_cfg_sub_d0,
- };
- 
-diff --git a/drivers/misc/cardreader/rts5261.c b/drivers/misc/cardreader/rts5261.c
-index 1fd4e0e507302..64333347c14a4 100644
---- a/drivers/misc/cardreader/rts5261.c
-+++ b/drivers/misc/cardreader/rts5261.c
-@@ -91,7 +91,7 @@ static void rtsx5261_fetch_vendor_settings(struct rtsx_pcr *pcr)
- 	pcr->sd30_drive_sel_3v3 = rts5261_reg_to_sd30_drive_sel_3v3(reg);
- }
- 
--static void rts5261_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rts5261_force_power_down(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	/* Set relink_time to 0 */
- 	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 1, MASK_8_BIT_DEF, 0);
-diff --git a/drivers/misc/cardreader/rtsx_pcr.c b/drivers/misc/cardreader/rtsx_pcr.c
-index ec395a33faf8b..7262ef0f1913f 100644
---- a/drivers/misc/cardreader/rtsx_pcr.c
-+++ b/drivers/misc/cardreader/rtsx_pcr.c
-@@ -1086,7 +1086,7 @@ static void rtsx_pm_power_saving(struct rtsx_pcr *pcr)
- 	rtsx_comm_pm_power_saving(pcr);
- }
- 
--static void rtsx_base_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
-+static void rtsx_base_force_power_down(struct rtsx_pcr *pcr)
- {
- 	/* Set relink_time to 0 */
- 	rtsx_pci_write_register(pcr, AUTOLOAD_CFG_BASE + 1, MASK_8_BIT_DEF, 0);
-@@ -1100,7 +1100,7 @@ static void rtsx_base_force_power_down(struct rtsx_pcr *pcr, u8 pm_state)
- 	rtsx_pci_write_register(pcr, FPDCTL, ALL_POWER_DOWN, ALL_POWER_DOWN);
- }
- 
--static void __maybe_unused rtsx_pci_power_off(struct rtsx_pcr *pcr, u8 pm_state)
-+static void __maybe_unused rtsx_pci_power_off(struct rtsx_pcr *pcr, u8 pm_state, bool runtime)
- {
- 	if (pcr->ops->turn_off_led)
- 		pcr->ops->turn_off_led(pcr);
-@@ -1112,9 +1112,9 @@ static void __maybe_unused rtsx_pci_power_off(struct rtsx_pcr *pcr, u8 pm_state)
- 	rtsx_pci_write_register(pcr, HOST_SLEEP_STATE, 0x03, pm_state);
- 
- 	if (pcr->ops->force_power_down)
--		pcr->ops->force_power_down(pcr, pm_state);
-+		pcr->ops->force_power_down(pcr, pm_state, runtime);
- 	else
--		rtsx_base_force_power_down(pcr, pm_state);
-+		rtsx_base_force_power_down(pcr);
- }
- 
- void rtsx_pci_enable_ocp(struct rtsx_pcr *pcr)
-@@ -1669,7 +1669,7 @@ static int __maybe_unused rtsx_pci_suspend(struct device *dev_d)
- 
- 	mutex_lock(&pcr->pcr_mutex);
- 
--	rtsx_pci_power_off(pcr, HOST_ENTER_S3);
-+	rtsx_pci_power_off(pcr, HOST_ENTER_S3, false);
- 
- 	mutex_unlock(&pcr->pcr_mutex);
- 	return 0;
-@@ -1708,7 +1708,7 @@ static void rtsx_pci_shutdown(struct pci_dev *pcidev)
- 
- 	dev_dbg(&(pcidev->dev), "--> %s\n", __func__);
- 
--	rtsx_pci_power_off(pcr, HOST_ENTER_S1);
-+	rtsx_pci_power_off(pcr, HOST_ENTER_S1, false);
- 
- 	pci_disable_device(pcidev);
- 	free_irq(pcr->irq, (void *)pcr);
-@@ -1754,7 +1754,7 @@ static int rtsx_pci_runtime_suspend(struct device *device)
- 	cancel_delayed_work_sync(&pcr->carddet_work);
- 
- 	mutex_lock(&pcr->pcr_mutex);
--	rtsx_pci_power_off(pcr, HOST_ENTER_S3);
-+	rtsx_pci_power_off(pcr, HOST_ENTER_S3, true);
- 
- 	mutex_unlock(&pcr->pcr_mutex);
- 
-diff --git a/drivers/misc/cardreader/rtsx_pcr.h b/drivers/misc/cardreader/rtsx_pcr.h
-index daf057c4eea62..aa0ebd6672277 100644
---- a/drivers/misc/cardreader/rtsx_pcr.h
-+++ b/drivers/misc/cardreader/rtsx_pcr.h
-@@ -25,6 +25,7 @@
- #define REG_EFUSE_POWEROFF		0x00
- #define RTS5250_CLK_CFG3		0xFF79
- #define RTS525A_CFG_MEM_PD		0xF0
-+#define RTS524A_AUTOLOAD_CFG1		0xFF7C
- #define RTS524A_PM_CTRL3		0xFF7E
- #define RTS525A_BIOS_CFG		0xFF2D
- #define RTS525A_LOAD_BIOS_FLAG	0x01
-diff --git a/include/linux/rtsx_pci.h b/include/linux/rtsx_pci.h
-index 89b7d34e25b63..3d780b44e678a 100644
---- a/include/linux/rtsx_pci.h
-+++ b/include/linux/rtsx_pci.h
-@@ -1095,7 +1095,7 @@ struct pcr_ops {
- 	unsigned int	(*cd_deglitch)(struct rtsx_pcr *pcr);
- 	int		(*conv_clk_and_div_n)(int clk, int dir);
- 	void		(*fetch_vendor_settings)(struct rtsx_pcr *pcr);
--	void		(*force_power_down)(struct rtsx_pcr *pcr, u8 pm_state);
-+	void		(*force_power_down)(struct rtsx_pcr *pcr, u8 pm_state, bool runtime);
- 	void		(*stop_cmd)(struct rtsx_pcr *pcr);
- 
- 	void (*set_aspm)(struct rtsx_pcr *pcr, bool enable);
+Denys Drozdov (1):
+  ARM: dts: imx7s: Define operating points table for cpufreq
+
+Stefan Agner (1):
+  cpufreq: Add i.MX7S to cpufreq-dt-platdev blocklist
+
+ arch/arm/boot/dts/imx7s.dtsi         | 16 ++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
+ 2 files changed, 17 insertions(+)
+
 -- 
-2.33.1
+2.25.1
 
