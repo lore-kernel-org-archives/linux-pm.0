@@ -2,169 +2,236 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D120C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jan 2022 07:28:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41726C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jan 2022 07:28:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241869AbiAXH22 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jan 2022 02:28:28 -0500
-Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:41200
-        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241842AbiAXH2Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jan 2022 02:28:25 -0500
-Received: from HP-EliteBook-840-G7.. (36-229-235-192.dynamic-ip.hinet.net [36.229.235.192])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 7A27B3F165;
-        Mon, 24 Jan 2022 07:28:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1643009304;
-        bh=dj16gFP5CrsdfGvdwZ7qFQSRJlPlMNcu4pgF0B1jdwU=;
-        h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-         MIME-Version;
-        b=FFHyCs9r9oCp5/xPILV8zOMHxXLhkDt35DUtlG2Jm9TcGYIDlIfL3CcuC2trpZ1E6
-         BsHufcXP8WgfifSX3W/rrHmf/KHHPFrVzIOVLGCkzRQl5hoCQygPcsX36i+zy0sIkX
-         meRpEjMl8oO8kEOen9VYcH7plUP/22miuDov8RA0Roy4QBuaP/PKA8Bd2lvzvAgciO
-         KqbZezdyzpKOEL0wcZxmq8HV1zOt9/qYW0IpKdEUIYGWGpS3rFftaDYGSFnzsY7g1B
-         7aCJHXg+//jtu05tN7npF/CHURyEbvx70eNDfGyqSdhZCxU450ZbhgQuJQSK1begnJ
-         ZGWlaAvsnY//w==
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-To:     arnd@arndb.de, gregkh@linuxfoundation.org, ulf.hansson@linaro.org
-Cc:     linux-pm@vger.kernel.org,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Ricky WU <ricky_wu@realtek.com>,
-        Yang Li <yang.lee@linux.alibaba.com>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v5 3/4] misc: rtsx: Cleanup power management ops
-Date:   Mon, 24 Jan 2022 15:28:02 +0800
-Message-Id: <20220124072804.1811690-3-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.33.1
-In-Reply-To: <20220124072804.1811690-1-kai.heng.feng@canonical.com>
-References: <20220121014039.1693208-1-kai.heng.feng@canonical.com>
- <20220124072804.1811690-1-kai.heng.feng@canonical.com>
+        id S241865AbiAXH2d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jan 2022 02:28:33 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:34688 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S241813AbiAXH2c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jan 2022 02:28:32 -0500
+X-UUID: 707d40179bd543fd8fba229a40cedfab-20220124
+X-UUID: 707d40179bd543fd8fba229a40cedfab-20220124
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1848919182; Mon, 24 Jan 2022 15:28:29 +0800
+Received: from mtkexhb01.mediatek.inc (172.21.101.102) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Mon, 24 Jan 2022 15:28:28 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb01.mediatek.inc
+ (172.21.101.102) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 24 Jan
+ 2022 15:28:27 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 24 Jan 2022 15:28:27 +0800
+Message-ID: <f4fbfc91d2f0abf041f058f191e2b239ac173a1e.camel@mediatek.com>
+Subject: Re: [PATCH v21 4/8] soc: mediatek: SVS: add monitor mode
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Enric Balletbo Serra <eballetbo@gmail.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Guenter Roeck <linux@roeck-us.net>
+Date:   Mon, 24 Jan 2022 15:28:27 +0800
+In-Reply-To: <e118df40-da6b-88f6-fbff-15befb3405d5@collabora.com>
+References: <20220107095200.4389-1-roger.lu@mediatek.com>
+         <20220107095200.4389-5-roger.lu@mediatek.com>
+         <e118df40-da6b-88f6-fbff-15befb3405d5@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-- Use cancel_delayed_work_sync to ensure there's no race with
-  carddet_work.
+Hi AngeloGioacchino,
 
-- Remove device_wakeup_disable to save some CPU cycles. If the device
-  really has ACPI _DSW then the wakeup should be disabled in probe
-  routine.
+Sorry for the late reply and thanks for the advice.
 
-- Remove fetch_vendor_settings from runtime resume routine, since they
-  are already saved in "struct rtsx_pcr".
+On Fri, 2022-01-07 at 15:34 +0100, AngeloGioacchino Del Regno wrote:
+> Il 07/01/22 10:51, Roger Lu ha scritto:
+> > SVS monitor mode is based on different thermal temperature
+> > to provide suitable SVS bank voltages.
+> > 
+> > Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+> > ---
+> >   drivers/soc/mediatek/mtk-svs.c | 253 ++++++++++++++++++++++++++++++++-
+> >   1 file changed, 247 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
+> > index fc7e2ee44a92..042c6e8e9069 100644
+> > --- a/drivers/soc/mediatek/mtk-svs.c
+> > +++ b/drivers/soc/mediatek/mtk-svs.c
+> > @@ -25,6 +25,7 @@
+> >   #include <linux/regulator/consumer.h>
+> >   #include <linux/slab.h>
+> >   #include <linux/spinlock.h>
+> > +#include <linux/thermal.h>
+> >   
+> >   /* svs bank 1-line sw id */
+> >   #define SVSB_CPU_LITTLE			BIT(0)
+> > @@ -36,6 +37,7 @@
+> >   #define SVSB_MODE_ALL_DISABLE		0
+> >   #define SVSB_MODE_INIT01		BIT(1)
+> >   #define SVSB_MODE_INIT02		BIT(2)
+> > +#define SVSB_MODE_MON			BIT(3)
 
-- Move variable assignments to the top of the functions.
+[snip]
 
-Cc: Ricky WU <ricky_wu@realtek.com>
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v5:
- - No change.
+> >   /**
+> > @@ -241,6 +254,7 @@ struct svs_platform {
+> >    * @get_volts: function pointer to get bank voltages
+> >    * @name: bank name
+> >    * @buck_name: regulator name
+> > + * @tzone_name: thermal zone name
+> >    * @suspended: suspend flag of this bank
+> >    * @phase: bank current phase
+> >    * @volt_od: bank voltage overdrive
+> > @@ -270,6 +284,13 @@ struct svs_platform {
+> >    * @sw_id: bank software identification
+> >    * @cpu_id: cpu core id for SVS CPU bank use only
+> >    * @ctl0: TS-x selection
+> > + * @temp: bank temperature
+> > + * @tzone_htemp: thermal zone high temperature threshold
+> > + * @tzone_htemp_voffset: thermal zone high temperature voltage offset
+> > + * @tzone_ltemp: thermal zone low temperature threshold
+> > + * @tzone_ltemp_voffset: thermal zone low temperature voltage offset
+> > + * @bts: svs efuse data
+> > + * @mts: svs efuse data
+> >    * @bdes: svs efuse data
+> >    * @mdes: svs efuse data
+> >    * @mtdes: svs efuse data
+> > @@ -292,6 +313,7 @@ struct svs_bank {
+> >   	void (*get_volts)(struct svs_platform *svsp);
+> >   	char *name;
+> >   	char *buck_name;
+> > +	char *tzone_name;
+> >   	bool suspended;
+> >   	enum svsb_phase phase;
+> >   	s32 volt_od;
+> > @@ -321,6 +343,13 @@ struct svs_bank {
+> >   	u32 sw_id;
+> >   	u32 cpu_id;
+> >   	u32 ctl0;
+> > +	u32 temp;
+> > +	u32 tzone_htemp;
+> > +	u32 tzone_htemp_voffset;
+> > +	u32 tzone_ltemp;
+> > +	u32 tzone_ltemp_voffset;
+> > +	u32 bts;
+> > +	u32 mts;
+> >   	u32 bdes;
+> >   	u32 mdes;
+> >   	u32 mtdes;
+> > @@ -361,10 +390,21 @@ static u32 svs_bank_volt_to_opp_volt(u32 svsb_volt,
+> > u32 svsb_volt_step,
+> >   	return (svsb_volt * svsb_volt_step) + svsb_volt_base;
+> >   }
+> >   
+> 
+> I'm sorry for the double review, but this went unnoticed in the previous one.
+> 
+> > +static int svs_get_zone_temperature(const char *tzone_name, int
+> > *tzone_temp)
+> > +{
+> > +	struct thermal_zone_device *tzd;
+> > +
+> > +	tzd = thermal_zone_get_zone_by_name(tzone_name);
+> 
+> This call is expensive, as it's iterating through the (possibly) entire
+> thermal_tz_list (drivers/thermal/thermal_core.c) so, for performance purposes,
+> noting that you're using this in svs_adjust_pm_opp_volts(), it's not a good
+> idea
+> to call it at every ISR.
+> 
+> I would instead propose to get a pointer to the thermal_zone at driver probe
+> time and cache that in struct svs_bank: this function would also be removed
+> as the only thing that you'd need to do then would be just one call...
+> 
+> [read forward...]
 
-v4:
- - Move variable assignments to the top of the functions.
+No problem. I'll cache thermal_zone at driver probe time and remove this API in
+the next patch. Thanks.
 
-v3:
-v2:
- - No change.
+> 
+> > +	if (IS_ERR(tzd))
+> > +		return PTR_ERR(tzd);
+> > +
+> > +	return thermal_zone_get_temp(tzd, tzone_temp);
+> > +}
+> > +
+> >   static int svs_adjust_pm_opp_volts(struct svs_bank *svsb, bool
+> > force_update)
+> >   {
+> > -	int ret = -EPERM;
+> > -	u32 i, svsb_volt, opp_volt;
+> > +	int ret = -EPERM, tzone_temp = 0;
+> > +	u32 i, svsb_volt, opp_volt, temp_voffset = 0;
+> >   
+> >   	mutex_lock(&svsb->lock);
+> >   
+> > @@ -378,6 +418,22 @@ static int svs_adjust_pm_opp_volts(struct svs_bank
+> > *svsb, bool force_update)
+> >   		goto unlock_mutex;
+> >   	}
+> >   
+> > +	/* Get thermal effect */
+> > +	if (svsb->phase == SVSB_PHASE_MON) {
+> > +		ret = svs_get_zone_temperature(svsb->tzone_name, &tzone_temp);
+> 
+> ... so you can simply call ...
+> 
+> 
+> 	ret = thermal_zone_get_temp(svsb->tzd, tzone_temp);
+> 
+> 
+> ...without any need for any helper.
 
- drivers/misc/cardreader/rtsx_pcr.c | 34 ++++++++----------------------
- 1 file changed, 9 insertions(+), 25 deletions(-)
+Sure, I'll call thermal_zone_get_temp() directly after applying this recommended
+change in the next patch. Thanks.
 
-diff --git a/drivers/misc/cardreader/rtsx_pcr.c b/drivers/misc/cardreader/rtsx_pcr.c
-index f919290f01192..ec395a33faf8b 100644
---- a/drivers/misc/cardreader/rtsx_pcr.c
-+++ b/drivers/misc/cardreader/rtsx_pcr.c
-@@ -1660,22 +1660,17 @@ static void rtsx_pci_remove(struct pci_dev *pcidev)
- static int __maybe_unused rtsx_pci_suspend(struct device *dev_d)
- {
- 	struct pci_dev *pcidev = to_pci_dev(dev_d);
--	struct pcr_handle *handle;
--	struct rtsx_pcr *pcr;
-+	struct pcr_handle *handle = pci_get_drvdata(pcidev);
-+	struct rtsx_pcr *pcr = handle->pcr;
- 
- 	dev_dbg(&(pcidev->dev), "--> %s\n", __func__);
- 
--	handle = pci_get_drvdata(pcidev);
--	pcr = handle->pcr;
--
--	cancel_delayed_work(&pcr->carddet_work);
-+	cancel_delayed_work_sync(&pcr->carddet_work);
- 
- 	mutex_lock(&pcr->pcr_mutex);
- 
- 	rtsx_pci_power_off(pcr, HOST_ENTER_S3);
- 
--	device_wakeup_disable(dev_d);
--
- 	mutex_unlock(&pcr->pcr_mutex);
- 	return 0;
- }
-@@ -1683,15 +1678,12 @@ static int __maybe_unused rtsx_pci_suspend(struct device *dev_d)
- static int __maybe_unused rtsx_pci_resume(struct device *dev_d)
- {
- 	struct pci_dev *pcidev = to_pci_dev(dev_d);
--	struct pcr_handle *handle;
--	struct rtsx_pcr *pcr;
-+	struct pcr_handle *handle = pci_get_drvdata(pcidev);
-+	struct rtsx_pcr *pcr = handle->pcr;
- 	int ret = 0;
- 
- 	dev_dbg(&(pcidev->dev), "--> %s\n", __func__);
- 
--	handle = pci_get_drvdata(pcidev);
--	pcr = handle->pcr;
--
- 	mutex_lock(&pcr->pcr_mutex);
- 
- 	ret = rtsx_pci_write_register(pcr, HOST_SLEEP_STATE, 0x03, 0x00);
-@@ -1711,13 +1703,11 @@ static int __maybe_unused rtsx_pci_resume(struct device *dev_d)
- 
- static void rtsx_pci_shutdown(struct pci_dev *pcidev)
- {
--	struct pcr_handle *handle;
--	struct rtsx_pcr *pcr;
-+	struct pcr_handle *handle = pci_get_drvdata(pcidev);
-+	struct rtsx_pcr *pcr = handle->pcr;
- 
- 	dev_dbg(&(pcidev->dev), "--> %s\n", __func__);
- 
--	handle = pci_get_drvdata(pcidev);
--	pcr = handle->pcr;
- 	rtsx_pci_power_off(pcr, HOST_ENTER_S1);
- 
- 	pci_disable_device(pcidev);
-@@ -1756,11 +1746,8 @@ static int rtsx_pci_runtime_idle(struct device *device)
- static int rtsx_pci_runtime_suspend(struct device *device)
- {
- 	struct pci_dev *pcidev = to_pci_dev(device);
--	struct pcr_handle *handle;
--	struct rtsx_pcr *pcr;
--
--	handle = pci_get_drvdata(pcidev);
--	pcr = handle->pcr;
-+	struct pcr_handle *handle = pci_get_drvdata(pcidev);
-+	struct rtsx_pcr *pcr = handle->pcr;
- 
- 	dev_dbg(device, "--> %s\n", __func__);
- 
-@@ -1786,9 +1773,6 @@ static int rtsx_pci_runtime_resume(struct device *device)
- 
- 	rtsx_pci_write_register(pcr, HOST_SLEEP_STATE, 0x03, 0x00);
- 
--	if (pcr->ops->fetch_vendor_settings)
--		pcr->ops->fetch_vendor_settings(pcr);
--
- 	rtsx_pci_init_hw(pcr);
- 
- 	if (pcr->slots[RTSX_SD_CARD].p_dev != NULL) {
--- 
-2.33.1
+> 
+> > +		if (ret || (svsb->temp > SVSB_TEMP_UPPER_BOUND &&
+> > +			    svsb->temp < SVSB_TEMP_LOWER_BOUND)) {
+> > +			dev_err(svsb->dev, "%s: %d (0x%x), run default volts\n",
+> > +				svsb->tzone_name, ret, svsb->temp);
+> > +			svsb->phase = SVSB_PHASE_ERROR;
+> > +		}
+> > +
+> > +		if (tzone_temp >= svsb->tzone_htemp)
+> > +			temp_voffset += svsb->tzone_htemp_voffset;
+> > +		else if (tzone_temp <= svsb->tzone_ltemp)
+> > +			temp_voffset += svsb->tzone_ltemp_voffset;
+> > +	}
+> > +
+> >   	/* vmin <= svsb_volt (opp_volt) <= default opp voltage */
+> >   	for (i = 0; i < svsb->opp_count; i++) {
+> >   		switch (svsb->phase) {
+> 
+> Apart from that, the commit looks good. Looking forward to review the new
+> version!
+> 
+> Regards,
+> - Angelo
 
