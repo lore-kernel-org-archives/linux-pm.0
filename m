@@ -2,95 +2,211 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E13DC4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jan 2022 17:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32826C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jan 2022 17:20:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237573AbiAYRIx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jan 2022 12:08:53 -0500
-Received: from smtp-relay-internal-0.canonical.com ([185.125.188.122]:50916
-        "EHLO smtp-relay-internal-0.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241135AbiAYRFe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jan 2022 12:05:34 -0500
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com [209.85.221.70])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id B28233F1E8
-        for <linux-pm@vger.kernel.org>; Tue, 25 Jan 2022 17:05:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1643130332;
-        bh=dSvKZ8AHHeBFaUwfnKaz2QA3fzKNbqhnfNH57EfO12U=;
-        h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-         MIME-Version:Content-Type;
-        b=BOz5CwyW9SZaVU0hdxBLIug4WGNw7Zp8QeR7Qed1cjWli1KLDTH62t/hyQwE6s/sR
-         Rsz1a5dGdUHm6XTBoIbXiXMtYx8KIGS+w9GjfK4+d6HdKTns5PL+wYQHiIUV+160ZD
-         Y5FvpIyeSXwaj+L5kHWhS//bxTz6oW2we95h/jJLBZd5PbSqR9JE/C8GasI4WgqXVX
-         R2P3M3dRh86jjyZ8b43N8XyNniIvU+VdFh2B2FZP7JIHnYg3N8N7fRNA0XUWGAgSWM
-         UGvfQEKp1Ppo49x8sZLDUu12IN2ftn2aRJYoRXRURSg3W76XwlNlhuxCAVqxd08H/l
-         ktDejOOs/RM+g==
-Received: by mail-wr1-f70.google.com with SMTP id t13-20020adfa2cd000000b001d09443ee4fso3334077wra.3
-        for <linux-pm@vger.kernel.org>; Tue, 25 Jan 2022 09:05:32 -0800 (PST)
+        id S1587824AbiAYRUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jan 2022 12:20:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48714 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1587572AbiAYRSZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jan 2022 12:18:25 -0500
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 44CF5C06175E
+        for <linux-pm@vger.kernel.org>; Tue, 25 Jan 2022 09:18:24 -0800 (PST)
+Received: by mail-wr1-x430.google.com with SMTP id c23so5500255wrb.5
+        for <linux-pm@vger.kernel.org>; Tue, 25 Jan 2022 09:18:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=qh9ZukSBrcmzrIqovMOzTJ9hbhpz7rlhT3FvWLuMjno=;
+        b=AmUOUGHYDskeloPIUiia90BgtPxqtFVOd+UP5YTpoBPRxna8VpJrXb7keLdypazGpj
+         c5lAY5BRGiiyzy7xvlqC306bBqfVVfjz93i5F+1wYZG9FsDZRRSKXv56VN91q6eEeVpt
+         tfEcQSaYgDCygQGW9roHtBecBP8VpKEXoGems/30OhfRTcS33BS8LAhks+oBv/kfufIZ
+         qauP1w3/ucKsS2LlcR2WJmasK78frOP0R9p+2bFnzMOYpDcTRYj0Sf2gMvWPdqH6sryQ
+         Na0SDfUcNgJkGuICQML2NmfRPneXJoG7XbIbQyK+jKAxn3+akXaS/xQ1Mh6t91IZn/tV
+         ytxg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=dSvKZ8AHHeBFaUwfnKaz2QA3fzKNbqhnfNH57EfO12U=;
-        b=hg7zRDfUMCcTTurqfKVx8xoKILmFzy7e9ulr2G6ut9czqwtDPFS1leUrYtbPUxh5Wt
-         ChNYeYTagZiqBh7GGAFz1tsPtJ/87/2Lhgs5OuQpfrDTvmsEd55kK2DXn0xSB6bGLPNz
-         19J0oHY5+7ctsNP9x7e+HfqvCPPdTa8cpaL9gyaA+Mh48BsheHTBoeu9ySsHbYGQTFF3
-         9OWxDyjoJqzhtwuAa94Pw302n2Y1SX7ZF8lUwjraW25a6PmF6kwKzwZfqeED3WnAO81N
-         IOH1hrHJWTXugg75xa3H1OL3wCod+wesRipmrKB/khh5ybqC9xTNXmmRSt3iYJM1AYhX
-         IlIg==
-X-Gm-Message-State: AOAM530OR1ktC3T+MbsQeSH9ikXw5Nj8qUEym+nvKK5qEu4lBYNKiZo4
-        u3fHX4LhTmBuIt4rSikpzxl8RStKMOV7J1rjvm4Jielshy9KOIypreU2jp4i7ws8Q3hu2vY1vPq
-        iyIbX7ux3rjk00/V4xPYXIbAaSWVobMftTf3q
-X-Received: by 2002:a1c:c915:: with SMTP id f21mr3793715wmb.39.1643130332352;
-        Tue, 25 Jan 2022 09:05:32 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJy7hsKMSTS+c3tg8hbEizs0VHVpl83/TDWW7Ey8qOCr5k/EuXQApytnig+iht+MKtj+BSx35g==
-X-Received: by 2002:a1c:c915:: with SMTP id f21mr3793698wmb.39.1643130332208;
-        Tue, 25 Jan 2022 09:05:32 -0800 (PST)
-Received: from localhost.localdomain (xdsl-188-155-168-84.adslplus.ch. [188.155.168.84])
-        by smtp.gmail.com with ESMTPSA id o15sm1082377wms.9.2022.01.25.09.05.31
+        bh=qh9ZukSBrcmzrIqovMOzTJ9hbhpz7rlhT3FvWLuMjno=;
+        b=YwzwnuCwxODeNAYIG5ir0FTomEg+ie6z/SH/QX7c8c8leyaYAUklgwUkDeGyuN743W
+         VwQLeaDjRw9JH0wOtGy5YStpEL6uyxZfNqVdZV6Bdew8hAuS3xPvPXlrKfF2AxZuIRTD
+         bv1JnYkr6sRVvlDLFcYV6aGKgdYtE1k7vfc9KrnzKxlM5D8ZaoTLDJt0EQY2oLDIBXe6
+         cmy49oDnBoWynER44LhKYayccp+9a9DY09A64gckUIp60jNL6FkAcgvUHnxbCghPDZoL
+         3n9a0Dw8QqFV4bTZmhVelQiTW3YwjyKMgJ7WtCsbuDz3NeCtjwD+9AjlD0trso/bwKbS
+         +6Tw==
+X-Gm-Message-State: AOAM531RIX62Ley69IXkGrKB4Z8Myj/Iw0QN5MM+iVwoEuqJ6WFbYQvD
+        iAFHaZj/QMzxoTtUdzbifwI/tA==
+X-Google-Smtp-Source: ABdhPJwqG6zdTyq/D+amCPqGdgKKkLK3jWFZ3zy+ZdLTx0DX6iZ3/1suZKjKKwlk0Xnv8aQSEbry6A==
+X-Received: by 2002:adf:eb4f:: with SMTP id u15mr18587817wrn.6.1643131102726;
+        Tue, 25 Jan 2022 09:18:22 -0800 (PST)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:f589:cf7d:b2ee:bb5e])
+        by smtp.gmail.com with ESMTPSA id t18sm17561901wri.34.2022.01.25.09.18.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Jan 2022 09:05:31 -0800 (PST)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-kernel@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        linux-samsung-soc@vger.kernel.org
-Subject: Re: (subset) [PATCH 1/3] ARM: dts: exynos: drop old thermal properties from Exynos4210
-Date:   Tue, 25 Jan 2022 18:04:54 +0100
-Message-Id: <164313029072.79782.14492454091056440886.b4-ty@canonical.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220122132554.65192-1-krzysztof.kozlowski@canonical.com>
-References: <20220122132554.65192-1-krzysztof.kozlowski@canonical.com>
+        Tue, 25 Jan 2022 09:18:22 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc:     robh@kernel.org, lukasz.luba@arm.com, heiko@sntech.de,
+        arnd@linaro.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        linux-arch@vger.kernel.org (open list:GENERIC INCLUDE/ASM HEADER FILES)
+Subject: [PATCH v7 1/5] powercap/drivers/dtpm: Convert the init table section to a simple array
+Date:   Tue, 25 Jan 2022 18:18:05 +0100
+Message-Id: <20220125171809.1273269-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220125171809.1273269-1-daniel.lezcano@linaro.org>
+References: <20220125171809.1273269-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 22 Jan 2022 14:25:52 +0100, Krzysztof Kozlowski wrote:
-> The samsung,tmu_gain and samsung,tmu_reference_voltage properties of
-> Exynos Thermal Management Unit driver are not used since April 2018.
-> They were removed with commit fccfe0993b5d ("thermal: exynos: remove
-> parsing of samsung,tmu_gain property") and commit 61020d189dbc
-> ("thermal: exynos: remove parsing of samsung, tmu_reference_voltage
-> property"), so drop them also from Exynos4210 DTS.
-> 
-> [...]
+The init table section is freed after the system booted. However the
+next changes will make per module the DTPM description, so the table
+won't be accessible when the module is loaded.
 
-Applied, thanks!
+In order to fix that, we should move the table to the data section
+where there are very few entries and that makes strange to add it
+there.
 
-[1/3] ARM: dts: exynos: drop old thermal properties from Exynos4210
-      commit: e20bd06fc421fba4099be51d3f56b9b1741b499b
+The main goal of the table was to keep self-encapsulated code and we
+can keep it almost as it by using an array instead.
 
-Best regards,
+Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/powercap/dtpm.c           |  2 ++
+ drivers/powercap/dtpm_cpu.c       |  5 ++++-
+ drivers/powercap/dtpm_subsys.h    | 18 ++++++++++++++++++
+ include/asm-generic/vmlinux.lds.h | 11 -----------
+ include/linux/dtpm.h              | 24 +++---------------------
+ 5 files changed, 27 insertions(+), 33 deletions(-)
+ create mode 100644 drivers/powercap/dtpm_subsys.h
+
+diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+index 8cb45f2d3d78..0e5c93443c70 100644
+--- a/drivers/powercap/dtpm.c
++++ b/drivers/powercap/dtpm.c
+@@ -24,6 +24,8 @@
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ 
++#include "dtpm_subsys.h"
++
+ #define DTPM_POWER_LIMIT_FLAG 0
+ 
+ static const char *constraint_name[] = {
+diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
+index b740866b228d..5763e0ce2af5 100644
+--- a/drivers/powercap/dtpm_cpu.c
++++ b/drivers/powercap/dtpm_cpu.c
+@@ -269,4 +269,7 @@ static int __init dtpm_cpu_init(void)
+ 	return 0;
+ }
+ 
+-DTPM_DECLARE(dtpm_cpu, dtpm_cpu_init);
++struct dtpm_subsys_ops dtpm_cpu_ops = {
++	.name = KBUILD_MODNAME,
++	.init = dtpm_cpu_init,
++};
+diff --git a/drivers/powercap/dtpm_subsys.h b/drivers/powercap/dtpm_subsys.h
+new file mode 100644
+index 000000000000..2a3a2055f60e
+--- /dev/null
++++ b/drivers/powercap/dtpm_subsys.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2022 Linaro Ltd
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ */
++#ifndef ___DTPM_SUBSYS_H__
++#define ___DTPM_SUBSYS_H__
++
++extern struct dtpm_subsys_ops dtpm_cpu_ops;
++
++struct dtpm_subsys_ops *dtpm_subsys[] = {
++#ifdef CONFIG_DTPM_CPU
++	&dtpm_cpu_ops,
++#endif
++};
++
++#endif
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 42f3866bca69..2a10db2f0bc5 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -321,16 +321,6 @@
+ #define THERMAL_TABLE(name)
+ #endif
+ 
+-#ifdef CONFIG_DTPM
+-#define DTPM_TABLE()							\
+-	. = ALIGN(8);							\
+-	__dtpm_table = .;						\
+-	KEEP(*(__dtpm_table))						\
+-	__dtpm_table_end = .;
+-#else
+-#define DTPM_TABLE()
+-#endif
+-
+ #define KERNEL_DTB()							\
+ 	STRUCT_ALIGN();							\
+ 	__dtb_start = .;						\
+@@ -723,7 +713,6 @@
+ 	ACPI_PROBE_TABLE(irqchip)					\
+ 	ACPI_PROBE_TABLE(timer)						\
+ 	THERMAL_TABLE(governor)						\
+-	DTPM_TABLE()							\
+ 	EARLYCON_TABLE()						\
+ 	LSM_TABLE()							\
+ 	EARLY_LSM_TABLE()						\
+diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
+index d37e5d06a357..506048158a50 100644
+--- a/include/linux/dtpm.h
++++ b/include/linux/dtpm.h
+@@ -32,29 +32,11 @@ struct dtpm_ops {
+ 	void (*release)(struct dtpm *);
+ };
+ 
+-typedef int (*dtpm_init_t)(void);
+-
+-struct dtpm_descr {
+-	dtpm_init_t init;
++struct dtpm_subsys_ops {
++	const char *name;
++	int (*init)(void);
+ };
+ 
+-/* Init section thermal table */
+-extern struct dtpm_descr __dtpm_table[];
+-extern struct dtpm_descr __dtpm_table_end[];
+-
+-#define DTPM_TABLE_ENTRY(name, __init)				\
+-	static struct dtpm_descr __dtpm_table_entry_##name	\
+-	__used __section("__dtpm_table") = {			\
+-		.init = __init,					\
+-	}
+-
+-#define DTPM_DECLARE(name, init)	DTPM_TABLE_ENTRY(name, init)
+-
+-#define for_each_dtpm_table(__dtpm)	\
+-	for (__dtpm = __dtpm_table;	\
+-	     __dtpm < __dtpm_table_end;	\
+-	     __dtpm++)
+-
+ static inline struct dtpm *to_dtpm(struct powercap_zone *zone)
+ {
+ 	return container_of(zone, struct dtpm, zone);
 -- 
-Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+2.25.1
+
