@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5702CC41535
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:08:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48C15C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:08:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245464AbiA0XIe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Jan 2022 18:08:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57924 "EHLO
+        id S1344123AbiA0XIn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Jan 2022 18:08:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57984 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245300AbiA0XIc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:32 -0500
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD560C061756
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:32 -0800 (PST)
-Received: by mail-pf1-x42c.google.com with SMTP id a8so4367910pfa.6
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:32 -0800 (PST)
+        with ESMTP id S1344203AbiA0XIk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:40 -0500
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A8D2C061753
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:36 -0800 (PST)
+Received: by mail-pf1-x42d.google.com with SMTP id p37so4372782pfh.4
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ZfhvZdFs5TObb5S4eewDrBMOltALFoSNTdZ7kqpym+w=;
-        b=npEbe3pKve6T0stjeDsyP2hlb1l9yn6TxS2m1sa+3SXZ04FPuvMdfmzsTIJNsLSdxi
-         t6w0LMTqu1IkNqXOqN4942uEw/i8X5WRoVPoa8nM8w6m7VUaLVyx4MINNlIxcDmTvOQd
-         xGhmHBDLy9pUDKcWGknlP0bT+XZ24P1uaSnpY=
+        bh=S7JkzSF7lxJgCpd6ZXDkhdvjrfqNJJ5Wge2dT4ZFw7o=;
+        b=QkHrDYVuucq5tGrwY+7ofVKvafE8N1vG6K7wssS8MFOLQ8A+qT44Pw8OkxznULsPLE
+         fU0ppcxIbnnoe3DkKlONgnWitZdR6bHPjT1zDXJKdypl9iivtwyPlKX/9eCq/YqaK+Iu
+         BWm6b0pbXYtrWPXRj7GPsRq0ghVWt5Gr/dEag=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ZfhvZdFs5TObb5S4eewDrBMOltALFoSNTdZ7kqpym+w=;
-        b=DtNLn46buBF0h3tGq68eV1jVxoDrGEZ3pxC0Eblu26/sRnry8zhIZBPMLrDRO6x5LB
-         GmrUwyiO+7kTuPXFON3i2r7RYtE9dUFXC/+dsbRP95JWw1GmvTOSEI7ZOW7Y9Zd2ZOrA
-         IJd82C8ZNT0+DcdysXDcIvaGu4v1U5n/22pBjV2OcCqu1VLaO1u6ZiekOhCjSux4I1iP
-         UEqQgkt3P0HwCGVj9RgzTW9kze5VyNzoDBuD5peQbd5FSoRCqWNm5C9o9dDOXOX4wGpg
-         s+RUb3pBEdzAuIxa8+sfMtxZnV15FRWA+XmxdN6uSbdghMWRthLmxT5+YlgznuhX143/
-         rLrA==
-X-Gm-Message-State: AOAM532hj4qxpfkxH+WNmJTzrFyU2M/rlD8aqg018omlofwyPNEK+5F4
-        UxyoUBql3aN2zAhnkrLDDK+3xQ==
-X-Google-Smtp-Source: ABdhPJzWfp15WA+agQIDXTl8cUPnuwXcqyV2WF4QJ4q1xpLKzz6EakugAmhaPwx/3rCjwXSRJkmH8Q==
-X-Received: by 2002:a05:6a00:b42:: with SMTP id p2mr5377425pfo.50.1643324912230;
-        Thu, 27 Jan 2022 15:08:32 -0800 (PST)
+        bh=S7JkzSF7lxJgCpd6ZXDkhdvjrfqNJJ5Wge2dT4ZFw7o=;
+        b=hFYKUIW0FI0rPZTzxHGgjYv3kSnZXn9L0h5cj99JTd+yN6PXjljybbGr2QtjJG5EnD
+         aJUZk5L34cqpZ17wd+Uq34+tDaJr/7qK1u1AxDLXfUTiPFTW077Od7Uv4Gs8S2+QuJuM
+         VC/4t/GJFFZo40hTDo9xAKSAO+kcbP17XKHN3rZz1kMV43sa29NinZfCLeYfUmK8Cixh
+         uPBZNd5Io6qvOFbXKkIZJw2iX8Xz3PUUOTloe34gtyEN7yWkh8KeBTtgczqjWbYU9Pyp
+         G68E9RTeLKcSvXA95e7aUBR9RDG3CvJug+dg4njk5aoiKzX+0P6AGUKw0A4hWdDW8S9T
+         V4TA==
+X-Gm-Message-State: AOAM531GvkeNwo0FHc3NeZYWgzJrwUBH5UdQE+920qq8Xj0BH11ZMrkF
+        LeyFOvuoau0MPHzO2M6B7HfDOQ==
+X-Google-Smtp-Source: ABdhPJxGSe8Or1J7VdvMjjKei+W+lXlkhGyA7m0Vzqh1YDxZLw6gaRpY1PqHnE/am+HMGfaQbFydiw==
+X-Received: by 2002:a63:6c44:: with SMTP id h65mr4438729pgc.100.1643324915912;
+        Thu, 27 Jan 2022 15:08:35 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:723d:38a9:9e7f:3435])
-        by smtp.gmail.com with UTF8SMTPSA id r14sm339902pjo.39.2022.01.27.15.08.31
+        by smtp.gmail.com with UTF8SMTPSA id f8sm4740841pfe.204.2022.01.27.15.08.34
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 27 Jan 2022 15:08:31 -0800 (PST)
+        Thu, 27 Jan 2022 15:08:35 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -56,9 +56,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Heiko Stuebner <heiko@sntech.de>,
         Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v2 04/15] dt-bindings: devfreq: rk3399_dmc: Specify idle params in nanoseconds
-Date:   Thu, 27 Jan 2022 15:07:15 -0800
-Message-Id: <20220127150615.v2.4.I01c6a2b2db578136686b42d463af985cfdff2fd9@changeid>
+Subject: [PATCH v2 06/15] PM / devfreq: rk3399_dmc: Drop undocumented ondemand DT props
+Date:   Thu, 27 Jan 2022 15:07:17 -0800
+Message-Id: <20220127150615.v2.6.I4bd77eb751d5bfce8346bfed576bcacb28e4550f@changeid>
 X-Mailer: git-send-email 2.35.0.rc0.227.g00780c9af4-goog
 In-Reply-To: <20220127230727.3369358-1-briannorris@chromium.org>
 References: <20220127230727.3369358-1-briannorris@chromium.org>
@@ -68,133 +68,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's inefficient to use the same number of cycles for all OPPs, since
-lower frequencies make for longer idle times. Let's specify the idle
-time instead, so software can pick the optimal number of cycles on its
-own.
+These properties are:
 
-NB: these bindings aren't used anywhere yet.
+* undocumented
+* directly representing software properties, not hardware properties
+* unused (no in-tree users, yet; this IP block has so far only been used
+  in downstream kernels)
+
+Let's just stick the values that downstream users have been using
+directly in the driver and call it a day.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
-Changes in v2:
- - New patch
+(no changes since v1)
 
- .../bindings/devfreq/rk3399_dmc.yaml          | 50 +++++++++++++++++--
- 1 file changed, 45 insertions(+), 5 deletions(-)
+ drivers/devfreq/rk3399_dmc.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-index 8bb778df92ae..8786b7fa9b28 100644
---- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-@@ -55,42 +55,52 @@ properties:
-       being used.
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 293857ebfd75..e982862f6ac2 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -430,10 +430,8 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		goto err_edev;
+ 	}
  
-   rockchip,pd_idle:
-+    deprecated: true
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-       Configure the PD_IDLE value. Defines the power-down idle period in which
-       memories are placed into power-down mode if bus is idle for PD_IDLE DFI
-       clock cycles.
-+      See also rockchip,pd-idle-ns.
+-	of_property_read_u32(np, "upthreshold",
+-			     &data->ondemand_data.upthreshold);
+-	of_property_read_u32(np, "downdifferential",
+-			     &data->ondemand_data.downdifferential);
++	data->ondemand_data.upthreshold = 25;
++	data->ondemand_data.downdifferential = 15;
  
-   rockchip,sr_idle:
-+    deprecated: true
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-       Configure the SR_IDLE value. Defines the self-refresh idle period in
-       which memories are placed into self-refresh mode if bus is idle for
-       SR_IDLE * 1024 DFI clock cycles (DFI clocks freq is half of DRAM clock).
-       Default value is "0".
-+      See also rockchip,sr-idle-ns.
+ 	data->rate = clk_get_rate(data->dmc_clk);
  
-   rockchip,sr_mc_gate_idle:
-+    deprecated: true
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-       Defines the memory self-refresh and controller clock gating idle period.
-       Memories are placed into self-refresh mode and memory controller clock
-       arg gating started if bus is idle for sr_mc_gate_idle*1024 DFI clock
-       cycles.
-+      See also rockchip,sr-mc-gate-idle-ns.
- 
-   rockchip,srpd_lite_idle:
-+    deprecated: true
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-       Defines the self-refresh power down idle period in which memories are
-       placed into self-refresh power down mode if bus is idle for
-       srpd_lite_idle * 1024 DFI clock cycles. This parameter is for LPDDR4
-       only.
-+      See also rockchip,srpd-lite-idle-ns.
- 
-   rockchip,standby_idle:
-+    deprecated: true
-     $ref: /schemas/types.yaml#/definitions/uint32
-     description:
-       Defines the standby idle period in which memories are placed into
-       self-refresh mode. The controller, pi, PHY and DRAM clock will be gated
-       if bus is idle for standby_idle * DFI clock cycles.
-+      See also rockchip,standby-idle-ns.
- 
-   rockchip,dram_dll_dis_freq:
-     deprecated: true
-@@ -259,6 +269,36 @@ properties:
-       When the DRAM type is LPDDR4, this parameter defines the PHY side ODT
-       strength. Default value is 60.
- 
-+  rockchip,pd-idle-ns:
-+    description:
-+      Configure the PD_IDLE value in nanoseconds. Defines the power-down idle
-+      period in which memories are placed into power-down mode if bus is idle
-+      for PD_IDLE nanoseconds.
-+
-+  rockchip,sr-idle-ns:
-+    description:
-+      Configure the SR_IDLE value in nanoseconds. Defines the self-refresh idle
-+      period in which memories are placed into self-refresh mode if bus is idle
-+      for SR_IDLE nanoseconds. Default value is "0".
-+
-+  rockchip,sr-mc-gate-idle-ns:
-+    description:
-+      Defines the memory self-refresh and controller clock gating idle period in nanoseconds.
-+      Memories are placed into self-refresh mode and memory controller clock
-+      arg gating started if bus is idle for sr_mc_gate_idle nanoseconds.
-+
-+  rockchip,srpd-lite-idle-ns:
-+    description:
-+      Defines the self-refresh power down idle period in which memories are
-+      placed into self-refresh power down mode if bus is idle for
-+      srpd_lite_idle nanoseonds. This parameter is for LPDDR4 only.
-+
-+  rockchip,standby-idle-ns:
-+    description:
-+      Defines the standby idle period in which memories are placed into
-+      self-refresh mode. The controller, pi, PHY and DRAM clock will be gated
-+      if bus is idle for standby_idle nanoseconds.
-+
- required:
-   - compatible
-   - devfreq-events
-@@ -282,11 +322,11 @@ examples:
-       clock-names = "dmc_clk";
-       operating-points-v2 = <&dmc_opp_table>;
-       center-supply = <&ppvar_centerlogic>;
--      rockchip,pd_idle = <0x40>;
--      rockchip,sr_idle = <0x2>;
--      rockchip,sr_mc_gate_idle = <0x3>;
--      rockchip,srpd_lite_idle = <0x4>;
--      rockchip,standby_idle = <0x2000>;
-+      rockchip,pd-idle-ns = <160>;
-+      rockchip,sr-idle-ns = <10240>;
-+      rockchip,sr-mc-gate-idle-ns = <40960>;
-+      rockchip,srpd-lite-idle-ns = <61440>;
-+      rockchip,standby-idle-ns = <81920>;
-       rockchip,ddr3_odt_dis_freq = <333000000>;
-       rockchip,lpddr3_odt_dis_freq = <333000000>;
-       rockchip,lpddr4_odt_dis_freq = <333000000>;
 -- 
 2.35.0.rc0.227.g00780c9af4-goog
 
