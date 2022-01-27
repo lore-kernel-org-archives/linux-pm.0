@@ -2,138 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B44E2C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 20:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C3AFC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:08:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343849AbiA0UKp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Jan 2022 15:10:45 -0500
-Received: from mail-yb1-f174.google.com ([209.85.219.174]:33643 "EHLO
-        mail-yb1-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343865AbiA0UKp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 15:10:45 -0500
-Received: by mail-yb1-f174.google.com with SMTP id l68so12295050ybl.0;
-        Thu, 27 Jan 2022 12:10:44 -0800 (PST)
+        id S236367AbiA0XI0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Jan 2022 18:08:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57868 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S245105AbiA0XIZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:25 -0500
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 269E0C061748
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:25 -0800 (PST)
+Received: by mail-pf1-x430.google.com with SMTP id d187so4354817pfa.10
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=/1uOFTgg0x7nxOozmt+E9oLAD0yJmH2M0jmKFxZDwp8=;
+        b=N5XEoUM5GPx0kQt4THwu9A+kK+DZR0wMVHnyygjwUG5aaFoDL+gOadyxplbQetMhe7
+         wrCn7wY6jwGkNG0PfOk50FCELTNuv5Ef6BAmJkfoYlHmzbA34qzN6oU2TbxPfDvxZ87u
+         PhwuMG6XcbV1qCtwINtTlV/2e77vS1BRriaxs=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=gh+UlDf/TEfrWF/4dLOcpRWKXy/rGv4qkE/LWOydCEU=;
-        b=VzKMX/umQH3GLHH8plYvpHJysEDD0dZL+41KvnSMfQ9D27OQOmWeSYgqx1/Qiq2vVO
-         0KIPlihYXZPdP4XNdr0VQmc1apdpTTtaISIBPakvfIIeC8+sI6dyvCBmau99JkCYzfAq
-         Z2JVXKZbZeHRSjlxdbbJhL3A1cmM3zAdp8r3BC9aAfvDK4WIgq2r63APluHLC73Qvep8
-         vVapGUyhQK0ZXzQcfaU9tTiPyMUjRqqnYGUx3qKwDEnuh6BgU7ZZ7zHRSslUINUPOtrQ
-         BDcZDPDCcHkj2XzOH5kcNUTYKnpbqma/CjZXv/Pt1OTVopWSBHo5ZxbcxOaB+M4CzMgt
-         xhlQ==
-X-Gm-Message-State: AOAM533Ia/3Ig1kDRy6vr06pqeEBzcferopnP8zTFkfQ803Q7auVSygh
-        krots3ar4ZOKh2apYqaqQsBqESUqvzl9NtQtByM=
-X-Google-Smtp-Source: ABdhPJxONF5czKwKSr4XjHPsxyOZpvAMwe77IoMGqGHLhMjlI7aWj9Ry3JZes3jus7I/ZL+eEQZOs4ed0Zan2Vgsxg0=
-X-Received: by 2002:a25:180a:: with SMTP id 10mr8572542yby.552.1643314236571;
- Thu, 27 Jan 2022 12:10:36 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=/1uOFTgg0x7nxOozmt+E9oLAD0yJmH2M0jmKFxZDwp8=;
+        b=b4jIHX54XbvjXbrM6MFMBch597csMKH3p4++qjMb9awkdmnCJc8FmeJrqHz7Z2qjxs
+         kftFhbkLm+c+UkJKBmMc0Q0UshwuWH126bZTKUBZAYj5t0aoR2HsTK/mGk07lUz4MAZ/
+         rEetMKdp0z8bprVUjOwJ4AzugdNrKwqrv5gbNtwoA2OSnFlI3upY0cAkWR2+txFtVNJZ
+         wA36WP2D95lWWmtt27lbGIdigCt4f/u5SJBqr7VKhsMa9YCJH2tQedazZOJrr5xYMMNA
+         oDF/NtDl19/VAFDGOAdxqwqLhRdl0Wne+tgzojWPd7+c4YklkWDGJKhqlPYbx+QNKhH+
+         JJGA==
+X-Gm-Message-State: AOAM530PAA6CkdWTjsw/LZMKdzQ4EWa61vDi6talPVLatPfrw/c0h7fN
+        xKDFRzB3fiIxZojfhRrAGvYwET79RpuDVQ==
+X-Google-Smtp-Source: ABdhPJyhsxMBgopZJQ9Yzo2MIciHeAMHqFWshYvoQ8YUfc42nVNLVluvkoFoX6uSfTwD6O2dKCWxcQ==
+X-Received: by 2002:a63:6ac3:: with SMTP id f186mr4322420pgc.81.1643324904727;
+        Thu, 27 Jan 2022 15:08:24 -0800 (PST)
+Received: from localhost ([2620:15c:202:201:723d:38a9:9e7f:3435])
+        by smtp.gmail.com with UTF8SMTPSA id b5sm20269235pgl.22.2022.01.27.15.08.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 27 Jan 2022 15:08:24 -0800 (PST)
+From:   Brian Norris <briannorris@chromium.org>
+To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        Lin Huang <hl@rock-chips.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Derek Basehore <dbasehore@chromium.org>,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        Heiko Stuebner <heiko@sntech.de>,
+        Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v2 00/15] rk3399: Clean up and enable DDR DVFS
+Date:   Thu, 27 Jan 2022 15:07:11 -0800
+Message-Id: <20220127230727.3369358-1-briannorris@chromium.org>
+X-Mailer: git-send-email 2.35.0.rc0.227.g00780c9af4-goog
 MIME-Version: 1.0
-References: <CAHTsKTdSyC7Jwk56tDR8QwM_oO13ByBRaA78VpHymOZ7J4NQ9Q@mail.gmail.com>
- <CAJZ5v0jrU4Xw2wzdUL9Vd2C6u8NVx5J79DeiRY6KU1xT6ZSuqw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jrU4Xw2wzdUL9Vd2C6u8NVx5J79DeiRY6KU1xT6ZSuqw@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 27 Jan 2022 21:10:25 +0100
-Message-ID: <CAJZ5v0gLMSPsaS7Jnsr8DhevaQamsVk=pu=BfXZxrT+SBAM=fQ@mail.gmail.com>
-Subject: Re: [RFC] PM: suspend: Upstreaming wakeup reason capture support
-To:     Kelly Rossmoyer <krossmo@google.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Vijay Nayak <nayakvij@google.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 27, 2022 at 8:54 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Mon, Jan 10, 2022 at 7:49 PM Kelly Rossmoyer <krossmo@google.com> wrote:
-> >
-> > # Introduction
-> >
-> > To aid optimization, troubleshooting, and attribution of battery life, the
-> > Android kernel currently includes a set of patches which provide enhanced
-> > visibility into kernel suspend/resume/abort behaviors.  The capabilities
-> > and implementation of this feature have evolved significantly since an
-> > unsuccessful attempt to upstream the original code
-> > (https://lkml.org/lkml/2014/3/10/716), and we would like to (re)start a
-> > conversation about upstreaming, starting with the central question: is
-> > there support for upstreaming this set of features?
-> >
-> > # Motivation
-> >
-> > Of the many factors influencing battery life on Linux-powered mobile
-> > devices, kernel suspend tends to be amongst the most impactful.  Maximizing
-> > time spent in suspend and minimizing the frequency of net-negative suspend
-> > cycles are both important contributors to battery life optimization.  But
-> > enabling that optimization - and troubleshooting when things go wrong -
-> > requires more observability of suspend/resume/abort behavior than Linux
-> > currently provides.  While mechanisms like `/sys/power/pm_wakeup_irq` and
-> > wakeup_source stats are useful, they are incomplete and scattered.  The
-> > Android kernel wakeup reason patches implement significant improvements in
-> > that area.
-> >
-> > # Features
-> >
-> > As of today, the active set of patches surface the following
-> > suspend-related data:
-> >
-> > * wakeup IRQs, including:
-> >    * multiple IRQs if more than one is pending during resume flow
-> >    * unmapped HW IRQs (wakeup-capable in HW) that should not be
-> >      occurring
-> >    * misconfigured IRQs (e.g. both enable_irq_wake() and
-> >      IRQF_NO_SUSPEND)
-> >    * threaded IRQs (not just the parent chip's IRQ)
-> >
-> > * non-IRQ wakeups, including:
-> >    * wakeups caused by an IRQ that was consumed by lower-level SW
-> >    * wakeups from SOC architecture that don't manifest as IRQs
-> >
-> > * abort reasons, including:
-> >    * wakeup_source activity
-> >    * failure to freeze userspace
-> >    * failure to suspend devices
-> >    * failed syscore_suspend callback
-> >
-> > * durations from the most recent cycle, including:
-> >    * time spent doing suspend/resume work
-> >    * time spent in suspend
-> >
-> > In addition to battery life optimization and troubleshooting, some of these
-> > capabilities also lay the groundwork for efforts around improving
-> > attribution of wakeups/aborts (e.g. to specific processes, device features,
-> > external devices, etc).
-> >
-> > # Shortcomings
-> >
-> > While the core implementation (see below) is relatively straightforward and
-> > localized, calls into that core are somewhat widely spread in order to
-> > capture the breadth of events of interest.  The pervasiveness of those
-> > hooks is clearly an area where improvement would be beneficial, especially
-> > if a cleaner solution preserved equivalent capabilities.
-> >
-> > # Existing Code
-> >
-> > As a reference for how Android currently implements the core code for these
-> > features (which would need a bit of work before submission even if all
-> > features were included), see the following link:
-> >
-> > https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/kernel/power/wakeup_reason.c
->
-> So as Zichar said, this is quite heavy-weight.
->
-> I'm not fundamentally against adding more infrastructure to help
-> identify issues related to system suspend, but there needs to be a
-> clear benefit associated with any change in this direction.
+This series covers 2 primary tasks:
 
-That said, the general idea behind wakeup_source objects is that every
-system wakeup event should be recorded in one of them which then can
-be used for later analysis.
+1) Resubmit prior work:
 
-If there are reasons why this cannot work in general, what are they?
+[RESEND PATCH v5 3/4] arm64: dts: rockchip: Enable dmc and dfi nodes on gru.
+https://lore.kernel.org/lkml/20210308233858.24741-2-daniel.lezcano@linaro.org/
+[RESEND PATCH v5 2/4] arm64: dts: rk3399: Add dfi and dmc nodes.
+https://lore.kernel.org/lkml/20210308233858.24741-3-daniel.lezcano@linaro.org/
+
+This series was partially merged a while back, but the remaining 2
+patches were blocked mostly on stylistic grounds (alpha/numerical
+ordering).
+
+2) Integrate many updates, bugfixes, and clarifications that were done
+by Rockchip and Google engineers when first launching this platform.
+Many of these were not integrated in the earlier series (e.g., the OPPs
+changed before production; earlier patchsets used pre-production
+numbers).
+
+Along the way, it seemed worthwhile to convert the binding docs to a
+schema. Among other reasons, it actually helped catch several errors and
+omissions in translation between downstream device trees and the version
+that actually landed upstream.
+
+See the patches for further details.
+
+Regards,
+Brian
+
+Changes in v2:
+ - Fix yamllint issues
+ - Adapt to various review comments (use of *-hz, hyphens, node naming)
+ - Add a few new bugfixes
+ - Add some new properties (ported from downstream kernels) required for
+   stability
+ - Convert more properties from "cycles" to "nanoseconds"
+
+Brian Norris (13):
+  dt-bindings: devfreq: rk3399_dmc: Convert to YAML
+  dt-bindings: devfreq: rk3399_dmc: Deprecate unused/redundant
+    properties
+  dt-bindings: devfreq: rk3399_dmc: Fix Hz units
+  dt-bindings: devfreq: rk3399_dmc: Specify idle params in nanoseconds
+  dt-bindings: devfreq: rk3399_dmc: Add more disable-freq properties
+  PM / devfreq: rk3399_dmc: Drop undocumented ondemand DT props
+  PM / devfreq: rk3399_dmc: Drop excess timing properties
+  PM / devfreq: rk3399_dmc: Use bitfield macro definitions for ODT_PD
+  PM / devfreq: rk3399_dmc: Support new disable-freq properties
+  PM / devfreq: rk3399_dmc: Support new *-ns properties
+  PM / devfreq: rk3399_dmc: Disable edev on remove()
+  PM / devfreq: rk3399_dmc: Use devm_pm_opp_of_add_table()
+  PM / devfreq: rk3399_dmc: Avoid static (reused) profile
+
+Lin Huang (2):
+  arm64: dts: rk3399: Add dfi and dmc nodes
+  arm64: dts: rockchip: Enable dmc and dfi nodes on gru
+
+ .../bindings/devfreq/rk3399_dmc.txt           | 212 ----------
+ .../bindings/devfreq/rk3399_dmc.yaml          | 370 ++++++++++++++++++
+ .../dts/rockchip/rk3399-gru-chromebook.dtsi   |   7 +
+ .../boot/dts/rockchip/rk3399-gru-scarlet.dtsi |  12 +
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  |  28 ++
+ .../boot/dts/rockchip/rk3399-op1-opp.dtsi     |  25 ++
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi      |  19 +
+ drivers/devfreq/rk3399_dmc.c                  | 299 +++++++-------
+ 8 files changed, 595 insertions(+), 377 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+ create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
+
+-- 
+2.35.0.rc0.227.g00780c9af4-goog
+
