@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 152C6C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:09:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC6F7C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:09:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344597AbiA0XJB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Jan 2022 18:09:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58010 "EHLO
+        id S1344697AbiA0XJL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Jan 2022 18:09:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58046 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344306AbiA0XIn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:43 -0500
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3EC50C061763
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:42 -0800 (PST)
-Received: by mail-pj1-x1033.google.com with SMTP id l24-20020a17090aec1800b001b55738f633so6043030pjy.1
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:42 -0800 (PST)
+        with ESMTP id S1344475AbiA0XIx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:53 -0500
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFE10C061757
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:52 -0800 (PST)
+Received: by mail-pl1-x62c.google.com with SMTP id i1so4185650pla.9
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=2CpJvXPo2f7MRYObSqB2TPJqiUKrFA3vxItu5+XYK4E=;
-        b=RMywaGeGSUmwaERdUZXc9MuVTXOPqFgSFhHBitMJ8rd4ASs7kZQ022V1CUjjIYErrP
-         1+LuIQdQlFuLiG+S0snlh+YJwpNbeCQv9GxVu8jX9W/6cq9Tx5JKPMsE5HDiBxywBrkn
-         +LKU1Wi7Afnuc9KbFJYSnjvTkkmfduZqVbbW0=
+        bh=TgvyNELvg3Sp7eq/kP6ZXmVUFjIF8jXZbUQbHyXbYEA=;
+        b=ksWYFpunD8F/POefDSacV+EHnA/Ob+b1C5cIWM4AR/RdicdiwkskZr6IkLTPvIAGlx
+         jzRkBKTSZajM3cDG91qrW1bTBuFeklxmwp2NSoSV28l53EIxjzc01BDxznvW5DWUvycM
+         r+wZn7zVndV2p4K+H9hIjyzSRx3eZWLf/U1Xc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=2CpJvXPo2f7MRYObSqB2TPJqiUKrFA3vxItu5+XYK4E=;
-        b=JsldCm9OIWUN40sbzQ/T2P8WCQC8zVDGcg6v89w0sHpsoVI46gvHn3Vi4OCJUhG59z
-         axAK+7DwXo7iM/27o7+VRtbvYixe3n1MXEWfu5qAdsoPu09Ay4qm7TG0U3BxXTZDisVc
-         7mvfrDL7zdIQ2ap7UC25ID7psiwR7va4UdI2JGYYDSxUPOIDQquUmS0X3je4qX1JVUnD
-         6FoVsLf2jxKR+NlwEJO9b6Ezqe0moKCtmMSOEWSFv8wgO6LQ6K/A0qnFdE5GA4gF+UmD
-         Q0MP6okyNwGoyBOY9ReDJxnpcBofAneGg8rFtCM/KDjvdU9n1x2jJzhIvoUDPx+4qCAJ
-         j0FA==
-X-Gm-Message-State: AOAM5305r/k9z/8jHGr8r4VnxYA4/5t7/4MrzHc7L8TyShfwRf9aB5Bi
-        RMZmF1sIfopkSAwdQCrHF9Vmcg==
-X-Google-Smtp-Source: ABdhPJy7XLBtJwlwzqij9tbWm9vhWkNj4dblv+pYuN1DbddFkcM4t+BTJNdAAI3cfZtgWDwaQAdXxA==
-X-Received: by 2002:a17:90a:de98:: with SMTP id n24mr6656488pjv.87.1643324921749;
-        Thu, 27 Jan 2022 15:08:41 -0800 (PST)
+        bh=TgvyNELvg3Sp7eq/kP6ZXmVUFjIF8jXZbUQbHyXbYEA=;
+        b=Afs87RIUv/67bZoOC3vEi1uHhRu+xDYOAM6B7tDzrwcXHswfGCL9kvVoKMpcLVFd2g
+         RCipzYEipl4dY857foMcyiEaFkuOtllTtIOU1dpIF1f9R4rKkwMHvf+pC8+bC6xdHFfC
+         kSKFx0Jtmd+gDv4olx4h13FR+7djqJkx7ZYJ8fHzkh+VlPFvfuBbq3TMItRcaDbQdq30
+         7NaG3toaKZSZ/QY/gboeM1RYu555FGEStffQ/jRas4ZyQzcmwgJohHtryt+JwajZYpFf
+         6xLV56C42ZGAz3QkwgBh6lJHie90O+2XPeg6ObQd171ARoKp4IHoA30XRi9RKoZYrybM
+         MRJQ==
+X-Gm-Message-State: AOAM533nPMWz+xkfx2njRH9ItLnbjmX5bXBzvRH0Wx0iDzFkWd6q/mUt
+        Gn08MODNSYJHwo4MXTGqQSHZlw==
+X-Google-Smtp-Source: ABdhPJxGTgGsf17+kFpx/sl5BjhXHh6BcmwIuThMSQoz/ECA3RxkZOf4C40gfM6CZkmpTwdQkKj4Mw==
+X-Received: by 2002:a17:902:c946:: with SMTP id i6mr5502608pla.74.1643324932282;
+        Thu, 27 Jan 2022 15:08:52 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:723d:38a9:9e7f:3435])
-        by smtp.gmail.com with UTF8SMTPSA id ck21sm338858pjb.51.2022.01.27.15.08.40
+        by smtp.gmail.com with UTF8SMTPSA id 5sm367869pjf.34.2022.01.27.15.08.50
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 27 Jan 2022 15:08:41 -0800 (PST)
+        Thu, 27 Jan 2022 15:08:51 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -56,9 +56,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Heiko Stuebner <heiko@sntech.de>,
         Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v2 09/15] PM / devfreq: rk3399_dmc: Support new disable-freq properties
-Date:   Thu, 27 Jan 2022 15:07:20 -0800
-Message-Id: <20220127150615.v2.9.I08d654522b8a1ae92ecb8d2e2a74511f778f61e5@changeid>
+Subject: [PATCH v2 14/15] PM / devfreq: rk3399_dmc: Use devm_pm_opp_of_add_table()
+Date:   Thu, 27 Jan 2022 15:07:25 -0800
+Message-Id: <20220127150615.v2.14.I3df48ceacbf299549501a44433039d46e0a275ea@changeid>
 X-Mailer: git-send-email 2.35.0.rc0.227.g00780c9af4-goog
 In-Reply-To: <20220127230727.3369358-1-briannorris@chromium.org>
 References: <20220127230727.3369358-1-briannorris@chromium.org>
@@ -68,109 +68,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Implement the newly-defined properties to allow disabling certain
-power-saving-at-idle features at higher frequencies.
-
-This is a rewritten version of work by Lin Huang <hl@rock-chips.com>.
+This simplifies error-cleanup and remove().
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
-(no changes since v1)
+Changes in v2:
+ - New patch
 
- drivers/devfreq/rk3399_dmc.c | 51 +++++++++++++++++++++++++++++++++---
- 1 file changed, 47 insertions(+), 4 deletions(-)
+ drivers/devfreq/rk3399_dmc.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index c4efbc15cbb1..fc740c1f6747 100644
+index fca9fcbd4249..9615658d04ae 100644
 --- a/drivers/devfreq/rk3399_dmc.c
 +++ b/drivers/devfreq/rk3399_dmc.c
-@@ -55,6 +55,12 @@ struct rk3399_dmcfreq {
- 	unsigned int ddr3_odt_dis_freq;
- 	unsigned int lpddr3_odt_dis_freq;
- 	unsigned int lpddr4_odt_dis_freq;
-+
-+	unsigned int pd_idle_dis_freq;
-+	unsigned int sr_idle_dis_freq;
-+	unsigned int sr_mc_gate_idle_dis_freq;
-+	unsigned int srpd_lite_idle_dis_freq;
-+	unsigned int standby_idle_dis_freq;
- };
- 
- static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-@@ -81,8 +87,25 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 	mutex_lock(&dmcfreq->lock);
- 
- 	if (dmcfreq->regmap_pmu) {
-+		unsigned int odt_pd_arg0 = dmcfreq->odt_pd_arg0;
-+		unsigned int odt_pd_arg1 = dmcfreq->odt_pd_arg1;
- 		unsigned int odt_pd_arg2 = 0;
- 
-+		if (target_rate >= dmcfreq->sr_idle_dis_freq)
-+			odt_pd_arg0 &= ~RK3399_SET_ODT_PD_0_SR_IDLE;
-+
-+		if (target_rate >= dmcfreq->sr_mc_gate_idle_dis_freq)
-+			odt_pd_arg0 &= ~RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE;
-+
-+		if (target_rate >= dmcfreq->standby_idle_dis_freq)
-+			odt_pd_arg0 &= ~RK3399_SET_ODT_PD_0_STANDBY_IDLE;
-+
-+		if (target_rate >= dmcfreq->pd_idle_dis_freq)
-+			odt_pd_arg1 &= ~RK3399_SET_ODT_PD_1_PD_IDLE;
-+
-+		if (target_rate >= dmcfreq->srpd_lite_idle_dis_freq)
-+			odt_pd_arg1 &= ~RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE;
-+
- 		if (target_rate >= dmcfreq->odt_dis_freq)
- 			odt_pd_arg2 |= RK3399_SET_ODT_PD_2_ODT_ENABLE;
- 
-@@ -91,10 +114,9 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
- 		 * (power-down) timings and to enable or disable the
- 		 * ODT (on-die termination) resistors.
- 		 */
--		arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
--			      dmcfreq->odt_pd_arg1,
--			      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
--			      odt_pd_arg2, 0, 0, 0, &res);
-+		arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, odt_pd_arg0, odt_pd_arg1,
-+			      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD, odt_pd_arg2,
-+			      0, 0, 0, &res);
+@@ -401,7 +401,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 	 * We add a devfreq driver to our parent since it has a device tree node
+ 	 * with operating points.
+ 	 */
+-	if (dev_pm_opp_of_add_table(dev)) {
++	if (devm_pm_opp_of_add_table(dev)) {
+ 		dev_err(dev, "Invalid operating-points in device tree.\n");
+ 		ret = -EINVAL;
+ 		goto err_edev;
+@@ -415,7 +415,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 	opp = devfreq_recommended_opp(dev, &data->rate, 0);
+ 	if (IS_ERR(opp)) {
+ 		ret = PTR_ERR(opp);
+-		goto err_free_opp;
++		goto err_edev;
  	}
  
- 	/*
-@@ -230,6 +252,16 @@ static int rk3399_dmcfreq_of_props(struct rk3399_dmcfreq *data,
- {
- 	int ret = 0;
+ 	data->rate = dev_pm_opp_get_freq(opp);
+@@ -430,7 +430,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 					   &data->ondemand_data);
+ 	if (IS_ERR(data->devfreq)) {
+ 		ret = PTR_ERR(data->devfreq);
+-		goto err_free_opp;
++		goto err_edev;
+ 	}
  
-+	/*
-+	 * These are all optional, and serve as minimum bounds. Give them large
-+	 * (i.e., never "disabled") values if the DT doesn't specify one.
-+	 */
-+	data->pd_idle_dis_freq =
-+		data->sr_idle_dis_freq =
-+		data->sr_mc_gate_idle_dis_freq =
-+		data->srpd_lite_idle_dis_freq =
-+		data->standby_idle_dis_freq = UINT_MAX;
-+
- 	ret |= of_property_read_u32(np, "rockchip,pd_idle",
- 				    &data->pd_idle);
- 	ret |= of_property_read_u32(np, "rockchip,sr_idle",
-@@ -247,6 +279,17 @@ static int rk3399_dmcfreq_of_props(struct rk3399_dmcfreq *data,
- 	ret |= of_property_read_u32(np, "rockchip,lpddr4_odt_dis_freq",
- 				    &data->lpddr4_odt_dis_freq);
+ 	devm_devfreq_register_opp_notifier(dev, data->devfreq);
+@@ -440,8 +440,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
  
-+	ret |= of_property_read_u32(np, "rockchip,pd-idle-dis-freq-hz",
-+				    &data->pd_idle_dis_freq);
-+	ret |= of_property_read_u32(np, "rockchip,sr-idle-dis-freq-hz",
-+				    &data->sr_idle_dis_freq);
-+	ret |= of_property_read_u32(np, "rockchip,sr-mc-gate-idle-dis-freq-hz",
-+				    &data->sr_mc_gate_idle_dis_freq);
-+	ret |= of_property_read_u32(np, "rockchip,srpd-lite-idle-dis-freq-hz",
-+				    &data->srpd_lite_idle_dis_freq);
-+	ret |= of_property_read_u32(np, "rockchip,standby-idle-dis-freq-hz",
-+				    &data->standby_idle_dis_freq);
-+
- 	return ret;
+ 	return 0;
+ 
+-err_free_opp:
+-	dev_pm_opp_of_remove_table(&pdev->dev);
+ err_edev:
+ 	devfreq_event_disable_edev(data->edev);
+ 
+@@ -454,12 +452,6 @@ static int rk3399_dmcfreq_remove(struct platform_device *pdev)
+ 
+ 	devfreq_event_disable_edev(dmcfreq->edev);
+ 
+-	/*
+-	 * Before remove the opp table we need to unregister the opp notifier.
+-	 */
+-	devm_devfreq_unregister_opp_notifier(dmcfreq->dev, dmcfreq->devfreq);
+-	dev_pm_opp_of_remove_table(dmcfreq->dev);
+-
+ 	return 0;
  }
  
 -- 
