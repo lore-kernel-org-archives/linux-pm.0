@@ -2,58 +2,58 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3100C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 01:15:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5E3C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 01:15:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232128AbiA0BPC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Jan 2022 20:15:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39230 "EHLO
+        id S232134AbiA0BPF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Jan 2022 20:15:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232720AbiA0BPC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jan 2022 20:15:02 -0500
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB7C6C06173B
-        for <linux-pm@vger.kernel.org>; Wed, 26 Jan 2022 17:15:01 -0800 (PST)
-Received: by mail-lf1-x133.google.com with SMTP id z4so2268037lft.3
-        for <linux-pm@vger.kernel.org>; Wed, 26 Jan 2022 17:15:01 -0800 (PST)
+        with ESMTP id S232206AbiA0BPF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jan 2022 20:15:05 -0500
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD242C06173B
+        for <linux-pm@vger.kernel.org>; Wed, 26 Jan 2022 17:15:04 -0800 (PST)
+Received: by mail-lf1-x12d.google.com with SMTP id o12so2179282lfg.12
+        for <linux-pm@vger.kernel.org>; Wed, 26 Jan 2022 17:15:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=xI1RSZYqgsQ81M8OcAMrVpP/Yu138GU0W7y71VAKSdU=;
-        b=SJlLf/q/PguG7p2Ts0u+C2vBez6/Hr1hNeyjaJoR31YSM5JMH+H04u9VG/k4ZUoaqm
-         3s4gu7illZ0ZhVE8IaFYMV6u0MNjQfKCDuhNqm5JOBOEOENVk/PD1wzNr65YUX2wJfpw
-         4V4GarToXYGSqsvAcnr+8GsVl8b0oVRGHGkeUPIwXRDn9WPgsmQUupH/cV77JUBxF5UZ
-         aXkhQcryblYsxhqFm2jHkq63fH6lBSgmrs/a1tqmLYi5puLAtfmRXKQpwz03QBApRbL0
-         cDjR7rLT/qGQbTWW+3GfTmFPfseNqq9Te7Ksgyt+rVTEt6P9NG/xS19LTgC/ZI+qADkg
-         IcNQ==
+        bh=haRFNa2MOuGGx+qiHY4rYq2fcJJPvI8NSUcWdSM3M9o=;
+        b=ZxBLmP94C2g/0rl+XNyh6ZIQ1WIHp1DCoDrqMU+zlkNlMNH5KTmib/Dy3XCE+LbLXr
+         3ni0qldNPP/pTNNdEij1n9z4g5KX6DW/tlwtrfemRse/h5EXaS28sf0jCIpl9iNO/njj
+         CU/AOSwwiFHa2mru41YsTKZ4pqVfN/P5R5rDxg1Fy71lIY4q/wiY/XEDhmAxJvJhe2L/
+         ZpDwFyGqYqBIdqJHbD5MKRd93VieDLxcs9L1VyvNU4osUV85kK/FWRu4PsMDR5GBUnBf
+         Q2MFmPdUhg3G90sf23HV2k5S9B5+X3EDf2nHndA90fvkb5PmJur6NEfE6U0/7dRURLzM
+         Kn8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=xI1RSZYqgsQ81M8OcAMrVpP/Yu138GU0W7y71VAKSdU=;
-        b=f0ZjAyTICvBfsa7Q0KcLhhjAypwPKVAFrMcOEorvbHquJ/pWOW2TvqZA08fqOaxaiT
-         vYl6H4oVz3FOoPyElzpcHf2VQfg83qaaW9uIa/sRh7AAJBs8UvCewAKDV+2cB8BJBFDC
-         jul/2T5oKasI8jVtIO7tjS4KsDRWYuKq2/zjooOb/h0WvnM0pClHodaw0/y4PcFUxZhf
-         iqjHBXi7PXuag/xim2wsIu6QfQMgpogZ5q8hsjeqJIWoAGpNzbxGWZtL1rC2HG18nbn4
-         dQ4NfJuKtiYzsF10LO0XmlJqJjHUiAlBlD1LvOTnZmoOXjP0TvDLK9QPvysroTvCsoYe
-         /O3w==
-X-Gm-Message-State: AOAM531wgpC1DiWrNxuIFw36XFtqVad5408mtwDuT8MsUMbx9N3ZYTAc
-        rq18umpAlAw1ziOUgFNSgaM5eg==
-X-Google-Smtp-Source: ABdhPJwHa9t452xK7pptztdTSYNzr9G5P31oRlKbz88Fx1uVmdUf/18QY4VIRdp6MP/s33ksUkfHAw==
-X-Received: by 2002:ac2:43ae:: with SMTP id t14mr1140436lfl.599.1643246100136;
-        Wed, 26 Jan 2022 17:15:00 -0800 (PST)
+        bh=haRFNa2MOuGGx+qiHY4rYq2fcJJPvI8NSUcWdSM3M9o=;
+        b=xj41JoMKpL3hgh9zPxIe+pnywAoxAKMbKGpRXB7HUFuUSZg2Cytbxkwuz2gae4CLH+
+         8scjDXH9wUgoNsxY1EAE1fOjGz+5lPE2Aoo/5q/3PzswyA6lL8Vvr3DPK9uc+0k2ZasH
+         X0JvUBmuTxM83BehJcmtTUPu1BqUbCsqgQbABcr4jmYb842lLjqeg8YAfhaC9mBuPHGn
+         okOTCGH+PwvRLSjngkjUjmL+xhVs4B0qYPAzvbJxQR63eITiTHsrBI0OthdiztQhealE
+         pkT0oErNKkjGftbhroxK6BTWXK9rS/lXdjSO/w0oM5IYlWCdwVEg/tLu638SnHqL/EDe
+         PbKg==
+X-Gm-Message-State: AOAM5315eVAAkxTuKZH9gJfuGtN+ExkgrJzw9d4gwYg28ugiMi2rmXO5
+        mKzQ7+XwQteg/jrtMYHH54jsgg==
+X-Google-Smtp-Source: ABdhPJztp4pcWK0oUBNBH0iA2LHgVCrevSIUo1onUQt/yOGNW8a++8eWI5+ARJ9Esgh/SAFdljmtjg==
+X-Received: by 2002:ac2:4e89:: with SMTP id o9mr1276366lfr.246.1643246103170;
+        Wed, 26 Jan 2022 17:15:03 -0800 (PST)
 Received: from localhost.localdomain (c-fdcc225c.014-348-6c756e10.bbcust.telenor.se. [92.34.204.253])
-        by smtp.gmail.com with ESMTPSA id u14sm1028337lji.40.2022.01.26.17.14.59
+        by smtp.gmail.com with ESMTPSA id u14sm1028337lji.40.2022.01.26.17.15.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 26 Jan 2022 17:14:59 -0800 (PST)
+        Wed, 26 Jan 2022 17:15:02 -0800 (PST)
 From:   Linus Walleij <linus.walleij@linaro.org>
 To:     Sebastian Reichel <sre@kernel.org>,
         Marcus Cooper <codekipper@gmail.com>
 Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 08/11] power: supply: ab8500_chargalg: Drop charging step
-Date:   Thu, 27 Jan 2022 02:12:33 +0100
-Message-Id: <20220127011236.332687-9-linus.walleij@linaro.org>
+Subject: [PATCH 10/11] power: supply: ab8500_charger: Restrict ADC retrieveal
+Date:   Thu, 27 Jan 2022 02:12:35 +0100
+Message-Id: <20220127011236.332687-11-linus.walleij@linaro.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220127011236.332687-1-linus.walleij@linaro.org>
 References: <20220127011236.332687-1-linus.walleij@linaro.org>
@@ -63,251 +63,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is a sysfs ABI to change the "charging step" of the
-charger i.e. limit how much we charge from userspace.
-
-Since we don't have any userspace for this code, this sits
-unused and it is not used on production products either.
-
-Drop this code.
+The AB8505 only has two ADC channels: the voltage and current
+provided from VBUS (USB). It does not support AC charging at all.
+Make sure we don't try to retrieve the non-existing channels.
 
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/power/supply/ab8500_chargalg.c | 105 ++-----------------------
- 1 file changed, 6 insertions(+), 99 deletions(-)
+ drivers/power/supply/ab8500_charger.c | 24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/power/supply/ab8500_chargalg.c b/drivers/power/supply/ab8500_chargalg.c
-index bcf85ae6828e..9f9a84ad2da2 100644
---- a/drivers/power/supply/ab8500_chargalg.c
-+++ b/drivers/power/supply/ab8500_chargalg.c
-@@ -46,9 +46,6 @@
- /* Five minutes expressed in seconds */
- #define FIVE_MINUTES_IN_SECONDS        300
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index ce074c018dcb..681b53bb0df0 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -3443,17 +3443,19 @@ static int ab8500_charger_probe(struct platform_device *pdev)
+ 	di->parent = dev_get_drvdata(pdev->dev.parent);
  
--#define CHARGALG_CURR_STEP_LOW_UA	0
--#define CHARGALG_CURR_STEP_HIGH_UA	100000
--
- /*
-  * This is the battery capacity limit that will trigger a new
-  * full charging cycle in the case where maintenance charging
-@@ -86,11 +83,6 @@ struct ab8500_chargalg_suspension_status {
- 	bool usb_suspended;
- };
- 
--struct ab8500_chargalg_current_step_status {
--	bool curr_step_change;
--	int curr_step_ua;
--};
--
- struct ab8500_chargalg_battery_data {
- 	int temp;
- 	int volt_uv;
-@@ -186,8 +178,6 @@ struct ab8500_chargalg_events {
-  * struct ab8500_charge_curr_maximization - Charger maximization parameters
-  * @original_iset_ua:	the non optimized/maximised charger current
-  * @current_iset_ua:	the charging current used at this moment
-- * @test_delta_i_ua:	the delta between the current we want to charge and the
--			current that is really going into the battery
-  * @condition_cnt:	number of iterations needed before a new charger current
- 			is set
-  * @max_current_ua:	maximum charger current
-@@ -200,7 +190,6 @@ struct ab8500_chargalg_events {
- struct ab8500_charge_curr_maximization {
- 	int original_iset_ua;
- 	int current_iset_ua;
--	int test_delta_i_ua;
- 	int condition_cnt;
- 	int max_current_ua;
- 	int wait_cnt;
-@@ -229,7 +218,6 @@ enum maxim_ret {
-  * @batt_data:		data of the battery
-  * @susp_status:	current charger suspension status
-  * @bm:           	Platform specific battery management information
-- * @curr_status:	Current step status for over-current protection
-  * @parent:		pointer to the struct ab8500
-  * @chargalg_psy:	structure that holds the battery properties exposed by
-  *			the charging algorithm
-@@ -255,7 +243,6 @@ struct ab8500_chargalg {
- 	struct ab8500_chargalg_battery_data batt_data;
- 	struct ab8500_chargalg_suspension_status susp_status;
- 	struct ab8500 *parent;
--	struct ab8500_chargalg_current_step_status curr_status;
- 	struct ab8500_bm_data *bm;
- 	struct power_supply *chargalg_psy;
- 	struct ux500_charger *ac_chg;
-@@ -420,22 +407,6 @@ static int ab8500_chargalg_check_charger_connection(struct ab8500_chargalg *di)
- 	return di->chg_info.conn_chg;
- }
- 
--/**
-- * ab8500_chargalg_check_current_step_status() - Check charging current
-- * step status.
-- * @di:		pointer to the ab8500_chargalg structure
-- *
-- * This function will check if there is a change in the charging current step
-- * and change charge state accordingly.
-- */
--static void ab8500_chargalg_check_current_step_status
--	(struct ab8500_chargalg *di)
--{
--	if (di->curr_status.curr_step_change)
--		ab8500_chargalg_state_to(di, STATE_NORMAL_INIT);
--	di->curr_status.curr_step_change = false;
--}
--
- /**
-  * ab8500_chargalg_start_safety_timer() - Start charging safety timer
-  * @di:		pointer to the ab8500_chargalg structure
-@@ -831,7 +802,6 @@ static void init_maxim_chg_curr(struct ab8500_chargalg *di)
- 
- 	di->ccm.original_iset_ua = bi->constant_charge_current_max_ua;
- 	di->ccm.current_iset_ua = bi->constant_charge_current_max_ua;
--	di->ccm.test_delta_i_ua = di->bm->maxi->charger_curr_step_ua;
- 	di->ccm.max_current_ua = di->bm->maxi->chg_curr_ua;
- 	di->ccm.condition_cnt = di->bm->maxi->wait_cycles;
- 	di->ccm.level = 0;
-@@ -862,8 +832,7 @@ static enum maxim_ret ab8500_chargalg_chg_curr_maxim(struct ab8500_chargalg *di)
- 			dev_dbg(di->dev, "lowering current\n");
- 			di->ccm.wait_cnt++;
- 			di->ccm.condition_cnt = di->bm->maxi->wait_cycles;
--			di->ccm.max_current_ua =
--				di->ccm.current_iset_ua - di->ccm.test_delta_i_ua;
-+			di->ccm.max_current_ua = di->ccm.current_iset_ua;
- 			di->ccm.current_iset_ua = di->ccm.max_current_ua;
- 			di->ccm.level--;
- 			return MAXIM_RET_CHANGE;
-@@ -893,29 +862,8 @@ static enum maxim_ret ab8500_chargalg_chg_curr_maxim(struct ab8500_chargalg *di)
- 		return MAXIM_RET_IBAT_TOO_HIGH;
- 	}
- 
--	if (delta_i_ua > di->ccm.test_delta_i_ua &&
--		(di->ccm.current_iset_ua + di->ccm.test_delta_i_ua) <
--		di->ccm.max_current_ua) {
--		if (di->ccm.condition_cnt-- == 0) {
--			/* Increse the iset with cco.test_delta_i */
--			di->ccm.condition_cnt = di->bm->maxi->wait_cycles;
--			di->ccm.current_iset_ua += di->ccm.test_delta_i_ua;
--			di->ccm.level++;
--			dev_dbg(di->dev, " Maximization needed, increase"
--				" with %d uA to %duA (Optimal ibat: %d uA)"
--				" Level %d\n",
--				di->ccm.test_delta_i_ua,
--				di->ccm.current_iset_ua,
--				di->ccm.original_iset_ua,
--				di->ccm.level);
--			return MAXIM_RET_CHANGE;
--		} else {
--			return MAXIM_RET_NOACTION;
--		}
--	}  else {
--		di->ccm.condition_cnt = di->bm->maxi->wait_cycles;
--		return MAXIM_RET_NOACTION;
--	}
-+	di->ccm.condition_cnt = di->bm->maxi->wait_cycles;
-+	return MAXIM_RET_NOACTION;
- }
- 
- static void handle_maxim_chg_curr(struct ab8500_chargalg *di)
-@@ -1302,7 +1250,6 @@ static void ab8500_chargalg_algorithm(struct ab8500_chargalg *di)
- 	struct power_supply_battery_info *bi = di->bm->bi;
- 	int charger_status;
- 	int ret;
--	int curr_step_lvl_ua;
- 
- 	/* Collect data from all power_supply class devices */
- 	class_for_each_device(power_supply_class, NULL,
-@@ -1313,7 +1260,6 @@ static void ab8500_chargalg_algorithm(struct ab8500_chargalg *di)
- 	ab8500_chargalg_check_charger_voltage(di);
- 
- 	charger_status = ab8500_chargalg_check_charger_connection(di);
--	ab8500_chargalg_check_current_step_status(di);
- 
- 	if (is_ab8500(di->parent)) {
- 		ret = ab8500_chargalg_check_charger_enable(di);
-@@ -1511,15 +1457,13 @@ static void ab8500_chargalg_algorithm(struct ab8500_chargalg *di)
- 		break;
- 
- 	case STATE_NORMAL_INIT:
--		if (di->curr_status.curr_step_ua == CHARGALG_CURR_STEP_LOW_UA)
-+		if (bi->constant_charge_current_max_ua == 0)
-+			/* "charging" with 0 uA */
- 			ab8500_chargalg_stop_charging(di);
- 		else {
--			curr_step_lvl_ua = bi->constant_charge_current_max_ua
--				* di->curr_status.curr_step_ua
--				/ CHARGALG_CURR_STEP_HIGH_UA;
- 			ab8500_chargalg_start_charging(di,
- 				bi->constant_charge_voltage_max_uv,
--				curr_step_lvl_ua);
-+				bi->constant_charge_current_max_ua);
- 		}
- 
- 		ab8500_chargalg_state_to(di, STATE_NORMAL);
-@@ -1742,37 +1686,6 @@ static int ab8500_chargalg_get_property(struct power_supply *psy,
- 
- /* Exposure to the sysfs interface */
- 
--static ssize_t ab8500_chargalg_curr_step_show(struct ab8500_chargalg *di,
--					      char *buf)
--{
--	return sprintf(buf, "%d\n", di->curr_status.curr_step_ua);
--}
--
--static ssize_t ab8500_chargalg_curr_step_store(struct ab8500_chargalg *di,
--					       const char *buf, size_t length)
--{
--	long param;
--	int ret;
--
--	ret = kstrtol(buf, 10, &param);
--	if (ret < 0)
+ 	/* Get ADC channels */
+-	di->adc_main_charger_v = devm_iio_channel_get(dev, "main_charger_v");
+-	if (IS_ERR(di->adc_main_charger_v)) {
+-		ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_v),
+-				    "failed to get ADC main charger voltage\n");
 -		return ret;
--
--	di->curr_status.curr_step_ua = param;
--	if (di->curr_status.curr_step_ua >= CHARGALG_CURR_STEP_LOW_UA &&
--		di->curr_status.curr_step_ua <= CHARGALG_CURR_STEP_HIGH_UA) {
--		di->curr_status.curr_step_change = true;
--		queue_work(di->chargalg_wq, &di->chargalg_work);
--	} else
--		dev_info(di->dev, "Wrong current step\n"
--			"Enter 0. Disable AC/USB Charging\n"
--			"1--100. Set AC/USB charging current step\n"
--			"100. Enable AC/USB Charging\n");
--
--	return strlen(buf);
--}
--
--
- static ssize_t ab8500_chargalg_en_show(struct ab8500_chargalg *di,
- 				       char *buf)
- {
-@@ -1832,10 +1745,6 @@ static struct ab8500_chargalg_sysfs_entry ab8500_chargalg_en_charger =
- 	__ATTR(chargalg, 0644, ab8500_chargalg_en_show,
- 				ab8500_chargalg_en_store);
- 
--static struct ab8500_chargalg_sysfs_entry ab8500_chargalg_curr_step =
--	__ATTR(chargalg_curr_step, 0644, ab8500_chargalg_curr_step_show,
--					ab8500_chargalg_curr_step_store);
--
- static ssize_t ab8500_chargalg_sysfs_show(struct kobject *kobj,
- 	struct attribute *attr, char *buf)
- {
-@@ -1868,7 +1777,6 @@ static ssize_t ab8500_chargalg_sysfs_charger(struct kobject *kobj,
- 
- static struct attribute *ab8500_chargalg_chg[] = {
- 	&ab8500_chargalg_en_charger.attr,
--	&ab8500_chargalg_curr_step.attr,
- 	NULL,
- };
- 
-@@ -2057,7 +1965,6 @@ static int ab8500_chargalg_probe(struct platform_device *pdev)
- 		dev_err(di->dev, "failed to create sysfs entry\n");
- 		return ret;
+-	}
+-	di->adc_main_charger_c = devm_iio_channel_get(dev, "main_charger_c");
+-	if (IS_ERR(di->adc_main_charger_c)) {
+-		ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_c),
+-				    "failed to get ADC main charger current\n");
+-		return ret;
++	if (!is_ab8505(di->parent)) {
++		di->adc_main_charger_v = devm_iio_channel_get(dev, "main_charger_v");
++		if (IS_ERR(di->adc_main_charger_v)) {
++			ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_v),
++					    "failed to get ADC main charger voltage\n");
++			return ret;
++		}
++		di->adc_main_charger_c = devm_iio_channel_get(dev, "main_charger_c");
++		if (IS_ERR(di->adc_main_charger_c)) {
++			ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_c),
++					    "failed to get ADC main charger current\n");
++			return ret;
++		}
  	}
--	di->curr_status.curr_step_ua = CHARGALG_CURR_STEP_HIGH_UA;
- 
- 	dev_info(di->dev, "probe success\n");
- 	return component_add(dev, &ab8500_chargalg_component_ops);
+ 	di->adc_vbus_v = devm_iio_channel_get(dev, "vbus_v");
+ 	if (IS_ERR(di->adc_vbus_v)) {
 -- 
 2.34.1
 
