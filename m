@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA5F6C4321E
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51A98C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 23:08:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245606AbiA0XId (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Jan 2022 18:08:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57916 "EHLO
+        id S1343731AbiA0XIf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Jan 2022 18:08:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343699AbiA0XIc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:32 -0500
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0533C061755
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:30 -0800 (PST)
-Received: by mail-pl1-x62c.google.com with SMTP id c3so4214717pls.5
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:30 -0800 (PST)
+        with ESMTP id S1343769AbiA0XIe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jan 2022 18:08:34 -0500
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88DDCC061747
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:34 -0800 (PST)
+Received: by mail-pj1-x102f.google.com with SMTP id my12-20020a17090b4c8c00b001b528ba1cd7so4758169pjb.1
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jan 2022 15:08:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=7h2TqwoqXaEMfjPzv9SF6ZGc4nNnV1XaxjSg49pOxCw=;
-        b=DPUvXSj4gGoUi2PZpwiU9r2MGTNKqUgmF4dU8QpNs/blxOChn/Dp4X5P6uc34QaFaV
-         DOvAxI8yXqbH/50nNHY73T7e0MH2ScJuvKPL2U+RdqfwtNhtdml4RTg/ip02fDK4yYwO
-         +/wg5JzxvX29Bfht/wS7TUy2EGdWPpsb4iBTk=
+        bh=PIXY+sEGqfziH4n+3nglkYpU71hUD2jbkDapelJUYx4=;
+        b=VHdpreI16umQb0mYgJNYwcpXLMOYb9t5rWTJ5lF4m9dkAlOLQJbt8IUssF2/vzGhhu
+         P2J4/IhQS1aBIC7OrTZ1rtXRz+BfKAgWlbPsQXOeqn/lbT032Hn/Q9FuFAS2EqI91NEL
+         qkeLOxEtvhwyVPeocb+jYET3MYH1WQ8LLra/E=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=7h2TqwoqXaEMfjPzv9SF6ZGc4nNnV1XaxjSg49pOxCw=;
-        b=V5wbX1Lld4bpQKmGAoH8kxZNDdQMkfj7UOogNdZTrhAliVAIzfUDqX3G1OUMcTpF4Q
-         ObAul5AMUejkJgMrnEFZ+4l4RNMIjhEomZD1dTB3jgOfo/LdohkgzjVzuXdS20fsmtQv
-         H1gerY1Bul0DsNruShkb7oY28z0Yb3hRieSChpcGaqu3LqpO5J5RitJm2VzKvnVVoJCP
-         7VEb5xRiZTLl1NVN0OqU+p696X2fncs1AOsac337nueRDULC5JNwKRR+O7jlXilRWIt3
-         POIUsJnFUI43xYXazUswvRm2lWt5VllDlkg8Qzb/zHKeMWDaDeEAyJetOPFVWfhKkYp1
-         Lifw==
-X-Gm-Message-State: AOAM530dtnkft/ddR5cCbqvUSyPFhAHkNG/jaJJa3n3cZfV4LR57HoX8
-        aAFPPtFiKNFyVbnGE8nMOaRQ9Q==
-X-Google-Smtp-Source: ABdhPJwF8ZK0wYylhQqNtZ4M2mQnejXec2VevUUW76yQtWHtCIpE5oy0RcA49p/AmsG5dRO59F5mzg==
-X-Received: by 2002:a17:90b:33c6:: with SMTP id lk6mr6586908pjb.213.1643324910342;
-        Thu, 27 Jan 2022 15:08:30 -0800 (PST)
+        bh=PIXY+sEGqfziH4n+3nglkYpU71hUD2jbkDapelJUYx4=;
+        b=kzNmvEYvU37CR1X4DlaLn4EiIVHRbhkMlVPCYZq6loYCsiVRORRSbmj3S8jz1UedaA
+         tcXkoG7ITc1czNO4EQ8l6etOecejNgOcaVm6j0N9C8z3ME10sAe7RciCNGEg0tHduVx7
+         7oAdAVt/NsOeEos7gKnki8r7t9WOqEqav7XmBECUFukpPScKY0mHSgv4XImopBDkxqS4
+         1Gelf3uRGLqCubZxGOFuE2TBbnYwGEW5CxA3bAZ+EfuNo9l+ajuluDWs8cqIFj4Psaox
+         vEAKzIDsjWIWtaQX532O8CAAT6XfRVCdz6d1l7BryFMODQ+eu+LEFOoQ9v9VBDfHf3b/
+         oHbg==
+X-Gm-Message-State: AOAM531sopcX3eKAK2kvKhFl8zZz/T0ey7n+aan3VBoCkbk+MDPCbIwi
+        UlJNGK6O1545x2yxnMQwiXn3RQ==
+X-Google-Smtp-Source: ABdhPJyOEdExuVH8zC2uGNPOjViFehIsUDjflPA1+PxmuS5k/khzsp0p8n9ZntEMyywxRWObRePXqQ==
+X-Received: by 2002:a17:90b:1983:: with SMTP id mv3mr6659930pjb.222.1643324914114;
+        Thu, 27 Jan 2022 15:08:34 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:723d:38a9:9e7f:3435])
-        by smtp.gmail.com with UTF8SMTPSA id h6sm6933258pfc.35.2022.01.27.15.08.29
+        by smtp.gmail.com with UTF8SMTPSA id h10sm4000716pfv.31.2022.01.27.15.08.33
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 27 Jan 2022 15:08:29 -0800 (PST)
+        Thu, 27 Jan 2022 15:08:33 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -56,9 +56,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         Heiko Stuebner <heiko@sntech.de>,
         Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v2 03/15] dt-bindings: devfreq: rk3399_dmc: Fix Hz units
-Date:   Thu, 27 Jan 2022 15:07:14 -0800
-Message-Id: <20220127150615.v2.3.I9341269171c114d0e04e41d48037fd32816e2d8c@changeid>
+Subject: [PATCH v2 05/15] dt-bindings: devfreq: rk3399_dmc: Add more disable-freq properties
+Date:   Thu, 27 Jan 2022 15:07:16 -0800
+Message-Id: <20220127150615.v2.5.I382d4de737198ea52deb118c9bdc4d93d76e009e@changeid>
 X-Mailer: git-send-email 2.35.0.rc0.227.g00780c9af4-goog
 In-Reply-To: <20220127230727.3369358-1-briannorris@chromium.org>
 References: <20220127230727.3369358-1-briannorris@chromium.org>
@@ -68,86 +68,73 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver and all downstream device trees [1] are using Hz units, but
-the document claims MHz. DRAM frequency for these systems can't possibly
-exceed 2^32-1 Hz, so the choice of unit doesn't really matter than much.
-
-Rather than add unnecessary risk in getting the units wrong, let's just
-go with the unofficial convention and make the docs match reality.
-
-A sub-1MHz frequency is extremely unlikely, so include a minimum in the
-schema, to help catch anybody who might have believed this was MHz.
-
-[1] And notably, also those trying to upstream them:
-https://lore.kernel.org/lkml/20210308233858.24741-3-daniel.lezcano@linaro.org/
+DDR DVFS tuning has found that several power-saving features don't have
+good tradeoffs at higher frequencies -- at higher frequencies, we'll see
+glitches or other errors. Provide tuning controls so these can be
+disabled at higher OPPs, and left active only at the lower ones.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
-(no changes since v1)
+Changes in v2:
+ - hyphens, not underscores
+ - *-hz units, and drop the types definition
 
- .../bindings/devfreq/rk3399_dmc.yaml          | 24 +++++++++----------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ .../bindings/devfreq/rk3399_dmc.yaml          | 37 +++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-index fd62a8cd62d5..8bb778df92ae 100644
+index 8786b7fa9b28..afa058c52c0b 100644
 --- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
 +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-@@ -116,11 +116,11 @@ properties:
+@@ -299,6 +299,38 @@ properties:
+       self-refresh mode. The controller, pi, PHY and DRAM clock will be gated
+       if bus is idle for standby_idle nanoseconds.
  
-   rockchip,ddr3_odt_dis_freq:
-     $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1000000  # In case anyone thought this was MHz.
-     description:
-       When the DRAM type is DDR3, this parameter defines the ODT disable
--      frequency in MHz (Mega Hz). When the DDR frequency is less then
--      ddr3_odt_dis_freq, the ODT on the DRAM side and controller side are both
--      disabled.
-+      frequency in Hz. When the DDR frequency is less then ddr3_odt_dis_freq,
-+      the ODT on the DRAM side and controller side are both disabled.
- 
-   rockchip,ddr3_drv:
-     deprecated: true
-@@ -160,11 +160,11 @@ properties:
- 
-   rockchip,lpddr3_odt_dis_freq:
-     $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1000000  # In case anyone thought this was MHz.
-     description:
-       When the DRAM type is LPDDR3, this parameter defines then ODT disable
--      frequency in MHz (Mega Hz). When DDR frequency is less then
--      ddr3_odt_dis_freq, the ODT on the DRAM side and controller side are both
--      disabled.
-+      frequency in Hz. When DDR frequency is less then ddr3_odt_dis_freq, the
-+      ODT on the DRAM side and controller side are both disabled.
- 
-   rockchip,lpddr3_drv:
-     deprecated: true
-@@ -204,11 +204,11 @@ properties:
- 
-   rockchip,lpddr4_odt_dis_freq:
-     $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1000000  # In case anyone thought this was MHz.
-     description:
-       When the DRAM type is LPDDR4, this parameter defines the ODT disable
--      frequency in MHz (Mega Hz). When the DDR frequency is less then
--      ddr3_odt_dis_freq, the ODT on the DRAM side and controller side are both
--      disabled.
-+      frequency in Hz. When the DDR frequency is less then ddr3_odt_dis_freq,
-+      the ODT on the DRAM side and controller side are both disabled.
- 
-   rockchip,lpddr4_drv:
-     deprecated: true
-@@ -287,7 +287,7 @@ examples:
-       rockchip,sr_mc_gate_idle = <0x3>;
-       rockchip,srpd_lite_idle = <0x4>;
-       rockchip,standby_idle = <0x2000>;
--      rockchip,ddr3_odt_dis_freq = <333>;
--      rockchip,lpddr3_odt_dis_freq = <333>;
--      rockchip,lpddr4_odt_dis_freq = <333>;
-+      rockchip,ddr3_odt_dis_freq = <333000000>;
-+      rockchip,lpddr3_odt_dis_freq = <333000000>;
-+      rockchip,lpddr4_odt_dis_freq = <333000000>;
++  rockchip,pd-idle-dis-freq-hz:
++    description:
++      Defines the power-down idle disable frequency in Hz. When the DDR
++      frequency is greater than pd-idle-dis-freq, power-down idle is disabled.
++      See also rockchip,pd-idle-ns.
++
++  rockchip,sr-idle-dis-freq-hz:
++    description:
++      Defines the self-refresh idle disable frequency in Hz. When the DDR
++      frequency is greater than sr-idle-dis-freq, self-refresh idle is
++      disabled. See also rockchip,sr-idle-ns.
++
++  rockchip,sr-mc-gate-idle-dis-freq-hz:
++    description:
++      Defines the self-refresh and memory-controller clock gating disable
++      frequency in Hz. When the DDR frequency is greater than
++      sr-mc-gate-idle-dis-freq, the clock will not be gated when idle. See also
++      rockchip,sr-mc-gate-idle-ns.
++
++  rockchip,srpd-lite-idle-dis-freq-hz:
++    description:
++      Defines the self-refresh power down idle disable frequency in Hz. When
++      the DDR frequency is greater than srpd-lite-idle-dis-freq, memory will
++      not be placed into self-refresh power down mode when idle. See also
++      rockchip,srpd-lite-idle-ns.
++
++  rockchip,standby-idle-dis-freq-hz:
++    description:
++      Defines the standby idle disable frequency in Hz. When the DDR frequency
++      is greater than standby-idle-dis-freq, standby idle is disabled. See also
++      rockchip,standby-idle-ns.
++
+ required:
+   - compatible
+   - devfreq-events
+@@ -330,4 +362,9 @@ examples:
+       rockchip,ddr3_odt_dis_freq = <333000000>;
+       rockchip,lpddr3_odt_dis_freq = <333000000>;
+       rockchip,lpddr4_odt_dis_freq = <333000000>;
++      rockchip,pd-idle-dis-freq-hz = <1000000000>;
++      rockchip,sr-idle-dis-freq-hz = <1000000000>;
++      rockchip,sr-mc-gate-idle-dis-freq-hz = <1000000000>;
++      rockchip,srpd-lite-idle-dis-freq-hz = <0>;
++      rockchip,standby-idle-dis-freq-hz = <928000000>;
      };
 -- 
 2.35.0.rc0.227.g00780c9af4-goog
