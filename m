@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26011C4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88AF0C35268
 	for <linux-pm@archiver.kernel.org>; Thu, 27 Jan 2022 19:33:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245614AbiA0TdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S245621AbiA0TdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 27 Jan 2022 14:33:10 -0500
-Received: from mga04.intel.com ([192.55.52.120]:47240 "EHLO mga04.intel.com"
+Received: from mga18.intel.com ([134.134.136.126]:40872 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S245568AbiA0TdH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Jan 2022 14:33:07 -0500
+        id S245576AbiA0TdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Jan 2022 14:33:08 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643311987; x=1674847987;
+  t=1643311988; x=1674847988;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=HWFixSIfnxp0SG7pO69qcVjsPaKBwAhzJyrz/TsLEqw=;
-  b=SJ5urMLNuAKBc2IkCQdhpMUi+Es3qLksLF2oQBMl4Q9/m5crdPK8gQ+y
-   mEMi/WYjVrsb8KroKUSEmoCcGbBqYG9xQOrJGkaAqj0SIucnaJvwdLiIw
-   rIg9RhtVPTxMbBGMjNQHfI5vHvm7V79NOMvV2g7FOH+Nfe9wj/aSxvu1Y
-   EkTvDbPKi++EdGu+pZM4f1p29kwKheLnxXevQov7mR72+VH47D50oD5AK
-   ayehXs1EvmGCNTXTmzekMncv0jVi7Nzrkebp2Oq6vXKjw7GYJAJpt+/Eg
-   +KfGtQcuh6b8oWwrZHUTSiMC2gCzOmMM9rwsyr96Kn3KVZN1NNhP8H++j
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10239"; a="245788382"
+  bh=xnRbqa6BTbe8guUhq0yIR4wviwt5NP1PbDC58oVK8CA=;
+  b=cPr6VT8tA0v/OUgCnPqcuWHS+ppv85kEljmLje9+7tV5K+p63pD3clXt
+   UepmducfWS4M2o+8+8Wdten/oiaUE2/HPQ4Zj0VpwCpmflRrXA9LSLrYv
+   TzjcFnzkBSTOwycYJsGUsBpQiMCudx7mZTvMgyX88tMFZY3beMBnFTUJQ
+   Kmv648Z24h3o3iFb4c2ZmpxVhVSidDU5v2Z3X9t9D4yYWzF66xA14T0cy
+   jsIJ/n3c5yTm2EBvYIVi17guNUjGHNCFH0XID1HGf/B/9gJqF7pKVQILY
+   3hPC0xkDKhw+MYZUJ1klGHHIdBQAcpN9ZuCUY90NvIwtR0OWNx4N00/ZQ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10239"; a="230522679"
 X-IronPort-AV: E=Sophos;i="5.88,321,1635231600"; 
-   d="scan'208";a="245788382"
+   d="scan'208";a="230522679"
 Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2022 11:33:03 -0800
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2022 11:33:07 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.88,321,1635231600"; 
-   d="scan'208";a="495844885"
+   d="scan'208";a="495844934"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by orsmga002.jf.intel.com with ESMTP; 27 Jan 2022 11:33:01 -0800
+  by orsmga002.jf.intel.com with ESMTP; 27 Jan 2022 11:33:06 -0800
 From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -48,11 +48,10 @@ Cc:     x86@kernel.org, linux-doc@vger.kernel.org,
         Lukasz Luba <lukasz.luba@arm.com>,
         "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
         Ricardo Neri <ricardo.neri@intel.com>,
-        linux-kernel@vger.kernel.org,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Subject: [PATCH v5 1/7] x86/Documentation: Describe the Intel Hardware Feedback Interface
-Date:   Thu, 27 Jan 2022 11:34:48 -0800
-Message-Id: <20220127193454.12814-2-ricardo.neri-calderon@linux.intel.com>
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v5 7/7] thermal: intel: hfi: Notify user space for HFI events
+Date:   Thu, 27 Jan 2022 11:34:54 -0800
+Message-Id: <20220127193454.12814-8-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220127193454.12814-1-ricardo.neri-calderon@linux.intel.com>
 References: <20220127193454.12814-1-ricardo.neri-calderon@linux.intel.com>
@@ -60,20 +59,43 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Start a documentation file to describe the purpose and operation of Intel's
-Hardware Feedback Interface. Describe how this interface is used in Linux
-to relay performance and energy efficiency updates to userspace.
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+When the hardware issues an HFI event, relay a notification to user space.
+This allows user space to respond by reading performance and efficiency of
+each CPU and take appropriate action.
+
+For example, when the performance and efficiency of a CPU is 0, user space
+can either offline the CPU or inject idle. Also, if user space notices a
+downward trend in performance, it may proactively adjust power limits to
+avoid future situations in which performance drops to 0.
+
+To avoid excessive notifications, the rate is limited by one HZ per event.
+To limit the netlink message size, send parameters for up to 16 CPUs in a
+single message. If there are more than 16 CPUs, issue as many messages as
+needed to notify the status of all CPUs.
+
+In the HFI specification, both performance and efficiency capabilities are
+defined in the [0, 255] range. The existing implementations of HFI hardware
+do not scale the maximum values to 255. Since userspace cares about
+capability values that are either 0 or show a downward/upward trend, this
+fact does not matter much. Relative changes in capabilities are enough. To
+comply with the thermal netlink ABI, scale both performance and efficiency
+capabilities to the [0, 1023] interval.
 
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Aubrey Li <aubrey.li@linux.intel.com>
+Cc: Lukasz Luba <lukasz.luba@arm.com>
 Cc: Tim Chen <tim.c.chen@linux.intel.com>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Reviewed-by: Len Brown <len.brown@intel.com>
-Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
 Changes since v4:
-  * None
+  * Reworked parsing of HFI capabilities into chunks of
+    HFI_MAX_THERM_NOTIFY_COUNT CPUs at a time to reduce the time
+    we spend with interrupts disabled. (Srinivas)
+  * Protected hfi_instance::cpus when iterating over them. (Rafael)
 
 Changes since v3:
   * None
@@ -82,104 +104,133 @@ Changes since v2:
   * None
 
 Changes since v1:
-  * Clarified that HFI capabilities are independent. (Daniel)
-  * Provided examples on changes reflected in the HFI table. (Daniel)
+  * Made get_one_hfi_cap() return void. Removed unnecessary checks.
+    (Rafael)
+  * Replaced raw_spin_[un]lock_irq[restore|save]() with raw_spin_
+    [un]lock_irq() in get_one_hfi_cap(). This function is only called from
+    a workqueue and there is no need to save and restore irq flags.
+  * Scaled performance and energy efficiency values to a [0, 1023] interval
+    when reporting values to user space via thermal netlink notifications.
+    (Lucasz).
+  * Reworded commit message to comment on the scaling of HFI capabilities
+    to comply with the proposed thermal netlink ABI.
 ---
- Documentation/x86/index.rst     |  1 +
- Documentation/x86/intel-hfi.rst | 72 +++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+)
- create mode 100644 Documentation/x86/intel-hfi.rst
+ drivers/thermal/intel/Kconfig     |  1 +
+ drivers/thermal/intel/intel_hfi.c | 75 ++++++++++++++++++++++++++++++-
+ 2 files changed, 75 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/x86/index.rst b/Documentation/x86/index.rst
-index f498f1d36cd3..982c8af853b9 100644
---- a/Documentation/x86/index.rst
-+++ b/Documentation/x86/index.rst
-@@ -21,6 +21,7 @@ x86-specific Documentation
-    tlb
-    mtrr
-    pat
-+   intel-hfi
-    intel-iommu
-    intel_txt
-    amd-memory-encryption
-diff --git a/Documentation/x86/intel-hfi.rst b/Documentation/x86/intel-hfi.rst
-new file mode 100644
-index 000000000000..49dea58ea4fb
---- /dev/null
-+++ b/Documentation/x86/intel-hfi.rst
-@@ -0,0 +1,72 @@
-+.. SPDX-License-Identifier: GPL-2.0
+diff --git a/drivers/thermal/intel/Kconfig b/drivers/thermal/intel/Kconfig
+index e9d2925227d4..6cf3fe36a4ae 100644
+--- a/drivers/thermal/intel/Kconfig
++++ b/drivers/thermal/intel/Kconfig
+@@ -104,6 +104,7 @@ config INTEL_HFI_THERMAL
+ 	bool "Intel Hardware Feedback Interface"
+ 	depends on CPU_SUP_INTEL
+ 	depends on X86_THERMAL_VECTOR
++	select THERMAL_NETLINK
+ 	help
+ 	  Select this option to enable the Hardware Feedback Interface. If
+ 	  selected, hardware provides guidance to the operating system on
+diff --git a/drivers/thermal/intel/intel_hfi.c b/drivers/thermal/intel/intel_hfi.c
+index 7a2b750eecc4..730fd121df6e 100644
+--- a/drivers/thermal/intel/intel_hfi.c
++++ b/drivers/thermal/intel/intel_hfi.c
+@@ -40,6 +40,7 @@
+ 
+ #include <asm/msr.h>
+ 
++#include "../thermal_core.h"
+ #include "intel_hfi.h"
+ 
+ #define THERM_STATUS_CLEAR_PKG_MASK (BIT(1) | BIT(3) | BIT(5) | BIT(7) | \
+@@ -163,6 +164,78 @@ static DEFINE_MUTEX(hfi_instance_lock);
+ 
+ static struct workqueue_struct *hfi_updates_wq;
+ #define HFI_UPDATE_INTERVAL		HZ
++#define HFI_MAX_THERM_NOTIFY_COUNT	16
 +
-+============================================================
-+Hardware-Feedback Interface for scheduling on Intel Hardware
-+============================================================
++static void get_hfi_caps(struct hfi_instance *hfi_instance,
++			 struct thermal_genl_cpu_caps *cpu_caps)
++{
++	int cpu, i = 0;
 +
-+Overview
-+--------
++	raw_spin_lock_irq(&hfi_instance->table_lock);
++	for_each_cpu(cpu, hfi_instance->cpus) {
++		struct hfi_cpu_data *caps;
++		s16 index;
 +
-+Intel has described the Hardware Feedback Interface (HFI) in the Intel 64 and
-+IA-32 Architectures Software Developer's Manual (Intel SDM) Volume 3 Section
-+14.6 [1]_.
++		index = per_cpu(hfi_cpu_info, cpu).index;
++		caps = hfi_instance->data + index * hfi_features.cpu_stride;
++		cpu_caps[i].cpu = cpu;
 +
-+The HFI gives the operating system a performance and energy efficiency
-+capability data for each CPU in the system. Linux can use the information from
-+the HFI to influence task placement decisions.
++		/*
++		 * Scale performance and energy efficiency to
++		 * the [0, 1023] interval that thermal netlink uses.
++		 */
++		cpu_caps[i].performance = caps->perf_cap << 2;
++		cpu_caps[i].efficiency = caps->ee_cap << 2;
 +
-+The Hardware Feedback Interface
-+-------------------------------
++		++i;
++	}
++	raw_spin_unlock_irq(&hfi_instance->table_lock);
++}
 +
-+The Hardware Feedback Interface provides to the operating system information
-+about the performance and energy efficiency of each CPU in the system. Each
-+capability is given as a unit-less quantity in the range [0-255]. Higher values
-+indicate higher capability. Energy efficiency and performance are reported in
-+separate capabilities. Even though on some systems these two metrics may be
-+related, they are specified as independent capabilities in the Intel SDM.
++/*
++ * Call update_capabilities() when there are changes in the HFI table.
++ */
++static void update_capabilities(struct hfi_instance *hfi_instance)
++{
++	struct thermal_genl_cpu_caps *cpu_caps;
++	int i = 0, cpu_count;
 +
-+These capabilities may change at runtime as a result of changes in the
-+operating conditions of the system or the action of external factors. The rate
-+at which these capabilities are updated is specific to each processor model. On
-+some models, capabilities are set at boot time and never change. On others,
-+capabilities may change every tens of milliseconds. For instance, a remote
-+mechanism may be used to lower Thermal Design Power. Such change can be
-+reflected in the HFI. Likewise, if the system needs to be throttled due to
-+excessive heat, the HFI may reflect reduced performance on specific CPUs.
++	/* CPUs may come online/offline while processing an HFI update. */
++	mutex_lock(&hfi_instance_lock);
 +
-+The kernel or a userspace policy daemon can use these capabilities to modify
-+task placement decisions. For instance, if either the performance or energy
-+capabilities of a given logical processor becomes zero, it is an indication that
-+the hardware recommends to the operating system to not schedule any tasks on
-+that processor for performance or energy efficiency reasons, respectively.
++	cpu_count = cpumask_weight(hfi_instance->cpus);
 +
-+Implementation details for Linux
-+--------------------------------
++	/* No CPUs to report in this hfi_instance. */
++	if (!cpu_count)
++		goto out;
 +
-+The infrastructure to handle thermal event interrupts has two parts. In the
-+Local Vector Table of a CPU's local APIC, there exists a register for the
-+Thermal Monitor Register. This register controls how interrupts are delivered
-+to a CPU when the thermal monitor generates and interrupt. Further details
-+can be found in the Intel SDM Vol. 3 Section 10.5 [1]_.
++	cpu_caps = kcalloc(cpu_count, sizeof(*cpu_caps), GFP_KERNEL);
++	if (!cpu_caps)
++		goto out;
 +
-+The thermal monitor may generate interrupts per CPU or per package. The HFI
-+generates package-level interrupts. This monitor is configured and initialized
-+via a set of machine-specific registers. Specifically, the HFI interrupt and
-+status are controlled via designated bits in the IA32_PACKAGE_THERM_INTERRUPT
-+and IA32_PACKAGE_THERM_STATUS registers, respectively. There exists one HFI
-+table per package. Further details can be found in the Intel SDM Vol. 3
-+Section 14.9 [1]_.
++	get_hfi_caps(hfi_instance, cpu_caps);
 +
-+The hardware issues an HFI interrupt after updating the HFI table and is ready
-+for the operating system to consume it. CPUs receive such interrupt via the
-+thermal entry in the Local APIC's Local Vector Table.
++	if (cpu_count < HFI_MAX_THERM_NOTIFY_COUNT)
++		goto last_cmd;
 +
-+When servicing such interrupt, the HFI driver parses the updated table and
-+relays the update to userspace using the thermal notification framework. Given
-+that there may be many HFI updates every second, the updates relayed to
-+userspace are throttled at a rate of CONFIG_HZ jiffies.
++	/* Process complete chunks of HFI_MAX_THERM_NOTIFY_COUNT capabilities. */
++	for (i = 0;
++	     (i + HFI_MAX_THERM_NOTIFY_COUNT) <= cpu_count;
++	     i += HFI_MAX_THERM_NOTIFY_COUNT)
++		thermal_genl_cpu_capability_event(HFI_MAX_THERM_NOTIFY_COUNT,
++						  &cpu_caps[i]);
 +
-+References
-+----------
++	cpu_count = cpu_count - i;
 +
-+.. [1] https://www.intel.com/sdm
++last_cmd:
++	/* Process the remaining capabilities if any. */
++	if (cpu_count)
++		thermal_genl_cpu_capability_event(cpu_count, &cpu_caps[i]);
++
++	kfree(cpu_caps);
++out:
++	mutex_unlock(&hfi_instance_lock);
++}
+ 
+ static void hfi_update_work_fn(struct work_struct *work)
+ {
+@@ -173,7 +246,7 @@ static void hfi_update_work_fn(struct work_struct *work)
+ 	if (!hfi_instance)
+ 		return;
+ 
+-	/* TODO: Consume update here. */
++	update_capabilities(hfi_instance);
+ }
+ 
+ void intel_hfi_process_event(__u64 pkg_therm_status_msr_val)
 -- 
 2.17.1
 
