@@ -2,184 +2,174 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0044C4332F
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:10:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A72FBC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:36:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233894AbiA1QKN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jan 2022 11:10:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38394 "EHLO
+        id S1350100AbiA1QgF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jan 2022 11:36:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229482AbiA1QKM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:10:12 -0500
-Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8628C061714
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:12 -0800 (PST)
-Received: by mail-qk1-x72d.google.com with SMTP id g145so5962634qke.3
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:12 -0800 (PST)
+        with ESMTP id S1350098AbiA1QgF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:36:05 -0500
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3888BC06173B
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:05 -0800 (PST)
+Received: by mail-wr1-x42a.google.com with SMTP id w11so11938056wra.4
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=g6Z+hYT1u5UZ26dl63lvlyPiTNCs69Y2+JHCq1qS3cQ=;
-        b=MK7mrTpGrkTcTh6pcyG6s2WEkE5djiIcZDpBSYAFz1V+eU4ohxamgVf/LzAaaJkHCr
-         1QlIOl6KJYVb919xVWC26dvDhFs+D5z/DwEJjuUWLJrXPnBrNZ/KfWWOUNeQ+5Vr20Hn
-         rRjl2rXYqYfFUKLNjFicF6Bryhsk+yqVsjhXHdpYZEHSS/oCH9p9OYpTpUJHGMYv0vDd
-         lWt7o1Dz+SHcd+vP7/cehITWmYMN973COJhzPgTiUMj+rY9jKcAMwDw61qwUvKjiJXRG
-         xikldfqynAAfccLzH/z0FVnKO9K3tbNy/ck4w5MzvQxNGg90T+ZL3wxUAp45rDprtFhx
-         sFOw==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5TceRxuk2fQE3djY5Tb2lWnPhhHwofkfTcUwbKOvdyI=;
+        b=vVmuf7RRpu6VRa3zvcn34asve1SGLN1cn1oojFVCC8TyE9u/WYi73McT7s7ILNZTm8
+         /ajq4N/os8jZxw8vHpVU8abJUGIMc5jlKNVoyDI/vGt2V8VGwh/0Lr39qN3RTrfYfLk5
+         kR5dmJpuV6tdIMDnvYjkP9529o7VrRgJ1XQ4N0B1MAMKulxa93lh6ynqc4+YKF//AxZW
+         GuwY7wcMJc3cQx/C2ytNiMU0LtK+8zgtdF74OsullakR6JOv1C9RUy2j4+LzXbFIJ5jK
+         CddXGIYwiHcxw8Yy5+M9CCUczk4RSlDNFGRKTyX8TNnXgEHmsDoRnIoYehKbuZZePbAp
+         hu1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=g6Z+hYT1u5UZ26dl63lvlyPiTNCs69Y2+JHCq1qS3cQ=;
-        b=pJZ70QoSQk5hGEmws1wYp+9kFj3SxDGjJnYDvXvOCD5dCjWQL9vPENU/DCLMlBhd4y
-         bxi10UgNm/RcfCq/4b87CnF7h6Oa34Zc00lCmTDMYuoZHUzS5DUM06BQHY1ztEMpyL46
-         UqGB/rwifcZ67VEWB+2qH+X93OsLAf6heW37ZBZuitgRsf6fhQ3olNq3gPV2LbFDTgZs
-         DHdTiCDn9fSUIUtUtpM+I4kLmtHpmFXR7+Ro0QzZZkjGrIcN3ia3TULPEM7l8z4NfFeY
-         JrbAaj28uvHdQuqFaBHDn8dlm+nUFWzGANy9EPxQsbpmQH2yGqRAXmKvTRuaq/82XE9a
-         XaqA==
-X-Gm-Message-State: AOAM533YSem6cCZ8reG4/V6kMsb8eSD9QU1bIqvC9WSiQiPXv2T7BWjQ
-        0Ts8F2Qh5EfiqI0T+h7ZtfzXYg==
-X-Google-Smtp-Source: ABdhPJwDXY0bPJD+HljavRzOmarkBqbFmjPs9dBryPB309LQkBN+UM5XNdoM4DT7g9teG49laMSeMg==
-X-Received: by 2002:a05:620a:578:: with SMTP id p24mr6310556qkp.430.1643386211791;
-        Fri, 28 Jan 2022 08:10:11 -0800 (PST)
-Received: from sagittarius-a.sqcorp.co (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
-        by smtp.gmail.com with ESMTPSA id o21sm3339006qtv.68.2022.01.28.08.10.10
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5TceRxuk2fQE3djY5Tb2lWnPhhHwofkfTcUwbKOvdyI=;
+        b=Yh364syhcXrZ6Odo1tamP5RsuK0BiQhO2ZxamsVWPlaK9wx0sYny9SD6R/DI4B/lFk
+         GdTYVjn92yM+x9F3+ZR30Vswxwk0mruby+kmmveEIQpTAPT7NM1KF4NsJH8WSbjFm+zt
+         oC6jsDZDNCZVa4QXoUsX3YGH/BA67o8Nk1M/kIQl0ReLSPmunWuWUOdzsid9CK+gBhjB
+         qDSN3dmly5WNJcXPBo69FDDrku2KHnMK8wAzt8awSFv/+RhV7JJrHd7hYoGTbnmTAkO1
+         vijyQEV9fqMvSEAxNm6o4kVT8E8yzcilEX88eQT5JdoDVPHRZs0yXmAhOXZvfGANgClu
+         BZSg==
+X-Gm-Message-State: AOAM531NdhivEFeiZsnIYTN9Hb2JtEgCJ/Z2GGkTI0/77Ru5ICV5z/Lc
+        ulwMrdNBfjOtiSoSB9tvyXkJbg==
+X-Google-Smtp-Source: ABdhPJwlsnRDe760kCFZnGg4E9DX6U0EsgF0aATukMI2rRQ99YHdR6TiAPpD6lc6K2xCeDCbMdqzFQ==
+X-Received: by 2002:adf:ee86:: with SMTP id b6mr7934942wro.373.1643387763678;
+        Fri, 28 Jan 2022 08:36:03 -0800 (PST)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:f39:b962:8b8e:9851])
+        by smtp.gmail.com with ESMTPSA id m6sm5734745wrw.54.2022.01.28.08.36.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Jan 2022 08:10:11 -0800 (PST)
-From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-To:     djakov@kernel.org, bjorn.andersson@linaro.org, agross@kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     jun.nie@linaro.org, shawn.guo@linaro.org, benl@squareup.com,
-        dmitry.baryshkov@linaro.org, bryan.odonoghue@linaro.org
-Subject: [PATCH 2/3] interconnect: qcom: msm8939: Merge snoc and snoc_mm into one
-Date:   Fri, 28 Jan 2022 16:10:01 +0000
-Message-Id: <20220128161002.2308563-3-bryan.odonoghue@linaro.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20220128161002.2308563-1-bryan.odonoghue@linaro.org>
-References: <20220128161002.2308563-1-bryan.odonoghue@linaro.org>
+        Fri, 28 Jan 2022 08:36:02 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc:     heiko@sntech.de, robh@kernel.org, lukasz.luba@arm.com,
+        arnd@linaro.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v8 0/6] powercap/drivers/dtpm: Create the dtpm hierarchy
+Date:   Fri, 28 Jan 2022 17:35:32 +0100
+Message-Id: <20220128163537.212248-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current msm8939 snoc and snoc_mm definitions are represented as
-separate entities based on downstream definition which declares two
-identical and therefore overlapping mmio regions.
+The DTPM hierarchy is the base to build on top of it a power budget allocator.
+It reflects the power consumption of the group of devices and allows to cap
+their power.
 
-Downstream:
-reg = <0x580000 0x14080>,
-      <0x580000 0x14080>;
-reg-names = "snoc-base", "snoc-mm-base";
+The core code is there but there is no way to describe the desired hierarchy
+yet.
 
-Upstream:
-snoc: interconnect@580000 {
-        compatible = "qcom,msm8939-snoc";
-        #interconnect-cells = <1>;
-        reg = <0x580000 0x14080>;
-        clock-names = "bus", "bus_a";
-        clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-                 <&rpmcc RPM_SMD_SNOC_A_CLK>;
-        status = "okay";
-};
+A first proposal introduced the description through configfs [1] but was
+rejected [2].
 
-snoc: interconnect@580000 {
-        compatible = "qcom,msm8939-snoc_mm";
-        #interconnect-cells = <1>;
-        reg = <0x580000 0x14080>;
-        clock-names = "bus", "bus_a",
-        clocks = <&rpmcc RPM_SMD_SYSMMNOC_CLK>,
-                 <&rpmcc RPM_SMD_SYSMMNOC_A_CLK>;
-        status = "okay";
-};
+A second proposal based on the device tree with a binding similar to the power
+domains [3] was proposed but finally rejected [4].
 
-This overlapping declaration leads to the following failure on boot.
+This version delegates the hierarchy creation to the SoC with a specific and
+self-encapsulated code using an array to describe the tree. The SoC DTPM driver
+defines an array of nodes pointing to their parents.  The hierarchy description
+can integrate a DT node and in the future a SCMI node, that means the
+description can mix different type of nodes.
 
-[    1.212340] qnoc-msm8939 580000.interconnect_mm: can't request region for resource [mem 0x00580000-0x0059407f]
-[    1.212391] qnoc-msm8939 580000.interconnect_mm: Cannot ioremap interconnect bus resource
-[    1.221524] qnoc-msm8939: probe of 580000.interconnect_mm failed with error -16
+As the DTPM tree depends on different devices which could be modules, the SoC
+specific description must always be compiled as a module and describe the
+module softdeps in order to let the userspace to handle proper loading
+ordering.
 
-snoc_mm is a complete misnomer though, as there is no distinct register
-space, simply an additional clock to drive higher frequences on snoc for
-new multi-media 'mm' devices tacked on to the old msm8916 snoc.
+In addition to the hierarchy creation, the devfreq dtpm support is also
+integrated into this series.
 
-The difference can be captured with
+This series was tested on a rock960 (revision B - rk3399 based) and a db845c
+(Qualcomm sdm845 based).
 
-- A new clock
-- Performance points/clock settings in the relevant multi-media devices.
+[1] https://lore.kernel.org/all/20210401183654.27214-1-daniel.lezcano@linaro.org/
+[2] https://lore.kernel.org/all/YGYg6ZeZ1181%2FpXk@kroah.com/
+[3] https://lore.kernel.org/all/20211205231558.779698-1-daniel.lezcano@linaro.org/
+[4] https://lore.kernel.org/all/YbfFapsmsjs4qnsg@robh.at.kernel.org/
 
-Fix the above bug by representing snoc_mm as two new clocks to the existing
-snoc, not a separate interconnect bus.
+Changelog:
+   V8:
+   - Add '/* sentinel */' in the last array entry
+   - Remove Panfrost dependency in the dtpm rockchip module's Kconfig
 
-Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
----
- drivers/interconnect/qcom/msm8939.c | 30 +++++------------------------
- 1 file changed, 5 insertions(+), 25 deletions(-)
+   V7:
+   - Added a couple of comments if a node in the hierarchy fails to create
+   - Fixed a double free in dtpm_devfreq in the error path
 
-diff --git a/drivers/interconnect/qcom/msm8939.c b/drivers/interconnect/qcom/msm8939.c
-index d188f3636e4c3..7030911e25adc 100644
---- a/drivers/interconnect/qcom/msm8939.c
-+++ b/drivers/interconnect/qcom/msm8939.c
-@@ -1271,25 +1271,6 @@ static struct qcom_icc_node *msm8939_snoc_nodes[] = {
- 	[SNOC_INT_BIMC] = &snoc_int_bimc,
- 	[SNOC_PCNOC_MAS] = &snoc_pcnoc_mas,
- 	[SNOC_QDSS_INT] = &qdss_int,
--};
--
--static const struct regmap_config msm8939_snoc_regmap_config = {
--	.reg_bits	= 32,
--	.reg_stride	= 4,
--	.val_bits	= 32,
--	.max_register	= 0x14080,
--	.fast_io	= true,
--};
--
--static struct qcom_icc_desc msm8939_snoc = {
--	.type = QCOM_ICC_NOC,
--	.nodes = msm8939_snoc_nodes,
--	.num_nodes = ARRAY_SIZE(msm8939_snoc_nodes),
--	.regmap_cfg = &msm8939_snoc_regmap_config,
--	.qos_offset = 0x7000,
--};
--
--static struct qcom_icc_node *msm8939_snoc_mm_nodes[] = {
- 	[MASTER_VIDEO_P0] = &mas_video,
- 	[MASTER_JPEG] = &mas_jpeg,
- 	[MASTER_VFE] = &mas_vfe,
-@@ -1301,7 +1282,7 @@ static struct qcom_icc_node *msm8939_snoc_mm_nodes[] = {
- 	[SNOC_MM_INT_2] = &mm_int_2,
- };
- 
--static const struct regmap_config msm8939_snoc_mm_regmap_config = {
-+static const struct regmap_config msm8939_snoc_regmap_config = {
- 	.reg_bits	= 32,
- 	.reg_stride	= 4,
- 	.val_bits	= 32,
-@@ -1309,11 +1290,11 @@ static const struct regmap_config msm8939_snoc_mm_regmap_config = {
- 	.fast_io	= true,
- };
- 
--static struct qcom_icc_desc msm8939_snoc_mm = {
-+static struct qcom_icc_desc msm8939_snoc = {
- 	.type = QCOM_ICC_NOC,
--	.nodes = msm8939_snoc_mm_nodes,
--	.num_nodes = ARRAY_SIZE(msm8939_snoc_mm_nodes),
--	.regmap_cfg = &msm8939_snoc_mm_regmap_config,
-+	.nodes = msm8939_snoc_nodes,
-+	.num_nodes = ARRAY_SIZE(msm8939_snoc_nodes),
-+	.regmap_cfg = &msm8939_snoc_regmap_config,
- 	.qos_offset = 0x7000,
- };
- 
-@@ -1420,7 +1401,6 @@ static const struct of_device_id msm8939_noc_of_match[] = {
- 	{ .compatible = "qcom,msm8939-bimc", .data = &msm8939_bimc },
- 	{ .compatible = "qcom,msm8939-pcnoc", .data = &msm8939_pcnoc },
- 	{ .compatible = "qcom,msm8939-snoc", .data = &msm8939_snoc },
--	{ .compatible = "qcom,msm8939-snoc-mm", .data = &msm8939_snoc_mm },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, msm8939_noc_of_match);
+   V6:
+   - Switched the init table to a subsystem arrays
+   - Checked 'setup' function is set before calling it
+   - Moved out of the loop the 'of_node_put'
+   - Explicitely add DTPM_NODE_VIRTUAL in documentation
+   - Moved powercap_register_control_type() into the hierarchy creation function
+   - Removed the sdm845 description
+   - Made rk3399 always as a module and added module softdeps
+
+   V5:
+   - Remove DT bindings
+   - Added description with an array
+   - Added simple description for rk3399 and sdm845
+   - Moved dtpm table to the data section
+
+   V4:
+   - Added missing powerzone-cells
+   - Changed powerzone name to comply with the pattern property
+
+   V3:
+   - Remove GPU section as no power is available (yet)
+   - Remove '#powerzone-cells' conforming to the bindings change
+   - Removed required property 'compatible'
+   - Removed powerzone-cells from the topmost node
+   - Removed powerzone-cells from cpus 'consumers' in example
+   - Set additionnal property to false
+
+   V2:
+   - Added pattern properties and stick to powerzone-*
+   - Added required property compatible and powerzone-cells
+   - Added additionnal property
+   - Added compatible
+   - Renamed to 'powerzones'
+   - Added missing powerzone-cells to the topmost node
+   - Fixed errors reported by 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+   - Move description in the SoC dtsi specific file
+   - Fixed missing prototype warning reported by lkp@
+
+   V1: Initial post
+
+Daniel Lezcano (5):
+  powercap/drivers/dtpm: Convert the init table section to a simple
+    array
+  powercap/drivers/dtpm: Add hierarchy creation
+  powercap/drivers/dtpm: Add CPU DT initialization support
+  powercap/drivers/dtpm: Add dtpm devfreq with energy model support
+  rockchip/soc/drivers: Add DTPM description for rk3399
+
+ drivers/powercap/Kconfig          |   8 ++
+ drivers/powercap/Makefile         |   1 +
+ drivers/powercap/dtpm.c           | 192 +++++++++++++++++++++++++++-
+ drivers/powercap/dtpm_cpu.c       |  41 ++++--
+ drivers/powercap/dtpm_devfreq.c   | 203 ++++++++++++++++++++++++++++++
+ drivers/powercap/dtpm_subsys.h    |  22 ++++
+ drivers/soc/rockchip/Kconfig      |   8 ++
+ drivers/soc/rockchip/Makefile     |   1 +
+ drivers/soc/rockchip/dtpm.c       |  59 +++++++++
+ include/asm-generic/vmlinux.lds.h |  11 --
+ include/linux/dtpm.h              |  33 +++--
+ 11 files changed, 540 insertions(+), 39 deletions(-)
+ create mode 100644 drivers/powercap/dtpm_devfreq.c
+ create mode 100644 drivers/powercap/dtpm_subsys.h
+ create mode 100644 drivers/soc/rockchip/dtpm.c
+
 -- 
-2.33.0
+2.25.1
 
