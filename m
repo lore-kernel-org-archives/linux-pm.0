@@ -2,61 +2,63 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9754FC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E41AC433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:36:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350146AbiA1QgU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jan 2022 11:36:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44512 "EHLO
+        id S1350196AbiA1Qg2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jan 2022 11:36:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350184AbiA1QgO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:36:14 -0500
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 051A5C06174E
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:13 -0800 (PST)
-Received: by mail-wm1-x331.google.com with SMTP id o30-20020a05600c511e00b0034f4c3186f4so8567595wms.3
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:12 -0800 (PST)
+        with ESMTP id S1350197AbiA1QgW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:36:22 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6C4A7C061747
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:22 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id m14so11690501wrg.12
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:36:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=oPK1edLyJrRFFEyWcyiec8UXIbfSrQa/ueeEQUG7KDE=;
-        b=kGyi6U92aemfBrqx1MsrnIRNqE7tjyN/FjHGf3cWg0qVpija+ScUg7R0y4UcYPKTNp
-         951ssI+FVMlGXDMnic+lGaP3MkOzqgWaH/OpX51uT5hyuXMrOFYczWKdOpPzOI4NwYa0
-         a6Vbvd3iak8eWOy0K9bzJ1J+oWZ0QHPidFbtpH+T7qK8s5ELyAbyIzr1rz5m/QXOEdjw
-         +KjCUeGMptQyuguDUmthx/oHvCuGNvTYpX1Hk7h5Z0q5JAZpD0OmeMSbfLMjov/Z9eor
-         6hkcjuPjk6i4eG9yVNPkWQ3ZeC2sAefj+8q/gpeiZDwuuFvz9jhJOMyaSb3RjDIt78Sb
-         5NkA==
+        bh=99dERtWOZtbIzdgryv5Ia92S7CWD3+jik7G8TWPvHK4=;
+        b=M56W1cYQkxO416lN+jHB1tezGrT0pfoCHG+V30MKezZeGa1pynMj+KMFaFb+TC3xtR
+         QMogfQHJDufhRqxBR6KnAJ+xQF7iDAHcaL6BHjZb6W/t92XCBNdgp5zou1XR178MrL4z
+         s5FbTVaCgtijqYCITJBmcuM2L2B5PwH9jDR/fAJrnrdt0vx//WVR71e2M8M8NCYLjDbW
+         h+w/tXk883nHnYyi9FXF9ylMdrOSRfI7SARFZKXXO11REESQ44wxz971S/YF4HYsH792
+         W7EZTGUfv9qcua4OiCgY61fRq35io87LL5TW8Ovtjzq3anlJRGCuSS2YRqLemAlcSh1Q
+         I5Kg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=oPK1edLyJrRFFEyWcyiec8UXIbfSrQa/ueeEQUG7KDE=;
-        b=Dka8QGKv42IZhN8Fbz3viGLtszr/pZTb7g6+7wNt/f00BXlaV8IZFnQKCXOzcwFRhW
-         MGrVECvWsIXQIwt6ViyPSzHG5NHAKWS5lez6Mi7MfD9LjZ6oJ4pm18l0reEcFneGWHmR
-         7rL+JYRfXCaCp7Mwee1NV9wEeUaboCHXBCh9LGSd3enLKk7I3U0ahZe8H8yahfLE1PLP
-         KDcpghXDZ9aojvACeDbOm+61rvYNN6yRM8ZRn8TKRLiQPdNTvRkU/wfw3R/8FIo3wYwN
-         AvH881eYQR3YgTG52eCNFu/lEAhMC5WcBY+vM2VwRDLQB1OWCOCmEC5l42QODIRHEunX
-         Gu+Q==
-X-Gm-Message-State: AOAM530E6vwOx1qAVUNoj4HP5l9hT1qHOFC/CxSo2qBE33VEjudAOvYm
-        bLsVXgtnlKgWw8mozkr83f999g==
-X-Google-Smtp-Source: ABdhPJwvHeyXNhi7RFJ2QaYYMJS7UntYm6hj8Gz+56fUrsZ0y8xZzXk0LaGrhKsbyFh5guhz8dFOIw==
-X-Received: by 2002:a7b:c0d0:: with SMTP id s16mr8205368wmh.169.1643387771424;
-        Fri, 28 Jan 2022 08:36:11 -0800 (PST)
+        bh=99dERtWOZtbIzdgryv5Ia92S7CWD3+jik7G8TWPvHK4=;
+        b=drLDgFU+wfgfac5FCjCu72oF+wqA3IYI2fnKv7lhjEic7X9+fHECv8jQX3+hbcnNzt
+         an4jhDMSeWW13jxaecig/QO3Tn5L9G0Q/Awha56A7jR/GLK8BzvOEK5F2ebfUPwaL0Sf
+         /GrcQVlqPtptFnDKvvF9mdGeJ6BmLL++zjYbEPOSFbZrSwcWo7VDOdpwZH81VV2+frg9
+         jj/DBAXg/i8YCJvB5bFzIvMBTgJeZ2x1vhyJDXSx+QTJeK8pFOCB9VgATg0HnzjtGkrb
+         KqVBs1uJOz6IpdWfg1PlDKtN6zHVBBL4BUI7FMEcHCnNhZJWZe8DRY+I2rTV5hvKshIr
+         4TXA==
+X-Gm-Message-State: AOAM533NXG+kz/aKP5yqk9PTuwMb6IPgNjsFqfv+SfwBnztKez5QfyPd
+        fsrTx0bnT77c61PjbUpf6KWo4Q==
+X-Google-Smtp-Source: ABdhPJwxf8JZPd4soZH8tiFA70PMwbDqUAwzX9iu+50eMktnT6hbnD1to8hEQRhEd71OIDQlFPrA1g==
+X-Received: by 2002:adf:f141:: with SMTP id y1mr7683089wro.104.1643387780869;
+        Fri, 28 Jan 2022 08:36:20 -0800 (PST)
 Received: from localhost.localdomain ([2a01:e34:ed2f:f020:f39:b962:8b8e:9851])
-        by smtp.gmail.com with ESMTPSA id m6sm5734745wrw.54.2022.01.28.08.36.09
+        by smtp.gmail.com with ESMTPSA id m6sm5734745wrw.54.2022.01.28.08.36.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Jan 2022 08:36:10 -0800 (PST)
+        Fri, 28 Jan 2022 08:36:20 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rjw@rjwysocki.net
 Cc:     heiko@sntech.de, robh@kernel.org, lukasz.luba@arm.com,
         arnd@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH v8 3/5] powercap/drivers/dtpm: Add CPU DT initialization support
-Date:   Fri, 28 Jan 2022 17:35:35 +0100
-Message-Id: <20220128163537.212248-4-daniel.lezcano@linaro.org>
+        linux-pm@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        linux-arm-kernel@lists.infradead.org (moderated list:ARM/Rockchip SoC
+        support),
+        linux-rockchip@lists.infradead.org (open list:ARM/Rockchip SoC support)
+Subject: [PATCH v8 5/5] rockchip/soc/drivers: Add DTPM description for rk3399
+Date:   Fri, 28 Jan 2022 17:35:37 +0100
+Message-Id: <20220128163537.212248-6-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220128163537.212248-1-daniel.lezcano@linaro.org>
 References: <20220128163537.212248-1-daniel.lezcano@linaro.org>
@@ -66,105 +68,136 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Based on the previous DT changes in the core code, use the 'setup'
-callback to initialize the CPU DTPM backend.
+The DTPM framework does support now the hierarchy description.
 
-Code is reorganized to stick to the DTPM table description. No
-functional changes.
+The platform specific code can call the hierarchy creation function
+with an array of struct dtpm_node pointing to their parent.
+
+This patch provides a description of the big / Little CPUs and the
+GPU and tie them together under a virtual 'package' name. Only rk3399 is
+described now.
+
+The description could be extended in the future with the memory
+controller with devfreq.
+
+The description is always a module and it describes the soft
+dependencies. The userspace has to load the softdeps module in the
+right order.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by; Heiko Stuebner <heiko@sntech.de>
 ---
- drivers/powercap/dtpm_cpu.c | 36 ++++++++++++++++++++++++++++++------
- 1 file changed, 30 insertions(+), 6 deletions(-)
+Changelog:
+   V8:
+   - Add '/* sentinel */' in the last array entry
+   - Remove Panfrost dependency in the dtpm rockchip module's Kconfig
 
-diff --git a/drivers/powercap/dtpm_cpu.c b/drivers/powercap/dtpm_cpu.c
-index 5763e0ce2af5..eed5ad688d46 100644
---- a/drivers/powercap/dtpm_cpu.c
-+++ b/drivers/powercap/dtpm_cpu.c
-@@ -21,6 +21,7 @@
- #include <linux/cpuhotplug.h>
- #include <linux/dtpm.h>
- #include <linux/energy_model.h>
+   V7:
+   - No changes
+
+   V6:
+   - Made rk3399 always as a module and added module softdeps
+
+   V5:
+   - Module creation
+---
+drivers/soc/rockchip/Kconfig  |  8 +++++
+ drivers/soc/rockchip/Makefile |  1 +
+ drivers/soc/rockchip/dtpm.c   | 59 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 68 insertions(+)
+ create mode 100644 drivers/soc/rockchip/dtpm.c
+
+diff --git a/drivers/soc/rockchip/Kconfig b/drivers/soc/rockchip/Kconfig
+index 25eb2c1e31bb..156ac0e0c8fe 100644
+--- a/drivers/soc/rockchip/Kconfig
++++ b/drivers/soc/rockchip/Kconfig
+@@ -34,4 +34,12 @@ config ROCKCHIP_PM_DOMAINS
+ 
+           If unsure, say N.
+ 
++config ROCKCHIP_DTPM
++	tristate "Rockchip DTPM hierarchy"
++	depends on DTPM && m
++	help
++	 Describe the hierarchy for the Dynamic Thermal Power
++	 Management tree on this platform. That will create all the
++	 power capping capable devices.
++
+ endif
+diff --git a/drivers/soc/rockchip/Makefile b/drivers/soc/rockchip/Makefile
+index 875032f7344e..05f31a4e743c 100644
+--- a/drivers/soc/rockchip/Makefile
++++ b/drivers/soc/rockchip/Makefile
+@@ -5,3 +5,4 @@
+ obj-$(CONFIG_ROCKCHIP_GRF) += grf.o
+ obj-$(CONFIG_ROCKCHIP_IODOMAIN) += io-domain.o
+ obj-$(CONFIG_ROCKCHIP_PM_DOMAINS) += pm_domains.o
++obj-$(CONFIG_ROCKCHIP_DTPM) += dtpm.o
+diff --git a/drivers/soc/rockchip/dtpm.c b/drivers/soc/rockchip/dtpm.c
+new file mode 100644
+index 000000000000..ebebb748488b
+--- /dev/null
++++ b/drivers/soc/rockchip/dtpm.c
+@@ -0,0 +1,59 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2021 Linaro Limited
++ *
++ * Author: Daniel Lezcano <daniel.lezcano@linaro.org>
++ *
++ * DTPM hierarchy description
++ */
++#include <linux/dtpm.h>
++#include <linux/module.h>
 +#include <linux/of.h>
- #include <linux/pm_qos.h>
- #include <linux/slab.h>
- #include <linux/units.h>
-@@ -176,6 +177,17 @@ static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
- }
- 
- static int cpuhp_dtpm_cpu_online(unsigned int cpu)
++#include <linux/platform_device.h>
++
++static struct dtpm_node __initdata rk3399_hierarchy[] = {
++	[0]{ .name = "rk3399",
++	     .type = DTPM_NODE_VIRTUAL },
++	[1]{ .name = "package",
++	     .type = DTPM_NODE_VIRTUAL,
++	     .parent = &rk3399_hierarchy[0] },
++	[2]{ .name = "/cpus/cpu@0",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[3]{ .name = "/cpus/cpu@1",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[4]{ .name = "/cpus/cpu@2",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[5]{ .name = "/cpus/cpu@3",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[6]{ .name = "/cpus/cpu@100",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[7]{ .name = "/cpus/cpu@101",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[8]{ .name = "/gpu@ff9a0000",
++	     .type = DTPM_NODE_DT,
++	     .parent = &rk3399_hierarchy[1] },
++	[9]{ /* sentinel */ }
++};
++
++static struct of_device_id __initdata rockchip_dtpm_match_table[] = {
++        { .compatible = "rockchip,rk3399", .data = rk3399_hierarchy },
++        {},
++};
++
++static int __init rockchip_dtpm_init(void)
 +{
-+	struct dtpm_cpu *dtpm_cpu;
-+
-+	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
-+	if (dtpm_cpu)
-+		return dtpm_update_power(&dtpm_cpu->dtpm);
-+
-+	return 0;
++	return dtpm_create_hierarchy(rockchip_dtpm_match_table);
 +}
++module_init(rockchip_dtpm_init);
 +
-+static int __dtpm_cpu_setup(int cpu, struct dtpm *parent)
- {
- 	struct dtpm_cpu *dtpm_cpu;
- 	struct cpufreq_policy *policy;
-@@ -183,6 +195,10 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 	char name[CPUFREQ_NAME_LEN];
- 	int ret = -ENOMEM;
- 
-+	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
-+	if (dtpm_cpu)
-+		return 0;
-+
- 	policy = cpufreq_cpu_get(cpu);
- 	if (!policy)
- 		return 0;
-@@ -191,10 +207,6 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 	if (!pd)
- 		return -EINVAL;
- 
--	dtpm_cpu = per_cpu(dtpm_per_cpu, cpu);
--	if (dtpm_cpu)
--		return dtpm_update_power(&dtpm_cpu->dtpm);
--
- 	dtpm_cpu = kzalloc(sizeof(*dtpm_cpu), GFP_KERNEL);
- 	if (!dtpm_cpu)
- 		return -ENOMEM;
-@@ -207,7 +219,7 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 
- 	snprintf(name, sizeof(name), "cpu%d-cpufreq", dtpm_cpu->cpu);
- 
--	ret = dtpm_register(name, &dtpm_cpu->dtpm, NULL);
-+	ret = dtpm_register(name, &dtpm_cpu->dtpm, parent);
- 	if (ret)
- 		goto out_kfree_dtpm_cpu;
- 
-@@ -231,7 +243,18 @@ static int cpuhp_dtpm_cpu_online(unsigned int cpu)
- 	return ret;
- }
- 
--static int __init dtpm_cpu_init(void)
-+static int dtpm_cpu_setup(struct dtpm *dtpm, struct device_node *np)
-+{
-+	int cpu;
-+
-+	cpu = of_cpu_node_to_id(np);
-+	if (cpu < 0)
-+		return 0;
-+
-+	return __dtpm_cpu_setup(cpu, dtpm);
-+}
-+
-+static int dtpm_cpu_init(void)
- {
- 	int ret;
- 
-@@ -272,4 +295,5 @@ static int __init dtpm_cpu_init(void)
- struct dtpm_subsys_ops dtpm_cpu_ops = {
- 	.name = KBUILD_MODNAME,
- 	.init = dtpm_cpu_init,
-+	.setup = dtpm_cpu_setup,
- };
++MODULE_SOFTDEP("pre: panfrost cpufreq-dt");
++MODULE_DESCRIPTION("Rockchip DTPM driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:dtpm");
++MODULE_AUTHOR("Daniel Lezcano <daniel.lezcano@kernel.org");
 -- 
 2.25.1
 
