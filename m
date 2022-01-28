@@ -2,60 +2,59 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0045C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:10:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3E95C43219
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jan 2022 16:10:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236917AbiA1QKL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jan 2022 11:10:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38386 "EHLO
+        id S235537AbiA1QKP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jan 2022 11:10:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233894AbiA1QKL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:10:11 -0500
-Received: from mail-qv1-xf29.google.com (mail-qv1-xf29.google.com [IPv6:2607:f8b0:4864:20::f29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D24C3C061747
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:10 -0800 (PST)
-Received: by mail-qv1-xf29.google.com with SMTP id s6so6224428qvv.11
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:10 -0800 (PST)
+        with ESMTP id S229482AbiA1QKP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 11:10:15 -0500
+Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1E05C06173B
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:14 -0800 (PST)
+Received: by mail-qv1-xf2f.google.com with SMTP id hu2so6238909qvb.8
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 08:10:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=BW9H3cFAMWnTD35c52x3Htxe4iYr3BTDYJAgx05lFMw=;
-        b=TBVZz6piKgCTfaHky7qJRYb4OiK7aZajSS+/10TpPuPGxCBBcV2Gpx2LDqu/T/RWPt
-         8wwwxBBOd1n9NCyRISDPaAw6w9ZS+oXRQldKiJK8N/5x6LQaOZennOEBuLm92xovTIyn
-         LgFDnyPRKU9tyd/PyCFIwvd4TxED+Is2rpigDaTIYdjZEoqa9t2sq/oUOl1ZQm3N89aP
-         ulCGz4gf4DmelRR/K4Rqk+/D4xK60Zu0BUwL3vKbVdKq2rw9drInDSyFeKqdrneczPdY
-         Aj6JjKbpb2RgfC0NoHG1itJEMbuHHZ2WfwtppjP4AZTGNxjRaPY/nsOwb4teHWVZuN3Z
-         HnwQ==
+        bh=BZVdFXLyl74h3jtOPF272oyC+s8DavqmR8oCcxBJMgQ=;
+        b=Irl9DzzuMp5iz+pnKClhzQPaMwdM0JkYG1ovs0IKC2O9S0v4uxcneGJvTgqJ2M9fWR
+         z1uk2YF3U4ckMLO3AyhN0a04UiwiJJ/sfl3WbfVcGyOfUtHe6tB1hYjYC+MQFU6uKJSd
+         rEloCtTXSk/x2tZcORAqeOWG7ihk5pXHdPzj2jif+RwjvoOPQ5vZV4JGSX3uzGKS/AV2
+         1RtNE7BIp+sw5rndSOrKv9LN6PeClTtxV4znTpb70yiGCSkivqBWeM/8PHvZzinwfboM
+         82HHT9uk2Gs3l9k+6G8WQYE4gfEWi1Jg8yHty8vSgLeh/4fcUwuheOiEKCnyQ8ovf35e
+         qHXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=BW9H3cFAMWnTD35c52x3Htxe4iYr3BTDYJAgx05lFMw=;
-        b=1nTr/Ch96qlIpE2yGFMdsRcJVBiqLs+EUhUv7EDL8LrRWTnpFUwMpcnm9SaKqzmqJA
-         JV5O2rFZ2E2Sy4rQEtp7dXYg7oi38WWqib0RfaccmazuiO6mq7bl+EcenmKWuooQ4qpa
-         WRJ6j1bvKuTPqDVonJcpOxJ9UBveyt828aO987AIZnzyN3iq2lKV+88YXWywzCKew3De
-         pDxDoUBGLFioFwa/gdCcNupsi/VZ+pB4KVLY99Brx32gXkqSz5dGsmT+FhzP4UPejvOx
-         XB/xDL+Ak6UpCZOZbKwGt09rA6bRKvL9lImshMiskevmkknS46zmX+/OHRfrA9XrXcQF
-         l6Sw==
-X-Gm-Message-State: AOAM531J16bX1bL4FFNxm6jcqZ0wrrWdGA52P+gOzZwK5+96GKgBZOFK
-        3h2ZzA6GPdV8He9bNYIdlyihgA==
-X-Google-Smtp-Source: ABdhPJwRIh3C849RZX6hS/6n8q0Ink9qCbIrYeEqnPMjrSUcDhgy8TDSRHB7tWPGDV/RoziOMkXrcQ==
-X-Received: by 2002:a05:6214:2261:: with SMTP id gs1mr7640225qvb.125.1643386209903;
-        Fri, 28 Jan 2022 08:10:09 -0800 (PST)
+        bh=BZVdFXLyl74h3jtOPF272oyC+s8DavqmR8oCcxBJMgQ=;
+        b=4HJvZqfhtD13VaLxMQw+522j8kyyunQVOflLrEZB9yx3gdhBovYtHvFiPITwW9g288
+         MNYjMdF/lBprweyitWn8/C1ls4Y7u1fUb732hCy8hVTpyQosjN7qbN9oZTqxA+vEO7cP
+         wC2omdZkXjNJ5WjXnmYAjlK6fJ1aspOkYeGc0fgkFgPAnnpCg1E12AGIf4dJpXuRSe2b
+         QX9LuqqcGj5k6UPSa9Jh1HT4I6Oxm8GaaX5dcM4ZXaB2hJilDftbvbr/fQfInG2ZwSLe
+         QIYE56+Q4JbocJJxA6X1kaD4PxP0hyVWSIZTOFKT03Kic9MLYNeTlc2u5XKbN++hl0Z9
+         qa/A==
+X-Gm-Message-State: AOAM532oF7F32F6PB9BuF1BbRF0A1mf52WgNtuoxkoiKG2bxe2DEmNOn
+        lrHgtNGSnlojpvl5Zl6KdAlh/g==
+X-Google-Smtp-Source: ABdhPJx4boyq8XpVgJFTXH3MbmtL0MCaFGhtPTIwTG2irXEbCBxo7KD1ZiZ+2g2ELnnqqy8i9BqdFw==
+X-Received: by 2002:a05:6214:5189:: with SMTP id kl9mr7555285qvb.9.1643386213864;
+        Fri, 28 Jan 2022 08:10:13 -0800 (PST)
 Received: from sagittarius-a.sqcorp.co (188-141-3-169.dynamic.upc.ie. [188.141.3.169])
-        by smtp.gmail.com with ESMTPSA id o21sm3339006qtv.68.2022.01.28.08.10.07
+        by smtp.gmail.com with ESMTPSA id o21sm3339006qtv.68.2022.01.28.08.10.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Jan 2022 08:10:09 -0800 (PST)
+        Fri, 28 Jan 2022 08:10:13 -0800 (PST)
 From:   Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 To:     djakov@kernel.org, bjorn.andersson@linaro.org, agross@kernel.org,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     jun.nie@linaro.org, shawn.guo@linaro.org, benl@squareup.com,
-        dmitry.baryshkov@linaro.org, bryan.odonoghue@linaro.org,
-        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org
-Subject: [PATCH 1/3] dt-bindings: interconnect: Create modified msm8939-snoc description
-Date:   Fri, 28 Jan 2022 16:10:00 +0000
-Message-Id: <20220128161002.2308563-2-bryan.odonoghue@linaro.org>
+        dmitry.baryshkov@linaro.org, bryan.odonoghue@linaro.org
+Subject: [PATCH 3/3] interconnect: qcom: msm8939: Deliniate bus, bus_a, bus_mm and bus_a_mm clocks
+Date:   Fri, 28 Jan 2022 16:10:02 +0000
+Message-Id: <20220128161002.2308563-4-bryan.odonoghue@linaro.org>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20220128161002.2308563-1-bryan.odonoghue@linaro.org>
 References: <20220128161002.2308563-1-bryan.odonoghue@linaro.org>
@@ -65,74 +64,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Subsume msm8939-snoc-mm and msm8939-snoc into the one device.
-Looking at the DTS description for this downstream we see that snoc and
-snoc_mm share the same address space, the same clocks, indeed the only hint
-at all in qcom documentation these to are separate in anyway is boxes drawn
-on a diagram.
+System NoC (snoc) and System MM NoC (snoc_mm) clocks can be defined
+together and passed as part of a single snoc interconnect. rpmcc indexes
+take care of sending the right RPM messages.
 
-snoc_mm is in fact simply two higher performance points for multimedia
-devices tacked onto the msm8916 snoc which was reused for msm8936/msm8939.
-
-The various client IP blocks make requests to vote for either X0 or GPLL0
-clock rates with the multi-media votes indicating a higher operating point.
-
-We don't need to model snoc and snoc_mm separately since the datasheet for
-this part shows snoc_mm is not a separate device.
-
-Breaking up snoc into two pieces is a mistake that was made downstream
-which we carried over into upstream.
-
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
 Signed-off-by: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
 ---
- .../bindings/interconnect/qcom,rpm.yaml       | 25 +++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ drivers/interconnect/qcom/msm8939.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-index e4c3c2818119e..1110a242b2132 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-@@ -79,8 +79,6 @@ allOf:
-               - qcom,msm8916-snoc
-               - qcom,msm8939-bimc
-               - qcom,msm8939-pcnoc
--              - qcom,msm8939-snoc
--              - qcom,msm8939-snoc-mm
-               - qcom,msm8996-a1noc
-               - qcom,msm8996-a2noc
-               - qcom,msm8996-bimc
-@@ -182,6 +180,29 @@ allOf:
-             - description: Aggregate2 USB3 AXI Clock.
-             - description: Config NoC USB2 AXI Clock.
+diff --git a/drivers/interconnect/qcom/msm8939.c b/drivers/interconnect/qcom/msm8939.c
+index 7030911e25adc..431e77d63df46 100644
+--- a/drivers/interconnect/qcom/msm8939.c
++++ b/drivers/interconnect/qcom/msm8939.c
+@@ -1290,10 +1290,19 @@ static const struct regmap_config msm8939_snoc_regmap_config = {
+ 	.fast_io	= true,
+ };
  
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,msm8939-snoc
++static const char * const snoc_clocks[] = {
++	"bus",
++	"bus_a",
++	"bus_mm",
++	"bus_a_mm",
++};
 +
-+    then:
-+      properties:
-+        clock-names:
-+          items:
-+            - const: bus
-+            - const: bus_a
-+            - const: bus_mm
-+            - const: bus_a_mm
-+
-+        clocks:
-+          items:
-+            - description: Bus Clock.
-+            - description: Bus A Clock.
-+            - description: Bus Clock MultiMedia.
-+            - description: Bus A Clock MultiMedia.
-+
- examples:
-   - |
-       #include <dt-bindings/clock/qcom,rpmcc.h>
+ static struct qcom_icc_desc msm8939_snoc = {
+ 	.type = QCOM_ICC_NOC,
+ 	.nodes = msm8939_snoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(msm8939_snoc_nodes),
++	.clocks = snoc_clocks,
++	.num_clocks = ARRAY_SIZE(snoc_clocks),
+ 	.regmap_cfg = &msm8939_snoc_regmap_config,
+ 	.qos_offset = 0x7000,
+ };
 -- 
 2.33.0
 
