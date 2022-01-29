@@ -2,114 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A39D1C4332F
-	for <linux-pm@archiver.kernel.org>; Sat, 29 Jan 2022 00:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 973F4C433F5
+	for <linux-pm@archiver.kernel.org>; Sat, 29 Jan 2022 00:53:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344791AbiA2Avx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jan 2022 19:51:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43790 "EHLO
+        id S1347177AbiA2Axy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jan 2022 19:53:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44256 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344838AbiA2Avu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 19:51:50 -0500
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDA9CC061748
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 16:51:49 -0800 (PST)
-Received: by mail-lj1-x230.google.com with SMTP id q127so11369653ljq.2
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 16:51:49 -0800 (PST)
+        with ESMTP id S236412AbiA2Axy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jan 2022 19:53:54 -0500
+Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com [IPv6:2607:f8b0:4864:20::b2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78B0AC061714
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 16:53:54 -0800 (PST)
+Received: by mail-yb1-xb2d.google.com with SMTP id k31so23481191ybj.4
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jan 2022 16:53:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=BUS6wW3yGInzGcbpUzNKgXwJz8KX3iohGyze+GjeDY8=;
-        b=XHKxJLGqPN67mksmkaLurQUiVLFeBx5orDKZNCZFWBh/BKF5zQRmkbjdLpauvsM0Bs
-         M9O0HW6126Xj8ZQt/GL5GM8bcu7RbMHuCuaMLQfeqKWAyHDOXpFJWd5WE0Yk6yBrq3+r
-         9YWSr6umKFjZaY1CXdvr8L3nlC0B4stNUOw7dBJUvpIZjIG6QU30H8hsDjRkw6TQ/J+e
-         RGvFCGx82GC3a2J5VHLNGG1RdrV/KNtPbVkHTIhRnc8G3l9aWO4YAdaETuh9kdrbhUTG
-         61jABneW7jgQNFzyRCmMsJdoci/TpZM4GMcS0eOVll+SrJmXAhxUjNNz/A7E2/WKxJ79
-         +HTw==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=0NbgrXX9sQyQqD1q4C3GFzViJjmAGZOetKlNWCOO/pM=;
+        b=Pfp4YCdOr2yQOd7FkT/46L3gRqIdCB3FKGbQSWjL7Jv9HB3Vkq5bvUtqkeB2QHbz4U
+         fGUrjjrO4mFrfIYqh2ojE7Ecp6dosiYuLt2HPhbu91qaINGyJw21WI6tP19we01sA6ic
+         iq8s3U1FBnCbUL93EClwVm59wQTGmtG6K4e0WFUxfTs6/g1gsllVFA9DbRwjmntkUod1
+         9z7Jfr371C0hVd48SzVYueHp8b5e/J7+cXwrwLfJaupCw2HvwkV4k5h/oI3E5mNhpXp/
+         KEfY5k+asYhJkptKlz9fb6f1bKgHniRNOAX8/xFzGnaJ19EWB5CdF2p91f0wrul/kKTd
+         u44g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=BUS6wW3yGInzGcbpUzNKgXwJz8KX3iohGyze+GjeDY8=;
-        b=WgIj1+oVS2lZLukVHUrvi+8DvEXkrkjs1xDZHdseQGuHCKYvYpakZk8g82OVLPniRb
-         dsDWkG/yvsd/xvTm44QAt7bPE6qNrv/ZkuudMYy65Tn7k2FgvcFYbwNFws58f8VZsvS8
-         CJ7QFC9tJGBbMWVvosPVYC78LXNEihjSOb5fjwXQL2Fa7Ih7heoYuH13wvBHMK5geajs
-         1A2zECtSnz9agJ27ghn3lYjAZZ2SnA8wVvaml3fNfDP96eXUzJzsf+ukCZPXRGsKWy8S
-         1dRdaCccb/go9aWVi/WSl2vLNPTLNetUAcX/rf9mOvb0gywkVKaiKCth5MISeXvnAs9e
-         ezHQ==
-X-Gm-Message-State: AOAM532LxOO2oqTYaZcBAs/psTCeXOiXWbbYsKnhcE72tv/s9Tj9iiLs
-        NcYnYufENeWACiBgRzYcJhsBnQ==
-X-Google-Smtp-Source: ABdhPJxurfDAgx+6aJbvize5H1s2fragtNlZUUhaARGLaEFgaOUYFyQE9XjfxJFSPmJrhOaVmKRXiA==
-X-Received: by 2002:a05:651c:212a:: with SMTP id a42mr7231431ljq.100.1643417508294;
-        Fri, 28 Jan 2022 16:51:48 -0800 (PST)
-Received: from localhost.localdomain ([92.34.204.253])
-        by smtp.gmail.com with ESMTPSA id m17sm2232903lfr.24.2022.01.28.16.51.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Jan 2022 16:51:47 -0800 (PST)
-From:   Linus Walleij <linus.walleij@linaro.org>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Marcus Cooper <codekipper@gmail.com>
-Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 10/11 v2] power: supply: ab8500_charger: Restrict ADC retrieveal
-Date:   Sat, 29 Jan 2022 01:49:24 +0100
-Message-Id: <20220129004925.639684-11-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220129004925.639684-1-linus.walleij@linaro.org>
-References: <20220129004925.639684-1-linus.walleij@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0NbgrXX9sQyQqD1q4C3GFzViJjmAGZOetKlNWCOO/pM=;
+        b=VLdY0ViA2i2VZFiCpeRlRgV5VlEe8euhzjX0pLFqK6zx+Lai/5hmt//tgWEXk9OuQR
+         rzSz/yJFH4gBe1e1UR7+o/cUWAJS8mcdPq9v7XvRrAGflK6TVlT1BUMiwEYC3R1nY0a/
+         w44AQWxvTI74uqiAM7OBGE3c4N/wlDnj3OG4fRn1MkFr4YKBGJRa/iPMB0WVPQdi5W1d
+         nNvyUWWXVeuoWBnH8TqwEGYoqlD4waqSgFksbwHIKsgCLvaOE3/aQG5QWOoD8kouYfmx
+         KOvwGIJKS1k2YfE5q0sVmMnsXe32Wag8U56yAaP62dOGNK2M1ApqxgUpkGh54cvbCTnx
+         lYxQ==
+X-Gm-Message-State: AOAM533tcDPNZv9j8FoDFpJdYgYiCVaPX4tl2BMAgevyWOPwUhVns6qN
+        U54FNdNbHztYMBWSw9VPUFtADJKapu7PhM/3YVJh1U/iQyQCGA==
+X-Google-Smtp-Source: ABdhPJyc08fF90vzpDGv/xVPDhy6Iv5LyGya40KeDPPiy5sPSbVGKGf3NJKWnx3e5lOhPILw2YeoNY/sTNN3PVwtthE=
+X-Received: by 2002:a05:6902:124a:: with SMTP id t10mr14882868ybu.634.1643417633741;
+ Fri, 28 Jan 2022 16:53:53 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220128173336.643-1-linmq006@gmail.com>
+In-Reply-To: <20220128173336.643-1-linmq006@gmail.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Sat, 29 Jan 2022 01:53:42 +0100
+Message-ID: <CACRpkdaTmWomZY6WgozTJKVMvTmesDRsLqhn5BP+QeaMoAA1VA@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: ab8500: Fix memory leak in ab8500_chargalg_sysfs_init
+To:     Miaoqian Lin <linmq006@gmail.com>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The AB8505 only has two ADC channels: the voltage and current
-provided from VBUS (USB). It does not support AC charging at all.
-Make sure we don't try to retrieve the non-existing channels.
+On Fri, Jan 28, 2022 at 6:33 PM Miaoqian Lin <linmq006@gmail.com> wrote:
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-ChangeLog v1->v2:
-- Resending with other patches, no changes.
----
- drivers/power/supply/ab8500_charger.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+> kobject_init_and_add() takes reference even when it fails.
+> According to the doc of kobject_init_and_add()
+>
+>    If this function returns an error, kobject_put() must be called to
+>    properly clean up the memory associated with the object.
+>
+> Fix this issue by adding kobject_put().
+>
+> Fixes: c5b64a990e7f ("power: supply: ab8500: Rename charging algorithm symbols")
 
-diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
-index ce074c018dcb..681b53bb0df0 100644
---- a/drivers/power/supply/ab8500_charger.c
-+++ b/drivers/power/supply/ab8500_charger.c
-@@ -3443,17 +3443,19 @@ static int ab8500_charger_probe(struct platform_device *pdev)
- 	di->parent = dev_get_drvdata(pdev->dev.parent);
- 
- 	/* Get ADC channels */
--	di->adc_main_charger_v = devm_iio_channel_get(dev, "main_charger_v");
--	if (IS_ERR(di->adc_main_charger_v)) {
--		ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_v),
--				    "failed to get ADC main charger voltage\n");
--		return ret;
--	}
--	di->adc_main_charger_c = devm_iio_channel_get(dev, "main_charger_c");
--	if (IS_ERR(di->adc_main_charger_c)) {
--		ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_c),
--				    "failed to get ADC main charger current\n");
--		return ret;
-+	if (!is_ab8505(di->parent)) {
-+		di->adc_main_charger_v = devm_iio_channel_get(dev, "main_charger_v");
-+		if (IS_ERR(di->adc_main_charger_v)) {
-+			ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_v),
-+					    "failed to get ADC main charger voltage\n");
-+			return ret;
-+		}
-+		di->adc_main_charger_c = devm_iio_channel_get(dev, "main_charger_c");
-+		if (IS_ERR(di->adc_main_charger_c)) {
-+			ret = dev_err_probe(dev, PTR_ERR(di->adc_main_charger_c),
-+					    "failed to get ADC main charger current\n");
-+			return ret;
-+		}
- 	}
- 	di->adc_vbus_v = devm_iio_channel_get(dev, "vbus_v");
- 	if (IS_ERR(di->adc_vbus_v)) {
--- 
-2.34.1
+Really? I think this code is older.
 
+> @@ -1907,8 +1907,10 @@ static int ab8500_chargalg_sysfs_init(struct ab8500_chargalg *di)
+>         ret = kobject_init_and_add(&di->chargalg_kobject,
+>                 &ab8500_chargalg_ktype,
+>                 NULL, "ab8500_chargalg");
+> -       if (ret < 0)
+> +       if (ret < 0) {
+>                 dev_err(di->dev, "failed to create sysfs entry\n");
+> +               kobject_put(&di->chargalg_kobject);
+> +       }
+
+I wouldn't bother with this.
+
+This code is getting deleted in this patch:
+https://lore.kernel.org/linux-pm/20220129004925.639684-10-linus.walleij@linaro.org/T/#u
+
+Yours,
+Linus Walleij
