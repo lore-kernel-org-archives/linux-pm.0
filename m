@@ -2,102 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B39C4C433EF
-	for <linux-pm@archiver.kernel.org>; Sat, 29 Jan 2022 18:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D243C433EF
+	for <linux-pm@archiver.kernel.org>; Sat, 29 Jan 2022 20:07:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352970AbiA2SIL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 29 Jan 2022 13:08:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44894 "EHLO
+        id S1346299AbiA2UHA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 29 Jan 2022 15:07:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353085AbiA2SIG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Jan 2022 13:08:06 -0500
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C9A9C0613F0
-        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 10:07:53 -0800 (PST)
-Received: by mail-lf1-x136.google.com with SMTP id x11so18239433lfa.2
-        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 10:07:53 -0800 (PST)
+        with ESMTP id S243982AbiA2UHA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Jan 2022 15:07:00 -0500
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90296C061714
+        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 12:06:59 -0800 (PST)
+Received: by mail-wm1-x332.google.com with SMTP id k6-20020a05600c1c8600b003524656034cso3483813wms.2
+        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 12:06:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hXL6L2zK8AglMazhyj7WKYzd8b5nE29SexQFpyrPges=;
-        b=zcKKZvcPffsxsHOa+3qtba75zbC/g7ivPk/B74rX9LsCUYvPPn4wLaIwzjfG/LVFVZ
-         2ctYU+HywBnUXs6sdP9k9MkrcM7ioRVrb//2jsmhE3XBUOMKvf1O/vZ0Hl3XFQNqVTDy
-         Mw4H9ddrwnro+rBieGy5zjDPOjS7rPEn+HTjORZ7dQOZxRZSeHXry6w2ddPEe4KTIwE2
-         VmDpG1Aw9wffaX4/wX7CFmkGa5kY5Ws8eu/OetzDIsijaoaIJc7o6XtCy22h1PplGbA1
-         uRbIUqBqLY55dc3a0T7RY2c1A7vnBU0X2O0H4mQ6a9WLwoa1XV1YVH8OrCH9Q2VNgl97
-         TeXQ==
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=S51O7i9lXG7bN9afK9GQn6FtCRWvzVPVNhY8VS6CT3c=;
+        b=LZbqyWLQbndc+d1Z7o5jmL3/kT1nBaFoQ8IL3tsadvkKreBIu2kpcWK/g2AmsEB/Jw
+         Zn6BDDapH7Yb3uB8Xcj+/op8xAZ/EeZ3ZANpUh4qlXdd1pdiGykTZvdJWOiwLvA2zfqS
+         Wm+o8gB5ylo4qlCuBWBRzouJb0TbX8mxxYv/X7vfMcuA/aPwJQ3DUK3causnOZ8P6KBe
+         w7dxaT+0zmZCXQSE/qHiRr3+GLSbAxuewvQRUBi5ez/st0h8X22x4A1XkrWtKibxaWmM
+         FdVhYqBQw9TDw9TVfajzMoXub9v4fFUkwctJ7sahaEJy0mPh3cOVqYSVKly2+TQOL5Gd
+         qJpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=hXL6L2zK8AglMazhyj7WKYzd8b5nE29SexQFpyrPges=;
-        b=62Mga1thejw4r+kPPJVX2h0MwFeNQzxhfkuoIrorNeN1Hhorz/gnounFV5OtMpBD18
-         VeIyQcdj7cn9v9+yiYbM3ubqKR1hYOhWiQR6GH5zBOvPv7OsYd5OGxOFJ7vHKnZajGap
-         IHkoYpsvtcLZxRIkWJLHxSL/Jw/mjGvxSkX1iTQwVAJhJiDCxe04tbi6O8wynE2MzmVT
-         J4MEuQo/YmCs1SSHLeUHw79AQcM/VUGcO/ICb2ilrRCs6OtzqCA4o1foXQQsALi8bCtJ
-         16RIw+UZlDE4kGOkY9/z6/74bO5LTmJ1ZkFDLHxY6CujfihVlLOrfA2ER+v5xZKWNkB3
-         YPOQ==
-X-Gm-Message-State: AOAM533g6QRXpyn9UL5NztBXCcyLMP0F3GRcdfUdpm/PqMVoiRi7urgX
-        /fcIZRVv76ZAzGFZVkXEFywaVA==
-X-Google-Smtp-Source: ABdhPJyYU7zzYV0xs3gVEXwNC6ZG2dpuAPPTdFYicI9B3vh5imlKY77pOLY518ol1vQcsjFbjat/+w==
-X-Received: by 2002:a05:6512:108c:: with SMTP id j12mr10015026lfg.514.1643479671788;
-        Sat, 29 Jan 2022 10:07:51 -0800 (PST)
-Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id y3sm1713464lji.96.2022.01.29.10.07.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 Jan 2022 10:07:51 -0800 (PST)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Amit Kucheria <amitk@kernel.org>,
+        bh=S51O7i9lXG7bN9afK9GQn6FtCRWvzVPVNhY8VS6CT3c=;
+        b=ihMPo3atztdlYU5uTR2s2nRHJ2iI9YwPcDP4Ayrp9nZIAdBxJJOvPDAIIOktOgoBkk
+         OgTMhU9Aas8XemjgjWYxHi8WvfSOlBAOINwlnWMjXKu3by6IohInv/uO5W48AQv9p1t7
+         zNfNsj+IWh654eUUFvWEC1x1M7Upo6xlXIahmkgkku6bNsHrht1aZJdhbrnPxf9URSsf
+         D1TyhVFVKW7iwFyxz4i3sYVsg1+y/5J4VdgYymEoGzG9tNbzfy0ywzjX1g0sxH3KjNWJ
+         8AouBBFaD7R1ELv9cUJbODFyucadF7M1RfcxZEV4gQaLGemzrOz8/mOvDLuEB4pfja06
+         x77g==
+X-Gm-Message-State: AOAM5333z3+P3wyhvWIevbJde94/E+w6vxWhsaFzoQktaTuFdT4ilfhf
+        FpzTq2KPbD2YETDz92Cm/TzM4Q==
+X-Google-Smtp-Source: ABdhPJzkjd4N/OmSdj/wA8yEM1j/6676LvYD5iELsVlVvGibDqSEeYYv0jaEwt/VlEy+aYjqlZ2O4A==
+X-Received: by 2002:a05:600c:3d0b:: with SMTP id bh11mr12249921wmb.24.1643486817374;
+        Sat, 29 Jan 2022 12:06:57 -0800 (PST)
+Received: from ?IPV6:2a01:e34:ed2f:f020:88a4:8c58:a63:ad53? ([2a01:e34:ed2f:f020:88a4:8c58:a63:ad53])
+        by smtp.googlemail.com with ESMTPSA id m4sm5010873wmc.1.2022.01.29.12.06.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 29 Jan 2022 12:06:56 -0800 (PST)
+Message-ID: <0918ba01-6ab0-fba5-fd65-9a027159c2f0@linaro.org>
+Date:   Sat, 29 Jan 2022 21:06:54 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v2] thermal/drivers/tsens: register thermal zones as hwmon
+ sensors
+Content-Language: en-US
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
         Thara Gopinath <thara.gopinath@gmail.com>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
 Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: [PATCH v2] thermal/drivers/tsens: register thermal zones as hwmon sensors
-Date:   Sat, 29 Jan 2022 21:07:50 +0300
-Message-Id: <20220129180750.1882310-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
+References: <20220129180750.1882310-1-dmitry.baryshkov@linaro.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <20220129180750.1882310-1-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Register thermal zones as hwmon sensors to let userspace read
-CPU temperatures using standard hwmon interface.
+On 29/01/2022 19:07, Dmitry Baryshkov wrote:
+> Register thermal zones as hwmon sensors to let userspace read
+> CPU temperatures using standard hwmon interface.
+> 
+> Acked-by: Amit Kucheria <amitk@kernel.org>
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+> ---
 
-Acked-by: Amit Kucheria <amitk@kernel.org>
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- drivers/thermal/qcom/tsens.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Applied, thanks
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 99a8d9f3e03c..154d3cb19c88 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -18,6 +18,7 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/thermal.h>
-+#include "../thermal_hwmon.h"
- #include "tsens.h"
- 
- /**
-@@ -1060,6 +1061,10 @@ static int tsens_register(struct tsens_priv *priv)
- 		priv->sensor[i].tzd = tzd;
- 		if (priv->ops->enable)
- 			priv->ops->enable(priv, i);
-+
-+		if (devm_thermal_add_hwmon_sysfs(tzd))
-+			dev_warn(priv->dev,
-+				 "Failed to add hwmon sysfs attributes\n");
- 	}
- 
- 	/* VER_0 require to set MIN and MAX THRESH
+
 -- 
-2.34.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
