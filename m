@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 716F8C433FE
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 23:39:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9191AC433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 23:40:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357136AbiA3XjR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Jan 2022 18:39:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34314 "EHLO
+        id S1357170AbiA3Xkm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jan 2022 18:40:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357199AbiA3Xht (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 18:37:49 -0500
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C66CEC061748;
-        Sun, 30 Jan 2022 15:37:48 -0800 (PST)
-Received: by mail-lf1-x12c.google.com with SMTP id n8so23300627lfq.4;
-        Sun, 30 Jan 2022 15:37:48 -0800 (PST)
+        with ESMTP id S1357405AbiA3XiF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 18:38:05 -0500
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F6E1C061760;
+        Sun, 30 Jan 2022 15:38:03 -0800 (PST)
+Received: by mail-lf1-x131.google.com with SMTP id u14so23251503lfo.11;
+        Sun, 30 Jan 2022 15:38:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=tAbveYQ6Sj9Bc7jSTaK6mqXkvmIczcqPXf0PDpGOqZw=;
-        b=QHplLZpG4Vn/qnA5SF9xQFG9TC0Ze8i4Spzrt9m1VH9xTuo4sL+GdKpNLnJA7KOr8X
-         Qfc/trGP80uyWOnL6/AW3/9PNKh6sZ4v+/AJr0yDEUAv6gwF+kbxhdx4PyYuQlWkYmBT
-         5dcnK+FjbXKDiIkDUIeSgduqdLBtuC8rMXlJOwSh6i5VHZUwrW/dUGAwRrpUn/Af/fxj
-         WsMvnRXnP4aQQ0nueTuih5zFAem9IsmzVuE9wBKY5qbRUAnxw1SUKdH9hUrXyM5G4iNf
-         Wv3uZZ05umzkgZLlfNoLjxiV+CUOHCuLo8ttBfu5AssPJfG1v91CF2F7LItDTfLU1kFo
-         8YCg==
+        bh=wEeGalIPQ9GIIDvt4ZGJ+mYKkZoiFtMFy2ITVcPwwOI=;
+        b=jXXBBfwPJ7SdtaD0pclW/HMx76vc8RahjAuPQm5Z/0dXxW/074tzfimlFO1HkDBvcr
+         oaZmouil0FqH92hbizW5my46ifg5DAFhrVT4LPFQpqXlLAxmnLJ6s1I5wLZSpyLZkBO0
+         wmI0HqfYIjv7H9ry2CW8BCr2FKRe9TovMRMPOdztHPrunU9Y7lzjTWnUadttQIH5bcvW
+         vttSNQ9r1vC1IZO5YVlqjP01k8/CcmcrMHA8TiKEuoGV1yx8sOgJc71/KAtv9CA4CYS0
+         o8OCrmOu9r4n3DeN2/5U1nzk/Hg0gBL3B1cSmVdN8RggR9Ftjf3x1TwywZSLzo/+Zh9b
+         2sCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=tAbveYQ6Sj9Bc7jSTaK6mqXkvmIczcqPXf0PDpGOqZw=;
-        b=Tw3kXRAzUQEM0loksTPhwQm/Q4QdZVu9mqG3UAoJzi7hP/4xqe9dMQpWm9EQBE4Nks
-         TdTa1McynMfVEk5vE7K/lwC76DPVj+KFOXuY0Jugu8FNK26sG+rGOvZ9Kq7V+FEfw3Yy
-         BQ9oIpo7BIf5OSNgsiJOhU5BjWmilGCJLrZrt6Sf4tmuM2hGOKc83vlmlWRXYB4oz1OR
-         qQXsJtL5ZqV1gIQbMZira+6QAg0yaLPijIYoXLbLnjmRLazA97FbH58EjQ08XuIBsp3N
-         FL7zCkg/07dehJCFfVxzZ+QKU/u/KpMf3NKN5dJR0tex0uFHtEDlTWYvajkNuU4C9Nwf
-         E1vQ==
-X-Gm-Message-State: AOAM5324VoxWar/fZm/K4DrkF6iMgaoyGGdKahUNdVOqtT9LkL28POlu
-        nFzXLLMURjaSpgJrelH+HFk=
-X-Google-Smtp-Source: ABdhPJwh6ac6/+YvlvcJArSyTbTVyJtyah+mG/ZsA52vJGw4uJf6+kKdZUm5PeIMLD7zMqHGNap5TQ==
-X-Received: by 2002:a05:6512:2396:: with SMTP id c22mr12993704lfv.547.1643585867143;
-        Sun, 30 Jan 2022 15:37:47 -0800 (PST)
+        bh=wEeGalIPQ9GIIDvt4ZGJ+mYKkZoiFtMFy2ITVcPwwOI=;
+        b=y4kMksU65D1pJavAk3ETN4c8isOcOOiiONvGRreiivH+/h02zucilMkzrRM1OerMoJ
+         PofIEb4kUs93yZEjfkQUCGb44UUCn0Dsh+AfuIJ01Z95FmGo20x09tbfSEJXScPcd/aa
+         pO50QreBfP1Fk/Dzz9Pp+N0Xr9EgUfXfVKbTQ3k4txNxuUtrkQGbSvNj+veGDIYZ38zf
+         opbKEswjakjqTO0VI0MO7lNzm2eIjnpIbK144dWOWEJbDX7fJD4skzeUZSt17bJRerE4
+         tc9/UxHPcyd7DfHnUvZmQEisT1y7TvdwSYhAKS1sXMx9gLNTnUfAM2nZIIm5FuPQlU5F
+         tdoQ==
+X-Gm-Message-State: AOAM531c+MK5ymDQtlFQamP51XPbA8uhsziubhpEl2ffJPkJdhIQy/yk
+        SpcKubuphbqfqULRr7sbxJs=
+X-Google-Smtp-Source: ABdhPJxKcR6AU2adDJMgqBbtDaQvM6Qs2pl/Zem+Cp2eBfoUK309RxSg7fIwfBi/lJNJPdOsuZTuaw==
+X-Received: by 2002:a05:6512:402a:: with SMTP id br42mr13689925lfb.336.1643585881636;
+        Sun, 30 Jan 2022 15:38:01 -0800 (PST)
 Received: from localhost.localdomain (109-252-138-126.dynamic.spd-mgts.ru. [109.252.138.126])
-        by smtp.gmail.com with ESMTPSA id a24sm1262950ljp.112.2022.01.30.15.37.45
+        by smtp.gmail.com with ESMTPSA id a24sm1262950ljp.112.2022.01.30.15.37.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Jan 2022 15:37:46 -0800 (PST)
+        Sun, 30 Jan 2022 15:38:01 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -99,9 +99,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v6 12/21] m68k: Switch to new sys-off handler API
-Date:   Mon, 31 Jan 2022 02:37:09 +0300
-Message-Id: <20220130233718.21544-13-digetx@gmail.com>
+Subject: [PATCH v6 20/21] regulator: pfuze100: Use devm_register_sys_off_handler()
+Date:   Mon, 31 Jan 2022 02:37:17 +0300
+Message-Id: <20220130233718.21544-21-digetx@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220130233718.21544-1-digetx@gmail.com>
 References: <20220130233718.21544-1-digetx@gmail.com>
@@ -111,132 +111,107 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Kernel now supports chained power-off handlers. Use
-register_power_off_handler() that registers power-off handlers and
-do_kernel_power_off() that invokes chained power-off handlers. Legacy
-pm_power_off() will be removed once all drivers will be converted to
-the new power-off API.
+Use devm_register_sys_off_handler() that replaces global
+pm_power_off_prepare variable and allows to register multiple
+power-off handlers.
 
-Normally arch code should adopt only the do_kernel_power_off() at first,
-but m68k is a special case because it uses pm_power_off() "inside out",
-i.e. pm_power_off() invokes machine_power_off() [in fact it does nothing],
-while it's machine_power_off() that should invoke the pm_power_off(), and
-thus, we can't convert platforms to the new API separately. There are only
-two platforms changed here, so it's not a big deal.
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/m68k/emu/natfeat.c         | 3 ++-
- arch/m68k/include/asm/machdep.h | 1 -
- arch/m68k/kernel/process.c      | 5 ++---
- arch/m68k/kernel/setup_mm.c     | 1 -
- arch/m68k/kernel/setup_no.c     | 1 -
- arch/m68k/mac/config.c          | 4 +++-
- 6 files changed, 7 insertions(+), 8 deletions(-)
+ drivers/regulator/pfuze100-regulator.c | 38 ++++++++++----------------
+ 1 file changed, 14 insertions(+), 24 deletions(-)
 
-diff --git a/arch/m68k/emu/natfeat.c b/arch/m68k/emu/natfeat.c
-index 71b78ecee75c..b19dc00026d9 100644
---- a/arch/m68k/emu/natfeat.c
-+++ b/arch/m68k/emu/natfeat.c
-@@ -15,6 +15,7 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
+diff --git a/drivers/regulator/pfuze100-regulator.c b/drivers/regulator/pfuze100-regulator.c
+index d60d7d1b7fa2..2eca8d43a097 100644
+--- a/drivers/regulator/pfuze100-regulator.c
++++ b/drivers/regulator/pfuze100-regulator.c
+@@ -10,6 +10,7 @@
+ #include <linux/of_device.h>
+ #include <linux/regulator/of_regulator.h>
+ #include <linux/platform_device.h>
 +#include <linux/reboot.h>
- #include <linux/io.h>
- #include <asm/machdep.h>
- #include <asm/natfeat.h>
-@@ -90,5 +91,5 @@ void __init nf_init(void)
- 	pr_info("NatFeats found (%s, %lu.%lu)\n", buf, version >> 16,
- 		version & 0xffff);
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/regulator/pfuze100.h>
+@@ -76,6 +77,7 @@ struct pfuze_chip {
+ 	struct pfuze_regulator regulator_descs[PFUZE100_MAX_REGULATOR];
+ 	struct regulator_dev *regulators[PFUZE100_MAX_REGULATOR];
+ 	struct pfuze_regulator *pfuze_regulators;
++	struct sys_off_handler sys_off;
+ };
  
--	mach_power_off = nf_poweroff;
-+	register_platform_power_off(nf_poweroff);
+ static const int pfuze100_swbst[] = {
+@@ -569,10 +571,10 @@ static inline struct device_node *match_of_node(int index)
+ 	return pfuze_matches[index].of_node;
  }
-diff --git a/arch/m68k/include/asm/machdep.h b/arch/m68k/include/asm/machdep.h
-index 8fd80ef1b77e..8d8c3ee2069f 100644
---- a/arch/m68k/include/asm/machdep.h
-+++ b/arch/m68k/include/asm/machdep.h
-@@ -24,7 +24,6 @@ extern int (*mach_get_rtc_pll)(struct rtc_pll_info *);
- extern int (*mach_set_rtc_pll)(struct rtc_pll_info *);
- extern void (*mach_reset)( void );
- extern void (*mach_halt)( void );
--extern void (*mach_power_off)( void );
- extern unsigned long (*mach_hd_init) (unsigned long, unsigned long);
- extern void (*mach_hd_setup)(char *, int *);
- extern void (*mach_heartbeat) (int);
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index a6030dbaa089..e160a7c57bd3 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -67,12 +67,11 @@ void machine_halt(void)
  
- void machine_power_off(void)
+-static struct pfuze_chip *syspm_pfuze_chip;
+-
+-static void pfuze_power_off_prepare(void)
++static void pfuze_power_off_prepare(struct power_off_prep_data *data)
  {
--	if (mach_power_off)
--		mach_power_off();
-+	do_kernel_power_off();
- 	for (;;);
- }
- 
--void (*pm_power_off)(void) = machine_power_off;
-+void (*pm_power_off)(void);
- EXPORT_SYMBOL(pm_power_off);
- 
- void show_regs(struct pt_regs * regs)
-diff --git a/arch/m68k/kernel/setup_mm.c b/arch/m68k/kernel/setup_mm.c
-index 8f94feed969c..47d55541612f 100644
---- a/arch/m68k/kernel/setup_mm.c
-+++ b/arch/m68k/kernel/setup_mm.c
-@@ -98,7 +98,6 @@ EXPORT_SYMBOL(mach_get_rtc_pll);
- EXPORT_SYMBOL(mach_set_rtc_pll);
- void (*mach_reset)( void );
- void (*mach_halt)( void );
--void (*mach_power_off)( void );
- #ifdef CONFIG_HEARTBEAT
- void (*mach_heartbeat) (int);
- EXPORT_SYMBOL(mach_heartbeat);
-diff --git a/arch/m68k/kernel/setup_no.c b/arch/m68k/kernel/setup_no.c
-index 5e4104f07a44..00bf82258233 100644
---- a/arch/m68k/kernel/setup_no.c
-+++ b/arch/m68k/kernel/setup_no.c
-@@ -55,7 +55,6 @@ int (*mach_hwclk) (int, struct rtc_time*);
- /* machine dependent reboot functions */
- void (*mach_reset)(void);
- void (*mach_halt)(void);
--void (*mach_power_off)(void);
- 
- #ifdef CONFIG_M68000
- #if defined(CONFIG_M68328)
-diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-index 65d124ec80bb..382f656c29ea 100644
---- a/arch/m68k/mac/config.c
-+++ b/arch/m68k/mac/config.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/errno.h>
- #include <linux/module.h>
-+#include <linux/reboot.h>
- #include <linux/types.h>
- #include <linux/mm.h>
- #include <linux/tty.h>
-@@ -140,7 +141,6 @@ void __init config_mac(void)
- 	mach_hwclk = mac_hwclk;
- 	mach_reset = mac_reset;
- 	mach_halt = mac_poweroff;
--	mach_power_off = mac_poweroff;
- #if IS_ENABLED(CONFIG_INPUT_M68K_BEEP)
- 	mach_beep = mac_mksound;
- #endif
-@@ -160,6 +160,8 @@ void __init config_mac(void)
- 
- 	if (macintosh_config->ident == MAC_MODEL_IICI)
- 		mach_l2_flush = via_l2_flush;
++	struct pfuze_chip *syspm_pfuze_chip = data->cb_data;
 +
-+	register_platform_power_off(mac_poweroff);
+ 	dev_info(syspm_pfuze_chip->dev, "Configure standby mode for power off");
+ 
+ 	/* Switch from default mode: APS/APS to APS/Off */
+@@ -611,24 +613,23 @@ static void pfuze_power_off_prepare(void)
+ 
+ static int pfuze_power_off_prepare_init(struct pfuze_chip *pfuze_chip)
+ {
++	int err;
++
+ 	if (pfuze_chip->chip_id != PFUZE100) {
+ 		dev_warn(pfuze_chip->dev, "Requested pm_power_off_prepare handler for not supported chip\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	if (pm_power_off_prepare) {
+-		dev_warn(pfuze_chip->dev, "pm_power_off_prepare is already registered.\n");
+-		return -EBUSY;
+-	}
++	pfuze_chip->sys_off.power_off_prepare_cb = pfuze_power_off_prepare;
++	pfuze_chip->sys_off.cb_data = pfuze_chip;
+ 
+-	if (syspm_pfuze_chip) {
+-		dev_warn(pfuze_chip->dev, "syspm_pfuze_chip is already set.\n");
+-		return -EBUSY;
++	err = devm_register_sys_off_handler(pfuze_chip->dev, &pfuze_chip->sys_off);
++	if (err) {
++		dev_err(pfuze_chip->dev,
++			"failed to register sys-off handler: %d\n", err);
++		return err;
+ 	}
+ 
+-	syspm_pfuze_chip = pfuze_chip;
+-	pm_power_off_prepare = pfuze_power_off_prepare;
+-
+ 	return 0;
  }
  
+@@ -837,23 +838,12 @@ static int pfuze100_regulator_probe(struct i2c_client *client,
+ 	return 0;
+ }
+ 
+-static int pfuze100_regulator_remove(struct i2c_client *client)
+-{
+-	if (syspm_pfuze_chip) {
+-		syspm_pfuze_chip = NULL;
+-		pm_power_off_prepare = NULL;
+-	}
+-
+-	return 0;
+-}
+-
+ static struct i2c_driver pfuze_driver = {
+ 	.driver = {
+ 		.name = "pfuze100-regulator",
+ 		.of_match_table = pfuze_dt_ids,
+ 	},
+ 	.probe = pfuze100_regulator_probe,
+-	.remove = pfuze100_regulator_remove,
+ };
+ module_i2c_driver(pfuze_driver);
  
 -- 
 2.34.1
