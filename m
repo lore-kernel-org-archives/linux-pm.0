@@ -2,96 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B00A3C433F5
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 01:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 239A3C433EF
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 10:27:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353632AbiA3BRd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 29 Jan 2022 20:17:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52974 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230206AbiA3BRc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Jan 2022 20:17:32 -0500
-Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 484EDC061714
-        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 17:17:32 -0800 (PST)
-Received: by mail-lj1-x230.google.com with SMTP id e17so14473653ljk.5
-        for <linux-pm@vger.kernel.org>; Sat, 29 Jan 2022 17:17:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=tlBCKkzLKxg3eMb5IZdgufrGrZfHXP2vlLMprNYdKbI=;
-        b=AcOjpl8y4rAty+IcgrZxbIocfPvDYyrmYZ9l3FcFZg70cpTxFMZC8pWAr4NJtubrlM
-         r9QrXMBwPbJGST8zRakS/4WDRJBo/jIpuzzMUMOuUVmGEJG0g3ssuOG1w+4l221ChPsy
-         qz1ZI6qLlatteoXr4fHAKgbJ1ltR2cpTdPDfchdvOKQl0eK1QFs2JWmDcBAcS6P/PfX5
-         /jK9BdZ/6QdS6eb4nglBP3IK8hnySxcD1tZEO4r4/TjACGMAE7F7evyQ+XveHfR4oqah
-         uKBZratPsi7zy9NXk+KonuiAAV/st5fRn48ZqeJHy9NskVh0PF9ihtq1TdFbPlqtaQkz
-         w4LQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=tlBCKkzLKxg3eMb5IZdgufrGrZfHXP2vlLMprNYdKbI=;
-        b=H7z7OAUCB44Qxe+JNOvc5Nvz2m9oJq48Emyu7b04vSuiI6LaVhZZcta9a8maTN5hs5
-         isUtb9xuAWjoMQ0I9bMuMu8ZVopxqPX8w6ZgKGWWnw4uTWV9EgjuljppLqiXHARKXl9p
-         L9KumT13cho/+X9gtKXKm6VV6g4sDvRn/CQzrOUp/O6JFRwyq6ornGOhUXJO62qhiKw8
-         sdKtXVPDPaNu1yhA8Bh5GoplaGrrzOxDbI+y2FF/A06K/lIO2mMDRfuRP/2MQnmd9+kh
-         XU5zrz799C5f2YiAQXet4I9lfq79a1D+Jh1gxUa/BOD/GJTpExFAYZtFNoP5Ib4DkfW8
-         h9jg==
-X-Gm-Message-State: AOAM530HtZOfLk7VcrBf2BNFZuSmbDOTg8IDWN/WEQ2hkya6rPpRfEND
-        cLzQ4+BneVQb8keH2n2hLCWtS2d1NgvDjg==
-X-Google-Smtp-Source: ABdhPJwnrqyI3PvdlWfcWQbI0h8hTujm7tm2Uk4qbOz0S6nGAxeAw7x/YOENOMJLGO6dge5rN39v6w==
-X-Received: by 2002:a2e:bc11:: with SMTP id b17mr9901686ljf.74.1643505449987;
-        Sat, 29 Jan 2022 17:17:29 -0800 (PST)
-Received: from localhost.localdomain (c-fdcc225c.014-348-6c756e10.bbcust.telenor.se. [92.34.204.253])
-        by smtp.gmail.com with ESMTPSA id x5sm1277114ljm.62.2022.01.29.17.17.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 29 Jan 2022 17:17:29 -0800 (PST)
-From:   Linus Walleij <linus.walleij@linaro.org>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     linux-pm@vger.kernel.org, kernel test robot <lkp@intel.com>,
-        Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH] power: supply: cw2015: fix noderef.cocci warnings
-Date:   Sun, 30 Jan 2022 02:15:24 +0100
-Message-Id: <20220130011524.8537-1-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.34.1
+        id S232545AbiA3K1f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jan 2022 05:27:35 -0500
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:35886
+        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1354584AbiA3K1e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 05:27:34 -0500
+X-IronPort-AV: E=Sophos;i="5.88,328,1635199200"; 
+   d="scan'208";a="4476194"
+Received: from 173.121.68.85.rev.sfr.net (HELO hadrien) ([85.68.121.173])
+  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jan 2022 11:27:34 +0100
+Date:   Sun, 30 Jan 2022 11:27:32 +0100 (CET)
+From:   Julia Lawall <julia.lawall@inria.fr>
+X-X-Sender: jll@hadrien
+To:     Len Brown <lenb@kernel.org>
+cc:     linux-pm@vger.kernel.org
+Subject: DRAM power consumption with turbostat
+Message-ID: <alpine.DEB.2.22.394.2201301121380.3109@hadrien>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: kernel test robot <lkp@intel.com>
+Hello,
 
-drivers/power/supply/cw2015_battery.c:692:12-18: ERROR: application of sizeof to pointer
+I was wondering whether the DRAM power consumption reported by turbostat
+is reliable on recent Intel machines?
 
- sizeof when applied to a pointer typed expression gives the size of
- the pointer
+In particular, I observed that turbostat reported a high DRAM energy
+comsumption on a machine (Intel 5128) with persistent memory, but where
+the persistent memory was not being used.  A colleague did an experiemnt
+on another machine with persistent memory, and reported:
 
-Generated by: scripts/coccinelle/misc/noderef.cocci
+-----
 
-Fixes: 0839e7a54fc2 ("power: supply_core: Pass pointer to battery info")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: kernel test robot <lkp@intel.com>
-[Fixed up subject]
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/power/supply/cw2015_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I didn't run the test on troll but on another server equipped with PM
+where I was able to reproduce the bug and by reading directly the msr
+registers, I see that:
+CPU Energy units = 0.00006104J
+DRAM Energy units = 0.00001526J
 
-diff --git a/drivers/power/supply/cw2015_battery.c b/drivers/power/supply/cw2015_battery.c
-index 0c87ad0dbf71..728e2a6cc9c3 100644
---- a/drivers/power/supply/cw2015_battery.c
-+++ b/drivers/power/supply/cw2015_battery.c
-@@ -689,7 +689,7 @@ static int cw_bat_probe(struct i2c_client *client)
- 	if (ret) {
- 		/* Allocate an empty battery */
- 		cw_bat->battery = devm_kzalloc(&client->dev,
--					       sizeof(cw_bat->battery),
-+					       sizeof(*cw_bat->battery),
- 					       GFP_KERNEL);
- 		if (!cw_bat->battery)
- 			return -ENOMEM;
--- 
-2.34.1
+However turbostat assumes that the DRAM  Energy units is 0.00006104J when
+it runs the computation to obtain Joules (hence the too-high value
+returned by turbostat)
 
+-----
+
+I see the code in turbostat that just uses the CPU energy units value
+(rapl_dram_energy_units_probe), but I don't know what was the MSR used to
+collect the above information.  Overall, I am wondering if the DRAM energy
+consumption values are reliable in cases with and without persistent
+memory.
+
+thanks,
+julia
