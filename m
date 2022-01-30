@@ -2,257 +2,294 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83F1DC433FE
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 20:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7527BC433F5
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 21:02:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231837AbiA3Utg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Jan 2022 15:49:36 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:20885 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1356333AbiA3Urg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 15:47:36 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643575655;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=JmrPouzyJORqeW8YegyrXzTKKZke8QnXRejNnVcuGaU=;
-        b=hhUvXkipZehQyGM+r9CcqdgQqtsq13PTrNESoL5M2QVnxJrJFEXcaMA5V/jKid10Wb0nj+
-        2S3kkj6qoihVWtZqxrMFIKARaqjkXELerktKMbVtsEM9mLlD90QxFksRQVNZNe+HGqNY8c
-        ofSOwJeLKo7qiKnxEw+/XVqAc921v9M=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-456-VxhSskVmOBWCJDjWgcUC6A-1; Sun, 30 Jan 2022 15:47:32 -0500
-X-MC-Unique: VxhSskVmOBWCJDjWgcUC6A-1
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id DAD5F18397A7;
-        Sun, 30 Jan 2022 20:47:29 +0000 (UTC)
-Received: from shalem.redhat.com (unknown [10.39.192.60])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 7121C61093;
-        Sun, 30 Jan 2022 20:47:26 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Mark Gross <markgross@kernel.org>,
-        Andy Shevchenko <andy@kernel.org>,
-        Wolfram Sang <wsa@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Ard Biesheuvel <ardb@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
-        linux-acpi@vger.kernel.org, Yauhen Kharuzhy <jekhor@gmail.com>,
-        Tsuchiya Yuto <kitakar@gmail.com>,
-        Fabio Aiuto <fabioaiuto83@gmail.com>,
-        platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: [PATCH v4 15/20] i2c: cht-wc: Make charger i2c-client instantiation board/device-model specific
-Date:   Sun, 30 Jan 2022 21:45:52 +0100
-Message-Id: <20220130204557.15662-16-hdegoede@redhat.com>
-In-Reply-To: <20220130204557.15662-1-hdegoede@redhat.com>
-References: <20220130204557.15662-1-hdegoede@redhat.com>
+        id S1347634AbiA3VCQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jan 2022 16:02:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56748 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S243746AbiA3VCQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 16:02:16 -0500
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1AEF9C06173B
+        for <linux-pm@vger.kernel.org>; Sun, 30 Jan 2022 13:02:16 -0800 (PST)
+Received: by mail-wm1-x32c.google.com with SMTP id m26so2577770wms.0
+        for <linux-pm@vger.kernel.org>; Sun, 30 Jan 2022 13:02:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=zgN4kboK6BDi4j8PdQgM4+rnAZo/EbE+mRU5+LkdX5I=;
+        b=M/RIeWVvt1ILqz4YX0HR2Qt8Kvbj0WY/BF3eVcE1RalbZnfNLEy/jueZPykje3r2tw
+         IZUwziPCwJFmd2Ch+F1gaPcrMbwfRSy7RSNjvFrkPYDFTkeZX+ZDpY/sn1LIWnYQcqJ5
+         zdBCfTvQVLkoGpocGrgSJ2VCHftcLvvdgY8EMhn2Q1Jq5GHHZzZVgSaoqtA3ltsQUla5
+         bleYRO+Qmr2irw117KzrVrBDbpy0TXNdjhADSBga3vZN0fw0KFPzb1AkBkp3YH48WlaK
+         JXjo3mA0kTN0jx7Q8XKU+7y1WCcCdEJcEYAFuApb7GKYTLhFl5dJIgEg47LO+uEzBh1J
+         Pm7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=zgN4kboK6BDi4j8PdQgM4+rnAZo/EbE+mRU5+LkdX5I=;
+        b=dP/THpYfExC/zaHN1MFdVj+nqgM0LsVQs7vsuymhBgVT64opynOScAGjDufFvSon9W
+         +9ROI214581zGjJS4C0tdUL09C7kD8POATFdk1BISqxLZVuiMCpH8TqohnvQGPTfA7Y6
+         v76rN9n55LlS5B8xQLhaMvjRurVe0nIorOuOitlHc3owVj1rEK9HLiK/d6egLry/OuwQ
+         FAbCGE+6KQLmtJicO8ouxFpQ6HPJ+lUquZmNwg60EA7d0eFipmHrvwXoFgMbwhGPdNPB
+         rZjrHPtI59uHYSnJHPXECIydOQRytUDINrMkO7xm9OnOJ/iASSad4LRIhLIS1gyUSHIH
+         ceyQ==
+X-Gm-Message-State: AOAM530U7T1OxIFdkcWu4x+nb0XU6EqY7ONOw+MMEWioh75g3flV6hRO
+        i7vI8dQVh5Iy+RnpE44Y0npZkQ==
+X-Google-Smtp-Source: ABdhPJwnuWOR0GnzVxtJ/hx7eZAn0y6Hp7MDGqzH0Qs+meRUlepIIhnQDaIGi1drQWL04J8IJeHP2w==
+X-Received: by 2002:a7b:c153:: with SMTP id z19mr23962932wmi.118.1643576534603;
+        Sun, 30 Jan 2022 13:02:14 -0800 (PST)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:d3c5:fe0:78a4:5227])
+        by smtp.gmail.com with ESMTPSA id i6sm9845185wrw.8.2022.01.30.13.02.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 30 Jan 2022 13:02:13 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc:     heiko@sntech.de, lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, ulf.hansson@linaro.org,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v1 1/7] powercap/dtpm: Change locking scheme
+Date:   Sun, 30 Jan 2022 22:02:03 +0100
+Message-Id: <20220130210210.549877-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The i2c-controller on the Cherry Trail - Whiskey Cove PMIC is special
-in that it is always connected to the I2C charger IC of the board on
-which the PMIC is used; and the charger IC is not described in ACPI,
-so the i2c-cht-wc code needs to instantiate an i2c-client for it itself.
+The different functions are all called through the
+dtpm_create_hierarchy() which handle the mutex. The different
+functions are used in this context, consequently with the lock always
+held.
 
-So far this was hardcoded to instantiate an i2c-client for the
-bq24292i, with all properties, etc. set to match how this charger
-is used on the GPD win and GPD pocket devices.
+Remove all locks taken in the function and add the lock in the
+hierarchy creation function.
 
-There is a rudimentary check to make sure the ACPI tables are at least
-somewhat as expected, but this is far from accurate, leading to
-a wrong i2c-client being instantiated for the charger on some boards.
-
-Switch to the new DMI based intel_cht_wc_get_model() helper which is
-exported by the MFD driver for the CHT Whiskey Cove PMIC to help PMIC
-cell drivers like the i2c-cht-wc code reliably detect which board
-they are running on.
-
-And add board_info for the charger ICs as found on the other 2 known
-boards with a Whisky Cove PMIC.
-
-This has been tested on all 3 known boards.
-
-Acked-by: Wolfram Sang <wsa@kernel.org>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
-Changes in v3:
-- Add Wolfram's Ack for taking this upstream through another tree
-  then the i2c tree
-- Some minor tweaks / spelling fixes based on Andy's review
----
- drivers/i2c/busses/i2c-cht-wc.c | 120 +++++++++++++++++++++++++++-----
- 1 file changed, 102 insertions(+), 18 deletions(-)
+ drivers/powercap/dtpm.c | 95 ++++++++++++-----------------------------
+ 1 file changed, 27 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-cht-wc.c b/drivers/i2c/busses/i2c-cht-wc.c
-index 1cf68f85b2e1..54e909f9eab6 100644
---- a/drivers/i2c/busses/i2c-cht-wc.c
-+++ b/drivers/i2c/busses/i2c-cht-wc.c
-@@ -18,6 +18,7 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/power/bq24190_charger.h>
-+#include <linux/power/bq25890_charger.h>
- #include <linux/slab.h>
- 
- #define CHT_WC_I2C_CTRL			0x5e24
-@@ -270,6 +271,7 @@ static const struct irq_chip cht_wc_i2c_irq_chip = {
- 	.name			= "cht_wc_ext_chrg_irq_chip",
- };
- 
-+/********** GPD Win / Pocket charger IC settings **********/
- static const char * const bq24190_suppliers[] = {
- 	"tcpm-source-psy-i2c-fusb302" };
- 
-@@ -304,17 +306,92 @@ static struct bq24190_platform_data bq24190_pdata = {
- 	.regulator_init_data = &bq24190_vbus_init_data,
- };
- 
-+static struct i2c_board_info gpd_win_board_info = {
-+	.type = "bq24190",
-+	.addr = 0x6b,
-+	.dev_name = "bq24190",
-+	.swnode = &bq24190_node,
-+	.platform_data = &bq24190_pdata,
-+};
-+
-+/********** Xiaomi Mi Pad 2 charger IC settings  **********/
-+static struct regulator_consumer_supply bq2589x_vbus_consumer = {
-+	.supply = "vbus",
-+	.dev_name = "cht_wcove_pwrsrc",
-+};
-+
-+static const struct regulator_init_data bq2589x_vbus_init_data = {
-+	.constraints = {
-+		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
-+	},
-+	.consumer_supplies = &bq2589x_vbus_consumer,
-+	.num_consumer_supplies = 1,
-+};
-+
-+static struct bq25890_platform_data bq2589x_pdata = {
-+	.regulator_init_data = &bq2589x_vbus_init_data,
-+};
-+
-+static const struct property_entry xiaomi_mipad2_props[] = {
-+	PROPERTY_ENTRY_BOOL("linux,skip-reset"),
-+	PROPERTY_ENTRY_BOOL("linux,read-back-settings"),
-+	{ }
-+};
-+
-+static const struct software_node xiaomi_mipad2_node = {
-+	.properties = xiaomi_mipad2_props,
-+};
-+
-+static struct i2c_board_info xiaomi_mipad2_board_info = {
-+	.type = "bq25890",
-+	.addr = 0x6a,
-+	.dev_name = "bq25890",
-+	.swnode = &xiaomi_mipad2_node,
-+	.platform_data = &bq2589x_pdata,
-+};
-+
-+/********** Lenovo Yogabook YB1-X90F/-X91F/-X91L charger settings **********/
-+static const char * const lenovo_yb1_bq25892_suppliers[] = { "cht_wcove_pwrsrc" };
-+
-+static const struct property_entry lenovo_yb1_bq25892_props[] = {
-+	PROPERTY_ENTRY_STRING_ARRAY("supplied-from",
-+				    lenovo_yb1_bq25892_suppliers),
-+	PROPERTY_ENTRY_U32("linux,pump-express-vbus-max", 12000000),
-+	PROPERTY_ENTRY_BOOL("linux,skip-reset"),
-+	/*
-+	 * The firmware sets everything to the defaults, which leads to a
-+	 * somewhat low charge-current of 2048mA and worse to a battery-voltage
-+	 * of 4.2V instead of 4.35V (when booted without a charger connected).
-+	 * Use our own values instead of "linux,read-back-settings" to fix this.
-+	 */
-+	PROPERTY_ENTRY_U32("ti,charge-current", 4224000),
-+	PROPERTY_ENTRY_U32("ti,battery-regulation-voltage", 4352000),
-+	PROPERTY_ENTRY_U32("ti,termination-current", 256000),
-+	PROPERTY_ENTRY_U32("ti,precharge-current", 128000),
-+	PROPERTY_ENTRY_U32("ti,minimum-sys-voltage", 3500000),
-+	PROPERTY_ENTRY_U32("ti,boost-voltage", 4998000),
-+	PROPERTY_ENTRY_U32("ti,boost-max-current", 1400000),
-+	PROPERTY_ENTRY_BOOL("ti,use-ilim-pin"),
-+	{ }
-+};
-+
-+static const struct software_node lenovo_yb1_bq25892_node = {
-+	.properties = lenovo_yb1_bq25892_props,
-+};
-+
-+static struct i2c_board_info lenovo_yogabook1_board_info = {
-+	.type = "bq25892",
-+	.addr = 0x6b,
-+	.dev_name = "bq25892",
-+	.swnode = &lenovo_yb1_bq25892_node,
-+	.platform_data = &bq2589x_pdata,
-+};
-+
- static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
+index 414826a1509b..0b0121c37a1b 100644
+--- a/drivers/powercap/dtpm.c
++++ b/drivers/powercap/dtpm.c
+@@ -51,9 +51,7 @@ static int get_max_power_range_uw(struct powercap_zone *pcz, u64 *max_power_uw)
  {
- 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
-+	struct i2c_board_info *board_info = NULL;
- 	struct cht_wc_i2c_adap *adap;
--	struct i2c_board_info board_info = {
--		.type = "bq24190",
--		.addr = 0x6b,
--		.dev_name = "bq24190",
--		.swnode = &bq24190_node,
--		.platform_data = &bq24190_pdata,
--	};
- 	int ret, reg, irq;
+ 	struct dtpm *dtpm = to_dtpm(pcz);
  
- 	irq = platform_get_irq(pdev, 0);
-@@ -379,17 +456,24 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto remove_irq_domain;
+-	mutex_lock(&dtpm_lock);
+ 	*max_power_uw = dtpm->power_max - dtpm->power_min;
+-	mutex_unlock(&dtpm_lock);
  
--	/*
--	 * Normally the Whiskey Cove PMIC is paired with a TI bq24292i charger,
--	 * connected to this i2c bus, and a max17047 fuel-gauge and a fusb302
--	 * USB Type-C controller connected to another i2c bus. In this setup
--	 * the max17047 and fusb302 devices are enumerated through an INT33FE
--	 * ACPI device. If this device is present register an i2c-client for
--	 * the TI bq24292i charger.
--	 */
--	if (acpi_dev_present("INT33FE", NULL, -1)) {
--		board_info.irq = adap->client_irq;
--		adap->client = i2c_new_client_device(&adap->adapter, &board_info);
-+	switch (pmic->cht_wc_model) {
-+	case INTEL_CHT_WC_GPD_WIN_POCKET:
-+		board_info = &gpd_win_board_info;
-+		break;
-+	case INTEL_CHT_WC_XIAOMI_MIPAD2:
-+		board_info = &xiaomi_mipad2_board_info;
-+		break;
-+	case INTEL_CHT_WC_LENOVO_YOGABOOK1:
-+		board_info = &lenovo_yogabook1_board_info;
-+		break;
-+	default:
-+		dev_warn(&pdev->dev, "Unknown model, not instantiating charger device\n");
-+		break;
-+	}
+ 	return 0;
+ }
+@@ -83,14 +81,7 @@ static int __get_power_uw(struct dtpm *dtpm, u64 *power_uw)
+ 
+ static int get_power_uw(struct powercap_zone *pcz, u64 *power_uw)
+ {
+-	struct dtpm *dtpm = to_dtpm(pcz);
+-	int ret;
+-
+-	mutex_lock(&dtpm_lock);
+-	ret = __get_power_uw(dtpm, power_uw);
+-	mutex_unlock(&dtpm_lock);
+-
+-	return ret;
++	return __get_power_uw(to_dtpm(pcz), power_uw);
+ }
+ 
+ static void __dtpm_rebalance_weight(struct dtpm *dtpm)
+@@ -133,7 +124,16 @@ static void __dtpm_add_power(struct dtpm *dtpm)
+ 	}
+ }
+ 
+-static int __dtpm_update_power(struct dtpm *dtpm)
++/**
++ * dtpm_update_power - Update the power on the dtpm
++ * @dtpm: a pointer to a dtpm structure to update
++ *
++ * Function to update the power values of the dtpm node specified in
++ * parameter. These new values will be propagated to the tree.
++ *
++ * Return: zero on success, -EINVAL if the values are inconsistent
++ */
++int dtpm_update_power(struct dtpm *dtpm)
+ {
+ 	int ret;
+ 
+@@ -155,26 +155,6 @@ static int __dtpm_update_power(struct dtpm *dtpm)
+ 	return ret;
+ }
+ 
+-/**
+- * dtpm_update_power - Update the power on the dtpm
+- * @dtpm: a pointer to a dtpm structure to update
+- *
+- * Function to update the power values of the dtpm node specified in
+- * parameter. These new values will be propagated to the tree.
+- *
+- * Return: zero on success, -EINVAL if the values are inconsistent
+- */
+-int dtpm_update_power(struct dtpm *dtpm)
+-{
+-	int ret;
+-
+-	mutex_lock(&dtpm_lock);
+-	ret = __dtpm_update_power(dtpm);
+-	mutex_unlock(&dtpm_lock);
+-
+-	return ret;
+-}
+-
+ /**
+  * dtpm_release_zone - Cleanup when the node is released
+  * @pcz: a pointer to a powercap_zone structure
+@@ -191,20 +171,14 @@ int dtpm_release_zone(struct powercap_zone *pcz)
+ 	struct dtpm *dtpm = to_dtpm(pcz);
+ 	struct dtpm *parent = dtpm->parent;
+ 
+-	mutex_lock(&dtpm_lock);
+-
+-	if (!list_empty(&dtpm->children)) {
+-		mutex_unlock(&dtpm_lock);
++	if (!list_empty(&dtpm->children))
+ 		return -EBUSY;
+-	}
+ 
+ 	if (parent)
+ 		list_del(&dtpm->sibling);
+ 
+ 	__dtpm_sub_power(dtpm);
+ 
+-	mutex_unlock(&dtpm_lock);
+-
+ 	if (dtpm->ops)
+ 		dtpm->ops->release(dtpm);
+ 
+@@ -216,23 +190,12 @@ int dtpm_release_zone(struct powercap_zone *pcz)
+ 	return 0;
+ }
+ 
+-static int __get_power_limit_uw(struct dtpm *dtpm, int cid, u64 *power_limit)
+-{
+-	*power_limit = dtpm->power_limit;
+-	return 0;
+-}
+-
+ static int get_power_limit_uw(struct powercap_zone *pcz,
+ 			      int cid, u64 *power_limit)
+ {
+-	struct dtpm *dtpm = to_dtpm(pcz);
+-	int ret;
+-
+-	mutex_lock(&dtpm_lock);
+-	ret = __get_power_limit_uw(dtpm, cid, power_limit);
+-	mutex_unlock(&dtpm_lock);
+-
+-	return ret;
++	*power_limit = to_dtpm(pcz)->power_limit;
++	
++	return 0;
+ }
+ 
+ /*
+@@ -292,7 +255,7 @@ static int __set_power_limit_uw(struct dtpm *dtpm, int cid, u64 power_limit)
+ 
+ 			ret = __set_power_limit_uw(child, cid, power);
+ 			if (!ret)
+-				ret = __get_power_limit_uw(child, cid, &power);
++				ret = get_power_limit_uw(&child->zone, cid, &power);
+ 
+ 			if (ret)
+ 				break;
+@@ -310,8 +273,6 @@ static int set_power_limit_uw(struct powercap_zone *pcz,
+ 	struct dtpm *dtpm = to_dtpm(pcz);
+ 	int ret;
+ 
+-	mutex_lock(&dtpm_lock);
+-
+ 	/*
+ 	 * Don't allow values outside of the power range previously
+ 	 * set when initializing the power numbers.
+@@ -323,8 +284,6 @@ static int set_power_limit_uw(struct powercap_zone *pcz,
+ 	pr_debug("%s: power limit: %llu uW, power max: %llu uW\n",
+ 		 dtpm->zone.name, dtpm->power_limit, dtpm->power_max);
+ 
+-	mutex_unlock(&dtpm_lock);
+-
+ 	return ret;
+ }
+ 
+@@ -335,11 +294,7 @@ static const char *get_constraint_name(struct powercap_zone *pcz, int cid)
+ 
+ static int get_max_power_uw(struct powercap_zone *pcz, int id, u64 *max_power)
+ {
+-	struct dtpm *dtpm = to_dtpm(pcz);
+-
+-	mutex_lock(&dtpm_lock);
+-	*max_power = dtpm->power_max;
+-	mutex_unlock(&dtpm_lock);
++	*max_power = to_dtpm(pcz)->power_max;
+ 
+ 	return 0;
+ }
+@@ -442,8 +397,6 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 	if (IS_ERR(pcz))
+ 		return PTR_ERR(pcz);
+ 
+-	mutex_lock(&dtpm_lock);
+-
+ 	if (parent) {
+ 		list_add_tail(&dtpm->sibling, &parent->children);
+ 		dtpm->parent = parent;
+@@ -459,8 +412,6 @@ int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm *parent)
+ 	pr_debug("Registered dtpm node '%s' / %llu-%llu uW, \n",
+ 		 dtpm->zone.name, dtpm->power_min, dtpm->power_max);
+ 
+-	mutex_unlock(&dtpm_lock);
+-
+ 	return 0;
+ }
+ 
+@@ -605,8 +556,12 @@ int dtpm_create_hierarchy(struct of_device_id *dtpm_match_table)
+ 	struct device_node *np;
+ 	int i, ret;
+ 
+-	if (pct)
+-		return -EBUSY;
++	mutex_lock(&dtpm_lock);
 +
-+	if (board_info) {
-+		board_info->irq = adap->client_irq;
-+		adap->client = i2c_new_client_device(&adap->adapter, board_info);
- 		if (IS_ERR(adap->client)) {
- 			ret = PTR_ERR(adap->client);
- 			goto del_adapter;
++	if (pct) {
++		ret = -EBUSY;
++		goto out_unlock;
++	}
+ 
+ 	pct = powercap_register_control_type(NULL, "dtpm", NULL);
+ 	if (IS_ERR(pct)) {
+@@ -648,12 +603,16 @@ int dtpm_create_hierarchy(struct of_device_id *dtpm_match_table)
+ 				dtpm_subsys[i]->name, ret);
+ 	}
+ 
++	mutex_unlock(&dtpm_lock);
++
+ 	return 0;
+ 
+ out_err:
+ 	powercap_unregister_control_type(pct);
+ out_pct:
+ 	pct = NULL;
++out_unlock:
++	mutex_unlock(&dtpm_lock);
+ 	
+ 	return ret;
+ }
 -- 
-2.33.1
+2.25.1
 
