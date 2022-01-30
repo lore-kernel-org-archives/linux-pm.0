@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F49FC3526F
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 23:38:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D9B9C35270
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 23:38:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357476AbiA3XiT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Jan 2022 18:38:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34398 "EHLO
+        id S1357483AbiA3XiV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jan 2022 18:38:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357338AbiA3XiA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 18:38:00 -0500
+        with ESMTP id S1357275AbiA3Xhy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 18:37:54 -0500
 Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9408EC061757;
-        Sun, 30 Jan 2022 15:37:59 -0800 (PST)
-Received: by mail-lf1-x134.google.com with SMTP id bu18so23308852lfb.5;
-        Sun, 30 Jan 2022 15:37:59 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50F8CC061401;
+        Sun, 30 Jan 2022 15:37:54 -0800 (PST)
+Received: by mail-lf1-x134.google.com with SMTP id a28so23276405lfl.7;
+        Sun, 30 Jan 2022 15:37:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=6m8P3WoXpjmgm4wPv3Z7h5cBjPxfBSCYucbGZeGzChw=;
-        b=pw0lvBk+dTz3ObiHx+Tziue58w6zUuZQVNJvU9S7GB+pTzwAHhgcj/iJlwXXxw2erP
-         SjJaIXCKqSP4ZUdeywJtZKFLRYiUBBH6flK45216wEu+kAKbGqsUiHPKIi82YM1bz/wq
-         bMKu0rK0969KEuxg/PSMaDE+zRgG2hxtPkS3M1mFIZPAgYW4ktfU2t1MzGq6fvtQ0WCp
-         Y+7PFXh6gcLp4xF5Q6p6cFH24zY5vWjbmW+bewwmKwBTNzJ37xEIcDLIFgNsMgKiVVBl
-         Kl81Cxsay4XTPckhsJ1WeXkyEjcWdoSjNX8wa8Lm2Ykdw2ly2wOfBD20u+sG0elmdIGM
-         o1xg==
+        bh=onbjYH+GRuJ1H+aKPIQ3zfVzcOAEVYGJovL5WFpgYzE=;
+        b=UH1XcKU9Gn1SSFj/c6UF13MQ0Jk4L0iTHT84SKL6CKoxP6s+KdtFoXyH/BcfyYDpHy
+         loZc76siXQCxc0BEyl6FoScWMfzkuy0+stkGcZcwGW2GEdy+KMmBYv7TWditUzAcwMzy
+         Tt6+cvIqwyyrufTRsRpGGLkldJ9LCj0ohCU13mN/KWIDXPq7wGpxAM7zRuw3yc8XG/sX
+         kB5V6sSPdbwBeQeNfwWdQOiHlVD0cbXl/3KN+Taw7rwJQ9btmTdGH9V7WkpieowAbyRI
+         LCnnw5FiTCZdg9w/dnOXicsOkOVxD4dBkbYZp5w48IHi/dsTV0RcMVW6iF0qd1ahO1Hj
+         Vr0A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=6m8P3WoXpjmgm4wPv3Z7h5cBjPxfBSCYucbGZeGzChw=;
-        b=h2mCAOMbZbzkk1ECRXctqaYnGatW35mubMGZmnZacbSh9EiDoYQ8lcbu/SbHDg5Ebr
-         fBNVSWqA3CweZuJi17k+JIU7LPyzqJQ5rjO0zB7x3fisw2WqRgC7laI4Lft/2E2/8tB7
-         dMHNOaz3nZLz0kIcb3JVokb/p9rqdg+UfaMEwsvmZDe9CI5/bXxy9tGlO++gfUHa/U1M
-         XLX8p3k8UZGLbQY6YBlJW+dFoqDwjnMTCO5GUeHZqxGm9yuesFWNQr5nsTVlNNERWJaa
-         hUKTAFWXrRywodocMcxAvHBt4rZpVN5V+w45VePT+Y8sXsxpLJBLpMxFRBhVjmwUxOyV
-         4VGw==
-X-Gm-Message-State: AOAM5314pkahsagkdMyOm7+h+d3Sj+72SBJiHS6o8UmxP7/C6u38s8xG
-        l5bNnG9GThRDCdvpwYQxdmc=
-X-Google-Smtp-Source: ABdhPJym+9e+qz3b9Eox6rk6EROG58IYAq1gwBJQdx3IJq9mRqA6OUoE67/3HvdiOb6Vb5OIHzS4jw==
-X-Received: by 2002:a05:6512:10c4:: with SMTP id k4mr13546209lfg.63.1643585878009;
-        Sun, 30 Jan 2022 15:37:58 -0800 (PST)
+        bh=onbjYH+GRuJ1H+aKPIQ3zfVzcOAEVYGJovL5WFpgYzE=;
+        b=Iw4X+dLgq4TQ1J7pwQ4D22scVGfIV8U4OcsrGwhQFy79n0p6VcTx2aQg0HUa+eSJoe
+         ywss2gjH/4VbyQ5z9FH4qxa3FoapRDVprAQiAwDLHM+L1vBiQMgifNNN9PZSA/cY1eVw
+         Mg3jtw+6aqbP/2k9akJLnu+EXg21VMvmiXA+Hc9MZZmCKxDZkPUMTwmSsZ769b6DrkYv
+         aaVc/uR0rj0iY6hdBmcNItcPvRju+P37pB9PiKwhhEkLHiTfn0rqC1x/UgJenrwra+da
+         2UkV/GKYgyy3yCKQZX+04HPbz53BaJX19IuJ6n3wf3mR7mooLBI9ElIHRNsFP6q6oT4d
+         theQ==
+X-Gm-Message-State: AOAM531UrgDOUjeDHw6JYRSSb/pjNZVMevz2ZKclWxL8syUHXgtaGdrY
+        ziLfIZgkDWcmvYcClf5kYEc=
+X-Google-Smtp-Source: ABdhPJzNx9wknKIs7vHNlQS9Ch9++IYsC8MJz1WUWotZ0fgIzeDZMu0xSzBho+J/7CYm9WmVvjoXbA==
+X-Received: by 2002:a05:6512:31cd:: with SMTP id j13mr13576351lfe.369.1643585872718;
+        Sun, 30 Jan 2022 15:37:52 -0800 (PST)
 Received: from localhost.localdomain (109-252-138-126.dynamic.spd-mgts.ru. [109.252.138.126])
-        by smtp.gmail.com with ESMTPSA id a24sm1262950ljp.112.2022.01.30.15.37.56
+        by smtp.gmail.com with ESMTPSA id a24sm1262950ljp.112.2022.01.30.15.37.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Jan 2022 15:37:57 -0800 (PST)
+        Sun, 30 Jan 2022 15:37:52 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -99,9 +99,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v6 18/21] memory: emif: Use kernel_can_power_off()
-Date:   Mon, 31 Jan 2022 02:37:15 +0300
-Message-Id: <20220130233718.21544-19-digetx@gmail.com>
+Subject: [PATCH v6 15/21] ia64: Use do_kernel_power_off()
+Date:   Mon, 31 Jan 2022 02:37:12 +0300
+Message-Id: <20220130233718.21544-16-digetx@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220130233718.21544-1-digetx@gmail.com>
 References: <20220130233718.21544-1-digetx@gmail.com>
@@ -111,27 +111,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace legacy pm_power_off with kernel_can_power_off() helper that
-is aware about chained power-off handlers.
+Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+that invokes chained power-off handlers. It also invokes legacy
+pm_power_off() for now, which will be removed once all drivers will
+be converted to the new power-off API.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/emif.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/ia64/kernel/process.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/memory/emif.c b/drivers/memory/emif.c
-index 762d0c0f0716..cab10d5274a0 100644
---- a/drivers/memory/emif.c
-+++ b/drivers/memory/emif.c
-@@ -630,7 +630,7 @@ static irqreturn_t emif_threaded_isr(int irq, void *dev_id)
- 		dev_emerg(emif->dev, "SDRAM temperature exceeds operating limit.. Needs shut down!!!\n");
+diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
+index 834df24a88f1..cee4d7db2143 100644
+--- a/arch/ia64/kernel/process.c
++++ b/arch/ia64/kernel/process.c
+@@ -19,6 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/notifier.h>
+ #include <linux/personality.h>
++#include <linux/reboot.h>
+ #include <linux/sched.h>
+ #include <linux/sched/debug.h>
+ #include <linux/sched/hotplug.h>
+@@ -599,8 +600,7 @@ machine_halt (void)
+ void
+ machine_power_off (void)
+ {
+-	if (pm_power_off)
+-		pm_power_off();
++	do_kernel_power_off();
+ 	machine_halt();
+ }
  
- 		/* If we have Power OFF ability, use it, else try restarting */
--		if (pm_power_off) {
-+		if (kernel_can_power_off()) {
- 			kernel_power_off();
- 		} else {
- 			WARN(1, "FIXME: NO pm_power_off!!! trying restart\n");
 -- 
 2.34.1
 
