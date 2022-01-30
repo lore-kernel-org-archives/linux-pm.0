@@ -2,38 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3270CC43219
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 20:48:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EDD2C4321E
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Jan 2022 20:48:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1356383AbiA3UsW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Jan 2022 15:48:22 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:50813 "EHLO
+        id S1356393AbiA3UsX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Jan 2022 15:48:23 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:58077 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1356386AbiA3Urx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 15:47:53 -0500
+        by vger.kernel.org with ESMTP id S1356408AbiA3Ur7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Jan 2022 15:47:59 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643575671;
+        s=mimecast20190719; t=1643575678;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NP5ZZjbP+5a6CBKM4ARGc3cpSsivbTp+jHAFBgsPOcE=;
-        b=Kexr/mI4laRAZDPZiggwZQfln6Ryo/ex/tDlUnx/w2vKbawxvfBEzT0vm/UkFZrXeLNqMe
-        OzKaZu2ypZZaFn4fhqzWq/rRGX8P7EPO42qNhlPStsbZRMe0gNlKKK6H9iUj3vCXWKV36c
-        aIS67I4Or7S9mZfnFTH0+Jaxzf/8V2M=
+        bh=LamNEK/YX9d4yqutYB371mhhnNQ/iRuKdSAUJRRVPa4=;
+        b=aH0HVWIVggdOFYUe+55cqlWLuLk2sfSUlFoufjWh5oQ/Nfk0HLAuXHGD5tqBPoidNBpQsM
+        0r6FZmqRclZgIqx1c0gCaSlkp8zg+J1De1Tci6YpNd0n+JC7jUSmErb/blQHITiAY9QGvQ
+        FJB9q8hNqmB473fLmn3YgARVYiJWmOI=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-296-m-MSK84kPD6lBQTUrkJh_A-1; Sun, 30 Jan 2022 15:47:44 -0500
-X-MC-Unique: m-MSK84kPD6lBQTUrkJh_A-1
+ us-mta-445-QBa4bKeKPgeBJ39eD09GAg-1; Sun, 30 Jan 2022 15:47:55 -0500
+X-MC-Unique: QBa4bKeKPgeBJ39eD09GAg-1
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id D6B1F18397A7;
-        Sun, 30 Jan 2022 20:47:41 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id AEE2A1083F65;
+        Sun, 30 Jan 2022 20:47:52 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.192.60])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 6A22C61093;
-        Sun, 30 Jan 2022 20:47:38 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id C386361093;
+        Sun, 30 Jan 2022 20:47:46 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
@@ -51,9 +51,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
         Fabio Aiuto <fabioaiuto83@gmail.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org
-Subject: [PATCH v4 18/20] extcon: intel-cht-wc: Refactor cht_wc_extcon_get_charger()
-Date:   Sun, 30 Jan 2022 21:45:55 +0100
-Message-Id: <20220130204557.15662-19-hdegoede@redhat.com>
+Subject: [PATCH v4 20/20] extcon: intel-cht-wc: Report RID_A for ACA adapters
+Date:   Sun, 30 Jan 2022 21:45:57 +0100
+Message-Id: <20220130204557.15662-21-hdegoede@redhat.com>
 In-Reply-To: <20220130204557.15662-1-hdegoede@redhat.com>
 References: <20220130204557.15662-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -63,49 +63,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is a preparation patch for adding support for registering
-a power_supply class device.
+Make cht_wc_extcon_get_id() report RID_A for ACA adapters, instead of
+reporting ID_FLOAT.
 
-Setting usbsrc to "CHT_WC_USBSRC_TYPE_SDP << CHT_WC_USBSRC_TYPE_SHIFT"
-will make the following switch-case return EXTCON_CHG_USB_SDP
-just as before, so there is no functional change.
+According to the spec. we should read the USB-ID pin ADC value
+to determine the resistance of the used pull-down resister and
+then return RID_A / RID_B / RID_C based on this. But all "Accessory
+Charger Adapter"s (ACAs) which users can actually buy always use
+a combination of a charging port with one or more USB-A ports, so
+they should always use a resistor indicating RID_A. But the spec
+is hard to read / badly-worded so some of them actually indicate
+they are a RID_B ACA even though they clearly are a RID_A ACA.
+
+To workaround this simply always return INTEL_USB_RID_A, which
+matches all the ACAs which users can actually buy.
 
 Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-Changes in v3:
-- Reword the commit message
----
- drivers/extcon/extcon-intel-cht-wc.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/extcon/extcon-intel-cht-wc.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/extcon/extcon-intel-cht-wc.c b/drivers/extcon/extcon-intel-cht-wc.c
-index edc386937dee..150637bea417 100644
+index 144cb5d8cd47..2a8d41cbf41c 100644
 --- a/drivers/extcon/extcon-intel-cht-wc.c
 +++ b/drivers/extcon/extcon-intel-cht-wc.c
-@@ -153,14 +153,15 @@ static int cht_wc_extcon_get_charger(struct cht_wc_extcon_data *ext,
- 	} while (time_before(jiffies, timeout));
- 
- 	if (status != CHT_WC_USBSRC_STS_SUCCESS) {
--		if (ignore_errors)
--			return EXTCON_CHG_USB_SDP; /* Save fallback */
-+		if (!ignore_errors) {
-+			if (status == CHT_WC_USBSRC_STS_FAIL)
-+				dev_warn(ext->dev, "Could not detect charger type\n");
-+			else
-+				dev_warn(ext->dev, "Timeout detecting charger type\n");
-+		}
- 
--		if (status == CHT_WC_USBSRC_STS_FAIL)
--			dev_warn(ext->dev, "Could not detect charger type\n");
--		else
--			dev_warn(ext->dev, "Timeout detecting charger type\n");
--		return EXTCON_CHG_USB_SDP; /* Save fallback */
-+		/* Save fallback */
-+		usbsrc = CHT_WC_USBSRC_TYPE_SDP << CHT_WC_USBSRC_TYPE_SHIFT;
+@@ -121,13 +121,21 @@ static int cht_wc_extcon_get_id(struct cht_wc_extcon_data *ext, int pwrsrc_sts)
+ 		return INTEL_USB_ID_GND;
+ 	case CHT_WC_PWRSRC_RID_FLOAT:
+ 		return INTEL_USB_ID_FLOAT;
++	/*
++	 * According to the spec. we should read the USB-ID pin ADC value here
++	 * to determine the resistance of the used pull-down resister and then
++	 * return RID_A / RID_B / RID_C based on this. But all "Accessory
++	 * Charger Adapter"s (ACAs) which users can actually buy always use
++	 * a combination of a charging port with one or more USB-A ports, so
++	 * they should always use a resistor indicating RID_A. But the spec
++	 * is hard to read / badly-worded so some of them actually indicate
++	 * they are a RID_B ACA evnen though they clearly are a RID_A ACA.
++	 * To workaround this simply always return INTEL_USB_RID_A, which
++	 * matches all the ACAs which users can actually buy.
++	 */
+ 	case CHT_WC_PWRSRC_RID_ACA:
++		return INTEL_USB_RID_A;
+ 	default:
+-		/*
+-		 * Once we have IIO support for the GPADC we should read
+-		 * the USBID GPADC channel here and determine ACA role
+-		 * based on that.
+-		 */
+ 		return INTEL_USB_ID_FLOAT;
  	}
- 
- 	usbsrc = (usbsrc & CHT_WC_USBSRC_TYPE_MASK) >> CHT_WC_USBSRC_TYPE_SHIFT;
+ }
 -- 
 2.33.1
 
