@@ -2,141 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48044C43217
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Jan 2022 20:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34D11C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Jan 2022 22:06:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376735AbiAaUji (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Jan 2022 15:39:38 -0500
-Received: from dfw.source.kernel.org ([139.178.84.217]:37656 "EHLO
-        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343999AbiAaUjh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jan 2022 15:39:37 -0500
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id D4412614C2;
-        Mon, 31 Jan 2022 20:39:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37D95C340E8;
-        Mon, 31 Jan 2022 20:39:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1643661576;
-        bh=LlCWcmjo9XBLXtkZjmaUu+sQAjNy8t3wD356RhDm6+8=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=dbIvvaZtUtglyEdPJeUXqJeRCSK+nQ6All4q5LCLeHNekPbJGzAd5HBkBDMUdPyEX
-         aLGoz9yVDcpb77joBuHGnfcQ20RTksmJJA8Y7SrJ9Rew6tW4rcMIZRXV5cttCSPQ0D
-         HkEINXYQFrsUCNmd3iD1ToriUf9adNj2trOKs5EHQpQh2ZgYg2jkD+SsyjO4qmwmJU
-         upmD5OlqmrXdrSY7oYrS3dOZxgV98KvJJ3JFZxzIEf0AVbUnMz0iuLBk8UlKNXkBOk
-         lpi4tu/p3npuGwGoPD/pO37vgzqDNONpZMMhn8MfAwiO9zjbATlOiIceIevlZ9aNye
-         Lvr+4f0EY7Kbg==
-Received: from disco-boy.misterjones.org ([51.254.78.96] helo=www.loen.fr)
-        by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <maz@kernel.org>)
-        id 1nEdSX-004Ugn-LI; Mon, 31 Jan 2022 20:39:33 +0000
+        id S231266AbiAaWGr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Jan 2022 17:06:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58054 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230320AbiAaWGr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jan 2022 17:06:47 -0500
+Received: from mail-oi1-x236.google.com (mail-oi1-x236.google.com [IPv6:2607:f8b0:4864:20::236])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E75C3C061714
+        for <linux-pm@vger.kernel.org>; Mon, 31 Jan 2022 14:06:46 -0800 (PST)
+Received: by mail-oi1-x236.google.com with SMTP id y23so29465444oia.13
+        for <linux-pm@vger.kernel.org>; Mon, 31 Jan 2022 14:06:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=W9hEBXurjCl7qSO381JI7fgMTyHfEqjYiRw7QVwUoiQ=;
+        b=f83Oy42QBUfyAnO9mve85cB7lvEpbgY0o691h1XkMCXtnW+ODYVqKGNpp53UiVmbrl
+         1LapiEW86Y8LpNLC57YIN4MJXtXRsAUASy/va5wXAVR9UsZJydU9Z6ScvgYH3Rto1ZtR
+         ATpM+JnVu6yUXaT++xmS910rY+UtTeVAJJ+1i1Ca8VUFPdxpkRYLLl3WFGoeM3QW+v+a
+         UJyNh4UCzHKLT4f4eL1OfYTWVH6YZJGYIXwmVk90Y+qy7if69L8IjUhOCEy3QGIDQSfF
+         nDnJhFBgh5+AWipXSUTTZ9+V7sctCUUqRpGELV9SZihVlU5DiMdDgTt1IZyt7DWrK1Pz
+         3m7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=W9hEBXurjCl7qSO381JI7fgMTyHfEqjYiRw7QVwUoiQ=;
+        b=n2+SoeNA4lfedgNfw9GI5LkH5XH48DNBb1Em2ozoTQio3zbS9Zj6BajCn5YqvE6EK9
+         ZYP4jN7XWX4ResRIVTKSwAKAjaCRTXOQwZmEfs97iPPV0M7m+8U54qwdvFExGW7rqs3A
+         rWi5oNazE+JCSCXOg3BlHga+MfMv0cAOgmUGMBMzpbz/qJ5U4CXTpb+OSJG5HFmPVfHR
+         sqscgSNyTa2+rEo/VAiUIegHSgEXP313thHowAbTMPbOMPAgrQeRUeiTPHbSNDY2U+EN
+         NHf9wbVNYHuimQDHBmkY7jk+Svq4e/OHLqx+IqIo5W0ZWYXO7s5tguTZELFVWRakgcbS
+         X/Uw==
+X-Gm-Message-State: AOAM530rIJN03Bm5mmFc2p5vFzW3MYPci1cZebdOlP9H06GoA6pKo1Ia
+        EjgJbsXGjlD/aWTtV8+3tUYdGg==
+X-Google-Smtp-Source: ABdhPJwHPXbk+76P0Fx/D780/C1NJjDyzqlecixXCiyHyxzMZac7l6IJP/2pS0jKeDB9FmtMamolhg==
+X-Received: by 2002:a05:6808:1822:: with SMTP id bh34mr14801119oib.209.1643666806299;
+        Mon, 31 Jan 2022 14:06:46 -0800 (PST)
+Received: from builder.lan ([2600:1700:a0:3dc8:3697:f6ff:fe85:aac9])
+        by smtp.gmail.com with ESMTPSA id q11sm7085491oti.3.2022.01.31.14.06.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Jan 2022 14:06:45 -0800 (PST)
+Date:   Mon, 31 Jan 2022 16:06:44 -0600
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Yassine Oudjana <y.oudjana@protonmail.com>
+Cc:     Rob Herring <robh+dt@kernel.org>, Ilia Lin <ilia.lin@kernel.org>,
+        Niklas Cassel <nks@flawful.org>,
+        Andy Gross <agross@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] dt-bindings: Convert multiple Qualcomm OPP and
+ CPUFreq bindings to DT schema
+Message-ID: <YfhddMNAL1mQGtKU@builder.lan>
+References: <20220104132618.391799-1-y.oudjana@protonmail.com>
 MIME-Version: 1.0
-Date:   Mon, 31 Jan 2022 20:39:33 +0000
-From:   Marc Zyngier <maz@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Jon Hunter <jonathanh@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        =?UTF-8?Q?U?= =?UTF-8?Q?we_Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Nishanth Menon <nm@ti.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org,
-        linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-clk@vger.kernel.org, David Heidelberg <david@ixit.cz>
-Subject: Re: [PATCH v16 08/40] gpu: host1x: Add initial runtime PM and OPP
- support
-In-Reply-To: <40983f6e-92ee-40d4-861f-06faea0113fc@gmail.com>
-References: <20211130232347.950-1-digetx@gmail.com>
- <20211130232347.950-9-digetx@gmail.com>
- <21212ddb-205f-71d6-0199-d75768eaf32c@nvidia.com>
- <41edc53b-5ed1-d524-2546-c3d1ee6cdea4@gmail.com>
- <6652ac84-36f5-0e43-65fa-04786f384f21@nvidia.com>
- <56dce9c7-397d-75b0-b5b8-18ce1084e72b@nvidia.com>
- <6dbc8205-5669-8b08-16b8-fe5e1acdd06f@gmail.com>
- <796eb3f7-80e2-bc55-fd52-43e76220f8c2@nvidia.com>
- <40983f6e-92ee-40d4-861f-06faea0113fc@gmail.com>
-User-Agent: Roundcube Webmail/1.4.13
-Message-ID: <6adda63b4de6b55d11426ecbb08d6c51@kernel.org>
-X-Sender: maz@kernel.org
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 51.254.78.96
-X-SA-Exim-Rcpt-To: digetx@gmail.com, jonathanh@nvidia.com, thierry.reding@gmail.com, ulf.hansson@linaro.org, vireshk@kernel.org, sboyd@kernel.org, pdeschrijver@nvidia.com, mperttunen@nvidia.com, lee.jones@linaro.org, u.kleine-koenig@pengutronix.de, nm@ti.com, adrian.hunter@intel.com, mturquette@baylibre.com, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-mmc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-clk@vger.kernel.org, david@ixit.cz
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220104132618.391799-1-y.oudjana@protonmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+On Tue 04 Jan 07:27 CST 2022, Yassine Oudjana wrote:
 
-On 2021-12-22 19:31, Dmitry Osipenko wrote:
-> 22.12.2021 22:30, Jon Hunter пишет:
->> 
->> On 22/12/2021 19:01, Dmitry Osipenko wrote:
->> 
->> ...
->> 
->>> diff --git a/drivers/gpu/host1x/syncpt.c 
->>> b/drivers/gpu/host1x/syncpt.c
->>> index e08e331e46ae..8194826c9ce3 100644
->>> --- a/drivers/gpu/host1x/syncpt.c
->>> +++ b/drivers/gpu/host1x/syncpt.c
->>> @@ -137,6 +137,15 @@ void host1x_syncpt_restore(struct host1x *host)
->>>       struct host1x_syncpt *sp_base = host->syncpt;
->>>       unsigned int i;
->>> 
->>> +    for (i = 0; i < host->info->nb_pts; i++) {
->>> +        /*
->>> +         * Unassign syncpt from channels for purposes of Tegra186
->>> +         * syncpoint protection. This prevents any channel from
->>> +         * accessing it until it is reassigned.
->>> +         */
->>> +        host1x_hw_syncpt_assign_to_channel(host, sp_base + i, NULL);
->>> +    }
->>> +
->>>       for (i = 0; i < host1x_syncpt_nb_pts(host); i++)
->>>           host1x_hw_syncpt_restore(host, sp_base + i);
->>> 
->>> @@ -352,13 +361,6 @@ int host1x_syncpt_init(struct host1x *host)
->>>       for (i = 0; i < host->info->nb_pts; i++) {
->>>           syncpt[i].id = i;
->>>           syncpt[i].host = host;
->>> -
->>> -        /*
->>> -         * Unassign syncpt from channels for purposes of Tegra186
->>> -         * syncpoint protection. This prevents any channel from
->>> -         * accessing it until it is reassigned.
->>> -         */
->>> -        host1x_hw_syncpt_assign_to_channel(host, &syncpt[i], NULL);
->>>       }
->>> 
->>>       for (i = 0; i < host->info->nb_bases; i++)
->>> 
->> 
->> 
->> Thanks! This fixed it!
+> This series is a compilation of DT schema conversions of multiple Qualcomm
+> OPP and CPUFreq bindings:
+> - qcom-cpufreq-nvmem (operating-points-v2-kryo-cpu)
+> - qcom-opp (operating-points-v2-qcom-level)
+> - qcom,cpr
 > 
-> I'll prepare proper patch with yours t-b, thank you.
+> Converting each one to DT schema introduces new dt_binding_check and
+> dtbs_check errors to the others, so it was better to combine them into
+> a series. Some errors were also caused by a couple of device trees having
+> OPP tables with names that do not follow opp-v2-base, so these got fixed
+> in this series as well. Finally, the lack of MSM8996 compatibles in
+> arm/qcom.yaml caused an error in the opp-v2-kryo-cpu example, so they were
+> added to the schema as well as to the msm8996-mtp device tree, which only
+> had qcom,msm8996-mtp as its compatible.
+> 
+> PATCH 4/7 is a new version of a patch[1] that was sent as part of
+> a different series before, and PATCH 7/7 is a new version of a patch[2]
+> that was first sent alone.
+> 
+> Changes since v1 (PATCH v2 4/7):
+>  - Split the schema into an OPP schema and a CPUFreq schema. 
+> 
+> Changes since v1 (PATCH v2 7/7):
+>  - Remove allOf from compatible.
+> 
 
-The fix has been in -next for some time now, but it still hasn't
-made it into Linus' tree (at least not in -rc2).
-
-Any hope for this to land -rc3?
+The mixed versioning in this series confuses b4 - and thereby me as
+well.  Can you please resubmit this with all patches of the same version
+(e.g. v3).
 
 Thanks,
+Bjorn
 
-      M.
--- 
-Jazz is not dead. It just smells funny...
+> Yassine Oudjana (7):
+>   dt-bindings: arm: qcom: Add msm8996 and apq8096 compatibles
+>   arm64: dts: qcom: msm8996-mtp: Add msm8996 compatible
+>   dt-bindings: opp: qcom-opp: Convert to DT schema
+>   dt-bindings: opp: Convert qcom-nvmem-cpufreq to DT schema
+>   arm64: dts: qcom: msm8996: Rename cluster OPP tables
+>   arm64: dts: qcom: qcs404: Rename CPU and CPR OPP tables
+>   dt-bindings: power: avs: qcom,cpr: Convert to DT schema
+> 
+>  .../devicetree/bindings/arm/qcom.yaml         |  16 +-
+>  .../bindings/cpufreq/qcom-cpufreq-nvmem.yaml  | 166 ++++
+>  .../bindings/opp/opp-v2-kryo-cpu.yaml         | 257 ++++++
+>  .../bindings/opp/opp-v2-qcom-level.yaml       |  60 ++
+>  .../bindings/opp/qcom-nvmem-cpufreq.txt       | 796 ------------------
+>  .../devicetree/bindings/opp/qcom-opp.txt      |  19 -
+>  .../bindings/power/avs/qcom,cpr.txt           | 130 ---
+>  .../bindings/power/avs/qcom,cpr.yaml          | 160 ++++
+>  MAINTAINERS                                   |   5 +-
+>  arch/arm64/boot/dts/qcom/msm8996-mtp.dts      |   2 +-
+>  arch/arm64/boot/dts/qcom/msm8996.dtsi         |   4 +-
+>  arch/arm64/boot/dts/qcom/qcs404.dtsi          |   4 +-
+>  12 files changed, 666 insertions(+), 953 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/qcom-cpufreq-nvmem.yaml
+>  create mode 100644 Documentation/devicetree/bindings/opp/opp-v2-kryo-cpu.yaml
+>  create mode 100644 Documentation/devicetree/bindings/opp/opp-v2-qcom-level.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+>  delete mode 100644 Documentation/devicetree/bindings/opp/qcom-opp.txt
+>  delete mode 100644 Documentation/devicetree/bindings/power/avs/qcom,cpr.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/avs/qcom,cpr.yaml
+> 
+> [1] https://lore.kernel.org/linux-arm-msm/20211014083016.137441-6-y.oudjana@protonmail.com/
+> [2]	https://lore.kernel.org/linux-arm-msm/20211221133937.173618-1-y.oudjana@protonmail.com/
+> -- 
+> 2.34.1
+> 
+> 
