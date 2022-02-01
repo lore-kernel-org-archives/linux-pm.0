@@ -2,112 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A89AC433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Feb 2022 18:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4BE3C433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Feb 2022 19:19:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237332AbiBASnS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Feb 2022 13:43:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56570 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232224AbiBASnR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Feb 2022 13:43:17 -0500
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCE0DC06173B
-        for <linux-pm@vger.kernel.org>; Tue,  1 Feb 2022 10:43:17 -0800 (PST)
-Received: by mail-pl1-x62b.google.com with SMTP id h14so16133944plf.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Feb 2022 10:43:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:in-reply-to:references:date:message-id
-         :mime-version;
-        bh=6fPJFl5vrGTy5wN+6iyLxqMIH5fB+nup+utSNi7xCFI=;
-        b=JFoC8kCvrk6PVaxIzJ3yNULiqngFgKPktXk6Uy8wQFysm1RKVZ1yng4MaoFknXvCl5
-         w50qhHlMbRZ8qg5eKV6q+aY5S+AexzLC726J3dITlnzwKwKhUY767Yiyu26rk+dQR4El
-         iZvrQ5OXzLrsR3koSAnpyPb59rfDdrSWlYmb60GBs2NxZFkpnfsPJzTJ8DtB93E6/SBN
-         QkNs0I0nrAyVRUHmTRYTQzBWuI3eXJm22L+kdU283/sdSJsaqA8Df8BqbkfppInv6RoC
-         uAXJAXYBK/e8ighPrDnAm3bCLsXg0Bcl5Wd5q2oUbLpOXMUV0ZRNnJukZqWzHkdHX9cL
-         4FCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
-         :message-id:mime-version;
-        bh=6fPJFl5vrGTy5wN+6iyLxqMIH5fB+nup+utSNi7xCFI=;
-        b=LyUbiFSzCtMmGkFipdFitQb/XxclYKy9LSeUgoOHTOLsr63wVASgRpCJhh/IrN7PyH
-         cY6LVBAomPWI60o78AtXCTFPAKnO17cbz9Z2IqvHELV048sQYO0zvGhIeVgMwG9AGyI0
-         m038wmNOnO+hRqlokSLOU63x4kmYWpC8YavfHJu8nNnzHkgsqFTqnwAtJZGiuZXN6G0a
-         sOUeDK46TeICbmDBghuySGVI//8XuaOlOt3DafwOnaSjjOnyEoZIwaXf3EKjzm6H5sbJ
-         eDLwMirKhMqa2TOvEoP+rbbNJgrT+oSSqS470tDCYSHGOWIgmDh/XNLPMyb8r/Jxk0tU
-         94/Q==
-X-Gm-Message-State: AOAM532JMCBZ97RmI3bYYy6c8SPJLeDQZrmlwS3QJkgitc0khwOyd929
-        vZpZr6qLlz5JyJ3t/TB6D8g2PrpiuZ1Scw==
-X-Google-Smtp-Source: ABdhPJyaOJVKaHFfRhEGAmObqlO5/p6vKN4OSc6RYhmsGbTY9lg7Dx448+JitmRXoD1gp5a8X4QMsw==
-X-Received: by 2002:a17:902:710c:: with SMTP id a12mr26847513pll.108.1643740997274;
-        Tue, 01 Feb 2022 10:43:17 -0800 (PST)
-Received: from localhost (c-71-197-186-152.hsd1.wa.comcast.net. [71.197.186.152])
-        by smtp.gmail.com with ESMTPSA id s19sm9183477pfu.34.2022.02.01.10.43.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Feb 2022 10:43:16 -0800 (PST)
-From:   Kevin Hilman <khilman@baylibre.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ben.tseng@mediatek.com, Matthias Kaehlcke <mka@chromium.org>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        "Zhang, Rui" <rui.zhang@intel.com>
-Subject: Re: [PATCH v4 RESEND 0/2] Add a generic virtual thermal sensor
-In-Reply-To: <CAJZ5v0iX=SSaPzZNBX8gNMDPCUewiQA_bHxka2pxvtFHxmPxww@mail.gmail.com>
-References: <20220111103346.2660639-1-abailon@baylibre.com>
- <7hilu9xe7n.fsf@baylibre.com>
- <CAJZ5v0gZFBEKDt6S0H91F5xCjC3qtT6B+cTnv6u1nijMHkc8jA@mail.gmail.com>
- <7h35lcygin.fsf@baylibre.com>
- <CAJZ5v0iX=SSaPzZNBX8gNMDPCUewiQA_bHxka2pxvtFHxmPxww@mail.gmail.com>
-Date:   Tue, 01 Feb 2022 10:43:16 -0800
-Message-ID: <7hbkzqmnqz.fsf@baylibre.com>
+        id S242174AbiBATTF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Feb 2022 14:19:05 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46364 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238080AbiBATTE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Feb 2022 14:19:04 -0500
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 4.0.0)
+ id 020522ec740534d4; Tue, 1 Feb 2022 20:19:03 +0100
+Received: from kreacher.localnet (unknown [213.134.162.64])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id C6BD766B3BC;
+        Tue,  1 Feb 2022 20:19:02 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH 2/2] ACPI: EC / PM: Print additional debug message in acpi_ec_dispatch_gpe()
+Date:   Tue, 01 Feb 2022 20:18:56 +0100
+Message-ID: <4378297.LvFx2qVVIh@kreacher>
+In-Reply-To: <11917820.O9o76ZdvQC@kreacher>
+References: <11917820.O9o76ZdvQC@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.162.64
+X-CLIENT-HOSTNAME: 213.134.162.64
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrgeefgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepvddufedrudefgedrudeivddrieegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeivddrieegpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeefpdhrtghpthhtoheplhhinhhugidqrggtphhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-DCC--Metrics: v370.home.net.pl 1024; Body=3 Fuz1=3 Fuz2=3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> On Mon, Jan 24, 2022 at 10:23 PM Kevin Hilman <khilman@baylibre.com> wrote:
->>
->> "Rafael J. Wysocki" <rafael@kernel.org> writes:
->>
->> > On Mon, Jan 24, 2022 at 5:58 PM Kevin Hilman <khilman@baylibre.com> wrote:
->> >>
->> >> Daniel, Amit,
->> >>
->> >> Alexandre Bailon <abailon@baylibre.com> writes:
->> >>
->> >> > This series add a virtual thermal sensor.
->> >> > It could be used to get a temperature using some thermal sensors.
->> >> > Currently, the supported operations are max, min and avg.
->> >> > The virtual sensor could be easily extended to support others operations.
->> >> >
->> >> > Changes in v2:
->> >> > - Fix some warnings / errors reported by kernel test robot
->> >> > - rename some struct and functions with a more accurate name
->> >> > - update the dt bindings: rename type attribute to aggregation-function
->> >> > - factorize a little bit the aggregation functions
->> >> > Changes in v3:
->> >> > - Aggregate thermal zone instead of thermal sensors
->> >> > - Use try_get_module / put_module to prevent thermal providers to be removed
->> >> > - Update the bindings, to be more accurate
->> >> > Changes in v4:
->> >> > - Fix two warnings reported by kernel test robot
->> >>
->> >> Any more feedback on this series?
->> >
->> > Hopefully, I'll get to it this week and I'll let you know.
->>
->> Thanks Rafael,
->
-> Done, please see
-> https://lore.kernel.org/linux-pm/CAJZ5v0jejFG76OfewYg3kmKv4xwLdRBpC+zRpJ9Jom+tqo7qyg@mail.gmail.com/
+Make acpi_ec_dispatch_gpe() print an additional debug message after
+seeing the EC GPE status bit set to help diagnose wakeup-related
+issues.
 
-Thank you.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/ec.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/acpi/ec.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ec.c
++++ linux-pm/drivers/acpi/ec.c
+@@ -2071,8 +2071,11 @@ bool acpi_ec_dispatch_gpe(void)
+ 	 */
+ 	spin_lock_irq(&first_ec->lock);
+ 
+-	if (acpi_ec_gpe_status_set(first_ec))
++	if (acpi_ec_gpe_status_set(first_ec)) {
++		pm_pr_dbg("ACPI EC GPE status set\n");
++
+ 		work_in_progress = advance_transaction(first_ec, false);
++	}
+ 
+ 	spin_unlock_irq(&first_ec->lock);
+ 
+
+
+
