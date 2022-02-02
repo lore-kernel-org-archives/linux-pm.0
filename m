@@ -2,58 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6808C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Feb 2022 11:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E23FC433EF
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Feb 2022 12:46:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241836AbiBBLCW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Feb 2022 06:02:22 -0500
-Received: from mail.profitfirm24.com.pl ([212.237.10.110]:59872 "EHLO
-        mail.profitfirm24.com.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343671AbiBBLCV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Feb 2022 06:02:21 -0500
-Received: by mail.profitfirm24.com.pl (Postfix, from userid 1001)
-        id 4DE80AA9CB; Tue,  1 Feb 2022 09:17:30 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=profitfirm24.com.pl;
-        s=mail; t=1643707741;
-        bh=M1ZVeu3q6Upppe+FUx/3rgI7MKJXh389NZDbgCK1SX4=;
-        h=Date:From:To:Subject:From;
-        b=ce56jv5SHxeM0N1wlrhyw9a5DYHnOYZgIh0YO/vGbbvhtqhvEFlZnNyWrAZGLyX8e
-         WnXUM8hphH/vz5um4Ws2/gXcMRzWyATp6TP6NOyt9/CYt236bmj5xKQdPM+dW6oagx
-         /IAyUtbKfyWBjRSGymxFK5SEbd9Vv+QqW/X9RL+n9Fgw4fwwmca2Tfv9xkKk+p7Ywb
-         9Tzgp9bJ5hkP59bfA2TUe91l0H7zhxAc5IL5yUOG8tEhoFJL0wkEL0BxoCWNnRwNqh
-         Nb5Ff4nw1xL+0L3MNXZJKL7ylH5Jhi3SenLaVn9ZsyIW3aNl+mp1UH3RbnaoL5J2k1
-         jUjpHTzg7bjWQ==
-Received: by profitfirm24.com.pl for <linux-pm@vger.kernel.org>; Tue,  1 Feb 2022 09:17:20 GMT
-Message-ID: <20220201074652-0.1.b.2yqs.0.y3ueip8rbn@profitfirm24.com.pl>
-Date:   Tue,  1 Feb 2022 09:17:20 GMT
-From:   =?UTF-8?Q? "Arkadiusz_Soko=C5=82owski" ?= 
-        <arkadiusz.sokolowski@profitfirm24.com.pl>
-To:     <linux-pm@vger.kernel.org>
-Subject: Koszty instalacji fotowoltaicznej
-X-Mailer: mail.profitfirm24.com.pl
+        id S239666AbiBBMqA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Feb 2022 07:46:00 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:46811 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S237261AbiBBMp7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Feb 2022 07:45:59 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643805959;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=L2MgpqkUcQy8xm2YEczHn5aMWVUVny42CQPa38ApqUo=;
+        b=VBp3nBumZQG3y5BnoX/TJeVgV7ojZEiJgWPQPteEpPQVGeGJpsTEWoFLOEYg+/YRSJb25B
+        uT4fp4fwhpqVFKc0VJ6jH2Vdn9buQqmTfO8q73JFUutQNEKZakt5g1suy51cpc6k/2k/Ey
+        VBfXchn/8ijykm0+MXT5760YX9VhlEE=
+Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com
+ [209.85.208.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-584-9dVwC3qEN4SLLaxhboyIDQ-1; Wed, 02 Feb 2022 07:45:58 -0500
+X-MC-Unique: 9dVwC3qEN4SLLaxhboyIDQ-1
+Received: by mail-ed1-f72.google.com with SMTP id w3-20020a50c443000000b0040696821132so10315993edf.22
+        for <linux-pm@vger.kernel.org>; Wed, 02 Feb 2022 04:45:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=L2MgpqkUcQy8xm2YEczHn5aMWVUVny42CQPa38ApqUo=;
+        b=0SJaO4u6gznTTmzzAXE1RYMqcuWxc9klCzOTTmlKDpdRiljmAS6xVxgFROojZWXoTs
+         9ibhz/QY0QbiUrZUqk8FJdZ6r3pY114SMki4UKuKMlf3IMFjuSjGSCaBY7xi8wGK1O/b
+         Ul1qdtqDmAvEZzUEIVjRXoeWsJKZjJCzy6J6pDVdnNzHC2pJmKdtj2x8TCzNwvbV+RUP
+         yDBXc2a1pRJTp43Q7ZmuBfez8YUZDPKGIUY8Rb+OKHBDFL0yU6P0DzgJcWv3WxrLz/gt
+         09WuDRW2z7Q0XmhP9s8x/bIPVKCockE3DlxNAstv64rXFYVawGiTrYhivyiNrffd2dUG
+         6sRA==
+X-Gm-Message-State: AOAM532HF4tUOvbzoQ5PnDwe5VZaUzVM+pISfb1twqx5wftU3d2k/Bwk
+        4RK88chPkHhKRrx7qeuCFgL8VgTbNOJP/cCtCMzDIteGkNirip3aU2/ptK/qD3A1B+pEl4RV5FN
+        X2nfAyukzWXzwVNeezTE=
+X-Received: by 2002:a05:6402:698:: with SMTP id f24mr30447151edy.159.1643805957168;
+        Wed, 02 Feb 2022 04:45:57 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJx0BOt5vFNLNoU+2m3VvI1dwFENKVK9kPv+3YXwZ4YNAFwj6bqDiewZqYzq9PKmLgXw0q43hA==
+X-Received: by 2002:a05:6402:698:: with SMTP id f24mr30447139edy.159.1643805957039;
+        Wed, 02 Feb 2022 04:45:57 -0800 (PST)
+Received: from ?IPV6:2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1? (2001-1c00-0c1e-bf00-1db8-22d3-1bc9-8ca1.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1])
+        by smtp.gmail.com with ESMTPSA id q6sm15775628ejx.113.2022.02.02.04.45.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 02 Feb 2022 04:45:56 -0800 (PST)
+Message-ID: <8386b5bf-46bd-5927-9119-cdf77e1df082@redhat.com>
+Date:   Wed, 2 Feb 2022 13:45:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH][next] power: supply: axp288_fuel_gauge: Fix spelling
+ mistake "resisitor" -> "resistor"
+Content-Language: en-US
+To:     Colin Ian King <colin.i.king@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20220202091246.580091-1-colin.i.king@gmail.com>
+From:   Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <20220202091246.580091-1-colin.i.king@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Hi,
 
-stworzyli=C5=9Bmy specjaln=C4=85 ofert=C4=99 dla firm, na kompleksow=C4=85=
- obs=C5=82ug=C4=99 inwestycji w fotowoltaik=C4=99. =20
+On 2/2/22 10:12, Colin Ian King wrote:
+> There is a spelling mistake in a MODULE_PARM_DESC description. Fix it.
+> 
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 
-Specjalizujemy si=C4=99 w zakresie doboru, monta=C5=BCu i serwisie instal=
-acji fotowoltaicznych, dysponujemy najnowocze=C5=9Bniejszymi rozwi=C4=85z=
-ania, kt=C3=B3re zapewni=C4=85 Pa=C5=84stwu oczekiwane rezultaty.
+Oops my bad, patch looks good to me:
 
-Mo=C5=BCemy przygotowa=C4=87 dla Pa=C5=84stwa wst=C4=99pn=C4=85 kalkulacj=
-=C4=99 i przeanalizowa=C4=87 efekty mo=C5=BCliwe do osi=C4=85gni=C4=99cia=
-=2E
+Acked-by: Hans de Goede <hdegoede@redhat.com>
 
-Czy s=C4=85 Pa=C5=84stwo otwarci na wst=C4=99pn=C4=85 rozmow=C4=99 w tym =
-temacie?
+Regards,
 
+Hans
 
-Pozdrawiam
-Arkadiusz Soko=C5=82owski
+> ---
+>  drivers/power/supply/axp288_fuel_gauge.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+> index dcedbc59732d..13be2c1d6528 100644
+> --- a/drivers/power/supply/axp288_fuel_gauge.c
+> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+> @@ -91,7 +91,7 @@
+>  
+>  static bool no_current_sense_res;
+>  module_param(no_current_sense_res, bool, 0444);
+> -MODULE_PARM_DESC(no_current_sense_res, "No (or broken) current sense resisitor");
+> +MODULE_PARM_DESC(no_current_sense_res, "No (or broken) current sense resistor");
+>  
+>  enum {
+>  	QWBTU_IRQ = 0,
+> 
+
