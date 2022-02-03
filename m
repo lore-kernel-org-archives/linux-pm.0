@@ -2,146 +2,143 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 498ABC433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Feb 2022 18:57:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94822C433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Feb 2022 20:32:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352924AbiBCS5h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Feb 2022 13:57:37 -0500
-Received: from mail-yb1-f170.google.com ([209.85.219.170]:36807 "EHLO
-        mail-yb1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234035AbiBCS5h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Feb 2022 13:57:37 -0500
-Received: by mail-yb1-f170.google.com with SMTP id c6so11869277ybk.3;
-        Thu, 03 Feb 2022 10:57:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=EpyDkyG4xB8jSiDotXaela/62CttDlFOZPwhGEx9NZw=;
-        b=eb94PvEyfTUZtS9bR7I5hbXxYxFSc+FuwSLv0LbhFds/KTd+1sFuhAKrMtJmt0u+Fv
-         kW+s3ZATGz9Qzyo5g6jdM3ITINRyMjLbI+ltFaGQIeHCqhxy1vUZCS/qiLwrWq+hO2e2
-         Bz8KVGpVqJ6AKZueZcpanNiy7AKGo9sSYYb3ONRQ84R/CJJjR9AXBYbU04m1d/XnmwqX
-         WNbLLL+3mxTD3xZcndxoWf2gSk1uuHFB6yKmcc1Kq9PJEL/S3p4fJE3KbYD/dKARfPrE
-         tghjo5UBIvAblJDifjQQFgYpLlCdtu2LOJSH843mhyGEE3syYwaeLE/m/2/ByP78zn7V
-         kmRA==
-X-Gm-Message-State: AOAM531nmNmkeR0BHVl1TeXefB6EWU/jLbzgTvf5pO2O+0QnNf4fRorG
-        Cn1x0VU/zbEyMkBVUbx9nK/MrrMxII8uwfwPN69SlapF
-X-Google-Smtp-Source: ABdhPJz0kFA/+2Su2AVIgcBW2zIragRHga6XXbhsgGUI/eIIrqm+rIyx8I+hh8apo+8f+MITfnz7WjBPV4hP3PVweK4=
-X-Received: by 2002:a0d:d782:: with SMTP id z124mr5513446ywd.28.1643914656415;
- Thu, 03 Feb 2022 10:57:36 -0800 (PST)
+        id S1354347AbiBCUcj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Feb 2022 15:32:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57862 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354510AbiBCUbr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Feb 2022 15:31:47 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BF1BC06176D;
+        Thu,  3 Feb 2022 12:31:23 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 1E20C61AB9;
+        Thu,  3 Feb 2022 20:31:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7000BC340F0;
+        Thu,  3 Feb 2022 20:31:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1643920282;
+        bh=L2abX2J6L4mBx7bs32Xn/5k1qnjftTG1FoPZV+6UUe4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=BdT2AcNvjGHdAYQwN2k4HU0rSlkeQSjOFCLD1p8os0p8UnAK1NX0PANaLe4jiKgMM
+         pYErwI9LSC7wqVoYPSHvcjZJ8i1ga43rVC1FCynQPNBToFcFTkr4dJpk72Yb62nN0V
+         ecXb4y6uVo2W7qdtjksZC1w0OftT1NctiOh+V6gPqy8Zl+qatbF1L6H8TYJIQDMci3
+         qTOpNJfcLICH8PehJu+rCYODDczdeVNfebx8EhEyoGYgCT3iyvnkYt3nxBF6EOBJVn
+         VS1mO4ahNS4jO4ahombeXRihEcPlIbSrs/2GhXlb2Ev0A3p1sOvcOEmhWs6mfifADL
+         7AcK/f7/Q15bw==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     =?UTF-8?q?Amadeusz=20S=C5=82awi=C5=84ski?= 
+        <amadeuszx.slawinski@linux.intel.com>,
+        Cezary Rojewski <cezary.rojewski@intel.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
+        pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.16 37/52] PM: hibernate: Remove register_nosave_region_late()
+Date:   Thu,  3 Feb 2022 15:29:31 -0500
+Message-Id: <20220203202947.2304-37-sashal@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220203202947.2304-1-sashal@kernel.org>
+References: <20220203202947.2304-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <20220127193454.12814-1-ricardo.neri-calderon@linux.intel.com> <CAJZ5v0gcK10TiVbc8+j1pVN+T2p3EZHEK9Ga2=2ZxeGd=iVkhw@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gcK10TiVbc8+j1pVN+T2p3EZHEK9Ga2=2ZxeGd=iVkhw@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 3 Feb 2022 19:57:25 +0100
-Message-ID: <CAJZ5v0j7+xkYOGB8kLxGwwD3ReaXt4oMRK-D-5t2zKeMxd-CYA@mail.gmail.com>
-Subject: Re: [PATCH v5 0/7] Thermal: Introduce the Hardware Feedback Interface
- for thermal and performance management
-To:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "the arch/x86 maintainers" <x86@kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Aubrey Li <aubrey.li@linux.intel.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Andi Kleen <ak@linux.intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-        Ricardo Neri <ricardo.neri@intel.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Jan 30, 2022 at 4:23 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Jan 27, 2022 at 8:33 PM Ricardo Neri
-> <ricardo.neri-calderon@linux.intel.com> wrote:
-> >
-> > Hi,
-> >
-> > This is v5 of this patchset after having incorporated the feedback from
-> > reviewers. Please find v1, v2, v3, and v4 in [1], [2], [3], and [4],
-> > respectively.
-> >
-> > The Intel Hardware Feedback Interface (HFI) [5] provides information about
-> > the performance and energy efficiency of each CPU in the system. It uses a
-> > table that is shared between hardware and the operating system. The
-> > contents of the table may be updated as a result of changes in the
-> > operating conditions of the system (e.g., reaching a thermal limit) or the
-> > action of external factors (e.g., changes in the thermal design power).
-> >
-> > The information that HFI provides are specified as numeric, unit-less
-> > capabilities relative to other CPUs in the system. These capabilities have
-> > a range of [0-255] where higher numbers represent higher capabilities.
-> > Energy efficiency and performance are reported in separate capabilities.
-> > If either the performance or energy capabilities efficiency of a CPU are 0,
-> > the hardware recommends to not schedule any tasks on such CPU for
-> > performance, energy efficiency or thermal reasons, respectively.
-> >
-> > The kernel or user space may use the information from the HFI to modify
-> > task placement and/or adjust power limits. This patchset focuses on the
-> > user space. The thermal notification framework is extended to relay
-> > updates of CPU capacity. Thus, a userspace daemon can affinitize workloads
-> > to certain CPUs and/or offline CPUs whose capabilities are zero.
-> >
-> > The frequency of HFI updates is specific to each processor model. On some
-> > systems, there is just a single HFI update at boot. On other systems, there
-> > may be updates every tens of milliseconds. In order to not overwhelm
-> > userspace with too many updates, they are limited to one update every
-> > CONFIG_HZ jiffies.
-> >
-> > Thanks and BR,
-> > Ricardo
-> >
-> > [1]. https://lore.kernel.org/lkml/20211106013312.26698-1-ricardo.neri-calderon@linux.intel.com/
-> > [2]. https://lore.kernel.org/lkml/20211220151438.1196-1-ricardo.neri-calderon@linux.intel.com/
-> > [3]. https://lore.kernel.org/lkml/20220106025059.25847-8-ricardo.neri-calderon@linux.intel.com/
-> > [4]. https://lore.kernel.org/lkml/20220108034743.31277-1-ricardo.neri-calderon@linux.intel.com/
-> > [5]. https://www.intel.com/sdm
-> >
-> > Changes since v4:
-> >  ++ Unchanged patches: 1, 2.
-> >  * Reworded description hfi_instance::hdr and hfi_instance::data.
-> >    (Patch 3; Srinivas)
-> >  * Call intel_hfi_online() before enabling the thermal vector at the
-> >    local APIC is enabled. This makes sure that a CPU has an associated
-> >    HFI instance when an HFI event happens. Reworded the commit message to
-> >    reflect this change. (Patch 4; Srinivas)
-> >  * Set hfi_instances to NULL if we fail to allocate memory for
-> >    hfi_instance::cpus. (Patch 4; Srinivas)
-> >  * Delayed initialization of local variables until after the check for a
-> >    non-NULL hfi_instances in intel_hfi_online(). (Patch 4; Srinivas)
-> >  * Optimized the error path in init_hfi_init() to not needlessly
-> >    free the memory of cpumasks that have not been allocated. (Patch 4;
-> >    Srinivas)
-> >  * Removed pointless checks for X86_FEATURE_HFI in
-> >    intel_hfi_[on|off]line(). It is sufficient to check for a non-NULL
-> >    hfi_instances or a CPU's hfi_instance. (Patch 4)
-> >  * Added a dedicated (i.e., not system_wq) workqueue to process HFI updates.
-> >    Reworded commit message accordingly. (Patch 5; Rafael)
-> >  * Repurposed comment on possibly receiving an HFI event with a NULL
-> >    hfi_cpu_info::instance. Patch 4 fixed this potential issue. Instead,
-> >    add a debug statement. (Patch 5; Srinivas)
-> >  * Wrapped check for NULL hfi_cpu_info::instance in the unlikely macro.
-> >    (Patch 5; Srinivas)
-> >  * Renamed struct cpu_capability as struct thermal_genl_cpu_caps.
-> >    (Patch 6; Rafael)
-> >  * Removed automatic variable ret from
-> >    thermal_genl_event_cpu_capability_change() and instead always return
-> >    -EMSGSIZE on error. (Patch 6; Rafael)
-> >  * Reworked parsing of HFI capabilities into chunks of
-> >    HFI_MAX_THERM_NOTIFY_COUNT CPUs at a time to reduce the time
-> >    we spend with interrupts disabled. (Patch7; Srinivas)
-> >  * Protected hfi_instance::cpus when iterating over them. (Patch 7;
-> >    Rafael)
->
-> All patches in the series look good to me now, so I will be queuing it
-> up for 5.18 unless there are any objections or concerns.
+From: Amadeusz Sławiński <amadeuszx.slawinski@linux.intel.com>
 
-The series has been applied as 5.18 material, thanks!
+[ Upstream commit 33569ef3c754a82010f266b7b938a66a3ccf90a4 ]
+
+It is an unused wrapper forcing kmalloc allocation for registering
+nosave regions. Also, rename __register_nosave_region() to
+register_nosave_region() now that there is no need for disambiguation.
+
+Signed-off-by: Amadeusz Sławiński <amadeuszx.slawinski@linux.intel.com>
+Reviewed-by: Cezary Rojewski <cezary.rojewski@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ include/linux/suspend.h | 11 +----------
+ kernel/power/snapshot.c | 21 +++++++--------------
+ 2 files changed, 8 insertions(+), 24 deletions(-)
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 8af13ba60c7e4..c1310c571d805 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -430,15 +430,7 @@ struct platform_hibernation_ops {
+ 
+ #ifdef CONFIG_HIBERNATION
+ /* kernel/power/snapshot.c */
+-extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
+-static inline void __init register_nosave_region(unsigned long b, unsigned long e)
+-{
+-	__register_nosave_region(b, e, 0);
+-}
+-static inline void __init register_nosave_region_late(unsigned long b, unsigned long e)
+-{
+-	__register_nosave_region(b, e, 1);
+-}
++extern void register_nosave_region(unsigned long b, unsigned long e);
+ extern int swsusp_page_is_forbidden(struct page *);
+ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+@@ -457,7 +449,6 @@ int pfn_is_nosave(unsigned long pfn);
+ int hibernate_quiet_exec(int (*func)(void *data), void *data);
+ #else /* CONFIG_HIBERNATION */
+ static inline void register_nosave_region(unsigned long b, unsigned long e) {}
+-static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
+ static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+ static inline void swsusp_set_page_free(struct page *p) {}
+ static inline void swsusp_unset_page_free(struct page *p) {}
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index f7a9860782135..330d499376924 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -978,8 +978,7 @@ static void memory_bm_recycle(struct memory_bitmap *bm)
+  * Register a range of page frames the contents of which should not be saved
+  * during hibernation (to be used in the early initialization code).
+  */
+-void __init __register_nosave_region(unsigned long start_pfn,
+-				     unsigned long end_pfn, int use_kmalloc)
++void __init register_nosave_region(unsigned long start_pfn, unsigned long end_pfn)
+ {
+ 	struct nosave_region *region;
+ 
+@@ -995,18 +994,12 @@ void __init __register_nosave_region(unsigned long start_pfn,
+ 			goto Report;
+ 		}
+ 	}
+-	if (use_kmalloc) {
+-		/* During init, this shouldn't fail */
+-		region = kmalloc(sizeof(struct nosave_region), GFP_KERNEL);
+-		BUG_ON(!region);
+-	} else {
+-		/* This allocation cannot fail */
+-		region = memblock_alloc(sizeof(struct nosave_region),
+-					SMP_CACHE_BYTES);
+-		if (!region)
+-			panic("%s: Failed to allocate %zu bytes\n", __func__,
+-			      sizeof(struct nosave_region));
+-	}
++	/* This allocation cannot fail */
++	region = memblock_alloc(sizeof(struct nosave_region),
++				SMP_CACHE_BYTES);
++	if (!region)
++		panic("%s: Failed to allocate %zu bytes\n", __func__,
++		      sizeof(struct nosave_region));
+ 	region->start_pfn = start_pfn;
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
+-- 
+2.34.1
+
