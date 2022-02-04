@@ -2,70 +2,178 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FBF7C433F5
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Feb 2022 08:29:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C60C433FE
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Feb 2022 08:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241421AbiBDI3d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Feb 2022 03:29:33 -0500
-Received: from ams.source.kernel.org ([145.40.68.75]:58576 "EHLO
-        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238709AbiBDI3d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Feb 2022 03:29:33 -0500
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        id S1357222AbiBDIwW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Feb 2022 03:52:22 -0500
+Received: from smtp-relay-internal-0.canonical.com ([185.125.188.122]:36852
+        "EHLO smtp-relay-internal-0.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1357209AbiBDIwQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Feb 2022 03:52:16 -0500
+Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com [209.85.218.69])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E06DBB83551;
-        Fri,  4 Feb 2022 08:29:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16867C004E1;
-        Fri,  4 Feb 2022 08:29:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1643963370;
-        bh=hV0XVIpJv8RfsccFVgtd6nr6963RmT/8SgaEKOgrUGM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=CkacnUzIMgDRFphD+YHfn9mQpier5IfJsqoe/Ygn0PfYfp0gBV6K82RfCBDhpo6Yf
-         jFMWFZUT0aez4ocdBJ8E1XmVV5KqFjpylE3tFFbmBR9NWg5qIny6U61rAl1sqHtTzR
-         eJuabVpShJszWnFnRlPjlTWmMQJuv4chuWqlEs8k=
-Date:   Fri, 4 Feb 2022 09:29:27 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Sasha Levin <sashal@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, stable@vger.kernel.org,
-        Lee Jones <lee.jones@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        rafael@kernel.org, pavel@ucw.cz, len.brown@intel.com,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH AUTOSEL 5.16 36/52] PM: wakeup: simplify the output logic
- of pm_show_wakelocks()
-Message-ID: <Yfzj56RiMMd79M26@kroah.com>
-References: <20220203202947.2304-1-sashal@kernel.org>
- <20220203202947.2304-36-sashal@kernel.org>
+        by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 93CEF40326
+        for <linux-pm@vger.kernel.org>; Fri,  4 Feb 2022 08:52:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1643964734;
+        bh=iqZrLHxxMKYXcwDk+JH/xBRKoG0uPSeGw2pYz3/v6kY=;
+        h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+         In-Reply-To:Content-Type;
+        b=TfcFge227DkvHqmguJL3GjRvNS4JUZe4tZ0vUXbNTOp9bXawP0HIxL5SOuwO94SNH
+         LCu9lyWNkoXMJerP6A88IHg6f4EwSd5yJKXNnFYjuf1XCZIgDOUe3kMn/yovzZPmSj
+         k3Ku3f8a0EhBw8mRv1nVPgz+FmB7PtxT2dZBe7JaHvmNMun+lSYqQWuz6lO0VUogYF
+         iCSEH37TwdcMui+iwQ1B2HcvzPI/mZjonzVP4BQiiPiobmXyaMkp2UgUQyuGAmPyfB
+         Qdgv1sug9WAyByoNiWuVuVwgGAT+RX7EYWhCzpsrWSlriBC6wS0LDZm3nmDqoQAEmf
+         YgkKaQzqSlThw==
+Received: by mail-ej1-f69.google.com with SMTP id lb14-20020a170907784e00b006aa178894fcso2251468ejc.6
+        for <linux-pm@vger.kernel.org>; Fri, 04 Feb 2022 00:52:14 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=iqZrLHxxMKYXcwDk+JH/xBRKoG0uPSeGw2pYz3/v6kY=;
+        b=uZ09QBqheKS2LGtdwj367HmYZJAVQWTdiKcPXB2leTizdMh4r5/0zItepdVIZaaYrm
+         VmaOrlrvHDAaOtpnu1KJtSRhhBF8MmCRnh84s8bflIxaMvzoIii/QmiAXMwBrL1IPxVG
+         /DUex8aI+UQAMUCtYFnaysYVVPyO6FimPVf1REbUrusS4IAYDNCnqWjzj2H0Hz4ulKRk
+         ykKns0JeMgcPy3ICXa3YaFqKUCWlpFfQ8iMzBgTYpZaUo/gTqm3iNZZrMLyBu23tqYi0
+         cbPQJpE9gzdCauMvPT2+XDI3JxSf2x4wDAvl73M5oqFXHChvWmixNw7LNfcwTvCiRyPz
+         gkxA==
+X-Gm-Message-State: AOAM531WfrqJ/RG88DchYUQd7tdw5MXqcQ3T8Ld+h5j9+LeRLtYTaeJa
+        +ZGqR3AlzXPC9P5IY1V9aDGiDhDdgjwZyi/eWOyFviOQGppcAqH0NAlY81zL2LvJiQQmVvoT1E4
+        ZuJIDRCT9C0arToxmutxJhrh1WFZYRucw9OQ9
+X-Received: by 2002:a05:6402:3492:: with SMTP id v18mr1976622edc.345.1643964732793;
+        Fri, 04 Feb 2022 00:52:12 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwVcZDvspQCzKUyW5YG8zjDVQmYqY/DEAG3sfjKSfnQIzLHqmc3NlVf9LlkkFskfuUgLPJavA==
+X-Received: by 2002:a05:6402:3492:: with SMTP id v18mr1976597edc.345.1643964732578;
+        Fri, 04 Feb 2022 00:52:12 -0800 (PST)
+Received: from [192.168.0.81] (xdsl-188-155-168-84.adslplus.ch. [188.155.168.84])
+        by smtp.gmail.com with ESMTPSA id z8sm418238ejc.197.2022.02.04.00.52.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 04 Feb 2022 00:52:11 -0800 (PST)
+Message-ID: <ed615fdb-5c30-697e-f197-a3a93c5336b9@canonical.com>
+Date:   Fri, 4 Feb 2022 09:52:10 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220203202947.2304-36-sashal@kernel.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] HPE BMC GXP SUPPORT
+Content-Language: en-US
+To:     "Verdun, Jean-Marie" <verdun@hpe.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Hawkins, Nick" <nick.hawkins@hpe.com>
+Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Corey Minyard <minyard@acm.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Lee Jones <lee.jones@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mark Brown <broonie@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Russell King <linux@armlinux.org.uk>,
+        Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
+        SoC Team <soc@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+        Stanislav Jakubek <stano.jakubek@gmail.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Hao Fang <fanghao11@huawei.com>,
+        "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Marc Zyngier <maz@kernel.org>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Anshuman Khandual <anshuman.khandual@arm.com>,
+        Wang Kefeng <wangkefeng.wang@huawei.com>,
+        Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Linux I2C <linux-i2c@vger.kernel.org>,
+        "openipmi-developer@lists.sourceforge.net" 
+        <openipmi-developer@lists.sourceforge.net>,
+        MTD Maling List <linux-mtd@lists.infradead.org>,
+        netdev <netdev@vger.kernel.org>,
+        Linux PWM List <linux-pwm@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        linux-spi <linux-spi@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Linux USB List <linux-usb@vger.kernel.org>,
+        LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+References: <nick.hawkins@hpe.com>
+ <20220202165315.18282-1-nick.hawkins@hpe.com>
+ <CAL_Jsq+K2t5WYE056so1iZgZr7CBKvDEjAwnJVTyUFQcK-VFSA@mail.gmail.com>
+ <e79133f2-f872-3ed6-4038-526e94e84909@canonical.com>
+ <1FEAAC19-1DD7-40D7-98FD-30C2659E7C0F@hpe.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+In-Reply-To: <1FEAAC19-1DD7-40D7-98FD-30C2659E7C0F@hpe.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Feb 03, 2022 at 03:29:30PM -0500, Sasha Levin wrote:
-> From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+On 03/02/2022 18:07, Verdun, Jean-Marie wrote:
 > 
-> [ Upstream commit c9d967b2ce40d71e968eb839f36c936b8a9cf1ea ]
+>    > Maybe it does not look like, but this is actually a v2. Nick was asked
+>    > to change the naming for the nodes already in v1. Unfortunately it did
+>    > not happen, so we have vuart, spifi, vic and more.
 > 
-> The buffer handling in pm_show_wakelocks() is tricky, and hopefully
-> correct.  Ensure it really is correct by using sysfs_emit_at() which
-> handles all of the tricky string handling logic in a PAGE_SIZE buffer
-> for us automatically as this is a sysfs file being read from.
+>    > It is a waste of reviewers' time to ask them to perform the same review
+>    > twice or to ignore their comments.
 > 
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Reviewed-by: Lee Jones <lee.jones@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
-> ---
->  kernel/power/wakelock.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
+>     Hi Krysztof,
+> 
+>     Accept our apologies if you think you lose your time, it is clearly not our
+>     intent. 
+> 
+>     This is the first time that we (I mean the team) introduce a new arch into
+>     the linux kernel and I must admit that we had hard time to understand
+>     from which angle we needed to start.
+> 
+>     I will probably write a Documentation afterward, as it is easy to find doc
+>     on how to introduce a patch or a driver, but not when you want to 
+>     introduce a new chip. 
+> 
+>     We are trying to do our best, and clearly want to follow all of your inputs.
+>     Mistakes happen and they are clearly not intentional and not driven in 
+>     a way to make you lose your time.
+> 
+>     Helping others, and teaching something new is definitely a way to 
+>     optimize your time and this is what you are currently doing with us.
+> 
+>     We appreciate it and hope you will too.
 
-This is already in a stable release, so no need to add it again.
+I understand, I also maybe over-reacted on this. Just please go through
+the comments you got for first submission and either apply them or
+respond why you disagree.
 
-thanks,
+The next submissions (patchset split into several commits) should be a
+v3, preferably with cover letter (git format-patch --cover-letter -v3
+...) where you can document also changes you did to the patchset.
 
-greg k-h
+It looks for example like this:
+https://lore.kernel.org/linux-samsung-soc/31da451b-a36c-74fb-5667-d4193284c6cd@canonical.com/T/#mf98d2ac27a8481dc69dd110f9861c8318cade252
+
+or like this (where changelogs are in each patch, although ordering is
+not correct because dt-bindings should be the first in the series):
+https://lore.kernel.org/all/20220103233948.198119-1-Mr.Bossman075@gmail.com/
+
+
+Best regards,
+Krzysztof
