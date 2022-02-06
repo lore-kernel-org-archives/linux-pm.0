@@ -2,17 +2,17 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4510BC433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E048C4332F
 	for <linux-pm@archiver.kernel.org>; Sun,  6 Feb 2022 18:36:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234686AbiBFSgH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S237654AbiBFSgH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sun, 6 Feb 2022 13:36:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53420 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237654AbiBFSgF (ORCPT
+        with ESMTP id S1345994AbiBFSgF (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Feb 2022 13:36:05 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 93798C043184
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E2D2EC06173B
         for <linux-pm@vger.kernel.org>; Sun,  6 Feb 2022 10:36:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
         s=mimecast20190719; t=1644172563;
@@ -20,30 +20,30 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=+Zz8lrDxlo4FuqIPlxk3k2zkD/N6oyUkKUAqsEk6uzI=;
-        b=AkpvvodeoxI3do3Wwfj46oiTWAZad6U6YvUsR2W4//hXV2SufCXWIEJWYBtidv2urkGJv2
-        SdJ1N8yYKKX7SK/MdGTbgjZl3d3n7qROy0KPY+K+FTKPgBVICv1d/rZld2+xAw4Mq4cU3d
-        fdPx0GKGYPawToTxcn2UXDR64Peq0c0=
+        bh=vQhKiL5PZm0ua4bYfpZe/JtLpub25Q5rMxkcjoyDS4c=;
+        b=RgYR0OJ8eks6CNo76ItZlLdZ42ehZdN4p6lCtoJ6OZstzdGl5SAn4p38ye6hAKtw6vQcEs
+        ErmZXo8OLsg/SP6iDKI1zZhLECdWuia8i7S8F0CBn2Tn6CMgWHESXGL3Tj2Gfv/eZNWyyG
+        6qx9/OdiW8rP2++/goWzdIcv3X2GkBU=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-407--K7E3mbzMSWIA06p-toUxA-1; Sun, 06 Feb 2022 13:36:00 -0500
-X-MC-Unique: -K7E3mbzMSWIA06p-toUxA-1
+ us-mta-55-pVgKgX0wMVugeRNZaNDWMw-1; Sun, 06 Feb 2022 13:36:02 -0500
+X-MC-Unique: pVgKgX0wMVugeRNZaNDWMw-1
 Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 3533C814243;
-        Sun,  6 Feb 2022 18:35:59 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A5D3B2F46;
+        Sun,  6 Feb 2022 18:36:01 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.39.192.35])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 4484D85EE4;
-        Sun,  6 Feb 2022 18:35:58 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id B53A085EE4;
+        Sun,  6 Feb 2022 18:36:00 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Hans de Goede <hdegoede@redhat.com>,
         Stephan Gerhold <stephan@gerhold.net>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 5/8] power: supply: bq24190_charger: Store ichg-max and vreg-max in bq24190_dev_info
-Date:   Sun,  6 Feb 2022 19:35:40 +0100
-Message-Id: <20220206183543.51200-6-hdegoede@redhat.com>
+Subject: [PATCH v2 7/8] power: supply: bq24190_charger: Disallow ccc_ireg and cvc_vreg to be higher then the fwnode values
+Date:   Sun,  6 Feb 2022 19:35:42 +0100
+Message-Id: <20220206183543.51200-8-hdegoede@redhat.com>
 In-Reply-To: <20220206183543.51200-1-hdegoede@redhat.com>
 References: <20220206183543.51200-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -53,97 +53,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Store ichg-max and vreg-max in bq24190_dev_info once from
-bq24190_get_config() and drop the bq24190_charger_get_current_max() and
-bq24190_charger_get_voltage_max() helpers.
-
-This is a preparation patch for honoring the
-constant_charge_current_max_ua and constant_charge_voltage_max_uv
-values from power_supply_get_battery_info().
+If the fwnode data as parsed by power_supply_get_battery_info() provides
+max values for ccc_ireg and cvc_vreg then do not allow the user to later
+set these to higher values then those specified by the firmware,
+otherwise the battery might get damaged.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq24190_charger.c | 34 ++++++++++----------------
- 1 file changed, 13 insertions(+), 21 deletions(-)
+ drivers/power/supply/bq24190_charger.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 83873119ba24..cb36ccbb731a 100644
+index 974e4b6b8d4d..04aa25f2d033 100644
 --- a/drivers/power/supply/bq24190_charger.c
 +++ b/drivers/power/supply/bq24190_charger.c
-@@ -165,6 +165,8 @@ struct bq24190_dev_info {
- 	u16				sys_min;
- 	u16				iprechg;
- 	u16				iterm;
-+	u32				ichg_max;
-+	u32				vreg_max;
- 	struct mutex			f_reg_lock;
- 	u8				f_reg;
- 	u8				ss_reg;
-@@ -977,15 +979,6 @@ static int bq24190_charger_get_current(struct bq24190_dev_info *bdi,
- 	return 0;
- }
+@@ -1019,6 +1019,9 @@ static int bq24190_charger_set_current(struct bq24190_dev_info *bdi,
+ 	if (v)
+ 		curr *= 5;
  
--static int bq24190_charger_get_current_max(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	int idx = ARRAY_SIZE(bq24190_ccc_ichg_values) - 1;
--
--	val->intval = bq24190_ccc_ichg_values[idx];
--	return 0;
--}
--
- static int bq24190_charger_set_current(struct bq24190_dev_info *bdi,
- 		const union power_supply_propval *val)
- {
-@@ -1024,15 +1017,6 @@ static int bq24190_charger_get_voltage(struct bq24190_dev_info *bdi,
- 	return 0;
- }
- 
--static int bq24190_charger_get_voltage_max(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	int idx = ARRAY_SIZE(bq24190_cvc_vreg_values) - 1;
--
--	val->intval = bq24190_cvc_vreg_values[idx];
--	return 0;
--}
--
- static int bq24190_charger_set_voltage(struct bq24190_dev_info *bdi,
- 		const union power_supply_propval *val)
- {
-@@ -1109,13 +1093,15 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 		ret = bq24190_charger_get_current(bdi, val);
- 		break;
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
--		ret = bq24190_charger_get_current_max(bdi, val);
-+		val->intval = bdi->ichg_max;
-+		ret = 0;
- 		break;
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
- 		ret = bq24190_charger_get_voltage(bdi, val);
- 		break;
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
--		ret = bq24190_charger_get_voltage_max(bdi, val);
-+		val->intval = bdi->vreg_max;
-+		ret = 0;
- 		break;
- 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
- 		ret = bq24190_charger_get_iinlimit(bdi, val);
-@@ -1682,7 +1668,13 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- {
- 	const char * const s = "ti,system-minimum-microvolt";
- 	struct power_supply_battery_info *info;
--	int v;
-+	int v, idx;
++	if (curr > bdi->ichg_max)
++		return -EINVAL;
 +
-+	idx = ARRAY_SIZE(bq24190_ccc_ichg_values) - 1;
-+	bdi->ichg_max = bq24190_ccc_ichg_values[idx];
-+
-+	idx = ARRAY_SIZE(bq24190_cvc_vreg_values) - 1;
-+	bdi->vreg_max = bq24190_cvc_vreg_values[idx];
+ 	ret = bq24190_set_field_val(bdi, BQ24190_REG_CCC,
+ 			BQ24190_REG_CCC_ICHG_MASK, BQ24190_REG_CCC_ICHG_SHIFT,
+ 			bq24190_ccc_ichg_values,
+@@ -1052,6 +1055,9 @@ static int bq24190_charger_set_voltage(struct bq24190_dev_info *bdi,
+ {
+ 	int ret;
  
- 	if (device_property_read_u32(bdi->dev, s, &v) == 0) {
- 		v /= 1000;
++	if (val->intval > bdi->vreg_max)
++		return -EINVAL;
++
+ 	ret = bq24190_set_field_val(bdi, BQ24190_REG_CVC,
+ 			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
+ 			bq24190_cvc_vreg_values,
+@@ -1743,11 +1749,11 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
+ 		/* These are optional, so no warning when not set */
+ 		v = info->constant_charge_current_max_ua;
+ 		if (v >= bq24190_ccc_ichg_values[0] && v <= bdi->ichg_max)
+-			bdi->ichg = v;
++			bdi->ichg = bdi->ichg_max = v;
+ 
+ 		v = info->constant_charge_voltage_max_uv;
+ 		if (v >= bq24190_cvc_vreg_values[0] && v <= bdi->vreg_max)
+-			bdi->vreg = v;
++			bdi->vreg = bdi->vreg_max = v;
+ 	}
+ 
+ 	return 0;
 -- 
 2.33.1
 
