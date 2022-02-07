@@ -2,58 +2,96 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EB9FC433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Feb 2022 07:46:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2BFEC43219
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Feb 2022 08:18:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232259AbiBGHpX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Feb 2022 02:45:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36438 "EHLO
+        id S234501AbiBGISA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Feb 2022 03:18:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51772 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244580AbiBGHie (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Feb 2022 02:38:34 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C42D7C043185;
-        Sun,  6 Feb 2022 23:38:33 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 54CBFD6E;
-        Sun,  6 Feb 2022 23:30:47 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.57.15.201])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 49E2B3F73B;
-        Sun,  6 Feb 2022 23:30:45 -0800 (PST)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     amit.kachhap@gmail.com, daniel.lezcano@linaro.org,
-        viresh.kumar@linaro.org, rafael@kernel.org, amitk@kernel.org,
-        rui.zhang@intel.com, dietmar.eggemann@arm.com, lukasz.luba@arm.com,
-        Pierre.Gondois@arm.com
-Subject: [PATCH 0/2] Ignore Energy Model with abstract scale in IPA and DTPM
-Date:   Mon,  7 Feb 2022 07:30:34 +0000
-Message-Id: <20220207073036.14901-1-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
+        with ESMTP id S244786AbiBGILG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Feb 2022 03:11:06 -0500
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3767EC043181;
+        Mon,  7 Feb 2022 00:11:06 -0800 (PST)
+Received: by mail-pj1-x102a.google.com with SMTP id a11-20020a17090a740b00b001b8b506c42fso2387705pjg.0;
+        Mon, 07 Feb 2022 00:11:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=BPjSWbh9AJ/hwlVO5qE57HHwxamYnP4dP25AlKlaQB0=;
+        b=fljC4K8mp7UCV0YBMVphzhqbkGi6y6RWCT/EkUq7gpJt/RBphqFd0VUpS7a4gvGiDW
+         1MvVxMOi6quLAZr/sq6O7CTd3gp3/VjoxVkvmTbWD8NnKvx+rn421HNz3NY/LKozZEpu
+         hJ1Ur2sHlonWawIcw+hlDQXrtLmggy+NDPz/4Vt0i3z3lvj8svvcfQv4ktGcayPFHGiz
+         gVCf0CcYzzJdnNWmRiskoMF0yJKa8XFcLPrrW/mMD41M5Rm3gA32hiMMeU8qgzzm9L+v
+         8nZgnNQEi7yMvD14jvYfD0/i5KI0S8eOtZhms0MFY5iyczSAGkhvwXAoURKtXhHO5OV/
+         Ubmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=BPjSWbh9AJ/hwlVO5qE57HHwxamYnP4dP25AlKlaQB0=;
+        b=hjP1hNVCpT/ykeYdkTP4UZB/UE1m5YTN5gyXmgIPSni5H0VwHMjls9bzkoU1uSz0CZ
+         0W7Pggj0kx3awybOBgeHmo/aJpf5K0n5cxxAH+1bSBdax6Mi/WkZxWM1v1t70GEzY5sf
+         DdLQU7IPzav3nO6Ay28jPOFTa7FOG9JnxIvx1SgzH4U2nuShLlHu5NMmN0fBT5yD2uBh
+         nY1Vy6jK6jKmE2FBux6bQc6Z3ZY1ZYNuxSA+duJ0uatrtfs10pF32djNttyrF4uC5FWH
+         5ScNeIjRd53oehyYHfgQYePmCdfGrgw0JUXlRzq10PYDgZU0Tp/k+VN+/4hJV6s76f1e
+         HSQg==
+X-Gm-Message-State: AOAM530m2SFs7dMmlVwffDE5kK8WFyZNIXu9cZX/9DsLbO2qMNAykZvW
+        xPVejJfaFHHUyrIvVLTweq0=
+X-Google-Smtp-Source: ABdhPJx7GFGlv+foTQZ4ZI/MYmg/49E0npi4U0C71AkA+B/UvYbzmgsZo2CrJryGWKM/d/EyYTxXGA==
+X-Received: by 2002:a17:902:d2c2:: with SMTP id n2mr914582plc.76.1644221465677;
+        Mon, 07 Feb 2022 00:11:05 -0800 (PST)
+Received: from scdiu3.sunplus.com ([113.196.136.192])
+        by smtp.googlemail.com with ESMTPSA id h6sm11774502pfk.110.2022.02.07.00.11.03
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 07 Feb 2022 00:11:05 -0800 (PST)
+From:   Edwin Chiu <edwinchiu0505tw@gmail.com>
+To:     robh+dt@kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+        edwin.chiu@sunplus.com
+Cc:     Edwin Chiu <edwinchiu0505tw@gmail.com>
+Subject: [PATCH v4] Add cpuidle driver for Sunplus SP7021
+Date:   Mon,  7 Feb 2022 16:11:14 +0800
+Message-Id: <cover.1644218105.git.edwinchiu0505tw@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+This is a patch series for cpuidle driver for Sunplus SP7021 SoC.
 
-The Energy Model supports abstract scale power values. This might cause
-issues for some mechanisms like thermal governor IPA or DTPM, which
-expect that all devices provide sane power values. This patch set prevents
-from registering such devices for IPA and DTPM.
+Sunplus SP7021 is an ARM Cortex A7 (4 cores) based SoC. It integrates
+many peripherals (ex: UART, I2C, SPI, SDIO, eMMC, USB, SD card and 
+etc.) into a single chip. It is designed for industrial control.
 
-Regards,
-Lukasz
+Refer to:
+https://sunplus-tibbo.atlassian.net/wiki/spaces/doc/overview
+https://tibbo.com/store/plus1.html
 
-Lukasz Luba (2):
-  thermal: cooling: Check Energy Model type in cpufreq_cooling and
-    devfreq_cooling
-  powercap: DTPM: Check Energy Model type for power values scale
+Changes in v3
+ - Rearrangement #include sequence
+ - Change remark style to /*~*/
+ - Align author email address to same as sob
+ - Optimal code
+Changes in v4
+ - According Rob Herringrobh's comment
+   There is no need for this binding.
+   Just wanting a different driver is not a reason for a duplicate schema.
+   So remove yaml file and submit driver again.
+   
+Edwin Chiu (1):
+  cpuidle: sunplus: Create cpuidle driver for sunplus sp7021
 
- drivers/powercap/dtpm_cpu.c       |  2 +-
- drivers/thermal/cpufreq_cooling.c |  2 +-
- drivers/thermal/devfreq_cooling.c | 16 +++++++++++++---
- 3 files changed, 15 insertions(+), 5 deletions(-)
+ MAINTAINERS                                   |   8 ++
+ drivers/cpuidle/Kconfig.arm                   |   7 ++
+ drivers/cpuidle/Makefile                      |   1 +
+ drivers/cpuidle/cpuidle-sunplus.c             | 167 ++++++++++++++++++++++++++
+ include/linux/platform_data/cpuidle-sunplus.h |  19 +++
+ 5 files changed, 202 insertions(+)
+ create mode 100644 drivers/cpuidle/cpuidle-sunplus.c
+ create mode 100644 include/linux/platform_data/cpuidle-sunplus.h
 
 -- 
-2.17.1
+2.7.4
 
