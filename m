@@ -2,148 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB613C433F5
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Feb 2022 09:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D08EC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Feb 2022 09:47:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231847AbiBGJFg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Feb 2022 04:05:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43298 "EHLO
+        id S245171AbiBGJqI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Feb 2022 04:46:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241434AbiBGI4n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Feb 2022 03:56:43 -0500
-Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF1EEC043181
-        for <linux-pm@vger.kernel.org>; Mon,  7 Feb 2022 00:56:42 -0800 (PST)
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com [209.85.128.72])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 9445E3F328
-        for <linux-pm@vger.kernel.org>; Mon,  7 Feb 2022 08:56:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1644224201;
-        bh=btDpU5FmsTkCm5Mc+WyqRMkXXG3Fg8Z86T3tz0oN0CM=;
-        h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-         In-Reply-To:Content-Type;
-        b=HepHLUJh7x3PakI0ZWJV0Iy7bSoGdHu68AE9wjL1bUgbOacsNEc5ZVSrOoXzIbjPP
-         a2Qxm9VLBNzFNIkPVJkF+Lbckf7nhUN9rbwd0uBTKK7qu+bpmYt8QblGX9f8lvBLWw
-         Py6vDiaJkyNirKJK72AyzQloEdSdt/7Wo4RlKQvIY8IGpuo+epS2wKfwtSKYPdNRM/
-         cpNYofpHIkOAGiD+v80C3L6PYsT4zNcXtyY5X8yVklFD7WrzybSLq5flIp+60DfxD2
-         qDrD18XitNL3p3LmdhA6LB2i/4ktTlRpe2OrY4zh7T2fj3owW7+e9MjQEzItDE+VMp
-         R+vxYns3BDtYQ==
-Received: by mail-wm1-f72.google.com with SMTP id h82-20020a1c2155000000b003552c13626cso7533962wmh.3
-        for <linux-pm@vger.kernel.org>; Mon, 07 Feb 2022 00:56:41 -0800 (PST)
+        with ESMTP id S1345347AbiBGJf1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Feb 2022 04:35:27 -0500
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 447D5C043187
+        for <linux-pm@vger.kernel.org>; Mon,  7 Feb 2022 01:35:26 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id c192so9390840wma.4
+        for <linux-pm@vger.kernel.org>; Mon, 07 Feb 2022 01:35:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=TCP4D7FjgMKnby1e08gVg89o79MvrPT+OFv+Q8blaaw=;
+        b=ogrUu/AfnxSajBawUTAzhtl8hLHhL27U55AVn39abbS66VthBN2tMwBOrOl3xMel+M
+         qcydCYRurHTN44lCd9x0SEZQ1xWAGK/kf7FCmswWvYVMdoQomDqI7uBjuqYS+hkkbsLH
+         M0aU74LkynnNMWzcR83MoJglFkamGY4FGKSAthZ4e6ZfWaRlRuJuCuW6zwtdP5LaEJ5K
+         754Hu2ipMrf9lbi3w7cSa9wVeqU94CaV0PlO9mrimZQZKRfMxHnUYifUturxVEDlt+nJ
+         DSvz2SHZnrxS+h8kwo2kPAnt+8Pw0JYWRcAWqzR29lntazxq3gkLeaPbCE3bGj69p3UE
+         WauQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=btDpU5FmsTkCm5Mc+WyqRMkXXG3Fg8Z86T3tz0oN0CM=;
-        b=3mdGzQdIJeFrKIP/qGDQbgp7VznGv/rO6EHC8ps9raYwGnVyKj9nnR2vDGoRbPhtlS
-         hVFzgh8Pa+6Rh/76UR4KHTCKrQy1bldm666YG9YlM4MnmryhyP9bZSp1Lasez7+bs458
-         0UTrLyfHydzlVEqMNvcGCOG1Ai9Fh2Y24hKpN11BdYxKWKrsecLgv7EWrJ9EoJPJX5Rn
-         mmz1PqEFRQTDHw8PQu+1DS5V7K9xv3Q+FLmsaKYLFj8uZoQC+U7vkncid67j7VEuxxOV
-         +TADsaC4wrRhZEGkTr2o52w+mzOfJmMAfQfG8oRxShtth8YydEIzp0RFDX8IBLPP/W3u
-         tOVg==
-X-Gm-Message-State: AOAM531zVK0+qYMYOltPwBdNNEfdr9e9j6USsABkWFMJFK2TVxNNAtsM
-        qX1V2kk1X5HFl01eQeJQuBncEbwrMe23hNj/4b7eZcSOQmVHw0Q4nBZ/V4yNNgnq8by8hayVeDZ
-        BWcAGx1C+PzMCFI59lATcLuFxrAknn9BcbA+I
-X-Received: by 2002:a05:6000:16c5:: with SMTP id h5mr9011094wrf.364.1644224201260;
-        Mon, 07 Feb 2022 00:56:41 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwUWIz/kuedsRBnrB7RSMh9Ojazqtas2KPEtQ5IG7MGExl8fZ8JQjN+4o3EFV9rqV86qk4Cxw==
-X-Received: by 2002:a05:6000:16c5:: with SMTP id h5mr9011087wrf.364.1644224201104;
-        Mon, 07 Feb 2022 00:56:41 -0800 (PST)
-Received: from [192.168.0.86] (xdsl-188-155-168-84.adslplus.ch. [188.155.168.84])
-        by smtp.gmail.com with ESMTPSA id t14sm17259601wmq.43.2022.02.07.00.56.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Feb 2022 00:56:40 -0800 (PST)
-Message-ID: <4b18991e-1c93-077d-368f-a861e8c2b845@canonical.com>
-Date:   Mon, 7 Feb 2022 09:56:39 +0100
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=TCP4D7FjgMKnby1e08gVg89o79MvrPT+OFv+Q8blaaw=;
+        b=cf7npAXQhQgZ25d+gXVX1b1UA2wIkMVvi0QjrOiXjsPoAVaEN/ggf7xtuUOwAUvvge
+         MplaBH2TczOtqztdFnoaJsOyhJ+t8/TMmg7xIwr9dkmjBS9Y+tBZ5FRFZ6M8LWInKm5j
+         X+sZMIopzOwqUiz6rEzlbW5yatsVPzWLttJwk5Y8ECmRQCDnVXNp/89jsRARwB4LgMgQ
+         fgF1abm41rUPngnG2b3M7/RQ5/bEVJ6oipntnKKMcAE5YMKIa+3MZRGjwaj0TfeuKJcv
+         Br57ObOkrPdP9y/qqGiqHC/tmDpdUV8rgGGlwys3dZRgcfeoc3ta8zVuO6yIwgXfbEyF
+         ECjw==
+X-Gm-Message-State: AOAM533OT43E9BDs9xcKXaOWeXOSjttinT4LkZefyMfkRUF6MU3/bHiY
+        2ZA35eLYd6OReORYbyPmUuXH2w==
+X-Google-Smtp-Source: ABdhPJw22S5Q4w+myvg3aIQzNPQRoUolNTKEHd2CXwdqN9FlAuhosQe7sBTyghe8NdwcT3vntxlSiw==
+X-Received: by 2002:a1c:35c9:: with SMTP id c192mr9022814wma.168.1644226524796;
+        Mon, 07 Feb 2022 01:35:24 -0800 (PST)
+Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
+        by smtp.gmail.com with ESMTPSA id g15sm9584075wri.82.2022.02.07.01.35.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Feb 2022 01:35:24 -0800 (PST)
+Date:   Mon, 7 Feb 2022 09:35:22 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Cc:     linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mark Brown <broonie@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v2 0/4] leds/power/regulator/mfd: dt-bindings:
+ maxim,max77693: convert to dtschema
+Message-ID: <YgDn2iupBQL1lr9p@google.com>
+References: <20220111175017.223966-1-krzysztof.kozlowski@canonical.com>
+ <63255060-8df8-660d-52bf-198d77c884d5@canonical.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v3 5/8] dt-bindings: memory: lpddr3: deprecate
- manufacturer ID
-Content-Language: en-US
-To:     Alim Akhtar <alim.akhtar@samsung.com>,
-        'Rob Herring' <robh+dt@kernel.org>,
-        'Lukasz Luba' <lukasz.luba@arm.com>,
-        'Dmitry Osipenko' <digetx@gmail.com>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-References: <20220206135807.211767-1-krzysztof.kozlowski@canonical.com>
- <CGME20220206135825epcas5p4c07136cf0a54eb4d6c8441cd6dbf14bc@epcas5p4.samsung.com>
- <20220206135807.211767-6-krzysztof.kozlowski@canonical.com>
- <0a7101d81bd9$33088840$991998c0$@samsung.com>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-In-Reply-To: <0a7101d81bd9$33088840$991998c0$@samsung.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <63255060-8df8-660d-52bf-198d77c884d5@canonical.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 07/02/2022 05:14, Alim Akhtar wrote:
-> Hi Krzysztof
+On Sun, 06 Feb 2022, Krzysztof Kozlowski wrote:
+
+> On 11/01/2022 18:50, Krzysztof Kozlowski wrote:
+> > Hi,
+> > 
+> > Changes since v1
+> > ================
+> > 1. MFD: Use absolute path to schemas, add additionalProperties=false.
+> > 2. Regulator: mention all allowed properties,
+> >    additionalProperties=false, add min/max values for voltages and
+> >    current, don't use patternProperties when not needed.
+> > 
+> > Dependencies
+> > ============
+> > The final patch - MFD maxim,max77693 bindings conversion - depends on
+> > all previous. Therefore this could go via Rob's or Lee's trees.
+> > 
 > 
->> -----Original Message-----
->> From: Krzysztof Kozlowski [mailto:krzysztof.kozlowski@canonical.com]
->> Sent: Sunday, February 6, 2022 7:28 PM
->> To: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>; Rob Herring
->> <robh+dt@kernel.org>; Lukasz Luba <lukasz.luba@arm.com>; Alim Akhtar
->> <alim.akhtar@samsung.com>; Dmitry Osipenko <digetx@gmail.com>; linux-
->> kernel@vger.kernel.org; devicetree@vger.kernel.org; linux-
->> pm@vger.kernel.org; linux-samsung-soc@vger.kernel.org; linux-arm-
->> kernel@lists.infradead.org
->> Subject: [PATCH v3 5/8] dt-bindings: memory: lpddr3: deprecate
->> manufacturer ID
->>
->> The memory manufacturer should be described in vendor part of compatible,
->> so there is no need to duplicate it in a separate property.
->> Similarly is done in LPDDR2 bindings.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
->> ---
->> .../bindings/memory-controllers/ddr/jedec,lpddr3.yaml         | 4 +++-
->> 1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/memory-
->> controllers/ddr/jedec,lpddr3.yaml
->> b/Documentation/devicetree/bindings/memory-
->> controllers/ddr/jedec,lpddr3.yaml
->> index d6787b5190ee..3bcba15098ea 100644
->> --- a/Documentation/devicetree/bindings/memory-
->> controllers/ddr/jedec,lpddr3.yaml
->> +++ b/Documentation/devicetree/bindings/memory-
->> controllers/ddr/jedec,lpd
->> +++ dr3.yaml
->> @@ -40,7 +40,9 @@ properties:
->>   manufacturer-id:
->>     $ref: /schemas/types.yaml#/definitions/uint32
->>     description: |
->> -      Manufacturer ID value read from Mode Register 5.
->> +      Manufacturer ID value read from Mode Register 5.  The property is
->> +      deprecated, manufacturer should be derived from the compatible.
->> +    deprecated: true
->>
+> Dear Lee,
 > 
-> Shouldn't it be the other way? As DT describes hardware and MR5 does contain
-> the Manufacturer ID, 
-> so getting Manufacturer ID from MR5 makes aligned to hardware description.
+> This patchset was reviewed and there are no outstanding issues. Could
+> you pick up entire set via MFD tree?
 
-The code/driver can read MR5 and report it to user-space in case for
-example we have a device compatible with different vendor and same
-compatible is used. So compatible is re-used but we want real
-manufacturer ID from the hardware.
+Nothing from LED or Regulator?
 
-But storing a fixed MR5 value in DT does not fit here. If someone takes
-effort to encode manufacturer ID in the DTS, then he/she should take
-effort to actually document the compatible.
-
-Basically having MR5 in DT is equal to having a compatible in DTS. I
-prefer the latter - simpler, less properties, using existing property
-from DT spec instead of custom one.
-
-Best regards,
-Krzysztof
+-- 
+Lee Jones [李琼斯]
+Principal Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog
