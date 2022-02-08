@@ -2,162 +2,160 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 756A6C433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Feb 2022 08:00:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B2DC433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Feb 2022 08:49:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348671AbiBHIA5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Feb 2022 03:00:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43722 "EHLO
+        id S1351588AbiBHItO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Feb 2022 03:49:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348684AbiBHIA4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 03:00:56 -0500
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 94760C0401EF;
-        Tue,  8 Feb 2022 00:00:55 -0800 (PST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5F50911D4;
-        Tue,  8 Feb 2022 00:00:55 -0800 (PST)
-Received: from e126645.home (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 72AE63F718;
-        Tue,  8 Feb 2022 00:00:53 -0800 (PST)
-From:   Pierre Gondois <Pierre.Gondois@arm.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Ionela.Voinescu@arm.com, Lukasz.Luba@arm.com,
-        Morten.Rasmussen@arm.com, Pierre Gondois <Pierre.Gondois@arm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v3] cpufreq: CPPC: Fix performance/frequency conversion
-Date:   Tue,  8 Feb 2022 09:01:09 +0100
-Message-Id: <20220208080109.697904-1-Pierre.Gondois@arm.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S1351271AbiBHIs4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 03:48:56 -0500
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F02D2C03FEC5
+        for <linux-pm@vger.kernel.org>; Tue,  8 Feb 2022 00:48:51 -0800 (PST)
+Received: by mail-wr1-x42c.google.com with SMTP id k18so29338354wrg.11
+        for <linux-pm@vger.kernel.org>; Tue, 08 Feb 2022 00:48:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=brainfault-org.20210112.gappssmtp.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=EkVxK/LOYz0/eo5az4a2zVWUd5m6LEvFlEjayukrMYk=;
+        b=op64XUdgnstjz6QFJUzFkyQ4kvy0o35NYrSG8sjVko8AfwvJWsZX2akrlJ6y8EGQ2e
+         wWBJdZQ/tesItUNAXQhq6UMZSjC+HOYBqpC3eKF79QrR3n3MC2iNq/7IvhOYj1Z2uea1
+         tY5r5lV/2stL6vROHTELIfSmTXJHuMo+yDi910j2fFQlFc6qmbBoVmiykoU6jJ875/5d
+         Z3UsB7FqwI31PKTcHz0xY00UJZoba83/zojhH3ni1KDI1L4I+Lf7wFi2CQr7KBKRatqG
+         jqtcWLHmjx2+4Ad1YDmXlJYYJfWbMdIAIvgOj0tTEdyGg1Z07YptGVS00Fw2xCi4CIW+
+         JFVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=EkVxK/LOYz0/eo5az4a2zVWUd5m6LEvFlEjayukrMYk=;
+        b=7A9Gjmfu1D/qwcXuaWpcDIAgbjrdMJqUs72kCgaW8+2imZ1pBtPeXQx4Uc90BCokwI
+         4W8mufJrAQ1r1E+9+XwcMSYtlRfasMfvjb8OstCI4OYwfrbkp+Z4HGfhd3LTFmRGxeG7
+         onnQsCOji1JC82sIjnX+G0YXqi5Fkj9p0d5xjZxGviqDGhlKGm3s0P9oW/u3iW+Fa21W
+         TahIkXmz0c6ozg6t+spGZYjBgk8+oxZXyZQ9YP8Mc/gOXUJQlj7nA9JOIk2jiog7lTpd
+         Iuy0q6gf1NV+heOeUrvfc0/vl4JfS32991/v9cP9LVuCvlFh3cfsOeGBn3wgU4JHoc24
+         6E/g==
+X-Gm-Message-State: AOAM531UEP9V2E5ZVTlJO0rXNb8czS77MYAoIAdDwSyU5w8MytrBaB2W
+        XzVAeOLS2UOl00HdTMITp3lgCzu49aCibToc9cNClg==
+X-Google-Smtp-Source: ABdhPJyosXWO+NAe1q63zMby8CE8NyRp3HJT3OqC3u+vUMEXQNCw+EOmmQ/CtbilJrSHEq/padGN1KsmnCaA7OOnan0=
+X-Received: by 2002:a05:6000:1e0a:: with SMTP id bj10mr2564533wrb.313.1644310130417;
+ Tue, 08 Feb 2022 00:48:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220126114452.692512-1-apatel@ventanamicro.com>
+ <20220126114452.692512-9-apatel@ventanamicro.com> <CAJF2gTRLcqQ8ZjKwWNmARtaraVW7dD5Hp5=iv+4kHYENvB2gWg@mail.gmail.com>
+In-Reply-To: <CAJF2gTRLcqQ8ZjKwWNmARtaraVW7dD5Hp5=iv+4kHYENvB2gWg@mail.gmail.com>
+From:   Anup Patel <anup@brainfault.org>
+Date:   Tue, 8 Feb 2022 14:18:37 +0530
+Message-ID: <CAAhSdy00Yi10M0ECm+aUmbeviaXnm-bV9yLkwJKMSXQ2_7geCw@mail.gmail.com>
+Subject: Re: [PATCH v10 8/8] RISC-V: Enable RISC-V SBI CPU Idle driver for
+ QEMU virt machine
+To:     Guo Ren <guoren@kernel.org>
+Cc:     Anup Patel <apatel@ventanamicro.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
+        Sandeep Tripathy <milun.tripathy@gmail.com>,
+        Atish Patra <atishp@atishpatra.org>,
+        Alistair Francis <Alistair.Francis@wdc.com>,
+        Liush <liush@allwinnertech.com>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-riscv <linux-riscv@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        kvm-riscv@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUfreq governors request CPU frequencies using information
-on current CPU usage. The CPPC driver converts them to
-performance requests. Frequency targets are computed as:
-	target_freq = (util / cpu_capacity) * max_freq
-target_freq is then clamped between [policy->min, policy->max].
+On Tue, Feb 8, 2022 at 11:56 AM Guo Ren <guoren@kernel.org> wrote:
+>
+> On Wed, Jan 26, 2022 at 7:51 PM Anup Patel <apatel@ventanamicro.com> wrote:
+> >
+> > From: Anup Patel <anup.patel@wdc.com>
+> >
+> > We enable RISC-V SBI CPU Idle driver for QEMU virt machine to test
+> > SBI HSM Supend on QEMU.
+> >
+> > Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > ---
+> >  arch/riscv/Kconfig.socs           | 3 +++
+> >  arch/riscv/configs/defconfig      | 1 +
+> >  arch/riscv/configs/rv32_defconfig | 1 +
+> >  3 files changed, 5 insertions(+)
+> >
+> > diff --git a/arch/riscv/Kconfig.socs b/arch/riscv/Kconfig.socs
+> > index 6ec44a22278a..f4097a815201 100644
+> > --- a/arch/riscv/Kconfig.socs
+> > +++ b/arch/riscv/Kconfig.socs
+> > @@ -36,6 +36,9 @@ config SOC_VIRT
+> >         select GOLDFISH
+> >         select RTC_DRV_GOLDFISH if RTC_CLASS
+> >         select SIFIVE_PLIC
+> > +       select PM_GENERIC_DOMAINS if PM
+> > +       select PM_GENERIC_DOMAINS_OF if PM && OF
+> > +       select RISCV_SBI_CPUIDLE if CPU_IDLE
+> >         help
+> >           This enables support for QEMU Virt Machine.
+> >
+> > diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+> > index a5e0482a4969..b8c882b70b02 100644
+> > --- a/arch/riscv/configs/defconfig
+> > +++ b/arch/riscv/configs/defconfig
+> > @@ -20,6 +20,7 @@ CONFIG_SOC_SIFIVE=y
+> >  CONFIG_SOC_VIRT=y
+> >  CONFIG_SMP=y
+> >  CONFIG_HOTPLUG_CPU=y
+> > +CONFIG_PM=y
+> >  CONFIG_CPU_IDLE=y
+> >  CONFIG_VIRTUALIZATION=y
+> >  CONFIG_KVM=m
+> > diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
+> rv32_defconfig would be removed. I think you could delete this part.
+> https://lore.kernel.org/linux-riscv/20220201150545.1512822-9-guoren@kernel.org/T/#u
+>
+> I would Cc you in the patch, and you could track the progress.
 
-The CPPC driver converts performance values to frequencies
-(and vice-versa) using cppc_cpufreq_perf_to_khz() and
-cppc_cpufreq_khz_to_perf(). These functions both use two different
-factors depending on the range of the input value. For
-cppc_cpufreq_khz_to_perf():
-- (NOMINAL_PERF / NOMINAL_FREQ) or
-- (LOWEST_PERF / LOWEST_FREQ)
-and for cppc_cpufreq_perf_to_khz():
-- (NOMINAL_FREQ / NOMINAL_PERF) or
-- ((NOMINAL_PERF - LOWEST_FREQ) / (NOMINAL_PERF - LOWEST_PERF))
+I am not sure in which order Palmer will merge these patches so I
+will let him take care of the conflicts in rv32_defconfig.
 
-This means:
-1- the functions are not inverse for some values:
-   (perf_to_khz(khz_to_perf(x)) != x)
-2- cppc_cpufreq_perf_to_khz(LOWEST_PERF) can sometimes give
-   a different value from LOWEST_FREQ due to integer approximation
-3- it is implied that performance and frequency are proportional
-   (NOMINAL_FREQ / NOMINAL_PERF) == (LOWEST_PERF / LOWEST_FREQ)
+Regards,
+Anup
 
-This patch changes the conversion functions to an affine function.
-This fixes the 3 points above.
-
-Suggested-by: Lukasz Luba <lukasz.luba@arm.com>
-Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Signed-off-by: Pierre Gondois <Pierre.Gondois@arm.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 43 +++++++++++++++++-----------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index d4c27022b9c9..e0ff09d66c96 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -303,52 +303,48 @@ static u64 cppc_get_dmi_max_khz(void)
- 
- /*
-  * If CPPC lowest_freq and nominal_freq registers are exposed then we can
-- * use them to convert perf to freq and vice versa
-- *
-- * If the perf/freq point lies between Nominal and Lowest, we can treat
-- * (Low perf, Low freq) and (Nom Perf, Nom freq) as 2D co-ordinates of a line
-- * and extrapolate the rest
-- * For perf/freq > Nominal, we use the ratio perf:freq at Nominal for conversion
-+ * use them to convert perf to freq and vice versa. The conversion is
-+ * extrapolated as an affine function passing by the 2 points:
-+ *  - (Low perf, Low freq)
-+ *  - (Nominal perf, Nominal perf)
-  */
- static unsigned int cppc_cpufreq_perf_to_khz(struct cppc_cpudata *cpu_data,
- 					     unsigned int perf)
- {
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-+	s64 retval, offset = 0;
- 	static u64 max_khz;
- 	u64 mul, div;
- 
- 	if (caps->lowest_freq && caps->nominal_freq) {
--		if (perf >= caps->nominal_perf) {
--			mul = caps->nominal_freq;
--			div = caps->nominal_perf;
--		} else {
--			mul = caps->nominal_freq - caps->lowest_freq;
--			div = caps->nominal_perf - caps->lowest_perf;
--		}
-+		mul = caps->nominal_freq - caps->lowest_freq;
-+		div = caps->nominal_perf - caps->lowest_perf;
-+		offset = caps->nominal_freq - div64_u64(caps->nominal_perf * mul, div);
- 	} else {
- 		if (!max_khz)
- 			max_khz = cppc_get_dmi_max_khz();
- 		mul = max_khz;
- 		div = caps->highest_perf;
- 	}
--	return (u64)perf * mul / div;
-+
-+	retval = offset + div64_u64(perf * mul, div);
-+	if (retval >= 0)
-+		return retval;
-+	return 0;
- }
- 
- static unsigned int cppc_cpufreq_khz_to_perf(struct cppc_cpudata *cpu_data,
- 					     unsigned int freq)
- {
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-+	s64 retval, offset = 0;
- 	static u64 max_khz;
- 	u64  mul, div;
- 
- 	if (caps->lowest_freq && caps->nominal_freq) {
--		if (freq >= caps->nominal_freq) {
--			mul = caps->nominal_perf;
--			div = caps->nominal_freq;
--		} else {
--			mul = caps->lowest_perf;
--			div = caps->lowest_freq;
--		}
-+		mul = caps->nominal_perf - caps->lowest_perf;
-+		div = caps->nominal_freq - caps->lowest_freq;
-+		offset = caps->nominal_perf - div64_u64(caps->nominal_freq * mul, div);
- 	} else {
- 		if (!max_khz)
- 			max_khz = cppc_get_dmi_max_khz();
-@@ -356,7 +352,10 @@ static unsigned int cppc_cpufreq_khz_to_perf(struct cppc_cpudata *cpu_data,
- 		div = max_khz;
- 	}
- 
--	return (u64)freq * mul / div;
-+	retval = offset + div64_u64(freq * mul, div);
-+	if (retval >= 0)
-+		return retval;
-+	return 0;
- }
- 
- static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
--- 
-2.25.1
-
+>
+> > index d1b87db54d68..6f9a7c89bff9 100644
+> > --- a/arch/riscv/configs/rv32_defconfig
+> > +++ b/arch/riscv/configs/rv32_defconfig
+> > @@ -20,6 +20,7 @@ CONFIG_SOC_VIRT=y
+> >  CONFIG_ARCH_RV32I=y
+> >  CONFIG_SMP=y
+> >  CONFIG_HOTPLUG_CPU=y
+> > +CONFIG_PM=y
+> >  CONFIG_CPU_IDLE=y
+> >  CONFIG_VIRTUALIZATION=y
+> >  CONFIG_KVM=m
+> > --
+> > 2.25.1
+> >
+> >
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+>
+>
+>
+> --
+> Best Regards
+>  Guo Ren
+>
+> ML: https://lore.kernel.org/linux-csky/
