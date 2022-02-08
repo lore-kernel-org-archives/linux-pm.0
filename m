@@ -2,186 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B1DEC433FE
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Feb 2022 11:30:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24E8BC43219
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Feb 2022 11:30:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245278AbiBHLaE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Feb 2022 06:30:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59568 "EHLO
+        id S235548AbiBHLaG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Feb 2022 06:30:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46090 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1356424AbiBHKpY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 05:45:24 -0500
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2AD4C03FEC3;
-        Tue,  8 Feb 2022 02:45:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644317123; x=1675853123;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=+KO4sF4k8MB+WmyP2JsU+xI5l1gssY/zGbTiH6WguDQ=;
-  b=HhbXo3ClNx7+exLzhrkT1LG2P+DUdqgkM0e/0VQD8edBqUdRjlsJq7EM
-   kMtBwIRRUo0HmF7VZ1F61utLi3DcdCBFB6JugvNh979L4jvZSUdJQRMHx
-   E+e+L7qqoBU77UCJaYbGlNU3ySEAs3J9jplzJB9Lt6ElPtdih8uLik9kd
-   iLVncKJhin1xNsrMgpsya7w02Z/gSjZTvfMm5DQKv/EbWUg9ib1BVtQIU
-   9AoV5X8IYvkq0y1ucj4bbODWEUjoeu13BEvUan1UnV+RyHmYGpGC+c1JL
-   /p9/MTUIqVn0r8V4KOjbsOLNKVVwY3u+4gTGcTfl55mB6mWFWZf8Hv9ls
-   g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10251"; a="228890764"
-X-IronPort-AV: E=Sophos;i="5.88,352,1635231600"; 
-   d="scan'208";a="228890764"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2022 02:45:22 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,352,1635231600"; 
-   d="scan'208";a="481901913"
-Received: from lkp-server01.sh.intel.com (HELO d95dc2dabeb1) ([10.239.97.150])
-  by orsmga003.jf.intel.com with ESMTP; 08 Feb 2022 02:45:20 -0800
-Received: from kbuild by d95dc2dabeb1 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1nHNzr-00003Y-Sq; Tue, 08 Feb 2022 10:45:19 +0000
-Date:   Tue, 08 Feb 2022 18:44:30 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 963096e03c9e753d00dd0a04bcf4699b5a05b816
-Message-ID: <6202498e.hDHNVPWL/oPrDzPj%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S1355593AbiBHJrk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 04:47:40 -0500
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D56FAC03FEC1;
+        Tue,  8 Feb 2022 01:47:39 -0800 (PST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9DBCC11D4;
+        Tue,  8 Feb 2022 01:47:39 -0800 (PST)
+Received: from [10.57.15.144] (unknown [10.57.15.144])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1CB873F718;
+        Tue,  8 Feb 2022 01:47:35 -0800 (PST)
+Subject: Re: [PATCH 0/2] Ignore Energy Model with abstract scale in IPA and
+ DTPM
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     amit.kachhap@gmail.com, viresh.kumar@linaro.org, rafael@kernel.org,
+        amitk@kernel.org, rui.zhang@intel.com, dietmar.eggemann@arm.com,
+        Pierre.Gondois@arm.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20220207073036.14901-1-lukasz.luba@arm.com>
+ <0d2217e0-44f7-8587-3e1f-a73d301ab166@linaro.org>
+ <616307f7-b419-8e36-6879-6cf6f4e02d5a@arm.com>
+ <f63be987-a1a5-cf7e-8302-4ae6e87b6699@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <eed90b35-4556-963d-f6c2-8c645896c158@arm.com>
+Date:   Tue, 8 Feb 2022 09:47:29 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f63be987-a1a5-cf7e-8302-4ae6e87b6699@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 963096e03c9e753d00dd0a04bcf4699b5a05b816  Merge branch 'acpi-pm' into bleeding-edge
 
-elapsed time: 723m
 
-configs tested: 111
-configs skipped: 3
+On 2/8/22 7:39 AM, Daniel Lezcano wrote:
+> On 07/02/2022 12:44, Lukasz Luba wrote:
+>>
+>>
+>> On 2/7/22 10:41 AM, Daniel Lezcano wrote:
+>>> On 07/02/2022 08:30, Lukasz Luba wrote:
+>>>> Hi all,
+>>>>
+>>>> The Energy Model supports abstract scale power values. This might cause
+>>>> issues for some mechanisms like thermal governor IPA or DTPM, which
+>>>> expect that all devices provide sane power values. This patch set 
+>>>> prevents
+>>>> from registering such devices for IPA and DTPM.
+>>>
+>>>
+>>> Does it mean for example big and little have both 0-100 ?
+>>>
+>>>
+>>
+>> Unfortunately, these can be any numbers. I hope at least the CPUs
+>> Big and Little power have sense: Little power is not higher
+>> than Big power. The purpose of EM is to enable EAS, so this power
+>> relation between Big and Little should have sense. Someone
+>> who is not willing to or cannot expose real power values, still
+>> wants the EAS to operate (my assumption and hope). The SCMI FW can
+>> provide abstract power values. It's in the SCMI spec. Thus,
+>> creating these abstract scale power values for big.LITTLE the right
+>> way should result in properly working EAS.
+>>
+>> I can also have hope for GPU vs. Big power, but it is a weaker hope.
+>> The second is more tricky to distinguish even if you have a domain
+>> knowledge, but not the real measurements with you. The GPU power
+>> values is also a 'sensitive' knowledge to share. Open source guys can do
+>> that (after measurements), but some vendor's engineers probably can't.
+> 
+> So basically, we don't know, right ?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Well, we know - power is not in milli-Watts.
+The PowerCap and DTPM have this sysfs contract of providing micro-Watts.
+Don't we break this if we know for sure that the power values in EM
+are not in milli-Watts?
 
-gcc tested configs:
-arm                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20220207
-sh                               alldefconfig
-sh                           se7751_defconfig
-mips                            ar7_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                        cell_defconfig
-sh                         ecovec24_defconfig
-arm                        clps711x_defconfig
-sh                        edosk7760_defconfig
-arm                        keystone_defconfig
-sparc                       sparc32_defconfig
-m68k                       m5475evb_defconfig
-m68k                        m5407c3_defconfig
-sh                           se7343_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                      ep88xc_defconfig
-arm                  randconfig-c002-20220207
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-sparc                            allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64               randconfig-a013-20220207
-x86_64               randconfig-a016-20220207
-x86_64               randconfig-a015-20220207
-x86_64               randconfig-a012-20220207
-x86_64               randconfig-a014-20220207
-x86_64               randconfig-a011-20220207
-i386                 randconfig-a012-20220207
-i386                 randconfig-a013-20220207
-i386                 randconfig-a015-20220207
-i386                 randconfig-a014-20220207
-i386                 randconfig-a011-20220207
-i386                 randconfig-a016-20220207
-arc                  randconfig-r043-20220207
-s390                 randconfig-r044-20220207
-riscv                randconfig-r042-20220207
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
+> 
+> At this point the different subsystems (cpufreq cooling device and dtpm) 
+> disabled by these patches can deal with abstract scale values, like they 
+> do today with the very approximate power numbers we have defined in the DT.
+> 
+> Let's wait and see how the different SoC vendors implement the SCMI spec.
+> 
 
-clang tested configs:
-x86_64                        randconfig-c007
-powerpc              randconfig-c003-20220208
-i386                          randconfig-c001
-mips                 randconfig-c004-20220208
-arm                  randconfig-c002-20220208
-s390                 randconfig-c005-20220208
-riscv                randconfig-c006-20220208
-mips                           mtx1_defconfig
-arm                            dove_defconfig
-arm                       versatile_defconfig
-powerpc                     pseries_defconfig
-x86_64               randconfig-a004-20220207
-x86_64               randconfig-a003-20220207
-x86_64               randconfig-a002-20220207
-x86_64               randconfig-a001-20220207
-x86_64               randconfig-a005-20220207
-x86_64               randconfig-a006-20220207
-i386                 randconfig-a003-20220207
-i386                 randconfig-a001-20220207
-i386                 randconfig-a002-20220207
-i386                 randconfig-a005-20220207
-i386                 randconfig-a004-20220207
-i386                 randconfig-a006-20220207
-hexagon              randconfig-r045-20220207
-hexagon              randconfig-r041-20220207
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+I'm not sure if that would be visible to us. The current path to feed
+abstract power values from SCMI cpufreq already exists and is based
+on protocol response. The DT is not involved in this configuration.
