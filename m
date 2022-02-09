@@ -2,86 +2,152 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 900F5C433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Feb 2022 00:15:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0112C43219
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Feb 2022 02:40:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239326AbiBIAPx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Feb 2022 19:15:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60874 "EHLO
+        id S242102AbiBICke (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Feb 2022 21:40:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55484 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239393AbiBIAPu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 19:15:50 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62890C061576;
-        Tue,  8 Feb 2022 16:15:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=lJOw/VsM+kYcT/r7+TM/LOgN+0nAg/jllFVjzFoM+1w=; b=cF2+BNKws0UQ09BHu8hPNouc9E
-        AbUDHIXPuBawoB/uMNaTtM/qDD4SnCeBoSm//klzhdjTXk6fF7b4B3TWrpIZJXDbOyPy8ZnOyfetI
-        wd0CgTL4TjXE6UcB/QESUJC2St8GyxzYSj++nNvwfbpo5oVbJ2ceclV/kumhV9OHxkEnGq8+hJaq5
-        yDYu+4BPe8/DAzM2w0J5UoTjA0TC/uzCvpMJhFWJfn74mZ4XbVIAsSZ7mkFa8Syw3LRReAgDHoyyG
-        A9ZEn0ONe3jvIPDmnAbVwuvR4yz5f2lXvz3RZVOWsgUHhWqS+sC8XGAJhLaY3sI0kWRRYlQMSXt7h
-        353Ld3FQ==;
-Received: from [2601:1c0:6280:3f0::aa0b] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nHaeB-00FqeX-HY; Wed, 09 Feb 2022 00:15:47 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Aubrey Li <aubrey.li@linux.intel.com>,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -next] thermal: intel: INTEL_HFI_THERMAL depends on NET
-Date:   Tue,  8 Feb 2022 16:15:46 -0800
-Message-Id: <20220209001546.18189-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S231366AbiBIBdM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Feb 2022 20:33:12 -0500
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C15CBC061576
+        for <linux-pm@vger.kernel.org>; Tue,  8 Feb 2022 17:33:11 -0800 (PST)
+Received: by mail-pj1-x1032.google.com with SMTP id h14-20020a17090a130e00b001b88991a305so3618733pja.3
+        for <linux-pm@vger.kernel.org>; Tue, 08 Feb 2022 17:33:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=ct/RJbYUwFZkoRE18bAj6uTwFLYzCqHbCB/35ggLiRE=;
+        b=klxArvQH+DMPfAELOmn+cDdMM2IKTnrnGS6l4aaUw3zjuk8mR1ZZXLiMBdV9kKj7U3
+         cpJAvlwcixy3nSrKk8nkHRhOqYGQ82LjlVW48B1JvSSsYvWSbTh0j/MkCY5c+DFfKCCz
+         hdICsgrgaPlzomaZn9IQ5g0k7JzSjktooZHkYsiXzlrEF1ALobpk8BoZVngRoMW3uSUT
+         wLnTPWYL1HnQlPN4B9DhSMZRisSJLAU8dTjjroZC86lR63i9SkoY+/FxR/C4hEQBAOo5
+         Lu3hJ375uLzZqsVUiyTLfDskrZ0XpwhEOZQQfAs3drAIB3myoayIIC3zkJ4MGBVlQHxM
+         Wjkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=ct/RJbYUwFZkoRE18bAj6uTwFLYzCqHbCB/35ggLiRE=;
+        b=ABurpA1jTvjhaNd21idEkpBh7LLhMsU5SLsvJvwy15ht3+IJZyeXTPFAgJM1C9eWbX
+         4HsuKCxew9kbQBuLJyQHGzFYtpiZE3B9mdjZsmORztLP53mLt9nTONubG/sB3d+SQEaD
+         OBZNsCFOzmbxoAyOvta8H/UTGXoOTMRkFzdtlfolSYHMHye70vRw7bnO+BYRzxIDwPlX
+         xPTe+HuL4fTDnhRgzI3c5TX/f7U2/QKzNrlk5vf3FN5cgUBaiuecNqR/PimrvnEADllx
+         x+4Arv0ja+YiavVf1YfgQyuIqhr61D7yTFqksrZ18AdcyTjytMd/OePXqcc3KSFY19FU
+         JGjQ==
+X-Gm-Message-State: AOAM530Im3fuAzN05oBa4w42oYe8rP7c0Gcxz+8+8D8jyWoGvM0s6S7/
+        KMyy+L6aaDG6DkcoZ1fJ9jQsLw==
+X-Google-Smtp-Source: ABdhPJx246M+7MtCsPc4MXA6GUT6dc3HOLWElk226ENt+hIt7t46KheZzMLBAVUYImxkUlPbVxZFmw==
+X-Received: by 2002:a17:903:11d0:: with SMTP id q16mr7171382plh.134.1644370391269;
+        Tue, 08 Feb 2022 17:33:11 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id e28sm12408767pgm.23.2022.02.08.17.33.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Feb 2022 17:33:10 -0800 (PST)
+Message-ID: <620319d6.1c69fb81.bd9db.06a0@mx.google.com>
+Date:   Tue, 08 Feb 2022 17:33:10 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: v5.17-rc3-35-g1e2d75f89fc7
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 1 warning (v5.17-rc3-35-g1e2d75f89fc7)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-THERMAL_NETLINK depends on NET and since 'select' does not follow
-any dependency chain, INTEL_HFI_THERMAL also should depend on NET.
+pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.17-rc3-35-g1e=
+2d75f89fc7)
 
-Fix one Kconfig warning and 48 subsequent build errors:
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+17-rc3-35-g1e2d75f89fc7/
 
-WARNING: unmet direct dependencies detected for THERMAL_NETLINK
-  Depends on [n]: THERMAL [=y] && NET [=n]
-  Selected by [y]:
-  - INTEL_HFI_THERMAL [=y] && THERMAL [=y] && (X86 [=y] || X86_INTEL_QUARK [=n] || COMPILE_TEST [=y]) && CPU_SUP_INTEL [=y] && X86_THERMAL_VECTOR [=y]
+Tree: pm
+Branch: testing
+Git Describe: v5.17-rc3-35-g1e2d75f89fc7
+Git Commit: 1e2d75f89fc7f3cf192049c10594d9535a64b6ea
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
-Fixes: bd30cdfd9bd7 ("thermal: intel: hfi: Notify user space for HFI events")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Aubrey Li <aubrey.li@linux.intel.com>
-Cc: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Warnings Detected:
+
+arc:
+
+arm64:
+
+arm:
+
+i386:
+
+mips:
+    32r2el_defconfig (gcc-10): 1 warning
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
+e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
+ted "0,0"
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
+): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
+0,0"
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
+ section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
+on mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
+ection mismatches
+
 ---
-Found in mmotm, linux-next.patch.
-
- drivers/thermal/intel/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- mmotm-2022-0208-1531.orig/drivers/thermal/intel/Kconfig
-+++ mmotm-2022-0208-1531/drivers/thermal/intel/Kconfig
-@@ -102,6 +102,7 @@ config INTEL_MENLOW
- 
- config INTEL_HFI_THERMAL
- 	bool "Intel Hardware Feedback Interface"
-+	depends on NET
- 	depends on CPU_SUP_INTEL
- 	depends on X86_THERMAL_VECTOR
- 	select THERMAL_NETLINK
+For more info write to <info@kernelci.org>
