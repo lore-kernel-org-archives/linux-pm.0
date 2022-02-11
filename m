@@ -2,119 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE4FC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Feb 2022 20:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23760C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Feb 2022 20:18:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243478AbiBKUJH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Feb 2022 15:09:07 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:52562 "EHLO
+        id S229967AbiBKUSv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Feb 2022 15:18:51 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:56744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229967AbiBKUJE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Feb 2022 15:09:04 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4FECC55;
-        Fri, 11 Feb 2022 12:09:02 -0800 (PST)
+        with ESMTP id S229960AbiBKUSu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Feb 2022 15:18:50 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36E30CF9;
+        Fri, 11 Feb 2022 12:18:48 -0800 (PST)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 8D63E1F47303
+        with ESMTPSA id E87241F47311
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1644610141;
-        bh=eAvRqHo0RU9Lgp188B/WFV9rRy04nr9pCE2iLNixyFY=;
+        s=mail; t=1644610727;
+        bh=FKmREKxPGsm31y789/Pvn0AY/iQ2MYWOKaGsio2oCkE=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Im9yRkqXOA2OltaBx2puFM96HCyvq9T2KyD858+EML2gDrBCDmk6PQcKyiPy5LDMu
-         hpntVIUgMDB1NrN1z3rm7XT+iZF0+K/CBCeXLTZzsLQx36pFGtvJYoqn+l9LRKZUh1
-         e/IimYk9TT0zOjfuhGobPJLsO1u2bfKhfLLq8co+qjAACX1FVsEHMTujJHlTtSPs0R
-         ovgqGg5iK8Y/SSLH3Dx67CTEiAX0jQrfv4s4LGppmlBMoVRsydoRLpJhBxcHd1pKnr
-         sN1/XRW/zJuqMKskHRr982tnobVrKqPjXm06Ie0hGHCFozEA1OBXXWw94okKVM3vam
-         /ibnrEdAmyTrw==
+        b=R2g98pujQDr3YZ3+koI2YRmAI++sXs51QQyWDAKQ7mKyY1HlLUnJGHDWp4XTy2dGn
+         xIJqfBM7DwK+8cDaFYYgu7b0S03SY+aWR9YFcSaSo/Bs4CPTL9+tFqWmHtQVjpg2ss
+         VKbQncPXA6VXC+rOD8zgvwfUsui6UnkCfn8es4T2ac1RJeotXmAVWeiEp82gly+VlI
+         XYuzHjdEmzIKBdNNBIJAIY0HRB2ERF75yG6p8iyKQND9DssKceimLw7QceS2IW9Xfo
+         oLHi3EL9tHyzAbV3XOBsemdSUkoLXsljaPkH3NM++EHwXGTB8onN0LE92zY7RSKWNC
+         K8sTMIWoz7kJg==
 Received: by mercury (Postfix, from userid 1000)
-        id 6233E1060908; Fri, 11 Feb 2022 21:08:59 +0100 (CET)
-Date:   Fri, 11 Feb 2022 21:08:59 +0100
+        id 074831060908; Fri, 11 Feb 2022 21:18:44 +0100 (CET)
+Date:   Fri, 11 Feb 2022 21:18:44 +0100
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     elicec@foxmail.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] power: supply: ab8500_charger: fix spelling typo
-Message-ID: <20220211200859.zyzthhhitjmmhih7@mercury.elektranox.org>
-References: <tencent_5DA124DA30164B8C65F2406B34E193F70A09@qq.com>
+To:     =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] power: supply: ltc2941: simplify Qlsb calculation
+Message-ID: <20220211201844.5g4x7tjpuw64hhwt@mercury.elektranox.org>
+References: <680a4c737950f59e787f64887402e3ae247e89dd.1641868274.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="7trnl2prv7cntliw"
+        protocol="application/pgp-signature"; boundary="gxaxhjzleppuumbm"
 Content-Disposition: inline
-In-Reply-To: <tencent_5DA124DA30164B8C65F2406B34E193F70A09@qq.com>
+In-Reply-To: <680a4c737950f59e787f64887402e3ae247e89dd.1641868274.git.mirq-linux@rere.qmqm.pl>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---7trnl2prv7cntliw
-Content-Type: text/plain; charset=us-ascii
+--gxaxhjzleppuumbm
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jan 19, 2022 at 11:53:01AM +0800, elicec@foxmail.com wrote:
-> From: Hong Peng <elicec@foxmail.com>
+On Tue, Jan 11, 2022 at 03:32:40AM +0100, Micha=C5=82 Miros=C5=82aw wrote:
+> Replace two divisions with a subtraction+shift for a small code size
+> improvement and less brackets.
 >=20
-> fix the comment typo: "interrupts", "structcure"
->=20
-> Signed-off-by: Hong Peng <elicec@foxmail.com>
+> Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
 > ---
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/supply/ab8500_charger.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/power/supply/ltc2941-battery-gauge.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply=
-/ab8500_charger.c
-> index ce074c018dcb..fcf4ed4e35aa 100644
-> --- a/drivers/power/supply/ab8500_charger.c
-> +++ b/drivers/power/supply/ab8500_charger.c
-> @@ -171,7 +171,7 @@ enum ab8500_usb_state {
->  	struct ab8500_charger, ac_chg)
+> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
+/supply/ltc2941-battery-gauge.c
+> index 09f3e78af4e0..c0cbf4cd59ee 100644
+> --- a/drivers/power/supply/ltc2941-battery-gauge.c
+> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+> @@ -490,13 +490,13 @@ static int ltc294x_i2c_probe(struct i2c_client *cli=
+ent,
+>  	if (info->id =3D=3D LTC2943_ID) {
+>  		if (prescaler_exp > LTC2943_MAX_PRESCALER_EXP)
+>  			prescaler_exp =3D LTC2943_MAX_PRESCALER_EXP;
+> -		info->Qlsb =3D ((340 * 50000) / r_sense) /
+> -				(4096 / (1 << (2*prescaler_exp)));
+> +		info->Qlsb =3D ((340 * 50000) / r_sense) >>
+> +			     (12 - 2*prescaler_exp);
+>  	} else {
+>  		if (prescaler_exp > LTC2941_MAX_PRESCALER_EXP)
+>  			prescaler_exp =3D LTC2941_MAX_PRESCALER_EXP;
+> -		info->Qlsb =3D ((85 * 50000) / r_sense) /
+> -				(128 / (1 << prescaler_exp));
+> +		info->Qlsb =3D ((85 * 50000) / r_sense) >>
+> +			     (7 - prescaler_exp);
+>  	}
 > =20
->  /**
-> - * struct ab8500_charger_interrupts - ab8500 interupts
-> + * struct ab8500_charger_interrupts - ab8500 interrupts
->   * @name:	name of the interrupt
->   * @isr		function pointer to the isr
->   */
-> @@ -1083,7 +1083,7 @@ static int ab8500_vbus_in_curr_to_regval(struct ab8=
-500_charger *di, int curr_ua)
-> =20
->  /**
->   * ab8500_charger_get_usb_cur() - get usb current
-> - * @di:		pointer to the ab8500_charger structre
-> + * @di:		pointer to the ab8500_charger structure
->   *
->   * The usb stack provides the maximum current that can be drawn from
->   * the standard usb host. This will be in uA.
+>  	/* Read status register to check for LTC2942 */
 > --=20
-> 2.17.1
+> 2.30.2
 >=20
 
---7trnl2prv7cntliw
+--gxaxhjzleppuumbm
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmIGwlsACgkQ2O7X88g7
-+pr0Cg/+ICRenfUZuyz4BY0vq0kP+dLddVrxlhkPLNbvJWFpihi6aYRwQpjilCOP
-0IT2k6u5BW9PGOJURtr1LtXNWc8yNA2k/905JHxapj+z6792zWYpj/ctYKcusTrb
-bjDPzEr+IIySxNxThaJ5RtyO2znMIPzmGzpkM1yAJZKGg9ribb9AUesFhrC8vatq
-2Xil6k6RScOfbRxHFtMVwjgY9ooC2SYLFUT9uxTWXFE5D19dTKRZdQOT+Lg4SzQW
-vncz+7zwsIKYhJxwZKwP7snx7SCS+bY465XuQSL+OiJLZQLkicxeX5MUYW9BMa6E
-f3CRTpu7vscB4XmK08Wq+CB75cU0VI43Ts5QABnaNshYh/btAdQiSksZmCnQugt+
-j4GSB80aVuxT/5CDIeNHVNbbOjXPfHHNwmXM2m5Qpn2DLyZPuRq2PZaZ01MDamjW
-Q2laR5IubOKiMhatz+N7BWKyRAhgD7LjpcxqwlB0oJYWca0m0UY7MEhbQkdtWqwU
-5xvJZZ0vfvcCcyVQPQ/dn6NW/9iqaY4dHa6XFiJTozp+PlKdwnE2NxJK1l2fZalA
-+byoG6iVy9SfSIl4JM8yUBR9MxPdk+qju2PTkq7mJhQA/MFQUXDeSJZsYaj9JYxB
-CGA2EXtSUbISp/f3xXBshtm0hq7QJ44mvasMP9cR7y7KUy2Ernk=
-=lZWd
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmIGxKMACgkQ2O7X88g7
++prTpA/7BPe0XzdCpPVaICPJKvHTuN/F3MiSwIIgrvpQIB0pgl3vA+5apE+GJ/eg
+ctSIRtfYr4NUK4O/nizuUIoge/dkmPPxRiXnarqOiCJLWgBXwax+t8p9daTYIkGo
+iPfgTjJpb2LO/DzvZbyuaaQ/ue9bbAp4HDx3ZSRK52BvwjgTSebdFkcJXaIPaKtS
+ug/4Rh/B/+RL+gyOkTqCGFKlQLI+CEs6jowB804LF+y4ZLCXS0FtYZpCLv/Nwh9q
+pwrXUwoHH2BLvPSVmp5cKwg0y239VUJL0+7kXu/Fnt+ckiYW0hjb05V+IUevAMBe
+dDLapu2fM4EG9Wo0mShOflTth0EHK8hY4IbgrA/suaWzmEVeSbXCv28fre++reGJ
+EXM1sdWcAqZ5P7cQkRJnhG9LqZwG5Y1R+oBHUBG5ELIA3YBSr15Ag70vDXM6L81U
+JaSxtxAGO0AMzyOvX7GjJijeFgc9SzinNiDwHKa6Kloq1om9aP3VGwILQ+LzsYwX
+Arj0prxZWe+fRSZq809pNSRpYxaJyMWfr37r/m//LA4i4ndhF7Q8Ta7Wi1AiKZju
+Za62QYPnwy3U967ZjDos0xcWUR5kTe+qZPv1H0ZZRdHW+mZ/x6cBSimmk2/fGObt
+gvY69nd9XzbyQQqNJRRcl/AxmqTbetdFjKqFwBEkmjXFokoGfic=
+=i0fz
 -----END PGP SIGNATURE-----
 
---7trnl2prv7cntliw--
+--gxaxhjzleppuumbm--
