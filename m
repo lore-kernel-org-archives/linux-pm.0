@@ -2,148 +2,163 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5494C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 10:51:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 635A8C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 10:52:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349325AbiBNKvw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Feb 2022 05:51:52 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43826 "EHLO
+        id S1349626AbiBNKwi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Feb 2022 05:52:38 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350045AbiBNKvJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Feb 2022 05:51:09 -0500
-Received: from NAM02-BN1-obe.outbound.protection.outlook.com (mail-bn1nam07on2079.outbound.protection.outlook.com [40.107.212.79])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD10688B10;
-        Mon, 14 Feb 2022 02:15:18 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=enSIdfx7WpgJFhaqDune0tvZCjBwt6wsvtjte+oqxkt0j5B6cot3fZC5U/CJK4f5rwlwzKhoX7Yo3g1yQKWGSvC6imV/MsqthiwGHYgKX4ynSzo3N1AuHvZQZd9OLl1X6jR73bRxp6IQPcBWYr5lD983VUOTPNh1ouRFxk4EPCWROree3Zr1M0Px2GnhQnqSkWMJXycn7lacD9HxTNRzq5kHhDdy/LYI8wRxoRgNVtI3rHvvXboERRul1qX2htUGqYFqtFnQM8xNzJxySKCieAuSb/0WdT/juPxtzqdfTIRZGW75ePtVguHphLzL6ulXxMx6UeoGmUy031fcxZf0dw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hNbkBH7B5iMPv0VrmuE3kbcImPmX9WR9+nNGVLrN2BU=;
- b=hTgBVdrq9KvZ6Er1fA1RFIBAEnOXm5L5iWKX1zdq7nQ5G990Rgs7LIgAne7YR1d4uYgIENb9ielUv0Mixrth/mui6nbPafb/Oibpo68kPsNOGCNaH0nLOrkHRKodTJYhteHqm/kt2tjB9sNMHKnWIcDNdPTR03VtV6IB1jUCENp6knWgofIMNnG9WRv39yRprtt0xOiZphKkuzshJVo2VqEs+bNfQhdIGon4aFCzSO7eiEF/BJLhm2443EHIfkPiRAiV5wLbOYUIaS5EvgucpBAnFiWb+Mbo2FmBSwTTY5XULyt19joLnunJof9ehgw5jGOjHf8cQ0UPNNlMrdpVKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=alien8.de smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hNbkBH7B5iMPv0VrmuE3kbcImPmX9WR9+nNGVLrN2BU=;
- b=0QQXmH1KqBfIW9PL3UGfHI5W+XiTVrgY6cgb0RP7v+40UqsVtDvqDYvnkOnIKQb2czaiagGr8/TZMouxIpUtsRiWq4d8kOpr3trJk4toI5MaIB/zhOmCF57sUmwQD35CWjC9y5nVWI4PZHQoLvqOdStlZhYGDdRNz3z8+VVqB1o=
-Received: from DM6PR21CA0008.namprd21.prod.outlook.com (2603:10b6:5:174::18)
- by BY5PR12MB4145.namprd12.prod.outlook.com (2603:10b6:a03:212::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4975.11; Mon, 14 Feb
- 2022 10:15:17 +0000
-Received: from DM6NAM11FT027.eop-nam11.prod.protection.outlook.com
- (2603:10b6:5:174:cafe::37) by DM6PR21CA0008.outlook.office365.com
- (2603:10b6:5:174::18) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5017.6 via Frontend
- Transport; Mon, 14 Feb 2022 10:15:16 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DM6NAM11FT027.mail.protection.outlook.com (10.13.172.205) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4975.11 via Frontend Transport; Mon, 14 Feb 2022 10:15:15 +0000
-Received: from hr-amd.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.18; Mon, 14 Feb
- 2022 04:15:10 -0600
-From:   Huang Rui <ray.huang@amd.com>
-To:     Borislav Petkov <bp@alien8.de>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        <linux-pm@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-        <x86@kernel.org>
-CC:     <linux-kernel@vger.kernel.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Giovanni Gherdovich <ggherdovich@suse.cz>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        "Deepak Sharma" <deepak.sharma@amd.com>,
-        Jinzhou Su <Jinzhou.Su@amd.com>,
-        Perry Yuan <Perry.Yuan@amd.com>,
-        Jassmine Meng <li.meng@amd.com>, Huang Rui <ray.huang@amd.com>
-Subject: [PATCH 1/4] x86/acpi: Expand the CPPC MSR file to cover the whole CPPC implementation
-Date:   Mon, 14 Feb 2022 18:14:47 +0800
-Message-ID: <20220214101450.356047-2-ray.huang@amd.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220214101450.356047-1-ray.huang@amd.com>
-References: <20220214101450.356047-1-ray.huang@amd.com>
+        with ESMTP id S1349391AbiBNKvz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Feb 2022 05:51:55 -0500
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B93469CD8;
+        Mon, 14 Feb 2022 02:16:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1644833793; x=1676369793;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=iMfir8Hys8PoRkg7XbbXRj39pNMes8hLErnltaIltH8=;
+  b=H0pRtYXVokRBX+RGOdsauOP2aIBK1vtMoRGVk+VDUjA0gjIToKp08alR
+   Tm18cVC3x44oAcrbuiqx/MzOE8OK4CduA2tcM/A1XkQRsBI7PovauGPJd
+   0kz34pErXmws8kirxEiFlrcm3UmngipUs6aMo6zPHQmDtF9jNxNgty5Eu
+   x+fAcade60DLDG7Rwc6dU+y5s++sSBiaXXsF0yEQzBwK49KC3bxrLe4wT
+   TpB1A+VMBkcYrK8YoNp/BJt8twTNALUNIl+xHo6DUgdP8dwR9lZ7s8WuF
+   dPG9EmE0KsElsnrAyZkL2fICumUH0C3VBRwIxaCvdCGRHPC478tlmkk2s
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="230023834"
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="230023834"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 02:16:32 -0800
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="603187011"
+Received: from smile.fi.intel.com ([10.237.72.61])
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 02:16:17 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1nJYLy-004PC8-6n;
+        Mon, 14 Feb 2022 12:13:06 +0200
+Date:   Mon, 14 Feb 2022 12:13:01 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Jiri Slaby <jirislaby@kernel.org>, linux-iio@vger.kernel.org,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, alsa-devel@alsa-project.org,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        linux-phy@lists.infradead.org,
+        Thierry Reding <thierry.reding@gmail.com>,
+        linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
+        linux-gpio@vger.kernel.org,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Guenter Roeck <groeck@chromium.org>, linux-spi@vger.kernel.org,
+        Lee Jones <lee.jones@linaro.org>,
+        openipmi-developer@lists.sourceforge.net,
+        Peter Korsgaard <peter@korsgaard.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
+        kvm@vger.kernel.org, Kamal Dasu <kdasu.kdev@gmail.com>,
+        Richard Weinberger <richard@nod.at>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        bcm-kernel-feedback-list@broadcom.com,
+        linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        platform-driver-x86@vger.kernel.org, linux-pwm@vger.kernel.org,
+        Zha Qipeng <qipeng.zha@intel.com>,
+        Corey Minyard <minyard@acm.org>, linux-pm@vger.kernel.org,
+        John Garry <john.garry@huawei.com>,
+        William Breathitt Gray <vilhelm.gray@gmail.com>,
+        Mark Gross <markgross@kernel.org>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Mark Brown <broonie@kernel.org>,
+        linux-mediatek@lists.infradead.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Benson Leung <bleung@chromium.org>,
+        linux-arm-kernel@lists.infradead.org,
+        Mun Yew Tham <mun.yew.tham@intel.com>,
+        Eric Auger <eric.auger@redhat.com>, netdev@vger.kernel.org,
+        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+        Cornelia Huck <cohuck@redhat.com>, linux-mmc@vger.kernel.org,
+        Joakim Zhang <qiangqing.zhang@nxp.com>,
+        Oleksij Rempel <linux@rempel-privat.de>,
+        linux-renesas-soc@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Niklas =?iso-8859-1?Q?S=F6derlund?= 
+        <niklas.soderlund@ragnatech.se>,
+        Brian Norris <computersforpeace@gmail.com>,
+        "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v2 1/2] platform: make platform_get_irq_optional()
+ optional
+Message-ID: <YgorLXUr8aT+1ttv@smile.fi.intel.com>
+References: <20220212201631.12648-1-s.shtylyov@omp.ru>
+ <20220212201631.12648-2-s.shtylyov@omp.ru>
+ <20220214071351.pcvstrzkwqyrg536@pengutronix.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 869c178b-2ec3-470e-62ae-08d9efa2e4bc
-X-MS-TrafficTypeDiagnostic: BY5PR12MB4145:EE_
-X-Microsoft-Antispam-PRVS: <BY5PR12MB4145D5A6D759CE163618FF1BEC339@BY5PR12MB4145.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: FJQTZmikMe3o+nUNhi9AW+c4o8UU4H9fvILRFOcRWM8NWA/D1i+B7zPnfkvRkjbod9ucbu9yBeXOPO7hxP+SswuEGDvXB5OYkAygHzPWJBOctvadGc634XURwIbRofJrMzozx4nbkVkBIH/49PxTqlOSGFmhtzk2fDnsANxIhn36QatDM5ACDGhwLv2///Dj+rmn4nK5RMWLAyGc1fyk1riltMagfUX5g2tmzLQoumNTyNstxsD6iZmVNU05shiVcymJyngbtDEYlGvkE5G+uEpxs3cL2DWUopEwjC0Qr6t7nFwpzuxQdPOYMgSG61cwkiHOxi7RbnThlQYWkZ7ul+vTSRMXZ1DujDeSMrZZZ49sjIOjvhHkl4n0/BHVIM3hRIV9DXbKG5hdi7SinmOJBAy8G3EaVkEjDBf0kuV6XqA0I/NIZXq3aBR9dXemlPl4SO/8lJDj0PPWARkXHEg2qB5xhJUZq7s+z8xYg5auLfG+W7yjPHMawMaZWhk/HU0JYon8+WQHPYtvBAyecD07v8HmuMMNv6/PwoXyllB7li5NSNwg30RksdxKKgjwga0l86+7aKo0LPiYk1+Qp1vzWmylarrywfPGuKtYRfP32qp8n8WhFsN1e0O4xJRg5Dt/0pjjVReMbh8ZUMQkSi0zht+Koz+sT1SV8p1LtdBlolIMtOcuyws3Fdf5mKznk5vxQBvpII8JLRCP6nuR8FpL9g==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(36840700001)(46966006)(36860700001)(47076005)(508600001)(2616005)(7696005)(83380400001)(82310400004)(336012)(426003)(186003)(1076003)(26005)(16526019)(356005)(4326008)(8676002)(86362001)(70586007)(40460700003)(70206006)(8936002)(5660300002)(2906002)(36756003)(6666004)(110136005)(316002)(54906003)(81166007)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Feb 2022 10:15:15.0146
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 869c178b-2ec3-470e-62ae-08d9efa2e4bc
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT027.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4145
+In-Reply-To: <20220214071351.pcvstrzkwqyrg536@pengutronix.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rename the cppc_msr.c to cppc.c in x86 ACPI, that expects to use this file
-to cover more function implementation for ACPI CPPC beside MSR helpers.
-Naming as "cppc" is more straightforward as one of the functionalities
-under ACPI subsystem.
+On Mon, Feb 14, 2022 at 08:13:51AM +0100, Uwe Kleine-König wrote:
+> On Sat, Feb 12, 2022 at 11:16:30PM +0300, Sergey Shtylyov wrote:
+> > This patch is based on the former Andy Shevchenko's patch:
+> > 
+> > https://lore.kernel.org/lkml/20210331144526.19439-1-andriy.shevchenko@linux.intel.com/
+> > 
+> > Currently platform_get_irq_optional() returns an error code even if IRQ
+> > resource simply has not been found.  It prevents the callers from being
+> > error code agnostic in their error handling:
+> > 
+> > 	ret = platform_get_irq_optional(...);
+> > 	if (ret < 0 && ret != -ENXIO)
+> > 		return ret; // respect deferred probe
+> > 	if (ret > 0)
+> > 		...we get an IRQ...
+> > 
+> > All other *_optional() APIs seem to return 0 or NULL in case an optional
+> > resource is not available.  Let's follow this good example, so that the
+> > callers would look like:
+> > 
+> > 	ret = platform_get_irq_optional(...);
+> > 	if (ret < 0)
+> > 		return ret;
+> > 	if (ret > 0)
+> > 		...we get an IRQ...
+> > 
+> > Reported-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
+> > Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
+> 
+> While this patch is better than v1, I still don't like it for the
+> reasons discussed for v1. (i.e. 0 isn't usable as a dummy value which I
+> consider the real advantage for the other _get_optional() functions.)
 
-Signed-off-by: Huang Rui <ray.huang@amd.com>
----
- arch/x86/kernel/acpi/Makefile               | 2 +-
- arch/x86/kernel/acpi/{cppc_msr.c => cppc.c} | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
- rename arch/x86/kernel/acpi/{cppc_msr.c => cppc.c} (96%)
+I think you haven't reacted anyhow to my point that you mixing apples and
+bananas together when comparing this 0 to the others _optional APIs.
 
-diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
-index cf340d85946a..fc17b3f136fe 100644
---- a/arch/x86/kernel/acpi/Makefile
-+++ b/arch/x86/kernel/acpi/Makefile
-@@ -3,7 +3,7 @@
- obj-$(CONFIG_ACPI)		+= boot.o
- obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
- obj-$(CONFIG_ACPI_APEI)		+= apei.o
--obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_msr.o
-+obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc.o
- 
- ifneq ($(CONFIG_ACPI_PROCESSOR),)
- obj-y				+= cstate.o
-diff --git a/arch/x86/kernel/acpi/cppc_msr.c b/arch/x86/kernel/acpi/cppc.c
-similarity index 96%
-rename from arch/x86/kernel/acpi/cppc_msr.c
-rename to arch/x86/kernel/acpi/cppc.c
-index b961de569e7e..08d823d72586 100644
---- a/arch/x86/kernel/acpi/cppc_msr.c
-+++ b/arch/x86/kernel/acpi/cppc.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * cppc_msr.c:  MSR Interface for CPPC
-+ * cppc.c: CPPC Interface for x86
-  * Copyright (c) 2016, Intel Corporation.
-  */
- 
+> Apart from that, I think the subject is badly chosen. With "Make
+> somefunc() optional" I would expect that you introduce a Kconfig symbol
+> that results in the function not being available when disabled.
+
+
 -- 
-2.25.1
+With Best Regards,
+Andy Shevchenko
+
 
