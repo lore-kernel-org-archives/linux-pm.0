@@ -2,198 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A805C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 04:26:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E348BC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 06:12:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240238AbiBNE0S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 13 Feb 2022 23:26:18 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:58428 "EHLO
+        id S233584AbiBNGMY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Feb 2022 01:12:24 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:52108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240226AbiBNE0O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Feb 2022 23:26:14 -0500
-Received: from wout4-smtp.messagingengine.com (wout4-smtp.messagingengine.com [64.147.123.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 899BD4F47E
-        for <linux-pm@vger.kernel.org>; Sun, 13 Feb 2022 20:26:07 -0800 (PST)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailout.west.internal (Postfix) with ESMTP id F2E743200E51;
-        Sun, 13 Feb 2022 23:20:54 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Sun, 13 Feb 2022 23:20:55 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
-        cc:cc:content-transfer-encoding:content-type:date:date:from:from
-        :in-reply-to:in-reply-to:message-id:mime-version:references
-        :reply-to:sender:subject:subject:to:to; s=fm2; bh=FNdavk6AjBVF3M
-        6f8Rc393UvIIdwHUCZdblJizpLtLw=; b=JBYUtyIUaHTTKpovEQf5yQk3C2AIlx
-        4VM1z4XBoej2rFH+B0D0c58Zh9uzc68DIYL28iX4zAXaebkRgtO00VNfWFif+R0w
-        UJIUc42xYVpFsA8SiJ572WbfGFM4h3dDECxKbxqyoYVOh+mi8WJBIfG7sMNBNm1B
-        qtRf4FANjdbZowHGD4dsR1Vf127k4RY98O1OsBCqcngTZKQRTmoPTZ35gevW9ueV
-        2nmVqHv1T7bqVjHiBbQ0rZotU5YuBPuN/BPPmJACWBwKDV4GRd2P7LbkBN9hfaMR
-        +TuEThbMcFa9Q86heI1L+2I2E70D43TWhluCPE7LMycDdMRyQP6pDA7w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-transfer-encoding
-        :content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm2; bh=FNdavk6AjBVF3M6f8Rc393UvIIdwHUCZdblJizpLt
-        Lw=; b=Wtm1i0p8n7m8lDaml8hNKfC3z7JMwP2YtrcQlyjW/yTm2EKgCwvPklhbk
-        H8BzstMDVvESyFb2WSsRHjCZ58Cqm7v240ak+SAGb5vfvmTsz9ulHa+3PLC6JAmQ
-        g6faASl7b/yACemlwotwJawBEc24nuIXlcy38m7VfM3m3r/7EKzlcFONJ7CiMaVc
-        YCJBRjoBOO3Bt2OhOJwEPmMta8BaO2Lzuahj2DFMiduS8SAiaiD2ctaO8j2hgcM8
-        M62RESfi2G4Ak4MzUZiynx8D43pnB3x4pEmqy5n5PlQKEFe5oZlIhHS1Oa19x6n/
-        RJYaOulHea9kWFqHl6rXfAMPGoaXg==
-X-ME-Sender: <xms:pdgJYkUIxMfxyLqy5goXEJcg_JHwCXjNXILhLGP7DBx_LDbOB6VNGA>
-    <xme:pdgJYomfd-tfbPivWh8XTZ1zR70xSHTO3YuQ1ykuBBQ6oJF4Fhcf477rbPDFeAtG9
-    kVGvNUH9lxFlz7sIw>
-X-ME-Received: <xmr:pdgJYoZb8JKD0UX34QLJJ6k9GqPTahIWbuSTSK7wunVa_aXR49sxZXSRZ7xU85TcN6o5nIbPw23-FzX3qOJYBNh5tgJ0proVJ5wH5uY-i4TmFXvbvm3GHW19gg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrjedugdejtdcutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefuvfhfhffkffgfgggjtgfgsehtjeertddtfeejnecuhfhrohhmpefurghmuhgv
-    lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
-    frrghtthgvrhhnpefgveffteelheffjeeukedvkedviedtheevgeefkeehueeiieeuteeu
-    gfettdeggeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhroh
-    hmpehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhg
-X-ME-Proxy: <xmx:pdgJYjXI_FprD_iSqxtMJGEIx-NZ3DI-n_b45Gy3pU3Ltmo8sDEaTQ>
-    <xmx:pdgJYumgoJyk52lkEI-pWJ1IAZVTPAvlnJeafjXBrLy48kqEV3dcXA>
-    <xmx:pdgJYod1qOYfiFktSzuJ1IQ0QDtE9ORr5lhQd6PozAlOCtOlfVG43Q>
-    <xmx:ptgJYvDTsJcxe42DpQ5WjkvQdG2M5XaFhyU27ZV_MsIZQJjhE-MK2A>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 13 Feb 2022 23:20:53 -0500 (EST)
-Subject: Re: [PATCH 3/3] power: supply: Add a driver for Injoinic power bank
- ICs
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Ondrej Jirman <x@xff.cz>
-References: <20220129222424.45707-1-samuel@sholland.org>
- <20220129222424.45707-3-samuel@sholland.org>
- <20220211212218.j5r75tyvhirxis4z@mercury.elektranox.org>
-From:   Samuel Holland <samuel@sholland.org>
-Message-ID: <8027f37b-3977-adaa-d2cf-d59ae243cc32@sholland.org>
-Date:   Sun, 13 Feb 2022 22:20:53 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+        with ESMTP id S240704AbiBNGMX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Feb 2022 01:12:23 -0500
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 975BF56C1F;
+        Sun, 13 Feb 2022 22:12:13 -0800 (PST)
+X-UUID: 993a821bf1ab49b6bea98760c3f67cc8-20220214
+X-UUID: 993a821bf1ab49b6bea98760c3f67cc8-20220214
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <yong.wu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 808764725; Mon, 14 Feb 2022 14:12:10 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Mon, 14 Feb 2022 14:12:09 +0800
+Received: from localhost.localdomain (10.17.3.154) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 14 Feb 2022 14:12:07 +0800
+From:   Yong Wu <yong.wu@mediatek.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        <dri-devel@lists.freedesktop.org>
+CC:     James Wang <james.qian.wang@arm.com>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        <iommu@lists.linux-foundation.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        <linux-kernel@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        <linux-mediatek@lists.infradead.org>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Hsin-Yi Wang <hsinyi@chromium.org>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Tomasz Figa <tfiga@chromium.org>,
+        <srv_heupstream@mediatek.com>, Rob Clark <robdclark@gmail.com>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Yong Wu <yong.wu@mediatek.com>, <linux-pm@vger.kernel.org>
+Subject: [PATCH 21/23] power: supply: ab8500: Make use of the helper component_compare_dev
+Date:   Mon, 14 Feb 2022 14:08:17 +0800
+Message-ID: <20220214060819.7334-22-yong.wu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220214060819.7334-1-yong.wu@mediatek.com>
+References: <20220214060819.7334-1-yong.wu@mediatek.com>
 MIME-Version: 1.0
-In-Reply-To: <20220211212218.j5r75tyvhirxis4z@mercury.elektranox.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Use the common compare helper from component.
 
-On 2/11/22 3:22 PM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Sat, Jan 29, 2022 at 04:24:24PM -0600, Samuel Holland wrote:
->> This driver supports several chip variants which all share the same I2C
->> register interface. Since the chip will turn off and become inaccessible
->> under conditions outside of software control (e.g. upon button press or
->> input voltage removal), some special handling is needed to delay the
->> initialization of the IC until it is accessible.
->>
->> Signed-off-by: Samuel Holland <samuel@sholland.org>
->> ---
-> 
-> Thanks, driver looks mostly good to me. Just two things:
-> 
->> [...]
->> +static const struct power_supply_desc ip5xxx_charger_desc = {
->> +	.name			= "ip5xxx-charger",
->> +	.type			= POWER_SUPPLY_TYPE_BATTERY,
-> 
-> POWER_SUPPLY_TYPE_BATTERY is the wrong type for a charger.
-> Considering the chips want 5V on the input side as far as
-> I could see, a sensible type is POWER_SUPPLY_TYPE_USB.
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Yong Wu <yong.wu@mediatek.com>
+---
+ drivers/power/supply/ab8500_charger.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-The chip takes a 5V USB input, charges a battery, and then boosts the battery
-voltage back up to 5V on the output side (or passes the input voltage, if
-present, directly through to the output).
-
-Currently only POWER_SUPPLY_PROP_ONLINE describes the output side of the chip.
-All of the other properties here describe the battery. For example,
-POWER_SUPPLY_PROP_VOLTAGE/CURRENT_NOW is the battery voltage/current, not the
-output voltage/current. That doesn't match what I would expect from
-POWER_SUPPLY_TYPE_USB.
-
-Should there really be two separate power supplies, one for the battery of type
-POWER_SUPPLY_TYPE_BATTERY, and a second one for the output side of type
-POWER_SUPPLY_TYPE_USB, with the battery supplying the boost output stage? I'll
-send v2 with this idea; please let me know what you think.
-
-Since these two supplies would share the same device and OF node, how would I
-link them together?
-
->> +	.properties		= ip5xxx_charger_properties,
->> +	.num_properties		= ARRAY_SIZE(ip5xxx_charger_properties),
->> +	.get_property		= ip5xxx_charger_get_property,
->> +	.set_property		= ip5xxx_charger_set_property,
->> +	.property_is_writeable	= ip5xxx_charger_property_is_writeable,
->> +};
->> +
->> +static const struct regmap_config ip5xxx_regmap_config = {
->> +	.reg_bits		= 8,
->> +	.val_bits		= 8,
->> +	.max_register		= IP5XXX_BATOCV_DAT1,
->> +};
->> +
->> +static int ip5xxx_power_probe(struct i2c_client *client)
->> +{
->> +	struct power_supply_config psy_cfg = {};
->> +	struct device *dev = &client->dev;
->> +	struct power_supply *psy;
->> +	struct ip5xxx *ip5xxx;
->> +
->> +	ip5xxx = devm_kzalloc(dev, sizeof(*ip5xxx), GFP_KERNEL);
-> 
-> if (!ip5xxx)
->     return -ENOMEM;
-
-I'll fix this in v2.
-
-Regards,
-Samuel
-
-> -- Sebastian
-> 
->> +	ip5xxx->regmap = devm_regmap_init_i2c(client, &ip5xxx_regmap_config);
->> +	if (IS_ERR(ip5xxx->regmap))
->> +		return PTR_ERR(ip5xxx->regmap);
->> +
->> +	psy_cfg.of_node = dev->of_node;
->> +	psy_cfg.drv_data = ip5xxx;
->> +
->> +	psy = devm_power_supply_register(dev, &ip5xxx_charger_desc, &psy_cfg);
->> +	if (IS_ERR(psy))
->> +		return PTR_ERR(psy);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct of_device_id ip5xxx_power_of_match[] = {
->> +	{ .compatible = "injoinic,ip5108" },
->> +	{ .compatible = "injoinic,ip5109" },
->> +	{ .compatible = "injoinic,ip5207" },
->> +	{ .compatible = "injoinic,ip5209" },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(of, ip5xxx_power_of_match);
->> +
->> +static struct i2c_driver ip5xxx_power_driver = {
->> +	.probe_new	= ip5xxx_power_probe,
->> +	.driver		= {
->> +		.name		= "ip5xxx-power",
->> +		.of_match_table	= ip5xxx_power_of_match,
->> +	}
->> +};
->> +module_i2c_driver(ip5xxx_power_driver);
->> +
->> +MODULE_AUTHOR("Samuel Holland <samuel@sholland.org>");
->> +MODULE_DESCRIPTION("Injoinic IP5xxx power bank IC driver");
->> +MODULE_LICENSE("GPL");
->> -- 
->> 2.33.1
->>
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index ce074c018dcb..875fe665f8a8 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -3414,11 +3414,6 @@ static struct platform_driver *const ab8500_charger_component_drivers[] = {
+ 	&ab8500_chargalg_driver,
+ };
+ 
+-static int ab8500_charger_compare_dev(struct device *dev, void *data)
+-{
+-	return dev == data;
+-}
+-
+ static int ab8500_charger_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -3657,8 +3652,7 @@ static int ab8500_charger_probe(struct platform_device *pdev)
+ 
+ 		while ((d = platform_find_device_by_driver(p, drv))) {
+ 			put_device(p);
+-			component_match_add(dev, &match,
+-					    ab8500_charger_compare_dev, d);
++			component_match_add(dev, &match, component_compare_dev, d);
+ 			p = d;
+ 		}
+ 		put_device(p);
+-- 
+2.18.0
 
