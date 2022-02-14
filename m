@@ -2,179 +2,128 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E674CC4321E
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 11:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 848DFC4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Feb 2022 11:32:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351112AbiBNLYu convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Feb 2022 06:24:50 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:52632 "EHLO
+        id S241760AbiBNLcK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Feb 2022 06:32:10 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351226AbiBNLX7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Feb 2022 06:23:59 -0500
-Received: from mail-qv1-f50.google.com (mail-qv1-f50.google.com [209.85.219.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6AAC7E0AA;
-        Mon, 14 Feb 2022 02:59:32 -0800 (PST)
-Received: by mail-qv1-f50.google.com with SMTP id a19so14432712qvm.4;
-        Mon, 14 Feb 2022 02:59:32 -0800 (PST)
+        with ESMTP id S1351661AbiBNLai (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Feb 2022 06:30:38 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A4D2449274
+        for <linux-pm@vger.kernel.org>; Mon, 14 Feb 2022 03:13:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1644837185;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=cd7FfNhaOUqw4MafFCrvctc+5I4/l56rH8rjuuoMQx8=;
+        b=EphOaXML+De4JBnoV8MLtsu1dTXpX7nu0Okpc1fb0oxHJYW3DKnuggN1+7oxGeQf6baVjx
+        RYFcDrZbBW2GlIQNxsa0wA+1JTZNTZuFGYKnAnzqiOrQYOiwKWMk8U9ago7r+uhRHK7N+2
+        VRaequv/pYkBlrr9p8RTa2usgel9fzw=
+Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
+ [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-574-beJGX6_cPtG7YC5_Lig2Ow-1; Mon, 14 Feb 2022 06:13:04 -0500
+X-MC-Unique: beJGX6_cPtG7YC5_Lig2Ow-1
+Received: by mail-ej1-f70.google.com with SMTP id r18-20020a17090609d200b006a6e943d09eso5681412eje.20
+        for <linux-pm@vger.kernel.org>; Mon, 14 Feb 2022 03:13:04 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=3zUaM8opKL0LG20PPLjLO0sGhx6OMEFs8RjHjfjsiY4=;
-        b=tzYW5L5xOK2xjgIhwKD7wo4utCRQktTYnmyF5KtC7nyd4QwxINuVYG0oZDuj2UWxgT
-         v/aCYx8fYJ460CRM8cqFGhvZWVTV32Txdva7EilCtR5KuJUaUdqVVS7A7bSNU3h32VJ+
-         2pJ2Y3tGDfNi2ZOUy2aWpZT0nVb7NeQpDeHk76U1HFWgRfZgnwSl3z8nfQ4JYELBC7w+
-         anK5B90Xh4HPCL5PMFl7xyPXyFTTOvibl637EXBhEt2cmJo4/fZJ0Y71K7/l41QRDnHU
-         eA/djqj4anfQA78O8QEI0s/RYo5qs13hiZUR71hMLnibfSqINLjWfOOnZb42aq7YUf4q
-         CRrQ==
-X-Gm-Message-State: AOAM531hvoqH7tmhpaGYLCsoe+Zw1pr4CRNoNkqjMA02M0yksh9tEj9K
-        nnVGq0KJ/mQRARxLUWcaA+SwQIlmvrkhXw==
-X-Google-Smtp-Source: ABdhPJwrRq7LQh4v5o0CPVNGHtwumDUPKtYShp4qDGuprC6H2gTwWZ7lqh2fqI8sviBIFGzuhsrVZw==
-X-Received: by 2002:a1f:9092:: with SMTP id s140mr849683vkd.38.1644829287597;
-        Mon, 14 Feb 2022 01:01:27 -0800 (PST)
-Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com. [209.85.221.171])
-        by smtp.gmail.com with ESMTPSA id o2sm1719696vke.47.2022.02.14.01.01.26
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=cd7FfNhaOUqw4MafFCrvctc+5I4/l56rH8rjuuoMQx8=;
+        b=enXCLk+F2KpfqawZjWXNN5URrtNh1kGavcC6OQC6qKBeY+FjbNpZ8uucFt//IOiIlM
+         V8O4tzZO4kcS6Fj0DylrRzlQIed76qoktIv0H05RA9rj+0e17p1XiyK376g2W7LMRNKr
+         Q9Nua5PbfxxWQV4r4NwN/IPmBfflhYQdHJTviBUrx8HeDgqCasPutce5/1Z4VVRBA1v2
+         6mVWEiryTioJhA1Taoy1X06BOlHNXRxMEgXaq7adBmzk4/xzJbWiWCb15j2CpEMr6/EI
+         DTn5JDtECB2A8cmvF5/XbCRENbl8XMy/WWmsNayb/K/OUvYJ9gu5xIsp8Wunk/lCiwAJ
+         MqsA==
+X-Gm-Message-State: AOAM531wJZXbxW2IV4eZ6er+anQHlTi5hdK3VMyQMTw4Q1sOgw8ec/oj
+        P+7tMcxHEMhrGPuBL56QG7P1upONa7vGRvqrzp9Pq+63S0zlwA2JDYe1IHGTimEqVpkxr9lLuuL
+        0q3ZgpWxUR55acuvjEz0=
+X-Received: by 2002:aa7:d40f:: with SMTP id z15mr11148451edq.357.1644837183435;
+        Mon, 14 Feb 2022 03:13:03 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJzaDY+IY+Ydj+aXMFKhLtloPk4nt05m+QD+99CTBrzop3qEzQnXTRrUQXMBvsF014QaDo+TYg==
+X-Received: by 2002:aa7:d40f:: with SMTP id z15mr11148436edq.357.1644837183291;
+        Mon, 14 Feb 2022 03:13:03 -0800 (PST)
+Received: from [10.40.98.142] ([78.108.130.194])
+        by smtp.gmail.com with ESMTPSA id z5sm10405008eja.20.2022.02.14.03.13.02
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Feb 2022 01:01:27 -0800 (PST)
-Received: by mail-vk1-f171.google.com with SMTP id bj24so2718190vkb.8;
-        Mon, 14 Feb 2022 01:01:26 -0800 (PST)
-X-Received: by 2002:a1f:7307:: with SMTP id o7mr818150vkc.0.1644829286141;
- Mon, 14 Feb 2022 01:01:26 -0800 (PST)
+        Mon, 14 Feb 2022 03:13:02 -0800 (PST)
+Message-ID: <ecd789b3-74df-f4fe-ae66-8728f9bf24ab@redhat.com>
+Date:   Mon, 14 Feb 2022 12:13:02 +0100
 MIME-Version: 1.0
-References: <20220212201631.12648-1-s.shtylyov@omp.ru> <20220212201631.12648-2-s.shtylyov@omp.ru>
- <20220214071351.pcvstrzkwqyrg536@pengutronix.de>
-In-Reply-To: <20220214071351.pcvstrzkwqyrg536@pengutronix.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 14 Feb 2022 10:01:14 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWi8gno_FBbc=AwsdRtDJik8_bANjQrrRtUOOBRjFN=KA@mail.gmail.com>
-Message-ID: <CAMuHMdWi8gno_FBbc=AwsdRtDJik8_bANjQrrRtUOOBRjFN=KA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] platform: make platform_get_irq_optional() optional
-To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Sergey Shtylyov <s.shtylyov@omp.ru>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Jiri Slaby <jirislaby@kernel.org>, linux-iio@vger.kernel.org,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>, alsa-devel@alsa-project.org,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        linux-phy@lists.infradead.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
-        linux-gpio@vger.kernel.org,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Guenter Roeck <groeck@chromium.org>, linux-spi@vger.kernel.org,
-        Lee Jones <lee.jones@linaro.org>,
-        openipmi-developer@lists.sourceforge.net,
-        Peter Korsgaard <peter@korsgaard.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
-        kvm@vger.kernel.org, Kamal Dasu <kdasu.kdev@gmail.com>,
-        Richard Weinberger <richard@nod.at>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Kishon Vijay Abraham I <kishon@ti.com>,
-        bcm-kernel-feedback-list@broadcom.com,
-        linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        platform-driver-x86@vger.kernel.org, linux-pwm@vger.kernel.org,
-        Zha Qipeng <qipeng.zha@intel.com>,
-        Corey Minyard <minyard@acm.org>, linux-pm@vger.kernel.org,
-        John Garry <john.garry@huawei.com>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>,
-        Mark Gross <markgross@kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Mark Brown <broonie@kernel.org>,
-        linux-mediatek@lists.infradead.org,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Takashi Iwai <tiwai@suse.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Benson Leung <bleung@chromium.org>,
-        linux-arm-kernel@lists.infradead.org,
-        Mun Yew Tham <mun.yew.tham@intel.com>,
-        Eric Auger <eric.auger@redhat.com>, netdev@vger.kernel.org,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Cornelia Huck <cohuck@redhat.com>, linux-mmc@vger.kernel.org,
-        Joakim Zhang <qiangqing.zhang@nxp.com>,
-        Oleksij Rempel <linux@rempel-privat.de>,
-        linux-renesas-soc@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Brian Norris <computersforpeace@gmail.com>,
-        "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.4.0
+Subject: Re: [PATCH] fix linux 5.16 freeze regression on 32-bit ThinkPad T40
+Content-Language: en-US
+To:     Woody Suwalski <wsuwalski@gmail.com>, linux-pm@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+References: <80742062-8629-3978-e78d-92ffc9bb2e0b@gmail.com>
+From:   Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <80742062-8629-3978-e78d-92ffc9bb2e0b@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Uwe,
+Hi,
 
-On Mon, Feb 14, 2022 at 8:29 AM Uwe Kleine-König
-<u.kleine-koenig@pengutronix.de> wrote:
-> On Sat, Feb 12, 2022 at 11:16:30PM +0300, Sergey Shtylyov wrote:
-> > This patch is based on the former Andy Shevchenko's patch:
-> >
-> > https://lore.kernel.org/lkml/20210331144526.19439-1-andriy.shevchenko@linux.intel.com/
-> >
-> > Currently platform_get_irq_optional() returns an error code even if IRQ
-> > resource simply has not been found.  It prevents the callers from being
-> > error code agnostic in their error handling:
-> >
-> >       ret = platform_get_irq_optional(...);
-> >       if (ret < 0 && ret != -ENXIO)
-> >               return ret; // respect deferred probe
-> >       if (ret > 0)
-> >               ...we get an IRQ...
-> >
-> > All other *_optional() APIs seem to return 0 or NULL in case an optional
-> > resource is not available.  Let's follow this good example, so that the
-> > callers would look like:
-> >
-> >       ret = platform_get_irq_optional(...);
-> >       if (ret < 0)
-> >               return ret;
-> >       if (ret > 0)
-> >               ...we get an IRQ...
-> >
-> > Reported-by: Matthias Schiffer <matthias.schiffer@ew.tq-group.com>
-> > Signed-off-by: Sergey Shtylyov <s.shtylyov@omp.ru>
->
-> While this patch is better than v1, I still don't like it for the
-> reasons discussed for v1. (i.e. 0 isn't usable as a dummy value which I
-> consider the real advantage for the other _get_optional() functions.)
+On 2/9/22 22:05, Woody Suwalski wrote:
+> From: Woody Suwalski <wsuwalski@gmail.com>
+> 
+> Add and ACPI idle power level limit for 32-bit ThinkPad T40.
+> 
+> There is a regression on T40 introduced by commit d6b88ce2, starting with kernel 5.16:
+> 
+> commit d6b88ce2eb9d2698eb24451eb92c0a1649b17bb1
+> Author: Richard Gong <richard.gong@amd.com>
+> Date:   Wed Sep 22 08:31:16 2021 -0500
+> 
+>     ACPI: processor idle: Allow playing dead in C3 state
+> 
+> The above patch is trying to enter C3 state during init, what is causing a T40 system freeze. I have not found a similar issue on any other of my 32-bit machines.
+> 
+> The fix is to add another exception to the processor_power_dmi_table[] list.
+> As a result the dmesg shows as expected:
+> 
+>     2.155398] ACPI: IBM ThinkPad T40 detected - limiting to C2 max_cstate. Override with "processor.max_cstate=9"
+> [    2.155404] ACPI: processor limited to max C-state 2
+> 
+> The fix is trivial and affects only vintage T40 systems.
+> 
+> Signed-off-by: Woody Suwalski <wsuwalski@gmail.com>
+> ---
 
-IMHO the real advantage is the simplified error handling, which is the
-area where most of the current bugs are. So I applaud the core change.
+Thanks, patch looks good to me:
 
-Also IMHO, the dummy value handling is a red herring.  Contrary to
-optional clocks and resets, a missing optional interrupt does not
-always mean there is nothing to do: in case of polling, something
-else must definitely be done.  So even if request_irq() would accept
-a dummy interrupt zero and just do nothing, it would give the false
-impression that that is all there is to do, while an actual check
-for zero with polling code handling may still need to be present,
-thus leading to more not less bugs.
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
-> Apart from that, I think the subject is badly chosen. With "Make
-> somefunc() optional" I would expect that you introduce a Kconfig symbol
-> that results in the function not being available when disabled.
+Regards,
 
-Agreed.
+Hans
 
-Gr{oetje,eeting}s,
 
-                        Geert
+> --- a/drivers/acpi/processor_idle.c    2022-02-04 09:09:54.515906362 -0500
+> +++ b/drivers/acpi/processor_idle.c    2022-02-04 14:21:08.264911271 -0500
+> @@ -96,6 +96,11 @@ static const struct dmi_system_id proces
+>        DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer Inc."),
+>        DMI_MATCH(DMI_PRODUCT_NAME,"L8400B series Notebook PC")},
+>       (void *)1},
+> +    /* T40 can not handle C3 idle state */
+> +    { set_max_cstate, "IBM ThinkPad T40", {
+> +      DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
+> +      DMI_MATCH(DMI_PRODUCT_NAME, "23737CU")},
+> +     (void *)2},
+>      {},
+>  };
+> 
+> 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
