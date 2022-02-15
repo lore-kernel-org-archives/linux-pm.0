@@ -2,183 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9718CC433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Feb 2022 10:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E2EC433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Feb 2022 12:22:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234521AbiBOK5B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Feb 2022 05:57:01 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50560 "EHLO
+        id S231184AbiBOMW2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Feb 2022 07:22:28 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232569AbiBOK46 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Feb 2022 05:56:58 -0500
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B35D2B10A0;
-        Tue, 15 Feb 2022 02:56:46 -0800 (PST)
+        with ESMTP id S229997AbiBOMW1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Feb 2022 07:22:27 -0500
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE3D8652D8;
+        Tue, 15 Feb 2022 04:22:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644922606; x=1676458606;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=dTrtqie4shxFDrwGEl538Whbee33Y8ND67NcnSwUL54=;
-  b=HQZnn+XSFDYve8mJVxnvpgnuSRIPuH8C/j/1jgPyBZPf/hsuiFo1mqTq
-   VxR1Hmdjydolkd+U+o1uOKs+Z/mpZ/+K9g8TWLwGE2PpY8DEjZO336+C5
-   TWyYT1+xL+VTSsgrN/3TCFIwtcgm8/+NWpbKllAHHHtvgVdlpBUHVR+kP
-   NL3nMJS1xgG+3RyGS0kTVMDkxT9vbIqw6uvUS7ttKuwNLJXulHMl8uN8f
-   kY1Kj7OHFcdn4lsgB3aj9vYIGnXg7UsBy+v+HKXlZ4qZKAZ14/zZgZcoB
-   Vljf7cqX+Wz5OQn3OoxZmGg3UTl5z1/VLLRqz3nTsma9A67lkMliPFbMK
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10258"; a="250270689"
+  t=1644927738; x=1676463738;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=9Z5qiYvDYgVNlV1KxkkI+JpsTNmfMXnWh+xwt4Boy3U=;
+  b=K18fhYO+cO1+R1f4gdB/AxhnKjtkK43b06/+vItf5eOs7JpPkTXVcJ2e
+   iHM1kJFYe+/quot+2cHbQ+ww463J0TnEMipp7YOM5Nz6nsHJIZ+s81AXJ
+   HHLRg/v8RS/CMlteHDZ8pNaGUc8g2nIuni9NpXuc1tcEY31AMISFlg/cP
+   vFklBoGU6+B4tjJEuNMgs+PsFuoZpi9LE5fr5wIgWePozIE1Ew/rhYv0H
+   3dGqsaGvHbmAbdijmnC568gjGQqrcaQAR6Auvi7L5SV4izrEkDKw9mm9L
+   vJRTMoAreyMML98quevfyB1Q8DVngqidABpRzZXlRUf4xHTwz3/dJR5cM
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10258"; a="250081081"
 X-IronPort-AV: E=Sophos;i="5.88,370,1635231600"; 
-   d="scan'208";a="250270689"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2022 02:56:45 -0800
-X-ExtLoop1: 1
+   d="scan'208";a="250081081"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2022 04:22:17 -0800
 X-IronPort-AV: E=Sophos;i="5.88,370,1635231600"; 
-   d="scan'208";a="497016534"
-Received: from lkp-server01.sh.intel.com (HELO d95dc2dabeb1) ([10.239.97.150])
-  by orsmga006.jf.intel.com with ESMTP; 15 Feb 2022 02:56:43 -0800
-Received: from kbuild by d95dc2dabeb1 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1nJvVj-0009Yt-9w; Tue, 15 Feb 2022 10:56:43 +0000
-Date:   Tue, 15 Feb 2022 18:56:06 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 9db71e8e3027d2026be1ea9b6cfce8fd7216fb01
-Message-ID: <620b86c6.uRMwLUkkE1+grIue%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+   d="scan'208";a="544277902"
+Received: from aslawinx-mobl.ger.corp.intel.com (HELO [10.99.249.196]) ([10.99.249.196])
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2022 04:22:14 -0800
+Message-ID: <f6e5f716-f191-c126-cc81-cf872ad4e750@linux.intel.com>
+Date:   Tue, 15 Feb 2022 13:22:12 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.6.0
+Subject: Re: [PATCH] x86: Preserve ACPI memory area during hibernation
+Content-Language: en-US
+To:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, x86@kernel.org,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H . Peter Anvin" <hpa@zytor.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Cezary Rojewski <cezary.rojewski@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>
+References: <20220121103938.2602637-1-amadeuszx.slawinski@linux.intel.com>
+ <59ef4cd5-5703-2356-c893-9858985f91e0@intel.com>
+From:   =?UTF-8?Q?Amadeusz_S=c5=82awi=c5=84ski?= 
+        <amadeuszx.slawinski@linux.intel.com>
+In-Reply-To: <59ef4cd5-5703-2356-c893-9858985f91e0@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 9db71e8e3027d2026be1ea9b6cfce8fd7216fb01  Merge branch 'acpi-ec' into bleeding-edge
+On 2/14/2022 8:34 PM, Rafael J. Wysocki wrote:
+> On 1/21/2022 11:39 AM, Amadeusz Sławiński wrote:
+>> When overriding NHLT ACPI-table tests show that on some platforms
+>> there is problem that NHLT contains garbage after hibernation/resume
+>> cycle.
+>>
+>> Problem stems from the fact that ACPI override performs early memory
+>> allocation using memblock_phys_alloc_range() in
+>> memblock_phys_alloc_range(). This memory block is later being marked as
+>> ACPI memory block in arch_reserve_mem_area(). Later when memory areas
+>> are considered for hibernation it is being marked as nosave in
+>> e820__register_nosave_regions().
+>>
+>> Fix this by skipping ACPI memory area altogether when considering areas
+>> to mark as nosave.
+> 
+> This patch looks correct to me and I'm going to apply it as 5.18 
+> material unless there are any objections or concerns (in which case 
+> please let me know).
+> 
+> 
 
-elapsed time: 731m
+Well, what do you know? I've checked with validation team to make sure 
+that it works as expected and while it causes no problem on almost all 
+platforms and fixes problem with NHLT ACPI-table override, there is this 
+one platform where it causes oops on hibernation which of course is gone 
+after reverting the patch.
 
-configs tested: 107
-configs skipped: 3
+  ? set_direct_map_default_noflush+0x130/0x130
+  ? memory_bm_test_bit+0x29/0x60
+  saveable_page+0xce/0xf2
+  count_data_pages+0x50/0x76
+  hibernate_preallocate_memory+0x9c/0x377
+  ? __mutex_lock_slowpath+0x20/0x20
+  hibernation_snapshot+0x1cf/0x610
+  snapshot_ioctl+0x3d2/0x690
+  ? snapshot_release+0xd0/0xd0
+  ? new_sync_write+0x36b/0x390
+  __x64_sys_ioctl+0x6dc/0xe20
+  ? vfs_fileattr_set+0x520/0x520
+  ? _raw_read_unlock+0x2a/0x50
+  ? __kasan_check_read+0x11/0x20
+  ? vfs_write+0x131/0x3d0
+  ? ksys_write+0x13b/0x170
+  ? debug_smp_processor_id+0x17/0x20
+  ? fpregs_assert_state_consistent+0x5f/0x70
+  ? exit_to_user_mode_prepare+0x3e/0x170
+  do_syscall_64+0x43/0x90
+  entry_SYSCALL_64_after_hwframe+0x44/0xae
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20220214
-mips                 randconfig-c004-20220214
-mips                           jazz_defconfig
-sh                            titan_defconfig
-sh                          urquell_defconfig
-arm                            hisi_defconfig
-powerpc                   currituck_defconfig
-sh                        sh7785lcr_defconfig
-sh                   rts7751r2dplus_defconfig
-m68k                       m5475evb_defconfig
-sh                              ul2_defconfig
-arm                        trizeps4_defconfig
-arm                         lpc18xx_defconfig
-powerpc                      bamboo_defconfig
-arm                        mvebu_v7_defconfig
-arc                        nsimosci_defconfig
-arm                  randconfig-c002-20220214
-ia64                                defconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-alpha                               defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-sparc                            allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64               randconfig-a013-20220214
-x86_64               randconfig-a014-20220214
-x86_64               randconfig-a012-20220214
-x86_64               randconfig-a015-20220214
-x86_64               randconfig-a011-20220214
-x86_64               randconfig-a016-20220214
-i386                 randconfig-a013-20220214
-i386                 randconfig-a016-20220214
-i386                 randconfig-a012-20220214
-i386                 randconfig-a015-20220214
-i386                 randconfig-a011-20220214
-i386                 randconfig-a014-20220214
-arc                  randconfig-r043-20220214
-s390                 randconfig-r044-20220214
-riscv                randconfig-r042-20220214
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
-
-clang tested configs:
-arm                            dove_defconfig
-arm64                            allyesconfig
-mips                          ath25_defconfig
-mips                     loongson1c_defconfig
-arm                        magician_defconfig
-riscv                            alldefconfig
-powerpc                   lite5200b_defconfig
-i386                 randconfig-a004-20220214
-i386                 randconfig-a002-20220214
-i386                 randconfig-a003-20220214
-i386                 randconfig-a001-20220214
-i386                 randconfig-a006-20220214
-i386                 randconfig-a005-20220214
-x86_64               randconfig-a002-20220214
-x86_64               randconfig-a004-20220214
-x86_64               randconfig-a003-20220214
-x86_64               randconfig-a001-20220214
-x86_64               randconfig-a006-20220214
-x86_64               randconfig-a005-20220214
-hexagon              randconfig-r041-20220214
-hexagon              randconfig-r045-20220214
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Above trace points at functions using pfn, so I suspect there may be 
+need for some additional checks, but I will need to investigate.
+I guess you can skip this patch for now, until I figure what exactly is 
+going on.
