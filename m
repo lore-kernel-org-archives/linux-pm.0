@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5375BC43219
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Feb 2022 07:37:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35BF5C433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Feb 2022 07:37:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230311AbiBPHh6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Feb 2022 02:37:58 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:47430 "EHLO
+        id S230328AbiBPHh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Feb 2022 02:37:59 -0500
+Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:47424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230308AbiBPHhw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Feb 2022 02:37:52 -0500
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2089.outbound.protection.outlook.com [40.107.237.89])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFD87171875;
+        with ESMTP id S230305AbiBPHhv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Feb 2022 02:37:51 -0500
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2083.outbound.protection.outlook.com [40.107.244.83])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0CD5187E06;
         Tue, 15 Feb 2022 23:37:16 -0800 (PST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=GxTlKkz8bmnN2o9mnGpEAIBxAnpSp9YysrXoZ/wAClpqj1An40W6sAQ7jWtrm+FzT+mBRKalzCwR+W4k87rRplpqgT6aUCfnD02cx2pUVNRKdIedHSNd82iepwpMauT668+E27r/0jhqfSjnjAwlGOQ/8Zo6KObn/FXsXARERfWc4PwUzYOX0bxBXNhwAbpy1H8/uC/uy4KzR97NqAHaIQWbwKQBLc/jtTxd4/d0p8jeJ9Z/iaUD0UuASlZo5W5ZNqRAtclzvyFjUPvy+WE6KnDTghruvUsM2IsyYO5nTOhW05V4IOP/DxXlNbPBld69q5AnlZHTwiASZBuC6ovOgg==
+ b=RQ0JTgr93gAmo/9Ua3hDDgd4N1FJGc4Sf3RGWA68ZflPviCwSSYYvB54i+bjUXgJ6sGvpNrbCDxxz7ZsPJquy6jMYnL3yXilCHj4ZSUrvZlQzQK1Q3dbMCk/LJxszxowiM8StFJyh4N9AMOrYELvAhtIPUU3b43vklKb3CzZ6d/QNXap9SjdoBTK9128Q2ZVuY8wdLuGeQVAmQ1hUsX+dODVLOSrqcxWFThiYeCKQEj1EDbvSMSYXkQHuZB0DhbtSn70LoOvbuQMvfEcAvR2BFHeZypxm67dvzQLHXKLycXPnM0Gv934n2KUEyUeicqhJ+aaudgnZY78l43AeQDyOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4RbkQn3dD3s1QYVuk934xqyMRVB5dSeR+NldY7tUrnk=;
- b=HwEWVBFXl/oUT+WCXaQRh9UL0ge9YvimQOQWZFHc0r+hRzQBxOJTvov+LHseGjDqXWb0IQv1iNCHJ0nfVZOjQd+gF9qRdCL6oLxGGU7y9h6GY9FAFTn0dcN/JGc7JuWyflUi2PX4K3CcabVaSHneCvmPjPVG4KlvZZM7T4MwPBz15cDMXK7hgCckBMEEpwxYUqkAHH42gY7j7nSJwI0Rfhcw2sLW2bGicbY668La4c1/Y3ioRfvXU9TdjL8aRI6XMiJg98vABmhjfeEr3/uwy+qAAcyiDVzgBUHVzMgIIBquf1QD7q8AsksP8ig6AaNMSTOgTiYXtObmleJ5KLvgvQ==
+ bh=QvFQRM3Kvl5/VlKL8/woeNbPXhFxQXuwUSuzc8bAQKo=;
+ b=JRPVrvJ0wXuqNKmaEmsX/BqRSRtDLebnYnlWlXtwysKw8Qq4c/klohLG+/NFK+ZS/arj9o8JIcsK/JcJ9TImrLfcszJpoSIIQL0kCF7UVdk848WVRs3u96CpAgHGdk/4k9ErfQIX1kZYhExl5SuV0LdWy7JyvXvFXcmEzW8ko8eJYqySApucf/oHLQRlIzyGmGc0mCGNfWlNw69uLYI4fBOCZeBq3Xs9qIDg2KCIly7HBjfZqGqCf6u6CGxjBl4QjwG8g4U+ncdPIUlp/TDIKBj07yFJ/+gW5Y2sg9wlhvH11qhndxvf5m/PWoO/Y//i9usjyRv23E0bw/uxnCukgg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
  dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
  header.from=amd.com; dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4RbkQn3dD3s1QYVuk934xqyMRVB5dSeR+NldY7tUrnk=;
- b=lieJObwJSVomQv1LgErQP1mYNQqKaNTT4O/VZd7caq75n9ReSRDZckbavkCkOL/HhmWPVeYSgHhP/aZOk1+GDjUgeT01XCxaw0rzLrwuSiL9uHqlreVEINerACCBA5sPw1XPTGKug1GWiCHSUBiCxJ+2/Axu+vWGuv43mwTvarQ=
-Received: from BN9PR03CA0478.namprd03.prod.outlook.com (2603:10b6:408:139::33)
- by BY5PR12MB4003.namprd12.prod.outlook.com (2603:10b6:a03:196::16) with
+ bh=QvFQRM3Kvl5/VlKL8/woeNbPXhFxQXuwUSuzc8bAQKo=;
+ b=OXOsKSHSpqU2aZ3uIkW5ObM1QuB1l+Jl6Na3FHX5XmFKh52TKbvvKAUTqksB9xhuwTcU3dJGHxJTnkqA6pjf8d5UjlWoAka6XlMeEUKCP4NmhDraZuw1xfBZ/oxZE2d9YtkF/OkDlxSKSu+8AY+ksdPYmlks21/4883Px360tJ8=
+Received: from BN9PR03CA0652.namprd03.prod.outlook.com (2603:10b6:408:13b::27)
+ by CY4PR12MB1895.namprd12.prod.outlook.com (2603:10b6:903:11c::12) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4975.18; Wed, 16 Feb
- 2022 07:36:55 +0000
-Received: from BN8NAM11FT045.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:139:cafe::34) by BN9PR03CA0478.outlook.office365.com
- (2603:10b6:408:139::33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4995.16 via Frontend
- Transport; Wed, 16 Feb 2022 07:36:49 +0000
+ 2022 07:37:09 +0000
+Received: from BN8NAM11FT046.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:13b:cafe::34) by BN9PR03CA0652.outlook.office365.com
+ (2603:10b6:408:13b::27) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4995.14 via Frontend
+ Transport; Wed, 16 Feb 2022 07:37:08 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +46,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT045.mail.protection.outlook.com (10.13.177.47) with Microsoft SMTP
+ BN8NAM11FT046.mail.protection.outlook.com (10.13.177.127) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4975.11 via Frontend Transport; Wed, 16 Feb 2022 07:36:49 +0000
+ 15.20.4975.11 via Frontend Transport; Wed, 16 Feb 2022 07:37:08 +0000
 Received: from hr-amd.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.18; Wed, 16 Feb
- 2022 01:36:44 -0600
+ 2022 01:37:03 -0600
 From:   Huang Rui <ray.huang@amd.com>
 To:     Shuah Khan <skhan@linuxfoundation.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
@@ -73,9 +73,9 @@ CC:     Deepak Sharma <deepak.sharma@amd.com>,
         Steven Rostedt <rostedt@goodmis.org>,
         "Giovanni Gherdovich" <ggherdovich@suse.cz>,
         <linux-kernel@vger.kernel.org>, Huang Rui <ray.huang@amd.com>
-Subject: [PATCH RESEND v6 4/9] cpupower: Add the function to get the sysfs value from specific table
-Date:   Wed, 16 Feb 2022 15:35:53 +0800
-Message-ID: <20220216073558.751071-5-ray.huang@amd.com>
+Subject: [PATCH RESEND v6 8/9] cpupower: Move print_speed function into misc helper
+Date:   Wed, 16 Feb 2022 15:35:57 +0800
+Message-ID: <20220216073558.751071-9-ray.huang@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220216073558.751071-1-ray.huang@amd.com>
 References: <20220216073558.751071-1-ray.huang@amd.com>
@@ -87,108 +87,227 @@ X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 0c3324a2-796c-4a90-5461-08d9f11f1799
-X-MS-TrafficTypeDiagnostic: BY5PR12MB4003:EE_
-X-Microsoft-Antispam-PRVS: <BY5PR12MB40034C9CAADE92DDFE0C20C6EC359@BY5PR12MB4003.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:3383;
+X-MS-Office365-Filtering-Correlation-Id: 2dd5a6d3-cc3a-4e9a-bb58-08d9f11f2339
+X-MS-TrafficTypeDiagnostic: CY4PR12MB1895:EE_
+X-Microsoft-Antispam-PRVS: <CY4PR12MB189527155A7B7D0566BF4CF9EC359@CY4PR12MB1895.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:4125;
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: WiXft6a7JCFyU85DzHC/0Cyf95SAiYd6Ws1+4a3GQRy/MGtJmLhkUvs2ZM4HkwYp8qYf/PZpet+tF8GiBVChl22loZbhZSp6EgMcsTTrWrXqNGXnko0be8DaMzMQnwvga6nkBqENWuu1PKKic0MenFlz2KrbK87XQN7l4br3j0YLeASbIVwIvAkFR7ZV9PjOQJdgwXRzQeELgDhyR1cylfFSBzM+kdIiEkoToerIrtCiwZn50ITtIP2BWJhfNfg+nAfxHUnMZdQfd//aXkZ93bLlKyyR1kVVnk/iraZi5EqU65GXMyjnYTq3STPe37hobmPOnJM2PnAZn9Lz6GdF7ziSAEvyj/OVFEFct9k4hhf1Y0RVwpT3x2E03vws3v+WSO7IJ69bJXBZ9bQEKq+EPmxDpATdm2VoK70otsb5miDZZgMov8oEEUN/P/VmZg/zfd+iOyhxkvXKy3O2AFBFCabd3RRDkCQfODBJxon1c6W0h7RXeHkFmbQxbYpwbc5jHYd0WVB2BHDqWxWevEta5AaVlfPD0tLEC20nzaxEVJSB2B6wBP8/JGyb41EwbOicfRTl4yUC2Pjg9SMHiP2ijwEBBfBQMs5dqlX2yS+PqiMYKhFISTHhOUgxU8YAu42GAWRl96VoxdR5f+8XloWoJwxNHMJUzu+L5EPjSs6UouFJpZ2WuvqvRbqVqZAzd5/Tf/pkY1BbXZbseL+cFSZTk8eFLzPUEyNvUQPDK3MT8CM=
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(36840700001)(40470700004)(46966006)(54906003)(70586007)(336012)(316002)(4326008)(2906002)(8676002)(110136005)(26005)(7696005)(6666004)(1076003)(36860700001)(16526019)(82310400004)(2616005)(186003)(508600001)(426003)(47076005)(83380400001)(36756003)(70206006)(81166007)(5660300002)(7416002)(8936002)(40460700003)(356005)(86362001)(15583001)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: /2sjMofuZsNy65zyK3QCsZbFw5aKtYsOXgN9XeD/cvqjRPfSRD0BK9YqKRiM60Wp/gXjo6iVWRc4Uw0W4OXhB9Z3dZyyA/Ol2topJ8qpSGU91ut3ooohh3IwKd8/rWUJ8mLiYoNHc1rojZTGBNypXkL9GzeIodN3pUi4J1TA6x5ZAyuNMt+02ylHGZODUX3zlizmPBTdtFUH2dKsJ0DgtT1FuBZj3eAbBVvf12Ag7qSUEMERa6bsFvaANIcWdiaGtG8gEzUu4Dj9m+oSqF1jI3ExB83t7NI2pMelKVdF5/gxX/bLhX9v1u6QXznR7SKhUrCfAgkL/DG7y084dv/Y9lMMJz1TUwe34kOkweDE2Q9UgCIHim0Qo89K283XWPseRZvq33A9gGZ5XY/+23FP800/iu1NQakNaQWyEtJ6RjO+e6cnzV0jQgdp0kCPxxIQeNvcWOjfwZURzTbLLQX0cPBCer9uHgl6m42qRxYNUg/jL8ROZ1cH4azi8XhJpcoylW9Aw7oPuFU3Rcay4z7dD32RZzFHXeW7xM9KsnulSCKTmwlTSLhm26OwM40urI0BBw7aFby0DJ7gjLO5owRpDEj8u8bXDxMdxtKWzwq+g3k/t+foNKbpeYlVzrmfjp2hONX7uQbw4vKB2XmpFJF4L7kxS8xENX9wp9XedD6MWGEgiSZkj35PYXer18hBJvP3ocKEuoCk8Az/n2g+4Buxyg==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(36840700001)(46966006)(4326008)(356005)(7416002)(186003)(70206006)(36756003)(54906003)(5660300002)(2906002)(86362001)(8936002)(8676002)(82310400004)(81166007)(16526019)(47076005)(40460700003)(426003)(26005)(508600001)(70586007)(6666004)(36860700001)(336012)(316002)(110136005)(2616005)(1076003)(83380400001)(7696005)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Feb 2022 07:36:49.1215
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Feb 2022 07:37:08.6120
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0c3324a2-796c-4a90-5461-08d9f11f1799
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2dd5a6d3-cc3a-4e9a-bb58-08d9f11f2339
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT045.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT046.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4003
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR12MB1895
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Expose the helper into cpufreq header, then cpufreq driver can use this
-function to get the sysfs value if it has any specific sysfs interfaces.
+The print_speed can be as a common function, and expose it into misc
+helper header. Then it can be used on other helper files as well.
 
 Signed-off-by: Huang Rui <ray.huang@amd.com>
 ---
- tools/power/cpupower/lib/cpufreq.c | 21 +++++++++++++++------
- tools/power/cpupower/lib/cpufreq.h | 12 ++++++++++++
- 2 files changed, 27 insertions(+), 6 deletions(-)
+ tools/power/cpupower/utils/cpufreq-info.c    | 59 ++++----------------
+ tools/power/cpupower/utils/helpers/helpers.h |  1 +
+ tools/power/cpupower/utils/helpers/misc.c    | 42 ++++++++++++++
+ 3 files changed, 54 insertions(+), 48 deletions(-)
 
-diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
-index c3b56db8b921..c011bca27041 100644
---- a/tools/power/cpupower/lib/cpufreq.c
-+++ b/tools/power/cpupower/lib/cpufreq.c
-@@ -83,20 +83,21 @@ static const char *cpufreq_value_files[MAX_CPUFREQ_VALUE_READ_FILES] = {
- 	[STATS_NUM_TRANSITIONS] = "stats/total_trans"
- };
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index f9895e31ff5a..b429454bf3ae 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -84,43 +84,6 @@ static void proc_cpufreq_output(void)
+ }
  
+ static int no_rounding;
+-static void print_speed(unsigned long speed)
+-{
+-	unsigned long tmp;
 -
--static unsigned long sysfs_cpufreq_get_one_value(unsigned int cpu,
--						 enum cpufreq_value which)
-+unsigned long cpufreq_get_sysfs_value_from_table(unsigned int cpu,
-+						 const char **table,
-+						 unsigned index,
-+						 unsigned size)
+-	if (no_rounding) {
+-		if (speed > 1000000)
+-			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+-				((unsigned int) speed%1000000));
+-		else if (speed > 1000)
+-			printf("%u.%03u MHz", ((unsigned int) speed/1000),
+-				(unsigned int) (speed%1000));
+-		else
+-			printf("%lu kHz", speed);
+-	} else {
+-		if (speed > 1000000) {
+-			tmp = speed%10000;
+-			if (tmp >= 5000)
+-				speed += 10000;
+-			printf("%u.%02u GHz", ((unsigned int) speed/1000000),
+-				((unsigned int) (speed%1000000)/10000));
+-		} else if (speed > 100000) {
+-			tmp = speed%1000;
+-			if (tmp >= 500)
+-				speed += 1000;
+-			printf("%u MHz", ((unsigned int) speed/1000));
+-		} else if (speed > 1000) {
+-			tmp = speed%100;
+-			if (tmp >= 50)
+-				speed += 100;
+-			printf("%u.%01u MHz", ((unsigned int) speed/1000),
+-				((unsigned int) (speed%1000)/100));
+-		}
+-	}
+-
+-	return;
+-}
+-
+ static void print_duration(unsigned long duration)
  {
- 	unsigned long value;
- 	unsigned int len;
- 	char linebuf[MAX_LINE_LEN];
- 	char *endp;
+ 	unsigned long tmp;
+@@ -254,11 +217,11 @@ static int get_boost_mode(unsigned int cpu)
+ 	if (freqs) {
+ 		printf(_("  boost frequency steps: "));
+ 		while (freqs->next) {
+-			print_speed(freqs->frequency);
++			print_speed(freqs->frequency, no_rounding);
+ 			printf(", ");
+ 			freqs = freqs->next;
+ 		}
+-		print_speed(freqs->frequency);
++		print_speed(freqs->frequency, no_rounding);
+ 		printf("\n");
+ 		cpufreq_put_available_frequencies(freqs);
+ 	}
+@@ -277,7 +240,7 @@ static int get_freq_kernel(unsigned int cpu, unsigned int human)
+ 		return -EINVAL;
+ 	}
+ 	if (human) {
+-		print_speed(freq);
++		print_speed(freq, no_rounding);
+ 	} else
+ 		printf("%lu", freq);
+ 	printf(_(" (asserted by call to kernel)\n"));
+@@ -296,7 +259,7 @@ static int get_freq_hardware(unsigned int cpu, unsigned int human)
+ 		return -EINVAL;
+ 	}
+ 	if (human) {
+-		print_speed(freq);
++		print_speed(freq, no_rounding);
+ 	} else
+ 		printf("%lu", freq);
+ 	printf(_(" (asserted by call to hardware)\n"));
+@@ -316,9 +279,9 @@ static int get_hardware_limits(unsigned int cpu, unsigned int human)
  
--	if (which >= MAX_CPUFREQ_VALUE_READ_FILES)
-+	if (!table || index >= size || !table[index])
- 		return 0;
+ 	if (human) {
+ 		printf(_("  hardware limits: "));
+-		print_speed(min);
++		print_speed(min, no_rounding);
+ 		printf(" - ");
+-		print_speed(max);
++		print_speed(max, no_rounding);
+ 		printf("\n");
+ 	} else {
+ 		printf("%lu %lu\n", min, max);
+@@ -350,9 +313,9 @@ static int get_policy(unsigned int cpu)
+ 		return -EINVAL;
+ 	}
+ 	printf(_("  current policy: frequency should be within "));
+-	print_speed(policy->min);
++	print_speed(policy->min, no_rounding);
+ 	printf(_(" and "));
+-	print_speed(policy->max);
++	print_speed(policy->max, no_rounding);
  
--	len = sysfs_cpufreq_read_file(cpu, cpufreq_value_files[which],
--				linebuf, sizeof(linebuf));
-+	len = sysfs_cpufreq_read_file(cpu, table[index], linebuf,
-+				      sizeof(linebuf));
+ 	printf(".\n                  ");
+ 	printf(_("The governor \"%s\" may decide which speed to use\n"
+@@ -436,7 +399,7 @@ static int get_freq_stats(unsigned int cpu, unsigned int human)
+ 	struct cpufreq_stats *stats = cpufreq_get_stats(cpu, &total_time);
+ 	while (stats) {
+ 		if (human) {
+-			print_speed(stats->frequency);
++			print_speed(stats->frequency, no_rounding);
+ 			printf(":%.2f%%",
+ 				(100.0 * stats->time_in_state) / total_time);
+ 		} else
+@@ -486,11 +449,11 @@ static void debug_output_one(unsigned int cpu)
+ 	if (freqs) {
+ 		printf(_("  available frequency steps:  "));
+ 		while (freqs->next) {
+-			print_speed(freqs->frequency);
++			print_speed(freqs->frequency, no_rounding);
+ 			printf(", ");
+ 			freqs = freqs->next;
+ 		}
+-		print_speed(freqs->frequency);
++		print_speed(freqs->frequency, no_rounding);
+ 		printf("\n");
+ 		cpufreq_put_available_frequencies(freqs);
+ 	}
+diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+index f142fbfa4a77..4c24c25a7b07 100644
+--- a/tools/power/cpupower/utils/helpers/helpers.h
++++ b/tools/power/cpupower/utils/helpers/helpers.h
+@@ -200,5 +200,6 @@ extern struct bitmask *offline_cpus;
+ void get_cpustate(void);
+ void print_online_cpus(void);
+ void print_offline_cpus(void);
++void print_speed(unsigned long speed, int no_rounding);
  
- 	if (len == 0)
- 		return 0;
-@@ -109,6 +110,14 @@ static unsigned long sysfs_cpufreq_get_one_value(unsigned int cpu,
- 	return value;
+ #endif /* __CPUPOWERUTILS_HELPERS__ */
+diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
+index e0d3145434d3..d693c96cd09c 100644
+--- a/tools/power/cpupower/utils/helpers/misc.c
++++ b/tools/power/cpupower/utils/helpers/misc.c
+@@ -164,3 +164,45 @@ void print_offline_cpus(void)
+ 		printf(_("cpupower set operation was not performed on them\n"));
+ 	}
  }
- 
-+static unsigned long sysfs_cpufreq_get_one_value(unsigned int cpu,
-+						 enum cpufreq_value which)
-+{
-+	return cpufreq_get_sysfs_value_from_table(cpu, cpufreq_value_files,
-+						  which,
-+						  MAX_CPUFREQ_VALUE_READ_FILES);
-+}
 +
- /* read access to files which contain one string */
- 
- enum cpufreq_string {
-diff --git a/tools/power/cpupower/lib/cpufreq.h b/tools/power/cpupower/lib/cpufreq.h
-index 95f4fd9e2656..107668c0c454 100644
---- a/tools/power/cpupower/lib/cpufreq.h
-+++ b/tools/power/cpupower/lib/cpufreq.h
-@@ -203,6 +203,18 @@ int cpufreq_modify_policy_governor(unsigned int cpu, char *governor);
- int cpufreq_set_frequency(unsigned int cpu,
- 				unsigned long target_frequency);
- 
 +/*
-+ * get the sysfs value from specific table
++ * print_speed
 + *
-+ * Read the value with the sysfs file name from specific table. Does
-+ * only work if the cpufreq driver has the specific sysfs interfaces.
++ * Print the exact CPU frequency with appropriate unit
 + */
++void print_speed(unsigned long speed, int no_rounding)
++{
++	unsigned long tmp;
 +
-+unsigned long cpufreq_get_sysfs_value_from_table(unsigned int cpu,
-+						 const char **table,
-+						 unsigned index,
-+						 unsigned size);
++	if (no_rounding) {
++		if (speed > 1000000)
++			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
++				((unsigned int) speed%1000000));
++		else if (speed > 1000)
++			printf("%u.%03u MHz", ((unsigned int) speed/1000),
++				(unsigned int) (speed%1000));
++		else
++			printf("%lu kHz", speed);
++	} else {
++		if (speed > 1000000) {
++			tmp = speed%10000;
++			if (tmp >= 5000)
++				speed += 10000;
++			printf("%u.%02u GHz", ((unsigned int) speed/1000000),
++				((unsigned int) (speed%1000000)/10000));
++		} else if (speed > 100000) {
++			tmp = speed%1000;
++			if (tmp >= 500)
++				speed += 1000;
++			printf("%u MHz", ((unsigned int) speed/1000));
++		} else if (speed > 1000) {
++			tmp = speed%100;
++			if (tmp >= 50)
++				speed += 100;
++			printf("%u.%01u MHz", ((unsigned int) speed/1000),
++				((unsigned int) (speed%1000)/100));
++		}
++	}
 +
- #ifdef __cplusplus
- }
- #endif
++	return;
++}
 -- 
 2.25.1
 
