@@ -2,122 +2,211 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A309C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Feb 2022 18:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BFC6C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Feb 2022 18:44:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237455AbiBPSK5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Feb 2022 13:10:57 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50090 "EHLO
+        id S235639AbiBPSow (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Feb 2022 13:44:52 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:36044 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237479AbiBPSK4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Feb 2022 13:10:56 -0500
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A98E52B1014
-        for <linux-pm@vger.kernel.org>; Wed, 16 Feb 2022 10:10:41 -0800 (PST)
-Received: by mail-wr1-x434.google.com with SMTP id v12so4876093wrv.2
-        for <linux-pm@vger.kernel.org>; Wed, 16 Feb 2022 10:10:41 -0800 (PST)
+        with ESMTP id S237796AbiBPSon (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Feb 2022 13:44:43 -0500
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04069222DEC
+        for <linux-pm@vger.kernel.org>; Wed, 16 Feb 2022 10:44:31 -0800 (PST)
+Received: by mail-wr1-x42f.google.com with SMTP id h6so4951365wrb.9
+        for <linux-pm@vger.kernel.org>; Wed, 16 Feb 2022 10:44:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=message-id:date:mime-version:user-agent:subject:content-language:to
          :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=/GDwCmOa4MtdZnSQteLqJB5ggHWRiUbbOudwWhAgHcI=;
-        b=trUphBMT/37EFY19GX1DTH6KJWnDoyi+q8RVMHFeBja8rT3CLmZJKVZokGSaVj1noe
-         SE9Y74qGSA1gl3/C3P3nDNY0ZiO7SAbFFhCMRRHwtNh0MTXGm67xIwY6TzClNNEvohhF
-         Cn365qiU5EKO3MyIWHmio73G4ddp1+p+RpvQ+WphFF1F1GTNx2MAqKy2E1hi+dteQUAO
-         nXGisZxF0F1h1UHECAnXoc10Tu8N+0Gt/IUM/QhRn0npOBWze5HXdcsjrdxGK30PBG3h
-         OI8j/NQS+fFfnJHfrCIP59PMRy/gC47L7SkZt+uCwR1FIqhJkjbMz0vd6kIxnP3xgvmA
-         tlzQ==
+        bh=lszB3xceFjSIFmWwB8cITSlsQu8F9SaAJnYIVCoUsFc=;
+        b=sbVTqKGlf7xvO45FqWb50YfhQZItyXe2xKSD86hgNjh8yyr2JXznhNFPzd/swEwlHh
+         KMuOVe9I7Cb1kewjSd3cnJCUNB6vx/yKdw9OvffbnjnurEfm9scvTyoux4GvNtvLsy49
+         uc17nWybjxZKamcEKx/F+42OfvemWwa9angbKZcX7cZL5BfhyLY6Q6yylpifcoVPD/+1
+         GByHPcOaaKna6095XTbBFSWNDxb8pMa1awTKwrippYFrYWwLfAhy7sPMzxP+KQ30TUqs
+         mTfRtF7Pq+Z5cUNuMaL9baRs1CYnP0MdXCBAZdjAZDYRF6yWPorkZUEKWPGbx1VPLlOg
+         5T5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=/GDwCmOa4MtdZnSQteLqJB5ggHWRiUbbOudwWhAgHcI=;
-        b=WHPh0uJC5Jlu/yUnEzKm5sU5Yp4iX3G26jWZ03PbkDfs+tD8d1S9iZuONa+537qHTi
-         YX+7U1NTh6yaClWc7yBDbbFqirIhuaSHqof5Yqf9bUq1NHmyT2mdr+g4+VoArauntPFW
-         xkfRGvwSLsdLfDvibQY0E01Vn8hPruIBOq1q7n5tr4uHV9Nybe2Et/EHcZ3PAEG4PIsD
-         9/ea7XsNIdf2EfTjGQocheCTofnfeyPk0Rfte6gpS9IWGELu6WiabOri9BXesZKEpLcO
-         Sq7CmwS2dlsQ9waj01cuibhRudb7kK+JOMkhkVXZqRsaSuK33y1btb8XpNZtsNey69HF
-         lScg==
-X-Gm-Message-State: AOAM533xDdfKuXW9yotHSBodfk6mTXWb+cqhZ/RkkwZU00XJZ/8Cv6GZ
-        O6MOc9PIqTPqmW6wPq3csHfeVw==
-X-Google-Smtp-Source: ABdhPJzCLH7rGMIhynYdNXqwlOOJOhAjOeEZcgG3BuiMskbbYpYgii4hpA1AcoQiMSV2w8e/cc7zQQ==
-X-Received: by 2002:a5d:40ca:0:b0:1e5:1996:fc88 with SMTP id b10-20020a5d40ca000000b001e51996fc88mr3314356wrq.222.1645035040170;
-        Wed, 16 Feb 2022 10:10:40 -0800 (PST)
+        bh=lszB3xceFjSIFmWwB8cITSlsQu8F9SaAJnYIVCoUsFc=;
+        b=7bwibH42DT7jnvmok4OF6GMdyDYRCheuoaEWRU/nkLgdqkQ3H02H/8fRy0SQaUG3SZ
+         SpQ9goE8jRAPVIbwK3ch9jrWb6D4Z3URV1VjGmx6Brj6/7o2UaP2U74OJkI93Cft8PfA
+         Yii9aQjSJJCEZwODBWsri2MZljmhI2xYyvM3n//qqWBLWo36FEVStSVmEkYFw8ntFkRE
+         P9R70QSpemddpG5lwJl2tw8aVzSGxIw5P2t6QIHp1Ikuf2/qQTMAsHav3b6PMOXKlrfJ
+         uRrWfT+OX6PUdhkUUdsi4VDSuYR3nhyepnGZj6dRduqf2DfiVGV3t2FbD1v1KiNS7nkU
+         6fxg==
+X-Gm-Message-State: AOAM533LMVwnFgQMy3eFUUaM0Nv93Nr5+KGSdWzt94R1MrNJ8CROiWI6
+        vkKk9DjYKIYdUQD4f++ZB29Ocg==
+X-Google-Smtp-Source: ABdhPJyQBwxtunRVW/1pojsvJEgADGCFHehYC1r5tdHntm0Zk7lR/GS3+oFU+xnPDUm73wPyWePNFg==
+X-Received: by 2002:a5d:634b:0:b0:1e3:3226:8e27 with SMTP id b11-20020a5d634b000000b001e332268e27mr3260753wrw.428.1645037069455;
+        Wed, 16 Feb 2022 10:44:29 -0800 (PST)
 Received: from ?IPV6:2a01:e34:ed2f:f020:6165:d98a:b553:c3c1? ([2a01:e34:ed2f:f020:6165:d98a:b553:c3c1])
-        by smtp.googlemail.com with ESMTPSA id l12sm18045471wmd.44.2022.02.16.10.10.37
+        by smtp.googlemail.com with ESMTPSA id j10sm14282624wmq.20.2022.02.16.10.44.27
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Feb 2022 10:10:39 -0800 (PST)
-Message-ID: <e44b9c4b-2ac4-4ea4-c771-bde13943af5f@linaro.org>
-Date:   Wed, 16 Feb 2022 19:10:33 +0100
+        Wed, 16 Feb 2022 10:44:28 -0800 (PST)
+Message-ID: <c07b9fe7-5d28-c72a-a9d9-e612b07b0b75@linaro.org>
+Date:   Wed, 16 Feb 2022 19:44:26 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v1 3/7] powercap/dtpm: Fixup kfree for virtual node
+Subject: Re: [PATCH v5] drivers: thermal: clear all mitigation when thermal
+ zone is disabled
 Content-Language: en-US
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     rjw@rjwysocki.net, heiko@sntech.de, lukasz.luba@arm.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-References: <20220130210210.549877-1-daniel.lezcano@linaro.org>
- <20220130210210.549877-3-daniel.lezcano@linaro.org>
- <CAPDyKFqV++g63Asax8TNSEgujxJ=uM9XG2_Advu34JidYBCGtg@mail.gmail.com>
+To:     Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1643307093-22501-1-git-send-email-quic_manafm@quicinc.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <CAPDyKFqV++g63Asax8TNSEgujxJ=uM9XG2_Advu34JidYBCGtg@mail.gmail.com>
+In-Reply-To: <1643307093-22501-1-git-send-email-quic_manafm@quicinc.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 16/02/2022 17:22, Ulf Hansson wrote:
-> On Sun, 30 Jan 2022 at 22:02, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>
->> When the node is virtual there is no release function associated which
->> can free the memory.
->>
->> Free the memory when no 'ops' exists.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>   drivers/powercap/dtpm.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/powercap/dtpm.c b/drivers/powercap/dtpm.c
->> index 0b0121c37a1b..7bddd25a6767 100644
->> --- a/drivers/powercap/dtpm.c
->> +++ b/drivers/powercap/dtpm.c
->> @@ -181,12 +181,12 @@ int dtpm_release_zone(struct powercap_zone *pcz)
->>
->>          if (dtpm->ops)
->>                  dtpm->ops->release(dtpm);
->> +       else
->> +               kfree(dtpm);
->>
+On 27/01/2022 19:11, Manaf Meethalavalappu Pallikunhi wrote:
+> Whenever a thermal zone is in trip violated state, there is a chance
+> that the same thermal zone mode can be disabled either via
+> thermal core API or via thermal zone sysfs. Once it is disabled,
+> the framework bails out any re-evaluation of thermal zone. It leads
+> to a case where if it is already in mitigation state, it will stay
+> the same state forever.
 > 
-> This doesn't look correct. Below you check dtpm against "root", which
-> may be after its memory has been freed.
+> To avoid above mentioned issue, add support to bind/unbind
+> governor from thermal zone during thermal zone mode change request
+> and clear all existing throttling in governor unbind_from_tz()
+> callback.
+
+Manaf,
+
+can you clarify when / why is needed to disable a thermal zone at runtime?
+
+
+
+> Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
+> ---
+>   drivers/thermal/gov_power_allocator.c |  3 +++
+>   drivers/thermal/gov_step_wise.c       | 26 ++++++++++++++++++++++++++
+>   drivers/thermal/thermal_core.c        | 31 +++++++++++++++++++++++++++----
+>   3 files changed, 56 insertions(+), 4 deletions(-)
 > 
-> If the ->release() function should be responsible for freeing the
-> dtpm, it needs to be called after the check below.
-
-It is harmless, 'root' is not dereferenced but used as an ID
-
-Moreover, in the patch 5/7 it is moved out this function.
-
-
->>          if (root == dtpm)
->>                  root = NULL;
->>
->> -       kfree(dtpm);
->> -
->>          return 0;
->>   }
->>
-> 
-> Kind regards
-> Uffe
+> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+> index 13e3757..9ff0c5f 100644
+> --- a/drivers/thermal/gov_power_allocator.c
+> +++ b/drivers/thermal/gov_power_allocator.c
+> @@ -696,6 +696,9 @@ static void power_allocator_unbind(struct thermal_zone_device *tz)
+>   
+>   	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
+>   
+> +	tz->passive = 0;
+> +	allow_maximum_power(tz, true);
+> +
+>   	if (params->allocated_tzp) {
+>   		kfree(tz->tzp);
+>   		tz->tzp = NULL;
+> diff --git a/drivers/thermal/gov_step_wise.c b/drivers/thermal/gov_step_wise.c
+> index 12acb12..2d2186b 100644
+> --- a/drivers/thermal/gov_step_wise.c
+> +++ b/drivers/thermal/gov_step_wise.c
+> @@ -168,6 +168,31 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>   }
+>   
+>   /**
+> + * step_wise_unbind() - unbind the step_wise governor to a thermal zone
+> + * @tz:	thermal zone to unbind it to
+> + *
+> + * Clear all previous throttling and reset passive counter.
+> + *
+> + */
+> +static void step_wise_unbind(struct thermal_zone_device *tz)
+> +{
+> +	struct thermal_instance *instance;
+> +
+> +	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
+> +
+> +	mutex_lock(&tz->lock);
+> +	tz->passive = 0;
+> +	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+> +		instance->initialized = false;
+> +		instance->target = THERMAL_NO_TARGET;
+> +		mutex_lock(&instance->cdev->lock);
+> +		__thermal_cdev_update(instance->cdev);
+> +		mutex_unlock(&instance->cdev->lock);
+> +	}
+> +	mutex_unlock(&tz->lock);
+> +}
+> +
+> +/**
+>    * step_wise_throttle - throttles devices associated with the given zone
+>    * @tz: thermal_zone_device
+>    * @trip: trip point index
+> @@ -196,6 +221,7 @@ static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
+>   
+>   static struct thermal_governor thermal_gov_step_wise = {
+>   	.name		= "step_wise",
+> +	.unbind_from_tz	= step_wise_unbind,
+>   	.throttle	= step_wise_throttle,
+>   };
+>   THERMAL_GOVERNOR_DECLARE(thermal_gov_step_wise);
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 82654dc..34726d3 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -274,6 +274,26 @@ static int __init thermal_register_governors(void)
+>   	return ret;
+>   }
+>   
+> +static void thermal_governor_attach(struct thermal_zone_device *tz)
+> +{
+> +	mutex_lock(&thermal_governor_lock);
+> +	if (tz->governor && tz->governor->bind_to_tz) {
+> +		if (tz->governor->bind_to_tz(tz))
+> +			dev_err(&tz->device,
+> +				"governor %s failed to bind to thermal zone %s\n",
+> +				tz->governor->name, tz->type);
+> +	}
+> +	mutex_unlock(&thermal_governor_lock);
+> +}
+> +
+> +static void thermal_governor_detach(struct thermal_zone_device *tz)
+> +{
+> +	mutex_lock(&thermal_governor_lock);
+> +	if (tz->governor && tz->governor->unbind_from_tz)
+> +		tz->governor->unbind_from_tz(tz);
+> +	mutex_unlock(&thermal_governor_lock);
+> +}
+> +
+>   /*
+>    * Zone update section: main control loop applied to each zone while monitoring
+>    *
+> @@ -449,12 +469,15 @@ static int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
+>   
+>   	mutex_unlock(&tz->lock);
+>   
+> -	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+> -
+> -	if (mode == THERMAL_DEVICE_ENABLED)
+> +	if (mode == THERMAL_DEVICE_ENABLED) {
+> +		thermal_governor_attach(tz);
+> +		thermal_zone_device_init(tz);
+> +		thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+>   		thermal_notify_tz_enable(tz->id);
+> -	else
+> +	} else {
+> +		thermal_governor_detach(tz);
+>   		thermal_notify_tz_disable(tz->id);
+> +	}
+>   
+>   	return ret;
+>   }
 
 
 -- 
