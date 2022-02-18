@@ -2,493 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3931EC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Feb 2022 12:54:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09FEDC433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Feb 2022 13:13:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233522AbiBRMyt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Feb 2022 07:54:49 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:56100 "EHLO
+        id S232732AbiBRNNf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Feb 2022 08:13:35 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:53610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233924AbiBRMys (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Feb 2022 07:54:48 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB9CB2B3541
-        for <linux-pm@vger.kernel.org>; Fri, 18 Feb 2022 04:54:30 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id w13so4697632wmi.2
-        for <linux-pm@vger.kernel.org>; Fri, 18 Feb 2022 04:54:30 -0800 (PST)
+        with ESMTP id S230075AbiBRNNd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Feb 2022 08:13:33 -0500
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2088.outbound.protection.outlook.com [40.107.21.88])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF12ADFD7;
+        Fri, 18 Feb 2022 05:13:15 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=gcOCbXXBfSMjzjOjLvY+N3Tbh/PqV656VuHOLrCpJEhWB+KfA7avMqNFitR5vCXpXC8XwFucBnBkqEGbutERphO8DxcUMRIkAG7O6vgbEH0hO/Y40nvs8nS8TiCIEoP2EYBOUbNWI1KVoOsnJVRFbgodfVIGF9p9R1o73dzOvjmJ3LF/tHWExF4QQsT54rtJTs8CYOIQJMwnH8OzgUVQWJnv0CKRLjFZif/rRsiL7W3upaCtVZjk+X/rnl57xW/emJcNSxQbB+gc8dzv6QFN19bGqmFuZgnxjrV9oHhhwNro3WiRPKev5UNCeAaNUCWCmwC3rPOYiGbnwefIW+Mqlg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=rXXi1ZLDfNi06EUk4PQKjQZmqKQD3bm3r9HBJW9ur9A=;
+ b=cPc3uf0XHOJQJEeU3VAY6iBVB4YdlrIU6pC/lJB/4+kUF2s7zXuw5liEYy8Do3zGWyJtnu2PKpqvNTiAfXApedNW/jz+6IG24B/vUGIZmTcm0KO/F8y7pegPNVZ1uL3/CMQJWH3y1T9lgB28OownSQHOMrVvCqM2FfySPcGKx5N8Ef94s+TyNKU4n9cbDBvIIJpEdj6S0xSxdkRZn7YDydZE8fjBnwwKfHB5u6Gw5P9/E1DWpRngya+mcCmsks9j53WXNwR0ygqepWoj+tY9RtGpJmH1nFCenbinZakwllm70WzxNTJmKrKOeI6xHd6+HDyeDNfSZeK8tbzN/I9Ufw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ObrogwrsHsxgebV9FG+uqStBwkgeAFcG8F17qvQ//uw=;
-        b=P4LAq13fI2QJBjmLmqssElpG59/p2cpKhsgKBHgpv34PM/2Z+A7Gz+fGAXr1RngVdL
-         XLkgfGykT0di4EDCzwSOFrUkcQ8Zw7fOfYf1MYaZKWhZJHPHxtd8eqGr7U0uo9JK1udW
-         5Zm5zsb8ZvPMPvkBMlF1+gNbl6e009YZWnxiDuoENG+grwYfT9sr3pLshGMUuS/PgD5S
-         6DmCAW5HQZ+yV306V2ujqevROdARLjYwnzCKwUnySjCfhuD5p6DXynUAqc6bVFVNCoxx
-         qQScNqvUV6a5bf3L1mnS4RqgsoNQhlmILVv82wR0hKr4S6Z5VzVX/BK8kktrV0sqPFrY
-         nzlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ObrogwrsHsxgebV9FG+uqStBwkgeAFcG8F17qvQ//uw=;
-        b=uscdbM7/o/pL0LrFVipDflDF1mG1n7ZJX3ZkYueUaeC0sF8daWy6Vp7XvEq67S0i0X
-         XACzhrdTdciu6H5WRI2DTQOm7qfAn/7wQqVk2L6proWb/lKyHznLWf+bmoEivHAw6juq
-         d6MnszuP1wQo/vYwxJM/LgyqAPIXriiNhJ2NYy8CYsz44h/yT64BNRrfNrUkvusm0zNn
-         uk+tTC9MZ+5AVMWf1xYhfFbKLlmX8dXc06A6PeUwXerRem2AIv77IZlL/rgeU+vkYdKl
-         E0sssKZkDiim5qndTpA1akInQcc/9Oqhs0No5WPhtn9GzTIIXWgI3xRO0DAx9SneHoGD
-         5fBA==
-X-Gm-Message-State: AOAM530q1w2YkufcJwUQBK7stqk09nKOkzJBSoIvTbKyVGnEfjDnN5U/
-        8zF+agvErzde7tR8DdxwjQoGhQ==
-X-Google-Smtp-Source: ABdhPJy/M8MHWvgQqY3Zg0pwpPHG0cvYALBNmZ4ntJvwy1fgD7h7lJrdKXH4E3kneOIY4LhD/vu7tg==
-X-Received: by 2002:a05:600c:ad0:b0:37b:b989:faaf with SMTP id c16-20020a05600c0ad000b0037bb989faafmr10446441wmr.167.1645188869298;
-        Fri, 18 Feb 2022 04:54:29 -0800 (PST)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:5828:300b:5226:ef02])
-        by smtp.gmail.com with ESMTPSA id p7sm17034011wrr.95.2022.02.18.04.54.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Feb 2022 04:54:28 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rafael@kernel.org
-Cc:     srinivas.pandruvada@linux.intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Sasha Levin <sashal@kernel.org>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: [PATCH v1 4/4] tools/thermal: Add thermal daemon skeleton
-Date:   Fri, 18 Feb 2022 13:53:34 +0100
-Message-Id: <20220218125334.995447-5-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220218125334.995447-1-daniel.lezcano@linaro.org>
-References: <20220218125334.995447-1-daniel.lezcano@linaro.org>
+ d=dialogsemiconductor.onmicrosoft.com;
+ s=selector1-dialogsemiconductor-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rXXi1ZLDfNi06EUk4PQKjQZmqKQD3bm3r9HBJW9ur9A=;
+ b=ZrS7EBvKFqtk5E+TS3rshPMX/0CTslkM+IyyUCYFTeTtvz4hG6mTWOZgyewf+c1QvnSGsIDoBH+K04/dUYRLCNXwj7oTb43diJQh1xaGTCF/Nrc4AInInSPmrQkVI1w5/V4Jm5i1XtAaes9TUp/LZ61dQctLUmzWKqVvyHdwgYY=
+Received: from DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:10:255::23)
+ by PR3PR10MB4160.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:102:a4::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4975.15; Fri, 18 Feb
+ 2022 13:13:11 +0000
+Received: from DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::acd3:e31b:a13e:b0db]) by DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::acd3:e31b:a13e:b0db%6]) with mapi id 15.20.4995.017; Fri, 18 Feb 2022
+ 13:13:11 +0000
+From:   Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Support Opensource <Support.Opensource@diasemi.com>,
+        Sebastian Reichel <sre@kernel.org>
+CC:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: RE: [PATCH] power: supply: da9150-fg: Use
+ devm_delayed_work_autocancel()
+Thread-Topic: [PATCH] power: supply: da9150-fg: Use
+ devm_delayed_work_autocancel()
+Thread-Index: AQHYIQLYZkJpMV3yBU+s35Z4V4Ora6yZT2CQ
+Date:   Fri, 18 Feb 2022 13:13:10 +0000
+Message-ID: <DB9PR10MB465210AEF84FD0F390B1616480379@DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM>
+References: <c4cf74b56258c679f69bbc6350179b8b500f5800.1644774892.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <c4cf74b56258c679f69bbc6350179b8b500f5800.1644774892.git.christophe.jaillet@wanadoo.fr>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=diasemi.com;
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 7f3e83be-bccf-4355-8cf1-08d9f2e069d0
+x-ms-traffictypediagnostic: PR3PR10MB4160:EE_
+x-ms-exchange-sharedmailbox-routingagent-processed: True
+x-microsoft-antispam-prvs: <PR3PR10MB4160DC828EA98C709BFF9CC9A7379@PR3PR10MB4160.EURPRD10.PROD.OUTLOOK.COM>
+x-ms-oob-tlc-oobclassifiers: OLM:6790;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: HVHn0zgxoVBkVCnRa10AQX7CugJkdQ/UdXSMFt51Xuj2r6H4VY2fIrWU4cgQnT2P6aCK5FdOFz9ppTyJWIPpKtzLza0dgB/yZnpqt+rKQqmCvW2HsZniXZbGJQUuSeawuEWKK5BOMyBDVxSgnntD1KlP0vNmQkC6aIXQUuilM2rEC1/l5TZpD/sxXfHWVT3cVCRrZIPTyREdXNC4hC9k17+zb2SZWuiy9XIXNGE3RH8/rtdW/qLmqmO3uJsHTKa1zBRgJM1ivfH5LYP2/TY3dv2YEsMuQxPLo2B/P1MPr+7CFnwUGOwb9E/KiwxQuvo334TJoSlzqiltSYNFjASkGBJHTDaQ4FdGl3xw74Xkbz9EZH23cH3pdAlGQPtd/mdVg6sZJMaA0J/AcpJXCAHo5TAectrwD0iu5Q7UmE1NDzph7X6b52bI80LrhocJawYN0R1gGwqVZHlDqfn+z3lZctUXC8M4W/kCw4D0Pvn2eXv7OGaiHxugwOxMokpdNJhhFtL46OibNA4pVyiLDe0XFYn/oojM1+sLqM3LQGxYqJKfeyXIkgzxROATcN5ud6OO0K0SmHvhW9MS9/M0TcbWiOAT9y0HfdMA7jl1FWuFhr5SEzbQEYxXdwDk3yX6XYzoARXcj64bXUK1/TxPSNqmfeXnt9JTJ56iNMi8q2HLDLqIXwEzMfkktmdv0ldNaI/mnSPk7hQCBPpKg3jGbLk9Ig==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(4326008)(64756008)(76116006)(316002)(54906003)(66946007)(6506007)(8936002)(8676002)(66446008)(66476007)(508600001)(110136005)(33656002)(86362001)(4744005)(122000001)(38100700002)(38070700005)(7696005)(186003)(9686003)(71200400001)(26005)(55236004)(53546011)(55016003)(5660300002)(2906002)(52536014)(66556008);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?jgxR6rzUUdy0032sagFHCmF8Jqr92eUQ3x11G/jSXoCPiMq7sgUwftzT70Qx?=
+ =?us-ascii?Q?YPTt7bDT6urYg8RDmBYwUUt/jYXmldCqI5nGkX4DfCh3raGZ7F8fgwMG/wfa?=
+ =?us-ascii?Q?6aV0l8g7pFi5ZvYRYnI3R6NyAFZ9RhLyPsXS20Og6+Y2ngUze9jDZlTXMXvP?=
+ =?us-ascii?Q?Mx9LLMLJ5ahAvQncczxjDvFo0PaDdmduQe9/p8pZ+pAbGy+MTy8BFIhUM628?=
+ =?us-ascii?Q?oZjl1G8nSlmgaQwcbqs9rKAikdV7VQy/9t12Y9zmFVXFefl7BATE6gq+eXgj?=
+ =?us-ascii?Q?rAIyvqnORUp9uYsK8/GiHm4j7V9MPJteY/IHEn3wKXDFAnA68oKUx7Iy3TZA?=
+ =?us-ascii?Q?aB+0vzhoL6nUou6zoCgV1+TnR5mHJyIH2LWOHmo6RCT90fSt58pWjl+6ODfN?=
+ =?us-ascii?Q?GL6CNlpd9WplMaQhhBboixbwdco2IpQ/D2G6ssTOZNWnebfopNYeDUOSfX+B?=
+ =?us-ascii?Q?872moFyyIit8FwvhYTBh30n6Ha0dtMetFFngMvxuXbnnIYzum0Bqf1BsOh5k?=
+ =?us-ascii?Q?3ACIlKq640zf00q6e5wAk3Ji8o53ybQBencZG4cNYZgHbO6HzDDs3hmKp9W1?=
+ =?us-ascii?Q?dNk+ghOHETy9ku/tAtw7iWSS2MASTR2hJer/dCE9KWlZFcq9DqMU3P89dXyM?=
+ =?us-ascii?Q?iIdtpkrvF+Q9pkAa+orlrryE/BlE7mwyzg/qPD5kipSO050oQXuqcTf+TEO+?=
+ =?us-ascii?Q?qg+fhqf73H76xPsM882g67irjD3lRgSJFScwoB7bR68Tg22pGQIARmGmTrRY?=
+ =?us-ascii?Q?1COwf4lTyKaU/GwSktbRQcRjCvQhti5WDyb3C7Zf7J+1+80eHRd1Qb4cc9+g?=
+ =?us-ascii?Q?yl9mYPsd4JxQGbtrhre3xNRrpVXqh67UtbliSGJDPopqR7j2aQILbY+EXLli?=
+ =?us-ascii?Q?KV3kztsCh3TtCPcjkGWbXEfgg4a39vQ+Ezev+ahKlddS9UdGSezrghMixEN0?=
+ =?us-ascii?Q?85f1+1Ql1HdGLFxfVPSsRyaxAMEduptxZoHWNSwp3GagafjQMaWzH/iRbdMh?=
+ =?us-ascii?Q?ctTiO1SQLLTToU4u4Ol8AClTy3RaqYaH0mTni33qFotyJIlOH9/1sqtFr5AU?=
+ =?us-ascii?Q?ff/Yo0zoQm36vbyAAVZS8W9vARwfnlQFg7KnwBgQa+BE7qFxF4swogVqx6Zi?=
+ =?us-ascii?Q?ffgevDtFAV+7F+KCCNpu4hAabkU1D6Xcml81S3R9uIoSpBGa6IQKz0x40XWa?=
+ =?us-ascii?Q?wE/N/FR91JLXNSZIRF9idC3vUc+9q2WFzgUwFiY6TOb41523cbymjqb1ajts?=
+ =?us-ascii?Q?NQkFandR71R9NjOWwfv4j+CNIoVgyCvQWRuVkTu9+BuWGEZSDNcHedGH4KBg?=
+ =?us-ascii?Q?1660Zpob+TyTOh9SIXFJl2FZEC1KVVB0zXlyarOKPxsIiAf9tYR79htxBP6f?=
+ =?us-ascii?Q?h2M9+ORc5hF8lP91g1wrXm02890rJ3lmpN5J+Vpv/G7oVktFG4JWyfXQtXUJ?=
+ =?us-ascii?Q?KkgjlPKBUZkC8GmS71JOfKtFEHrUV31Ep6h1SFuEpFCVfThz0E3sidFRqhtG?=
+ =?us-ascii?Q?UGSWYKs48qlYGQiMOkDYbosLTG8YU/LMpDPBHxm7ukSCPdk31bYoJw4MI/L/?=
+ =?us-ascii?Q?DZMRvRWiXIZwf0cnHsW2bV9haXdgfho9XDhT6/OMnbPvaE50j6INdQB2Z82F?=
+ =?us-ascii?Q?IJpkajurgRWAqjJ4nsuuPVV7ChEGCXR4erISGzJaHkUQylfVqRf0xWGrr2Ei?=
+ =?us-ascii?Q?yGIPMA=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: diasemi.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR10MB4652.EURPRD10.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7f3e83be-bccf-4355-8cf1-08d9f2e069d0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Feb 2022 13:13:11.0569
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 511e3c0e-ee96-486e-a2ec-e272ffa37b7c
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: kxkOPVl31u0e3/s2+Zxm2BH/PP4EfFJNsVCxICzBDz35+It5gVQ1CgkFQZbybjtJf1XU9q+1d8ZeY9vjicWOWw+50/SK81v8n1JmRBfvw2k=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR10MB4160
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This change provides a simple daemon skeleton. It provides an example
-of how to use the thermal library.
+On 13 February 2022 17:55, Christophe JAILLET wrote:
 
-The goal of this skeleton is to give a base brick for anyone
-interested in writing its own thermal engine.
+> This driver only uses managed resources, except for the delayed work, if
+> it is used.
+>=20
+> Use devm_delayed_work_autocancel() to also manage the delayed work.
+> The error handling path of the probe and the remove function can both be
+> removed.
+>=20
+> This saves a few lines of code.
+>=20
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-In the future, it will evolve with more features.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- tools/Makefile                                |  16 +-
- tools/thermal/thermal-engine/Build            |   2 +
- tools/thermal/thermal-engine/Makefile         |  27 ++
- tools/thermal/thermal-engine/thermal-engine.c | 287 ++++++++++++++++++
- 4 files changed, 329 insertions(+), 3 deletions(-)
- create mode 100644 tools/thermal/thermal-engine/Build
- create mode 100644 tools/thermal/thermal-engine/Makefile
- create mode 100644 tools/thermal/thermal-engine/thermal-engine.c
-
-diff --git a/tools/Makefile b/tools/Makefile
-index 78615f8cb463..b71cf39d3c08 100644
---- a/tools/Makefile
-+++ b/tools/Makefile
-@@ -32,6 +32,7 @@ help:
- 	@echo '  spi                    - spi tools'
- 	@echo '  tmon                   - thermal monitoring and tuning tool'
- 	@echo '  thermometer            - temperature capture tool'
-+	@echo '  thermal-engine         - thermal monitoring tool'
- 	@echo '  thermal                - thermal library'
- 	@echo '  tracing                - misc tracing tools'
- 	@echo '  turbostat              - Intel CPU idle stats and freq reporting tool'
-@@ -99,6 +100,9 @@ tmon: FORCE
- thermometer: FORCE
- 	$(call descend,thermal/$@)
- 
-+thermal-engine: FORCE thermal
-+	$(call descend,thermal/$@)
-+
- freefall: FORCE
- 	$(call descend,laptop/$@)
- 
-@@ -109,7 +113,7 @@ all: acpi cgroup counter cpupower gpio hv firewire \
- 		perf selftests bootconfig spi turbostat usb \
- 		virtio vm bpf x86_energy_perf_policy \
- 		tmon freefall iio objtool kvm_stat wmi \
--		pci debugging tracing thermal thermometer
-+		pci debugging tracing thermal thermometer thermal-engine
- 
- acpi_install:
- 	$(call descend,power/$(@:_install=),install)
-@@ -135,6 +139,9 @@ tmon_install:
- thermometer_install:
- 	$(call descend,thermal/$(@:_install=),install)
- 
-+thermal-engine_install:
-+	$(call descend,thermal/$(@:_install=),install)
-+
- freefall_install:
- 	$(call descend,laptop/$(@:_install=),install)
- 
-@@ -147,7 +154,7 @@ install: acpi_install cgroup_install counter_install cpupower_install gpio_insta
- 		virtio_install vm_install bpf_install x86_energy_perf_policy_install \
- 		tmon_install freefall_install objtool_install kvm_stat_install \
- 		wmi_install pci_install debugging_install intel-speed-select_install \
--		tracing_install thermometer_install
-+		tracing_install thermometer_install thermal-engine_install
- 
- acpi_clean:
- 	$(call descend,power/acpi,clean)
-@@ -183,6 +190,9 @@ turbostat_clean x86_energy_perf_policy_clean intel-speed-select_clean:
- thermometer_clean:
- 	$(call descend,thermal/thermometer,clean)
- 
-+thermal-engine_clean:
-+	$(call descend,thermal/thermal-engine,clean)
-+
- tmon_clean:
- 	$(call descend,thermal/tmon,clean)
- 
-@@ -197,6 +207,6 @@ clean: acpi_clean cgroup_clean counter_clean cpupower_clean hv_clean firewire_cl
- 		vm_clean bpf_clean iio_clean x86_energy_perf_policy_clean tmon_clean \
- 		freefall_clean build_clean libbpf_clean libsubcmd_clean \
- 		gpio_clean objtool_clean leds_clean wmi_clean pci_clean firmware_clean debugging_clean \
--		intel-speed-select_clean tracing_clean thermal_clean thermometer_clean
-+		intel-speed-select_clean tracing_clean thermal_clean thermometer_clean thermal-engine_clean
- 
- .PHONY: FORCE
-diff --git a/tools/thermal/thermal-engine/Build b/tools/thermal/thermal-engine/Build
-new file mode 100644
-index 000000000000..0c8b65248c80
---- /dev/null
-+++ b/tools/thermal/thermal-engine/Build
-@@ -0,0 +1,2 @@
-+thermal-engine-y += thermal-engine.o
-+
-diff --git a/tools/thermal/thermal-engine/Makefile b/tools/thermal/thermal-engine/Makefile
-new file mode 100644
-index 000000000000..d4296a331377
---- /dev/null
-+++ b/tools/thermal/thermal-engine/Makefile
-@@ -0,0 +1,27 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# Makefile for thermal tools
-+
-+ifeq ($(srctree),)
-+srctree := $(patsubst %/,%,$(dir $(CURDIR)))
-+srctree := $(patsubst %/,%,$(dir $(srctree)))
-+srctree := $(patsubst %/,%,$(dir $(srctree)))
-+# $(info Determined 'srctree' to be $(srctree))
-+endif
-+
-+CFLAGS = -Wall -Wextra
-+CFLAGS += -I$(srctree)/tools/thermal/lib
-+CFLAGS += -I$(srctree)/tools/lib/thermal/include
-+
-+LDFLAGS = -L$(srctree)/tools/thermal/lib
-+LDFLAGS += -L$(srctree)/tools/lib/thermal
-+LDFLAGS += -lthermal_tools
-+LDFLAGS += -lthermal
-+LDFLAGS += -lconfig
-+LDFLAGS += -lnl-genl-3 -lnl-3
-+
-+all: thermal-engine
-+%: %.c
-+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-+
-+clean:
-+	$(RM) thermal-engine
-diff --git a/tools/thermal/thermal-engine/thermal-engine.c b/tools/thermal/thermal-engine/thermal-engine.c
-new file mode 100644
-index 000000000000..dc468278bb49
---- /dev/null
-+++ b/tools/thermal/thermal-engine/thermal-engine.c
-@@ -0,0 +1,287 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Thermal monitoring tool based on the thermal netlink events.
-+ *
-+ * Copyright (C) 2022 Linaro Ltd.
-+ *
-+ * Author: Daniel Lezcano <daniel.lezcano@kernel.org>
-+ */
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <libgen.h>
-+#include <limits.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <syslog.h>
-+
-+#include <sys/epoll.h>
-+#include <sys/stat.h>
-+#include <sys/types.h>
-+
-+#include <thermal.h>
-+#include "thermal-tools.h"
-+
-+struct options {
-+	int loglevel;
-+	int logopt;
-+	int interactive;
-+};
-+
-+struct thermal_data {
-+	struct thermal_zone *tz;
-+	struct thermal_handler *th;
-+};
-+
-+static int show_trip(struct thermal_trip *tt, __maybe_unused void *arg)
-+{
-+	INFO("trip id=%d, type=%d, temp=%d, hyst=%d\n",
-+	     tt->id, tt->type, tt->temp, tt->hyst);
-+
-+	return 0;
-+}		
-+
-+static int show_temp(struct thermal_zone *tz, __maybe_unused void *arg)
-+{
-+	thermal_cmd_get_temp(arg, tz);
-+
-+	INFO("temperature: %d\n", tz->temp);
-+
-+	return 0;
-+}
-+
-+static int show_governor(struct thermal_zone *tz, __maybe_unused void *arg)
-+{
-+	thermal_cmd_get_governor(arg, tz);
-+
-+	INFO("governor: '%s'\n", tz->governor);
-+	
-+	return 0;
-+}
-+
-+static int show_tz(struct thermal_zone *tz, __maybe_unused void *arg)
-+{
-+	INFO("thermal zone '%s', id=%d\n", tz->name, tz->id);
-+
-+	for_each_thermal_trip(tz->trip, show_trip, NULL);
-+
-+	show_temp(tz, arg);
-+	
-+	show_governor(tz, arg);
-+	
-+	return 0;
-+}
-+
-+static int tz_create(const char *name, int tz_id, __maybe_unused void *arg)
-+{
-+	INFO("Thermal zone '%s'/%d created\n", name, tz_id);
-+
-+	return 0;
-+}
-+
-+static int tz_delete(int tz_id, __maybe_unused void *arg)
-+{
-+	INFO("Thermal zone %d deleted\n", tz_id);
-+
-+	return 0;
-+}
-+
-+static int tz_disable(int tz_id, void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("Thermal zone %d ('%s') disabled\n", tz_id, tz->name);
-+
-+	return 0;
-+}
-+
-+static int tz_enable(int tz_id, void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("Thermal zone %d ('%s') enabled\n", tz_id, tz->name);
-+
-+	return 0;
-+}
-+
-+static int trip_high(int tz_id, int trip_id, int temp, void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("Thermal zone %d ('%s'): trip point %d crossed way up with %d °C\n",
-+	     tz_id, tz->name, trip_id, temp);
-+
-+	return 0;
-+}
-+
-+static int trip_low(int tz_id, int trip_id, int temp, void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("Thermal zone %d ('%s'): trip point %d crossed way down with %d °C\n",
-+	     tz_id, tz->name, trip_id, temp);
-+
-+	return 0;
-+}
-+
-+static int trip_add(int tz_id, int trip_id, int type, int temp, int hyst, __maybe_unused void *arg)
-+{
-+	INFO("Trip point added %d: id=%d, type=%d, temp=%d, hyst=%d\n",
-+	     tz_id, trip_id, type, temp, hyst);
-+
-+	return 0;
-+}
-+
-+static int trip_delete(int tz_id, int trip_id, __maybe_unused void *arg)
-+{
-+	INFO("Trip point deleted %d: id=%d\n", tz_id, trip_id);
-+
-+	return 0;
-+}
-+
-+static int trip_change(int tz_id, int trip_id, int type, int temp, int hyst, __maybe_unused void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("Trip point changed %d: id=%d, type=%d, temp=%d, hyst=%d\n",
-+	     tz_id, trip_id, type, temp, hyst);
-+
-+	tz->trip[trip_id].type = type;
-+	tz->trip[trip_id].temp = temp;
-+	tz->trip[trip_id].hyst = hyst;
-+
-+	return 0;
-+}
-+
-+static int cdev_add(const char *name, int cdev_id, int max_state, __maybe_unused void *arg)
-+{
-+	INFO("Cooling device '%s'/%d (max state=%d) added\n", name, cdev_id, max_state);
-+
-+	return 0;
-+}
-+
-+static int cdev_delete(int cdev_id, __maybe_unused void *arg)
-+{
-+	INFO("Cooling device %d deleted", cdev_id);
-+
-+	return 0;
-+}
-+
-+static int cdev_update(int cdev_id, int cur_state, __maybe_unused void *arg)
-+{
-+	INFO("cdev:%d state:%d\n", cdev_id, cur_state);
-+
-+	return 0;
-+}
-+
-+static int gov_change(int tz_id, const char *name, __maybe_unused void *arg)
-+{
-+	struct thermal_data *td = arg;
-+	struct thermal_zone *tz = thermal_zone_find_by_id(td->tz, tz_id);
-+
-+	INFO("%s: governor changed %s -> %s\n", tz->name, tz->governor, name);
-+
-+	strcpy(tz->governor, name);
-+
-+	return 0;
-+}
-+
-+static struct thermal_ops ops = {
-+	.events.tz_create	= tz_create,
-+	.events.tz_delete	= tz_delete,
-+	.events.tz_disable	= tz_disable,
-+	.events.tz_enable	= tz_enable,
-+	.events.trip_high	= trip_high,
-+	.events.trip_low	= trip_low,
-+	.events.trip_add	= trip_add,
-+	.events.trip_delete	= trip_delete,
-+	.events.trip_change	= trip_change,
-+	.events.cdev_add	= cdev_add,
-+	.events.cdev_delete	= cdev_delete,
-+	.events.cdev_update	= cdev_update,
-+	.events.gov_change	= gov_change
-+};
-+
-+static int thermal_event(__maybe_unused int fd, __maybe_unused void *arg)
-+{
-+	struct thermal_data *td = arg;
-+
-+	return thermal_events_handle(td->th, td);
-+}
-+
-+static int options_init(int argc, char *argv[], struct options *options)
-+{
-+	int opt;
-+	
-+	while ((opt = getopt(argc, argv, "sl:")) != -1) {
-+               switch (opt) {
-+	       case 'l':
-+		       options->loglevel = log_str2level(optarg);
-+		       break;
-+	       case 's':
-+		       options->logopt |= TO_STDOUT;
-+		       break;
-+               default: /* '?' */
-+		       ERROR("Usage: %s \n", argv[0]);
-+		       return -1;
-+               }
-+	}
-+
-+	return 0;
-+}
-+
-+enum {
-+	THERMAL_ENGINE_SUCCESS = 0,
-+	THERMAL_ENGINE_OPTION_ERROR,
-+	THERMAL_ENGINE_DAEMON_ERROR,
-+	THERMAL_ENGINE_LOG_ERROR,
-+	THERMAL_ENGINE_THERMAL_ERROR,
-+	THERMAL_ENGINE_MAINLOOP_ERROR,
-+};
-+
-+int main(int argc, char *argv[])
-+{
-+	struct thermal_data td;
-+	struct options options = {
-+		.loglevel = LOG_DEBUG,
-+		.logopt = LOG_SYSLOG
-+	};
-+
-+	if (options_init(argc, argv, &options))
-+		return THERMAL_ENGINE_OPTION_ERROR;
-+
-+	if (!(options.logopt & TO_STDOUT) && daemon(0, 0))
-+		return THERMAL_ENGINE_DAEMON_ERROR;
-+	
-+	if (log_init(options.loglevel, basename(argv[0]), options.logopt))
-+		return THERMAL_ENGINE_LOG_ERROR;
-+
-+	td.th = thermal_init(&ops);
-+	if (!td.th)
-+		return THERMAL_ENGINE_THERMAL_ERROR;
-+
-+	td.tz = thermal_zone_discover(td.th);
-+	if (!td.tz)
-+		return THERMAL_ENGINE_THERMAL_ERROR;
-+
-+	for_each_thermal_zone(td.tz, show_tz, td.th);
-+	
-+	if (mainloop_init())
-+		return THERMAL_ENGINE_MAINLOOP_ERROR;
-+
-+	if (mainloop_add(thermal_events_fd(td.th), thermal_event, &td))
-+		return THERMAL_ENGINE_MAINLOOP_ERROR;
-+
-+	if (mainloop(-1))
-+		return THERMAL_ENGINE_MAINLOOP_ERROR;
-+
-+	return THERMAL_ENGINE_SUCCESS;
-+}
--- 
-2.25.1
-
+Reviewed-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
