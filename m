@@ -2,31 +2,30 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C4EBC433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 06:41:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE13C43217
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 06:41:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345480AbiBUGlV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Feb 2022 01:41:21 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41646 "EHLO
+        id S243756AbiBUGlX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Feb 2022 01:41:23 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:42044 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345446AbiBUGko (ORCPT
+        with ESMTP id S1345377AbiBUGko (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Feb 2022 01:40:44 -0500
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B9AF43ECC;
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22C64443D1;
         Sun, 20 Feb 2022 22:39:46 -0800 (PST)
-X-UUID: 236ef30850a04124af3f1effd64e93bc-20220221
-X-UUID: 236ef30850a04124af3f1effd64e93bc-20220221
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
+X-UUID: 41e69ec60373412db8bb90b98bef808b-20220221
+X-UUID: 41e69ec60373412db8bb90b98bef808b-20220221
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
         (envelope-from <roger.lu@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 537259538; Mon, 21 Feb 2022 14:39:41 +0800
+        with ESMTP id 303966659; Mon, 21 Feb 2022 14:39:41 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Mon, 21 Feb 2022 14:39:39 +0800
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Mon, 21 Feb 2022 14:39:40 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 21 Feb 2022 14:39:39 +0800
+ Transport; Mon, 21 Feb 2022 14:39:40 +0800
 From:   Roger Lu <roger.lu@mediatek.com>
 To:     Matthias Brugger <matthias.bgg@gmail.com>,
         Enric Balletbo Serra <eballetbo@gmail.com>,
@@ -49,10 +48,12 @@ CC:     Fan Chen <fan.chen@mediatek.com>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Guenter Roeck <linux@roeck-us.net>,
         Jia-wei Chang <jia-wei.chang@mediatek.com>
-Subject: [PATCH v23 0/7] soc: mediatek: SVS: introduce MTK SVS
-Date:   Mon, 21 Feb 2022 14:39:32 +0800
-Message-ID: <20220221063939.14969-1-roger.lu@mediatek.com>
+Subject: [PATCH v23 2/7] arm64: dts: mt8183: add svs device information
+Date:   Mon, 21 Feb 2022 14:39:34 +0800
+Message-ID: <20220221063939.14969-3-roger.lu@mediatek.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220221063939.14969-1-roger.lu@mediatek.com>
+References: <20220221063939.14969-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -60,40 +61,48 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Smart Voltage Scaling(SVS) engine is a piece of hardware
-which calculates suitable SVS bank voltages to OPP voltage table.
-Then, DVFS driver could apply those SVS bank voltages to PMIC/Buck
-when receiving OPP_EVENT_ADJUST_VOLTAGE.
+Add compatible/reg/irq/clock/efuse setting in svs node.
 
-1. SVS driver uses OPP adjust event in [1] to update OPP table voltage part.
-2. SVS driver gets thermal/GPU device by node [2][3] and CPU device by get_cpu_device().
-After retrieving subsys device, SVS driver calls device_link_add() to make sure probe/suspend callback priority.
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+Acked-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=25cb20a212a1f989385dfe23230817e69c62bee5
-[2] https://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git/commit/?h=opp/linux-next&id=b325ce39785b1408040d90365a6ab1aa36e94f87
-[3] https://git.kernel.org/pub/scm/linux/kernel/git/matthias.bgg/linux.git/commit/?h=v5.16-next/dts64&id=a8168cebf1bca1b5269e8a7eb2626fb76814d6e2
-
-change since v22:
-- Make "svsb_volt = max(svsb->volt[i] + temp_voffset, svsb->vmin);" become one line.
-- Remove voffset read/write commands for better system safety.
-- Add more comments on @turn_freq_base.
-
-Roger Lu (7):
-  [v23,1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
-  [v23,2/7] arm64: dts: mt8183: add svs device information
-  [v23,3/7] soc: mediatek: SVS: introduce MTK SVS engine
-  [v23,4/7] soc: mediatek: SVS: add monitor mode
-  [v23,5/7] soc: mediatek: SVS: add debug commands
-  [v23,6/7] dt-bindings: soc: mediatek: add mt8192 svs dt-bindings
-  [v23,7/7] soc: mediatek: SVS: add mt8192 SVS GPU driver
-
- .../bindings/soc/mediatek/mtk-svs.yaml        |   91 +
- arch/arm64/boot/dts/mediatek/mt8183.dtsi      |   16 +
- drivers/soc/mediatek/Kconfig                  |   10 +
- drivers/soc/mediatek/Makefile                 |    1 +
- drivers/soc/mediatek/mtk-svs.c                | 2398 +++++++++++++++++
- 5 files changed, 2516 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
- create mode 100644 drivers/soc/mediatek/mtk-svs.c
-
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 00f2ddd245e1..e1a3b63f4250 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -807,6 +807,18 @@
+ 			status = "disabled";
+ 		};
+ 
++		svs: svs@1100b000 {
++			compatible = "mediatek,mt8183-svs";
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
++			clocks = <&infracfg CLK_INFRA_THERM>;
++			clock-names = "main";
++			nvmem-cells = <&svs_calibration>,
++				      <&thermal_calibration>;
++			nvmem-cell-names = "svs-calibration-data",
++					   "t-calibration-data";
++		};
++
+ 		thermal: thermal@1100b000 {
+ 			#thermal-sensor-cells = <1>;
+ 			compatible = "mediatek,mt8183-thermal";
+@@ -1325,6 +1337,10 @@
+ 			mipi_tx_calibration: calib@190 {
+ 				reg = <0x190 0xc>;
+ 			};
++
++			svs_calibration: calib@580 {
++				reg = <0x580 0x64>;
++			};
+ 		};
+ 
+ 		u3phy: t-phy@11f40000 {
+-- 
+2.18.0
 
