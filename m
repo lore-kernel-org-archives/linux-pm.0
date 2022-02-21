@@ -2,153 +2,156 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 650EDC433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 16:09:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5ABA4C433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 16:47:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379891AbiBUQJc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Feb 2022 11:09:32 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:58734 "EHLO
+        id S1381216AbiBUQsQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Feb 2022 11:48:16 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:35276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232866AbiBUQJc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Feb 2022 11:09:32 -0500
-Received: from mail-yb1-f169.google.com (mail-yb1-f169.google.com [209.85.219.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C973117ABB;
-        Mon, 21 Feb 2022 08:09:08 -0800 (PST)
-Received: by mail-yb1-f169.google.com with SMTP id w63so14105881ybe.10;
-        Mon, 21 Feb 2022 08:09:08 -0800 (PST)
+        with ESMTP id S1381217AbiBUQsP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Feb 2022 11:48:15 -0500
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5922237D3;
+        Mon, 21 Feb 2022 08:47:50 -0800 (PST)
+Received: by mail-ej1-f41.google.com with SMTP id p14so34694196ejf.11;
+        Mon, 21 Feb 2022 08:47:50 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=UPYIn5XH+Em7FNXY5/X3cEIDgDhAxKowlxKqkc3z4TQ=;
-        b=nHtcdIWaI9nm+NaG1XfQh1eN8+usbpPzEOjeNe9TA9XuQitiQ/qvKHodxGb6/Rxie7
-         7C7oQniWOgGcJdItTxCyjAooToPRK0G4We/gcWuk+EtI0+5FkBVEnAq9WLy2KrTaGR6k
-         QUgBiPvgLMOC0vOd7FhtprVFXcuxTKigPCwU2eJiQ+Ha2wKTy4qWnAeagkaq37v/7ILB
-         9UD1e/Drxb5aPgwOrtb6siAC5s8FV4yPmD3QKw1vyMk8afsEUKnJd3Yi4a4Xnd/tsA8H
-         ErxIGtefwdiwlDPN/uqOk+rM1AeUYBmFzWXFotquqkIT/VJGJLBr6hiWAX6D/USWKGDG
-         g74A==
-X-Gm-Message-State: AOAM530FMDTV+RP5y9fSuFTOazgQQ/1Ym0neGTbkF+18KWu3YJqlZLWw
-        mL0M1eIuYN7kcGspVih8UDkB/IcUPDCc4SK7CQk=
-X-Google-Smtp-Source: ABdhPJxCMRPqJ4fex71EVtbTpYHpZhtL3689hPo+XpK5QiFhRPKh4Gio7k8CZx14XtU5ACTiHyDwZRueeQzB/GM1b4I=
-X-Received: by 2002:a25:7d81:0:b0:624:43b7:ed70 with SMTP id
- y123-20020a257d81000000b0062443b7ed70mr14262808ybc.365.1645459748028; Mon, 21
- Feb 2022 08:09:08 -0800 (PST)
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=mZ7odzxcmDDBexe3fFOiFTjovI32DikZ8MnOePBH+K0=;
+        b=w55BJ08KXCDc2Sipb2qmL3L9V6KJzglK+gEAtA1pD85LjdNzIIFdIxQ6iXIyZbkYWn
+         4KYFEO2fhcDBYbt0xAQsOzC/tkHT384JDdEVpDDz+zCusCmKWdr5X9Y91KDfGVZa9Mu0
+         uwv9CirEK1cD4JTkZjLv0K8XOG5tq37Sh/RYaD8vq/rflClPRfatQibT9J5V0+d/HmaA
+         GorR1YOQT9fIfCJDHOUrVucavXtUiw2GlT4cUs95pq8J4WpqIujEo8Ejkezmu5TocHUn
+         SCAbONlMNHfMp+XH8Utua4xb9LG+iTA2zQN6dgoOyyndNGpSNfy8Ad/Neh/UWG/5n64l
+         bYeQ==
+X-Gm-Message-State: AOAM530mTZzjVwHU1x8wGQ1qQ9dfTDwWEyMMwLqlUFriMwSLkA23ndh/
+        9n/laPZIS8H8snpeUyKNfZs=
+X-Google-Smtp-Source: ABdhPJz1lfB8HRKxtm3xhZlXPU6kX8QkEphtvOWWgrhPcuihASzwLyN2YObNMVXiCsJ4gYVIAHfqxQ==
+X-Received: by 2002:a17:906:4752:b0:6ce:61d9:b632 with SMTP id j18-20020a170906475200b006ce61d9b632mr17067189ejs.694.1645462069126;
+        Mon, 21 Feb 2022 08:47:49 -0800 (PST)
+Received: from [192.168.0.122] (xdsl-188-155-181-108.adslplus.ch. [188.155.181.108])
+        by smtp.googlemail.com with ESMTPSA id 5sm5529448ejl.32.2022.02.21.08.47.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Feb 2022 08:47:47 -0800 (PST)
+Message-ID: <394261d1-f1df-e80d-3591-10f2d649e731@kernel.org>
+Date:   Mon, 21 Feb 2022 17:47:46 +0100
 MIME-Version: 1.0
-References: <20220220060053.13647-1-tangmeng@uniontech.com>
-In-Reply-To: <20220220060053.13647-1-tangmeng@uniontech.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 21 Feb 2022 17:08:52 +0100
-Message-ID: <CAJZ5v0gowqO1fTdDYqhRJ38bSMpKb8bUFE-=P7GSmVaFdeVyDg@mail.gmail.com>
-Subject: Re: [PATCH 05/11] kernel/acpi: move acpi_video_flags sysctl to its
- own file
-To:     tangmeng <tangmeng@uniontech.com>
-Cc:     "Luis R. Rodriguez" <mcgrof@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Iurii Zaikin <yzaikin@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-fsdevel@vger.kernel.org, nizhen@uniontech.com,
-        zhanglianjie@uniontech.com, nixiaoming@huawei.com,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v5] cpuidle: sunplus: Create cpuidle driver for sunplus
+ sp7021
+Content-Language: en-US
+To:     Edwin Chiu <edwinchiu0505tw@gmail.com>, edwin.chiu@sunplus.com,
+        robh+dt@kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
+References: <cover.1645427180.git.edwinchiu0505tw@gmail.com>
+ <1628e048220f066204b8ac27f3cedf7f3cc02963.1645427180.git.edwinchiu0505tw@gmail.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+In-Reply-To: <1628e048220f066204b8ac27f3cedf7f3cc02963.1645427180.git.edwinchiu0505tw@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Feb 20, 2022 at 7:01 AM tangmeng <tangmeng@uniontech.com> wrote:
->
-> kernel/sysctl.c is a kitchen sink where everyone leaves their dirty
-> dishes, this makes it very difficult to maintain.
->
-> To help with this maintenance let's start by moving sysctls to places
-> where they actually belong.  The proc sysctl maintainers do not want to
-> know what sysctl knobs you wish to add for your own piece of code, we
-> just care about the core logic.
->
-> All filesystem syctls now get reviewed by fs folks. This commit
-> follows the commit of fs, move the acpi_video_flags sysctl to its
-> own file, arch/x86/kernel/acpi/sleep.c.
->
-> Signed-off-by: tangmeng <tangmeng@uniontech.com>
-
-Do you want me to take this or does it depend on the rest of the series?
-
+On 21/02/2022 08:26, Edwin Chiu wrote:
+> Create cpuidle driver for sunplus sp7021 chip
+> 
+> Signed-off-by: Edwin Chiu <edwinchiu0505tw@gmail.com>
 > ---
->  arch/x86/kernel/acpi/sleep.c | 21 ++++++++++++++++++++-
->  include/linux/acpi.h         |  1 -
->  kernel/sysctl.c              |  9 ---------
->  3 files changed, 20 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-> index 1e97f944b47d..256f3c065605 100644
-> --- a/arch/x86/kernel/acpi/sleep.c
-> +++ b/arch/x86/kernel/acpi/sleep.c
-> @@ -20,7 +20,26 @@
->  #include "../../realmode/rm/wakeup.h"
->  #include "sleep.h"
->
-> -unsigned long acpi_realmode_flags;
-> +static unsigned long acpi_realmode_flags;
-> +#ifdef CONFIG_SYSCTL
-> +static struct ctl_table kern_acpi_table[] = {
-> +       {
-> +               .procname       = "acpi_video_flags",
-> +               .data           = &acpi_realmode_flags,
-> +               .maxlen         = sizeof(unsigned long),
-> +               .mode           = 0644,
-> +               .proc_handler   = proc_doulongvec_minmax,
-> +       },
-> +       { }
-> +};
+> Changes in v3
+>  - Rearrangement #include sequence
+>  - Change remark style to /*~*/
+>  - Align author email address to same as sob
+>  - Optimal code
+> Changes in v4
+>  - According Rob Herringrobh's comment
+>    There is no need for this binding.
+>    Just wanting a different driver is not a reason
+>    for a duplicate schema.
+>    So remove yaml file and submit driver again.
+> Changes in v5
+>  - According Krzysztof's comment
+>    You either use appropriate compatible in DT
+>    or add your compatible to cpuidle-arm.
+>    Even if this did not work, then the solution is to
+>    use common parts, not to duplicate entire driver.
+>    According Sudeep's comment
+>    In short NACK for any dedicated driver for this platform,
+>    use the generic cpuidle-arm driver with appropriate platform hooks
+>    Create cpuidle-sunplus.c in arch/arm/mach-sunplus/
+>    for hook generic cpuidle-arm driver
+> 
+>  MAINTAINERS                                   |  6 ++
+>  arch/arm/mach-sunplus/cpuidle-sunplus.c       | 88 +++++++++++++++++
+>  include/linux/platform_data/cpuidle-sunplus.h | 12 ++++
+>  3 files changed, 106 insertions(+)
+>  create mode 100644 arch/arm/mach-sunplus/cpuidle-sunplus.c
+>  create mode 100644 include/linux/platform_data/cpuidle-sunplus.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index e0dca8f..5c96428 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -18252,6 +18252,12 @@ L:	netdev@vger.kernel.org
+>  S:	Maintained
+>  F:	drivers/net/ethernet/dlink/sundance.c
+>  
+> +SUNPLUS CPUIDLE DRIVER
+> +M:	Edwin Chiu <edwinchiu0505tw@gmail.com>
+> +S:	Maintained
+> +F:	arch/arm/mach-sunplus/cpuidle-sunplus.c
+> +F:	include/linux/platform_data/cpuidle-sunplus.h
 > +
-> +static __init int kernel_acpi_sysctls_init(void)
+>  SUPERH
+>  M:	Yoshinori Sato <ysato@users.sourceforge.jp>
+>  M:	Rich Felker <dalias@libc.org>
+> diff --git a/arch/arm/mach-sunplus/cpuidle-sunplus.c b/arch/arm/mach-sunplus/cpuidle-sunplus.c
+> new file mode 100644
+> index 0000000..e9d9738
+> --- /dev/null
+> +++ b/arch/arm/mach-sunplus/cpuidle-sunplus.c
+> @@ -0,0 +1,88 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * SP7021 cpu idle Driver.
+> + * Copyright (C) Sunplus Tech / Tibbo Tech.
+> + */
+> +#define pr_fmt(fmt) "CPUidle arm: " fmt
+> +
+> +#include <linux/cpuidle.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_data/cpuidle-sunplus.h>
+> +
+> +#include <asm/cpuidle.h>
+> +
+> +typedef int (*idle_fn)(void);
+> +
+> +static DEFINE_PER_CPU(idle_fn*, sp7021_idle_ops);
+> +
+> +static int sp7021_cpuidle_enter(unsigned long index)
 > +{
-> +       register_sysctl_init("kernel", kern_acpi_table);
-> +       return 0;
+> +	return __this_cpu_read(sp7021_idle_ops)[index]();
 > +}
-> +late_initcall(kernel_acpi_sysctls_init);
-> +#endif /* CONFIG_SYSCTL */
->
->  #if defined(CONFIG_SMP) && defined(CONFIG_64BIT)
->  static char temp_stack[4096];
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 6274758648e3..4f1d9cf579f5 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -349,7 +349,6 @@ static inline bool acpi_sci_irq_valid(void)
->  }
->
->  extern int sbf_port;
-> -extern unsigned long acpi_realmode_flags;
->
->  int acpi_register_gsi (struct device *dev, u32 gsi, int triggering, int polarity);
->  int acpi_gsi_to_irq (u32 gsi, unsigned int *irq);
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index e6d99bbf9a9d..62499e3207aa 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1973,15 +1973,6 @@ static struct ctl_table kern_table[] = {
->                 .proc_handler   = proc_dointvec,
->         },
->  #endif
-> -#if    defined(CONFIG_ACPI_SLEEP) && defined(CONFIG_X86)
-> -       {
-> -               .procname       = "acpi_video_flags",
-> -               .data           = &acpi_realmode_flags,
-> -               .maxlen         = sizeof (unsigned long),
-> -               .mode           = 0644,
-> -               .proc_handler   = proc_doulongvec_minmax,
-> -       },
-> -#endif
->  #ifdef CONFIG_SYSCTL_ARCH_UNALIGN_NO_WARN
->         {
->                 .procname       = "ignore-unaligned-usertrap",
-> --
-> 2.20.1
->
->
->
+> +static int sp7021_cpu_spc(void)
+> +{
+> +	cpu_v7_do_idle();   /* idle to WFI */
+> +	return 0;
+> +}
+> +static const struct of_device_id sp7021_idle_state_match[] = {
+> +	{ .compatible = "arm,idle-state", .data = sp7021_cpu_spc },
+> +	{ },
+> +};
+
+This is confusing. You want to have two drivers to bind to the same
+compatible? As I wrote in the previous messages, you should simply use
+arm,idle-state just like few other architectures.
+
+
+Best regards,
+Krzysztof
