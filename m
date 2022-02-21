@@ -2,167 +2,106 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FD2FC4321E
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 06:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFE0C43217
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Feb 2022 07:26:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245319AbiBUGlw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Feb 2022 01:41:52 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41918 "EHLO
+        id S1346109AbiBUH0a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Feb 2022 02:26:30 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:39364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345421AbiBUGko (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Feb 2022 01:40:44 -0500
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A01543ADE;
-        Sun, 20 Feb 2022 22:39:45 -0800 (PST)
-X-UUID: 941181af1daf405c80fe14a8f5cad3c0-20220221
-X-UUID: 941181af1daf405c80fe14a8f5cad3c0-20220221
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
-        (envelope-from <roger.lu@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 975457412; Mon, 21 Feb 2022 14:39:41 +0800
-Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Mon, 21 Feb 2022 14:39:40 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
- (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 21 Feb
- 2022 14:39:40 +0800
-Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 21 Feb 2022 14:39:39 +0800
-From:   Roger Lu <roger.lu@mediatek.com>
-To:     Matthias Brugger <matthias.bgg@gmail.com>,
-        Enric Balletbo Serra <eballetbo@gmail.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Nicolas Boichat <drinkcat@google.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Philipp Zabel <p.zabel@pengutronix.de>
-CC:     Fan Chen <fan.chen@mediatek.com>,
-        HenryC Chen <HenryC.Chen@mediatek.com>,
-        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
-        Charles Yang <Charles.Yang@mediatek.com>,
-        Angus Lin <Angus.Lin@mediatek.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jia-wei Chang <jia-wei.chang@mediatek.com>
-Subject: [PATCH v23 1/7] dt-bindings: soc: mediatek: add mtk svs dt-bindings
-Date:   Mon, 21 Feb 2022 14:39:33 +0800
-Message-ID: <20220221063939.14969-2-roger.lu@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220221063939.14969-1-roger.lu@mediatek.com>
-References: <20220221063939.14969-1-roger.lu@mediatek.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+        with ESMTP id S1346101AbiBUH03 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Feb 2022 02:26:29 -0500
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17CB4B0;
+        Sun, 20 Feb 2022 23:26:06 -0800 (PST)
+Received: by mail-pj1-x102d.google.com with SMTP id q8-20020a17090a178800b001bc299b8de1so3020783pja.1;
+        Sun, 20 Feb 2022 23:26:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=/v5S5vNuug3GOI4emxMXAStkqzv+r74zEqj6r8qlq6I=;
+        b=R1ZftL6146zTkxfAwi5L1mAFrxX09JqfgAFZX0hBlUUSA4+vlJsLu9Tk9PHkpuWOTE
+         qUIc+VXUrzEElhqpWCpWF9PXphAo3wSyDyoFeHQNR7vD71ryPLZDA61Agyiuqk/L6p8N
+         Es8qKjtlfK/QywMQPoOqm/a9rs9+Y0u2c9KesfQ1PMVQqZPfSRZe9/LbdgL+4XDaE7cJ
+         M/4QceNEaW8NvExob1XDcJFiOxlg0OQn7J9+7PEQtta8UbuUuxRlXL2pHHjEDsquZR42
+         1TZpAzeUj6sQtH93j3lmS2fcVxw4UewxQz1hRP6pKsWzKd/C3cSjijRANrzWenomTtff
+         8L6A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=/v5S5vNuug3GOI4emxMXAStkqzv+r74zEqj6r8qlq6I=;
+        b=7oiqUDWz3hm/D0JCPPYb6si4360yZKyEaRnJzr7chByRo3XtDE+TwcHqPWJQc37Oen
+         9UDW1TktacfiTu45kZWOAl+6s++HHd/2VBS+CWYkkEK5EgF9xO8KOihAV2/QtCRWpEdy
+         UILC9Et8K/rUgP9PJue9P5SppdSnoHIW3vCKSVIoPqbdXiMjWTKs0uWo86kcVJojGakF
+         zg0NsjVKiNGisfLTi+weI0EDhvdQFd+R8rCOXvqrAQZ3UojBbP5jvTdJH5pyc/SjGzr9
+         4o2A37no28s1h+ySreOUoWHB5HuNdQLQ1tWigH7xvWznkvxl1DOJfRxjUQ7sHJxgh0to
+         YIAQ==
+X-Gm-Message-State: AOAM530JXqozVpTNjN1YYMxzxBk3P8nf6+sRRgKHxhfHZFMtYqdgxhul
+        PA6rZEzaiYye2RlLaPW3qHL0/x8JRvHtxg==
+X-Google-Smtp-Source: ABdhPJxnvwUiR223tT4jiy6N9TvQeZ2QJuyj6jVsRKtSW/aZ7FMu1qC5OTnbZyhJvtTM3E1oFQBgqQ==
+X-Received: by 2002:a17:902:bf06:b0:14d:8c72:96c6 with SMTP id bi6-20020a170902bf0600b0014d8c7296c6mr18080104plb.156.1645428365536;
+        Sun, 20 Feb 2022 23:26:05 -0800 (PST)
+Received: from scdiu3.sunplus.com ([113.196.136.192])
+        by smtp.googlemail.com with ESMTPSA id q21sm11558094pfu.188.2022.02.20.23.26.03
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 20 Feb 2022 23:26:04 -0800 (PST)
+From:   Edwin Chiu <edwinchiu0505tw@gmail.com>
+To:     edwin.chiu@sunplus.com, robh+dt@kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        rafael@kernel.org, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org
+Cc:     Edwin Chiu <edwinchiu0505tw@gmail.com>
+Subject: [PATCH v5] Add cpuidle driver for Sunplus SP7021
+Date:   Mon, 21 Feb 2022 15:26:17 +0800
+Message-Id: <cover.1645427180.git.edwinchiu0505tw@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the binding for enabling mtk svs on MediaTek SoC.
+This is a patch series for cpuidle driver for Sunplus SP7021 SoC.
 
-Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/soc/mediatek/mtk-svs.yaml        | 83 +++++++++++++++++++
- 1 file changed, 83 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
+Sunplus SP7021 is an ARM Cortex A7 (4 cores) based SoC. It integrates
+many peripherals (ex: UART, I2C, SPI, SDIO, eMMC, USB, SD card and 
+etc.) into a single chip. It is designed for industrial control.
 
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-new file mode 100644
-index 000000000000..dfd275f4973c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/mediatek/mtk-svs.yaml
-@@ -0,0 +1,83 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/mediatek/mtk-svs.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Mediatek Smart Voltage Scaling (SVS) Device Tree Bindings
-+
-+maintainers:
-+  - Roger Lu <roger.lu@mediatek.com>
-+  - Matthias Brugger <matthias.bgg@gmail.com>
-+  - Kevin Hilman <khilman@kernel.org>
-+
-+description: |+
-+  The SVS engine is a piece of hardware which has several
-+  controllers(banks) for calculating suitable voltage to
-+  different power domains(CPU/GPU/CCI) according to
-+  chip process corner, temperatures and other factors. Then DVFS
-+  driver could apply SVS bank voltage to PMIC/Buck.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - mediatek,mt8183-svs
-+
-+  reg:
-+    maxItems: 1
-+    description: Address range of the MTK SVS controller.
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+    description: Main clock for MTK SVS controller to work.
-+
-+  clock-names:
-+    const: main
-+
-+  nvmem-cells:
-+    minItems: 1
-+    description:
-+      Phandle to the calibration data provided by a nvmem device.
-+    items:
-+      - description: SVS efuse for SVS controller
-+      - description: Thermal efuse for SVS controller
-+
-+  nvmem-cell-names:
-+    items:
-+      - const: svs-calibration-data
-+      - const: t-calibration-data
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - clocks
-+  - clock-names
-+  - nvmem-cells
-+  - nvmem-cell-names
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/mt8183-clk.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+
-+        svs@1100b000 {
-+            compatible = "mediatek,mt8183-svs";
-+            reg = <0 0x1100b000 0 0x1000>;
-+            interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW>;
-+            clocks = <&infracfg CLK_INFRA_THERM>;
-+            clock-names = "main";
-+            nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
-+            nvmem-cell-names = "svs-calibration-data", "t-calibration-data";
-+        };
-+    };
+Refer to:
+https://sunplus-tibbo.atlassian.net/wiki/spaces/doc/overview
+https://tibbo.com/store/plus1.html
+
+Changes in v3
+ - Rearrangement #include sequence
+ - Change remark style to /*~*/
+ - Align author email address to same as sob
+ - Optimal code
+Changes in v4
+ - According Rob Herringrobh's comment
+   There is no need for this binding.
+   Just wanting a different driver is not a reason
+   for a duplicate schema.
+   So remove yaml file and submit driver again.
+Changes in v5
+ - According Krzysztof's comment
+   You either use appropriate compatible in DT
+   or add your compatible to cpuidle-arm.
+   Even if this did not work, then the solution is to
+   use common parts, not to duplicate entire driver.
+   According Sudeep's comment
+   In short NACK for any dedicated driver for this platform,
+   use the generic cpuidle-arm driver with appropriate platform hooks
+   Create cpuidle-sunplus.c in arch/arm/mach-sunplus/
+   for hook generic cpuidle-arm driver
+
+Edwin Chiu (1):
+  cpuidle: sunplus: Create cpuidle driver for sunplus sp7021
+
+ MAINTAINERS                                   |  6 ++
+ arch/arm/mach-sunplus/cpuidle-sunplus.c       | 88 +++++++++++++++++
+ include/linux/platform_data/cpuidle-sunplus.h | 12 ++++
+ 3 files changed, 106 insertions(+)
+ create mode 100644 arch/arm/mach-sunplus/cpuidle-sunplus.c
+ create mode 100644 include/linux/platform_data/cpuidle-sunplus.h
+
 -- 
-2.18.0
+2.7.4
 
