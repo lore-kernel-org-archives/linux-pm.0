@@ -2,88 +2,74 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B02C4C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Feb 2022 11:23:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E72C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Feb 2022 14:08:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231671AbiBVLXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Feb 2022 06:23:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49314 "EHLO
+        id S232651AbiBVOJR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Feb 2022 09:09:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44998 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229705AbiBVLXd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Feb 2022 06:23:33 -0500
+        with ESMTP id S230163AbiBVOJR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Feb 2022 09:09:17 -0500
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8524812E15E;
-        Tue, 22 Feb 2022 03:23:07 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AB59614ACAB;
+        Tue, 22 Feb 2022 06:08:51 -0800 (PST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4E953106F;
-        Tue, 22 Feb 2022 03:23:07 -0800 (PST)
-Received: from [10.57.9.152] (unknown [10.57.9.152])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 54DAA3F70D;
-        Tue, 22 Feb 2022 03:23:05 -0800 (PST)
-Message-ID: <8e594ef8-1a50-4b74-9bd7-f848593588a7@arm.com>
-Date:   Tue, 22 Feb 2022 11:23:03 +0000
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [RFC][PATCH 1/2] dt-bindings: power: add Energy Model bindings
-Content-Language: en-US
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
-        rafael@kernel.org, daniel.lezcano@linaro.org, nm@ti.com,
-        sboyd@kernel.org, mka@chromium.org, dianders@chromium.org,
-        robh+dt@kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20220221225131.15836-1-lukasz.luba@arm.com>
- <20220221225131.15836-2-lukasz.luba@arm.com>
- <20220222030337.ijnfrh367illmidr@vireshk-i7>
- <147e48e5-e310-cd8f-ba8c-ff32e3094be3@arm.com>
- <20220222094547.tgj4bciq6rez62nk@vireshk-i7>
- <c83ae91b-6901-de2b-913e-b28af73c52fa@arm.com>
- <20220222101242.chwcxan2nyhczqth@vireshk-i7>
- <e979397d-c522-e0da-b997-16609fe308c5@arm.com>
- <20220222111519.rd5m4fxd7rvkuqqf@vireshk-i7>
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7550E106F;
+        Tue, 22 Feb 2022 06:08:51 -0800 (PST)
+Received: from e123648.arm.com (unknown [10.57.9.152])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 35D693F5A1;
+        Tue, 22 Feb 2022 06:08:49 -0800 (PST)
 From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20220222111519.rd5m4fxd7rvkuqqf@vireshk-i7>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To:     linux-kernel@vger.kernel.org
+Cc:     lukasz.luba@arm.com, dietmar.eggemann@arm.com,
+        viresh.kumar@linaro.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, nm@ti.com, sboyd@kernel.org,
+        mka@chromium.org, dianders@chromium.org, robh+dt@kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/2] Introduce 'advanced' Energy Model in DT
+Date:   Tue, 22 Feb 2022 14:07:44 +0000
+Message-Id: <20220222140746.12293-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi all,
 
+This patch set solves a few issues:
+1. It allows to register EM from DT, when the voltage information is not
+   available. (Some background of the issues present on Chromebook devices
+   can be checked at [1].)
+2. It allows to register 'advanced' EM from the DT, which is more accurate
+   and reflects total power (dynamic + static).
 
-On 2/22/22 11:15, Viresh Kumar wrote:
-> On 22-02-22, 11:03, Lukasz Luba wrote:
->> OK, I misunderstood that. If that is possible than it would
->> be great. I'm assuming you are taking about OPP v2.
-> 
-> Yes.
-> 
->> I can relax the
->> requirement that I need to provide this DT-EM for arm32, since they
->> have a legacy OPP v1.
-> 
-> OPP V2 or V1 doesn't have anything to do with arm32/64. Anyone can implement the
-> newer V2 version (basically whoever wants something more than a simple freq/volt
-> pair). So arm32 SoC's that want to use the DT-EM thing, should migrate to
-> opp-v2, we can't support that with opp-v1.
-> 
->> So we might have an entry similar that interconnect for the
->> bandwidth, but for us it would be 'opp-power-uw'?
-> 
-> I will rather say similar to opp-microvolt or opp-microamp, so it better be
-> opp-microwatt.
-> 
->> Let me have a look about some examples how that could be just
->> added/extended in the opp table but from board file.
->> If you have some handy link, I would be grateful.
-> 
-> The file I provided earlier:
-> 
-> arch/arm64/boot/dts/freescale/imx8mq-librem5-r3.dts
-> 
-> This is updating opp-microvolt property of a single OPP node in the whole table.
-> Pretty much like this only.
-> 
+Implementation details:
+It adds a new callback in OPP framework to parse the OPP node entry and
+read the "opp-microwatt". It's going to only work with OPP-v2, but it's
+agreed to be OK.
 
-Thanks, I'll use that example for the v2
+Comments, suggestions are very welcome.
+
+changelog:
+v2:
+- implemented Viresh idea to add "opp-microwatt" into the OPP node entry in DT
+v1 [2]
+
+Regards,
+Lukasz Luba
+
+[1] https://lore.kernel.org/linux-pm/20220207073036.14901-2-lukasz.luba@arm.com/
+[2] https://lore.kernel.org/linux-pm/20220221225131.15836-1-lukasz.luba@arm.com/
+
+Lukasz Luba (2):
+  dt-bindings: opp: Add 'opp-microwatt' entry in the OPP
+  OPP: Add 'opp-microwatt' parsing for advanced EM registration
+
+ .../devicetree/bindings/opp/opp-v2-base.yaml  |  7 ++
+ drivers/opp/of.c                              | 70 +++++++++++++++++++
+ 2 files changed, 77 insertions(+)
+
+-- 
+2.17.1
+
