@@ -2,105 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FC54C433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Feb 2022 00:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E85A4C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Feb 2022 00:40:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236398AbiBWAdz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Feb 2022 19:33:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38252 "EHLO
+        id S236433AbiBWAlL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Feb 2022 19:41:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236397AbiBWAdz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Feb 2022 19:33:55 -0500
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CF8B5C657;
-        Tue, 22 Feb 2022 16:33:29 -0800 (PST)
+        with ESMTP id S231518AbiBWAlL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Feb 2022 19:41:11 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D19735F8F7;
+        Tue, 22 Feb 2022 16:40:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1645576409; x=1677112409;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=sLOP+uYqXE60s3px7qOY/JHhr42q3bbt4UwDpjHqx5w=;
-  b=DDUWmmThNdkSoAGMC/4XSJaghL5zcvYsyC1gZqaO4YFfuKq10ZAMfYxx
-   jSQiuwWHwDm9u4n3D3867QWoAL9V/AO0ZFGg3lmlToLAdufONeVW4Sqg2
-   SwheyIBd0DfWfpjHtd4ee5SQv3y2UJuTvW81i3B6/0S1cHOvATD/dLSmJ
-   xBAJ+rFStOS9JeqnhybpAGnyB1nTp51+67s6WrZ3HfgvATh85bcY8Y3vG
-   P5gkqlomvV1J9ZeMbioyDtq3h6NmnHckRFvvixrFcIK7h1xOCKOvepA7n
-   mkPmx3N+x9Dosc26GBu0neWmF8fxF7TQxcT+UG+NH+nLQP4i1H3xxsJIe
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10266"; a="232470442"
+  t=1645576844; x=1677112844;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=bXG/hqPanWAZqS1VkKyT5WERuxbLoNAjWQs8L+yqxEg=;
+  b=YftGCQmzBOAr6wQwUjZ6cNYRcnQZMx1kGLyYkYhh9MC/xxUIosKClf/G
+   3U4T1VZz5hmv3ymt1vfy7KqgePwItipphY8T4wQ8ToCJ3lXzWuGxoj/59
+   0FqWkIiw9cnRU5meORy1qWOPAmzgkNEgqlfIG/2Zu2auln5JQ+BVJPqO1
+   EoNF6tUkIEPnICWeZefEnRAYTaz5s8YofpFOY6b1hikZ1+mYTxjARoLhX
+   27dQn3481V5C1UjQ2X4qzUrNi31u5BuUL9uCwc6AP0n+tTcjgLlWdb5TJ
+   075q/2b3BmGemlpYdCQmSx18sbXGeb6qds8LedT5wVYeCzfze13RkosNo
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10266"; a="235360402"
 X-IronPort-AV: E=Sophos;i="5.88,389,1635231600"; 
-   d="scan'208";a="232470442"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Feb 2022 16:33:29 -0800
+   d="scan'208";a="235360402"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Feb 2022 16:40:44 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.88,389,1635231600"; 
-   d="scan'208";a="490994834"
-Received: from cliu38-mobl3.sh.intel.com ([10.239.147.47])
-  by orsmga003.jf.intel.com with ESMTP; 22 Feb 2022 16:33:27 -0800
-From:   Chuansheng Liu <chuansheng.liu@intel.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, stable@vger.kernel.org,
-        rafael@kernel.org, srinivas.pandruvada@linux.intel.com
-Subject: [PATCH] thermal: int340x: fix memory leak in int3400_notify()
-Date:   Wed, 23 Feb 2022 08:20:24 +0800
-Message-Id: <20220223002024.55026-1-chuansheng.liu@intel.com>
-X-Mailer: git-send-email 2.25.0.rc2
+   d="scan'208";a="776497120"
+Received: from shbuild999.sh.intel.com (HELO localhost) ([10.239.146.189])
+  by fmsmga006.fm.intel.com with ESMTP; 22 Feb 2022 16:40:41 -0800
+Date:   Wed, 23 Feb 2022 08:40:41 +0800
+From:   Feng Tang <feng.tang@intel.com>
+To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     Doug Smythies <dsmythies@telus.net>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "paulmck@kernel.org" <paulmck@kernel.org>,
+        "stable@vger.kernel.org" <stable@vger.kernel.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: Re: CPU excessively long times between frequency scaling driver
+ calls - bisected
+Message-ID: <20220223004041.GA4548@shbuild999.sh.intel.com>
+References: <CAAYoRsXrwOQgzAcED+JfVG0=JQNEXuyGcSGghL4Z5xnFgkp+TQ@mail.gmail.com>
+ <20220208091525.GA7898@shbuild999.sh.intel.com>
+ <CAAYoRsXkyWf0vmEE2HvjF6pzCC4utxTF=7AFx1PJv4Evh=C+Ow@mail.gmail.com>
+ <e185b89fb97f47758a5e10239fc3eed0@intel.com>
+ <CAAYoRsXbBJtvJzh91nTXATLL1eb2EKbTVb8vEWa3Y6DfCWhZeg@mail.gmail.com>
+ <aaace653f12b79336b6f986ef5c4f9471445372a.camel@linux.intel.com>
+ <20220222073435.GB78951@shbuild999.sh.intel.com>
+ <CAJZ5v0iXQ=qXiZoF_qb1hdBh=yfZ13-of3y3LFu2m6gZh9peTw@mail.gmail.com>
+ <CAAYoRsX-iw+88R9ZizMwJw2qc99XJZ8Fe0M5ETOy4=RUNsxWhQ@mail.gmail.com>
+ <24f7d485dc60ba3ed5938230f477bf22a220d596.camel@linux.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <24f7d485dc60ba3ed5938230f477bf22a220d596.camel@linux.intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It is easy to hit the below memory leaks in my TigerLake platform:
-
---
-unreferenced object 0xffff927c8b91dbc0 (size 32):
-  comm "kworker/0:2", pid 112, jiffies 4294893323 (age 83.604s)
-  hex dump (first 32 bytes):
-    4e 41 4d 45 3d 49 4e 54 33 34 30 30 20 54 68 65  NAME=INT3400 The
-    72 6d 61 6c 00 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5  rmal.kkkkkkkkkk.
-  backtrace:
-    [<ffffffff9c502c3e>] __kmalloc_track_caller+0x2fe/0x4a0
-    [<ffffffff9c7b7c15>] kvasprintf+0x65/0xd0
-    [<ffffffff9c7b7d6e>] kasprintf+0x4e/0x70
-    [<ffffffffc04cb662>] int3400_notify+0x82/0x120 [int3400_thermal]
-    [<ffffffff9c8b7358>] acpi_ev_notify_dispatch+0x54/0x71
-    [<ffffffff9c88f1a7>] acpi_os_execute_deferred+0x17/0x30
-    [<ffffffff9c2c2c0a>] process_one_work+0x21a/0x3f0
-    [<ffffffff9c2c2e2a>] worker_thread+0x4a/0x3b0
-    [<ffffffff9c2cb4dd>] kthread+0xfd/0x130
-    [<ffffffff9c201c1f>] ret_from_fork+0x1f/0x30
----
-
-Fix it by calling kfree() accordingly.
-
-Fixes: 38e44da59130 ("thermal: int3400_thermal: process "thermal table
-changed" event")
-
-Cc: linux-pm@vger.kernel.org
-Cc: stable@vger.kernel.org
-Cc: rafael@kernel.org
-Cc: srinivas.pandruvada@linux.intel.com
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
----
- drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 72acb1f61849..4f478812cb51 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -404,6 +404,10 @@ static void int3400_notify(acpi_handle handle,
- 	thermal_prop[3] = kasprintf(GFP_KERNEL, "EVENT=%d", therm_event);
- 	thermal_prop[4] = NULL;
- 	kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE, thermal_prop);
-+	kfree(thermal_prop[0]);
-+	kfree(thermal_prop[1]);
-+	kfree(thermal_prop[2]);
-+	kfree(thermal_prop[3]);
- }
+On Tue, Feb 22, 2022 at 04:32:29PM -0800, srinivas pandruvada wrote:
+> Hi Doug,
+> 
+> On Tue, 2022-02-22 at 16:07 -0800, Doug Smythies wrote:
+> > Hi All,
+> > 
+> > I am about 1/2 way through testing Feng's "hacky debug patch",
+> > let me know if I am wasting my time, and I'll abort. So far, it
+> > works fine.
+> This just proves that if you add some callback during long idle,  you
+> will reach a less aggressive p-state. I think you already proved that
+> with your results below showing 1W less average power ("Kernel 5.17-rc3
+> + Feng patch (6 samples at 300 sec per").
+> 
+> Rafael replied with one possible option. Alternatively when planing to
+> enter deep idle, set P-state to min with a callback like we do in
+> offline callback.
  
- static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
--- 
-2.25.0.rc2
+Yes, if the system is going to idle, it makes sense to goto a lower
+cpufreq first (also what my debug patch will essentially lead to).
 
+Given cprfreq-util's normal running frequency is every 10ms, doing
+this before entering idle is not a big extra burden.
+
+Thanks,
+Feng
+
+> So we need to think about a proper solution for this.
+> 
+> Thanks,
+> Srinivas
