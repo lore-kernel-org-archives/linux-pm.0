@@ -2,77 +2,64 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC543C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Feb 2022 20:54:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9F82C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Feb 2022 20:54:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234500AbiBXUzD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Feb 2022 15:55:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36170 "EHLO
+        id S233863AbiBXUzQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Feb 2022 15:55:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234473AbiBXUy4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Feb 2022 15:54:56 -0500
-Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECCAB1C945E
-        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 12:54:17 -0800 (PST)
-Received: by mail-oi1-x22a.google.com with SMTP id j2so4919336oie.7
-        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 12:54:17 -0800 (PST)
+        with ESMTP id S234504AbiBXUzD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Feb 2022 15:55:03 -0500
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25A96227582
+        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 12:54:22 -0800 (PST)
+Received: by mail-ot1-x336.google.com with SMTP id j3-20020a9d7683000000b005aeed94f4e9so2211094otl.6
+        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 12:54:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=5yuNRPfZ4wSXNWFo4eJjPd8/1lZiboAzYQHF2bGrwvk=;
-        b=v1lToXbj6oZ1yX9wpwPl5hYdstrCcyekZCPmIEOlGppkubYZ6pJNuzpaFkf7bGP4Se
-         BOJbrNy3BWI+s2+QR/gmTqGk+eDdELRHlq4z8WMk5EaVKMpNGONSux38H5N0dzs6z/2u
-         rxdQ5G5zH9RCdv4USnV5CdtUZjD/A2AKGK3yGpzXb0bNEaugvhgupX9mV6O8pCkxc2IV
-         YOarLdNp3J0mvPG+8K3uN7xNAH+/lFMH/CZMDBJaIvaiFExN0KH2Gf9dQfCLA8i1pP3E
-         BoLb6j5UA/QQea21t7zIeIXiYLYu6S3CLhgHqm+uobeQgHBsziL+Nhhy/bkTPqhF1zfz
-         KS6w==
+        bh=YfJFTU/SisfAPs9JKDHMGgPqhCwNHsIGV8L1A8XDLlU=;
+        b=OMHLyMTq5+u9d9yoBScCGhM0BMPqB37McuH7aXNiL4K0QOIXtqW0+i/rd191UaHlR0
+         XeoPHj4uww9/n9rn7V3FC00ZfBFaZp3PT2qk+DXEIwUqTwNtspKi7yvSYDzxtvDIg5LC
+         lENwFIRMwvmKgLy4X00RmM2WaMXvrnOc8mAIQkGVF8hQsz1eoOac7xXoAID53s/HMp41
+         tdpI7xj2dBDIxEdFgsv2onYcaLyDt4UiyQN2fht+cex1EVpmQP1OaY3ayG6PP3eynjp1
+         3RLSXPYRun0c+c3Z0XROaHjgAhUQQrgq4lTDV+3+AhYSogmxb7vFxfh80XyYopz1DC4B
+         86ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=5yuNRPfZ4wSXNWFo4eJjPd8/1lZiboAzYQHF2bGrwvk=;
-        b=euLpv8Vu6MZLsVjoeyoPsROt6pGDkrhrwZxtuWMdr/690JZ2hQlyi1LsCLw1QcMHF0
-         E9I9qtDb6dWfWEJGx4bzxuxwECTwL98CWtZm01iErplDy4sQD48imhyESAValtfY96XV
-         6y76t/DgdqbQVQGCQdh/4l6KDdqnYW9AhW16vrFjJ4PHX3B9Ql5XkjuRM7KyHeg+TJYU
-         RbdeUtvtbKltxwbbxXqhiJx4W0KjZpC4ks76Uj0bHWlsxgi55+IwKLy+UsJq805OkafI
-         mFz9r9MKsAqU2gLSC3y1wY6CLsHhIoH06qctfT3mXEPNCHsWaBjUUT5BKGUQTY2VkjsQ
-         /bQw==
-X-Gm-Message-State: AOAM5310N53LNY8mGjLhXmwBX6s/blVrRdzJkfZeHOw3IWYHJzI4lG7p
-        jcSAVjuoBzYy+glWndC6iAatEQ==
-X-Google-Smtp-Source: ABdhPJxxjHsZdlkR1kwbPa4Qzyy0vNpFU3AB0yGjO2kGTUXG4HI3QT47u3CtJHIp3y7C0I3N9YK+gQ==
-X-Received: by 2002:a05:6808:1718:b0:2d7:416e:d9d9 with SMTP id bc24-20020a056808171800b002d7416ed9d9mr1652260oib.76.1645736057319;
-        Thu, 24 Feb 2022 12:54:17 -0800 (PST)
+        bh=YfJFTU/SisfAPs9JKDHMGgPqhCwNHsIGV8L1A8XDLlU=;
+        b=t7QKCcllsXaE/LSPdXhKjAe0TX8d7sU/w/NQHNlEsG2MEtpcvlKONa3tgQgozxbaLO
+         4zsxt6L1BUJSebJ44eldhJ5T99OokjVjNh4cTKjeCcEYqKBE2MFtyorMa9tNOclHfQ6v
+         L5DmKNtElffQZzghWiYjFPMESjmvLxkN/FcUrTP9d5MArcmp8XTLn7109Ihl19CXxcz1
+         XDzouS9Se//k8LKQckQ50Pw6rdQWqAPvM9u/8u0enKv7C2k5vnp2DA3y/Yd43zshGsiz
+         odNGV4TPnfT/A2UcOxXjQ8viO9jgEjW46UZ3EwlgaBlnknhXEbvfeHQV90A+46AnoewH
+         tk4w==
+X-Gm-Message-State: AOAM530n1Mch2AHGAeLnJftx+9tDi8yQNvJesvIzP2rhs4Ylv9ZnLlL/
+        fJKTGprCFpqk/UZW+8d0RFkXWg==
+X-Google-Smtp-Source: ABdhPJyrRmbj+mSeiaX+91lpDoKZG7xScJ0qAqLMuj1UY/gOm6vTRI8pWT6D58WwacbQQoADffwrdQ==
+X-Received: by 2002:a9d:730b:0:b0:5af:3058:b962 with SMTP id e11-20020a9d730b000000b005af3058b962mr1615926otk.135.1645736061326;
+        Thu, 24 Feb 2022 12:54:21 -0800 (PST)
 Received: from builder.lan ([2600:1700:a0:3dc8:3697:f6ff:fe85:aac9])
-        by smtp.gmail.com with ESMTPSA id c8-20020a4ad788000000b0031ce69b1640sm191259oou.10.2022.02.24.12.54.16
+        by smtp.gmail.com with ESMTPSA id c8-20020a4ad788000000b0031ce69b1640sm191259oou.10.2022.02.24.12.54.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Feb 2022 12:54:16 -0800 (PST)
+        Thu, 24 Feb 2022 12:54:20 -0800 (PST)
 From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Luca Weiss <luca@z3ntu.xyz>, linux-arm-msm@vger.kernel.org
-Cc:     Stephan Gerhold <stephan@gerhold.net>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
-        Mark Brown <broonie@kernel.org>,
-        Manu Gautam <mgautam@codeaurora.org>,
-        linux-usb@vger.kernel.org,
-        Bartosz Dudziak <bartosz.dudziak@snejp.pl>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Stephen Boyd <sboyd@codeaurora.org>,
-        linux-kernel@vger.kernel.org, Hector Martin <marcan@marcan.st>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>,
-        linux-remoteproc@vger.kernel.org, phone-devel@vger.kernel.org,
-        Amit Kucheria <amitk@kernel.org>
-Subject: Re: (subset) [PATCH v2 00/10] Initial MSM8953 & Fairphone 3 support
-Date:   Thu, 24 Feb 2022 14:54:03 -0600
-Message-Id: <164573604162.1471031.13389413392112165052.b4-ty@linaro.org>
+To:     mka@chromium.org, dianders@chromium.org,
+        Sibi Sankar <quic_sibis@quicinc.com>
+Cc:     rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, robh+dt@kernel.org, agross@kernel.org,
+        linux-pm@vger.kernel.org, sboyd@kernel.org,
+        linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org
+Subject: Re: (subset) [PATCH v4] arm64: dts: qcom: sc7280: Add cpu OPP tables
+Date:   Thu, 24 Feb 2022 14:54:06 -0600
+Message-Id: <164573604161.1471031.14236592247266780650.b4-ty@linaro.org>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220220201909.445468-1-luca@z3ntu.xyz>
-References: <20220220201909.445468-1-luca@z3ntu.xyz>
+In-Reply-To: <1644428757-25575-1-git-send-email-quic_sibis@quicinc.com>
+References: <1644428757-25575-1-git-send-email-quic_sibis@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -80,34 +67,15 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 20 Feb 2022 21:18:53 +0100, Luca Weiss wrote:
-> This series adds initial support for MSM8953 (and SDM632 which is based
-> on MSM8953) and the Fairphone 3 smartphone.
+On Wed, 9 Feb 2022 23:15:57 +0530, Sibi Sankar wrote:
+> Add OPP tables required to scale DDR/L3 per freq-domain on SC7280 SoCs.
 > 
-> Only relatively basic functionality is supported like storage, volume
-> keys and USB.
 > 
-> There is currently close-to-mainline support for other components for
-> this SoC including GPU, WiFi and audio, this series adds only basic
-> support so that the other components can start getting upstreamed
-> easier.
-> 
-> [...]
 
 Applied, thanks!
 
-[04/10] dt-bindings: arm: cpus: Add Kryo 250 CPUs
-        commit: 08b25f7d99e15f2aa5f4cce3f13ad0c67a4c1e34
-[06/10] arm64: dts: qcom: Add MSM8953 device tree
-        commit: 9fb08c8019234a0759aab66914f01bc0971e4eed
-[07/10] arm64: dts: qcom: Add PM8953 PMIC
-        commit: 06ea71e42975cdd43cc1e2dacd3e56c8693ac733
-[08/10] arm64: dts: qcom: Add SDM632 device tree
-        commit: 24af02271ca7cf095186963002d1d98349d9e5e5
-[09/10] dt-bindings: arm: qcom: Document sdm632 and fairphone,fp3 board
-        commit: cb898d5e59b41a268dcf4dbef31d651c393dfbae
-[10/10] arm64: dts: qcom: sdm632: Add device tree for Fairphone 3
-        commit: 308b26cddb04afc7776de1cbbe07172eeccc7c98
+[1/1] arm64: dts: qcom: sc7280: Add cpu OPP tables
+      commit: 1e8853c698276d20cdee99a8019f9f5e54c5c0a1
 
 Best regards,
 -- 
