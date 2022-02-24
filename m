@@ -2,52 +2,52 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76972C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Feb 2022 09:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE6C5C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Feb 2022 09:13:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232640AbiBXJD7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Feb 2022 04:03:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36176 "EHLO
+        id S231846AbiBXJOS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Feb 2022 04:14:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232635AbiBXJD6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Feb 2022 04:03:58 -0500
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2C82189A8A
-        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 01:03:27 -0800 (PST)
-Received: by mail-pj1-x102e.google.com with SMTP id g7-20020a17090a708700b001bb78857ccdso5147907pjk.1
-        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 01:03:27 -0800 (PST)
+        with ESMTP id S229458AbiBXJOS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Feb 2022 04:14:18 -0500
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25F8D1959D1
+        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 01:13:49 -0800 (PST)
+Received: by mail-pj1-x1032.google.com with SMTP id bx5so1450984pjb.3
+        for <linux-pm@vger.kernel.org>; Thu, 24 Feb 2022 01:13:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=QCM78YTn8/YVxRCZhQXtEB9THICvyOh286lVLbqQpaE=;
-        b=rkNBMDEf/SqUajws9FmdO9tKxMTm17pN9iH5SFB3gRCwM2E/eKIRZYeJPNmzSHSaOn
-         lQY9sO/8Lh9xsPcM21Be3q8LV+jNC3t5Shq3Wf+CHC2hs4Zr0++3/KHap3GXDNgMyRhV
-         IIHAEfFwRnt6J3UTutGiUM6M6Nm6bNLWAOLmXMratd5dozz6PJ3ySy+BFTdOhAvgzIYM
-         NAkwU21Z9Xvq0/Yh3VKrAd7o2FcKtHSCkAfaaLraoItjRSejXUzTq29jlNz2e5qC048e
-         6lsjUmkGODO9k+pvJ7+gkSlX6OrzKaCOD2MHIMkPZo4/ugAm7XYufKmfcLTC1dePgyH2
-         KRyA==
+        bh=SEB2HcIZlaGJONkY26HdM82R7VoeFOHxdC+7YcIMHpk=;
+        b=BozESD3z7jrdcobIG336ckDeZAT5h9x7FcX4J+gwosdJzTR8yZqS1S/PUUodNTnmxn
+         dyxz8PwnhXIC+ujervLPrq18f+p3TtMW8TTtbQOjJHKoOJuoQzkcflu7DNBZq5iFQzPK
+         21szHHPjvyarIuX6e6MuWTJ00EeARxT4k4tHBLoGVwGW556uS4lR8abVXCW0hfnwf4d8
+         mg2XW1gQst95Dh0Le4fb6ToJ24EQhK/nlPQ0wdSGMKk4SlQMcDWN4pb4Og5Rc1h/0mQ4
+         M53vftWWm0vTX2c7e7odMBjVUKc6mhkcTioASNMGsBCUtDADfM/p+PZfL6LwCGFIi3ci
+         97MA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=QCM78YTn8/YVxRCZhQXtEB9THICvyOh286lVLbqQpaE=;
-        b=72J0w5ggCgf5a26BK/AyoBlfm9LJPECOZ+eN7zto+hEnbTALdeaawPv5E867ZYNNFv
-         R7e0Ktwoc/EmNe6kUwCCBDEnQhb8g6aOEk1w23hVHjRMMM4jcw7+A/Bxf93Trz5zmL6V
-         yS4pNugPQt3zpgKh5u+RUsDVXJz8pyhKi6tBvE0Y6M13E/VBz3cN3EmfFLhGUaFsUouj
-         zjGK2tDRxayR7Pd1z4BY2SVuqIAL3FnIpECwfkspuuuvP95Uz4nDc39WLiDrRSv7sYLx
-         IvfKBugPazx9mR1kIJIsIN85aCXKJKR2huYcJ4jfch7MFFffkArUQnFG45qO2LFJfxLi
-         /i8Q==
-X-Gm-Message-State: AOAM530YzXrbottoqeLesRENvQBhK89KyNkllwwWLS7PdsIVSAxOD6S9
-        LGhGxkdVSmB/mGIoD0hn9vUIWA==
-X-Google-Smtp-Source: ABdhPJwGsYnvGBr1SzToJDWL3pbvTkdogMi/iHWJErfg6U8NpfHn2UG+e2zDs4MEgNGGgWVU0CzSlQ==
-X-Received: by 2002:a17:902:c20c:b0:150:11df:9918 with SMTP id 12-20020a170902c20c00b0015011df9918mr1526277pll.76.1645693407502;
-        Thu, 24 Feb 2022 01:03:27 -0800 (PST)
+        bh=SEB2HcIZlaGJONkY26HdM82R7VoeFOHxdC+7YcIMHpk=;
+        b=qBVGwk4w94HZFuG/ZF/c3UajPWGnqUAOECaEiS6+DKttpvZBWp2zGzA7AsiPtMfqOr
+         WW/lr06n85CYWuiOCUMaHpqVaHuneZ+Tut23l3vF40g6B2CzAxEtuF8XE1JnwC/WTSU6
+         F5BCyAjktyFPFVaaQDFhUYOfK4H3hHCKFi4FthiVO+CnSd8oWl2pRwidxEUDjL1mfXpY
+         pFt0LhPcEXt+swbiIWlookqqQCF8YPzuDT8VXjnEVI1nDPpXTtOR8yewl3+Arae3o187
+         Zzh4yZYycTTLUYhzXBS7HnAchB8QNcgs8WnESFse2kM+L9MdH3+4+XXGjWiCzYLZvj24
+         4XFQ==
+X-Gm-Message-State: AOAM531Qoo18B6P/xmgv7lXPGdDlX9DjkqRZ3zs5oCprxWu+iD7lvemX
+        moPEpRmYmwf8/g1Pf3YClEDuRg3QCnTBcw==
+X-Google-Smtp-Source: ABdhPJzJ0XhbfmmZjCWBnzEZ/9O3RcQUX+ygX8jRUUsuH0fqSmXlcsrJDkdhqfym7YwV5f4zR6L2Ww==
+X-Received: by 2002:a17:903:1252:b0:14d:ca16:2b8 with SMTP id u18-20020a170903125200b0014dca1602b8mr1759819plh.142.1645694028619;
+        Thu, 24 Feb 2022 01:13:48 -0800 (PST)
 Received: from localhost ([223.184.83.228])
-        by smtp.gmail.com with ESMTPSA id g18sm2507892pfc.108.2022.02.24.01.03.26
+        by smtp.gmail.com with ESMTPSA id s3-20020a17090a5d0300b001bc2b469051sm5406635pji.29.2022.02.24.01.13.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Feb 2022 01:03:27 -0800 (PST)
-Date:   Thu, 24 Feb 2022 14:33:25 +0530
+        Thu, 24 Feb 2022 01:13:47 -0800 (PST)
+Date:   Thu, 24 Feb 2022 14:43:46 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Lukasz Luba <lukasz.luba@arm.com>
 Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
@@ -55,41 +55,118 @@ Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
         sboyd@kernel.org, mka@chromium.org, dianders@chromium.org,
         robh+dt@kernel.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 2/4] OPP: Add "opp-microwatt" supporting code
-Message-ID: <20220224090325.m4pl36ma3uettxvg@vireshk-i7>
+Subject: Re: [PATCH v3 3/4] OPP: Add support of "opp-microwatt" for advanced
+ EM registration
+Message-ID: <20220224091346.xmnpj27vllpa4cuy@vireshk-i7>
 References: <20220224081131.27282-1-lukasz.luba@arm.com>
- <20220224081131.27282-3-lukasz.luba@arm.com>
+ <20220224081131.27282-4-lukasz.luba@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220224081131.27282-3-lukasz.luba@arm.com>
+In-Reply-To: <20220224081131.27282-4-lukasz.luba@arm.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On 24-02-22, 08:11, Lukasz Luba wrote:
-> +/**
-> + * dev_pm_opp_get_power() - Gets the power corresponding to an opp
-> + * @opp:	opp for which power has to be returned for
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+>  
+> +/*
+> + * Callback function provided to the Energy Model framework upon registration.
+> + * It provides the power used by @dev at @kHz if it is the frequency of an
+> + * existing OPP, or at the frequency of the first OPP above @kHz otherwise
+> + * (see dev_pm_opp_find_freq_ceil()). This function updates @kHz to the ceiled
+> + * frequency and @mW to the associated power.
 > + *
-> + * Return: power in micro watt corresponding to the opp, else
-> + * return 0
-> + *
-> + * This is useful only for devices with single power supply.
+> + * Returns 0 on success or a proper -EINVAL value in case of error.
 > + */
-> +unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
+> +static int __maybe_unused
+> +_get_opp_power(unsigned long *mW, unsigned long *kHz, struct device *dev)
+
+Lets call it _get_dt_opp_power() or _get_dt_power() ?
+
 > +{
-> +	if (IS_ERR_OR_NULL(opp)) {
-> +		pr_err("%s: Invalid parameters\n", __func__);
-> +		return 0;
+> +	struct dev_pm_opp *opp;
+> +	unsigned long opp_freq, opp_power;
+> +
+> +	/* Find the right frequency and related OPP */
+> +	opp_freq = *kHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(dev, &opp_freq);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	opp_power = dev_pm_opp_get_power(opp);
+
+As I said in 2/4, this should really give the total instead.
+
+> +	dev_pm_opp_put(opp);
+> +	if (!opp_power)
+> +		return -EINVAL;
+> +
+> +	*kHz = opp_freq / 1000;
+> +	*mW = opp_power / 1000;
+> +
+> +	return 0;
+> +}
+> +
+>  /*
+>   * Callback function provided to the Energy Model framework upon registration.
+>   * This computes the power estimated by @dev at @kHz if it is the frequency
+> @@ -1488,6 +1520,24 @@ static int __maybe_unused _get_power(unsigned long *mW, unsigned long *kHz,
+>  	return 0;
+>  }
+>  
+> +static bool _of_has_opp_microwatt_property(struct device *dev)
+> +{
+> +	unsigned long power, freq = 0;
+> +	struct dev_pm_opp *opp;
+> +
+> +	/* Check if at least one OPP has needed property */
+> +	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+> +	if (IS_ERR(opp))
+> +		return false;
+> +
+> +	power = dev_pm_opp_get_power(opp);
+> +	dev_pm_opp_put(opp);
+> +	if (!power)
+
+What if this particular frequency has 0 power mentioned for some
+reason :)
+
+Instead of this heavy stuff, just pick the first OPP from the opp
+table and see its power-value.
+
+> +		return false;
+> +
+> +	return true;
+> +}
+> +
+>  /**
+>   * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
+>   * @dev		: Device for which an Energy Model has to be registered
+> @@ -1517,6 +1567,14 @@ int dev_pm_opp_of_register_em(struct device *dev, struct cpumask *cpus)
+>  		goto failed;
+>  	}
+>  
+> +	/* First, try to find more precised Energy Model in DT */
+> +	if (_of_has_opp_microwatt_property(dev)) {
+> +		struct em_data_callback em_dt_cb = EM_DATA_CB(_get_opp_power);
+> +
+> +		return em_dev_register_perf_domain(dev, nr_opp, &em_dt_cb,
+> +						   cpus, true);
 > +	}
 > +
-> +	return opp->supplies[0].u_watt;
 
-What about returning the total of all u_watts for this OPP here ?
-Surely it doesn't make sense to do the same for voltage and current,
-but power is different.
+We have another em_dev_register_perf_domain() down the line, lets keep
+only one such call and get it a callback that should be set in an
+if/else loop.
+
+>  	np = of_node_get(dev->of_node);
+>  	if (!np) {
+>  		ret = -EINVAL;
+> -- 
+> 2.17.1
 
 -- 
 viresh
