@@ -2,68 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83C41C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:23:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74FA5C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:29:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229476AbiB1UYI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 15:24:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33860 "EHLO
+        id S229711AbiB1U3s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 15:29:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbiB1UYH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:24:07 -0500
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C27F56208
-        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:23:28 -0800 (PST)
-Received: by mail-lj1-x229.google.com with SMTP id y24so33394ljh.11
-        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:23:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Rhevy6fb5H45VxDHjLDNCxtPhjJ0u7uFLdfSx9pxlIs=;
-        b=SFiiDaskyFzzbW4jCoUqiJYglpNWscp1lwtLHE93w8dRI3h8eXZkrLgebAKqQfA9oZ
-         haXikdZXvfEB810zRURGwChdn/CvMC8Q7Pab3hpE0iVI/nf3FVJvcryQMcC1uZhcoZUU
-         P6IZH9h2w6s9V+B5fc5q6pR5l/tJkcQrm5JJ0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Rhevy6fb5H45VxDHjLDNCxtPhjJ0u7uFLdfSx9pxlIs=;
-        b=2ICnNQycojOUSei5ghMKacwbZRRgEC+3n3Qq8jZJ05O8/TnNRMAh9iv++kwZ9uGqn0
-         OUgHdTyqcjZOW4TV0pNHMPuml/xeO+ysIHcNTsKW+I5lfpQaNJYeBD+aul6xVyp9q4Se
-         0tEPhzXA7aS/mSdFbn3OXPuqf1DAWkGsX+QScqgkuqA80Lz1RErODwIcRKD9AqDv6apC
-         8lqD71Y5GEekxKOpiHuHOCTbET9UabsAalMGoGtCFjENkOO5Eh+j5ALluZuf/Lfvg0/U
-         ML8ac2xJ4TCt87yuZfUlz2FZ7P5O3s15Fs9VHbgny0C3+ObVr6sVdBTKU1aWPtub4ghh
-         EfMA==
-X-Gm-Message-State: AOAM533AOsP+xPZP/snn5fYEVeiPhsm5PR2AiznEuZ4MKEQ3YXaB9Spt
-        rda2rWO7GgoRfNCTpQxEAWyyiF+7XuyloffZo1o=
-X-Google-Smtp-Source: ABdhPJxZ1zZ8nko2T4WSGKtLHHF+rGSBv7FqWQ40Tx8KMXvHo3yz5GWj4fW6EerKq7FUNvNILkwb9Q==
-X-Received: by 2002:a05:651c:84:b0:237:a185:fb96 with SMTP id 4-20020a05651c008400b00237a185fb96mr15122162ljq.44.1646079806498;
-        Mon, 28 Feb 2022 12:23:26 -0800 (PST)
-Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com. [209.85.208.177])
-        by smtp.gmail.com with ESMTPSA id h15-20020a19700f000000b00443e2a42010sm1123322lfc.56.2022.02.28.12.23.26
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Feb 2022 12:23:26 -0800 (PST)
-Received: by mail-lj1-f177.google.com with SMTP id o6so19034170ljp.3
-        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:23:26 -0800 (PST)
-X-Received: by 2002:a2e:924d:0:b0:246:370c:5618 with SMTP id
- v13-20020a2e924d000000b00246370c5618mr15110351ljg.358.1646079300900; Mon, 28
- Feb 2022 12:15:00 -0800 (PST)
-MIME-Version: 1.0
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com> <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
- <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com> <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
-In-Reply-To: <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon, 28 Feb 2022 12:14:44 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Message-ID: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-To:     =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-Cc:     Jakob Koschel <jakobkoschel@gmail.com>,
+        with ESMTP id S229489AbiB1U3q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:29:46 -0500
+Received: from sipsolutions.net (s3.sipsolutions.net [IPv6:2a01:4f8:191:4433::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A60D046B14;
+        Mon, 28 Feb 2022 12:29:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=sipsolutions.net; s=mail; h=Content-Transfer-Encoding:MIME-Version:
+        Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
+        Resent-Cc:Resent-Message-ID; bh=uTSgVBk5w89AJnv82I9bqMWvwbVIn7Apzl6uMNeIbWY=;
+        t=1646080146; x=1647289746; b=OkHUiLVznHOGWDQgva9o/U8+hdeMUTOf+IyChue2hmp5Fll
+        ehN379UgJObU84VnUri6HU2CJVMFCfloUG7hAL3mEL6+GyOJ8BoW3Ztxf0QjDucExPzRhtDHGA3sn
+        pFob6kzHYzdNYQbK17GeixiYC/29eL01WuIKAP9nzf5Rrj16Kw2WLK8pdotdsfNO/iUozlBq52fyt
+        XoISW2UfhPtOix8uc7dvq7d6ueMBQhFqQfOJjlH6tyjcXzAZSZh5pTL/BTZI6ozwW24iSqB3LrEw5
+        mWgsr7dP1wyl/pxa0vKCyWULkX9Q8iNjl2i7O0VZM8H8UmdnyB/dZgp74mcvgvAw==;
+Received: by sipsolutions.net with esmtpsa (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+        (Exim 4.95)
+        (envelope-from <johannes@sipsolutions.net>)
+        id 1nOmc1-00716Q-Dh;
+        Mon, 28 Feb 2022 21:27:17 +0100
+Message-ID: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop
+ body as a ptr
+From:   Johannes Berg <johannes@sipsolutions.net>
+To:     Matthew Wilcox <willy@infradead.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+        Jakob Koschel <jakobkoschel@gmail.com>,
         alsa-devel@alsa-project.org, linux-aspeed@lists.ozlabs.org,
         "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
         linux-iio@vger.kernel.org, nouveau@lists.freedesktop.org,
@@ -112,36 +85,44 @@ Cc:     Jakob Koschel <jakobkoschel@gmail.com>,
         Andrew Morton <akpm@linux-foundation.org>,
         linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
         Mike Rapoport <rppt@kernel.org>
+Date:   Mon, 28 Feb 2022 21:27:13 +0100
+In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+         <20220228110822.491923-3-jakobkoschel@gmail.com>
+         <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+         <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+         <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+         <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+         <Yh0tl3Lni4weIMkl@casper.infradead.org>
 Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.42.4 (3.42.4-1.fc35) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-malware-bazaar: not-scanned
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 28, 2022 at 12:10 PM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> We can do
->
->         typeof(pos) pos
->
-> in the 'for ()' loop, and never use __iter at all.
->
-> That means that inside the for-loop, we use a _different_ 'pos' than outside.
+On Mon, 2022-02-28 at 20:16 +0000, Matthew Wilcox wrote:
+> On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
+> > We can do
+> > 
+> >         typeof(pos) pos
+> > 
+> > in the 'for ()' loop, and never use __iter at all.
+> > 
+> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
+> 
+> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+> it catches real bugs.
+> 
 
-The thing that makes me throw up in my mouth a bit is that in that
+I was just going to say the same thing...
 
-        typeof(pos) pos
+If we're willing to change the API for the macro, we could do
 
-the first 'pos' (that we use for just the typeof) is that outer-level
-'pos', IOW it's a *different* 'pos' than the second 'pos' in that same
-declaration that declares the inner level shadowing new 'pos'
-variable.
+  list_for_each_entry(type, pos, head, member)
 
-If I was a compiler person, I would say "Linus, that thing is too ugly
-to live", and I would hate it. I'm just hoping that even compiler
-people say "that's *so* ugly it's almost beautiful".
+and then actually take advantage of -Wshadow?
 
-Because it does seem to work. It's not pretty, but hey, it's not like
-our headers are really ever be winning any beauty contests...
-
-                Linus
+johannes
