@@ -2,102 +2,113 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4490C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A352C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:17:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229740AbiB1UO0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 15:14:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32842 "EHLO
+        id S230113AbiB1URi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 15:17:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230171AbiB1UOV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:14:21 -0500
-Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBE496312;
-        Mon, 28 Feb 2022 12:13:37 -0800 (PST)
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-2d6d0cb5da4so121706157b3.10;
-        Mon, 28 Feb 2022 12:13:37 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=i1gNUi++w9jmdAT4TpUHXeBfIhOS/MlJVW6bUq+SZ7M=;
-        b=L9capcuXb5dsuR0sbfD3yOZDpkjvzdPU+7pkzyOwsr2UmcLs7shgn/yVbFWGWqEGjD
-         k7WPKFXKNp/JqcmG/M02jXsH9TFEZ98XEQ2fJboSzjRusJ0VwDxp1ECkAtBdGiWJbEb4
-         TtU1aR12bHbw9ynlrhv/HRph+scub4YKOXEIexqtd5EUnn6PMb75VYcpz/JsI9yfzOJg
-         78Z/FHDMuc0oLDR/f/5DkQBkh8ZeovPdffhOEHRuA6mA4GUz/rrM7L352VG9sAByY9lV
-         1gE7P+g43U6+Vqg0ULBZnQs0n6fSOvrCQf/pGA2ESTvxBQGV2jhGuqyPRp8VZu/K3XV2
-         LgSQ==
-X-Gm-Message-State: AOAM532WcmSf9VMEIfU4T6/GoSTraA1/3wkTPf6LoBCWatNe8JGTuLWd
-        +hXb3YAyoW6uDguO2G5hLfm/f13SD/UK5FRNC5A=
-X-Google-Smtp-Source: ABdhPJwgOy8cKMEV7DdF8wEo1m85qBE5OKhfI4UIKaRKwJTPQgeaDbfJdRd1rWJDrD+o9MheZAj4t2+x8NHEmUwnqWc=
-X-Received: by 2002:a81:1611:0:b0:2d6:3290:9bd3 with SMTP id
- 17-20020a811611000000b002d632909bd3mr21933149yww.19.1646079216535; Mon, 28
- Feb 2022 12:13:36 -0800 (PST)
+        with ESMTP id S229821AbiB1URf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:17:35 -0500
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B7234D60D;
+        Mon, 28 Feb 2022 12:16:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=Gzmb9gGTyCSEGFZjR7TUOSRZ1bWW/G5bAVEV+T9ChYA=; b=HMc4MBy8Vzw7Zw6bzwiCq0vper
+        wGe8MnGgfy3P9tw37992OGwcjtB/nFZdz8dqNima3vpVALFvZyXZ3FLoo4RUIh3Ab9CrQCeBzKMqY
+        Ctk97R68KJQlQYl84mgCzKSPEBlsm5unT7lh2/ssDfpaJ9kijdyJZ7M9Gq/AZ9YISpkY4qwyvfd22
+        UNXuHqD0QUEzQlXJX3VELz7E5j90JJI15fiDqKM4f3XzpVoGyrKZNwsue1ODaw91KQCRdaBoqAoRS
+        K+CsuK7iyfWO24fTeFRAPdlXgnD6RcCDMvrfP15+eL0CkbNFD8MwWSyqHmDh8nTOhNkj6bmyxGR8R
+        ZvPOqL+g==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nOmRT-008sRP-GZ; Mon, 28 Feb 2022 20:16:23 +0000
+Date:   Mon, 28 Feb 2022 20:16:23 +0000
+From:   Matthew Wilcox <willy@infradead.org>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+        Jakob Koschel <jakobkoschel@gmail.com>,
+        alsa-devel@alsa-project.org, linux-aspeed@lists.ozlabs.org,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        linux-iio@vger.kernel.org, nouveau@lists.freedesktop.org,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        samba-technical@lists.samba.org,
+        linux1394-devel@lists.sourceforge.net, drbd-dev@lists.linbit.com,
+        linux-arch <linux-arch@vger.kernel.org>,
+        CIFS <linux-cifs@vger.kernel.org>,
+        KVM list <kvm@vger.kernel.org>,
+        linux-scsi <linux-scsi@vger.kernel.org>,
+        linux-rdma <linux-rdma@vger.kernel.org>,
+        linux-staging@lists.linux.dev, "Bos, H.J." <h.j.bos@vu.nl>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        intel-wired-lan@lists.osuosl.org,
+        kgdb-bugreport@lists.sourceforge.net,
+        bcm-kernel-feedback-list@broadcom.com,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Arnd Bergman <arnd@arndb.de>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        intel-gfx <intel-gfx@lists.freedesktop.org>,
+        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        v9fs-developer@lists.sourceforge.net,
+        linux-tegra <linux-tegra@vger.kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-sgx@vger.kernel.org,
+        linux-block <linux-block@vger.kernel.org>,
+        Netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org,
+        linux-wireless <linux-wireless@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux F2FS Dev Mailing List 
+        <linux-f2fs-devel@lists.sourceforge.net>,
+        tipc-discussion@lists.sourceforge.net,
+        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+        dma <dmaengine@vger.kernel.org>,
+        linux-mediatek@lists.infradead.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+Message-ID: <Yh0tl3Lni4weIMkl@casper.infradead.org>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+ <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+ <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
 MIME-Version: 1.0
-References: <20220220181522.541718-1-jic23@kernel.org> <20220220181522.541718-3-jic23@kernel.org>
- <6cd17744-d060-1094-098d-e30a10f96600@intel.com> <20220227114628.219c7055@jic23-huawei>
-In-Reply-To: <20220227114628.219c7055@jic23-huawei>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 28 Feb 2022 21:13:25 +0100
-Message-ID: <CAJZ5v0iwFJizKf-SEr10M-8HFirMzH8=LkONLvtZ30pfEk4AOA@mail.gmail.com>
-Subject: Re: [PATCH 2/8] PM: core: Add NS varients of EXPORT[_GPL]_SIMPLE_DEV_PM_OPS
- and runtime pm equiv
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-iio@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Lorenzo Bianconi <lorenzo@kernel.org>,
-        Tomasz Duszynski <tomasz.duszynski@octakon.com>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Feb 27, 2022 at 12:39 PM Jonathan Cameron <jic23@kernel.org> wrote:
->
-> On Mon, 21 Feb 2022 20:37:57 +0100
-> "Rafael J. Wysocki" <rafael.j.wysocki@intel.com> wrote:
->
-> Hi Rafael,
-> > CC: linux-pm
->
-> Oops. Stupid omission on my part, sorry about that!
->
-> >
-> > On 2/20/2022 7:15 PM, Jonathan Cameron wrote:
-> > > From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > >
-> > > As more drivers start to use namespaces, we need to have varients of these
-> > > useful macros that allow the export to be in a particular namespace.
-> > >
-> > > Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > > Cc: Paul Cercueil <paul@crapouillou.net>
-> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > I'd rather route this through linux-pm unless you have dependent changes.
->
-> Ok.
->
-> The kxsd9 patch (4) is dependent on other changes queued for
-> the merge window in IIO. If we want to do it through linux-pm I'd
-> love it if we can manage to get the ground work in for the coming merge window.
->
-> So options are:
->
-> 1) This patch alone via linux-pm and I queue the users up for next cycle
->    Fine by me but always awkward to have infrastructure with no users.
-> 2) First 3 patches via linux-pm so we have a user (scd30) in a low churn
->    driver and I'll queue the rest for 5.19.  Fine by me as well.
->    That goes on cleanly on 5.17-rc1 and there is nothing else in my review
->    queue touching that driver.
+On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
+> We can do
+> 
+>         typeof(pos) pos
+> 
+> in the 'for ()' loop, and never use __iter at all.
+> 
+> That means that inside the for-loop, we use a _different_ 'pos' than outside.
 
-That would work for me.
+Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+it catches real bugs.
 
-> I'm also interested to hear your view on the discussion going on in reply
-> to the cover letter. Specifically Paul suggested we 'only' have the
-> namespaced versions of these macros.
-
-Well, I'm a bit afraid that providing the namespaced versions only
-would slow down the adoption.
+> +#define list_for_each_entry(pos, head, member)					\
+> +	for (typeof(pos) pos = list_first_entry(head, typeof(*pos), member);	\
+> +	     !list_entry_is_head(pos, head, member);	\
+>  	     pos = list_next_entry(pos, member))
