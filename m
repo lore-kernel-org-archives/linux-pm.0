@@ -2,41 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74FA5C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:29:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E2ADC4167E
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:43:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229711AbiB1U3s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 15:29:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49312 "EHLO
+        id S229885AbiB1Unn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 15:43:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40250 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229489AbiB1U3q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:29:46 -0500
-Received: from sipsolutions.net (s3.sipsolutions.net [IPv6:2a01:4f8:191:4433::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A60D046B14;
-        Mon, 28 Feb 2022 12:29:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=sipsolutions.net; s=mail; h=Content-Transfer-Encoding:MIME-Version:
-        Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
-        Resent-Cc:Resent-Message-ID; bh=uTSgVBk5w89AJnv82I9bqMWvwbVIn7Apzl6uMNeIbWY=;
-        t=1646080146; x=1647289746; b=OkHUiLVznHOGWDQgva9o/U8+hdeMUTOf+IyChue2hmp5Fll
-        ehN379UgJObU84VnUri6HU2CJVMFCfloUG7hAL3mEL6+GyOJ8BoW3Ztxf0QjDucExPzRhtDHGA3sn
-        pFob6kzHYzdNYQbK17GeixiYC/29eL01WuIKAP9nzf5Rrj16Kw2WLK8pdotdsfNO/iUozlBq52fyt
-        XoISW2UfhPtOix8uc7dvq7d6ueMBQhFqQfOJjlH6tyjcXzAZSZh5pTL/BTZI6ozwW24iSqB3LrEw5
-        mWgsr7dP1wyl/pxa0vKCyWULkX9Q8iNjl2i7O0VZM8H8UmdnyB/dZgp74mcvgvAw==;
-Received: by sipsolutions.net with esmtpsa (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-        (Exim 4.95)
-        (envelope-from <johannes@sipsolutions.net>)
-        id 1nOmc1-00716Q-Dh;
-        Mon, 28 Feb 2022 21:27:17 +0100
-Message-ID: <e3bb7d0632f8ef60f18c19976d57330e1ef00584.camel@sipsolutions.net>
+        with ESMTP id S229613AbiB1Unj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:43:39 -0500
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com [IPv6:2607:fcd0:100:8a00::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F2E024593;
+        Mon, 28 Feb 2022 12:42:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1646080979;
+        bh=syYpb/xpUEM74XaWkn+xK6Z1vfQJZQo/NwVp9EVw5rs=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=ujxiIgy0T+0bXa5l/GTOdjcngh6b85JmDA0WyHri0Bbh2a93S9iJ0SxWyDfl/MyPo
+         LfSkwtJLqYe+MRa0ZrGntCtSGoW1hjohSGvPcqjksKBYaUrg8Aw3UwyQBazEu7CyPQ
+         sHqUpBIAmzvzOB+1XNyd+aN4TkXOB/egoLerum4w=
+Received: from localhost (localhost [127.0.0.1])
+        by bedivere.hansenpartnership.com (Postfix) with ESMTP id 4748C1280EAE;
+        Mon, 28 Feb 2022 15:42:59 -0500 (EST)
+Received: from bedivere.hansenpartnership.com ([127.0.0.1])
+        by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id i-njNjm3Pi4q; Mon, 28 Feb 2022 15:42:59 -0500 (EST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1646080979;
+        bh=syYpb/xpUEM74XaWkn+xK6Z1vfQJZQo/NwVp9EVw5rs=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=ujxiIgy0T+0bXa5l/GTOdjcngh6b85JmDA0WyHri0Bbh2a93S9iJ0SxWyDfl/MyPo
+         LfSkwtJLqYe+MRa0ZrGntCtSGoW1hjohSGvPcqjksKBYaUrg8Aw3UwyQBazEu7CyPQ
+         sHqUpBIAmzvzOB+1XNyd+aN4TkXOB/egoLerum4w=
+Received: from jarvis.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:c551::527])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id DDA6D12806A6;
+        Mon, 28 Feb 2022 15:42:54 -0500 (EST)
+Message-ID: <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
 Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop
  body as a ptr
-From:   Johannes Berg <johannes@sipsolutions.net>
-To:     Matthew Wilcox <willy@infradead.org>,
+From:   James Bottomley <James.Bottomley@HansenPartnership.com>
+To:     Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
         Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-        Jakob Koschel <jakobkoschel@gmail.com>,
+Cc:     Jakob Koschel <jakobkoschel@gmail.com>,
         alsa-devel@alsa-project.org, linux-aspeed@lists.ozlabs.org,
         "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
         linux-iio@vger.kernel.org, nouveau@lists.freedesktop.org,
@@ -85,44 +95,97 @@ Cc:     Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
         Andrew Morton <akpm@linux-foundation.org>,
         linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
         Mike Rapoport <rppt@kernel.org>
-Date:   Mon, 28 Feb 2022 21:27:13 +0100
-In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
+Date:   Mon, 28 Feb 2022 15:42:53 -0500
+In-Reply-To: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
          <20220228110822.491923-3-jakobkoschel@gmail.com>
          <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
          <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
-         <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
-         <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
-         <Yh0tl3Lni4weIMkl@casper.infradead.org>
+         <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
 Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.42.4 (3.42.4-1.fc35) 
+User-Agent: Evolution 3.34.4 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-malware-bazaar: not-scanned
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 2022-02-28 at 20:16 +0000, Matthew Wilcox wrote:
-> On Mon, Feb 28, 2022 at 12:10:24PM -0800, Linus Torvalds wrote:
-> > We can do
+On Mon, 2022-02-28 at 21:07 +0100, Christian König wrote:
+> Am 28.02.22 um 20:56 schrieb Linus Torvalds:
+> > On Mon, Feb 28, 2022 at 4:19 AM Christian König
+> > <christian.koenig@amd.com> wrote:
+> > > I don't think that using the extra variable makes the code in any
+> > > way
+> > > more reliable or easier to read.
+> > So I think the next step is to do the attached patch (which
+> > requires
+> > that "-std=gnu11" that was discussed in the original thread).
 > > 
-> >         typeof(pos) pos
+> > That will guarantee that the 'pos' parameter of
+> > list_for_each_entry()
+> > is only updated INSIDE the for_each_list_entry() loop, and can
+> > never
+> > point to the (wrongly typed) head entry.
 > > 
-> > in the 'for ()' loop, and never use __iter at all.
+> > And I would actually hope that it should actually cause compiler
+> > warnings about possibly uninitialized variables if people then use
+> > the
+> > 'pos' pointer outside the loop. Except
 > > 
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
+> >   (a) that code in sgx/encl.c currently initializes 'tmp' to NULL
+> > for
+> > inexplicable reasons - possibly because it already expected this
+> > behavior
+> > 
+> >   (b) when I remove that NULL initializer, I still don't get a
+> > warning,
+> > because we've disabled -Wno-maybe-uninitialized since it results in
+> > so
+> > many false positives.
+> > 
+> > Oh well.
+> > 
+> > Anyway, give this patch a look, and at least if it's expanded to do
+> > "(pos) = NULL" in the entry statement for the for-loop, it will
+> > avoid the HEAD type confusion that Jakob is working on. And I think
+> > in a cleaner way than the horrid games he plays.
+> > 
+> > (But it won't avoid possible CPU speculation of such type
+> > confusion. That, in my opinion, is a completely different issue)
 > 
-> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
-> it catches real bugs.
+> Yes, completely agree.
 > 
+> > I do wish we could actually poison the 'pos' value after the loop
+> > somehow - but clearly the "might be uninitialized" I was hoping for
+> > isn't the way to do it.
+> > 
+> > Anybody have any ideas?
+> 
+> I think we should look at the use cases why code is touching (pos)
+> after the loop.
+> 
+> Just from skimming over the patches to change this and experience
+> with the drivers/subsystems I help to maintain I think the primary
+> pattern looks something like this:
+> 
+> list_for_each_entry(entry, head, member) {
+>      if (some_condition_checking(entry))
+>          break;
+> }
+> do_something_with(entry);
 
-I was just going to say the same thing...
 
-If we're willing to change the API for the macro, we could do
+Actually, we usually have a check to see if the loop found anything,
+but in that case it should something like
 
-  list_for_each_entry(type, pos, head, member)
+if (list_entry_is_head(entry, head, member)) {
+    return with error;
+}
+do_somethin_with(entry);
 
-and then actually take advantage of -Wshadow?
+Suffice?  The list_entry_is_head() macro is designed to cope with the
+bogus entry on head problem.
 
-johannes
+James
+
+
