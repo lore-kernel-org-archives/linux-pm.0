@@ -2,308 +2,148 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A212C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9117C43219
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 20:04:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229929AbiB1UD3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 15:03:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49510 "EHLO
+        id S229845AbiB1UEs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 15:04:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229930AbiB1UD2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:03:28 -0500
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D07F53BFA5;
-        Mon, 28 Feb 2022 12:02:47 -0800 (PST)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 4.0.0)
- id eeaadf3ab70aef69; Mon, 28 Feb 2022 20:36:05 +0100
-Received: from kreacher.localnet (unknown [213.134.175.252])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 2032A660304;
-        Mon, 28 Feb 2022 20:36:04 +0100 (CET)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Doug Smythies <dsmythies@telus.net>,
-        Feng Tang <feng.tang@intel.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Zhang, Rui" <rui.zhang@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "paulmck@kernel.org" <paulmck@kernel.org>,
-        "stable@vger.kernel.org" <stable@vger.kernel.org>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: CPU excessively long times between frequency scaling driver calls - bisected
-Date:   Mon, 28 Feb 2022 20:36:03 +0100
-Message-ID: <11956019.O9o76ZdvQC@kreacher>
-In-Reply-To: <20220228041228.GH4548@shbuild999.sh.intel.com>
-References: <CAAYoRsXkyWf0vmEE2HvjF6pzCC4utxTF=7AFx1PJv4Evh=C+Ow@mail.gmail.com> <CAAYoRsW4LqNvSZ3Et5fqeFcHQ9j9-0u9Y-LN9DmpCS3wG3+NWg@mail.gmail.com> <20220228041228.GH4548@shbuild999.sh.intel.com>
+        with ESMTP id S229870AbiB1UEq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 15:04:46 -0500
+Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 501BB4665E
+        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:04:05 -0800 (PST)
+Received: by mail-ej1-x633.google.com with SMTP id gb39so27137416ejc.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:04:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=uod9R4vPcpqIjzHofeC96qXcIXUlGW+U5alvKq7K0ZA=;
+        b=Y+K+LAchMzIcesbCiqrzhisJgvbUIKYh3oFG/AlZJTKul1K9rRfHylHsN/EgM8hdwz
+         P3hABFpC0Wcw+/0V4cKR5X0P787Wy9QwMeL5ORY50P9+oNZqmMp6NkFq4yV6NAIkP79C
+         0bvk8ZnwfFSPqzKfD7Qqea+fs2YLRTaNcLanw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=uod9R4vPcpqIjzHofeC96qXcIXUlGW+U5alvKq7K0ZA=;
+        b=YH9qziNlBGakMx1Pd3jWNivruBcgsr1K3QsQ3KmMtva06wZlRhUMoIuDqqFEkwnA6W
+         hbYdEOP35/rB+McYC8j+2j6QYNjYUUTWZFuB/laznnLrTHjmK/6YFyxZFSgJCpyk/x83
+         P3mI4FGm9uk0W4na+At58CZJWmKByVPHQ+EQDiG4bsdyKBiV0osHA2SPd2ATUxFBjvaE
+         9O2HXjlvV3JQqx0majq7bCg97U/8j1nuUoDxF6FWRA7L2sYa1czXFAHeRuu6LVl6Ko91
+         WbZtd7FuPyledey7ZRjUSvifC/vhaC8Dbl1lZhIh4fQT8zuei2ce/Khn/MjFPfNUWajj
+         ChVw==
+X-Gm-Message-State: AOAM530HQaWM7yy6NdcdCbCuNEOeEuRCz6As3wZANVyn2jvEjSOZpR9G
+        diPfu+QkzROunUGYycRXn0WLDqv9kVW2O4MdEQs=
+X-Google-Smtp-Source: ABdhPJyMhY0Rh2KEBYtzOS2UIjG2dNgh8OC/6Zdu2sKNwdHXKV+1nI+tMuDtOvELC70s1xkQGL2lzw==
+X-Received: by 2002:a17:906:b2c6:b0:6a9:4bc4:2ec2 with SMTP id cf6-20020a170906b2c600b006a94bc42ec2mr16631120ejb.718.1646078643387;
+        Mon, 28 Feb 2022 12:04:03 -0800 (PST)
+Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com. [209.85.221.45])
+        by smtp.gmail.com with ESMTPSA id hz20-20020a1709072cf400b006d1b5df5c1fsm4668864ejc.17.2022.02.28.12.04.01
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 28 Feb 2022 12:04:01 -0800 (PST)
+Received: by mail-wr1-f45.google.com with SMTP id d3so17214397wrf.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 12:04:01 -0800 (PST)
+X-Received: by 2002:ac2:44a4:0:b0:445:8fc5:a12a with SMTP id
+ c4-20020ac244a4000000b004458fc5a12amr7653619lfm.27.1646078630855; Mon, 28 Feb
+ 2022 12:03:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com> <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+In-Reply-To: <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon, 28 Feb 2022 12:03:34 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+Message-ID: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+To:     =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+Cc:     Jakob Koschel <jakobkoschel@gmail.com>,
+        alsa-devel@alsa-project.org, linux-aspeed@lists.ozlabs.org,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        linux-iio@vger.kernel.org, nouveau@lists.freedesktop.org,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        samba-technical@lists.samba.org,
+        linux1394-devel@lists.sourceforge.net, drbd-dev@lists.linbit.com,
+        linux-arch <linux-arch@vger.kernel.org>,
+        CIFS <linux-cifs@vger.kernel.org>,
+        KVM list <kvm@vger.kernel.org>,
+        linux-scsi <linux-scsi@vger.kernel.org>,
+        linux-rdma <linux-rdma@vger.kernel.org>,
+        linux-staging@lists.linux.dev, "Bos, H.J." <h.j.bos@vu.nl>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        intel-wired-lan@lists.osuosl.org,
+        kgdb-bugreport@lists.sourceforge.net,
+        bcm-kernel-feedback-list@broadcom.com,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Arnd Bergman <arnd@arndb.de>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        intel-gfx <intel-gfx@lists.freedesktop.org>,
+        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        v9fs-developer@lists.sourceforge.net,
+        linux-tegra <linux-tegra@vger.kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-sgx@vger.kernel.org,
+        linux-block <linux-block@vger.kernel.org>,
+        Netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org,
+        linux-wireless <linux-wireless@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux F2FS Dev Mailing List 
+        <linux-f2fs-devel@lists.sourceforge.net>,
+        tipc-discussion@lists.sourceforge.net,
+        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+        dma <dmaengine@vger.kernel.org>,
+        linux-mediatek@lists.infradead.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Mike Rapoport <rppt@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.175.252
-X-CLIENT-HOSTNAME: 213.134.175.252
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddruddttddguddviecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdejlefghfeiudektdelkeekvddugfeghffggeejgfeukeejleevgffgvdeluddtnecukfhppedvudefrddufeegrddujeehrddvhedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudejhedrvdehvddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepuddtpdhrtghpthhtohepughsmhihthhhihgvshesthgvlhhushdrnhgvthdprhgtphhtthhopehfvghnghdrthgrnhhgsehinhhtvghlrdgtohhmpdhrtghpthhtoheprhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehsrhhinhhivhgrshdrphgrnhgurhhuvhgruggrsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtoheprhhuihdr
- iihhrghnghesihhnthgvlhdrtghomhdprhgtphhtthhopehtghhlgieslhhinhhuthhrohhnihigrdguvgdprhgtphhtthhopehprghulhhmtghksehkvghrnhgvlhdrohhrghdprhgtphhtthhopehsthgrsghlvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopeigkeeisehkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=10 Fuz1=10 Fuz2=10
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday, February 28, 2022 5:12:28 AM CET Feng Tang wrote:
-> On Fri, Feb 25, 2022 at 04:36:53PM -0800, Doug Smythies wrote:
-> > On Fri, Feb 25, 2022 at 9:46 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > On Thursday, February 24, 2022 9:08:30 AM CET Feng Tang wrote:
-> > ...
-> > > > > So it looks like a new mechanism is needed for that.
-> > > >
-> > > > If you think idle class is not the right place to solve it, I can
-> > > > also help testing new patches.
-> > >
-> > > So I have the appended experimental patch to address this issue that's not
-> > > been tested at all.  Caveat emptor.
-> > 
-> > Hi Rafael,
-> > 
-> > O.K., you gave fair warning.
-> > 
-> > The patch applied fine.
-> > It does not compile for me.
-> > The function cpuidle_update_retain_tick does not exist.
-> > Shouldn't it be somewhere in cpuidle.c?
-> > I used the function cpuidle_disable_device as a template
-> > for searching and comparing.
-> > 
-> > Because all of my baseline results are with kernel 5.17-rc3,
-> > that is what I am still using.
-> > 
-> > Error:
-> > ld: drivers/cpufreq/intel_pstate.o: in function `intel_pstate_update_perf_ctl':
-> > intel_pstate.c:(.text+0x2520): undefined reference to
-> > `cpuidle_update_retain_tick'
->  
-> Same here, seems the cpuidle_update_retain_tick()'s implementation
-> is missing.
+On Mon, Feb 28, 2022 at 11:56 AM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+> I do wish we could actually poison the 'pos' value after the loop
+> somehow - but clearly the "might be uninitialized" I was hoping for
+> isn't the way to do it.
 
-That's a patch generation issue on my part, sorry.
+Side note: we do need *some* way to do it.
 
-However, it was a bit racy, so maybe it's good that it was not complete.
+Because if we make that change, and only set it to another pointer
+when not the head, then we very much change the semantics of
+"list_for_each_head()". The "list was empty" case would now exit with
+'pos' not set at all (or set to NULL if we add that). Or it would be
+set to the last entry.
 
-Below is a new version.
+And regardless, that means that all the
 
----
- drivers/cpufreq/intel_pstate.c     |   40 ++++++++++++++++++++++++++++---------
- drivers/cpuidle/governor.c         |   23 +++++++++++++++++++++
- drivers/cpuidle/governors/ladder.c |    6 +++--
- drivers/cpuidle/governors/menu.c   |    2 +
- drivers/cpuidle/governors/teo.c    |    3 ++
- include/linux/cpuidle.h            |    4 +++
- 6 files changed, 67 insertions(+), 11 deletions(-)
+        if (pos == head)
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -284,6 +284,8 @@ static int menu_select(struct cpuidle_dr
- 	if (unlikely(delta < 0)) {
- 		delta = 0;
- 		delta_tick = 0;
-+	} else if (cpuidle_retain_local_tick()) {
-+		delta = delta_tick;
- 	}
- 	data->next_timer_ns = delta;
- 
-Index: linux-pm/drivers/cpuidle/governors/teo.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/teo.c
-+++ linux-pm/drivers/cpuidle/governors/teo.c
-@@ -308,6 +308,9 @@ static int teo_select(struct cpuidle_dri
- 	cpu_data->time_span_ns = local_clock();
- 
- 	duration_ns = tick_nohz_get_sleep_length(&delta_tick);
-+	if (cpuidle_retain_local_tick())
-+		duration_ns = delta_tick;
-+
- 	cpu_data->sleep_length_ns = duration_ns;
- 
- 	/* Check if there is any choice in the first place. */
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -172,6 +172,9 @@ extern int cpuidle_play_dead(void);
- extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
- static inline struct cpuidle_device *cpuidle_get_device(void)
- {return __this_cpu_read(cpuidle_devices); }
-+
-+extern void cpuidle_update_retain_tick(bool val);
-+extern bool cpuidle_retain_local_tick(void);
- #else
- static inline void disable_cpuidle(void) { }
- static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
-@@ -211,6 +214,7 @@ static inline int cpuidle_play_dead(void
- static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
- 	struct cpuidle_device *dev) {return NULL; }
- static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
-+static inline void cpuidle_update_retain_tick(bool val) { }
- #endif
- 
- #ifdef CONFIG_CPU_IDLE
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -19,6 +19,7 @@
- #include <linux/list.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpuidle.h>
- #include <linux/sysfs.h>
- #include <linux/types.h>
- #include <linux/fs.h>
-@@ -1970,6 +1971,30 @@ static inline void intel_pstate_cppc_set
- }
- #endif /* CONFIG_ACPI_CPPC_LIB */
- 
-+static void intel_pstate_update_perf_ctl(struct cpudata *cpu)
-+{
-+	int pstate = cpu->pstate.current_pstate;
-+
-+	/*
-+	 * Avoid stopping the scheduler tick from cpuidle on CPUs in turbo
-+	 * P-states to prevent them from getting back to the high frequency
-+	 * right away after getting out of deep idle.
-+	 */
-+	cpuidle_update_retain_tick(pstate > cpu->pstate.max_pstate);
-+	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu, pstate));
-+}
-+
-+static void intel_pstate_update_perf_ctl_wrapper(void *cpu_data)
-+{
-+	intel_pstate_update_perf_ctl(cpu_data);
-+}
-+
-+static void intel_pstate_update_perf_ctl_on_cpu(struct cpudata *cpu)
-+{
-+	smp_call_function_single(cpu->cpu, intel_pstate_update_perf_ctl_wrapper,
-+				 cpu, 1);
-+}
-+
- static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
- {
- 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
-@@ -1979,8 +2004,7 @@ static void intel_pstate_set_pstate(stru
- 	 * the CPU being updated, so force the register update to run on the
- 	 * right CPU.
- 	 */
--	wrmsrl_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
--		      pstate_funcs.get_val(cpu, pstate));
-+	intel_pstate_update_perf_ctl_on_cpu(cpu);
- }
- 
- static void intel_pstate_set_min_pstate(struct cpudata *cpu)
-@@ -2256,7 +2280,7 @@ static void intel_pstate_update_pstate(s
- 		return;
- 
- 	cpu->pstate.current_pstate = pstate;
--	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu, pstate));
-+	intel_pstate_update_perf_ctl(cpu);
- }
- 
- static void intel_pstate_adjust_pstate(struct cpudata *cpu)
-@@ -2843,11 +2867,9 @@ static void intel_cpufreq_perf_ctl_updat
- 					  u32 target_pstate, bool fast_switch)
- {
- 	if (fast_switch)
--		wrmsrl(MSR_IA32_PERF_CTL,
--		       pstate_funcs.get_val(cpu, target_pstate));
-+		intel_pstate_update_perf_ctl(cpu);
- 	else
--		wrmsrl_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
--			      pstate_funcs.get_val(cpu, target_pstate));
-+		intel_pstate_update_perf_ctl_on_cpu(cpu);
- }
- 
- static int intel_cpufreq_update_pstate(struct cpufreq_policy *policy,
-@@ -2857,6 +2879,8 @@ static int intel_cpufreq_update_pstate(s
- 	int old_pstate = cpu->pstate.current_pstate;
- 
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+	cpu->pstate.current_pstate = target_pstate;
-+
- 	if (hwp_active) {
- 		int max_pstate = policy->strict_target ?
- 					target_pstate : cpu->max_perf_ratio;
-@@ -2867,8 +2891,6 @@ static int intel_cpufreq_update_pstate(s
- 		intel_cpufreq_perf_ctl_update(cpu, target_pstate, fast_switch);
- 	}
- 
--	cpu->pstate.current_pstate = target_pstate;
--
- 	intel_cpufreq_trace(cpu, fast_switch ? INTEL_PSTATE_TRACE_FAST_SWITCH :
- 			    INTEL_PSTATE_TRACE_TARGET, old_pstate);
- 
-Index: linux-pm/drivers/cpuidle/governors/ladder.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/ladder.c
-+++ linux-pm/drivers/cpuidle/governors/ladder.c
-@@ -61,10 +61,10 @@ static inline void ladder_do_selection(s
-  * ladder_select_state - selects the next state to enter
-  * @drv: cpuidle driver
-  * @dev: the CPU
-- * @dummy: not used
-+ * @stop_tick: Whether or not to stop the scheduler tick
-  */
- static int ladder_select_state(struct cpuidle_driver *drv,
--			       struct cpuidle_device *dev, bool *dummy)
-+			       struct cpuidle_device *dev, bool *stop_tick)
- {
- 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
-@@ -73,6 +73,8 @@ static int ladder_select_state(struct cp
- 	s64 latency_req = cpuidle_governor_latency_req(dev->cpu);
- 	s64 last_residency;
- 
-+	*stop_tick = !cpuidle_retain_local_tick();
-+
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0)) {
- 		ladder_do_selection(dev, ldev, last_idx, 0);
-Index: linux-pm/drivers/cpuidle/governor.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governor.c
-+++ linux-pm/drivers/cpuidle/governor.c
-@@ -118,3 +118,26 @@ s64 cpuidle_governor_latency_req(unsigne
- 
- 	return (s64)device_req * NSEC_PER_USEC;
- }
-+
-+static DEFINE_PER_CPU(bool, cpuidle_retain_tick);
-+
-+/**
-+ * cpuidle_update_retain_tick - Update the local CPU's retain_tick flag.
-+ * @val: New value of the flag.
-+ *
-+ * The retain_tick flag controls whether or not to cpuidle is allowed to stop
-+ * the scheduler tick on the local CPU and it can be updated with the help of
-+ * this function.
-+ */
-+void cpuidle_update_retain_tick(bool val)
-+{
-+	this_cpu_write(cpuidle_retain_tick, val);
-+}
-+
-+/**
-+ * couidle_retain_local_tick - Return the local CPU's retain_tick flag value.
-+ */
-+bool cpuidle_retain_local_tick(void)
-+{
-+	return this_cpu_read(cpuidle_retain_tick);
-+}
+kinds of checks after the loop would be fundamentally broken.
 
+Darn. I really hoped for (and naively expected) that we could actually
+have the compiler warn about the use-after-loop case. That whole
+"compiler will now complain about bad use" was integral to my clever
+plan to use the C99 feature of declaring the iterator inside the loop.
 
+But my "clever plan" was apparently some ACME-level Wile E. Coyote sh*t.
 
+Darn.
 
+                   Linus
