@@ -2,132 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CF0EC35278
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 22:07:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F364C4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 22:09:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231371AbiB1WHr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 17:07:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35058 "EHLO
+        id S229985AbiB1WKX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 17:10:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46242 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230402AbiB1WHq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 17:07:46 -0500
-X-Greylist: delayed 3241 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 28 Feb 2022 14:07:01 PST
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7E7D3C4E3A;
-        Mon, 28 Feb 2022 14:07:01 -0800 (PST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-        by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 21SKr95E005627;
-        Mon, 28 Feb 2022 14:53:09 -0600
-Received: (from segher@localhost)
-        by gate.crashing.org (8.14.1/8.14.1/Submit) id 21SKr7Xe005624;
-        Mon, 28 Feb 2022 14:53:07 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date:   Mon, 28 Feb 2022 14:53:07 -0600
-From:   Segher Boessenkool <segher@kernel.crashing.org>
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-        linux-wireless <linux-wireless@vger.kernel.org>,
-        alsa-devel@alsa-project.org, KVM list <kvm@vger.kernel.org>,
-        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
-        linux-iio@vger.kernel.org, nouveau@lists.freedesktop.org,
-        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Cristiano Giuffrida <c.giuffrida@vu.nl>,
-        "Bos, H.J." <h.j.bos@vu.nl>, linux1394-devel@lists.sourceforge.net,
-        drbd-dev@lists.linbit.com, linux-arch <linux-arch@vger.kernel.org>,
-        CIFS <linux-cifs@vger.kernel.org>, linux-aspeed@lists.ozlabs.org,
-        linux-scsi <linux-scsi@vger.kernel.org>,
-        linux-rdma <linux-rdma@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        amd-gfx list <amd-gfx@lists.freedesktop.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        intel-wired-lan@lists.osuosl.org,
-        kgdb-bugreport@lists.sourceforge.net,
-        bcm-kernel-feedback-list@broadcom.com,
-        Dan Carpenter <dan.carpenter@oracle.com>,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Arnd Bergman <arnd@arndb.de>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        intel-gfx <intel-gfx@lists.freedesktop.org>,
-        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
-        Nathan Chancellor <nathan@kernel.org>,
-        dma <dmaengine@vger.kernel.org>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Jakob Koschel <jakobkoschel@gmail.com>,
-        v9fs-developer@lists.sourceforge.net,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        linux-sgx@vger.kernel.org,
-        linux-block <linux-block@vger.kernel.org>,
-        Netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org,
-        samba-technical@lists.samba.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux F2FS Dev Mailing List 
-        <linux-f2fs-devel@lists.sourceforge.net>,
-        tipc-discussion@lists.sourceforge.net,
-        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-        linux-mediatek@lists.infradead.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body as a ptr
-Message-ID: <20220228205307.GD614@gate.crashing.org>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com> <20220228110822.491923-3-jakobkoschel@gmail.com> <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com> <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com> <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com> <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com> <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        with ESMTP id S229634AbiB1WKX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 17:10:23 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 738FCC681F;
+        Mon, 28 Feb 2022 14:09:43 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 39DA4B81698;
+        Mon, 28 Feb 2022 22:09:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D10FC340EE;
+        Mon, 28 Feb 2022 22:09:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1646086180;
+        bh=C3m4pnnTAF+o+8Z+tsT22TMwOAoIvmDl7rQIHuiLdMA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=BdRbVBZNF8SyrlpXKAsHjo1A6k3f944Uzsh5hy2UmK5ywn8cPtoiWatoTWpomjQzc
+         x44Jv7/Wzxo8T+fSgsmyLRYgbKXOQkqEy86p/ln+HE5A679Zvs+XoyM7aJWc8wSHt6
+         ACqagutJzp7I7JrJGyMxpDRREGY/HUyTANKgF4FJ/99jkm+o2X+/pda0xDuvY8MbdY
+         Sv4Zfi/zQD1hFPf6GsOnP6lA5hiuplekt76UNCcR1YonNLI47HOJfCmRDkLAT1NcBE
+         yuQHyRRcOkNLJGUq9zBF6RREf+bF8FScygNYfOz5OBENPb041Vfalb0bt696k7uf4U
+         g+dDDXgOJFcHA==
+Date:   Mon, 28 Feb 2022 22:09:31 +0000
+From:   Mark Brown <broonie@kernel.org>
+To:     Rob Herring <robh@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
+        Guenter Roeck <groeck@chromium.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-mtd@lists.infradead.org,
+        netdev@vger.kernel.org, linux-phy@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        alsa-devel@alsa-project.org, linux-spi@vger.kernel.org,
+        linux-usb@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Another pass removing cases of 'allOf'
+ containing a '$ref'
+Message-ID: <Yh1IG9daOUOB52rf@sirena.org.uk>
+References: <20220228213802.1639658-1-robh@kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="xC2AwCckB4yHmCdp"
 Content-Disposition: inline
-In-Reply-To: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20220228213802.1639658-1-robh@kernel.org>
+X-Cookie: Killing turkeys causes winter.
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 28, 2022 at 12:14:44PM -0800, Linus Torvalds wrote:
-> On Mon, Feb 28, 2022 at 12:10 PM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> > We can do
-> >
-> >         typeof(pos) pos
-> >
-> > in the 'for ()' loop, and never use __iter at all.
-> >
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
-> 
-> The thing that makes me throw up in my mouth a bit is that in that
-> 
->         typeof(pos) pos
-> 
-> the first 'pos' (that we use for just the typeof) is that outer-level
-> 'pos', IOW it's a *different* 'pos' than the second 'pos' in that same
-> declaration that declares the inner level shadowing new 'pos'
-> variable.
 
-The new "pos" has not yet been declared, so this has to refer to the
-outer "pos", it cannot be the inner one.  Because it hasn't been
-declared yet :-)
+--xC2AwCckB4yHmCdp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Compare this to
-  typeof (pos) pos = pos;
-where that last "pos" *does* refer to the newly declared one: that
-declaration has already been done!  (So this code is UB btw, 6.3.2.1/2).
+On Mon, Feb 28, 2022 at 03:38:02PM -0600, Rob Herring wrote:
+> Another pass at removing unnecessary use of 'allOf' with a '$ref'.
+>=20
+> json-schema versions draft7 and earlier have a weird behavior in that
+> any keywords combined with a '$ref' are ignored (silently). The correct
+> form was to put a '$ref' under an 'allOf'. This behavior is now changed
+> in the 2019-09 json-schema spec and '$ref' can be mixed with other
+> keywords.
 
-> If I was a compiler person, I would say "Linus, that thing is too ugly
-> to live", and I would hate it. I'm just hoping that even compiler
-> people say "that's *so* ugly it's almost beautiful".
+Acked-by: Mark Brown <broonie@kernel.org>
 
-It is perfectly well-defined.  Well, it would be good if we (GCC) would
-document it does work, and if someone tested it on LLVM as well.  But it
-is really hard to implement it to *not* work :-)
+--xC2AwCckB4yHmCdp
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> Because it does seem to work. It's not pretty, but hey, it's not like
-> our headers are really ever be winning any beauty contests...
+-----BEGIN PGP SIGNATURE-----
 
-It is very pretty!  Needs a comment though :-)
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmIdSBoACgkQJNaLcl1U
+h9Brnwf9Gb7P9H3jku9OngoretGUxGN4DtDmr+0Bvk7ZZFkSIVQYVBROL0mmUfer
+wPLiKHS48VJM6irhxRMqHLa1CrIeAmJHZpkg0R1JH1Iw36fWPZiBTfrDG8qubOti
+l/cEx7Jmxoj2EtB8xcTpbYGqwOqSZtDkAz1smUIh3coKzArwCPjkAYE59GjQ28SS
+F+P6ze1awYqRh/vkZC5ge03hrBhxOKU1iVyqv4iRfWtwCXRxYM3aPTs4aLB/T0NW
+svINogVRgGsGVmY7gRufv1wI7bJle7+MP7byPwsqzx2AXthe0fYt3x457mV59wjc
+Ej2pLNgE/IiOKyZ8gmWU8kkWHOh2hQ==
+=Hxgn
+-----END PGP SIGNATURE-----
 
-
-Segher
+--xC2AwCckB4yHmCdp--
