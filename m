@@ -2,82 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF4D2C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 11:13:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5ABFBC4167E
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 11:20:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231558AbiB1LON (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 06:14:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57982 "EHLO
+        id S235578AbiB1LUw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 06:20:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235607AbiB1LLE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 06:11:04 -0500
-X-Greylist: delayed 312 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 28 Feb 2022 03:09:41 PST
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D95E6E8F1;
-        Mon, 28 Feb 2022 03:09:40 -0800 (PST)
-Received: from evilbit.green-communications.fr ([92.154.77.116]) by
- mrelayeu.kundenserver.de (mreue012 [213.165.67.103]) with ESMTPSA (Nemesis)
- id 1MqZE0-1o25Ic3yFs-00mcLC; Mon, 28 Feb 2022 12:04:23 +0100
-From:   Nicolas Cavallari <nicolas.cavallari@green-communications.fr>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: genetlink: Fix TZ_GET_TRIP NULL pointer dereference
-Date:   Mon, 28 Feb 2022 12:03:51 +0100
-Message-Id: <20220228110351.20518-2-nicolas.cavallari@green-communications.fr>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220228110351.20518-1-nicolas.cavallari@green-communications.fr>
-References: <20220228110351.20518-1-nicolas.cavallari@green-communications.fr>
+        with ESMTP id S235316AbiB1LUu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 06:20:50 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18C2A381BD;
+        Mon, 28 Feb 2022 03:20:11 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id B28EEB81088;
+        Mon, 28 Feb 2022 11:20:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 577DAC340E7;
+        Mon, 28 Feb 2022 11:20:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1646047208;
+        bh=TZYI8CoLqZwdjhCp4FIqkyAKtFSpIqtbXR7Aczi5lHQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=C57riiYnEjUdxOZhn04GGyA8PIVDUJ6DJKuCKjTYwuUmTfW6bVKDrs724kyxSBaKx
+         RgI2btjN0kChcFl20e7HpTgxlexOr2YrBREdqqTBvDVt/Whdw/5z0V77N814zObmo3
+         /EeMG4N6szzw6EaZ5Y2WBm3/aL7Ea4aeZYOpa8Fs=
+Date:   Mon, 28 Feb 2022 12:20:03 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Jakob Koschel <jakobkoschel@gmail.com>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-arch <linux-arch@vger.kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Arnd Bergman <arnd@arndb.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        "Bos, H.J." <h.j.bos@vu.nl>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        Nathan Chancellor <nathan@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sgx@vger.kernel.org,
+        drbd-dev@lists.linbit.com, linux-block@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-crypto@vger.kernel.org,
+        dmaengine@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        intel-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+        linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+        intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-usb@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+        bcm-kernel-feedback-list@broadcom.com, linux-tegra@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, kvm@vger.kernel.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-fsdevel@vger.kernel.org,
+        kgdb-bugreport@lists.sourceforge.net,
+        v9fs-developer@lists.sourceforge.net,
+        tipc-discussion@lists.sourceforge.net, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 2/6] treewide: remove using list iterator after loop body
+ as a ptr
+Message-ID: <Yhyv42ONIxTj04mg@kroah.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:Z23tdDyKIgIMHnYp/38gWcoqsVjOYU4hm9ReJpXzE/mCJ5x6hUX
- 4iYXgS7D7k995wnC7lbYkdxiO6y58eg2A4BYDeBxh/BsztFyOi2L+KGdGz5YY8Z/fthO/WF
- 8hLl/FdDWsDTM3QdE2nV6x6aStzK6DuVKs1H1b7JCuyYrMCNSczoHVCeT3t/U1mFuCm7PAY
- VSTkkA+XZPRjJP9AIVg8w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:wZmt3fsaZFA=:cLOupJGsEzb0sPlifnbInd
- 8UsZi9s9FlvobtrUwKhn66i2XKvST2QxIjulNPv+psAnUS7Wu+y7lDVQUFDcC49taSHXNm8ZD
- obJaOCjZfuCeOqlxrDky9F2HP6E25n3/cRofyUVuD69Y8f8CHE0bgoV1wFN8Y3gG7sUiF5Ki7
- ZG7xf7F/8VjsOcjZux+iuAKEJvBAT9tU/0a172kER7xPiDLaqyPr9YF+S2/pkyQ4RVFnkwe6W
- 6w5MQJA9pMQW5HR3mFL32be3SX4bdvTXMhv08oVlkg43y+YkboW1zjoCC9/dTcphnp9Q/10QB
- 843Tx8aGmPsU8SJxVzvlzjtitQ186WYlKtHkvDL2CGJpkchyGLoGh+Bq+RtGeUhmhjYhy4QLM
- dA2RP7K528SLyBi7orqbTI2NTZ/Ri893WGXBDfnBcElP97aPMnj5OUWCpC8ejMIMVhC8j8eQU
- vCSpnsbBzD3ySiRE0FkhdU1B0GKFW7e4Uem04WlDcjeL/ZmLWybIBbS8yj1QV9kxB5FfPzARf
- IyX4O6JiyCX2eF8fILMsX/3XsL9ZiYEbgOAusemGL2oVqxVk929C6jb2AC/BSJO0+RRFoPnYu
- /W8peUrW7zo0Lhwrn0qqkr7eh1rakXitvdA+gRG72BKpH+NO4YhkEbK2H2ApnhNDoWWoZmU3L
- YhY/gjqiWbRTfqpST581q3WB3eoGeJw87tPXg88RRrVxpr35sRDT4eIjDP3MuCWWUAp2ovDAr
- OBPzulVOjfkdUpxu8TTwJVWM1h7bk+tn1lFcQg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220228110822.491923-3-jakobkoschel@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Do not call get_trip_hyst() if the thermal zone does not define one.
+On Mon, Feb 28, 2022 at 12:08:18PM +0100, Jakob Koschel wrote:
+> If the list does not contain the expected element, the value of
+> list_for_each_entry() iterator will not point to a valid structure.
+> To avoid type confusion in such case, the list iterator
+> scope will be limited to list_for_each_entry() loop.
+> 
+> In preparation to limiting scope of a list iterator to the list traversal
+> loop, use a dedicated pointer to point to the found element.
+> Determining if an element was found is then simply checking if
+> the pointer is != NULL.
+> 
+> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/sgx/encl.c       |  6 +++--
+>  drivers/scsi/scsi_transport_sas.c    | 17 ++++++++-----
+>  drivers/thermal/thermal_core.c       | 38 ++++++++++++++++++----------
+>  drivers/usb/gadget/configfs.c        | 22 ++++++++++------
+>  drivers/usb/gadget/udc/max3420_udc.c | 11 +++++---
+>  drivers/usb/gadget/udc/tegra-xudc.c  | 11 +++++---
+>  drivers/usb/mtu3/mtu3_gadget.c       | 11 +++++---
+>  drivers/usb/musb/musb_gadget.c       | 11 +++++---
+>  drivers/vfio/mdev/mdev_core.c        | 11 +++++---
+>  9 files changed, 88 insertions(+), 50 deletions(-)
 
-Signed-off-by: Nicolas Cavallari <nicolas.cavallari@green-communications.fr>
----
- drivers/thermal/thermal_netlink.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+The drivers/usb/ portion of this patch should be in patch 1/X, right?
 
-diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
-index a16dd4d5d710..73e68cce292e 100644
---- a/drivers/thermal/thermal_netlink.c
-+++ b/drivers/thermal/thermal_netlink.c
-@@ -419,11 +419,12 @@ static int thermal_genl_cmd_tz_get_trip(struct param *p)
- 	for (i = 0; i < tz->trips; i++) {
- 
- 		enum thermal_trip_type type;
--		int temp, hyst;
-+		int temp, hyst = 0;
- 
- 		tz->ops->get_trip_type(tz, i, &type);
- 		tz->ops->get_trip_temp(tz, i, &temp);
--		tz->ops->get_trip_hyst(tz, i, &hyst);
-+		if (tz->ops->get_trip_hyst)
-+			tz->ops->get_trip_hyst(tz, i, &hyst);
- 
- 		if (nla_put_u32(msg, THERMAL_GENL_ATTR_TZ_TRIP_ID, i) ||
- 		    nla_put_u32(msg, THERMAL_GENL_ATTR_TZ_TRIP_TYPE, type) ||
--- 
-2.35.1
+Also, you will have to split these up per-subsystem so that the
+different subsystem maintainers can take these in their trees.
 
+thanks,
+
+greg k-h
