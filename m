@@ -2,153 +2,249 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7B17C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 09:18:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7DCEC35276
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Feb 2022 11:09:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233528AbiB1JTP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Feb 2022 04:19:15 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34418 "EHLO
+        id S235480AbiB1LJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Feb 2022 06:09:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50534 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231463AbiB1JTO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 04:19:14 -0500
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70352517FC
-        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 01:18:35 -0800 (PST)
-Received: by mail-wr1-x432.google.com with SMTP id s13so14321739wrb.6
-        for <linux-pm@vger.kernel.org>; Mon, 28 Feb 2022 01:18:35 -0800 (PST)
+        with ESMTP id S231282AbiB1LJf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Feb 2022 06:09:35 -0500
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 773B76621A;
+        Mon, 28 Feb 2022 03:08:54 -0800 (PST)
+Received: by mail-ej1-x635.google.com with SMTP id p15so23995782ejc.7;
+        Mon, 28 Feb 2022 03:08:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=smile-fr.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=xBnaBUHZiPf/i/GVor2BUnhBpMNuYKQlp76LBNPvktw=;
-        b=tAUuZnh7Q/7PVBNFl5bqBPz8uipl74wfKp++VpfCBb6I3TcOWUm+RWRdMw/+NSsDpR
-         iO0CwKBTEwGQkGVFAEHOe7CW92jl/yOOY/1RiZfNCyGElC+NuQu7FMFNkrloj5jSxaIb
-         xQLs5uEFi+kVehbQ309LGTs1EnkdgYCM7n9Qq4uwEESFSH6ZaiY9JzxWL3viCb5cJR6F
-         6HE2dgN4cekvkZQhLH9SzK+GZQzxy8agwQM29L31hQ35G7x49Hr8n+ZAJB596uqRHscS
-         /CLlQg7aDn4Rs/ttlMw8xwCR2dl4t8KTOx1jNCkkEIqY4WMUx1+AdGZu/uM4y+irwSxr
-         iQ2A==
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=DGHuYFjchXbmgUIZ1SnPPgINXW2r1tGfV7LKxanZ5rw=;
+        b=mx6+xil8F/OwTucWDkjx4s8oWe9qKYEvq+lRSteVfL7qHoHjMYzOaON1c2kL9OYiTX
+         db1Mykp/ffS9il6Fqi76pAlN/G5rXNdswBXj/5Gig3gkxoatbBHPRDADsVd/P2bKgern
+         FiNaHDXHNfiQkUQdDT0QxGTuel99Vo9xYQqWbNfVZEfqWt3+vAZeTOc1QbByn6ecNGa6
+         S2BlhLxmBqy/aCRkfkMxvBR+4RMiFfh+//eOhtERGL+8TdWCfHba+zdrYCDUyKUpjEKv
+         GoJF4WvvVQmT7fMcDismFLp5shdM79FKyOLpnEpulQji7R6fg8Aw9kXLsIi9eJ28dAK+
+         e6Aw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=xBnaBUHZiPf/i/GVor2BUnhBpMNuYKQlp76LBNPvktw=;
-        b=IpaeoXnGYvFKlbbJuU5Pjk5OJ0xvEmLFPjLqbJnFPl8e9J8RGawj8O4SYSbZIWbEoS
-         jq0KLU+FINgoYgB4zKHjDWh5V+Cr+TGH11TF5w1RX2xqQv8q1TtSM55lbc7Wn8wsKjgN
-         ysqL8D0XvTJE+2SJJPxKiyx2prYcpc8Ift6CceRE8n7NN668eJ66u5t2CLmiC8BLh2i6
-         gz8HEQpSz9e40I1NmbNXE/+UmuOS89qHf5FuzPFohBGnXwN19GZssJl4qc9KgYUx0MJj
-         oNSbhpoqBgzZ7ujMF1oDEeWMns4j0XnG85FJiqngmP1EjqQXhAwDwYG4+jFM86JJBqjv
-         s6Mg==
-X-Gm-Message-State: AOAM53280tPCGlra6zBZ2+pvC6/nrL4yasyZYYzZcwgApLlBFVLpu0Vs
-        fWD/x3ALBvPsbXlEpoJA1mjqHg==
-X-Google-Smtp-Source: ABdhPJyhIOuDwrLOhXqZCbd1kJmuFIcDWggB3nehLm9VOcXw1SVXcysCsHDjHdKed4MmZLMKAJAI3A==
-X-Received: by 2002:adf:ec08:0:b0:1ef:d7e1:c70 with SMTP id x8-20020adfec08000000b001efd7e10c70mr2070406wrn.257.1646039914037;
-        Mon, 28 Feb 2022 01:18:34 -0800 (PST)
-Received: from ?IPV6:2a01:cb05:8f8a:1800:1c97:b8d1:b477:d53f? (2a01cb058f8a18001c97b8d1b477d53f.ipv6.abo.wanadoo.fr. [2a01:cb05:8f8a:1800:1c97:b8d1:b477:d53f])
-        by smtp.gmail.com with ESMTPSA id j27-20020adfd21b000000b001e519f3e0d0sm9900265wrh.7.2022.02.28.01.18.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 28 Feb 2022 01:18:33 -0800 (PST)
-Message-ID: <03877d75-0a4a-3365-7005-9f493d8810cf@smile.fr>
-Date:   Mon, 28 Feb 2022 10:18:32 +0100
+        bh=DGHuYFjchXbmgUIZ1SnPPgINXW2r1tGfV7LKxanZ5rw=;
+        b=1bNDt9DZ9vdL6IeovAr4FC27FUvFi4jnZQZYMMlul2Q01UKNzlHm1z3FwigGBlBL1a
+         espESZaRqFGQyOLnZlQ2VIxqXxwmKG9rNZS5OL8UTCCD2L3zqxeo/o6ooY+au4yLNoUQ
+         xbQ67jdWOaxSIAf/9gXcrfXoHmHrzU9nctvDiuVM2E0MqwD5Uc8e0s/Znij6esRwHHsr
+         tQgLndisNG3XjKntWxlZFqx4/XoJZG0o4ZDlswQwsb9TwRtqiFjX7Ac4hj+yOAY8qDAh
+         EDPMcDy/3thVOQRqa7C/ZVY2quKjLEYSvnTUPxXBZYSZoX3EPTADSk3rkwnlHxo6TpE1
+         LQow==
+X-Gm-Message-State: AOAM532nrmuiJjF1PUmL8f3Xz/7nH2iwYgIfMWvD8fXRM1QYRO2KP3N/
+        5/JZGLThCH30fo87HakgtPA=
+X-Google-Smtp-Source: ABdhPJzNctGRxtGORumk8xJxhLEhhYPBXw3MCY4PM4mZEwTJgQgzAy87Z2fgE8nw5jOtXDmEFeeNlg==
+X-Received: by 2002:a17:906:32d8:b0:6ce:d850:f79 with SMTP id k24-20020a17090632d800b006ced8500f79mr14260258ejk.414.1646046532887;
+        Mon, 28 Feb 2022 03:08:52 -0800 (PST)
+Received: from localhost.localdomain (dhcp-077-250-038-153.chello.nl. [77.250.38.153])
+        by smtp.googlemail.com with ESMTPSA id z22-20020a17090655d600b006d229436793sm4209049ejp.223.2022.02.28.03.08.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 28 Feb 2022 03:08:52 -0800 (PST)
+From:   Jakob Koschel <jakobkoschel@gmail.com>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Jakob Koschel <jakobkoschel@gmail.com>,
+        linux-arch <linux-arch@vger.kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Arnd Bergman <arnd@arndb.de>,
+        "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        "Brian Johannesmeyer" <bjohannesmeyer@gmail.com>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        "Bos, H.J." <h.j.bos@vu.nl>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        Nathan Chancellor <nathan@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-sgx@vger.kernel.org,
+        drbd-dev@lists.linbit.com, linux-block@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-crypto@vger.kernel.org,
+        dmaengine@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        intel-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+        linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+        intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-usb@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+        bcm-kernel-feedback-list@broadcom.com, linux-tegra@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, kvm@vger.kernel.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-f2fs-devel@lists.sourceforge.net,
+        linux-fsdevel@vger.kernel.org,
+        kgdb-bugreport@lists.sourceforge.net,
+        v9fs-developer@lists.sourceforge.net,
+        tipc-discussion@lists.sourceforge.net, alsa-devel@alsa-project.org
+Subject: [PATCH 0/6] Remove usage of list iterator past the loop body
+Date:   Mon, 28 Feb 2022 12:08:16 +0100
+Message-Id: <20220228110822.491923-1-jakobkoschel@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] drivers/thermal/ti-soc-thermal: Add hwmon support
-Content-Language: en-US
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
-Cc:     j-keerthy@ti.com, edubezval@gmail.com
-References: <20220218104725.2718904-1-romain.naour@smile.fr>
- <c6b8e5fd-4315-859f-b4a2-a3a055143ddf@linaro.org>
-From:   Romain Naour <romain.naour@smile.fr>
-In-Reply-To: <c6b8e5fd-4315-859f-b4a2-a3a055143ddf@linaro.org>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+This is the first patch removing several categories of use cases of
+the list iterator variable past the loop.
+This is follow up to the discussion in:
+https://lore.kernel.org/all/20220217184829.1991035-1-jakobkoschel@gmail.com/
 
-Le 25/02/2022 à 12:46, Daniel Lezcano a écrit :
-> 
-> Hi Romain,
-> 
-> I'll apply the patch.
+As concluded in:
+https://lore.kernel.org/all/YhdfEIwI4EdtHdym@kroah.com/
+the correct use should be using a separate variable after the loop
+and using a 'tmp' variable as the list iterator.
+The list iterator will not point to a valid structure after the loop
+if no break/goto was hit. Invalid uses of the list iterator variable
+can be avoided altogether by simply using a separate pointer to
+iterate the list.
 
-You're welcome!
+Linus and Greg agreed on the following pattern:
 
-> 
-> In the future, use the scripts/get_maintainer.pl -f <file> to get the recipients
-> of your patch if you have a doubt about who to send it to.
+-	struct gr_request *req;
++	struct gr_request *req = NULL;
++	struct gr_request *tmp;
+	struct gr_ep *ep;
+	int ret = 0;
 
-I wasn't sure if it was needed to send the patch to both mailing list.
-I was only subscribed to linux-omap until now.
+-	list_for_each_entry(req, &ep->queue, queue) {
+-		if (&req->req == _req)
++	list_for_each_entry(tmp, &ep->queue, queue) {
++		if (&tmp->req == _req) {
++			req = tmp;
+			break;
++		}
+	}
+-	if (&req->req != _req) {
++	if (!req) {
+		ret = -EINVAL;
+		goto out;
+	}
 
-Best regards,
-Romain
+
+With gnu89 the list iterator variable cannot yet be declared
+within the for loop of the list iterator.
+Moving to a more modern version of C would allow defining
+the list iterator variable within the macro, limiting
+the scope to the loop.
+This avoids any incorrect usage past the loop altogether.
+
+This are around 30% of the cases where the iterator
+variable is used past the loop (identified with a slightly
+modified version of use_after_iter.cocci).
+I've decided to split it into at a few patches separated
+by similar use cases.
+
+Because the output of get_maintainer.pl was too big,
+I included all the found lists and everyone from the
+previous discussion.
+
+Jakob Koschel (6):
+  drivers: usb: remove usage of list iterator past the loop body
+  treewide: remove using list iterator after loop body as a ptr
+  treewide: fix incorrect use to determine if list is empty
+  drivers: remove unnecessary use of list iterator variable
+  treewide: remove dereference of list iterator after loop body
+  treewide: remove check of list iterator against head past the loop
+    body
+
+ arch/arm/mach-mmp/sram.c                      |  9 ++--
+ arch/arm/plat-pxa/ssp.c                       | 28 +++++-------
+ arch/powerpc/sysdev/fsl_gtm.c                 |  4 +-
+ arch/x86/kernel/cpu/sgx/encl.c                |  6 ++-
+ drivers/block/drbd/drbd_req.c                 | 45 ++++++++++++-------
+ drivers/counter/counter-chrdev.c              | 26 ++++++-----
+ drivers/crypto/cavium/nitrox/nitrox_main.c    | 11 +++--
+ drivers/dma/dw-edma/dw-edma-core.c            |  4 +-
+ drivers/dma/ppc4xx/adma.c                     | 11 +++--
+ drivers/firewire/core-transaction.c           | 32 +++++++------
+ drivers/firewire/sbp2.c                       | 14 +++---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c        | 19 +++++---
+ drivers/gpu/drm/drm_memory.c                  | 15 ++++---
+ drivers/gpu/drm/drm_mm.c                      | 17 ++++---
+ drivers/gpu/drm/drm_vm.c                      | 13 +++---
+ drivers/gpu/drm/gma500/oaktrail_lvds.c        |  9 ++--
+ drivers/gpu/drm/i915/gem/i915_gem_context.c   | 14 +++---
+ .../gpu/drm/i915/gem/i915_gem_execbuffer.c    | 15 ++++---
+ drivers/gpu/drm/i915/gt/intel_ring.c          | 15 ++++---
+ .../gpu/drm/nouveau/nvkm/subdev/clk/base.c    | 11 +++--
+ .../gpu/drm/nouveau/nvkm/subdev/fb/ramgk104.c | 13 +++---
+ drivers/gpu/drm/scheduler/sched_main.c        | 14 +++---
+ drivers/gpu/drm/ttm/ttm_bo.c                  | 19 ++++----
+ drivers/gpu/drm/vmwgfx/vmwgfx_kms.c           | 22 +++++----
+ drivers/infiniband/hw/hfi1/tid_rdma.c         | 16 ++++---
+ drivers/infiniband/hw/mlx4/main.c             | 12 ++---
+ drivers/media/dvb-frontends/mxl5xx.c          | 11 +++--
+ drivers/media/pci/saa7134/saa7134-alsa.c      |  4 +-
+ drivers/media/v4l2-core/v4l2-ctrls-api.c      | 31 +++++++------
+ drivers/misc/mei/interrupt.c                  | 12 ++---
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  3 +-
+ .../net/ethernet/qlogic/qede/qede_filter.c    | 11 +++--
+ drivers/net/wireless/ath/ath6kl/htc_mbox.c    |  2 +-
+ .../net/wireless/intel/ipw2x00/libipw_rx.c    | 15 ++++---
+ drivers/perf/xgene_pmu.c                      | 13 +++---
+ drivers/power/supply/cpcap-battery.c          | 11 +++--
+ drivers/scsi/lpfc/lpfc_bsg.c                  | 16 ++++---
+ drivers/scsi/scsi_transport_sas.c             | 17 ++++---
+ drivers/scsi/wd719x.c                         | 12 +++--
+ drivers/staging/rtl8192e/rtl819x_TSProc.c     | 17 +++----
+ drivers/staging/rtl8192e/rtllib_rx.c          | 17 ++++---
+ .../staging/rtl8192u/ieee80211/ieee80211_rx.c | 15 ++++---
+ .../rtl8192u/ieee80211/rtl819x_TSProc.c       | 19 ++++----
+ drivers/thermal/thermal_core.c                | 38 ++++++++++------
+ drivers/usb/gadget/composite.c                |  9 ++--
+ drivers/usb/gadget/configfs.c                 | 22 +++++----
+ drivers/usb/gadget/udc/aspeed-vhub/epn.c      | 11 +++--
+ drivers/usb/gadget/udc/at91_udc.c             | 26 ++++++-----
+ drivers/usb/gadget/udc/atmel_usba_udc.c       | 11 +++--
+ drivers/usb/gadget/udc/bdc/bdc_ep.c           | 11 +++--
+ drivers/usb/gadget/udc/fsl_qe_udc.c           | 11 +++--
+ drivers/usb/gadget/udc/fsl_udc_core.c         | 11 +++--
+ drivers/usb/gadget/udc/goku_udc.c             | 11 +++--
+ drivers/usb/gadget/udc/gr_udc.c               | 11 +++--
+ drivers/usb/gadget/udc/lpc32xx_udc.c          | 11 +++--
+ drivers/usb/gadget/udc/max3420_udc.c          | 11 +++--
+ drivers/usb/gadget/udc/mv_u3d_core.c          | 11 +++--
+ drivers/usb/gadget/udc/mv_udc_core.c          | 11 +++--
+ drivers/usb/gadget/udc/net2272.c              | 12 ++---
+ drivers/usb/gadget/udc/net2280.c              | 11 +++--
+ drivers/usb/gadget/udc/omap_udc.c             | 11 +++--
+ drivers/usb/gadget/udc/pxa25x_udc.c           | 11 +++--
+ drivers/usb/gadget/udc/s3c-hsudc.c            | 11 +++--
+ drivers/usb/gadget/udc/tegra-xudc.c           | 11 +++--
+ drivers/usb/gadget/udc/udc-xilinx.c           | 11 +++--
+ drivers/usb/mtu3/mtu3_gadget.c                | 11 +++--
+ drivers/usb/musb/musb_gadget.c                | 11 +++--
+ drivers/vfio/mdev/mdev_core.c                 | 11 +++--
+ fs/cifs/smb2misc.c                            | 10 +++--
+ fs/f2fs/segment.c                             |  9 ++--
+ fs/proc/kcore.c                               | 13 +++---
+ kernel/debug/kdb/kdb_main.c                   | 36 +++++++++------
+ kernel/power/snapshot.c                       | 10 +++--
+ kernel/trace/ftrace.c                         | 22 +++++----
+ kernel/trace/trace_eprobe.c                   | 15 ++++---
+ kernel/trace/trace_events.c                   | 11 ++---
+ net/9p/trans_xen.c                            | 11 +++--
+ net/ipv4/udp_tunnel_nic.c                     | 10 +++--
+ net/tipc/name_table.c                         | 11 +++--
+ net/tipc/socket.c                             | 11 +++--
+ net/xfrm/xfrm_ipcomp.c                        | 11 +++--
+ sound/soc/intel/catpt/pcm.c                   | 13 +++---
+ sound/soc/sprd/sprd-mcdt.c                    | 13 +++---
+ 83 files changed, 708 insertions(+), 465 deletions(-)
 
 
-> 
-> Thanks
-> 
->   -- Daniel
-> 
-> On 18/02/2022 11:47, Romain Naour wrote:
->> Expose ti-soc-thermal thermal sensors as HWMON devices.
->>
->>    # sensors
->>    cpu_thermal-virtual-0
->>    Adapter: Virtual device
->>    temp1:        +54.2 C  (crit = +105.0 C)
->>
->>    dspeve_thermal-virtual-0
->>    Adapter: Virtual device
->>    temp1:        +51.4 C  (crit = +105.0 C)
->>
->>    gpu_thermal-virtual-0
->>    Adapter: Virtual device
->>    temp1:        +54.2 C  (crit = +105.0 C)
->>
->>    iva_thermal-virtual-0
->>    Adapter: Virtual device
->>    temp1:        +54.6 C  (crit = +105.0 C)
->>
->>    core_thermal-virtual-0
->>    Adapter: Virtual device
->>    temp1:        +52.6 C  (crit = +105.0 C)
->>
->> Similar to imx_sc_thermal d2bc4dd91da6095a769fdc9bc519d3be7ad5f97a.
->>
->> No need to take care of thermal_remove_hwmon_sysfs() since
->> devm_thermal_add_hwmon_sysfs() (a wrapper around devres) is
->> used. See c7fc403e40b0ea18976a59e968c23439a80809e8.
->>
->> Signed-off-by: Romain Naour <romain.naour@smile.fr>
->> ---
->>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 4 ++++
->>   1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> index f84375865c97..0959632b2170 100644
->> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> @@ -21,6 +21,7 @@
->>     #include "ti-thermal.h"
->>   #include "ti-bandgap.h"
->> +#include "../thermal_hwmon.h"
->>     /* common data structures */
->>   struct ti_thermal_data {
->> @@ -189,6 +190,9 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
->>       ti_bandgap_set_sensor_data(bgp, id, data);
->>       ti_bandgap_write_update_interval(bgp, data->sensor_id, interval);
->>   +    if (devm_thermal_add_hwmon_sysfs(data->ti_thermal))
->> +        dev_warn(bgp->dev, "failed to add hwmon sysfs attributes\n");
->> +
->>       return 0;
->>   }
->>   
-> 
-> 
-
+base-commit: 7ee022567bf9e2e0b3cd92461a2f4986ecc99673
+--
+2.25.1
