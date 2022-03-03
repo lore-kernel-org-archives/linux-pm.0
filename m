@@ -2,74 +2,152 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C446C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Mar 2022 14:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99B1AC433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Mar 2022 17:48:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233062AbiCCOBa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Mar 2022 09:01:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53960 "EHLO
+        id S235462AbiCCRt1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Mar 2022 12:49:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229881AbiCCOB3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2022 09:01:29 -0500
-X-Greylist: delayed 2049 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 03 Mar 2022 06:00:33 PST
-Received: from mx0b-001ae601.pphosted.com (mx0a-001ae601.pphosted.com [67.231.149.25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A20A564BC9
-        for <linux-pm@vger.kernel.org>; Thu,  3 Mar 2022 06:00:33 -0800 (PST)
-Received: from pps.filterd (m0077473.ppops.net [127.0.0.1])
-        by mx0a-001ae601.pphosted.com (8.16.1.2/8.16.1.2) with ESMTP id 223CnFvX023911;
-        Thu, 3 Mar 2022 07:26:19 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=PODMain02222019;
- bh=5c4pTCYuRwuOQvexSJv3ZrY0ewqsjXzHl0G2qACotPs=;
- b=ktLkkAp6nXn2INvSuJdOhCT66XzVi6mh4Oaq8efaNQOwmUs1N7LtAtm/LBaZQbSNuKj0
- a2nlpOpyFPW/iJFMO1plapl3ssQAIzDeAOM9taKv2H+wEVG0VwW5Kg4fFAnE8xYVjWgf
- XuB9VFr44ou5zd4Q8xRO0cBk8JhIjX2cIVrEwSScLXj2az0+8q6q2fKWJUWECczCK95+
- 9RfP4AVo0FftwE6zkbhh+MJrG0ap+DnWGItxngJ4VSwVog7DKmWIKHOZtBGgdY2tagFt
- fNnfA+h8ntkvTDUkCBoqIs1gCahOP06iUOH/7BX9yVAkqA2S59RzoS/fZjeREPFuoyuX kQ== 
-Received: from ediex02.ad.cirrus.com ([84.19.233.68])
-        by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3ejsv20bys-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
-        Thu, 03 Mar 2022 07:26:19 -0600
-Received: from EDIEX01.ad.cirrus.com (198.61.84.80) by EDIEX02.ad.cirrus.com
- (198.61.84.81) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.18; Thu, 3 Mar
- 2022 13:26:17 +0000
-Received: from ediswmail.ad.cirrus.com (198.61.86.93) by EDIEX01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server id 15.1.2375.18 via Frontend
- Transport; Thu, 3 Mar 2022 13:26:17 +0000
-Received: from ediswmail.ad.cirrus.com (ediswmail.ad.cirrus.com [198.61.86.93])
-        by ediswmail.ad.cirrus.com (Postfix) with ESMTP id 3BD4D2A1;
-        Thu,  3 Mar 2022 13:26:17 +0000 (UTC)
-Date:   Thu, 3 Mar 2022 13:26:17 +0000
-From:   Charles Keepax <ckeepax@opensource.cirrus.com>
-To:     Jiasheng Jiang <jiasheng@iscas.ac.cn>
-CC:     <sre@kernel.org>, <patches@opensource.cirrus.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] power: supply: Add missing free in free_charger_irq
-Message-ID: <20220303132617.GN38351@ediswmail.ad.cirrus.com>
-References: <20220303094322.342569-1-jiasheng@iscas.ac.cn>
+        with ESMTP id S235376AbiCCRtT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2022 12:49:19 -0500
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2AA4E5643C
+        for <linux-pm@vger.kernel.org>; Thu,  3 Mar 2022 09:48:34 -0800 (PST)
+Received: by mail-pg1-x532.google.com with SMTP id c1so5142120pgk.11
+        for <linux-pm@vger.kernel.org>; Thu, 03 Mar 2022 09:48:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=3m3kAnC5yVE0thF2/DdfFMvxjXwoPEFsln4f+FEMc90=;
+        b=aYkpLLcwTHErVgKVX6glyj54CVXIxUc8lkwnarAOkeFPlY6SvgIQQrunjhUqur34U4
+         OTDIRnCcYXOhl6QDpSjuZmJqdzkZ77ODIY6sD0D25T3JNa0QrESz5IBS56SFLm3WfqYS
+         XZ5O28iKfQ8BCsQPfbse5oAnViot4RRDo99iygbrZbbBv5JihClXPLvY3Uo+InPAxJyK
+         UCbQNMbUUQiTBuMfQtUR4TqSTNIicicp4Z3gjDZ3joYRVTMvxlS7+ecyKGpxXA4GgruH
+         2iPRelV3a3niwsYax6xY8y8+R7ffPhVYZZpTyBBCXZpQCRM5s1eeMsIwdO27GPCBVPfG
+         SZ+Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=3m3kAnC5yVE0thF2/DdfFMvxjXwoPEFsln4f+FEMc90=;
+        b=kL6SmbNSrBvVksm5j4D8hoaT9pau4JeVkQ1sJGfyotknS+xSUBE+THjyhEfPdxY0tj
+         3Gic4ocupIz3q1L5hTDgwIl1K+9vjmbMfaykw6FszAMkotqlDUf25pY3INSgCo7FpWbV
+         s+/JQpYdpdrO4l4vxGeE8cwaWUvEZTg3Uf+a+5I2jcg++u00491brUcAtSjwHbeyNB9G
+         s7IkprB5AGeXhLnkBRJ4OawgIOSbzpeG6r2MCe5uvnCQsih1oibgaA3yR4D5PrW0/61O
+         UWRXWoxflO5+F8DUpifyGJQf7wweyJBUVK4g9ytc9unbnw72PeB9Bwat021bGxII3HVX
+         pxVA==
+X-Gm-Message-State: AOAM532q3PvLb+N2aXnA1/5Rxq/ODjV4ed1KHFzX41kGLNWM07nnIDYP
+        NfVJcfXJgyw+8+S8q7vmGP3hm6/bEUHuQAveuAU=
+X-Google-Smtp-Source: ABdhPJyEATzZ/c34YFpbY6Xe5MYIegcBxfFWruhYun+xzKKTxgtzDs8625BsRcG5yoU81dJFeuAveQ==
+X-Received: by 2002:a65:6d87:0:b0:374:2525:dcb0 with SMTP id bc7-20020a656d87000000b003742525dcb0mr31693327pgb.248.1646329713646;
+        Thu, 03 Mar 2022 09:48:33 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id u11-20020a056a00124b00b004e11307f8cdsm2928991pfi.86.2022.03.03.09.48.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 03 Mar 2022 09:48:33 -0800 (PST)
+Message-ID: <6220ff71.1c69fb81.ad015.791b@mx.google.com>
+Date:   Thu, 03 Mar 2022 09:48:33 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20220303094322.342569-1-jiasheng@iscas.ac.cn>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-Proofpoint-GUID: 78xQPOv72v0n1v4wGd3ez_R9RUHigCRX
-X-Proofpoint-ORIG-GUID: 78xQPOv72v0n1v4wGd3ez_R9RUHigCRX
-X-Proofpoint-Spam-Reason: safe
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: v5.17-rc6-111-g8953254f5daa
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 1 warning (v5.17-rc6-111-g8953254f5daa)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Mar 03, 2022 at 05:43:22PM +0800, Jiasheng Jiang wrote:
-> In free_charger_irq(), there is no free for 'WM8350_IRQ_CHG_FAST_RDY'.
-> Therefore, it should be better to add it in order to avoid the memory leak.
-> 
-> Fixes: 14431aa0c5a4 ("power_supply: Add support for WM8350 PMU")
-> Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-> ---
+pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.17-rc6-111-g8=
+953254f5daa)
 
-Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+17-rc6-111-g8953254f5daa/
 
-Thanks,
-Charles
+Tree: pm
+Branch: testing
+Git Describe: v5.17-rc6-111-g8953254f5daa
+Git Commit: 8953254f5daafa82f800ae05279658770fc9dbd6
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
+
+Warnings Detected:
+
+arc:
+
+arm64:
+
+arm:
+
+i386:
+
+mips:
+    32r2el_defconfig (gcc-10): 1 warning
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
+e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
+ted "0,0"
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
+): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
+0,0"
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
+ section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
+on mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
+ection mismatches
+
+---
+For more info write to <info@kernelci.org>
