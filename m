@@ -2,191 +2,229 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF570C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Mar 2022 09:30:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25826C433FE
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Mar 2022 09:34:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231977AbiCCJbM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Mar 2022 04:31:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34124 "EHLO
+        id S232006AbiCCJfV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Mar 2022 04:35:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47286 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231926AbiCCJbH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2022 04:31:07 -0500
-Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6519F16FDDA
-        for <linux-pm@vger.kernel.org>; Thu,  3 Mar 2022 01:30:19 -0800 (PST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-318-HvTdrMxlM1W3jsGT6It_3A-1; Thu, 03 Mar 2022 09:30:16 +0000
-X-MC-Unique: HvTdrMxlM1W3jsGT6It_3A-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.28; Thu, 3 Mar 2022 09:30:14 +0000
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.028; Thu, 3 Mar 2022 09:30:14 +0000
-From:   David Laight <David.Laight@ACULAB.COM>
-To:     'Xiaomeng Tong' <xiam0nd.tong@gmail.com>
-CC:     "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-        "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>,
-        "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>,
-        "arnd@arndb.de" <arnd@arndb.de>,
-        "bcm-kernel-feedback-list@broadcom.com" 
-        <bcm-kernel-feedback-list@broadcom.com>,
-        "bjohannesmeyer@gmail.com" <bjohannesmeyer@gmail.com>,
-        "c.giuffrida@vu.nl" <c.giuffrida@vu.nl>,
-        "christian.koenig@amd.com" <christian.koenig@amd.com>,
-        "christophe.jaillet@wanadoo.fr" <christophe.jaillet@wanadoo.fr>,
-        "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>,
-        "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
-        "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "gustavo@embeddedor.com" <gustavo@embeddedor.com>,
-        "h.j.bos@vu.nl" <h.j.bos@vu.nl>,
-        "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
-        "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
-        "jakobkoschel@gmail.com" <jakobkoschel@gmail.com>,
-        "jgg@ziepe.ca" <jgg@ziepe.ca>,
-        "keescook@chromium.org" <keescook@chromium.org>,
-        "kgdb-bugreport@lists.sourceforge.net" 
-        <kgdb-bugreport@lists.sourceforge.net>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "linux-cifs@vger.kernel.org" <linux-cifs@vger.kernel.org>,
-        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-        "linux-f2fs-devel@lists.sourceforge.net" 
-        <linux-f2fs-devel@lists.sourceforge.net>,
-        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-        "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-        "linux-mediatek@lists.infradead.org" 
-        <linux-mediatek@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "linux-sgx@vger.kernel.org" <linux-sgx@vger.kernel.org>,
-        "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>,
-        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-        "linux1394-devel@lists.sourceforge.net" 
-        <linux1394-devel@lists.sourceforge.net>,
-        "linux@rasmusvillemoes.dk" <linux@rasmusvillemoes.dk>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "nathan@kernel.org" <nathan@kernel.org>,
-        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-        "nouveau@lists.freedesktop.org" <nouveau@lists.freedesktop.org>,
-        "rppt@kernel.org" <rppt@kernel.org>,
-        "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "tipc-discussion@lists.sourceforge.net" 
-        <tipc-discussion@lists.sourceforge.net>,
-        "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-        "v9fs-developer@lists.sourceforge.net" 
-        <v9fs-developer@lists.sourceforge.net>
-Subject: RE: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-Thread-Topic: [PATCH 2/6] treewide: remove using list iterator after loop body
- as a ptr
-Thread-Index: AQHYLhg9+DU/OogLf0+tiSFmjztyUKysHu+QgADRVYCAACVtoIAALj+AgAAE1XA=
-Date:   Thu, 3 Mar 2022 09:30:14 +0000
-Message-ID: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
-References: <39404befad5b44b385698ff65465abe5@AcuMS.aculab.com>
- <20220303072657.11124-1-xiam0nd.tong@gmail.com>
-In-Reply-To: <20220303072657.11124-1-xiam0nd.tong@gmail.com>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+        with ESMTP id S231857AbiCCJfU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2022 04:35:20 -0500
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70FBF403C2;
+        Thu,  3 Mar 2022 01:34:35 -0800 (PST)
+Received: by mail-ej1-f46.google.com with SMTP id qx21so9258426ejb.13;
+        Thu, 03 Mar 2022 01:34:35 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=HCoJ2YMwz0q/SwgLBzV0H3UA+rYOKmWN8IjDCigSeO8=;
+        b=QeWlJjedoR2qFQBUOh4pkhzui5u5PKxnKQUs5zyRaF5mTqLJkKjx2lJcSdTp4D4V/d
+         NweQl12MrRSaJTviT4Nmzvr5hRPl6ZIoyJ5SWf1ZE/BVbnVyp5EY9W/FYSxw+W67ms0x
+         3Tc/EJHGU2v4Cfz954oAjvXSxchWOfWf70Yc/3EA91lFIKkXZeZMphk4JY7MjyCXDKRL
+         0GwdW3UkK7fcWvnmMBXR1iEnbhtTe7j210IQtL0LlpIL6x8qJNT8N10IoPqGkT4aFbYF
+         DSOqePZ20AIdQZiziy1VaHD9bE3lPjaauePg+l2qGeZG6SbHfAPvq71EfaPt2CslijLi
+         bodA==
+X-Gm-Message-State: AOAM5339lsRSqgv6ri2nmuqHXf6oMYGuzKCYahmDQa6va9QSG0FcJTmU
+        7HWgYiyml/fTml07yJ6lJqY1biMyFVU=
+X-Google-Smtp-Source: ABdhPJyj7IPoYYr6U2OkzEEq2Jm0KvkKkWEb0ABY+xk3BFll3PIddVhRcde7e62zhWwEa+oWwrxWsA==
+X-Received: by 2002:a17:906:402:b0:6d5:c6bc:3150 with SMTP id d2-20020a170906040200b006d5c6bc3150mr26995549eja.403.1646300073839;
+        Thu, 03 Mar 2022 01:34:33 -0800 (PST)
+Received: from [192.168.0.137] (xdsl-188-155-181-108.adslplus.ch. [188.155.181.108])
+        by smtp.googlemail.com with ESMTPSA id f6-20020a50fc86000000b0040f614e0906sm615639edq.46.2022.03.03.01.34.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 03 Mar 2022 01:34:32 -0800 (PST)
+Message-ID: <fd39f73e-8317-38c4-6002-8defd784caec@kernel.org>
+Date:   Thu, 3 Mar 2022 10:34:31 +0100
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
-        auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v5] cpuidle: sunplus: Create cpuidle driver for sunplus
+ sp7021
 Content-Language: en-US
+To:     =?UTF-8?B?RWR3aW4gQ2hpdSDpgrHlnoLls7A=?= <edwin.chiu@sunplus.com>,
+        Edwin Chiu <edwinchiu0505tw@gmail.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "rafael@kernel.org" <rafael@kernel.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+References: <cover.1645427180.git.edwinchiu0505tw@gmail.com>
+ <1628e048220f066204b8ac27f3cedf7f3cc02963.1645427180.git.edwinchiu0505tw@gmail.com>
+ <394261d1-f1df-e80d-3591-10f2d649e731@kernel.org>
+ <bcc7a0b58aad4f0989d7d86eaee2c746@sphcmbx02.sunplus.com.tw>
+ <748eb0e1-684c-a772-bccd-64b80780192f@kernel.org>
+ <fda1e55e576b4cdf9ab412529a3dfc7b@sphcmbx02.sunplus.com.tw>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+In-Reply-To: <fda1e55e576b4cdf9ab412529a3dfc7b@sphcmbx02.sunplus.com.tw>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RnJvbTogWGlhb21lbmcgVG9uZw0KPiBTZW50OiAwMyBNYXJjaCAyMDIyIDA3OjI3DQo+IA0KPiBP
-biBUaHUsIDMgTWFyIDIwMjIgMDQ6NTg6MjMgKzAwMDAsIERhdmlkIExhaWdodCB3cm90ZToNCj4g
-PiBvbiAzIE1hciAyMDIyIDEwOjI3OjI5ICswODAwLCBYaWFvbWVuZyBUb25nIHdyb3RlOg0KPiA+
-ID4gVGhlIHByb2JsZW0gaXMgdGhlIG1pcy11c2Ugb2YgaXRlcmF0b3Igb3V0c2lkZSB0aGUgbG9v
-cCBvbiBleGl0LCBhbmQNCj4gPiA+IHRoZSBpdGVyYXRvciB3aWxsIGJlIHRoZSBIRUFEJ3MgY29u
-dGFpbmVyX29mIHBvaW50ZXIgd2hpY2ggcG9pbnRlcnMNCj4gPiA+IHRvIGEgdHlwZS1jb25mdXNl
-ZCBzdHJ1Y3QuIFNpZGVub3RlOiBUaGUgKm1pcy11c2UqIGhlcmUgcmVmZXJzIHRvDQo+ID4gPiBt
-aXN0YWtlbHkgYWNjZXNzIHRvIG90aGVyIG1lbWJlcnMgb2YgdGhlIHN0cnVjdCwgaW5zdGVhZCBv
-ZiB0aGUNCj4gPiA+IGxpc3RfaGVhZCBtZW1iZXIgd2hpY2ggYWN1dGFsbHkgaXMgdGhlIHZhbGlk
-IEhFQUQuDQo+ID4NCj4gPiBUaGUgcHJvYmxlbSBpcyB0aGF0IHRoZSBIRUFEJ3MgY29udGFpbmVy
-X29mIHBvaW50ZXIgc2hvdWxkIG5ldmVyDQo+ID4gYmUgY2FsY3VsYXRlZCBhdCBhbGwuDQo+ID4g
-VGhpcyBpcyB3aGF0IGlzIGZ1bmRhbWVudGFsbHkgYnJva2VuIGFib3V0IHRoZSBjdXJyZW50IGRl
-ZmluaXRpb24uDQo+IA0KPiBZZXMsIHRoZSBydWxlIGlzICJ0aGUgSEVBRCdzIGNvbnRhaW5lcl9v
-ZiBwb2ludGVyIHNob3VsZCBuZXZlciBiZQ0KPiBjYWxjdWxhdGVkIGF0IGFsbCBvdXRzaWRlIHRo
-ZSBsb29wIiwgYnV0IGhvdyBkbyB5b3UgbWFrZSBzdXJlIGV2ZXJ5b25lDQo+IGZvbGxvd3MgdGhp
-cyBydWxlPw0KPiBFdmVyeW9uZSBtYWtlcyBtaXN0YWtlcywgYnV0IHdlIGNhbiBlbGltaW5hdGUg
-dGhlbSBhbGwgZnJvbSB0aGUgYmVnaW5uaW5nDQo+IHdpdGggdGhlIGhlbHAgb2YgY29tcGlsZXIg
-d2hpY2ggY2FuIGNhdGNoIHN1Y2ggdXNlLWFmdGVyLWxvb3AgdGhpbmdzLg0KPiANCj4gPiA+IElP
-VywgeW91IHdvdWxkIGRlcmVmZXJlbmNlIGEgKE5VTEwgKyBvZmZzZXRfb2ZfbWVtYmVyKSBhZGRy
-ZXNzIGhlcmUuDQo+ID4NCj4gPldoZXJlPw0KPiANCj4gSW4gdGhlIGNhc2Ugd2hlcmUgYSBkZXZl
-bG9wZXIgZG8gbm90IGZvbGxvd3MgdGhlIGFib3ZlIHJ1bGUsIGFuZCBtaXN0YWtlbHkNCj4gYWNj
-ZXNzIGEgbm9uLWxpc3QtaGVhZCBtZW1iZXIgb2YgdGhlIEhFQUQncyBjb250YWluZXJfb2YgcG9p
-bnRlciBvdXRzaWRlDQo+IHRoZSBsb29wLiBGb3IgZXhhbXBsZToNCj4gICAgIHN0cnVjdCByZXF7
-DQo+ICAgICAgIGludCBhOw0KPiAgICAgICBzdHJ1Y3QgbGlzdF9oZWFkIGg7DQo+ICAgICB9DQo+
-ICAgICBzdHJ1Y3QgcmVxICpyOw0KPiAgICAgbGlzdF9mb3JfZWFjaF9lbnRyeShyLCBIRUFELCBo
-KSB7DQo+ICAgICAgIGlmIChyLT5hID09IDB4MTApDQo+ICAgICAgICAgYnJlYWs7DQo+ICAgICB9
-DQo+ICAgICAvLyB0aGUgZGV2ZWxvcGVyIG1hZGUgYSBtaXN0YWtlOiBoZSBkaWRuJ3QgdGFrZSB0
-aGlzIHNpdHVhdGlvbiBpbnRvDQo+ICAgICAvLyBhY2NvdW50IHdoZXJlIGFsbCBlbnRyaWVzIGlu
-IHRoZSBsaXN0IGFyZSAqci0+YSAhPSAweDEwKiwgYW5kIG5vdw0KPiAgICAgLy8gdGhlIHIgaXMg
-dGhlIEhFQUQncyBjb250YWluZXJfb2YgcG9pbnRlci4NCj4gICAgIHItPmEgPSAweDIwOw0KPiBU
-aHVzIHRoZSAici0+YSA9IDB4MjAiIHdvdWxkIGRlcmVmZXJlbmNlIGEgKE5VTEwgKyBvZmZzZXRf
-b2ZfbWVtYmVyKQ0KPiBhZGRyZXNzIGhlcmUuDQoNClRoYXQgaXMganVzdCBhIGJ1Zy4NCk5vIGRp
-ZmZlcmVudCB0byBmYWlsaW5nIHRvIGNoZWNrIGFueXRoaW5nIGVsc2UgbWlnaHQgJ3JldHVybicN
-CmEgTlVMTCBwb2ludGVyLg0KQmVjYXVzZSBpdCBpcyBhIE5VTEwgZGVyZWZlcmVuY2UgeW91IGZp
-bmQgb3V0IHByZXR0eSBxdWlja2x5Lg0KVGhlIGV4aXN0aW5nIGxvb3AgbGVhdmVzIHlvdSB3aXRo
-IGEgdmFsaWQgcG9pbnRlciB0byBzb21ldGhpbmcNCnRoYXQgaXNuJ3QgYSBsaXN0IGl0ZW0uDQoN
-Cj4gPiA+IFBsZWFzZSByZW1pbmQgbWUgaWYgaSBtaXNzZWQgc29tZXRoaW5nLCB0aGFua3MuDQo+
-ID4gPg0KPiA+ID4gQ2FuIHlvdSBzaGFyZSB5b3VyICJhbHRlcm5hdGl2ZSBkZWZpbml0aW9ucyIg
-ZGV0YWlscz8gdGhhbmtzIQ0KPiA+DQo+ID4gVGhlIGxvb3Agc2hvdWxkIHByb2JhYmx5IHVzZSBh
-cyBleHRyYSB2YXJpYWJsZSB0aGF0IHBvaW50cw0KPiA+IHRvIHRoZSAnbGlzdCBub2RlJyBpbiB0
-aGUgbmV4dCBzdHJ1Y3R1cmUuDQo+ID4gU29tZXRoaW5nIGxpa2U6DQo+ID4gCWZvciAoeHh4ICpp
-dGVyID0gaGVhZC0+bmV4dDsNCj4gPiAJCWl0ZXIgPT0gJmhlYWQgPyAoKGl0ZW0gPSBOVUxMKSww
-KSA6ICgoaXRlbSA9IGxpc3RfaXRlbShpdGVyKSwxKSk7DQo+ID4gCQlpdGVyID0gaXRlbS0+bWVt
-YmVyLT5uZXh0KSB7DQo+ID4gCSAgIC4uLg0KPiA+IFdpdGggYSBiaXQgb2YgY2FzdGluZyB5b3Ug
-Y2FuIHVzZSAnaXRlbScgdG8gaG9sZCAnaXRlcicuDQo+IA0KPiB5b3Ugc3RpbGwgY2FuIG5vdCBt
-YWtlIHN1cmUgZXZlcnlvbmUgZm9sbG93cyB0aGlzIHJ1bGU6DQo+ICJkbyBub3QgdXNlIGl0ZXJh
-dG9yIG91dHNpZGUgdGhlIGxvb3AiIHdpdGhvdXQgdGhlIGhlbHAgb2YgY29tcGlsZXIsDQo+IGJl
-Y2F1c2UgaXRlbSBpcyBkZWNsYXJlZCBvdXRzaWRlIHRoZSBsb29wLg0KDQpUaGF0IG9uZSBoYXMg
-J2l0ZXInIGRlZmluZWQgaW4gdGhlIGxvb3AuDQoNCj4gQlRXLCB0byBhdm9pZCBhbWJpZ3VpdHnv
-vIx0aGUgImFsdGVybmF0aXZlIGRlZmluaXRpb25zIiBoZXJlIGkgYXNrZWQgaXMNCj4gc29tZXRo
-aW5nIGZyb20geW91IGluIHRoaXMgY29udGV4dDoNCj4gIk9UT0ggdGhlcmUgbWF5IGJlIGFsdGVy
-bmF0aXZlIGRlZmluaXRpb25zIHRoYXQgY2FuIGJlIHVzZWQgdG8gZ2V0DQo+IHRoZSBjb21waWxl
-ciAob3Igb3RoZXIgY29tcGlsZXItbGlrZSB0b29scykgdG8gZGV0ZWN0IGJyb2tlbiBjb2RlLg0K
-PiBFdmVuIGlmIHRoZSBkZWZpbml0aW9uIGNhbid0IHBvc3NpYmx5IGdlbmVyYXRlIGEgd29ya2lu
-ZyBrZXJybmVsLiINCg0KSSB3YXMgdGhpbmtpbmcgb2Ygc29tZXRoaW5nIGxpa2U6DQoJaWYgKChw
-b3MgPSBsaXN0X2ZpcnN0KSksIDEpIHBvcyA9IE5VTEwgZWxzZQ0Kc28gdGhhdCB1bmNoZWNrZWQg
-ZGVyZWZlcmVuY2VzIGFmdGVyIHRoZSBsb29wIHdpbGwgYmUgZGV0ZWN0YWJsZQ0KYXMgTlVMTCBw
-b2ludGVyIG9mZnNldHMgLSBidXQgdGhhdCBpbiBpdHNlbGYgaXNuJ3QgZW5vdWdoIHRvIGF2b2lk
-DQpvdGhlciB3YXJuaW5ncy4NCg0KPiA+ID4gVGhlICJsaXN0X2Zvcl9lYWNoX2VudHJ5X2luc2lk
-ZShwb3MsIHR5cGUsIGhlYWQsIG1lbWJlcikiIHdheSBtYWtlcw0KPiA+ID4gdGhlIGl0ZXJhdG9y
-IGludmlzaWFibGUgb3V0c2lkZSB0aGUgbG9vcCwgYW5kIHdvdWxkIGJlIGNhdGNoZWQgYnkNCj4g
-PiA+IGNvbXBpbGVyIGlmIHVzZS1hZnRlci1sb29wIHRoaW5ncyBoYXBwZW5lZC4NCj4gDQo+ID4g
-SXQgaXMgYWxzbyBhIGNvbXBldGUgUElUQSBmb3IgYW55dGhpbmcgZG9pbmcgYSBzZWFyY2guDQo+
-IA0KPiBZb3UgbWVhbiBpdCB3b3VsZCBiZSBhIGJ1cmRlbiBvbiBzZWFyY2g/IGNhbiB5b3Ugc2hv
-dyBtZSBzb21lIGV4YW1wbGVzPw0KDQpUaGUgd2hvbGUgYnVzaW5lc3Mgb2YgaGF2aW5nIHRvIHNh
-dmUgdGhlIHBvaW50ZXIgdG8gdGhlIGxvY2F0ZWQgaXRlbQ0KYmVmb3JlIGJyZWFraW5nIHRoZSBs
-b29wLCByZW1lbWJlcmluZyB0byBoYXZlIHNldCBpdCB0byBOVUxMIGVhcmxpZXIgZXRjLg0KDQpJ
-dCBpcyBzbyBtdWNoIGJldHRlciBpZiB5b3UgY2FuIGp1c3QgZG86DQoJCWlmIChmb3VuZCkNCgkJ
-CWJyZWFrOw0KDQoJRGF2aWQNCg0KLQ0KUmVnaXN0ZXJlZCBBZGRyZXNzIExha2VzaWRlLCBCcmFt
-bGV5IFJvYWQsIE1vdW50IEZhcm0sIE1pbHRvbiBLZXluZXMsIE1LMSAxUFQsIFVLDQpSZWdpc3Ry
-YXRpb24gTm86IDEzOTczODYgKFdhbGVzKQ0K
+On 03/03/2022 10:01, Edwin Chiu 邱垂峰 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Krzysztof Kozlowski <krzk@kernel.org>
+>> Sent: Tuesday, March 1, 2022 7:34 PM
+>> To: Edwin Chiu 邱垂峰 <edwin.chiu@sunplus.com>; Edwin Chiu <edwinchiu0505tw@gmail.com>;
+>> robh+dt@kernel.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; rafael@kernel.org;
+>> daniel.lezcano@linaro.org; linux-pm@vger.kernel.org
+>> Subject: Re: [PATCH v5] cpuidle: sunplus: Create cpuidle driver for sunplus sp7021
+>>
+>> On 01/03/2022 10:30, Edwin Chiu 邱垂峰 wrote:
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: Krzysztof Kozlowski <krzk@kernel.org>
+>>>> Sent: Tuesday, February 22, 2022 12:48 AM
+>>>> To: Edwin Chiu <edwinchiu0505tw@gmail.com>; Edwin Chiu 邱垂峰
+>>>> <edwin.chiu@sunplus.com>;
+>>>> robh+dt@kernel.org; devicetree@vger.kernel.org;
+>>>> robh+linux-kernel@vger.kernel.org; rafael@kernel.org;
+>>>> daniel.lezcano@linaro.org; linux-pm@vger.kernel.org
+>>>> Subject: Re: [PATCH v5] cpuidle: sunplus: Create cpuidle driver for
+>>>> sunplus sp7021
+>>>>
+>>>> On 21/02/2022 08:26, Edwin Chiu wrote:
+>>>>> Create cpuidle driver for sunplus sp7021 chip
+>>>>>
+>>>>> Signed-off-by: Edwin Chiu <edwinchiu0505tw@gmail.com>
+>>>>> ---
+>>>>> Changes in v3
+>>>>>  - Rearrangement #include sequence
+>>>>>  - Change remark style to /*~*/
+>>>>>  - Align author email address to same as sob
+>>>>>  - Optimal code
+>>>>> Changes in v4
+>>>>>  - According Rob Herringrobh's comment
+>>>>>    There is no need for this binding.
+>>>>>    Just wanting a different driver is not a reason
+>>>>>    for a duplicate schema.
+>>>>>    So remove yaml file and submit driver again.
+>>>>> Changes in v5
+>>>>>  - According Krzysztof's comment
+>>>>>    You either use appropriate compatible in DT
+>>>>>    or add your compatible to cpuidle-arm.
+>>>>>    Even if this did not work, then the solution is to
+>>>>>    use common parts, not to duplicate entire driver.
+>>>>>    According Sudeep's comment
+>>>>>    In short NACK for any dedicated driver for this platform,
+>>>>>    use the generic cpuidle-arm driver with appropriate platform hooks
+>>>>>    Create cpuidle-sunplus.c in arch/arm/mach-sunplus/
+>>>>>    for hook generic cpuidle-arm driver
+>>>>>
+>>>>>  MAINTAINERS                                   |  6 ++
+>>>>>  arch/arm/mach-sunplus/cpuidle-sunplus.c       | 88 +++++++++++++++++
+>>>>>  include/linux/platform_data/cpuidle-sunplus.h | 12 ++++
+>>>>>  3 files changed, 106 insertions(+)
+>>>>>  create mode 100644 arch/arm/mach-sunplus/cpuidle-sunplus.c
+>>>>>  create mode 100644 include/linux/platform_data/cpuidle-sunplus.h
+>>>>>
+>>>>> diff --git a/MAINTAINERS b/MAINTAINERS index e0dca8f..5c96428 100644
+>>>>> --- a/MAINTAINERS
+>>>>> +++ b/MAINTAINERS
+>>>>> @@ -18252,6 +18252,12 @@ L:	netdev@vger.kernel.org
+>>>>>  S:	Maintained
+>>>>>  F:	drivers/net/ethernet/dlink/sundance.c
+>>>>>
+>>>>> +SUNPLUS CPUIDLE DRIVER
+>>>>> +M:	Edwin Chiu <edwinchiu0505tw@gmail.com>
+>>>>> +S:	Maintained
+>>>>> +F:	arch/arm/mach-sunplus/cpuidle-sunplus.c
+>>>>> +F:	include/linux/platform_data/cpuidle-sunplus.h
+>>>>> +
+>>>>>  SUPERH
+>>>>>  M:	Yoshinori Sato <ysato@users.sourceforge.jp>
+>>>>>  M:	Rich Felker <dalias@libc.org>
+>>>>> diff --git a/arch/arm/mach-sunplus/cpuidle-sunplus.c
+>>>>> b/arch/arm/mach-sunplus/cpuidle-sunplus.c
+>>>>> new file mode 100644
+>>>>> index 0000000..e9d9738
+>>>>> --- /dev/null
+>>>>> +++ b/arch/arm/mach-sunplus/cpuidle-sunplus.c
+>>>>> @@ -0,0 +1,88 @@
+>>>>> +// SPDX-License-Identifier: GPL-2.0-only
+>>>>> +/*
+>>>>> + * SP7021 cpu idle Driver.
+>>>>> + * Copyright (C) Sunplus Tech / Tibbo Tech.
+>>>>> + */
+>>>>> +#define pr_fmt(fmt) "CPUidle arm: " fmt
+>>>>> +
+>>>>> +#include <linux/cpuidle.h>
+>>>>> +#include <linux/of_device.h>
+>>>>> +#include <linux/platform_data/cpuidle-sunplus.h>
+>>>>> +
+>>>>> +#include <asm/cpuidle.h>
+>>>>> +
+>>>>> +typedef int (*idle_fn)(void);
+>>>>> +
+>>>>> +static DEFINE_PER_CPU(idle_fn*, sp7021_idle_ops);
+>>>>> +
+>>>>> +static int sp7021_cpuidle_enter(unsigned long index) {
+>>>>> +	return __this_cpu_read(sp7021_idle_ops)[index]();
+>>>>> +}
+>>>>> +static int sp7021_cpu_spc(void)
+>>>>> +{
+>>>>> +	cpu_v7_do_idle();   /* idle to WFI */
+>>>>> +	return 0;
+>>>>> +}
+>>>>> +static const struct of_device_id sp7021_idle_state_match[] = {
+>>>>> +	{ .compatible = "arm,idle-state", .data = sp7021_cpu_spc },
+>>>>> +	{ },
+>>>>> +};
+>>>>
+>>>> This is confusing. You want to have two drivers to bind to the same
+>>>> compatible? As I wrote in the previous messages, you should simply use arm,idle-state just like few
+>> other architectures.
+>>>>
+>>>>
+>>>> Best regards,
+>>>> Krzysztof
+>>>
+>>>
+>>> The patch v5 implemented according your comment.
+>>> Used common part of arm,idle-state.
+>>> Create new enable-method for cpuidle.ops function.
+>>> It only have arm cpuidle driver exist now, no two drivers to bind to the same compatible.
+>>>
+>>> What do you mean " simply use arm,idle-state just like few other architectures "?
+>>>
+>>
+>> I mean, do it similarly (by using arm,idle-state and other related
+>> properties) to for example ti,am4372/ti,am3352.
+>>
+>> Best regards,
+>> Krzysztof
+> 
+> 
+> The am3352 cpuidle code structure is very similar to ours.				
+> Used enable-method = "ti,am3352" and compatible = "arm,idle-state" in am33xx.dtsi				
+> Used CPUIDLE_METHOD_OF_DECLARE(pm33xx_idle, "ti,am3352", &amx3_cpuidle_ops) in pm33xx-core.c				
+> 				
+> The difference are				
+> am3352				
+> amx3_idle_init(~) assign idle_states[i].wfi_flags = states[i].wfi_flags;				
+> amx3_idle_enter(~) call idle_fn(idle_state->wfi_flags)				
+> 				
+> sunplus-sp7021				
+> sp7021_cpuidle_init(~) assign fns[i] = idle_fns[i];				
+> sp7021_cpuidle_enter(~) call __this_cpu_read(sp7021_idle_ops)[index]();				
+> 
+> I don't think am3352 cpuidle code architecture simpler than ours.
+> The idle_fn function need more complex method to be assign.
+> How do you think?
 
+You duplicated a driver, entire pieces of code. This is not acceptable.
+Therefore it does not really make sense to discuss whether duplicated
+solution seems simpler or not... We won't accept duplicated code.
+Especially for WFI-only driver.
+
+Best regards,
+Krzysztof
