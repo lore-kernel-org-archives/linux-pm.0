@@ -2,273 +2,200 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23278C433FE
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Mar 2022 14:47:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B437C433FE
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Mar 2022 16:23:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239924AbiCDOsE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Mar 2022 09:48:04 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55920 "EHLO
+        id S240601AbiCDQYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Mar 2022 11:24:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237160AbiCDOsD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2022 09:48:03 -0500
-Received: from mail-yb1-xb30.google.com (mail-yb1-xb30.google.com [IPv6:2607:f8b0:4864:20::b30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF19848384;
-        Fri,  4 Mar 2022 06:47:15 -0800 (PST)
-Received: by mail-yb1-xb30.google.com with SMTP id g26so17243172ybj.10;
-        Fri, 04 Mar 2022 06:47:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=CUW9eyq6olA9UOxPXQmSp+qMVQaP00he0KkU/RyKjq0=;
-        b=ETyBEW7YhnLoIr1wJ94chKj8as25ZaiWCxdoQeJfM2137JFZx84RaD1MY+P+XNzoUy
-         P165qPpM5aAS9MffBzqblSELPKK9kxtTairC8Js/3oG3r3IHbrDLi18scYeptCyna7SP
-         TdxjaQ1rkJv7A03GmgIUFYy0DgSgLz7sBRlDUDER6ue7GgDUwaarpfbYV7BN1F5eTFlf
-         MSkMadqL7DBmi4eCyISJMDa+TWbOhaU34nZeSmLfAL4Zq136Q2HPdBdsgf48VgsLcMyQ
-         XNHCrMtwByGh/RsmKmeRc3AqDNe+FBnIz4FKJM4qKiAyj4Dd9ekHHh4i2tr4tAqlMK1D
-         TngQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=CUW9eyq6olA9UOxPXQmSp+qMVQaP00he0KkU/RyKjq0=;
-        b=WNsTQIGUV/jZFx7Q+LDaeTeKJwB3SRDXSZ7GLvGcx+lVdUuhI8SDulIuWECi3viQjM
-         DePpDEoSKOLSc7DwU1AxvC+0fnP2Co8MvXwEupGe2dyjsFm9VSZTVg5KrfHsNbxpQI5O
-         hYRsNjPEirnmS/Os7/KGyUopaMr6EXwYRbLjKtzUIJyWYGLOWJ3VaWrmS0PltYT2lBFC
-         vrQru2weUKIMlJdxpbQyimam4NHNBwgwciiH23ZghUcdF4f8CutBnlhX5TsF/YdoGF8L
-         uyET2Ddv8nOCMofHiuXkKr9iawtzt9lJmIkexMC06tsqlCqvTayQmdXp5TcVBtGXXp+t
-         RZBA==
-X-Gm-Message-State: AOAM531hOpco6ESSC5tqSlm/2ihKmO5jAV31gZWwem15GplQN232nJeQ
-        HGYQhlBYG2FjN1dTQ4sgFOh8y8duv+LfTm9AVc7lYj9x3Dw=
-X-Google-Smtp-Source: ABdhPJzL3K/jikdloz8L2WO3+zi/8Cp0G3owqWF4urVyT4uasuJoj++B4FPKa3BA6m7Ih1hTbhxRqbFNnawHLzBx2DA=
-X-Received: by 2002:a05:6902:143:b0:628:7cf1:f2a9 with SMTP id
- p3-20020a056902014300b006287cf1f2a9mr17194704ybh.51.1646405234801; Fri, 04
- Mar 2022 06:47:14 -0800 (PST)
+        with ESMTP id S238075AbiCDQYM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2022 11:24:12 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 920EA5675D;
+        Fri,  4 Mar 2022 08:23:24 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2DF9B61D7E;
+        Fri,  4 Mar 2022 16:23:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8485BC340E9;
+        Fri,  4 Mar 2022 16:23:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1646411003;
+        bh=A0WZoEr7gra5ckN9ZrUfGZctENNf9o5PHa/VMwr1bE8=;
+        h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+        b=DYoFhsdUWID4fR0kL9HCfwgaMWLdTUppwwygMrPdUFQyxz0wx9LByhTLBkqNP4ol1
+         fvV/o+le5SE7hDq2hNjVcVFUlhmHk2y/PSNwlarnXlnJ4iJ48XjTsItQs8L9j9pMgo
+         HToJHiKiNlBD3R+/wNfnrtSp0yb9jU+/iijVam0GJl7LUNlzKFdk0w2rx3Fw41qFXd
+         jRX5M+lkrTWlU1o87lLc2v0MFnB6M0agFz4O+6OpjFTOHMfRkjCbFI/f0A+tZdgsGK
+         wQNk9xDKjofThnAQV3TgDGBGxgthW3AmxU4e3OzXh5HnVHmVLzEcc7jG1zwhjBlAs8
+         DP2xeadk2gL4Q==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+        id 2CBEF5C04FD; Fri,  4 Mar 2022 08:23:23 -0800 (PST)
+Date:   Fri, 4 Mar 2022 08:23:23 -0800
+From:   "Paul E. McKenney" <paulmck@kernel.org>
+To:     Feng Tang <feng.tang@intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Doug Smythies <dsmythies@telus.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "stable@vger.kernel.org" <stable@vger.kernel.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        tim.c.chen@intel.com
+Subject: Re: CPU excessively long times between frequency scaling driver
+ calls - bisected
+Message-ID: <20220304162323.GN4285@paulmck-ThinkPad-P17-Gen-1>
+Reply-To: paulmck@kernel.org
+References: <20220228041228.GH4548@shbuild999.sh.intel.com>
+ <11956019.O9o76ZdvQC@kreacher>
+ <20220301055255.GI4548@shbuild999.sh.intel.com>
+ <CAJZ5v0jWUR__zn0=SDDecFct86z-=Y6v5fi37mMyW+zOBi7oWw@mail.gmail.com>
+ <CAAYoRsVLOcww0z4mp9TtGCKdrgeEiL_=FgrUO=rwkZAok4sQdg@mail.gmail.com>
+ <CAJZ5v0hK4zoOtgNQNFkJHC0XOiGsPGUPphHU5og44e_K4kGU9g@mail.gmail.com>
+ <CAAYoRsWN-h+fBAoocGmUFHDkOv2PL+6U59_ASBYH74j0orHaCQ@mail.gmail.com>
+ <20220303052727.GM4548@shbuild999.sh.intel.com>
+ <CAJZ5v0h0yqP2qThX6KbQT-6zG=YfxkAbH+uGV8aZCgZX0tSPpw@mail.gmail.com>
+ <20220304051344.GA72462@shbuild999.sh.intel.com>
 MIME-Version: 1.0
-References: <20220127230727.3369358-1-briannorris@chromium.org> <20220127150615.v2.12.I3a5c7f21ecd8221b42c2dbcd618386bce7b3e9a6@changeid>
-In-Reply-To: <20220127150615.v2.12.I3a5c7f21ecd8221b42c2dbcd618386bce7b3e9a6@changeid>
-From:   Peter Geis <pgwipeout@gmail.com>
-Date:   Fri, 4 Mar 2022 09:47:03 -0500
-Message-ID: <CAMdYzYo9Y_pEAAtreQU0B9DVzGsbUgpTA2g7HGRyUXcSBjMy4g@mail.gmail.com>
-Subject: Re: [PATCH v2 12/15] arm64: dts: rockchip: Enable dmc and dfi nodes
- on gru
-To:     Brian Norris <briannorris@chromium.org>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>,
-        Lin Huang <hl@rock-chips.com>,
-        arm-mail-list <linux-arm-kernel@lists.infradead.org>,
-        Derek Basehore <dbasehore@chromium.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        =?UTF-8?B?R2HDq2wgUE9SVEFZ?= <gael.portay@collabora.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220304051344.GA72462@shbuild999.sh.intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 27, 2022 at 6:17 PM Brian Norris <briannorris@chromium.org> wro=
-te:
->
-> From: Lin Huang <hl@rock-chips.com>
->
-> Enable the DMC (Dynamic Memory Controller) and the DFI (DDR PHY
-> Interface) nodes on gru boards so we can support DDR DVFS.
->
-> Signed-off-by: Lin Huang <hl@rock-chips.com>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Signed-off-by: Ga=C3=ABl PORTAY <gael.portay@collabora.com>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> Updates since the old series:
->
->  - reordered alphabetically by phandle name, per style
->  - drop a ton of deprecated/unused properties
->  - add required center-supply for scarlet
->  - add new *_idle_dis_freq properties
->  - drop the lowest (200 MHz) OPP; this was never stabilized for
->    production
->  - bump the voltage (0.9V -> 0.925V) for the highest OPP on Chromebook
->    models; later (tablet) models were more stable, with a fixed DDR
->    regulator
->  - bump odt_dis_freq to 666 MHz; early versions used 333 MHz, but
->    stabilization efforts landed on 666 MHz for production
->
-> ---
->
-> Changes in v2:
->  - Adapt to new properties
->
-> Changes in v1:
-> This was part of a previous series, at:
-> https://lore.kernel.org/r/20210308233858.24741-3-daniel.lezcano@linaro.or=
-g
-> I've picked up a bunch of changes and fixes, so I've restarted the patch
-> series numbering.
+On Fri, Mar 04, 2022 at 01:13:44PM +0800, Feng Tang wrote:
+> On Thu, Mar 03, 2022 at 01:02:01PM +0100, Rafael J. Wysocki wrote:
+> > On Thu, Mar 3, 2022 at 6:27 AM Feng Tang <feng.tang@intel.com> wrote:
+> > >
+> > > On Tue, Mar 01, 2022 at 08:06:24PM -0800, Doug Smythies wrote:
+> > > > On Tue, Mar 1, 2022 at 9:34 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > > >
+> > > > > I guess the numbers above could be reduced still by using a P-state
+> > > > > below the max non-turbo one as a limit.
+> > > >
+> > > > Yes, and for a test I did "rjw-3".
+> > > >
+> > > > > > overruns: 1042.
+> > > > > > max overrun time: 9,769 uSec.
+> > > > >
+> > > > > This would probably get worse then, though.
+> > > >
+> > > > Yes, that was my expectation, but not what happened.
+> > > >
+> > > > rjw-3:
+> > > > ave: 3.09 watts
+> > > > min: 3.01 watts
+> > > > max: 31.7 watts
+> > > > ave freq: 2.42 GHz.
+> > > > overruns: 12. (I did not expect this.)
+> > > > Max overruns time: 621 uSec.
+> > > >
+> > > > Note 1: IRQ's increased by 74%. i.e. it was going in
+> > > > and out of idle a lot more.
+> > > >
+> > > > Note 2: We know that processor package power
+> > > > is highly temperature dependent. I forgot to let my
+> > > > coolant cool adequately after the kernel compile,
+> > > > and so had to throw out the first 4 power samples
+> > > > (20 minutes).
+> > > >
+> > > > I retested both rjw-2 and rjw-3, but shorter tests
+> > > > and got 0 overruns in both cases.
+> > >
+> > > One thought is can we consider trying the previous debug patch of
+> > > calling the util_update when entering idle (time limited).
+> > >
+> > > In current code, the RT/CFS/Deadline class all have places to call
+> > > cpufreq_update_util(), the patch will make sure it is called in all
+> > > four classes, also it follows the principle of 'schedutil' of not
+> > > introducing more system cost. And surely I could be missing some
+> > > details here.
+> > >
+> > > Following is a cleaner version of the patch, and the code could be
+> > > moved down to the internal loop of
+> > >
+> > >         while (!need_resched()) {
+> > >
+> > >         }
+> > >
+> > > Which will make it get called more frequently.
+> > 
+> > It will, but it's not necessary in all cases.  It only is necessary if
+> > the tick is going to be stopped (because the tick will update the
+> > P-state governor anyway if it runs).  However, at this point you don't
+> > know what's going to happen to the tick.
+> > 
+> > Moreover, updating the P-state governor before going idle doesn't
+> > really help,
+> 
+> >From Doug's previous test, the power consumption and the delay
+> both improved with the debug patch.
+> 
+> > because the P-state programmed by it at this point may
+> > very well be stale after getting out of the idle state, so instead of
+> > doing a full update at this point, it should force a low P-state on
+> > the way from idle.
+> 
+> Makes sense.
+> 
+> Paul has asked about the timer interupts, and here is some more info,
+> when there is no active load in system, the longest interval of 4
+> seconds between 2 timer interrupts comes from the kernel watchdog
+> for hardware/software lockup detector, and every CPU will have this
+> timer, which limits the maximum cpu idle duration to be 4 seconds.
 
-Good Morning,
+And thank you for the info!  One way to reduce this overhead is to boot
+with the watchdog_thresh kernel-boot parameter set to some value greater
+than 10.  The downside is that HW/FW/NMI catastrophes will need to last
+for more than 10 seconds before the system complains.  One approach
+is to run with a small watchdog_thresh during testing and a larger one
+in production.
 
-I'm trying to bring this series over to rockpro64 (and eventually the
-pinephone-pro) and am running into some snags.
-Essentially, anytime a transition happens, the board locks up.
-I've disabled the extra power save disable flags and adjusted the OPPs
-for rockpro64's power.
-Transitions anywhere from the default 800mhz cause a lock.
+							Thanx, Paul
 
-I'm digging deeper, but I'm hoping you can answer some questions in
-the meantime:
-1. Does this require something from firmware that isn't available on
-Mainline ATF? (AKA special firmware to the Chromebook line)
-2. If not, do you have any recommendations off the top of your head?
-
-Thanks,
-Peter Geis
-
->
->  .../dts/rockchip/rk3399-gru-chromebook.dtsi   |  7 +++++
->  .../boot/dts/rockchip/rk3399-gru-scarlet.dtsi | 12 ++++++++
->  arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  | 28 +++++++++++++++++++
->  .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 25 +++++++++++++++++
->  4 files changed, 72 insertions(+)
->
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi b/ar=
-ch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
-> index 9b2c679f5eca..cc8950046d94 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
-> @@ -234,6 +234,13 @@ &cdn_dp {
->         extcon =3D <&usbc_extcon0>, <&usbc_extcon1>;
->  };
->
-> +&dmc {
-> +       center-supply =3D <&ppvar_centerlogic>;
-> +       rockchip,pd-idle-dis-freq-hz =3D <800000000>;
-> +       rockchip,sr-idle-dis-freq-hz =3D <800000000>;
-> +       rockchip,sr-mc-gate-idle-dis-freq-hz =3D <800000000>;
-> +};
-> +
->  &edp {
->         status =3D "okay";
->
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet.dtsi b/arch/=
-arm64/boot/dts/rockchip/rk3399-gru-scarlet.dtsi
-> index a9817b3d7edc..913d845eb51a 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet.dtsi
-> @@ -391,6 +391,18 @@ &cru {
->                 <400000000>;
->  };
->
-> +/* The center supply is fixed to .9V on scarlet */
-> +&dmc {
-> +       center-supply =3D <&pp900_s0>;
-> +};
-> +
-> +/* We don't need .925 V for 928 MHz on scarlet */
-> +&dmc_opp_table {
-> +       opp03 {
-> +               opp-microvolt =3D <900000>;
-> +       };
-> +};
-> +
->  &gpio0 {
->         gpio-line-names =3D /* GPIO0 A 0-7 */
->                           "CLK_32K_AP",
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/bo=
-ot/dts/rockchip/rk3399-gru.dtsi
-> index 162f08bca0d4..23bfba86daab 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-> @@ -373,6 +373,34 @@ &cru {
->                 <200000000>;
->  };
->
-> +&dfi {
-> +       status =3D "okay";
-> +};
-> +
-> +&dmc {
-> +       status =3D "okay";
-> +
-> +       rockchip,pd-idle-ns =3D <160>;
-> +       rockchip,sr-idle-ns =3D <10240>;
-> +       rockchip,sr-mc-gate-idle-ns =3D <40960>;
-> +       rockchip,srpd-lite-idle-ns =3D <61440>;
-> +       rockchip,standby-idle-ns =3D <81920>;
-> +
-> +       rockchip,ddr3_odt_dis_freq =3D <666000000>;
-> +       rockchip,lpddr3_odt_dis_freq =3D <666000000>;
-> +       rockchip,lpddr4_odt_dis_freq =3D <666000000>;
-> +
-> +       rockchip,sr-mc-gate-idle-dis-freq-hz =3D <1000000000>;
-> +       rockchip,srpd-lite-idle-dis-freq-hz =3D <0>;
-> +       rockchip,standby-idle-dis-freq-hz =3D <928000000>;
-> +};
-> +
-> +&dmc_opp_table {
-> +       opp03 {
-> +               opp-suspend;
-> +       };
-> +};
-> +
->  &emmc_phy {
->         status =3D "okay";
->  };
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi b/arch/arm6=
-4/boot/dts/rockchip/rk3399-op1-opp.dtsi
-> index 2180e0f75003..6e29e74f6fc6 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
-> @@ -110,6 +110,27 @@ opp05 {
->                         opp-microvolt =3D <1075000>;
->                 };
->         };
-> +
-> +       dmc_opp_table: dmc_opp_table {
-> +               compatible =3D "operating-points-v2";
-> +
-> +               opp00 {
-> +                       opp-hz =3D /bits/ 64 <400000000>;
-> +                       opp-microvolt =3D <900000>;
-> +               };
-> +               opp01 {
-> +                       opp-hz =3D /bits/ 64 <666000000>;
-> +                       opp-microvolt =3D <900000>;
-> +               };
-> +               opp02 {
-> +                       opp-hz =3D /bits/ 64 <800000000>;
-> +                       opp-microvolt =3D <900000>;
-> +               };
-> +               opp03 {
-> +                       opp-hz =3D /bits/ 64 <928000000>;
-> +                       opp-microvolt =3D <925000>;
-> +               };
-> +       };
->  };
->
->  &cpu_l0 {
-> @@ -136,6 +157,10 @@ &cpu_b1 {
->         operating-points-v2 =3D <&cluster1_opp>;
->  };
->
-> +&dmc {
-> +       operating-points-v2 =3D <&dmc_opp_table>;
-> +};
-> +
->  &gpu {
->         operating-points-v2 =3D <&gpu_opp_table>;
->  };
-> --
-> 2.35.0.rc0.227.g00780c9af4-goog
->
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+> > > ---
+> > >
+> > > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> > > index d17b0a5ce6ac..e12688036725 100644
+> > > --- a/kernel/sched/idle.c
+> > > +++ b/kernel/sched/idle.c
+> > > @@ -258,15 +258,23 @@ static void cpuidle_idle_call(void)
+> > >   *
+> > >   * Called with polling cleared.
+> > >   */
+> > > +DEFINE_PER_CPU(u64, last_util_update_time);    /* in jiffies */
+> > >  static void do_idle(void)
+> > >  {
+> > >         int cpu = smp_processor_id();
+> > > +       u64 expire;
+> > >
+> > >         /*
+> > >          * Check if we need to update blocked load
+> > >          */
+> > >         nohz_run_idle_balance(cpu);
+> > >
+> > > +       expire = __this_cpu_read(last_util_update_time) + HZ * 3;
+> > > +       if (unlikely(time_is_before_jiffies((unsigned long)expire))) {
+> > > +               cpufreq_update_util(this_rq(), 0);
+> > 
+> > And quite frankly I'm not sure if running cpufreq_update_util() from
+> > here is safe.
+> 
+> I had that concern too :). Do you mean this is called when the local
+> irq is enabled, and could be interrupted causing some issue?
+> 
+> Thanks,
+> Feng
+> 
+> > > +               __this_cpu_write(last_util_update_time, get_jiffies_64());
+> > > +       }
+> > > +
+> > >         /*
+> > >          * If the arch has a polling bit, we maintain an invariant:
+> > >          *
+> > >
