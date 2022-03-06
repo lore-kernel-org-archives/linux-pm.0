@@ -2,229 +2,157 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02BB5C433F5
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Mar 2022 02:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FCD1C433EF
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Mar 2022 05:52:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231607AbiCFCOm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 5 Mar 2022 21:14:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60912 "EHLO
+        id S230466AbiCFFxV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Mar 2022 00:53:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46480 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229445AbiCFCOl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Mar 2022 21:14:41 -0500
-Received: from smtpbguseast3.qq.com (smtpbguseast3.qq.com [54.243.244.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C6B72558F
-        for <linux-pm@vger.kernel.org>; Sat,  5 Mar 2022 18:13:50 -0800 (PST)
-X-QQ-mid: bizesmtp81t1646532785t9u92oyv
-Received: from localhost.localdomain ( [114.222.120.105])
-        by bizesmtp.qq.com (ESMTP) with 
-        id ; Sun, 06 Mar 2022 10:12:57 +0800 (CST)
-X-QQ-SSF: 01400000002000B0I000B00A0000000
-X-QQ-FEAT: TskX/GkkryDl1ebvnVWbkmMHiBjfiugUE3fW1N5Gxre2+vjdIH/KUeZp8+ZoO
-        /EZHC0T1v47W8jWzh/DD9Ne5AwHfy46VoajLTi3JnjNeDXrkViZm9Drxh6v2uRv20To9Mim
-        ND2rMoK0HVi6fmBdgWPpwOMo7VkjNmEdB4r4z2N/ZQ2opJO01l1BIHvjzasjfuIG7HYZ6q2
-        dczvhDyu5DiYMbQ2yOq6F8JOVeZ9EG8mDaDySIHkh/ioLhC2bykRwaovj8N11JdFHDhgi/P
-        pe/WGphfS/SVRJ2NvQ1bH4xxwQSTQ60+sKrrwqvBrERDmAuXZO9gBnWYzUHaZuLArE8LAD+
-        u+UIrw077Ol2Ez2AvHMu2OJnIJx9w==
-X-QQ-GoodBg: 2
-From:   zhanglianjie <zhanglianjie@uniontech.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        zhanglianjie <zhanglianjie@uniontech.com>
-Subject: [PATCH 1/2] cpufreq: unify the show() and store() styles of attr
-Date:   Sun,  6 Mar 2022 10:12:49 +0800
-Message-Id: <20220306021250.64315-1-zhanglianjie@uniontech.com>
-X-Mailer: git-send-email 2.20.1
+        with ESMTP id S229841AbiCFFxV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Mar 2022 00:53:21 -0500
+Received: from mail-41104.protonmail.ch (mail-41104.protonmail.ch [185.70.41.104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E74226D4
+        for <linux-pm@vger.kernel.org>; Sat,  5 Mar 2022 21:52:27 -0800 (PST)
+Received: from mail-0201.mail-europe.com (mail-0201.mail-europe.com [51.77.79.158])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        by mail-41104.protonmail.ch (Postfix) with ESMTPS id 4KB9j62wBGz4xFfc
+        for <linux-pm@vger.kernel.org>; Sun,  6 Mar 2022 05:52:26 +0000 (UTC)
+Authentication-Results: mail-41104.protonmail.ch;
+        dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="R3pLfFH/"
+Date:   Sun, 06 Mar 2022 05:52:18 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
+        s=protonmail2; t=1646545941;
+        bh=jlHvcCrmUJa3Tgqz2MiMzMxuvjdRv3ydQ/NyZc+5Npo=;
+        h=Date:To:From:Cc:Reply-To:Subject:Message-ID:From:To:Cc:Date:
+         Subject:Reply-To:Feedback-ID:Message-ID;
+        b=R3pLfFH/NetUj6mPXDbbD8SQJCLX+gkdh8pi4P3/DIfBMMoccXIOkQbvv+qYorcPh
+         I0G8ftBHaEgMVeDFu3BTku24W+oBLibBJPtOVoUBU0NnOmu51fML9+ehXtb9JQh4Ta
+         oC762S1ljBSBDGwoOkdZqNIf5P8cFobNBN/iHj9Fo32MPrGEoncVBCo27JH+sf2JYI
+         8jCO8VpwC7EL6yGIe8qRgQusJ8f8JYLYXgRPHmBlsv5QxjSwAZ/GFAOlTfhCArEbo7
+         vBLFOaeDfwLxqD7kW0I84uOeZiRSt5BldujmMME7MDG/LCB51O/Q8445jsh26867vE
+         VhRsQznCbra2A==
+To:     rafael@kernel.org, pavel@ucw.cz, len.brown@intel.com
+From:   David Cohen <dacohen@pm.me>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        David Cohen <dacohen@pm.me>
+Reply-To: David Cohen <dacohen@pm.me>
+Subject: [PATCH] PM: fix dynamic debug within pm_pr_debug()
+Message-ID: <20220306055207.386821-1-dacohen@pm.me>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:uniontech.com:qybgforeign:qybgforeign5
-X-QQ-Bgrelay: 1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Unify the show() and store() styles of attr,
-change show_xxx(), store_xxx() to xxx_show(), xxx_store().
+Currently, pm_pr_debug() and pm_deferred_pr_debug() use __pm_pr_debug()
+to filter pm debug messages based on pm_debug_messages_on flag.
+According to __pm_pr_debug() implementation, pm_deferred_pr_debug()
+indirectly calls printk_deferred() within __pm_pr_debug() which doesn't
+support dynamic debug, but pm_pr_debug() indirectly calls pr_debug()
+which does support dynamic debug.
 
-Signed-off-by: zhanglianjie <zhanglianjie@uniontech.com>
+The problem is if we enable/disable dynamic debug inside __pm_pr_debug()
+it will affect all pm_pr_debug() calls at once, so we can't individually
+control them.
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 08515f7e515f..b6bd0ff35323 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -146,7 +146,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+This patch changes __pm_pr_debug() implementation into macros to make
+pr_debug() to be directly called by all pr_pm_debug() cases. As a direct
+side effect all pr_pm_debug() can be individually controlled by dynamic
+debug feature.
 
- /************************** sysfs interface ************************/
+Signed-off-by: David Cohen <dacohen@pm.me>
+---
+ include/linux/suspend.h | 19 +++++++++++++++----
+ kernel/power/main.c     | 29 -----------------------------
+ 2 files changed, 15 insertions(+), 33 deletions(-)
 
--static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-+static ssize_t sampling_down_factor_store(struct gov_attr_set *attr_set,
- 					  const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -161,7 +161,7 @@ static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
- 	return count;
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 300273ff40cc..d727d3c867e3 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -542,22 +542,33 @@ static inline void unlock_system_sleep(void) {}
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ extern bool pm_print_times_enabled;
+ extern bool pm_debug_messages_on;
+-extern __printf(2, 3) void __pm_pr_dbg(bool defer, const char *fmt, ...);
++#define __pm_pr_dbg(fmt, ...)=09=09=09=09=09\
++=09do {=09=09=09=09=09=09=09\
++=09=09if (pm_debug_messages_on)=09=09=09\
++=09=09=09pr_debug("PM: " fmt, ##__VA_ARGS__);=09\
++=09} while(0)
++#define __pm_deferred_pr_dbg(fmt, ...)=09=09=09=09\
++=09do {=09=09=09=09=09=09=09\
++=09=09if (pm_debug_messages_on)=09=09=09\
++=09=09=09printk_deferred(KERN_DEBUG "PM: " fmt, ##__VA_ARGS__);=09\
++=09} while(0)
+ #else
+ #define pm_print_times_enabled=09(false)
+ #define pm_debug_messages_on=09(false)
+
+ #include <linux/printk.h>
+
+-#define __pm_pr_dbg(defer, fmt, ...) \
++#define __pm_pr_dbg(fmt, ...) \
++=09no_printk(KERN_DEBUG fmt, ##__VA_ARGS__)
++#define __pm_deferred_pr_dbg(fmt, ...) \
+ =09no_printk(KERN_DEBUG fmt, ##__VA_ARGS__)
+ #endif
+
+ #define pm_pr_dbg(fmt, ...) \
+-=09__pm_pr_dbg(false, fmt, ##__VA_ARGS__)
++=09__pm_pr_dbg(fmt, ##__VA_ARGS__)
+
+ #define pm_deferred_pr_dbg(fmt, ...) \
+-=09__pm_pr_dbg(true, fmt, ##__VA_ARGS__)
++=09__pm_deferred_pr_dbg(fmt, ##__VA_ARGS__)
+
+ #ifdef CONFIG_PM_AUTOSLEEP
+
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 7e646079fbeb..5242bf2ee469 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -545,35 +545,6 @@ static int __init pm_debug_messages_setup(char *str)
  }
+ __setup("pm_debug_messages", pm_debug_messages_setup);
 
--static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
-+static ssize_t up_threshold_store(struct gov_attr_set *attr_set,
- 				  const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -177,7 +177,7 @@ static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
-+static ssize_t down_threshold_store(struct gov_attr_set *attr_set,
- 				    const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -195,7 +195,7 @@ static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
-+static ssize_t ignore_nice_load_store(struct gov_attr_set *attr_set,
- 				      const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -220,7 +220,7 @@ static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_freq_step(struct gov_attr_set *attr_set, const char *buf,
-+static ssize_t freq_step_store(struct gov_attr_set *attr_set, const char *buf,
- 			       size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 63f7c219062b..0d42cf8b88d8 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -27,7 +27,7 @@ static DEFINE_MUTEX(gov_dbs_data_mutex);
-
- /* Common sysfs tunables */
- /*
-- * store_sampling_rate - update sampling rate effective immediately if needed.
-+ * sampling_rate_store - update sampling rate effective immediately if needed.
-  *
-  * If new rate is smaller than the old, simply updating
-  * dbs.sampling_rate might not be appropriate. For example, if the
-@@ -41,7 +41,7 @@ static DEFINE_MUTEX(gov_dbs_data_mutex);
-  * This must be called with dbs_data->mutex held, otherwise traversing
-  * policy_dbs_list isn't safe.
-  */
--ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
-+ssize_t sampling_rate_store(struct gov_attr_set *attr_set, const char *buf,
- 			    size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -80,7 +80,7 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
-
- 	return count;
- }
--EXPORT_SYMBOL_GPL(store_sampling_rate);
-+EXPORT_SYMBOL_GPL(sampling_rate_store);
-
- /**
-  * gov_update_cpu_data - Update CPU load data.
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index bab8e6140377..65ecf32ba4f8 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -51,7 +51,7 @@ static inline struct dbs_data *to_dbs_data(struct gov_attr_set *attr_set)
- }
-
- #define gov_show_one(_gov, file_name)					\
--static ssize_t show_##file_name						\
-+static ssize_t file_name##_show						\
- (struct gov_attr_set *attr_set, char *buf)				\
- {									\
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);		\
-@@ -60,7 +60,7 @@ static ssize_t show_##file_name						\
- }
-
- #define gov_show_one_common(file_name)					\
--static ssize_t show_##file_name						\
-+static ssize_t file_name##_show						\
- (struct gov_attr_set *attr_set, char *buf)				\
- {									\
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);		\
-@@ -69,11 +69,11 @@ static ssize_t show_##file_name						\
-
- #define gov_attr_ro(_name)						\
- static struct governor_attr _name =					\
--__ATTR(_name, 0444, show_##_name, NULL)
-+__ATTR(_name, 0444, _name##_show, NULL)
-
- #define gov_attr_rw(_name)						\
- static struct governor_attr _name =					\
--__ATTR(_name, 0644, show_##_name, store_##_name)
-+__ATTR(_name, 0644, _name##_show, _name##_store)
-
- /* Common to all CPUs of a policy */
- struct policy_dbs_info {
-@@ -176,7 +176,7 @@ void od_register_powersave_bias_handler(unsigned int (*f)
- 		(struct cpufreq_policy *, unsigned int, unsigned int),
- 		unsigned int powersave_bias);
- void od_unregister_powersave_bias_handler(void);
--ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
-+ssize_t sampling_rate_store(struct gov_attr_set *attr_set, const char *buf,
- 			    size_t count);
- void gov_update_cpu_data(struct dbs_data *dbs_data);
- #endif /* _CPUFREQ_GOVERNOR_H */
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 6a41ea4729b8..e8fbf970ff07 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -202,7 +202,7 @@ static unsigned int od_dbs_update(struct cpufreq_policy *policy)
- /************************** sysfs interface ************************/
- static struct dbs_governor od_dbs_gov;
-
--static ssize_t store_io_is_busy(struct gov_attr_set *attr_set, const char *buf,
-+static ssize_t io_is_busy_store(struct gov_attr_set *attr_set, const char *buf,
- 				size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -220,7 +220,7 @@ static ssize_t store_io_is_busy(struct gov_attr_set *attr_set, const char *buf,
- 	return count;
- }
-
--static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
-+static ssize_t up_threshold_store(struct gov_attr_set *attr_set,
- 				  const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -237,7 +237,7 @@ static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-+static ssize_t sampling_down_factor_store(struct gov_attr_set *attr_set,
- 					  const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -265,7 +265,7 @@ static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
-+static ssize_t ignore_nice_load_store(struct gov_attr_set *attr_set,
- 				      const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
-@@ -290,7 +290,7 @@ static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
- 	return count;
- }
-
--static ssize_t store_powersave_bias(struct gov_attr_set *attr_set,
-+static ssize_t powersave_bias_store(struct gov_attr_set *attr_set,
- 				    const char *buf, size_t count)
- {
- 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
+-/**
+- * __pm_pr_dbg - Print a suspend debug message to the kernel log.
+- * @defer: Whether or not to use printk_deferred() to print the message.
+- * @fmt: Message format.
+- *
+- * The message will be emitted if enabled through the pm_debug_messages
+- * sysfs attribute.
+- */
+-void __pm_pr_dbg(bool defer, const char *fmt, ...)
+-{
+-=09struct va_format vaf;
+-=09va_list args;
+-
+-=09if (!pm_debug_messages_on)
+-=09=09return;
+-
+-=09va_start(args, fmt);
+-
+-=09vaf.fmt =3D fmt;
+-=09vaf.va =3D &args;
+-
+-=09if (defer)
+-=09=09printk_deferred(KERN_DEBUG "PM: %pV", &vaf);
+-=09else
+-=09=09printk(KERN_DEBUG "PM: %pV", &vaf);
+-
+-=09va_end(args);
+-}
+-
+ #else /* !CONFIG_PM_SLEEP_DEBUG */
+ static inline void pm_print_times_init(void) {}
+ #endif /* CONFIG_PM_SLEEP_DEBUG */
 --
-2.20.1
-
+2.35.1
 
 
