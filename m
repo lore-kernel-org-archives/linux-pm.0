@@ -2,31 +2,34 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 231DBC433FE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Mar 2022 12:26:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2627C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Mar 2022 12:26:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232542AbiCGM1Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Mar 2022 07:27:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35928 "EHLO
+        id S242238AbiCGM13 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Mar 2022 07:27:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35966 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236485AbiCGM1Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 07:27:24 -0500
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F17A80934;
-        Mon,  7 Mar 2022 04:26:29 -0800 (PST)
-X-UUID: 21965ce3590e44ad99f609bc582ba1f2-20220307
-X-UUID: 21965ce3590e44ad99f609bc582ba1f2-20220307
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
+        with ESMTP id S236485AbiCGM11 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 07:27:27 -0500
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E397C8092B;
+        Mon,  7 Mar 2022 04:26:32 -0800 (PST)
+X-UUID: 243c8acfc913456a8d91bb9f07546a9a-20220307
+X-UUID: 243c8acfc913456a8d91bb9f07546a9a-20220307
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
         (envelope-from <jia-wei.chang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 33136119; Mon, 07 Mar 2022 20:26:25 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 375587973; Mon, 07 Mar 2022 20:26:27 +0800
+Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
  mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Mon, 7 Mar 2022 20:26:23 +0800
+ 15.2.792.15; Mon, 7 Mar 2022 20:26:26 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
+ (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 7 Mar
+ 2022 20:26:26 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 7 Mar 2022 20:26:23 +0800
+ Transport; Mon, 7 Mar 2022 20:26:25 +0800
 From:   Tim Chang <jia-wei.chang@mediatek.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -45,9 +48,9 @@ CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         <hsinyi@google.com>,
         Jia-Wei Chang <jia-wei.chang@mediatek.corp-partner.google.com>
-Subject: [PATCH 1/3] dt-bindings: devfreq: mediatek: add mtk cci devfreq dt-bindings
-Date:   Mon, 7 Mar 2022 20:25:11 +0800
-Message-ID: <20220307122513.11822-2-jia-wei.chang@mediatek.com>
+Subject: [PATCH 3/3] devfreq: mediatek: add platform data to support mt8186
+Date:   Mon, 7 Mar 2022 20:25:13 +0800
+Message-ID: <20220307122513.11822-4-jia-wei.chang@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220307122513.11822-1-jia-wei.chang@mediatek.com>
 References: <20220307122513.11822-1-jia-wei.chang@mediatek.com>
@@ -58,93 +61,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-add devicetree binding of mtk cci devfreq on MediaTek SoC.
+add specific platform data to support mt8186.
 
 Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.corp-partner.google.com>
 ---
- .../devicetree/bindings/devfreq/mtk-cci.yaml  | 73 +++++++++++++++++++
- 1 file changed, 73 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/mtk-cci.yaml
+ drivers/devfreq/mtk-cci-devfreq.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/mtk-cci.yaml b/Documentation/devicetree/bindings/devfreq/mtk-cci.yaml
-new file mode 100644
-index 000000000000..e64ac4c56758
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/mtk-cci.yaml
-@@ -0,0 +1,73 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/devfreq/mtk-cci.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/devfreq/mtk-cci-devfreq.c b/drivers/devfreq/mtk-cci-devfreq.c
+index 986f34689f5c..ade09794b404 100644
+--- a/drivers/devfreq/mtk-cci-devfreq.c
++++ b/drivers/devfreq/mtk-cci-devfreq.c
+@@ -439,8 +439,18 @@ static const struct mtk_ccifreq_platform_data mtk_platform_data = {
+ 	.need_voltage_tracking = false,
+ };
+ 
++static const struct mtk_ccifreq_platform_data mt8186_platform_data = {
++	.min_volt_shift = 100000,
++	.max_volt_shift = 250000,
++	.proc_max_volt = 1118750,
++	.sram_min_volt = 850000,
++	.sram_max_volt = 1118750,
++	.need_voltage_tracking = true,
++};
 +
-+title: Mediatek Cache Coherent Interconnect (CCI) Devfreq driver Device Tree Bindings
-+
-+maintainers:
-+  - Jia-Wei Chang <jia-wei.chang@mediatek.com>
-+
-+description: |
-+  This module is used to create CCI DEVFREQ.
-+  The performance will depend on both CCI frequency and CPU frequency.
-+  For MT8186, CCI co-buck with Little core.
-+  Contain CCI opp table for voltage and frequency scaling.
-+
-+properties:
-+  compatible:
-+    const: "mediatek,mt8186-cci"
-+
-+  clocks:
-+    items:
-+      - description:
-+          The first one is the multiplexer for clock input of CPU cluster.
-+      - description:
-+          The other is used as an intermediate clock source when the original
-+          CPU is under transition and not stable yet.
-+
-+  clock-names:
-+    items:
-+      - const: "cci"
-+      - const: "intermediate"
-+
-+  operating-points-v2:
-+    description:
-+      For details, please refer to
-+      Documentation/devicetree/bindings/opp/opp-v2.yaml
-+
-+  opp-table: true
-+
-+  proc-supply:
-+    description:
-+      Phandle of the regulator for CCI that provides the supply voltage.
-+
-+  sram-supply:
-+    description:
-+      Phandle of the regulator for sram of CCI that provides the supply
-+      voltage. When present, the cci devfreq driver needs to do
-+      "voltage tracking" to step by step scale up/down Vproc and Vsram to fit
-+      SoC specific needs. When absent, the voltage scaling flow is handled by
-+      hardware, hence no software "voltage tracking" is needed.
-+
-+required:
-+  - compatible
-+  - clocks
-+  - clock-names
-+  - operating-points-v2
-+  - proc-supply
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/mt8186-clk.h>
-+    cci: cci {
-+      compatible = "mediatek,mt8186-cci";
-+      clocks = <&mcusys CLK_MCU_ARMPLL_BUS_SEL>, <&apmixedsys CLK_APMIXED_MAINPLL>;
-+      clock-names = "cci", "intermediate";
-+      operating-points-v2 = <&cci_opp>;
-+      proc-supply = <&mt6358_vproc12_reg>;
-+      sram-supply = <&mt6358_vsram_proc12_reg>;
-+    };
+ static const struct of_device_id mtk_ccifreq_machines[] = {
+ 	{ .compatible = "mediatek,mt8183-cci", .data = &mtk_platform_data },
++	{ .compatible = "mediatek,mt8186-cci", .data = &mt8186_platform_data },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, mtk_ccifreq_machines);
 -- 
 2.18.0
 
