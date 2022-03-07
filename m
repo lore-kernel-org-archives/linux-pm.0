@@ -2,187 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 062DAC433FE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Mar 2022 06:16:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E8EAC433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Mar 2022 06:45:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234385AbiCGGRe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Mar 2022 01:17:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45606 "EHLO
+        id S232006AbiCGGqh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Mar 2022 01:46:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51752 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234840AbiCGGRd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 01:17:33 -0500
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 386455F24E;
-        Sun,  6 Mar 2022 22:16:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1646633800; x=1678169800;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=czqyC369iJ/4Fiuo2aAnacT+hcsllm8pRuj6qchrKa8=;
-  b=NZO7Y2rLEtWgkJiWj/ds8LH/DJA4LUd+ZDFGjO0zN9vkMvjW9h9MqJQz
-   PIcTb12a7BIbpyK2sEIVQ8ow1f8WYzpks7zZ6+RjBK/0ayR3Aw+eeGe6B
-   1N/kMmk1myGPRCzK8Mqg8tCo3opullzL3K0FP0twguIEUYjHUw05973pq
-   jx77G64sLjrtFheWfLphRyj7iRTQFyYlbd1aQzSkuwEFcrvaUFxOjR+Qb
-   3FG9k9YVlsQh0eC9EGulkyiqIHK0uXAyQF/kxOVVhexqrz8+LEYr4884q
-   g7PLNVcUWzyuJYjQm6i1tWfyRVA7A6wvokEoWqglRiVvGk0w05rbfqQ2v
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10278"; a="317544470"
-X-IronPort-AV: E=Sophos;i="5.90,161,1643702400"; 
-   d="scan'208";a="317544470"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2022 22:16:39 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,161,1643702400"; 
-   d="scan'208";a="710991044"
-Received: from lkp-server02.sh.intel.com (HELO 89b41b6ae01c) ([10.239.97.151])
-  by orsmga005.jf.intel.com with ESMTP; 06 Mar 2022 22:16:37 -0800
-Received: from kbuild by 89b41b6ae01c with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1nR6fY-00002N-B1; Mon, 07 Mar 2022 06:16:32 +0000
-Date:   Mon, 07 Mar 2022 13:40:20 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- c6f4ba2d2b9ac49e8576e8532879484fabec198e
-Message-ID: <62259ac4.hltsASUBeeswv9DD%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        with ESMTP id S233273AbiCGGqg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 01:46:36 -0500
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2450B60049
+        for <linux-pm@vger.kernel.org>; Sun,  6 Mar 2022 22:45:43 -0800 (PST)
+Received: by mail-pl1-x62d.google.com with SMTP id m2so6944598pll.0
+        for <linux-pm@vger.kernel.org>; Sun, 06 Mar 2022 22:45:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wVn4uRZg+YKMfOFAeldUGJ/LiriTwdJu0U1lZacIdDM=;
+        b=hzTSvFPxpPwjQyJ0VHtasLUo5yjoprO+oZRWY2rlqxyjk6wBrS5NqxKNGzgj/Ml5vN
+         UFfes1wlgu42sm4Nwo9hISosEBtYjOA6jjc2UcWPVyufUymbwnRUF/8aWqgN0G1P/dkK
+         AIPcGN6BBwRATGAS8aVyvEWiQIpwDy4pkb6K6fIdvIpZStBh6HXtYrg3Vk599w9dzU2C
+         PquWW2v+jTNwxox2jj7QUtKRGLiMdymXdPfpkYQWeTz0plfhQrkWk2pykzGcuGFhnZ3+
+         Zz68MCoSP+IosX7xlT//nEZTyhIRH88mu298OaqUBVnF9ldZVYmCpwM8x3ABJdkhIPjR
+         W8SA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wVn4uRZg+YKMfOFAeldUGJ/LiriTwdJu0U1lZacIdDM=;
+        b=WgWDhohXjtFeDQaVMQ12eGMQTYGKsfPejMLvNr0b4TW4t4jA2KU7K4hiBEpZxnXTUV
+         5OwCr2BZAWwXZAwILX9pYmPbCrHrXqqop2OOwo8iElD4qvOMWvClyQxWNiGoiWw5OK/L
+         qaUP5KnQ5Xce/kyEx0fcsuOBDUm+3wpKYq3wB93hzBXto20VC9VYMzRD3JnGq4N30/di
+         IQFcX1TCEDfNBf8QjOo/kiCpW/Mke55bG5V6n34x7/DmuaVDb8ClDusN3WvT3jYgkNmf
+         2ldE/IW+iHZqYlgw/BLsOpdStaX2TlIXATavZhG19SQSJu++2u9U42+Aj4/NOPARLCfE
+         6nSA==
+X-Gm-Message-State: AOAM5322SO/LYrxuoLKP/D5h7SzbScsbLb3kBHA/fPMYRHIfDlyeOXgQ
+        uc9nSPs6x914DIVXFWIdNzwN
+X-Google-Smtp-Source: ABdhPJyzWieNmuO9fHFMVJFZ9QSFUaen3fJwQ2r0++wW5LU0X1MofBMi6GvvZxI9PjVUoFCkR+/nlg==
+X-Received: by 2002:a17:90b:1052:b0:1bf:5024:c2a7 with SMTP id gq18-20020a17090b105200b001bf5024c2a7mr6473564pjb.218.1646635542531;
+        Sun, 06 Mar 2022 22:45:42 -0800 (PST)
+Received: from localhost.localdomain ([117.207.25.157])
+        by smtp.gmail.com with ESMTPSA id s7-20020a056a00178700b004e1a15e7928sm15841940pfg.145.2022.03.06.22.45.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 06 Mar 2022 22:45:42 -0800 (PST)
+From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To:     rafael@kernel.org, viresh.kumar@linaro.org, robh+dt@kernel.org
+Cc:     bjorn.andersson@linaro.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        angelogioacchino.delregno@somainline.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [PATCH 0/2] Convert Qcom CPUFREQ HW binding to YAML
+Date:   Mon,  7 Mar 2022 12:15:29 +0530
+Message-Id: <20220307064531.47678-1-manivannan.sadhasivam@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: c6f4ba2d2b9ac49e8576e8532879484fabec198e  Merge branch 'acpi-apei' into bleeding-edge
+Hi,
 
-elapsed time: 4819m
+Patch 1/2 was submitted separately [1] but Rob's bot reported errors related to
+the performance domain binding that used Qcom CPUFREQ as an example. But Qcom
+CPUFREQ driver doesn't support the generic performance domains yet.
 
-configs tested: 111
-configs skipped: 3
+So I've added a patch 2/2 that fixes the warning by using MediaTek CPUFREQ as
+the example and added both patches to this series.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks,
+Mani
 
-gcc tested configs:
-arm                                 defconfig
-arm64                               defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                            allyesconfig
-i386                          randconfig-c001
-m68k                       m5275evb_defconfig
-sh                             sh03_defconfig
-arm                         axm55xx_defconfig
-sh                          r7780mp_defconfig
-xtensa                generic_kc705_defconfig
-arm                          pxa3xx_defconfig
-m68k                          multi_defconfig
-arm                           stm32_defconfig
-sh                          r7785rp_defconfig
-arc                        vdk_hs38_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                            hisi_defconfig
-arm                            mps2_defconfig
-h8300                     edosk2674_defconfig
-arm                  randconfig-c002-20220302
-arm                  randconfig-c002-20220304
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-alpha                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-parisc                              defconfig
-parisc64                            defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-i386                             allyesconfig
-i386                              debian-10.3
-i386                   debian-10.3-kselftests
-i386                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-i386                          randconfig-a003
-i386                          randconfig-a001
-i386                          randconfig-a005
-x86_64                        randconfig-a015
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a006
-x86_64                        randconfig-a002
-x86_64                        randconfig-a004
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-arc                  randconfig-r043-20220304
-arc                  randconfig-r043-20220302
-s390                 randconfig-r044-20220302
-riscv                randconfig-r042-20220304
-s390                 randconfig-r044-20220304
-riscv                randconfig-r042-20220302
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                           allyesconfig
-x86_64                                  kexec
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
+[1] https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20211005044920.78544-1-manivannan.sadhasivam@linaro.org/
 
-clang tested configs:
-powerpc                     tqm5200_defconfig
-powerpc                     kilauea_defconfig
-mips                      maltaaprp_defconfig
-powerpc                      ppc64e_defconfig
-i386                             allyesconfig
-i386                          randconfig-a002
-i386                          randconfig-a004
-i386                          randconfig-a006
-x86_64                        randconfig-a012
-x86_64                        randconfig-a016
-x86_64                        randconfig-a014
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220304
-hexagon              randconfig-r045-20220302
-hexagon              randconfig-r041-20220302
-hexagon              randconfig-r041-20220304
+Manivannan Sadhasivam (2):
+  dt-bindings: cpufreq: cpufreq-qcom-hw: Convert to YAML bindings
+  dt-bindings: dvfs: Use MediaTek CPUFREQ HW as an example
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ .../bindings/cpufreq/cpufreq-qcom-hw.txt      | 172 ---------------
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml     | 201 ++++++++++++++++++
+ .../bindings/dvfs/performance-domain.yaml     |  14 +-
+ 3 files changed, 211 insertions(+), 176 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml
+
+-- 
+2.25.1
+
