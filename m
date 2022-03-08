@@ -2,55 +2,55 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ED41C433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 20:33:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF5E9C433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 20:33:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350253AbiCHUew (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Mar 2022 15:34:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33022 "EHLO
+        id S1350246AbiCHUex (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Mar 2022 15:34:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33046 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350252AbiCHUev (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 15:34:51 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BA153EF24
-        for <linux-pm@vger.kernel.org>; Tue,  8 Mar 2022 12:33:53 -0800 (PST)
-Date:   Tue, 08 Mar 2022 20:33:49 -0000
+        with ESMTP id S1350254AbiCHUew (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 15:34:52 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0609241607
+        for <linux-pm@vger.kernel.org>; Tue,  8 Mar 2022 12:33:54 -0800 (PST)
+Date:   Tue, 08 Mar 2022 20:33:50 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1646771631;
+        s=2020; t=1646771632;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=lNsz2cG0Ruz3CmPzlfsd53HbyBkTL6ViWxYGgJuUkrM=;
-        b=BaRwRz5Fc3k6+iEgCbgYVqJgCaqqtoK0t7yuGkRtgfgSiZu6s5L5thDNz28LB/30CWzm9x
-        SXDWELodF/6bkzlsGBsnWj9HZV7BUkrj9Y4i7LhF/2ehfRBzESsHep72vTL/JqUH+HPVP1
-        vZv3SGVGFnkBO+vqcUMXOx6X2T9ozo5sBdU6dF8QuhwUFT7ieKxv8UvYJqSk2WTPr/IRsU
-        fBcTz1J18hR+M/5+pZBKhZxkYfgf3tkbpcnYiM7TJFb89rHYOddxaJsz+5A5dpdjIiqkjz
-        h03id0hS3SNJpeLDwAsIRIGvtZMYjaR4aMSAedQ0w2Fcd50ezMgtPxV2sYLn0Q==
+        bh=tA6c+A0ZugBN7VaMCbeT47P2jjejSxx1a9NkzxOesWE=;
+        b=Z0YwdG2zVA+icIvxPPx3wjJ7jvAcwm+8o6T5rmgPdIVXzHgW+lJxgE+id1E6RZrlE6k5i+
+        TUGPi6gn7FhqxB7jrjjBnQstZ+bPGT9t8qcHYYSnB71x5e0gSCupuqKnwIWw8VCoG2TD4u
+        UgKqwl1utWyFlBMdUaWmn3TIdf/KY3j4Iv1WJ9UASMGfQRHy7VCG5PYJgM0EJodt0Bhm7p
+        xOMr0qVcrfSaW5lVhjy1S/cF/YxPe11ic30X7k3/MI+yGsyDMw7WTs67uVQnsQ5rGGooGi
+        Ox2PT0L2lLw0M9KIXCEPQcPQ1oNvKUomDTZxVeDoTfSs8aLiObwRF5II2k6MtQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1646771631;
+        s=2020e; t=1646771632;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=lNsz2cG0Ruz3CmPzlfsd53HbyBkTL6ViWxYGgJuUkrM=;
-        b=Smpaol6ty7fLPgD4tnV7k2uy5+VdZiRF2I1QfdNQ6V7CT8oTAADzOQTan8TQZf8ivpDsaB
-        hv5ssPh7L2XXQsBQ==
-From:   "thermal-bot for Thara Gopinath" <tip-bot2@linutronix.de>
+        bh=tA6c+A0ZugBN7VaMCbeT47P2jjejSxx1a9NkzxOesWE=;
+        b=GnhukadUovz66UeN8W19ywVcyQUekRIE6ecd3PFZZMfwrsZpOohadVvjn4hC4tbuD2PZUk
+        bnwCtAOLd/mWtLBw==
+From:   "thermal-bot for Dmitry Baryshkov" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/qcom/lmh: Add support for sm8150
-Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220106173138.411097-2-thara.gopinath@linaro.org>
-References: <20220106173138.411097-2-thara.gopinath@linaro.org>
+Subject: [thermal: thermal/next] thermal/drivers/tsens: register thermal zones
+ as hwmon sensors
+Cc:     Amit Kucheria <amitk@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
+In-Reply-To: <20220129180750.1882310-1-dmitry.baryshkov@linaro.org>
+References: <20220129180750.1882310-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Message-ID: <164677162929.16921.2281959118289355037.tip-bot2@tip-bot2>
+Message-ID: <164677163007.16921.12143354781302766435.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -61,120 +61,46 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     cf0c54db636c9107b0c1f1b57ab7f18fa2fef478
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//cf0c54db636c9107b0c1f1b57ab7f18fa2fef478
-Author:        Thara Gopinath <thara.gopinath@linaro.org>
-AuthorDate:    Thu, 06 Jan 2022 12:31:36 -05:00
+Commit-ID:     8556e19d4939fbdb15aee9391f035453c5b2255a
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8556e19d4939fbdb15aee9391f035453c5b2255a
+Author:        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+AuthorDate:    Sat, 29 Jan 2022 21:07:50 +03:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 08 Mar 2022 21:26:09 +01:00
+CommitterDate: Tue, 08 Mar 2022 21:26:08 +01:00
 
-thermal/drivers/qcom/lmh: Add support for sm8150
+thermal/drivers/tsens: register thermal zones as hwmon sensors
 
-Add compatible to support LMh for sm8150 SoC.
-sm8150 does not require explicit enabling for various LMh subsystems.
-Add a variable indicating the same as match data which is set for sdm845.
-Execute the piece of code enabling various LMh subsystems only if
-enable algorithm match data is present.
+Register thermal zones as hwmon sensors to let userspace read
+CPU temperatures using standard hwmon interface.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Link: https://lore.kernel.org/r/20220106173138.411097-2-thara.gopinath@linaro.org
+Acked-by: Amit Kucheria <amitk@kernel.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Link: https://lore.kernel.org/r/20220129180750.1882310-1-dmitry.baryshkov@linaro.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qcom/lmh.c | 62 ++++++++++++++++++++-----------------
- 1 file changed, 35 insertions(+), 27 deletions(-)
+ drivers/thermal/qcom/tsens.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/qcom/lmh.c b/drivers/thermal/qcom/lmh.c
-index eafa752..c7f91cb 100644
---- a/drivers/thermal/qcom/lmh.c
-+++ b/drivers/thermal/qcom/lmh.c
-@@ -28,6 +28,8 @@
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 99a8d9f..154d3cb 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -18,6 +18,7 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ #include <linux/thermal.h>
++#include "../thermal_hwmon.h"
+ #include "tsens.h"
  
- #define LMH_REG_DCVS_INTR_CLR		0x8
- 
-+#define LMH_ENABLE_ALGOS		1
+ /**
+@@ -1060,6 +1061,10 @@ static int tsens_register(struct tsens_priv *priv)
+ 		priv->sensor[i].tzd = tzd;
+ 		if (priv->ops->enable)
+ 			priv->ops->enable(priv, i);
 +
- struct lmh_hw_data {
- 	void __iomem *base;
- 	struct irq_domain *domain;
-@@ -90,6 +92,7 @@ static int lmh_probe(struct platform_device *pdev)
- 	struct device_node *cpu_node;
- 	struct lmh_hw_data *lmh_data;
- 	int temp_low, temp_high, temp_arm, cpu_id, ret;
-+	unsigned int enable_alg;
- 	u32 node_id;
- 
- 	lmh_data = devm_kzalloc(dev, sizeof(*lmh_data), GFP_KERNEL);
-@@ -141,32 +144,36 @@ static int lmh_probe(struct platform_device *pdev)
- 	if (!qcom_scm_lmh_dcvsh_available())
- 		return -EINVAL;
- 
--	ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_CRNT, LMH_ALGO_MODE_ENABLE, 1,
--				 LMH_NODE_DCVS, node_id, 0);
--	if (ret)
--		dev_err(dev, "Error %d enabling current subfunction\n", ret);
--
--	ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_REL, LMH_ALGO_MODE_ENABLE, 1,
--				 LMH_NODE_DCVS, node_id, 0);
--	if (ret)
--		dev_err(dev, "Error %d enabling reliability subfunction\n", ret);
--
--	ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_BCL, LMH_ALGO_MODE_ENABLE, 1,
--				 LMH_NODE_DCVS, node_id, 0);
--	if (ret)
--		dev_err(dev, "Error %d enabling BCL subfunction\n", ret);
--
--	ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_THERMAL, LMH_ALGO_MODE_ENABLE, 1,
--				 LMH_NODE_DCVS, node_id, 0);
--	if (ret) {
--		dev_err(dev, "Error %d enabling thermal subfunction\n", ret);
--		return ret;
--	}
--
--	ret = qcom_scm_lmh_profile_change(0x1);
--	if (ret) {
--		dev_err(dev, "Error %d changing profile\n", ret);
--		return ret;
-+	enable_alg = (uintptr_t)of_device_get_match_data(dev);
-+
-+	if (enable_alg) {
-+		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_CRNT, LMH_ALGO_MODE_ENABLE, 1,
-+					 LMH_NODE_DCVS, node_id, 0);
-+		if (ret)
-+			dev_err(dev, "Error %d enabling current subfunction\n", ret);
-+
-+		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_REL, LMH_ALGO_MODE_ENABLE, 1,
-+					 LMH_NODE_DCVS, node_id, 0);
-+		if (ret)
-+			dev_err(dev, "Error %d enabling reliability subfunction\n", ret);
-+
-+		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_BCL, LMH_ALGO_MODE_ENABLE, 1,
-+					 LMH_NODE_DCVS, node_id, 0);
-+		if (ret)
-+			dev_err(dev, "Error %d enabling BCL subfunction\n", ret);
-+
-+		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_THERMAL, LMH_ALGO_MODE_ENABLE, 1,
-+					 LMH_NODE_DCVS, node_id, 0);
-+		if (ret) {
-+			dev_err(dev, "Error %d enabling thermal subfunction\n", ret);
-+			return ret;
-+		}
-+
-+		ret = qcom_scm_lmh_profile_change(0x1);
-+		if (ret) {
-+			dev_err(dev, "Error %d changing profile\n", ret);
-+			return ret;
-+		}
++		if (devm_thermal_add_hwmon_sysfs(tzd))
++			dev_warn(priv->dev,
++				 "Failed to add hwmon sysfs attributes\n");
  	}
  
- 	/* Set default thermal trips */
-@@ -213,7 +220,8 @@ static int lmh_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id lmh_table[] = {
--	{ .compatible = "qcom,sdm845-lmh", },
-+	{ .compatible = "qcom,sdm845-lmh", .data = (void *)LMH_ENABLE_ALGOS},
-+	{ .compatible = "qcom,sm8150-lmh", },
- 	{}
- };
- MODULE_DEVICE_TABLE(of, lmh_table);
+ 	/* VER_0 require to set MIN and MAX THRESH
