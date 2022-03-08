@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F7A7C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 362DDC433FE
 	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 00:10:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344056AbiCHAL2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Mar 2022 19:11:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52034 "EHLO
+        id S1344025AbiCHALa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Mar 2022 19:11:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344031AbiCHALM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 19:11:12 -0500
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 635E9377F1
-        for <linux-pm@vger.kernel.org>; Mon,  7 Mar 2022 16:10:16 -0800 (PST)
-Received: by mail-pl1-x630.google.com with SMTP id e2so15507472pls.10
-        for <linux-pm@vger.kernel.org>; Mon, 07 Mar 2022 16:10:16 -0800 (PST)
+        with ESMTP id S1344079AbiCHAL2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 19:11:28 -0500
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0ECA37032
+        for <linux-pm@vger.kernel.org>; Mon,  7 Mar 2022 16:10:23 -0800 (PST)
+Received: by mail-pf1-x435.google.com with SMTP id z16so15856369pfh.3
+        for <linux-pm@vger.kernel.org>; Mon, 07 Mar 2022 16:10:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=4MidqK8UFH0OO5PuGunb8WphemubCtQBPIxhc/BLNC4=;
-        b=Y7MZ3dBBFqBsHVJw4LhSele0cERRtvLPdhqjvm/dbYuKac/ttY1X7dhkkWQ/tfVGl0
-         tr7jWz/2apfy1mdwUM7wRiCrcE5/lHX/RNl0+Y4iWCR7Y7j0/7W/RELbflk4b1yVvoVZ
-         zjgTnxNRlNWVX3HyNdCEkxpAZRGe4F+pSxuHM=
+        bh=qamn1KXLKkoAp4pJxR8atvIxLoRPmk7xdgGcjv6i0+c=;
+        b=HtNToSVKei4r/dkWdQX0wFF5BeiprqAGBJsdBdObgeljF01tpvu6X37kYjGzVbNni+
+         WZOVPuhC++u65RvNvI13z38qMqXgqw+SxmFn9G+J1eGwYp92cOQk/pAGGrjwwKQWDFKf
+         /8iwPbKU2kjsHaj0KliCyO3Wyw7yBT0HGo8lI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=4MidqK8UFH0OO5PuGunb8WphemubCtQBPIxhc/BLNC4=;
-        b=6UTJiXR0C/Iohu3BoJ/IwAFXgzMBdcUBsibhC6dRC6dm+ATb98MnQG+7k1hhMUdvjh
-         1GU6EII/6yr+QjOZW0mu5h+oFET50/oeBDMkrJiSss63GNBcLYUKYLNcyY8dbx9c7dnf
-         kk0UFUoR6rXp2vHqSCJlD7tCb4pvLF6Tt/qudW2m7Ot7/MymHNL8J8ylzhaS1rsNNMy0
-         vYIgL9gGcNmQLVWyQinn3+edD+TzAPsUA5rW7l3P3iMlL/lfYoHMhQWV7HBeeqXnviw3
-         gw2izgWTFXtsCFaKZbvGdlDfzi9QFVrsdm0J6RFv14TOGxTkkaLfKv1/uyMHz+751RE9
-         9QUA==
-X-Gm-Message-State: AOAM530Cn0R2wDiQOqJXEpUNRaZtNwNuoDJfFoLVzsYNlR9THLrN7pPP
-        OM8IzfXCDBbJpvxJGE6ejBACKQ==
-X-Google-Smtp-Source: ABdhPJxEvIqD1klp8jx5ozBpuURKAe+1fn2tbuJrsH1G/PMoec47nH+zhYizJ5ADadhdFnqLvm92UA==
-X-Received: by 2002:a17:90a:bf86:b0:1bd:6057:b77c with SMTP id d6-20020a17090abf8600b001bd6057b77cmr1688428pjs.72.1646698215650;
-        Mon, 07 Mar 2022 16:10:15 -0800 (PST)
+        bh=qamn1KXLKkoAp4pJxR8atvIxLoRPmk7xdgGcjv6i0+c=;
+        b=ZtbncOUy6uZBS617/wRw71e11H/r6U+gQoZaQib28UUPlPSFTcj3po4OcGTI6AFEi5
+         X0y0jkZkmtiNsUv49apYZsRpfyH6UDX6dntcrucgH08hwDxJRw6Qq4jvGghwwff17yFy
+         TeUhwgiCw8SO33abg0GTqMUCgkfp0JcQLY+Kfga2iPWCCUCagZr72PpnuUO7cANrkr6q
+         91aQaULW0QgE2mMyT98d5agiN075QRvFx0e0uPDkgO/MozbJBlAFWgNocGqe8f02NxE4
+         3ghmLrWXmvBO5zMTo/PeLzHunrplxKg2QK3jsCMV/BaDeB1Hqca0UspFxHwsyds6N0qy
+         Gxrg==
+X-Gm-Message-State: AOAM533sntysez8OR7LMMtDgOo4orzwwkQDjgCWpPxWhVi64S6vUuNbl
+        oI70/toAJ0ytaJDNvItjbEgZ/g==
+X-Google-Smtp-Source: ABdhPJzGV5UoWWEbvE82QJSgvp/hXpji18fWii897O93/NS3Ey5zWslK5hn5QEXo88Kr410ZN/GnIg==
+X-Received: by 2002:aa7:8432:0:b0:4f6:6dcd:4f19 with SMTP id q18-20020aa78432000000b004f66dcd4f19mr15511216pfn.53.1646698222537;
+        Mon, 07 Mar 2022 16:10:22 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:e551:44dc:2842:57f1])
-        by smtp.gmail.com with UTF8SMTPSA id h6-20020a636c06000000b00363a2533b17sm12943047pgc.8.2022.03.07.16.10.14
+        by smtp.gmail.com with UTF8SMTPSA id b62-20020a633441000000b0037c794cb68fsm11455025pga.9.2022.03.07.16.10.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Mar 2022 16:10:15 -0800 (PST)
+        Mon, 07 Mar 2022 16:10:22 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -54,11 +54,10 @@ Cc:     Lin Huang <hl@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>,
         linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
-        Brian Norris <briannorris@chromium.org>,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v3 05/15] dt-bindings: devfreq: rk3399_dmc: Add more disable-freq properties
-Date:   Mon,  7 Mar 2022 16:09:35 -0800
-Message-Id: <20220307160918.v3.5.I382d4de737198ea52deb118c9bdc4d93d76e009e@changeid>
+        Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v3 08/15] PM / devfreq: rk3399_dmc: Use bitfield macro definitions for ODT_PD
+Date:   Mon,  7 Mar 2022 16:09:38 -0800
+Message-Id: <20220307160918.v3.8.I0f36da588afd01d0dc9ce5866240efa34bd91e21@changeid>
 X-Mailer: git-send-email 2.35.1.616.g0bdcbb4464-goog
 In-Reply-To: <20220308000945.706701-1-briannorris@chromium.org>
 References: <20220308000945.706701-1-briannorris@chromium.org>
@@ -68,78 +67,108 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-DDR DVFS tuning has found that several power-saving features don't have
-good tradeoffs at higher frequencies -- at higher frequencies, we'll see
-glitches or other errors. Provide tuning controls so these can be
-disabled at higher OPPs, and left active only at the lower ones.
+We're going to add new usages, and it's cleaner to work with macros
+instead of comments and magic numbers.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 
-Changes in v3:
- * Add Reviewed-by
+(no changes since v1)
 
-Changes in v2:
- * hyphens, not underscores
- * *-hz units, and drop the types definition
+ drivers/devfreq/rk3399_dmc.c | 43 ++++++++++++++++++++----------------
+ 1 file changed, 24 insertions(+), 19 deletions(-)
 
- .../bindings/devfreq/rk3399_dmc.yaml          | 37 +++++++++++++++++++
- 1 file changed, 37 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-index 6a33a7b44741..60ed5023f54f 100644
---- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.yaml
-@@ -300,6 +300,38 @@ properties:
-       self-refresh mode. The controller, pi, PHY and DRAM clock will be gated
-       if bus is idle for standby_idle nanoseconds.
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 8f447217303f..c4efbc15cbb1 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -5,6 +5,7 @@
+  */
  
-+  rockchip,pd-idle-dis-freq-hz:
-+    description:
-+      Defines the power-down idle disable frequency in Hz. When the DDR
-+      frequency is greater than pd-idle-dis-freq, power-down idle is disabled.
-+      See also rockchip,pd-idle-ns.
+ #include <linux/arm-smccc.h>
++#include <linux/bitfield.h>
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/devfreq.h>
+@@ -23,6 +24,15 @@
+ #include <soc/rockchip/rk3399_grf.h>
+ #include <soc/rockchip/rockchip_sip.h>
+ 
++#define RK3399_SET_ODT_PD_0_SR_IDLE			GENMASK(7, 0)
++#define RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE		GENMASK(15, 8)
++#define RK3399_SET_ODT_PD_0_STANDBY_IDLE		GENMASK(31, 16)
 +
-+  rockchip,sr-idle-dis-freq-hz:
-+    description:
-+      Defines the self-refresh idle disable frequency in Hz. When the DDR
-+      frequency is greater than sr-idle-dis-freq, self-refresh idle is
-+      disabled. See also rockchip,sr-idle-ns.
++#define RK3399_SET_ODT_PD_1_PD_IDLE			GENMASK(11, 0)
++#define RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE		GENMASK(27, 16)
 +
-+  rockchip,sr-mc-gate-idle-dis-freq-hz:
-+    description:
-+      Defines the self-refresh and memory-controller clock gating disable
-+      frequency in Hz. When the DDR frequency is greater than
-+      sr-mc-gate-idle-dis-freq, the clock will not be gated when idle. See also
-+      rockchip,sr-mc-gate-idle-ns.
++#define RK3399_SET_ODT_PD_2_ODT_ENABLE			BIT(0)
 +
-+  rockchip,srpd-lite-idle-dis-freq-hz:
-+    description:
-+      Defines the self-refresh power down idle disable frequency in Hz. When
-+      the DDR frequency is greater than srpd-lite-idle-dis-freq, memory will
-+      not be placed into self-refresh power down mode when idle. See also
-+      rockchip,srpd-lite-idle-ns.
+ struct rk3399_dmcfreq {
+ 	struct device *dev;
+ 	struct devfreq *devfreq;
+@@ -55,7 +65,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	unsigned long old_clk_rate = dmcfreq->rate;
+ 	unsigned long target_volt, target_rate;
+ 	struct arm_smccc_res res;
+-	bool odt_enable = false;
+ 	int err;
+ 
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+@@ -72,8 +81,10 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	mutex_lock(&dmcfreq->lock);
+ 
+ 	if (dmcfreq->regmap_pmu) {
++		unsigned int odt_pd_arg2 = 0;
 +
-+  rockchip,standby-idle-dis-freq-hz:
-+    description:
-+      Defines the standby idle disable frequency in Hz. When the DDR frequency
-+      is greater than standby-idle-dis-freq, standby idle is disabled. See also
-+      rockchip,standby-idle-ns.
-+
- required:
-   - compatible
-   - devfreq-events
-@@ -331,4 +363,9 @@ examples:
-       rockchip,ddr3_odt_dis_freq = <333000000>;
-       rockchip,lpddr3_odt_dis_freq = <333000000>;
-       rockchip,lpddr4_odt_dis_freq = <333000000>;
-+      rockchip,pd-idle-dis-freq-hz = <1000000000>;
-+      rockchip,sr-idle-dis-freq-hz = <1000000000>;
-+      rockchip,sr-mc-gate-idle-dis-freq-hz = <1000000000>;
-+      rockchip,srpd-lite-idle-dis-freq-hz = <0>;
-+      rockchip,standby-idle-dis-freq-hz = <928000000>;
-     };
+ 		if (target_rate >= dmcfreq->odt_dis_freq)
+-			odt_enable = true;
++			odt_pd_arg2 |= RK3399_SET_ODT_PD_2_ODT_ENABLE;
+ 
+ 		/*
+ 		 * This makes a SMC call to the TF-A to set the DDR PD
+@@ -83,7 +94,7 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 		arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
+ 			      dmcfreq->odt_pd_arg1,
+ 			      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
+-			      odt_enable, 0, 0, 0, &res);
++			      odt_pd_arg2, 0, 0, 0, &res);
+ 	}
+ 
+ 	/*
+@@ -316,23 +327,17 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 	/*
+ 	 * In TF-A there is a platform SIP call to set the PD (power-down)
+ 	 * timings and to enable or disable the ODT (on-die termination).
+-	 * This call needs three arguments as follows:
+-	 *
+-	 * arg0:
+-	 *     bit[0-7]   : sr_idle
+-	 *     bit[8-15]  : sr_mc_gate_idle
+-	 *     bit[16-31] : standby idle
+-	 * arg1:
+-	 *     bit[0-11]  : pd_idle
+-	 *     bit[16-27] : srpd_lite_idle
+-	 * arg2:
+-	 *     bit[0]     : odt enable
+ 	 */
+-	data->odt_pd_arg0 = (data->sr_idle & 0xff) |
+-			    ((data->sr_mc_gate_idle & 0xff) << 8) |
+-			    ((data->standby_idle & 0xffff) << 16);
+-	data->odt_pd_arg1 = (data->pd_idle & 0xfff) |
+-			    ((data->srpd_lite_idle & 0xfff) << 16);
++	data->odt_pd_arg0 =
++		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_IDLE, data->sr_idle) |
++		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE,
++			   data->sr_mc_gate_idle) |
++		FIELD_PREP(RK3399_SET_ODT_PD_0_STANDBY_IDLE,
++			   data->standby_idle);
++	data->odt_pd_arg1 =
++		FIELD_PREP(RK3399_SET_ODT_PD_1_PD_IDLE, data->pd_idle) |
++		FIELD_PREP(RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE,
++			   data->srpd_lite_idle);
+ 
+ 	/*
+ 	 * We add a devfreq driver to our parent since it has a device tree node
 -- 
 2.35.1.616.g0bdcbb4464-goog
 
