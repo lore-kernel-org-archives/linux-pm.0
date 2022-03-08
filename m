@@ -2,19 +2,19 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 004EFC4332F
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 20:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A56BFC433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 20:33:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350249AbiCHUet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1350243AbiCHUet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 8 Mar 2022 15:34:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32822 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32836 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350243AbiCHUer (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 15:34:47 -0500
+        with ESMTP id S1350252AbiCHUes (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 15:34:48 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 816103CA67
-        for <linux-pm@vger.kernel.org>; Tue,  8 Mar 2022 12:33:50 -0800 (PST)
-Date:   Tue, 08 Mar 2022 20:33:46 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E41B3EF24
+        for <linux-pm@vger.kernel.org>; Tue,  8 Mar 2022 12:33:51 -0800 (PST)
+Date:   Tue, 08 Mar 2022 20:33:47 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020; t=1646771629;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -22,12 +22,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=gwzhspYvd93cpuYWPtAREUDrprowvdT/6XzU/jlWg7I=;
-        b=y0y0oWL+j72u5pfIcD9U4MrCFVUGvvwxX1NBxRRDzYoPWIRsqrvxtP/MboijcDY1ZIsejZ
-        n0VRtFAjmKqnvbgY5Qo2B13HL3zCuJMGtNkaARoO/lRUVU6Cbu+O/DP6dGtHrznE4vK2/3
-        o4Beue9sUWyWK3bVuTuYaDHJpgKBRu5vrCNgM8FMm7L3TG0roU2Crs36UFavjZE9HyO/ED
-        VG3bmvyn5SXM/gg7zQV4PYGFZzGTsbsHixKqAjJLbeXA/AokesKIO9yiMjJmLqHCKneqAi
-        01zf+fUHebZMCzm+jJ27vvS2IdRMayRWCemjW9YIoGMa/cUyvAt86oULxSb++w==
+        bh=WnifazXYSwoeEWf/Zewysos1qvl8wj+iYkPYPNNzMDY=;
+        b=UfmsUn02ZftqoRIgZceiSlTrUX61hgzumgBgH4B03gVyO0yIbMzB8GkjgwPp6GZ8MVRKak
+        +u+w4ov1YtXLGTc0pbvBs+RtdURcHfnEzuJzrCAzpqfApA6MEnATCz7ptsNO4s/xxRHIyI
+        NiCpP+rpEb20lzGRoccnSAqMW3nOy/rFwpM8aAZUfWoOC4ArJqr3E+nieqhwCZFwtMORdx
+        bIHTt8vAf0QMwEKaOIX+CWZt+BPk8OGP7dQ0FrmOirSU54wOdn7M5R0I7/y5vEw1AaU4Ib
+        FCsUKImN/+YFRcUACtC/GfLRG3mNwZYnC3eF07047oZf3MkXtc4vkSe7hldB9w==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
         s=2020e; t=1646771629;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
@@ -35,21 +35,23 @@ DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=gwzhspYvd93cpuYWPtAREUDrprowvdT/6XzU/jlWg7I=;
-        b=wCs3hJhKSc/Mqcv2Dg5LdVBxN91al/wwLw0bK8EyGb0gyx6jJmjAaiqMBFywZIb/izw6Y7
-        x3q61eEgpLp45sAw==
-From:   "thermal-bot for Romain Naour" <tip-bot2@linutronix.de>
+        bh=WnifazXYSwoeEWf/Zewysos1qvl8wj+iYkPYPNNzMDY=;
+        b=0/RVNK+gddsC2WYuwmGmxCUP4ZHhlnuopsX4ljuWzBv+ECmKRKPmZQwaW8NrikBSNMkNmL
+        pWMVVFg7eAJQMfAA==
+From:   "thermal-bot for Luca Weiss" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] drivers/thermal/ti-soc-thermal: Add hwmon support
-Cc:     Romain Naour <romain.naour@smile.fr>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20220218104725.2718904-1-romain.naour@smile.fr>
-References: <20220218104725.2718904-1-romain.naour@smile.fr>
+Subject: [thermal: thermal/next] dt-bindings: thermal: tsens: Add msm8953 compatible
+Cc:     Luca Weiss <luca@z3ntu.xyz>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
+In-Reply-To: <20220220201909.445468-3-luca@z3ntu.xyz>
+References: <20220220201909.445468-3-luca@z3ntu.xyz>
 MIME-Version: 1.0
-Message-ID: <164677162686.16921.5314559926092195125.tip-bot2@tip-bot2>
+Message-ID: <164677162768.16921.11500472170962824846.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -60,70 +62,36 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     3a9abd6cece8321be821bf84406a94e3c483f31e
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//3a9abd6cece8321be821bf84406a94e3c483f31e
-Author:        Romain Naour <romain.naour@smile.fr>
-AuthorDate:    Fri, 18 Feb 2022 11:47:25 +01:00
+Commit-ID:     e8ec6bb302074e41268f9764bf6328599682b84f
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e8ec6bb302074e41268f9764bf6328599682b84f
+Author:        Luca Weiss <luca@z3ntu.xyz>
+AuthorDate:    Sun, 20 Feb 2022 21:18:55 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
 CommitterDate: Tue, 08 Mar 2022 21:26:09 +01:00
 
-drivers/thermal/ti-soc-thermal: Add hwmon support
+dt-bindings: thermal: tsens: Add msm8953 compatible
 
-Expose ti-soc-thermal thermal sensors as HWMON devices.
+Document the compatible string for tsens found in msm8953.
 
-  # sensors
-  cpu_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +54.2 C  (crit = +105.0 C)
-
-  dspeve_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +51.4 C  (crit = +105.0 C)
-
-  gpu_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +54.2 C  (crit = +105.0 C)
-
-  iva_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +54.6 C  (crit = +105.0 C)
-
-  core_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +52.6 C  (crit = +105.0 C)
-
-Similar to imx_sc_thermal d2bc4dd91da6095a769fdc9bc519d3be7ad5f97a.
-
-No need to take care of thermal_remove_hwmon_sysfs() since
-devm_thermal_add_hwmon_sysfs() (a wrapper around devres) is
-used. See c7fc403e40b0ea18976a59e968c23439a80809e8.
-
-Signed-off-by: Romain Naour <romain.naour@smile.fr>
-Link: https://lore.kernel.org/r/20220218104725.2718904-1-romain.naour@smile.fr
+Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+Acked-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+Acked-by: Amit Kucheria <amitk@kernel.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20220220201909.445468-3-luca@z3ntu.xyz
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index f843758..0959632 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -21,6 +21,7 @@
- 
- #include "ti-thermal.h"
- #include "ti-bandgap.h"
-+#include "../thermal_hwmon.h"
- 
- /* common data structures */
- struct ti_thermal_data {
-@@ -189,6 +190,9 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 	ti_bandgap_set_sensor_data(bgp, id, data);
- 	ti_bandgap_write_update_interval(bgp, data->sensor_id, interval);
- 
-+	if (devm_thermal_add_hwmon_sysfs(data->ti_thermal))
-+		dev_warn(bgp->dev, "failed to add hwmon sysfs attributes\n");
-+
- 	return 0;
- }
- 
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index d3b9e9b..b6406bc 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -43,6 +43,7 @@ properties:
+       - description: v2 of TSENS
+         items:
+           - enum:
++              - qcom,msm8953-tsens
+               - qcom,msm8996-tsens
+               - qcom,msm8998-tsens
+               - qcom,sc7180-tsens
