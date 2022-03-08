@@ -2,128 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B1CAC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 19:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BD8BC433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 11:33:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343919AbiCHT1l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Mar 2022 14:27:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59802 "EHLO
+        id S237271AbiCHLeU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Mar 2022 06:34:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239799AbiCHT1l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 14:27:41 -0500
-Received: from alexa-out-sd-02.qualcomm.com (alexa-out-sd-02.qualcomm.com [199.106.114.39])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79ACE4E394;
-        Tue,  8 Mar 2022 11:26:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1646767604; x=1678303604;
-  h=from:to:cc:subject:date:message-id:mime-version;
-  bh=p5EQvhuvUh/i32VbwfS9DgkOo7IpZ5mlI+CyySn+M08=;
-  b=gSkIrN32zfiNhoDyxPcN20k8/kMelW4gRpkrp29RLo0x+jBhhnqEAj7i
-   HyQ0ewcgadA+O7FSEU8LyCYKYvkEe87qwAPgarWVkKSundSh8X69dShT9
-   aAUw+JLR15uJPvT/DYl0ddGBqySoFWH4tscNWflsQCMSd3xOzLz0BW9+m
-   A=;
-Received: from unknown (HELO ironmsg01-sd.qualcomm.com) ([10.53.140.141])
-  by alexa-out-sd-02.qualcomm.com with ESMTP; 08 Mar 2022 11:26:44 -0800
-X-QCInternal: smtphost
-Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
-  by ironmsg01-sd.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2022 11:26:44 -0800
-Received: from nalasex01b.na.qualcomm.com (10.47.209.197) by
- nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.986.15; Tue, 8 Mar 2022 11:26:43 -0800
-Received: from codeaurora.org (10.80.80.8) by nalasex01b.na.qualcomm.com
- (10.47.209.197) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.15; Tue, 8 Mar 2022
- 11:26:40 -0800
-From:   Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        "Manaf Meethalavalappu Pallikunhi" <quic_manafm@quicinc.com>
-Subject: [PATCH v2] drivers/thermal/thermal_of: Add change_mode ops support for thermal_of sensor
-Date:   Wed, 9 Mar 2022 00:56:26 +0530
-Message-ID: <1646767586-31908-1-git-send-email-quic_manafm@quicinc.com>
-X-Mailer: git-send-email 2.7.4
+        with ESMTP id S229930AbiCHLeT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2022 06:34:19 -0500
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7AFB33BA47
+        for <linux-pm@vger.kernel.org>; Tue,  8 Mar 2022 03:33:23 -0800 (PST)
+X-IronPort-AV: E=McAfee;i="6200,9189,10279"; a="317891711"
+X-IronPort-AV: E=Sophos;i="5.90,164,1643702400"; 
+   d="scan'208";a="317891711"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2022 03:33:23 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,164,1643702400"; 
+   d="scan'208";a="780681409"
+Received: from powerlab.fi.intel.com (HELO powerlab..) ([10.237.71.25])
+  by fmsmga006.fm.intel.com with ESMTP; 08 Mar 2022 03:33:21 -0800
+From:   me_gmail@vger.kernel.org
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM Mailing List <linux-pm@vger.kernel.org>
+Cc:     Len Brown <lenb@kernel.org>, Yu Chen <yu.c.chen@intel.com>,
+        Kin Cho <kin.cho@oracle.com>
+Subject: [PATCH] turbostat: fix PC6 displaying on some systems
+Date:   Tue,  8 Mar 2022 13:33:20 +0200
+Message-Id: <20220308113320.3869035-1-me_gmail>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.80.80.8]
-X-ClientProxiedBy: nasanex01a.na.qualcomm.com (10.52.223.231) To
- nalasex01b.na.qualcomm.com (10.47.209.197)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The sensor driver which register through thermal_of interface doesn't
-have an option to get thermal zone mode change notification from
-thermal core.
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-Add support for change_mode ops in thermal_of interface so that sensor
-driver can use this ops for mode change notification.
+'MSR_PKG_CST_CONFIG_CONTROL' encodes the deepest allowed package C-state limit,
+and turbostat decodes it.
 
-Signed-off-by: Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
+Before this patch: turbostat does not recognize value "3" on Ice Lake Xeon
+(ICX) and Sapphire Rapids Xeon (SPR), treats it as "unknown", and does not
+display any package C-states in the results table.
+
+After this patch: turbostat recognizes value 3 on ICX and SPR, treats it as
+"PC6", and correctly displays package C-states in the results table.
+
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
- drivers/thermal/thermal_of.c | 12 ++++++++++++
- include/linux/thermal.h      |  3 +++
- 2 files changed, 15 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 9233f7e..da48480 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -203,6 +203,14 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
- 	return data->ops->get_trend(data->sensor_data, trip, trend);
- }
- 
-+static int of_thermal_change_mode(struct thermal_zone_device *tz,
-+				enum thermal_device_mode mode)
-+{
-+	struct __thermal_zone *data = tz->devdata;
-+
-+	return data->ops->change_mode(data->sensor_data, mode);
-+}
-+
- static int of_thermal_bind(struct thermal_zone_device *thermal,
- 			   struct thermal_cooling_device *cdev)
- {
-@@ -408,6 +416,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 	if (ops->set_emul_temp)
- 		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
- 
-+	if (ops->change_mode)
-+		tzd->ops->change_mode = of_thermal_change_mode;
-+
- 	mutex_unlock(&tzd->lock);
- 
- 	return tzd;
-@@ -569,6 +580,7 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
- 	tzd->ops->get_temp = NULL;
- 	tzd->ops->get_trend = NULL;
- 	tzd->ops->set_emul_temp = NULL;
-+	tzd->ops->change_mode = NULL;
- 
- 	tz->ops = NULL;
- 	tz->sensor_data = NULL;
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index c3148939..365733b 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -299,6 +299,8 @@ struct thermal_zone_params {
-  *		   temperature.
-  * @set_trip_temp: a pointer to a function that sets the trip temperature on
-  *		   hardware.
-+ * @change_mode: a pointer to a function that notifies the thermal zone
-+ *		   mode change.
-  */
- struct thermal_zone_of_device_ops {
- 	int (*get_temp)(void *, int *);
-@@ -306,6 +308,7 @@ struct thermal_zone_of_device_ops {
- 	int (*set_trips)(void *, int, int);
- 	int (*set_emul_temp)(void *, int);
- 	int (*set_trip_temp)(void *, int, int);
-+	int (*change_mode) (void *, enum thermal_device_mode);
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 47d3ba895d6d..bc5ae0872fed 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -2323,7 +2323,7 @@ int skx_pkg_cstate_limits[16] =
  };
  
- /* Function declarations */
+ int icx_pkg_cstate_limits[16] =
+-    { PCL__0, PCL__2, PCL__6, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV,
++    { PCL__0, PCL__2, PCL__6, PCL__6, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV,
+ 	PCLRSV, PCLRSV
+ };
+ 
+-- 
+2.31.1
+
