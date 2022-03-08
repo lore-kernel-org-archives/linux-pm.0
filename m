@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBA3EC43217
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 00:10:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8CF8C4332F
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Mar 2022 00:10:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344052AbiCHALc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Mar 2022 19:11:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52618 "EHLO
+        id S1344039AbiCHALe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Mar 2022 19:11:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52694 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344029AbiCHAL2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 19:11:28 -0500
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A1B037A0C
-        for <linux-pm@vger.kernel.org>; Mon,  7 Mar 2022 16:10:21 -0800 (PST)
-Received: by mail-pg1-x533.google.com with SMTP id 132so14924663pga.5
-        for <linux-pm@vger.kernel.org>; Mon, 07 Mar 2022 16:10:21 -0800 (PST)
+        with ESMTP id S1344107AbiCHAL3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2022 19:11:29 -0500
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 881FE38181
+        for <linux-pm@vger.kernel.org>; Mon,  7 Mar 2022 16:10:27 -0800 (PST)
+Received: by mail-pj1-x102e.google.com with SMTP id ge19-20020a17090b0e1300b001bcca16e2e7so673826pjb.3
+        for <linux-pm@vger.kernel.org>; Mon, 07 Mar 2022 16:10:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=MGvJc+Ve3oy0Yq0K3bpgSkrQ5JxGu0c98z8DVJNiX8g=;
-        b=UB7j9G1HDj04FKQq7m2izcjNzAJC52qy1efJ/GUa/pZUqutvSGGJByhja3yVXdXyDg
-         C2cXCAhR5ANOcvQB2Q9i8RSwlE1W6Dt3vvOBdaY38GV2n7wkM+qlp0XGqkJDsLr+EmUA
-         R5+jzG5umnOk7AktqvwDO5M1kfCtVJE9PX1kE=
+        bh=XdkuXzvsU8Qmmgk1oFXQM7A/zqUKyIIaZpyPEVdNOeA=;
+        b=krNJH7xQBQOOruOgCj2qZGCW3TiSjJOjc1WigmC25I6OM1YtewF/SA43+VLdwbxomi
+         aNogFAE4ND7xWKP1oT89l0Ty/UN9W2a7yTVa4OuQJznj+1KyvzsGmzxdmSOQIoKz04sn
+         X3rfJw5v2v8kSH2yYeDBwDp/wa8mn8jyRUtKg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=MGvJc+Ve3oy0Yq0K3bpgSkrQ5JxGu0c98z8DVJNiX8g=;
-        b=S84/hC9GTazS/In/HZtwFFGA3nA/ZduTQAmJKHIlgfDeramvTejya7PaV0flRIUlqa
-         sssT5AhHp+Zi8DoUL0ZPLOnUOIeECBOKVYQR9ewk13f1cPEQMZK8zp71gF4+YVwlpkUG
-         K5Sbwp9NW6jsxDjJInicoOZAo4T+eqEVwpVUBGIUpHZMaFrwFoIvC1NdyaqwiXF+gzGe
-         7fcLpF8gzIjLSic/FRHIbFPI4rVwv9KJKvZq0TD8/SeQp5aa3sULXsii+2lHURjmcA3U
-         yHqzBoXSeAbxDTwGejGkdTSRcWYxXBIWCPky31yXlpuJ3bB0Jg1xkRLa4Bdyr0zExU5J
-         TEdw==
-X-Gm-Message-State: AOAM530z2z6Jhmj4KnQ3lZVmN4qynn+FSLIEE8HDISETImRg/iy8DAfx
-        /25WnFsBfvm5dLNJz4aiNRBLDWvQhBJriQ==
-X-Google-Smtp-Source: ABdhPJzyjRDgpUUUw66qx9ApKgD161Rwe+h47hLyiildmJsL1cTCNh3MlFkbanKJEadiAqA6N2lCag==
-X-Received: by 2002:a63:8bca:0:b0:37f:ed6e:e49e with SMTP id j193-20020a638bca000000b0037fed6ee49emr12004065pge.347.1646698220460;
-        Mon, 07 Mar 2022 16:10:20 -0800 (PST)
+        bh=XdkuXzvsU8Qmmgk1oFXQM7A/zqUKyIIaZpyPEVdNOeA=;
+        b=Cdf4U8NL2k6EBGs89lFjcLuET/ecd8brD7mSGGvR/AElqytD/qb89mh+Enp7XRkHtQ
+         An1tjmI+9VRYz/vY9dW7TiWTjsca4vONYuRiOvWVLRC0KIUvbmPAP2JfWws9+G6I+Gym
+         ZNoKXaPHQd3OHgeyntqP1nJf12Y2VjclhuoFjzUxKwV+u9szU3sdMCwCktIOqHJdBnyg
+         /V8xFaewaj55ctL7iv6YVQQBBitNv+e00ZrvnyB8e3mCI0e1Pn9rtGTkPpKJ8Rpczz1s
+         7qiS0VpCkcyJUWM8q7cBhf0mDNC8vc2ePlf1BeuzZOak8b44AkkAsLFM9a0tg25yx3NI
+         LqqA==
+X-Gm-Message-State: AOAM531oO5hlmQp5cwZoIywsfwWHlcb865jvWh7zGNSl1Q/+pgNKgT2e
+        CZ+glWWBYS2IpXe8awVWAFQnow==
+X-Google-Smtp-Source: ABdhPJxqxtqjYa5DADauFV5deo53ZMww6SUdSgY0VGtQ0jBU3x0ZVLoq9JJcZ2IvZP5NoYh+yzAuGA==
+X-Received: by 2002:a17:90b:1648:b0:1bd:28ac:859d with SMTP id il8-20020a17090b164800b001bd28ac859dmr1634535pjb.59.1646698227017;
+        Mon, 07 Mar 2022 16:10:27 -0800 (PST)
 Received: from localhost ([2620:15c:202:201:e551:44dc:2842:57f1])
-        by smtp.gmail.com with UTF8SMTPSA id u18-20020a056a00159200b004f708ecd48esm4756481pfk.149.2022.03.07.16.10.18
+        by smtp.gmail.com with UTF8SMTPSA id t9-20020a656089000000b00372c36604a7sm12851415pgu.13.2022.03.07.16.10.25
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Mar 2022 16:10:19 -0800 (PST)
+        Mon, 07 Mar 2022 16:10:26 -0800 (PST)
 From:   Brian Norris <briannorris@chromium.org>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -55,9 +55,9 @@ Cc:     Lin Huang <hl@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v3 07/15] PM / devfreq: rk3399_dmc: Drop excess timing properties
-Date:   Mon,  7 Mar 2022 16:09:37 -0800
-Message-Id: <20220307160918.v3.7.Ia0f7d6168a71ba4a4fd0519972a8dfd4c681fc25@changeid>
+Subject: [PATCH v3 10/15] PM / devfreq: rk3399_dmc: Support new *-ns properties
+Date:   Mon,  7 Mar 2022 16:09:40 -0800
+Message-Id: <20220307160918.v3.10.I4e01e243ea11e9f95295b40b44a9eaa3a883a0dd@changeid>
 X-Mailer: git-send-email 2.35.1.616.g0bdcbb4464-goog
 In-Reply-To: <20220308000945.706701-1-briannorris@chromium.org>
 References: <20220308000945.706701-1-briannorris@chromium.org>
@@ -67,245 +67,161 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All of these properties are initialized by ARM Trusted Firmware, and
-have been since the early days of this chip. It's redundant (and
-possibly wrong) to do this here now. What's more, there seems to be some
-confusion about the units and some of the definitions of this timing
-struct: the DT docs say MHz for many of these, but downstream users were
-in Hz (and therefore, the ATF interface was Hz). Also, the in-driver
-usage for some of these (e.g., for comparing to target frequency) were
-in Hz too. So doubly wrong.
+We want to keep the idle time fixed, so compute based on the current DDR
+frequency.
 
-We can avoid thinking about who got the right units by dropping the
-unnecessary code and properties. They are marked deprecated in the
-binding schema.
+The old properties were deprecated and never used, so we can safely drop
+them from the driver.
+
+This is a rewritten version of work by Lin Huang <hl@rock-chips.com>.
 
 Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
 
-(no changes since v1)
+(no changes since v2)
 
- drivers/devfreq/rk3399_dmc.c | 144 +++++++----------------------------
- 1 file changed, 29 insertions(+), 115 deletions(-)
+Changes in v2:
+ - New patch
+
+ drivers/devfreq/rk3399_dmc.c | 85 +++++++++++++++++++++---------------
+ 1 file changed, 50 insertions(+), 35 deletions(-)
 
 diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index e982862f6ac2..8f447217303f 100644
+index fc740c1f6747..f778564cab49 100644
 --- a/drivers/devfreq/rk3399_dmc.c
 +++ b/drivers/devfreq/rk3399_dmc.c
-@@ -23,38 +23,6 @@
+@@ -24,6 +24,8 @@
  #include <soc/rockchip/rk3399_grf.h>
  #include <soc/rockchip/rockchip_sip.h>
  
--struct dram_timing {
--	unsigned int ddr3_speed_bin;
++#define NS_TO_CYCLE(NS, MHz)				(((NS) * (MHz)) / NSEC_PER_USEC)
++
+ #define RK3399_SET_ODT_PD_0_SR_IDLE			GENMASK(7, 0)
+ #define RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE		GENMASK(15, 8)
+ #define RK3399_SET_ODT_PD_0_STANDBY_IDLE		GENMASK(31, 16)
+@@ -45,13 +47,12 @@ struct rk3399_dmcfreq {
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
+ 	unsigned int odt_dis_freq;
+-	int odt_pd_arg0, odt_pd_arg1;
+ 
 -	unsigned int pd_idle;
 -	unsigned int sr_idle;
 -	unsigned int sr_mc_gate_idle;
 -	unsigned int srpd_lite_idle;
 -	unsigned int standby_idle;
--	unsigned int auto_pd_dis_freq;
--	unsigned int dram_dll_dis_freq;
--	unsigned int phy_dll_dis_freq;
--	unsigned int ddr3_odt_dis_freq;
--	unsigned int ddr3_drv;
--	unsigned int ddr3_odt;
--	unsigned int phy_ddr3_ca_drv;
--	unsigned int phy_ddr3_dq_drv;
--	unsigned int phy_ddr3_odt;
--	unsigned int lpddr3_odt_dis_freq;
--	unsigned int lpddr3_drv;
--	unsigned int lpddr3_odt;
--	unsigned int phy_lpddr3_ca_drv;
--	unsigned int phy_lpddr3_dq_drv;
--	unsigned int phy_lpddr3_odt;
--	unsigned int lpddr4_odt_dis_freq;
--	unsigned int lpddr4_drv;
--	unsigned int lpddr4_dq_odt;
--	unsigned int lpddr4_ca_odt;
--	unsigned int phy_lpddr4_ca_drv;
--	unsigned int phy_lpddr4_ck_cs_drv;
--	unsigned int phy_lpddr4_dq_drv;
--	unsigned int phy_lpddr4_odt;
--};
--
- struct rk3399_dmcfreq {
- 	struct device *dev;
- 	struct devfreq *devfreq;
-@@ -62,13 +30,21 @@ struct rk3399_dmcfreq {
- 	struct clk *dmc_clk;
- 	struct devfreq_event_dev *edev;
- 	struct mutex lock;
--	struct dram_timing timing;
- 	struct regulator *vdd_center;
- 	struct regmap *regmap_pmu;
- 	unsigned long rate, target_rate;
- 	unsigned long volt, target_volt;
- 	unsigned int odt_dis_freq;
- 	int odt_pd_arg0, odt_pd_arg1;
-+
-+	unsigned int pd_idle;
-+	unsigned int sr_idle;
-+	unsigned int sr_mc_gate_idle;
-+	unsigned int srpd_lite_idle;
-+	unsigned int standby_idle;
-+	unsigned int ddr3_odt_dis_freq;
-+	unsigned int lpddr3_odt_dis_freq;
-+	unsigned int lpddr4_odt_dis_freq;
- };
- 
- static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-@@ -238,69 +214,27 @@ static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
- 			 rk3399_dmcfreq_resume);
- 
--static int of_get_ddr_timings(struct dram_timing *timing,
--			      struct device_node *np)
-+static int rk3399_dmcfreq_of_props(struct rk3399_dmcfreq *data,
-+				   struct device_node *np)
- {
- 	int ret = 0;
- 
--	ret = of_property_read_u32(np, "rockchip,ddr3_speed_bin",
--				   &timing->ddr3_speed_bin);
- 	ret |= of_property_read_u32(np, "rockchip,pd_idle",
--				    &timing->pd_idle);
-+				    &data->pd_idle);
- 	ret |= of_property_read_u32(np, "rockchip,sr_idle",
--				    &timing->sr_idle);
-+				    &data->sr_idle);
- 	ret |= of_property_read_u32(np, "rockchip,sr_mc_gate_idle",
--				    &timing->sr_mc_gate_idle);
-+				    &data->sr_mc_gate_idle);
- 	ret |= of_property_read_u32(np, "rockchip,srpd_lite_idle",
--				    &timing->srpd_lite_idle);
-+				    &data->srpd_lite_idle);
- 	ret |= of_property_read_u32(np, "rockchip,standby_idle",
--				    &timing->standby_idle);
--	ret |= of_property_read_u32(np, "rockchip,auto_pd_dis_freq",
--				    &timing->auto_pd_dis_freq);
--	ret |= of_property_read_u32(np, "rockchip,dram_dll_dis_freq",
--				    &timing->dram_dll_dis_freq);
--	ret |= of_property_read_u32(np, "rockchip,phy_dll_dis_freq",
--				    &timing->phy_dll_dis_freq);
-+				    &data->standby_idle);
- 	ret |= of_property_read_u32(np, "rockchip,ddr3_odt_dis_freq",
--				    &timing->ddr3_odt_dis_freq);
--	ret |= of_property_read_u32(np, "rockchip,ddr3_drv",
--				    &timing->ddr3_drv);
--	ret |= of_property_read_u32(np, "rockchip,ddr3_odt",
--				    &timing->ddr3_odt);
--	ret |= of_property_read_u32(np, "rockchip,phy_ddr3_ca_drv",
--				    &timing->phy_ddr3_ca_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_ddr3_dq_drv",
--				    &timing->phy_ddr3_dq_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_ddr3_odt",
--				    &timing->phy_ddr3_odt);
-+				    &data->ddr3_odt_dis_freq);
- 	ret |= of_property_read_u32(np, "rockchip,lpddr3_odt_dis_freq",
--				    &timing->lpddr3_odt_dis_freq);
--	ret |= of_property_read_u32(np, "rockchip,lpddr3_drv",
--				    &timing->lpddr3_drv);
--	ret |= of_property_read_u32(np, "rockchip,lpddr3_odt",
--				    &timing->lpddr3_odt);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr3_ca_drv",
--				    &timing->phy_lpddr3_ca_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr3_dq_drv",
--				    &timing->phy_lpddr3_dq_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr3_odt",
--				    &timing->phy_lpddr3_odt);
-+				    &data->lpddr3_odt_dis_freq);
- 	ret |= of_property_read_u32(np, "rockchip,lpddr4_odt_dis_freq",
--				    &timing->lpddr4_odt_dis_freq);
--	ret |= of_property_read_u32(np, "rockchip,lpddr4_drv",
--				    &timing->lpddr4_drv);
--	ret |= of_property_read_u32(np, "rockchip,lpddr4_dq_odt",
--				    &timing->lpddr4_dq_odt);
--	ret |= of_property_read_u32(np, "rockchip,lpddr4_ca_odt",
--				    &timing->lpddr4_ca_odt);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr4_ca_drv",
--				    &timing->phy_lpddr4_ca_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr4_ck_cs_drv",
--				    &timing->phy_lpddr4_ck_cs_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr4_dq_drv",
--				    &timing->phy_lpddr4_dq_drv);
--	ret |= of_property_read_u32(np, "rockchip,phy_lpddr4_odt",
--				    &timing->phy_lpddr4_odt);
-+				    &data->lpddr4_odt_dis_freq);
- 
- 	return ret;
- }
-@@ -311,8 +245,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = pdev->dev.of_node, *node;
- 	struct rk3399_dmcfreq *data;
--	int ret, index, size;
--	uint32_t *timing;
-+	int ret;
++	unsigned int pd_idle_ns;
++	unsigned int sr_idle_ns;
++	unsigned int sr_mc_gate_idle_ns;
++	unsigned int srpd_lite_idle_ns;
++	unsigned int standby_idle_ns;
+ 	unsigned int ddr3_odt_dis_freq;
+ 	unsigned int lpddr3_odt_dis_freq;
+ 	unsigned int lpddr4_odt_dis_freq;
+@@ -70,9 +71,14 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
  	struct dev_pm_opp *opp;
- 	u32 ddr_type;
- 	u32 val;
-@@ -343,26 +276,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+ 	unsigned long old_clk_rate = dmcfreq->rate;
+ 	unsigned long target_volt, target_rate;
++	unsigned int ddrcon_mhz;
+ 	struct arm_smccc_res res;
+ 	int err;
+ 
++	u32 odt_pd_arg0 = 0;
++	u32 odt_pd_arg1 = 0;
++	u32 odt_pd_arg2 = 0;
++
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp))
+ 		return PTR_ERR(opp);
+@@ -86,11 +92,35 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 
+ 	mutex_lock(&dmcfreq->lock);
+ 
+-	if (dmcfreq->regmap_pmu) {
+-		unsigned int odt_pd_arg0 = dmcfreq->odt_pd_arg0;
+-		unsigned int odt_pd_arg1 = dmcfreq->odt_pd_arg1;
+-		unsigned int odt_pd_arg2 = 0;
++	/*
++	 * Some idle parameters may be based on the DDR controller clock, which
++	 * is half of the DDR frequency.
++	 * pd_idle and standby_idle are based on the controller clock cycle.
++	 * sr_idle_cycle, sr_mc_gate_idle_cycle, and srpd_lite_idle_cycle
++	 * are based on the 1024 controller clock cycle
++	 */
++	ddrcon_mhz = target_rate / USEC_PER_SEC / 2;
++
++	u32p_replace_bits(&odt_pd_arg1,
++			  NS_TO_CYCLE(dmcfreq->pd_idle_ns, ddrcon_mhz),
++			  RK3399_SET_ODT_PD_1_PD_IDLE);
++	u32p_replace_bits(&odt_pd_arg0,
++			  NS_TO_CYCLE(dmcfreq->standby_idle_ns, ddrcon_mhz),
++			  RK3399_SET_ODT_PD_0_STANDBY_IDLE);
++	u32p_replace_bits(&odt_pd_arg0,
++			  DIV_ROUND_UP(NS_TO_CYCLE(dmcfreq->sr_idle_ns,
++						   ddrcon_mhz), 1024),
++			  RK3399_SET_ODT_PD_0_SR_IDLE);
++	u32p_replace_bits(&odt_pd_arg0,
++			  DIV_ROUND_UP(NS_TO_CYCLE(dmcfreq->sr_mc_gate_idle_ns,
++						   ddrcon_mhz), 1024),
++			  RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE);
++	u32p_replace_bits(&odt_pd_arg1,
++			  DIV_ROUND_UP(NS_TO_CYCLE(dmcfreq->srpd_lite_idle_ns,
++						   ddrcon_mhz), 1024),
++			  RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE);
+ 
++	if (dmcfreq->regmap_pmu) {
+ 		if (target_rate >= dmcfreq->sr_idle_dis_freq)
+ 			odt_pd_arg0 &= ~RK3399_SET_ODT_PD_0_SR_IDLE;
+ 
+@@ -262,16 +292,16 @@ static int rk3399_dmcfreq_of_props(struct rk3399_dmcfreq *data,
+ 		data->srpd_lite_idle_dis_freq =
+ 		data->standby_idle_dis_freq = UINT_MAX;
+ 
+-	ret |= of_property_read_u32(np, "rockchip,pd_idle",
+-				    &data->pd_idle);
+-	ret |= of_property_read_u32(np, "rockchip,sr_idle",
+-				    &data->sr_idle);
+-	ret |= of_property_read_u32(np, "rockchip,sr_mc_gate_idle",
+-				    &data->sr_mc_gate_idle);
+-	ret |= of_property_read_u32(np, "rockchip,srpd_lite_idle",
+-				    &data->srpd_lite_idle);
+-	ret |= of_property_read_u32(np, "rockchip,standby_idle",
+-				    &data->standby_idle);
++	ret |= of_property_read_u32(np, "rockchip,pd-idle-ns",
++				    &data->pd_idle_ns);
++	ret |= of_property_read_u32(np, "rockchip,sr-idle-ns",
++				    &data->sr_idle_ns);
++	ret |= of_property_read_u32(np, "rockchip,sr-mc-gate-idle-ns",
++				    &data->sr_mc_gate_idle_ns);
++	ret |= of_property_read_u32(np, "rockchip,srpd-lite-idle-ns",
++				    &data->srpd_lite_idle_ns);
++	ret |= of_property_read_u32(np, "rockchip,standby-idle-ns",
++				    &data->standby_idle_ns);
+ 	ret |= of_property_read_u32(np, "rockchip,ddr3_odt_dis_freq",
+ 				    &data->ddr3_odt_dis_freq);
+ 	ret |= of_property_read_u32(np, "rockchip,lpddr3_odt_dis_freq",
+@@ -367,21 +397,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		      ROCKCHIP_SIP_CONFIG_DRAM_INIT,
+ 		      0, 0, 0, 0, &res);
  
 -	/*
--	 * Get dram timing and pass it to arm trust firmware,
--	 * the dram driver in arm trust firmware will get these
--	 * timing and to do dram initial.
+-	 * In TF-A there is a platform SIP call to set the PD (power-down)
+-	 * timings and to enable or disable the ODT (on-die termination).
 -	 */
--	if (!of_get_ddr_timings(&data->timing, np)) {
--		timing = &data->timing.ddr3_speed_bin;
--		size = sizeof(struct dram_timing) / 4;
--		for (index = 0; index < size; index++) {
--			arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, *timing++, index,
--				      ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM,
--				      0, 0, 0, 0, &res);
--			if (res.a0) {
--				dev_err(dev, "Failed to set dram param: %ld\n",
--					res.a0);
--				ret = -EINVAL;
--				goto err_edev;
--			}
--		}
--	}
-+	rk3399_dmcfreq_of_props(data, np);
- 
- 	node = of_parse_phandle(np, "rockchip,pmu", 0);
- 	if (!node)
-@@ -381,13 +295,13 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 
- 	switch (ddr_type) {
- 	case RK3399_PMUGRF_DDRTYPE_DDR3:
--		data->odt_dis_freq = data->timing.ddr3_odt_dis_freq;
-+		data->odt_dis_freq = data->ddr3_odt_dis_freq;
- 		break;
- 	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
--		data->odt_dis_freq = data->timing.lpddr3_odt_dis_freq;
-+		data->odt_dis_freq = data->lpddr3_odt_dis_freq;
- 		break;
- 	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
--		data->odt_dis_freq = data->timing.lpddr4_odt_dis_freq;
-+		data->odt_dis_freq = data->lpddr4_odt_dis_freq;
- 		break;
- 	default:
- 		ret = -EINVAL;
-@@ -414,11 +328,11 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	 * arg2:
- 	 *     bit[0]     : odt enable
- 	 */
--	data->odt_pd_arg0 = (data->timing.sr_idle & 0xff) |
--			    ((data->timing.sr_mc_gate_idle & 0xff) << 8) |
--			    ((data->timing.standby_idle & 0xffff) << 16);
--	data->odt_pd_arg1 = (data->timing.pd_idle & 0xfff) |
--			    ((data->timing.srpd_lite_idle & 0xfff) << 16);
-+	data->odt_pd_arg0 = (data->sr_idle & 0xff) |
-+			    ((data->sr_mc_gate_idle & 0xff) << 8) |
-+			    ((data->standby_idle & 0xffff) << 16);
-+	data->odt_pd_arg1 = (data->pd_idle & 0xfff) |
-+			    ((data->srpd_lite_idle & 0xfff) << 16);
- 
+-	data->odt_pd_arg0 =
+-		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_IDLE, data->sr_idle) |
+-		FIELD_PREP(RK3399_SET_ODT_PD_0_SR_MC_GATE_IDLE,
+-			   data->sr_mc_gate_idle) |
+-		FIELD_PREP(RK3399_SET_ODT_PD_0_STANDBY_IDLE,
+-			   data->standby_idle);
+-	data->odt_pd_arg1 =
+-		FIELD_PREP(RK3399_SET_ODT_PD_1_PD_IDLE, data->pd_idle) |
+-		FIELD_PREP(RK3399_SET_ODT_PD_1_SRPD_LITE_IDLE,
+-			   data->srpd_lite_idle);
+-
  	/*
  	 * We add a devfreq driver to our parent since it has a device tree node
+ 	 * with operating points.
 -- 
 2.35.1.616.g0bdcbb4464-goog
 
