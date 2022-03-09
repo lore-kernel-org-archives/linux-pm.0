@@ -2,164 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AE00C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Mar 2022 22:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24932C433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Mar 2022 22:39:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238277AbiCIWDa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Mar 2022 17:03:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46322 "EHLO
+        id S236645AbiCIWkw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Mar 2022 17:40:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44486 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232704AbiCIWD3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2022 17:03:29 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4656EBD0;
-        Wed,  9 Mar 2022 14:02:28 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id E989EB823C9;
-        Wed,  9 Mar 2022 22:02:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BCA4C340EE;
-        Wed,  9 Mar 2022 22:02:24 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-        dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="T1fuvT6G"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-        t=1646863339;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=inreFAnh9tqy7Qlx+a012zOsU9dSDc7ob/YEs/Oahuw=;
-        b=T1fuvT6GNklQFVlKRs5Fx3/lhU5a5lY+x4d3BmbJ1TqqIVlkrwaQIbxgmi6jwH9EAOFwCQ
-        rckR7B4h3E1/mdErRIlTDIzh3wvR1gGfJ9wLYG3LURJpc1KOhyCQRKHvDssSim+a8W5OGT
-        Z5JNAqH3kaCA8JlF0U6Vt+/w9ac/tRk=
-Received: by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 168a9f66 (TLSv1.3:AEAD-AES256-GCM-SHA384:256:NO);
-        Wed, 9 Mar 2022 22:02:19 +0000 (UTC)
-Received: by mail-yb1-f175.google.com with SMTP id z30so7271091ybi.2;
-        Wed, 09 Mar 2022 14:02:18 -0800 (PST)
-X-Gm-Message-State: AOAM5321QAGWIjalmdN5yIkXmh06FE1GRZ5qPlmzgJxwoyHDGnuFgE6B
-        SosUaNvGpd76yKzRtTrsvQxBOnOylnRykDM4t8k=
-X-Google-Smtp-Source: ABdhPJyCUVD8T4qqYuq1h5ED6rk/6Kw1l+qk/ag1MpB3SuWxlea1B5XdqPkq5wTPm3WvOPgfJuy34sJfOcw4H5dA8AQ=
-X-Received: by 2002:a25:2312:0:b0:629:60d6:7507 with SMTP id
- j18-20020a252312000000b0062960d67507mr1596488ybj.267.1646863335346; Wed, 09
- Mar 2022 14:02:15 -0800 (PST)
-MIME-Version: 1.0
-References: <Yh4+9+UpanJWAIyZ@zx2c4.com> <c5181fb5-38fb-f261-9de5-24655be1c749@amazon.com>
-In-Reply-To: <c5181fb5-38fb-f261-9de5-24655be1c749@amazon.com>
-From:   "Jason A. Donenfeld" <Jason@zx2c4.com>
-Date:   Wed, 9 Mar 2022 15:02:04 -0700
-X-Gmail-Original-Message-ID: <CAHmME9rTMDkE7UA3_wg87mrDVYps+YaHw+dZwF0EbM0zC4pQQw@mail.gmail.com>
-Message-ID: <CAHmME9rTMDkE7UA3_wg87mrDVYps+YaHw+dZwF0EbM0zC4pQQw@mail.gmail.com>
-Subject: Re: propagating vmgenid outward and upward
-To:     Alexander Graf <graf@amazon.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        KVM list <kvm@vger.kernel.org>,
-        QEMU Developers <qemu-devel@nongnu.org>,
-        linux-hyperv@vger.kernel.org,
-        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-        "Michael Kelley (LINUX)" <mikelley@microsoft.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        adrian@parity.io, Laszlo Ersek <lersek@redhat.com>,
-        =?UTF-8?Q?Daniel_P=2E_Berrang=C3=A9?= <berrange@redhat.com>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Jann Horn <jannh@google.com>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
+        with ESMTP id S233941AbiCIWkv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2022 17:40:51 -0500
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35EE8120F62
+        for <linux-pm@vger.kernel.org>; Wed,  9 Mar 2022 14:39:52 -0800 (PST)
+Received: by mail-lf1-x12f.google.com with SMTP id r4so6368730lfr.1
+        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2022 14:39:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=DQZKBK074A8TFSyYxr2OkPnyn2MB2fIT3PRZzlPro58=;
+        b=TWYq/B8i0x1RGd4xJ7dZNnNlKRw6Qs5ACTLfrIMG/k62l74ASgF7HenXPTdt/SdE0a
+         uw0CdD0B4ZNN5/skVdtab8lhKgu06KbrfEsmf2PlrbzzdjHCa0qk/hSn5CkiNZRMiSXR
+         +FtLS8K/Xo8klcuUQDynwVmNGc6DXvUTzRxv3PmU+I3EFZ5C0Rx9fHwM4azKbwaT5KSq
+         gFy1f8KRD9qIOSOeQyWqGlovbp7s1qQ1QCZBWiJ4rXv8zXbT95IUjyQxCHOn6a2ul/yL
+         /GjiMpz/s3fRjerYCbgawpFUejIWu+/wEMibKHKdDJhOVXqST+byXaBuP/+4bA0lvi+S
+         Diig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=DQZKBK074A8TFSyYxr2OkPnyn2MB2fIT3PRZzlPro58=;
+        b=7rkpE5Td8Eeqq7iofGvORojb3lghSeEQcn6xC39Z8I1ANY+9u/5BoQh6MSqgZJBbsx
+         S8qEWNwjOnsYlnT+EMrfbeG+oBC8TJ0eLYuAi/wQ/6a1YOrGQQpMS9L3jAnfFYjhc3N6
+         gsoYt+4oXifMwTM8YWSwtR/Ip+xO5cMCMpf/UgtRXG+gs5IX+lNI0jFHmC7rh3a1oEAB
+         xAMM6YMQVaakaM9UWAmmmpNGhPmw/gVC+l8b0oVqMPs/+wscoTXI0NZlsM0944Xq6qCm
+         0qsOkTXJaHOlz+Aaeva0itSBt/oKJanLB7gUtbR4sB9o1s9VRKFtZBsV0ZjoYWUr4wNg
+         5Exg==
+X-Gm-Message-State: AOAM533IBPXoeoxaajnXltSPF0fvuRKJpNmd9Y238VSqRrpRA9mhZY/L
+        ygbFMEtDTAeILEHSalxVBBbhKw==
+X-Google-Smtp-Source: ABdhPJxgEsqe8Ds7AHWdsjR1GGA/1opBZlNnxsNz2vvyHcizxkfTgrlgiGeDywplly4A/vkQMeyszw==
+X-Received: by 2002:a05:6512:ba6:b0:42a:84ee:d9d9 with SMTP id b38-20020a0565120ba600b0042a84eed9d9mr1177557lfv.353.1646865590554;
+        Wed, 09 Mar 2022 14:39:50 -0800 (PST)
+Received: from eriador.lan ([37.153.55.125])
+        by smtp.gmail.com with ESMTPSA id b24-20020a196458000000b004483734e0afsm621036lfj.12.2022.03.09.14.39.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Mar 2022 14:39:49 -0800 (PST)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Colm MacCarthaigh <colmmacc@amazon.com>,
-        "Theodore Ts'o" <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Subject: [PATCH v2 0/4] cpufreq: qcom-hw: Fixes for cpu hotplug support
+Date:   Thu, 10 Mar 2022 01:39:34 +0300
+Message-Id: <20220309223938.3819715-1-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Alex,
+This patchseries aims at fixing and improving CPU hotplug support on
+Qualcomm platforms. First three patches are the fixes for the LMH
+support in the cpufreq driver. The last patch adds support for
+lightweight offline() and online() callbacks which are used instead of
+exit() and init() each time the CPU is put offline or back online.
 
-On Wed, Mar 9, 2022 at 3:10 AM Alexander Graf <graf@amazon.com> wrote:
-> > The vmgenid driver basically works, though it is racy, because that ACPI
-> > notification can arrive after the system is already running again. This
->
->
-> I believe enough people already pointed out that this assumption is
-> incorrect. The thing that is racy about VMGenID is the interrupt based
-> notification.
+Changes since v1:
+- Update commit message for the first patch to describe why dropping
+  affinity hint is required (before calling free_irq()),
+- Fixed commit message for the second patch to include messages
+  generated using the mainline kernel w/o additional patches,
+- Changed third patch to use dev_warn_ratelimited(),
+- Reworked last patch to move request_irq/free_irq to online()/offline()
+  to make sure that the IRQ isn't left enabled after the CPU has been
+  put offline.
 
-I'm having a hard time figuring out what's different between your
-statement and mine. I said that the race is due to the notification.
-You said that the race is due to the notification. What subtle thing
-am I missing here that would lead you to say that my assumption is
-incorrect? Or did you just misread?
+Dmitry Baryshkov (4):
+  cpufreq: qcom-hw: drop affinity hint before freeing the IRQ
+  cpufreq: qcom-hw: fix the race between LMH worker and cpuhp
+  cpufreq: qcom-hw: fix the opp entries refcounting
+  cpufreq: qcom-hw: provide online/offline operations
 
-> The actual identifier is updated before the VM resumes
-> from its clone operation, so if you match on that you will know whether
-> you are in a new or old world. And that is enough to create
-> transactions: Save the identifier before a "crypto transaction",
-> validate before you finish, if they don't match, abort, reseed and replay.
+ drivers/cpufreq/qcom-cpufreq-hw.c | 78 +++++++++++++++++++++++++------
+ 1 file changed, 64 insertions(+), 14 deletions(-)
 
-Right. But more than just transactions, it's useful to preventing key
-reuse vulnerabilities, in which case, you store the current identifier
-just before an ephemeral key is generated, and then subsequently check
-to see that the identifier hasn't changed before transmitting anything
-related to that key.
+-- 
+2.34.1
 
-> If you follow the logic at the beginning of the mail, you can create
-> something race free if you consume the hardware VMGenID counter. You can
-> not make it race free if you rely on the interrupt mechanism.
-
-Yes, as mentioned and discussed in depth before. However, your use of
-the word "counter" is problematic. Vmgenid is not a counter. It's a
-unique identifier. That means you can't compare it with a single word
-comparison but have to compare all of the 16 bytes. That seems
-potentially expensive. It's for that reason that I suggested
-augmenting the vmgenid spec with an additional word-sized _counter_
-that could be mapped into the kernels and into userspaces.
-
-> So following that train of thought, if you expose the hardware VMGenID
-> to user space, you could allow user space to act race free based on
-> VMGenID. That means consumers of user space RNGs could validate whether
-> the ID is identical between the beginning of the crypto operation and
-> the end.
-
-Right.
-
-> However, there are more complicated cases as well. What do you do with
-> Samba for example? It needs to generate a new SID after the clone.
-> That's a super heavy operation. Do you want to have smbd constantly poll
-> on the VMGenID just to see whether it needs to kick off some
-> administrative actions?
-
-Were it a single word-sized integer, mapped into memory, that wouldn't
-be much of a problem at all. It could constantly read this before and
-after every operation. The problem is that it's 16 bytes and
-understandably applications don't want to deal with that clunkiness.
-
-> In that case, all we would need from the kernel is an easily readable
-> GenID that changes
-
-Actually, no, you need even less than that. All that's required is a
-sysfs/procfs file that can be poll()'d on. It doesn't need to have any
-content. When poll() returns readable, the VM has been forked. Then
-userspace rngs and other things like that can call getrandom() to
-receive a fresh value to mix into whatever their operation is. Since
-all we're talking about here is _event notification_, all we need is
-that event, which is what poll() provides.
-
-> I'm also not a super big fan of putting all that logic into systemd. It
-> means applications need to create their own notification mechanisms to
-> pass that cloning notification into actual processes. Don't we have any
-> mechanism that applications and libraries could use to natively get an
-> event when the GenID changes?
-
-Yes. poll() can do this. For the purposes of discussion, I've posted
-an implementation of this idea here:
-https://lore.kernel.org/lkml/20220309215907.77526-1-Jason@zx2c4.com/
-
-What I'm sort of leaning toward is doing something like that patch,
-and then later if vmgenid ever grows an additional word-sized counter,
-moving to explore the race-free approach. Given the amount of
-programming required to actually implement the race-free approach
-(transactions and careful study of each case), the poll() file
-approach might be a medium-grade compromise for the time being.
-Evidently that's what Microsoft decided too.
-
-Jason
