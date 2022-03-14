@@ -2,110 +2,165 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBB18C433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Mar 2022 02:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA049C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Mar 2022 13:41:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231292AbiCNCMU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 13 Mar 2022 22:12:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32926 "EHLO
+        id S241982AbiCNNmg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Mar 2022 09:42:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43892 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231283AbiCNCMT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Mar 2022 22:12:19 -0400
-Received: from out29-220.mail.aliyun.com (out29-220.mail.aliyun.com [115.124.29.220])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F0072A240;
-        Sun, 13 Mar 2022 19:11:09 -0700 (PDT)
-X-Alimail-AntiSpam: AC=CONTINUE;BC=0.07748652|-1;BR=01201311R121S39rulernew998_84748_2000303;CH=blue;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.00552317-0.00660772-0.987869;FP=0|0|0|0|0|-1|-1|-1;HT=ay29a033018047204;MF=kant@allwinnertech.com;NM=1;PH=DS;RN=6;RT=6;SR=0;TI=SMTPD_---.N3nAf7U_1647223866;
-Received: from sunxibot.allwinnertech.com(mailfrom:kant@allwinnertech.com fp:SMTPD_---.N3nAf7U_1647223866)
-          by smtp.aliyun-inc.com(10.147.40.233);
-          Mon, 14 Mar 2022 10:11:07 +0800
-From:   Kant Fan <kant@allwinnertech.com>
-To:     myungjoo.ham@samsung.com (maintainer:DEVICE FREQUENCY (DEVFREQ)),
-        kyungmin.park@samsung.com (maintainer:DEVICE FREQUENCY (DEVFREQ)),
-        cw00.choi@samsung.com (maintainer:DEVICE FREQUENCY (DEVFREQ))
-Cc:     Kant Fan <kant@allwinnertech.com>,
-        linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ)),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] devfreq:governor:Save void *data in the governor userspace
-Date:   Mon, 14 Mar 2022 10:11:17 +0800
-Message-Id: <20220314021118.59375-1-kant@allwinnertech.com>
-X-Mailer: git-send-email 2.29.0
+        with ESMTP id S241979AbiCNNmf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2022 09:42:35 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D48FDBC16;
+        Mon, 14 Mar 2022 06:41:25 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7BCC1ED1;
+        Mon, 14 Mar 2022 06:41:25 -0700 (PDT)
+Received: from [10.57.21.234] (unknown [10.57.21.234])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 394C03F7D7;
+        Mon, 14 Mar 2022 06:41:24 -0700 (PDT)
+Message-ID: <8529a647-6127-539f-20ba-271be293fe2f@arm.com>
+Date:   Mon, 14 Mar 2022 13:41:22 +0000
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] thermal: devfreq_cooling: use local ops instead of global
+ ops
+Content-Language: en-US
+To:     Kant Fan <kant@allwinnertech.com>
+Cc:     Amit Kucheria <amitk@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "supporter:THERMAL" <rafael@kernel.org>,
+        "supporter:THERMAL" <daniel.lezcano@linaro.org>
+References: <20220312045922.9779-1-kant@allwinnertech.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <20220312045922.9779-1-kant@allwinnertech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The member void *data in the structure devfreq can be overwrite
-by governor_userspace. For example:
-1. The device driver assigned the devfreq governor to simple_ondemand
-by the function devfreq_add_device() and init the devfreq member
-void *data to a pointer of a static structure devfreq_simple_ondemand_data
-by the function devfreq_add_device().
-2. The user changed the devfreq governor to userspace by the command
-"echo userspace > /sys/class/devfreq/.../governor".
-3. The governor userspace alloced a dynamic memory for the struct
-userspace_data and assigend the member void *data of devfreq to
-this memory by the function userspace_init().
-4. The user changed the devfreq governor back to simple_ondemand
-by the command "echo simple_ondemand > /sys/class/devfreq/.../governor".
-5. The governor userspace exited and assigned the member void *data
-in the structure devfreq to NULL by the function userspace_exit().
-6. The governor simple_ondemand fetched the static information of
-devfreq_simple_ondemand_data in the function
-devfreq_simple_ondemand_func() but the member void *data of devfreq was
-assigned to NULL by the function userspace_exit().
-7. The information of upthreshold and downdifferential is lost
-and the governor simple_ondemand can't work correctly.
+Hi Kant,
 
-The member void *data in the structure devfreq is designed for
-a static pointer used in a governor and inited by the function
-devfreq_add_device(). So if a governor want to use void *data
-to do some other things, it must save void *data in the init()
-function and restore void *data in the exit() function.
+On 3/12/22 04:59, Kant Fan wrote:
+> Fix access illegal address problem in following condition:
+> There are muti devfreq cooling devices in system, some of them has
+> em model but other does not, energy model ops such as state2power will
+> append to global devfreq_cooling_ops when the cooling device with
+> em model register. It makes the cooling device without em model
+> also use devfreq_cooling_ops after appending when register later by
+> of_devfreq_cooling_register_power() or of_devfreq_cooling_register().
+> 
+> IPA governor regards the cooling devices without em model as a power actor
+> because they also have energy model ops, and will access illegal address
+> at dfc->em_pd when execute cdev->ops->get_requested_power,
+> cdev->ops->state2power or cdev->ops->power2state.
+> 
+> Signed-off-by: Kant Fan <kant@allwinnertech.com>
 
-Signed-off-by: Kant Fan <kant@allwinnertech.com>
----
- drivers/devfreq/governor_userspace.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Thank you for finding this issue. This was also an issue since the
+beginning of that code. The modified global ops after first registration
+which went through, was also previously there. Thus, we would need two
+different patches for stable kernels.
 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index ab9db7adb3ad..dbbb448dcbcf 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -17,6 +17,7 @@
- struct userspace_data {
- 	unsigned long user_frequency;
- 	bool valid;
-+	void *saved_data;
- };
- 
- static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
-@@ -91,6 +92,7 @@ static int userspace_init(struct devfreq *devfreq)
- 		goto out;
- 	}
- 	data->valid = false;
-+	data->saved_data = devfreq->data;
- 	devfreq->data = data;
- 
- 	err = sysfs_create_group(&devfreq->dev.kobj, &dev_attr_group);
-@@ -100,6 +102,8 @@ static int userspace_init(struct devfreq *devfreq)
- 
- static void userspace_exit(struct devfreq *devfreq)
- {
-+	struct userspace_data *data = devfreq->data;
-+	void *saved_data = data->saved_data;
- 	/*
- 	 * Remove the sysfs entry, unless this is being called after
- 	 * device_del(), which should have done this already via kobject_del().
-@@ -108,7 +112,7 @@ static void userspace_exit(struct devfreq *devfreq)
- 		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
- 
- 	kfree(devfreq->data);
--	devfreq->data = NULL;
-+	devfreq->data = saved_data;
- }
- 
- static int devfreq_userspace_handler(struct devfreq *devfreq,
--- 
-2.29.0
+For this one, please add the tag:
+Fixes: 615510fe13bd2 ("thermal: devfreq_cooling: remove old power model 
+and use EM")
 
+This patch would also go via stable tree for kernels v5.11+
+Please read the process how to send a patch which will be merged to the
+stable tree.
+
+There will be a need to create another patch(es) for stable kernels with
+Fixes: a76caf55e5b35 ("thermal: Add devfreq cooling")
+In those kernels also the global ops is modified and might not support
+properly many cooling devices. It's present in other stable kernels:
+v5.10 and older
+
+> ---
+>   drivers/thermal/devfreq_cooling.c | 25 ++++++++++++++++++-------
+>   1 file changed, 18 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> index 4310cb342a9f..d38a80adec73 100644
+> --- a/drivers/thermal/devfreq_cooling.c
+> +++ b/drivers/thermal/devfreq_cooling.c
+> @@ -358,21 +358,28 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+>   	struct thermal_cooling_device *cdev;
+>   	struct device *dev = df->dev.parent;
+>   	struct devfreq_cooling_device *dfc;
+> +	struct thermal_cooling_device_ops *ops;
+>   	char *name;
+>   	int err, num_opps;
+>   
+> -	dfc = kzalloc(sizeof(*dfc), GFP_KERNEL);
+> -	if (!dfc)
+> +	ops = kmemdup(&devfreq_cooling_ops, sizeof(*ops), GFP_KERNEL);
+> +	if (!ops)
+>   		return ERR_PTR(-ENOMEM);
+>   
+> +	dfc = kzalloc(sizeof(*dfc), GFP_KERNEL);
+> +	if (!dfc) {
+> +		err = -ENOMEM;
+> +		goto free_ops;
+> +	}
+> +
+>   	dfc->devfreq = df;
+>   
+>   	dfc->em_pd = em_pd_get(dev);
+>   	if (dfc->em_pd) {
+> -		devfreq_cooling_ops.get_requested_power =
+> +		ops->get_requested_power =
+>   			devfreq_cooling_get_requested_power;
+> -		devfreq_cooling_ops.state2power = devfreq_cooling_state2power;
+> -		devfreq_cooling_ops.power2state = devfreq_cooling_power2state;
+> +		ops->state2power = devfreq_cooling_state2power;
+> +		ops->power2state = devfreq_cooling_power2state;
+>   
+>   		dfc->power_ops = dfc_power;
+>   
+> @@ -407,8 +414,7 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+>   	if (!name)
+>   		goto remove_qos_req;
+>   
+> -	cdev = thermal_of_cooling_device_register(np, name, dfc,
+> -						  &devfreq_cooling_ops);
+> +	cdev = thermal_of_cooling_device_register(np, name, dfc, ops);
+>   	kfree(name);
+>   
+>   	if (IS_ERR(cdev)) {
+> @@ -429,6 +435,8 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+>   	kfree(dfc->freq_table);
+>   free_dfc:
+>   	kfree(dfc);
+> +free_ops:
+> +	kfree(ops);
+>   
+>   	return ERR_PTR(err);
+>   }
+> @@ -510,11 +518,13 @@ EXPORT_SYMBOL_GPL(devfreq_cooling_em_register);
+>   void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>   {
+>   	struct devfreq_cooling_device *dfc;
+> +	const struct thermal_cooling_device_ops *ops;
+>   	struct device *dev;
+>   
+>   	if (IS_ERR_OR_NULL(cdev))
+>   		return;
+>   
+> +	ops = cdev->ops;
+>   	dfc = cdev->devdata;
+>   	dev = dfc->devfreq->dev.parent;
+>   
+> @@ -525,5 +535,6 @@ void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>   
+>   	kfree(dfc->freq_table);
+>   	kfree(dfc);
+> +	kfree(ops);
+>   }
+>   EXPORT_SYMBOL_GPL(devfreq_cooling_unregister);
+
+The fix looks good.
