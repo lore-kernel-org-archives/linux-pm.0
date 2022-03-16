@@ -2,152 +2,124 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B10C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Mar 2022 12:31:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B12BC433FE
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Mar 2022 12:39:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239389AbiCPMcZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Mar 2022 08:32:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38474 "EHLO
+        id S1355682AbiCPMkf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Mar 2022 08:40:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51924 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230190AbiCPMcZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2022 08:32:25 -0400
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5798457A5
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2022 05:31:07 -0700 (PDT)
-Received: by mail-pl1-x62d.google.com with SMTP id z3so1667083plg.8
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2022 05:31:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=WOT8qaaO/crm7BT2j7enTu6vJsve9vNW2Kvw9DzeE8E=;
-        b=Q+FDx7qUFDNXAMMyzMXETA2XtFbNuMiT2gvlNKU+Vrc2tqc73H+utiJ2GKHT/3zPm5
-         cvx7SLENfBx4uKlDlNtEYxIh+wIdbxqFJ4cL5xCI2e+ezvKeA6irD9l1BRXH+zkgVPxr
-         YYdFySHwGzT5wQKv6Bo4ae0DXDO1hj8Kdz/SjMUWz3u8f/GhXyUG84qh9vJTJFji4y2O
-         6unWnmVzRH1kyAl302rf8ZxSYcnbYwKAv9qx7vk3kIbSVebZtjeznofzKlLrpylhLYNR
-         2E1dKUOuzEtAsGTnjq1W2fIoBuGnGarPEs/5mXOHkwzMPO3gNleUp+Z1Q1O/pJ3oiD5L
-         cLcQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=WOT8qaaO/crm7BT2j7enTu6vJsve9vNW2Kvw9DzeE8E=;
-        b=Lr6cxpXaZqStq9D9asOUAJdlDmtdNfmLoFDYsQamxoZ0Dn2U1P3ywUCv+WqqDgM1Hf
-         uYP0/qKTRdqlZff7JVzyKFuKzUa17LOzORHKXDaVGdsJP1sg4SBVPl/P1/5YRKL4EW35
-         e92WeO8xjjRaqKDC6XiVZK+cH1b+M2s6XqlYr9sbJdTo8ns2g4ahK01t6LvIquC482UQ
-         pogJqVUgtqJtexaBftxZqwgVlcTbMlomUxTciIDnhTzH9u7dXBF4ckc8SYK4XduOLPv6
-         flPr+J5tyJoHd8sIUSUsMG6gKjU8sOaJmO7hgNgf+Vk04hWxSQ4C0lu6T3rX0stgyGRF
-         /PiA==
-X-Gm-Message-State: AOAM533TjKtT/WXS0UJa4DPYlubshpk2sHltw332gIkKZhl9vcQs1FfP
-        tabycnffh2yelZw0Xbahf4Gj5A==
-X-Google-Smtp-Source: ABdhPJxfOYy5a4zNrMN3qZpYZdnlMkPu+q5EKBdJ3P2bWQQd7IZhGV6b17zQ8mpEsXzuRLAf3a5IFg==
-X-Received: by 2002:a17:902:a50c:b0:153:b18a:ff75 with SMTP id s12-20020a170902a50c00b00153b18aff75mr4054850plq.142.1647433867101;
-        Wed, 16 Mar 2022 05:31:07 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id a20-20020a056a000c9400b004f7ab5a44ebsm3408442pfv.18.2022.03.16.05.31.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Mar 2022 05:31:06 -0700 (PDT)
-Message-ID: <6231d88a.1c69fb81.eea0f.7730@mx.google.com>
-Date:   Wed, 16 Mar 2022 05:31:06 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        with ESMTP id S1355713AbiCPMke (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2022 08:40:34 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFD4B5AEE5;
+        Wed, 16 Mar 2022 05:39:18 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
+ id e2f96ae570f65f18; Wed, 16 Mar 2022 13:39:17 +0100
+Received: from kreacher.localnet (unknown [213.134.162.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id F1B0066B8A9;
+        Wed, 16 Mar 2022 13:39:15 +0100 (CET)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH v1 2/2] ACPI: bus: Avoid using CPPC if not supported by firmware
+Date:   Wed, 16 Mar 2022 13:39:03 +0100
+Message-ID: <2107550.irdbgypaU6@kreacher>
+In-Reply-To: <4734682.31r3eYUQgx@kreacher>
+References: <4734682.31r3eYUQgx@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: build
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-X-Kernelci-Kernel: v5.17-rc8-157-gad2ced059eef
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 1 warning (v5.17-rc8-157-gad2ced059eef)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.162.1
+X-CLIENT-HOSTNAME: 213.134.162.1
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrudefvddggedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetgefgleetgeduheeugeeikeevudelueelvdeufeejfeffgeefjedugfetfeehhfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvudefrddufeegrdduiedvrddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeivddruddphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepiedprhgtphhtthhopehlihhnuhigqdgrtghpihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdrfigvshhtvghr
+ sggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohephhguvghgohgvuggvsehrvgguhhgrthdrtghomhdprhgtphhtthhopehmrghrihhordhlihhmohhntghivghllhhosegrmhgurdgtohhm
+X-DCC--Metrics: v370.home.net.pl 1024; Body=6 Fuz1=6 Fuz2=6
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.17-rc8-157-ga=
-d2ced059eef)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-17-rc8-157-gad2ced059eef/
+If the platform firmware indicates that it does not support CPPC by
+clearing the OSC_SB_CPC_SUPPORT and OSC_SB_CPCV2_SUPPORT bits in the
+platform _OSC capabilities mask, avoid attempting to evaluate _CPC
+which may fail in that case.
 
-Tree: pm
-Branch: testing
-Git Describe: v5.17-rc8-157-gad2ced059eef
-Git Commit: ad2ced059eefe51ab94f02bd67ab6fbffb499d9e
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+Because the OSC_SB_CPC_SUPPORT and OSC_SB_CPCV2_SUPPORT bits are only
+added to the supported platform capabilities mask on x86, when
+X86_FEATURE_HWP is supported, allow _CPC to be evaluated regardless
+in the other cases.
 
-Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-
-i386:
-
-mips:
-    32r2el_defconfig (gcc-10): 1 warning
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    2    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
-e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
-ted "0,0"
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
-ion mismatches
-
-Warnings:
-    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
-): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
-0,0"
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
-ismatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
- section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
-on mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
-ection mismatches
-
+Link: https://lore.kernel.org/linux-acpi/CAJZ5v0i=ecAksq0TV+iLVObm-=fUfdqPABzzkgm9K6KxO1ZCcg@mail.gmail.com
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-For more info write to <info@kernelci.org>
+ drivers/acpi/bus.c       |    8 ++++++++
+ drivers/acpi/cppc_acpi.c |    3 +++
+ include/linux/acpi.h     |    1 +
+ 3 files changed, 12 insertions(+)
+
+Index: linux-pm/drivers/acpi/bus.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/bus.c
++++ linux-pm/drivers/acpi/bus.c
+@@ -284,6 +284,8 @@ EXPORT_SYMBOL_GPL(osc_pc_lpi_support_con
+ bool osc_sb_native_usb4_support_confirmed;
+ EXPORT_SYMBOL_GPL(osc_sb_native_usb4_support_confirmed);
+ 
++bool osc_sb_cppc_not_supported;
++
+ static u8 sb_uuid_str[] = "0811B06E-4A27-44F9-8D60-3CBBC22E7B48";
+ static void acpi_bus_osc_negotiate_platform_control(void)
+ {
+@@ -339,6 +341,12 @@ static void acpi_bus_osc_negotiate_platf
+ 		return;
+ 	}
+ 
++#ifdef CONFIG_X86
++	if (boot_cpu_has(X86_FEATURE_HWP))
++		osc_sb_cppc_not_supported = !(capbuf_ret[OSC_SUPPORT_DWORD] &
++				(OSC_SB_CPC_SUPPORT | OSC_SB_CPCV2_SUPPORT));
++#endif
++
+ 	/*
+ 	 * Now run _OSC again with query flag clear and with the caps
+ 	 * supported by both the OS and the platform.
+Index: linux-pm/drivers/acpi/cppc_acpi.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/cppc_acpi.c
++++ linux-pm/drivers/acpi/cppc_acpi.c
+@@ -656,6 +656,9 @@ int acpi_cppc_processor_probe(struct acp
+ 	acpi_status status;
+ 	int ret = -EFAULT;
+ 
++	if (osc_sb_cppc_not_supported)
++		return -ENODEV;
++
+ 	/* Parse the ACPI _CPC table for this CPU. */
+ 	status = acpi_evaluate_object_typed(handle, "_CPC", NULL, &output,
+ 			ACPI_TYPE_PACKAGE);
+Index: linux-pm/include/linux/acpi.h
+===================================================================
+--- linux-pm.orig/include/linux/acpi.h
++++ linux-pm/include/linux/acpi.h
+@@ -580,6 +580,7 @@ acpi_status acpi_run_osc(acpi_handle han
+ extern bool osc_sb_apei_support_acked;
+ extern bool osc_pc_lpi_support_confirmed;
+ extern bool osc_sb_native_usb4_support_confirmed;
++extern bool osc_sb_cppc_not_supported;
+ 
+ /* USB4 Capabilities */
+ #define OSC_USB_USB3_TUNNELING			0x00000001
+
+
+
