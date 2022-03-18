@@ -2,178 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0DB3C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Mar 2022 00:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC216C433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Mar 2022 02:09:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230442AbiCRANA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Mar 2022 20:13:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46684 "EHLO
+        id S231676AbiCRCK7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Mar 2022 22:10:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230448AbiCRAM7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2022 20:12:59 -0400
-Received: from comms.puri.sm (comms.puri.sm [159.203.221.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE5B4141479;
-        Thu, 17 Mar 2022 17:11:41 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 7A512E007A;
-        Thu, 17 Mar 2022 17:11:11 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id HS29Kj_9xdt9; Thu, 17 Mar 2022 17:11:10 -0700 (PDT)
-From:   Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-To:     Hans de Goede <hdegoede@redhat.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc:     Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Purism Kernel Team <kernel@puri.sm>,
-        Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH 2/4] power: supply: max17042_battery: use ModelCfg refresh on max17055
-Date:   Fri, 18 Mar 2022 01:10:46 +0100
-Message-Id: <20220318001048.20922-3-sebastian.krzyszkowiak@puri.sm>
-In-Reply-To: <20220318001048.20922-1-sebastian.krzyszkowiak@puri.sm>
-References: <20220318001048.20922-1-sebastian.krzyszkowiak@puri.sm>
+        with ESMTP id S230202AbiCRCK7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2022 22:10:59 -0400
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1427625F66B;
+        Thu, 17 Mar 2022 19:09:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1647569382; x=1679105382;
+  h=message-id:subject:from:reply-to:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=bcvdTm8vTC17tTtaKL6TbtagXdFa7r13SD1OdJ96w6M=;
+  b=meuZUM6a2CSYrm7VW+WrI585lKBNNW8HcQWtf+aSOp5r8/EPf/fWMw1k
+   5zOYKseYyod3t0SYFwiE18dbufEJPYJALTaN7LhMmdWqtHWLV75usxe6n
+   p8sV2XtX0X/mohvU6sJroXmFkwkRYmtExQwX4WFxr+LU1FK74HkOU9vbA
+   svEe/4kdFpdg2HgsRj0HFwS+WcbJCR3tVUc2Z1+lObdRYKfJjds85XmzT
+   65S88g//vwRo81CAD62e7VN1jCCjNJuBQW0191rmUQSMDiM3cVPvHYZWX
+   yhHAl44dMIVidBBeUTYfzD7tJeF13dPjSdOdPj8PFq9muYZQmXLgVokPi
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="239191312"
+X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
+   d="scan'208";a="239191312"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 19:09:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
+   d="scan'208";a="691143655"
+Received: from linux.intel.com ([10.54.29.200])
+  by fmsmga001.fm.intel.com with ESMTP; 17 Mar 2022 19:09:41 -0700
+Received: from mzaid-MOBL1.amr.corp.intel.com (mzaid-MOBL1.amr.corp.intel.com [10.255.228.81])
+        by linux.intel.com (Postfix) with ESMTP id F1664580A5D;
+        Thu, 17 Mar 2022 19:09:40 -0700 (PDT)
+Message-ID: <117f781f5bf8d1c3cee5f8580fb0c9bf8d049cc7.camel@linux.intel.com>
+Subject: Re: [PATCH v2 1/2] PCI/PM: refactor pci_pm_suspend_noirq()
+From:   "David E. Box" <david.e.box@linux.intel.com>
+Reply-To: david.e.box@linux.intel.com
+To:     Rajvi Jingar <rajvi.jingar@intel.com>, rafael.j.wysocki@intel.com,
+        bhelgaas@google.com
+Cc:     linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Date:   Thu, 17 Mar 2022 19:09:40 -0700
+In-Reply-To: <20220317233153.2617938-1-rajvi.jingar@intel.com>
+References: <20220317233153.2617938-1-rajvi.jingar@intel.com>
+Organization: David E. Box
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5-0ubuntu1 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Unlike other models, max17055 doesn't require cell characterization
-data and operates on smaller amount of input variables (DesignCap,
-VEmpty, IChgTerm and ModelCfg). Input data can already be filled in
-by max17042_override_por_values, however model refresh bit has to be
-set after adjusting input variables in order to make them apply.
+Hi Rajvi,
 
-Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
----
- drivers/power/supply/max17042_battery.c | 73 +++++++++++++++----------
- include/linux/power/max17042_battery.h  |  3 +
- 2 files changed, 48 insertions(+), 28 deletions(-)
+On Thu, 2022-03-17 at 16:31 -0700, Rajvi Jingar wrote:
+> The state of the device is saved during pci_pm_suspend_noirq(), if it
+> has not already been saved, regardless of the skip_bus_pm flag value. So
+> skip_bus_pm check is removed before saving the device state.
+> 
+> v2: add comments to the changes
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index c019d6c52363..c39250349a1d 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -806,6 +806,13 @@ static inline void max17042_override_por_values(struct max17042_chip *chip)
- 	    (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055)) {
- 		max17042_override_por(map, MAX17047_V_empty, config->vempty);
- 	}
-+
-+	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055) {
-+		max17042_override_por(map, MAX17055_ModelCfg, config->model_cfg);
-+		// VChg is 1 by default, so allow it to be set to 0
-+		regmap_update_bits(map, MAX17055_ModelCfg,
-+				MAX17055_MODELCFG_VCHG_BIT, config->model_cfg);
-+	}
- }
- 
- static int max17042_init_chip(struct max17042_chip *chip)
-@@ -814,44 +821,54 @@ static int max17042_init_chip(struct max17042_chip *chip)
- 	int ret;
- 
- 	max17042_override_por_values(chip);
-+
-+	if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17055) {
-+		regmap_write_bits(map, MAX17055_ModelCfg,
-+				  MAX17055_MODELCFG_REFRESH_BIT, MAX17055_MODELCFG_REFRESH_BIT);
-+	}
-+
- 	/* After Power up, the MAX17042 requires 500mS in order
- 	 * to perform signal debouncing and initial SOC reporting
- 	 */
- 	msleep(500);
- 
--	/* Initialize configuration */
--	max17042_write_config_regs(chip);
--
--	/* write cell characterization data */
--	ret = max17042_init_model(chip);
--	if (ret) {
--		dev_err(&chip->client->dev, "%s init failed\n",
--			__func__);
--		return -EIO;
--	}
-+	if ((chip->chip_type == MAXIM_DEVICE_TYPE_MAX17042) ||
-+	    (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17047) ||
-+	    (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17050)) {
-+		/* Initialize configuration */
-+		max17042_write_config_regs(chip);
-+
-+		/* write cell characterization data */
-+		ret = max17042_init_model(chip);
-+		if (ret) {
-+			dev_err(&chip->client->dev, "%s init failed\n",
-+				__func__);
-+			return -EIO;
-+		}
- 
--	ret = max17042_verify_model_lock(chip);
--	if (ret) {
--		dev_err(&chip->client->dev, "%s lock verify failed\n",
--			__func__);
--		return -EIO;
--	}
--	/* write custom parameters */
--	max17042_write_custom_regs(chip);
-+		ret = max17042_verify_model_lock(chip);
-+		if (ret) {
-+			dev_err(&chip->client->dev, "%s lock verify failed\n",
-+				__func__);
-+			return -EIO;
-+		}
-+		/* write custom parameters */
-+		max17042_write_custom_regs(chip);
- 
--	/* update capacity params */
--	max17042_update_capacity_regs(chip);
-+		/* update capacity params */
-+		max17042_update_capacity_regs(chip);
- 
--	/* delay must be atleast 350mS to allow VFSOC
--	 * to be calculated from the new configuration
--	 */
--	msleep(350);
-+		/* delay must be at least 350mS to allow VFSOC
-+		 * to be calculated from the new configuration
-+		 */
-+		msleep(350);
- 
--	/* reset vfsoc0 reg */
--	max17042_reset_vfsoc0_reg(chip);
-+		/* reset vfsoc0 reg */
-+		max17042_reset_vfsoc0_reg(chip);
- 
--	/* load new capacity params */
--	max17042_load_new_capacity_params(chip);
-+		/* load new capacity params */
-+		max17042_load_new_capacity_params(chip);
-+	}
- 
- 	/* Init complete, Clear the POR bit */
- 	regmap_update_bits(map, MAX17042_STATUS, STATUS_POR_BIT, 0x0);
-diff --git a/include/linux/power/max17042_battery.h b/include/linux/power/max17042_battery.h
-index c417abd2ab70..6943921cab5e 100644
---- a/include/linux/power/max17042_battery.h
-+++ b/include/linux/power/max17042_battery.h
-@@ -23,6 +23,8 @@
- 
- #define MAX17042_CHARACTERIZATION_DATA_SIZE 48
- 
-+#define MAX17055_MODELCFG_REFRESH_BIT	BIT(15)
-+
- enum max17042_register {
- 	MAX17042_STATUS		= 0x00,
- 	MAX17042_VALRT_Th	= 0x01,
-@@ -208,6 +210,7 @@ struct max17042_config_data {
- 	u16	full_soc_thresh;	/* 0x13 */
- 	u16	design_cap;	/* 0x18 */
- 	u16	ichgt_term;	/* 0x1E */
-+	u16	model_cfg;	/* 0xDB */
- 
- 	/* MG3 config */
- 	u16	at_rate;	/* 0x04 */
--- 
-2.35.1
+...
+
+> 
+> Signed-off-by: Rajvi Jingar <rajvi.jingar@intel.com>
+> Suggested-by: David E. Box <david.e.box@linux.intel.com>
+> ---
+
+Patch changelogs aren't kept in the commit message. Place them here after the
+"---" line. In this location, it won't affect applying the patch.
+
+David
+
+>  drivers/pci/pci-driver.c | 18 ++++++------------
+>  1 file changed, 6 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index 588588cfda48..ffe76f238d7e 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -834,20 +834,14 @@ static int pci_pm_suspend_noirq(struct device *dev)
+>  		}
+>  	}
+>  
+> -	if (pci_dev->skip_bus_pm) {
+> +	if (!pci_dev->state_saved) {
+> +		pci_save_state(pci_dev);
+>  		/*
+> -		 * Either the device is a bridge with a child in D0 below it, or
+> -		 * the function is running for the second time in a row without
+> -		 * going through full resume, which is possible only during
+> -		 * suspend-to-idle in a spurious wakeup case.  The device should
+> -		 * be in D0 at this point, but if it is a bridge, it may be
+> -		 * necessary to save its state.
+> +		 * If the device is a bridge with a child in D0 below it, it
+> needs to
+> +		 * stay in D0, so check skip_bus_pm to avoid putting it into a
+> +		 * low-power state in that case.
+>  		 */
+> -		if (!pci_dev->state_saved)
+> -			pci_save_state(pci_dev);
+> -	} else if (!pci_dev->state_saved) {
+> -		pci_save_state(pci_dev);
+> -		if (pci_power_manageable(pci_dev))
+> +		if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev))
+>  			pci_prepare_to_sleep(pci_dev);
+>  	}
+>  
 
