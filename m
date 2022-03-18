@@ -2,118 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC216C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Mar 2022 02:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8750C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Mar 2022 08:16:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231676AbiCRCK7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Mar 2022 22:10:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43530 "EHLO
+        id S233625AbiCRISH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Mar 2022 04:18:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230202AbiCRCK7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2022 22:10:59 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1427625F66B;
-        Thu, 17 Mar 2022 19:09:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1647569382; x=1679105382;
-  h=message-id:subject:from:reply-to:to:cc:date:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=bcvdTm8vTC17tTtaKL6TbtagXdFa7r13SD1OdJ96w6M=;
-  b=meuZUM6a2CSYrm7VW+WrI585lKBNNW8HcQWtf+aSOp5r8/EPf/fWMw1k
-   5zOYKseYyod3t0SYFwiE18dbufEJPYJALTaN7LhMmdWqtHWLV75usxe6n
-   p8sV2XtX0X/mohvU6sJroXmFkwkRYmtExQwX4WFxr+LU1FK74HkOU9vbA
-   svEe/4kdFpdg2HgsRj0HFwS+WcbJCR3tVUc2Z1+lObdRYKfJjds85XmzT
-   65S88g//vwRo81CAD62e7VN1jCCjNJuBQW0191rmUQSMDiM3cVPvHYZWX
-   yhHAl44dMIVidBBeUTYfzD7tJeF13dPjSdOdPj8PFq9muYZQmXLgVokPi
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="239191312"
-X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
-   d="scan'208";a="239191312"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 19:09:41 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
-   d="scan'208";a="691143655"
-Received: from linux.intel.com ([10.54.29.200])
-  by fmsmga001.fm.intel.com with ESMTP; 17 Mar 2022 19:09:41 -0700
-Received: from mzaid-MOBL1.amr.corp.intel.com (mzaid-MOBL1.amr.corp.intel.com [10.255.228.81])
-        by linux.intel.com (Postfix) with ESMTP id F1664580A5D;
-        Thu, 17 Mar 2022 19:09:40 -0700 (PDT)
-Message-ID: <117f781f5bf8d1c3cee5f8580fb0c9bf8d049cc7.camel@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] PCI/PM: refactor pci_pm_suspend_noirq()
-From:   "David E. Box" <david.e.box@linux.intel.com>
-Reply-To: david.e.box@linux.intel.com
-To:     Rajvi Jingar <rajvi.jingar@intel.com>, rafael.j.wysocki@intel.com,
-        bhelgaas@google.com
-Cc:     linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Date:   Thu, 17 Mar 2022 19:09:40 -0700
-In-Reply-To: <20220317233153.2617938-1-rajvi.jingar@intel.com>
-References: <20220317233153.2617938-1-rajvi.jingar@intel.com>
-Organization: David E. Box
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.5-0ubuntu1 
+        with ESMTP id S233645AbiCRIR4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2022 04:17:56 -0400
+Received: from mail-lj1-f176.google.com (mail-lj1-f176.google.com [209.85.208.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B2D72DD9BD;
+        Fri, 18 Mar 2022 01:16:36 -0700 (PDT)
+Received: by mail-lj1-f176.google.com with SMTP id 25so10325286ljv.10;
+        Fri, 18 Mar 2022 01:16:36 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=gdJy8KDJJqmZ9B5JDH3Ed9jqDYHGnMTV1QhHIxa70VU=;
+        b=GVM42SLm2lGCheCmSygx2ufuVdNvkgpp7NOnZxDwrfAZ0IMawN8wuuTFTeLufayWrt
+         OTG3ri8PSqJqEO59RmC9Rksu4cdinWSPqEovriMnuun9btG+POeEDBUbc+I0gORWPMcw
+         KWbZkfqzTxYK2H4pXJnjpgVarEStfgOHHWIYyqXuGHpEOvXtSqO5ueABE4J7v5A2RqUB
+         2OxD9UBcY3pqyTsI5gX0J74ki8bLm2SIs5GktoR7Pgzb4PcHpM4e04Qoy8MdJq4rST/Y
+         djuHNI+91ZPW19t2kPOXb4/qzMLqcJzswLkZT+tDFVO0mt95hoGn22iTnvpu7fUofAKy
+         tLRw==
+X-Gm-Message-State: AOAM532agG29LLzg6LeP5BTMfoqXFERPRrpWLfjPkx0HOWVqXz/cMmHa
+        vGXo6w/4R0klIoVQr4aftH4=
+X-Google-Smtp-Source: ABdhPJz7A6Ubxp/taJytZpn2KcwTH1dwwAdR5Al82fKyO+424DvYHLnCmfgjQ9zxdQvi7bmGxxt0Qg==
+X-Received: by 2002:a2e:9bd7:0:b0:248:ca3:ecf1 with SMTP id w23-20020a2e9bd7000000b002480ca3ecf1mr5678862ljj.66.1647591394254;
+        Fri, 18 Mar 2022 01:16:34 -0700 (PDT)
+Received: from [192.168.0.17] (78-11-189-27.static.ip.netia.com.pl. [78.11.189.27])
+        by smtp.googlemail.com with ESMTPSA id d12-20020ac241cc000000b004437eab8187sm743539lfi.73.2022.03.18.01.16.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 18 Mar 2022 01:16:33 -0700 (PDT)
+Message-ID: <97d88728-4e73-0820-07e7-199377ebff2a@kernel.org>
+Date:   Fri, 18 Mar 2022 09:16:30 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 1/4] power: supply: max17042_battery: Add unit conversion
+ macros
+Content-Language: en-US
+To:     Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc:     Purism Kernel Team <kernel@puri.sm>, Rob Herring <robh@kernel.org>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+References: <20220318001048.20922-1-sebastian.krzyszkowiak@puri.sm>
+ <20220318001048.20922-2-sebastian.krzyszkowiak@puri.sm>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+In-Reply-To: <20220318001048.20922-2-sebastian.krzyszkowiak@puri.sm>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rajvi,
-
-On Thu, 2022-03-17 at 16:31 -0700, Rajvi Jingar wrote:
-> The state of the device is saved during pci_pm_suspend_noirq(), if it
-> has not already been saved, regardless of the skip_bus_pm flag value. So
-> skip_bus_pm check is removed before saving the device state.
+On 18/03/2022 01:10, Sebastian Krzyszkowiak wrote:
+> Instead of sprinkling the code with magic numbers, put the unit
+> definitions used by the gauge into a set of macros. Macros are
+> used instead of simple defines in order to not require floating
+> point operations for divisions.
 > 
-> v2: add comments to the changes
-
-...
-
-> 
-> Signed-off-by: Rajvi Jingar <rajvi.jingar@intel.com>
-> Suggested-by: David E. Box <david.e.box@linux.intel.com>
+> Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
 > ---
-
-Patch changelogs aren't kept in the commit message. Place them here after the
-"---" line. In this location, it won't affect applying the patch.
-
-David
-
->  drivers/pci/pci-driver.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
+>  drivers/power/supply/max17042_battery.c | 40 +++++++++++++++----------
+>  1 file changed, 24 insertions(+), 16 deletions(-)
 > 
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 588588cfda48..ffe76f238d7e 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -834,20 +834,14 @@ static int pci_pm_suspend_noirq(struct device *dev)
->  		}
->  	}
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+> index ab031bbfbe78..c019d6c52363 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -51,6 +51,15 @@
 >  
-> -	if (pci_dev->skip_bus_pm) {
-> +	if (!pci_dev->state_saved) {
-> +		pci_save_state(pci_dev);
->  		/*
-> -		 * Either the device is a bridge with a child in D0 below it, or
-> -		 * the function is running for the second time in a row without
-> -		 * going through full resume, which is possible only during
-> -		 * suspend-to-idle in a spurious wakeup case.  The device should
-> -		 * be in D0 at this point, but if it is a bridge, it may be
-> -		 * necessary to save its state.
-> +		 * If the device is a bridge with a child in D0 below it, it
-> needs to
-> +		 * stay in D0, so check skip_bus_pm to avoid putting it into a
-> +		 * low-power state in that case.
->  		 */
-> -		if (!pci_dev->state_saved)
-> -			pci_save_state(pci_dev);
-> -	} else if (!pci_dev->state_saved) {
-> -		pci_save_state(pci_dev);
-> -		if (pci_power_manageable(pci_dev))
-> +		if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev))
->  			pci_prepare_to_sleep(pci_dev);
->  	}
+>  #define MAX17042_VMAX_TOLERANCE		50 /* 50 mV */
 >  
+> +#define MAX17042_CURRENT_LSB		1562500ll /* µV */
 
+Is this really long long? The usage in max17042_get_status() is with int
+operand and result.
+
+> +#define MAX17042_CURRENT_RSENSE(x)	(x * MAX17042_CURRENT_LSB) /* µV */
+> +#define MAX17042_CAPACITY_LSB		5000000ll /* µVh */
+> +#define MAX17042_CAPACITY_RSENSE(x)	(x * MAX17042_CAPACITY_LSB) /* µVh */
+> +#define MAX17042_TIME(x)		(x * 5625 / 1000) /* s */
+> +#define MAX17042_VOLTAGE(x)		(x * 625 / 8) /* µV */
+> +#define MAX17042_RESISTANCE(x)		(x / 4096) /* Ω */
+> +#define MAX17042_TEMPERATURE(x)		(x / 256) /* °C */
+
+Please enclose the "x" in (), in each macro
+
+
+Best regards,
+Krzysztof
