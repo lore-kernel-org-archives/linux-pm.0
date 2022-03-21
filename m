@@ -2,237 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC15CC433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 16:39:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9770CC433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 17:09:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350158AbiCUQlV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Mar 2022 12:41:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36960 "EHLO
+        id S1350353AbiCURKv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Mar 2022 13:10:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243578AbiCUQlV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2022 12:41:21 -0400
-Received: from mail-yw1-f180.google.com (mail-yw1-f180.google.com [209.85.128.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BA3D17E18;
-        Mon, 21 Mar 2022 09:39:55 -0700 (PDT)
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-2e5757b57caso162188437b3.4;
-        Mon, 21 Mar 2022 09:39:55 -0700 (PDT)
+        with ESMTP id S1349549AbiCURKu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2022 13:10:50 -0400
+Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F0DD12AA6;
+        Mon, 21 Mar 2022 10:09:24 -0700 (PDT)
+Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-2e5e31c34bfso83921137b3.10;
+        Mon, 21 Mar 2022 10:09:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=q2bbu0FlI0bjoAu2DyU2tLEct1K2WT3Nwkj0AnRIr48=;
-        b=GUhwGqwI7E1/9Coni0FmKD7WWeVcXGHm4+T2KqIv/qs9ODbfHmh7iWTv6pID7znr3e
-         hs7lINy2y5G+78pNeEKmnNbKC2juML9SruScmyqZu90PdLJWF7Bzl3IfoBR4S4a29rha
-         YcLPEMOPQuJ2UU4PkVo1v6SSJNuYPYFxSd+1Xob6rNLpGm5iO1K9pOf/D4z3yL59jbom
-         QsvGTZPI7b2UY1hhM69kofdU9NLv+cuV7FIVi1bjbQIYve7zhgxVVWfaeCdiza6TGf/6
-         CDlGIivgaGQFGxgLoBXs9Va1Z6ojZeml0KyYQqhqPJR/IrqaTtAS/3A8W9awDmgtUGbs
-         X59w==
-X-Gm-Message-State: AOAM5300YjMv85Jsmd8CjRerHEe1JrQB2uIvljAmhTSZTrJdZO5jAlbI
-        fsauNgktTHaLny1ni04GmQQrn1WHDNa2MSZ0V5k=
-X-Google-Smtp-Source: ABdhPJz2BdoNoNPYGxapeQ55Ogncfc3A7a6RAv/xKxM8OfgNimI4flRGmVJ1RWxaw2GT5+2UHqr6A+gf/94/yzomQS0=
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=uBQoTQvqn5xOqDlxxU4vpllFKwBu83a7Z6W8Hi/OBDM=;
+        b=5ouBvyLbCjgkuHPsCCJYf9BXQ4C/rEdVfLBOqReGcF3mJepNBieoxcAQetIGHRS7ev
+         UYLHIe9O2OKd18XHjZ+ogIpvtKrSH3BluXV+mnTff62ypycgkTpseNO7CNSP8Zb0HyhA
+         hxZH95zf/AXZgy3eIMBuEYXj/tjrk5kTcGSXoPj6tHbJWVHqqHrTXLz8tBOEZuedJ1Q8
+         xIW9gv+kqgNj2anGF52rkBBcuVeEaS3P/9paz7ZdnGWPvn1/OyoXoxrDjOHWEUQP+4lj
+         QYmv4dVkypMYteK3PZqtTKxtbRI1HStlpWBiXN66XkiqxiKrCpZAQBTxkHrn3Rdi79Qv
+         Cclw==
+X-Gm-Message-State: AOAM530GTP3ROPV9r0WJyMdjGBoYKKYE6LhDIRk8Gwaz5mmLno6U7FXM
+        ptSqZXMCjewWYXmTpgs678jMtaStb3dgo0lICHE=
+X-Google-Smtp-Source: ABdhPJyZvI4TLJ/e19RIjSlhFtOcd4k382oImd8SwwdZNmJ5dJJd1/jiwYGLcuUqC0HlLUZqdSFUnVMy4Q+TaZ4e2vY=
 X-Received: by 2002:a81:5cf:0:b0:2e5:7477:168e with SMTP id
- 198-20020a8105cf000000b002e57477168emr24630650ywf.149.1647880794783; Mon, 21
- Mar 2022 09:39:54 -0700 (PDT)
+ 198-20020a8105cf000000b002e57477168emr24781963ywf.149.1647882563352; Mon, 21
+ Mar 2022 10:09:23 -0700 (PDT)
 MIME-Version: 1.0
+References: <20220312043624.40732-1-dacohen@pm.me> <CAJZ5v0gqpQTuNN0WpnEd4dAQmnR=BXSoH_w7kkAxOG7xkftW6Q@mail.gmail.com>
+ <YjU3sfYLcEqK1Usd@jiban.lan> <CAJZ5v0j61EMFXpONqPBpQjzm3T3nFeHjfp2YdV3oXW8KnQJ2tw@mail.gmail.com>
+ <YjiQ8EbhBQzDOHjV@jiban> <CAJZ5v0h2ppT4jXpnMWCqhBjwHHmkGQfXZ5BBid3VND+_tGv7wg@mail.gmail.com>
+ <YjigXzUovGDhx06p@jiban>
+In-Reply-To: <YjigXzUovGDhx06p@jiban>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 21 Mar 2022 17:39:44 +0100
-Message-ID: <CAJZ5v0gzkr8k3u6ZdKnsAOgk569Gf-HF5u2AShXdznEE4+UYGw@mail.gmail.com>
-Subject: [GIT PULL] Thermal control updates for v5.18-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "the arch/x86 maintainers" <x86@kernel.org>
+Date:   Mon, 21 Mar 2022 18:09:12 +0100
+Message-ID: <CAJZ5v0j3Yk3mMkyxub7Jm4S4G9cxMej7sMngoLSUM5ZbjAqPTw@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: fix dynamic debug within pm_pr_debug()
+To:     David Cohen <dacohen@pm.me>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Mon, Mar 21, 2022 at 4:57 PM David Cohen <dacohen@pm.me> wrote:
+>
+> On Mon, Mar 21, 2022 at 04:12:24PM +0100, Rafael J. Wysocki wrote:
+> > On Mon, Mar 21, 2022 at 3:51 PM David Cohen <dacohen@pm.me> wrote:
+> > >
+> > > On Mon, Mar 21, 2022 at 03:20:20PM +0100, Rafael J. Wysocki wrote:
+> > > > On Sat, Mar 19, 2022 at 2:54 AM David Cohen <dacohen@pm.me> wrote:
+> > > > >
+> > > > > On Thu, Mar 17, 2022 at 02:45:11PM +0100, Rafael J. Wysocki wrote:
+> > > > > > On Sat, Mar 12, 2022 at 5:37 AM David Cohen <dacohen@pm.me> wrote:
+> > > > > > >
+> > > > > > > Currently, pm_pr_debug() and pm_deferred_pr_debug() use __pm_pr_debug()
+> > > > > > > to filter pm debug messages based on pm_debug_messages_on flag.
+> > > > > > > According to __pm_pr_debug() implementation, pm_deferred_pr_debug()
+> > > > > > > indirectly calls printk_deferred() within __pm_pr_debug() which doesn't
+> > > > > > > support dynamic debug, but pm_pr_debug() indirectly calls pr_debug()
+> > > > > >
+> > > > > > I'm not sure what you mean by pm_pr_debug().  There's no such thing in
+> > > > > > the kernel tree.
+> > > > > >
+> > > > > > Assuming that it means pm_pr_dbg(), it doesn't call pr_debug():
+> > > > >
+> > > > > Yeah, I apologize for the typo. I meant pm_pr_dbg(). I can fix that if
+> > > > > you're ok with the patch as per comments below.
+> > > > >
+> > > > > >
+> > > > > > #define pm_pr_dbg(fmt, ...) __pm_pr_dbg(false, fmt, ##__VA_ARGS__)
+> > > > > >
+> > > > > > and
+> > > > > >
+> > > > > > void __pm_pr_dbg(bool defer, const char *fmt, ...)
+> > > > > > {
+> > > > > > ...
+> > > > > >         if (defer)
+> > > > > >                printk_deferred(KERN_DEBUG "PM: %pV", &vaf);
+> > > > > >         else
+> > > > > >                printk(KERN_DEBUG "PM: %pV", &vaf);
+> > > > > >
+> > > > > > And as I said printk(KERN_DEBUG ...) is not equivalent to
+> > > > > > pr_debug(...), because it is not dynamic printk().
+> > > > >
+> > > > > The problem is not about __pm_pr_dbg() calling printk(). The problem is
+> > > > > the pm files that used to call pr_debug() were modified to call
+> > > > > pm_pr_dbg() in order to be behing the pm_debug_messages_on flag, as per
+> > > > > this commit:
+> > > > > 8d8b2441db96 PM / sleep: Do not print debug messages by default
+> > > >
+> > > > So what's the problem with setting pm_debug_messages_on in addition to
+> > > > enabling dynamic debug for a given file?
+> > >
+> > > Let me be a bit more detailed:
+> > >
+> > > Before "8d8b2441db96 PM / sleep: Do not print debug messages by default":
+> > > - pr_debug() was used
+> > > - The kernel pm files had dynamic debug support
+> > > - All the instances using pr_debug() are visible on
+> > >   /sys/kernel/debug/dynamic_debug/control
+> > > - pm_debug_messages_on flag was not supported
+> > >
+> > > After "8d8b2441db96 PM / sleep: Do not print debug messages by default":
+> > > - pr_debug() was replaced with pm_pr_dbg()
+> >
+> > Just for some PM-related messages, not in general.
+>
+> Yes, I'm only addressing the kernel PM cases.
+>
+> >
+> > > - The kernel pm files where pm_pr_dbg() replaced pr_debug() *lost* dynamic
+> > >   debug support and they are no longer visible on
+> > >   /sys/kernel/debug/dynamic_debug/control
+> >
+> > Again, some of them.
+> >
+> > > - pm_debug_messages_on flag was introduced
+> >
+> > So what exactly is the problem you are trying to address?
+> >
+> > > What my patch is doing:
+> > > - Reintroducing dynamic debug support to the same files who lost it
+> > >   after the patch mentioned above
+> >
+> > Why is this necessary?
+>
+> I'm trying to have more granularity when enabling the debug messages.
+> See below for more context.
+>
+> >
+> > > - The instances using pr_pm_dbg() (which originally came from pr_debug())
+> > >   are reintroduced to /sys/kernel/debug/dynamic_debug/control
+> > > - pm_debug_messages_on flag is unaltered
+> >
+> > I think that you really want to turn off some PM messages by default
+> > when pm_debug_messages_on is set.
+> >
+> > OTOH I want to be able to see pr_pm_dbg() messages in the log when
+> > pm_debug_messages_on is set without having to turn on dynamic debug
+> > for every file in which pr_pm_dbg() is used.  Your patch breaks this.
+>
+> When debugging an issue with s2idle on my laptop where it enters an
+> infinite loop instead of suspending, the excess of PM messages were
+> changing the behavior and making it more a lot difficult to reproduce
+> the issue (and a less severe side effect, printing many debug info I
+> didn't need).
 
-Please pull from the tag
+I see.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- thermal-5.18-rc1
+> But as you pointed out, my patch is indeed changing the behavior for
+> when the pm_debug_messages_on is enabled. Would you be open for this
+> behavior instead:
+>  - If dynamic debug support is disabled, pm_pr_dbg() is printed if
+>    pm_debug_messages_on == 1
+>  - If dynamic debug support is enabled, pm_pr_dbg() is printed if
+>    pm_debug_messages_on == 1 or if pm_pr_dbg() was explicitly enabled on
+>    /sys/kernel/debug/dynamic_debug/control
 
-with top-most commit 31035f3e20af4ede5f1c8162068327ea0b35a96e
-
- Merge branch 'thermal-hfi'
-
-on top of commit 7e57714cd0ad2d5bb90e50b5096a0e671dec1ef3
-
- Linux 5.17-rc6
-
-to receive thermal control updates for 5.18-rc1.
-
-As far as new functionality is concerned, there is a new thermal
-driver for the Intel Hardware Feedback Interface (HFI) along with
-some intel-speed-select utility changes to support it.  There are
-also new DT compatible strings for a couple of platforms and
-thermal zones on some platforms will be registered as HWmon
-sensors now.
-
-Apart from the above, some drivers are updated (fixes mostly) and
-there is a new piece of documentation for the Intel DPTF (Dynamic
-Power and Thermal Framework) sysfs interface.
-
-Specifics:
-
- - Add a new thermal driver for the Intel Hardware Feedback Interface
-   (HFI) including the HFI initialization, HFI notification interrupt
-   handling and sending CPU capabilities change messages to user
-   space via the thermal netlink interface (Ricardo Neri, Srinivas
-   Pandruvada, Nathan Chancellor, Randy Dunlap).
-
- - Extend the intel-speed-select utility to handle out-of-band CPU
-   configuration changes and add support for the CPU capabilities
-   change messages sent over the thermal netlink interface by the new
-   HFI thermal driver to it (Srinivas Pandruvada).
-
- - Convert the DT bindings to yaml format for the Exynos platform
-   and fix and update the MAINTAINERS file for this driver (Krzysztof
-   Kozlowski).
-
- - Register the thermal zones as HWmon sensors for the QCom's
-   Tsens driver and TI thermal platforms (Dmitry Baryshkov, Romain
-   Naour).
-
- - Add the msm8953 compatible documentation in the bindings (Luca
-   Weiss).
-
- - Add the sm8150 platform support to the QCom LMh driver's DT
-   binding (Thara Gopinath).
-
- - Check the command result from the IPC command to the BPMP in the
-   Tegra driver (Mikko Perttunen).
-
- - Silence the error for normal configuration where the interrupt
-   is optional in the Broadcom thermal driver (Florian Fainelli).
-
- - Remove remaining dead code from the TI thermal driver (Yue
-   Haibing).
-
- - Don't use bitmap_weight() in end_power_clamp() in the powerclamp
-   driver (Yury Norov).
-
- - Update the OS policy capabilities handshake in the int340x thermal
-   driver (Srinivas Pandruvada).
-
- - Increase the policies bitmap size in int340x (Srinivas Pandruvada).
-
- - Replace acpi_bus_get_device() with acpi_fetch_acpi_dev() in the
-   int340x thermal driver (Rafael Wysocki).
-
- - Check for NULL after calling kmemdup() in int340x (Jiasheng Jiang).
-
- - Add Intel Dynamic Power and Thermal Framework (DPTF) kernel interface
-   documentation (Srinivas Pandruvada).
-
- - Fix bullet list warning in the thermal documentation (Randy Dunlap).
-
-Thanks!
-
-
----------------
-
-Dmitry Baryshkov (1):
-      thermal/drivers/tsens: register thermal zones as hwmon sensors
-
-Florian Fainelli (1):
-      thermal/drivers/brcmstb_thermal: Interrupt is optional
-
-Jiasheng Jiang (1):
-      thermal: int340x: Check for NULL after calling kmemdup()
-
-Krzysztof Kozlowski (3):
-      dt-bindings: thermal: samsung: Convert to dtschema
-      MAINTAINERS: thermal: samsung: Drop obsolete properties
-      MAINTAINERS: thermal: samsung: update Krzysztof Kozlowski's email
-
-Luca Weiss (1):
-      dt-bindings: thermal: tsens: Add msm8953 compatible
-
-Mikko Perttunen (1):
-      thermal: tegra-bpmp: Handle errors in BPMP response
-
-Nathan Chancellor (1):
-      thermal: netlink: Fix parameter type of
-thermal_genl_cpu_capability_event() stub
-
-Nicolas Cavallari (1):
-      thermal: core: Fix TZ_GET_TRIP NULL pointer dereference
-
-Rafael J. Wysocki (1):
-      thermal: Replace acpi_bus_get_device()
-
-Randy Dunlap (2):
-      thermal: fix Documentation bullet list warning
-      thermal: intel: hfi: INTEL_HFI_THERMAL depends on NET
-
-Ricardo Neri (5):
-      x86/Documentation: Describe the Intel Hardware Feedback Interface
-      x86/cpu: Add definitions for the Intel Hardware Feedback Interface
-      thermal: intel: hfi: Minimally initialize the Hardware Feedback Interface
-      thermal: intel: hfi: Handle CPU hotplug events
-      thermal: intel: hfi: Enable notification interrupt
-
-Romain Naour (1):
-      drivers/thermal/ti-soc-thermal: Add hwmon support
-
-Srinivas Pandruvada (8):
-      thermal: netlink: Add a new event to notify CPU capabilities change
-      thermal: intel: hfi: Notify user space for HFI events
-      tools/power/x86/intel-speed-select: OOB daemon mode
-      tools/power/x86/intel-speed-select: HFI support
-      tools/power/x86/intel-speed-select: v1.12 release
-      Documentation: thermal: DPTF Documentation
-      thermal: int340x: Increase bitmap size
-      thermal: int340x: Update OS policy capability handshake
-
-Thara Gopinath (2):
-      thermal/drivers/qcom/lmh: Add support for sm8150
-      dt-bindings: thermal: Add sm8150 compatible string for LMh
-
-YueHaibing (1):
-      thermal/drivers/ti-soc-thermal: Remove unused function
-ti_thermal_get_temp()
-
-Yury Norov (1):
-      thermal: intel_powerclamp: don't use bitmap_weight() in end_power_clamp()
-
----------------
-
- Documentation/ABI/testing/sysfs-class-thermal      |   2 +-
- .../devicetree/bindings/thermal/exynos-thermal.txt | 106 ----
- .../devicetree/bindings/thermal/qcom-lmh.yaml      |   1 +
- .../devicetree/bindings/thermal/qcom-tsens.yaml    |   1 +
- .../bindings/thermal/samsung,exynos-thermal.yaml   | 184 +++++++
- Documentation/driver-api/thermal/index.rst         |   1 +
- Documentation/driver-api/thermal/intel_dptf.rst    | 272 ++++++++++
- Documentation/x86/index.rst                        |   1 +
- Documentation/x86/intel-hfi.rst                    |  72 +++
- MAINTAINERS                                        |   7 +-
- arch/x86/include/asm/cpufeatures.h                 |   1 +
- arch/x86/include/asm/msr-index.h                   |   6 +
- drivers/thermal/broadcom/brcmstb_thermal.c         |   2 +-
- drivers/thermal/intel/Kconfig                      |  14 +
- drivers/thermal/intel/Makefile                     |   1 +
- .../intel/int340x_thermal/acpi_thermal_rel.c       |  23 +-
- .../intel/int340x_thermal/int3400_thermal.c        | 153 ++++--
- drivers/thermal/intel/intel_hfi.c                  | 569 +++++++++++++++++++++
- drivers/thermal/intel/intel_hfi.h                  |  17 +
- drivers/thermal/intel/intel_powerclamp.c           |   9 +-
- drivers/thermal/intel/therm_throt.c                |  22 +
- drivers/thermal/qcom/lmh.c                         |  62 ++-
- drivers/thermal/qcom/tsens.c                       |   5 +
- drivers/thermal/tegra/tegra-bpmp-thermal.c         |  13 +-
- drivers/thermal/thermal_netlink.c                  |  58 ++-
- drivers/thermal/thermal_netlink.h                  |  14 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  12 +-
- include/uapi/linux/thermal.h                       |   6 +-
- tools/power/x86/intel-speed-select/Build           |   2 +-
- tools/power/x86/intel-speed-select/Makefile        |  10 +-
- tools/power/x86/intel-speed-select/hfi-events.c    | 309 +++++++++++
- tools/power/x86/intel-speed-select/isst-config.c   |  54 +-
- tools/power/x86/intel-speed-select/isst-daemon.c   | 244 +++++++++
- tools/power/x86/intel-speed-select/isst.h          |  13 +
- 34 files changed, 2029 insertions(+), 237 deletions(-)
+Yes, that would work.
