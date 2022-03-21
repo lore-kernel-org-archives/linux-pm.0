@@ -2,215 +2,205 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43ABFC43217
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 01:22:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93D90C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 03:14:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238214AbiCUBXx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 20 Mar 2022 21:23:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36034 "EHLO
+        id S243731AbiCUDQE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 20 Mar 2022 23:16:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232714AbiCUBXw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2022 21:23:52 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 395F270928;
-        Sun, 20 Mar 2022 18:22:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=7sdUiS9GK2a9IHOMaMalD7HEg3D293dhjq705r7V1jI=; b=Teh+nVdS5SpmsugSPBqwZ2vtd0
-        +SGAN9nxcaeCe3VA5LVBeMAqUMzhmVKv18sUTKrjFyfop5ThCr3djxe15ixxXfRpem7/MuQEdzgWz
-        CVVcIg/Dch7Ogyg+3sapjfNxUUDzrh6kqHpmGT/15Av4lUe5Po/R4ahBZ/grelV6Q9zF++WT96mDL
-        qDvwtntshBNv3Lov8iKnswDa+tIeVHsiF49D5oIp90upBOF+zD3Hv6fsXXgxliPO9mluIobGUwGk8
-        3w5ldhwx4uHqWlFkNFKTwU9EfAI9a78p51Qfnkle88ey82rLKhI4AvArMYd3vzuZBsHFh1y7detFW
-        24gPw2vA==;
-Received: from [2601:1c0:6280:3f0::aa0b] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nW6kU-006Dnt-Sg; Mon, 21 Mar 2022 01:22:19 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        linux-s390@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        sparclinux@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        Johannes Weiner <hannes@cmpxchg.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
-Subject: [PATCH] Docs: admin/kernel-parameters: edit a few boot options
-Date:   Sun, 20 Mar 2022 18:22:16 -0700
-Message-Id: <20220321012216.23724-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.34.1
+        with ESMTP id S243478AbiCUDQD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2022 23:16:03 -0400
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 568CB2315F
+        for <linux-pm@vger.kernel.org>; Sun, 20 Mar 2022 20:14:37 -0700 (PDT)
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20220321031432epoutp016a43db86373223ab10dbfaca46744822~eRucZjZhc1205112051epoutp015
+        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2022 03:14:32 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20220321031432epoutp016a43db86373223ab10dbfaca46744822~eRucZjZhc1205112051epoutp015
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1647832472;
+        bh=+sXwCEW3mW2sBV52D5/Cek7rU4aPA8/VK9Jgbz0yWmE=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=n1cS5VMMlHXdNMkagq5PD5WkZXz66jJr7NLOV6Tq5Tmn93Ka1zbuT03WcO1wx35K6
+         7DhP8p6BXjHLzqkHF7e86FVFi1qb0xks/mC6esfyxeP1mzVhmmofcctKNibGXz4PAe
+         QVHbcTGLfeLY4zNIEivoYxx1RyM6u1psq8S8w/Cc=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
+        20220321031431epcas1p32f0935dc303f7369ceae86585dd9eed3~eRub3yE4x0183401834epcas1p3U;
+        Mon, 21 Mar 2022 03:14:31 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.36.135]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4KMKTt1Dzpz4x9QB; Mon, 21 Mar
+        2022 03:14:26 +0000 (GMT)
+Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        3D.C5.21932.29DE7326; Mon, 21 Mar 2022 12:14:26 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20220321031425epcas1p21cc0552e9712818d95b39747cfc3166a~eRuV55cd11508815088epcas1p20;
+        Mon, 21 Mar 2022 03:14:25 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20220321031425epsmtrp2bc3634279bd20ef71f9c17652dd7160d~eRuV5EIzW1070910709epsmtrp2-;
+        Mon, 21 Mar 2022 03:14:25 +0000 (GMT)
+X-AuditID: b6c32a38-929ff700000255ac-d3-6237ed92eba0
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        D4.17.29871.09DE7326; Mon, 21 Mar 2022 12:14:24 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20220321031424epsmtip26ce8e671a406bff7abd96a260df92c06~eRuVsX4lV1929219292epsmtip2K;
+        Mon, 21 Mar 2022 03:14:24 +0000 (GMT)
+Subject: Re: [PATCH v4 00/15] rk3399: Clean up and enable DDR DVFS
+To:     Brian Norris <briannorris@chromium.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Heiko Stuebner <heiko@sntech.de>
+Cc:     Derek Basehore <dbasehore@chromium.org>,
+        devicetree@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <c909b9ce-d787-e5fe-6a92-473cd24d0858@samsung.com>
+Date:   Mon, 21 Mar 2022 12:39:38 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220308190901.3144566-1-briannorris@chromium.org>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrNJsWRmVeSWpSXmKPExsWy7bCmru6kt+ZJBjMWcFhs+vie1eLV5j1s
+        FvOPnGO1+P/oNavFjw2nmC3ONr1ht9j0+BqrxeVdc9gsPvceYbT49OA/s8XtxhVsFq17j7A7
+        8HjMbrjI4rFpVSebx+Yl9R5/Z+1n8ejbsorRY/u1ecwenzfJBbBHZdtkpCampBYppOYl56dk
+        5qXbKnkHxzvHm5oZGOoaWlqYKynkJeam2iq5+AToumXmAB2qpFCWmFMKFApILC5W0rezKcov
+        LUlVyMgvLrFVSi1IySkwLdArTswtLs1L18tLLbEyNDAwMgUqTMjOWP//N3PBM/GK5ktXmBsY
+        W4S7GDk5JARMJN7fvs8CYgsJ7GCUONPi0MXIBWR/YpRof9vEAuF8Y5Q42XmDHabj+aYXrBCJ
+        vYwSOxoamSCc94wSn87uYwOpEhZwkpj0diMziC0icJxR4vjvPJAiZoF3jBKrm76DFbEJaEns
+        f3EDzOYXUJS4+uMxI4jNK2AnMWPaHiCbg4NFQFXi2rFCkLCoQJjEyW0tUCWCEidnPgG7m1PA
+        QeLEt0tg1zELiEvcejKfCcKWl9j+dg4zyF4JgQscEsv2dTFBvOAicfjYdihbWOLV8S1Qr0lJ
+        fH63lw2ioZlRouHFbUYIp4dR4uizPhaIKmOJ/UsnM4FcxyygKbF+lz5EWFFi5++5jBCb+STe
+        fe1hBSmREOCV6GgTgihRlrj84C7UXkmJxe2dbBMYlWYh+WcWkh9mIflhFsKyBYwsqxjFUguK
+        c9NTiw0LTODRnZyfu4kRnIq1LHYwzn37Qe8QIxMH4yFGCQ5mJRHef7+Nk4R4UxIrq1KL8uOL
+        SnNSiw8xmgIDeCKzlGhyPjAb5JXEG5pYGpiYGRmbWBiaGSqJ8/ZOPZ0oJJCeWJKanZpakFoE
+        08fEwSnVwFRwf8G3MPnlAhoqP/a3JcR7TJzK9Y/z3NeYmmYOU7UZJ6s//CjLLF71d1PfySym
+        vbFJ8pKy4Qu8omWnaJ1fdcCzdUmCk6SJo3J008MqxsIJjxcvm2u1Y1W1lv6r6c/vVv8+s+K1
+        8Jyj8UqTr2xdzlTv36p05dGNIHMXqedHarvjrnbM2Ncn+FNPJlW55qLO6+vrn3J9fb/2s1HU
+        Bc2SYttVpemnK92Sq+eY/5u6l9N0tYx3Rf6FtPYsK1c9zwepIuVvzcSjHmi2eeW/6tk9uTfh
+        aceeAC3P2slxV/QONXy9JfBsU9HUg/mKFUlzu2ynP2R5tvSzUszEfeLyG38tbXHVviRVlXXQ
+        V3meOkv6QSWW4oxEQy3mouJEABK45UlOBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMIsWRmVeSWpSXmKPExsWy7bCSvO6Et+ZJBvcO2Fhs+vie1eLV5j1s
+        FvOPnGO1+P/oNavFjw2nmC3ONr1ht9j0+BqrxeVdc9gsPvceYbT49OA/s8XtxhVsFq17j7A7
+        8HjMbrjI4rFpVSebx+Yl9R5/Z+1n8ejbsorRY/u1ecwenzfJBbBHcdmkpOZklqUW6dslcGWs
+        //+bueCZeEXzpSvMDYwtwl2MnBwSAiYSzze9YAWxhQR2M0qsPOoHEZeUmHbxKHMXIweQLSxx
+        +HBxFyMXUMlbRonlfxYwgdQICzhJTHq7kRnEFhE4ySix4pUQiM0s8I5RYuH3LIiGyYwSbw6f
+        AGtgE9CS2P/iBhuIzS+gKHH1x2NGEJtXwE5ixrQ9jCDLWARUJa4dKwQJiwqESexc8pgJokRQ
+        4uTMJywgNqeAg8SJb5fYIXapS/yZd4kZwhaXuPVkPhOELS+x/e0c5gmMwrOQtM9C0jILScss
+        JC0LGFlWMUqmFhTnpucWGxYY5qWW6xUn5haX5qXrJefnbmIEx6OW5g7G7as+6B1iZOJgPMQo
+        wcGsJML777dxkhBvSmJlVWpRfnxRaU5q8SFGaQ4WJXHeC10n44UE0hNLUrNTUwtSi2CyTByc
+        Ug1Mez4HP5mq+bIrXNRWLkj5trvPKsNFZ2UDu3mzJT77V/yrr5N5nekkJPo2pa3uxoVbAT/m
+        3ll1Rkwpwln98+TGOydZxeTbNEuzDx0XfWT68YH13puBNelNC4Tj6x3u763LWBN37/JE6Z/v
+        GB7civp6+/vM/QJLxIolH5m6zQjkuXSqvt1uxYRtkU61p8zM//1Y5mSZvE/eXH/TiUtJWeUq
+        CQoF4ssrI37Uv8jOKe0QnNrxgtGvtCFkzmuZAIZzvx9+36d0oe6ttPmk5btlLxUJ7ImZZ3el
+        LeY0N2tCvEOh3eFj2i8uez0WU//91dRox//+Hw8lflV+XHbnXGvelGUN23LuRE6KX/Y+btqc
+        PF03JZbijERDLeai4kQAdAGeuTYDAAA=
+X-CMS-MailID: 20220321031425epcas1p21cc0552e9712818d95b39747cfc3166a
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20220308190916epcas1p1baf4361cc5f33a90b38b01be7ffa748d
+References: <CGME20220308190916epcas1p1baf4361cc5f33a90b38b01be7ffa748d@epcas1p1.samsung.com>
+        <20220308190901.3144566-1-briannorris@chromium.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Clean up some of admin-guide/kernel-parameters.txt:
+Hi Brian,
 
-a. "smt" should be "smt=" (S390)
-b. add "smt-enabled" for POWERPC
-c. Sparc supports the vdso= boot option
-d. make the tp_printk options (2) formatting similar to other options
-   by adding spacing
-e. add "trace_clock=" with a reference to Documentation/trace/ftrace.rst
-f. use [IA-64] as documented instead of [ia64]
-g. fix formatting and text for test_suspend=
-h. fix formatting for swapaccount=
-i. fix formatting and grammar for video.brightness_switch_enabled=
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: linux-s390@vger.kernel.org
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-ia64@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org
----
- Documentation/admin-guide/kernel-parameters.txt |   33 +++++++++-----
- 1 file changed, 22 insertions(+), 11 deletions(-)
+On 3/9/22 4:08 AM, Brian Norris wrote:
+> This series covers 2 primary tasks:
+> 
+> 1) Resubmit prior work:
+> 
+> [RESEND PATCH v5 3/4] arm64: dts: rockchip: Enable dmc and dfi nodes on gru.
+> https://lore.kernel.org/lkml/20210308233858.24741-2-daniel.lezcano@linaro.org/
+> [RESEND PATCH v5 2/4] arm64: dts: rk3399: Add dfi and dmc nodes.
+> https://lore.kernel.org/lkml/20210308233858.24741-3-daniel.lezcano@linaro.org/
+> 
+> This series was partially merged a while back, but the remaining 2
+> patches were blocked mostly on stylistic grounds (alpha/numerical
+> ordering).
+> 
+> 2) Integrate many updates, bugfixes, and clarifications that were done
+> by Rockchip and Google engineers when first launching this platform.
+> Many of these were not integrated in the earlier series (e.g., the OPPs
+> changed before production; earlier patchsets used pre-production
+> numbers).
+> 
+> Along the way, it seemed worthwhile to convert the binding docs to a
+> schema. Among other reasons, it actually helped catch several errors and
+> omissions in translation between downstream device trees and the version
+> that actually landed upstream.
+> 
+> See the patches for further details.
+> 
+> Regards,
+> Brian
+> 
+> Changes in v4:
+>  * Update .yaml to use more "default" entries, instead of free-form text
+>  * s/phandle-array/phandle/
+>  * Move to .../memory-controllers, update filename
+> 
+> Changes in v3:
+>  * Add |maxItems| for devfreq-events
+>  * Improve deprecation notes
+>  * Add Reviewed-by tags
+>  * Collect some Acked/Reviewed tags
+> 
+> Changes in v2:
+>  * Fix yamllint issues
+>  * Adapt to various review comments (use of *-hz, hyphens, node naming)
+>  * Add a few new bugfixes
+>  * Add some new properties (ported from downstream kernels) required for
+>    stability
+>  * Convert more properties from "cycles" to "nanoseconds"
+> 
+> Brian Norris (13):
+>   dt-bindings: devfreq: rk3399_dmc: Convert to YAML
+>   dt-bindings: devfreq: rk3399_dmc: Deprecate unused/redundant
+>     properties
+>   dt-bindings: devfreq: rk3399_dmc: Fix Hz units
+>   dt-bindings: devfreq: rk3399_dmc: Specify idle params in nanoseconds
+>   dt-bindings: devfreq: rk3399_dmc: Add more disable-freq properties
+>   PM / devfreq: rk3399_dmc: Drop undocumented ondemand DT props
+>   PM / devfreq: rk3399_dmc: Drop excess timing properties
+>   PM / devfreq: rk3399_dmc: Use bitfield macro definitions for ODT_PD
+>   PM / devfreq: rk3399_dmc: Support new disable-freq properties
+>   PM / devfreq: rk3399_dmc: Support new *-ns properties
+>   PM / devfreq: rk3399_dmc: Disable edev on remove()
+>   PM / devfreq: rk3399_dmc: Use devm_pm_opp_of_add_table()
+>   PM / devfreq: rk3399_dmc: Avoid static (reused) profile
+> 
+> Lin Huang (2):
+>   arm64: dts: rk3399: Add dfi and dmc nodes
+>   arm64: dts: rockchip: Enable dmc and dfi nodes on gru
 
---- linux-next-20220318.orig/Documentation/admin-guide/kernel-parameters.txt
-+++ linux-next-20220318/Documentation/admin-guide/kernel-parameters.txt
-@@ -2814,7 +2814,7 @@
- 			different yeeloong laptops.
- 			Example: machtype=lemote-yeeloong-2f-7inch
- 
--	max_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory greater
-+	max_addr=nn[KMG]	[KNL,BOOT,IA-64] All physical memory greater
- 			than or equal to this physical address is ignored.
- 
- 	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
-@@ -3057,7 +3057,7 @@
- 
- 	mga=		[HW,DRM]
- 
--	min_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory below this
-+	min_addr=nn[KMG]	[KNL,BOOT,IA-64] All physical memory below this
- 			physical address is ignored.
- 
- 	mini2440=	[ARM,HW,KNL]
-@@ -5382,13 +5382,19 @@
- 				1: Fast pin select (default)
- 				2: ATC IRMode
- 
--	smt		[KNL,S390] Set the maximum number of threads (logical
-+	smt=		[KNL,S390] Set the maximum number of threads (logical
- 			CPUs) to use per physical CPU on systems capable of
- 			symmetric multithreading (SMT). Will be capped to the
- 			actual hardware limit.
- 			Format: <integer>
- 			Default: -1 (no limit)
- 
-+	smt-enabled=	[PPC 64-bit] Enable SMT, disable SMT, or set the
-+			maximum number of threads. This can be used to override
-+			the Open Firmware (OF) option.
-+			Format: on | off | <integer>
-+			Default: all threads enabled
-+
- 	softlockup_panic=
- 			[KNL] Should the soft-lockup detector generate panics.
- 			Format: 0 | 1
-@@ -5768,8 +5774,9 @@
- 			This parameter controls use of the Protected
- 			Execution Facility on pSeries.
- 
--	swapaccount=[0|1]
--			[KNL] Enable accounting of swap in memory resource
-+	swapaccount=	[KNL]
-+			Format: [0|1]
-+			Enable accounting of swap in memory resource
- 			controller if no parameter or 1 is given or disable
- 			it if 0 is given (See Documentation/admin-guide/cgroup-v1/memory.rst)
- 
-@@ -5815,7 +5822,8 @@
- 
- 	tdfx=		[HW,DRM]
- 
--	test_suspend=	[SUSPEND][,N]
-+	test_suspend=	[SUSPEND]
-+			Format: { "mem" | "standby" | "freeze" }[,N]
- 			Specify "mem" (for Suspend-to-RAM) or "standby" (for
- 			standby suspend) or "freeze" (for suspend type freeze)
- 			as the system sleep state during system startup with
-@@ -5902,6 +5910,8 @@
- 	trace_buf_size=nn[KMG]
- 			[FTRACE] will set tracing buffer size on each cpu.
- 
-+	trace_clock=	[FTRACE] See Documentation/trace/ftrace.rst
-+
- 	trace_event=[event-list]
- 			[FTRACE] Set and start specified trace events in order
- 			to facilitate early boot debugging. The event-list is a
-@@ -5924,7 +5934,7 @@
- 			See also Documentation/trace/ftrace.rst "trace options"
- 			section.
- 
--	tp_printk[FTRACE]
-+	tp_printk	[FTRACE]
- 			Have the tracepoints sent to printk as well as the
- 			tracing ring buffer. This is useful for early boot up
- 			where the system hangs or reboots and does not give the
-@@ -5946,7 +5956,7 @@
- 			frequency tracepoints such as irq or sched, can cause
- 			the system to live lock.
- 
--	tp_printk_stop_on_boot[FTRACE]
-+	tp_printk_stop_on_boot [FTRACE]
- 			When tp_printk (above) is set, it can cause a lot of noise
- 			on the console. It may be useful to only include the
- 			printing of events during boot up, as user space may
-@@ -6295,7 +6305,7 @@
- 					HIGHMEM regardless of setting
- 					of CONFIG_HIGHPTE.
- 
--	vdso=		[X86,SH]
-+	vdso=		[X86,SH,SPARC]
- 			On X86_32, this is an alias for vdso32=.  Otherwise:
- 
- 			vdso=1: enable VDSO (the default)
-@@ -6321,11 +6331,12 @@
- 	video=		[FB] Frame buffer configuration
- 			See Documentation/fb/modedb.rst.
- 
--	video.brightness_switch_enabled= [0,1]
-+	video.brightness_switch_enabled= [ACPI]
-+			Format: [0|1]
- 			If set to 1, on receiving an ACPI notify event
- 			generated by hotkey, video driver will adjust brightness
- 			level and then send out the event to user space through
--			the allocated input device; If set to 0, video driver
-+			the allocated input device. If set to 0, video driver
- 			will only send out the event without touching backlight
- 			brightness level.
- 			default: 1
+
+Applied them except for patch11/patch12 about dts patches.
+
+Thanks for your work.
+Chanwoo Choi
+
+
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
