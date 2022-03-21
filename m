@@ -2,165 +2,70 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC7C0C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 17:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8893DC433FE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Mar 2022 22:52:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351701AbiCURL2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Mar 2022 13:11:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59396 "EHLO
+        id S230414AbiCUWx1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Mar 2022 18:53:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38512 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235913AbiCURL1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2022 13:11:27 -0400
-Received: from comms.puri.sm (comms.puri.sm [159.203.221.185])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA463427E1;
-        Mon, 21 Mar 2022 10:10:00 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 71BB1E013D;
-        Mon, 21 Mar 2022 10:09:30 -0700 (PDT)
-Received: from comms.puri.sm ([127.0.0.1])
-        by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id V6GEmpCEbAdy; Mon, 21 Mar 2022 10:09:29 -0700 (PDT)
-From:   Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Cc:     Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Andrey Smirnov <andrew.smirnov@gmail.com>,
-        linux-kernel@vger.kernel.org, kernel@puri.sm,
-        stable@vger.kernel.org
-Subject: [PATCH v3] thermal: qoriq: Only enable sites that actually exist
-Date:   Mon, 21 Mar 2022 18:08:52 +0100
-Message-Id: <20220321170852.654094-1-sebastian.krzyszkowiak@puri.sm>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S230358AbiCUWxR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2022 18:53:17 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B5683CCCD0;
+        Mon, 21 Mar 2022 15:32:33 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id A9C97B81A7A;
+        Mon, 21 Mar 2022 21:53:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 795CAC36AE3;
+        Mon, 21 Mar 2022 21:53:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1647899628;
+        bh=5+wBPsZpbBVwNV0lj418mnZUaeWICQcbnDvLB3PAOI8=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=RSdNDYUUqOFu4akpIfAMqOvcHNcRBROPzm4OIG0JKQohSpid7V65U9q4jlTNPWyGR
+         9zDsgtX0cFd0ObpiBMNPn0PJDmhS+q2jXKRocCdh/g5Zq/vEs6Bdy84tWdHhryD/GD
+         tJMwKj0i3ovNToP7X+daEUtBCW0mEfXIoJIqtB5nD/P43qvUk2USp0LV87N4sSNopl
+         R8jtRJgfxEEfs2D6j8fUKgCtBYpaugLmkloRPlYFdbPA+SGk8dwdjilvu4T35uiInv
+         VrzXGoie5o7VfnfW4kn7igFhLGQnKelkWiz2pryjiUehONxosex8TDygtD2N2H9otR
+         9j4P3+7AVTvyw==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 62B90E6D44B;
+        Mon, 21 Mar 2022 21:53:48 +0000 (UTC)
+Subject: Re: [GIT PULL] ACPI updates for v5.18-rc1
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jzzwLCo5=TAntL7_GW_VO=rWJ8Hnbne=n19UNNJzdR2A@mail.gmail.com>
+References: <CAJZ5v0jzzwLCo5=TAntL7_GW_VO=rWJ8Hnbne=n19UNNJzdR2A@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-acpi.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jzzwLCo5=TAntL7_GW_VO=rWJ8Hnbne=n19UNNJzdR2A@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.18-rc1
+X-PR-Tracked-Commit-Id: 1bde8bddb5db59e5bcd090b227c74d48965cedef
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 242ba6656d604aa8dc87451fc08143cb28d5a587
+Message-Id: <164789962839.9856.12794973265477392892.pr-tracker-bot@kernel.org>
+Date:   Mon, 21 Mar 2022 21:53:48 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        the arch/x86 maintainers <x86@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On i.MX8MQ, enabling monitoring sites that aren't connected to anything
-can cause unwanted side effects on some units. This seems to happen
-once some of these sites report out-of-range readings and results in
-sensor misbehavior, such as thermal zone readings getting stuck or even
-suddenly reporting an impossibly high value, triggering emergency
-shutdowns.
+The pull request you sent on Mon, 21 Mar 2022 17:31:39 +0100:
 
-The datasheet lists all non-existent sites as "reserved" and doesn't
-make any guarantees about being able to enable them at all, so let's
-not do that. Instead, iterate over sensor DT nodes and only enable
-monitoring sites that are specified there prior to registering their
-thermal zones. This still fixes the issue with bogus data being
-reported on the first reading, but doesn't introduce problems that
-come with reading from non-existent sites.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.18-rc1
 
-Fixes: 45038e03d633 ("thermal: qoriq: Enable all sensors before registering them")
-Cc: stable@vger.kernel.org
-Signed-off-by: Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>
----
-v3: add cc: stable
-v2: augment the commit message with details on what the patch is doing
----
- drivers/thermal/qoriq_thermal.c | 63 ++++++++++++++++++++++-----------
- 1 file changed, 43 insertions(+), 20 deletions(-)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/242ba6656d604aa8dc87451fc08143cb28d5a587
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 73049f9bea25..ef0848849ee2 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -32,7 +32,6 @@
- #define TMR_DISABLE	0x0
- #define TMR_ME		0x80000000
- #define TMR_ALPF	0x0c000000
--#define TMR_MSITE_ALL	GENMASK(15, 0)
- 
- #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
- #define TMTMIR_DEFAULT	0x0000000f
-@@ -129,33 +128,51 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
- static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 				       struct qoriq_tmu_data *qdata)
- {
--	int id;
-+	int ret = 0;
-+	struct device_node *np, *child, *sensor_np;
- 
--	if (qdata->ver == TMU_VER1) {
--		regmap_write(qdata->regmap, REGS_TMR,
--			     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
--	} else {
--		regmap_write(qdata->regmap, REGS_V2_TMSR, TMR_MSITE_ALL);
--		regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
--	}
-+	np = of_find_node_by_name(NULL, "thermal-zones");
-+	if (!np)
-+		return -ENODEV;
-+
-+	sensor_np = of_node_get(dev->of_node);
- 
--	for (id = 0; id < SITES_MAX; id++) {
-+	for_each_available_child_of_node(np, child) {
- 		struct thermal_zone_device *tzd;
--		struct qoriq_sensor *sensor = &qdata->sensor[id];
--		int ret;
-+		struct qoriq_sensor *sensor;
-+		int id, site;
-+
-+		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
-+
-+		if (ret < 0) {
-+			dev_err(dev, "failed to get valid sensor id: %d\n", ret);
-+			of_node_put(child);
-+			break;
-+		}
- 
-+		sensor = &qdata->sensor[id];
- 		sensor->id = id;
- 
-+		/* Enable monitoring */
-+		if (qdata->ver == TMU_VER1) {
-+			site = 0x1 << (15 - id);
-+			regmap_update_bits(qdata->regmap, REGS_TMR,
-+					   site | TMR_ME | TMR_ALPF,
-+					   site | TMR_ME | TMR_ALPF);
-+		} else {
-+			site = 0x1 << id;
-+			regmap_update_bits(qdata->regmap, REGS_V2_TMSR, site, site);
-+			regmap_write(qdata->regmap, REGS_TMR, TMR_ME | TMR_ALPF_V2);
-+		}
-+
- 		tzd = devm_thermal_zone_of_sensor_register(dev, id,
- 							   sensor,
- 							   &tmu_tz_ops);
--		ret = PTR_ERR_OR_ZERO(tzd);
--		if (ret) {
--			if (ret == -ENODEV)
--				continue;
--
--			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
--			return ret;
-+		if (IS_ERR(tzd)) {
-+			ret = PTR_ERR(tzd);
-+			dev_err(dev, "failed to register thermal zone: %d\n", ret);
-+			of_node_put(child);
-+			break;
- 		}
- 
- 		if (devm_thermal_add_hwmon_sysfs(tzd))
-@@ -164,7 +181,13 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 
- 	}
- 
--	return 0;
-+	of_node_put(sensor_np);
-+	of_node_put(np);
-+
-+	if (ret)
-+		regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-+
-+	return ret;
- }
- 
- static int qoriq_tmu_calibration(struct device *dev,
+Thank you!
+
 -- 
-2.35.1
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
