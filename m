@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E267AC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Mar 2022 23:59:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2608C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Mar 2022 00:01:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240803AbiCWAAm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Mar 2022 20:00:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35430 "EHLO
+        id S240823AbiCWACs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Mar 2022 20:02:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229470AbiCWAAl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2022 20:00:41 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECB581FA65
-        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2022 16:59:13 -0700 (PDT)
+        with ESMTP id S229470AbiCWACr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2022 20:02:47 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECC471FA65
+        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2022 17:01:19 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A3601B81DAB
-        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2022 23:59:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 56D26C340F3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2022 23:59:11 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 87F49612F5
+        for <linux-pm@vger.kernel.org>; Wed, 23 Mar 2022 00:01:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id ED241C340F4
+        for <linux-pm@vger.kernel.org>; Wed, 23 Mar 2022 00:01:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1647993551;
-        bh=AK57SBTwC7FJH0qaUmhd20bVaqki16Zowf2h2T7SnKY=;
+        s=k20201202; t=1647993679;
+        bh=vA8RtMbB/K0G/UxG/g/XnDpbzWc3apsFLXvDaflUo8c=;
         h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=JFA8hz/WBrdln/Mpi8jSsWQzhsPflrVZK2biMaVOvVMV0uniDqIVsFv2ndFiScvkK
-         QPh3mvK/cEjDQSid5utJkZh/xPLi+/xP4V6rrnJE8ybEpUWvsG8GoB459ngo0X63L1
-         rqfGbYwq8qaCg8TZaBWBiR9Z02Bf5+/stHSi+ec8dxWSnBbR5CQuDMBUnFHoP80v6S
-         WiVcoZykLv/wPrb+hXfxHixTlhyRUtIShA1WUURG0kBuwzOirGVgQo7a5nDRgYCuol
-         3WVFMJX0lNQ6rdqMX6PyASTlXwDcMfJvFl4eancQAV8QxjZaIVa0+XzOGymXyGiYKF
-         XeVptjO8efaBw==
+        b=PNvLm3hhmHbFc4hqup1HVrNlH/A+LSD3agibWpzpivwW6z/mrd/9c39EbsErlq2Sv
+         lRYJRXZ/CnPjXoucrLlaD7PkQ/DMOVtErWlKVkPmcLYROfnNbcyEe5GruLmt3EqVi9
+         tdbHViwGF0uH97CR+mlmEYFqJoeVMbFLT996EypToWmrJMTvMrF7fMYyuGf9IOnADb
+         PdLM6zOmZj8xrqOtEbYZ5JCExOOaNgQtL5KqFA9nwL49EP43cXqFNvpG6CAk9RFF4E
+         L7EcwGlZRsEZI1ft9nNOP9ntKSlrTQ2cyVSSWqIN3Ue36HIV9wnXe0NoF5aakW/rVu
+         r/MqlTEQie0RQ==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 46DB5C05FD6; Tue, 22 Mar 2022 23:59:11 +0000 (UTC)
+        id BE83ACAC6E2; Wed, 23 Mar 2022 00:01:18 +0000 (UTC)
 From:   bugzilla-daemon@kernel.org
 To:     linux-pm@vger.kernel.org
 Subject: [Bug 215729] amd-pstate driver has a much higher idle power
  consumption for a desktop Zen 3 CPU
-Date:   Tue, 22 Mar 2022 23:59:11 +0000
+Date:   Wed, 23 Mar 2022 00:01:18 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -52,8 +52,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215729-137361-xrVsPP4xWJ@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-215729-137361-k8nDBjd9CC@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-215729-137361@https.bugzilla.kernel.org/>
 References: <bug-215729-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -67,11 +67,18 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D215729
 
---- Comment #1 from Artem S. Tashkinov (aros@gmx.com) ---
-At least under Windows 10 I see effective frequencies around 50MHz (i.e. co=
-res
-are idling as much as possible), that doesn't seem to be the case with Linu=
-x.
+Artem S. Tashkinov (aros@gmx.com) changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |ray.huang@amd.com
+
+--- Comment #2 from Artem S. Tashkinov (aros@gmx.com) ---
+CC'ing Huang Rui - please check.
+
+I'm not changing any CPU frequency related options - i.e. everything is run=
+ning
+by default.
 
 --=20
 You may reply to this email to add a comment.
