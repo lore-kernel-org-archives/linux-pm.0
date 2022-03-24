@@ -2,41 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95141C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Mar 2022 16:59:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BA58C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Mar 2022 16:59:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352029AbiCXRBI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Mar 2022 13:01:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57816 "EHLO
+        id S1352091AbiCXRBQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Mar 2022 13:01:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58136 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352039AbiCXRBG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2022 13:01:06 -0400
+        with ESMTP id S1352079AbiCXRBK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2022 13:01:10 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 19E485F4E2
-        for <linux-pm@vger.kernel.org>; Thu, 24 Mar 2022 09:59:34 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CBE7D60A81
+        for <linux-pm@vger.kernel.org>; Thu, 24 Mar 2022 09:59:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1648141173;
+        s=mimecast20190719; t=1648141176;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=HoU1CnOuyhMAlEaaC12/xCNXrJPRzI+Ntu0MYgwKlIE=;
-        b=WfchQiOOmI2WDGSAPPPQ05r+6726PUUVVy/9p/xh6VQtxFJLrruUO8izwn5/nl1LhInQ7v
-        ikv1tNJZ6ugOTM4g7+qpUBws/zP6YzwXknCjXFOavP6F/x7bXu89b3Yh1kn8wUPEUgSWC2
-        ABJK6Xrpqelw1sqWy0e6vG/oMK+Yfs8=
+        bh=6IfREbj9fKQtRnAg2pDT/5pKTpdLNrvvzJnz4m1uJk0=;
+        b=C4bmvtvkEvRUBU0eTAS3m+nvbPewSoHtTKROZwU18WJpWw+CyGHVcflcs6g2tV25O6v2iD
+        6v2CFfOHhJviG4/HSNlP4rJd6neBCYdfdc/6U1gQhu1RL2kzz+8egz2NoiIFfJTuRvPRAP
+        TgnarSeAgaKmY2AsaNOB5HmnZD42HyY=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-135-0PnzShTtP7eZ3Lw5u9qB_Q-1; Thu, 24 Mar 2022 12:59:27 -0400
-X-MC-Unique: 0PnzShTtP7eZ3Lw5u9qB_Q-1
+ us-mta-343-wCqIudkiPKuCtPvzD40K3w-1; Thu, 24 Mar 2022 12:59:33 -0400
+X-MC-Unique: wCqIudkiPKuCtPvzD40K3w-1
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id F2CE51044566;
-        Thu, 24 Mar 2022 16:59:26 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id DE0E9801585;
+        Thu, 24 Mar 2022 16:59:32 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.192.132])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id CB747C26EA0;
-        Thu, 24 Mar 2022 16:59:23 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 2759DC26EA0;
+        Thu, 24 Mar 2022 16:59:30 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -52,9 +52,9 @@ Cc:     Hans de Goede <hdegoede@redhat.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] Documentation/ABI: sysfs-driver-aspeed-uart-routing: Fix sphinx warning
-Date:   Thu, 24 Mar 2022 17:59:16 +0100
-Message-Id: <20220324165918.22005-2-hdegoede@redhat.com>
+Subject: [PATCH 3/3] Documentation/ABI: sysfs-fs-erofs: Fix Sphinx errors
+Date:   Thu, 24 Mar 2022 17:59:18 +0100
+Message-Id: <20220324165918.22005-4-hdegoede@redhat.com>
 In-Reply-To: <20220324165918.22005-1-hdegoede@redhat.com>
 References: <20220324165918.22005-1-hdegoede@redhat.com>
 MIME-Version: 1.0
@@ -64,37 +64,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix the following warning from "make htmldocs":
+Fix the following warnings from "make htmldocs":
 
-Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing:2:
-  WARNING: Inline emphasis start-string without end-string.
-
-This is caused by the used of '*' in the example cat command,
-mark the command as code to fix this.
+Documentation/ABI/testing/sysfs-fs-erofs:10:
+  ERROR: Unexpected indentation.
+  WARNING: Block quote ends without a blank line; unexpected unindent.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ Documentation/ABI/testing/sysfs-fs-erofs | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-index b363827da437..1e25cd2cacc1 100644
---- a/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-+++ b/Documentation/ABI/testing/sysfs-driver-aspeed-uart-routing
-@@ -8,9 +8,10 @@ Description:	Selects the RX source of the UARTx device.
- 		selected option marked by brackets "[]". The list of available options
- 		depends on the selected file.
- 
--		e.g.
--		cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
--		[io1] io2 io3 io4 uart2 uart3 uart4 io6
-+		e.g.::
+diff --git a/Documentation/ABI/testing/sysfs-fs-erofs b/Documentation/ABI/testing/sysfs-fs-erofs
+index 05482374a741..bb4681a01811 100644
+--- a/Documentation/ABI/testing/sysfs-fs-erofs
++++ b/Documentation/ABI/testing/sysfs-fs-erofs
+@@ -9,8 +9,9 @@ Description:	Shows all enabled kernel features.
+ What:		/sys/fs/erofs/<disk>/sync_decompress
+ Date:		November 2021
+ Contact:	"Huang Jianan" <huangjianan@oppo.com>
+-Description:	Control strategy of sync decompression
++Description:	Control strategy of sync decompression:
 +
-+			# cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
-+			[io1] io2 io3 io4 uart2 uart3 uart4 io6
- 
- 		In this case, UART1 gets its input from IO1 (physical serial port 1).
- 
+ 		- 0 (default, auto): enable for readpage, and enable for
+-				     readahead on atomic contexts only,
++		  readahead on atomic contexts only.
+ 		- 1 (force on): enable for readpage and readahead.
+ 		- 2 (force off): disable for all situations.
 -- 
 2.35.1
 
