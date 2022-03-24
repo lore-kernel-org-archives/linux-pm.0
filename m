@@ -2,40 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CAAC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Mar 2022 16:47:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 033AEC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Mar 2022 16:47:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351792AbiCXQtV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Mar 2022 12:49:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49090 "EHLO
+        id S1351785AbiCXQtW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Mar 2022 12:49:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351785AbiCXQtS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2022 12:49:18 -0400
+        with ESMTP id S1351787AbiCXQtT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2022 12:49:19 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8E806ADD6B
-        for <linux-pm@vger.kernel.org>; Thu, 24 Mar 2022 09:47:46 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id DB9A5ADD58
+        for <linux-pm@vger.kernel.org>; Thu, 24 Mar 2022 09:47:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1648140465;
+        s=mimecast20190719; t=1648140467;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=UpCGOPzrBlCTuSLxyy7t5OA4eAmMttPs1iO1RjGpOPM=;
-        b=hCVHtKY1mfpNJArD7MKjv8WZq2cUXlHY/3Tx9ZGw01H9G/uYW5+FoBRt+k3XYVupsJhd+3
-        Gv0vMgV/OXhdptI3F2zgjBvA2+OoBgQ8ytcNP1R67OpYGVsYdjOaL3GdLK9+Spheu9HLQV
-        l1wn9Ed5o977F4gV7UxI6am1zL+zdxA=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=H7qgwlx16gMa4fPk1wjLgWS5qaxNfrIcUO2G1rbGKjE=;
+        b=Vhzabb7AOaRCM93b0qNDfYT83WgbZGJLiuSZtOu+no/Njs972NAxQkeUUyI/Sy3rbwnJ9x
+        8jWK56XRSSAfyOXoJfyz5xkQ5lGeSHzj2wnT8r2HAEekDoGA+gneHDipLaX5biwf+xAdQG
+        gXvulSF6H+dpMd6wvCbHpeupr++N4DA=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-322-dIf3rhLWMo-LZ_2lu4oU5Q-1; Thu, 24 Mar 2022 12:47:40 -0400
-X-MC-Unique: dIf3rhLWMo-LZ_2lu4oU5Q-1
+ us-mta-230-Y7GCWqX5PPqiln_NcQ1DwA-1; Thu, 24 Mar 2022 12:47:43 -0400
+X-MC-Unique: Y7GCWqX5PPqiln_NcQ1DwA-1
 Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C810E1C05AE0;
-        Thu, 24 Mar 2022 16:47:39 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2F541811E7A;
+        Thu, 24 Mar 2022 16:47:43 +0000 (UTC)
 Received: from shalem.redhat.com (unknown [10.39.192.132])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 49797417E32;
-        Thu, 24 Mar 2022 16:47:38 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id B2F5440146E;
+        Thu, 24 Mar 2022 16:47:41 +0000 (UTC)
 From:   Hans de Goede <hdegoede@redhat.com>
 To:     Mark Gross <markgross@kernel.org>,
         Andy Shevchenko <andy@kernel.org>,
@@ -47,9 +48,11 @@ Cc:     Hans de Goede <hdegoede@redhat.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH 0/4] Documentation/ABI: platform/x86: Sphinx warning fixes
-Date:   Thu, 24 Mar 2022 17:47:33 +0100
-Message-Id: <20220324164737.21765-1-hdegoede@redhat.com>
+Subject: [PATCH 2/4] Documentation/ABI: sysfs-class-firmware-attributes: Fix Sphinx errors
+Date:   Thu, 24 Mar 2022 17:47:35 +0100
+Message-Id: <20220324164737.21765-3-hdegoede@redhat.com>
+In-Reply-To: <20220324164737.21765-1-hdegoede@redhat.com>
+References: <20220324164737.21765-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 2.85 on 10.11.54.10
@@ -57,47 +60,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+Fix the following warnings from "make htmldocs":
 
-After Stephen reported some Sphinx warnings for files under
-Documentation/ABI/testing, I had to first figure out how to reproduce
-these. It turns out that to regenerate the htmldocs for files under
-Documentation/ABI/testing once has to run:
+Documentation/ABI/testing/sysfs-class-firmware-attributes:130:
+  ERROR: Unexpected indentation.
+  ERROR: Unexpected indentation.
+  ERROR: Unexpected indentation.
 
-touch Documentation/admin-guide/abi-testing.rst && make htmldocs
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ .../testing/sysfs-class-firmware-attributes   | 42 ++++++++++---------
+ 1 file changed, 23 insertions(+), 19 deletions(-)
 
-This turned up warnings in multiple sysfs ABI files for platform/x86
-drivers, as well as in some new functionality in sysfs-class-power,
-which was merged through the platform-drivers-x86 tree.
-
-I plan to merge this series through the platform-drivers-x86 tree and
-send this out in a fixed pull-req to Linus once 5.18-rc1 is out.
-
-Regards,
-
-Hans
-
-p.s.
-
-platform-drivers-x86 authors, for future patch submissions touching
-files under Documentation/ABI/testing please run:
-
-touch Documentation/admin-guide/abi-testing.rst && make htmldocs
-
-and make sure no warnings are introduced.
-
-
-Hans de Goede (4):
-  Documentation/ABI: sysfs-driver-intel_sdsi: Fix sphinx warnings
-  Documentation/ABI: sysfs-class-firmware-attributes: Fix Sphinx errors
-  Documentation/ABI: sysfs-class-firmware-attributes: Misc. cleanups
-  Documentation/ABI: sysfs-class-power: Fix Sphinx error
-
- .../testing/sysfs-class-firmware-attributes   | 48 ++++++++++---------
- Documentation/ABI/testing/sysfs-class-power   |  1 +
- .../ABI/testing/sysfs-driver-intel_sdsi       | 18 +++----
- 3 files changed, 37 insertions(+), 30 deletions(-)
-
+diff --git a/Documentation/ABI/testing/sysfs-class-firmware-attributes b/Documentation/ABI/testing/sysfs-class-firmware-attributes
+index 05820365f1ec..5356ff2ed6c8 100644
+--- a/Documentation/ABI/testing/sysfs-class-firmware-attributes
++++ b/Documentation/ABI/testing/sysfs-class-firmware-attributes
+@@ -246,9 +246,7 @@ Description:
+ 					that is being referenced (e.g hdd0, hdd1 etc)
+ 					This attribute defaults to device 0.
+ 
+-		certificate:
+-		signature:
+-		save_signature:
++		certificate, signature, save_signature:
+ 					These attributes are used for certificate based authentication. This is
+ 					used in conjunction with a signing server as an alternative to password
+ 					based authentication.
+@@ -257,22 +255,27 @@ Description:
+ 					The attributes can be displayed to check the stored value.
+ 
+ 					Some usage examples:
+-					Installing a certificate to enable feature:
+-						echo <supervisor password > authentication/Admin/current_password
+-						echo <signed certificate> > authentication/Admin/certificate
+ 
+-					Updating the installed certificate:
+-						echo <signature> > authentication/Admin/signature
+-						echo <signed certificate> > authentication/Admin/certificate
++						Installing a certificate to enable feature::
+ 
+-					Removing the installed certificate:
+-						echo <signature> > authentication/Admin/signature
+-						echo '' > authentication/Admin/certificate
++							echo "supervisor password" > authentication/Admin/current_password
++							echo "signed certificate" > authentication/Admin/certificate
+ 
+-					Changing a BIOS setting:
+-						echo <signature> > authentication/Admin/signature
+-						echo <save signature> > authentication/Admin/save_signature
+-						echo Enable > attribute/PasswordBeep/current_value
++						Updating the installed certificate::
++
++							echo "signature" > authentication/Admin/signature
++							echo "signed certificate" > authentication/Admin/certificate
++
++						Removing the installed certificate::
++
++							echo "signature" > authentication/Admin/signature
++							echo "" > authentication/Admin/certificate
++
++						Changing a BIOS setting::
++
++							echo "signature" > authentication/Admin/signature
++							echo "save signature" > authentication/Admin/save_signature
++							echo Enable > attribute/PasswordBeep/current_value
+ 
+ 					You cannot enable certificate authentication if a supervisor password
+ 					has not been set.
+@@ -288,9 +291,10 @@ Description:
+ 		certificate_to_password:
+ 					Write only attribute used to switch from certificate based authentication
+ 					back to password based.
+-					Usage:
+-						echo <signature> > authentication/Admin/signature
+-						echo <password> > authentication/Admin/certificate_to_password
++					Usage::
++
++						echo "signature" > authentication/Admin/signature
++						echo "password" > authentication/Admin/certificate_to_password
+ 
+ 
+ What:		/sys/class/firmware-attributes/*/attributes/pending_reboot
 -- 
 2.35.1
 
