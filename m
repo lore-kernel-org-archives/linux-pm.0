@@ -2,101 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A33C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Mar 2022 19:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0540C43217
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Mar 2022 19:57:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231341AbiCYT64 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Mar 2022 15:58:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34104 "EHLO
+        id S231648AbiCYT65 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:58:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232599AbiCYT6S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2022 15:58:18 -0400
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 261A12A4FA0
+        with ESMTP id S232622AbiCYT6T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2022 15:58:19 -0400
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDFEE2A85D2
         for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:47:37 -0700 (PDT)
-Received: by mail-lf1-x12d.google.com with SMTP id bu29so15163871lfb.0
+Received: by mail-lf1-x12e.google.com with SMTP id k21so15084026lfe.4
         for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:47:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=lgpBZVT3N397yNEIE8syFhUaj9YB16F6AhosJ5tOLW8=;
-        b=N6mHXveQOoSZhABGQi8E7MEKTtsoXwSmYElE3MIh3BF5uZa3BYVcgqX7p08SdfaJj1
-         vvQ+fxNfu25M+hlQG08ku6H5eTq8nShwNPKMdparpEIK+UVB4/BeB/+UCtGdrJ1NUS1p
-         Xl1bMLPf92nO+oqq3G4iXBwfYORC23Fs3KUTaBe16bY6icyTegq6gqGDazL6VFfOex7k
-         SyoGN9Xr+nQayHMSNpi11Zn1enUtJTwKMiFi0kf/O4CCtXGKFVFqBNMb/zHYMVR+27EQ
-         6+PhmcHTrUUkuzD9oIEtQYuJFiGNDXyNlFJP48t3YW7307s7WgVSde2+ADZnEEEte29B
-         nBpg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=+XCrIAyYDkgTz/DidtvlvSnQAA1xIZjhXOzszg4D7hE=;
+        b=LWLdyTFOysWxnISbdMfivzdBiq60M9batOrhdLOhC/InTOG2+CZdk4u1OjaMU9xGvH
+         iz6Gr2eXihj0g1qKzo5uPcH2pmlXA9ltmWyFoyCIyX6KBHWUe9/5BLPxbDSH+xPzH+RH
+         UvIY6fPdYvCpQJVMYCaQYAWzgyufPD3XUVbfKcc0xaf6h8Yic7SeBst2XqokzRgRpdv4
+         D1Pf1BbrDwK7BRytlK2SGW5sdXUhvISN/hZSO6mzQ+Ck4NS4pHrQkS7Kz7ER+5fo7To9
+         /RlQ/dXVRAre4O8EsydhSljZGI97fMHEgHsClu7MgBmitSEsnbPpYTC8I4XY3MKKgKk6
+         b7tQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=lgpBZVT3N397yNEIE8syFhUaj9YB16F6AhosJ5tOLW8=;
-        b=KWi2BwTasPYsoojgI0D0BRIlm2637V5QSufNdBVFKiE6koNsVh3P6jV80PxVVvSYi0
-         /QMJC96aMnjW3KF7RaQqRJ880w83gxV7f+5YC6D9d/pI1LHeGy4LCb1KsB1KljWD6NY2
-         5FOZR7vwp+kzq5Gg4pwHH2sB0QDGsAFCEe5NYR5XVs/9A+uJrj9pcMCKBpvNQ2IZaKIQ
-         qyE9ZcR6oUdA/ryEwMUBUrHJFDEhtw8qiat/Wi9D7ckAvXZa8AXd/hjkGy0UzDPP2sOw
-         jDg1eIg72CV/94iJyIc4OGUc/29JlydX/8FdSrZPHPcQRKS3G0bi0kTTZLFQQ7sXUXFf
-         iO9Q==
-X-Gm-Message-State: AOAM531tZxJ4bp8xKuCBBLeJ4NAGgKeYRhMNsfOMbqwFGjAXaC/9eePo
-        Bp3Ov1TjmEnm4Ta8nRTjASEyyg==
-X-Google-Smtp-Source: ABdhPJyyhGwSHZvtiF6X9rzM53uUfZpOgpSMKroyqWiYthwPRq1lZ5oii1oKgclzonhQgtuLYK/ZSQ==
-X-Received: by 2002:a05:6512:4014:b0:44a:2b77:bed6 with SMTP id br20-20020a056512401400b0044a2b77bed6mr8691672lfb.381.1648237643246;
-        Fri, 25 Mar 2022 12:47:23 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=+XCrIAyYDkgTz/DidtvlvSnQAA1xIZjhXOzszg4D7hE=;
+        b=AxdOOQuqQ5pUX6RzJLzUNeg/4boIzMjj4A6oEy5wr09xumyYw/xW4Hqdrx3ndQItqY
+         5+cK+4TOi0wVX5Rn2H2Oc/xto/S97U1PKmBa9/nYfyKUWtQckgORT16mXIeu2ltge9pO
+         aUFP86cyibDew2CmwQdU9IrB9DT/8TRguuhdbIhdKbLoiJgVX5H7UHQa5hiz41S0P3hx
+         DkbCVlVWqOybRo5SnutRBTuW4tDXsNVozhQqhpikthwsx+VBJ/SRhJ2oDRxSN84xV5yy
+         hUUBQmlSN7l7INOqXi6yOP8O1c/YXZbOrc4sR+UivyYNhspZ7/V7DEUsYqaD+uEm68j5
+         wtTg==
+X-Gm-Message-State: AOAM531/NHQOabx8Jkfzdbq4hp5oYNHfVzp356/R34LPK8csmyWqT5SG
+        VCOSYJG/2BSRxvNkcrr5XYxqqQ==
+X-Google-Smtp-Source: ABdhPJxKgv6x3rfj72N7e6R0s+yc5U3E9Q7S1lHfRYOLlI4nNWu3fX+Am0oo8Iipj3AlDREfSqdRBA==
+X-Received: by 2002:a05:6512:321c:b0:44a:2109:201f with SMTP id d28-20020a056512321c00b0044a2109201fmr8960693lfe.26.1648237646648;
+        Fri, 25 Mar 2022 12:47:26 -0700 (PDT)
 Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id u16-20020ac25190000000b004433b80c1d3sm802014lfi.182.2022.03.25.12.47.22
+        by smtp.gmail.com with ESMTPSA id u16-20020ac25190000000b004433b80c1d3sm802014lfi.182.2022.03.25.12.47.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Mar 2022 12:47:22 -0700 (PDT)
+        Fri, 25 Mar 2022 12:47:26 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Thara Gopinath <thara.gopinath@gmail.com>
-Subject: [PATCH v3 0/4] cpufreq: qcom-hw: Fixes for cpu hotplug support
-Date:   Fri, 25 Mar 2022 22:47:17 +0300
-Message-Id: <20220325194721.2263571-1-dmitry.baryshkov@linaro.org>
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+Subject: [PATCH v3 4/4] cpufreq: qcom-hw: provide online/offline operations
+Date:   Fri, 25 Mar 2022 22:47:21 +0300
+Message-Id: <20220325194721.2263571-5-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220325194721.2263571-1-dmitry.baryshkov@linaro.org>
+References: <20220325194721.2263571-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchseries aims at fixing and improving CPU hotplug support on
-Qualcomm platforms. First three patches are the fixes for the LMH
-support in the cpufreq driver. The last patch adds support for
-lightweight offline() and online() callbacks which are used instead of
-exit() and init() each time the CPU is put offline or back online.
+Provide lightweight online and offline operations. This saves us from
+parsing and tearing down the OPP tables each time the CPU is put online
+or offline.
 
-Patches 1-3 being pure simple fixes can be applied during the -rc
-stage, while patch 4 is targeting next development cycle
+Tested-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+Reviewed-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ drivers/cpufreq/qcom-cpufreq-hw.c | 28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
 
-Changes since v2:
-- Point Fixes tag from the first patch to the correct commit
-- Replace huge patch 2 with one-liner thanks to being able to use
-  policy->related_cpus instead of policy->cpus
-
-Changes since v1:
-- Update commit message for the first patch to describe why dropping
-  affinity hint is required (before calling free_irq()),
-- Fixed commit message for the second patch to include messages
-  generated using the mainline kernel w/o additional patches,
-- Changed third patch to use dev_warn_ratelimited(),
-- Reworked last patch to move request_irq/free_irq to online()/offline()
-  to make sure that the IRQ isn't left enabled after the CPU has been
-  put offline.
-
-Dmitry Baryshkov (4):
-  cpufreq: qcom-hw: drop affinity hint before freeing the IRQ
-  cpufreq: qcom-hw: fix the race between LMH worker and cpuhp
-  cpufreq: qcom-hw: fix the opp entries refcounting
-  cpufreq: qcom-hw: provide online/offline operations
-
- drivers/cpufreq/qcom-cpufreq-hw.c | 43 ++++++++++++++++++++++++++-----
- 1 file changed, 36 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 35f993d2deea..4f4fe05225b6 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -421,10 +421,26 @@ static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
+ 	return 0;
+ }
+ 
+-static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
++static int qcom_cpufreq_hw_cpu_online(struct cpufreq_policy *policy)
+ {
++	struct qcom_cpufreq_data *data = policy->driver_data;
++	struct platform_device *pdev = cpufreq_get_driver_data();
++	int ret;
++
++	ret = irq_set_affinity_hint(data->throttle_irq, policy->cpus);
++	if (ret)
++		dev_err(&pdev->dev, "Failed to set CPU affinity of %s[%d]\n",
++			data->irq_name, data->throttle_irq);
++
++	return ret;
++}
++
++static int qcom_cpufreq_hw_cpu_offline(struct cpufreq_policy *policy)
++{
++	struct qcom_cpufreq_data *data = policy->driver_data;
++
+ 	if (data->throttle_irq <= 0)
+-		return;
++		return 0;
+ 
+ 	mutex_lock(&data->throttle_lock);
+ 	data->cancel_throttle = true;
+@@ -432,6 +448,12 @@ static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
+ 
+ 	cancel_delayed_work_sync(&data->throttle_work);
+ 	irq_set_affinity_hint(data->throttle_irq, NULL);
++
++	return 0;
++}
++
++static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
++{
+ 	free_irq(data->throttle_irq, data);
+ }
+ 
+@@ -588,6 +610,8 @@ static struct cpufreq_driver cpufreq_qcom_hw_driver = {
+ 	.get		= qcom_cpufreq_hw_get,
+ 	.init		= qcom_cpufreq_hw_cpu_init,
+ 	.exit		= qcom_cpufreq_hw_cpu_exit,
++	.online		= qcom_cpufreq_hw_cpu_online,
++	.offline	= qcom_cpufreq_hw_cpu_offline,
+ 	.register_em	= cpufreq_register_em_with_opp,
+ 	.fast_switch    = qcom_cpufreq_hw_fast_switch,
+ 	.name		= "qcom-cpufreq-hw",
 -- 
 2.35.1
 
