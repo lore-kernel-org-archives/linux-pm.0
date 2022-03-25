@@ -2,204 +2,221 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A852FC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Mar 2022 16:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC650C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Mar 2022 19:25:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1359203AbiCYQ6T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Mar 2022 12:58:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33306 "EHLO
+        id S229556AbiCYT1X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:27:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58096 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354491AbiCYQ6S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2022 12:58:18 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 469693CFE6;
-        Fri, 25 Mar 2022 09:56:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1648227404; x=1679763404;
-  h=message-id:date:subject:to:cc:references:from:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=e+gazxV02hO4Y0QttnzzPG5b4go6J2+ijR2StZtIa5Q=;
-  b=lD7oJz+cxE7Jqtql7+LwDeHotVR+S/8CTRijiIsRmNa3oqzUqUm4xUhs
-   s9KSVPuzh/52zb5u6wTWup6hugVBzt8ONI8Y5J0EFQeSHLCLDMkFyvIV8
-   0tdwLEBdP32ASp/dHMpMTW/NuoUlUgU4fRYFbb1oHR5xPX03ToKVNm0Ac
-   HTu9bfUuFfdqh1n3ydeKvon7oKFjV6jD12kTN0U4muen7VHsgEj9U+fAK
-   BgdtSLEhxBTTIYX1USEzX8bFDf/GsNeZDH78LqqIeI/oZmYxMXJqk0wF9
-   52Xt16UTDaS9mqugsOihHrsQV9obKG9//uOwqC9VFtSjzEEG9E1QLXcRI
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10297"; a="258864667"
-X-IronPort-AV: E=Sophos;i="5.90,209,1643702400"; 
-   d="scan'208";a="258864667"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2022 09:56:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,209,1643702400"; 
-   d="scan'208";a="648321347"
-Received: from orsmsx606.amr.corp.intel.com ([10.22.229.19])
-  by fmsmga002.fm.intel.com with ESMTP; 25 Mar 2022 09:56:29 -0700
-Received: from orsmsx609.amr.corp.intel.com (10.22.229.22) by
- ORSMSX606.amr.corp.intel.com (10.22.229.19) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Fri, 25 Mar 2022 09:56:29 -0700
-Received: from orsmsx609.amr.corp.intel.com (10.22.229.22) by
- ORSMSX609.amr.corp.intel.com (10.22.229.22) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Fri, 25 Mar 2022 09:56:28 -0700
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- orsmsx609.amr.corp.intel.com (10.22.229.22) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27 via Frontend Transport; Fri, 25 Mar 2022 09:56:28 -0700
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.104)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2308.21; Fri, 25 Mar 2022 09:56:28 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ElHgRwhP4STrAU7FYNZWcouihm8CgXddMeKbNEDXE/0U7IrRiUH2dYMNlxlE6PoUlat3ELDLMQvGKNdzMHSH3Wd9lUjw5coK0MYhgLaqfum+ge6GhW3W1v+ypm+CJKXSlRZwm+6dfEG7JX9iBVGzN5TeAuoYJNJFQAbhvY+tn8yjFXaym9N7ZgH27hHgBlz6ZUfa3FxwGHqAn2oBmS8afUupjxXfdEubOPMXufgF3uX2CzeJH5015NvezOZNlaxO0cD4k5QOk5b9QoOXNngcyBLiuhtxo8ABuot/gaG2/i0f4nDDG3ebcAGu0C0UmR0f3uJwwlsKY8UFc1Mp7VP93g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8AjwmJIHDcCRmD6Qlx6kTlcvEt2aftS6cfBn/25ch7c=;
- b=K5gPADiWJSSVrr4UFssnkMHSy11JXxBUDrWAInb786927ROHinAt02IZZHoxPT8hNu+e6mFERWAzDjcySQFDfWaVhg7FzweL38JBPZrZQpOzvolrSb+NC2i1Q+zXTPB/+iv4UKe1ZZEn1ouWN+bs2epJRkIDKz4MSQXP8XkVM/HIL64WltEMmJcUzGIO4DGYC7U41jLmFmDHIT27UIagwAP1rTRSCXv9Qj74FZow8+z3X8HYu3fxxKTRcB7I2/qH0NbRwORDhG6vzmrPHq3NMSyT4alLS/YSZNBMJQI6b4ocHdWydW43yMBxfG3rGwZUjZc2laXdttvzTMSaPKwZ5w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from MW5PR11MB5810.namprd11.prod.outlook.com (2603:10b6:303:192::22)
- by DM6PR11MB3337.namprd11.prod.outlook.com (2603:10b6:5:a::27) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5081.18; Fri, 25 Mar 2022 16:56:26 +0000
-Received: from MW5PR11MB5810.namprd11.prod.outlook.com
- ([fe80::dda5:a04:f265:68ad]) by MW5PR11MB5810.namprd11.prod.outlook.com
- ([fe80::dda5:a04:f265:68ad%3]) with mapi id 15.20.5081.022; Fri, 25 Mar 2022
- 16:56:26 +0000
-Message-ID: <16ba3681-a6fc-1359-2016-9d2199b6805a@intel.com>
-Date:   Fri, 25 Mar 2022 17:56:20 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Firefox/91.0 Thunderbird/91.7.0
-Subject: Re: [PATCH v3 1/2] PCI/PM: refactor pci_pm_suspend_noirq()
-Content-Language: en-US
-To:     Rajvi Jingar <rajvi.jingar@intel.com>, <bhelgaas@google.com>
-CC:     <david.e.box@linux.intel.com>, <linux-pci@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-References: <20220318221932.3305691-1-rajvi.jingar@intel.com>
-From:   "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Organization: Intel Technology Poland Sp. z o. o., KRS 101882, ul. Slowackiego
- 173, 80-298 Gdansk
-In-Reply-To: <20220318221932.3305691-1-rajvi.jingar@intel.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: AM5PR0701CA0010.eurprd07.prod.outlook.com
- (2603:10a6:203:51::20) To MW5PR11MB5810.namprd11.prod.outlook.com
- (2603:10b6:303:192::22)
+        with ESMTP id S229557AbiCYT1S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2022 15:27:18 -0400
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DF7425D5ED
+        for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:00:28 -0700 (PDT)
+Received: by mail-lj1-x22f.google.com with SMTP id h11so11490059ljb.2
+        for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:00:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=V+mqdl/8yeQYl/IuysCLzhmn9y/CpmqU+8Go5SfPM1w=;
+        b=xIWQ/+DTLejUwomBZ0gLI3Na0Yst9Q5CF47xgJzx4QyFvzcSJ80q1ptsiEho7rbcf0
+         /sdy4W66Z4Z0xunh+lMqJObMWzwj1O100nCROYZTsPeF1p5JEwZOWUO0ZqNutqWfJDiu
+         YG0tAvndqF1zSLveQC2i3jsd+NZvUbJCE5/usAzkQ73VwMpqQVPyyrb5s54UxA5MDucP
+         /tqYPRnaivPNrXoUcl7zD7Ronm7hjQKtqCKIRL6gpNOb6+engVawD0oUkXvgBA4026ao
+         d9huTAptGjD+/ybRzBgP5TC4lAruiiILOMumnLDrC3E0ukHz0SdAmyKYrm7l6yOQtPdl
+         uSNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=V+mqdl/8yeQYl/IuysCLzhmn9y/CpmqU+8Go5SfPM1w=;
+        b=PW2a1wur233yi+s9gMGzF5Fw8kF5Rxrc+tfXg0U36V6gpeMB7vkroNtXGvAqnVaAHU
+         0ZC6lfkIxZp9wY4bWDi3iFXEsNEUy66iGpbgjowN803RULPvH5cI7MVEj8o0HTIDchf8
+         EdftjkkZ8YRJ18RrhS2bwBk6HWwsSREWQZaV+BFIjkjsK95KRabEaC2BT3fge8dcFb82
+         4+MIiZ0XtnCQzbglqCYpJHU0geHgZqFnYovsu7csgJj1gtUFoGyAqnjODpSgYxGWh0Ff
+         lguUC9cwhMkTYcUgh+zW6V0e3KoooItGa+/BL3xOZVSr+ybtkhi+x9uDKcUgmeNOJ33I
+         5ecw==
+X-Gm-Message-State: AOAM530uGHQqSgQS/Jckow8HmLu6tQja46dZXl0CdUVnabw2bxGGrZxT
+        mt6kn7StZQQ1I5wmhWRDYrRCLc0nN08NfA==
+X-Google-Smtp-Source: ABdhPJy4+0fo8WFN/jfJd8qX8ZRY8Ouo8jbMZ/1RHx1QyBjtR7ao7I4CHYfeYCcfYjaiQF/lzscWXA==
+X-Received: by 2002:ac2:5ff2:0:b0:448:7f69:889d with SMTP id s18-20020ac25ff2000000b004487f69889dmr8780218lfg.202.1648234352533;
+        Fri, 25 Mar 2022 11:52:32 -0700 (PDT)
+Received: from [192.168.1.211] ([37.153.55.125])
+        by smtp.gmail.com with ESMTPSA id r9-20020ac25f89000000b0044a1008c5d7sm790323lfe.234.2022.03.25.11.52.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 25 Mar 2022 11:52:31 -0700 (PDT)
+Message-ID: <d7966059-c003-d49a-a5ce-bff1e0604b58@linaro.org>
+Date:   Fri, 25 Mar 2022 21:52:31 +0300
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: db1b6227-24b3-4be0-53ac-08da0e80662f
-X-MS-TrafficTypeDiagnostic: DM6PR11MB3337:EE_
-X-Microsoft-Antispam-PRVS: <DM6PR11MB33375EB06A8059A48375D9D9CB1A9@DM6PR11MB3337.namprd11.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: tGRDDuziZ7jnBsXz0Vv77VKBiIER2RITiyLXY9Snw6Irkz1ltihshPJ6VgC/9lM6yPhgRsvQclrPhiI+CwjzreFe2Rv3g9kZEv35+4eH8SDXuxC5O2EP/jodNWGQUm4jgUqBgYoRkq2Ahkk1/gK91zo0WO3PxowWtbstUzKRN0EIuOWUJ+k73XfrkWm46bzCODznBHkLz+VZu29SfLW0CvIut9h6Xo6h4BkJ903U4et8gWL/JBXq6AbyTTpIImHqjA1tzKQMTzAUq+DK7zYQqb8sVizHF8QANSFwjy4O++1Y0S0VzqN6s8lqeZ2MbEMjHeBChU7mTCv9vN/6UxoWFyRkslEjURJcBqy4aGSRlYby413TbBoMsC0gYsWgyo3xHBmihFae7rmmTrQu6vkCgNgYjTTnoOD2ZvPWwL/OHz0BfkdEWZKfjVLjgjI3v8M7SSpj1d0FSTNnG3f3+fLK8mNIzE5B7tX77Cvw+ieu1i2O5Hxe+AwgrXWd5XiuVFk5L96cey+D1s9FWfbvnZ3uWkJadpRc4qRhnzxFYHNvHX4uW3jWLvPS7aJZoXXP9grqIKW49Iw243ivASWONi0IfZzHKDQ8GZAPdXTUV824mESfEiozvzTIajWjD87tPhKRtIWpG/aJ7aOFAS7nNRbjxPUExgKGtxBStUb2id5h1/YjkfDUSMr6MQZUTecw89myMCDVE3DVyN82alp4nyElsrpnLgKjzHwJA4jf7HoKims=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW5PR11MB5810.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(86362001)(5660300002)(6666004)(66946007)(8936002)(6486002)(6506007)(8676002)(66476007)(316002)(66556008)(31696002)(508600001)(83380400001)(82960400001)(36916002)(186003)(2616005)(38100700002)(4326008)(53546011)(2906002)(6512007)(36756003)(31686004)(26005)(45980500001)(43740500002);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eFhGTmxvajRCMWgzU2VIaGs1Vmd0cWJ2UHp4MVNwK0lBM05tTVJHeUhKdTlk?=
- =?utf-8?B?ZXkrejl5YVNzMlQycHhVNUlyNHhCRXdMdVU3SW1rMmxjc284MDJ1QlBmc1pE?=
- =?utf-8?B?RjlLWHhXM1J3aU9ySXlqY1Z4NTRUWkNNcmZiMVJCSVZoVXVHNlBVeG8xVzRL?=
- =?utf-8?B?QTdKYnVUbmFSZmhycWVYL2ZPcXlId1NjMUJlQWI4Y01NbVAwTTgza1d3ZC8y?=
- =?utf-8?B?R0ZLZ0d3NUVoWHkzL01oT3hPalE0ZDd1TXVyM2o1Mm5Jb0U3YmxTamRCcUo5?=
- =?utf-8?B?K2ZtcXl5dVJJMG93Qno3d2NvcVR1Yk5DZll0SVV5ejRzVnRDb1k0aURBRlhm?=
- =?utf-8?B?T1JpWkpENUZldGJGOVd1ZGVKQkNKaVgzTnRSb0IwNmlOUmpha28wNGVXYXh3?=
- =?utf-8?B?STg5NFBVVVJieUU3Tll6S0oyL200Z1pFZ0J1MDJURTVvalQwRnJzb3hOU1F5?=
- =?utf-8?B?dGdicUhlelczS0ZiTU1EN0JEZGRjVzlReXBSQnZqNjdPTk5DVkZPbWNUSVFl?=
- =?utf-8?B?TkVPakt5SnhKUDFUUXdMV0ZySGt4ZEdVZ1FvVXR0aDJkd09ydEJ3WVI5N0tz?=
- =?utf-8?B?RTBaK2tTdUhWZHZMdXdiNXVvK1F4SnN4VVhlQVBaMWttZTVkSHRWUnA0Rnhm?=
- =?utf-8?B?MjZvNTlEK0lUZXZFSTIyeXpOWnhUMjhGRmZmaGEzcjJpYmJGaWJFMGlEV3NR?=
- =?utf-8?B?Nnd6SmFWNWlDa0RJZXNJM0NwZGtvNFZ4RW1ITW51b1NibEYzanpsdkhlKzBn?=
- =?utf-8?B?TmVnWURmZWk2NU80Um9DNXpMYTUxYlI4eU9STVJ3U0JSTXJyU3MrSlhsMURZ?=
- =?utf-8?B?MGxLVWlqVDRINit0NkxWdGJOZDJMQ3MvcURzM1c1c3NXa1pzK1lHcDFUbmI4?=
- =?utf-8?B?U0EzcWVZQjZsaEFBeXorbHhSSDRBbkJkRW9oelF4NlFETHpMaUMvQ0NldElz?=
- =?utf-8?B?TEFiRFlOeHFneGJGOTBoejdHWCtrY2ZCNFJrQnlzVWswMEVCZXdIL0JzY04y?=
- =?utf-8?B?MWpBU3VWTi93SGE2cXpNMHBGWGZrWmM3K00rb1QyNkQ1dlN3RStyVGRIMUZ6?=
- =?utf-8?B?aXA4eGtYcFh6UktLUDU3VEVJNkNnS2h5QVRNU2JSVTBWSjhhRnhyck9tNHo4?=
- =?utf-8?B?OWl4bWRuUFNUSGNNVWhaSVNqdmhmekFHcm42SU9tTzZqRFJ4ck81RkVlRUMz?=
- =?utf-8?B?cW0xbVhyUDZ3NHg2SW8wSDNBdCtPNGl2SUpsQzR3RWY3OXVFSHBjOWN2RmIv?=
- =?utf-8?B?OWk0SUUyR2paQ0FONW9UdzRQZ3IyaUlIdTY5bndibmx4U1NhTzVlTnZGbmgw?=
- =?utf-8?B?eCtMNi8xNVlZVXBTSEJkTVZiK2lmS0pYd1phYnBTdmFFRzVvY0RVRnJ1d2lw?=
- =?utf-8?B?c3Q3OGVWdGxYcjVqMzNHS09KTDVOYm5qamV2MUJlcFJSQzQ3WUhRRmw3TThv?=
- =?utf-8?B?US9MbjVFbTg5bW1uanBJSnJia3I3dzVUanRYc1BJUENpNkxNbGpFOFVsdytn?=
- =?utf-8?B?OVF2eWJkdUVqK0F4d1lKRTU4cHM5SWtPQ0RCRzNxTzdNM3lDcmlMS1VEZ1hI?=
- =?utf-8?B?TGJtMEw1RWRkUzBNM0N6Z3Y5enMyYmRwZnp3M2oxRm5wTnVCb0M2ZVhhN0xM?=
- =?utf-8?B?MlcrS0FKMmw3eEJVeDZRdkpHaTFPbkxZN3dEaWYvR0Q2bm1GNi9KMW1weWVp?=
- =?utf-8?B?UFhhVUNXVENkUnYyaHd4a0QyYStDc2FuYmNWb3RnUzBxRFRHRXFUV3JLb3Bk?=
- =?utf-8?B?a3prcTBnWlJrNE9IaEdwVW1HbDZrejVwVGRtUUdhTDhNOUNFYUF4S1UyVEVu?=
- =?utf-8?B?WVZGWllWeTNaYW9XNmFwSU9nOFJpd0NacnlncFNGK2EzbTNOd3lXNFZPVWFv?=
- =?utf-8?B?ckp0ekxBQUpwRytPU1RXcnl3SmNGeEExS1FPZU1pVk15dkVSVGR4RXpOcy9S?=
- =?utf-8?B?UzFab2laNy8wUHVucmNyeUlIaWhvUEZURi9GZmRyWWRUMU9zWWI2QU1Bc253?=
- =?utf-8?B?VTRKaFdrd0l3PT0=?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: db1b6227-24b3-4be0-53ac-08da0e80662f
-X-MS-Exchange-CrossTenant-AuthSource: MW5PR11MB5810.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Mar 2022 16:56:26.2465
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /Ik4vXnv6EGfZiof7EEw4R+Ec1iNOw3J8WnmrD+UT/zsEWjs5eU6Tmda/8YIcw2qUF2w2fd6F4pk+eOtxINtXMN23RkJbUhzhJ/onqLyWkE=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR11MB3337
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v2 2/4] cpufreq: qcom-hw: fix the race between LMH worker
+ and cpuhp
+Content-Language: en-GB
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        Thara Gopinath <thara.gopinath@gmail.com>
+References: <20220309223938.3819715-1-dmitry.baryshkov@linaro.org>
+ <20220309223938.3819715-3-dmitry.baryshkov@linaro.org>
+ <YjyVgx08RiFDYwT5@ripper>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+In-Reply-To: <YjyVgx08RiFDYwT5@ripper>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 3/18/2022 11:19 PM, Rajvi Jingar wrote:
-> The state of the device is saved during pci_pm_suspend_noirq(), if it
-> has not already been saved, regardless of the skip_bus_pm flag value. So
-> skip_bus_pm check is removed before saving the device state.
->
-> Signed-off-by: Rajvi Jingar <rajvi.jingar@intel.com>
-> Suggested-by: David E. Box <david.e.box@linux.intel.com>
-> ---
->   v1 -> v2: add comments to the changes
->   v2 -> v3: move changelog after "---" marker
+On 24/03/2022 19:00, Bjorn Andersson wrote:
+> On Wed 09 Mar 14:39 PST 2022, Dmitry Baryshkov wrote:
+> 
+>> qcom_lmh_dcvs_poll() can be running when the cpu is being put offline.
+>> This results in the following warnings and an oops. The driver would
+>> disable the worker, but it happens closer to the end of
+>> cpufreq_offline(). Change the locking in the qcom_lmh_dcvs_poll(), so
+>> that the worker can not run in parallel with cpufreq_offline() call.
+>>
+>> [   55.650435] (NULL device *): dev_pm_opp_find_freq_floor: Invalid argument freq=00000000709ccbf9
+>> [   55.659420] (NULL device *): Can't find the OPP for throttling: -EINVAL!
+>> [   55.666329] Unable to handle kernel paging request at virtual address ffffadfba4bb6d81
+>> [   55.674491] Mem abort info:
+>> [   55.677363]   ESR = 0x96000004
+>> [   55.680527]   EC = 0x25: DABT (current EL), IL = 32 bits
+>> [   55.686001]   SET = 0, FnV = 0
+>> [   55.689164]   EA = 0, S1PTW = 0
+>> [   55.692418]   FSC = 0x04: level 0 translation fault
+>> [   55.697449] Data abort info:
+>> [   55.700426]   ISV = 0, ISS = 0x00000004
+>> [   55.704383]   CM = 0, WnR = 0
+>> [   55.707455] swapper pgtable: 4k pages, 48-bit VAs, pgdp=00000000a98e9000
+>> [   55.714354] [ffffadfba4bb6d81] pgd=0000000000000000, p4d=0000000000000000
+>> [   55.721388] Internal error: Oops: 96000004 [#1] SMP
+>> [   55.726397] Modules linked in:
+>> [   55.729542] CPU: 7 PID: 162 Comm: kworker/7:1H Tainted: G S      W         5.17.0-rc6-00100-g04890a1d9672 #724
+>> [   55.746066] Workqueue: events_highpri qcom_lmh_dcvs_poll
+>> [   55.751527] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+>> [   55.758669] pc : cpufreq_cpu_get_raw+0x20/0x44
+>> [   55.763233] lr : qcom_cpufreq_hw_get+0x10/0x64
+>> [   55.767799] sp : ffff800009983d10
+>> [   55.771207] x29: ffff800009983d10 x28: ffffaa13a4f2b000 x27: ffff7b31329f9305
+>> [   55.778530] x26: ffffaa13a4f30af8 x25: ffffaa13a4f4e4c8 x24: ffff7b2ec2eda000
+>> [   55.785851] x23: ffffffffffffffea x22: ffff7b2ec2e9fc18 x21: ffff7b2ec2e9fc00
+>> [   55.793170] x20: 0000000000000100 x19: ffff7b2ec2e9fcc0 x18: ffffffffffffffff
+>> [   55.800490] x17: 726620746e656d75 x16: 6772612064696c61 x15: ffff8000899839c7
+>> [   55.807812] x14: 0000000000000000 x13: 0000000000000000 x12: 0000000000000000
+>> [   55.815140] x11: ffff7b2ec2e9fc80 x10: ffffaa13a59a1a70 x9 : 0000000000000000
+>> [   55.822468] x8 : ffff7b2eca6917c0 x7 : ffffaa13a528b000 x6 : 0000000000000001
+>> [   55.829788] x5 : 0000000000040000 x4 : 000000000000024f x3 : 0000000000000000
+>> [   55.837116] x2 : 0000000000000100 x1 : ffffaa13a4bb6d80 x0 : 000003e800000001
+>> [   55.844439] Call trace:
+>> [   55.846951]  cpufreq_cpu_get_raw+0x20/0x44
+> 
+> While I don't have the line numbers, I presume this would be cause by
+> policy->cpus being empty and:
+> 
+>     int cpu = cpumask_first(policy->cpus);
+> 
+> returning >= nr_cpu_ids, which means that the get_cpu_device(cpu); on
+> the next line will return NULL and then we keep playing opp on that
+> NULL?
+> 
+> 
+> Seems like this would be exactly the same mistake as I did wrt
+> policy->cpus vs policy->related_cpus and we don't actually need the
+> specific CPU, we just need a cpu device in the frequency domain.
+> 
+> As such we should actually do cpumaks_first(policy->related_cpus)
+> instead.
+> 
+>> [   55.851155]  qcom_lmh_dcvs_poll+0x104/0x160
+>> [   55.855452]  process_one_work+0x288/0x69c
+>> [   55.859574]  worker_thread+0x74/0x470
+>> [   55.863336]  kthread+0xfc/0x100
+>> [   55.866568]  ret_from_fork+0x10/0x20
+>> [   55.870246] Code: b00065c1 91360021 d503233f f8625800 (f8616800)
+>> [   55.876501] ---[ end trace 0000000000000000 ]---
+>>
+>> Fixes: 275157b367f4 ("cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support")
+>> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+>> ---
+>>   drivers/cpufreq/qcom-cpufreq-hw.c | 24 +++++++++++++++++++++---
+>>   1 file changed, 21 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+>> index 44d46e52baea..7c1bb002e1c3 100644
+>> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+>> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+>> @@ -296,6 +296,23 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
+>>   	struct dev_pm_opp *opp;
+>>   	unsigned int freq;
+>>   
+>> +	/*
+>> +	 * Synchronize against CPU going offline.
+>> +	 * cpufreq_offline() will get the write lock on policy->rwsem.
+>> +	 */
+>> +retry:
+>> +	if (unlikely(!down_read_trylock(&policy->rwsem))) {
+>> +		mutex_lock(&data->throttle_lock);
+>> +		if (data->cancel_throttle) {
+>> +			mutex_unlock(&data->throttle_lock);
+>> +			return;
+>> +		}
+>> +
+>> +		mutex_unlock(&data->throttle_lock);
+>> +
+>> +		schedule();
+>> +		goto retry;
+>> +	}
+> 
+> And doing that instead would remove the need for doing this crazy
+> locking between the cpufreq core and qcom driver.
 
-And you need to add one more "---" marker right after it.
+I didn't like the idea that the notifier is running in parallel with the 
+cpufreq code modifying the policy. We can check if that's an issue 
+separately.
 
-Analogously in the second patch.
-
->   drivers/pci/pci-driver.c | 18 ++++++------------
->   1 file changed, 6 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 588588cfda48..ffe76f238d7e 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -834,20 +834,14 @@ static int pci_pm_suspend_noirq(struct device *dev)
->   		}
->   	}
->   
-> -	if (pci_dev->skip_bus_pm) {
-> +	if (!pci_dev->state_saved) {
-> +		pci_save_state(pci_dev);
->   		/*
-> -		 * Either the device is a bridge with a child in D0 below it, or
-> -		 * the function is running for the second time in a row without
-> -		 * going through full resume, which is possible only during
-> -		 * suspend-to-idle in a spurious wakeup case.  The device should
-> -		 * be in D0 at this point, but if it is a bridge, it may be
-> -		 * necessary to save its state.
-> +		 * If the device is a bridge with a child in D0 below it, it needs to
-> +		 * stay in D0, so check skip_bus_pm to avoid putting it into a
-> +		 * low-power state in that case.
->   		 */
-> -		if (!pci_dev->state_saved)
-> -			pci_save_state(pci_dev);
-> -	} else if (!pci_dev->state_saved) {
-> -		pci_save_state(pci_dev);
-> -		if (pci_power_manageable(pci_dev))
-> +		if (!pci_dev->skip_bus_pm && pci_power_manageable(pci_dev))
->   			pci_prepare_to_sleep(pci_dev);
->   	}
->   
+> 
+> Above change would be trivial and -rc material.
+> 
+> Regards,
+> Bjorn
+> 
+>>   	/*
+>>   	 * Get the h/w throttled frequency, normalize it using the
+>>   	 * registered opp table and use it to calculate thermal pressure.
+>> @@ -314,9 +331,10 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
+>>   
+>>   	/*
+>>   	 * In the unlikely case policy is unregistered do not enable
+>> -	 * polling or h/w interrupt
+>> +	 * polling or h/w interrupt.
+>> +	 * If we are here, we have the policy->rwsem read lock,
+>> +	 * cancel_throttle can be toggled only with the write lock.
+>>   	 */
+>> -	mutex_lock(&data->throttle_lock);
+>>   	if (data->cancel_throttle)
+>>   		goto out;
+>>   
+>> @@ -331,7 +349,7 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
+>>   				 msecs_to_jiffies(10));
+>>   
+>>   out:
+>> -	mutex_unlock(&data->throttle_lock);
+>> +	up_read(&policy->rwsem);
+>>   }
+>>   
+>>   static void qcom_lmh_dcvs_poll(struct work_struct *work)
+>> -- 
+>> 2.34.1
+>>
 
 
+-- 
+With best wishes
+Dmitry
