@@ -2,62 +2,61 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0540C43217
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F63CC4332F
 	for <linux-pm@archiver.kernel.org>; Fri, 25 Mar 2022 19:57:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231648AbiCYT65 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Mar 2022 15:58:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36144 "EHLO
+        id S231482AbiCYT64 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:58:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232622AbiCYT6T (ORCPT
+        with ESMTP id S232614AbiCYT6T (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2022 15:58:19 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDFEE2A85D2
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 916472274F6
         for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:47:37 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id k21so15084026lfe.4
+Received: by mail-lf1-x12b.google.com with SMTP id k21so15083904lfe.4
         for <linux-pm@vger.kernel.org>; Fri, 25 Mar 2022 12:47:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=+XCrIAyYDkgTz/DidtvlvSnQAA1xIZjhXOzszg4D7hE=;
-        b=LWLdyTFOysWxnISbdMfivzdBiq60M9batOrhdLOhC/InTOG2+CZdk4u1OjaMU9xGvH
-         iz6Gr2eXihj0g1qKzo5uPcH2pmlXA9ltmWyFoyCIyX6KBHWUe9/5BLPxbDSH+xPzH+RH
-         UvIY6fPdYvCpQJVMYCaQYAWzgyufPD3XUVbfKcc0xaf6h8Yic7SeBst2XqokzRgRpdv4
-         D1Pf1BbrDwK7BRytlK2SGW5sdXUhvISN/hZSO6mzQ+Ck4NS4pHrQkS7Kz7ER+5fo7To9
-         /RlQ/dXVRAre4O8EsydhSljZGI97fMHEgHsClu7MgBmitSEsnbPpYTC8I4XY3MKKgKk6
-         b7tQ==
+        bh=TGuxe1tdDb+vQ+pZhLOcPKE6MxLU7K+4INF2UgDIqr0=;
+        b=cPWEDq6xT1iCsQo+k4oMH4ctICGThnhQfJTPUCLSI8162t/9OCnktg4KZ/1O4o9Xwm
+         OsjJEJ/NJL5nt6zVUbya/m6XIaAX/QmezYbLRqplJVOW39gAv1mvMlb9wSsuP0f3sAH+
+         5uVEa3hBf9PzT4EZptyjBnfBTalrcPmH3RV6PNnGtvATis1vkSEp7GwU7VsBUdxC30Nn
+         t9bWz/f6i363ApS3P5l6D6UJNqO673zQ+hnbKewfxNaU4x/Kiiuh7WnLnHsr0UaTJbRq
+         /T8YrCj0Kcxw+HUYXlovvHhZGp+h7QVgNqZuOR57jAoajzBx0ORaNKHpAsSGeN4FZdFs
+         j1wg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=+XCrIAyYDkgTz/DidtvlvSnQAA1xIZjhXOzszg4D7hE=;
-        b=AxdOOQuqQ5pUX6RzJLzUNeg/4boIzMjj4A6oEy5wr09xumyYw/xW4Hqdrx3ndQItqY
-         5+cK+4TOi0wVX5Rn2H2Oc/xto/S97U1PKmBa9/nYfyKUWtQckgORT16mXIeu2ltge9pO
-         aUFP86cyibDew2CmwQdU9IrB9DT/8TRguuhdbIhdKbLoiJgVX5H7UHQa5hiz41S0P3hx
-         DkbCVlVWqOybRo5SnutRBTuW4tDXsNVozhQqhpikthwsx+VBJ/SRhJ2oDRxSN84xV5yy
-         hUUBQmlSN7l7INOqXi6yOP8O1c/YXZbOrc4sR+UivyYNhspZ7/V7DEUsYqaD+uEm68j5
-         wtTg==
-X-Gm-Message-State: AOAM531/NHQOabx8Jkfzdbq4hp5oYNHfVzp356/R34LPK8csmyWqT5SG
-        VCOSYJG/2BSRxvNkcrr5XYxqqQ==
-X-Google-Smtp-Source: ABdhPJxKgv6x3rfj72N7e6R0s+yc5U3E9Q7S1lHfRYOLlI4nNWu3fX+Am0oo8Iipj3AlDREfSqdRBA==
-X-Received: by 2002:a05:6512:321c:b0:44a:2109:201f with SMTP id d28-20020a056512321c00b0044a2109201fmr8960693lfe.26.1648237646648;
-        Fri, 25 Mar 2022 12:47:26 -0700 (PDT)
+        bh=TGuxe1tdDb+vQ+pZhLOcPKE6MxLU7K+4INF2UgDIqr0=;
+        b=VlYzOEYD3rk7BXykozeHlsQMKgGZyzOLVGaK0vNKxQMCg48f6T+BacUGGlV41rVoU0
+         jHMxZkpbLZATTfSfCe51tkbh9ZvcZas6xxA/25OZSioKNmjJLGh2lyYEVVjbGBxIFqDB
+         YU0MB9CQMrBFG3qZux1CtkQ7kHxoQB5MuhMh2nrdoMyi4Nu/OR21+SkjCGFbuOg0Re+T
+         Qzx1RCJS4LiL+kXvI7QYoxUSGinP3mjUUl9O/ZzYLOd+mnh6aQ0S06n/HL8vb8ObEPwR
+         VsY6oW7xcf9TmnkCI38Qu4qkAba8yJEubnStYDCyGD0Nka0IOoa6n4fg8sPW9jACdMjF
+         a1fQ==
+X-Gm-Message-State: AOAM531PEXZE5hCI+LVUNXOQUjynlxgTE3FyWwhMdCB0uFQQl/7KuYL7
+        pmDMI0yEN41QgEKZYJhyf8XjLw==
+X-Google-Smtp-Source: ABdhPJwotfYLWv75bVK0qDbc68J0TqcIw4rsdTPhVhixUyIFVDuALTzgSUVIzXEDaEJLzkVYjYhD4Q==
+X-Received: by 2002:a05:6512:32c6:b0:44a:5a90:7f4a with SMTP id f6-20020a05651232c600b0044a5a907f4amr9082282lfg.256.1648237644952;
+        Fri, 25 Mar 2022 12:47:24 -0700 (PDT)
 Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id u16-20020ac25190000000b004433b80c1d3sm802014lfi.182.2022.03.25.12.47.25
+        by smtp.gmail.com with ESMTPSA id u16-20020ac25190000000b004433b80c1d3sm802014lfi.182.2022.03.25.12.47.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Mar 2022 12:47:26 -0700 (PDT)
+        Fri, 25 Mar 2022 12:47:24 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
-Subject: [PATCH v3 4/4] cpufreq: qcom-hw: provide online/offline operations
-Date:   Fri, 25 Mar 2022 22:47:21 +0300
-Message-Id: <20220325194721.2263571-5-dmitry.baryshkov@linaro.org>
+        Thara Gopinath <thara.gopinath@gmail.com>
+Subject: [PATCH v3 2/4] cpufreq: qcom-hw: fix the race between LMH worker and cpuhp
+Date:   Fri, 25 Mar 2022 22:47:19 +0300
+Message-Id: <20220325194721.2263571-3-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220325194721.2263571-1-dmitry.baryshkov@linaro.org>
 References: <20220325194721.2263571-1-dmitry.baryshkov@linaro.org>
@@ -67,73 +66,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Provide lightweight online and offline operations. This saves us from
-parsing and tearing down the OPP tables each time the CPU is put online
-or offline.
+The driver would disable the worker when cpu is being put offline, but
+it happens closer to the end of cpufreq_offline(). The function
+qcom_lmh_dcvs_poll() can be running in parallel with this, when
+policy->cpus already has been updated. Read policy->related_cpus
+instead.
 
-Tested-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
-Reviewed-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+[   37.122433] ------------[ cut here ]------------
+[   37.127225] WARNING: CPU: 0 PID: 187 at drivers/base/arch_topology.c:180 topology_update_thermal_pressure+0xec/0x100
+[   37.138098] Modules linked in:
+[   37.141279] CPU: 0 PID: 187 Comm: kworker/0:3 Tainted: G S                5.17.0-rc6-00389-g37c83d0b8710-dirty #713
+[   37.158306] Workqueue: events qcom_lmh_dcvs_poll
+[   37.163095] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[   37.170278] pc : topology_update_thermal_pressure+0xec/0x100
+[   37.176131] lr : topology_update_thermal_pressure+0x20/0x100
+[   37.181977] sp : ffff800009b6bce0
+[   37.185402] x29: ffff800009b6bce0 x28: ffffd87abe92b000 x27: ffff04bd7292e205
+[   37.192792] x26: ffffd87abe930af8 x25: ffffd87abe94e4c8 x24: 0000000000000000
+[   37.200180] x23: ffff04bb01177018 x22: ffff04bb011770c0 x21: ffff04bb01177000
+[   37.207567] x20: ffff04bb0a419000 x19: 00000000000c4e00 x18: 0000000000000000
+[   37.214954] x17: 000000040044ffff x16: 004000b2b5503510 x15: 0000006aaa1326d2
+[   37.222333] x14: 0000000000000232 x13: 0000000000000001 x12: 0000000000000040
+[   37.229718] x11: ffff04bb00400000 x10: 968f57bd39f701c8 x9 : ffff04bb0acc8674
+[   37.237095] x8 : fefefefefefefeff x7 : 0000000000000018 x6 : ffffd87abd90092c
+[   37.244478] x5 : 0000000000000016 x4 : 0000000000000000 x3 : 0000000000000100
+[   37.251852] x2 : ffff04bb0a419020 x1 : 0000000000000100 x0 : 0000000000000100
+[   37.259235] Call trace:
+[   37.261771]  topology_update_thermal_pressure+0xec/0x100
+[   37.267266]  qcom_lmh_dcvs_poll+0xbc/0x154
+[   37.271505]  process_one_work+0x288/0x69c
+[   37.275654]  worker_thread+0x74/0x470
+[   37.279450]  kthread+0xfc/0x100
+[   37.282712]  ret_from_fork+0x10/0x20
+[   37.286417] irq event stamp: 74
+[   37.289664] hardirqs last  enabled at (73): [<ffffd87abdd78af4>] _raw_spin_unlock_irq+0x44/0x80
+[   37.298632] hardirqs last disabled at (74): [<ffffd87abdd71fc0>] __schedule+0x710/0xa10
+[   37.306885] softirqs last  enabled at (58): [<ffffd87abcc90410>] _stext+0x410/0x588
+[   37.314778] softirqs last disabled at (51): [<ffffd87abcd1bf68>] __irq_exit_rcu+0x158/0x174
+[   37.323386] ---[ end trace 0000000000000000 ]---
+
+Fixes: 275157b367f4 ("cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support")
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 28 ++++++++++++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 35f993d2deea..4f4fe05225b6 100644
+index 44d46e52baea..d39a0ef9ea45 100644
 --- a/drivers/cpufreq/qcom-cpufreq-hw.c
 +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -421,10 +421,26 @@ static int qcom_cpufreq_hw_lmh_init(struct cpufreq_policy *policy, int index)
- 	return 0;
- }
- 
--static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
-+static int qcom_cpufreq_hw_cpu_online(struct cpufreq_policy *policy)
+@@ -290,7 +290,7 @@ static unsigned int qcom_lmh_get_throttle_freq(struct qcom_cpufreq_data *data)
+ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
  {
-+	struct qcom_cpufreq_data *data = policy->driver_data;
-+	struct platform_device *pdev = cpufreq_get_driver_data();
-+	int ret;
-+
-+	ret = irq_set_affinity_hint(data->throttle_irq, policy->cpus);
-+	if (ret)
-+		dev_err(&pdev->dev, "Failed to set CPU affinity of %s[%d]\n",
-+			data->irq_name, data->throttle_irq);
-+
-+	return ret;
-+}
-+
-+static int qcom_cpufreq_hw_cpu_offline(struct cpufreq_policy *policy)
-+{
-+	struct qcom_cpufreq_data *data = policy->driver_data;
-+
- 	if (data->throttle_irq <= 0)
--		return;
-+		return 0;
- 
- 	mutex_lock(&data->throttle_lock);
- 	data->cancel_throttle = true;
-@@ -432,6 +448,12 @@ static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
- 
- 	cancel_delayed_work_sync(&data->throttle_work);
- 	irq_set_affinity_hint(data->throttle_irq, NULL);
-+
-+	return 0;
-+}
-+
-+static void qcom_cpufreq_hw_lmh_exit(struct qcom_cpufreq_data *data)
-+{
- 	free_irq(data->throttle_irq, data);
- }
- 
-@@ -588,6 +610,8 @@ static struct cpufreq_driver cpufreq_qcom_hw_driver = {
- 	.get		= qcom_cpufreq_hw_get,
- 	.init		= qcom_cpufreq_hw_cpu_init,
- 	.exit		= qcom_cpufreq_hw_cpu_exit,
-+	.online		= qcom_cpufreq_hw_cpu_online,
-+	.offline	= qcom_cpufreq_hw_cpu_offline,
- 	.register_em	= cpufreq_register_em_with_opp,
- 	.fast_switch    = qcom_cpufreq_hw_fast_switch,
- 	.name		= "qcom-cpufreq-hw",
+ 	struct cpufreq_policy *policy = data->policy;
+-	int cpu = cpumask_first(policy->cpus);
++	int cpu = cpumask_first(policy->related_cpus);
+ 	struct device *dev = get_cpu_device(cpu);
+ 	unsigned long freq_hz, throttled_freq;
+ 	struct dev_pm_opp *opp;
 -- 
 2.35.1
 
