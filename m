@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD364C4332F
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Mar 2022 11:23:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0FBEC433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Mar 2022 11:26:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240926AbiC1LYg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Mar 2022 07:24:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60258 "EHLO
+        id S241293AbiC1L1l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Mar 2022 07:27:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46404 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241657AbiC1LYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2022 07:24:04 -0400
+        with ESMTP id S241068AbiC1L0I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2022 07:26:08 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D9A057159;
-        Mon, 28 Mar 2022 04:21:27 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0983C38BA;
+        Mon, 28 Mar 2022 04:23:36 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id B59A4B81056;
-        Mon, 28 Mar 2022 11:21:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 496F5C340F3;
-        Mon, 28 Mar 2022 11:21:14 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 5E92EB81055;
+        Mon, 28 Mar 2022 11:23:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13E86C36AE2;
+        Mon, 28 Mar 2022 11:23:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648466475;
-        bh=f4cI2kwoNWeXjWEpz7vIiEEZffPnwnQuTh+ZvEZwOTM=;
+        s=k20201202; t=1648466615;
+        bh=AZLgzFAwxZdYdqe4eXTxIBX3b8sHli58R11pOaP4gmk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=KBBnnfpUZGExDfCc69r2JrRspeT7zG1Qt2mqky0XI04HvWY5Zp5pXfLAHzYaRKddV
-         GDloaI58/rpOXzSAQDtYI3xajYzYr537X/Nloot57sxjRS714xNXvFiv9udFtEu8Ax
-         yubo4J4d5QI8DMvyb3S7i8tQJ6fQTyViKcWhugXyhAqq5uQDTqAa4Fz+9YI17Hyehy
-         Hvlxme0BNuq77G3e46VOknYyxrJqXE/N75zjUmjawRzw+qrUL6/JWECHVC+iTsnnZc
-         4iAAoHTayOOHSMJqNqbeQtghQq1aKbljhvB4F8AeZ4QMia5XtNJnfH2m7kiHUzxpdb
-         Oiuo3IbPYFHag==
+        b=s2G9/21WcVl08rdhmy2mXKfAOEnGpSOgF4F3u37L5pqM1qQgKvSYC4JROAN7tof9G
+         egexKWUdHc5n12jJkAwO/0usNRZAl9z8uBxr4IERshrNxEW2wrtCIasqwXLCgkc4sO
+         6dHikl/cG7HhCaK1xh6E0iEk4eGckNS7UHM8i81HdE8m/eB0cREmf4GSO4tfhkcigU
+         KLUUWLnriTAcvBlJF5zEDJ6RPUB1ol6O6y1HUcJx01De92xawifUW9u1Jx511ItmvK
+         hLr0rE6gScqnWG2RYG3aCYznee4PyP1vbFAozRDDufeWBYpQnrmvYJnEvIAQnl0oTo
+         JxDUeHQuoysVw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
-        len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org,
+        pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 29/35] PM: core: keep irq flags in device_pm_check_callbacks()
-Date:   Mon, 28 Mar 2022 07:20:05 -0400
-Message-Id: <20220328112011.1555169-29-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 18/21] PM: core: keep irq flags in device_pm_check_callbacks()
+Date:   Mon, 28 Mar 2022 07:22:51 -0400
+Message-Id: <20220328112254.1556286-18-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220328112011.1555169-1-sashal@kernel.org>
-References: <20220328112011.1555169-1-sashal@kernel.org>
+In-Reply-To: <20220328112254.1556286-1-sashal@kernel.org>
+References: <20220328112254.1556286-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -128,10 +128,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 04ea92cbd9cf..08c8a69d7b81 100644
+index 4167e2aef397..1dbaaddf540e 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -2018,7 +2018,9 @@ static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
+@@ -1994,7 +1994,9 @@ static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
  
  void device_pm_check_callbacks(struct device *dev)
  {
@@ -142,7 +142,7 @@ index 04ea92cbd9cf..08c8a69d7b81 100644
  	dev->power.no_pm_callbacks =
  		(!dev->bus || (pm_ops_is_empty(dev->bus->pm) &&
  		 !dev->bus->suspend && !dev->bus->resume)) &&
-@@ -2027,7 +2029,7 @@ void device_pm_check_callbacks(struct device *dev)
+@@ -2003,7 +2005,7 @@ void device_pm_check_callbacks(struct device *dev)
  		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
  		(!dev->driver || (pm_ops_is_empty(dev->driver->pm) &&
  		 !dev->driver->suspend && !dev->driver->resume));
