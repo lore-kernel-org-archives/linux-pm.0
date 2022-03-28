@@ -2,136 +2,153 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6C8C433FE
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Mar 2022 11:39:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D7C1C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Mar 2022 11:39:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239440AbiC1Lkv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Mar 2022 07:40:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57858 "EHLO
+        id S241334AbiC1Lky (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Mar 2022 07:40:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39402 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243689AbiC1Lgr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2022 07:36:47 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3550B1BEBA
-        for <linux-pm@vger.kernel.org>; Mon, 28 Mar 2022 04:28:42 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id bt26so24137252lfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 28 Mar 2022 04:28:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=alkm6GAWo2f9KK0udr6YqOnxDL3wRG7VC8zZzqw/UA0=;
-        b=C5qKK5COQt2vcAc0rnvS5bZFeoWGxCzJAq7CaTUZ2pzdsH66opPE+nHoCq8cSuKk4F
-         cnYHLhyt/luVE7n5FBubfWOQVCYwhoO2SpUFGEPbAzUcVcqCdVYa/JGRgd2etiYjwlSd
-         kS6+BUfHW2j6DTKPUCR4RskPRlnXwtm1PuX1Rgwgjr1kuDgnywxhYgepzCJ1KzTVHT8D
-         FGLgefVnDRdH+XuuyKryvaFCQllHXBdtha86k9bBW24aqXmKSTcTUqCDOnxsYFKYYlbZ
-         cFLP7QfVe8bnYfLWd2g5RPr/114apDHHBuzBeZbd8SkLWvOxVEzrtlU1Zghmm0TgRxn+
-         gdOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=alkm6GAWo2f9KK0udr6YqOnxDL3wRG7VC8zZzqw/UA0=;
-        b=dgT2IVXczpVAb4a6piX7jb02uRVSJTMln4Wjo4oiG+/rrTPQjPODtSxrAKey4pOEqI
-         Na85au0DVZQN2eqfBnOlCGda7/0EDHgELPzZEHwTsBlOhCqtbLZtoTOAHvZ5ZdEnqSIA
-         6fpr0pv0Tl6TKSfiICg9KCLdEuhd1QbvgaIl6ry+GOGrXVc1HcCP7Zujt1IZsiGvWC5H
-         G3BXTXsLLZzP+aj/06tRqBzoEW66d/DmK+QaxWfSuwlESIHwxonvffmjRMw8Bn1CTQJk
-         frYRiFJ3YRoYE0i81PT8GdemvA0I4euMVQ8rQK8nnsJkCByen94MDkfP6fJQZ/xMOEhV
-         /MhQ==
-X-Gm-Message-State: AOAM531rlnBpEXavnGHUBcXQaW5ozf2Zwf80HaBtWwKGJthIcr3uQkcA
-        fNX3Hgb+IeHuPQlkiiEwkdJqZg==
-X-Google-Smtp-Source: ABdhPJzCbBGvm5ABKxgC0QMItHLeB7ll+t5pmGeZX5KAly8LAdVOG6WyvFpK9/KbNMKu93Cdw3kiIg==
-X-Received: by 2002:a05:6512:689:b0:44a:3b4c:8bf3 with SMTP id t9-20020a056512068900b0044a3b4c8bf3mr19052511lfe.378.1648466920750;
-        Mon, 28 Mar 2022 04:28:40 -0700 (PDT)
-Received: from localhost.localdomain (88-113-46-102.elisa-laajakaista.fi. [88.113.46.102])
-        by smtp.gmail.com with ESMTPSA id l4-20020a2e9084000000b00244cb29e3e4sm1700373ljg.133.2022.03.28.04.28.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Mar 2022 04:28:40 -0700 (PDT)
-From:   Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
-To:     Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org,
+        with ESMTP id S241874AbiC1Ldz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2022 07:33:55 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88FEE58E6D;
+        Mon, 28 Mar 2022 04:24:57 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7B8E76122E;
+        Mon, 28 Mar 2022 11:24:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B28D6C34110;
+        Mon, 28 Mar 2022 11:24:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1648466693;
+        bh=JS5FYOtkNEY390+6ZSo/ta/uD5zpzbnuGnFQm+Z78rU=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=iNz/D+hK7QngR3j781qzKEYj1Eqf3HBvrry4WgyGsjLk6ceqPMHABk651QYMbtxoJ
+         /4MI5ixwtG2s1TsI8fabrh5Y7EuN7p2Sphs5ZasFTvQGkdSBaYqDcpTwv9Cw2FAJuC
+         9V6bo/A4XJ3+hj28fRpw/iJz6opbfFHJoZMucxJX8Nh2mEkmx7WdIjyIz9CITQR2F/
+         IAIqrcpzhqt69ZagAhKpfNUF3NkZuUe8zsTSPd0T0TfdLinnGZ74uzcN9yQRUS7VQ5
+         6owUlraHVcPotfKrT+7TdF3AQBnWHiDSulgjSUMlCdaKrKwP4iZIKc6XGEFC/EAyTm
+         sHrkGAGxFEFJQ==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sasha Levin <sashal@kernel.org>, rafael@kernel.org,
+        pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH 2/2] cpufreq: qcom-cpufreq-hw: Fix throttle frequency value on EPSS platforms
-Date:   Mon, 28 Mar 2022 14:28:36 +0300
-Message-Id: <20220328112836.2464486-3-vladimir.zapolskiy@linaro.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20220328112836.2464486-1-vladimir.zapolskiy@linaro.org>
-References: <20220328112836.2464486-1-vladimir.zapolskiy@linaro.org>
+Subject: [PATCH AUTOSEL 4.14 7/8] PM: core: keep irq flags in device_pm_check_callbacks()
+Date:   Mon, 28 Mar 2022 07:24:38 -0400
+Message-Id: <20220328112440.1557113-7-sashal@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220328112440.1557113-1-sashal@kernel.org>
+References: <20220328112440.1557113-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On QCOM platforms with EPSS flavour of cpufreq IP a throttled frequency is
-obtained from another register REG_DOMAIN_STATE, thus the helper function
-qcom_lmh_get_throttle_freq() should be modified accordingly, as for now
-it returns gibberish since .reg_current_vote is unset for EPSS hardware.
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 
-Fixes: 275157b367f4 ("cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support")
-Signed-off-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+[ Upstream commit 524bb1da785a7ae43dd413cd392b5071c6c367f8 ]
+
+The function device_pm_check_callbacks() can be called under the spin
+lock (in the reported case it happens from genpd_add_device() ->
+dev_pm_domain_set(), when the genpd uses spinlocks rather than mutexes.
+
+However this function uncoditionally uses spin_lock_irq() /
+spin_unlock_irq(), thus not preserving the CPU flags. Use the
+irqsave/irqrestore instead.
+
+The backtrace for the reference:
+[    2.752010] ------------[ cut here ]------------
+[    2.756769] raw_local_irq_restore() called with IRQs enabled
+[    2.762596] WARNING: CPU: 4 PID: 1 at kernel/locking/irqflag-debug.c:10 warn_bogus_irq_restore+0x34/0x50
+[    2.772338] Modules linked in:
+[    2.775487] CPU: 4 PID: 1 Comm: swapper/0 Tainted: G S                5.17.0-rc6-00384-ge330d0d82eff-dirty #684
+[    2.781384] Freeing initrd memory: 46024K
+[    2.785839] pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[    2.785841] pc : warn_bogus_irq_restore+0x34/0x50
+[    2.785844] lr : warn_bogus_irq_restore+0x34/0x50
+[    2.785846] sp : ffff80000805b7d0
+[    2.785847] x29: ffff80000805b7d0 x28: 0000000000000000 x27: 0000000000000002
+[    2.785850] x26: ffffd40e80930b18 x25: ffff7ee2329192b8 x24: ffff7edfc9f60800
+[    2.785853] x23: ffffd40e80930b18 x22: ffffd40e80930d30 x21: ffff7edfc0dffa00
+[    2.785856] x20: ffff7edfc09e3768 x19: 0000000000000000 x18: ffffffffffffffff
+[    2.845775] x17: 6572206f74206465 x16: 6c696166203a3030 x15: ffff80008805b4f7
+[    2.853108] x14: 0000000000000000 x13: ffffd40e809550b0 x12: 00000000000003d8
+[    2.860441] x11: 0000000000000148 x10: ffffd40e809550b0 x9 : ffffd40e809550b0
+[    2.867774] x8 : 00000000ffffefff x7 : ffffd40e809ad0b0 x6 : ffffd40e809ad0b0
+[    2.875107] x5 : 000000000000bff4 x4 : 0000000000000000 x3 : 0000000000000000
+[    2.882440] x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffff7edfc03a8000
+[    2.889774] Call trace:
+[    2.892290]  warn_bogus_irq_restore+0x34/0x50
+[    2.896770]  _raw_spin_unlock_irqrestore+0x94/0xa0
+[    2.901690]  genpd_unlock_spin+0x20/0x30
+[    2.905724]  genpd_add_device+0x100/0x2d0
+[    2.909850]  __genpd_dev_pm_attach+0xa8/0x23c
+[    2.914329]  genpd_dev_pm_attach_by_id+0xc4/0x190
+[    2.919167]  genpd_dev_pm_attach_by_name+0x3c/0xd0
+[    2.924086]  dev_pm_domain_attach_by_name+0x24/0x30
+[    2.929102]  psci_dt_attach_cpu+0x24/0x90
+[    2.933230]  psci_cpuidle_probe+0x2d4/0x46c
+[    2.937534]  platform_probe+0x68/0xe0
+[    2.941304]  really_probe.part.0+0x9c/0x2fc
+[    2.945605]  __driver_probe_device+0x98/0x144
+[    2.950085]  driver_probe_device+0x44/0x15c
+[    2.954385]  __device_attach_driver+0xb8/0x120
+[    2.958950]  bus_for_each_drv+0x78/0xd0
+[    2.962896]  __device_attach+0xd8/0x180
+[    2.966843]  device_initial_probe+0x14/0x20
+[    2.971144]  bus_probe_device+0x9c/0xa4
+[    2.975092]  device_add+0x380/0x88c
+[    2.978679]  platform_device_add+0x114/0x234
+[    2.983067]  platform_device_register_full+0x100/0x190
+[    2.988344]  psci_idle_init+0x6c/0xb0
+[    2.992113]  do_one_initcall+0x74/0x3a0
+[    2.996060]  kernel_init_freeable+0x2fc/0x384
+[    3.000543]  kernel_init+0x28/0x130
+[    3.004132]  ret_from_fork+0x10/0x20
+[    3.007817] irq event stamp: 319826
+[    3.011404] hardirqs last  enabled at (319825): [<ffffd40e7eda0268>] __up_console_sem+0x78/0x84
+[    3.020332] hardirqs last disabled at (319826): [<ffffd40e7fd6d9d8>] el1_dbg+0x24/0x8c
+[    3.028458] softirqs last  enabled at (318312): [<ffffd40e7ec90410>] _stext+0x410/0x588
+[    3.036678] softirqs last disabled at (318299): [<ffffd40e7ed1bf68>] __irq_exit_rcu+0x158/0x174
+[    3.045607] ---[ end trace 0000000000000000 ]---
+
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ drivers/base/power/main.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 53954e5086e0..3156d79ef39e 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -30,6 +30,7 @@
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 4fd49d55bc3e..3d51e457a4cd 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1901,7 +1901,9 @@ static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
  
- struct qcom_cpufreq_soc_data {
- 	u32 reg_enable;
-+	u32 reg_domain_state;
- 	u32 reg_dcvs_ctrl;
- 	u32 reg_freq_lut;
- 	u32 reg_volt_lut;
-@@ -283,11 +284,16 @@ static void qcom_get_related_cpus(int index, struct cpumask *m)
- 	}
- }
- 
--static unsigned int qcom_lmh_get_throttle_freq(struct qcom_cpufreq_data *data)
-+static unsigned long qcom_lmh_get_throttle_freq(struct qcom_cpufreq_data *data)
+ void device_pm_check_callbacks(struct device *dev)
  {
--	unsigned int val = readl_relaxed(data->base + data->soc_data->reg_current_vote);
-+	unsigned int lval;
- 
--	return (val & 0x3FF) * 19200;
-+	if (data->soc_data->reg_current_vote)
-+		lval = readl_relaxed(data->base + data->soc_data->reg_current_vote) & 0x3ff;
-+	else
-+		lval = readl_relaxed(data->base + data->soc_data->reg_domain_state) & 0xff;
+-	spin_lock_irq(&dev->power.lock);
++	unsigned long flags;
 +
-+	return lval * xo_rate;
++	spin_lock_irqsave(&dev->power.lock, flags);
+ 	dev->power.no_pm_callbacks =
+ 		(!dev->bus || (pm_ops_is_empty(dev->bus->pm) &&
+ 		 !dev->bus->suspend && !dev->bus->resume)) &&
+@@ -1911,5 +1913,5 @@ void device_pm_check_callbacks(struct device *dev)
+ 		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
+ 		(!dev->driver || (pm_ops_is_empty(dev->driver->pm) &&
+ 		 !dev->driver->suspend && !dev->driver->resume));
+-	spin_unlock_irq(&dev->power.lock);
++	spin_unlock_irqrestore(&dev->power.lock, flags);
  }
- 
- static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
-@@ -297,14 +303,12 @@ static void qcom_lmh_dcvs_notify(struct qcom_cpufreq_data *data)
- 	struct device *dev = get_cpu_device(cpu);
- 	unsigned long freq_hz, throttled_freq;
- 	struct dev_pm_opp *opp;
--	unsigned int freq;
- 
- 	/*
- 	 * Get the h/w throttled frequency, normalize it using the
- 	 * registered opp table and use it to calculate thermal pressure.
- 	 */
--	freq = qcom_lmh_get_throttle_freq(data);
--	freq_hz = freq * HZ_PER_KHZ;
-+	freq_hz = qcom_lmh_get_throttle_freq(data);
- 
- 	opp = dev_pm_opp_find_freq_floor(dev, &freq_hz);
- 	if (IS_ERR(opp) && PTR_ERR(opp) == -ERANGE)
-@@ -371,6 +375,7 @@ static const struct qcom_cpufreq_soc_data qcom_soc_data = {
- 
- static const struct qcom_cpufreq_soc_data epss_soc_data = {
- 	.reg_enable = 0x0,
-+	.reg_domain_state = 0x20,
- 	.reg_dcvs_ctrl = 0xb0,
- 	.reg_freq_lut = 0x100,
- 	.reg_volt_lut = 0x200,
 -- 
-2.33.0
+2.34.1
 
