@@ -2,81 +2,155 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7330BC433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Mar 2022 18:12:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CDC2C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Mar 2022 20:23:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349849AbiC3SN4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Mar 2022 14:13:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47388 "EHLO
+        id S231979AbiC3UZT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Mar 2022 16:25:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349861AbiC3SNy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2022 14:13:54 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88B703F898
-        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2022 11:12:02 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id u26so25379249eda.12
-        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2022 11:12:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chrisdown.name; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=7EeHvbWk//qAFbeA6A5Z8GvHq/HktOwS8ahcApKNqcE=;
-        b=SesD38yYKpqPNksIzQ8aZoV15Upa3FHXViA/NI7jvTW+rkEQtWH8Z3N0Pou1LmTWMU
-         nxlFXncclEX4cUFu+7vp5s7R1aJicX03Jzc53nwUnyIlTZ5Ra5vyCVARZDXgJO7y13CO
-         5I80HLWC0ozhk4+wT2Za1SQWmMrY6zfskmvbY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=7EeHvbWk//qAFbeA6A5Z8GvHq/HktOwS8ahcApKNqcE=;
-        b=KIPbAyuYAQ8gh7YRExgTuwzMGmPix85q9g1RMg/VwvVa6eZzisRHjHguTSgyRAuCtV
-         +v0lYBYy/kK/2YISY10N+xEB1jLgda4nYM1zzj6U7bre2B8VFcKM0jflndLia5VKYdN3
-         WQlHf6jxOkuWkTl7O5+2ENWlTeApWf7KIkMLl/C0Z87HRUPxOART/BlWnXz/hXZm1lyB
-         sRjToGjufy2wrqKoHUasGK03H8stdferhWYM0X47anwn9yLbvNH93/43s4qqa9hYOSXr
-         r+SiK6/VEO99CC4uDts85dKPE4ymvfe8tJ2uXcDV9z+koWcuc2ErYEbjYaR6YE9KyP33
-         +dtA==
-X-Gm-Message-State: AOAM533j8Xr8TRkjD0U2wo6LGRlx/4Kyhb9l/Z8fc6RClmvSLiCvId6b
-        xFn+N7zy/jGjJs2WMYGSEwvPqQ==
-X-Google-Smtp-Source: ABdhPJw2lHDcULcX0Y44ZQPyalM8UaR0/qMr3M2rNaqPICn61olCaEuZxQ9/+ZpEl3lSdfrWAQwspQ==
-X-Received: by 2002:a05:6402:2142:b0:413:6531:bd9e with SMTP id bq2-20020a056402214200b004136531bd9emr12398254edb.5.1648663920818;
-        Wed, 30 Mar 2022 11:12:00 -0700 (PDT)
-Received: from localhost ([2620:10d:c093:400::5:c1bb])
-        by smtp.gmail.com with ESMTPSA id h30-20020a056402095e00b00412b81dd96esm9912801edz.29.2022.03.30.11.11.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Mar 2022 11:12:00 -0700 (PDT)
-Date:   Wed, 30 Mar 2022 19:11:59 +0100
-From:   Chris Down <chris@chrisdown.name>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: Re: Thermal notifications without setting thermal governor to
- userspace?
-Message-ID: <YkSdbwVTFZGu6X/1@chrisdown.name>
-References: <YkR6/KnH/f9U+2qf@chrisdown.name>
- <f48f8bcc-0d1c-0a36-0e50-2e6b17a645a2@linaro.org>
+        with ESMTP id S231191AbiC3UZR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2022 16:25:17 -0400
+X-Greylist: delayed 1271 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 30 Mar 2022 13:23:31 PDT
+Received: from gateway22.websitewelcome.com (gateway22.websitewelcome.com [192.185.47.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 658976378
+        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2022 13:23:31 -0700 (PDT)
+Received: from cm14.websitewelcome.com (cm14.websitewelcome.com [100.42.49.7])
+        by gateway22.websitewelcome.com (Postfix) with ESMTP id AEE4114D38
+        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2022 15:02:19 -0500 (CDT)
+Received: from 162-215-252-75.unifiedlayer.com ([208.91.199.152])
+        by cmsmtp with SMTP
+        id ZeWJnjAjVHnotZeWJnaRDO; Wed, 30 Mar 2022 15:02:19 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=roeck-us.net; s=default; h=Content-Transfer-Encoding:Content-Type:
+        In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=DrUu3f6Vg70A9S/e0ENsULeFLvIkUNgEiXVJ565JLzM=; b=dDDchv22UZx7S9aVL6BuhPFHoX
+        K+2861O1HC8rPmzN2ZaiTGoflxh53IzGBZ5EdHlqW5L6ICtftxsebDPSzuFktdght6c9yH2mECk3o
+        hLsWYXTJn9H3SwYhiHZfPPOXC/1lXTRDSYoEX9pJoM8dxdCPLPVLqms0Qt098Vul4I53VkR3nQVHI
+        wOMhdbWDZT9nLBtwTF0hK4AV+ZtXbiviUIGWNDFCZsx/+6f8zcp0aGaHlMR2wswTvg4dBO+7CezGy
+        6Ss2GnHToaslE/5DM42PTv+ri9c94/USznJ3FiAGdSgbE30796l7gzBBI1tqHXmOyusJoumjPqycM
+        5A2964cA==;
+Received: from 108-223-40-66.lightspeed.sntcca.sbcglobal.net ([108.223.40.66]:54582)
+        by bh-25.webhostbox.net with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <linux@roeck-us.net>)
+        id 1nZeWI-001X75-Mk; Wed, 30 Mar 2022 20:02:18 +0000
+Message-ID: <45acc349-8fea-f755-065c-c561949c45af@roeck-us.net>
+Date:   Wed, 30 Mar 2022 13:02:16 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <f48f8bcc-0d1c-0a36-0e50-2e6b17a645a2@linaro.org>
-User-Agent: Mutt/2.2.2 (aa28abe8) (2022-03-25)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v20 1/4] mfd: silergy,sy7636a: Add config option
+Content-Language: en-US
+To:     Alistair Francis <alistair@alistair23.me>, lgirdwood@gmail.com,
+        robh+dt@kernel.org, kernel@pengutronix.de, lee.jones@linaro.org,
+        broonie@kernel.org
+Cc:     linux-hwmon@vger.kernel.org, geert@linux-m68k.org,
+        linux-kernel@vger.kernel.org, shawnguo@kernel.org,
+        alistair23@gmail.com, s.hauer@pengutronix.de, andreas@kemnade.info,
+        rui.zhang@intel.com, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-imx@nxp.com, amitk@kernel.org
+References: <20220330094126.30252-1-alistair@alistair23.me>
+ <20220330094126.30252-2-alistair@alistair23.me>
+From:   Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <20220330094126.30252-2-alistair@alistair23.me>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - bh-25.webhostbox.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - roeck-us.net
+X-BWhitelist: no
+X-Source-IP: 108.223.40.66
+X-Source-L: No
+X-Exim-ID: 1nZeWI-001X75-Mk
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: 108-223-40-66.lightspeed.sntcca.sbcglobal.net [108.223.40.66]:54582
+X-Source-Auth: linux@roeck-us.net
+X-Email-Count: 11
+X-Source-Cap: cm9lY2s7YWN0aXZzdG07YmgtMjUud2ViaG9zdGJveC5uZXQ=
+X-Local-Domain: yes
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On 3/30/22 02:41, Alistair Francis wrote:
+> Add a specific MFD_SY7636A config option.
+> 
+> As part of this change we can use MFD_SY7636A as a dependency for all
+> SY7636a components and also remove the name from MFD_SIMPLE_MFD_I2C as
+> it no longer needs to be selectable.
+> 
+> Signed-off-by: Alistair Francis <alistair@alistair23.me>
 
-Daniel Lezcano writes:
->I'll answer to your email but meanwhile this can have some interest for you:
->
->
->https://lore.kernel.org/all/20220330100444.3846661-1-daniel.lezcano@linaro.org/
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-Thanks! Glad to see that it's making progress.
+> ---
+>   drivers/hwmon/Kconfig     |  1 +
+>   drivers/mfd/Kconfig       | 12 +++++++++++-
+>   drivers/regulator/Kconfig |  1 +
+>   3 files changed, 13 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> index 68a8a27ab3b7..74b60d24e740 100644
+> --- a/drivers/hwmon/Kconfig
+> +++ b/drivers/hwmon/Kconfig
+> @@ -1693,6 +1693,7 @@ config SENSORS_SIS5595
+>   
+>   config SENSORS_SY7636A
+>   	tristate "Silergy SY7636A"
+> +	depends on MFD_SY7636A
+>   	help
+>   	  If you say yes here you get support for the thermistor readout of
+>   	  the Silergy SY7636A PMIC.
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 3b59456f5545..c47cb755757b 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -1095,6 +1095,16 @@ config MFD_SPMI_PMIC
+>   	  Say M here if you want to include support for the SPMI PMIC
+>   	  series as a module.  The module will be called "qcom-spmi-pmic".
+>   
+> +config MFD_SY7636A
+> +	tristate "Silergy SY7636A voltage regulator"
+> +	depends on I2C
+> +	select MFD_SIMPLE_MFD_I2C
+> +	help
+> +	  Enable support for Silergy SY7636A voltage regulator.
+> +
+> +	  To enable support for building sub-devices as modules,
+> +	  choose M here.
+> +
+>   config MFD_RDC321X
+>   	tristate "RDC R-321x southbridge"
+>   	select MFD_CORE
+> @@ -1202,7 +1212,7 @@ config MFD_SI476X_CORE
+>   	  module will be called si476x-core.
+>   
+>   config MFD_SIMPLE_MFD_I2C
+> -	tristate "Simple Multi-Functional Device support (I2C)"
+> +	tristate
+>   	depends on I2C
+>   	select MFD_CORE
+>   	select REGMAP_I2C
+> diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+> index 5ef2306fce04..c8ce6e5eea24 100644
+> --- a/drivers/regulator/Kconfig
+> +++ b/drivers/regulator/Kconfig
+> @@ -1219,6 +1219,7 @@ config REGULATOR_STW481X_VMMC
+>   
+>   config REGULATOR_SY7636A
+>   	tristate "Silergy SY7636A voltage regulator"
+> +	depends on MFD_SY7636A
+>   	help
+>   	  This driver supports Silergy SY3686A voltage regulator.
+>   
 
-I'll wait for your reply on the e-mail overall then :-)
-
-Thanks,
-
-Chris
