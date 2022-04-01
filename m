@@ -2,106 +2,109 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63D7BC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7813BC433EF
 	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 15:45:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345236AbiDAPq6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 11:46:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36348 "EHLO
+        id S243116AbiDAPq7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 11:46:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351322AbiDAPom (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 11:44:42 -0400
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B254A103BAF
-        for <linux-pm@vger.kernel.org>; Fri,  1 Apr 2022 08:19:07 -0700 (PDT)
-Received: by mail-wm1-x332.google.com with SMTP id bi13-20020a05600c3d8d00b0038c2c33d8f3so3703429wmb.4
-        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2022 08:19:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1NdprsVhjM+s7BsGf7u7DDEuZ12Z3WnLtb7OSPBuoMg=;
-        b=ZUGfuwiDrHqDp/g+ojAICJE50HXT1l3XtK+fv1OSahrfDPU2Zt2RQYWbq8A0w2lJNL
-         +sFt75rhKvamqqTn9JSXBy0AGr/bXt6MctiPhJE1UJpI7289KVTr2PVoYbQ1V/AEfN6s
-         RWU4nOaG50fRhtQkLcZtGcNb/OQh3z/WgWnwOtaZ6O4bJ9MtGgjhNu0gAUFFpLH9gNKj
-         HBijFXOL8QbQrLkRQ6xHoo5k7D8l/qN8bLf0nDmLeAFQ7L5oxEksIWIhLNI5+xGC4Uzj
-         sKMDrryt7KtIUF5W469O6wmCAiK9Cz9jj7iqxJIWCt7nnmxjsGOvS0UUDP8qQlgqF33a
-         ZsbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1NdprsVhjM+s7BsGf7u7DDEuZ12Z3WnLtb7OSPBuoMg=;
-        b=yzlXP1GaeeVfZQjGUKtwMCfSxvLTrVRfitvHcxl99ELwtxwFzxABmiwESsCUfBqyBN
-         A6yCIgAsJghxRNkcPUQlTIX7JeFyrneWDQeu+kH4c9TkVkn+6nhgcQewoawwQiJkFJGl
-         hb1fJGdO7xXRpgunC1xnPFYTZw+7nMKLOX7JVtoHAA5rhjLe6JG7f7PdunRA2izpwTxb
-         Id0ZqAZaG29ulIBhjPT+lkoR04c2KJBL39Q7oIuAgkRImTGUtis+0fSZIo0D/wZp5QkF
-         f1jduPgfUWBtdvKX+6wUiyBHcugBO2uYFgAe9TJr7UMkjizvhOP0gdtNsP/msnzH6HTt
-         kpSw==
-X-Gm-Message-State: AOAM5334ddp0XdORWOs91PRPxeWPKHReDb5OMmniIgZQjwy58sqq0n9a
-        Zo1pKdigLn8UrlvfkdOGe0E=
-X-Google-Smtp-Source: ABdhPJxWdEWV/WBcQuJBXwUksy9heBFiyV/941WD4rUO4S72+XqTeSc9/wX+CbzvXnE6ozc/uQQqNA==
-X-Received: by 2002:a05:600c:4408:b0:388:a042:344f with SMTP id u8-20020a05600c440800b00388a042344fmr9024136wmn.52.1648826345742;
-        Fri, 01 Apr 2022 08:19:05 -0700 (PDT)
-Received: from localhost.localdomain ([37.164.133.248])
-        by smtp.gmail.com with ESMTPSA id g6-20020a5d5406000000b001f049726044sm2276101wrv.79.2022.04.01.08.19.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Apr 2022 08:19:05 -0700 (PDT)
-From:   Massimiliano Minella <massimiliano.minella@gmail.com>
-X-Google-Original-From: Massimiliano Minella <massimiliano.minella@se.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Massimiliano Minella <massimiliano.minella@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v2] thermal: k3: Add hwmon support
-Date:   Fri,  1 Apr 2022 17:13:51 +0200
-Message-Id: <20220401151656.913166-1-massimiliano.minella@se.com>
-X-Mailer: git-send-email 2.25.1
+        with ESMTP id S1350123AbiDAO7E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:59:04 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 194C65676D;
+        Fri,  1 Apr 2022 07:46:40 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id BF4B6B824FD;
+        Fri,  1 Apr 2022 14:46:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7877FC34113;
+        Fri,  1 Apr 2022 14:46:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1648824397;
+        bh=CdT67UIb3gW6Ey5zJJcP49xxe4aOfAQ2gK2EWJliYUI=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=NrVlkA+ol+eZppUVnF4PzKV9dmiH9fehzKPH5cxjG+aBKzZQSVlv3crgcb0+K1mcp
+         lqamSmENPkY2kdXNh6FajusarrDAvQd84lkJJDpn1U0HJE6ubAaRmSMvt22zGevQ05
+         wwF2gLEA3TZFBv8qPAd2QaHCL18M4U1P7LSj7QTxBcUptodoPmxSGdqPOvMti86D7v
+         7OVxEVEHSrVwPciTDiEEcgwwqiZL1uOn1mbSmBUgEy50ZU8hIgQJlel46OuOzmj2fn
+         3VF5PyP+sz98t5Vv/Dr9NB3ToFeS2iiQZ/UpVZTbNKmUEtKzDxc6qUmJq8LrcaOLFe
+         TCFWeUBqlaMJw==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Evgeny Boger <boger@wirenboard.com>, Chen-Yu Tsai <wens@csie.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>, sre@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 08/29] power: supply: axp20x_battery: properly report current when discharging
+Date:   Fri,  1 Apr 2022 10:45:51 -0400
+Message-Id: <20220401144612.1955177-8-sashal@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220401144612.1955177-1-sashal@kernel.org>
+References: <20220401144612.1955177-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Massimiliano Minella <massimiliano.minella@gmail.com>
+From: Evgeny Boger <boger@wirenboard.com>
 
-Expose the thermal sensors on K3 AM654 as hwmon devices, so that
-temperatures could be read using lm-sensors.
+[ Upstream commit d4f408cdcd26921c1268cb8dcbe8ffb6faf837f3 ]
 
-Signed-off-by: Massimiliano Minella <massimiliano.minella@gmail.com>
+As stated in [1], negative current values are used for discharging
+batteries.
+
+AXP PMICs internally have two different ADC channels for shunt current
+measurement: one used during charging and one during discharging.
+The values reported by these ADCs are unsigned.
+While the driver properly selects ADC channel to get the data from,
+it doesn't apply negative sign when reporting discharging current.
+
+[1] Documentation/ABI/testing/sysfs-class-power
+
+Signed-off-by: Evgeny Boger <boger@wirenboard.com>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-Changes in v2:
- * use devm_thermal_add_hwmon_sysfs instead of devm_add_action_or_reset
+ drivers/power/supply/axp20x_battery.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
- drivers/thermal/k3_bandgap.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
-index 35f41e8a0b75..5d0b3ffc6f46 100644
---- a/drivers/thermal/k3_bandgap.c
-+++ b/drivers/thermal/k3_bandgap.c
-@@ -16,6 +16,8 @@
- #include <linux/thermal.h>
- #include <linux/types.h>
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index e84b6e4da14a..9fda98b950ba 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -185,7 +185,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 				   union power_supply_propval *val)
+ {
+ 	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
+-	struct iio_channel *chan;
+ 	int ret = 0, reg, val1;
  
-+#include "thermal_hwmon.h"
-+
- #define K3_VTM_DEVINFO_PWR0_OFFSET		0x4
- #define K3_VTM_DEVINFO_PWR0_TEMPSENS_CT_MASK	0xf0
- #define K3_VTM_TMPSENS0_CTRL_OFFSET	0x80
-@@ -219,6 +221,9 @@ static int k3_bandgap_probe(struct platform_device *pdev)
- 			ret = PTR_ERR(data[id].tzd);
- 			goto err_alloc;
- 		}
-+
-+		if (devm_thermal_add_hwmon_sysfs(data[id].tzd))
-+			dev_warn(dev, "Failed to add hwmon sysfs attributes\n");
- 	}
+ 	switch (psp) {
+@@ -265,12 +264,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
  
- 	platform_set_drvdata(pdev, bgp);
-
-base-commit: 31035f3e20af4ede5f1c8162068327ea0b35a96e
+-		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
+-			chan = axp20x_batt->batt_chrg_i;
+-		else
+-			chan = axp20x_batt->batt_dischrg_i;
+-
+-		ret = iio_read_channel_processed(chan, &val->intval);
++		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING) {
++			ret = iio_read_channel_processed(axp20x_batt->batt_chrg_i, &val->intval);
++		} else {
++			ret = iio_read_channel_processed(axp20x_batt->batt_dischrg_i, &val1);
++			val->intval = -val1;
++		}
+ 		if (ret)
+ 			return ret;
+ 
 -- 
-2.25.1
+2.34.1
 
