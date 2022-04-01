@@ -2,109 +2,208 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EB70C433EF
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 15:45:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 512A3C433FE
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 16:02:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344033AbiDAPrK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 11:47:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58272 "EHLO
+        id S235878AbiDAQEX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 12:04:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350546AbiDAPAI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 11:00:08 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E5C291565;
-        Fri,  1 Apr 2022 07:47:47 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3C54360A53;
-        Fri,  1 Apr 2022 14:47:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5DBEC36AE3;
-        Fri,  1 Apr 2022 14:47:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648824466;
-        bh=SuBR1hW/0xDCQAQZLmbTr1+EmG9QhsVoHp7VnORdMZY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Mcrpv6LX9VkOmM8EtxZ8tXkfcxuG1ZOnjBLScAaqe1zVtGidwHN7Pa4nliEFY777B
-         dmM0+pMyZG38CHtJogwK8PXLxf6siRPeJbBntnhdNH1fPxgMEpDdJuE/P8FVXNXVCv
-         l+6+FqQ86tGWOGOz/0QFsvInU2gNiVSDidv9UwK6qmNYkttDx1xfwZw8gvd9bsBVBn
-         MjyTXmuE+1sxHy4MgTpWPaapAiM5Rt+Jm0ez98unLWBVHYshknPbLuoj8SBo333a1r
-         wVWFwaSGWI06OQO6qSOeqzi7ASmFEdxNzkJgKNlBgV3wpsrv1xqR+hKC/brMegz/rc
-         H6iZM6wdXUjbw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Evgeny Boger <boger@wirenboard.com>, Chen-Yu Tsai <wens@csie.org>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, sre@kernel.org,
+        with ESMTP id S241829AbiDAP5Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 11:57:24 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74F8929341C;
+        Fri,  1 Apr 2022 08:28:15 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id CD6A51F47CE7
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1648826893;
+        bh=0+Qy6DqL3DzylnNPp1BpGcwg8sHoEzTpg9tt+67cetk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=oaadmmE9l2jBobRHcuF+5apmP/oV1M+yQTgaQXh/490G5z2SvOZp7QLQgtzJgg9LJ
+         kSSRoR/nvZ9CwLp45EzhG+gsEx3koHVUSuHt1JW59/t+bmT8pXUVS2QmnY9xmsUTpC
+         X1WV89JttUN6+Th3tQeeGyVC1YwWsXUAEy4E+P0Xan4XfKtfPr4ZtwGN333euh6WrD
+         N3loL42J+dcFCtia8Qc/ofLuqb3G3buKPaL9WdfbuFavNDoIIMZDK0K3IoFi0LcBXI
+         AskMmI0jNnVIhTdrzAIT7CJxNibpnxmJUqkKLyDRo57zBD7XpsP3QwbD56h1ddTp85
+         QH8WLFv/Q71Kg==
+Received: by mercury (Postfix, from userid 1000)
+        id 2CCD61060582; Fri,  1 Apr 2022 17:28:11 +0200 (CEST)
+Date:   Fri, 1 Apr 2022 17:28:11 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Charles Keepax <ckeepax@opensource.cirrus.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Yunfei Dong <yunfei.dong@mediatek.com>,
+        - <patches@opensource.cirrus.com>, linux-media@vger.kernel.org,
+        alsa-devel@alsa-project.org, linux-gpio@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 06/22] power: supply: axp20x_battery: properly report current when discharging
-Date:   Fri,  1 Apr 2022 10:47:13 -0400
-Message-Id: <20220401144729.1955554-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220401144729.1955554-1-sashal@kernel.org>
-References: <20220401144729.1955554-1-sashal@kernel.org>
+Subject: Re: [PATCH] dt-bindings: Fix 'enum' lists with duplicate entries
+Message-ID: <20220401152811.uv3wm55byrmk4gqc@mercury.elektranox.org>
+References: <20220401141247.2993925-1-robh@kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="gjfd7i3tbgmmz62e"
+Content-Disposition: inline
+In-Reply-To: <20220401141247.2993925-1-robh@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Evgeny Boger <boger@wirenboard.com>
 
-[ Upstream commit d4f408cdcd26921c1268cb8dcbe8ffb6faf837f3 ]
+--gjfd7i3tbgmmz62e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-As stated in [1], negative current values are used for discharging
-batteries.
+Hi,
 
-AXP PMICs internally have two different ADC channels for shunt current
-measurement: one used during charging and one during discharging.
-The values reported by these ADCs are unsigned.
-While the driver properly selects ADC channel to get the data from,
-it doesn't apply negative sign when reporting discharging current.
+On Fri, Apr 01, 2022 at 09:12:47AM -0500, Rob Herring wrote:
+> There's no reason to list the same value twice in an 'enum'. Fix all the
+> occurrences in the tree. A meta-schema change will catch future ones.
+>=20
+> Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: Charles Keepax <ckeepax@opensource.cirrus.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Yunfei Dong <yunfei.dong@mediatek.com>
+> Cc: - <patches@opensource.cirrus.com>
+> Cc: linux-media@vger.kernel.org
+> Cc: alsa-devel@alsa-project.org
+> Cc: linux-gpio@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
 
-[1] Documentation/ABI/testing/sysfs-class-power
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-Signed-off-by: Evgeny Boger <boger@wirenboard.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/axp20x_battery.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+-- Sebastian
 
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 7494f0f0eadb..a2e2443357fa 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -160,7 +160,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 				   union power_supply_propval *val)
- {
- 	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
--	struct iio_channel *chan;
- 	int ret = 0, reg, val1;
- 
- 	switch (psp) {
-@@ -240,12 +239,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
--			chan = axp20x_batt->batt_chrg_i;
--		else
--			chan = axp20x_batt->batt_dischrg_i;
--
--		ret = iio_read_channel_processed(chan, &val->intval);
-+		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING) {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_chrg_i, &val->intval);
-+		} else {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_dischrg_i, &val1);
-+			val->intval = -val1;
-+		}
- 		if (ret)
- 			return ret;
- 
--- 
-2.34.1
+> There's also one other occurrence in snps,dwmac.yaml I didn't fix as=20
+> there's a patch[1] for it which prompted this patch.
+>=20
+> Rob
+>=20
+> [1] https://lore.kernel.org/r/20220401030847epcms1p8cf7a8e1d8cd7d325dacf3=
+0f78da36328@epcms1p8
+>=20
+>  .../bindings/arm/tegra/nvidia,tegra20-pmc.yaml        |  1 -
+>  Documentation/devicetree/bindings/bus/ti-sysc.yaml    |  1 -
+>  .../bindings/media/mediatek,vcodec-encoder.yaml       |  1 -
+>  .../devicetree/bindings/pinctrl/cirrus,madera.yaml    | 11 +++++------
+>  .../devicetree/bindings/power/supply/bq2415x.yaml     |  1 -
+>  5 files changed, 5 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-p=
+mc.yaml b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.ya=
+ml
+> index 0afec83cc723..564ae6aaccf7 100644
+> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
+> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.yaml
+> @@ -13,7 +13,6 @@ maintainers:
+>  properties:
+>    compatible:
+>      enum:
+> -      - nvidia,tegra20-pmc
+>        - nvidia,tegra20-pmc
+>        - nvidia,tegra30-pmc
+>        - nvidia,tegra114-pmc
+> diff --git a/Documentation/devicetree/bindings/bus/ti-sysc.yaml b/Documen=
+tation/devicetree/bindings/bus/ti-sysc.yaml
+> index bd40213302da..fced4082b047 100644
+> --- a/Documentation/devicetree/bindings/bus/ti-sysc.yaml
+> +++ b/Documentation/devicetree/bindings/bus/ti-sysc.yaml
+> @@ -34,7 +34,6 @@ properties:
+>      oneOf:
+>        - items:
+>            - enum:
+> -              - ti,sysc-omap2
+>                - ti,sysc-omap2
+>                - ti,sysc-omap4
+>                - ti,sysc-omap4-simple
+> diff --git a/Documentation/devicetree/bindings/media/mediatek,vcodec-enco=
+der.yaml b/Documentation/devicetree/bindings/media/mediatek,vcodec-encoder.=
+yaml
+> index e7b65a91c92c..df7df06c378f 100644
+> --- a/Documentation/devicetree/bindings/media/mediatek,vcodec-encoder.yaml
+> +++ b/Documentation/devicetree/bindings/media/mediatek,vcodec-encoder.yaml
+> @@ -106,7 +106,6 @@ allOf:
+>            enum:
+>              - mediatek,mt8173-vcodec-enc
+>              - mediatek,mt8192-vcodec-enc
+> -            - mediatek,mt8173-vcodec-enc
+> =20
+>      then:
+>        properties:
+> diff --git a/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml=
+ b/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
+> index 8a90d8273767..6bd42e43cdab 100644
+> --- a/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
+> +++ b/Documentation/devicetree/bindings/pinctrl/cirrus,madera.yaml
+> @@ -48,13 +48,12 @@ properties:
+>                Name of one pin group to configure.
+>              enum: [ aif1, aif2, aif3, aif4, mif1, mif2, mif3, pdmspk1,
+>                      pdmspk2, dmic4, dmic5, dmic6, gpio1, gpio2, gpio3,
+> -                    gpio4, gpio5, gpio6, gpio7, gpio7, gpio8, gpio9,
+> +                    gpio4, gpio5, gpio6, gpio7, gpio8, gpio9,
+>                      gpio10, gpio11, gpio12, gpio13, gpio14, gpio15,
+> -                    gpio16, gpio17, gpio17, gpio18, gpio19, gpio20,
+> -                    gpio21, gpio22, gpio23, gpio24, gpio25, gpio26,
+> -                    gpio27, gpio27, gpio28, gpio29, gpio30, gpio31,
+> -                    gpio32, gpio33, gpio34, gpio35, gpio36, gpio37,
+> -                    gpio37, gpio38, gpio39 ]
+> +                    gpio16, gpio17, gpio18, gpio19, gpio20, gpio21,
+> +                    gpio22, gpio23, gpio24, gpio25, gpio26, gpio27,
+> +                    gpio28, gpio29, gpio30, gpio31, gpio32, gpio33,
+> +                    gpio34, gpio35, gpio36, gpio37, gpio38, gpio39 ]
+> =20
+>            function:
+>              description:
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq2415x.yaml =
+b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+> index f8461f06e6f4..118cf484cc69 100644
+> --- a/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+> +++ b/Documentation/devicetree/bindings/power/supply/bq2415x.yaml
+> @@ -16,7 +16,6 @@ allOf:
+>  properties:
+>    compatible:
+>      enum:
+> -      - ti,bq24150
+>        - ti,bq24150
+>        - ti,bq24150a
+>        - ti,bq24151
+> --=20
+> 2.32.0
+>=20
 
+--gjfd7i3tbgmmz62e
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmJHGggACgkQ2O7X88g7
++po2uA/+OS0hkCudE7TWE85KDv5+/Qb+6/JFLz20iy0f8rQr3U1VOufXZccdMBmV
+lPY7v8Tzl+P3F2tHUdy1A6MSRvSrfxGQi32YeaSR/jNylRY7Lpmm73psjokmXsX/
+FZZMXB7SvHvSLPqIdfKfs9sxuWjeZqw/YsYTDXHvubTSX5LkDuxx1p9KYYoTtZ5y
+jDDUYqCdc1j8+z6u302ErkzZLLxowhYXlfy5I0D3I9VlVA42X6+gVT6j108fgLMw
+ARg8mB8LrTwigl+qpW4E91pH0IOwwVbyIoUAJOUEQlj2qsAxfxAvNOaAbT5KbRZS
+Tj+4TqPQYM+srE8e4dqKCQHB5GQFqHlgFa4r4ATqaqCddL04Zvl1MhaVqoXIuGL/
+NH28aDPnRib2ZR7JkbAQ77NyLnBFtfEbJ7EU58YeTkD+QWJ41Xj9OzH4oEDdurCx
+ggml7FuQj4LaC4uy4cR2MDyHlsrg2wS24+R9rFeXc47HchTboXS14r+a5fOLetpp
+BydxRULRfek5NWLZZGaWLzZZmWwGgG3/hNeNFXDPazkECoHC6HtfpNGX5XAuR3dx
+/PUycmAYpb2KfL3gVZksITrrAZ2qc3tGJgn//rsmCHcouG1w5Kf9NlvRsCzCUAAY
+gbTebdGk0p0ilzuOB4jo1QTy5xJgR6pUMzCWXigh4jkRzJU2pYI=
+=3CSB
+-----END PGP SIGNATURE-----
+
+--gjfd7i3tbgmmz62e--
