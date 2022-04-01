@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B7C4C4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6984C433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 15:45:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345703AbiDAO4b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 10:56:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54906 "EHLO
+        id S242970AbiDAPqe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 11:46:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351270AbiDAOsi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:48:38 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10D9926A945;
-        Fri,  1 Apr 2022 07:39:25 -0700 (PDT)
+        with ESMTP id S1348264AbiDAOxj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:53:39 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77BB32B5AC0;
+        Fri,  1 Apr 2022 07:42:50 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id F19A8CE2585;
-        Fri,  1 Apr 2022 14:38:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84C12C340EE;
-        Fri,  1 Apr 2022 14:38:45 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 16694B82500;
+        Fri,  1 Apr 2022 14:42:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB959C340EE;
+        Fri,  1 Apr 2022 14:42:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648823926;
-        bh=Vb9jK5l2dL7OUkRHwt1xmUNIYgFrzM1D1PHHrhDfYeM=;
+        s=k20201202; t=1648824168;
+        bh=CdT67UIb3gW6Ey5zJJcP49xxe4aOfAQ2gK2EWJliYUI=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ECSoWF4rgFaQHV36NsXEvXhvA5r3UEjtVUsYwHda6UFMAcdie733W/lp/4OHVnNBW
-         aTAJEcx1c4txpt+nWX9u0t84Dda3eXXoLVQGl08k3vXyT/HREf6RG30WyXg22YluSf
-         IQaOZEIPR3vHWqsjGhLROCwnBH6pZLgiHL4/4/HfWk91F8RSre7LKgZQLfEH9zXayZ
-         pza73XZB5rhIKLhm7I5FAgNN97gVLIIQP7zIn7SKI448EcpI/+bX7TabMpbQXHyuAK
-         PiImuKMo0fjRaq3vBDehjjqge71hwi6EJkSEz5yOQfRJmYa3eGbnBosW4Q/C/nnJVP
-         022jPNpo6azbw==
+        b=da4ex2jqsYK5Icxxp8AAdQdnSduLmxskJ4gu0420SAtHRVFplbayN6Nz5FEj0vvgR
+         si66+s6Dwe2+poaaRvb1ta+m3FGH7WcejgcZJq14cADwbTAdMIaA1X+56RylqKUqSn
+         262OR19MebeUB/tEICBJv7IJ+85uC1WkvsRvixdG9pDmPWELQtp5i/FCWYiWF8gGM1
+         K4eJxdanIah9mQF59o3GM6LIPFUyJRzE9M32FlzyWweK4PZiO49IK4S+sVTkrwXOQ3
+         5oIFuGbZvLD0O0vE3aqqI/LglU5O7c16VY1YO/5GhM2mK8baHBlJrazfo8zyxF+/S6
+         ersQtpkBMSihw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Evgeny Boger <boger@wirenboard.com>, Chen-Yu Tsai <wens@csie.org>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 22/98] power: supply: axp20x_battery: properly report current when discharging
-Date:   Fri,  1 Apr 2022 10:36:26 -0400
-Message-Id: <20220401143742.1952163-22-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 14/65] power: supply: axp20x_battery: properly report current when discharging
+Date:   Fri,  1 Apr 2022 10:41:15 -0400
+Message-Id: <20220401144206.1953700-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220401143742.1952163-1-sashal@kernel.org>
-References: <20220401143742.1952163-1-sashal@kernel.org>
+In-Reply-To: <20220401144206.1953700-1-sashal@kernel.org>
+References: <20220401144206.1953700-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 18a9db0df4b1..335e12cc5e2f 100644
+index e84b6e4da14a..9fda98b950ba 100644
 --- a/drivers/power/supply/axp20x_battery.c
 +++ b/drivers/power/supply/axp20x_battery.c
-@@ -186,7 +186,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+@@ -185,7 +185,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
  				   union power_supply_propval *val)
  {
  	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
@@ -86,7 +86,7 @@ index 18a9db0df4b1..335e12cc5e2f 100644
  	int ret = 0, reg, val1;
  
  	switch (psp) {
-@@ -266,12 +265,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+@@ -265,12 +264,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
  		if (ret)
  			return ret;
  
