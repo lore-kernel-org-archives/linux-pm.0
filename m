@@ -2,109 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A852C433FE
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:54:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8504FC433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:54:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245702AbiDAO4O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 10:56:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34600 "EHLO
+        id S235124AbiDAO4K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 10:56:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348239AbiDAOme (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:42:34 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D70BBDB;
-        Fri,  1 Apr 2022 07:34:36 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        with ESMTP id S1352460AbiDAOuW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:50:22 -0400
+Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77CAD2B331E;
+        Fri,  1 Apr 2022 07:41:45 -0700 (PDT)
+Received: from localhost (unknown [IPv6:2601:281:8300:35::5f6])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 5EE9DB8240E;
-        Fri,  1 Apr 2022 14:34:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D1F2C340EE;
-        Fri,  1 Apr 2022 14:34:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648823650;
-        bh=Vb9jK5l2dL7OUkRHwt1xmUNIYgFrzM1D1PHHrhDfYeM=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LysxBhUmjUOJ5czfT4BtkwpKwKo47NHl6T7TBzUXY7U4giu8emfJaMMivcViHQUog
-         n5im66C5MGmXgvaofk8d7ZAtdPyRT3wLANemIP1vlFcRM4noS+XFQr9wpCWgOMkL2c
-         baeLsiRWTnvjUinUCbR8Ak4gFCQpS4GbNQ2IHr84VG9YCuuyLFNlgdKaWg+n7T2X4J
-         u9FOrYxfU+hj1EJLYUBTh6Or2CCsCFF6OoaWqjwMKbykOMehQbrz/Pw2o/Dm80xmS/
-         T9ePU4Ln7V82sAohHRZjuDg9ITmaEASlA8gOMiDn5puxdnsIdGQpHvkNNYa7VinUuF
-         yPMmwnsduAE9A==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Evgeny Boger <boger@wirenboard.com>, Chen-Yu Tsai <wens@csie.org>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, sre@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 028/109] power: supply: axp20x_battery: properly report current when discharging
-Date:   Fri,  1 Apr 2022 10:31:35 -0400
-Message-Id: <20220401143256.1950537-28-sashal@kernel.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220401143256.1950537-1-sashal@kernel.org>
-References: <20220401143256.1950537-1-sashal@kernel.org>
+        by ms.lwn.net (Postfix) with ESMTPSA id 66E7236D;
+        Fri,  1 Apr 2022 14:41:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 66E7236D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+        t=1648824065; bh=YOo/UPql+NDwyz2e3HSuZOsUwXhZJ0hyMP9zC0XqeJs=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=jl+acHcAnWRUVHAj9Hito6b1LjAsiBL49YA0wXH8lp6o1GHuI84cSVP5cDzvJxXKV
+         cqyjofllqeP0zFa5WchrYEls+oG6ytrqd2teeqWBkLutJB2lhgxU/dGJq1e9vC0Fp+
+         J8Yb8L5lcWUafduIlZwGL2bd1aF9Np5fBLsQrYWKZfmJqwHxo4S3cn4t1BBEa9/Nxr
+         OA2izcbIuHrcGngybhYYiInFWm4yCtEhXHEV//KAXyb4ZxGYRZvMJaxsddk3bwFNBj
+         65Aok08kQH/WTHyIkJWKxJLPxu6DkjJAqWjKwdJkUT5YzDLSmamcFqUXUsR14KSwaM
+         OcKQbv83/dhLw==
+From:   Jonathan Corbet <corbet@lwn.net>
+To:     Akira Yokosawa <akiyks@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Akira Yokosawa <akiyks@gmail.com>
+Subject: Re: [PATCH -pm] docs: driver-api/thermal/intel_dptf: Include
+ isonum.txt
+In-Reply-To: <e06542af-aa8b-0885-37a3-bb7bc5fafa1e@gmail.com>
+References: <e06542af-aa8b-0885-37a3-bb7bc5fafa1e@gmail.com>
+Date:   Fri, 01 Apr 2022 08:41:04 -0600
+Message-ID: <87y20oyigv.fsf@meer.lwn.net>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Evgeny Boger <boger@wirenboard.com>
+Akira Yokosawa <akiyks@gmail.com> writes:
 
-[ Upstream commit d4f408cdcd26921c1268cb8dcbe8ffb6faf837f3 ]
+> For the "|copy|" substitution to work, need to include isonum.txt.
+>
+> Fixes: 16c02447f3e1 ("Documentation: thermal: DPTF Documentation")
+> Reported by: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Akira Yokosawa <akiyks@gmail.com>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> ---
+> Hi,
+>
+> This fixes a doc build warning reported by Randy at
+> https://lore.kernel.org/r/73d98132-1d08-ef29-edb7-9e062b9154b8@infradead.=
+org/.
+>
+>         Thanks, Akira
+> --
+>  Documentation/driver-api/thermal/intel_dptf.rst | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/Documentation/driver-api/thermal/intel_dptf.rst b/Documentat=
+ion/driver-api/thermal/intel_dptf.rst
+> index 96668dca753a..2df82719c5be 100644
+> --- a/Documentation/driver-api/thermal/intel_dptf.rst
+> +++ b/Documentation/driver-api/thermal/intel_dptf.rst
+> @@ -1,5 +1,7 @@
+>  .. SPDX-License-Identifier: GPL-2.0
+>=20=20
+> +.. include:: <isonum.txt>
+> +
 
-As stated in [1], negative current values are used for discharging
-batteries.
+Interesting...I don't think that was always necessary.
 
-AXP PMICs internally have two different ADC channels for shunt current
-measurement: one used during charging and one during discharging.
-The values reported by these ADCs are unsigned.
-While the driver properly selects ADC channel to get the data from,
-it doesn't apply negative sign when reporting discharging current.
+I have to ask, though: is this worth it?  It adds up to a fair amount of
+clutter to get one symbol - =C2=A9 - that can also just be inserted directly
+if we really think we need it.  I'd vote for doing a global s/|copy|/=C2=A9/
+instead.
 
-[1] Documentation/ABI/testing/sysfs-class-power
+Thanks,
 
-Signed-off-by: Evgeny Boger <boger@wirenboard.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/axp20x_battery.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 18a9db0df4b1..335e12cc5e2f 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -186,7 +186,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 				   union power_supply_propval *val)
- {
- 	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
--	struct iio_channel *chan;
- 	int ret = 0, reg, val1;
- 
- 	switch (psp) {
-@@ -266,12 +265,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
--			chan = axp20x_batt->batt_chrg_i;
--		else
--			chan = axp20x_batt->batt_dischrg_i;
--
--		ret = iio_read_channel_processed(chan, &val->intval);
-+		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING) {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_chrg_i, &val->intval);
-+		} else {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_dischrg_i, &val1);
-+			val->intval = -val1;
-+		}
- 		if (ret)
- 			return ret;
- 
--- 
-2.34.1
-
+jon
