@@ -2,47 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 183DBC433FE
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:54:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4D4BC433F5
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:54:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348793AbiDAO4V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 10:56:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34122 "EHLO
+        id S1349488AbiDAO40 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 10:56:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348987AbiDAOpR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:45:17 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 609CF2986FE;
-        Fri,  1 Apr 2022 07:35:15 -0700 (PDT)
+        with ESMTP id S1351859AbiDAOti (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:49:38 -0400
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09B912B04C4;
+        Fri,  1 Apr 2022 07:40:30 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 37F7B60A3C;
-        Fri,  1 Apr 2022 14:35:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB368C340EE;
-        Fri,  1 Apr 2022 14:35:13 +0000 (UTC)
+        by sin.source.kernel.org (Postfix) with ESMTPS id C2302CE2586;
+        Fri,  1 Apr 2022 14:39:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57A3BC340F2;
+        Fri,  1 Apr 2022 14:39:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648823714;
-        bh=O9osNwnWnovFmioDsg9RoWnkdzW2wddKSctaV6asboM=;
+        s=k20201202; t=1648823986;
+        bh=LY9RsvrfVBQFrwrtSbWIidsZi96BvSQXyVJXHcA9wk4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ebl9Z8ddJtdkFowA8rzp0qPVMTt8NX8Q3F0aI3FMaGDnejJSU2GZKu/DrmmYajWuo
-         ssG86mJNTliJB4AhhR5/OBw8VlFL51n6O5FOWF95Oo7ZZ7dGfUaLL4jRmcRoOqJgbS
-         gsXIueFNmXk+mgZXxMwTllmS65yFL0romOoGe+WCHjGDtQWYmJPKQN3bzBU95e+9/I
-         AX2os95UKXc2kmmha/+C6T6hVNmMDlrjZXKq6cEBe9eODw5J9/ywX16V2gcVaxpOBP
-         TIe/ODKOijDjaksuUHlIstuX1byeinmU9JZcyBY/X7XSrh9nztlGhehQkV4nIaTxqq
-         kQK++S8aT/LdQ==
+        b=q66x8fGh9wn/MRoVKOTyCmmM/TM36KjKjkHDrG11a8Ndtv7uCq6NvuAESM9qCEC8J
+         w/Q7zsm83mWOgw3PVy+1lP1SJYqREvf+8t6eOo0D+/oD1Y2wYsOV0FvMBHfB828hhS
+         pc+or4m99u883K3Cq1vkvNOLNIgFeul5IF5CXnSADBiT14BRS5HrZbqeDJGLE0ru9H
+         fpdm1JO+PXdu+0GpyVwdbRpehcDK52yv4uvyo/EDBKyZs7tiOeCn/5wElJhNLOgdcR
+         DIGwzSeRMXrHdUVf5KZwe0haZi0/2UB1WA4dQePZQFzCQswsfVizxfa+4YKcpifQLF
+         +2RjHfmL1eukw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, sre@kernel.org, wens@csie.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 049/109] power: supply: axp288-charger: Set Vhold to 4.4V
-Date:   Fri,  1 Apr 2022 10:31:56 -0400
-Message-Id: <20220401143256.1950537-49-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 41/98] power: supply: axp288-charger: Set Vhold to 4.4V
+Date:   Fri,  1 Apr 2022 10:36:45 -0400
+Message-Id: <20220401143742.1952163-41-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220401143256.1950537-1-sashal@kernel.org>
-References: <20220401143256.1950537-1-sashal@kernel.org>
+In-Reply-To: <20220401143742.1952163-1-sashal@kernel.org>
+References: <20220401143742.1952163-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -94,10 +94,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index ec41f6cd3f93..c498e62ab4e2 100644
+index b9553be9bed5..fb9db7f43895 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -42,11 +42,11 @@
+@@ -41,11 +41,11 @@
  #define VBUS_ISPOUT_CUR_LIM_1500MA	0x1	/* 1500mA */
  #define VBUS_ISPOUT_CUR_LIM_2000MA	0x2	/* 2000mA */
  #define VBUS_ISPOUT_CUR_NO_LIM		0x3	/* 2500mA */
@@ -111,7 +111,7 @@ index ec41f6cd3f93..c498e62ab4e2 100644
  #define VBUS_ISPOUT_VBUS_PATH_DIS	BIT(7)
  
  #define CHRG_CCCV_CC_MASK		0xf		/* 4 bits */
-@@ -769,6 +769,16 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
+@@ -744,6 +744,16 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
  		ret = axp288_charger_vbus_path_select(info, true);
  		if (ret < 0)
  			return ret;
