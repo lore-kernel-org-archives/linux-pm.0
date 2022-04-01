@@ -2,135 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C669EC4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 07:14:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5259AC433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 08:50:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343771AbiDAHQ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 03:16:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33220 "EHLO
+        id S230512AbiDAIvs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 04:51:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58696 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343769AbiDAHQ0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 03:16:26 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4269493190
-        for <linux-pm@vger.kernel.org>; Fri,  1 Apr 2022 00:14:36 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id y36so353727lfa.6
-        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2022 00:14:35 -0700 (PDT)
+        with ESMTP id S245113AbiDAIvr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 04:51:47 -0400
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DE9724CEE2
+        for <linux-pm@vger.kernel.org>; Fri,  1 Apr 2022 01:49:57 -0700 (PDT)
+Received: by mail-ej1-x634.google.com with SMTP id bh17so4371216ejb.8
+        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2022 01:49:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=se1WsznpofUY5alulIL6V0fVeQduefquDyJntWc5gYE=;
-        b=LpJ+SHKdSKR9knLES20AxuK7StRZ899txeFOxS58+eNYIMsiac+iq8/YBG7su2Bid7
-         Rk6vf8s6EJIbwN8hayGSykK7dgWXnmJ/zeQemk94QGS0t/GM+hD3T4sdNnQ/uY/GpLWM
-         8XNRl0RGZ/RCOszS/Le33s/9zTLvhpC97sfqWu/DJzokgPDn8htBXNtzCL8DFMV/g/3w
-         7ovXNYi81q0lpnG40HqftMxTTJ+l7pSfR9AjkDjWQQB9mz2J3KegFKpeJYqjcg5fY0fm
-         nNJWpFHXtdFa8y4nnzdoN0jzbeX17kIYEE6leM8oSXcVXiEhHfTH99a/FBTlxWYQDJ53
-         jGHQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gyxaGkdBaFbFDBr0XmiSIvVcCyMDB5oUwgvGK5gLUz4=;
+        b=HwTRGKsANBcBbiq4uCmILV5o70O9u5TO3NcYg7vCaepmazGHHkxf83ZWDqsmaGKpl9
+         bPUGqtwo4WFsAnlA/ovSf3/JSDDqg44hsuUKnRuqeEisN7KYBjpli1Zgiban1/q/EwAy
+         FB17iCg+us+vXAWdlVFHcsjIEnMkSMzr2yAEZIFcQKeiD/vXhuApeI28hGPdLQuyMztR
+         PILFll/Lo7yVAhuKmjpOUaiYcfIbJeNN1S3nJ4gknmPBoCOe9yaFIa+rthzJZMo2zfdb
+         9xQYNOIL5f7Wrv9D7AeUwqJWs0NGyzGhsFz9JVgEgG9uMHptV+pFK91TPlaZfUAhu+Ut
+         2h/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=se1WsznpofUY5alulIL6V0fVeQduefquDyJntWc5gYE=;
-        b=I0IV8c4vXEtk/XPvh+QsYQxe0jOEmPFbkveHXHzU11U/Gaph5t0PLPi2PBynndkIbE
-         jptIKr37wmLGHKwSUBb2v8s8BXtJQSYo6w21HzhsvfIbLO3h8LcvRWEF+qRk8L8Ew+cw
-         ArZF8er2aDVypVmSb94R4ZZuD6djNvsSTt4WEdI0rJJV3KJvCOAFH1zXW1wH6GVG4UKl
-         uJuawgpebljf0rSb6IxYvRr1V6jReAF/hwY0dNM0fzPqipJ1GIESj9OtNdC23/ffI0gZ
-         sJf7GcZa817dJpil7RMJk9FuwBP684LO8vEsy9TXMeherJH75CNrJT/JI4HezzUMv/M6
-         cAUw==
-X-Gm-Message-State: AOAM532VpLFipCcznWVF0Mq8N9Fr0mkHq12rOrMeLPmHNjg6Drmj2wR0
-        Yu/LD8eZUyLZ6tWFnsFD7yAsRA==
-X-Google-Smtp-Source: ABdhPJwokTq7YdlJEaAnvN+Wz8DTOqYtf2JPq1DWjcz+2CmIvnuyAxp1efdRIi2v7RK3iQ6JKabqFQ==
-X-Received: by 2002:a05:6512:1116:b0:44a:834c:e70e with SMTP id l22-20020a056512111600b0044a834ce70emr12619838lfg.155.1648797271020;
-        Fri, 01 Apr 2022 00:14:31 -0700 (PDT)
-Received: from localhost.localdomain (88-113-46-102.elisa-laajakaista.fi. [88.113.46.102])
-        by smtp.gmail.com with ESMTPSA id x28-20020a19e01c000000b0044a3aca1c39sm152198lfg.255.2022.04.01.00.14.30
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gyxaGkdBaFbFDBr0XmiSIvVcCyMDB5oUwgvGK5gLUz4=;
+        b=cHSvflri5bJpTrk85MyTHFRUrQGnewpxyz8L3oz3RU/kfyMXeHODiLW2UeBJH4UfjA
+         JSvO7nKW1/1LFceY8vtN8Isnl+d3z6ogFNo01fE5Ej1LshH/8FshOHN4AjMJxzQbS9dF
+         TNFV+WXzMk/WNH1jvqFbGNQHbT2qZrmdtRrTiDfC21vArV8XJFS4WTAsuLM7RIH7O1wU
+         lNn+s/oVRBI4Y8dfuvp4Ei51XB6Yo4QEKLgGS3v505cx3AHPz2mI0/fihbPck/qZ4VRu
+         AYX7MzeS1MgzWsxeM1K4lQWbE1nCbBn08uejNFVkYEcSwO9QPNL2JpiegXun17q9p8ff
+         0atA==
+X-Gm-Message-State: AOAM530eWEQDcNKro/RzHVD7uXzZQaAjIZDMEvZnPKpjAro1NgaU7tzM
+        BmVWVUDPN02foa//WkTndl5maA==
+X-Google-Smtp-Source: ABdhPJzAnKpzvuNc8xtUDGSi4nQwIexbeJOFciJ4pqF5qnxo6KsMiAq8ta3Q2qmXSdXORspNRuyqXg==
+X-Received: by 2002:a17:907:7da5:b0:6e4:e40f:60a0 with SMTP id oz37-20020a1709077da500b006e4e40f60a0mr225232ejc.486.1648802995649;
+        Fri, 01 Apr 2022 01:49:55 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id r16-20020a056402019000b00418ed60c332sm905361edv.65.2022.04.01.01.49.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Apr 2022 00:14:30 -0700 (PDT)
-From:   Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
-To:     Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 1/2] cpufreq: qcom-cpufreq-hw: Clear dcvs interrupts
-Date:   Fri,  1 Apr 2022 10:14:23 +0300
-Message-Id: <20220401071424.2869057-2-vladimir.zapolskiy@linaro.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20220401071424.2869057-1-vladimir.zapolskiy@linaro.org>
-References: <20220401071424.2869057-1-vladimir.zapolskiy@linaro.org>
+        Fri, 01 Apr 2022 01:49:55 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH] PM: Domains: Extend dev_pm_domain_detach() doc
+Date:   Fri,  1 Apr 2022 10:49:50 +0200
+Message-Id: <20220401084950.118998-1-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It's noted that dcvs interrupts are not self-clearing, thus an interrupt
-handler runs constantly, which leads to a severe regression in runtime.
-To fix the problem an explicit write to clear interrupt register is
-required.
+Mention all domain attach menthods which dev_pm_domain_detach()
+reverses.
 
-Fixes: 275157b367f4 ("cpufreq: qcom-cpufreq-hw: Add dcvs interrupt support")
-Signed-off-by: Vladimir Zapolskiy <vladimir.zapolskiy@linaro.org>
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
-Changes from v1 to v2:
-* added a check for pending interrupt status before its handling,
-  thanks to Bjorn for review
+ drivers/base/power/common.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- drivers/cpufreq/qcom-cpufreq-hw.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index f9d593ff4718..e17413a6f120 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -24,6 +24,8 @@
- #define CLK_HW_DIV			2
- #define LUT_TURBO_IND			1
- 
-+#define GT_IRQ_STATUS			BIT(2)
-+
- #define HZ_PER_KHZ			1000
- 
- struct qcom_cpufreq_soc_data {
-@@ -31,6 +33,8 @@ struct qcom_cpufreq_soc_data {
- 	u32 reg_dcvs_ctrl;
- 	u32 reg_freq_lut;
- 	u32 reg_volt_lut;
-+	u32 reg_intr_clr;
-+	u32 reg_intr_status;
- 	u32 reg_current_vote;
- 	u32 reg_perf_state;
- 	u8 lut_row_size;
-@@ -345,11 +349,19 @@ static void qcom_lmh_dcvs_poll(struct work_struct *work)
- static irqreturn_t qcom_lmh_dcvs_handle_irq(int irq, void *data)
- {
- 	struct qcom_cpufreq_data *c_data = data;
-+	u32 val;
-+
-+	val = readl_relaxed(c_data->base + c_data->soc_data->reg_intr_status);
-+	if (!(val & GT_IRQ_STATUS))
-+		return IRQ_HANDLED;
- 
- 	/* Disable interrupt and enable polling */
- 	disable_irq_nosync(c_data->throttle_irq);
- 	schedule_delayed_work(&c_data->throttle_work, 0);
- 
-+	writel_relaxed(GT_IRQ_STATUS,
-+		       c_data->base + c_data->soc_data->reg_intr_clr);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -368,6 +380,8 @@ static const struct qcom_cpufreq_soc_data epss_soc_data = {
- 	.reg_dcvs_ctrl = 0xb0,
- 	.reg_freq_lut = 0x100,
- 	.reg_volt_lut = 0x200,
-+	.reg_intr_clr = 0x308,
-+	.reg_intr_status = 0x30c,
- 	.reg_perf_state = 0x320,
- 	.lut_row_size = 4,
- };
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index bbddb267c2e6..72115917e0bd 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -172,10 +172,10 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
+  * @dev: Device to detach.
+  * @power_off: Used to indicate whether we should power off the device.
+  *
+- * This functions will reverse the actions from dev_pm_domain_attach() and
+- * dev_pm_domain_attach_by_id(), thus it detaches @dev from its PM domain.
+- * Typically it should be invoked during the remove phase, either from
+- * subsystem level code or from drivers.
++ * This functions will reverse the actions from dev_pm_domain_attach(),
++ * dev_pm_domain_attach_by_id() and dev_pm_domain_attach_by_name(), thus it
++ * detaches @dev from its PM domain.  Typically it should be invoked during the
++ * remove phase, either from subsystem level code or from drivers.
+  *
+  * Callers must ensure proper synchronization of this function with power
+  * management callbacks.
 -- 
-2.33.0
+2.32.0
 
