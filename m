@@ -2,44 +2,44 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D0FCC433F5
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:30:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F7E6C43217
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Apr 2022 14:34:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347222AbiDAObx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Apr 2022 10:31:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38650 "EHLO
+        id S241776AbiDAOgX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Apr 2022 10:36:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347245AbiDAOaq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:30:46 -0400
+        with ESMTP id S1348206AbiDAOdt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2022 10:33:49 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8EFB728B10D;
-        Fri,  1 Apr 2022 07:27:42 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A7E257B20;
+        Fri,  1 Apr 2022 07:31:14 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 2B295B82505;
-        Fri,  1 Apr 2022 14:27:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBA91C340EE;
-        Fri,  1 Apr 2022 14:27:38 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id BF29EB8240E;
+        Fri,  1 Apr 2022 14:31:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EF30C340F2;
+        Fri,  1 Apr 2022 14:31:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648823260;
-        bh=2ViwZkbjY63eUQxxgCosViXi4slLzpHzcABYkWOc+9o=;
+        s=k20201202; t=1648823471;
+        bh=maaGKWuQQ40Y3IWQ2QWKFhbciN+lKyrz47xI7/nwPs4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ce2jmIswMKKhpaRPvKcsOdaNw0GLpTP0OkbccdPhRdbrXMEB0hhIkmy1j/HRI935h
-         yPKWGeRUJgHqate590pSpxB9ZlfdSqRCLYBMEUl/IZFtICbNxypjesgQGP+INe4tkO
-         HAan+nVxWBA7U/SYpnlxgfmHa4IuACmzD+H2cBkSdVsWZv/zmRrIHR8vuVcTGCpGkS
-         P6KglzsFeyK9HRyM4BuSU1GZ3zGnJNkpTkCohlwbuOQH2K5Wl+k/5+erJJzoNaPy+C
-         j1D6adYHHdl+ulGdQiyx3W59xpGAna9TWfvz1lGjpeWXSAt28lvBzgsAbNZ4A5yw/v
-         hdb6AZKKLZ/YQ==
+        b=TWMj/dCJ5zXj0j7JNWexh782in4wgxO4fQJQaPvaEyGmHu27hNiDo+sC+8lZZsk3r
+         D/xDxmocFSO0yW2krNshy5hKh0PTIDqfB+FByGAum6O0hDllpH2eC964wPIsRN6oKE
+         mFFWfI26EuNXyhKSpBWOaljj9D6XltmT56IpvmkqCwRbyLgupg8UX4AmfzOUxe+5Mo
+         6qvBLdCaV1H1K3Ybq10a0BxqEvkCJOo6Z5aAZ4t7Ntv+eZho94H8GRezGLcR9c7l5H
+         ARfDhgzafiFpa399JFCg/pbS6NUXOQ7rbTq2hY1ojfT/kqmDviMzdmvChu5gl93HuC
+         QFSiQaJjM8PyQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Evgeny Boger <boger@wirenboard.com>, Chen-Yu Tsai <wens@csie.org>,
+Cc:     Hans de Goede <hdegoede@redhat.com>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, sre@kernel.org,
+        Sasha Levin <sashal@kernel.org>, sre@kernel.org, wens@csie.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.17 038/149] power: supply: axp20x_battery: properly report current when discharging
-Date:   Fri,  1 Apr 2022 10:23:45 -0400
-Message-Id: <20220401142536.1948161-38-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.17 105/149] power: supply: axp288_fuel_gauge: Use acpi_quirk_skip_acpi_ac_and_battery()
+Date:   Fri,  1 Apr 2022 10:24:52 -0400
+Message-Id: <20220401142536.1948161-105-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220401142536.1948161-1-sashal@kernel.org>
 References: <20220401142536.1948161-1-sashal@kernel.org>
@@ -51,59 +51,83 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Evgeny Boger <boger@wirenboard.com>
+From: Hans de Goede <hdegoede@redhat.com>
 
-[ Upstream commit d4f408cdcd26921c1268cb8dcbe8ffb6faf837f3 ]
+[ Upstream commit da365db704d290fb4dc4cdbd41f60b0ecec1cc03 ]
 
-As stated in [1], negative current values are used for discharging
-batteries.
+Normally the native AXP288 fg/charger drivers are preferred but one some
+devices the ACPI drivers should be used instead.
 
-AXP PMICs internally have two different ADC channels for shunt current
-measurement: one used during charging and one during discharging.
-The values reported by these ADCs are unsigned.
-While the driver properly selects ADC channel to get the data from,
-it doesn't apply negative sign when reporting discharging current.
+The ACPI battery/ac drivers use the acpi_quirk_skip_acpi_ac_and_battery()
+helper to determine if they should skip loading because native fuel-gauge/
+charger drivers like the AXP288 drivers will be used.
 
-[1] Documentation/ABI/testing/sysfs-class-power
+The new acpi_quirk_skip_acpi_ac_and_battery() helper includes a list of
+exceptions for boards where the ACPI drivers should be used instead.
 
-Signed-off-by: Evgeny Boger <boger@wirenboard.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+Use this new helper to avoid loading on such boards. Note this requires
+adding a Kconfig dependency on ACPI, this is not a problem because ACPI
+should be enabled on all boards with an AXP288 PMIC anyways.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/axp20x_battery.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/power/supply/Kconfig             |  2 +-
+ drivers/power/supply/axp288_fuel_gauge.c | 14 ++++++++------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 5d197141f476..9106077c0dbb 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -186,7 +186,6 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 				   union power_supply_propval *val)
- {
- 	struct axp20x_batt_ps *axp20x_batt = power_supply_get_drvdata(psy);
--	struct iio_channel *chan;
- 	int ret = 0, reg, val1;
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index d7534f12e9ef..5e4a69352811 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -358,7 +358,7 @@ config AXP288_CHARGER
  
- 	switch (psp) {
-@@ -266,12 +265,12 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		if (ret)
- 			return ret;
+ config AXP288_FUEL_GAUGE
+ 	tristate "X-Powers AXP288 Fuel Gauge"
+-	depends on MFD_AXP20X && IIO && IOSF_MBI
++	depends on MFD_AXP20X && IIO && IOSF_MBI && ACPI
+ 	help
+ 	  Say yes here to have support for X-Power power management IC (PMIC)
+ 	  Fuel Gauge. The device provides battery statistics and status
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index c1da217fdb0e..ce8ffd0a41b5 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -9,6 +9,7 @@
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
  
--		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
--			chan = axp20x_batt->batt_chrg_i;
--		else
--			chan = axp20x_batt->batt_dischrg_i;
--
--		ret = iio_read_channel_processed(chan, &val->intval);
-+		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING) {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_chrg_i, &val->intval);
-+		} else {
-+			ret = iio_read_channel_processed(axp20x_batt->batt_dischrg_i, &val1);
-+			val->intval = -val1;
-+		}
- 		if (ret)
- 			return ret;
++#include <linux/acpi.h>
+ #include <linux/dmi.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+@@ -560,12 +561,6 @@ static const struct dmi_system_id axp288_no_battery_list[] = {
+ 			DMI_EXACT_MATCH(DMI_BIOS_VERSION, "1.000"),
+ 		},
+ 	},
+-	{
+-		/* ECS EF20EA */
+-		.matches = {
+-			DMI_MATCH(DMI_PRODUCT_NAME, "EF20EA"),
+-		},
+-	},
+ 	{
+ 		/* Intel Cherry Trail Compute Stick, Windows version */
+ 		.matches = {
+@@ -624,6 +619,13 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 	};
+ 	unsigned int val;
+ 
++	/*
++	 * Normally the native AXP288 fg/charger drivers are preferred but
++	 * on some devices the ACPI drivers should be used instead.
++	 */
++	if (!acpi_quirk_skip_acpi_ac_and_battery())
++		return -ENODEV;
++
+ 	if (dmi_check_system(axp288_no_battery_list))
+ 		return -ENODEV;
  
 -- 
 2.34.1
