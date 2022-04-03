@@ -2,185 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14F49C433FE
-	for <linux-pm@archiver.kernel.org>; Sat,  2 Apr 2022 15:50:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78D0FC433EF
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Apr 2022 03:14:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357456AbiDBPwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 2 Apr 2022 11:52:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40560 "EHLO
+        id S231288AbiDCDP4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 2 Apr 2022 23:15:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36642 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357452AbiDBPwR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 2 Apr 2022 11:52:17 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4BC2201BE
-        for <linux-pm@vger.kernel.org>; Sat,  2 Apr 2022 08:50:24 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id qh7so1642011ejb.11
-        for <linux-pm@vger.kernel.org>; Sat, 02 Apr 2022 08:50:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=6975MKU9sTkhbv+L8Y2u10WML0H3VB/iCkjt87HVcpo=;
-        b=Uq6rZIzCcG2AALKeKDE+g/YwFx0tGeWA6eaEST4TXreWflRtRMKfMjC2DJ3/fkcY1n
-         sPsVpDvCjUlKz7TFK4la4f75DBvo4iBuv3dFuB68E9HzMGUV0rVueljK6I81uWdV7qPk
-         btZti3rQacMT3uQsMlYyBzJIBgsADoFB4raO9ib0WhiIuahEr55lRnq9sbGP9kfFRtZk
-         P0n3DVTR2h8E5ZOuJMukHJzCM63tKkID6ddUVcwbcWMl8SoGAmyoaHjsiF+Vns5ASJfX
-         4w9nhuQPUkgGYgUDVBtTR/pP/E8v6Ugc6nBFH4Zw1HFoGO83LdjXRyh+WVHZ7UyNz4+o
-         vYRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=6975MKU9sTkhbv+L8Y2u10WML0H3VB/iCkjt87HVcpo=;
-        b=nR/+81YK+4n9N6525h4p8CtRQi/amHoBlny5TYZnNCrQmaW/JgRidLFYokxyyxYOWr
-         bfSoc3LXSDhyrReXVqFuDIJiBG6Yzh2Nm3mZFD2zw8s866yUBjAHDcHbP1NBK5oVDETG
-         nHDWzGCunDqUW4D9tJWrdhWc7SS9qdq9lOS/Gay3I6yGXfSfh+cuj4pNhHRc6a9uG8e0
-         V2KFtridg+8YA50E0RRKSdJrN144LGHVZWxXs2D2bGe55Wb7vszKx7rV7be4P6fERsrn
-         +OWaQSr0xMoW85eRjls9Zv+8BdqJQkdz9bUySAzVmz7bzPvXRDu4b5kwWLyxgNVpy8vv
-         uF+Q==
-X-Gm-Message-State: AOAM533bMRo8F0Q4exDV3GcpQsvTASl4ibHTvSldZMz9MVC50r4aypvp
-        +YiKUrbR4mhh/BKVmPVkRIIufLz+HPyF9w==
-X-Google-Smtp-Source: ABdhPJx8QAoYvVoNwXcpqzI0cVtIj6iw6TjQJw6cn1Dy2UVjJulY+JTWr3wZAJBGvvRkcqAd9ZS9TQ==
-X-Received: by 2002:a17:906:32cf:b0:6d5:83bc:e962 with SMTP id k15-20020a17090632cf00b006d583bce962mr4390724ejk.108.1648914623488;
-        Sat, 02 Apr 2022 08:50:23 -0700 (PDT)
-Received: from [192.168.0.33] (cpc78119-cwma10-2-0-cust590.7-3.cable.virginm.net. [81.96.50.79])
-        by smtp.gmail.com with ESMTPSA id s3-20020a1709067b8300b006e4a6dee49dsm2241404ejo.184.2022.04.02.08.50.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 02 Apr 2022 08:50:23 -0700 (PDT)
-Message-ID: <e981064e-50a3-05f3-a013-564aea5fe99b@linaro.org>
-Date:   Sat, 2 Apr 2022 16:50:22 +0100
+        with ESMTP id S231280AbiDCDPz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 2 Apr 2022 23:15:55 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5191E12A88;
+        Sat,  2 Apr 2022 20:13:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=45+PtY2KxLSf5ox+zJPh8dG5t1TTtpukHGJp11Nd5pA=; b=YSSNmTVTKaN8rHdY0ufjHHfZfp
+        b4ja/MhUhjU1AqLmOKgiKgLRjmctKLE257t18zSYl7tIqjsyNuTo8mhEdSsBWheEL47yIlWPwkZbu
+        642lWTGiV31EZtDnMlW+fHV9fVuzoLTUuXFVZ7pG/t5g28nMiHmYGFahSDpFs8WcCpNdU90pw6vbb
+        czc5wUKXD/PcD/a0S8Pa4mJfn4UXSPE56TxZGw/RYJI0/6O0rmRERYVJS/pAGyT4vQ53jJzO0GdiO
+        yK/hD05h0aXVfyNGT9bWuDXGCh44Wvl+9bj+fm2BYVDoocCphJkJo4QHH9U7CMxdyVDpqslOEz3n4
+        geeGXQSg==;
+Received: from [2601:1c0:6280:3f0::aa0b] (helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1naqge-00AZ3b-Je; Sun, 03 Apr 2022 03:13:56 +0000
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        kernel test robot <lkp@intel.com>,
+        Anup Patel <anup.patel@wdc.com>,
+        Anup Patel <anup@brainfault.org>,
+        Anup Patel <apatel@ventanamicro.com>,
+        Atish Patra <atishp@rivosinc.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org,
+        linux-riscv@lists.infradead.org,
+        Palmer Dabbelt <palmer@rivosinc.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Albert Ou <aou@eecs.berkeley.edu>
+Subject: [PATCH -next] cpuidle: riscv: support non-SMP config
+Date:   Sat,  2 Apr 2022 20:13:55 -0700
+Message-Id: <20220403031355.20894-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH 6/6] dt-bindings: power: supply: qcom,smb2: add bindings
- for smb2 driver
-Content-Language: en-US
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Cc:     Amit Pundir <amit.pundir@linaro.org>,
-        Sumit Semwal <sumit.semwal@linaro.org>
-References: <20220401202643.877609-1-caleb.connolly@linaro.org>
- <20220401202643.877609-7-caleb.connolly@linaro.org>
- <f737fd47-e557-45af-035b-af29a88e22e6@linaro.org>
-From:   Caleb Connolly <caleb.connolly@linaro.org>
-In-Reply-To: <f737fd47-e557-45af-035b-af29a88e22e6@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Add <asm/smp.h> for cpuid_to_hartid_map etc.
+This is needed for both SMP and non-SMP builds, but not having it
+causes a build error for non-SMP:
 
+drivers/cpuidle/cpuidle-riscv-sbi.c: In function 'sbi_cpuidle_init_cpu':
+drivers/cpuidle/cpuidle-riscv-sbi.c:350:26: error: implicit declaration of function 'cpuid_to_hartid_map' [-Werror=implicit-function-declaration]
 
-On 02/04/2022 15:22, Krzysztof Kozlowski wrote:
-> On 01/04/2022 22:26, Caleb Connolly wrote:
->> Add devicetree bindings for the Qualcomm PMI8998/PM660 SMB2 charger
->> drivers.
->>
->> Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
->> ---
->>   .../bindings/power/supply/qcom,smb2.yaml      | 68 +++++++++++++++++++
->>   1 file changed, 68 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/power/supply/qcom,smb2.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/qcom,smb2.yaml b/Documentation/devicetree/bindings/power/supply/qcom,smb2.yaml
->> new file mode 100644
->> index 000000000000..1bea1fef78b8
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/qcom,smb2.yaml
->> @@ -0,0 +1,68 @@
->> +# SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/power/supply/qcom,smb2.yaml#
-> 
-> Hi,
-Hi Krzysztof,
-> 
-> Are you sure "smb2" is a real Qualcomm versioning? IOW, is there going
-> to be smb3 in the future? If not, better to just name the file according
-> to model, so like compatible and like other existing schemas from Qualcomm.
-Qualcomm versioning is a complete mystery to me 😅, downstream kernels have a 
-"pmi8998_charger" which uses the qpnp-smb2 driver, there is also an "smb5" 
-driver presumably for newer PMICs. This driver is used for the charger block 
-found on the PMI8998 and PM660 at least, a name like "pmi8998_charger" might be 
-more suitable.
+Fixes: 6abf32f1d9c5 ("cpuidle: Add RISC-V SBI CPU idle driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Cc: Anup Patel <anup.patel@wdc.com>
+Cc: Anup Patel <anup@brainfault.org>
+Cc: Anup Patel <apatel@ventanamicro.com>
+Cc: Atish Patra <atishp@rivosinc.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-riscv@lists.infradead.org
+Cc: Palmer Dabbelt <palmer@rivosinc.com>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>
+---
+ drivers/cpuidle/cpuidle-riscv-sbi.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> 
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Qualcomm PMI8998/PM660 Switch-Mode Battery Charger "2"
->> +
->> +maintainers:
->> +  - Caleb Connolly <caleb.connolly@linaro.org>
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - qcom,pmi8998-smb2
->> +
->> +  reg:
->> +    maxItems: 1
->> +
->> +  interrupts:
->> +    items:
->> +      - description: usb plugin
-> 
-> Just maxItems:1 (description is obvious and matches names).
-> 
->> +
->> +  interrupt-names:
->> +    items:
->> +      - const: usb-plugin
->> +
->> +  io-channels:
->> +    items:
->> +      - description: USB in current in uA
->> +      - description: USB in voltage in uV
->> +
->> +  io-channel-names:
->> +    items:
->> +      - const: usbin_i
->> +      - const: usbin_v
->> +
-> 
-> What about monitored-battery? How do you configure the battery
-> characteristics?
-> 
->> +required:
->> +  - compatible
->> +  - reg
->> +  - interrupts
->> +  - interrupt-names
->> +  - io-channels
->> +  - io-channel-names
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    #include <dt-bindings/interrupt-controller/irq.h>
->> +    pmic {
->> +      #address-cells = <1>;
->> +      #size-cells = <0>;
->> +      #interrupt-cells = <4>;
->> +
->> +      smb2@1000 {
-> 
-> Generic node name please, so "charger".
-> 
-> 
-> 
-> Best regards,
-> Krzysztof
-
--- 
-Kind Regards,
-Caleb (they/them)
+--- linux-next-20220401.orig/drivers/cpuidle/cpuidle-riscv-sbi.c
++++ linux-next-20220401/drivers/cpuidle/cpuidle-riscv-sbi.c
+@@ -22,6 +22,7 @@
+ #include <linux/pm_runtime.h>
+ #include <asm/cpuidle.h>
+ #include <asm/sbi.h>
++#include <asm/smp.h>
+ #include <asm/suspend.h>
+ 
+ #include "dt_idle_states.h"
