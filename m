@@ -2,90 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB74C35280
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4750AC433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:23:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378993AbiDDVSd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44164 "EHLO
+        id S1378950AbiDDVSb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379416AbiDDRKT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:10:19 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B09F40A23
-        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 10:08:22 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id bh17so21328933ejb.8
-        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 10:08:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=LXXr7F0cW3RTrkA8M6uuznqZSvmvR1TGt0LOYkCfNSQ=;
-        b=wBUWd1KOHSXpqah/8BaOgmo8qLPdZf1sdgt0au6YhBPtGFBBh2rBCHyFSGtQaXNZe7
-         khGltgNxaO32X6qwHt4slyv3JWF+NX5P+dHNeemg4Dp4Rj2oEKD1T3M7L+jBkvG0cEaj
-         XWzBID2cjpeX8s/+1fc7UvWjmeXe7cRskPgFVjXw5x5VHbcBDjc3bg59jDMUgbQMp0QD
-         LFBiJ6j2JSV6MBnkz8TAYalVInVz6tEnJZIX0E2/DYb+fBpSM+arJRv+VD6RXlRi6b5Y
-         Ek8TgLsFU9b5Qf6uMfaf/Q6xTn5QkVOkUzkmJD5P8m3DccA+TDLPfosr3ptDA05BQWii
-         dHCQ==
+        with ESMTP id S1379391AbiDDRES (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:04:18 -0400
+Received: from mail-oi1-f176.google.com (mail-oi1-f176.google.com [209.85.167.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2687140A22;
+        Mon,  4 Apr 2022 10:02:22 -0700 (PDT)
+Received: by mail-oi1-f176.google.com with SMTP id q129so10701409oif.4;
+        Mon, 04 Apr 2022 10:02:22 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=LXXr7F0cW3RTrkA8M6uuznqZSvmvR1TGt0LOYkCfNSQ=;
-        b=K8fMIyeVbs+DLOvCjS/6EJzzWN+cZJVGjDfVwqXYRNFfI3OqeNIi/XN5F6jO2BoRQo
-         oWVLlDVTcyYAz1YqIn02s0qiPHMHvOBhUf1OW+WvcxFZ/J1cv7JzVsD+5xfjq4lZaLUG
-         Y2ZEgtmp7XRWVPB73P0fqRG71aemJ7ZAOqXrHZxMaUSA2crJnhTRkMuTnpEsgn1O14Vh
-         B9C3+qyHID2qf7tVVQ2VQ95NBTBzwRVaRzzy+jGJ7y3/hWZtLMH8IQ0Y0edOwDm0t9YH
-         QYwp5cjj6YSpG/mQYKOdeCRxGezKo9KeqOFRldLBVjfPOC4EobqJkjxF+dmcR1hQ/sBl
-         1f7g==
-X-Gm-Message-State: AOAM532zJOF07TzY/VlP8QH2XrGVJ7BLS4g8Cy+cKCDmQc7tyaMjyhk9
-        S6XB/zPTjmwMcTsIVyTqF1x9TeUK930mTv2/
-X-Google-Smtp-Source: ABdhPJx2qo4HGcrJqr114ZtIIY4ckwTEFuRMwUlvOaFJCAC2pEj4AzRRvX7sa3sEZVcPo8HyRUAHlA==
-X-Received: by 2002:a17:907:a41e:b0:6e7:9ea9:8350 with SMTP id sg30-20020a170907a41e00b006e79ea98350mr1021136ejc.377.1649092101002;
-        Mon, 04 Apr 2022 10:08:21 -0700 (PDT)
-Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.gmail.com with ESMTPSA id u25-20020a170906b11900b006e08588afedsm4565827ejy.132.2022.04.04.10.08.20
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=KnM/3DeRUkghGL3B228lv8tjJAJo66tZo/nzV6jVUL8=;
+        b=woe382QyJMhl9DaVmJVTx67a5NzPogC7+6pfXXLFKQcIQwagapfi0LCRzNCsJ8hVVn
+         rp8m5FJ7/vohg747dNQ0s8hxMe0f4APnpVxpZm73WxCrkrv5rZBhmx4jJKF+36b1h9bP
+         +m663ZgDm09R3bt0QW212tlvzQRFx7IaPaRBUM6c4+qTnw+/Cj8AkLTJi5b+0v4tNvZR
+         dyXGiX4KmQcWUJrbFeXr4JSD99f6LvU/s9zbfc7Rb54iyWvDCoh7DLylB6SG+UpSsDDo
+         aJJkP+im1EoyySgsxVHYln/G2vLUMfk9ESKJ/a8P+6xshBN5n3j8a408TfoAE8q7g1sm
+         yIvA==
+X-Gm-Message-State: AOAM533mlrFkfObwvFKtL7oG0x1y9RrBF/+E0llbgMl9/IKK+EV8wxzf
+        uuhKkr8u2qqvd7Tm9OzM0tac9U28xg==
+X-Google-Smtp-Source: ABdhPJwjAxbJ3KU0l9+VXRjxGhhRZm4agoSKxhMj4f9qcCrMs2dDJ+nBsX6ziJpkXNEm3ZrMKCAzUA==
+X-Received: by 2002:a05:6808:2008:b0:2da:5b12:83ff with SMTP id q8-20020a056808200800b002da5b1283ffmr47508oiw.216.1649091740535;
+        Mon, 04 Apr 2022 10:02:20 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id t3-20020a05680800c300b002f935a7daa9sm4403437oic.19.2022.04.04.10.02.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 10:08:20 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] memory: samsung: exynos5422-dmc: Avoid some over memory allocation
-Date:   Mon,  4 Apr 2022 19:08:14 +0200
-Message-Id: <164909209237.1690243.6125620782539753539.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <69d7e69346986e2fdb994d4382954c932f9f0993.1647760213.git.christophe.jaillet@wanadoo.fr>
-References: <69d7e69346986e2fdb994d4382954c932f9f0993.1647760213.git.christophe.jaillet@wanadoo.fr>
+        Mon, 04 Apr 2022 10:02:19 -0700 (PDT)
+Received: (nullmailer pid 1527750 invoked by uid 1000);
+        Mon, 04 Apr 2022 17:02:19 -0000
+Date:   Mon, 4 Apr 2022 12:02:19 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Rob Herring <robh@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org,
+        linux-gpio@vger.kernel.org, - <patches@opensource.cirrus.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Charles Keepax <ckeepax@opensource.cirrus.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Yunfei Dong <yunfei.dong@mediatek.com>,
+        alsa-devel@alsa-project.org,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        linux-media@vger.kernel.org,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] dt-bindings: Fix 'enum' lists with duplicate entries
+Message-ID: <Ykskm27aWyHMGk5v@robh.at.kernel.org>
+References: <20220401141247.2993925-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220401141247.2993925-1-robh@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 20 Mar 2022 08:10:30 +0100, Christophe JAILLET wrote:
-> 'dmc->counter' is a 'struct devfreq_event_dev **', so there is some
-> over memory allocation. 'counters_size' should be computed with
-> 'sizeof(struct devfreq_event_dev *)'.
+On Fri, 01 Apr 2022 09:12:47 -0500, Rob Herring wrote:
+> There's no reason to list the same value twice in an 'enum'. Fix all the
+> occurrences in the tree. A meta-schema change will catch future ones.
 > 
-> Use 'sizeof(*dmc->counter)' instead to fix it.
+> Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: Charles Keepax <ckeepax@opensource.cirrus.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Yunfei Dong <yunfei.dong@mediatek.com>
+> Cc: - <patches@opensource.cirrus.com>
+> Cc: linux-media@vger.kernel.org
+> Cc: alsa-devel@alsa-project.org
+> Cc: linux-gpio@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> There's also one other occurrence in snps,dwmac.yaml I didn't fix as
+> there's a patch[1] for it which prompted this patch.
 > 
-> While at it, use devm_kcalloc() instead of devm_kzalloc()+open coded
-> multiplication.
+> Rob
 > 
-> [...]
+> [1] https://lore.kernel.org/r/20220401030847epcms1p8cf7a8e1d8cd7d325dacf30f78da36328@epcms1p8
+> 
+>  .../bindings/arm/tegra/nvidia,tegra20-pmc.yaml        |  1 -
+>  Documentation/devicetree/bindings/bus/ti-sysc.yaml    |  1 -
+>  .../bindings/media/mediatek,vcodec-encoder.yaml       |  1 -
+>  .../devicetree/bindings/pinctrl/cirrus,madera.yaml    | 11 +++++------
+>  .../devicetree/bindings/power/supply/bq2415x.yaml     |  1 -
+>  5 files changed, 5 insertions(+), 10 deletions(-)
+> 
 
 Applied, thanks!
-
-[1/1] memory: samsung: exynos5422-dmc: Avoid some over memory allocation
-      commit: 56653827f0d7bc7c2d8bac0e119fd1521fa9990a
-
-Best regards,
--- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
