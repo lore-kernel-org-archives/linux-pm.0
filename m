@@ -2,98 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D12C4167B
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB74C35280
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378984AbiDDVSc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38546 "EHLO
+        id S1378993AbiDDVSd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1378880AbiDDQEm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:04:42 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 81D4B427DE;
-        Mon,  4 Apr 2022 09:02:46 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D8B6D6E;
-        Mon,  4 Apr 2022 09:02:46 -0700 (PDT)
-Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.1.196.65])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E7E173F73B;
-        Mon,  4 Apr 2022 09:02:45 -0700 (PDT)
-Date:   Mon, 4 Apr 2022 17:02:44 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
-        Pierre.Gondois@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
-        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
-        mka@chromium.org, nm@ti.com, sboyd@kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, cristian.marussi@arm.com,
-        sudeep.holla@arm.com, matthias.bgg@gmail.com
-Subject: Re: [RESEND][PATCH 6/8] Documentation: EM: Add artificial EM
- registration description
-Message-ID: <YksWpIoGa4rbW/XG@arm.com>
-References: <20220321095729.20655-1-lukasz.luba@arm.com>
- <20220321095729.20655-7-lukasz.luba@arm.com>
+        with ESMTP id S1379416AbiDDRKT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:10:19 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B09F40A23
+        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 10:08:22 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id bh17so21328933ejb.8
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 10:08:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=LXXr7F0cW3RTrkA8M6uuznqZSvmvR1TGt0LOYkCfNSQ=;
+        b=wBUWd1KOHSXpqah/8BaOgmo8qLPdZf1sdgt0au6YhBPtGFBBh2rBCHyFSGtQaXNZe7
+         khGltgNxaO32X6qwHt4slyv3JWF+NX5P+dHNeemg4Dp4Rj2oEKD1T3M7L+jBkvG0cEaj
+         XWzBID2cjpeX8s/+1fc7UvWjmeXe7cRskPgFVjXw5x5VHbcBDjc3bg59jDMUgbQMp0QD
+         LFBiJ6j2JSV6MBnkz8TAYalVInVz6tEnJZIX0E2/DYb+fBpSM+arJRv+VD6RXlRi6b5Y
+         Ek8TgLsFU9b5Qf6uMfaf/Q6xTn5QkVOkUzkmJD5P8m3DccA+TDLPfosr3ptDA05BQWii
+         dHCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=LXXr7F0cW3RTrkA8M6uuznqZSvmvR1TGt0LOYkCfNSQ=;
+        b=K8fMIyeVbs+DLOvCjS/6EJzzWN+cZJVGjDfVwqXYRNFfI3OqeNIi/XN5F6jO2BoRQo
+         oWVLlDVTcyYAz1YqIn02s0qiPHMHvOBhUf1OW+WvcxFZ/J1cv7JzVsD+5xfjq4lZaLUG
+         Y2ZEgtmp7XRWVPB73P0fqRG71aemJ7ZAOqXrHZxMaUSA2crJnhTRkMuTnpEsgn1O14Vh
+         B9C3+qyHID2qf7tVVQ2VQ95NBTBzwRVaRzzy+jGJ7y3/hWZtLMH8IQ0Y0edOwDm0t9YH
+         QYwp5cjj6YSpG/mQYKOdeCRxGezKo9KeqOFRldLBVjfPOC4EobqJkjxF+dmcR1hQ/sBl
+         1f7g==
+X-Gm-Message-State: AOAM532zJOF07TzY/VlP8QH2XrGVJ7BLS4g8Cy+cKCDmQc7tyaMjyhk9
+        S6XB/zPTjmwMcTsIVyTqF1x9TeUK930mTv2/
+X-Google-Smtp-Source: ABdhPJx2qo4HGcrJqr114ZtIIY4ckwTEFuRMwUlvOaFJCAC2pEj4AzRRvX7sa3sEZVcPo8HyRUAHlA==
+X-Received: by 2002:a17:907:a41e:b0:6e7:9ea9:8350 with SMTP id sg30-20020a170907a41e00b006e79ea98350mr1021136ejc.377.1649092101002;
+        Mon, 04 Apr 2022 10:08:21 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id u25-20020a170906b11900b006e08588afedsm4565827ejy.132.2022.04.04.10.08.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 04 Apr 2022 10:08:20 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] memory: samsung: exynos5422-dmc: Avoid some over memory allocation
+Date:   Mon,  4 Apr 2022 19:08:14 +0200
+Message-Id: <164909209237.1690243.6125620782539753539.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <69d7e69346986e2fdb994d4382954c932f9f0993.1647760213.git.christophe.jaillet@wanadoo.fr>
+References: <69d7e69346986e2fdb994d4382954c932f9f0993.1647760213.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220321095729.20655-7-lukasz.luba@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Thanks for documenting this as well.
-
-On Monday 21 Mar 2022 at 09:57:27 (+0000), Lukasz Luba wrote:
-> Add description about new artificial EM registration and use cases.
-> Update also the documentation with the new .get_cost() callback
-> description and usage.
+On Sun, 20 Mar 2022 08:10:30 +0100, Christophe JAILLET wrote:
+> 'dmc->counter' is a 'struct devfreq_event_dev **', so there is some
+> over memory allocation. 'counters_size' should be computed with
+> 'sizeof(struct devfreq_event_dev *)'.
 > 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  Documentation/power/energy-model.rst | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
+> Use 'sizeof(*dmc->counter)' instead to fix it.
 > 
-> diff --git a/Documentation/power/energy-model.rst b/Documentation/power/energy-model.rst
-> index fd29ed2506c0..feb257b7f350 100644
-> --- a/Documentation/power/energy-model.rst
-> +++ b/Documentation/power/energy-model.rst
-> @@ -123,6 +123,26 @@ allows a platform to register EM power values which are reflecting total power
->  (static + dynamic). These power values might be coming directly from
->  experiments and measurements.
->  
-> +Registration of 'artificial' EM
-> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +There is an option to provide a custom callback for drivers missing detailed
-> +knowledge about power value for each performance state. The callback
-> +.get_cost() is optional and provides the 'cost' values used by the EAS.
-> +This is useful for platforms that only provide information on relative
-> +efficiency between CPU types, where one could use the information to
-> +create an abstract power model. But even an abstract power model can
-> +sometimes be hard to fit in, given the input power value size restrictions.
-> +The .get_cost() allows to provide the 'cost' values which reflect the
-> +efficiency of the CPUs. This would allow to provide EAS information which
-> +has different relation than what would be forced by the EM internal
-> +formulas calculating 'cost' values. To register an EM for such platform, the
-> +driver must set the flag 'milliwatts' to 0, provide .get_power() callback
-> +and provide .get_cost() callback. The EM framework would handle such platform
-
-Maybe it worth adding a note here that the power values provided with
-.get_power() are only for information purposes and that they don't have
-any functional use.
-
-> +properly during registration. A flag EM_PERF_DOMAIN_ARTIFICIAL is set for such
-> +platform. Special care should be taken by other frameworks which are using EM
-> +to test and treat this flag properly.
-> +
->  Registration of 'simple' EM
->  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
->  
-
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-
-> -- 
-> 2.17.1
+> While at it, use devm_kcalloc() instead of devm_kzalloc()+open coded
+> multiplication.
 > 
+> [...]
+
+Applied, thanks!
+
+[1/1] memory: samsung: exynos5422-dmc: Avoid some over memory allocation
+      commit: 56653827f0d7bc7c2d8bac0e119fd1521fa9990a
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
