@@ -2,91 +2,85 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D905BC3527D
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B895CC3526F
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378914AbiDDVSW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49220 "EHLO
+        id S1356184AbiDDVSZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1378965AbiDDQLA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:11:00 -0400
-Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com [209.85.210.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2F79DF52;
-        Mon,  4 Apr 2022 09:09:02 -0700 (PDT)
-Received: by mail-ot1-f41.google.com with SMTP id x8-20020a9d6288000000b005b22c373759so7539862otk.8;
-        Mon, 04 Apr 2022 09:09:02 -0700 (PDT)
+        with ESMTP id S1379395AbiDDREZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:04:25 -0400
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3345640A27
+        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 10:02:29 -0700 (PDT)
+Received: by mail-ej1-x630.google.com with SMTP id k23so17853506ejd.3
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 10:02:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=AZy7e16Ig1JG7qj3MBTWcZiECGvCR3TfCcY9SM2k7uA=;
+        b=TkwLryzG8xq8ZJgUcCjQo23owBZZxVZFlkUrfEjVt10WatBuovqiDNcaYbAr25omCj
+         d/kdNNsblDqCmWG5ynrU8fhTXwQ/8Ch/9Es+pyux5G6XK9KlilWd6omMRts4Qr5EVCOD
+         vT85iI2i9IE/qPYUVU9NmGMmM53GkB4/i/SaTw9UAzzF0fYfcXY5EVrC8qm7/w4jB6DI
+         iI0q2d55LAvT0MvFWh0m8iwFkBjqZ4+uErSypFFgzJUqqdQ3WSZwOkiq1AaAApg8LADP
+         LOsfRO1HtVp7I2biiAyX3xEtqSmtatDXPSIpc592+g14AaVuhm+poLEgUDxFYxX8L/xy
+         9UqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=cJKsE7JJ9CtwSVyO3do4jJEmXMn0p28LOdCOaIAoMXE=;
-        b=nOw+CJxlMvhPfjyQtCIpHW/XSgAJUvp6RFo2YTOWMFGnZxhs4baTcWsTajFSxjW/HR
-         oyWbmznw3b8c7POgVPUoN+B/PeJ0kKwvaLWgZt2MLMVAjH4VDlSKMsHJRMERppW/deUs
-         9BKJaS/gyjB3FG29AxEeeuBi78rXxbDUXblxCS0ak4N0yetJ5jyZ0GF9Vwdh0Eg4VOIl
-         1XAhdHD0IhtVofhyOa2bhTRINV1v//E0szvOtej8S9hX6Z+p0p1q3gvQBYHC1VNqYFRP
-         n/xhfoodkY+G/H/GvC5BhVXTFsLe0A5nmVb45oDCUaQevyI6EwVslK4Sjd8IYRAVm/4f
-         p3Rg==
-X-Gm-Message-State: AOAM533Dh6QNh1xgEGG4BmKVPuQUe6W//AMcPWZpQpmJoq2BGTwABBA9
-        jO3ciB8zijGFpp+ILXhJ4Q==
-X-Google-Smtp-Source: ABdhPJwLfX+tD9cyTfa2GD8KrJbLwA7u4qe+vnD2aFBYxhzwS3ADjJn1XIw9pR+zvQnZxZYH8flVsA==
-X-Received: by 2002:a05:6830:2010:b0:5b2:38da:6c24 with SMTP id e16-20020a056830201000b005b238da6c24mr93175otp.158.1649088542261;
-        Mon, 04 Apr 2022 09:09:02 -0700 (PDT)
-Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id p22-20020a056870831600b000ccfbea4f23sm4633163oae.33.2022.04.04.09.09.01
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=AZy7e16Ig1JG7qj3MBTWcZiECGvCR3TfCcY9SM2k7uA=;
+        b=N+mIRr5uomUwtBqPz0eiida/Bmi22UnDTa2+C5kdzO8XTAKz1art82vk38dxaKF93K
+         bGK36ZzVO06tdXpScV9UsCKXoy7vliTuNHUHHeIJz7f7QEFY1YOmiglm0rRm0mv/2kj5
+         Kh5SQQcXS8NadbRuPc7VKhX2D0/EjUimXCBfeD/gqgFx5hP4YRXYC24inVYRQHsJG3Fp
+         e8jZ1ZOdCUiIJ6BYKQfiQkD6yg7/uTVKAnme1ZHfDrNNCN8xrqr+mOW+5kJaj9ahewbn
+         Ir4813EhQlEbfm6M0ZqTn050u+apzAySFmtftqaa6KfeMaLp3sjrcqunPpYOnvMuyozv
+         WVpA==
+X-Gm-Message-State: AOAM532FPjbwi3j7APMImbPNaqyRShuMgAgCZoMWhw+wDqNvr6a7gXb3
+        8/fbnpaJmik+cCCvm6uPsoSnDg==
+X-Google-Smtp-Source: ABdhPJw30fbKCfQKHVKnmx6muF5fQbHs2yESn5RWTv0aghy4f7F4Sy0XYE4R1cIxrr0pe2nLy7vXTQ==
+X-Received: by 2002:a17:907:7205:b0:6e7:ee50:ea94 with SMTP id dr5-20020a170907720500b006e7ee50ea94mr1050231ejc.351.1649091747789;
+        Mon, 04 Apr 2022 10:02:27 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id hs12-20020a1709073e8c00b006dfdfdac005sm4588927ejc.174.2022.04.04.10.02.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 09:09:01 -0700 (PDT)
-Received: (nullmailer pid 1436948 invoked by uid 1000);
-        Mon, 04 Apr 2022 16:08:58 -0000
-From:   Rob Herring <robh@kernel.org>
-To:     Sumit Gupta <sumitg@nvidia.com>
-Cc:     devicetree@vger.kernel.org, jonathanh@nvidia.com,
-        ksitaraman@nvidia.com, bbasu@nvidia.com,
-        linux-kernel@vger.kernel.org, treding@nvidia.com,
-        sanjayc@nvidia.com, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, robh+dt@kernel.org,
-        viresh.kumar@linaro.org, rafael@kernel.org, krzk+dt@kernel.org
-In-Reply-To: <20220404121713.22461-2-sumitg@nvidia.com>
-References: <20220404121713.22461-1-sumitg@nvidia.com> <20220404121713.22461-2-sumitg@nvidia.com>
-Subject: Re: [Patch v3 1/4] dt-bindings: Document Tegra CCPLEX Cluster
-Date:   Mon, 04 Apr 2022 11:08:58 -0500
-Message-Id: <1649088538.036927.1436947.nullmailer@robh.at.kernel.org>
+        Mon, 04 Apr 2022 10:02:27 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: (subset) [PATCH v3 8/8] ARM: dts: exynos: remove deprecated unit address for LPDDR3 timings on Odroid
+Date:   Mon,  4 Apr 2022 19:02:24 +0200
+Message-Id: <164909174137.1688710.5639682730055944531.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220206135918.211990-1-krzysztof.kozlowski@canonical.com>
+References: <20220206135807.211767-1-krzysztof.kozlowski@canonical.com> <20220206135918.211990-1-krzysztof.kozlowski@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 04 Apr 2022 17:47:10 +0530, Sumit Gupta wrote:
-> The Tegra CPU COMPLEX CLUSTER area contains memory-mapped
-> registers that initiate CPU frequency/voltage transitions.
+On Sun, 6 Feb 2022 14:59:18 +0100, Krzysztof Kozlowski wrote:
+> Passing maximum frequency of LPDDR3 memory timings as unit address was
+> deprecated in favor of 'max-freq' property.
 > 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  .../tegra/nvidia,tegra-ccplex-cluster.yaml    | 52 +++++++++++++++++++
->  1 file changed, 52 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra-ccplex-cluster.yaml
 > 
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Applied, thanks!
 
-yamllint warnings/errors:
+[8/8] ARM: dts: exynos: remove deprecated unit address for LPDDR3 timings on Odroid
+      commit: c3d3727c8531ba78fc725995ce34cf948ebf1dae
 
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra-ccplex-cluster.example.dt.yaml: example-0: ccplex@e000000:reg:0: [0, 234881024, 0, 393215] is too long
-	From schema: /usr/local/lib/python3.8/dist-packages/dtschema/schemas/reg.yaml
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/patch/
-
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
-
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
