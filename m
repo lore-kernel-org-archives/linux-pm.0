@@ -2,83 +2,150 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D706BC46467
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 309A9C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378902AbiDDVSV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36944 "EHLO
+        id S1378908AbiDDVSW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58840 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379085AbiDDQdD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:33:03 -0400
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9006436E0C;
-        Mon,  4 Apr 2022 09:31:07 -0700 (PDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 520B3D6E;
-        Mon,  4 Apr 2022 09:31:07 -0700 (PDT)
-Received: from [10.57.8.9] (unknown [10.57.8.9])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 65D843F73B;
-        Mon,  4 Apr 2022 09:31:04 -0700 (PDT)
-Message-ID: <74a2f038-50dd-91e5-227d-a1c633a87184@arm.com>
-Date:   Mon, 4 Apr 2022 17:31:02 +0100
+        with ESMTP id S1380260AbiDDTXW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 15:23:22 -0400
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A6DD13B033
+        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 12:21:25 -0700 (PDT)
+Received: by mail-pf1-x42e.google.com with SMTP id z16so9916589pfh.3
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 12:21:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20210112.gappssmtp.com; s=20210112;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=qj+08UoQ81QXCJIQ0FgNKcu3iX45S9pwm2TaiMUsPUQ=;
+        b=Tx0DLhaT35SVhaJtjG4RXEwT5NbflW1Jt4AWotrHS+8I2nrLgPXhlBoQPp7FOcIg/o
+         6g4m0TFBv4yYDTPnxW10XYNsnQKkiBSqQCxeDxTEgYRdpbBd9S4IBwuIwMh3C2avrbfV
+         tC+c10ZJr1IfIAgXXkNhso96P1k7m1apAK4bDBaFhJejdOTn2dLEK3yeqOPGFocs090V
+         Zotsj412wDVwYr+x5QIkkxySFMhSsQNLoTuaLaYFTfn/g+MlyMmGWQ/PXS/SK+y8pHy6
+         o/bfJJXnmLfiCm4eV1jl7XwkEd1vni/7h4k9cRPwO9N9kJSkzThqOBF0bJq/V1x8Lgu3
+         ZRpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=qj+08UoQ81QXCJIQ0FgNKcu3iX45S9pwm2TaiMUsPUQ=;
+        b=T0r0Zi4tJqfOaqPHvuWK2Nq7mi9AHSXT6gb2e8v2Xl15umNO8M3CO7cjZETaKibG0j
+         ciJgItmEHO1CeadFRy1gQtGm5pEdo8KvJBA0SlVudylA89eTyI/Owx+IkUyGxgOK4M4t
+         X8fLon7YCxBPFWPqXDzn2/1iRXf6Gnbnpedy0YmReDOrGOQq2u49J+ZDZ+yOxKgc2EeK
+         77hEnMPy/9mf1uORLIkKDlEE4Af/kx6jXLLUakMOadSyNQ1jGyn/GqvUKMoHUQEQ9PvU
+         VRjjomvT8I5jZE2M3RSSINlFQy2Zmv1MZsHxR6yxWEHGYULnCHZw4uQ9cfM+6AVj7icC
+         BFmQ==
+X-Gm-Message-State: AOAM533BicTnpn9CPYvNtbiFgmCegnewA9mECPmzAo2vRhpuQ7L14aPJ
+        YN12vImvsrOPfuHpM68dngGrPA==
+X-Google-Smtp-Source: ABdhPJzfkpiR1DiTFs9IhkKAfUS4XW1JV3sMxAekA1ytB46matysNGdlufGvuouYsjDplKQfd5pClA==
+X-Received: by 2002:a62:38d1:0:b0:4fa:80ad:bf5e with SMTP id f200-20020a6238d1000000b004fa80adbf5emr1211036pfa.69.1649100085168;
+        Mon, 04 Apr 2022 12:21:25 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id j63-20020a636e42000000b003987df110edsm11184329pgc.42.2022.04.04.12.21.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 04 Apr 2022 12:21:24 -0700 (PDT)
+Message-ID: <624b4534.1c69fb81.7c30c.d324@mx.google.com>
+Date:   Mon, 04 Apr 2022 12:21:24 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [RESEND][PATCH 5/8] PM: EM: Remove old debugfs files and print
- all 'flags'
-Content-Language: en-US
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
-        Pierre.Gondois@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
-        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
-        mka@chromium.org, nm@ti.com, sboyd@kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, cristian.marussi@arm.com,
-        sudeep.holla@arm.com, matthias.bgg@gmail.com
-References: <20220321095729.20655-1-lukasz.luba@arm.com>
- <20220321095729.20655-6-lukasz.luba@arm.com> <YksWj8GhZWUimF74@arm.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <YksWj8GhZWUimF74@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: v5.18-rc1
+X-Kernelci-Report-Type: build
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.18-rc1)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Ionela,
+pm/testing build: 7 builds: 0 failed, 7 passed, 1 warning (v5.18-rc1)
 
-Thank you for reviewing these patches.
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+18-rc1/
 
-On 4/4/22 17:02, Ionela Voinescu wrote:
-> Hi Lukasz,
-> 
-> IMO the debugfs files were fine as they were:
->   - They offered information on units and inefficiencies without having
->     to dig into the code to see which bit is for which flag.
->   - I believe the artificial EM power values fit under bogoWatts as unit,
->     so that part would still be correct.
-> 
-> On the other hand, your new file offers more information: we'd be able
-> to see in debugfs whether we're dealing with an artificial EM, despite
-> needing a bit more looking over the code to understand the output.
+Tree: pm
+Branch: testing
+Git Describe: v5.18-rc1
+Git Commit: 3123109284176b1532874591f7c81f3837bbdc17
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
-I have consolidated them, so we would support more features in the flag
-automatically when there will be a need.
+Warnings Detected:
 
-In Android kernel we don't have unfortunately the debugfs compiled-in,
-so this information is still only for kernel testing with some Linux
-distro.
+arc:
 
-I have been thinking to switch into sysfs interface, so we could
-have it in Android as well. This patch change adding a generic 'flags'
-which would be more 'stable' (which is a requirement for sysfs contract)
-is also a closer step into that direction. But that is for longer
-discussion and not for this $subject.
+arm64:
 
-> 
-> I don't have a strong opinion and the code looks fine, so:
-> 
-> Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-> 
+arm:
 
+i386:
+
+mips:
+    32r2el_defconfig (gcc-10): 1 warning
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    1    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_devic=
+e_reg): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expec=
+ted "0,0"
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-10) =E2=80=94 PASS, 0 errors, 1 warning, 0 sect=
+ion mismatches
+
+Warnings:
+    arch/mips/boot/dts/img/boston.dts:128.19-178.5: Warning (pci_device_reg=
+): /pci@14000000/pci2_root@0,0,0: PCI unit address format error, expected "=
+0,0"
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section m=
+ismatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0=
+ section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 secti=
+on mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-10) =E2=80=94 PASS, 0 errors, 0 warnings, 0 s=
+ection mismatches
+
+---
+For more info write to <info@kernelci.org>
