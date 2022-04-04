@@ -2,109 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70029C35294
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D12C4167B
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378936AbiDDVS3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60226 "EHLO
+        id S1378984AbiDDVSc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38546 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379511AbiDDRTz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:19:55 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FAB013F77
-        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 10:17:58 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id d3so4730243wrb.7
-        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 10:17:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chrisdown.name; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=WNtaKQ/W4kzlxVZJxxV5vPIWkgcFCTJx+RZDk2ENwjY=;
-        b=TZTG+Vp4kCH9znGmLVIxLa4TCaXoBaTMn5zfghJruKdi0VUxnnRWqSeSdFrknFklEp
-         CHjUtx+MaATarJeDVSsoCOANc6cuqtS7e3eb7PB7Hls2F6I5xH8kuEfv8janjrikHHnD
-         oggCFme7Ji6SEIR/UaJGTCC3YNcCN0WUOG9TQ=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=WNtaKQ/W4kzlxVZJxxV5vPIWkgcFCTJx+RZDk2ENwjY=;
-        b=b5aWghOG2D+d1jja/OpGJtlkVmgBY0K1cilLG0ZMhLlweh7lrW9CPh4HzIJKemK9Ak
-         6eIPX6A/jfqkVQPIAl8zIZ0iazDVl1H8VUWLYRiuX3WHoi4ub0WQ31vdl/8qu0PQ+7gV
-         kludrvUORMrMfjBSSP959DG2CyErvprqiMKfGAkYCq2uomnT1Rkg6E1/FbVXvTMjOYjE
-         lwhb0wn1p4YlL64ZzY/ifrB1jBf5HY4XCD/+OnPioST3cNAGkM1DLc6Ja8bDBEKuw7eL
-         4MhvuvsVu4hKYMKVC9/E9ALzNcanjZ0GI9avMVd6rOcrCBUgmL4uQx6/g0fOgyRLR2IE
-         16zg==
-X-Gm-Message-State: AOAM532viOlR0o+L+w6iCeFFwdZObWHDjQ3tChoxidmseeh7QWir5CPG
-        KEGNlplzEM0z6i5DzxJUmKpSy8xBbsfrOT8f
-X-Google-Smtp-Source: ABdhPJxdJrmlXUKqL74JeB1HzZ0cdk0um+2davLItplVQxLZjJH5eQ4hPcUrX9RzKjd8DkvpL5xAcg==
-X-Received: by 2002:adf:d081:0:b0:1ef:9378:b7cc with SMTP id y1-20020adfd081000000b001ef9378b7ccmr564031wrh.407.1649092676958;
-        Mon, 04 Apr 2022 10:17:56 -0700 (PDT)
-Received: from localhost ([2620:10d:c092:400::4:521a])
-        by smtp.gmail.com with ESMTPSA id p16-20020a5d48d0000000b00205cf199abcsm9755918wrs.46.2022.04.04.10.17.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 10:17:56 -0700 (PDT)
-Date:   Mon, 4 Apr 2022 18:17:55 +0100
-From:   Chris Down <chris@chrisdown.name>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: Re: Thermal notifications without setting thermal governor to
- userspace?
-Message-ID: <YksoQ62CObN1R/oG@chrisdown.name>
-References: <YkR6/KnH/f9U+2qf@chrisdown.name>
- <faf9e24f-4419-cdbb-573f-4cf2d9e506e2@linaro.org>
- <YksL8a+cINo7K/xX@chrisdown.name>
- <8f1428c7-cf0e-b2cc-c898-09935a9017da@linaro.org>
+        with ESMTP id S1378880AbiDDQEm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:04:42 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 81D4B427DE;
+        Mon,  4 Apr 2022 09:02:46 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D8B6D6E;
+        Mon,  4 Apr 2022 09:02:46 -0700 (PDT)
+Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.1.196.65])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E7E173F73B;
+        Mon,  4 Apr 2022 09:02:45 -0700 (PDT)
+Date:   Mon, 4 Apr 2022 17:02:44 +0100
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
+        Pierre.Gondois@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+        mka@chromium.org, nm@ti.com, sboyd@kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, cristian.marussi@arm.com,
+        sudeep.holla@arm.com, matthias.bgg@gmail.com
+Subject: Re: [RESEND][PATCH 6/8] Documentation: EM: Add artificial EM
+ registration description
+Message-ID: <YksWpIoGa4rbW/XG@arm.com>
+References: <20220321095729.20655-1-lukasz.luba@arm.com>
+ <20220321095729.20655-7-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8f1428c7-cf0e-b2cc-c898-09935a9017da@linaro.org>
-User-Agent: Mutt/2.2.2 (aa28abe8) (2022-03-25)
+In-Reply-To: <20220321095729.20655-7-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Daniel Lezcano writes:
->Well on regular desktop, the thermal is managed under the hood by the 
->firmware/hardware, few sensors are exported AFAICT. I don't think a 
->thermal daemon would have a benefit on these platforms.
+Thanks for documenting this as well.
 
-Maybe we have different expectations? On my laptop, a Thinkpad T14s, things 
-seem not too bad:
+On Monday 21 Mar 2022 at 09:57:27 (+0000), Lukasz Luba wrote:
+> Add description about new artificial EM registration and use cases.
+> Update also the documentation with the new .get_cost() callback
+> description and usage.
+> 
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  Documentation/power/energy-model.rst | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> diff --git a/Documentation/power/energy-model.rst b/Documentation/power/energy-model.rst
+> index fd29ed2506c0..feb257b7f350 100644
+> --- a/Documentation/power/energy-model.rst
+> +++ b/Documentation/power/energy-model.rst
+> @@ -123,6 +123,26 @@ allows a platform to register EM power values which are reflecting total power
+>  (static + dynamic). These power values might be coming directly from
+>  experiments and measurements.
+>  
+> +Registration of 'artificial' EM
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +
+> +There is an option to provide a custom callback for drivers missing detailed
+> +knowledge about power value for each performance state. The callback
+> +.get_cost() is optional and provides the 'cost' values used by the EAS.
+> +This is useful for platforms that only provide information on relative
+> +efficiency between CPU types, where one could use the information to
+> +create an abstract power model. But even an abstract power model can
+> +sometimes be hard to fit in, given the input power value size restrictions.
+> +The .get_cost() allows to provide the 'cost' values which reflect the
+> +efficiency of the CPUs. This would allow to provide EAS information which
+> +has different relation than what would be forced by the EM internal
+> +formulas calculating 'cost' values. To register an EM for such platform, the
+> +driver must set the flag 'milliwatts' to 0, provide .get_power() callback
+> +and provide .get_cost() callback. The EM framework would handle such platform
 
-     % printf '%s\n' /sys/class/hwmon/hwmon*/temp*_input
-     /sys/class/hwmon/hwmon1/temp1_input
-     /sys/class/hwmon/hwmon2/temp1_input
-     /sys/class/hwmon/hwmon2/temp2_input
-     /sys/class/hwmon/hwmon2/temp3_input
-     /sys/class/hwmon/hwmon4/temp1_input
-     /sys/class/hwmon/hwmon4/temp2_input
-     /sys/class/hwmon/hwmon4/temp3_input
-     /sys/class/hwmon/hwmon4/temp4_input
-     /sys/class/hwmon/hwmon4/temp5_input
-     /sys/class/hwmon/hwmon4/temp6_input
-     /sys/class/hwmon/hwmon4/temp7_input
-     /sys/class/hwmon/hwmon4/temp8_input
-     /sys/class/hwmon/hwmon6/temp1_input
-     /sys/class/hwmon/hwmon8/temp1_input
-     /sys/class/hwmon/hwmon8/temp2_input
-     /sys/class/hwmon/hwmon8/temp3_input
-     /sys/class/hwmon/hwmon8/temp4_input
-     /sys/class/hwmon/hwmon8/temp5_input
+Maybe it worth adding a note here that the power values provided with
+.get_power() are only for information purposes and that they don't have
+any functional use.
 
-There are working temperature sensors out of the box for the CPU, wifi card, 
-ACPI thermal zone, and extended sensors from thinkpad_acpi.
+> +properly during registration. A flag EM_PERF_DOMAIN_ARTIFICIAL is set for such
+> +platform. Special care should be taken by other frameworks which are using EM
+> +to test and treat this flag properly.
+> +
+>  Registration of 'simple' EM
+>  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>  
 
-In my case, I'd like to get notifications in userspace when certain 
-temperatures are reached.
+Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
 
-So if I understood correctly, there's no way to dynamically configure 
-temperature thresholds and get breach events even as root, even with the new 
-netlink solution?
-
-Thanks again for your help!
-
-Chris
+> -- 
+> 2.17.1
+> 
