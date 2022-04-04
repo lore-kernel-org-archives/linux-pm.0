@@ -2,61 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12029C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 15:42:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB054C433F5
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 16:01:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378653AbiDDPoi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 11:44:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55564 "EHLO
+        id S1378886AbiDDQDP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 12:03:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347003AbiDDPoh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 11:44:37 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F11143EAA7;
-        Mon,  4 Apr 2022 08:42:40 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 010ffbb855258a31; Mon, 4 Apr 2022 17:42:39 +0200
-Received: from kreacher.localnet (unknown [213.134.181.62])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id A7E7066BCD3;
-        Mon,  4 Apr 2022 17:42:38 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PCI <linux-pci@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v1 0/2]: PCI: PM: Improvements related to D3cold -> D0 transitions
-Date:   Mon, 04 Apr 2022 17:38:58 +0200
-Message-ID: <4198163.ejJDZkT8p0@kreacher>
+        with ESMTP id S1378808AbiDDQCq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:02:46 -0400
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5AA4A245A5;
+        Mon,  4 Apr 2022 09:00:50 -0700 (PDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E3756D6E;
+        Mon,  4 Apr 2022 09:00:49 -0700 (PDT)
+Received: from localhost (ionvoi01-desktop.cambridge.arm.com [10.1.196.65])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 888053F73B;
+        Mon,  4 Apr 2022 09:00:49 -0700 (PDT)
+Date:   Mon, 4 Apr 2022 17:00:47 +0100
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
+        Pierre.Gondois@arm.com, viresh.kumar@linaro.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+        mka@chromium.org, nm@ti.com, sboyd@kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, cristian.marussi@arm.com,
+        sudeep.holla@arm.com, matthias.bgg@gmail.com
+Subject: Re: [RESEND][PATCH 1/8] PM: EM: Add .get_cost() callback
+Message-ID: <YksWL2cWQDXPCuKv@arm.com>
+References: <20220321095729.20655-1-lukasz.luba@arm.com>
+ <20220321095729.20655-2-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.181.62
-X-CLIENT-HOSTNAME: 213.134.181.62
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrudejvddgkeejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpefhgedtffejheekgeeljeevvedtuefgffeiieejuddutdekgfejvdehueejjeetvdenucfkphepvddufedrudefgedrudekuddriedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudekuddriedvpdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihhkrgdr
- figvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220321095729.20655-2-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+On Monday 21 Mar 2022 at 09:57:22 (+0000), Lukasz Luba wrote:
+> The Energy Model (EM) supports devices which report abstract power scale,
+> not only real Watts. The primary goal for EM is to enable the Energy Aware
+> Scheduler (EAS) for a given platform. Some of the platforms might not be
+> able to deliver proper power values. The only information that they might
+> have is the relative efficiency between CPU types.
+> 
+> Thus, it makes sense to remove some restrictions in the EM framework and
+> introduce a mechanism which would support those platforms. What is crucial
+> for EAS to operate is the 'cost' field in the EM. The 'cost' is calculated
+> internally in EM framework based on knowledge from 'power' values.
+> The 'cost' values must be strictly increasing. The existing API with its
+> 'power' value size restrictions cannot guarantee that the 'cost' will meet
+> this requirement.
+> 
+> Since the platform is missing this detailed information, but has only
+> efficiency details, introduce a new custom callback in the EM framework.
+> The new callback would allow to provide the 'cost' values which reflect
+> efficiency of the CPUs. This would allow to provide EAS information which
+> has different relation than what would be forced by the EM internal
+> formulas calculating 'cost' values. Thanks to this new callback it is
+> possible to create a system view for EAS which has no overlapping
+> performance states across many Performance Domains.
+> 
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  include/linux/energy_model.h | 24 +++++++++++++++++++++++-
+>  1 file changed, 23 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+> index 9f3c400bc52d..0a3a5663177b 100644
+> --- a/include/linux/energy_model.h
+> +++ b/include/linux/energy_model.h
+> @@ -114,9 +114,30 @@ struct em_data_callback {
+>  	 */
+>  	int (*active_power)(unsigned long *power, unsigned long *freq,
+>  			    struct device *dev);
+> +
+> +	/**
+> +	 * get_cost() - Provide the cost at the given performance state of
+> +	 *		a device
+> +	 * @dev		: Device for which we do this operation (can be a CPU)
+> +	 * @freq	: Frequency at the performance state in kHz
+> +	 * @cost	: The cost value for the performance state
+> +	 *		(modified)
+> +	 *
+> +	 * In case of CPUs, the cost is the one of a single CPU in the domain.
+> +	 * It is expected to fit in the [0, EM_MAX_POWER] range due to internal
+> +	 * usage in EAS calculation.
+> +	 *
+> +	 * Return 0 on success, or appropriate error value in case of failure.
+> +	 */
+> +	int (*get_cost)(struct device *dev, unsigned long freq,
+> +			unsigned long *cost);
+>  };
+> -#define EM_DATA_CB(_active_power_cb) { .active_power = &_active_power_cb }
+>  #define EM_SET_ACTIVE_POWER_CB(em_cb, cb) ((em_cb).active_power = cb)
+> +#define EM_ADV_DATA_CB(_active_power_cb, _cost_cb)	\
+> +	{ .active_power = _active_power_cb,		\
+> +	  .get_cost = _cost_cb }
+> +#define EM_DATA_CB(_active_power_cb)			\
+> +		EM_ADV_DATA_CB(_active_power_cb, NULL)
+>  
+>  struct em_perf_domain *em_cpu_get(int cpu);
+>  struct em_perf_domain *em_pd_get(struct device *dev);
+> @@ -264,6 +285,7 @@ static inline int em_pd_nr_perf_states(struct em_perf_domain *pd)
+>  
+>  #else
+>  struct em_data_callback {};
+> +#define EM_ADV_DATA_CB(_active_power_cb, _cost_cb) { }
+>  #define EM_DATA_CB(_active_power_cb) { }
+>  #define EM_SET_ACTIVE_POWER_CB(em_cb, cb) do { } while (0)
+>  
 
-This series of two patches addresses potential issues related to transitions
-of PCI devices from D3cold to D0.
+Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
 
-The first one is that devices initially in D3cold may be left in D0-uninitialized
-by pci_power_up() in some cases and the second one is that attempting to resume
-PCI devices under a bridge that fails to go from D3cold to D0 is pointless.
+Thanks,
+Ionela.
 
-Please refer to the patch changelogs for details.
-
-Thanks!
-
-
-
+> -- 
+> 2.17.1
+> 
