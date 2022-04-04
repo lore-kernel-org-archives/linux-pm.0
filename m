@@ -2,85 +2,144 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B895CC3526F
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39621C35280
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Apr 2022 21:16:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1356184AbiDDVSZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Apr 2022 17:18:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36646 "EHLO
+        id S1378927AbiDDVSY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Apr 2022 17:18:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379395AbiDDREZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 13:04:25 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3345640A27
-        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 10:02:29 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id k23so17853506ejd.3
-        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 10:02:29 -0700 (PDT)
+        with ESMTP id S1379014AbiDDQT7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2022 12:19:59 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5660331922
+        for <linux-pm@vger.kernel.org>; Mon,  4 Apr 2022 09:18:03 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id k124-20020a1ca182000000b0038c9cf6e2a6so5955391wme.0
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2022 09:18:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AZy7e16Ig1JG7qj3MBTWcZiECGvCR3TfCcY9SM2k7uA=;
-        b=TkwLryzG8xq8ZJgUcCjQo23owBZZxVZFlkUrfEjVt10WatBuovqiDNcaYbAr25omCj
-         d/kdNNsblDqCmWG5ynrU8fhTXwQ/8Ch/9Es+pyux5G6XK9KlilWd6omMRts4Qr5EVCOD
-         vT85iI2i9IE/qPYUVU9NmGMmM53GkB4/i/SaTw9UAzzF0fYfcXY5EVrC8qm7/w4jB6DI
-         iI0q2d55LAvT0MvFWh0m8iwFkBjqZ4+uErSypFFgzJUqqdQ3WSZwOkiq1AaAApg8LADP
-         LOsfRO1HtVp7I2biiAyX3xEtqSmtatDXPSIpc592+g14AaVuhm+poLEgUDxFYxX8L/xy
-         9UqQ==
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=YATu+tfw31GSz41b5CTKhB5HbxvgHUcP6Ebg25sVMHI=;
+        b=mA0W820ViwlJyrK0ssBga0gNu7FmrwKbBiRzKR1++FD6ONeK32Nsz3ERwR+hlqgNyW
+         8AfIh2spcx57WDyTwjearqZOreDolImi1mIhZL8T3x/Rhgq3ugbA+bwaopt/TxfyQX+d
+         dOpBHc3hmkA13c2eg+Qx1N/dKFsFPc5UPz3Tb3RpA8bcEH/6unqRqkkt2vvjXZcvokCI
+         tapKQJCDvYsl25ONAYf5FPUgAXchSpJnVjOb5HcbCDo65ScuFHBGSj88s9mF+uaiZ6ym
+         nLRQ78vFeiFuOH1f3wamgEdseP6hhLtHS3uVAA7R8/4LS+HV1LBH0Naz0vsteQ/0S7mC
+         zQbA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AZy7e16Ig1JG7qj3MBTWcZiECGvCR3TfCcY9SM2k7uA=;
-        b=N+mIRr5uomUwtBqPz0eiida/Bmi22UnDTa2+C5kdzO8XTAKz1art82vk38dxaKF93K
-         bGK36ZzVO06tdXpScV9UsCKXoy7vliTuNHUHHeIJz7f7QEFY1YOmiglm0rRm0mv/2kj5
-         Kh5SQQcXS8NadbRuPc7VKhX2D0/EjUimXCBfeD/gqgFx5hP4YRXYC24inVYRQHsJG3Fp
-         e8jZ1ZOdCUiIJ6BYKQfiQkD6yg7/uTVKAnme1ZHfDrNNCN8xrqr+mOW+5kJaj9ahewbn
-         Ir4813EhQlEbfm6M0ZqTn050u+apzAySFmtftqaa6KfeMaLp3sjrcqunPpYOnvMuyozv
-         WVpA==
-X-Gm-Message-State: AOAM532FPjbwi3j7APMImbPNaqyRShuMgAgCZoMWhw+wDqNvr6a7gXb3
-        8/fbnpaJmik+cCCvm6uPsoSnDg==
-X-Google-Smtp-Source: ABdhPJw30fbKCfQKHVKnmx6muF5fQbHs2yESn5RWTv0aghy4f7F4Sy0XYE4R1cIxrr0pe2nLy7vXTQ==
-X-Received: by 2002:a17:907:7205:b0:6e7:ee50:ea94 with SMTP id dr5-20020a170907720500b006e7ee50ea94mr1050231ejc.351.1649091747789;
-        Mon, 04 Apr 2022 10:02:27 -0700 (PDT)
-Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.gmail.com with ESMTPSA id hs12-20020a1709073e8c00b006dfdfdac005sm4588927ejc.174.2022.04.04.10.02.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 10:02:27 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: Re: (subset) [PATCH v3 8/8] ARM: dts: exynos: remove deprecated unit address for LPDDR3 timings on Odroid
-Date:   Mon,  4 Apr 2022 19:02:24 +0200
-Message-Id: <164909174137.1688710.5639682730055944531.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220206135918.211990-1-krzysztof.kozlowski@canonical.com>
-References: <20220206135807.211767-1-krzysztof.kozlowski@canonical.com> <20220206135918.211990-1-krzysztof.kozlowski@canonical.com>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=YATu+tfw31GSz41b5CTKhB5HbxvgHUcP6Ebg25sVMHI=;
+        b=VDGeUtzfcekcoD1Qmzn0zc8hnKu+ERkfLYZvWyOYpFBQSxZVHQ+7o5hy2PF9rP7/ZV
+         Nb3a/ZosBEv15HTX+naBo11ha9oq9cIGDMefZXIcObM7VOJuoUdSq3IhVkoLgS7EGTu2
+         yF9WZZFg8vaED81RZp3/oYrVtdjb+6quyaJrzcdilYQgsjfgnEpaY1W/ro/Lc7kMJdJw
+         DHvfjAlrWnwCgDGmJkGsfI9zKniQhTLn4ogFi4EQBu/4cy1vI/GnHoQPGbb2DSR9Svm5
+         IfNJeWOK5n2NMTdqzaYzIDBQ2oxSwtE0J4iCG0/WvlwKrSffITq3E1AtORwL+c9bIwcC
+         b5sA==
+X-Gm-Message-State: AOAM532PtcwXDCUvnzNlejkfwERl1fHylkCu29hyWdu/vLpeDHmPJe50
+        /FWPjduLvYGJZz0fsAGpCXUUHaJamn5X6A==
+X-Google-Smtp-Source: ABdhPJwyBvT+oh6DiTmWDVwxmFuqBqBH+x5MSl0FCvRxTnjB5WvMT0v95hh2fzNKBWqkgfFvlx3QdA==
+X-Received: by 2002:a05:600c:1910:b0:38d:1403:da8b with SMTP id j16-20020a05600c191000b0038d1403da8bmr20204357wmq.3.1649089081631;
+        Mon, 04 Apr 2022 09:18:01 -0700 (PDT)
+Received: from ?IPV6:2a01:e34:ed2f:f020:9cdc:22ce:6a8e:1fc8? ([2a01:e34:ed2f:f020:9cdc:22ce:6a8e:1fc8])
+        by smtp.googlemail.com with ESMTPSA id i3-20020adffc03000000b0020616ee90dbsm1908053wrr.42.2022.04.04.09.18.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Apr 2022 09:18:00 -0700 (PDT)
+Message-ID: <8f1428c7-cf0e-b2cc-c898-09935a9017da@linaro.org>
+Date:   Mon, 4 Apr 2022 18:17:59 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: Thermal notifications without setting thermal governor to
+ userspace?
+Content-Language: en-US
+To:     Chris Down <chris@chrisdown.name>
+Cc:     linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Guenter Roeck <linux@roeck-us.net>
+References: <YkR6/KnH/f9U+2qf@chrisdown.name>
+ <faf9e24f-4419-cdbb-573f-4cf2d9e506e2@linaro.org>
+ <YksL8a+cINo7K/xX@chrisdown.name>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <YksL8a+cINo7K/xX@chrisdown.name>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 6 Feb 2022 14:59:18 +0100, Krzysztof Kozlowski wrote:
-> Passing maximum frequency of LPDDR3 memory timings as unit address was
-> deprecated in favor of 'max-freq' property.
+
+Hi Chris,
+
+On 04/04/2022 17:17, Chris Down wrote:
+> Hey Daniel,
 > 
+> Thanks a lot for getting back!
 > 
+> Daniel Lezcano writes:
+>> For that it would require to setup a trip point from the firmware 
+>> dedicated to userspace management along with the writable trip point 
+>> kernel config option.
+>>
+>> On embedded systems, the trip point can be added easily in the device 
+>> tree.
+>>
+>> You would end up with:
+>>
+>> - one passive trip point : writable and used by userspace
+>>
+>> - one passive trip point to protect the system tied with a cooling 
+>> device and handled by the kernel
+>>
+>> - one hot trip point to notify the userspace critical is about to be 
+>> reach
+>>
+>> - one critical trip point to reboot the system
+>>
+>> From the userspace, you change the trip temp to 50°C, 70°C and 90°C 
+>> when crossing the way up or the way down.
+>>
+>> The sensor should implement the set_trip in order to program the 
+>> register to fire the interrupt at the specified temperature. 
+>> Otherwise, monitoring will be needed.
+>>
+>> On ACPI, except hacking the table and reload from the kernel I don't 
+>> see how to do that.
+> 
+> In my case I'm dealing with "normal" desktop machines and a distribution 
+> kernel, so it isn't possible to have fine grained control over the 
+> kernel configuration or device tree (especially since ideally this would 
+> be usable as an unprivileged user).
+> 
+> Is it still possible to use this in such a scenario?
 
-Applied, thanks!
+Well on regular desktop, the thermal is managed under the hood by the 
+firmware/hardware, few sensors are exported AFAICT. I don't think a 
+thermal daemon would have a benefit on these platforms.
 
-[8/8] ARM: dts: exynos: remove deprecated unit address for LPDDR3 timings on Odroid
-      commit: c3d3727c8531ba78fc725995ce34cf948ebf1dae
+Anyway. The temperature is not moving so quickly with all the heat sinks 
+on the desktop components usually, so monitoring the temperature with a 
+pid loop and increase the sampling when getting closer to a temperature 
+should be fine.
 
-Best regards,
+Just to clarify, userspace should not manage the thermal zones but the 
+overall temperature by acting on the different heating sources' 
+performance indexes.
+
+Regarding the unprivileged access, it is not possible to act on the 
+performance state of the different components for non-root users. It 
+would require to setup the file capabilities for your program which is 
+probably what you want.
+
+
+
 -- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
