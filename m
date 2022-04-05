@@ -2,142 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB24C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2EADC433EF
 	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:50:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383585AbiDEVpW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:45:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60350 "EHLO
+        id S240589AbiDEVoB convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:44:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59982 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1444822AbiDEPmE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:42:04 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADAE318B258;
-        Tue,  5 Apr 2022 07:06:52 -0700 (PDT)
-From:   Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1649167611;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to; bh=i81MASCCDw38dcKZylteUy/3pg50r3ulw2eAeBX1oQs=;
-        b=blb33Z/hkJODAWD0H0EQS/ucph9bnmTVwHRBaB8faYgOxdQiY1v+iBJaTHaNRuekJOtKPN
-        ftfSFYAe47v1dSNmihMBBH1Uu2xNTQVJdwHgnmhPTKiUEX4R9aGzzLCR0dShjccozOAAxp
-        oUI31XXjZk6cepgUaDwHHR6kYrdPUEy1C/4NzSt243SIacCu3JMKAXrZWqTLmqCAfJKtyt
-        Qwqz8k+Xo9itZXJ/J3gtQ2OzmHnvTghPeHmofW/8CsWy0Qp+5G+OH+2EC+BLPl1vpolf5d
-        LVWC3JV9vCMAYgjfutiivuCw3TVl2I1CqCzViZal/pBka4S7ZXg5GBCAdH3Oxg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1649167611;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to; bh=i81MASCCDw38dcKZylteUy/3pg50r3ulw2eAeBX1oQs=;
-        b=6qOMCJYfbs8XtKREWwkNMmyZpa/kppvHyluNeM4S50mmbUr3N+rkt67nQ6cuHWbR+xWQR8
-        crbdlICxoSpd+BDQ==
-To:     Evan Green <evgreen@google.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Rajat Jain <rajatja@chromium.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-pci <linux-pci@vger.kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Mathias Nyman <mathias.nyman@intel.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: Lost MSIs during hibernate
-In-Reply-To: <CAE=gft4a-QL82iFJE_xRQ3JrMmz-KZKWREtz=MghhjFbJeK=8A@mail.gmail.com>
-Date:   Tue, 05 Apr 2022 16:06:50 +0200
-Message-ID: <87a6cz39qd.ffs@tglx>
+        with ESMTP id S1455088AbiDEP7g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:59:36 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9B1ADE91C
+        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 08:09:44 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <p.zabel@pengutronix.de>)
+        id 1nbkoF-0007Sl-Ih; Tue, 05 Apr 2022 17:09:31 +0200
+Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <p.zabel@pengutronix.de>)
+        id 1nbkoG-001FZ2-2D; Tue, 05 Apr 2022 17:09:30 +0200
+Received: from pza by lupine with local (Exim 4.94.2)
+        (envelope-from <p.zabel@pengutronix.de>)
+        id 1nbkoE-0007ua-0i; Tue, 05 Apr 2022 17:09:30 +0200
+Message-ID: <ac31aebdd194fc559c43b08419a649ca32167e6d.camel@pengutronix.de>
+Subject: Re: [PATCH 4/8] dt-bindings: reset: add sama7g5 definitions
+From:   Philipp Zabel <p.zabel@pengutronix.de>
+To:     Claudiu Beznea <claudiu.beznea@microchip.com>, robh+dt@kernel.org,
+        nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com,
+        sre@kernel.org
+Cc:     linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Date:   Tue, 05 Apr 2022 17:09:29 +0200
+In-Reply-To: <20220405112724.2760905-5-claudiu.beznea@microchip.com>
+References: <20220405112724.2760905-1-claudiu.beznea@microchip.com>
+         <20220405112724.2760905-5-claudiu.beznea@microchip.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+User-Agent: Evolution 3.38.3-1 
 MIME-Version: 1.0
-Content-Type: text/plain
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: p.zabel@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Evan!
+On Di, 2022-04-05 at 14:27 +0300, Claudiu Beznea wrote:
+> Add reset bindings for SAMA7G5. At the moment only USB PHYs are
+> included.
 
-On Mon, Apr 04 2022 at 12:11, Evan Green wrote:
-> To my surprise, I'm back with another MSI problem, and hoping to get
-> some advice on how to approach fixing it.
+What do you mean by "at the moment only USB PHYs are included"? Are
+those the only reset controls on sama7g5 and later hardware might have
+more?
 
-Why am I not surprised?
-
-> What worries me is those IRQ "no longer affine" messages, as well as
-> my "EVAN don't touch hw" prints, indicating that requests to change
-> the MSI are being dropped. These ignored requests are coming in when
-> we try to migrate all IRQs off of the non-boot CPU, and they get
-> ignored because all devices are "frozen" at this point, and presumably
-> not in D0.
-
-They are disabled at that point.
-
-> To further try and prove that theory, I wrote a script to do the
-> hibernate prepare image step in a loop, but messed with XHCI's IRQ
-> affinity beforehand. If I move the IRQ to core 0, so far I have never
-> seen a hang. But if I move it to another core, I can usually get a
-> hang in the first attempt. I also very occasionally see wifi splats
-> when trying this, and those "no longer affine" prints are all the wifi
-> queue IRQs. So I think a wifi packet coming in at the wrong time can
-> do the same thing.
->
-> I wanted to see what thoughts you might have on this. Should I try to
-> make a patch that moves all IRQs to CPU 0 *before* the devices all
-> freeze? Sounds a little unpleasant. Or should PCI be doing something
-> different to avoid this combination of "you're not allowed to modify
-> my MSIs, but I might still generate interrupts that must not be lost"?
-
-PCI cannot do much here and moving interrupts around is papering over
-the underlying problem.
-
-xhci_hcd 0000:00:0d.0: EVAN Write MSI 0 fee1e000 4023
-
-  This sets up the interrupt when the driver is loaded
-
-xhci_hcd 0000:00:14.0: EVAN Write MSI 0 fee01000 4024
-
-  Ditto
-
-xhci_hcd 0000:00:0d.0: calling pci_pm_freeze+0x0/0xad @ 423, parent: pci0000:00
-xhci_hcd 0000:00:14.0: calling pci_pm_freeze+0x0/0xad @ 4644, parent: pci0000:00
-xhci_hcd 0000:00:14.0: pci_pm_freeze+0x0/0xad returned 0 after 0 usecs
-xhci_hcd 0000:00:0d.0: EVAN Write MSI 0 fee1e000 4023
-xhci_hcd 0000:00:0d.0: pci_pm_freeze+0x0/0xad returned 0 after 196000 usecs
-
-Those freeze() calls end up in xhci_suspend(), which tears down the XHCI
-and ensures that no interrupts are on flight.
-
-xhci_hcd 0000:00:0d.0: calling pci_pm_freeze_noirq+0x0/0xb2 @ 4645, parent: pci0000:00
-xhci_hcd 0000:00:0d.0: pci_pm_freeze_noirq+0x0/0xb2 returned 0 after 30 usecs
-xhci_hcd 0000:00:14.0: calling pci_pm_freeze_noirq+0x0/0xb2 @ 4644, parent: pci0000:00
-xhci_hcd 0000:00:14.0: pci_pm_freeze_noirq+0x0/0xb2 returned 0 after 3118 usecs
-
-   Now the devices are disabled and not accessible
-
-xhci_hcd 0000:00:14.0: EVAN Don't touch hw 0 fee00000 4024
-xhci_hcd 0000:00:0d.0: EVAN Don't touch hw 0 fee1e000 4045
-xhci_hcd 0000:00:0d.0: EVAN Don't touch hw 0 fee00000 4045
-xhci_hcd 0000:00:14.0: calling pci_pm_thaw_noirq+0x0/0x70 @ 9, parent: pci0000:00
-xhci_hcd 0000:00:14.0: EVAN Write MSI 0 fee00000 4024
-
-   This is the early restore _before_ the XHCI resume code is called
-   This interrupt is targeted at CPU0 (it's the one which could not be
-   written above).
-
-xhci_hcd 0000:00:14.0: pci_pm_thaw_noirq+0x0/0x70 returned 0 after 5272 usecs
-xhci_hcd 0000:00:0d.0: calling pci_pm_thaw_noirq+0x0/0x70 @ 1123, parent: pci0000:00
-xhci_hcd 0000:00:0d.0: EVAN Write MSI 0 fee00000 4045
-
-   Ditto
-
-xhci_hcd 0000:00:0d.0: pci_pm_thaw_noirq+0x0/0x70 returned 0 after 623 usecs
-xhci_hcd 0000:00:14.0: calling pci_pm_thaw+0x0/0x7c @ 3856, parent: pci0000:00
-xhci_hcd 0000:00:14.0: pci_pm_thaw+0x0/0x7c returned 0 after 0 usecs
-xhci_hcd 0000:00:0d.0: calling pci_pm_thaw+0x0/0x7c @ 4664, parent: pci0000:00
-xhci_hcd 0000:00:0d.0: pci_pm_thaw+0x0/0x7c returned 0 after 0 usecs
-
-That means the suspend/resume logic is doing the right thing.
-
-How the XHCI ends up being confused here is a mystery. Cc'ed a few more folks.
-
-Thanks,
-
-        tglx
-
-
+regards
+Philipp
