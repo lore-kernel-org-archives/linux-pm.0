@@ -2,237 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9557AC4332F
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E5A9C433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:49:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379800AbiDEVow (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:44:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46592 "EHLO
+        id S1381988AbiDEVpA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:45:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1446274AbiDEPoY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:44:24 -0400
-Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34A92E6C78;
-        Tue,  5 Apr 2022 07:13:10 -0700 (PDT)
-Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-2eb43ad7909so85992257b3.2;
-        Tue, 05 Apr 2022 07:13:10 -0700 (PDT)
+        with ESMTP id S1573266AbiDESjU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 14:39:20 -0400
+Received: from mail-ot1-x335.google.com (mail-ot1-x335.google.com [IPv6:2607:f8b0:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BD85167E3;
+        Tue,  5 Apr 2022 11:37:21 -0700 (PDT)
+Received: by mail-ot1-x335.google.com with SMTP id 88-20020a9d0ee1000000b005d0ae4e126fso130087otj.5;
+        Tue, 05 Apr 2022 11:37:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=+KbWd7V0K71eJ7YcPU2pSOmsRiOHZCWb39tTThHrGDU=;
+        b=Ek7jB5nSnvX8nkKurboNskrrBPBblu+4jqRUXkbMh3ca8FuApH6Rb6FgVhfqE9grkW
+         NjJ5Md7xQ7RlZDLu9Gze+AeK09cSBJ664PdQCRLHC6gF+t9qW9aOLSX78FegGO3k7jVk
+         rFUZQ7MqGeybfSVIZNDENxpzlYmk5eIBf9Dr1b8ZAP7tLQJWyyxhgJQ5qj5aQFl6oPXr
+         xDA1zcBqdJd/2Me1mtUAtEAO87UryhKJkjIbIjtLhHLbDmJdeL4BbAp6qVf5StQ/XioJ
+         NLPoNwaRwM0O2LZWv+WuuTdFIK9+HwlEYAIiosdi0Ei0P23jrhVrqHwM7+UINS9faAdR
+         mRNA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=0m0X8qD7jgaOpFhSCX1pI9/lBF4aFgFkK0POJ3FtM5M=;
-        b=oop02PYzQjf4I81Lgk4YHXpzi42n6WQveIpvF1+LxhlRXlBzom659lzoHZVZW8RA4f
-         i9VrfhAx+htfKK6+HHav6cGsfp4pSaozu8Y6va4FPwBKBNMvEfW+HIzvD+s/5zv6kcAW
-         VScgyYuKNHatNNWNwYAwo6vDB7QMJuXlQTtcVWaNAvf6kQ8oldpg8FL6M4jmKQigbaMn
-         ef4nPOFy981kzrUeawhcNAkHuyoSdOROd6truwdQ7qTV638O5j5Cy3JEpNKaudeHfSxw
-         yZyz733yGUe1tlEMIjAQ2fw6FmB5P7yGvYAP4M9tiFmwZcQlN/RSGjWE5DSu/pPna7AN
-         D3tA==
-X-Gm-Message-State: AOAM533eKEhvmfbZ+W3FKVOMlBuGOh9pe6H4UDEObRCxRmXaINPnLL0u
-        s0AWfQ4CEYNywmH6p/kDPe/lNr1oHF8ud6O3NpwSivjT
-X-Google-Smtp-Source: ABdhPJxwMh75H+q2lMm7lfhlZkhQSxK3Xl3vxLiAsuHwCOepfUfgE7YhAm+UQ8tjNWYOfmUWiErC4e6KhAn6L+k5ZXk=
-X-Received: by 2002:a81:1257:0:b0:2eb:97cf:a4a2 with SMTP id
- 84-20020a811257000000b002eb97cfa4a2mr2865951yws.149.1649167989258; Tue, 05
- Apr 2022 07:13:09 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=+KbWd7V0K71eJ7YcPU2pSOmsRiOHZCWb39tTThHrGDU=;
+        b=a6Wkpytl/4MFrIgOiZcv0hafFPp1IBmePlR4zrnGbeEXCRw6fvO6d/I3PLTy6VOKYL
+         I0NQNg/4aR15lozQ71D9oGRqNgu8J00Ib6u2ybKNmvFVJJ+M716rS1iLxNGSw5iErPIL
+         ndfEKIbNM9c8+8aFjMyv5QngOCjP9oSI7ujotbP+Jec1OZ3YQqPdEF7SxGV5IW7IPJVW
+         kON/TxJ3hIqF8BbUF2itx98OuA3i3SzUA/vuNqEGGB7auzVRf/LgqjccJaVKyVENj5n5
+         se0Thd2+d2jW09ym+0py4nz1kgCZS5TbqtZDCb7IkFDIW7IGs4d+ge0ZrJpjjuhAbpjV
+         XLWw==
+X-Gm-Message-State: AOAM531foGtwQz983yZ/PC14QDxzq48wVaVr/Sf8lnJalKwGj585GuH1
+        /N1LY1/zJg0+AjBcud7nWsk=
+X-Google-Smtp-Source: ABdhPJwzgIOB0kzAyeyofI6976mKnX78Ud7ePRgE6hN60K0Iq7zqsIgAXR9NtfXTu0KgHLJfGGpn4g==
+X-Received: by 2002:a9d:6047:0:b0:5b2:4003:cfcb with SMTP id v7-20020a9d6047000000b005b24003cfcbmr1723411otj.59.1649183840894;
+        Tue, 05 Apr 2022 11:37:20 -0700 (PDT)
+Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
+        by smtp.gmail.com with ESMTPSA id n35-20020a05687055a300b000e1e2ab91e4sm3780056oao.39.2022.04.05.11.37.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 Apr 2022 11:37:20 -0700 (PDT)
+Date:   Tue, 5 Apr 2022 13:37:18 -0500
+From:   Chris Morgan <macroalpha82@gmail.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        devicetree@vger.kernel.org, zhangqing@rock-chips.com,
+        zyw@rock-chips.com, jon.lin@rock-chips.com,
+        maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
+        krzk+dt@kernel.org, lee.jones@linaro.org,
+        Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
+ support
+Message-ID: <20220405183718.GA5929@wintermute.localdomain>
+References: <20220404215754.30126-1-macroalpha82@gmail.com>
+ <20220404215754.30126-2-macroalpha82@gmail.com>
+ <YkyJPKuG1s5pLR+t@robh.at.kernel.org>
 MIME-Version: 1.0
-References: <20220403054822.16868-1-rdunlap@infradead.org> <20220403054822.16868-2-rdunlap@infradead.org>
-In-Reply-To: <20220403054822.16868-2-rdunlap@infradead.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 5 Apr 2022 16:12:58 +0200
-Message-ID: <CAJZ5v0gZvd_Uw02_K7fWGYFtTncSTxdeoR6z=PQ5e0DM255k8A@mail.gmail.com>
-Subject: Re: [PATCH 1/3 v3] Docs: admin/kernel-parameters: edit a few boot options
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        linux-s390@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        sparclinux@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
-        linux-ia64@vger.kernel.org,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Johannes Weiner <hannes@cmpxchg.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YkyJPKuG1s5pLR+t@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Apr 3, 2022 at 7:48 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->
-> Clean up some of admin-guide/kernel-parameters.txt:
->
-> a. "smt" should be "smt=" (S390)
-> b. (dropped)
-> c. Sparc supports the vdso= boot option
-> d. make the tp_printk options (2) formatting similar to other options
->    by adding spacing
-> e. add "trace_clock=" with a reference to Documentation/trace/ftrace.rst
-> f. use [IA-64] as documented instead of [ia64]
-> g. fix formatting and text for test_suspend=
-> h. fix formatting for swapaccount=
-> i. fix formatting and grammar for video.brightness_switch_enabled=
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Heiko Carstens <hca@linux.ibm.com>
-> Cc: Vasily Gorbik <gor@linux.ibm.com>
-> Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-> Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-> Cc: Sven Schnelle <svens@linux.ibm.com>
-> Cc: linux-s390@vger.kernel.org
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: sparclinux@vger.kernel.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-acpi@vger.kernel.org
-> Cc: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
+On Tue, Apr 05, 2022 at 01:23:56PM -0500, Rob Herring wrote:
+> On Mon, Apr 04, 2022 at 04:57:51PM -0500, Chris Morgan wrote:
+> > From: Chris Morgan <macromorgan@hotmail.com>
+> > 
+> > Create dt-binding documentation to document rk817 battery and charger
+> > usage. New device-tree properties have been added.
+> > 
+> > - rockchip,resistor-sense-micro-ohms: The value in microohms of the
+> >                                       sample resistor.
+> > - rockchip,sleep-enter-current-microamp: The value in microamps of the
+> >                                          sleep enter current.
+> > - rockchip,sleep-filter-current: The value in microamps of the sleep
+> >                                  filter current.
+> > 
+> > Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> > Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
+> > ---
+> >  .../bindings/mfd/rockchip,rk817.yaml          | 48 +++++++++++++++++++
+> >  1 file changed, 48 insertions(+)
+> 
+> Doesn't apply for me. What tree is this based on?
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Sorry, it relies on the following being applied (all the prerequisites
+are now in master, but this one is still absent):
 
-for the test_suspend and ACPI video pieces.
+https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20220303203958.4904-5-macroalpha82@gmail.com/
 
-> ---
-> v3: add trace_clock= specifics (Steven)
-> v2: drop "smt-enabled" for arch/powerpc/ (Michael)
->
->  Documentation/admin-guide/kernel-parameters.txt |   47 ++++++++++----
->  1 file changed, 36 insertions(+), 11 deletions(-)
->
-> --- linux-next-20220331.orig/Documentation/admin-guide/kernel-parameters.txt
-> +++ linux-next-20220331/Documentation/admin-guide/kernel-parameters.txt
-> @@ -2814,7 +2814,7 @@
->                         different yeeloong laptops.
->                         Example: machtype=lemote-yeeloong-2f-7inch
->
-> -       max_addr=nn[KMG]        [KNL,BOOT,ia64] All physical memory greater
-> +       max_addr=nn[KMG]        [KNL,BOOT,IA-64] All physical memory greater
->                         than or equal to this physical address is ignored.
->
->         maxcpus=        [SMP] Maximum number of processors that an SMP kernel
-> @@ -3057,7 +3057,7 @@
->
->         mga=            [HW,DRM]
->
-> -       min_addr=nn[KMG]        [KNL,BOOT,ia64] All physical memory below this
-> +       min_addr=nn[KMG]        [KNL,BOOT,IA-64] All physical memory below this
->                         physical address is ignored.
->
->         mini2440=       [ARM,HW,KNL]
-> @@ -5388,7 +5388,7 @@
->                                 1: Fast pin select (default)
->                                 2: ATC IRMode
->
-> -       smt             [KNL,S390] Set the maximum number of threads (logical
-> +       smt=            [KNL,S390] Set the maximum number of threads (logical
->                         CPUs) to use per physical CPU on systems capable of
->                         symmetric multithreading (SMT). Will be capped to the
->                         actual hardware limit.
-> @@ -5774,8 +5774,9 @@
->                         This parameter controls use of the Protected
->                         Execution Facility on pSeries.
->
-> -       swapaccount=[0|1]
-> -                       [KNL] Enable accounting of swap in memory resource
-> +       swapaccount=    [KNL]
-> +                       Format: [0|1]
-> +                       Enable accounting of swap in memory resource
->                         controller if no parameter or 1 is given or disable
->                         it if 0 is given (See Documentation/admin-guide/cgroup-v1/memory.rst)
->
-> @@ -5821,7 +5822,8 @@
->
->         tdfx=           [HW,DRM]
->
-> -       test_suspend=   [SUSPEND][,N]
-> +       test_suspend=   [SUSPEND]
-> +                       Format: { "mem" | "standby" | "freeze" }[,N]
->                         Specify "mem" (for Suspend-to-RAM) or "standby" (for
->                         standby suspend) or "freeze" (for suspend type freeze)
->                         as the system sleep state during system startup with
-> @@ -5908,6 +5910,28 @@
->         trace_buf_size=nn[KMG]
->                         [FTRACE] will set tracing buffer size on each cpu.
->
-> +       trace_clock=    [FTRACE] Set the clock used for tracing events
-> +                       at boot up.
-> +                       local - Use the per CPU time stamp counter
-> +                               (converted into nanoseconds). Fast, but
-> +                               depending on the architecture, may not be
-> +                               in sync between CPUs.
-> +                       global - Event time stamps are synchronize across
-> +                               CPUs. May be slower than the local clock,
-> +                               but better for some race conditions.
-> +                       counter - Simple counting of events (1, 2, ..)
-> +                               note, some counts may be skipped due to the
-> +                               infrastructure grabbing the clock more than
-> +                               once per event.
-> +                       uptime - Use jiffies as the time stamp.
-> +                       perf - Use the same clock that perf uses.
-> +                       mono - Use ktime_get_mono_fast_ns() for time stamps.
-> +                       mono_raw - Use ktime_get_raw_fast_ns() for time
-> +                               stamps.
-> +                       boot - Use ktime_get_boot_fast_ns() for time stamps.
-> +                       Architectures may add more clocks. See
-> +                       Documentation/trace/ftrace.rst for more details.
-> +
->         trace_event=[event-list]
->                         [FTRACE] Set and start specified trace events in order
->                         to facilitate early boot debugging. The event-list is a
-> @@ -5930,7 +5954,7 @@
->                         See also Documentation/trace/ftrace.rst "trace options"
->                         section.
->
-> -       tp_printk[FTRACE]
-> +       tp_printk       [FTRACE]
->                         Have the tracepoints sent to printk as well as the
->                         tracing ring buffer. This is useful for early boot up
->                         where the system hangs or reboots and does not give the
-> @@ -5952,7 +5976,7 @@
->                         frequency tracepoints such as irq or sched, can cause
->                         the system to live lock.
->
-> -       tp_printk_stop_on_boot[FTRACE]
-> +       tp_printk_stop_on_boot [FTRACE]
->                         When tp_printk (above) is set, it can cause a lot of noise
->                         on the console. It may be useful to only include the
->                         printing of events during boot up, as user space may
-> @@ -6301,7 +6325,7 @@
->                                         HIGHMEM regardless of setting
->                                         of CONFIG_HIGHPTE.
->
-> -       vdso=           [X86,SH]
-> +       vdso=           [X86,SH,SPARC]
->                         On X86_32, this is an alias for vdso32=.  Otherwise:
->
->                         vdso=1: enable VDSO (the default)
-> @@ -6327,11 +6351,12 @@
->         video=          [FB] Frame buffer configuration
->                         See Documentation/fb/modedb.rst.
->
-> -       video.brightness_switch_enabled= [0,1]
-> +       video.brightness_switch_enabled= [ACPI]
-> +                       Format: [0|1]
->                         If set to 1, on receiving an ACPI notify event
->                         generated by hotkey, video driver will adjust brightness
->                         level and then send out the event to user space through
-> -                       the allocated input device; If set to 0, video driver
-> +                       the allocated input device. If set to 0, video driver
->                         will only send out the event without touching backlight
->                         brightness level.
->                         default: 1
+> 
+> Rob
