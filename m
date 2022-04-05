@@ -2,98 +2,224 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C9A0C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 11:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95710C433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 12:53:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242330AbiDELJl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 07:09:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47428 "EHLO
+        id S236117AbiDEMqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 08:46:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45564 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349467AbiDEJtz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 05:49:55 -0400
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55F5FFD1D;
-        Tue,  5 Apr 2022 02:46:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1649152006; x=1680688006;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=HZf/S7rVd3q8yY5bhWH8nEyTLZa+T5GesGL7jfopFXY=;
-  b=BxM8NniRHwZrdAKEyoRLdXzc21jdTLEM9ka8fp3n/zXnd+M+0StfBm+k
-   eMR8T0cGhJ6qJ8HA3WOqarsQO+Hy9tneZ49D7KOIgc9Rm2Jy7uvHv8h0L
-   BF02vZexaKVbpoWUnU6ip8r1JbXE29qYrUL9Ea/5rZA82O3NiUfdlr85o
-   cqzzMdhU6wa6XufFvZRehT5+j3GQluyuMm4ryCsxoyJST4FZpe3NIfxzY
-   VdNCAirZJJgpJlKc55AIb9I7T3fTn6peH5Dbutw/ygh7IlJvdbV1M2Y6Z
-   Z/jB2NDvZkkn+ROUt+R+wCIYbD6eNe8Hp1J7GRPDvjQriQzhxoFg/3ZVa
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10307"; a="242851251"
-X-IronPort-AV: E=Sophos;i="5.90,236,1643702400"; 
-   d="scan'208";a="242851251"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Apr 2022 02:46:45 -0700
-X-IronPort-AV: E=Sophos;i="5.90,236,1643702400"; 
-   d="scan'208";a="651826968"
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.162])
-  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Apr 2022 02:46:43 -0700
-Received: by lahna (sSMTP sendmail emulation); Tue, 05 Apr 2022 12:46:40 +0300
-Date:   Tue, 5 Apr 2022 12:46:40 +0300
-From:   Mika Westerberg <mika.westerberg@linux.intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v1 0/3] ACPI: PCI: PM: Power up PCI devices with ACPI
- companions upfront
-Message-ID: <YkwQAKcFU4CzYX5E@lahna>
-References: <21439956.EfDdHjke4D@kreacher>
+        with ESMTP id S1382370AbiDEMPE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 08:15:04 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21DF1A8886;
+        Tue,  5 Apr 2022 04:25:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1649157927; x=1680693927;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=VyOpHSV5HKkBdPnmNq5O+pK+4MQGLYr78YNp/R3g7B4=;
+  b=t8iYuilbKLzNj1kcbqzJxUoEE58Rlx7Ip3NzCvTF9uLNPWiW0uWrVv8f
+   zy3iptPUApl6Ne7Cj0kG/01usEagfPhi/9j9/0+mCv+/hwxUFtIClEWBh
+   3EqjB2N/aHixxbwHbAYmwZAiu2PGuj64HgTQvl5Vj3towhDrXBhd/jip3
+   wWyU6UaBQtSvVxXTYAjEKtgxPQjarOq+o6ej6wG0FKFaeqcUrzVfAtT5c
+   ZAVS4yIkeWxFlOw0lDTNg92PDOR7KpLP2r3oSXVPrT+qBH9ISKrlA2MR8
+   LtA7hKS02hAwAOO4MoWkjQ4vmKSqFe+W0PX3CqQzsIQiyM9AZNvKXSt5r
+   g==;
+X-IronPort-AV: E=Sophos;i="5.90,236,1643698800"; 
+   d="scan'208";a="158916307"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 05 Apr 2022 04:25:26 -0700
+Received: from chn-vm-ex02.mchp-main.com (10.10.87.72) by
+ chn-vm-ex02.mchp-main.com (10.10.87.72) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.17; Tue, 5 Apr 2022 04:25:24 -0700
+Received: from localhost.localdomain (10.10.115.15) by
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
+ 15.1.2375.17 via Frontend Transport; Tue, 5 Apr 2022 04:25:22 -0700
+From:   Claudiu Beznea <claudiu.beznea@microchip.com>
+To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
+        <alexandre.belloni@bootlin.com>, <p.zabel@pengutronix.de>,
+        <sre@kernel.org>
+CC:     <linux-arm-kernel@lists.infradead.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>
+Subject: [PATCH 1/8] ARM: dts: at91: use generic name for reset controller
+Date:   Tue, 5 Apr 2022 14:27:17 +0300
+Message-ID: <20220405112724.2760905-2-claudiu.beznea@microchip.com>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20220405112724.2760905-1-claudiu.beznea@microchip.com>
+References: <20220405112724.2760905-1-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21439956.EfDdHjke4D@kreacher>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Use generic name for reset controller of AT91 devices to comply with
+DT specifications.
 
-On Mon, Apr 04, 2022 at 05:20:30PM +0200, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> There are cases in which the power state of a PCI device depends on an ACPI
-> power resource (or more of them) in such a way that when the given power
-> resource is in the "off" state, the PCI device depending on it is in D3cold.
-> 
-> On some systems, the initial state of these power resources is "off", so the
-> kernel should not access the config space of PCI devices depending on them,
-> until the power resources in question are turned "on", but currently that is
-> not respected during PCI device enumeration.  Namely, the PCI device
-> enumeration code walks the entire bus and enumerates all of the devices it
-> can find, including the ones whose initial power state in principle depends on
-> the ACPI power resources in the "off" state.
+Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+---
+ arch/arm/boot/dts/at91sam9260.dtsi | 2 +-
+ arch/arm/boot/dts/at91sam9261.dtsi | 2 +-
+ arch/arm/boot/dts/at91sam9263.dtsi | 2 +-
+ arch/arm/boot/dts/at91sam9g45.dtsi | 2 +-
+ arch/arm/boot/dts/at91sam9n12.dtsi | 2 +-
+ arch/arm/boot/dts/at91sam9rl.dtsi  | 2 +-
+ arch/arm/boot/dts/at91sam9x5.dtsi  | 2 +-
+ arch/arm/boot/dts/sam9x60.dtsi     | 2 +-
+ arch/arm/boot/dts/sama5d2.dtsi     | 2 +-
+ arch/arm/boot/dts/sama5d3.dtsi     | 2 +-
+ arch/arm/boot/dts/sama5d4.dtsi     | 2 +-
+ 11 files changed, 11 insertions(+), 11 deletions(-)
 
-I guess these devices do not have _PRE() method either.
+diff --git a/arch/arm/boot/dts/at91sam9260.dtsi b/arch/arm/boot/dts/at91sam9260.dtsi
+index 7368347c9357..9d9820db9482 100644
+--- a/arch/arm/boot/dts/at91sam9260.dtsi
++++ b/arch/arm/boot/dts/at91sam9260.dtsi
+@@ -123,7 +123,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_xtal", "main_xtal";
+ 			};
+ 
+-			rstc@fffffd00 {
++			reset-controller@fffffd00 {
+ 				compatible = "atmel,at91sam9260-rstc";
+ 				reg = <0xfffffd00 0x10>;
+ 				clocks = <&pmc PMC_TYPE_CORE PMC_SLOW>;
+diff --git a/arch/arm/boot/dts/at91sam9261.dtsi b/arch/arm/boot/dts/at91sam9261.dtsi
+index 7adc36ca8a46..259aca565305 100644
+--- a/arch/arm/boot/dts/at91sam9261.dtsi
++++ b/arch/arm/boot/dts/at91sam9261.dtsi
+@@ -603,7 +603,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_xtal", "main_xtal";
+ 			};
+ 
+-			rstc@fffffd00 {
++			reset-controller@fffffd00 {
+ 				compatible = "atmel,at91sam9260-rstc";
+ 				reg = <0xfffffd00 0x10>;
+ 				clocks = <&slow_xtal>;
+diff --git a/arch/arm/boot/dts/at91sam9263.dtsi b/arch/arm/boot/dts/at91sam9263.dtsi
+index fe45d96239c9..c080df8c2312 100644
+--- a/arch/arm/boot/dts/at91sam9263.dtsi
++++ b/arch/arm/boot/dts/at91sam9263.dtsi
+@@ -151,7 +151,7 @@ tcb0: timer@fff7c000 {
+ 				clock-names = "t0_clk", "slow_clk";
+ 			};
+ 
+-			rstc@fffffd00 {
++			reset-controller@fffffd00 {
+ 				compatible = "atmel,at91sam9260-rstc";
+ 				reg = <0xfffffd00 0x10>;
+ 				clocks = <&slow_xtal>;
+diff --git a/arch/arm/boot/dts/at91sam9g45.dtsi b/arch/arm/boot/dts/at91sam9g45.dtsi
+index 2ab730fd6472..09794561c7ce 100644
+--- a/arch/arm/boot/dts/at91sam9g45.dtsi
++++ b/arch/arm/boot/dts/at91sam9g45.dtsi
+@@ -137,7 +137,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_clk", "main_xtal";
+ 			};
+ 
+-			rstc@fffffd00 {
++			reset-controller@fffffd00 {
+ 				compatible = "atmel,at91sam9g45-rstc";
+ 				reg = <0xfffffd00 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/at91sam9n12.dtsi b/arch/arm/boot/dts/at91sam9n12.dtsi
+index 0785389f5507..556f35ce49e3 100644
+--- a/arch/arm/boot/dts/at91sam9n12.dtsi
++++ b/arch/arm/boot/dts/at91sam9n12.dtsi
+@@ -126,7 +126,7 @@ pmc: pmc@fffffc00 {
+ 				interrupts = <1 IRQ_TYPE_LEVEL_HIGH 7>;
+ 			};
+ 
+-			rstc@fffffe00 {
++			reset-controller@fffffe00 {
+ 				compatible = "atmel,at91sam9g45-rstc";
+ 				reg = <0xfffffe00 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/at91sam9rl.dtsi b/arch/arm/boot/dts/at91sam9rl.dtsi
+index 730d1182c73e..12c634811820 100644
+--- a/arch/arm/boot/dts/at91sam9rl.dtsi
++++ b/arch/arm/boot/dts/at91sam9rl.dtsi
+@@ -766,7 +766,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_clk", "main_xtal";
+ 			};
+ 
+-			rstc@fffffd00 {
++			reset-controller@fffffd00 {
+ 				compatible = "atmel,at91sam9260-rstc";
+ 				reg = <0xfffffd00 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/at91sam9x5.dtsi b/arch/arm/boot/dts/at91sam9x5.dtsi
+index 395e883644cd..ea3b11336c79 100644
+--- a/arch/arm/boot/dts/at91sam9x5.dtsi
++++ b/arch/arm/boot/dts/at91sam9x5.dtsi
+@@ -134,7 +134,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_clk", "main_xtal";
+ 			};
+ 
+-			reset_controller: rstc@fffffe00 {
++			reset_controller: reset-controller@fffffe00 {
+ 				compatible = "atmel,at91sam9g45-rstc";
+ 				reg = <0xfffffe00 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/sam9x60.dtsi b/arch/arm/boot/dts/sam9x60.dtsi
+index ec45ced3cde6..211e743e2597 100644
+--- a/arch/arm/boot/dts/sam9x60.dtsi
++++ b/arch/arm/boot/dts/sam9x60.dtsi
+@@ -671,7 +671,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "td_slck", "md_slck", "main_xtal";
+ 			};
+ 
+-			reset_controller: rstc@fffffe00 {
++			reset_controller: reset-controller@fffffe00 {
+ 				compatible = "microchip,sam9x60-rstc";
+ 				reg = <0xfffffe00 0x10>;
+ 				clocks = <&clk32k 0>;
+diff --git a/arch/arm/boot/dts/sama5d2.dtsi b/arch/arm/boot/dts/sama5d2.dtsi
+index 09c741e8ecb8..769befc06b57 100644
+--- a/arch/arm/boot/dts/sama5d2.dtsi
++++ b/arch/arm/boot/dts/sama5d2.dtsi
+@@ -662,7 +662,7 @@ securam: sram@f8044000 {
+ 				ranges = <0 0xf8044000 0x1420>;
+ 			};
+ 
+-			reset_controller: rstc@f8048000 {
++			reset_controller: reset-controller@f8048000 {
+ 				compatible = "atmel,sama5d3-rstc";
+ 				reg = <0xf8048000 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/sama5d3.dtsi b/arch/arm/boot/dts/sama5d3.dtsi
+index d1841bffe3c5..ab124c09f70e 100644
+--- a/arch/arm/boot/dts/sama5d3.dtsi
++++ b/arch/arm/boot/dts/sama5d3.dtsi
+@@ -1003,7 +1003,7 @@ pmc: pmc@fffffc00 {
+ 				clock-names = "slow_clk", "main_xtal";
+ 			};
+ 
+-			reset_controller: rstc@fffffe00 {
++			reset_controller: reset-controller@fffffe00 {
+ 				compatible = "atmel,sama5d3-rstc", "atmel,at91sam9g45-rstc";
+ 				reg = <0xfffffe00 0x10>;
+ 				clocks = <&clk32k>;
+diff --git a/arch/arm/boot/dts/sama5d4.dtsi b/arch/arm/boot/dts/sama5d4.dtsi
+index f6e3e6f57252..bc41d302dbf3 100644
+--- a/arch/arm/boot/dts/sama5d4.dtsi
++++ b/arch/arm/boot/dts/sama5d4.dtsi
+@@ -729,7 +729,7 @@ pmecc: ecc-engine@ffffc070 {
+ 				};
+ 			};
+ 
+-			reset_controller: rstc@fc068600 {
++			reset_controller: reset-controller@fc068600 {
+ 				compatible = "atmel,sama5d3-rstc", "atmel,at91sam9g45-rstc";
+ 				reg = <0xfc068600 0x10>;
+ 				clocks = <&clk32k>;
+-- 
+2.32.0
 
-> Apparently, most of the time, the config space of such devices is accessible
-> regardless of the state of the ACPI power resource associated with the PCI
-> device, so the device enumeration is successful, but there are two potential
-> issues related to this behavior.  First off, even if the given PCI device
-> is accessible when the ACPI power resource depended on by it is "off",
-> changing its configuration may confuse the platform firmware and lead to
-> problems when the ACPI power resource in question is turned "on".  Second,
-> the PCI device may not be actually accessible at all when the ACPI power
-> resource depended on by it is "off", in which case it won't be found during
-> the PCI enumeration of devices.
-> 
-> This patch series addresses that problem by turning "on" all ACPI power
-> resources depended on by PCI devices before attempting to access the config
-> space of those devices for the first time.
-
-Makes sense.
-
-For the series,
-
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
