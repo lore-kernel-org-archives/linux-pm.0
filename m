@@ -2,94 +2,98 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F357AC433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:42:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27EDBC433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:42:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232037AbiDEVnk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:43:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37282 "EHLO
+        id S230115AbiDEVno (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:43:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1457459AbiDEQDP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 12:03:15 -0400
-Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7D455D1A0;
-        Tue,  5 Apr 2022 08:46:55 -0700 (PDT)
-Received: from localhost (unknown [IPv6:2601:281:8300:35:2589:2a93:190d:b787])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ms.lwn.net (Postfix) with ESMTPSA id 20691608;
-        Tue,  5 Apr 2022 15:46:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 20691608
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
-        t=1649173615; bh=kHfYrSzZyDs+Fu27L1LKoiRzei4/RCGk3O/QVQBW1rk=;
-        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-        b=Ym15LNvNX+5bNBTOTEfnrPAQERPQL+4Q3JLRjO3chKJgurqlYd90WxSYSbab+74hK
-         r5fkWh/kQQqTfh96JTYHX9Jm4ZvoIDKhcBSNcPIQgF+XHN3iXU4rz9WPOBoOUYAksU
-         ++4u3F3nNERfFWdutVRxQI27DWewR1g5jk7AC/3c/Lkazl4f47H5hZqBjfkzZpegHi
-         jXwVMJ8BqvwpUGapCdr50+Dg8Gke5bX+PaFEffzqGVJdXy7WKib0ztNhbRQGiedDNz
-         p4MsveBUV35qF82ZxnpB1UtqerBoYaqlvgmdeKqBsHQnBhrvx+jlOoKXA5NmKDhCz2
-         dt7e1tX0WOWoQ==
-From:   Jonathan Corbet <corbet@lwn.net>
-To:     Akira Yokosawa <akiyks@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org,
-        linux-doc@vger.kernel.org, Akira Yokosawa <akiyks@gmail.com>
-Subject: Re: [PATCH -pm v2] docs: driver-api/thermal/intel_dptf: Use
- copyright symbol
-In-Reply-To: <fffa1d50-f155-b6a4-bf58-22e395d7401c@gmail.com>
-References: <fffa1d50-f155-b6a4-bf58-22e395d7401c@gmail.com>
-Date:   Tue, 05 Apr 2022 09:46:54 -0600
-Message-ID: <871qybfs7l.fsf@meer.lwn.net>
+        with ESMTP id S1443920AbiDEPk2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:40:28 -0400
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13C89183A6
+        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 07:02:26 -0700 (PDT)
+Received: by mail-ed1-x52e.google.com with SMTP id b15so15028749edn.4
+        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 07:02:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=YlvhCz+ZwurBoa4Dacny1n1zKhjoK5WjTu0ka6Xew2M=;
+        b=JaBFqrGP/LYxuwnv3xPeUZFSgFCaYAP5Cc9OnqSilE1X0S9oVVSJ6EXMxe2neL3/Nd
+         UhH6K5oc0/icf2hvVcQMP+5db7MSeRmMi563yaeNeT+3++H8cmrbblbpCfE4FwTqHzFY
+         fBYh0THevDP3AxNl1qULJ+90gVVY4UUnhq8zUqTqnkKltzk5/ohQCROKxreOym0ut+vH
+         ZxmBxwEvfGIXQMDbxsYvxty0q/GfInzTR6SY0DenLzomyHKmwQAK4xWnvfBJTF3qBLTp
+         wG55NcoLaZfESKPsmdfJq+7EdqRxzt6kdl5p53pg/g96/ZlTjA7glASSgRLOCU+Qpijr
+         Ejtw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=YlvhCz+ZwurBoa4Dacny1n1zKhjoK5WjTu0ka6Xew2M=;
+        b=1iUYbTT4lPCVdlOCwFKNMZXguVskWBp5rOgyn2ZsdEPy6BOY0HBaS1280/LUeLuXM6
+         2Rkc43zM/T3V/odiFs499hr00OkaHHTYICw7UVcunqH7ugvE9vtw0abGN/JmiNUdoYHd
+         nJXA6iNFBzlthl0joqqUQv0bz1PpCNXqTFXCxEqA0dwRjwYhbWkpQcrYKD3++vSy5qyp
+         offD0kfOHqDoAqKNW56tLIjveRW8MwkYwO9R779xCXsuXXQf7rJXAwt/OfnsKdJqEIMy
+         eNyT7vByQstdZptaJZrMZ7K0f0AkVycwrIZc3FnoAkHrVJ5r5Q/fgo1TYHxyRBwCbHZC
+         cmxA==
+X-Gm-Message-State: AOAM533osGTtDqDTcMoLCkTVg4gHasGr6A+/2Wx7AhFMvsdDWGxyZ4R3
+        fL1m4AJHlwR/EXgFI4Cbl7BZQw==
+X-Google-Smtp-Source: ABdhPJzisQRw1uJSXOH6nUs9bMEsOFb2+0Ji2PIRWukr5+WRXSVe+El5YGq6vFp27YKEFnRXxC1ZRw==
+X-Received: by 2002:a05:6402:26c7:b0:41b:7aef:bdf6 with SMTP id x7-20020a05640226c700b0041b7aefbdf6mr3834868edd.210.1649167344648;
+        Tue, 05 Apr 2022 07:02:24 -0700 (PDT)
+Received: from [192.168.0.182] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id j12-20020a50e0cc000000b0041cd813ac01sm2630767edl.28.2022.04.05.07.02.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 05 Apr 2022 07:02:24 -0700 (PDT)
+Message-ID: <7ee4c8ab-595e-eaab-6f52-a97255ec032a@linaro.org>
+Date:   Tue, 5 Apr 2022 16:02:23 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
+ support
+Content-Language: en-US
+To:     Chris Morgan <macroalpha82@gmail.com>, linux-pm@vger.kernel.org
+Cc:     linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
+        zhangqing@rock-chips.com, zyw@rock-chips.com,
+        jon.lin@rock-chips.com, maccraft123mc@gmail.com, sre@kernel.org,
+        heiko@sntech.de, krzk+dt@kernel.org, robh+dt@kernel.org,
+        lee.jones@linaro.org, Chris Morgan <macromorgan@hotmail.com>
+References: <20220404215754.30126-1-macroalpha82@gmail.com>
+ <20220404215754.30126-2-macroalpha82@gmail.com>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220404215754.30126-2-macroalpha82@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Akira Yokosawa <akiyks@gmail.com> writes:
+On 04/04/2022 23:57, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Create dt-binding documentation to document rk817 battery and charger
+> usage. New device-tree properties have been added.
 
-> Using a substitution pattern of "|copy|" without including
-> isonum.txt causes a doc build warning.
->
-> Using the symbol "=C2=A9" itself is a better choice for those
-> who read .rst sources.
->
-> Fixes: 16c02447f3e1 ("Documentation: thermal: DPTF Documentation")
-> Reported by: Randy Dunlap <rdunlap@infradead.org>
-> Suggested-by: Jonathan Corbet <corbet@lwn.net>
-> Signed-off-by: Akira Yokosawa <akiyks@gmail.com>
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-doc@vger.kernel.org
-> ---
-> Changes since v1 [1]:
->
->   - Use =C2=A9 instead of including isonum.txt (Jon).
->   - Amend title and changelog.
->
-> v1 [1]: https://lore.kernel.org/r/e06542af-aa8b-0885-37a3-bb7bc5fafa1e@gm=
-ail.com/
-> ---
->  Documentation/driver-api/thermal/intel_dptf.rst | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/Documentation/driver-api/thermal/intel_dptf.rst b/Documentat=
-ion/driver-api/thermal/intel_dptf.rst
-> index 96668dca753a..372bdb4d04c6 100644
-> --- a/Documentation/driver-api/thermal/intel_dptf.rst
-> +++ b/Documentation/driver-api/thermal/intel_dptf.rst
-> @@ -4,7 +4,7 @@
->  Intel(R) Dynamic Platform and Thermal Framework Sysfs Interface
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20=20
-> -:Copyright: |copy| 2022 Intel Corporation
-> +:Copyright: =C2=A9 2022 Intel Corporation
+"Add new devicetree properties." instead of mixing tenses.
 
-Applied, thanks.
+> +
+> +      rockchip,sleep-filter-current-microamp:
+> +        description:
+> +          Value in microamps of the sleep filter current for the charger.
+> +          Value is used by the driver to derive the sleep sample current.
+> +
+> +    required:
+> +      - monitored-battery
+> +      - rockchip,resistor-sense-micro-ohms
+> +      - rockchip,sleep-enter-current-microamp
+> +      - rockchip,sleep-filter-current-microamp
 
-jon
+additionalProperties:false (on required-level of indentation)
+
+
+Best regards,
+Krzysztof
