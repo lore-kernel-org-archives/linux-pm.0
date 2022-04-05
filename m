@@ -2,126 +2,237 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68454C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9557AC4332F
 	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:49:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357270AbiDEVon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:44:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45734 "EHLO
+        id S1379800AbiDEVow (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:44:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1388892AbiDEPUm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:20:42 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84B1FC4E33
-        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 06:35:07 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id d7so3016744edn.11
-        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 06:35:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=5dwM+wZpTO3dJm2C/zTXFC7RztJX3MC1/t/cmygFHpM=;
-        b=U0esJs4rP0x+B/7le3KzQk0G9D9jf8luw+Lhb+RWPQ520F2Pkjzs3DVjaaHodh5Ejw
-         K7bJwFQphX/lsr8r79a9uqQIcQUtCWuYFPYkehbagjXAt4reilNZRI6JcOroNXL3HSm1
-         c1Dirae4HlQOeBoqs/mTgxhlSJw8YJjTlR92APx6zOXG6vyTCaqbTuliyVuR0CayEq60
-         NXSZzvAYgfZSRp66eov4utbzned9N9+RHLZFEfRHkCARQSBTK5GeS4KDiIh3xIUtJ8h+
-         vWME8qOzqa/NzEVS4/LMjrZG6mz8ojmpH5XjH38KhClsdBMdQuAdpllbk6spsPl8Fp6f
-         IAeA==
+        with ESMTP id S1446274AbiDEPoY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:44:24 -0400
+Received: from mail-yw1-f174.google.com (mail-yw1-f174.google.com [209.85.128.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34A92E6C78;
+        Tue,  5 Apr 2022 07:13:10 -0700 (PDT)
+Received: by mail-yw1-f174.google.com with SMTP id 00721157ae682-2eb43ad7909so85992257b3.2;
+        Tue, 05 Apr 2022 07:13:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=5dwM+wZpTO3dJm2C/zTXFC7RztJX3MC1/t/cmygFHpM=;
-        b=bSYVe1snbNPhn1IzCpYsdCH7nWPKWa7BhoihpwQnPeuK4ix+YkCgeh1H18fS8MAeiL
-         EmRRPV+K/7p+vAcgHTFmH2PWooLT/Ug5UIFE82DMF6497cuhk9yCrmEqWuQf8Azufs6E
-         aRj+fnHcuZvgLPwOyGhBXrUDZ7n45hBKXENeJ1XaBn07M2BNxlys4pqg2FrYnb1EGL8e
-         A0p8nS7X8PHXlOZ7CKKkmz2SdX4cxOGubFpPOGfwlG1flD9W5E7GRlNmgaqiSc7mdJBH
-         CMljfxYBLzN5npJSi+8FLDOEnIfUnYkZ7U2p4pgm+uZMalBge1evnNJKBB8FNjcXjfY/
-         3/tw==
-X-Gm-Message-State: AOAM530uQhJmeZNQVFGOe/Tfo7HGrWnbReDlHx9CWFAuDFFaRskA5dqy
-        bg99y3quoeubPJr663aOfytB1w==
-X-Google-Smtp-Source: ABdhPJyMdghdEM2XuZgbpwldmrRTm3as2pia+nLSDQYWpSbi7EJHANLmyvBkobO5HTtK6Wvy1FRIPg==
-X-Received: by 2002:a05:6402:3553:b0:419:6552:11b7 with SMTP id f19-20020a056402355300b00419655211b7mr3644088edd.286.1649165706043;
-        Tue, 05 Apr 2022 06:35:06 -0700 (PDT)
-Received: from [192.168.0.182] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.gmail.com with ESMTPSA id e3-20020a170906374300b006e7f060bf6asm2501343ejc.207.2022.04.05.06.35.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 05 Apr 2022 06:35:05 -0700 (PDT)
-Message-ID: <ac2b29c2-b3ec-eb03-595f-b0328e40015c@linaro.org>
-Date:   Tue, 5 Apr 2022 15:35:04 +0200
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0m0X8qD7jgaOpFhSCX1pI9/lBF4aFgFkK0POJ3FtM5M=;
+        b=oop02PYzQjf4I81Lgk4YHXpzi42n6WQveIpvF1+LxhlRXlBzom659lzoHZVZW8RA4f
+         i9VrfhAx+htfKK6+HHav6cGsfp4pSaozu8Y6va4FPwBKBNMvEfW+HIzvD+s/5zv6kcAW
+         VScgyYuKNHatNNWNwYAwo6vDB7QMJuXlQTtcVWaNAvf6kQ8oldpg8FL6M4jmKQigbaMn
+         ef4nPOFy981kzrUeawhcNAkHuyoSdOROd6truwdQ7qTV638O5j5Cy3JEpNKaudeHfSxw
+         yZyz733yGUe1tlEMIjAQ2fw6FmB5P7yGvYAP4M9tiFmwZcQlN/RSGjWE5DSu/pPna7AN
+         D3tA==
+X-Gm-Message-State: AOAM533eKEhvmfbZ+W3FKVOMlBuGOh9pe6H4UDEObRCxRmXaINPnLL0u
+        s0AWfQ4CEYNywmH6p/kDPe/lNr1oHF8ud6O3NpwSivjT
+X-Google-Smtp-Source: ABdhPJxwMh75H+q2lMm7lfhlZkhQSxK3Xl3vxLiAsuHwCOepfUfgE7YhAm+UQ8tjNWYOfmUWiErC4e6KhAn6L+k5ZXk=
+X-Received: by 2002:a81:1257:0:b0:2eb:97cf:a4a2 with SMTP id
+ 84-20020a811257000000b002eb97cfa4a2mr2865951yws.149.1649167989258; Tue, 05
+ Apr 2022 07:13:09 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
- support
-Content-Language: en-US
-To:     Chris Morgan <macroalpha82@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
-        devicetree@vger.kernel.org, zhangqing@rock-chips.com,
-        zyw@rock-chips.com, jon.lin@rock-chips.com,
-        maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
-        krzk+dt@kernel.org, robh+dt@kernel.org, lee.jones@linaro.org,
-        Chris Morgan <macromorgan@hotmail.com>
-References: <20220404215754.30126-1-macroalpha82@gmail.com>
- <20220404215754.30126-2-macroalpha82@gmail.com>
- <74f445c2-3194-80a6-6d52-21368eb6172a@linaro.org>
- <20220405131228.GA20@wintermute.localdomain>
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20220405131228.GA20@wintermute.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20220403054822.16868-1-rdunlap@infradead.org> <20220403054822.16868-2-rdunlap@infradead.org>
+In-Reply-To: <20220403054822.16868-2-rdunlap@infradead.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 5 Apr 2022 16:12:58 +0200
+Message-ID: <CAJZ5v0gZvd_Uw02_K7fWGYFtTncSTxdeoR6z=PQ5e0DM255k8A@mail.gmail.com>
+Subject: Re: [PATCH 1/3 v3] Docs: admin/kernel-parameters: edit a few boot options
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        linux-s390@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        sparclinux@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+        linux-ia64@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Johannes Weiner <hannes@cmpxchg.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/04/2022 15:12, Chris Morgan wrote:
-> On Tue, Apr 05, 2022 at 01:16:55PM +0200, Krzysztof Kozlowski wrote:
->> On 04/04/2022 23:57, Chris Morgan wrote:
->>> From: Chris Morgan <macromorgan@hotmail.com>
->>>
->>> Create dt-binding documentation to document rk817 battery and charger
->>> usage. New device-tree properties have been added.
->>>
->>> - rockchip,resistor-sense-micro-ohms: The value in microohms of the
->>>                                       sample resistor.
->>> - rockchip,sleep-enter-current-microamp: The value in microamps of the
->>>                                          sleep enter current.
->>> - rockchip,sleep-filter-current: The value in microamps of the sleep
->>>                                  filter current.
->>>
->>> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
->>> Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
->>> ---
->>>  .../bindings/mfd/rockchip,rk817.yaml          | 48 +++++++++++++++++++
->>>  1 file changed, 48 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
->>> index bfc1720adc43..b949d406a487 100644
->>> --- a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
->>> +++ b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
->>> @@ -117,6 +117,47 @@ properties:
->>>          description:
->>>            Describes if the microphone uses differential mode.
->>>  
->>> +  battery:
->>
->> I wonder why do you call it a batter while it is a charger, isn't it?
-> 
-> It is a driver for both the battery and charger. I'd argue about 95% of
-> it is battery functions and the other 5% is managing the IRQs for plug
-> removal/insertion and capturing the incoming voltage and current. In
-> the BSP kernel these were two seperate drivers, but there was so little
-> that needed to be done for the charger (and users probably don't need
-> plug IRQs if they aren't using a battery anyway since the system will
-> shut off on a plug out event due to no power...).
+On Sun, Apr 3, 2022 at 7:48 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+>
+> Clean up some of admin-guide/kernel-parameters.txt:
+>
+> a. "smt" should be "smt=" (S390)
+> b. (dropped)
+> c. Sparc supports the vdso= boot option
+> d. make the tp_printk options (2) formatting similar to other options
+>    by adding spacing
+> e. add "trace_clock=" with a reference to Documentation/trace/ftrace.rst
+> f. use [IA-64] as documented instead of [ia64]
+> g. fix formatting and text for test_suspend=
+> h. fix formatting for swapaccount=
+> i. fix formatting and grammar for video.brightness_switch_enabled=
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Heiko Carstens <hca@linux.ibm.com>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+> Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
+> Cc: Sven Schnelle <svens@linux.ibm.com>
+> Cc: linux-s390@vger.kernel.org
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: sparclinux@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-acpi@vger.kernel.org
+> Cc: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: linux-doc@vger.kernel.org
 
-What do you mean by driver for "battery"? Like some smart-battery
-system? with embedded battery (RK817 comes with embedded battery) Or a
-fuel gauge? Judging by power supply properties it looks like fuel gauge.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-"Battery" should rather be used for the node referenced by
-"monitored-battery"...
+for the test_suspend and ACPI video pieces.
 
-Best regards,
-Krzysztof
+> ---
+> v3: add trace_clock= specifics (Steven)
+> v2: drop "smt-enabled" for arch/powerpc/ (Michael)
+>
+>  Documentation/admin-guide/kernel-parameters.txt |   47 ++++++++++----
+>  1 file changed, 36 insertions(+), 11 deletions(-)
+>
+> --- linux-next-20220331.orig/Documentation/admin-guide/kernel-parameters.txt
+> +++ linux-next-20220331/Documentation/admin-guide/kernel-parameters.txt
+> @@ -2814,7 +2814,7 @@
+>                         different yeeloong laptops.
+>                         Example: machtype=lemote-yeeloong-2f-7inch
+>
+> -       max_addr=nn[KMG]        [KNL,BOOT,ia64] All physical memory greater
+> +       max_addr=nn[KMG]        [KNL,BOOT,IA-64] All physical memory greater
+>                         than or equal to this physical address is ignored.
+>
+>         maxcpus=        [SMP] Maximum number of processors that an SMP kernel
+> @@ -3057,7 +3057,7 @@
+>
+>         mga=            [HW,DRM]
+>
+> -       min_addr=nn[KMG]        [KNL,BOOT,ia64] All physical memory below this
+> +       min_addr=nn[KMG]        [KNL,BOOT,IA-64] All physical memory below this
+>                         physical address is ignored.
+>
+>         mini2440=       [ARM,HW,KNL]
+> @@ -5388,7 +5388,7 @@
+>                                 1: Fast pin select (default)
+>                                 2: ATC IRMode
+>
+> -       smt             [KNL,S390] Set the maximum number of threads (logical
+> +       smt=            [KNL,S390] Set the maximum number of threads (logical
+>                         CPUs) to use per physical CPU on systems capable of
+>                         symmetric multithreading (SMT). Will be capped to the
+>                         actual hardware limit.
+> @@ -5774,8 +5774,9 @@
+>                         This parameter controls use of the Protected
+>                         Execution Facility on pSeries.
+>
+> -       swapaccount=[0|1]
+> -                       [KNL] Enable accounting of swap in memory resource
+> +       swapaccount=    [KNL]
+> +                       Format: [0|1]
+> +                       Enable accounting of swap in memory resource
+>                         controller if no parameter or 1 is given or disable
+>                         it if 0 is given (See Documentation/admin-guide/cgroup-v1/memory.rst)
+>
+> @@ -5821,7 +5822,8 @@
+>
+>         tdfx=           [HW,DRM]
+>
+> -       test_suspend=   [SUSPEND][,N]
+> +       test_suspend=   [SUSPEND]
+> +                       Format: { "mem" | "standby" | "freeze" }[,N]
+>                         Specify "mem" (for Suspend-to-RAM) or "standby" (for
+>                         standby suspend) or "freeze" (for suspend type freeze)
+>                         as the system sleep state during system startup with
+> @@ -5908,6 +5910,28 @@
+>         trace_buf_size=nn[KMG]
+>                         [FTRACE] will set tracing buffer size on each cpu.
+>
+> +       trace_clock=    [FTRACE] Set the clock used for tracing events
+> +                       at boot up.
+> +                       local - Use the per CPU time stamp counter
+> +                               (converted into nanoseconds). Fast, but
+> +                               depending on the architecture, may not be
+> +                               in sync between CPUs.
+> +                       global - Event time stamps are synchronize across
+> +                               CPUs. May be slower than the local clock,
+> +                               but better for some race conditions.
+> +                       counter - Simple counting of events (1, 2, ..)
+> +                               note, some counts may be skipped due to the
+> +                               infrastructure grabbing the clock more than
+> +                               once per event.
+> +                       uptime - Use jiffies as the time stamp.
+> +                       perf - Use the same clock that perf uses.
+> +                       mono - Use ktime_get_mono_fast_ns() for time stamps.
+> +                       mono_raw - Use ktime_get_raw_fast_ns() for time
+> +                               stamps.
+> +                       boot - Use ktime_get_boot_fast_ns() for time stamps.
+> +                       Architectures may add more clocks. See
+> +                       Documentation/trace/ftrace.rst for more details.
+> +
+>         trace_event=[event-list]
+>                         [FTRACE] Set and start specified trace events in order
+>                         to facilitate early boot debugging. The event-list is a
+> @@ -5930,7 +5954,7 @@
+>                         See also Documentation/trace/ftrace.rst "trace options"
+>                         section.
+>
+> -       tp_printk[FTRACE]
+> +       tp_printk       [FTRACE]
+>                         Have the tracepoints sent to printk as well as the
+>                         tracing ring buffer. This is useful for early boot up
+>                         where the system hangs or reboots and does not give the
+> @@ -5952,7 +5976,7 @@
+>                         frequency tracepoints such as irq or sched, can cause
+>                         the system to live lock.
+>
+> -       tp_printk_stop_on_boot[FTRACE]
+> +       tp_printk_stop_on_boot [FTRACE]
+>                         When tp_printk (above) is set, it can cause a lot of noise
+>                         on the console. It may be useful to only include the
+>                         printing of events during boot up, as user space may
+> @@ -6301,7 +6325,7 @@
+>                                         HIGHMEM regardless of setting
+>                                         of CONFIG_HIGHPTE.
+>
+> -       vdso=           [X86,SH]
+> +       vdso=           [X86,SH,SPARC]
+>                         On X86_32, this is an alias for vdso32=.  Otherwise:
+>
+>                         vdso=1: enable VDSO (the default)
+> @@ -6327,11 +6351,12 @@
+>         video=          [FB] Frame buffer configuration
+>                         See Documentation/fb/modedb.rst.
+>
+> -       video.brightness_switch_enabled= [0,1]
+> +       video.brightness_switch_enabled= [ACPI]
+> +                       Format: [0|1]
+>                         If set to 1, on receiving an ACPI notify event
+>                         generated by hotkey, video driver will adjust brightness
+>                         level and then send out the event to user space through
+> -                       the allocated input device; If set to 0, video driver
+> +                       the allocated input device. If set to 0, video driver
+>                         will only send out the event without touching backlight
+>                         brightness level.
+>                         default: 1
