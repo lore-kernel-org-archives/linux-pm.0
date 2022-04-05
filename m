@@ -2,245 +2,167 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE04C433FE
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:49:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12F42C433F5
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:49:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383510AbiDEVpH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:45:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46066 "EHLO
+        id S1352998AbiDEVoj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:44:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60102 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1457862AbiDEQwx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 12:52:53 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3BE5326E6;
-        Tue,  5 Apr 2022 09:50:52 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id b583b31e156ca061; Tue, 5 Apr 2022 18:50:50 +0200
-Received: from kreacher.localnet (unknown [213.134.181.136])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 81B8F66BCB7;
-        Tue,  5 Apr 2022 18:50:49 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Abhishek Sahu <abhsahu@nvidia.com>
-Cc:     Bjorn Helgaas <helgaas@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Fix the ACPI power state during runtime resume
-Date:   Tue, 05 Apr 2022 18:50:48 +0200
-Message-ID: <2632919.mvXUDI8C0e@kreacher>
-In-Reply-To: <469a9db5-9868-cb17-dd5c-96ef29193fda@nvidia.com>
-References: <20220204233219.GA228585@bhelgaas> <8f89131c-41a2-02e4-1427-8a5b1704e0ea@nvidia.com> <469a9db5-9868-cb17-dd5c-96ef29193fda@nvidia.com>
+        with ESMTP id S1444384AbiDEPlY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:41:24 -0400
+Received: from mail-oi1-x234.google.com (mail-oi1-x234.google.com [IPv6:2607:f8b0:4864:20::234])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E33BBD8AC;
+        Tue,  5 Apr 2022 07:04:31 -0700 (PDT)
+Received: by mail-oi1-x234.google.com with SMTP id r8so13500060oib.5;
+        Tue, 05 Apr 2022 07:04:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=VpRYCzUSFqQOsJnFa1HK3Picrp1UN0Dkk9U5InPoxS4=;
+        b=FFI6YhzTevdQXQaC30yLc3wS4coQZw89BdSpxUTKS9vpRHiS38W+JXTO/Z08dZo7zW
+         dn6YsD+XzciatZgdzaGb81gkwuEw/9IwfVGrp5mk7oseaE2XBhKM+sXSpEypSCYAcEGH
+         LN6VuajiAViuJ0YhOw17EcH02SpvpwRFWSsmwaDb2IcdtrkuKi1fCbpsmlrxlpoLU52d
+         XWV6WH9GjUC+iAoL3tJpJXIq/WGZfF6YEVA0P5BBR237kCTUJ2s233Pq0TuQ717XDEjJ
+         HTS9BPk3cJZ3rIBpV5NaDutLWQjdmD37Y0I9lZbZUtq8AGffsXh9WnxX95/jsirkCg5V
+         244w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=VpRYCzUSFqQOsJnFa1HK3Picrp1UN0Dkk9U5InPoxS4=;
+        b=P/FIv4wJ89DKzdg8vwUQoTM04Sdr0w0+5TRJyaA6LIaV30gYuE3EjiCkpvXjFk7Y7/
+         lCKHRhgbcsw6SAQCkl6t6PL+NOXJ14UrcR9u4Eje4LVpEQ05DKYut1PT8QLnGmpjNggF
+         tFtSk/NgbK6FZH7LU50MTVXh3jiDZXzT329KnwWYqi9IyJ540jkBoLzIJAxW+HiJ1h8F
+         xxIUiYL2OsIKWyl+ZW7KpEREiJJbHAui0zG3k7ksrjtcO6XsSUsmf/53tzTRhHNkTrbs
+         3gIScwHIoOi87/bTknMmLggZKN5limDaVxdoNurd0eIvmQS4Xwt7nwbt4eInqezIdZUN
+         4WcQ==
+X-Gm-Message-State: AOAM531ND3U7/5sy4js6rEUkhdMFi/HbZyK0egmVbGf+hkadVCcawHE7
+        LNUDhPkBSwjGBjPk5k+WdA0=
+X-Google-Smtp-Source: ABdhPJxLU9NGisraQHAUwA2Pfe7U78pnpsSsDiVtJieLXk0lONuMBGg9/PzdR4PxEbZAa2whm5sREg==
+X-Received: by 2002:aca:2405:0:b0:2da:c44:bae3 with SMTP id n5-20020aca2405000000b002da0c44bae3mr1500868oic.173.1649167471115;
+        Tue, 05 Apr 2022 07:04:31 -0700 (PDT)
+Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
+        by smtp.gmail.com with ESMTPSA id e9-20020aca3709000000b002ed1930b253sm5352059oia.30.2022.04.05.07.04.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 Apr 2022 07:04:30 -0700 (PDT)
+Date:   Tue, 5 Apr 2022 09:04:28 -0500
+From:   Chris Morgan <macroalpha82@gmail.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        devicetree@vger.kernel.org, zhangqing@rock-chips.com,
+        zyw@rock-chips.com, jon.lin@rock-chips.com,
+        maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
+        krzk+dt@kernel.org, robh+dt@kernel.org, lee.jones@linaro.org,
+        Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
+ support
+Message-ID: <20220405140428.GA72@wintermute.localdomain>
+References: <20220404215754.30126-1-macroalpha82@gmail.com>
+ <20220404215754.30126-2-macroalpha82@gmail.com>
+ <74f445c2-3194-80a6-6d52-21368eb6172a@linaro.org>
+ <20220405131228.GA20@wintermute.localdomain>
+ <ac2b29c2-b3ec-eb03-595f-b0328e40015c@linaro.org>
+ <20220405135424.GA20@wintermute.localdomain>
+ <b269be83-3e45-fb36-75ab-e1c20ad6906f@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.181.136
-X-CLIENT-HOSTNAME: 213.134.181.136
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrudejgedguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepteeggfelteegudehueegieekveduleeuledvueefjeefffegfeejudfgteefhefhnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepvddufedrudefgedrudekuddrudefieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukedurddufeeipdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeejpdhrtghpthhtoheprggshhhsrghhuhesnhhvihguihgrrdgtohhmpdhrtghpthhtohephhgvlhhgrggrsheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepsghhvghlghgrrghssehgohhoghhlvgdrtghomhdprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghp
- thhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomh
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b269be83-3e45-fb36-75ab-e1c20ad6906f@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday, April 5, 2022 6:36:34 PM CEST Abhishek Sahu wrote:
-> On 2/8/2022 4:00 PM, Abhishek Sahu wrote:
-> > On 2/8/2022 12:28 AM, Rafael J. Wysocki wrote:
-> >> On Saturday, February 5, 2022 12:32:19 AM CET Bjorn Helgaas wrote:
-> >>> [+cc Rafael, hoping for your review :)
-> >>
-> >> +Mika
-> >>
-> >>> Wonder if we should add something like this to MAINTAINERS so you get
-> >>> cc'd on power-related things:
+On Tue, Apr 05, 2022 at 04:00:09PM +0200, Krzysztof Kozlowski wrote:
+> On 05/04/2022 15:54, Chris Morgan wrote:
+> > On Tue, Apr 05, 2022 at 03:35:04PM +0200, Krzysztof Kozlowski wrote:
+> >> On 05/04/2022 15:12, Chris Morgan wrote:
+> >>> On Tue, Apr 05, 2022 at 01:16:55PM +0200, Krzysztof Kozlowski wrote:
+> >>>> On 04/04/2022 23:57, Chris Morgan wrote:
+> >>>>> From: Chris Morgan <macromorgan@hotmail.com>
+> >>>>>
+> >>>>> Create dt-binding documentation to document rk817 battery and charger
+> >>>>> usage. New device-tree properties have been added.
+> >>>>>
+> >>>>> - rockchip,resistor-sense-micro-ohms: The value in microohms of the
+> >>>>>                                       sample resistor.
+> >>>>> - rockchip,sleep-enter-current-microamp: The value in microamps of the
+> >>>>>                                          sleep enter current.
+> >>>>> - rockchip,sleep-filter-current: The value in microamps of the sleep
+> >>>>>                                  filter current.
+> >>>>>
+> >>>>> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> >>>>> Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
+> >>>>> ---
+> >>>>>  .../bindings/mfd/rockchip,rk817.yaml          | 48 +++++++++++++++++++
+> >>>>>  1 file changed, 48 insertions(+)
+> >>>>>
+> >>>>> diff --git a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> >>>>> index bfc1720adc43..b949d406a487 100644
+> >>>>> --- a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> >>>>> +++ b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
+> >>>>> @@ -117,6 +117,47 @@ properties:
+> >>>>>          description:
+> >>>>>            Describes if the microphone uses differential mode.
+> >>>>>  
+> >>>>> +  battery:
+> >>>>
+> >>>> I wonder why do you call it a batter while it is a charger, isn't it?
 > >>>
-> >>> diff --git a/MAINTAINERS b/MAINTAINERS
-> >>> index ea3e6c914384..3d9a211cad5d 100644
-> >>> --- a/MAINTAINERS
-> >>> +++ b/MAINTAINERS
-> >>> @@ -15422,6 +15422,7 @@ F:    include/linux/pm.h
-> >>>  F:   include/linux/pm_*
-> >>>  F:   include/linux/powercap.h
-> >>>  F:   kernel/configs/nopm.config
-> >>> +K:   pci_[a-z_]*power[a-z_]*\(
+> >>> It is a driver for both the battery and charger. I'd argue about 95% of
+> >>> it is battery functions and the other 5% is managing the IRQs for plug
+> >>> removal/insertion and capturing the incoming voltage and current. In
+> >>> the BSP kernel these were two seperate drivers, but there was so little
+> >>> that needed to be done for the charger (and users probably don't need
+> >>> plug IRQs if they aren't using a battery anyway since the system will
+> >>> shut off on a plug out event due to no power...).
 > >>
-> >> It seems so, but generally PM patches should be CCed to linux-pm anyway.
-> >>
-> >>>
-> >>>  DYNAMIC THERMAL POWER MANAGEMENT (DTPM)
-> >>>  M:   Daniel Lezcano <daniel.lezcano@kernel.org>
-> >>> ]
-> >>>
-> >>> On Mon, Jan 24, 2022 at 05:51:07PM +0530, Abhishek Sahu wrote:
-> >>>> Consider the following sequence during PCI device runtime
-> >>>> suspend/resume:
-> >>>>
-> >>>> 1. PCI device goes into runtime suspended state. The PCI state
-> >>>>    will be changed to PCI_D0 and then pci_platform_power_transition()
-> >>>>    will be called which changes the ACPI state to ACPI_STATE_D3_HOT.
-> >>
-> >> You mean PCI_D3hot I suppose?
-> >>
+> >> What do you mean by driver for "battery"? Like some smart-battery
+> >> system? with embedded battery (RK817 comes with embedded battery) Or a
+> >> fuel gauge? Judging by power supply properties it looks like fuel gauge.
 > > 
-> >  Yes. It should be PCI_D3hot here. 
-> > 
-> >>>> 2. Parent bridge goes into runtime suspended state. If parent
-> >>>>    bridge supports D3cold, then it will change the power state of all its
-> >>>>    children to D3cold state and the power will be removed.
-> >>>>
-> >>>> 3. During wake-up time, the bridge will be runtime resumed first
-> >>>>    and pci_power_up() will be called for the bridge. Now, the power
-> >>>>    supply will be resumed.
-> >>>>
-> >>>> 4. pci_resume_bus() will be called which will internally invoke
-> >>>>    pci_restore_standard_config(). pci_update_current_state()
-> >>>>    will read PCI_PM_CTRL register and the current_state will be
-> >>>>    updated to D0.
-> >>>>
-> >>>> In the above process, at step 4, the ACPI device state will still be
-> >>>> ACPI_STATE_D3_HOT since pci_platform_power_transition() is not being
-> >>>> invoked.
-> >>
-> >> I'm not quite following.
-> >>
-> >> I'm assuming that this description applies to the endpoint device that was
-> >> previously put into D3_hot.
-> >>
-> > 
-> >  Yes. This is applicable for endpoint devices which was previously put
-> >  into D3hot.
-> > 
-> >> Since its current state is D3_hot, it is not D0 (in particular) and the
-> >> pci_set_power_state() in pci_restore_standard_config() should put int into
-> >> D0 proper, including the platform firmware part.
-> >>
-> > 
-> >  The pci_restore_standard_config() for endpoint devices are being called
-> >  internally during wake-up of upstream bridge. 
-> > 
-> >  pci_power_up(struct pci_dev *dev)
-> >  {
-> >       ...
-> >       if (dev->runtime_d3cold) {
-> >         /*
-> >          * When powering on a bridge from D3cold, the whole hierarchy
-> >          * may be powered on into D0uninitialized state, resume them to
-> >          * give them a chance to suspend again
-> >          */
-> >         pci_resume_bus(dev->subordinate);
-> >     }
-> >     ...
-> >  }
-> > 
-> >  For the upstream bridge, the above code will trigger the wake-up of
-> >  endpoint devices and then following code will be executed for the
-> >  endpoint devices:
-> > 
-> >  pci_update_current_state(struct pci_dev *dev, pci_power_t state)
-> >  {
-> >     if (platform_pci_get_power_state(dev) == PCI_D3cold ||
-> >         !pci_device_is_present(dev)) {
-> >         dev->current_state = PCI_D3cold;
-> >     } else if (dev->pm_cap) {
-> >         u16 pmcsr;
-> > 
-> >         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-> >         dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
-> >     } else {
-> >         dev->current_state = state;
-> >     }
-> >  }
-> > 
-> >  In the above code, the current_state will be set to D0 for the
-> >  endpoint devices since it will go into second block where
-> >  it will read the PM_CTRL register.
-> >  
-> >>>> We need call the pci_platform_power_transition() with state
-> >>>> D0 to change the ACPI state to ACPI_STATE_D0.
-> >>>>
-> >>>> This patch calls pci_power_up() if current power state is D0 inside
-> >>>> pci_restore_standard_config(). This pci_power_up() will change the
-> >>>> ACPI state to ACPI_STATE_D0.
-> >>>>
-> >>>> Following are the steps to confirm:
-> >>>>
-> >>>> Enable the debug prints in acpi_pci_set_power_state()
-> >>>>
-> >>>> 0000:01:00.0 is PCI device and 0000:00:01.0 is parent bridge device
-> >>>>
-> >>>> Before:
-> >>>>
-> >>>> 0000:01:00.0: power state changed by ACPI to D3hot
-> >>>> 0000:00:01.0: power state changed by ACPI to D3cold
-> >>>> 0000:00:01.0: power state changed by ACPI to D0
-> >>>>
-> >>>> After:
-> >>>>
-> >>>> 0000:01:00.0: power state changed by ACPI to D3hot
-> >>>> 0000:00:01.0: power state changed by ACPI to D3cold
-> >>>> 0000:00:01.0: power state changed by ACPI to D0
-> >>>> 0000:01:00.0: power state changed by ACPI to D0
-> >>>>
-> >>>> So with this patch, the PCI device ACPI state is also being
-> >>>> changed to D0.
-> >>>>
-> >>>> Signed-off-by: Abhishek Sahu <abhsahu@nvidia.com>
-> >>>> ---
-> >>>>  drivers/pci/pci-driver.c | 14 +++++++++++---
-> >>>>  1 file changed, 11 insertions(+), 3 deletions(-)
-> >>>>
-> >>>> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> >>>> index 588588cfda48..64e0cca12f16 100644
-> >>>> --- a/drivers/pci/pci-driver.c
-> >>>> +++ b/drivers/pci/pci-driver.c
-> >>>> @@ -521,14 +521,22 @@ static void pci_device_shutdown(struct device *dev)
-> >>>>   */
-> >>>>  static int pci_restore_standard_config(struct pci_dev *pci_dev)
-> >>>>  {
-> >>>> +   int error = 0;
-> >>>>     pci_update_current_state(pci_dev, PCI_UNKNOWN);
-> >>>>
-> >>>>     if (pci_dev->current_state != PCI_D0) {
-> >>>> -           int error = pci_set_power_state(pci_dev, PCI_D0);
-> >>>> -           if (error)
-> >>>> -                   return error;
-> >>>> +           error = pci_set_power_state(pci_dev, PCI_D0);
-> >>>> +   } else {
-> >>>> +           /*
-> >>>> +            * The platform power state can still be non-D0, so this is
-> >>>> +            * required to change the platform power state to D0.
-> >>>> +            */
-> >>
-> >> This really isn't expected to happen.
-> >>
-> >> If the device's power state has been changed to D3hot by ACPI, it is not in D0.
-> >>
-> >> It looks like the state tracking is not working here.
-> >>
-> > 
-> >  The state setting to D0 is happening due to the current logic present in
-> >  pci_update_current_state(). If we can fix the logic in
-> >  pci_update_current_state() to detect this condition and return state D3hot,
-> >  then it should also fix the issue. 
-> > 
-> >  Thanks,
-> >  Abhishek
-> > 
+> > It's basically just additional registers in the rk817 PMIC. The PMIC is
+> > controlled via I2C and contains multiple regulators, an audio codec,
+> > an RTC, some GPIO, some nvram, a columb counter for the battery, and an
+> > ADC for measuring input current/voltage/temperature (for battery or
+> > charger). 
 > 
->  Hi Rafael/Mika,
+> Actually you mentioned it in the cover letter - it's a PMIC, not a
+> battery. I doubt that it's embedded with a battery. :)
 > 
->  Could you please help regarding the correct way to fix this issue.
->  I can update the patch accordingly.
+> > This driver deals with the columb counter, the ADC, and a few
+> > bits of nvram for storing battery values to retain backwards
+> > compatibility with the BSP kernel and bootloader, and handling IRQs
+> > related to inserting or removing the charger (curiously my
+> > implementation ALSO has a charger sense GPIO in addition to the PMIC
+> > being able to sense that).
+> > 
+> > The driver itself is named rk817_charger. If you think I should change
+> > this from battery to "fuel gauge" or "charger" let me know and I can
+> > resubmit. Whatever makes it clearer for everyone.
+> 
+> Yeah, the property name and bindings should describe the hardware, so in
+> such case the hardware is rather a "charger" or "fuel-gauge". Your
+> "battery-cell" from DTS is probably just a "battery" (unless you expect
+> multiple cells?).
+> 
+> Best regards,
+> Krzysztof
 
-I think you can try one of the patches posted recently:
+Okay, when v6 comes around I'll change it to be "charger" instead of
+"battery" to make it more clear. There should only be a single battery
+instead of multiple cells, and according to the documentation I should
+be okay with describing the battery in the devicetree since it's not
+something easy for the end-user to change.
 
-https://patchwork.kernel.org/project/linux-pm/patch/3623886.MHq7AAxBmi@kreacher/
+I'd like to get someone to look at the meat and potatoes of the series
+before I submit a v6... I did a fairly substantial rewrite of the
+actual rk817_charger.c to solve for several problems and fix several
+bugs I found in extended testing. One of the major changes was to
+mirror the BSP in that I poll the PMIC every 8 seconds for updates
+and then store it in the driver struct rather than pull each value
+on demand as requested. I see other drivers doing this but I want
+to make sure that's acceptable upstream.
 
-Thanks!
-
-
-
+Thank you.
