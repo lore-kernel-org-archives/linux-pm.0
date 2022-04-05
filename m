@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85471C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5088C43217
 	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 05:41:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232578AbiDFFiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Apr 2022 01:38:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58860 "EHLO
+        id S231124AbiDFFht (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 01:37:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1581388AbiDFEQi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 00:16:38 -0400
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4F662B5195
-        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 17:26:54 -0700 (PDT)
-Received: by mail-lf1-x12b.google.com with SMTP id p10so1255615lfa.12
-        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 17:26:53 -0700 (PDT)
+        with ESMTP id S1851336AbiDFDDU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 23:03:20 -0400
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68F8625EAC
+        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 16:59:16 -0700 (PDT)
+Received: by mail-lf1-x12c.google.com with SMTP id z12so1189895lfu.10
+        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 16:59:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=c/JxrbhWAHjw8ckYVJv9DMMKqM3jkzyjVUcpKG0Ot64=;
-        b=YHme6/dYNhKGUqCrEPWzHCLTcjA7OCaIsgtFOHXXC4MKo+zNbynRP3oNmCu9LCMo8e
-         rtHip8KrPvxmzkobav1QkcuOu8vWqiqFvMr6ZjAR4YnnH0RmVyO1tc3668bJWM9U3TAx
-         OU5ETsFwZRpvlNg0IrL18PsOyroEWxtUtI/T7Ke8nSd3driMDVCfqGetXAgaDwA+TADG
-         1U+CDpHeqTOVwMan9SNlxWhk8scHto1y3FvzYzedhgF6W4Y21WbAf1/fWuphxyQPAa4O
-         Hh09zQcLJ1mtYI4+bcOAFimmbOAyifV3NYzlj/pd9Zwy3qHW4vmdsniSkuLGhkIWFq9V
-         NZeA==
+        bh=mCdnNmVygED4uaOfb8SOUK1cT/+oSB5JmQc20+uJ1II=;
+        b=pJI6u/buQZy8snAz4tQC7vRPgL+G+EOaeiqYoD8DnobLWGUhrEKB4VkkkqqJFpfYfl
+         VURFeceRN2RvFW3QDrJf/gJuybOG72ott4HQRF6OPzJUay4ofQkU0thgWbSpnbMHkJ3L
+         c6x5IV1iWVWg/7zSOyp76GwsFwY0ZnEHXI1RLSjwRHo+l8WOBmbjF5DJrNkT2gIW59tj
+         zWMeN7YeJpyaEpBsfW+S/q87I6MbvQS2fUvDBzYKqZPEpwZd+t+qK8FRlpYkCvujYcci
+         aGmcmX+wgDWNWRhHK0rq6KE4Vz6zH3dF8wrqdAJvLAsNGQo+5GapuDESy+PD41xPErGM
+         61Xg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=c/JxrbhWAHjw8ckYVJv9DMMKqM3jkzyjVUcpKG0Ot64=;
-        b=UsRmvudHMnKTIhzGJmy84MlRpeJ3NVJG7rhqNi6cXwWiPE9K2nxjEyg8hfzGjSjiTj
-         1aparIll8u9wyN9CB/aDTZNhCtj0it24eWVaHzJrDBZarBEjmN3WK+tyRlEQo+E+FOyw
-         q2rLmDfjbX6wvvXOG6jJo5ylQjKObR+eiz5VFs6qYN/tuJsBJls3UzughNxthKMBt+6y
-         kScHjCWJ/rsXpti3BDn29JOhssOKLyPRbqtvtgoLP7dgLslGFGAm/D1Ww5Ga6RltC0zT
-         g/K3jBMIA0r2BDV9/L+f8M8CGmb6neZqvA2PMW8kjkRYOMCsvuNlqHTi4873pUtKusxF
-         065Q==
-X-Gm-Message-State: AOAM533hKsMNilliCMWxTrcDeAgKSM9fdbN7RSHnFPc1pJUKHpA/FyLD
-        zCqsj2XpwbYJuhrA6++1BFYqgw==
-X-Google-Smtp-Source: ABdhPJxdcY/sUnOuISW2xEaYO0Jn3VmTn5lPNatDYBWEseO7aF5hOIGiEV4IWzOD6MANWxyvB0nEDA==
-X-Received: by 2002:a05:6512:2351:b0:45d:cabf:778c with SMTP id p17-20020a056512235100b0045dcabf778cmr4253806lfu.412.1649204812266;
-        Tue, 05 Apr 2022 17:26:52 -0700 (PDT)
+        bh=mCdnNmVygED4uaOfb8SOUK1cT/+oSB5JmQc20+uJ1II=;
+        b=xRBgCmd1OKFUwbOBa0C+oLv+Q+K0KGUcydsdwCWLtoCZ7Ny7ZPsiPXJ/0H+A+VrX2Z
+         D4Sps49+EzaYXG8ntp0Sb7dkyY3pZ0y1NpIwG+QaoEDHoN+Us60aA4P5RdWT9Sh6G/dQ
+         WfP6aXYaS+7nfAwDYSqGv0fVXOFgjfxs7TUt3itd79rQTQTcmLuFkx3V8Q1VHC0uH4Ah
+         b8PRzrzJJcsr1VYS25ivBHFVDJlt6BWX3c4VllCPm5EdTBZa2CS34MJONgHDdo+vP85u
+         oJqlWZKZ0f5K7vo4K0m4VxCn/Lk2AIjtdm+RETARSuys1bgPqMFu0728jqZ3K9S6VYsw
+         va5w==
+X-Gm-Message-State: AOAM531hcjEZeXA+JPBE+m4PleTJxqu+SzBUcw3dMksIQHIBr8MY4qz7
+        CO46MtF9gH3rTb2kJVbsMWtL5w==
+X-Google-Smtp-Source: ABdhPJyXy7UUxdIl/cuvDDnBtF4tCGUStvyyBHag9soJAoWBFTSxiJJZenScrY44qRkHDM67hWT52A==
+X-Received: by 2002:a05:6512:3403:b0:448:5f92:7b0c with SMTP id i3-20020a056512340300b004485f927b0cmr4077979lfr.237.1649203154619;
+        Tue, 05 Apr 2022 16:59:14 -0700 (PDT)
 Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id c21-20020a056512239500b0044aa21dadeasm1660270lfv.60.2022.04.05.17.26.51
+        by smtp.gmail.com with ESMTPSA id w14-20020a0565120b0e00b0044a9b61d2b3sm1646471lfu.221.2022.04.05.16.59.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Apr 2022 17:26:51 -0700 (PDT)
+        Tue, 05 Apr 2022 16:59:14 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -58,41 +58,71 @@ To:     Andy Gross <agross@kernel.org>,
         Stephen Boyd <sboyd@kernel.org>
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: [PATCH v2 2/4] thermal/drivers/tsens: add compat string for the qcom,msm8960
-Date:   Wed,  6 Apr 2022 03:26:46 +0300
-Message-Id: <20220406002648.393486-3-dmitry.baryshkov@linaro.org>
+Subject: [PATCH 3/4] clk: qcom: gcc-msm8960: create tsens device if there are no child nodes
+Date:   Wed,  6 Apr 2022 02:59:09 +0300
+Message-Id: <20220405235910.373107-4-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220406002648.393486-1-dmitry.baryshkov@linaro.org>
-References: <20220406002648.393486-1-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20220405235910.373107-1-dmitry.baryshkov@linaro.org>
+References: <20220405235910.373107-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On apq8064 (msm8960) platforms the tsens device is created manually by
-the gcc driver. Prepare the tsens driver for the qcom,msm8960-tsens
-device instantiated from the device tree.
+Currently gcc-msm8960 driver manually creates tsens device. Don't create
+it in case there are child nodes inside the gcc device (which would
+include the tsens).
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/clk/qcom/gcc-msm8960.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 154d3cb19c88..7963ee33bf75 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -979,6 +979,9 @@ static const struct of_device_id tsens_table[] = {
- 	}, {
- 		.compatible = "qcom,msm8939-tsens",
- 		.data = &data_8939,
-+	}, {
-+		.compatible = "qcom,msm8960-tsens",
-+		.data = &data_8960,
- 	}, {
- 		.compatible = "qcom,msm8974-tsens",
- 		.data = &data_8974,
+diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+index 051745ef99c8..0f2d1a69781b 100644
+--- a/drivers/clk/qcom/gcc-msm8960.c
++++ b/drivers/clk/qcom/gcc-msm8960.c
+@@ -3617,7 +3617,6 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	const struct of_device_id *match;
+-	struct platform_device *tsens;
+ 	int ret;
+ 
+ 	match = of_match_device(gcc_msm8960_match_table, &pdev->dev);
+@@ -3641,12 +3640,16 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 		hfpll_l2.d = &hfpll_l2_8064_data;
+ 	}
+ 
+-	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
+-					      NULL, 0);
+-	if (IS_ERR(tsens))
+-		return PTR_ERR(tsens);
++	if (of_get_available_child_count(pdev->dev.of_node) == 0) {
++		struct platform_device *tsens;
+ 
+-	platform_set_drvdata(pdev, tsens);
++		tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
++						      NULL, 0);
++		if (IS_ERR(tsens))
++			return PTR_ERR(tsens);
++
++		platform_set_drvdata(pdev, tsens);
++	}
+ 
+ 	return 0;
+ }
+@@ -3655,7 +3658,8 @@ static int gcc_msm8960_remove(struct platform_device *pdev)
+ {
+ 	struct platform_device *tsens = platform_get_drvdata(pdev);
+ 
+-	platform_device_unregister(tsens);
++	if (tsens)
++		platform_device_unregister(tsens);
+ 
+ 	return 0;
+ }
 -- 
 2.35.1
 
