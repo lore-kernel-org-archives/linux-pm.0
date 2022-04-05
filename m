@@ -2,151 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86995C4167D
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24CCAC4707E
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:40:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232294AbiDEVlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:41:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46320 "EHLO
+        id S230346AbiDEVl7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 17:41:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1573211AbiDESVW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 14:21:22 -0400
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com [209.85.128.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A90D92558F;
-        Tue,  5 Apr 2022 11:19:23 -0700 (PDT)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-2eb43ad7909so1134637b3.2;
-        Tue, 05 Apr 2022 11:19:23 -0700 (PDT)
+        with ESMTP id S1573229AbiDES3V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 14:29:21 -0400
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AAA2025C2;
+        Tue,  5 Apr 2022 11:27:22 -0700 (PDT)
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-2eb680211d9so958947b3.9;
+        Tue, 05 Apr 2022 11:27:22 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=wp5BQRPZX31Tau7Z/BAzOvMpyk9uV0bPZM8M4VsBras=;
-        b=gE0BaAvZ9okEO2GPTdjhpnnNT3Sz+VQw7q3NppHwMa0HdA6WbutUKUDRKSdsrUZoHK
-         tg7bznR2ssbZgEl9skhQTnFHTyWdcCNBL4VAx5zE59AmNpSo99Hk+5ztBpOaWFoi6r/O
-         n12ko5TTY8PhyIuCC+aWvdCEx1lf+wf5+XyZf5lby6F7F/fbPb7Ub/kQR/7LYlHZ8aOr
-         EAEKQ3YeI9qtPalaINQYLOfo5XWtPFSw+66fOwD6WLp6Yz2QnttgQvKOW7bkII6TBpJs
-         vz+AmptSE7Vm+SiuKTy11bV0FfLajEODRmzW0NJypL5Gke9tpSOCNktJIZNaiOxLi//b
-         2qww==
-X-Gm-Message-State: AOAM531OK7vT+NwPwVAa0oKRi7ZmbZTz5yxtubxWwM7J/pB/aIAzCXUa
-        1IpW3mf9tQND99Tl4SfA+LLNPw7CwhMJIjpEzQvbslYc
-X-Google-Smtp-Source: ABdhPJxgCOYicaGfabBQSX1TtzVkx4wjUpVl5764g8J8U/cZkdTPkmlBdt3znmSbx1ACV5tSfliK7lhe83x3Kk2vnAs=
+        bh=TDSUXKUMUVWSTSAUnF2dex+MaWNmmjp5ImjClvPiSUM=;
+        b=RGO6TAcERqiIMwGt7g6xpxeuTZ2jWgU0HTQAuY9uNfLVvqR1fv/f1cM9zOze2M2LRO
+         94gistLEvC+1kHGKS27BtuIZgWhwBEyLX738r4ncDOZdDDpWKNvfiU4S50wPrigkMoa9
+         TeYJ3w573rquZtEjNa5iuEhwybzjjv/xnnbE9afOoTSWMmsMAXfpYWJ0zm6tzVRjD1Gg
+         WoYWylUY7Pl7sdFUtabxeHrK4lVtZ9lqc1hddhQqFDnEAq7dnWVPY3IJnB+KZPjqwPUj
+         URlboPe26EaDAr3ONNBhO8YiXFpXX1XiVWryxek15FSRhwNRLQsir0an381xdTUUxMRZ
+         YR5g==
+X-Gm-Message-State: AOAM531nZmIE7Go6MGA+t6ku0ZiH/xaSsZWLReMZNWwI9dYKfU6cXOE4
+        3UVA1a9+wLkk+bHMwNlQQ/GMh52gDfwz9fLdAt0=
+X-Google-Smtp-Source: ABdhPJxvpzZoLalW9oAr6Uo4r58VCzGGEEAfBQWaV0XhBzVYnxUbdaEM7De5H1E6hh6DkbujzDLIdDHaxqNpOx3mbp0=
 X-Received: by 2002:a81:bc5:0:b0:2e6:dcfe:bfcb with SMTP id
- 188-20020a810bc5000000b002e6dcfebfcbmr3974299ywl.19.1649182762847; Tue, 05
- Apr 2022 11:19:22 -0700 (PDT)
+ 188-20020a810bc5000000b002e6dcfebfcbmr4003320ywl.19.1649183241811; Tue, 05
+ Apr 2022 11:27:21 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220401140605.31871-1-Jonathan.Cameron@huawei.com> <20220401140605.31871-2-Jonathan.Cameron@huawei.com>
-In-Reply-To: <20220401140605.31871-2-Jonathan.Cameron@huawei.com>
+References: <20220324190950.70486-1-dave@stgolabs.net> <20220324190950.70486-2-dave@stgolabs.net>
+In-Reply-To: <20220324190950.70486-2-dave@stgolabs.net>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 5 Apr 2022 20:19:11 +0200
-Message-ID: <CAJZ5v0gUECCmFJoVnmR8SK-pBg5v4QrtLgeKT7VTmgdykuZAzA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] iio: chemical: scd30: Export dev_pm_ops instead of
- suspend() and resume()
-To:     Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        linux-iio@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>,
-        Linux PM <linux-pm@vger.kernel.org>
+Date:   Tue, 5 Apr 2022 20:27:11 +0200
+Message-ID: <CAJZ5v0ibz6R0cNzmLX0NLW7pyYH68XsxXjuZDoF=G4+L5ZB7rg@mail.gmail.com>
+Subject: Re: [PATCH 1/3] thermal: int340x: Fix bogus acpi_buffer pointer freeing
+To:     Davidlohr Bueso <dave@stgolabs.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Apr 1, 2022 at 4:06 PM Jonathan Cameron
-<Jonathan.Cameron@huawei.com> wrote:
+On Thu, Mar 24, 2022 at 8:10 PM Davidlohr Bueso <dave@stgolabs.net> wrote:
 >
-> Whilst here move to the new infrastructure using pm_sleep_ptr()
-> and EXPORT_DEV_PM_OPS() so as to let the compiler remove the unused
-> code if CONFIG_SLEEP is not defined.
+> It is the caller's responsibility to free only upon ACPI_SUCCESS.
 >
-> Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Cc: Tomasz Duszynski <tomasz.duszynski@octakon.com>
+> Signed-off-by: Davidlohr Bueso <dave@stgolabs.net>
 > ---
->  drivers/iio/chemical/scd30.h        | 5 +----
->  drivers/iio/chemical/scd30_core.c   | 8 ++++----
->  drivers/iio/chemical/scd30_i2c.c    | 2 +-
->  drivers/iio/chemical/scd30_serial.c | 2 +-
->  4 files changed, 7 insertions(+), 10 deletions(-)
+>  drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/drivers/iio/chemical/scd30.h b/drivers/iio/chemical/scd30.h
-> index f60127bfe0f4..1ac9f3f79271 100644
-> --- a/drivers/iio/chemical/scd30.h
-> +++ b/drivers/iio/chemical/scd30.h
-> @@ -68,10 +68,7 @@ struct scd30_state {
->         scd30_command_t command;
->  };
->
-> -int scd30_suspend(struct device *dev);
-> -int scd30_resume(struct device *dev);
-> -
-> -static __maybe_unused SIMPLE_DEV_PM_OPS(scd30_pm_ops, scd30_suspend, scd30_resume);
-> +extern const struct dev_pm_ops scd30_pm_ops;
->
->  int scd30_probe(struct device *dev, int irq, const char *name, void *priv, scd30_command_t command);
->
-> diff --git a/drivers/iio/chemical/scd30_core.c b/drivers/iio/chemical/scd30_core.c
-> index 9fe6bbe9ee04..6c6c11c2772a 100644
-> --- a/drivers/iio/chemical/scd30_core.c
-> +++ b/drivers/iio/chemical/scd30_core.c
-> @@ -517,7 +517,7 @@ static const struct iio_chan_spec scd30_channels[] = {
->         IIO_CHAN_SOFT_TIMESTAMP(3),
->  };
->
-> -int __maybe_unused scd30_suspend(struct device *dev)
-> +static int scd30_suspend(struct device *dev)
->  {
->         struct iio_dev *indio_dev = dev_get_drvdata(dev);
->         struct scd30_state *state  = iio_priv(indio_dev);
-> @@ -529,9 +529,8 @@ int __maybe_unused scd30_suspend(struct device *dev)
->
->         return regulator_disable(state->vdd);
->  }
-> -EXPORT_SYMBOL(scd30_suspend);
->
-> -int __maybe_unused scd30_resume(struct device *dev)
-> +static int scd30_resume(struct device *dev)
->  {
->         struct iio_dev *indio_dev = dev_get_drvdata(dev);
->         struct scd30_state *state = iio_priv(indio_dev);
-> @@ -543,7 +542,8 @@ int __maybe_unused scd30_resume(struct device *dev)
->
->         return scd30_command_write(state, CMD_START_MEAS, state->pressure_comp);
->  }
-> -EXPORT_SYMBOL(scd30_resume);
+> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> index 4954800b9850..0e7931c286ec 100644
+> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> @@ -186,11 +186,11 @@ static int int3400_thermal_run_osc(acpi_handle handle, char *uuid_str, int *enab
+>                 ret = *((u32 *)(context.ret.pointer + 4));
+>                 if (ret != *enable)
+>                         result = -EPERM;
 > +
-> +EXPORT_SIMPLE_DEV_PM_OPS(scd30_pm_ops, scd30_suspend, scd30_resume);
+> +               kfree(context.ret.pointer);
+>         } else
+>                 result = -EPERM;
 >
->  static void scd30_stop_meas(void *data)
->  {
-> diff --git a/drivers/iio/chemical/scd30_i2c.c b/drivers/iio/chemical/scd30_i2c.c
-> index 875892a070ee..7c332e4e8e46 100644
-> --- a/drivers/iio/chemical/scd30_i2c.c
-> +++ b/drivers/iio/chemical/scd30_i2c.c
-> @@ -128,7 +128,7 @@ static struct i2c_driver scd30_i2c_driver = {
->         .driver = {
->                 .name = KBUILD_MODNAME,
->                 .of_match_table = scd30_i2c_of_match,
-> -               .pm = &scd30_pm_ops,
-> +               .pm = pm_sleep_ptr(&scd30_pm_ops),
->         },
->         .probe_new = scd30_i2c_probe,
->  };
-> diff --git a/drivers/iio/chemical/scd30_serial.c b/drivers/iio/chemical/scd30_serial.c
-> index 568b34486c44..8664f3ce6b33 100644
-> --- a/drivers/iio/chemical/scd30_serial.c
-> +++ b/drivers/iio/chemical/scd30_serial.c
-> @@ -252,7 +252,7 @@ static struct serdev_device_driver scd30_serdev_driver = {
->         .driver = {
->                 .name = KBUILD_MODNAME,
->                 .of_match_table = scd30_serdev_of_match,
-> -               .pm = &scd30_pm_ops,
-> +               .pm = pm_sleep_ptr(&scd30_pm_ops),
->         },
->         .probe = scd30_serdev_probe,
->  };
+> -       kfree(context.ret.pointer);
+> -
+>         return result;
+>  }
+>
 > --
 
-Applied as 5.19 material along with the [2-3/3].
-
-Please let me know if you need a non-mutable branch to pull from in
-order to base other work on these commits.
+Because the code before the change is not incorrect, this is a cleanup
+rather than a fix, so I've adjusted the subject a bit and applied this
+along with the [2-3/3] as 5.19 material.
 
 Thanks!
