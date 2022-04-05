@@ -2,62 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2EADC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 21:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49920C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 05:35:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240589AbiDEVoB convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 17:44:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59982 "EHLO
+        id S234379AbiDFFcG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 01:32:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1455088AbiDEP7g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 11:59:36 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9B1ADE91C
-        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 08:09:44 -0700 (PDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1nbkoF-0007Sl-Ih; Tue, 05 Apr 2022 17:09:31 +0200
-Received: from [2a0a:edc0:0:900:1d::4e] (helo=lupine)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1nbkoG-001FZ2-2D; Tue, 05 Apr 2022 17:09:30 +0200
-Received: from pza by lupine with local (Exim 4.94.2)
-        (envelope-from <p.zabel@pengutronix.de>)
-        id 1nbkoE-0007ua-0i; Tue, 05 Apr 2022 17:09:30 +0200
-Message-ID: <ac31aebdd194fc559c43b08419a649ca32167e6d.camel@pengutronix.de>
-Subject: Re: [PATCH 4/8] dt-bindings: reset: add sama7g5 definitions
-From:   Philipp Zabel <p.zabel@pengutronix.de>
-To:     Claudiu Beznea <claudiu.beznea@microchip.com>, robh+dt@kernel.org,
-        nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com,
-        sre@kernel.org
-Cc:     linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Date:   Tue, 05 Apr 2022 17:09:29 +0200
-In-Reply-To: <20220405112724.2760905-5-claudiu.beznea@microchip.com>
-References: <20220405112724.2760905-1-claudiu.beznea@microchip.com>
-         <20220405112724.2760905-5-claudiu.beznea@microchip.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.38.3-1 
+        with ESMTP id S1851351AbiDFDDm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 23:03:42 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B5F937037
+        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 16:59:17 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id y32so1222077lfa.6
+        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 16:59:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=hsebzT0oQrb725QbvmQmdLGCPg2UaxczruLpvf9xIJ8=;
+        b=nEzlP/Y5MWvuFOqwomUMzNMeA/Va+eKKfx9HVFAt1xnJSdqlTiKPo3wKxfrZoFmB5p
+         179bIHxq3ijqXk+EVO+doWrxFNZZbBO86wpy2xNGVWdqMPlgnzEmRTUJ8ScGiSpoSrWP
+         Anhsn+dHVQSC06lhw5jyljhvBajPfBwaiBzySJ5mo4GUDxWoFVQcapCHVlbHqUzUJJD7
+         diClpHoqiCwEJfUcDuZiYO87OYFf5IYA1sRmhF8gCAZaS82Khq/yf/GW4fe8pjPe9mi/
+         w/8zeU+1Jt1L8rAk6OzCDhwzlwRbGj7aqB7VeGhurvqu69bQaHI74xk+KVNTc+T2mYXo
+         mdNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=hsebzT0oQrb725QbvmQmdLGCPg2UaxczruLpvf9xIJ8=;
+        b=j1Ftmh+7/62gP3PcwNQ/1QEQiGHuYe1LEXKsl0hTIdx/CAX0G8QUs8qTOxpgjntBGr
+         0n1xwRSdO24xyTtv4i3DXyQeXuynERC5hQEh9kTjqZpvi5wE7k6H+unvoWjYJHAmj7c7
+         Hlcphbf5CsgjK4jzqfdXGPDcU4SqyQ6c3PP5sak48JRi4xwoDbU42XU/M6S9jAd8Wzk4
+         QjGWQjDEa2/6ROpf2vlpiL6+PUM/Tb9lTzmCtFJG+kG+ESU8WQVs0gXR5ZA4wzqO05Gp
+         BdA4SJIWKRB8AB4weVRexBdIcxgbkqi6RQdkC624NMmJPAZJ3dwaHr6QssCkjOUj0j7U
+         D8jQ==
+X-Gm-Message-State: AOAM533bkzHCXRlxZF0cpKiX6BRo9vsgF5RcvkKE7evfbtBA0MjaIm2t
+        BBs1KdG5AHYH/N8LQVNAViTCf5upEMVpgg==
+X-Google-Smtp-Source: ABdhPJwi0L/OTO/Vf772gVlUgxAVowWOVkAO8aoGbTsia63tyHDt1Np2ZLlAMxuB24VrWMuzASrNMA==
+X-Received: by 2002:a05:6512:3ca1:b0:44a:93f1:45cf with SMTP id h33-20020a0565123ca100b0044a93f145cfmr4362023lfv.542.1649203155487;
+        Tue, 05 Apr 2022 16:59:15 -0700 (PDT)
+Received: from eriador.lan ([37.153.55.125])
+        by smtp.gmail.com with ESMTPSA id w14-20020a0565120b0e00b0044a9b61d2b3sm1646471lfu.221.2022.04.05.16.59.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 Apr 2022 16:59:15 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: [PATCH 4/4] arm: dts: qcom-apq8064: create tsens device node
+Date:   Wed,  6 Apr 2022 02:59:10 +0300
+Message-Id: <20220405235910.373107-5-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220405235910.373107-1-dmitry.baryshkov@linaro.org>
+References: <20220405235910.373107-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Di, 2022-04-05 at 14:27 +0300, Claudiu Beznea wrote:
-> Add reset bindings for SAMA7G5. At the moment only USB PHYs are
-> included.
+Create separate device node for thermal sensors on apq8064 platform.
+Move related properties to the newly created device tree node.
 
-What do you mean by "at the moment only USB PHYs are included"? Are
-those the only reset controls on sama7g5 and later hardware might have
-more?
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
-regards
-Philipp
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index b9e9a9f9d3e2..87e8861d647c 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -105,7 +105,7 @@ cpu0-thermal {
+ 			polling-delay-passive = <250>;
+ 			polling-delay = <1000>;
+ 
+-			thermal-sensors = <&gcc 7>;
++			thermal-sensors = <&tsens 7>;
+ 			coefficients = <1199 0>;
+ 
+ 			trips {
+@@ -126,7 +126,7 @@ cpu1-thermal {
+ 			polling-delay-passive = <250>;
+ 			polling-delay = <1000>;
+ 
+-			thermal-sensors = <&gcc 8>;
++			thermal-sensors = <&tsens 8>;
+ 			coefficients = <1132 0>;
+ 
+ 			trips {
+@@ -147,7 +147,7 @@ cpu2-thermal {
+ 			polling-delay-passive = <250>;
+ 			polling-delay = <1000>;
+ 
+-			thermal-sensors = <&gcc 9>;
++			thermal-sensors = <&tsens 9>;
+ 			coefficients = <1199 0>;
+ 
+ 			trips {
+@@ -168,7 +168,7 @@ cpu3-thermal {
+ 			polling-delay-passive = <250>;
+ 			polling-delay = <1000>;
+ 
+-			thermal-sensors = <&gcc 10>;
++			thermal-sensors = <&tsens 10>;
+ 			coefficients = <1132 0>;
+ 
+ 			trips {
+@@ -812,12 +812,21 @@ tsens_backup: backup_calib {
+ 		gcc: clock-controller@900000 {
+ 			compatible = "qcom,gcc-apq8064";
+ 			reg = <0x00900000 0x4000>;
+-			nvmem-cells = <&tsens_calib>, <&tsens_backup>;
+-			nvmem-cell-names = "calib", "calib_backup";
+ 			#clock-cells = <1>;
+ 			#power-domain-cells = <1>;
+ 			#reset-cells = <1>;
+-			#thermal-sensor-cells = <1>;
++
++			tsens: thermal-sensor@900000 {
++				compatible = "qcom,msm8960-tsens";
++
++				nvmem-cells = <&tsens_calib>, <&tsens_backup>;
++				nvmem-cell-names = "calib", "calib_backup";
++				interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
++				interrupt-names = "uplow";
++
++				#qcom,sensors = <11>;
++				#thermal-sensor-cells = <1>;
++			};
+ 		};
+ 
+ 		lcc: clock-controller@28000000 {
+-- 
+2.35.1
+
