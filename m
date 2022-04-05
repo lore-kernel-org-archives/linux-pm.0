@@ -2,104 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7C96C4332F
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 12:57:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32D7DC43217
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 14:45:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241989AbiDEMze (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 08:55:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39282 "EHLO
+        id S237113AbiDEOqr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 10:46:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1382353AbiDEMO5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 08:14:57 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69A5DA66F2;
-        Tue,  5 Apr 2022 04:25:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1649157925; x=1680693925;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=7o0sgXENCg/Y0DQNqjlqJ8tcLEzSZooqtxoe6odT57w=;
-  b=OlowTSPa/+lLozdO8uYyB/+3AFwapNAMGM8gfIHj9NPI5jOftu0LEdgW
-   ONRtAvSK552/0xS8q+6sSTQNQUO78Z5N4Y+fLo35P9QWW+SC/aZ0q09/7
-   A82hZp6BDsmkkXuJ7/eqxXQbZAfteRqhxokaytYrBXNhgDdvD70r1HzL4
-   U/gDt2sPdb/CplHhvQAfQnfiSB7WlgWDhLZHuhH/7JEzzYAqw5zAVbemE
-   F0ff5WxoX9hO/OwvfOsQh/z/wUN8Uei2U0+GZ/lNIpgUpoOBo8Dwb1qgK
-   vaFmIPsexTDa4ePSePRLzIHHLSJWQn14kR2gMxhYZh1YstTmQMnagUo36
-   A==;
-X-IronPort-AV: E=Sophos;i="5.90,236,1643698800"; 
-   d="scan'208";a="159346885"
-Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 05 Apr 2022 04:25:22 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.17; Tue, 5 Apr 2022 04:25:22 -0700
-Received: from localhost.localdomain (10.10.115.15) by
- chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.2375.17 via Frontend Transport; Tue, 5 Apr 2022 04:25:20 -0700
-From:   Claudiu Beznea <claudiu.beznea@microchip.com>
-To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
-        <alexandre.belloni@bootlin.com>, <p.zabel@pengutronix.de>,
-        <sre@kernel.org>
-CC:     <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH 0/8] power: reset: at91-reset: add support for sama7g5
-Date:   Tue, 5 Apr 2022 14:27:16 +0300
-Message-ID: <20220405112724.2760905-1-claudiu.beznea@microchip.com>
-X-Mailer: git-send-email 2.33.0
+        with ESMTP id S1349825AbiDENGH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 09:06:07 -0400
+Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com [209.85.219.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8800175625;
+        Tue,  5 Apr 2022 05:07:16 -0700 (PDT)
+Received: by mail-yb1-f171.google.com with SMTP id g9so22971564ybf.1;
+        Tue, 05 Apr 2022 05:07:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=knCnV41xjhnnJ0VL0WEqN+kHikKWH8noX35ww6a147E=;
+        b=O7lckBcjELkuaLNv/vx9Zk/dwxb9uNuvdTAK9RfD2UeFpLI+xa1ocEs2O+vfLgUcsy
+         E6lMViABScXgrmVNn0UwQsQhGsBMZjx2E+J1SF4r6LWvm47xalDPaI0XJ2x+wI7/O4VW
+         hLWnU8IchmREOD59IjWNEVY3v3AhTniApfIMW+33/WKIqoHL00Cc5FpHrYpe82q0Sw5f
+         yYlqC0H9t+ZUIzWY9yhWmmJlA9jlW+JvfvfUm1iPBPJBlGqg44x1XmHa5Mx2jl+5l5Nx
+         YtKYSoqyZDYZ+I2EUT8bGKLtTFar7nvRsKdGKsStiFkHJo53hRUX/Zyy2PYRi16wMF4W
+         oWMw==
+X-Gm-Message-State: AOAM531oN2BMuSlLOg4c+fubzN47QHtqt6CXO/IXNgKM6WoRUnL+NEHf
+        dOMvpaK3MYr/99JV7bZnf1StMsg1GNX/S5tJN+ueJseC
+X-Google-Smtp-Source: ABdhPJzm72VVZWMJatZlptDAM3D3/uPEoLzUPr4PBmAZeVrej6UKEUv7t6NBnltKTsOgvbQB0rfxyKF5TOgeLVOvss8=
+X-Received: by 2002:a25:cc08:0:b0:63d:2c6d:162 with SMTP id
+ l8-20020a25cc08000000b0063d2c6d0162mr2240396ybf.137.1649160435809; Tue, 05
+ Apr 2022 05:07:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+References: <21439956.EfDdHjke4D@kreacher> <YkwQAKcFU4CzYX5E@lahna>
+In-Reply-To: <YkwQAKcFU4CzYX5E@lahna>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 5 Apr 2022 14:07:03 +0200
+Message-ID: <CAJZ5v0ja5OKUh004wEMhrgVtk-yp_Dzvmk33xNhabjDqzV0JsQ@mail.gmail.com>
+Subject: Re: [PATCH v1 0/3] ACPI: PCI: PM: Power up PCI devices with ACPI
+ companions upfront
+To:     Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Apr 5, 2022 at 1:45 PM Mika Westerberg
+<mika.westerberg@linux.intel.com> wrote:
+>
+> Hi Rafael,
+>
+> On Mon, Apr 04, 2022 at 05:20:30PM +0200, Rafael J. Wysocki wrote:
+> > Hi All,
+> >
+> > There are cases in which the power state of a PCI device depends on an ACPI
+> > power resource (or more of them) in such a way that when the given power
+> > resource is in the "off" state, the PCI device depending on it is in D3cold.
+> >
+> > On some systems, the initial state of these power resources is "off", so the
+> > kernel should not access the config space of PCI devices depending on them,
+> > until the power resources in question are turned "on", but currently that is
+> > not respected during PCI device enumeration.  Namely, the PCI device
+> > enumeration code walks the entire bus and enumerates all of the devices it
+> > can find, including the ones whose initial power state in principle depends on
+> > the ACPI power resources in the "off" state.
+>
+> I guess these devices do not have _PRE() method either.
 
-The series adds reset controller support for SAMA7G5 SoCs. Compared with
-previous version the reset controller embedded on SAMA7G5 is able to
-reset individual on SoC devices (e.g. USB PHY controllers).
+Personally, I haven't seen any ACPI tables containing any _PRE yet.
 
-Among with this I took the change and converted reset controller
-bindings to YAML (patch 2/8) and adapt reset controller nodes in
-device tree files to comply with DT specifications (patch 1/8).
+> > Apparently, most of the time, the config space of such devices is accessible
+> > regardless of the state of the ACPI power resource associated with the PCI
+> > device, so the device enumeration is successful, but there are two potential
+> > issues related to this behavior.  First off, even if the given PCI device
+> > is accessible when the ACPI power resource depended on by it is "off",
+> > changing its configuration may confuse the platform firmware and lead to
+> > problems when the ACPI power resource in question is turned "on".  Second,
+> > the PCI device may not be actually accessible at all when the ACPI power
+> > resource depended on by it is "off", in which case it won't be found during
+> > the PCI enumeration of devices.
+> >
+> > This patch series addresses that problem by turning "on" all ACPI power
+> > resources depended on by PCI devices before attempting to access the config
+> > space of those devices for the first time.
+>
+> Makes sense.
+>
+> For the series,
+>
+> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Thank you,
-Claudiu Beznea
-
-Claudiu Beznea (8):
-  ARM: dts: at91: use generic name for reset controller
-  dt-bindings: reset: convert Atmel/Microchip reset controller to YAML
-  dt-bindings: reset: atmel,at91sam9260-reset: add sama7g5 bindings
-  dt-bindings: reset: add sama7g5 definitions
-  power: reset: at91-reset: add at91_reset_data
-  power: reset: at91-reset: add reset_controller_dev support
-  power: reset: at91-reset: add support for SAMA7G5
-  ARM: dts: at91: sama7g5: add reset-controller node
-
- .../devicetree/bindings/arm/atmel-sysregs.txt |  15 --
- .../reset/atmel,at91sam9260-reset.yaml        |  68 +++++++++
- arch/arm/boot/dts/at91sam9260.dtsi            |   2 +-
- arch/arm/boot/dts/at91sam9261.dtsi            |   2 +-
- arch/arm/boot/dts/at91sam9263.dtsi            |   2 +-
- arch/arm/boot/dts/at91sam9g45.dtsi            |   2 +-
- arch/arm/boot/dts/at91sam9n12.dtsi            |   2 +-
- arch/arm/boot/dts/at91sam9rl.dtsi             |   2 +-
- arch/arm/boot/dts/at91sam9x5.dtsi             |   2 +-
- arch/arm/boot/dts/sam9x60.dtsi                |   2 +-
- arch/arm/boot/dts/sama5d2.dtsi                |   2 +-
- arch/arm/boot/dts/sama5d3.dtsi                |   2 +-
- arch/arm/boot/dts/sama5d4.dtsi                |   2 +-
- arch/arm/boot/dts/sama7g5.dtsi                |   7 +
- drivers/power/reset/at91-reset.c              | 134 ++++++++++++++++--
- include/dt-bindings/reset/sama7g5-reset.h     |  10 ++
- 16 files changed, 217 insertions(+), 39 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/reset/atmel,at91sam9260-reset.yaml
- create mode 100644 include/dt-bindings/reset/sama7g5-reset.h
-
--- 
-2.32.0
-
+Thanks!
