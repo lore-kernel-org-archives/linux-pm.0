@@ -2,186 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D24AC433F5
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 14:45:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C11E1C433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Apr 2022 14:45:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238677AbiDEOr1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Apr 2022 10:47:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53028 "EHLO
+        id S234845AbiDEOrd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Apr 2022 10:47:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1387145AbiDEOaP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 10:30:15 -0400
-Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74FC8114FD8;
-        Tue,  5 Apr 2022 06:12:31 -0700 (PDT)
-Received: by mail-ot1-x334.google.com with SMTP id d15-20020a9d72cf000000b005cda54187c3so9356149otk.2;
-        Tue, 05 Apr 2022 06:12:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=gybD8KNj/W/HoWbum2MjlytMZOz7rVdftOjd7CjfOfk=;
-        b=p2dW8JNDfG+wR/AcRAu+yec5t2wkejU1hmZnEb1UPOyUwpvbpSZA19xel29YXnx5YV
-         yh8xsbRCxTKGNq5lbQ5ysRHU4YyW+rH0qQ2Wc7uVYk2RRlIaRma/j0y9ZkMOBwJh68DE
-         /lenTj03J17b8diAei5OJvnA/7MnHNXUhRhZjcGglE2YYnGWO29v3wy7LImYpE+Z6YUj
-         z+gPU/+BRFoM3yHhWFBxMgMZ5O/2MofNljDL0vyuxB24BLx/Vgm4izJHjNy3qdikDH1N
-         cTlEyMIfZMh+mP2LI6NMOJtuJ91kC16jXml1+BSzGhzzGAsrPv6SvMGYGWZUh1SUPJND
-         j0og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=gybD8KNj/W/HoWbum2MjlytMZOz7rVdftOjd7CjfOfk=;
-        b=tOtGWqSG21YUt5794fKc9VtNzICMGLZ1X5iJnzXJRYx8XRDwZautGCPagWceCtYiSV
-         WoTAerRTLbLEQaG1ZdnzElAOoj+vweLZrs/AQ6uMmQEpzRVslQkSVe6vUJpB3KZelidr
-         fENcpougTLk0f8iAsLyYZC/pS+oJwkXWL81HudLuzbca0zwVyLxAX6D6aQWgFbtyv4HJ
-         wKy4miEO5aeQfzI51o88IiWIY+GV85m0q6ZZVulaI+2Hnwi22rfSY0z5bgXTeZzM7flU
-         OzY5vAQ3dr7JfTye6pQR9J/A7MlZJzZh/KPleoUtWt8OV0AHEOwU1I5kMl0OMQ8spX9P
-         PsmQ==
-X-Gm-Message-State: AOAM532TngbmVTtUHz3kTXRtmeaZ5kiGTqdv1WtnhMbQD6Z/vmyboAEN
-        yr/KtPAoAveej+P976y/hXA=
-X-Google-Smtp-Source: ABdhPJygfCMsG2GUugJSWbcoi7r4FK8hnjS9pfBgI6aqCzi6pvBrzjDHoCfUviralTU5vm9EL9lXCQ==
-X-Received: by 2002:a9d:7414:0:b0:5b2:4a00:fc7 with SMTP id n20-20020a9d7414000000b005b24a000fc7mr1171719otk.100.1649164350737;
-        Tue, 05 Apr 2022 06:12:30 -0700 (PDT)
-Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
-        by smtp.gmail.com with ESMTPSA id v21-20020a4ade95000000b00320f814c73bsm4950672oou.47.2022.04.05.06.12.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Apr 2022 06:12:30 -0700 (PDT)
-Date:   Tue, 5 Apr 2022 08:12:28 -0500
-From:   Chris Morgan <macroalpha82@gmail.com>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
-        devicetree@vger.kernel.org, zhangqing@rock-chips.com,
-        zyw@rock-chips.com, jon.lin@rock-chips.com,
-        maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
-        krzk+dt@kernel.org, robh+dt@kernel.org, lee.jones@linaro.org,
-        Chris Morgan <macromorgan@hotmail.com>
-Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
- support
-Message-ID: <20220405131228.GA20@wintermute.localdomain>
-References: <20220404215754.30126-1-macroalpha82@gmail.com>
- <20220404215754.30126-2-macroalpha82@gmail.com>
- <74f445c2-3194-80a6-6d52-21368eb6172a@linaro.org>
+        with ESMTP id S1382329AbiDEORP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2022 10:17:15 -0400
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2076.outbound.protection.outlook.com [40.107.92.76])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E45C160FC0;
+        Tue,  5 Apr 2022 06:01:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HfqsIMMfeC26reLatD9MokTwYecrPrj1vG/HCvzSOO2HrguiZh34GFZ0IWf5zdNDuR7+nGy5t5zpgv/qZmSnT8d/nsAYjzB9+fUTKTywZy9lX6nlAMjw0/cy5FDAjmuBO/oyawRjW8R0Q8OR9ejNZghJ/wocQ1QjQTgyuVDF8I/rfeI17JcbzaqL7hY8Q5obWj5sUz1a7dZKv+YKpcETCCJBhEZXHiWMGjojboTJLyX4ZC7kAQk0oYhgVJkekqdDh7m5nJZ08OBG/4LWYBqbmYfud8k0jPyx+wR/Y6jj7KmrSh2KHaA2XT6edoaFSAEYINcPcyohzKEHfSdgThDE+g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=G3P71ftXVbLa28033q3i+TL9rdfyovrIovSeQLq6P2A=;
+ b=luBZZ6wkeYLJfT2ZdX4bNfMVm47U7nVaXT2WnshIU0AscnZGC1UrFDrB9vW1clci1GaeIQN5z6FYYymRbbFWzktkurPgLmotPJOi7Zs8YOFyoCI55VmY9ay5hhCF+ksaXJM9V2zCPzsM0Bve7r5Rqqdx2mWAJVE7GNamAsrtaSJaes2+Ik7CCT0u9V4RXRGSTBWHTB+OCQXGxRnhMwInBk5/pYZ302u9qYaZxMZCLwA7rbvMzH6yxIBGaKBV3s7NrUPegB2wDCrmPRzpwb0nP0bJEvpQMe4OtBU9fMn3MuDKzc93JSd+TokWt+GW42+03qlhcVaXECYCKpNQoVOEDg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 12.22.5.238) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=G3P71ftXVbLa28033q3i+TL9rdfyovrIovSeQLq6P2A=;
+ b=J8REqfiQWsqQOhOwsZm+6N0lKqrM1ZeQSQJcJZ/Wi9UtAz2MJPrSAYmUtH6GEv3xBOiRjoH9YVgYOxdGwETwq9G1a9K/odhGWeGrnMQoW6LroGuCe/D6f74gqiEJ/Yx3TGDFzG4iIPrn3Gp6R48U4JekQ4u7LHPTROMNpJLUKZ1wqMTow2BtS0my8qDoj7RuXRLPsS2RKUDPeCXtakY4WdS+zHYy09w/8e5rMIaZ5PqkjcPDhdHo6b4KzPWj73+Sndb2j9ldSE0VrOlbJan9EIuiToJAtFe/7dEaksnwnkFULqOgeZz3ESNiXqjIKdfsNOaepJMHSp8ZuADijbxreg==
+Received: from MW4PR04CA0371.namprd04.prod.outlook.com (2603:10b6:303:81::16)
+ by DS7PR12MB5744.namprd12.prod.outlook.com (2603:10b6:8:73::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5123.31; Tue, 5 Apr
+ 2022 13:01:43 +0000
+Received: from CO1NAM11FT038.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:303:81:cafe::5) by MW4PR04CA0371.outlook.office365.com
+ (2603:10b6:303:81::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5123.31 via Frontend
+ Transport; Tue, 5 Apr 2022 13:01:43 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 12.22.5.238)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 12.22.5.238 as permitted sender) receiver=protection.outlook.com;
+ client-ip=12.22.5.238; helo=mail.nvidia.com;
+Received: from mail.nvidia.com (12.22.5.238) by
+ CO1NAM11FT038.mail.protection.outlook.com (10.13.174.231) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.20.5123.19 via Frontend Transport; Tue, 5 Apr 2022 13:01:43 +0000
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by DRHQMAIL105.nvidia.com
+ (10.27.9.14) with Microsoft SMTP Server (TLS) id 15.0.1497.32; Tue, 5 Apr
+ 2022 13:01:27 +0000
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail203.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.986.22; Tue, 5 Apr 2022
+ 06:01:27 -0700
+Received: from sumitg-l4t.nvidia.com (10.127.8.10) by mail.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server id 15.2.986.22 via Frontend
+ Transport; Tue, 5 Apr 2022 06:01:23 -0700
+From:   Sumit Gupta <sumitg@nvidia.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
+        <robh+dt@kernel.org>, <krzk+dt@kernel.org>, <treding@nvidia.com>,
+        <jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
+        <linux-tegra@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     <ksitaraman@nvidia.com>, <sanjayc@nvidia.com>, <bbasu@nvidia.com>,
+        <sumitg@nvidia.com>
+Subject: [Patch v4 0/4] Tegra234 cpufreq driver support 
+Date:   Tue, 5 Apr 2022 18:31:15 +0530
+Message-ID: <20220405130119.4697-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.17.1
+X-NVConfidentiality: public
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74f445c2-3194-80a6-6d52-21368eb6172a@linaro.org>
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: dd9903c4-f605-4ea8-7a23-08da17046ec7
+X-MS-TrafficTypeDiagnostic: DS7PR12MB5744:EE_
+X-Microsoft-Antispam-PRVS: <DS7PR12MB574482380735D416182509C9B9E49@DS7PR12MB5744.namprd12.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: npBzCHpycYkXM61lBIOplqHuVkOoYDAHDyPUZdJbwLBySHEagV4TEia0kB44lyHl3npfwJBtahYP5pLcjYZopvjlwYnyETM+I71fhXDlDK1wnDWlxsJMXRrcOUrDhUozLyTGeLuT6QG0EW7CBgHT3I2/CmlOxjKg/CVNJViHoMeNy5bvMxeAT6t7z865DGHb/28ajsqcRHWVB/RI1hyPe2pbqjd+69oyOuFmE/vQWdcXW326rMclFte7J1wwOQT4MiE9oZ2TReoNfpW8FiBmlMLjfb4gLiAx3gODnNF/eM5OrYkDK6xP8AeCYfQ0pqLFcx9hJbWy6T4Dg76L4SehiactXCIk6sEhklNmIz8dsI0ks3ptPWKf8qKXKGDebtEmBKyeReZK3VJcKy0ZL9mfOuhzbWUt9MMF8UBbH6lO6SMSnNcLI8ztJRjolJNET20JyAChKFmeAOy2wwj18N1VAW8V7wlD4fhYUeOcVheLW9m74jRFbZk3Ro+dQjamfaRx0vFwUk4x1Xb28d9C+hXP6qzZu4Tgca3LsxB8P60OaZOF3Xeb1wIDQ1I1ZJDZWv//UrE5dj6rcbrGr4Z4m2lg3IxVkLgvJuDKULb9VGiArqhOvLy4us4gu3PAufhRpqtQMx56FBl/tAApyqdgHldMyGqDPBNF+04eXCNSN0xywQfCGJlZHapynRCn5x+lSY8D0dsn2r2vKLDL8K2AIF+4AHIdNguP2Ip3JDfquREl4yo=
+X-Forefront-Antispam-Report: CIP:12.22.5.238;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:mail.nvidia.com;PTR:InfoNoRecords;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(46966006)(36840700001)(8936002)(36860700001)(40460700003)(2616005)(356005)(921005)(82310400005)(83380400001)(4743002)(54906003)(1076003)(81166007)(26005)(36756003)(2906002)(336012)(426003)(110136005)(5660300002)(86362001)(508600001)(8676002)(70586007)(107886003)(4326008)(47076005)(70206006)(7696005)(6666004)(316002)(186003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Apr 2022 13:01:43.1127
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: dd9903c4-f605-4ea8-7a23-08da17046ec7
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[12.22.5.238];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource: CO1NAM11FT038.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB5744
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Apr 05, 2022 at 01:16:55PM +0200, Krzysztof Kozlowski wrote:
-> On 04/04/2022 23:57, Chris Morgan wrote:
-> > From: Chris Morgan <macromorgan@hotmail.com>
-> > 
-> > Create dt-binding documentation to document rk817 battery and charger
-> > usage. New device-tree properties have been added.
-> > 
-> > - rockchip,resistor-sense-micro-ohms: The value in microohms of the
-> >                                       sample resistor.
-> > - rockchip,sleep-enter-current-microamp: The value in microamps of the
-> >                                          sleep enter current.
-> > - rockchip,sleep-filter-current: The value in microamps of the sleep
-> >                                  filter current.
-> > 
-> > Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> > Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
-> > ---
-> >  .../bindings/mfd/rockchip,rk817.yaml          | 48 +++++++++++++++++++
-> >  1 file changed, 48 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
-> > index bfc1720adc43..b949d406a487 100644
-> > --- a/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
-> > +++ b/Documentation/devicetree/bindings/mfd/rockchip,rk817.yaml
-> > @@ -117,6 +117,47 @@ properties:
-> >          description:
-> >            Describes if the microphone uses differential mode.
-> >  
-> > +  battery:
-> 
-> I wonder why do you call it a batter while it is a charger, isn't it?
+This patchset adds driver support for Tegra234 cpufreq.
+Also, added soc data and ops to support multiple SoC's and variants
+which have similar logic to {get|set} cpu frequency as Tegra194 in
+the same driver.
+From cpufreq point, main difference between Tegra194 and Tegra234 are:
+ 1) Tegra234 uses MMIO for frequency requests and not sysreg like T194.
+ 2) MPIDR affinity info in Tegra234 is different from Tegra194.
+ 3) Register bits of pllp_clk_count and core_clk_count are swapped.
+So, added ops hooks for Tegra234.
 
-It is a driver for both the battery and charger. I'd argue about 95% of
-it is battery functions and the other 5% is managing the IRQs for plug
-removal/insertion and capturing the incoming voltage and current. In
-the BSP kernel these were two seperate drivers, but there was so little
-that needed to be done for the charger (and users probably don't need
-plug IRQs if they aren't using a battery anyway since the system will
-shut off on a plug out event due to no power...).
+---
+v3-> v4:
+- fixed reg property too long error and set additionalProperties to
+  false in the binding document.
 
-> 
-> > +    description: |
-> > +      The child node for the charger to hold additional properties. If a
-> > +      battery is not in use, this node can be omitted.
-> > +    type: object
-> > +    properties:
-> > +      monitored-battery:
-> > +        description: |
-> > +          A phandle to a monitored battery node that contains a valid
-> > +          value for:
-> > +          charge-full-design-microamp-hours,
-> > +          charge-term-current-microamp,
-> > +          constant-charge-current-max-microamp,
-> > +          constant-charge-voltage-max-microvolt,
-> > +          voltage-max-design-microvolt,
-> > +          voltage-min-design-microvolt,
-> > +          and a valid ocv-capacity table.
-> > +
-> > +      rockchip,resistor-sense-micro-ohms:
-> > +        description: |
-> > +          Value in microohms of the battery sense resistor. This value is
-> > +          used by the driver to set the correct divisor value to translate
-> > +          ADC readings into the proper units of measure.
-> > +        enum: [10000, 20000]
-> > +
-> > +      rockchip,sleep-enter-current-microamp:
-> > +        description: |
-> > +          Value in microamps of the sleep enter current for the charger.
-> > +          Value is used by the driver to calibrate the relax threshold.
-> > +
-> > +      rockchip,sleep-filter-current-microamp:
-> > +        description:
-> > +          Value in microamps of the sleep filter current for the charger.
-> > +          Value is used by the driver to derive the sleep sample current.
-> > +
-> > +    required:
-> > +      - monitored-battery
-> > +      - rockchip,resistor-sense-micro-ohms
-> > +      - rockchip,sleep-enter-current-microamp
-> > +      - rockchip,sleep-filter-current-microamp
-> > +
-> >  allOf:
-> >    - if:
-> >        properties:
-> > @@ -323,6 +364,13 @@ examples:
-> >                  };
-> >              };
-> >  
-> > +            rk817_battery: battery {
-> 
-> The same.
-> 
-> > +                monitored-battery = <&battery_cell>;
-> > +                rockchip,resistor-sense-micro-ohms = <10000>;
-> > +                rockchip,sleep-enter-current-microamp = <300000>;
-> > +                rockchip,sleep-filter-current-microamp = <100000>;
-> > +            };
-> > +
-> >              rk817_codec: codec {
-> >                  rockchip,mic-in-differential;
-> >              };
-> 
-> 
-> Best regards,
-> Krzysztof
+v2 -> v3:
+- used CPU COMPLEX CLUSTER name in binding document.
+- reordered the patches.
 
-Thank you.
+v1 -> v2:
+- added nvidia,tegra-ccplex-cluster.yaml binding doc
+- changed compatible check to 'soc->actmon_cntr_base' field of soc data
 
-I forgot to note in my patch notes that this relies on this series
-being upstreamed to convert the rockchip rk808 bindings from txt into
-yaml:
-https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20220404215754.30126-2-macroalpha82@gmail.com/
+Sumit Gupta (4):
+  dt-bindings: Document Tegra CCPLEX Cluster
+  cpufreq: tegra194: add soc data to support multiple soc
+  cpufreq: tegra194: Add support for Tegra234
+  arm64: tegra: add node for tegra234 cpufreq
 
-That series is mostly upstreamed (the patches fixing issues in various
-devicetrees). All that remains is the main one switching to yaml.
+ .../tegra/nvidia,tegra-ccplex-cluster.yaml    |  52 ++++
+ arch/arm64/boot/dts/nvidia/tegra234.dtsi      |   7 +
+ drivers/cpufreq/tegra194-cpufreq.c            | 246 +++++++++++++++---
+ 3 files changed, 268 insertions(+), 37 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra-ccplex-cluster.yaml
+
+-- 
+2.17.1
+
