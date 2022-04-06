@@ -2,110 +2,231 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DBE6C4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 16:06:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23671C433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 17:06:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232040AbiDFQIv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Apr 2022 12:08:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55490 "EHLO
+        id S238316AbiDFRI3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 13:08:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59006 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237177AbiDFQHY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 12:07:24 -0400
-Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 403D0432D6C
-        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 21:47:08 -0700 (PDT)
-Received: by mail-oi1-x233.google.com with SMTP id j83so1293620oih.6
-        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 21:47:08 -0700 (PDT)
+        with ESMTP id S238367AbiDFRII (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 13:08:08 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB1C24BD63
+        for <linux-pm@vger.kernel.org>; Wed,  6 Apr 2022 07:44:10 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id r13so3546395wrr.9
+        for <linux-pm@vger.kernel.org>; Wed, 06 Apr 2022 07:44:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:in-reply-to:references:from:user-agent:date:message-id
-         :subject:to:cc;
-        bh=NW58TngHF2iGAMKYPwCczd/NajU2Zo1ovbXcFt5HfVg=;
-        b=HbEFFFNDXGE1evlb0UhGkovo3mQz8rrsjMrZ0rgXuwXs/AsmlxLjIo0Y/JJoBSEaQ/
-         XsZtm/oRIVWvTKK38RZ5aNicioktfbqpFBo+Sjlu2WX5W20YXu3GB6KXtrAJN9vyxhav
-         C18wFUMX1doDa1fxtMwdq+D3EQkj1WUoF1cXc=
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=Q7tTbUPj80zQFrsreVSfIyDmqBy9SR/9Gbp8AYxxfBQ=;
+        b=QeNOqhK6B2CXR8G/hrFhDjbWjL1lx7JCOEk3CHVDMkgvFSBTGaM2Mg+fj2Nm1zo8Ey
+         SyAtjm8ke72MI/W/IETggJqBL/Ht5+gD/vb8YoTbnxp2Ya8SVoV8oWklM0TgP2O88WO0
+         NMEFNI2hUIDHZXrTXl5S5wRHohvOgI5C9/gVX8U4+ZSdqPusTi5A0UfVskscfSdKrhAf
+         yAnVr3qSFXmJ67PzUiDzxftUEucttojSRWQZlUNG4AeyPHXDMNm4JXR1q2mMR/RiQaLQ
+         fwSBn+nSCXH60hduajUDRB2MkMX7Cc1Q2OKgKLXITnp8LQf+Jp/+NjPd0LP472JUoVw7
+         f/Tg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:in-reply-to:references:from
-         :user-agent:date:message-id:subject:to:cc;
-        bh=NW58TngHF2iGAMKYPwCczd/NajU2Zo1ovbXcFt5HfVg=;
-        b=Ck4esUuUdsCiyimdbFZR+eCXQhZ7h3vx0ZGXRdGv1yyXEuYGdqDRFngST1OsG9KSFP
-         d3dOY6jk2n2jehmyXHAMGszjpYA1LYmLlHU+SKMmF58w3FLNrZr1EbL3xkzgmrWzXb/r
-         UQ96Vc+FRxGifZvC4durE44yDN+zK6VF94PBlr2+u0v4k5j8sD2qto1pWNdjjKmRf1h+
-         G1QILuRYY/0sxOHrX+2YNn0vi6ilxp7xFKjJqiV5GVCnyIwj8EXdtHaFJ5WeB30DrPBt
-         YeJ4idyn8cOY3+Jfimp0qlHLjjTslwCkBw1o5e7WLLZIyNF2tZzLrMTIOdCYu0XD5oVM
-         CG8g==
-X-Gm-Message-State: AOAM533uUcSkKLsnWC9jJdUTOgFhtSCONr3oLP08aIzO0fpFqiOyZGzS
-        fDUBxnISfp84aEiBQJboOVeKr/d/gYOaSl/13C3omw==
-X-Google-Smtp-Source: ABdhPJznEpRzhYei7BQOzmtrp7K7kVlyM+t3hMHY0+2YiIUtrVJ/MLs5xc2bsd5dbee7S/GYtq5ePSIQqXJlseQIpxc=
-X-Received: by 2002:aca:a9c8:0:b0:2da:45b6:b796 with SMTP id
- s191-20020acaa9c8000000b002da45b6b796mr2700245oie.193.1649220427524; Tue, 05
- Apr 2022 21:47:07 -0700 (PDT)
-Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 5 Apr 2022 21:47:07 -0700
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=Q7tTbUPj80zQFrsreVSfIyDmqBy9SR/9Gbp8AYxxfBQ=;
+        b=btAufeyrrFNOVbuXHrjl07XiIekeeXc6ByXv4diXt6eW1XPJihKDPCJ9R+2wAWzv8p
+         a34b8JKR0p7AjoBQwaQL6bDUzkL2Q/4lT5paP8pqXjoG+3M69C/twk+CUfqjSnCLJppi
+         2r7D0IaIUhzQ2D8iTRCru5v69ArLik/lN8SSvcnBC9ejY86m7NMZkDTYPIg7lM4NFeDc
+         uWnh3rcQrSLUHfSlw9fq0BR/AfoiqXoT8PkeCqNrB0O3gXTWpeJfeq5/6Ho8CbFXhEtj
+         ZKk+hPng7oivHmyhl0mrIo0P+e6AAHotSWxhP3INXsyrJfXRcdFqw4DxtUYDCKCrRqhy
+         ILlQ==
+X-Gm-Message-State: AOAM530oHgvcIc8KO/pDx8M6OXuZoPGyILxLj9rGQ7kgKzK5KtsH8+1z
+        oBOCyT1YTBzGmgiHYyOvEsXlEA==
+X-Google-Smtp-Source: ABdhPJyX2H6+/xrddJqBK7sgjp1Of7OvV2pwupg2yuPXedmLBl5N4VGH82cdf/FI6si47PLAHHoKHw==
+X-Received: by 2002:a05:6000:10cf:b0:206:1d1c:5480 with SMTP id b15-20020a05600010cf00b002061d1c5480mr7051977wrx.546.1649256249144;
+        Wed, 06 Apr 2022 07:44:09 -0700 (PDT)
+Received: from ?IPV6:2a01:e34:ed2f:f020:261f:c14c:d23b:d177? ([2a01:e34:ed2f:f020:261f:c14c:d23b:d177])
+        by smtp.googlemail.com with ESMTPSA id l20-20020a05600c1d1400b0038cba2f88c0sm7191217wms.26.2022.04.06.07.44.07
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Apr 2022 07:44:07 -0700 (PDT)
+Message-ID: <9ccb342b-2f20-6efd-a668-96d593aa921e@linaro.org>
+Date:   Wed, 6 Apr 2022 16:44:06 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAE-0n51xeigKFS9Zek44HZGD9cdc4Em91aQ5HHzuy7P1FBmfFg@mail.gmail.com>
-References: <20211125174751.25317-1-djakov@kernel.org> <CAE-0n51xeigKFS9Zek44HZGD9cdc4Em91aQ5HHzuy7P1FBmfFg@mail.gmail.com>
-From:   Stephen Boyd <swboyd@chromium.org>
-User-Agent: alot/0.10
-Date:   Tue, 5 Apr 2022 21:47:07 -0700
-Message-ID: <CAE-0n52xQ+SbwpDfzuW-tMLJP17Z2qog2s_pS=XBTULLNpUkLg@mail.gmail.com>
-Subject: Re: [PATCH v3] interconnect: qcom: icc-rpmh: Add BCMs to commit list
- in pre_aggregate
-To:     Alex Elder <elder@linaro.org>, djakov@kernel.org,
-        okukatla@codeaurora.org, quic_mdtipton@quicinc.com
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, mka@chromium.org,
-        dianders@chromium.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v2 0/4] tools/thermal: thermal library and tools
+Content-Language: en-US
+To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
+        rafael@kernel.org
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20220330100444.3846661-1-daniel.lezcano@linaro.org>
+ <f526d227-ffbb-4ac0-ceb6-c793ab912559@linaro.org>
+ <5380fef6d45f2f7a0b8a5f681934f02943d5e138.camel@linux.intel.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+In-Reply-To: <5380fef6d45f2f7a0b8a5f681934f02943d5e138.camel@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Stephen Boyd (2022-04-05 16:00:55)
-> Quoting Georgi Djakov (2021-11-25 09:47:51)
-> > From: Mike Tipton <mdtipton@codeaurora.org>
-> >
-> > We're only adding BCMs to the commit list in aggregate(), but there are
-> > cases where pre_aggregate() is called without subsequently calling
-> > aggregate(). In particular, in icc_sync_state() when a node with initial
-> > BW has zero requests. Since BCMs aren't added to the commit list in
-> > these cases, we don't actually send the zero BW request to HW. So the
-> > resources remain on unnecessarily.
-> >
-> > Add BCMs to the commit list in pre_aggregate() instead, which is always
-> > called even when there are no requests.
-> >
-> > Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
-> > [georgi: remove icc_sync_state for platforms with incomplete support]
-> > Signed-off-by: Georgi Djakov <djakov@kernel.org>
->
-> This patch fixes suspend/resume for me on sc7180-trogdor-lazor. Without
-> it I can't achieve XO shutdown. It seems that it fixes the sync_state
-> support that was added in commit b1d681d8d324 ("interconnect: Add sync
-> state support"). Before that commit suspend worked because the
-> interconnect wasn't maxed out at boot. After that commit we started
-> maxing out the interconnect state and never dropping it.
+On 06/04/2022 16:28, srinivas pandruvada wrote:
+> Hi Daniel,
+> 
+> On Wed, 2022-04-06 at 10:00 +0200, Daniel Lezcano wrote:
+>>
+>> Hi,
+>>
+>> if there is no comment for the series, shall I pick it so we can go
+>> forward ?
+> Didn't get time to check yet. It will still be for the next merge
+> window, correct?
 
-I'm also wondering if this means suspend doesn't work without sync_state
-support? Does this mean that device links are required? And device links
-are only made if fw_devlink is enabled? I don't see any devlinks made in
-drivers/interconnect so I worry that we have to use fw_devlink to get
-device links made to make sync_state happen to remove the max votes that
-are put in at boot.
+Right, but I would like to continue adding more features, scripts and 
+tests. Iteratively.
 
->
-> It would be good to pick this back to stable kernels so we have a
-> working suspend/resume on LTS kernels. I tried picking it back to
-> 5.10.109 (latest 5.10 LTS) and booting it on my Lazor w/ LTE device but
-> it crashes at boot pretty reliably in the IPA driver. Interestingly I
-> can't get it to crash on 5.15.32 when I pick it back, so maybe something
-> has changed between 5.10 and 5.15 for IPA? I'll try to bisect it.
+>>
+>> On 30/03/2022 12:04, Daniel Lezcano wrote:
+>>> These changes are providing the following tools and library:
+>>>
+>>>    - A thermal library doing the netlink abstraction from the kernel
+>>> in
+>>>      order to make the userspace thermal implementation easier.
+>>> Having
+>>>      the library integrated with the kernel tree is also a guarantee
+>>> to
+>>>      keep the message format and their encoding/decoding aligned
+>>>                                                                     
+>>>                                                                     
+>>>                                                                     
+>>>                                                                     
+>>>     
+>>>    - A thermal tools library providing a set of functions to deal
+>>> with
+>>>      usual features like the log, the mainloop and the time. This
+>>>      library is used by the provided tools below
+>>>
+>>>    - An data acquisition program to capture the temperature of the
+>>>      different thermal zone during an amount of time or during the
+>>>      execution of an application. The output is formated to be
+>>> easily
+>>>      parsed by gnuplot, a spreadsheet program or a statistical
+>>> command
+>>>      line utility. The timestamp is based on the system uptime, thus
+>>>      giving an indication of when a thermal event happened, that can
+>>>      help to spot or reproduce thermal issue in the long run
+>>>
+>>>    - A thermal monitoring program based on the thermal library. It
+>>> gives
+>>>      a skeleton to build any logic on top of it and shows how to use
+>>> the
+>>>      thermal library. It does nothing except discovering the thermal
+>>>      zones, their trip points and listening for events like cooling
+>>>      devices state changes or trip point crossed
+>>>
+>>>    Changelog:
+>>>
+>>>    v1: Initial post after a RFC
+>>>
+>>>    v2:
+>>>
+>>>     - Fixed all trailing whitespaces and some other checkpatch
+>>>       warnings. Some warnings remain but they can be considered as
+>>> false
+>>>       positive
+>>>
+>>>     - Added in the thermometer tool:
+>>>       - Usage/help option as well as a man page
+>>>       - The ability to execute a program
+>>>       - The capture duration
+>>>       - Create the output directory if it does not exist
+>>>
+>>>     - Add in the thermal-engine tool:
+>>>       - A usage/help option
+>>>       - A message telling the userspace it is waiting for events
+>>>       - A daemonize option
+>>>
+>>>     - Minor bug fixes here and there, as well as typos
+>>>
+>>> Daniel Lezcano (4):
+>>>     tools/lib/thermal: Add a thermal library
+>>>     tools/thermal: Add util library
+>>>     tools/thermal: A temperature capture tool
+>>>     tools/thermal: Add thermal daemon skeleton
+>>>
+>>>    MAINTAINERS                                   |   1 +
+>>>    tools/Makefile                                |  36 +-
+>>>    tools/lib/thermal/.gitignore                  |   2 +
+>>>    tools/lib/thermal/Build                       |   5 +
+>>>    tools/lib/thermal/Makefile                    | 165 ++++++
+>>>    tools/lib/thermal/commands.c                  | 349 +++++++++++
+>>>    tools/lib/thermal/events.c                    | 164 +++++
+>>>    tools/lib/thermal/include/thermal.h           | 142 +++++
+>>>    tools/lib/thermal/libthermal.map              |  25 +
+>>>    tools/lib/thermal/libthermal.pc.template      |  12 +
+>>>    tools/lib/thermal/sampling.c                  |  75 +++
+>>>    tools/lib/thermal/thermal.c                   | 126 ++++
+>>>    tools/lib/thermal/thermal_nl.c                | 215 +++++++
+>>>    tools/lib/thermal/thermal_nl.h                |  46 ++
+>>>    tools/thermal/lib/Build                       |   3 +
+>>>    tools/thermal/lib/Makefile                    | 158 +++++
+>>>    .../thermal/lib/libthermal_tools.pc.template  |  12 +
+>>>    tools/thermal/lib/log.c                       |  77 +++
+>>>    tools/thermal/lib/log.h                       |  31 +
+>>>    tools/thermal/lib/mainloop.c                  | 120 ++++
+>>>    tools/thermal/lib/mainloop.h                  |  15 +
+>>>    tools/thermal/lib/thermal-tools.h             |  10 +
+>>>    tools/thermal/lib/uptimeofday.c               |  40 ++
+>>>    tools/thermal/lib/uptimeofday.h               |  12 +
+>>>    tools/thermal/thermal-engine/Build            |   2 +
+>>>    tools/thermal/thermal-engine/Makefile         |  28 +
+>>>    tools/thermal/thermal-engine/thermal-engine.c | 326 ++++++++++
+>>>    tools/thermal/thermometer/Build               |   2 +
+>>>    tools/thermal/thermometer/Makefile            |  26 +
+>>>    tools/thermal/thermometer/thermometer.8       |  93 +++
+>>>    tools/thermal/thermometer/thermometer.c       | 558
+>>> ++++++++++++++++++
+>>>    tools/thermal/thermometer/thermometer.conf    |   5 +
+>>>    32 files changed, 2878 insertions(+), 3 deletions(-)
+>>>    create mode 100644 tools/lib/thermal/.gitignore
+>>>    create mode 100644 tools/lib/thermal/Build
+>>>    create mode 100644 tools/lib/thermal/Makefile
+>>>    create mode 100644 tools/lib/thermal/commands.c
+>>>    create mode 100644 tools/lib/thermal/events.c
+>>>    create mode 100644 tools/lib/thermal/include/thermal.h
+>>>    create mode 100644 tools/lib/thermal/libthermal.map
+>>>    create mode 100644 tools/lib/thermal/libthermal.pc.template
+>>>    create mode 100644 tools/lib/thermal/sampling.c
+>>>    create mode 100644 tools/lib/thermal/thermal.c
+>>>    create mode 100644 tools/lib/thermal/thermal_nl.c
+>>>    create mode 100644 tools/lib/thermal/thermal_nl.h
+>>>    create mode 100644 tools/thermal/lib/Build
+>>>    create mode 100644 tools/thermal/lib/Makefile
+>>>    create mode 100644 tools/thermal/lib/libthermal_tools.pc.template
+>>>    create mode 100644 tools/thermal/lib/log.c
+>>>    create mode 100644 tools/thermal/lib/log.h
+>>>    create mode 100644 tools/thermal/lib/mainloop.c
+>>>    create mode 100644 tools/thermal/lib/mainloop.h
+>>>    create mode 100644 tools/thermal/lib/thermal-tools.h
+>>>    create mode 100644 tools/thermal/lib/uptimeofday.c
+>>>    create mode 100644 tools/thermal/lib/uptimeofday.h
+>>>    create mode 100644 tools/thermal/thermal-engine/Build
+>>>    create mode 100644 tools/thermal/thermal-engine/Makefile
+>>>    create mode 100644 tools/thermal/thermal-engine/thermal-engine.c
+>>>    create mode 100644 tools/thermal/thermometer/Build
+>>>    create mode 100644 tools/thermal/thermometer/Makefile
+>>>    create mode 100644 tools/thermal/thermometer/thermometer.8
+>>>    create mode 100644 tools/thermal/thermometer/thermometer.c
+>>>    create mode 100644 tools/thermal/thermometer/thermometer.conf
+>>>
+>>
+>>
+> 
+> 
 
-Bisecting pointed to commit 1aac309d3207 ("net: ipa: use autosuspend")
-as fixing it. I think before that commit we weren't enabling some
-interconnect, but now we're booting, runtime suspending, and then
-runtime resuming again. With the sync state patch I suspect the
-interconnect bandwidth is dropped and IPA needs to use runtime PM to
-actually turn resources back on because it assumed that resources are on
-when it probes.
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
