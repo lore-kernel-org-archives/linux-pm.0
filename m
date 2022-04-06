@@ -2,92 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32F9FC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 14:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADFAEC433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 14:33:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234286AbiDFOJK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Apr 2022 10:09:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44540 "EHLO
+        id S235117AbiDFOfA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 10:35:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234732AbiDFOID (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 10:08:03 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D3AA12864A
-        for <linux-pm@vger.kernel.org>; Wed,  6 Apr 2022 02:48:06 -0700 (PDT)
-Received: from gallifrey.ext.pengutronix.de ([2001:67c:670:201:5054:ff:fe8d:eefb] helo=[IPv6:::1])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <l.stach@pengutronix.de>)
-        id 1nc2Ga-00078y-C5; Wed, 06 Apr 2022 11:47:56 +0200
-Message-ID: <6a77a71069d771d408f716d05cafc6b3a1e13cda.camel@pengutronix.de>
-Subject: Re: [PATCH 0/5] imx: support noc settings with power domain
-From:   Lucas Stach <l.stach@pengutronix.de>
-To:     "Peng Fan (OSS)" <peng.fan@oss.nxp.com>, djakov@kernel.org,
-        robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de
-Cc:     festevam@gmail.com, linux-imx@nxp.com,
-        laurent.pinchart@ideasonboard.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Peng Fan <peng.fan@nxp.com>
-Date:   Wed, 06 Apr 2022 11:47:54 +0200
-In-Reply-To: <20220406082330.2681591-1-peng.fan@oss.nxp.com>
-References: <20220406082330.2681591-1-peng.fan@oss.nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.40.4 (3.40.4-1.fc34) 
+        with ESMTP id S235203AbiDFOer (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 10:34:47 -0400
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F004D42BBA4
+        for <linux-pm@vger.kernel.org>; Tue,  5 Apr 2022 18:49:21 -0700 (PDT)
+Received: by mail-pj1-x102f.google.com with SMTP id c15-20020a17090a8d0f00b001c9c81d9648so1277653pjo.2
+        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2022 18:49:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=/YAk+fWUU+ETvZMAahO94+Nmhx8ga8SOKFjIYbyRo2A=;
+        b=TdiuHKaZORaWPGQTvEUC06LmhEQ2Hv4BGNuu+2WWjop40q0AwxKFUcVd+SuxV1iC2f
+         fqTGkOvq2So+26pvLbXOPbG++jhun+FsmlEBb7ZVx0joMcOhwx6tONZKnOGOSWcLcAfc
+         /hqRG+wM3LeeAcZ6vYUV1vNuR2rb/C7Aet6wY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=/YAk+fWUU+ETvZMAahO94+Nmhx8ga8SOKFjIYbyRo2A=;
+        b=qgtxdmdWvxKGNJnRprVkJ6IMD8VU6LNnNo0HSgdMd0b3uoE6XApEo1RbHdkrh1zxWX
+         LfaAOGdhOCxZdbLCfWpaQyC/DlfX9CmPJTfvE9lgYqdoOeBin9dcaJ/dyaMojX7IwwlR
+         s9RyVnPPSTDPJtelFJCOQxNW94BC+ZFrR3yaD1kAlIK64Z+waxVjerjDWB/z88USDsts
+         bw5eFnRzObFZ+8fC3OGahGjlIyT7ocTfMQTOT4yl56BoPvCcDOtes9//VBjoRJEDWj2x
+         HS+xWC+0ffHYGV72B0of1w1ZSeHe42S5bLHuvSPRgSKJ8o9vJcCY/o6Xk8aUqvZZ8hKP
+         anjA==
+X-Gm-Message-State: AOAM531o7IVVG0zdcOqT94OtbGbSS1fXYoKwXAOQrzzcBMmbavXRTTu6
+        lY6gxTxVw6RrCwz104Muo+PAkA==
+X-Google-Smtp-Source: ABdhPJxRiO+aF5ru+VVliawznjkQgTfqyIcNS4jn2oAT5iUCxwlpZhGj0CMVfVLc/UCVkgor6cxH+g==
+X-Received: by 2002:a17:90a:c253:b0:1c9:ada2:f28d with SMTP id d19-20020a17090ac25300b001c9ada2f28dmr7240326pjx.17.1649209761200;
+        Tue, 05 Apr 2022 18:49:21 -0700 (PDT)
+Received: from localhost ([2620:15c:202:201:6903:769c:e1f5:9c25])
+        by smtp.gmail.com with UTF8SMTPSA id t69-20020a638148000000b0039822f39a40sm13620410pgd.25.2022.04.05.18.49.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 05 Apr 2022 18:49:20 -0700 (PDT)
+From:   Brian Norris <briannorris@chromium.org>
+To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Heiko Stuebner <heiko@sntech.de>
+Cc:     linux-kernel@vger.kernel.org,
+        Elaine Zhang <zhangqing@rock-chips.com>,
+        linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org,
+        Brian Norris <briannorris@chromium.org>
+Subject: [RFC PATCH 0/2] rockchip / devfreq: Coordinate DRAM controller resources between ATF and kernel
+Date:   Tue,  5 Apr 2022 18:48:40 -0700
+Message-Id: <20220406014842.2771799-1-briannorris@chromium.org>
+X-Mailer: git-send-email 2.35.1.1094.g7c7d902a7c-goog
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2001:67c:670:201:5054:ff:fe8d:eefb
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Peng,
+On Rockchip RK3399, there are a few hardware resources that are shared
+between firmware (ARM Trusted Firmware) and kernel (power domain
+driver) that need to be coordinated properly for DRAM DVFS to work
+reliably. See patch 1 for plenty more description.
 
-Am Mittwoch, dem 06.04.2022 um 16:23 +0800 schrieb Peng Fan (OSS):
-> From: Peng Fan <peng.fan@nxp.com>
-> 
-> i.MX8MP has a design that NoC(Not main NoC) is distributed in multiple
-> blocks, such as vpumix, hsiomix and etc. The access to NoC requires
-> power domain on and blk ctrl settings configured.
-> 
-> So the design here is for mixes that not have blk-ctrl, configure
-> the NoC in gpcv2 driver, for mixes that have blk-ctrl, configure
-> the NoC in blk-ctrl drivers.
-> 
-> This v1 patchset not apply on Shawn's tree, I picked up Lucas's HSIO
-> and Laurent's mediablk patches, then worked out this patchset:
-> https://github.com/MrVan/linux/tree/noc-imx8mp
-> 
-> Note: This interconnect related functions not added. This patchset
-> is only to replace the function did in NXP downstream:
-> https://source.codeaurora.org/external/imx/imx-atf/tree/plat/imx/imx8m/imx8mp/gpc.c?h=lf_v2.4#n157
+These fixes are based in part on the specification in the RK3399, and in
+part based on extrapolation and observation. Any confirmation about the
+behavior of PMU_CRU_GATEDIS_CON0, etc., is welcome.
 
-As a general comment I think this is implemented the wrong way around.
-
-Neither GPC, nor the blk-ctrl should poke into the NoC registers
-directly. The NoC driver should attach itself to the power domain via a
-notifier (same as the blk-ctrl does with the GPC domains) and should do
-the necessary NoC configuration when the power domain is powered up.
+Otherwise, see the patches.
 
 Regards,
-Lucas
-> 
-> Peng Fan (5):
->   dt-bindings: interconnect: imx8m: Add bindings for imx8mp noc
->   arm64: dts: imx8mp: add noc node
->   soc: imx: gpcv2: support i.MX8MP NoC settings
->   soc: imx: imx8m-blk-ctrl: support i.MX8MP media blk ctrl noc settings
->   soc: imx: imx8mp-blk-ctrl: introduce HSIO blk ctrl noc settings
-> 
->  .../bindings/interconnect/fsl,imx8m-noc.yaml  |   6 +
->  arch/arm64/boot/dts/freescale/imx8mp.dtsi     |   7 ++
->  drivers/soc/imx/gpcv2.c                       |  56 ++++++++-
->  drivers/soc/imx/imx8m-blk-ctrl.c              | 109 ++++++++++++++++++
->  drivers/soc/imx/imx8mp-blk-ctrl.c             |  74 ++++++++++++
->  5 files changed, 251 insertions(+), 1 deletion(-)
-> 
+Brian
 
+
+Brian Norris (2):
+  soc: rockchip: power-domain: Manage resource conflicts with firmware
+  PM / devfreq: rk3399_dmc: Block PMU during transitions
+
+ drivers/devfreq/rk3399_dmc.c      |  13 ++++
+ drivers/soc/rockchip/pm_domains.c | 118 ++++++++++++++++++++++++++++++
+ include/soc/rockchip/pm_domains.h |  25 +++++++
+ 3 files changed, 156 insertions(+)
+ create mode 100644 include/soc/rockchip/pm_domains.h
+
+-- 
+2.35.1.1094.g7c7d902a7c-goog
 
