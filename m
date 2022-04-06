@@ -2,123 +2,114 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D9E5C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 10:14:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA296C433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 11:01:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354285AbiDFKQ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Apr 2022 06:16:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53158 "EHLO
+        id S232420AbiDFLC4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 07:02:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239848AbiDFKPf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 06:15:35 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 937203BD257;
-        Tue,  5 Apr 2022 20:32:24 -0700 (PDT)
-X-UUID: ee9315ccb60b4dfa9d5938f31a8092b2-20220406
-X-UUID: ee9315ccb60b4dfa9d5938f31a8092b2-20220406
-Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw01.mediatek.com
-        (envelope-from <jia-wei.chang@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1518079559; Wed, 06 Apr 2022 11:32:19 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Wed, 6 Apr 2022 11:32:18 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 6 Apr 2022 11:32:18 +0800
-Message-ID: <41781640ceee45e763bb0f3d6c765fea76826fa5.camel@mediatek.com>
-Subject: Re: [PATCH 1/3] dt-bindings: devfreq: mediatek: add mtk cci devfreq
- dt-bindings
-From:   Jia-Wei Chang <jia-wei.chang@mediatek.com>
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <fan.chen@mediatek.com>,
-        <louis.yu@mediatek.com>, <roger.lu@mediatek.com>,
-        <Allen-yy.Lin@mediatek.com>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        <hsinyi@google.com>,
-        Jia-Wei Chang <jia-wei.chang@mediatek.corp-partner.google.com>
-Date:   Wed, 6 Apr 2022 11:32:18 +0800
-In-Reply-To: <ac0e3336-f9eb-def9-68ea-ab49e2c467a1@kernel.org>
-References: <20220307122513.11822-1-jia-wei.chang@mediatek.com>
-         <20220307122513.11822-2-jia-wei.chang@mediatek.com>
-         <bf418e08-2e32-5e61-abd8-abb0d8f5c080@canonical.com>
-         <13482b1b4244df5c0c0a4d6a60cdb2a7ba88500a.camel@mediatek.com>
-         <aa34eccf-ef08-4a8f-7a6c-7fbd05bd54b6@kernel.org>
-         <126e0905c2eb9f22a0be46dd7aa8ac891622346d.camel@mediatek.com>
-         <ac0e3336-f9eb-def9-68ea-ab49e2c467a1@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        with ESMTP id S234150AbiDFLCE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 07:02:04 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EE2A3BE607
+        for <linux-pm@vger.kernel.org>; Wed,  6 Apr 2022 00:28:53 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id c42so1548105edf.3
+        for <linux-pm@vger.kernel.org>; Wed, 06 Apr 2022 00:28:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=zfHXA8UAAQX4RF73thwSZRYnZdelw1yPWiu9aRHf/5U=;
+        b=sRlNXAIhYZfcBgj085AxwI95B959EZC2rbFo4zQvux7+LNOHdEB+J7w34JxBHYswyy
+         46G/Xuam31mr20ExEuNXcjIdgmAIba/CTgpy+OiFNGBfcJelAqNjMXySngvQDRy+sX3f
+         92tRLrowZxmcRbu11Iu67HmPBj7oELITbixV4rZYMaW4Ro3l7SCFi9d18JvsfVUswfTy
+         zXo1UaukAl1rxUxms66ZeDhVBpObMmmvW/XzY2F+1MLZ1krD5STxk1f37Jj5nL1lPnYp
+         atwhkk8fpbaNxluHgBLeTslioN3dtKT0QxwyTmN3Kj3UEq1thbwYdCC2EokLlcNCxZsO
+         fgRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=zfHXA8UAAQX4RF73thwSZRYnZdelw1yPWiu9aRHf/5U=;
+        b=zw8n1tK4IElZaI+1QzOZ/TIF/AoW7hz3pKZJvvNq1EgfyzTroLuucfYKJ8bPpelUCr
+         o3FA6Bk2/9VXzm7MpoMVfM1KJjGYorrwTu9vDXnaFd9jyZD/uMvFHfBdLvrB1QcDFduM
+         Dj2qizklWD0k5TYbiZT5MaUWeC9jJhJ0qzu+YD+jxe501+htbFY9EdmM+mRFqLKtOEve
+         HQk+5AHMVB3nz10t+lou9pxnoSetM9mYUmKJNUZKmcz8Bc/1duvoeH0g2MwMn5a5hHUA
+         QsCnEdY7E7K/W8uspOTiENHg6HSb/Ilp754RcJlBdDG5GT4EQ3xlCJP2JvDu8bbiITkq
+         9kkg==
+X-Gm-Message-State: AOAM532buwZwNzYExXTEdARrIPrNTZM91iImeYAtxdNl2mvU+H8CfjDC
+        hXD5wtIbgaTbP8GaAeZ6sRPl2w==
+X-Google-Smtp-Source: ABdhPJx9Kc7JEu8MNluYQlHCl+KsXiLVSaLgbOFo4Yy7DOp05A2hNUvsp+G3jvpeGP2g0JBkLL+2XA==
+X-Received: by 2002:a05:6402:332:b0:41c:d2d0:d7c3 with SMTP id q18-20020a056402033200b0041cd2d0d7c3mr7498281edw.296.1649230131737;
+        Wed, 06 Apr 2022 00:28:51 -0700 (PDT)
+Received: from [192.168.0.182] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id c13-20020a17090654cd00b006e0db351d01sm6315639ejp.124.2022.04.06.00.28.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 Apr 2022 00:28:51 -0700 (PDT)
+Message-ID: <44ae23a3-c3a1-7d34-8af2-cbc8c1c9db2b@linaro.org>
+Date:   Wed, 6 Apr 2022 09:28:50 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH 1/4 v5] dt-bindings: Add Rockchip rk817 battery charger
+ support
+Content-Language: en-US
+To:     Chris Morgan <macroalpha82@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        devicetree@vger.kernel.org, zhangqing@rock-chips.com,
+        zyw@rock-chips.com, jon.lin@rock-chips.com,
+        maccraft123mc@gmail.com, sre@kernel.org, heiko@sntech.de,
+        krzk+dt@kernel.org, robh+dt@kernel.org, lee.jones@linaro.org,
+        Chris Morgan <macromorgan@hotmail.com>
+References: <20220404215754.30126-1-macroalpha82@gmail.com>
+ <20220404215754.30126-2-macroalpha82@gmail.com>
+ <74f445c2-3194-80a6-6d52-21368eb6172a@linaro.org>
+ <20220405131228.GA20@wintermute.localdomain>
+ <ac2b29c2-b3ec-eb03-595f-b0328e40015c@linaro.org>
+ <20220405135424.GA20@wintermute.localdomain>
+ <b269be83-3e45-fb36-75ab-e1c20ad6906f@linaro.org>
+ <20220405140428.GA72@wintermute.localdomain>
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220405140428.GA72@wintermute.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 2022-04-02 at 13:31 +0200, Krzysztof Kozlowski wrote:
-> On 01/04/2022 15:39, Jia-Wei Chang wrote:
-> > > > > 
-> > > > > > +
-> > > > > > +  operating-points-v2:
-> > > > > > +    description:
-> > > > > > +      For details, please refer to
-> > > > > > +      Documentation/devicetree/bindings/opp/opp-v2.yaml
-> > > > > > +
-> > > > > > +  opp-table: true
-> > > > > 
-> > > > > Same comments as your CPU freq bindings apply.
-> > > > 
-> > > > mtk-cci-devfreq is a new driver and its arch is same as
-> > > > mediatek-
-> > > > cpufreq so that the properties of mtk-cci are refer to
-> > > > mediatek-
-> > > > cpufreq 
-> > > > bindings.
-> > > > operating-point-v2 is used to determine the voltage and
-> > > > frequency
-> > > > of
-> > > > dvfs which is further utilized by mtk-cci-devfreq.
-> > > 
-> > > "operating-point-v2" is understood, but the same as in cpufreq
-> > > bindings,
-> > > I am questioning why do you have "opp-table: true". It's a bit
-> > > confusing, so maybe I miss something?
-> > 
-> > Yes, you're correct.
-> > "opp-table: true" should be removed.
-> > I messed it up.
+On 05/04/2022 16:04, Chris Morgan wrote:
+>>> The driver itself is named rk817_charger. If you think I should change
+>>> this from battery to "fuel gauge" or "charger" let me know and I can
+>>> resubmit. Whatever makes it clearer for everyone.
+>>
+>> Yeah, the property name and bindings should describe the hardware, so in
+>> such case the hardware is rather a "charger" or "fuel-gauge". Your
+>> "battery-cell" from DTS is probably just a "battery" (unless you expect
+>> multiple cells?).
+>>
+>> Best regards,
+>> Krzysztof
 > 
-> No, I think I was wrong. The opp-table pretty frequently is embedded
-> in
-> the the device node itself. The operating-points-v2 references it.
-> 
-> You don't use it in the example, but it might be a valid usage, so it
-> can stay. Sorry for the confusion, it passed some time since I looked
-> at
-> OPP bindings.
+> Okay, when v6 comes around I'll change it to be "charger" instead of
+> "battery" to make it more clear. There should only be a single battery
+> instead of multiple cells, and according to the documentation I should
+> be okay with describing the battery in the devicetree since it's not
+> something easy for the end-user to change.
 
-You remind me of "opp-table: true" and the reason why I use it here is
-exactly as you mentioned. Sorry I was not familiar enough with this to
-respond it clearly and confidently.
-
-I think it is proper to keep "opp-table: true" and add a complete opp
-table information in dts example here as well.
-
-Thanks for your comments.
+Yes,the description of battery fits the purpose of DT.
 
 > 
-> 
-> Best regards,
-> Krzysztof
+> I'd like to get someone to look at the meat and potatoes of the series
+> before I submit a v6... I did a fairly substantial rewrite of the
+> actual rk817_charger.c to solve for several problems and fix several
+> bugs I found in extended testing. One of the major changes was to
+> mirror the BSP in that I poll the PMIC every 8 seconds for updates
+> and then store it in the driver struct rather than pull each value
+> on demand as requested. I see other drivers doing this but I want
+> to make sure that's acceptable upstream.
 
+
+Best regards,
+Krzysztof
