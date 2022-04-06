@@ -2,208 +2,61 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1338C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 17:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0057C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Apr 2022 17:32:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238687AbiDFRQE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Apr 2022 13:16:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34410 "EHLO
+        id S239306AbiDFReq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Apr 2022 13:34:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60006 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238718AbiDFRPv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 13:15:51 -0400
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 692EA3C59A1;
-        Wed,  6 Apr 2022 07:36:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1649255796; x=1680791796;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=pYFWpetVoxCbWFjEA4TJFxgbar+HNO3sGIldRIqiTWs=;
-  b=Rrj/pu76TaEmk4ccio+kleoPqFn61G3GuhKxbXpoHT1cl+f8L4dcbBE2
-   IeHEr4lE1ltBuMJmKEu3kmRE1O2VHRZMXFV50gMjnWfmbkzKzw+RXJH+p
-   cdswXJGSaVg2VTnZrWI42Ndmf6ukFUOKYtLdF+j8NDYAaTZJG/XQVHQk0
-   HOL6X+sGACvx5pRDRx2CNDKuvwS7JrQGp3aSRpCIo4P0nVrnOTm4T3Yqg
-   QWBvDpMiuYm9xeRguqqF6UuMSiQOg9/RGqQ0p4DVmsg1QjkWby8j0cpeJ
-   vk7z7u6H0ay3AoOKJHF5Owdx3w6k+7lwJikwPfMCTSwak1vRbeIHRfLXU
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10309"; a="321759721"
-X-IronPort-AV: E=Sophos;i="5.90,240,1643702400"; 
-   d="scan'208";a="321759721"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2022 07:29:00 -0700
-X-IronPort-AV: E=Sophos;i="5.90,240,1643702400"; 
-   d="scan'208";a="505758016"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.8])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2022 07:29:00 -0700
-Message-ID: <5380fef6d45f2f7a0b8a5f681934f02943d5e138.camel@linux.intel.com>
-Subject: Re: [PATCH v2 0/4] tools/thermal: thermal library and tools
-From:   srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Date:   Wed, 06 Apr 2022 07:28:59 -0700
-In-Reply-To: <f526d227-ffbb-4ac0-ceb6-c793ab912559@linaro.org>
-References: <20220330100444.3846661-1-daniel.lezcano@linaro.org>
-         <f526d227-ffbb-4ac0-ceb6-c793ab912559@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
+        with ESMTP id S239228AbiDFReZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2022 13:34:25 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EE2712BF8A;
+        Wed,  6 Apr 2022 08:40:30 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id AD2A261CAC;
+        Wed,  6 Apr 2022 15:40:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC897C385A3;
+        Wed,  6 Apr 2022 15:40:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1649259629;
+        bh=AsJzQIyOYpQ2FTcuHuYsP5bu2bnGDIoQFVq00vRBVJo=;
+        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+        b=QiP0NBNsT0e7u8WWWUV58zjTQkFRYNf/eTQT4aDO+469VWIt1teTvGx8H+izvCJ0Y
+         x4LSQmUeWml8Wlbq/B1HGs7ONgm4adwUnSqBQg0EJPqGl2cwulD2KDeN7qSIhnsuKl
+         Gznh8lYldsP5J1C57UXPiQeY5eG+TTbiOl7VArtF0F12T706+CKXoGFHUnqGoiR1I7
+         IWgjG1/EXbDgji9YQEs8zFiJ4zQxMj16XUtutmhYjtqHdlk12ZbFCju//6xVcF5oMX
+         hFmOMq9JVwAjtBhpOW81B7XkVY4iPtUANIVZaemS/liTGUsaf8qRL1Bcux2p0cK8Zw
+         fbcO+Qpaty35w==
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20220406002648.393486-1-dmitry.baryshkov@linaro.org>
+References: <20220406002648.393486-1-dmitry.baryshkov@linaro.org>
+Subject: Re: [PATCH v2 0/4] arm: qcom: qcom-apq8064: add separate device node for tsens
+From:   Stephen Boyd <sboyd@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
+To:     Amit Kucheria <amitk@kernel.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>
+Date:   Wed, 06 Apr 2022 08:40:27 -0700
+User-Agent: alot/0.10
+Message-Id: <20220406154028.EC897C385A3@smtp.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+Quoting Dmitry Baryshkov (2022-04-05 17:26:44)
+> Currently gcc-msm8960 driver manually creates tsens device. Instantiate
+> the device using DT node instead. This follow the IPQ8064 device tree
+> schema.
 
-On Wed, 2022-04-06 at 10:00 +0200, Daniel Lezcano wrote:
-> 
-> Hi,
-> 
-> if there is no comment for the series, shall I pick it so we can go 
-> forward ?
-Didn't get time to check yet. It will still be for the next merge
-window, correct?
-
-Thanks,
-Srinivas
-
-> 
-> 
-> 
-> On 30/03/2022 12:04, Daniel Lezcano wrote:
-> > These changes are providing the following tools and library:
-> > 
-> >   - A thermal library doing the netlink abstraction from the kernel
-> > in
-> >     order to make the userspace thermal implementation easier.
-> > Having
-> >     the library integrated with the kernel tree is also a guarantee
-> > to
-> >     keep the message format and their encoding/decoding aligned
-> >                                                                    
-> >                                                                    
-> >                                                                    
-> >                                                                    
-> >    
-> >   - A thermal tools library providing a set of functions to deal
-> > with
-> >     usual features like the log, the mainloop and the time. This
-> >     library is used by the provided tools below
-> > 
-> >   - An data acquisition program to capture the temperature of the
-> >     different thermal zone during an amount of time or during the
-> >     execution of an application. The output is formated to be
-> > easily
-> >     parsed by gnuplot, a spreadsheet program or a statistical
-> > command
-> >     line utility. The timestamp is based on the system uptime, thus
-> >     giving an indication of when a thermal event happened, that can
-> >     help to spot or reproduce thermal issue in the long run
-> > 
-> >   - A thermal monitoring program based on the thermal library. It
-> > gives
-> >     a skeleton to build any logic on top of it and shows how to use
-> > the
-> >     thermal library. It does nothing except discovering the thermal
-> >     zones, their trip points and listening for events like cooling
-> >     devices state changes or trip point crossed
-> > 
-> >   Changelog:
-> > 
-> >   v1: Initial post after a RFC
-> > 
-> >   v2:
-> > 
-> >    - Fixed all trailing whitespaces and some other checkpatch
-> >      warnings. Some warnings remain but they can be considered as
-> > false
-> >      positive
-> > 
-> >    - Added in the thermometer tool:
-> >      - Usage/help option as well as a man page
-> >      - The ability to execute a program
-> >      - The capture duration
-> >      - Create the output directory if it does not exist
-> > 
-> >    - Add in the thermal-engine tool:
-> >      - A usage/help option
-> >      - A message telling the userspace it is waiting for events
-> >      - A daemonize option
-> > 
-> >    - Minor bug fixes here and there, as well as typos
-> > 
-> > Daniel Lezcano (4):
-> >    tools/lib/thermal: Add a thermal library
-> >    tools/thermal: Add util library
-> >    tools/thermal: A temperature capture tool
-> >    tools/thermal: Add thermal daemon skeleton
-> > 
-> >   MAINTAINERS                                   |   1 +
-> >   tools/Makefile                                |  36 +-
-> >   tools/lib/thermal/.gitignore                  |   2 +
-> >   tools/lib/thermal/Build                       |   5 +
-> >   tools/lib/thermal/Makefile                    | 165 ++++++
-> >   tools/lib/thermal/commands.c                  | 349 +++++++++++
-> >   tools/lib/thermal/events.c                    | 164 +++++
-> >   tools/lib/thermal/include/thermal.h           | 142 +++++
-> >   tools/lib/thermal/libthermal.map              |  25 +
-> >   tools/lib/thermal/libthermal.pc.template      |  12 +
-> >   tools/lib/thermal/sampling.c                  |  75 +++
-> >   tools/lib/thermal/thermal.c                   | 126 ++++
-> >   tools/lib/thermal/thermal_nl.c                | 215 +++++++
-> >   tools/lib/thermal/thermal_nl.h                |  46 ++
-> >   tools/thermal/lib/Build                       |   3 +
-> >   tools/thermal/lib/Makefile                    | 158 +++++
-> >   .../thermal/lib/libthermal_tools.pc.template  |  12 +
-> >   tools/thermal/lib/log.c                       |  77 +++
-> >   tools/thermal/lib/log.h                       |  31 +
-> >   tools/thermal/lib/mainloop.c                  | 120 ++++
-> >   tools/thermal/lib/mainloop.h                  |  15 +
-> >   tools/thermal/lib/thermal-tools.h             |  10 +
-> >   tools/thermal/lib/uptimeofday.c               |  40 ++
-> >   tools/thermal/lib/uptimeofday.h               |  12 +
-> >   tools/thermal/thermal-engine/Build            |   2 +
-> >   tools/thermal/thermal-engine/Makefile         |  28 +
-> >   tools/thermal/thermal-engine/thermal-engine.c | 326 ++++++++++
-> >   tools/thermal/thermometer/Build               |   2 +
-> >   tools/thermal/thermometer/Makefile            |  26 +
-> >   tools/thermal/thermometer/thermometer.8       |  93 +++
-> >   tools/thermal/thermometer/thermometer.c       | 558
-> > ++++++++++++++++++
-> >   tools/thermal/thermometer/thermometer.conf    |   5 +
-> >   32 files changed, 2878 insertions(+), 3 deletions(-)
-> >   create mode 100644 tools/lib/thermal/.gitignore
-> >   create mode 100644 tools/lib/thermal/Build
-> >   create mode 100644 tools/lib/thermal/Makefile
-> >   create mode 100644 tools/lib/thermal/commands.c
-> >   create mode 100644 tools/lib/thermal/events.c
-> >   create mode 100644 tools/lib/thermal/include/thermal.h
-> >   create mode 100644 tools/lib/thermal/libthermal.map
-> >   create mode 100644 tools/lib/thermal/libthermal.pc.template
-> >   create mode 100644 tools/lib/thermal/sampling.c
-> >   create mode 100644 tools/lib/thermal/thermal.c
-> >   create mode 100644 tools/lib/thermal/thermal_nl.c
-> >   create mode 100644 tools/lib/thermal/thermal_nl.h
-> >   create mode 100644 tools/thermal/lib/Build
-> >   create mode 100644 tools/thermal/lib/Makefile
-> >   create mode 100644 tools/thermal/lib/libthermal_tools.pc.template
-> >   create mode 100644 tools/thermal/lib/log.c
-> >   create mode 100644 tools/thermal/lib/log.h
-> >   create mode 100644 tools/thermal/lib/mainloop.c
-> >   create mode 100644 tools/thermal/lib/mainloop.h
-> >   create mode 100644 tools/thermal/lib/thermal-tools.h
-> >   create mode 100644 tools/thermal/lib/uptimeofday.c
-> >   create mode 100644 tools/thermal/lib/uptimeofday.h
-> >   create mode 100644 tools/thermal/thermal-engine/Build
-> >   create mode 100644 tools/thermal/thermal-engine/Makefile
-> >   create mode 100644 tools/thermal/thermal-engine/thermal-engine.c
-> >   create mode 100644 tools/thermal/thermometer/Build
-> >   create mode 100644 tools/thermal/thermometer/Makefile
-> >   create mode 100644 tools/thermal/thermometer/thermometer.8
-> >   create mode 100644 tools/thermal/thermometer/thermometer.c
-> >   create mode 100644 tools/thermal/thermometer/thermometer.conf
-> > 
-> 
-> 
-
-
+Why can't the schema be changed?
