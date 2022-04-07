@@ -2,96 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6092FC433FE
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Apr 2022 15:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C484AC4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Apr 2022 17:51:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230399AbiDGPvP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 Apr 2022 11:51:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56944 "EHLO
+        id S1346626AbiDGRxR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 Apr 2022 13:53:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345037AbiDGPvN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2022 11:51:13 -0400
+        with ESMTP id S1346630AbiDGRxP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2022 13:53:15 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D0ACC55B4;
-        Thu,  7 Apr 2022 08:49:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B29B722EB35;
+        Thu,  7 Apr 2022 10:51:11 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C18B3B827BE;
-        Thu,  7 Apr 2022 15:49:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30075C385A4;
-        Thu,  7 Apr 2022 15:49:03 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 6C510B82901;
+        Thu,  7 Apr 2022 17:51:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05E26C385A0;
+        Thu,  7 Apr 2022 17:51:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649346543;
-        bh=e+alSzDzrc04Tz+Z+gKtvacXXhVH6XUBwWUSuj+9OLY=;
+        s=k20201202; t=1649353869;
+        bh=cmP0BZ3fNUvcP7KxHKtR0yiNgwGpwH3espXWf6j0OxA=;
         h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=Oc2N78jCjftJ6PIjmp5gY2ESvtysUuqCXzStvWEfEv1QqIpD74eYG+szMe/ayl6VV
-         3inQ7HV6gKfAUY1Ws0V6gLvhykpmbviBaD0WVWtraPF0YJjlOY0eHNz8BtGINDzR9j
-         VtjyrKIVb60+/UjKsW+J30OjL/NA63yXrs+ZuU6+Av+RrfuNPWhtxXZ1sj5sd48eME
-         yp7TulI29pk7Lyhiq6ZjDV3Hsu//sFhYvGYR2puv91WWSEm4+52vFydk3XjtOeqvPG
-         1YL7c4tQ7sHKzEISGYghvuuA7QC72CcCpor3BQWik6dics9aVNLxgkuzHCDQnUYfMk
-         Nd+ecSrbzJM7w==
-Date:   Thu, 7 Apr 2022 10:49:01 -0500
+        b=Ib2H7AYJZPo72aQsw1/OYImofH7OAeCmw1QztjPZCt5O7vxkDFE3uXOi5E3ORoV/K
+         GHIbKSEdMghvbX/hZBM7JZxdjReU0uda2rUmEpwYxyRgZNtv7daLjG0NvC53UhnWSO
+         lOr+jHVCnKOJR19X1z+r2NAlMzRtN6UzKqfxz+4AHbnWalXuJHl8a3CvsmJf65gXHc
+         TrLgEGJD3Vgwv7EvremvCWzqboi9Tod94Y4FAGtJ+ICkXc7fNGUr0nEfJWkiW+ADSk
+         Nz9CghzPAtZZ0CpoFIfYZEeKMvooc/1zoVfFxKkP64oNi7RFkuEYDDXui6ZlspGzxs
+         K9/WHcmwdmfLQ==
+Date:   Thu, 7 Apr 2022 12:51:07 -0500
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v1] PCI: PM: Power up all devices during runtime resume
-Message-ID: <20220407154901.GA239301@bhelgaas>
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v1 3/3] PCI: ACPI: PM: Power up devices in D3cold before
+ scanning them
+Message-ID: <20220407175107.GA252647@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4412361.LvFx2qVVIh@kreacher>
+In-Reply-To: <5729439.MhkbZ0Pkbq@kreacher>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Apr 06, 2022 at 09:00:52PM +0200, Rafael J. Wysocki wrote:
+On Mon, Apr 04, 2022 at 05:25:04PM +0200, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Currently, endpoint devices may not be powered up entirely during
-> runtime resume that follows a D3hot -> D0 transition of the parent
-> bridge.
+> The initial configuration of ACPI power resources on some systems
+> implies that some PCI devices on them are initially in D3cold.
 > 
-> Namely, even if the power state of an endpoint device, as indicated
-> by its PCI_PM_CTRL register, is D0 after powering up its parent
-> bridge, it may be still necessary to bring its ACPI companion into
-> D0 and that should be done before accessing it.  However, the current
-> code assumes that reading the PCI_PM_CTRL register is sufficient to
-> establish the endpoint device's power state, which may lead to
-> problems.
+> In some cases, especially for PCIe Root Ports, this is a "logical"
+> D3cold, meaning that the configuration space of the device is
+> accessible, but some of its functionality may be missing, but it
+> very well may be real D3cold, in which case the device will not
+> be accessible at all.  However, the PCI bus type driver will need
+> to access its configuration space in order to enumerate it.
 > 
-> Address that by forcing a power-up of all PCI devices, including the
-> platform firmware part of it, during runtime resume.
+> To prevent possible device enumeration failures that may ensue as
+> a result of ACPI power resources being initially in the "off"
+> state, power up all children of the host bridge ACPI device object
+> that hold valid _ADR objects (which indicates that they will be
+> enumerated by the PCI bus type driver) and do that to all children
+> of the ACPI device objects corresponding to PCI bridges (including
+> PCIe ports).
 > 
-> Link: https://lore.kernel.org/linux-pm/11967527.O9o76ZdvQC@kreacher
-> Fixes: 5775b843a619 ("PCI: Restore config space on runtime resume despite being unbound")
-> Reported-by: Abhishek Sahu <abhsahu@nvidia.com>
-> Tested-by: Abhishek Sahu <abhsahu@nvidia.com>
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied with Mika's reviewed-by to pci/pm for v5.19, thanks!
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
 > ---
->  drivers/pci/pci-driver.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/acpi/pci_root.c |    2 ++
+>  drivers/pci/pci-acpi.c  |    3 +++
+>  2 files changed, 5 insertions(+)
 > 
-> Index: linux-pm/drivers/pci/pci-driver.c
+> Index: linux-pm/drivers/acpi/pci_root.c
 > ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -1312,7 +1312,7 @@ static int pci_pm_runtime_resume(struct
->  	 * to a driver because although we left it in D0, it may have gone to
->  	 * D3cold when the bridge above it runtime suspended.
->  	 */
-> -	pci_restore_standard_config(pci_dev);
-> +	pci_pm_default_resume_early(pci_dev);
+> --- linux-pm.orig/drivers/acpi/pci_root.c
+> +++ linux-pm/drivers/acpi/pci_root.c
+> @@ -927,6 +927,8 @@ struct pci_bus *acpi_pci_root_create(str
+>  		host_bridge->preserve_config = 1;
+>  	ACPI_FREE(obj);
 >  
->  	if (!pci_dev->driver)
->  		return 0;
+> +	acpi_dev_power_up_children_with_adr(device);
+> +
+>  	pci_scan_child_bus(bus);
+>  	pci_set_host_bridge_release(host_bridge, acpi_pci_root_release_info,
+>  				    info);
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -1374,6 +1374,9 @@ void pci_acpi_setup(struct device *dev,
+>  
+>  	acpi_pci_wakeup(pci_dev, false);
+>  	acpi_device_power_add_dependent(adev, dev);
+> +
+> +	if (pci_is_bridge(pci_dev))
+> +		acpi_dev_power_up_children_with_adr(adev);
+>  }
+>  
+>  void pci_acpi_cleanup(struct device *dev, struct acpi_device *adev)
 > 
 > 
 > 
