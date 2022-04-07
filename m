@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4188C4167D
-	for <linux-pm@archiver.kernel.org>; Thu,  7 Apr 2022 07:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7804C4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  7 Apr 2022 07:16:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241589AbiDGHSO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S241599AbiDGHSO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 7 Apr 2022 03:18:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52572 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241700AbiDGHR2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2022 03:17:28 -0400
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA5B411CF40;
-        Thu,  7 Apr 2022 00:15:28 -0700 (PDT)
+        with ESMTP id S241759AbiDGHRj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2022 03:17:39 -0400
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 103A81578E6;
+        Thu,  7 Apr 2022 00:15:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1649315729; x=1680851729;
+  t=1649315737; x=1680851737;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=sYy+OHu/ihHl4AVwsFTzsneY2qllDVbmw6a9RaRneP4=;
-  b=WERRA4gaWAY4mGXfr5DTdTM07MVGYj0ovscC03LesMTs+YF6V6Lg7BuW
-   5M3PeMX6xs0q9Eg2gXlx0Js6blWdENPdFVk6py/ObuJ0tehLp4WhYxRm3
-   mJXqqvCe4tthT1kkZHKi1lOEvenBtk0c9NbQYuXK2269+IWf9eHDF2FPe
-   7s5I1ZpZ64ty0raVe0qtnRkeAMrrzbrLAa7VtVVwJxEZThwe2x+qWCikx
-   S2NNe6vclRzOblIRItFj3attV4RGE3ZOtHIAS5o+r2bTOqdvtS2H5CMio
-   t/RI+QIRSLnMgXmjmmeQ1+DZWRc//aLdwApNdMWLZSWvK5aUfDKo3h942
-   w==;
+  bh=sxYyjrK7igJydMiwAHuSHa3rYPohXNdb9pi8bMAAvkw=;
+  b=t0ig0kNE6+f1a4DAxyqJm4VQ/+f+ay0OaSaJ156+pmcrvv87D+wf/IUD
+   Kg391a5hSj5D4PNtajhyNOwK5JiFvAuQY0BszocByfK1saAmS6QuUm1Bi
+   09Hr4NzKSX8maOvmWGK/V5d6Lc5SJ/1JUyKYoS3/LRN4VpS9kH7d37aJz
+   kDuBke4rAHA3/e5oIM7Zl+RLiFVHsA3q2v45U/0SA4Wd9Dxsn9DgU6/Ah
+   7n8optSCzBYNx9v3I/yPlj3nWYaHFblWbYbl6nwyKKa8ct8zKWvnEoaU7
+   P5tGGffcuTSlicQt66602UmVvra6VdE0/uTxNcshvbEIARwhXOvel6ePe
+   A==;
 X-IronPort-AV: E=Sophos;i="5.90,241,1643698800"; 
-   d="scan'208";a="151841482"
+   d="scan'208";a="159247158"
 Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 07 Apr 2022 00:15:28 -0700
+  by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 07 Apr 2022 00:15:37 -0700
 Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
  chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.17; Thu, 7 Apr 2022 00:15:25 -0700
+ 15.1.2375.17; Thu, 7 Apr 2022 00:15:32 -0700
 Received: from localhost.localdomain (10.10.115.15) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.2375.17 via Frontend Transport; Thu, 7 Apr 2022 00:15:22 -0700
+ 15.1.2375.17 via Frontend Transport; Thu, 7 Apr 2022 00:15:29 -0700
 From:   Claudiu Beznea <claudiu.beznea@microchip.com>
 To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
         <alexandre.belloni@bootlin.com>, <p.zabel@pengutronix.de>,
@@ -46,9 +46,9 @@ To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
         <linux-kernel@vger.kernel.org>
 CC:     <linux-arm-kernel@lists.infradead.org>,
         Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH v2 08/10] power: reset: at91-reset: add support for SAMA7G5
-Date:   Thu, 7 Apr 2022 10:17:06 +0300
-Message-ID: <20220407071708.3848812-9-claudiu.beznea@microchip.com>
+Subject: [PATCH v2 10/10] ARM: configs: sama7: enable CONFIG_RESET_CONTROLLER
+Date:   Thu, 7 Apr 2022 10:17:08 +0300
+Message-ID: <20220407071708.3848812-11-claudiu.beznea@microchip.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20220407071708.3848812-1-claudiu.beznea@microchip.com>
 References: <20220407071708.3848812-1-claudiu.beznea@microchip.com>
@@ -59,41 +59,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for SAMA7G5 including reset_controller_dev support for 3 lines
-(which are USB PHYs).
+Enable CONFIG_RESET_CONTROLLER. It is necessary for resetting individual
+in SoC devices.
 
 Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 ---
- drivers/power/reset/at91-reset.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/configs/sama7_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index a6f65ac430cd..cba12af638a4 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -202,6 +202,11 @@ static const struct at91_reset_data samx7 = {
- 	.reset_args = AT91_RSTC_KEY | AT91_RSTC_PROCRST,
- };
- 
-+static const struct at91_reset_data sama7g5 = {
-+	.reset_args = AT91_RSTC_KEY | AT91_RSTC_PROCRST,
-+	.n_device_reset = 3,
-+};
-+
- static const struct of_device_id at91_reset_of_match[] = {
- 	{
- 		.compatible = "atmel,at91sam9260-rstc",
-@@ -223,6 +228,10 @@ static const struct of_device_id at91_reset_of_match[] = {
- 		.compatible = "microchip,sam9x60-rstc",
- 		.data = &samx7,
- 	},
-+	{
-+		.compatible = "microchip,sama7g5-rstc",
-+		.data = &sama7g5,
-+	},
- 	{ /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, at91_reset_of_match);
+diff --git a/arch/arm/configs/sama7_defconfig b/arch/arm/configs/sama7_defconfig
+index 0368068e04d9..ce20bef1246e 100644
+--- a/arch/arm/configs/sama7_defconfig
++++ b/arch/arm/configs/sama7_defconfig
+@@ -180,6 +180,7 @@ CONFIG_IIO_SW_TRIGGER=y
+ CONFIG_AT91_SAMA5D2_ADC=y
+ CONFIG_PWM=y
+ CONFIG_PWM_ATMEL=y
++CONFIG_RESET_CONTROLLER=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ CONFIG_FANOTIFY=y
 -- 
 2.32.0
 
