@@ -2,31 +2,34 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA63C433F5
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 04:59:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC5ECC3527C
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 04:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234509AbiDHFBd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Apr 2022 01:01:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38802 "EHLO
+        id S234529AbiDHFBe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Apr 2022 01:01:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234378AbiDHFBa (ORCPT
+        with ESMTP id S234435AbiDHFBa (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 01:01:30 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15D7319E0BC;
-        Thu,  7 Apr 2022 21:59:22 -0700 (PDT)
-X-UUID: ae73b620b89346e781b1932db97434aa-20220408
-X-UUID: ae73b620b89346e781b1932db97434aa-20220408
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7092919CCE2;
+        Thu,  7 Apr 2022 21:59:20 -0700 (PDT)
+X-UUID: 7e31ddcf5d224554b7b96675cf79da15-20220408
+X-UUID: 7e31ddcf5d224554b7b96675cf79da15-20220408
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1700548137; Fri, 08 Apr 2022 12:59:14 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Fri, 8 Apr 2022 12:59:12 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 1626827792; Fri, 08 Apr 2022 12:59:12 +0800
+Received: from mtkexhb01.mediatek.inc (172.21.101.102) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Fri, 8 Apr 2022 12:59:11 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb01.mediatek.inc
+ (172.21.101.102) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 8 Apr
+ 2022 12:59:10 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 8 Apr 2022 12:59:12 +0800
+ Transport; Fri, 8 Apr 2022 12:59:10 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>
@@ -36,13 +39,12 @@ CC:     <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH V2 13/15] cpufreq: mediatek: Link CCI device to CPU
-Date:   Fri, 8 Apr 2022 12:59:06 +0800
-Message-ID: <20220408045908.21671-14-rex-bc.chen@mediatek.com>
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Rex-BC Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH V2 00/15] cpufreq: mediatek: Cleanup and support MT8183 and MT8186
+Date:   Fri, 8 Apr 2022 12:58:53 +0800
+Message-ID: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
-References: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-MTK:  N
@@ -50,157 +52,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+Cpufreq is a DVFS driver used for power saving to scale the clock frequency
+and supply the voltage for CPUs. This series do some cleanup for MediaTek
+cpufreq drivers and add support for MediaTek SVS[2] and MediaTek CCI
+devfreq[3] which are supported in MT8183 and MT8186.
 
-In some MediaTek SoCs, like MT8183, CPU and CCI share the same power
-supplies. Cpufreq needs to check if CCI devfreq exists and wait until
-CCI devfreq ready before scaling frequency.
+Changes for V2:
+1. Drop the modification of transforming cpufreq-mediatek into yaml and
+   only add the MediaTek CCI property for MediaTek cpufreq.
+2. Split the original patches into several patches.
 
-- Add is_ccifreq_ready() to link CCI device to CPI, and CPU will start
-  DVFS when CCI is ready.
-- Add platform data for MT8183.
+Reference series:
+[1]: V1 of this series is present by Jia-Wei Chang.
+     message-id:20220307122151.11666-1-jia-wei.chang@mediatek.com
 
-Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
----
- drivers/cpufreq/mediatek-cpufreq.c | 69 +++++++++++++++++++++++++++++-
- 1 file changed, 68 insertions(+), 1 deletion(-)
+[2]: The MediaTek CCI devfreq driver is introduced in another series.
+     message-id:20220307122513.11822-1-jia-wei.chang@mediatek.com
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index b08ab7c14818..cebe5af2ef5d 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -22,6 +22,7 @@ struct mtk_cpufreq_platform_data {
- 	int proc_max_volt;
- 	int sram_min_volt;
- 	int sram_max_volt;
-+	bool is_ccifreq_support;
- };
- 
- /*
-@@ -38,6 +39,7 @@ struct mtk_cpufreq_platform_data {
- struct mtk_cpu_dvfs_info {
- 	struct cpumask cpus;
- 	struct device *cpu_dev;
-+	struct device *cci_dev;
- 	struct regulator *proc_reg;
- 	struct regulator *sram_reg;
- 	struct clk *cpu_clk;
-@@ -52,6 +54,7 @@ struct mtk_cpu_dvfs_info {
- 	int opp_cpu;
- 	unsigned long opp_freq;
- 	const struct mtk_cpufreq_platform_data *soc_data;
-+	bool is_ccifreq_bounded;
- };
- 
- static struct platform_device *cpufreq_pdev;
-@@ -171,6 +174,29 @@ static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
- 	return ret;
- }
- 
-+static bool is_ccifreq_ready(struct mtk_cpu_dvfs_info *info)
-+{
-+	struct device_link *sup_link;
-+
-+	if (info->is_ccifreq_bounded)
-+		return true;
-+
-+	sup_link = device_link_add(info->cpu_dev, info->cci_dev,
-+				   DL_FLAG_AUTOREMOVE_CONSUMER);
-+	if (!sup_link) {
-+		dev_err(info->cpu_dev, "cpu%d: sup_link is NULL\n",
-+			info->opp_cpu);
-+		return false;
-+	}
-+
-+	if (sup_link->supplier->links.status != DL_DEV_DRIVER_BOUND)
-+		return false;
-+
-+	info->is_ccifreq_bounded = true;
-+
-+	return true;
-+}
-+
- static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 				  unsigned int index)
- {
-@@ -183,6 +209,9 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	long freq_hz, old_freq_hz;
- 	int vproc, old_vproc, inter_vproc, target_vproc, ret;
- 
-+	if (info->soc_data->is_ccifreq_support && !is_ccifreq_ready(info))
-+		return 0;
-+
- 	inter_vproc = info->intermediate_voltage;
- 
- 	freq_hz = freq_table[index].frequency * 1000;
-@@ -329,6 +358,23 @@ static int mtk_cpufreq_opp_notifier(struct notifier_block *nb,
- 	return notifier_from_errno(ret);
- }
- 
-+static struct device *of_get_cci(struct device *cpu_dev)
-+{
-+	struct device_node *np;
-+	struct platform_device *pdev;
-+
-+	np = of_parse_phandle(cpu_dev->of_node, "cci", 0);
-+	if (IS_ERR(np))
-+		return NULL;
-+
-+	pdev = of_find_device_by_node(np);
-+	of_node_put(np);
-+	if (IS_ERR(pdev))
-+		return NULL;
-+
-+	return &pdev->dev;
-+}
-+
- static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- {
- 	struct device *cpu_dev;
-@@ -343,6 +389,17 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 	}
- 	info->cpu_dev = cpu_dev;
- 
-+	info->is_ccifreq_bounded = false;
-+	if (info->soc_data->is_ccifreq_support) {
-+		info->cci_dev = of_get_cci(info->cpu_dev);
-+		if (IS_ERR_OR_NULL(info->cci_dev)) {
-+			ret = PTR_ERR(info->cci_dev);
-+			dev_err(cpu_dev, "cpu%d: failed to get cci device\n",
-+				cpu);
-+			return -ENODEV;
-+		}
-+	}
-+
- 	info->cpu_clk = clk_get(cpu_dev, "cpu");
- 	if (IS_ERR(info->cpu_clk)) {
- 		ret = PTR_ERR(info->cpu_clk);
-@@ -620,6 +677,16 @@ static const struct mtk_cpufreq_platform_data mtk_platform_data = {
- 	.proc_max_volt = 1150000,
- 	.sram_min_volt = 0,
- 	.sram_max_volt = 1150000,
-+	.is_ccifreq_support = false,
-+};
-+
-+static const struct mtk_cpufreq_platform_data mt8183_platform_data = {
-+	.min_volt_shift = 100000,
-+	.max_volt_shift = 200000,
-+	.proc_max_volt = 1150000,
-+	.sram_min_volt = 0,
-+	.sram_max_volt = 1150000,
-+	.is_ccifreq_support = true,
- };
- 
- /* List of machines supported by this driver */
-@@ -632,7 +699,7 @@ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
- 	{ .compatible = "mediatek,mt817x", .data = &mtk_platform_data },
- 	{ .compatible = "mediatek,mt8173", .data = &mtk_platform_data },
- 	{ .compatible = "mediatek,mt8176", .data = &mtk_platform_data },
--	{ .compatible = "mediatek,mt8183", .data = &mtk_platform_data },
-+	{ .compatible = "mediatek,mt8183", .data = &mt8183_platform_data },
- 	{ .compatible = "mediatek,mt8365", .data = &mtk_platform_data },
- 	{ .compatible = "mediatek,mt8516", .data = &mtk_platform_data },
- 	{ }
+[3]: The MediaTek SVS driver is introduced in another series.
+     message-id:20220221063939.14969-1-roger.lu@mediatek.com
+
+Andrew-sh.Cheng (1):
+  cpufreq: mediatek: Add opp notification for SVS support
+
+Jia-Wei Chang (13):
+  dt-bindings: cpufreq: mediatek: Add MediaTek CCI property
+  cpufreq: mediatek: Use module_init and add module_exit
+  cpufreq: mediatek: Cleanup variables and error handling in mtk_cpu_dvfs_info_init()
+  cpufreq: mediatek: Remove unused headers
+  cpufreq: mediatek: Enable clocks and regulators
+  cpufreq: mediatek: Record previous target vproc value
+  cpufreq: mediatek: Move voltage limits to platform data
+  cpufreq: mediatek: Add .get function
+  cpufreq: mediatek: Make sram regulator optional
+  cpufreq: mediatek: Update logic of voltage_tracking()
+  cpufreq: mediatek: Use maximum voltage in init stage
+  cpufreq: mediatek: Link CCI device to CPU
+  cpufreq: mediatek: Add support for MT8186
+
+Rex-BC Chen (1):
+  cpufreq: mediatek: Use device print to show logs
+
+ .../bindings/cpufreq/cpufreq-mediatek.txt     |   4 +
+ drivers/cpufreq/mediatek-cpufreq.c            | 609 ++++++++++++------
+ 2 files changed, 401 insertions(+), 212 deletions(-)
+
 -- 
 2.18.0
 
