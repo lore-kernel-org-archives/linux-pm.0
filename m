@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99492C433EF
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 07:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54FBBC433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 07:59:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230172AbiDHIAo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Apr 2022 04:00:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49162 "EHLO
+        id S230452AbiDHIBL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Apr 2022 04:01:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230177AbiDHIAj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 04:00:39 -0400
+        with ESMTP id S230185AbiDHIBG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 04:01:06 -0400
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.153.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 651ED114DCF;
-        Fri,  8 Apr 2022 00:58:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BCAED11A568;
+        Fri,  8 Apr 2022 00:58:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1649404715; x=1680940715;
+  t=1649404732; x=1680940732;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=JTDMVVeRAftI6o86ZjLgMdKfDtLtM/8TSv3TYrBRguw=;
-  b=sTisuAtyYEUmY8ZcsEwTBZYv3crdGuMXX4B3mTn7m4jsnkXb4tZq+r/9
-   jJJzLBmcF+GkpWye5w09V3g7x+rzshseYGvq8/7RFf60xzhiE+Zn6uQZj
-   A5j6mJWqrU2wp5mLoxD7MZGnTrDbwsMkUhmkMzFfaKS/FirSPH+rzvPub
-   SikIT0p+geFXslwTIQppAqTweGrPP2HwX4Jcx1dsxLQ0N55LM0kuUe7l+
-   wozkdd9gRB+4ndBCtwLWQlch98NXF2VyIkdq98Wt0xLYbUGBEw7/O2IoG
-   ulKvZk2iRFDjHqTy0A/jQNOtj8cye0Kz50lFm+4BGTlcKbld4bUTZc9LN
+  bh=1Bi4lSLV0zLBBZOD2CzxtM5qbY8InuCSGS8Woi7tp1Q=;
+  b=qNOfvuaHWRNx9NJjRdeaWHepw/edUE5Vqo51xfe3mzhMFErpu6MXDeXg
+   8u8itYC+rorUnWsw1N0g1Qswc9zWi68J6mJJT0mGQOSVAv3KcCg2nNktt
+   bD6/SBHIy6I1cKx7OgVXtuz+foERmZ24NYtAH042F78C3UbluMrC6IeP2
+   9KS2fDc4nDAqOjZeqzVjsv6s/WdQsenZTSqldk/HYE7emYFSbckm8ar3b
+   Hxo1+xRVMpkvu3nQ6uyMZUyd+TLgm5wvvrfLuCEZeUnwP0FefCuJ8XbPE
+   atJoQUIF/zR/qUq0dcHZhU3HhVejJzdRmNW42u3jdpB1fxHtMRN4RuQWy
    A==;
 X-IronPort-AV: E=Sophos;i="5.90,244,1643698800"; 
-   d="scan'208";a="168919716"
+   d="scan'208";a="159403684"
 Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Apr 2022 00:58:35 -0700
+  by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 08 Apr 2022 00:58:50 -0700
 Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.17; Fri, 8 Apr 2022 00:58:34 -0700
+ 15.1.2375.17; Fri, 8 Apr 2022 00:58:49 -0700
 Received: from localhost.localdomain (10.10.115.15) by
  chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server id
- 15.1.2375.17 via Frontend Transport; Fri, 8 Apr 2022 00:58:31 -0700
+ 15.1.2375.17 via Frontend Transport; Fri, 8 Apr 2022 00:58:46 -0700
 From:   Claudiu Beznea <claudiu.beznea@microchip.com>
 To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
         <alexandre.belloni@bootlin.com>, <p.zabel@pengutronix.de>,
@@ -46,9 +46,9 @@ To:     <robh+dt@kernel.org>, <nicolas.ferre@microchip.com>,
 CC:     <cristian.birsan@microchip.com>, <linux-pm@vger.kernel.org>,
         <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH v3 05/10] power: reset: at91-reset: document structures and enums
-Date:   Fri, 8 Apr 2022 11:00:26 +0300
-Message-ID: <20220408080031.2527232-6-claudiu.beznea@microchip.com>
+Subject: [PATCH v3 09/10] ARM: dts: at91: sama7g5: add reset-controller node
+Date:   Fri, 8 Apr 2022 11:00:30 +0300
+Message-ID: <20220408080031.2527232-10-claudiu.beznea@microchip.com>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20220408080031.2527232-1-claudiu.beznea@microchip.com>
 References: <20220408080031.2527232-1-claudiu.beznea@microchip.com>
@@ -59,51 +59,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document structures and enums.
+Add reset controller node.
 
 Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 ---
- drivers/power/reset/at91-reset.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/arm/boot/dts/sama7g5.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 64def79d557a..e62798750b6b 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -39,6 +39,17 @@
- #define AT91_RSTC_URSTIEN	BIT(4)		/* User Reset Interrupt Enable */
- #define AT91_RSTC_ERSTL		GENMASK(11, 8)	/* External Reset Length */
+diff --git a/arch/arm/boot/dts/sama7g5.dtsi b/arch/arm/boot/dts/sama7g5.dtsi
+index eddcfbf4d223..aa0e72d4d2d5 100644
+--- a/arch/arm/boot/dts/sama7g5.dtsi
++++ b/arch/arm/boot/dts/sama7g5.dtsi
+@@ -122,6 +122,13 @@ pmc: pmc@e0018000 {
+ 			clock-names = "td_slck", "md_slck", "main_xtal";
+ 		};
  
-+/**
-+ * enum reset_type - reset types
-+ * @RESET_TYPE_GENERAL:		first power-up reset
-+ * @RESET_TYPE_WAKEUP:		return from backup mode
-+ * @RESET_TYPE_WATCHDOG:	watchdog fault
-+ * @RESET_TYPE_SOFTWARE:	processor reset required by software
-+ * @RESET_TYPE_USER:		NRST pin detected low
-+ * @RESET_TYPE_CPU_FAIL:	CPU clock failure detection
-+ * @RESET_TYPE_XTAL_FAIL:	32KHz crystal failure dectection fault
-+ * @RESET_TYPE_ULP2:		ULP2 reset
-+ */
- enum reset_type {
- 	RESET_TYPE_GENERAL	= 0,
- 	RESET_TYPE_WAKEUP	= 1,
-@@ -50,6 +61,15 @@ enum reset_type {
- 	RESET_TYPE_ULP2		= 8,
- };
- 
-+/**
-+ * struct at91_reset - AT91 reset specific data structure
-+ * @rstc_base:		base address for system reset
-+ * @ramc_base:		array with base addresses of RAM controllers
-+ * @sclk:		slow clock
-+ * @nb:			reset notifier block
-+ * @args:		SoC specific system reset arguments
-+ * @ramc_lpr:		SDRAM Controller Low Power Register
-+ */
- struct at91_reset {
- 	void __iomem *rstc_base;
- 	void __iomem *ramc_base[2];
++		reset_controller: reset-controller@e001d000 {
++			compatible = "microchip,sama7g5-rstc";
++			reg = <0xe001d000 0xc>, <0xe001d0e4 0x4>;
++			#reset-cells = <1>;
++			clocks = <&clk32k 0>;
++		};
++
+ 		shdwc: shdwc@e001d010 {
+ 			compatible = "microchip,sama7g5-shdwc", "syscon";
+ 			reg = <0xe001d010 0x10>;
 -- 
 2.32.0
 
