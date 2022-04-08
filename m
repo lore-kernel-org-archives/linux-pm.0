@@ -2,30 +2,30 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F22CEC4332F
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 04:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0FFEC433FE
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 04:59:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234481AbiDHFBa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Apr 2022 01:01:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38588 "EHLO
+        id S234498AbiDHFBb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Apr 2022 01:01:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38688 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233970AbiDHFB0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 01:01:26 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4F6D19CCF4;
-        Thu,  7 Apr 2022 21:59:19 -0700 (PDT)
-X-UUID: 4d782cba2706486cb3d24ae02d62d1c3-20220408
-X-UUID: 4d782cba2706486cb3d24ae02d62d1c3-20220408
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+        with ESMTP id S234360AbiDHFB1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 01:01:27 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D184A19EC5B;
+        Thu,  7 Apr 2022 21:59:21 -0700 (PDT)
+X-UUID: 9c43c840ef664f6ca83ae20b986d786e-20220408
+X-UUID: 9c43c840ef664f6ca83ae20b986d786e-20220408
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 971837181; Fri, 08 Apr 2022 12:59:12 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 970078977; Fri, 08 Apr 2022 12:59:12 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 8 Apr 2022 12:59:10 +0800
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 8 Apr 2022 12:59:11 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 8 Apr 2022 12:59:10 +0800
+ Transport; Fri, 8 Apr 2022 12:59:11 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>
@@ -35,10 +35,11 @@ CC:     <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Subject: [PATCH V2 02/15] cpufreq: mediatek: Use module_init and add module_exit
-Date:   Fri, 8 Apr 2022 12:58:55 +0800
-Message-ID: <20220408045908.21671-3-rex-bc.chen@mediatek.com>
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
+Subject: [PATCH V2 06/15] cpufreq: mediatek: Record previous target vproc value
+Date:   Fri, 8 Apr 2022 12:58:59 +0800
+Message-ID: <20220408045908.21671-7-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
 References: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
@@ -51,33 +52,83 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
-- Use module_init instead of device_initcall.
-- Add a function for module_exit to unregister driver.
+We found the buck voltage may not be exactly the same with what we set
+because CPU may share the same buck with other module.
+Therefore, we need to record the previous desired value instead of reading
+it from regulators.
 
+Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 31 +++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 866163883b48..9d7d9c8dc184 100644
+index dc4a87e68940..472f4de29e5f 100644
 --- a/drivers/cpufreq/mediatek-cpufreq.c
 +++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -580,7 +580,13 @@ static int __init mtk_cpufreq_driver_init(void)
+@@ -40,6 +40,7 @@ struct mtk_cpu_dvfs_info {
+ 	struct list_head list_head;
+ 	int intermediate_voltage;
+ 	bool need_voltage_tracking;
++	int old_vproc;
+ };
  
- 	return 0;
- }
--device_initcall(mtk_cpufreq_driver_init);
-+module_init(mtk_cpufreq_driver_init)
+ static LIST_HEAD(dvfs_info_list);
+@@ -190,11 +191,17 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 
+ static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
+ {
++	int ret;
 +
-+static void __exit mtk_cpufreq_driver_exit(void)
-+{
-+	platform_driver_unregister(&mtk_cpufreq_platdrv);
-+}
-+module_exit(mtk_cpufreq_driver_exit)
+ 	if (info->need_voltage_tracking)
+-		return mtk_cpufreq_voltage_tracking(info, vproc);
++		ret = mtk_cpufreq_voltage_tracking(info, vproc);
+ 	else
+-		return regulator_set_voltage(info->proc_reg, vproc,
+-					     vproc + VOLT_TOL);
++		ret = regulator_set_voltage(info->proc_reg, vproc,
++					    MAX_VOLT_LIMIT);
++	if (!ret)
++		info->old_vproc = vproc;
++
++	return ret;
+ }
  
- MODULE_DESCRIPTION("MediaTek CPUFreq driver");
- MODULE_AUTHOR("Pi-Cheng Chen <pi-cheng.chen@linaro.org>");
+ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+@@ -211,15 +218,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ 
+ 	inter_vproc = info->intermediate_voltage;
+ 
+-	old_freq_hz = clk_get_rate(cpu_clk);
+-	old_vproc = regulator_get_voltage(info->proc_reg);
+-	if (old_vproc < 0) {
+-		pr_err("%s: invalid Vproc value: %d\n", __func__, old_vproc);
+-		return old_vproc;
+-	}
+-
+ 	freq_hz = freq_table[index].frequency * 1000;
+-
+ 	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
+ 	if (IS_ERR(opp)) {
+ 		pr_err("cpu%d: failed to find OPP for %ld\n",
+@@ -229,6 +228,16 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	vproc = dev_pm_opp_get_voltage(opp);
+ 	dev_pm_opp_put(opp);
+ 
++	old_freq_hz = clk_get_rate(cpu_clk);
++	old_vproc = info->old_vproc;
++	if (old_vproc == 0)
++		old_vproc = regulator_get_voltage(info->proc_reg);
++	if (old_vproc < 0) {
++		dev_err(cpu_dev, "%s: invalid Vproc value: %d\n",
++			__func__, old_vproc);
++		return old_vproc;
++	}
++
+ 	/*
+ 	 * If the new voltage or the intermediate voltage is higher than the
+ 	 * current voltage, scale up voltage first.
 -- 
 2.18.0
 
