@@ -2,1276 +2,346 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1EDDC4167B
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 21:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21DA4C433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Apr 2022 21:46:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239734AbiDHVXi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Apr 2022 17:23:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43218 "EHLO
+        id S234834AbiDHVsW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Apr 2022 17:48:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50650 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238655AbiDHVXi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 17:23:38 -0400
-Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF9846551;
-        Fri,  8 Apr 2022 14:21:31 -0700 (PDT)
-Received: by mail-ot1-x32f.google.com with SMTP id y3-20020a056830070300b005cd9c4d03feso6957458ots.3;
-        Fri, 08 Apr 2022 14:21:31 -0700 (PDT)
+        with ESMTP id S231585AbiDHVsV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2022 17:48:21 -0400
+Received: from mail-oa1-x29.google.com (mail-oa1-x29.google.com [IPv6:2001:4860:4864:20::29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58D071480C1
+        for <linux-pm@vger.kernel.org>; Fri,  8 Apr 2022 14:46:16 -0700 (PDT)
+Received: by mail-oa1-x29.google.com with SMTP id 586e51a60fabf-d39f741ba0so11052228fac.13
+        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2022 14:46:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=qfxcejjHeyex4VQvosRLrnPyCM/B5UjLJM1CrVybsho=;
-        b=MGyEATRd+gPeTtH4LLu09IbQKZDKg1bgBYygElfwHkJZ4tM3+t+plqBNMt9S9g+j9E
-         S3HlK1JgbIHxsoD2bnWcd3+4fqpMtcnNp2sb/KJT7MR6J1TcSwWlF9hakjSySdxMt5vI
-         bIbFPIfuaLYqSeEhKKU0nyhs9oyDZo+Br2LZn14RfFFk9bhPFQu/xS5/lg6RRerR6Qq2
-         YojpyhH5ZgzsnfQleZI9QS9m25v7/SHt1utpJilPB8MduVLTfOqm9+tkZvkULiujgh3x
-         mMd+IYjDPiEs5t6ONTT3JvU1eoToA6PC4MvLSQ1nRyo5Uj1Jg1aC7pIUz8+QmdIFyBdY
-         lK4A==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=tzhZjvEhF/Gmp0TQ3rspjmAiTAiuaXngv+PeF1pYfuc=;
+        b=cwBl5y4y14jFbhJ3KjYt2WeCgWBFS5ltcOiZnmzWlXL7StWqiWwJJO4syi8SP1rQ2w
+         cituhgfybyAiij3dROau9a5AWb4OFYLxTERg3qLdYoQPRUbyFuaGlJCZXyMBYRvO+e+B
+         kMLJbLStPs9R63ZLwI57Fps5bDw/fyZ/kyYaRkXtOG1wzFL6wIc5uwNPNmQR1hTjnxjh
+         R6y0/WReJC3VM66xN8G9P+TC2UpuPiLQiLT3YcNfirsphvyYDe89ubyrvP5QCEOg4oae
+         CrPyXM95NLl76B42CJCnHzT7dntWL7S9Qst7wXKK1oW8SxJJFeVu2jC0YcB8QuXH47mR
+         F1HA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=qfxcejjHeyex4VQvosRLrnPyCM/B5UjLJM1CrVybsho=;
-        b=WLvdB5Hn6g6oPksTrMbqgknuPIPyzFnTGjTEIrYlzk4E+Raxp6/m/CffmWTk2EckWR
-         VKZGecfmx1CayJ/Ksnh1owX73c7hxuFo4Of0JB9ZWMG3DpSA5q/SaJ0wNdERDgN8Dxxx
-         KoNISMM89o0vEoqlJD3zp/TePgc5fkIzHaELSKzDoa/Y9YRaTZCi+Th6um41dhohN/Kf
-         LZa4q/w+Rc1HRNoJoYAZMdrEUivE64AMxCLe2ECbFeg65np5jrF0P8ufFn13zTQLjzMU
-         mqfjAMX+SWmp97pg30ps+QTdWW1Ew7q3biHQ4Rom7SfDK1YX71reQoz6mSxX4mL3jbMS
-         INyg==
-X-Gm-Message-State: AOAM531ZXSmVzrD6o2A+rzuPmGjmFWb2ngPJRLdYZyUk0AK00gej+ZPM
-        yWtv0uv7QHsIuG/6rug/Mc7UwCWvpvE=
-X-Google-Smtp-Source: ABdhPJxIwZ1JRLF7mnGBSpbffHkoPPLn8k4FjYyKjepxTrWcDxe4vWXq4zbfL+63IQ3I/YaUihGPYA==
-X-Received: by 2002:a05:6830:25cc:b0:5c9:5fc5:32b1 with SMTP id d12-20020a05683025cc00b005c95fc532b1mr7376795otu.138.1649452890255;
-        Fri, 08 Apr 2022 14:21:30 -0700 (PDT)
-Received: from wintermute.localdomain (cpe-76-183-134-35.tx.res.rr.com. [76.183.134.35])
-        by smtp.gmail.com with ESMTPSA id ep36-20020a056870a9a400b000de98fe4869sm9950375oab.35.2022.04.08.14.21.29
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=tzhZjvEhF/Gmp0TQ3rspjmAiTAiuaXngv+PeF1pYfuc=;
+        b=2rXf/xUWTK0IW9pa6V5qYi0TkPV422B/pPQhPQ6k9VnwACduIHU4+gDIx3Nf6rgjZv
+         ST3rkKCZzNcPaqjPo8VQd4pPZwzNy8ebhOvaeK5+qXoBDGQUtp2HKSe8lhArGfECjnVK
+         5XcxSrgYrDMnlGKkenTY6b5Myvhi526HPDEpw+xOk/s2j4IsI/2BdNcORPJdopR+as3n
+         pHGZT3KiGpa6oaWIoyQ/m3QCjImmowWsaH3eoEolVWowntZu8CJ4ReKaPfwclGA50OCG
+         QJBfHL4VHxNuOJFc4mkpLJZ47VjjlM5pq3KkeCmmjaVuO9ed3Bk3L6OTWwoObCbsDEOG
+         nDRQ==
+X-Gm-Message-State: AOAM530SMwH6Pz0CPr7dYoC/g0lBd83X63zU+Le6Y4GxMHsLx7wE3mKn
+        cwgluu0s/jXpyk2k6MJTDeDqtA==
+X-Google-Smtp-Source: ABdhPJz5pARrEan3E68M7K/Se6UGuNAKt92VbcJ69atLMvKHYpBPvPEuy6ZMiVH9E0rblS17hYco2Q==
+X-Received: by 2002:a05:6870:b417:b0:d4:547c:7a76 with SMTP id x23-20020a056870b41700b000d4547c7a76mr9763121oap.65.1649454375684;
+        Fri, 08 Apr 2022 14:46:15 -0700 (PDT)
+Received: from ripper.. ([2600:1700:a0:3dc8:205:1bff:fec0:b9b3])
+        by smtp.gmail.com with ESMTPSA id w7-20020a9d6387000000b005b2265711fcsm9569530otk.16.2022.04.08.14.46.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 Apr 2022 14:21:29 -0700 (PDT)
-From:   Chris Morgan <macroalpha82@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org,
-        zhangqing@rock-chips.com, zyw@rock-chips.com,
-        maccraft123mc@gmail.com, jon.lin@rock-chips.com, sre@kernel.org,
-        heiko@sntech.de, krzk+dt@kernel.org, robh+dt@kernel.org,
-        lee.jones@linaro.org, Chris Morgan <macromorgan@hotmail.com>
-Subject: [PATCH 3/4 v6] power: supply: Add charger driver for Rockchip RK817
-Date:   Fri,  8 Apr 2022 16:21:20 -0500
-Message-Id: <20220408212121.9368-4-macroalpha82@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220408212121.9368-1-macroalpha82@gmail.com>
-References: <20220408212121.9368-1-macroalpha82@gmail.com>
+        Fri, 08 Apr 2022 14:46:15 -0700 (PDT)
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Subject: [PATCH v2 1/2] dt-bindings: interconnect: qcom: Add sc8280xp binding
+Date:   Fri,  8 Apr 2022 14:48:34 -0700
+Message-Id: <20220408214835.624494-1-bjorn.andersson@linaro.org>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Chris Morgan <macromorgan@hotmail.com>
+The Qualcomm SC8280XP platform has the usual set of busses, add a
+binding for these interconnect providers and port definitions to allow
+interconnect paths to be expressed in the sc8280xp DeviceTree.
 
-Add support for the Rockchip rk817 battery charger integrated into the
-rk817 PMIC.
-
-Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-Signed-off-by: Maya Matuszczyk <maccraft123mc@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/power/supply/Kconfig         |    6 +
- drivers/power/supply/Makefile        |    1 +
- drivers/power/supply/rk817_charger.c | 1157 ++++++++++++++++++++++++++
- 3 files changed, 1164 insertions(+)
- create mode 100644 drivers/power/supply/rk817_charger.c
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 1aa8323ad9f6..56e70a68679a 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -708,6 +708,12 @@ config CHARGER_BQ256XX
- 	  charge management and system power path management devices for single
- 	  cell Li-ion and Li-polymer batteries.
- 
-+config CHARGER_RK817
-+	tristate "Rockchip RK817 PMIC Battery Charger"
-+	depends on MFD_RK808
-+	help
-+	  Say Y to include support for Rockchip RK817 Battery Charger.
-+
- config CHARGER_SMB347
- 	tristate "Summit Microelectronics SMB3XX Battery Charger"
- 	depends on I2C
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 7f02f36aea55..3040a1de81b8 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -91,6 +91,7 @@ obj-$(CONFIG_CHARGER_BQ2515X)	+= bq2515x_charger.o
- obj-$(CONFIG_CHARGER_BQ25890)	+= bq25890_charger.o
- obj-$(CONFIG_CHARGER_BQ25980)	+= bq25980_charger.o
- obj-$(CONFIG_CHARGER_BQ256XX)	+= bq256xx_charger.o
-+obj-$(CONFIG_CHARGER_RK817)	+= rk817_charger.o
- obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
- obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
- obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
-diff --git a/drivers/power/supply/rk817_charger.c b/drivers/power/supply/rk817_charger.c
+Changes since v1:
+- Dual license include file
+- Replaced '_' with '-' in compatibles.
+
+ .../bindings/interconnect/qcom,rpmh.yaml      |  12 +
+ .../dt-bindings/interconnect/qcom,sc8280xp.h  | 232 ++++++++++++++++++
+ 2 files changed, 244 insertions(+)
+ create mode 100644 include/dt-bindings/interconnect/qcom,sc8280xp.h
+
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+index 5a911be0c2ea..0286f40fdc44 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,rpmh.yaml
+@@ -60,6 +60,18 @@ properties:
+       - qcom,sc8180x-mc-virt
+       - qcom,sc8180x-mmss-noc
+       - qcom,sc8180x-system-noc
++      - qcom,sc8280xp-aggre1-noc
++      - qcom,sc8280xp-aggre2-noc
++      - qcom,sc8280xp-clk-virt
++      - qcom,sc8280xp-config-noc
++      - qcom,sc8280xp-dc-noc
++      - qcom,sc8280xp-gem-noc
++      - qcom,sc8280xp-lpass-ag-noc
++      - qcom,sc8280xp-mc-virt
++      - qcom,sc8280xp-mmss-noc
++      - qcom,sc8280xp-nspa-noc
++      - qcom,sc8280xp-nspb-noc
++      - qcom,sc8280xp-system-noc
+       - qcom,sdm845-aggre1-noc
+       - qcom,sdm845-aggre2-noc
+       - qcom,sdm845-config-noc
+diff --git a/include/dt-bindings/interconnect/qcom,sc8280xp.h b/include/dt-bindings/interconnect/qcom,sc8280xp.h
 new file mode 100644
-index 000000000000..65a846b7f79e
+index 000000000000..a3e5fda7c127
 --- /dev/null
-+++ b/drivers/power/supply/rk817_charger.c
-@@ -0,0 +1,1157 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/include/dt-bindings/interconnect/qcom,sc8280xp.h
+@@ -0,0 +1,232 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
 +/*
-+ * Charger Driver for Rockchip rk817
-+ *
-+ * Copyright (c) 2021
-+ *
-+ * Authors: Maya Matuszczyk <maccraft123mc@gmail.com>
-+ *	    Chris Morgan <macromorgan@hotmail.com>
++ * Copyright (c) 2021, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2022, Linaro Ltd.
 + */
 +
-+#include <linux/mfd/rk808.h>
-+#include <linux/irq.h>
-+#include <linux/of_gpio.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/power_supply.h>
-+#include <asm/unaligned.h>
-+
-+/* Charging statuses reported by hardware register */
-+enum rk817_charge_status {
-+	CHRG_OFF,
-+	DEAD_CHRG,
-+	TRICKLE_CHRG,
-+	CC_OR_CV_CHRG,
-+	CHARGE_FINISH,
-+	USB_OVER_VOL,
-+	BAT_TMP_ERR,
-+	BAT_TIM_ERR,
-+};
-+
-+/* Max charging current read to/written from hardware register.
-+ * Note how highest value corresponding to 0x7 is the lowest
-+ * current, this is per the datasheet.
-+ */
-+enum rk817_chg_cur {
-+	CHG_1A,
-+	CHG_1_5A,
-+	CHG_2A,
-+	CHG_2_5A,
-+	CHG_2_75A,
-+	CHG_3A,
-+	CHG_3_5A,
-+	CHG_0_5A,
-+};
-+
-+struct rk817_charger {
-+	struct device *dev;
-+	struct rk808 *rk808;
-+
-+	struct power_supply *bat_ps;
-+	struct power_supply *chg_ps;
-+	bool plugged_in;
-+	bool battery_present;
-+
-+	/* voltage_k and voltage_b values are used to calibrate the ADC
-+	 * voltage readings. While they are documented in the BSP kernel and
-+	 * datasheet as voltage_k and voltage_b, there is no further
-+	 * information explaining them in more detail.
-+	 */
-+
-+	uint32_t voltage_k;
-+	uint32_t voltage_b;
-+
-+	/* soc - state of charge - like the BSP this is stored as a percentage,
-+	 * to the thousandth. BSP has a display state of charge (dsoc) and a
-+	 * remaining state of charge (rsoc). This value will be used for both
-+	 * purposes here so we don't do any fancy math to try and "smooth" the
-+	 * charge and just report it as it is. Note for example an soc of 100
-+	 * is stored as 100000, an soc of 50 is stored as 50000, etc.
-+	 */
-+	int soc;
-+
-+	/* Capacity of battery when fully charged, equal or less than design
-+	 * capacity depending upon wear. BSP kernel saves to nvram in mAh,
-+	 * so this value is in mAh not the standard uAh.
-+	 */
-+	int fcc_mah;
-+
-+	/* Calibrate the SOC on a fully charged battery, this way we can use
-+	 * the calibrated SOC value to correct for columb counter drift.
-+	 */
-+	bool soc_cal;
-+
-+	/* Implementation specific immutable properties from device tree */
-+	int res_div;
-+	int sleep_enter_current_ua;
-+	int sleep_filter_current_ua;
-+	int bat_charge_full_design_uah;
-+	int bat_voltage_min_design_uv;
-+	int bat_voltage_max_design_uv;
-+
-+	/* Values updated periodically by driver for display. */
-+	int charge_now_uah;
-+	int volt_avg_uv;
-+	int cur_avg_ua;
-+	int max_chg_cur_ua;
-+	int max_chg_volt_uv;
-+	int charge_status;
-+	int charger_input_volt_avg_uv;
-+
-+	/* Work queue to periodically update values. */
-+	struct delayed_work work;
-+};
-+
-+/* ADC coefficients extracted from BSP kernel */
-+#define ADC_TO_CURRENT(adc_value, res_div)	\
-+	(adc_value * 172 / res_div)
-+
-+#define CURRENT_TO_ADC(current, samp_res)	\
-+	(current * samp_res / 172)
-+
-+#define CHARGE_TO_ADC(capacity, res_div)	\
-+	(capacity * res_div * 3600 / 172 * 1000)
-+
-+#define ADC_TO_CHARGE_UAH(adc_value, res_div)	\
-+	(adc_value / 3600 * 172 / res_div)
-+
-+static u8 rk817_chg_cur_to_reg(u32 chg_cur_ma)
-+{
-+	if (chg_cur_ma >= 3500)
-+		return CHG_3_5A;
-+	else if (chg_cur_ma >= 3000)
-+		return CHG_3A;
-+	else if (chg_cur_ma >= 2750)
-+		return CHG_2_75A;
-+	else if (chg_cur_ma >= 2500)
-+		return CHG_2_5A;
-+	else if (chg_cur_ma >= 2000)
-+		return CHG_2A;
-+	else if (chg_cur_ma >= 1500)
-+		return CHG_1_5A;
-+	else if (chg_cur_ma >= 1000)
-+		return CHG_1A;
-+	else if (chg_cur_ma >= 500)
-+		return CHG_0_5A;
-+	else
-+		return -EINVAL;
-+}
-+
-+static int rk817_chg_cur_from_reg(u8 reg)
-+{
-+	switch (reg) {
-+	case CHG_0_5A:
-+		return 500000;
-+	case CHG_1A:
-+		return 1000000;
-+	case CHG_1_5A:
-+		return 1500000;
-+	case CHG_2A:
-+		return 2000000;
-+	case CHG_2_5A:
-+		return 2500000;
-+	case CHG_2_75A:
-+		return 2750000;
-+	case CHG_3A:
-+		return 3000000;
-+	case CHG_3_5A:
-+		return 3500000;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static void rk817_bat_calib_vol(struct rk817_charger *charger)
-+{
-+	uint32_t vcalib0 = 0;
-+	uint32_t vcalib1 = 0;
-+	u8 bulk_reg[2];
-+
-+	/* calibrate voltage */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_VCALIB0_H,
-+			 bulk_reg, 2);
-+	vcalib0 = get_unaligned_be16(bulk_reg);
-+
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_VCALIB1_H,
-+			 bulk_reg, 2);
-+	vcalib1 = get_unaligned_be16(bulk_reg);
-+
-+	/* values were taken from BSP kernel */
-+	charger->voltage_k = (4025 - 2300) * 1000 /
-+			     ((vcalib1 - vcalib0) ? (vcalib1 - vcalib0) : 1);
-+	charger->voltage_b = 4025 - (charger->voltage_k * vcalib1) / 1000;
-+}
-+
-+static void rk817_bat_calib_cur(struct rk817_charger *charger)
-+{
-+	u8 bulk_reg[2];
-+
-+	/* calibrate current */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_IOFFSET_H,
-+			 bulk_reg, 2);
-+	regmap_bulk_write(charger->rk808->regmap, RK817_GAS_GAUGE_CAL_OFFSET_H,
-+			  bulk_reg, 2);
-+}
-+
-+/* note that only the fcc_mah is really used by this driver, the other values
-+ * are to ensure we can remain backwards compatible with the BSP kernel.
-+ */
-+static int rk817_record_battery_nvram_values(struct rk817_charger *charger)
-+{
-+	u8 bulk_reg[3];
-+	int ret;
-+
-+	/* write the soc value to the nvram location used by the BSP kernel
-+	 * for the dsoc value.
-+	 */
-+	put_unaligned_le24(charger->soc, bulk_reg);
-+	ret = regmap_bulk_write(charger->rk808->regmap, RK817_GAS_GAUGE_BAT_R1,
-+				bulk_reg, 3);
-+	if (ret < 0)
-+		return ret;
-+	/* write the same value to the nvram location used by the BSP kernel
-+	 * for the rsoc value.
-+	 */
-+	put_unaligned_le24(charger->soc, bulk_reg);
-+	ret = regmap_bulk_write(charger->rk808->regmap, RK817_GAS_GAUGE_DATA0,
-+				bulk_reg, 3);
-+	if (ret < 0)
-+		return ret;
-+	/* write the fcc_mah in mAh, just as the BSP kernel does. */
-+	put_unaligned_le24(charger->fcc_mah, bulk_reg);
-+	ret = regmap_bulk_write(charger->rk808->regmap, RK817_GAS_GAUGE_DATA3,
-+				bulk_reg, 3);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int rk817_bat_calib_cap(struct rk817_charger *charger)
-+{
-+	struct rk808 *rk808 = charger->rk808;
-+	int tmp, charge_now, charge_now_adc, volt_avg;
-+	u8 bulk_reg[4];
-+
-+	/* Calibrate the soc and fcc on a fully charged battery */
-+
-+	if (charger->charge_status == CHARGE_FINISH && (!charger->soc_cal)) {
-+		/* soc should be 100000 and columb counter should show the full
-+		 * charge capacity. Note that if the device is unplugged for a
-+		 * period of several days the columb counter will have a large
-+		 * margin of error, so setting it back to the full charge on
-+		 * a completed charge cycle should correct this (my device was
-+		 * showing 33% battery after 3 days unplugged when it should
-+		 * have been closer to 95% based on voltage and charge
-+		 * current).
-+		 */
-+
-+		charger->soc = 100000;
-+		charge_now_adc = CHARGE_TO_ADC(charger->fcc_mah,
-+					       charger->res_div);
-+		put_unaligned_be32(charge_now_adc, bulk_reg);
-+		regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_Q_INIT_H3,
-+				  bulk_reg, 4);
-+
-+		charger->soc_cal = 1;
-+		dev_dbg(charger->dev,
-+			"Fully charged. SOC is %d, full capacity is %d\n",
-+			charger->soc, charger->fcc_mah * 1000);
-+	}
-+
-+	/* The columb counter can drift up slightly, so we should correct for
-+	 * it. But don't correct it until we're at 100% soc.
-+	 */
-+	if (charger->charge_status == CHARGE_FINISH && charger->soc_cal) {
-+		regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_Q_PRES_H3,
-+				 bulk_reg, 4);
-+		charge_now_adc = get_unaligned_be32(bulk_reg);
-+		if (charge_now_adc < 0)
-+			return charge_now_adc;
-+		charge_now = ADC_TO_CHARGE_UAH(charge_now_adc,
-+					       charger->res_div);
-+
-+		/* Re-init columb counter with updated values to correct drift.
-+		 */
-+		if (charge_now / 1000 > charger->fcc_mah) {
-+			dev_dbg(charger->dev,
-+				"Recalibrating columb counter to %d uah\n",
-+				charge_now);
-+			/* Order of operations matters here to ensure we keep
-+			 * enough precision until the last step to keep from
-+			 * making needless updates to columb counter.
-+			 */
-+			charge_now_adc = CHARGE_TO_ADC(charger->fcc_mah,
-+					 charger->res_div);
-+			put_unaligned_be32(charge_now_adc, bulk_reg);
-+			regmap_bulk_write(rk808->regmap,
-+					  RK817_GAS_GAUGE_Q_INIT_H3,
-+					  bulk_reg, 4);
-+		}
-+	}
-+
-+	/* Calibrate the fully charged capacity when we previously had a full
-+	 * battery (soc_cal = 1) and are now empty (at or below minimum design
-+	 * voltage). If our columb counter is still positive, subtract that
-+	 * from our fcc value to get a calibrated fcc, and if our columb
-+	 * counter is negative add that to our fcc (but not to exceed our
-+	 * design capacity).
-+	 */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_BAT_VOL_H,
-+			 bulk_reg, 2);
-+	tmp = get_unaligned_be16(bulk_reg);
-+	volt_avg = (charger->voltage_k * tmp) + 1000 * charger->voltage_b;
-+	if (volt_avg <= charger->bat_voltage_min_design_uv &&
-+	    charger->soc_cal) {
-+		regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_Q_PRES_H3,
-+				 bulk_reg, 4);
-+		charge_now_adc = get_unaligned_be32(bulk_reg);
-+		charge_now = ADC_TO_CHARGE_UAH(charge_now_adc,
-+					       charger->res_div);
-+		/* Note, if charge_now is negative this will add it (what we
-+		 * want) and if it's positive this will subtract (also what
-+		 * we want).
-+		 */
-+		charger->fcc_mah = charger->fcc_mah - (charge_now / 1000);
-+
-+		dev_dbg(charger->dev,
-+			"Recalibrating full charge capacity to %d uah\n",
-+			charger->fcc_mah * 1000);
-+	}
-+
-+	rk817_record_battery_nvram_values(charger);
-+
-+	return 0;
-+}
-+
-+static void rk817_read_props(struct rk817_charger *charger)
-+{
-+	int tmp, reg;
-+	u8 bulk_reg[4];
-+
-+	/* Recalibrate voltage and current readings if we need to BSP does both
-+	 * on CUR_CALIB_UPD, ignoring VOL_CALIB_UPD. Curiously enough, both
-+	 * documentation and the BSP show that you perform an update if bit 7
-+	 * is 1, but you clear the status by writing a 1 to bit 7.
-+	 */
-+	regmap_read(charger->rk808->regmap, RK817_GAS_GAUGE_ADC_CONFIG1, &reg);
-+	if (reg & RK817_VOL_CUR_CALIB_UPD) {
-+		rk817_bat_calib_cur(charger);
-+		rk817_bat_calib_vol(charger);
-+		regmap_write_bits(charger->rk808->regmap,
-+				  RK817_GAS_GAUGE_ADC_CONFIG1,
-+				  RK817_VOL_CUR_CALIB_UPD,
-+				  RK817_VOL_CUR_CALIB_UPD);
-+	}
-+
-+	/* Update reported charge. */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_Q_PRES_H3,
-+			 bulk_reg, 4);
-+	tmp = get_unaligned_be32(bulk_reg);
-+	charger->charge_now_uah = ADC_TO_CHARGE_UAH(tmp, charger->res_div);
-+	if (charger->charge_now_uah < 0)
-+		charger->charge_now_uah = 0;
-+	if (charger->charge_now_uah > charger->fcc_mah * 1000)
-+		charger->charge_now_uah = charger->fcc_mah * 1000;
-+
-+	/* Update soc based on reported charge. */
-+	charger->soc = charger->charge_now_uah * 100 / charger->fcc_mah;
-+
-+	/* Update reported voltage. */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_BAT_VOL_H,
-+			 bulk_reg, 2);
-+	tmp = get_unaligned_be16(bulk_reg);
-+	charger->volt_avg_uv = (charger->voltage_k * tmp) + 1000 *
-+				charger->voltage_b;
-+
-+	/* Update reported current. Note value from registers is a signed 16
-+	 * bit int.
-+	 */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_BAT_CUR_H,
-+			 bulk_reg, 2);
-+	tmp = (short int)get_unaligned_be16(bulk_reg);
-+	charger->cur_avg_ua = ADC_TO_CURRENT(tmp, charger->res_div);
-+
-+	/* Update the max charge current. This value shouldn't change, but we
-+	 * can read it to report what the PMIC says it is instead of simply
-+	 * returning the default value.
-+	 */
-+	regmap_read(charger->rk808->regmap, RK817_PMIC_CHRG_OUT, &reg);
-+	charger->max_chg_cur_ua =
-+		rk817_chg_cur_from_reg(reg & RK817_CHRG_CUR_SEL);
-+
-+	/* Update max charge voltage. Like the max charge current this value
-+	 * shouldn't change, but we can report what the PMIC says.
-+	 */
-+	regmap_read(charger->rk808->regmap, RK817_PMIC_CHRG_OUT, &reg);
-+	charger->max_chg_volt_uv = ((((reg & RK817_CHRG_VOL_SEL) >> 4) *
-+				    50000) + 4100000);
-+
-+	/* Check if battery still present. */
-+	regmap_read(charger->rk808->regmap, RK817_PMIC_CHRG_STS, &reg);
-+	charger->battery_present = (reg & RK817_BAT_EXS);
-+
-+	/* Get which type of charge we are using (if any). */
-+	regmap_read(charger->rk808->regmap, RK817_PMIC_CHRG_STS, &reg);
-+	charger->charge_status = (reg >> 4) & 0x07;
-+
-+	/* Get charger input voltage. Note that on my example hardware (an
-+	 * Odroid Go Advance) the voltage of the power connector is measured
-+	 * on the register labelled USB in the datasheet; I don't know if this
-+	 * is how it is designed or just a quirk of the implementation. I
-+	 * believe this will also measure the voltage of the USB output when in
-+	 * OTG mode, if that is the case we may need to change this in the
-+	 * future to return 0 if the power supply status is offline (I can't
-+	 * test this with my current implementation. Also, when the voltage
-+	 * should be zero sometimes the ADC still shows a single bit (which
-+	 * would register as 20000uv). When this happens set it to 0.
-+	 */
-+	regmap_bulk_read(charger->rk808->regmap, RK817_GAS_GAUGE_USB_VOL_H,
-+			 bulk_reg, 2);
-+	reg = get_unaligned_be16(bulk_reg);
-+	if (reg > 1) {
-+		tmp = ((charger->voltage_k * reg / 1000 + charger->voltage_b) *
-+		       60 / 46);
-+		charger->charger_input_volt_avg_uv = tmp * 1000;
-+	} else {
-+		charger->charger_input_volt_avg_uv = 0;
-+	}
-+
-+	/* Calibrate battery capacity and soc. */
-+	rk817_bat_calib_cap(charger);
-+}
-+
-+static int rk817_bat_get_prop(struct power_supply *ps,
-+		enum power_supply_property prop,
-+		union power_supply_propval *val)
-+{
-+	struct rk817_charger *charger = power_supply_get_drvdata(ps);
-+
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = charger->battery_present;
-+		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (charger->cur_avg_ua < 0) {
-+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-+			break;
-+		}
-+		switch (charger->charge_status) {
-+		case CHRG_OFF:
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			break;
-+		/* Dead charge is documented, but not explained. I never
-+		 * observed it but assume it's a pre-charge for a dead
-+		 * battery.
-+		 */
-+		case DEAD_CHRG:
-+		case TRICKLE_CHRG:
-+		case CC_OR_CV_CHRG:
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+			break;
-+		case CHARGE_FINISH:
-+			val->intval = POWER_SUPPLY_STATUS_FULL;
-+			break;
-+		default:
-+			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
-+			return -EINVAL;
-+
-+		}
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		switch (charger->charge_status) {
-+		case CHRG_OFF:
-+		case CHARGE_FINISH:
-+			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+			break;
-+		case TRICKLE_CHRG:
-+			val->intval = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+			break;
-+		case DEAD_CHRG:
-+		case CC_OR_CV_CHRG:
-+			val->intval = POWER_SUPPLY_CHARGE_TYPE_STANDARD;
-+			break;
-+		default:
-+			val->intval = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+			break;
-+		}
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL:
-+		val->intval = charger->fcc_mah * 1000;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		val->intval = charger->bat_charge_full_design_uah;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN:
-+		val->intval = 0;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		val->intval = charger->charge_now_uah;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		val->intval = charger->bat_voltage_min_design_uv;
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		/* Add 500 so that values like 99999 are 100% not 99%. */
-+		val->intval = (charger->soc + 500) / 1000;
-+		if (val->intval > 100)
-+			val->intval = 100;
-+		if (val->intval < 0)
-+			val->intval = 0;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-+		val->intval = charger->volt_avg_uv;
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+		val->intval = charger->cur_avg_ua;
-+		break;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+		val->intval = charger->max_chg_cur_ua;
-+		break;
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
-+		val->intval = charger->max_chg_volt_uv;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		val->intval = charger->bat_voltage_max_design_uv;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int rk817_chg_get_prop(struct power_supply *ps,
-+			      enum power_supply_property prop,
-+			      union power_supply_propval *val)
-+{
-+	struct rk817_charger *charger = power_supply_get_drvdata(ps);
-+
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = charger->plugged_in;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		/* max voltage from datasheet at 5.5v (default 5.0v) */
-+		val->intval = 5500000;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		/* min voltage from datasheet at 3.8v (default 5.0v) */
-+		val->intval = 3800000;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-+		val->intval = charger->charger_input_volt_avg_uv;
-+		break;
-+	/* While it's possible that other implementations could use different
-+	 * USB types, the current implementation for this PMIC (the Odroid Go
-+	 * Advance) only uses a dedicated charging port with no rx/tx lines.
-+	 */
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = POWER_SUPPLY_USB_TYPE_DCP;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+
-+}
-+
-+static irqreturn_t rk817_plug_in_isr(int irq, void *cg)
-+{
-+	struct rk817_charger *charger;
-+
-+	charger = (struct rk817_charger *)cg;
-+	charger->plugged_in = 1;
-+	power_supply_changed(charger->chg_ps);
-+	power_supply_changed(charger->bat_ps);
-+	/* try to recalibrate capacity if we hit full charge. */
-+	charger->soc_cal = 0;
-+
-+	rk817_read_props(charger);
-+
-+	dev_dbg(charger->dev, "Power Cord Inserted\n");
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t rk817_plug_out_isr(int irq, void *cg)
-+{
-+	struct rk817_charger *charger;
-+	struct rk808 *rk808;
-+
-+	charger = (struct rk817_charger *)cg;
-+	rk808 = charger->rk808;
-+	charger->plugged_in = 0;
-+	power_supply_changed(charger->bat_ps);
-+	power_supply_changed(charger->chg_ps);
-+
-+	/* For some reason the bits of RK817_PMIC_CHRG_IN reset whenever the
-+	 * power cord is unplugged. This was not documented in the BSP kernel
-+	 * or the datasheet and only discovered by trial and error. Set minimum
-+	 * USB input voltage to 4.5v and enable USB voltage input limit.
-+	 */
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN,
-+			  RK817_USB_VLIM_SEL, (0x05 << 4));
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN, RK817_USB_VLIM_EN,
-+			  (0x01 << 7));
-+
-+	/* Set average USB input current limit to 1.5A and enable USB current
-+	 * input limit.
-+	 */
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN,
-+			  RK817_USB_ILIM_SEL, 0x03);
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN, RK817_USB_ILIM_EN,
-+			  (0x01 << 3));
-+
-+	rk817_read_props(charger);
-+
-+	dev_dbg(charger->dev, "Power Cord Removed\n");
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static enum power_supply_property rk817_bat_props[] = {
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-+	POWER_SUPPLY_PROP_VOLTAGE_AVG,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-+};
-+
-+static enum power_supply_property rk817_chg_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-+	POWER_SUPPLY_PROP_VOLTAGE_AVG,
-+};
-+
-+static enum power_supply_usb_type rk817_usb_type[] = {
-+	POWER_SUPPLY_USB_TYPE_DCP,
-+	POWER_SUPPLY_USB_TYPE_UNKNOWN,
-+};
-+
-+static const struct power_supply_desc rk817_bat_desc = {
-+	.name = "rk817-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = rk817_bat_props,
-+	.num_properties = ARRAY_SIZE(rk817_bat_props),
-+	.get_property = rk817_bat_get_prop,
-+};
-+
-+static const struct power_supply_desc rk817_chg_desc = {
-+	.name = "rk817-charger",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.usb_types = rk817_usb_type,
-+	.num_usb_types = ARRAY_SIZE(rk817_usb_type),
-+	.properties = rk817_chg_props,
-+	.num_properties = ARRAY_SIZE(rk817_chg_props),
-+	.get_property = rk817_chg_get_prop,
-+};
-+
-+static int rk817_read_battery_nvram_values(struct rk817_charger *charger)
-+{
-+	u8 bulk_reg[3];
-+	int ret;
-+
-+	/* Read the nvram data for full charge capacity. */
-+	ret = regmap_bulk_read(charger->rk808->regmap,
-+			       RK817_GAS_GAUGE_DATA3, bulk_reg, 3);
-+	if (ret < 0)
-+		return ret;
-+	charger->fcc_mah = get_unaligned_le24(bulk_reg);
-+
-+	/* Sanity checking for values equal to zero or less than would be
-+	 * practical for this device (BSP Kernel assumes 500mAH or less) for
-+	 * practicality purposes.
-+	 */
-+	if (charger->fcc_mah < 500) {
-+		dev_info(charger->dev,
-+			 "Invalid NVRAM max charge, setting to %u uAH\n",
-+			 charger->bat_charge_full_design_uah);
-+		charger->fcc_mah = charger->bat_charge_full_design_uah / 1000;
-+	}
-+
-+	/* Read the nvram for state of charge. */
-+	ret = regmap_bulk_read(charger->rk808->regmap,
-+			       RK817_GAS_GAUGE_BAT_R1, bulk_reg, 3);
-+	if (ret < 0)
-+		return ret;
-+	charger->soc = get_unaligned_le24(bulk_reg);
-+
-+	return 0;
-+}
-+
-+static int
-+rk817_read_or_set_full_charge_on_boot(struct rk817_charger *charger,
-+				struct power_supply_battery_info *bat_info)
-+{
-+	struct rk808 *rk808 = charger->rk808;
-+	u8 bulk_reg[4];
-+	u32 boot_voltage, boot_charge_mah, tmp;
-+	int ret, reg, off_time;
-+	int soc_tmp1, soc_tmp2, soc_tmp3;
-+	bool first_boot;
-+
-+	/* Check if the battery is uninitalized. If it is, the columb counter
-+	 * needs to be set up.
-+	 */
-+	ret = regmap_read(rk808->regmap, RK817_GAS_GAUGE_GG_STS, &reg);
-+	if (ret < 0)
-+		return ret;
-+	first_boot = reg & RK817_BAT_CON;
-+	/* If the battery is uninitialized, use the poweron voltage and an ocv
-+	 * lookup to guess our charge. The number won't be very accurate until
-+	 * we hit either our minimum voltage (0%) or full charge (100%).
-+	 */
-+	if (first_boot) {
-+		regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_PWRON_VOL_H,
-+				 bulk_reg, 2);
-+		tmp = get_unaligned_be16(bulk_reg);
-+		boot_voltage = (charger->voltage_k * tmp) +
-+				1000 * charger->voltage_b;
-+		/* Since only implementation has no working thermistor, assume
-+		 * 20C for OCV lookup. If lookup fails, report error with OCV
-+		 * table.
-+		 */
-+		charger->soc = power_supply_batinfo_ocv2cap(bat_info,
-+							    boot_voltage,
-+							    20) * 1000;
-+		if (charger->soc < 0)
-+			charger->soc = 0;
-+
-+		/* Guess that full charge capacity is the design capacity */
-+		charger->fcc_mah = charger->bat_charge_full_design_uah / 1000;
-+		/* Set battery as "set up". BSP driver uses this value even
-+		 * though datasheet claims it's a read-only value.
-+		 */
-+		regmap_write_bits(rk808->regmap, RK817_GAS_GAUGE_GG_STS,
-+				  RK817_BAT_CON, 0);
-+		/* Save nvram values */
-+		ret = rk817_record_battery_nvram_values(charger);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		ret = rk817_read_battery_nvram_values(charger);
-+		if (ret < 0)
-+			return ret;
-+
-+		regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_Q_PRES_H3,
-+				 bulk_reg, 4);
-+		tmp = get_unaligned_be32(bulk_reg);
-+		if (tmp < 0)
-+			tmp = 0;
-+		boot_charge_mah = ADC_TO_CHARGE_UAH(tmp,
-+						    charger->res_div) / 1000;
-+		/* Check if the columb counter has been off for more than 300
-+		 * minutes as it tends to drift downward. If so, re-init soc
-+		 * with the boot voltage instead. Note the unit values for the
-+		 * OFF_CNT register appear to be in decaminutes and stops
-+		 * counting at 2550 (0xFF) minutes. BSP kernel used OCV, but
-+		 * for me occasionally that would show invalid values. Boot
-+		 * voltage is only accurate for me on first poweron (not
-+		 * reboots), but we shouldn't ever encounter an OFF_CNT more
-+		 * than 0 on a reboot anyway.
-+		 */
-+		regmap_read(rk808->regmap, RK817_GAS_GAUGE_OFF_CNT, &off_time);
-+		if (off_time >= 30) {
-+			regmap_bulk_read(rk808->regmap,
-+					 RK817_GAS_GAUGE_PWRON_VOL_H,
-+					 bulk_reg, 2);
-+			tmp = get_unaligned_be16(bulk_reg);
-+			boot_voltage = (charger->voltage_k * tmp) +
-+					1000 * charger->voltage_b;
-+			charger->soc =
-+				power_supply_batinfo_ocv2cap(bat_info,
-+							     boot_voltage,
-+							     20) * 1000;
-+		} else {
-+			charger->soc = (boot_charge_mah * 1000 * 100 /
-+					charger->fcc_mah);
-+		}
-+	}
-+
-+	regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_PWRON_VOL_H,
-+			 bulk_reg, 2);
-+	tmp = get_unaligned_be16(bulk_reg);
-+	boot_voltage = (charger->voltage_k * tmp) + 1000 * charger->voltage_b;
-+	soc_tmp1 = power_supply_batinfo_ocv2cap(bat_info,
-+						boot_voltage, 20) * 1000;
-+	regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_Q_PRES_H3,
-+			 bulk_reg, 4);
-+	tmp = get_unaligned_be32(bulk_reg);
-+	if (tmp < 0)
-+		tmp = 0;
-+	boot_charge_mah = ADC_TO_CHARGE_UAH(tmp, charger->res_div) / 1000;
-+	soc_tmp2 = (boot_charge_mah * 1000 * 100 / charger->fcc_mah);
-+	regmap_bulk_read(rk808->regmap, RK817_GAS_GAUGE_OCV_VOL_H,
-+			 bulk_reg, 2);
-+	tmp = get_unaligned_be16(bulk_reg);
-+	boot_voltage = (charger->voltage_k * tmp) + 1000 * charger->voltage_b;
-+	soc_tmp3 = power_supply_batinfo_ocv2cap(bat_info,
-+						boot_voltage, 20) * 1000;
-+
-+	/* Now we have our full charge capacity and soc, init the columb
-+	 * counter.
-+	 */
-+	boot_charge_mah = charger->soc * charger->fcc_mah / 100 / 1000;
-+	if (boot_charge_mah > charger->fcc_mah)
-+		boot_charge_mah = charger->fcc_mah;
-+	tmp = CHARGE_TO_ADC(boot_charge_mah, charger->res_div);
-+	put_unaligned_be32(tmp, bulk_reg);
-+	ret = regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_Q_INIT_H3,
-+			  bulk_reg, 4);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Set QMAX value to max design capacity. */
-+	tmp = CHARGE_TO_ADC((charger->bat_charge_full_design_uah / 1000),
-+			    charger->res_div);
-+	put_unaligned_be32(tmp, bulk_reg);
-+	ret = regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_Q_MAX_H3,
-+				bulk_reg, 4);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int rk817_battery_init(struct rk817_charger *charger,
-+			      struct power_supply_battery_info *bat_info)
-+{
-+	struct rk808 *rk808 = charger->rk808;
-+	u32 tmp, max_chg_vol_mv, max_chg_cur_ma;
-+	u8 max_chg_vol_reg, chg_term_i_reg, max_chg_cur_reg;
-+	int ret, chg_term_ma;
-+	u8 bulk_reg[2];
-+
-+	/* Get initial plug state */
-+	regmap_read(rk808->regmap, RK817_SYS_STS, &tmp);
-+	charger->plugged_in = (tmp & RK817_PLUG_IN_STS);
-+
-+	/* Turn on all ADC functions to measure battery, USB, and sys voltage,
-+	 * as well as batt temp. Note only tested implementation so far does
-+	 * not use a battery with a thermistor.
-+	 */
-+	regmap_write(rk808->regmap, RK817_GAS_GAUGE_ADC_CONFIG0, 0xfc);
-+
-+	/* Set relax mode voltage sampling interval and ADC offset calibration
-+	 * interval to 8 minutes to mirror BSP kernel. Set voltage and current
-+	 * modes to average to mirror BSP kernel.
-+	 */
-+	regmap_write(rk808->regmap, RK817_GAS_GAUGE_GG_CON, 0x04);
-+
-+	/* Calibrate voltage like the BSP does here. */
-+	rk817_bat_calib_vol(charger);
-+
-+	/* Write relax threshold, derived from sleep enter current. */
-+	tmp = CURRENT_TO_ADC(charger->sleep_enter_current_ua,
-+			     charger->res_div);
-+	put_unaligned_be16(tmp, bulk_reg);
-+	regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_RELAX_THRE_H,
-+			  bulk_reg, 2);
-+
-+	/* Write sleep sample current, derived from sleep filter current. */
-+	tmp = CURRENT_TO_ADC(charger->sleep_filter_current_ua,
-+			     charger->res_div);
-+	put_unaligned_be16(tmp, bulk_reg);
-+	regmap_bulk_write(rk808->regmap, RK817_GAS_GAUGE_SLEEP_CON_SAMP_CUR_H,
-+			  bulk_reg, 2);
-+
-+	/* Restart battery relax voltage */
-+	regmap_write_bits(rk808->regmap, RK817_GAS_GAUGE_GG_STS,
-+			  RK817_RELAX_VOL_UPD, (0x0 << 2));
-+
-+	/* Set OCV Threshold Voltage to 127.5mV. This was hard coded like this
-+	 * in the BSP.
-+	 */
-+	regmap_write(rk808->regmap, RK817_GAS_GAUGE_OCV_THRE_VOL, 0xff);
-+
-+	/* Set maximum charging voltage to battery max voltage. Trying to be
-+	 * incredibly safe with these value, as setting them wrong could
-+	 * overcharge the battery, which would be very bad.
-+	 */
-+	max_chg_vol_mv = bat_info->constant_charge_voltage_max_uv / 1000;
-+	max_chg_cur_ma = bat_info->constant_charge_current_max_ua / 1000;
-+
-+	if (max_chg_vol_mv < 4100) {
-+		return dev_err_probe(charger->dev, -EINVAL,
-+		       "invalid max charger voltage, value %u unsupported\n",
-+			max_chg_vol_mv * 1000);
-+	}
-+	if (max_chg_vol_mv > 4450) {
-+		dev_info(charger->dev,
-+			 "Setting max charge voltage to 4450000uv\n");
-+		max_chg_vol_mv = 4450;
-+	}
-+
-+	if (max_chg_cur_ma < 500) {
-+		return dev_err_probe(charger->dev, -EINVAL,
-+		       "invalid max charger current, value %u unsupported\n",
-+		       max_chg_cur_ma * 1000);
-+	}
-+	if (max_chg_cur_ma > 3500)
-+		dev_info(charger->dev,
-+			 "Setting max charge current to 3500000ua\n");
-+
-+	/* Now that the values are sanity checked, if we subtract 4100 from the
-+	 * max voltage and divide by 50, we conviently get the exact value for
-+	 * the registers, which are 4.1v, 4.15v, 4.2v, 4.25v, 4.3v, 4.35v,
-+	 * 4.4v, and 4.45v; these correspond to values 0x00 through 0x07.
-+	 */
-+	max_chg_vol_reg = (max_chg_vol_mv - 4100) / 50;
-+
-+	max_chg_cur_reg = rk817_chg_cur_to_reg(max_chg_cur_ma);
-+
-+	if (max_chg_vol_reg < 0 || max_chg_vol_reg > 7) {
-+		return dev_err_probe(charger->dev, -EINVAL,
-+		       "invalid max charger voltage, value %u unsupported\n",
-+		       max_chg_vol_mv * 1000);
-+	}
-+	if (max_chg_cur_reg < 0 || max_chg_cur_reg > 7) {
-+		return dev_err_probe(charger->dev, -EINVAL,
-+		       "invalid max charger current, value %u unsupported\n",
-+		       max_chg_cur_ma * 1000);
-+	}
-+
-+	/* Write the values to the registers, and deliver an emergency warning
-+	 * in the event they are not written correctly.
-+	 */
-+	ret = regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_OUT,
-+				RK817_CHRG_VOL_SEL, (max_chg_vol_reg << 4));
-+	if (ret) {
-+		dev_emerg(charger->dev,
-+			  "Danger, unable to set max charger voltage: %u\n",
-+			  ret);
-+	}
-+
-+	ret = regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_OUT,
-+				RK817_CHRG_CUR_SEL, max_chg_cur_reg);
-+	if (ret) {
-+		dev_emerg(charger->dev,
-+			  "Danger, unable to set max charger current: %u\n",
-+			  ret);
-+	}
-+
-+	/* Set charge finishing mode to analog */
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_TERM,
-+			  RK817_CHRG_TERM_ANA_DIG, (0x0 << 2));
-+
-+	/* Set charge finish current, warn if value not in range and keep
-+	 * default.
-+	 */
-+	chg_term_ma = bat_info->charge_term_current_ua / 1000;
-+	if (chg_term_ma < 150 || chg_term_ma > 400) {
-+		dev_warn(charger->dev,
-+			 "Invalid charge termination %u, keeping default\n",
-+			 chg_term_ma * 1000);
-+		chg_term_ma = 200;
-+	}
-+
-+	/* Values of 150ma, 200ma, 300ma, and 400ma correspond to 00, 01, 10,
-+	 * and 11.
-+	 */
-+	chg_term_i_reg = (chg_term_ma - 100) / 100;
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_TERM,
-+			  RK817_CHRG_TERM_ANA_SEL, chg_term_i_reg);
-+
-+	ret = rk817_read_or_set_full_charge_on_boot(charger, bat_info);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Set minimum USB input voltage to 4.5v and enable USB voltage input
-+	 * limit.
-+	 */
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN,
-+			  RK817_USB_VLIM_SEL, (0x05 << 4));
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN, RK817_USB_VLIM_EN,
-+			  (0x01 << 7));
-+
-+	/* Set average USB input current limit to 1.5A and enable USB current
-+	 * input limit.
-+	 */
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN,
-+			  RK817_USB_ILIM_SEL, 0x03);
-+	regmap_write_bits(rk808->regmap, RK817_PMIC_CHRG_IN, RK817_USB_ILIM_EN,
-+			  (0x01 << 3));
-+
-+	return 0;
-+}
-+
-+static void rk817_charging_monitor(struct work_struct *work)
-+{
-+	struct rk817_charger *charger;
-+
-+	charger = container_of(work, struct rk817_charger, work.work);
-+
-+	rk817_read_props(charger);
-+
-+	/* Run every 8 seconds like the BSP driver did. */
-+	schedule_delayed_work(&charger->work, msecs_to_jiffies(8000));
-+}
-+
-+static int rk817_charger_probe(struct platform_device *pdev)
-+{
-+	struct rk808 *rk808 = dev_get_drvdata(pdev->dev.parent);
-+	struct rk817_charger *charger;
-+	struct device_node *node;
-+	struct power_supply_battery_info *bat_info;
-+	struct device *dev = &pdev->dev;
-+	struct power_supply_config pscfg = {};
-+	int plugin_irq, plugout_irq;
-+	int of_value;
-+	int ret;
-+
-+	node = of_get_child_by_name(dev->parent->of_node, "charger");
-+	if (!node)
-+		return -ENODEV;
-+
-+	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
-+	if (!charger)
-+		return -ENOMEM;
-+
-+	charger->rk808 = rk808;
-+
-+	charger->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, charger);
-+
-+	rk817_bat_calib_vol(charger);
-+
-+	pscfg.drv_data = charger;
-+	pscfg.of_node = node;
-+
-+	/* Get sample resistor value. Note only values of 10000 or 20000
-+	 * microohms are allowed. Schematic for my test implementation (an
-+	 * Odroid Go Advance) shows a 10 milliohm resistor for reference.
-+	 */
-+	ret = of_property_read_u32(node, "rockchip,resistor-sense-micro-ohms",
-+				   &of_value);
-+	if (ret < 0) {
-+		return dev_err_probe(dev, ret,
-+				     "Error reading sample resistor value\n");
-+	}
-+	/* Store as a 1 or a 2, since all we really use the value for is as a
-+	 * divisor in some calculations.
-+	 */
-+	charger->res_div = (of_value == 20000) ? 2 : 1;
-+
-+	/* Get sleep enter current value. Not sure what this value is for
-+	 * other than to help calibrate the relax threshold.
-+	 */
-+	ret = of_property_read_u32(node,
-+				   "rockchip,sleep-enter-current-microamp",
-+				   &of_value);
-+	if (ret < 0) {
-+		return dev_err_probe(dev, ret,
-+				     "Error reading sleep enter cur value\n");
-+	}
-+	charger->sleep_enter_current_ua = of_value;
-+
-+	/* Get sleep filter current value */
-+	ret = of_property_read_u32(node,
-+				   "rockchip,sleep-filter-current-microamp",
-+				   &of_value);
-+	if (ret < 0) {
-+		return dev_err_probe(dev, ret,
-+				     "Error reading sleep filter cur value\n");
-+	}
-+
-+	charger->sleep_filter_current_ua = of_value;
-+
-+	charger->bat_ps = devm_power_supply_register(&pdev->dev,
-+						     &rk817_bat_desc, &pscfg);
-+
-+	charger->chg_ps = devm_power_supply_register(&pdev->dev,
-+						     &rk817_chg_desc, &pscfg);
-+
-+	if (IS_ERR(charger->chg_ps))
-+		return dev_err_probe(dev, -EINVAL,
-+				     "Battery failed to probe\n");
-+
-+	if (IS_ERR(charger->chg_ps))
-+		return dev_err_probe(dev, -EINVAL,
-+				     "Charger failed to probe\n");
-+
-+	ret = power_supply_get_battery_info(charger->bat_ps,
-+					    &bat_info);
-+	if (ret) {
-+		return dev_err_probe(dev, ret,
-+				     "Unable to get battery info: %d\n", ret);
-+	}
-+
-+	if ((!bat_info->charge_full_design_uah) ||
-+	    (!bat_info->voltage_min_design_uv) ||
-+	    (!bat_info->voltage_max_design_uv) ||
-+	    (!bat_info->constant_charge_voltage_max_uv) ||
-+	    (!bat_info->constant_charge_current_max_ua) ||
-+	    (!bat_info->charge_term_current_ua)) {
-+		return dev_err_probe(dev, -EINVAL,
-+				     "Required battery info missing.\n");
-+	}
-+
-+	charger->bat_charge_full_design_uah = bat_info->charge_full_design_uah;
-+	charger->bat_voltage_min_design_uv = bat_info->voltage_min_design_uv;
-+	charger->bat_voltage_max_design_uv = bat_info->voltage_max_design_uv;
-+
-+	/* Has to run after power_supply_get_battery_info as it depends on some
-+	 * values discovered from that routine.
-+	 */
-+	ret = rk817_battery_init(charger, bat_info);
-+	if (ret)
-+		return ret;
-+
-+	power_supply_put_battery_info(charger->bat_ps, bat_info);
-+
-+	plugin_irq = platform_get_irq(pdev, 0);
-+	if (plugin_irq < 0)
-+		return plugin_irq;
-+
-+	plugout_irq = platform_get_irq(pdev, 1);
-+	if (plugout_irq < 0)
-+		return plugout_irq;
-+
-+	ret = devm_request_threaded_irq(charger->dev, plugin_irq, NULL,
-+					rk817_plug_in_isr,
-+					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+					"rk817_plug_in", charger);
-+	if (ret) {
-+		return dev_err_probe(&pdev->dev, ret,
-+				      "plug_in_irq request failed!\n");
-+	}
-+
-+	ret = devm_request_threaded_irq(charger->dev, plugout_irq, NULL,
-+					rk817_plug_out_isr,
-+					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+					"rk817_plug_out", charger);
-+	if (ret) {
-+		return dev_err_probe(&pdev->dev, ret,
-+				     "plug_out_irq request failed!\n");
-+	}
-+
-+	INIT_DELAYED_WORK(&charger->work, rk817_charging_monitor);
-+	/* Get and populate the first set of values. */
-+	schedule_delayed_work(&charger->work, 0);
-+
-+	return 0;
-+}
-+
-+
-+static struct platform_driver rk817_charger_driver = {
-+	.probe    = rk817_charger_probe,
-+	.driver   = {
-+		.name  = "rk817-charger",
-+	},
-+};
-+module_platform_driver(rk817_charger_driver);
-+
-+MODULE_DESCRIPTION("Battery power supply driver for RK817 PMIC");
-+MODULE_AUTHOR("Maya Matuszczyk <maccraft123mc@gmail.com>");
-+MODULE_LICENSE("GPL");
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SC8280XP_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_SC8280XP_H
++
++/* aggre1_noc */
++#define MASTER_QSPI_0			0
++#define MASTER_QUP_1			1
++#define MASTER_QUP_2			2
++#define MASTER_A1NOC_CFG		3
++#define MASTER_IPA			4
++#define MASTER_EMAC_1			5
++#define MASTER_SDCC_4			6
++#define MASTER_UFS_MEM			7
++#define MASTER_USB3_0			8
++#define MASTER_USB3_1			9
++#define MASTER_USB3_MP			10
++#define MASTER_USB4_0			11
++#define MASTER_USB4_1			12
++#define SLAVE_A1NOC_SNOC		13
++#define SLAVE_USB_NOC_SNOC		14
++#define SLAVE_SERVICE_A1NOC		15
++
++/* aggre2_noc */
++#define MASTER_QDSS_BAM			0
++#define MASTER_QUP_0			1
++#define MASTER_A2NOC_CFG		2
++#define MASTER_CRYPTO			3
++#define MASTER_SENSORS_PROC		4
++#define MASTER_SP			5
++#define MASTER_EMAC			6
++#define MASTER_PCIE_0			7
++#define MASTER_PCIE_1			8
++#define MASTER_PCIE_2A			9
++#define MASTER_PCIE_2B			10
++#define MASTER_PCIE_3A			11
++#define MASTER_PCIE_3B			12
++#define MASTER_PCIE_4			13
++#define MASTER_QDSS_ETR			14
++#define MASTER_SDCC_2			15
++#define MASTER_UFS_CARD			16
++#define SLAVE_A2NOC_SNOC		17
++#define SLAVE_ANOC_PCIE_GEM_NOC		18
++#define SLAVE_SERVICE_A2NOC		19
++
++/* clk_virt */
++#define MASTER_IPA_CORE			0
++#define MASTER_QUP_CORE_0		1
++#define MASTER_QUP_CORE_1		2
++#define MASTER_QUP_CORE_2		3
++#define SLAVE_IPA_CORE			4
++#define SLAVE_QUP_CORE_0		5
++#define SLAVE_QUP_CORE_1		6
++#define SLAVE_QUP_CORE_2		7
++
++/* config_noc */
++#define MASTER_GEM_NOC_CNOC		0
++#define MASTER_GEM_NOC_PCIE_SNOC	1
++#define SLAVE_AHB2PHY_0			2
++#define SLAVE_AHB2PHY_1			3
++#define SLAVE_AHB2PHY_2			4
++#define SLAVE_AOSS			5
++#define SLAVE_APPSS			6
++#define SLAVE_CAMERA_CFG		7
++#define SLAVE_CLK_CTL			8
++#define SLAVE_CDSP_CFG			9
++#define SLAVE_CDSP1_CFG			10
++#define SLAVE_RBCPR_CX_CFG		11
++#define SLAVE_RBCPR_MMCX_CFG		12
++#define SLAVE_RBCPR_MX_CFG		13
++#define SLAVE_CPR_NSPCX			14
++#define SLAVE_CRYPTO_0_CFG		15
++#define SLAVE_CX_RDPM			16
++#define SLAVE_DCC_CFG			17
++#define SLAVE_DISPLAY_CFG		18
++#define SLAVE_DISPLAY1_CFG		19
++#define SLAVE_EMAC_CFG			20
++#define SLAVE_EMAC1_CFG			21
++#define SLAVE_GFX3D_CFG			22
++#define SLAVE_HWKM			23
++#define SLAVE_IMEM_CFG			24
++#define SLAVE_IPA_CFG			25
++#define SLAVE_IPC_ROUTER_CFG		26
++#define SLAVE_LPASS			27
++#define SLAVE_MX_RDPM			28
++#define SLAVE_MXC_RDPM			29
++#define SLAVE_PCIE_0_CFG		30
++#define SLAVE_PCIE_1_CFG		31
++#define SLAVE_PCIE_2A_CFG		32
++#define SLAVE_PCIE_2B_CFG		33
++#define SLAVE_PCIE_3A_CFG		34
++#define SLAVE_PCIE_3B_CFG		35
++#define SLAVE_PCIE_4_CFG		36
++#define SLAVE_PCIE_RSC_CFG		37
++#define SLAVE_PDM			38
++#define SLAVE_PIMEM_CFG			39
++#define SLAVE_PKA_WRAPPER_CFG		40
++#define SLAVE_PMU_WRAPPER_CFG		41
++#define SLAVE_QDSS_CFG			42
++#define SLAVE_QSPI_0			43
++#define SLAVE_QUP_0			44
++#define SLAVE_QUP_1			45
++#define SLAVE_QUP_2			46
++#define SLAVE_SDCC_2			47
++#define SLAVE_SDCC_4			48
++#define SLAVE_SECURITY			49
++#define SLAVE_SMMUV3_CFG		50
++#define SLAVE_SMSS_CFG			51
++#define SLAVE_SPSS_CFG			52
++#define SLAVE_TCSR			53
++#define SLAVE_TLMM			54
++#define SLAVE_UFS_CARD_CFG		55
++#define SLAVE_UFS_MEM_CFG		56
++#define SLAVE_USB3_0			57
++#define SLAVE_USB3_1			58
++#define SLAVE_USB3_MP			59
++#define SLAVE_USB4_0			60
++#define SLAVE_USB4_1			61
++#define SLAVE_VENUS_CFG			62
++#define SLAVE_VSENSE_CTRL_CFG		63
++#define SLAVE_VSENSE_CTRL_R_CFG		64
++#define SLAVE_A1NOC_CFG			65
++#define SLAVE_A2NOC_CFG			66
++#define SLAVE_ANOC_PCIE_BRIDGE_CFG	67
++#define SLAVE_DDRSS_CFG			68
++#define SLAVE_CNOC_MNOC_CFG		69
++#define SLAVE_SNOC_CFG			70
++#define SLAVE_SNOC_SF_BRIDGE_CFG	71
++#define SLAVE_IMEM			72
++#define SLAVE_PIMEM			73
++#define SLAVE_SERVICE_CNOC		74
++#define SLAVE_PCIE_0			75
++#define SLAVE_PCIE_1			76
++#define SLAVE_PCIE_2A			77
++#define SLAVE_PCIE_2B			78
++#define SLAVE_PCIE_3A			79
++#define SLAVE_PCIE_3B			80
++#define SLAVE_PCIE_4			81
++#define SLAVE_QDSS_STM			82
++#define SLAVE_SMSS			83
++#define SLAVE_TCU			84
++
++/* dc_noc */
++#define MASTER_CNOC_DC_NOC		0
++#define SLAVE_LLCC_CFG			1
++#define SLAVE_GEM_NOC_CFG		2
++
++/* gem_noc */
++#define MASTER_GPU_TCU			0
++#define MASTER_PCIE_TCU			1
++#define MASTER_SYS_TCU			2
++#define MASTER_APPSS_PROC		3
++#define MASTER_COMPUTE_NOC		4
++#define MASTER_COMPUTE_NOC_1		5
++#define MASTER_GEM_NOC_CFG		6
++#define MASTER_GFX3D			7
++#define MASTER_MNOC_HF_MEM_NOC		8
++#define MASTER_MNOC_SF_MEM_NOC		9
++#define MASTER_ANOC_PCIE_GEM_NOC	10
++#define MASTER_SNOC_GC_MEM_NOC		11
++#define MASTER_SNOC_SF_MEM_NOC		12
++#define SLAVE_GEM_NOC_CNOC		13
++#define SLAVE_LLCC			14
++#define SLAVE_GEM_NOC_PCIE_CNOC		15
++#define SLAVE_SERVICE_GEM_NOC_1		16
++#define SLAVE_SERVICE_GEM_NOC_2		17
++#define SLAVE_SERVICE_GEM_NOC		18
++
++/* lpass_ag_noc */
++#define MASTER_CNOC_LPASS_AG_NOC	0
++#define MASTER_LPASS_PROC		1
++#define SLAVE_LPASS_CORE_CFG		2
++#define SLAVE_LPASS_LPI_CFG		3
++#define SLAVE_LPASS_MPU_CFG		4
++#define SLAVE_LPASS_TOP_CFG		5
++#define SLAVE_LPASS_SNOC		6
++#define SLAVE_SERVICES_LPASS_AML_NOC	7
++#define SLAVE_SERVICE_LPASS_AG_NOC	8
++
++/* mc_virt */
++#define MASTER_LLCC			0
++#define SLAVE_EBI1			1
++
++/*mmss_noc */
++#define MASTER_CAMNOC_HF		0
++#define MASTER_MDP0			1
++#define MASTER_MDP1			2
++#define MASTER_MDP_CORE1_0		3
++#define MASTER_MDP_CORE1_1		4
++#define MASTER_CNOC_MNOC_CFG		5
++#define MASTER_ROTATOR			6
++#define MASTER_ROTATOR_1		7
++#define MASTER_VIDEO_P0			8
++#define MASTER_VIDEO_P1			9
++#define MASTER_VIDEO_PROC		10
++#define MASTER_CAMNOC_ICP		11
++#define MASTER_CAMNOC_SF		12
++#define SLAVE_MNOC_HF_MEM_NOC		13
++#define SLAVE_MNOC_SF_MEM_NOC		14
++#define SLAVE_SERVICE_MNOC		15
++
++/* nspa_noc */
++#define MASTER_CDSP_NOC_CFG		0
++#define MASTER_CDSP_PROC		1
++#define SLAVE_CDSP_MEM_NOC		2
++#define SLAVE_NSP_XFR			3
++#define SLAVE_SERVICE_NSP_NOC		4
++
++/* nspb_noc */
++#define MASTER_CDSPB_NOC_CFG		0
++#define MASTER_CDSP_PROC_B		1
++#define SLAVE_CDSPB_MEM_NOC		2
++#define SLAVE_NSPB_XFR			3
++#define SLAVE_SERVICE_NSPB_NOC		4
++
++/* system_noc */
++#define MASTER_A1NOC_SNOC		0
++#define MASTER_A2NOC_SNOC		1
++#define MASTER_USB_NOC_SNOC		2
++#define MASTER_LPASS_ANOC		3
++#define MASTER_SNOC_CFG			4
++#define MASTER_PIMEM			5
++#define MASTER_GIC			6
++#define SLAVE_SNOC_GEM_NOC_GC		7
++#define SLAVE_SNOC_GEM_NOC_SF		8
++#define SLAVE_SERVICE_SNOC		9
++
++#endif
 -- 
-2.25.1
+2.35.1
 
