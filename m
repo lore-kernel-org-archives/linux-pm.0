@@ -2,78 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E288FC433F5
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Apr 2022 13:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D43D7C433EF
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Apr 2022 14:34:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243805AbiDKNf7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Apr 2022 09:35:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52592 "EHLO
+        id S1347321AbiDKOgQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Apr 2022 10:36:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237127AbiDKNf6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2022 09:35:58 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E04253BA74
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2022 06:33:44 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S1347292AbiDKOgP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2022 10:36:15 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FEBF3B2A3;
+        Mon, 11 Apr 2022 07:33:59 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
+ id 048c88d2ce66b26f; Mon, 11 Apr 2022 16:33:57 +0200
+Received: from kreacher.localnet (unknown [213.134.175.113])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 88ED7B815EB
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2022 13:33:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2BCD7C385AA
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2022 13:33:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649684022;
-        bh=pYOKtw+VjK35b47FJZMoYPFBRmhgvhDCyR8usfMV8Bc=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=UQV2YIAIrk+HKdflPrvXsFgkdPIbmp8XpL/Mc5CD562+YSNEVarEvIl13sNae9Mzt
-         UyyDhvpi3RGT1zVjDEN0SkaAnk4GgM2zYgWeUmhuUjGHUUzxAqbSsYLYEruYjB5rbs
-         EbuXf2DBbpJSwEksW/uIlcj24hgP8cYCBB+/2IzvVcGTdfjrPewZ2M4EA70BottQ0r
-         RlHymJU9GJJg5CIRNaYZncn+1gNfPHFGzsu8+gThoTQGbRd9aiw6Vc1fVF/UtSldQR
-         mwkIlnKIcGV9A4g64Yq1LwoczRjkB0Q9WwztD5FYeHWqwktT3+ZNEHnuMMwGHTl/oj
-         hjKdoSGdNXldg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 13692C05FCE; Mon, 11 Apr 2022 13:33:42 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215800] amd-pstate does not allow to set arbitrary maximum CPU
- frequency above 2200MHz for a desktop Zen 3 CPU
-Date:   Mon, 11 Apr 2022 13:33:41 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: huangrui@mail.ustc.edu.cn
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215800-137361-6cUyLcAXdn@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215800-137361@https.bugzilla.kernel.org/>
-References: <bug-215800-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        by v370.home.net.pl (Postfix) with ESMTPSA id CF32266BDED;
+        Mon, 11 Apr 2022 16:33:56 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PCI <linux-pci@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2 0/9] PCI/PM: Improvements related to device transitions into D0
+Date:   Mon, 11 Apr 2022 16:33:44 +0200
+Message-ID: <8108357.NyiUUSuA9g@kreacher>
+In-Reply-To: <11975904.O9o76ZdvQC@kreacher>
+References: <4419002.LvFx2qVVIh@kreacher> <11975904.O9o76ZdvQC@kreacher>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.175.113
+X-CLIENT-HOSTNAME: 213.134.175.113
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrudekiedgjeelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpeetgefgleetgeduheeugeeikeevudelueelvdeufeejfeffgeefjedugfetfeehhfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvudefrddufeegrddujeehrdduudefnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudejhedruddufedphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohephedprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohephhgvlhhgrggrshes
+ khgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgvlhdrtghomh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215800
+On Monday, April 11, 2022 4:17:41 PM CEST Rafael J. Wysocki wrote:
+> Hi All,
+> 
+> On Saturday, April 9, 2022 3:03:14 PM CEST Rafael J. Wysocki wrote:
+> > Hi All,
+> > 
+> > This series supersedes the one at
+> > 
+> > https://lore.kernel.org/linux-pm/4198163.ejJDZkT8p0@kreacher
+> > 
+> > It addresses some potential issues related to PCI device transitions from
+> > low-power states into D0 and makes the related code more straightforward
+> > and so easier to follow.
+> > 
+> > Please refer to the patch changelogs for details.
+> 
+> Here's a v2 of this patch series which is being sent, because I realized that
+> one of the checks in pci_power_up()
 
---- Comment #3 from Huang Rui (huangrui@mail.ustc.edu.cn) ---
-Hi Artem,
+This should be pci_set_low_power_state(), sorry for the confusion.
 
-Thanks for the report. Can you print: "lscpu | grep cppc"?
+> added by patch [4/7] in v1 was redundant
+> and can be dropped, but that affected the last 3 patches in the series and
+> then I noticed that more improvements were possible and hence the new patches
+> [2/9].
+> 
+> Thanks!
+> 
 
---=20
-You may reply to this email to add a comment.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+
