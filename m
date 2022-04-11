@@ -2,93 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4D79C433EF
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Apr 2022 15:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA4DBC4332F
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Apr 2022 15:44:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245698AbiDKPUN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Apr 2022 11:20:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33216 "EHLO
+        id S1348152AbiDKPq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Apr 2022 11:46:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240410AbiDKPUM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2022 11:20:12 -0400
-Received: from mail-yb1-f177.google.com (mail-yb1-f177.google.com [209.85.219.177])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51FE932076;
-        Mon, 11 Apr 2022 08:17:58 -0700 (PDT)
-Received: by mail-yb1-f177.google.com with SMTP id g34so8146035ybj.1;
-        Mon, 11 Apr 2022 08:17:58 -0700 (PDT)
+        with ESMTP id S1348164AbiDKPqY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2022 11:46:24 -0400
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24D091035
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2022 08:44:07 -0700 (PDT)
+Received: by mail-ej1-x62a.google.com with SMTP id bh17so31728689ejb.8
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2022 08:44:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=IfKH2CI9M//LkZvjQ2ovL0RNbL5cFQ7ZiAOaiFFFhfo=;
+        b=ibV3kGQKwcinaS1/iTDMsTIAihVjTtojxDgUre25vi954+OrzzCXK8ImxtuxVEAkb2
+         Hg9OL2s+Yf0sIU3ag62n4Ww/agXCDQNz5u+5hwgF3rM8FvjzAS/cv77t3QdhbGi2/mD+
+         0XAUrkKofi8LF/r3ulNzcVqr+YwXdWMoGhBIYA87ahdPZYM6pBWZKbmdU4Nkd0MRshwZ
+         TA5ctc+Tgvmf8HPMTDqH+EPOlDdJv554KFI0zXq3pxu6zIQCOA1h93UhRBD5MSLmuJeD
+         KvMLtcYHgtnubwq5Kasz3jHltnu7vd9PdyRo1xU3wl4I2ZXZnDcU9HfKbs2KU2m5cEhV
+         LH3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=+UkpLblW1SxDWq4/v7EPOEjxoIVr/fJ5t6xgCjodwz4=;
-        b=YHQzj1X4nZtYMaPyNfztxWY79MUlRIXNCNZdflDw+kn4aQOS1b0gJ4uD0Ucm3JTOJv
-         6kc/DgnCO2JrntjLzdWJKDCvsLwlc6A3ofY5GLmC5Dw+c1KsEvh7Zd/AXNNAT8ZXSCZK
-         AHfuVs1WvdAMuINDGHuOENN22kUP5fWYEwVodtWwtZ5wyp0s8mayYAJhtBx79co41n40
-         zgVuB+gbd51ZjLSKCf1kOKFheXCeHwWv7LoNzOPBsSxfB0YMcqJamMtk3ymfuXNrqt5f
-         zt/GpWoXhr+XdHTqgPCJO1SgcjqQTCHf7OANOEkNo7N2YHuqQjSEq311v2t91MINdKwL
-         gG8Q==
-X-Gm-Message-State: AOAM531vidaL9nHdjTpZhnobBAkiEmKu0oKvm1oP4r+wYuUOdCJmmWET
-        NfjyTzYt3kKQThuW8Y4gP7RQLhUdHanhdrPgRO9Q+RE/
-X-Google-Smtp-Source: ABdhPJzt77OWrISiDVpat25IqQ429M6dFyJii4JV+hLGXmHdCD31xyct9fXopI95toHyRy/b6gMOoShQ4f6BU+n5vvk=
-X-Received: by 2002:a25:3cc3:0:b0:63e:6ee9:4840 with SMTP id
- j186-20020a253cc3000000b0063e6ee94840mr14606614yba.153.1649690277498; Mon, 11
- Apr 2022 08:17:57 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=IfKH2CI9M//LkZvjQ2ovL0RNbL5cFQ7ZiAOaiFFFhfo=;
+        b=vHdXi3Eq9KAISomd4FrvupPBOED7RhaoLpALqomLm+7cURZ+GpCXIvy8x44MVRl+Bk
+         kCahrUTuyXRvTlTarf9sYMN1vyJ7cJnDA95ZCXjpuyZEyiuME+UBdFFQ2hchJ9itK0Mq
+         CelLKhhTK7PGMLOb/kkoAJJ1DbdOHi4Wr8Fajzoutvde4SZlXYYJXpVAsmMhr7RQWrK/
+         1/tR/5v7iM0a+ou5kU+1LPE1OVff5vtVSUIhwKNOr/7gF4i5cd2ohZQbMvKGRfLB2aAr
+         PN7QFYLS4uOX/dvVUDlMWJNIA6XK/Jg+GVwcQf6Dz8pz6olSm4XPL6sXVQ0VpmUBCXET
+         fqlA==
+X-Gm-Message-State: AOAM533FjSew81QM54Xr9PIhGrDOvn+NRpcczpvQv9CC66FeTOkqUY35
+        dJSHzM16ouw2Rq+T2bUcwLautA==
+X-Google-Smtp-Source: ABdhPJxV0mCjni3ixH3ficisiO0VgzkFHoIXlralC8ju8qT8Yv+egeY0tlkfaqMPsRNcX8XOEFMyjg==
+X-Received: by 2002:a17:907:628e:b0:6d9:c6fa:6168 with SMTP id nd14-20020a170907628e00b006d9c6fa6168mr30508428ejc.132.1649691845390;
+        Mon, 11 Apr 2022 08:44:05 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.gmail.com with ESMTPSA id t14-20020a170906608e00b006d1455acc62sm12173177ejj.74.2022.04.11.08.44.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 Apr 2022 08:44:04 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Avri Altman <avri.altman@wdc.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Taniya Das <tdas@codeaurora.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [RFC PATCH v2 1/6] dt-bindings: clock: qcom,gcc-sdm845: add parent power domain
+Date:   Mon, 11 Apr 2022 17:43:42 +0200
+Message-Id: <20220411154347.491396-2-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220411154347.491396-1-krzysztof.kozlowski@linaro.org>
+References: <20220411154347.491396-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-References: <1836398.tdWV9SEqCh@kreacher> <CAHp75Vc2Lci4ewdosqX4Thm6ME7pKjKw+C+wtUsq2esRM-eXjg@mail.gmail.com>
-In-Reply-To: <CAHp75Vc2Lci4ewdosqX4Thm6ME7pKjKw+C+wtUsq2esRM-eXjg@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 11 Apr 2022 17:17:46 +0200
-Message-ID: <CAJZ5v0hCPG0_4MUW5bt+FLtPmnFZ9NUxsEiFpd-6+wOmYxPm5A@mail.gmail.com>
-Subject: Re: [PATCH v1] PM: runtime: Avoid device usage count underflows
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Alan Stern <stern@rowland.harvard.edu>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Apr 11, 2022 at 5:09 PM Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
->
-> On Wed, Apr 6, 2022 at 11:49 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > A PM-runtime device usage count underflow is potentially critical,
-> > because it may cause a device to be suspended when it is expected to
-> > be operational.
-> >
-> > For this reason, (1) make rpm_check_suspend_allowed() return an error
-> > when the device usage count is negative to prevent devices from being
-> > suspended in that case, (2) introduce rpm_drop_usage_count() that will
-> > detect device usage count underflows, warn about them and fix them up,
-> > and (3) use it to drop the usage count in a few places instead of
-> > atomic_dec_and_test().
->
-> ...
->
-> > +               retval = rpm_drop_usage_count(dev);
-> > +               if (retval > 0) {
-> >                         trace_rpm_usage_rcuidle(dev, rpmflags);
-> >                         return 0;
-> > +               } else if (retval < 0) {
-> > +                       return retval;
-> >                 }
->
-> Can be written in a form
->
->                if (retval < 0)
->                        return retval;
->                if (retval > 0) {
->                        trace_rpm_usage_rcuidle(dev, rpmflags);
->                        return 0;
->                }
->
+Allow Qualcomm GCC to register its parent power domain (e.g. RPMHPD) to
+properly pass performance state from children.
 
-I know.
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
 
-And why would it be better?
+diff --git a/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml b/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
+index d902f137ab17..daf7906ebc40 100644
+--- a/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
++++ b/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
+@@ -43,6 +43,9 @@ properties:
+   '#reset-cells':
+     const: 1
+ 
++  power-domains:
++    maxItems: 1
++
+   '#power-domain-cells':
+     const: 1
+ 
+-- 
+2.32.0
+
