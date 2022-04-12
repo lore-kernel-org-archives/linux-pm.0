@@ -2,142 +2,201 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DAF2C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 12:31:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07E64C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 12:52:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352372AbiDLMdy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Apr 2022 08:33:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33620 "EHLO
+        id S1354894AbiDLMzG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Apr 2022 08:55:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345339AbiDLMdS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 08:33:18 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 615C55A157;
-        Tue, 12 Apr 2022 04:51:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
-        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To;
-        bh=knAjhsG/6jthQQWVo2QqXwIZ8VPSdd1nuBR6NhivhIM=; b=NM1atfIUmU+QivfU/eeeHNMPrm
-        A9rGuB8iqq6/RLJFLEX8OGlSVztUHLlL8GpK7bGqdpMtnHLhmE+dEWQRq2pLha152nQDDwlIUdVo3
-        Faeo9/VdbgrBhy8SWYiGNCNZaR1MyAdvEY93AV6b9KJKyjPznELglMFaeCLVQ6Lev13nMe5D6TbzL
-        xyBCbmVFiAv5qO+l5Rczg3EOtmu7mJSXWHgU0cePNto6rKhVz0JlrHxFAes+PizBPdAndcyfiTRrg
-        MpIb0NGroSCzA8Obcx4bttculHZ9CEW+gU7rprcR970T4KnQGGginaQyWjXgApRbAzarwiA9+/AVh
-        XFcfZxuA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1neF2o-004JiX-Ja; Tue, 12 Apr 2022 11:50:51 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 70FCD300C64;
-        Tue, 12 Apr 2022 13:50:47 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 4EA113017A437; Tue, 12 Apr 2022 13:50:47 +0200 (CEST)
-Message-ID: <20220412114853.964298896@infradead.org>
-User-Agent: quilt/0.66
-Date:   Tue, 12 Apr 2022 13:44:25 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, ebiederm@xmission.com,
-        bigeasy@linutronix.de, Will Deacon <will@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH 4/5] freezer,umh: Clean up freezer/initrd interaction
-References: <20220412114421.691372568@infradead.org>
+        with ESMTP id S1355250AbiDLMxz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 08:53:55 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF47EF7;
+        Tue, 12 Apr 2022 05:26:15 -0700 (PDT)
+X-UUID: 1169b8e3297a45ce80bbb58ed31e58a4-20220412
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.4,REQID:965c7447-afd0-4661-ae77-ff0adbeb80eb,OB:0,LO
+        B:0,IP:0,URL:25,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACT
+        ION:release,TS:25
+X-CID-META: VersionHash:faefae9,CLOUDID:cccee7a8-d103-4e36-82b9-b0e86991b3df,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
+X-UUID: 1169b8e3297a45ce80bbb58ed31e58a4-20220412
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 909156321; Tue, 12 Apr 2022 20:26:08 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 12 Apr 2022 20:26:06 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 12 Apr 2022 20:26:06 +0800
+Message-ID: <f00e3df2e270e5edc160f8ff1bd8c52a49bf71d5.camel@mediatek.com>
+Subject: Re: [PATCH V2 13/15] cpufreq: mediatek: Link CCI device to CPU
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Kevin Hilman <khilman@baylibre.com>, <rafael@kernel.org>,
+        <viresh.kumar@linaro.org>, <robh+dt@kernel.org>,
+        <krzk+dt@kernel.org>
+CC:     <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
+        <roger.lu@mediatek.com>, <hsinyi@google.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Tue, 12 Apr 2022 20:26:06 +0800
+In-Reply-To: <7hwnfv4hfr.fsf@baylibre.com>
+References: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
+         <20220408045908.21671-14-rex-bc.chen@mediatek.com>
+         <7hfsmn5m9f.fsf@baylibre.com>
+         <bc6dd020a1cc3f00f5be2bf2929046b9116bbeef.camel@mediatek.com>
+         <7hwnfv4hfr.fsf@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-handle_initrd() marks itself as PF_FREEZER_SKIP in order to ensure
-that the UMH, which is going to freeze the system, doesn't
-indefinitely wait for it's caller.
+On Mon, 2022-04-11 at 11:13 -0700, Kevin Hilman wrote:
+> Rex-BC Chen <rex-bc.chen@mediatek.com> writes:
+> 
+> > On Fri, 2022-04-08 at 13:54 -0700, Kevin Hilman wrote:
+> > > Rex-BC Chen <rex-bc.chen@mediatek.com> writes:
+> > > 
+> > > > From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+> > > > 
+> > > > In some MediaTek SoCs, like MT8183, CPU and CCI share the same
+> > > > power
+> > > > supplies. Cpufreq needs to check if CCI devfreq exists and wait
+> > > > until
+> > > > CCI devfreq ready before scaling frequency.
+> > > > 
+> > > > - Add is_ccifreq_ready() to link CCI device to CPI, and CPU
+> > > > will
+> > > > start
+> > > >   DVFS when CCI is ready.
+> > > > - Add platform data for MT8183.
+> > > > 
+> > > > Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+> > > 
+> > > The checks here are not enough, and will lead to unexpected
+> > > behavior.
+> > > IIUC, before doing DVFS, you're checking:
+> > > 
+> > > 1) if the "cci" DT node is present and
+> > > 2) if the driver for that device is bound
+> > > 
+> > > If both those conditions are not met, you don't actually fail,
+> > > you
+> > > just
+> > > silently do nothing in ->set_target().  As Angelo pointed out
+> > > also,
+> > > this
+> > > is not a good idea, and will be rather confusing to users.
+> > > 
+> > > The same thing would happen if the cci DT node was present, but
+> > > the
+> > > CCI
+> > > devfreq driver was disabled.  Silent failure would also be quite
+> > > unexpected behavior.  Similarily, if the cci DT node is not
+> > > present
+> > > at
+> > > all (like it is in current upstream DT), this CPUfreq driver will
+> > > silently do nothing.  Not good.
+> > > 
+> > > So, this patch needs to handle several scenarios:
+> > > 
+> > > 1) CCI DT node not present
+> > > 
+> > > In this case, the driver should still operate normally.  With no
+> > > CCI
+> > > node, or driver there's no conflict.
+> > > 
+> > > 2) CCI DT present/enabled but not yet bound
+> > > 
+> > > In this case, you could return -EAGAIN as suggested by Angelo, or
+> > > maybe
+> > > better, it should do a deferred probe.
+> > > 
+> > > 3) CCI DT present, but driver disabled
+> > > 
+> > > This case is similar to (1), this driver should continue to work.
+> > > 
+> > > Kevin
+> > 
+> > Hello Kevin and Angelo,
+> > 
+> > In my review, if we do not get the link or the link status is not
+> > correct between cci and cpufreq in target_index, I think it will
+> > never
+> > established again for this link.
+> > Because it's not checked in probe stage.
+> > 
+> > So I think we just need to deal with the issue without cci device,
+> > and
+> > don't expect the link between cci and cpufreq will be connected
+> > again.
+> > 
+> > If I am wrong, please correct me.
+> 
+> I don't fully understand your questions, but I think what your
+> getting
+> at suggest that you might need to use deferred probe to handle the
+> case
+> where the ordering of CCI and cpufreq probing is not predictable.
+> 
+> Kevin
 
-Rework things by adding UMH_FREEZABLE to indicate the completion is
-freezable.
+Hello Kevin and Angelo,
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
----
- include/linux/umh.h     |    9 +++++----
- init/do_mounts_initrd.c |   10 +---------
- kernel/umh.c            |    8 ++++++++
- 3 files changed, 14 insertions(+), 13 deletions(-)
+I can summary what I got now:
 
---- a/include/linux/umh.h
-+++ b/include/linux/umh.h
-@@ -11,10 +11,11 @@
- struct cred;
- struct file;
- 
--#define UMH_NO_WAIT	0	/* don't wait at all */
--#define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
--#define UMH_WAIT_PROC	2	/* wait for the process to complete */
--#define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
-+#define UMH_NO_WAIT	0x00	/* don't wait at all */
-+#define UMH_WAIT_EXEC	0x01	/* wait for the exec, but not the process */
-+#define UMH_WAIT_PROC	0x02	/* wait for the process to complete */
-+#define UMH_KILLABLE	0x04	/* wait for EXEC/PROC killable */
-+#define UMH_FREEZABLE	0x08	/* wait for EXEC/PROC freezable */
- 
- struct subprocess_info {
- 	struct work_struct work;
---- a/init/do_mounts_initrd.c
-+++ b/init/do_mounts_initrd.c
-@@ -79,19 +79,11 @@ static void __init handle_initrd(void)
- 	init_mkdir("/old", 0700);
- 	init_chdir("/old");
- 
--	/*
--	 * In case that a resume from disk is carried out by linuxrc or one of
--	 * its children, we need to tell the freezer not to wait for us.
--	 */
--	current->flags |= PF_FREEZER_SKIP;
--
- 	info = call_usermodehelper_setup("/linuxrc", argv, envp_init,
- 					 GFP_KERNEL, init_linuxrc, NULL, NULL);
- 	if (!info)
- 		return;
--	call_usermodehelper_exec(info, UMH_WAIT_PROC);
--
--	current->flags &= ~PF_FREEZER_SKIP;
-+	call_usermodehelper_exec(info, UMH_WAIT_PROC|UMH_FREEZABLE);
- 
- 	/* move initrd to rootfs' /old */
- 	init_mount("..", ".", NULL, MS_MOVE, NULL);
---- a/kernel/umh.c
-+++ b/kernel/umh.c
-@@ -28,6 +28,7 @@
- #include <linux/async.h>
- #include <linux/uaccess.h>
- #include <linux/initrd.h>
-+#include <linux/freezer.h>
- 
- #include <trace/events/module.h>
- 
-@@ -436,6 +437,9 @@ int call_usermodehelper_exec(struct subp
- 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
- 		goto unlock;
- 
-+	if (wait & UMH_FREEZABLE)
-+		freezer_do_not_count();
-+
- 	if (wait & UMH_KILLABLE) {
- 		retval = wait_for_completion_killable(&done);
- 		if (!retval)
-@@ -448,6 +452,10 @@ int call_usermodehelper_exec(struct subp
- 	}
- 
- 	wait_for_completion(&done);
-+
-+	if (wait & UMH_FREEZABLE)
-+		freezer_count();
-+
- wait_done:
- 	retval = sub_info->retval;
- out:
+1. Why we need cci for cpufreq in MT8183 and MT8186:
+   a. CCI is a mediatek hw module.
+   b. For mediatek SoCs before MT8183, like MT8173, the CCI hw
+      is not introduced.
+   c. The frequency for cci and cpufreq are determined could
+      be configed at bootloader stage, so the frequency when
+      entering kernel is unknown.
+   d. Cpu little core and cci are using the same regulator.
+   e. If we do not control CCI and just adjust the voltage in
+      cpufreq driver.
+      When we adjust the voltage smaller because we need to reduce
+      the frequency, the CCI could run in high frequency which is
+      set in bootloader.
+      This will cause some problem, the cci could crash.
 
+      Use MT8186 for a example, the bootloader set cci freq as
+      1.385GHz and cpufreq as 2GHz.
+      If entering kernel and we only adjust the cpufreq voltage, if
+      the cpufreq is under 1.618GHz, the cci will be out of spec.
+      You can refer to the chrome project bootloader "Coreboot" patch:
+      
+https://review.coreboot.org/c/coreboot/+/59569/2/src/mainboard/google/corsola/romstage.c
+
+   f. If cpufreq driver wait cci ready, regulator framework will take
+      the highest voltage requests from cci and cpufreq as output
+      so that it prevents from high freqeuncy low voltage crash.
+   d. Therefore, I think it's not a good idea to bypass cci device if
+      the ccifreq_supported is true in MT8183 and MT8186.
+
+2. Check the device link status is DL_DEV_DRIVER_BOUND is used for
+   promising the cci is probed done.
+
+3. About the cpufreq_driver->target_index
+   a. When I trace the common drivers, I found if the return value is
+      not zero, it will be BUG_ON.
+      ref:
+https://elixir.bootlin.com/linux/latest/source/drivers/cpufreq/cpufreq.c#L1471
+   b. I also try to move is_ccifreq_ready() to other place, like
+      cpufreq_driver->init and cpufreq probe function.
+      There will be new issue. Do you have any suggetion that we can
+      retern value of DEFER_PROBE?
+
+BRs,
+Rex
 
