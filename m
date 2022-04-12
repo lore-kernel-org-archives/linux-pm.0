@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03CF5C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 10:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F82FC433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 10:12:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345240AbiDLKO2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Apr 2022 06:14:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47444 "EHLO
+        id S1350109AbiDLKOe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Apr 2022 06:14:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236106AbiDLJmZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 05:42:25 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34A2661A28
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 01:46:43 -0700 (PDT)
+        with ESMTP id S1351758AbiDLJmd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 05:42:33 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA07B517DB
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 01:50:47 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C6EF0B81B75
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 08:46:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 51256C385A5
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 08:46:40 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 5AD16B81B66
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 08:50:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1EBCFC385A6
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 08:50:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649753200;
-        bh=oE3D8WDtjWO9aZxgaiCSDzFF3HBnEufRUgyvwpJcPI4=;
+        s=k20201202; t=1649753445;
+        bh=3ZqdZ3DEgrUmw984qgZvplBrpWBxlLiAY8kBIw4hJ+w=;
         h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=WoCsgMhvZ424X3lpgoDX3kc/vEBLWNvWsZJKsz86ak3hOZt0wUkOic04Z3d8OWjRL
-         egVUwH41Tzheo47B9s7fjThhTQeifiQkV2uVM706QtBc/K1twmuFPCl9A/Own7DQjw
-         K7kiBtC+bHS2MAHfczABlf8o0I/9UtwYROqI4J5131aCiuJXGY8kkU7cnfclGVdYjo
-         +ML/sZLFTvL2TUI7ctkBpn/paMMKVffhiKEf0G2S1/bE2XfmaA2VMSMCphNf1AjJKJ
-         V0FCE7RWrLJI25D5Uf23gKrjGRA6HSEGav7RIIuQSuh+5G+LY82CyExNI4IYNnm/39
-         xymp8gXaz4BBQ==
+        b=gbgQRtQ76zfM+MaEusQ1Ny31OLHGTXeFxO8EFNrPQWc/0dRA4uE7NexzJ33BopIGq
+         Tv2iMcLx6+KQ0sOmLffuOAs0KI2d7MWzkQj/HSRUV75eFjxnxiDk3OKExsLKEOrqSD
+         JCzQXQxMLVpUmnPx263yNvwR88YNasCSuJK3J2F1NZn5W5j/Ef41M8jIkatadkhiPi
+         EkM+roI23ohqDO3FP2yYexBCqtqB09eNIug+81icPHv+DFyEM45Me7DGl2sQ/8/0Gk
+         jqgFUuk+39VSSrcn1d5eynSr45F/jysrbkUk7mcgGbPVK6bZar+byotEXJlxAiSeMX
+         dfp19b34J4NNA==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 30BE6CC13AD; Tue, 12 Apr 2022 08:46:40 +0000 (UTC)
+        id 06622C05FCE; Tue, 12 Apr 2022 08:50:45 +0000 (UTC)
 From:   bugzilla-daemon@kernel.org
 To:     linux-pm@vger.kernel.org
 Subject: [Bug 215800] amd-pstate does not allow to set arbitrary maximum CPU
  frequency above 2200MHz for a desktop Zen 3 CPU
-Date:   Tue, 12 Apr 2022 08:46:39 +0000
+Date:   Tue, 12 Apr 2022 08:50:44 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -53,7 +53,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215800-137361-WixYeQd9MU@https.bugzilla.kernel.org/>
+Message-ID: <bug-215800-137361-U8EFvraSCi@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-215800-137361@https.bugzilla.kernel.org/>
 References: <bug-215800-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -67,16 +67,24 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D215800
 
---- Comment #9 from Artem S. Tashkinov (aros@gmx.com) ---
-(In reply to Joe from comment #7)
-> Created attachment 300747 [details]
-> Max freq
+--- Comment #10 from Artem S. Tashkinov (aros@gmx.com) ---
+Even restoring scaling_max_freq by setting it to cpuinfo_max_freq doesn't f=
+ix
+the issue.
 
-Changing scaling_max_freq makes the CPU stay at frequencies 2.2GHz or below.
+Again, I'm repeating what I already said in the original bug report.
 
-Enter e.g. 3000000 (3GHz) as scaling_max_freq for all cores, then observe t=
-hat
-scaling_cur_freq never exceeds 2.2GHz.
+
+
+> For my Ryzen 7 5800X I've tried (under root) numbers from 600 000 to 2 200
+> 000 and they all work:
+>=20
+> echo $number | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+>=20
+> However anything above 2 200 000 instead makes **the CPU stay at 2.2GHz**.
+
+Don't mind scaling_max_freq, it's scaling_cur_freq that never exceeds 2.2GH=
+z!
 
 --=20
 You may reply to this email to add a comment.
