@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0825EC433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 12:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DAF2C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 12:31:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347101AbiDLMdx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Apr 2022 08:33:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52318 "EHLO
+        id S1352372AbiDLMdy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Apr 2022 08:33:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245744AbiDLMdS (ORCPT
+        with ESMTP id S1345339AbiDLMdS (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 08:33:18 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9AA95A149;
-        Tue, 12 Apr 2022 04:51:12 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 615C55A157;
+        Tue, 12 Apr 2022 04:51:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=YkcanMudUrrWwtCRX80sZvYWSgv9wqc6arRCEIrUa2c=; b=DowUsHVCTdJrX61F02nRZe9+b1
-        vNUfGe0yV+4Gzy1fW/WyyLmCt+3yzKOR+1G3Q/mwporGdR2QhiTPVQsbaPx2xGJx4aNxRBG+pB6mP
-        zAyi8rBTahlEne/2Q/93AccIh/eeEaAax0r5+f5dWt28KuMaVoJoRlAFE3Ox78/OfEyEDwZNKOcax
-        fuagcO9tpllfhKn3JPwfPiXWcVDJ9w8gUec2yTVDr44746nTzu3/ePQ89qUpewRnkjBbFT0hHQkPc
-        zSiO5MGuCeh7ZseCU884xHhe6M9a2VJ9/zadm27LK623qf1FaUHizlZlpPHASecxFSj4EXbW/UBas
-        v4HvTStQ==;
+        bh=knAjhsG/6jthQQWVo2QqXwIZ8VPSdd1nuBR6NhivhIM=; b=NM1atfIUmU+QivfU/eeeHNMPrm
+        A9rGuB8iqq6/RLJFLEX8OGlSVztUHLlL8GpK7bGqdpMtnHLhmE+dEWQRq2pLha152nQDDwlIUdVo3
+        Faeo9/VdbgrBhy8SWYiGNCNZaR1MyAdvEY93AV6b9KJKyjPznELglMFaeCLVQ6Lev13nMe5D6TbzL
+        xyBCbmVFiAv5qO+l5Rczg3EOtmu7mJSXWHgU0cePNto6rKhVz0JlrHxFAes+PizBPdAndcyfiTRrg
+        MpIb0NGroSCzA8Obcx4bttculHZ9CEW+gU7rprcR970T4KnQGGginaQyWjXgApRbAzarwiA9+/AVh
+        XFcfZxuA==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1neF2o-004JiY-Ih; Tue, 12 Apr 2022 11:50:51 +0000
+        id 1neF2o-004JiX-Ja; Tue, 12 Apr 2022 11:50:51 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6238D3002DE;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 70FCD300C64;
         Tue, 12 Apr 2022 13:50:47 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 4399C3017A05D; Tue, 12 Apr 2022 13:50:47 +0200 (CEST)
-Message-ID: <20220412114853.842942162@infradead.org>
+        id 4EA113017A437; Tue, 12 Apr 2022 13:50:47 +0200 (CEST)
+Message-ID: <20220412114853.964298896@infradead.org>
 User-Agent: quilt/0.66
-Date:   Tue, 12 Apr 2022 13:44:23 +0200
+Date:   Tue, 12 Apr 2022 13:44:25 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -45,7 +45,7 @@ To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         bigeasy@linutronix.de, Will Deacon <will@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH 2/5] sched,ptrace: Fix ptrace_check_attach() vs PREEMPT_RT
+Subject: [PATCH 4/5] freezer,umh: Clean up freezer/initrd interaction
 References: <20220412114421.691372568@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -53,275 +53,91 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently ptrace_check_attach() / ptrace_freeze_traced() rely on
-specific scheduler behaviour to freeze the task. In specific, it
-relies on there not being any blocking behaviour between:
+handle_initrd() marks itself as PF_FREEZER_SKIP in order to ensure
+that the UMH, which is going to freeze the system, doesn't
+indefinitely wait for it's caller.
 
-  set_special_state(TASK_TRACED);
-  ...
-  schedule();
-
-specifically it relies on being able to change p->__state between
-those two points (to clear/set TASK_WAKEKILL) and relies on
-wait_task_inactive() to ensure the task has hit that schedule().
-
-However, PREEMPT_RT is breaking this by introducing sleeping
-spinlocks. The consequence of sleeping spinlocks is that p->__state
-can change (also see p->saved_state) and that a task can be inactive
-(off the runqueue) and *NOT* be at the schedule() as expected.
-
-That is, both the p->__state and wait_task_inactive() usage are
-broken.
-
-In order to avoid having to deal with p->saved_state, flip the
-wait_task_inactive() and p->__state poking. That is, first wait for
-the victim to be in schedule() and then poke p->__state, which is in a
-known state by then.
-
-The only problem with this is that it's possible to race with a
-concurrent ptrace_detach()+pthread_attach() landing back in the same
-situation as before. To deal with this, compare the task's nvcsw
-count to make sure there is no scheduling between the initial
-quiescence and the final task state poking.
+Rework things by adding UMH_FREEZABLE to indicate the completion is
+freezable.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- kernel/ptrace.c     |  175 +++++++++++++++++++++++++++++++++++++++++-----------
- kernel/sched/core.c |    5 -
- 2 files changed, 141 insertions(+), 39 deletions(-)
+ include/linux/umh.h     |    9 +++++----
+ init/do_mounts_initrd.c |   10 +---------
+ kernel/umh.c            |    8 ++++++++
+ 3 files changed, 14 insertions(+), 13 deletions(-)
 
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -186,31 +186,13 @@ static bool looks_like_a_spurious_pid(st
- }
+--- a/include/linux/umh.h
++++ b/include/linux/umh.h
+@@ -11,10 +11,11 @@
+ struct cred;
+ struct file;
  
- /*
-- * Ensure that nothing can wake it up, even SIGKILL
-+ * Ptrace operation is complete, re-allow TASK_WAKEKILL.
-  *
-- * A task is switched to this state while a ptrace operation is in progress;
-- * such that the ptrace operation is uninterruptible.
-+ * Unfreeze is easy, since ptrace_check_attach() guarantees the task is off the
-+ * runqueue and __TASK_TRACED. If it's still __TASK_TRACED holding
-+ * sighand->siglock serializes against ptrace_signal_wake_up() and we can
-+ * simply put TASK_WAKEKILL back (or wake because there's a pending fatal).
-  */
--static bool ptrace_freeze_traced(struct task_struct *task)
--{
--	bool ret = false;
--
--	/* Lockless, nobody but us can set this flag */
--	if (task->jobctl & JOBCTL_LISTENING)
--		return ret;
--
--	spin_lock_irq(&task->sighand->siglock);
--	if (task_is_traced(task) && !looks_like_a_spurious_pid(task) &&
--	    !__fatal_signal_pending(task)) {
--		task->jobctl |= JOBCTL_TRACED_FROZEN;
--		WRITE_ONCE(task->__state, __TASK_TRACED);
--		ret = true;
--	}
--	spin_unlock_irq(&task->sighand->siglock);
--
--	return ret;
--}
--
- static void ptrace_unfreeze_traced(struct task_struct *task)
- {
- 	if (READ_ONCE(task->__state) != __TASK_TRACED)
-@@ -234,6 +216,94 @@ static void ptrace_unfreeze_traced(struc
- 	spin_unlock_irq(&task->sighand->siglock);
- }
+-#define UMH_NO_WAIT	0	/* don't wait at all */
+-#define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
+-#define UMH_WAIT_PROC	2	/* wait for the process to complete */
+-#define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
++#define UMH_NO_WAIT	0x00	/* don't wait at all */
++#define UMH_WAIT_EXEC	0x01	/* wait for the exec, but not the process */
++#define UMH_WAIT_PROC	0x02	/* wait for the process to complete */
++#define UMH_KILLABLE	0x04	/* wait for EXEC/PROC killable */
++#define UMH_FREEZABLE	0x08	/* wait for EXEC/PROC freezable */
  
-+/*
-+ * In order to start a ptrace operation the victim task must be off the
-+ * runqueue in state __TASK_TRACED.
-+ */
-+static int __ptrace_freeze_cond(struct task_struct *p)
-+{
-+	if (!task_is_traced(p))
-+		return -ESRCH;
-+
-+	if (task_curr(p))
-+		return -EINPROGRESS;
-+
-+	if (p->on_rq)
-+		return -EWOULDBLOCK;
-+
-+	/*
-+	 * Due to PREEMPT_RT it is possible the task is blocked on a spinlock
-+	 * in state TASK_RTLOCK_WAIT, if so, gotta wait until that goes away.
-+	 */
-+	if (!(READ_ONCE(p->__state) & __TASK_TRACED))
-+		return -EWOULDBLOCK;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Returns:
-+ *  0:		  task is off runqueue in TASK_TRACED
-+ *  -ESRCH:	  not traced
-+ *  -EINPROGRESS: still running
-+ *  -EWOULDBLOCK: not running
-+ */
-+static int __ptrace_pre_freeze(struct task_struct *p, void *arg)
-+{
-+	int ret;
-+
-+	ret = __ptrace_freeze_cond(p);
-+	if (ret)
-+		return ret;
-+
-+	*(unsigned long *)arg = p->nvcsw;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Returns:
-+ *  0:		  task is off runqueue, now __TASK_TRACED
-+ *  -ESRCH:	  not traced, or scheduled since pre_freeze
-+ *  -GAIN:	  still running
-+ *  -EWOULDBLOCK: not running
-+ */
-+static int __ptrace_freeze(struct task_struct *p, void *arg)
-+{
-+	int ret;
-+
-+	ret = __ptrace_freeze_cond(p);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Task scheduled between __ptrace_pre_freeze() and here, not our task
-+	 * anymore.
-+	 */
-+	if (*(unsigned long *)arg != p->nvcsw)
-+		return -ESRCH;
-+
-+	if (looks_like_a_spurious_pid(p))
-+		return -ESRCH;
-+
-+	if (__fatal_signal_pending(p))
-+		return -ESRCH;
-+
-+	/*
-+	 * we hold:
-+	 *
-+	 *  - tasklist_lock       (avoids ptrace_detach)
-+	 *  - p->sighand->siglock (avoids ptrace_signal_wake_up)
-+	 *  - p->pi_lock          (avoids anything scheduler)
-+	 *
-+	 * task is absolutely frozen, now we can safely take out
-+	 * TASK_WAKEKILL.
-+	 */
-+	p->jobctl |= JOBCTL_TRACED_FROZEN;
-+	WRITE_ONCE(p->__state, __TASK_TRACED);
-+	return 0;
-+}
-+
- /**
-  * ptrace_check_attach - check whether ptracee is ready for ptrace operation
-  * @child: ptracee to check for
-@@ -253,7 +323,36 @@ static void ptrace_unfreeze_traced(struc
-  */
- static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
- {
--	int ret = -ESRCH;
-+	ktime_t to = TICK_NSEC;
-+	unsigned long nvcsw;
-+	int ret;
-+
-+	if (child == current)
-+		return -ESRCH;
-+
-+	if (!ignore_state) for (;;) {
-+		/*
-+		 * Ensure this child is a quiescent TASK_TRACED task.
-+		 */
-+		ret = task_call_func(child, __ptrace_pre_freeze, &nvcsw);
-+		switch (ret) {
-+		case 0:
-+			break;
-+		case -ESRCH:
-+			return ret;
-+		case -EINPROGRESS:
-+			while (task_curr(child))
-+				cpu_relax();
-+			continue;
-+		case -EWOULDBLOCK:
-+			/*
-+			 * XXX horrible, randomly wait 1 tick and try again.
-+			 */
-+			set_current_state(TASK_UNINTERRUPTIBLE);
-+			schedule_hrtimeout(&to, HRTIMER_MODE_REL_HARD);
-+			continue;
-+		}
-+	}
+ struct subprocess_info {
+ 	struct work_struct work;
+--- a/init/do_mounts_initrd.c
++++ b/init/do_mounts_initrd.c
+@@ -79,19 +79,11 @@ static void __init handle_initrd(void)
+ 	init_mkdir("/old", 0700);
+ 	init_chdir("/old");
  
- 	/*
- 	 * We take the read lock around doing both checks to close a
-@@ -262,29 +361,35 @@ static int ptrace_check_attach(struct ta
- 	 * we are sure that this is our traced child and that can only
- 	 * be changed by us so it's not changing right after this.
- 	 */
-+	ret = -ESRCH;
- 	read_lock(&tasklist_lock);
- 	if (child->ptrace && child->parent == current) {
- 		WARN_ON(READ_ONCE(child->__state) == __TASK_TRACED);
-+		if (ignore_state) {
-+			ret = 0;
-+			goto unlock;
-+		}
-+
-+		if (child->jobctl & JOBCTL_LISTENING)
-+			goto unlock;
-+
- 		/*
- 		 * child->sighand can't be NULL, release_task()
- 		 * does ptrace_unlink() before __exit_signal().
- 		 */
--		if (ignore_state || ptrace_freeze_traced(child))
--			ret = 0;
--	}
--	read_unlock(&tasklist_lock);
+-	/*
+-	 * In case that a resume from disk is carried out by linuxrc or one of
+-	 * its children, we need to tell the freezer not to wait for us.
+-	 */
+-	current->flags |= PF_FREEZER_SKIP;
 -
--	if (!ret && !ignore_state) {
--		if (!wait_task_inactive(child, __TASK_TRACED)) {
-+		spin_lock_irq(&child->sighand->siglock);
-+		ret = task_call_func(child, __ptrace_freeze, &nvcsw);
-+		if (ret) {
- 			/*
--			 * This can only happen if may_ptrace_stop() fails and
--			 * ptrace_stop() changes ->state back to TASK_RUNNING,
--			 * so we should not worry about leaking __TASK_TRACED.
-+			 * If *anything* changed since __ptrace_pre_freeze()
-+			 * this fails.
- 			 */
--			WARN_ON(READ_ONCE(child->__state) == __TASK_TRACED);
- 			ret = -ESRCH;
- 		}
-+		spin_unlock_irq(&child->sighand->siglock);
+ 	info = call_usermodehelper_setup("/linuxrc", argv, envp_init,
+ 					 GFP_KERNEL, init_linuxrc, NULL, NULL);
+ 	if (!info)
+ 		return;
+-	call_usermodehelper_exec(info, UMH_WAIT_PROC);
+-
+-	current->flags &= ~PF_FREEZER_SKIP;
++	call_usermodehelper_exec(info, UMH_WAIT_PROC|UMH_FREEZABLE);
+ 
+ 	/* move initrd to rootfs' /old */
+ 	init_mount("..", ".", NULL, MS_MOVE, NULL);
+--- a/kernel/umh.c
++++ b/kernel/umh.c
+@@ -28,6 +28,7 @@
+ #include <linux/async.h>
+ #include <linux/uaccess.h>
+ #include <linux/initrd.h>
++#include <linux/freezer.h>
+ 
+ #include <trace/events/module.h>
+ 
+@@ -436,6 +437,9 @@ int call_usermodehelper_exec(struct subp
+ 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
+ 		goto unlock;
+ 
++	if (wait & UMH_FREEZABLE)
++		freezer_do_not_count();
++
+ 	if (wait & UMH_KILLABLE) {
+ 		retval = wait_for_completion_killable(&done);
+ 		if (!retval)
+@@ -448,6 +452,10 @@ int call_usermodehelper_exec(struct subp
  	}
-+unlock:
-+	read_unlock(&tasklist_lock);
  
- 	return ret;
- }
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6310,10 +6310,7 @@ static void __sched notrace __schedule(u
- 
- 	/*
- 	 * We must load prev->state once (task_struct::state is volatile), such
--	 * that:
--	 *
--	 *  - we form a control dependency vs deactivate_task() below.
--	 *  - ptrace_{,un}freeze_traced() can change ->state underneath us.
-+	 * that we form a control dependency vs deactivate_task() below.
- 	 */
- 	prev_state = READ_ONCE(prev->__state);
- 	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
+ 	wait_for_completion(&done);
++
++	if (wait & UMH_FREEZABLE)
++		freezer_count();
++
+ wait_done:
+ 	retval = sub_info->retval;
+ out:
 
 
