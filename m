@@ -2,104 +2,92 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FF36C433FE
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 10:12:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC662C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 10:30:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357176AbiDLKOl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Apr 2022 06:14:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39344 "EHLO
+        id S235485AbiDLKcO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Apr 2022 06:32:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50416 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351976AbiDLJmd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 05:42:33 -0400
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4263ADE81
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 01:51:32 -0700 (PDT)
-Received: by mail-ed1-x52c.google.com with SMTP id g20so21489377edw.6
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 01:51:32 -0700 (PDT)
+        with ESMTP id S1379589AbiDLKTp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 06:19:45 -0400
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2CBBB78
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 02:22:42 -0700 (PDT)
+Received: by mail-ed1-x530.google.com with SMTP id u18so10907888eda.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2022 02:22:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=message-id:date:mime-version:user-agent:subject:content-language:to
          :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=VyKuoVOFtbJpQqYL42DYs7vEqjn6TG+3AG+tuB3ScVs=;
-        b=R4JpCrbTrv7VPod1/4uHIpPG60WwEs6xdg5RD47te/xuroYSMJV17AJ9kTj+IjCRfl
-         1vvR6A9B+eDfXxQpkBMMoUr1qtN8ZykBYccQDCshfgpuJSIW6r2x+qMueE6JZN8/31sv
-         NyxM36AjZiwkWybsHCh+WNLUkZD/m+HTzhkVN5d3GsSnz+TOnW+oZ6DWwlnQHfFNEKt9
-         8gi6kCzc/6dfh+pI59Xll/cqC4SVrUG0AYHSAy1sC30xGWHvUIYFVVrzPJp0NTKtNUrU
-         FC70CNLpMPZ8gckRC69enVnqUIZkm5W9p4O3G3x5WYY7IOVJDDiJcmOAAI8CsfkInQX8
-         5p5w==
+        bh=bZb78c0Dkr90FauEaWEqBXjjhU7NexeivXh5gp2UwLs=;
+        b=nJd5sbCAd9J/o4YopB04i0kUvmA/FYRwp4TZLvMSdd/djfBJC5mEQo1zlTxMl6u561
+         pb4/lYc1Od+ESsT6Y6OMh/rLitkI/mrPRe0d0+2qyvyLqP6G2HsMjWsJfY9VzjfbD7fi
+         e17tMN2ldkGal1+yNOHeGymcmPXUVAfyjHvrmroqXTUjZGCy5zRFhLwzqs9uaX40rOGM
+         p5JAxjE0PPDtWF+Z0eGgO2NzfHkJmoVt2Ofv2qpQ1F1dW0Ymhy/Yi+RrnKMFKLCaP0MK
+         cTdhydh3xM3FOIyWbU6UTkTduoy9WnyqbxdejqVdrVHeg7B3cK4UJt22c4HLb5864Uss
+         Uc3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=VyKuoVOFtbJpQqYL42DYs7vEqjn6TG+3AG+tuB3ScVs=;
-        b=M6il1IKKuRiq1bWnl3+7ILZ+b7YIBZRXCVQf+4TMK07/zaXS7AIx2Xky5o6MnBx/s1
-         jp4O0lJrX2FjgeDS+7WHDsIB94YBTEWzIaYXSHQPV0GBKYcgRRn64TGHwXBe4wmxvtMk
-         KHSDPPgzrdmLPhzWr7Dlj1qoErm8p56mcwQSR5mVDtUXMF23ALEmQbASktPJw9ocfuhf
-         i83YXOS5tBb/OQ0BB8I/XV2o9FvVGA6mkJPslz86pe+cELRbS2Mb9Zn0RTSEW+BS0cur
-         sh84+oTD2X16iMy0atxjB7pKZ+zxbv/Js8aqemZTzRHGKNYT5XtQVzjG/ktiRcvRCGyv
-         c4wQ==
-X-Gm-Message-State: AOAM531nO7Xhj558ssWsGDFwZC1H22DtSoFr1/f2taTFLt84Bc8G+X7k
-        c516PXayqlTiDnGBz3pfEj/ZMQ==
-X-Google-Smtp-Source: ABdhPJzhgwKUzzSz6he1cnlPJJ1RdVI6ilJSVC2f6gsXEHJNEA9nt9WQDY78OnBYwejeXogZpjSQFA==
-X-Received: by 2002:aa7:cac4:0:b0:418:85b7:adec with SMTP id l4-20020aa7cac4000000b0041885b7adecmr37427381edt.231.1649753490825;
-        Tue, 12 Apr 2022 01:51:30 -0700 (PDT)
+        bh=bZb78c0Dkr90FauEaWEqBXjjhU7NexeivXh5gp2UwLs=;
+        b=wmj625UB3JQedYRg6MS/ykI+EBWzm2Ga/jRyAuk2fu69ktiiysdZMY4V2OKiR5mJKU
+         3lyM8vI296gPEDFS5E5zlbCOISOwsgPLiHNR0uNBfYTqNGociCF/lgltUGkYHz5EfmWR
+         YhU9rVUUuavksPS/TQ3d8uCHC8s5xIVThvcPiCLnrhZtG1IVUP6dcq5h6VFE327DfkYz
+         XtN0By30Adcd0KAECaMevC+Lh9AX2q7a28yXNCvHbw3j/H+U/fGeCMZQjYn+uiJLgYSN
+         JmCDIAmu451cbmzvqFohLFTChJsUkoOudbW/ZFEa/Egdx67liwEZag0kZ5HTvoICbgNG
+         lnSg==
+X-Gm-Message-State: AOAM53018N/uaX1YT5SzpWSJ1357CDkRYo9SZlwl5hAseFwg6kkioeyc
+        YCvzHPjjvyz2pxyIYtSdfT9bEg==
+X-Google-Smtp-Source: ABdhPJzjntVBw7ZPan1uIuGYH95xd+2RtjqZ63AcS1EbLEPJuhLy8PiF9590Xuzc4M4jj0o/LN+tCQ==
+X-Received: by 2002:a50:9eaa:0:b0:418:f708:f59c with SMTP id a39-20020a509eaa000000b00418f708f59cmr37146046edf.333.1649755361419;
+        Tue, 12 Apr 2022 02:22:41 -0700 (PDT)
 Received: from [192.168.0.194] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.gmail.com with ESMTPSA id g2-20020a50bf42000000b0041cc5233252sm13505771edk.57.2022.04.12.01.51.29
+        by smtp.gmail.com with ESMTPSA id f4-20020a170906c08400b006e82dbd3f6esm6260961ejz.116.2022.04.12.02.22.40
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 12 Apr 2022 01:51:30 -0700 (PDT)
-Message-ID: <ad2c72e8-4608-9527-146d-43aa006e1306@linaro.org>
-Date:   Tue, 12 Apr 2022 10:51:29 +0200
+        Tue, 12 Apr 2022 02:22:40 -0700 (PDT)
+Message-ID: <7e1e6c10-c02a-c8da-44c0-ba3abef1950e@linaro.org>
+Date:   Tue, 12 Apr 2022 11:22:39 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH v2 2/2] PM / devfreq: mediatek: Introduce MediaTek CCI
- devfreq driver
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Add Qualcomm SDX65 DT
+ bindings
 Content-Language: en-US
-To:     Johnson Wang <johnson.wang@mediatek.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        cw00.choi@samsung.com, krzk+dt@kernel.org, robh+dt@kernel.org,
-        kyungmin.park@samsung.com
-Cc:     khilman@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, jia-wei.chang@mediatek.com,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
-References: <20220408052150.22536-1-johnson.wang@mediatek.com>
- <20220408052150.22536-3-johnson.wang@mediatek.com>
- <76d58182-2f56-32b2-42e9-2ecbdd09ba3d@linaro.org>
- <d900f8181bddb20a56231310d46b9427c40e77b8.camel@mediatek.com>
+To:     Rohit Agarwal <quic_rohiagar@quicinc.com>, agross@kernel.org,
+        bjorn.andersson@linaro.org, djakov@kernel.org, robh+dt@kernel.org,
+        krzk+dt@kernel.org
+Cc:     manivannan.sadhasivam@linaro.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <1649740053-14507-1-git-send-email-quic_rohiagar@quicinc.com>
+ <1649740053-14507-2-git-send-email-quic_rohiagar@quicinc.com>
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <d900f8181bddb20a56231310d46b9427c40e77b8.camel@mediatek.com>
+In-Reply-To: <1649740053-14507-2-git-send-email-quic_rohiagar@quicinc.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/04/2022 10:39, Johnson Wang wrote:
->>> +static struct platform_driver mtk_ccifreq_platdrv = {
->>> +	.probe	= mtk_ccifreq_probe,
->>> +	.remove	= mtk_ccifreq_remove,
->>> +	.driver = {
->>> +		.name = "mtk-ccifreq",
->>> +		.of_match_table = of_match_ptr(mtk_ccifreq_machines),
->>
->> You use of_match_ptr() so is it possible to build it without OF? If
->> so,
->> then mtk_ccifreq_machines needs maybe_unused.
->>
+On 12/04/2022 07:07, Rohit Agarwal wrote:
+> Add interconnect IDs for Qualcomm SDX65 platform.
 > 
-> No, this driver must be built with OF due to our CPU arch.
+> Signed-off-by: Rohit Agarwal <quic_rohiagar@quicinc.com>
 
-COMPILE_TEST does not use your arch... There are stubs for most of
-of-like functions, so !OF should build anyway.
+(...)
 
-> Should I add some dependencies in Kconfig to ensure OF is enabled?
+> diff --git a/include/dt-bindings/interconnect/qcom,sdx65.h b/include/dt-bindings/interconnect/qcom,sdx65.h
+> new file mode 100644
+> index 0000000..8d02c79
+> --- /dev/null
+> +++ b/include/dt-bindings/interconnect/qcom,sdx65.h
+> @@ -0,0 +1,67 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
 
-There are different ways to solve it and it depends on what goal do you
-want to achieve? One ways is to use maybe_unused and of_match_ptr. Other
-way is to do not use them (skip both).
+Is it possible to license it the same as bindings (GPL-2.0 OR BSD-2-Clause)?
 
 Best regards,
 Krzysztof
