@@ -2,66 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29BC0C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 10:54:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FD86C433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Apr 2022 11:08:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377535AbiDLK4k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Apr 2022 06:56:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53716 "EHLO
+        id S241987AbiDLLKM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Apr 2022 07:10:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1356946AbiDLKpq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 06:45:46 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A89D659A67;
-        Tue, 12 Apr 2022 02:43:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1649756593; x=1681292593;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=spVnMM+QgRSZn4l/UJxMcwljw0gQjm7dBFN3KL2Wmu8=;
-  b=BfLNBKW+Jcc1kgjbSGKCgzpa6M4ePK4vkyxGpKsttfXbFHfeldet2MJz
-   0tZtk4uMNgaoosGVD+X8slIPrLAXuBMGXblWAm60DXPQjuzcxnOFLOLox
-   xQJIYhKrFdaGm+4auynV+E/RUnbV968//oFVGN2KB2sTdOnahFjVuix2d
-   y3vWf4tadhqYdyLgFVXCJM3aX5HC+Y2bglXx45ULwW5O+JdRBnglB5+q1
-   U0l8JXNlv2s/gvCn36cQLQeFfoEq4tR3YLyJmHFe9F1GiEPdjmfMgSyvn
-   iVUjb+rJmMe81a54sreW7zn9IuEEZRbTS0kiAUsOoXEXwfaC8ZRatjpcf
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10314"; a="261771070"
-X-IronPort-AV: E=Sophos;i="5.90,253,1643702400"; 
-   d="scan'208";a="261771070"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Apr 2022 02:43:03 -0700
-X-IronPort-AV: E=Sophos;i="5.90,253,1643702400"; 
-   d="scan'208";a="572683971"
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.162])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Apr 2022 02:43:01 -0700
-Received: by lahna (sSMTP sendmail emulation); Tue, 12 Apr 2022 12:42:58 +0300
-Date:   Tue, 12 Apr 2022 12:42:58 +0300
-From:   Mika Westerberg <mika.westerberg@linux.intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 3/9] PCI/PM: Rearrange pci_update_current_state()
-Message-ID: <YlVJorXPD1EoqVCB@lahna>
-References: <4419002.LvFx2qVVIh@kreacher>
- <11975904.O9o76ZdvQC@kreacher>
- <4721615.GXAFRqVoOG@kreacher>
+        with ESMTP id S1354058AbiDLLFC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2022 07:05:02 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7646265799;
+        Tue, 12 Apr 2022 02:56:07 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: dmitry.osipenko)
+        with ESMTPSA id CA7361F44465
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1649757366;
+        bh=zGnnxmSlqh0YJeepd6leEtd3OpvyuoG43h8kmGFF2wc=;
+        h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+        b=P61L93uCY2BzkAlZkIa7DkNYhLesoazkWjHR45+XoCKZ8ns44JwAXtKwQtsKB5IWu
+         LBnshgET/1to4NkH52cenj6AcmR1fzToetNSgDLXX18/JYkgkQQSwZdaXlqZHCnpKj
+         1GBxRjPOedK74qEOQrXw+d5AInCvSk+FnCDQJJggENcP/eOVY2//qX2NkpjVfzBsqa
+         1dFmWcLJ7EUVzhKFegMKqxZGBg1v/mwnu50TrXhdgNf6aMdvdkZzAOzeVFn7EFF2vi
+         bG+4SHDoaE6xdqEupYSgMD2ed1PrE/GTXU258Xq63ayijsB2BJhDrJNAYUxYDRgOkh
+         gETvkTIe02RWg==
+Message-ID: <1b95163a-4b4d-3c0d-440d-0b6dd608b393@collabora.com>
+Date:   Tue, 12 Apr 2022 12:55:59 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4721615.GXAFRqVoOG@kreacher>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v7 16/20] mips: Use do_kernel_power_off()
+Content-Language: en-US
+From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Greg Ungerer <gerg@linux-m68k.org>,
+        Joshua Thompson <funaho@jurai.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Sebastian Reichel <sre@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+        Helge Deller <deller@gmx.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Lee Jones <lee.jones@linaro.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
+Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
+        linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+References: <20220411233832.391817-1-dmitry.osipenko@collabora.com>
+ <20220411233832.391817-17-dmitry.osipenko@collabora.com>
+In-Reply-To: <20220411233832.391817-17-dmitry.osipenko@collabora.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Apr 11, 2022 at 04:21:04PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+On 4/12/22 02:38, Dmitry Osipenko wrote:
+> Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+> that invokes chained power-off handlers. It also invokes legacy
+> pm_power_off() for now, which will be removed once all drivers will
+> be converted to the new power-off API.
 > 
-> Save one config space access in pci_update_current_state() by
-> testing the retireved PCI_PM_CTRL register value against
-              ^^^^^^^^^
-retrieved
+> Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+> ---
+>  arch/mips/kernel/reset.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/arch/mips/kernel/reset.c b/arch/mips/kernel/reset.c
+> index 6288780b779e..e7ce07b3e79b 100644
+> --- a/arch/mips/kernel/reset.c
+> +++ b/arch/mips/kernel/reset.c
+> @@ -114,8 +114,7 @@ void machine_halt(void)
+>  
+>  void machine_power_off(void)
+>  {
+> -	if (pm_power_off)
+> -		pm_power_off();
+> +	do_kernel_power_off();
+>  
+>  #ifdef CONFIG_SMP
+>  	preempt_disable();
+
+Adding ack from Thomas that he gave to v6. It's missing in v7 by accident.
+
+Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
