@@ -2,79 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 323C5C4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Apr 2022 12:54:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E42F6C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Apr 2022 13:25:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235666AbiDMM4f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Apr 2022 08:56:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56398 "EHLO
+        id S233748AbiDMN10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Apr 2022 09:27:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235649AbiDMM43 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2022 08:56:29 -0400
-Received: from alexa-out.qualcomm.com (alexa-out.qualcomm.com [129.46.98.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E81053B4C;
-        Wed, 13 Apr 2022 05:54:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
-  t=1649854448; x=1681390448;
-  h=from:to:cc:subject:date:message-id;
-  bh=5xRQ8goNdbg3PNC/HfjumOMnpeRAm6Z/VpX0ULTu4M4=;
-  b=eek9xqWVrKjt6YOIxYzczxQpGBp71a9cP8v4qIQExTKGP0dhRCjCECB5
-   W9yn/U+1DRGU+xDCTDIwqfj2arl2zKlWjfDuvRxUsDJdg9Ycbx1pDQOyu
-   gZhj9veMuBLiY31OiOQWI1nWiR9bh+00nKJRrXh/RwakhFGeKRjr0xsu9
-   U=;
-Received: from ironmsg07-lv.qualcomm.com ([10.47.202.151])
-  by alexa-out.qualcomm.com with ESMTP; 13 Apr 2022 05:54:08 -0700
-X-QCInternal: smtphost
-Received: from ironmsg02-blr.qualcomm.com ([10.86.208.131])
-  by ironmsg07-lv.qualcomm.com with ESMTP/TLS/AES256-SHA; 13 Apr 2022 05:54:06 -0700
-X-QCInternal: smtphost
-Received: from hu-rohiagar-hyd.qualcomm.com (HELO hu-sgudaval-hyd.qualcomm.com) ([10.213.106.138])
-  by ironmsg02-blr.qualcomm.com with ESMTP; 13 Apr 2022 18:23:49 +0530
-Received: by hu-sgudaval-hyd.qualcomm.com (Postfix, from userid 3970568)
-        id A583E3AC2; Wed, 13 Apr 2022 18:23:47 +0530 (+0530)
-From:   Rohit Agarwal <quic_rohiagar@quicinc.com>
-To:     agross@kernel.org, bjorn.andersson@linaro.org, djakov@kernel.org,
-        robh+dt@kernel.org, krzk+dt@kernel.org
-Cc:     manivannan.sadhasivam@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Rohit Agarwal <quic_rohiagar@quicinc.com>
-Subject: [PATCH v2 0/2] Add interconnect driver for SDX65
-Date:   Wed, 13 Apr 2022 18:23:33 +0530
-Message-Id: <1649854415-11174-1-git-send-email-quic_rohiagar@quicinc.com>
-X-Mailer: git-send-email 2.7.4
+        with ESMTP id S235739AbiDMN1Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2022 09:27:25 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EB0524EF6E
+        for <linux-pm@vger.kernel.org>; Wed, 13 Apr 2022 06:25:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1649856303;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=X4mDClISUBAr0O67B/LksnVAGP1eJFmEICVY8cBIZy0=;
+        b=Cnre4vHbho8R5Ye5xOgTgMLEfOLWRQUsScKUOPeRs+NQ9hoEZ01Hw4EvbM3x6t0ZSnqbG1
+        eNKI22Gu7ITTZ/MNOUicVXQYJ/oMDMTQHJBFjuMT62E7CBBr14/3PkcE/22MhJ8jzBM6Fa
+        ft6zInfa54lJKZcKJja7N/HcaqWxrbc=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-108-JssMX-eJPV6qodjEdwpUeg-1; Wed, 13 Apr 2022 09:24:58 -0400
+X-MC-Unique: JssMX-eJPV6qodjEdwpUeg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com [10.11.54.2])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 3A93D1066559;
+        Wed, 13 Apr 2022 13:24:57 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.193.165])
+        by smtp.corp.redhat.com (Postfix) with SMTP id 0A2D0404776F;
+        Wed, 13 Apr 2022 13:24:53 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+        oleg@redhat.com; Wed, 13 Apr 2022 15:24:56 +0200 (CEST)
+Date:   Wed, 13 Apr 2022 15:24:52 +0200
+From:   Oleg Nesterov <oleg@redhat.com>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     rjw@rjwysocki.net, mingo@kernel.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
+        ebiederm@xmission.com, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, linux-kernel@vger.kernel.org,
+        tj@kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/5] sched,ptrace: Fix ptrace_check_attach() vs PREEMPT_RT
+Message-ID: <20220413132451.GA27281@redhat.com>
+References: <20220412114421.691372568@infradead.org>
+ <20220412114853.842942162@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220412114853.842942162@infradead.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.84 on 10.11.54.2
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+Hi Peter,
 
-This series adds interconnect driver support for SDX65 
-platform for scaling the bandwidth requirements over RPMh.
+I like 1-2 but I need to read them (and other patches) again, a
+couple of nits right now.
 
-Changes from v1:
- - Addressed Krzysztof's comments and made necessary changes.
+On 04/12, Peter Zijlstra wrote:
+>
+> +static int __ptrace_freeze_cond(struct task_struct *p)
+> +{
+> +	if (!task_is_traced(p))
+> +		return -ESRCH;
 
-Thanks,
-Rohit.
+	if (!task_is_traced(p) || p->parent != current)
+		return -ESRCH;
 
+we should not spin/sleep if it is traced by another task
 
-Rohit Agarwal (2):
-  dt-bindings: interconnect: Add Qualcomm SDX65 DT bindings
-  interconnect: qcom: Add SDX65 interconnect provider driver
+> +static int __ptrace_freeze(struct task_struct *p, void *arg)
+> +{
+> +	int ret;
+> +
+> +	ret = __ptrace_freeze_cond(p);
+> +	if (ret)
+> +		return ret;
+> +
+> +	/*
+> +	 * Task scheduled between __ptrace_pre_freeze() and here, not our task
+> +	 * anymore.
+> +	 */
+> +	if (*(unsigned long *)arg != p->nvcsw)
+> +		return -ESRCH;
+> +
+> +	if (looks_like_a_spurious_pid(p))
+> +		return -ESRCH;
 
- .../bindings/interconnect/qcom,rpmh.yaml           |   3 +
- drivers/interconnect/qcom/Kconfig                  |   9 +
- drivers/interconnect/qcom/Makefile                 |   2 +
- drivers/interconnect/qcom/sdx65.c                  | 231 +++++++++++++++++++++
- drivers/interconnect/qcom/sdx65.h                  |  65 ++++++
- include/dt-bindings/interconnect/qcom,sdx65.h      |  67 ++++++
- 6 files changed, 377 insertions(+)
- create mode 100644 drivers/interconnect/qcom/sdx65.c
- create mode 100644 drivers/interconnect/qcom/sdx65.h
- create mode 100644 include/dt-bindings/interconnect/qcom,sdx65.h
+Oh, I do not think __ptrace_freeze() should check for spurious pid...
+looks_like_a_spurious_pid() should be called once in ptrace_check_attach()
+before task_call_func(__ptrace_freeze).
 
--- 
-2.7.4
+Oleg.
 
