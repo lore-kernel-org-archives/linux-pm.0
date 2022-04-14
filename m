@@ -2,81 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF55DC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7BBC433F5
 	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 16:08:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234102AbiDNQKS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Apr 2022 12:10:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53686 "EHLO
+        id S234725AbiDNQKW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Apr 2022 12:10:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353453AbiDNPkx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 11:40:53 -0400
-Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4CD2DBD13;
-        Thu, 14 Apr 2022 08:21:01 -0700 (PDT)
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-e2afb80550so5605891fac.1;
-        Thu, 14 Apr 2022 08:21:01 -0700 (PDT)
+        with ESMTP id S1344086AbiDNPxm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 11:53:42 -0400
+Received: from mail-oa1-f51.google.com (mail-oa1-f51.google.com [209.85.160.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DAE9FC113;
+        Thu, 14 Apr 2022 08:34:07 -0700 (PDT)
+Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-df22f50e0cso5624157fac.3;
+        Thu, 14 Apr 2022 08:34:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=lqRJc6X1Uv0L9nq++wQS5HzuhbVfOhr/gAFMGNc6R2Y=;
-        b=oEFrsuKmNujZGOMK5NNnLW1ECNUQe31gcUw4k1Z/YvFn87ashgyRFusJ1P9K+sZLR3
-         xf5kkg5p1ZPdX/FZ8OtDLbrU6PV7aQCChlqO/efTiLxEa3fJUvwYEUq7T8pieozXfXPx
-         065P7P8mobbWq0LY36EwrKht5SuIR+qvyckAoTuJPBcO3EOYyJYkh1Yrkret0WqvKOCf
-         qET2e+U/I2+wCY/fy1L7SzV2lCYBS+DDAPvCsAYchJ1Wbp5PgvPKkWxRJIqP406ULx9h
-         ZDD9VF+AyiEHYzOBqjGDfXf8Xaq4rvFD2I6vggj29RkI8LUxwyUV8sOZiFzTKbDtRV5S
-         2zBQ==
-X-Gm-Message-State: AOAM531aV4qDGcf2p8/KH7KbO21mx7/nv/bMt9yC1BOxJ2fJrLHiG2Gd
-        ofSpZ1rjijDeog6tbLyPSw==
-X-Google-Smtp-Source: ABdhPJxa75gqRlvYa8FhtXUMqFApngGD186Lmi8++a0QWdKFaMB5fVO1TNjyXAbtou2UEFajQ1tWOw==
-X-Received: by 2002:a05:6870:461d:b0:de:4705:7fe8 with SMTP id z29-20020a056870461d00b000de47057fe8mr1701434oao.221.1649949661055;
-        Thu, 14 Apr 2022 08:21:01 -0700 (PDT)
+        bh=XgRBiTVC/FFWfC6f7VFIlxavcDc/C7IkOvLYm4Mfzvs=;
+        b=QQ2vRYRmlckrTL2uohmikWroCLGEKLv0jKTlcPyESt926PPnpwMcTeFzlpWehuNSTA
+         tflGx73ggnfWtCf6c07p7TFZ1CVVxqQcZhqcEhCZ55OCx4Mp3eLY0X+mW5bWx11g8RQE
+         jm//i5g41NtucMGPNs2z2rjn4QxE0Y4ZrWp6pVGNcHsmg5AWMECHdD+0ggFQTOsmPiHR
+         bQU2cvhqzbLzle/L9M7aOVB3Y/7KrukGrBCJxB/FFvg/iDnhH93ZGN2vnnVx5mxz3d/f
+         uVtG2LtyzFoxQjlK0WNUxzmO9nugzThEUg4HQx6GEy/OVnLlVs1ggHm/kjHm8CEHJeS+
+         6QjA==
+X-Gm-Message-State: AOAM532mhJzNiOj+41uxL2P01P3UkUGOxiY96GmtfB0szSeanPpnGO/c
+        /FxYjxmCzhDIIf5MNheDEA==
+X-Google-Smtp-Source: ABdhPJxO41UyWKPRLV35Yj+ApQ4PFF6XoQyq8uSctU7sQmGIJXL6DxUImc9X9hOqKaDbOcuZF4s6Kw==
+X-Received: by 2002:a05:6870:434f:b0:bf:9f2a:26f0 with SMTP id x15-20020a056870434f00b000bf9f2a26f0mr1521011oah.40.1649950446230;
+        Thu, 14 Apr 2022 08:34:06 -0700 (PDT)
 Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id bn41-20020a056808232900b003222f6e2ae8sm105922oib.29.2022.04.14.08.20.59
+        by smtp.gmail.com with ESMTPSA id h8-20020a056830400800b005cdceb42261sm120283ots.66.2022.04.14.08.34.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Apr 2022 08:21:00 -0700 (PDT)
-Received: (nullmailer pid 2077061 invoked by uid 1000);
-        Thu, 14 Apr 2022 15:20:59 -0000
-Date:   Thu, 14 Apr 2022 10:20:59 -0500
+        Thu, 14 Apr 2022 08:34:05 -0700 (PDT)
+Received: (nullmailer pid 2095983 invoked by uid 1000);
+        Thu, 14 Apr 2022 15:34:04 -0000
+Date:   Thu, 14 Apr 2022 10:34:04 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc:     devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Avri Altman <avri.altman@wdc.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
-        Nishanth Menon <nm@ti.com>, Taniya Das <tdas@codeaurora.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        linux-clk@vger.kernel.org,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        linux-arm-msm@vger.kernel.org,
-        Alim Akhtar <alim.akhtar@samsung.com>,
-        linux-scsi@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH v2 1/6] dt-bindings: clock: qcom,gcc-sdm845: add
- parent power domain
-Message-ID: <Ylg7292ZqfwS4TUr@robh.at.kernel.org>
-References: <20220411154347.491396-1-krzysztof.kozlowski@linaro.org>
- <20220411154347.491396-2-krzysztof.kozlowski@linaro.org>
+To:     Anjelique Melendez <quic_amelende@quicinc.com>
+Cc:     dmitry.torokhov@gmail.com, corbet@lwn.net, sre@kernel.org,
+        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, collinsd@codeaurora.org,
+        bjorn.andersson@linaro.org, swboyd@chromium.org,
+        skakit@codeaurora.org, linux-doc@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        David Collins <quic_collinsd@quicinc.com>
+Subject: Re: [PATCH v5 1/5] dt-bindings: power: reset: qcom-pon: update "reg"
+ property details
+Message-ID: <Ylg+7MVRS4sKbOFb@robh.at.kernel.org>
+References: <20220411200506.22891-1-quic_amelende@quicinc.com>
+ <20220411200506.22891-2-quic_amelende@quicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220411154347.491396-2-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220411200506.22891-2-quic_amelende@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 11 Apr 2022 17:43:42 +0200, Krzysztof Kozlowski wrote:
-> Allow Qualcomm GCC to register its parent power domain (e.g. RPMHPD) to
-> properly pass performance state from children.
+On Mon, Apr 11, 2022 at 01:05:03PM -0700, Anjelique Melendez wrote:
+> From: David Collins <quic_collinsd@quicinc.com>
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Update the description of "reg" property to add the PON_PBS base
+> address along with PON_HLOS base address.  Also add "reg-names"
+> property description.
+> 
+> Signed-off-by: David Collins <quic_collinsd@quicinc.com>
+> Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
 > ---
->  Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml | 3 +++
->  1 file changed, 3 insertions(+)
+>  .../bindings/power/reset/qcom,pon.yaml | 20 +++++++++++++++++++-
+>  1 file changed, 19 insertions(+), 1 deletion(-)
 > 
+> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> index 353f155d..542200b2 100644
+> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> +++ b/Documentation/bindings/power/reset/qcom,pon.yaml
+> @@ -26,7 +26,25 @@ properties:
+>        - qcom,pm8998-pon
+>  
+>    reg:
+> -    maxItems: 1
+> +    description: |
+> +      Specifies the SPMI base address for the PON (power-on) peripheral.  For
+> +      PMICs that have the PON peripheral (GEN3) split into PON_HLOS and PON_PBS
+> +      (e.g. PMK8350), this can hold addresses of both PON_HLOS and PON_PBS
+> +      peripherals.  In that case, the PON_PBS address needs to be specified to
+> +      facilitate software debouncing on some PMICs.
+> +    minItems: 1
+> +    maxItems: 2
+> +
+> +  reg-names:
+> +    description: |
+> +      For PON GEN1 and GEN2, it should be "pon".  For PON GEN3 it should include
+> +      "pon_hlos" and optionally "pon_pbs".
+> +    minItems: 1
+> +    maxItems: 2
+> +    items:
+> +      - const: pon_hlos
+> +      - const: pon_pbs
+> +      - const: pon
 
-Acked-by: Rob Herring <robh@kernel.org>
+This says there are 3 entries, but you limited to 2. The schema also 
+doesn't match what the description says. Entries should be extended by 
+adding new entries to the end and keeping optional entries last. So like 
+this:
+
+minItems: 1
+items:
+  - const: pon
+  - const: pon_hlos
+  - const: pon_pbs
+
+Rob
