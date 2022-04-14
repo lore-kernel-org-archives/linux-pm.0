@@ -2,116 +2,157 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7BBC433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 16:08:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 511A4C4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 16:08:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234725AbiDNQKW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Apr 2022 12:10:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48866 "EHLO
+        id S235513AbiDNQKY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Apr 2022 12:10:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344086AbiDNPxm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 11:53:42 -0400
-Received: from mail-oa1-f51.google.com (mail-oa1-f51.google.com [209.85.160.51])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DAE9FC113;
-        Thu, 14 Apr 2022 08:34:07 -0700 (PDT)
-Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-df22f50e0cso5624157fac.3;
-        Thu, 14 Apr 2022 08:34:06 -0700 (PDT)
+        with ESMTP id S1358853AbiDNPmV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 11:42:21 -0400
+Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8990EFF83;
+        Thu, 14 Apr 2022 08:25:19 -0700 (PDT)
+Received: by mail-oi1-f181.google.com with SMTP id q129so5748821oif.4;
+        Thu, 14 Apr 2022 08:25:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=XgRBiTVC/FFWfC6f7VFIlxavcDc/C7IkOvLYm4Mfzvs=;
-        b=QQ2vRYRmlckrTL2uohmikWroCLGEKLv0jKTlcPyESt926PPnpwMcTeFzlpWehuNSTA
-         tflGx73ggnfWtCf6c07p7TFZ1CVVxqQcZhqcEhCZ55OCx4Mp3eLY0X+mW5bWx11g8RQE
-         jm//i5g41NtucMGPNs2z2rjn4QxE0Y4ZrWp6pVGNcHsmg5AWMECHdD+0ggFQTOsmPiHR
-         bQU2cvhqzbLzle/L9M7aOVB3Y/7KrukGrBCJxB/FFvg/iDnhH93ZGN2vnnVx5mxz3d/f
-         uVtG2LtyzFoxQjlK0WNUxzmO9nugzThEUg4HQx6GEy/OVnLlVs1ggHm/kjHm8CEHJeS+
-         6QjA==
-X-Gm-Message-State: AOAM532mhJzNiOj+41uxL2P01P3UkUGOxiY96GmtfB0szSeanPpnGO/c
-        /FxYjxmCzhDIIf5MNheDEA==
-X-Google-Smtp-Source: ABdhPJxO41UyWKPRLV35Yj+ApQ4PFF6XoQyq8uSctU7sQmGIJXL6DxUImc9X9hOqKaDbOcuZF4s6Kw==
-X-Received: by 2002:a05:6870:434f:b0:bf:9f2a:26f0 with SMTP id x15-20020a056870434f00b000bf9f2a26f0mr1521011oah.40.1649950446230;
-        Thu, 14 Apr 2022 08:34:06 -0700 (PDT)
+        bh=iGvtGvGGEIxpm5BQlfNMXTkv7Z8pGaPcOXe2M6C3Cas=;
+        b=aYt6X9BzMYljJX4kKcZt1mAmjd+cndcYi0uxv33poCvLCL/lfueW8sF2m/J6tLKtCh
+         18YJQw9yecW31YLCv77RtxtyY5YDdVc65vuJdriYjsPeWjV6ofVUOGg87kj2EoBtsQBD
+         Ex1609o1WhFxcqVDb2hu6xvW8dgRrQywM3o4NPOfZkykHfKk+T3kZMPg7CH4TSamuvUr
+         hhekA5SA8+hzk4ZC+ZMR5w7Ll+H/Xz6zPJk9NHwI6g+IWSBLgZFX5jL2PYmM1x0Eukvn
+         3GKg04fQm1dMgQAE6laY1yfrN3i/bDBeGzXCudDgMccaRNfpOXUYvX0pxEOg35o6Cn5G
+         T9kw==
+X-Gm-Message-State: AOAM530+teyKRDnmnscr9xQKt5hl1T68csu3NHEadhVOij5bS0TsmGtw
+        czGld5fDII7gdkXsf2Z8+Q==
+X-Google-Smtp-Source: ABdhPJzIxerz58hWNig5nTrpL6dkloaMuyfdKXuIbiX9eWx++lxdk+IcTfSHEMKJGaZJEi6lhXlV3Q==
+X-Received: by 2002:a05:6808:144d:b0:2f9:d667:19f7 with SMTP id x13-20020a056808144d00b002f9d66719f7mr1706639oiv.64.1649949919023;
+        Thu, 14 Apr 2022 08:25:19 -0700 (PDT)
 Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id h8-20020a056830400800b005cdceb42261sm120283ots.66.2022.04.14.08.34.05
+        by smtp.gmail.com with ESMTPSA id be21-20020a056808219500b002fa6227ba8dsm135067oib.34.2022.04.14.08.25.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Apr 2022 08:34:05 -0700 (PDT)
-Received: (nullmailer pid 2095983 invoked by uid 1000);
-        Thu, 14 Apr 2022 15:34:04 -0000
-Date:   Thu, 14 Apr 2022 10:34:04 -0500
+        Thu, 14 Apr 2022 08:25:18 -0700 (PDT)
+Received: (nullmailer pid 2083464 invoked by uid 1000);
+        Thu, 14 Apr 2022 15:25:17 -0000
+Date:   Thu, 14 Apr 2022 10:25:17 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     Anjelique Melendez <quic_amelende@quicinc.com>
-Cc:     dmitry.torokhov@gmail.com, corbet@lwn.net, sre@kernel.org,
-        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, collinsd@codeaurora.org,
-        bjorn.andersson@linaro.org, swboyd@chromium.org,
-        skakit@codeaurora.org, linux-doc@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        David Collins <quic_collinsd@quicinc.com>
-Subject: Re: [PATCH v5 1/5] dt-bindings: power: reset: qcom-pon: update "reg"
- property details
-Message-ID: <Ylg+7MVRS4sKbOFb@robh.at.kernel.org>
-References: <20220411200506.22891-1-quic_amelende@quicinc.com>
- <20220411200506.22891-2-quic_amelende@quicinc.com>
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Avri Altman <avri.altman@wdc.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Taniya Das <tdas@codeaurora.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [RFC PATCH v2 3/6] dt-bindings: ufs: common: add OPP table
+Message-ID: <Ylg83Ub7wuElT+Bu@robh.at.kernel.org>
+References: <20220411154347.491396-1-krzysztof.kozlowski@linaro.org>
+ <20220411154347.491396-4-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220411200506.22891-2-quic_amelende@quicinc.com>
+In-Reply-To: <20220411154347.491396-4-krzysztof.kozlowski@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Apr 11, 2022 at 01:05:03PM -0700, Anjelique Melendez wrote:
-> From: David Collins <quic_collinsd@quicinc.com>
+On Mon, Apr 11, 2022 at 05:43:44PM +0200, Krzysztof Kozlowski wrote:
+> Except scaling UFS and bus clocks, it's necessary to scale also the
+> voltages of regulators or power domain performance state levels.  Adding
+> Operating Performance Points table allows to adjust power domain
+> performance state, depending on the UFS clock speed.
 > 
-> Update the description of "reg" property to add the PON_PBS base
-> address along with PON_HLOS base address.  Also add "reg-names"
-> property description.
+> OPPv2 deprecates previous property limited to clock scaling:
+> freq-table-hz.
 > 
-> Signed-off-by: David Collins <quic_collinsd@quicinc.com>
-> Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
 > ---
->  .../bindings/power/reset/qcom,pon.yaml | 20 +++++++++++++++++++-
->  1 file changed, 19 insertions(+), 1 deletion(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-> index 353f155d..542200b2 100644
-> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-> +++ b/Documentation/bindings/power/reset/qcom,pon.yaml
-> @@ -26,7 +26,25 @@ properties:
->        - qcom,pm8998-pon
->  
->    reg:
-> -    maxItems: 1
-> +    description: |
-> +      Specifies the SPMI base address for the PON (power-on) peripheral.  For
-> +      PMICs that have the PON peripheral (GEN3) split into PON_HLOS and PON_PBS
-> +      (e.g. PMK8350), this can hold addresses of both PON_HLOS and PON_PBS
-> +      peripherals.  In that case, the PON_PBS address needs to be specified to
-> +      facilitate software debouncing on some PMICs.
-> +    minItems: 1
-> +    maxItems: 2
+> Not adding Rob's review tag because patch changed significantly.
+> ---
+>  .../devicetree/bindings/ufs/ufs-common.yaml   | 34 +++++++++++++++++--
+>  1 file changed, 31 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/ufs/ufs-common.yaml b/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> index 47a4e9e1a775..d7d2c8a136bb 100644
+> --- a/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> +++ b/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> @@ -20,11 +20,24 @@ properties:
+>        items:
+>          - description: Minimum frequency for given clock in Hz
+>          - description: Maximum frequency for given clock in Hz
+> +    deprecated: true
+>      description: |
+> +      Preferred is operating-points-v2.
 > +
-> +  reg-names:
-> +    description: |
-> +      For PON GEN1 and GEN2, it should be "pon".  For PON GEN3 it should include
-> +      "pon_hlos" and optionally "pon_pbs".
-> +    minItems: 1
-> +    maxItems: 2
-> +    items:
-> +      - const: pon_hlos
-> +      - const: pon_pbs
-> +      - const: pon
+>        Array of <min max> operating frequencies in Hz stored in the same order
+> -      as the clocks property. If this property is not defined or a value in the
+> -      array is "0" then it is assumed that the frequency is set by the parent
+> -      clock or a fixed rate clock source.
+> +      as the clocks property. If either this property or operating-points-v2 is
+> +      not defined or a value in the array is "0" then it is assumed that the
+> +      frequency is set by the parent clock or a fixed rate clock source.
+> +
+> +  operating-points-v2:
+> +    description:
+> +      Preferred over freq-table-hz.
+> +      If present, each OPP must contain array of frequencies stored in the same
+> +      order for each clock.  If clock frequency in the array is "0" then it is
+> +      assumed that the frequency is set by the parent clock or a fixed rate
+> +      clock source.
+> +
+> +  opp-table: true
+>  
+>    interrupts:
+>      maxItems: 1
+> @@ -75,8 +88,23 @@ properties:
+>  
+>  dependencies:
+>    freq-table-hz: [ 'clocks' ]
+> +  operating-points-v2: [ 'clocks', 'clock-names' ]
+>  
+>  required:
+>    - interrupts
+>  
+> +allOf:
+> +  - if:
+> +      required:
+> +        - freq-table-hz
+> +    then:
+> +      properties:
+> +        operating-points-v2: false
+> +  - if:
+> +      required:
+> +        - operating-points-v2
+> +    then:
+> +      properties:
+> +        freq-table-hz: false
 
-This says there are 3 entries, but you limited to 2. The schema also 
-doesn't match what the description says. Entries should be extended by 
-adding new entries to the end and keeping optional entries last. So like 
-this:
+You could also express this as:
 
-minItems: 1
-items:
-  - const: pon
-  - const: pon_hlos
-  - const: pon_pbs
+oneOf:
+  - required: [ freq-table-hz ]
+  - required: [ operating-points-v2 ]
+  - not:
+      required: [ freq-table-hz, operating-points-v2 ]
 
-Rob
+
+> +
+>  additionalProperties: true
+> -- 
+> 2.32.0
+> 
+> 
