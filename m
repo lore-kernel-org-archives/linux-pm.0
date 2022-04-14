@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64733C4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 17:03:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33476C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 17:03:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236574AbiDNRGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S242886AbiDNRGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 14 Apr 2022 13:06:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52184 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244930AbiDNRFp (ORCPT
+        with ESMTP id S244956AbiDNRFp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 13:05:45 -0400
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2047.outbound.protection.outlook.com [40.107.237.47])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4AB89BC3;
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2043.outbound.protection.outlook.com [40.107.92.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10CD14B404;
         Thu, 14 Apr 2022 09:48:17 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=K6BKK7rLq4mh7u1SCMoeIEQjyyniXHDZitC3suaL1IeHw9zqbBzN7bkpcWxuQL5KEHW0j/C4fkbDOFAaZ59bLWvJVa6lNy7mzny+WlwKwFjeyXvTNuhhBhkmWrLl3q2hHfu84Y5B6XZv8guLX81Y6IpRYYM/FD5jPH8pyoQ8diQw18r3hxTr/ivfRJz8hW5itJWah8LX4kEsv3JejQZfxr3DjEF1bZ404nPlkca8UGduDCv7X87EOu8MUe0cq3l8fDiQVYLNUp7gy/vkQSYUmxVGYHbL3Ibo92U/RDXJzyZHf96LOPu9t0O3rjc52tdO/vUr6IW5iqartUlO36UuNA==
+ b=WpttIjVeKs3+t0BgDMICf5feUoJKhx0XrO0uX/chvD5WXxOzyJsGsVBsd4j34AS5Y0zBglzb2qfLgRI6lvhfOSwjn9WZ1vnLnd/kkmh07po5L+QHAFrYu7imzBeECfKziHn3WWhKDOvAzTqF4NV7et9aYbo9eeU1yJC7ytCR+VfJPJnWFbHkTgHvhurTsEaIA3vscAmm0+boBzv1Uz0HEZALEPl3QyNsrf90vG+DmhpDxZpjmjbstUl1uBCMIrApJ/fI4tXlCP9LqKK7DvOFV+E5+qmETSGgJmxgtaWH1xBQ34/Z0WGOgg7j4nFByoNfnbjmTNosj/GqduC2+wiNVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Qmzr55cp2EbMngwaZIRCp1nStztnv1zdLphWXlYuvzI=;
- b=M2fY+94enRrIEndrIMwkiQ7N+drgsIqH4OnjhFjBcXGjfpyVIfVEGwRHC6CsYeFbtUiS15G5Y8vkMFloFZkkEIkNhR8/4MqTXwzFn5rZT15OJFYSuVj1Ef/oQ3r3S2LNFgj5PuxIZBXkmOB+prQR/F3T5h1rXsdrILxweaRAjcn2HOz3/kngEtVFMlD36ZQe8RUAPIjjaSgrYu0V53krXMwVECTR/3mjib+xaX2sh9zhoLFXWfl8sHeBpSw6bDhKnyNCLvV63V12lCRNWV2U4s/xwn/H71m/e5XU/ufIrFdulR0L2RNiMBygmcWiDNYi6nAmi6HXzM0/3EhDdm6ojA==
+ bh=R/XRSrXUeXyaJHAJgD1WJ9FnTtw0VhYx7EtixnJ6jk0=;
+ b=T9hgI3f8wGxhX6pm01O8/5OquoXxsCh7LmQMUzB9f72wfofilquPBSOlpSgzMqvGpWGSK+Gr6v8BxLi7OymkAIR0mCadsVd3dxfiFTUqEQutExOrkgOYQ57tHwcS2QFXu0fvDVe5IsAuJvJ+eD3klW2AHordYhcIc9kenQNtXGaXYnPKxaPvzhIlh++umGiB0rdRB7JssjUQUau44hPbq7zjl5DGLIOnGNVOESzfdu0BoYXkdQrwGvnkOz79uIV0YKn5FkqYM8TMxzRuTezDht0uTMAZBBMPHqgLoRNLBeTPLbOnMcR/O3Ache1RBCCeDYgGaCwwVg+grg+kphcZMg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Qmzr55cp2EbMngwaZIRCp1nStztnv1zdLphWXlYuvzI=;
- b=seYSED5YodXkmoJXI1O+eBTXqXliHICKNpmmy+l+w5IiZt/waTCf2TgVjSQX5MYMP1F14V2BsNXq6KnR19mXXO+ND0F86L2bP0apIUendcMhlDqoqgMZqxxwOFIh6UwqRfSyPleiA/9xvbVQ0QqxoMq8euj93Yg5fO/FT/e3I1c=
-Received: from BN6PR2001CA0023.namprd20.prod.outlook.com
- (2603:10b6:404:b4::33) by BN6PR12MB1938.namprd12.prod.outlook.com
- (2603:10b6:404:fe::9) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.20; Thu, 14 Apr
- 2022 16:48:15 +0000
-Received: from BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
- (2603:10b6:404:b4:cafe::ed) by BN6PR2001CA0023.outlook.office365.com
- (2603:10b6:404:b4::33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.20 via Frontend
- Transport; Thu, 14 Apr 2022 16:48:15 +0000
+ bh=R/XRSrXUeXyaJHAJgD1WJ9FnTtw0VhYx7EtixnJ6jk0=;
+ b=a5VN18WxqChRMKIFVLxD9/Km4GmQWKNW2Oo1ToQOh5gbmeTGTfogvfrLoSShVQd6gumsmpr7l47t4QEEPy9OwnkhZEWvXrKqR8ClqeMjfEKXN0jOiOIQGChgzyI6fnko/PaxKpFIW0/yszJJyvF4bO9K0yyRNDrJRGw2L3w/GHU=
+Received: from BN9PR03CA0780.namprd03.prod.outlook.com (2603:10b6:408:13a::35)
+ by MW2PR12MB2571.namprd12.prod.outlook.com (2603:10b6:907:10::28) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5144.29; Thu, 14 Apr
+ 2022 16:48:13 +0000
+Received: from BN8NAM11FT017.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:13a:cafe::51) by BN9PR03CA0780.outlook.office365.com
+ (2603:10b6:408:13a::35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.18 via Frontend
+ Transport; Thu, 14 Apr 2022 16:48:13 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -46,13 +46,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT068.mail.protection.outlook.com (10.13.177.69) with Microsoft SMTP
+ BN8NAM11FT017.mail.protection.outlook.com (10.13.177.93) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5164.19 via Frontend Transport; Thu, 14 Apr 2022 16:48:15 +0000
+ 15.20.5164.19 via Frontend Transport; Thu, 14 Apr 2022 16:48:12 +0000
 Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 14 Apr
- 2022 11:48:10 -0500
+ 2022 11:48:07 -0500
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     Rui Huang <ray.huang@amd.com>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -61,12 +61,10 @@ CC:     "open list:AMD PSTATE DRIVER" <linux-pm@vger.kernel.org>,
         Perry Yuan <Perry.Yuan@amd.com>,
         open list <linux-kernel@vger.kernel.org>,
         "Mario Limonciello" <mario.limonciello@amd.com>
-Subject: [PATCH v3 6/6] cpufreq: amd-pstate: Default to replace acpi-cpufreq
-Date:   Thu, 14 Apr 2022 11:48:01 -0500
-Message-ID: <20220414164801.1051-7-mario.limonciello@amd.com>
+Subject: [PATCH v3 0/6] Improve usability for amd-pstate
+Date:   Thu, 14 Apr 2022 11:47:55 -0500
+Message-ID: <20220414164801.1051-1-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220414164801.1051-1-mario.limonciello@amd.com>
-References: <20220414164801.1051-1-mario.limonciello@amd.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -75,68 +73,62 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: a4d56c98-443a-4523-15cc-08da1e36920d
-X-MS-TrafficTypeDiagnostic: BN6PR12MB1938:EE_
-X-Microsoft-Antispam-PRVS: <BN6PR12MB19384EDCC01AD08B0F267A15E2EF9@BN6PR12MB1938.namprd12.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: b18cdf78-41e4-4293-e6e7-08da1e36909a
+X-MS-TrafficTypeDiagnostic: MW2PR12MB2571:EE_
+X-Microsoft-Antispam-PRVS: <MW2PR12MB2571FC997BBF09B3C9870169E2EF9@MW2PR12MB2571.namprd12.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: PXOZXpnwRI0LBEi2kXcjCzDUCbkXmJrdnEdYVVHJXad2LJhjlqCZieNbCUpOvjToZ41Zn7efqqLrXRkaD6cxAKTSbPtXSiYqd+xaN+n6umiM86ICLO1DzybxsfKg7jMJgInhojo/iODyx0H1mu4mHzEpsrKXTs6SulUhIbOVoYUiREGfZZkscv5z7aIlRHBuFoZ2OaO8mL0JY/1e542KONLcyiRhbFONi9pv2C0jIVe+CuUp5N802UICDSFN6qomukulepoE6lRP0v7LKfb5P7DCrqVoyvP2nhYDDjP66FtEnVHxqMhyAFMYfhmlClCNF22vKBWzVIASHXDMKSKxoD/NDj7c94by+sEVwxIlDf/9kj4VtlVpQ8GAgcTnJdjQfKrQE++ED1H9njDH9cONbQbAptNaRxgqp/kYgxw4RguLO4TF6o6YL8hvNK7zqSyOqiR5AhxcTwcjHa10ewOwbsfq7/UE+2pCGfheigfqHmADBjFN/d7ZeJaghRloG0oL4rXRxyz0HGnWUUnajZKB6LkxVxR8H28egDQwNN5MjOCs5SAdh94VcK/75Qj5QzSCCDkX6IqKUbPQR+UwIwLrpMFcFVrckMHX2GnryXcEkKzMbmBZtmbqHZe+TEiWggwtXQAyCSZIRLGz9i2EMCt6h3a2sfOoJf6mUUbML3tdO7eeqyjlnnTab1K//C1oqpM/9c3I86nNj/4kNabJ4TfhSw==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(46966006)(40470700004)(36840700001)(44832011)(83380400001)(82310400005)(47076005)(2616005)(186003)(16526019)(1076003)(426003)(336012)(110136005)(54906003)(5660300002)(316002)(8936002)(81166007)(86362001)(356005)(2906002)(4326008)(36756003)(6666004)(7696005)(40460700003)(26005)(508600001)(70586007)(70206006)(8676002)(36860700001)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: d7uzFdYaqD5hFNwiOAXVq4XNWFHqOWb3rm6DIQIsRtx49Q1cc1iprjvqeST60QXwJFKDzo+5hNRmKh9qF52gAAfoEStGS1+Qs7l39z6DFZktVK5i4GCbGk67qrOiQNvyLv7kfU4BPOx9hu5y8pr6UZKwrsKYcfDT3HuszGoTSbHcTRBANQMeJO4Sh3R2t0pZEfx4xC6uoA2jjLXo0svuHzvpPMYIkdBcTTMOoJYR6gec0NrMm6xRbL+cfNMofD/MAkQ278oSX5ZsRrxQQv+SGsoCKmgDxK3N4VEfCAd4qAXIqclf97l4JfKXVlKIQMNpUm8ZjADyr/fOBSNOw2sA0Su2lDABvcmChYl/Jhn5mEdQtPSJCyKpKVC+Y4a7TdCgrJcEXwoej2gZ+70PxgCx4VKPXjy2/6G4egpL97bNRRiWRSvzpeoaJWiWbZTUbI0E2JJM4Mv8ie35bXQRGWSIi1OjR1l2dwwABoe8miTYZD54u2A8UJJtPt/KA/MGGnZTRmHmVX04NfQKBUedeJaDnjSKM+3bSqrdZDcBdnca1DLcySRJtqhRyJMJhjOZi8n7B7VYx/lCSBO5B0mj1RSER7YyhgnQm5MmGRn7aWp60qeaCZH+4sXXE6z4jG2ZDFWvMTL2bugmWFlI9H2cE51hBPrLwTxxwCs1QqOX0KJ47D8p77B7n2Re1+634HVQNLH+vyLmxaWMV3rLfvDvRCKjiA==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(46966006)(36840700001)(7696005)(54906003)(316002)(47076005)(6666004)(336012)(36860700001)(86362001)(36756003)(40460700003)(81166007)(356005)(110136005)(82310400005)(83380400001)(426003)(508600001)(1076003)(2906002)(44832011)(70206006)(16526019)(70586007)(5660300002)(8676002)(186003)(8936002)(4326008)(26005)(2616005)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2022 16:48:15.3119
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2022 16:48:12.8859
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a4d56c98-443a-4523-15cc-08da1e36920d
+X-MS-Exchange-CrossTenant-Network-Message-Id: b18cdf78-41e4-4293-e6e7-08da1e36909a
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT017.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR12MB1938
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW2PR12MB2571
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As a side effect of using the symbol `acpi_cpufreq_exit` attempting
-to `modprobe amd-pstate` loads the acpi-cpufreq driver if it's compiled
-as a module.
+There has recently been some news coverage about `amd-pstate` being in
+5.17, but this news also mentioned that it's a bit difficult to use.
 
-This means that module load order can't work anymore from those changes.
-To make this a more obvious default behavior set the "replace" module
-parameter for amd-pstate to true.
+You need to either block init calls, or compile the module into the kernel
+to force it to take precedence over acpi-cpufreq.
 
-Expected outcome is that no matter what configuration for module or
-compiled in, amd-pstate will take precedence.
+This series aims to improve the usability of amd-pstate so that distros
+can compile as a module, but users can still use it (relatively) easily.
 
-If a user prefers to use acpi_cpufreq, they can set `amd_pstate.replace=0`
-and then the following outcomes will happen when attempting to load
-amd-pstate:
-* acpi_cpufreq module  & amd_pstate module  -> acpi_cpufreq
-* acpi_cpufreq builtin & amd_pstate module  -> acpi_cpufreq
-* acpi_cpufreq builtin & amd_pstate builtin -> amd_pstate
-* acpi_cpufreq module  & amd_pstate builtin -> amd_pstate
+A new module parameter is included that will force amd-pstate to take
+precedence and a module table to let it load automatically on such
+systems.
 
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
-v2->v3:
- * New patch, added since worse experience from patch 4.
+By default with this series it will replace acpi-cpufreq no matter the
+module load order.  If users want to prefer acpi-cpufreq when amd-pstate
+is a module they can make a modprobe configuration file.
 
- drivers/cpufreq/amd-pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+/etc/modprobe.d/amd-pstate.conf:
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 3330504b7070..538c9c4cea6d 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -64,7 +64,7 @@ MODULE_PARM_DESC(shared_mem,
- 		 "enable amd-pstate on processors with shared memory solution (false = disabled (default), true = enabled)");
- 
- #if defined(CONFIG_X86_ACPI_CPUFREQ) || defined(CONFIG_X86_ACPI_CPUFREQ_MODULE)
--static bool replace = false;
-+static bool replace = true;
- module_param(replace, bool, 0444);
- MODULE_PARM_DESC(replace,
- 		  "replace acpi-cpufreq driver upon init if necessary");
+options amd-pstate replace=0
+
+Mario Limonciello (6):
+  cpufreq: Export acpu_cpufreq_exit for other drivers to call
+  cpufreq: amd-pstate: Only show shared memory solution message once
+  cpufreq: amd-pstate: Move cpufreq driver check later
+  cpufreq: amd-pstate: Allow replacing acpi-cpufreq when loaded
+  cpufreq: amd-pstate: Add a module device table
+  cpufreq: amd-pstate: Default to replace acpi-cpufreq
+
+ drivers/cpufreq/acpi-cpufreq.c | 10 +++++++--
+ drivers/cpufreq/amd-pstate.c   | 39 +++++++++++++++++++++++++++++-----
+ include/linux/cpufreq.h        |  3 +++
+ 3 files changed, 45 insertions(+), 7 deletions(-)
+
 -- 
 2.34.1
 
