@@ -2,45 +2,46 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBA00C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 02:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DAABC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 03:40:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236465AbiDNCfC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Apr 2022 22:35:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54630 "EHLO
+        id S237642AbiDNDnL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Apr 2022 23:43:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49576 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237639AbiDNCfB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2022 22:35:01 -0400
+        with ESMTP id S235002AbiDNDnK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2022 23:43:10 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 347C93193E;
-        Wed, 13 Apr 2022 19:32:34 -0700 (PDT)
-X-UUID: 50fd56eeb8ca4a7a98dcc5b707929fc3-20220414
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55DB615A0E;
+        Wed, 13 Apr 2022 20:40:44 -0700 (PDT)
+X-UUID: c05a8078b41941aa8233f4154241fc9b-20220414
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:0af9424a-3ad4-438b-875e-02c45679f611,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACT
-        ION:release,TS:45
-X-CID-INFO: VERSION:1.1.4,REQID:0af9424a-3ad4-438b-875e-02c45679f611,OB:0,LOB:
-        0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:45,FILE:0,RULE:Release_Ham,ACTIO
-        N:release,TS:45
-X-CID-META: VersionHash:faefae9,CLOUDID:d24d14a9-d103-4e36-82b9-b0e86991b3df,C
-        OID:IGNORED,Recheck:0,SF:13|15|28|17|19|48,TC:nil,Content:0,EDM:-3,File:ni
-        l,QS:0,BEC:nil
-X-UUID: 50fd56eeb8ca4a7a98dcc5b707929fc3-20220414
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+X-CID-O-INFO: VERSION:1.1.4,REQID:818fe170-59ba-46af-8fc6-e370c6b59fba,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:faefae9,CLOUDID:a40217a9-d103-4e36-82b9-b0e86991b3df,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
+X-UUID: c05a8078b41941aa8233f4154241fc9b-20220414
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1189990021; Thu, 14 Apr 2022 10:32:31 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Thu, 14 Apr 2022 10:32:29 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+        with ESMTP id 1906566215; Thu, 14 Apr 2022 11:40:39 +0800
+Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Thu, 14 Apr 2022 11:40:38 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
+ (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 14 Apr
+ 2022 11:40:37 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 14 Apr 2022 10:32:29 +0800
-Message-ID: <12c630946ce9d7b8c80143615496238759323981.camel@mediatek.com>
-Subject: Re: [PATCH V2 13/15] cpufreq: mediatek: Link CCI device to CPU
+ Transport; Thu, 14 Apr 2022 11:40:37 +0800
+Message-ID: <fc1e157470d7ad68efd823f38fe4a360ba3dfbde.camel@mediatek.com>
+Subject: Re: [PATCH V2 12/15] cpufreq: mediatek: Use maximum voltage in init
+ stage
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     Kevin Hilman <khilman@baylibre.com>, <rafael@kernel.org>,
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>, <rafael@kernel.org>,
         <viresh.kumar@linaro.org>, <robh+dt@kernel.org>,
         <krzk+dt@kernel.org>
 CC:     <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
@@ -50,17 +51,11 @@ CC:     <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>
-Date:   Thu, 14 Apr 2022 10:32:29 +0800
-In-Reply-To: <7hlew83blk.fsf@baylibre.com>
+Date:   Thu, 14 Apr 2022 11:40:37 +0800
+In-Reply-To: <5f788a8f-7092-19ca-8499-d3626c4a386d@collabora.com>
 References: <20220408045908.21671-1-rex-bc.chen@mediatek.com>
-         <20220408045908.21671-14-rex-bc.chen@mediatek.com>
-         <7hfsmn5m9f.fsf@baylibre.com>
-         <bc6dd020a1cc3f00f5be2bf2929046b9116bbeef.camel@mediatek.com>
-         <7hwnfv4hfr.fsf@baylibre.com>
-         <f00e3df2e270e5edc160f8ff1bd8c52a49bf71d5.camel@mediatek.com>
-         <7h5yne3zlx.fsf@baylibre.com>
-         <98957e61b040b6c5b6a6b39e6eb661e07e510277.camel@mediatek.com>
-         <7hlew83blk.fsf@baylibre.com>
+         <20220408045908.21671-13-rex-bc.chen@mediatek.com>
+         <5f788a8f-7092-19ca-8499-d3626c4a386d@collabora.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -70,105 +65,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 2022-04-13 at 14:41 -0700, Kevin Hilman wrote:
-> Rex-BC Chen <rex-bc.chen@mediatek.com> writes:
-> 
-> [...]
-> 
-> > From the Chanwoo's devfreq passive govonor series, it's impossible
-> > to
-> > let cci devreq probed done before cpufreq because the passive
-> > govonor
-> > will search for cpufreq node and use it.
+On Fri, 2022-04-08 at 15:37 +0200, AngeloGioacchino Del Regno wrote:
+> Il 08/04/22 06:59, Rex-BC Chen ha scritto:
+> > From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 > > 
-> > Ref: function: cpufreq_passive_register_notifier()
-> > 
-> > 
-https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/commit/?h=devfreq-testing&id=b670978ddc43eb0c60735c3af6e4a370603ab673__;!!CTRNKA9wMg0ARbw!z58Lc1p9REo88oHn-NkxroN_fBd0TsHYmhscNZwnWwT71ecRkTeqZ6vFl5l7HpkTdM6t$
-> >  
-> 
-> Well this is a problem, because CCI depends on CPUfreq, but CPUfreq
-> depends on CCI, so one of them has to load and then wait for the
-> other.
-> 
-> > After I discuss with Angelo and Jia-wei, we think we are keeping
+> > Two or more clients may use the same regulator, and it could cause
 > > the
-> > function in target_index and if the cci is not ready we will use
-> > the
-> > voltage which is set by bootloader to prevent high freqeuncy low
-> > voltage crash. And then we can keep seting the target frequency.
+> > issue of high-freqeuncy-low-voltage.
+> > To prevent this, we use maximum voltage in
+> > mtk_cpu_dvfs_info_init().
 > > 
+> > Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 > 
->  > We assume the setting of bootloader is correct and we can do this.
-> 
-> I'm still not crazy about this because you're lying to the CPUfreq
-> framework.  It's requesting one OPP, but you're not setting that,
-> you're
-> just keeping the bootloader frequency.
-> 
-> In my earlier reply, I gave two other options for handling this.
-> 
-> 1) set a (temporary) constraint on the voltage regulator so that it
-> cannot change.
-> 
-> or more clean, IMO:
-> 
-> 2) set a CPUfreq policy that restricts available OPPs to ones that
-> will
-> not break CCI.
-> 
-> Either of these solutions allow you to load the CPUfreq driver early,
-> and then wait for the CCI driver to be ready before removing the
-> restrictions.
+> Is this happening for proc-supply (proc_reg)?
+> ...because it looks like it is, so you should send this commit
+> separately
+> and with an appropriate Fixes: tag.
 
-Hello Kevin,
+Hello all,
 
-I think I do not describe this clearly.
-The proposal is:
+If we use the value of max(booting voltage, target cpufreq voltage)
+when cci is not ready, I think we don't need this patch to prevent high
+frequenc low voltage issue.
+(mentioned in [1])
 
-In cpufreq probe:
-we record the voltage value which is set by bootloader.
+I will drop this patch in next version.
 
-In mtk_cpufreq_set_target():
-We do NOT directly return 0.
-Instead, we will find the voltage of target cpufreq and use the value
-max(booting voltage, target cpufreq voltage)
+Thanks.
 
-mtk_cpufreq_set_target() {
-	/* NOT return 0 if !is_ccifreq_ready */
-	....
-	vproc = get voltage of target cpufreq from opp.
-
-	if (ccifreq_supported && !is_ccifreq_ready)
-		vproc = max(vproc, vproc_on_boot)
-
-	//setting voltage and target frequency
-	....
-}
-
-> 
-> > For the SoCs that including ci hardware (8183 and 8186), we think
-> > it's
-> > not ok if we don't probe cci correctly.
-> > If we failed to get cci node, I think we sould return -ENODEV and
-> > the
-> > probe of cpufreq failed.
-> > 
-> > What do you think the solution?
-> 
-> I think it would be better if CPUfreq probes sucessfully, but
-> restricts
-> the OPPs available until CCI is ready.  If CCI fails to probe/load,
-> you
-> still have a working CPUfreq driver, it just has a restricted set of
-> OPPs.
-> 
-> Kevin
-
-If we can use the solution.
-I think it will be ok for this situation.
-
-Thanks!
+[1]:https://patchwork.kernel.org/comment/24816091/
 
 BRs,
 Rex
