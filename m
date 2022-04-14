@@ -2,143 +2,159 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3820C4321E
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 13:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D9CC4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 16:07:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244377AbiDNNdx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Apr 2022 09:33:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49970 "EHLO
+        id S1347631AbiDNQKM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Apr 2022 12:10:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59206 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244431AbiDNN0x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 09:26:53 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B0C89F6E8;
-        Thu, 14 Apr 2022 06:20:04 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 12888393597a75da; Thu, 14 Apr 2022 15:20:03 +0200
-Received: from kreacher.localnet (unknown [213.134.181.101])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        with ESMTP id S1359210AbiDNPmt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 11:42:49 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29F21236;
+        Thu, 14 Apr 2022 08:29:18 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 69DCB66BE86;
-        Thu, 14 Apr 2022 15:20:02 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PCI <linux-pci@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v3 1/9] PCI/PM: Resume subordinate bus in bus type callbacks
-Date:   Thu, 14 Apr 2022 15:04:13 +0200
-Message-ID: <3190097.aeNJFYEL58@kreacher>
-In-Reply-To: <5838942.lOV4Wx5bFT@kreacher>
-References: <4419002.LvFx2qVVIh@kreacher> <11975904.O9o76ZdvQC@kreacher> <5838942.lOV4Wx5bFT@kreacher>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 5706C61DC2;
+        Thu, 14 Apr 2022 15:29:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8EE4C385AC;
+        Thu, 14 Apr 2022 15:29:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1649950157;
+        bh=VfDxvkyS/FpdFkcDiBcJ2hxm8R6mL94Wq9ENWeNdGqE=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=HsD10AHd0KGAwx7G5NxJBlhBRD+OFG+cya++yOxAm/FJtdGmX0EDMX+C0AA+dBPiw
+         EItMI2kNRUVIvX0D87gGolIsTXtt8vCS7QU41FzNnSBVhqw6iL0SP8DlfAVsKWgJ0f
+         5OCK4VS8pAaBv0aOJ1mEGSC1EpCOIU8NAlAStDJvMqpB2B5F1vY3YxNoxmNEJB5Lzr
+         NTK9gpz9HWwpLSpI4v3h+4/mFebrGH10EUHSdX7njvA/hWPQZ6DjaYsG2p70yW8QMV
+         WJ+w/mt4+s9AwJ75eOYbSHDG/omxo8BXgxf2EQ+RBmoQbp+Ec61w/8EfMu8/EROwZA
+         4G/7VPu68KXew==
+Received: by mail-il1-f176.google.com with SMTP id y5so3324158ilg.4;
+        Thu, 14 Apr 2022 08:29:17 -0700 (PDT)
+X-Gm-Message-State: AOAM531hAWeRhupNxvN0sg8cmn0Z53PP5aN/gwXY/rfStY3EADoMidTn
+        r9bUQmGTuED13rauu3nhvQuLN7MwlLDoCI/drg==
+X-Google-Smtp-Source: ABdhPJy1TIctwgBcCZ2Dvctvarm3ytHizMQCj2YY3IXTqJtr+cOZYJRLcBeXwBjfV5QaFOGt+zSh79l1q5plG517MH4=
+X-Received: by 2002:a92:dd86:0:b0:2bc:805c:23c7 with SMTP id
+ g6-20020a92dd86000000b002bc805c23c7mr1202482iln.279.1649950156691; Thu, 14
+ Apr 2022 08:29:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20220411154347.491396-1-krzysztof.kozlowski@linaro.org>
+ <20220411154347.491396-4-krzysztof.kozlowski@linaro.org> <Ylg83Ub7wuElT+Bu@robh.at.kernel.org>
+In-Reply-To: <Ylg83Ub7wuElT+Bu@robh.at.kernel.org>
+From:   Rob Herring <robh@kernel.org>
+Date:   Thu, 14 Apr 2022 10:29:05 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKmr_4rQPMYMvUyr9PL9NBPS0sjUsg3Z7VuDguMx7NwqQ@mail.gmail.com>
+Message-ID: <CAL_JsqKmr_4rQPMYMvUyr9PL9NBPS0sjUsg3Z7VuDguMx7NwqQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 3/6] dt-bindings: ufs: common: add OPP table
+To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Avri Altman <avri.altman@wdc.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Taniya Das <tdas@codeaurora.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        devicetree@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        SCSI <linux-scsi@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.181.101
-X-CLIENT-HOSTNAME: 213.134.181.101
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvvddrudelfedgieefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvjeelgffhiedukedtleekkedvudfggefhgfegjefgueekjeelvefggfdvledutdenucfkphepvddufedrudefgedrudekuddruddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukedurddutddupdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeehpdhrtghpthhtoheplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhpmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehm
- ihhkrgdrfigvshhtvghrsggvrhhgsehlihhnuhigrdhinhhtvghlrdgtohhm
-X-DCC--Metrics: v370.home.net.pl 1024; Body=5 Fuz1=5 Fuz2=5
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Apr 14, 2022 at 10:25 AM Rob Herring <robh@kernel.org> wrote:
+>
+> On Mon, Apr 11, 2022 at 05:43:44PM +0200, Krzysztof Kozlowski wrote:
+> > Except scaling UFS and bus clocks, it's necessary to scale also the
+> > voltages of regulators or power domain performance state levels.  Adding
+> > Operating Performance Points table allows to adjust power domain
+> > performance state, depending on the UFS clock speed.
+> >
+> > OPPv2 deprecates previous property limited to clock scaling:
+> > freq-table-hz.
+> >
+> > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> >
+> > ---
+> >
+> > Not adding Rob's review tag because patch changed significantly.
+> > ---
+> >  .../devicetree/bindings/ufs/ufs-common.yaml   | 34 +++++++++++++++++--
+> >  1 file changed, 31 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/ufs/ufs-common.yaml b/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> > index 47a4e9e1a775..d7d2c8a136bb 100644
+> > --- a/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> > +++ b/Documentation/devicetree/bindings/ufs/ufs-common.yaml
+> > @@ -20,11 +20,24 @@ properties:
+> >        items:
+> >          - description: Minimum frequency for given clock in Hz
+> >          - description: Maximum frequency for given clock in Hz
+> > +    deprecated: true
+> >      description: |
+> > +      Preferred is operating-points-v2.
+> > +
+> >        Array of <min max> operating frequencies in Hz stored in the same order
+> > -      as the clocks property. If this property is not defined or a value in the
+> > -      array is "0" then it is assumed that the frequency is set by the parent
+> > -      clock or a fixed rate clock source.
+> > +      as the clocks property. If either this property or operating-points-v2 is
+> > +      not defined or a value in the array is "0" then it is assumed that the
+> > +      frequency is set by the parent clock or a fixed rate clock source.
+> > +
+> > +  operating-points-v2:
+> > +    description:
+> > +      Preferred over freq-table-hz.
+> > +      If present, each OPP must contain array of frequencies stored in the same
+> > +      order for each clock.  If clock frequency in the array is "0" then it is
+> > +      assumed that the frequency is set by the parent clock or a fixed rate
+> > +      clock source.
+> > +
+> > +  opp-table: true
+> >
+> >    interrupts:
+> >      maxItems: 1
+> > @@ -75,8 +88,23 @@ properties:
+> >
+> >  dependencies:
+> >    freq-table-hz: [ 'clocks' ]
+> > +  operating-points-v2: [ 'clocks', 'clock-names' ]
+> >
+> >  required:
+> >    - interrupts
+> >
+> > +allOf:
+> > +  - if:
+> > +      required:
+> > +        - freq-table-hz
+> > +    then:
+> > +      properties:
+> > +        operating-points-v2: false
+> > +  - if:
+> > +      required:
+> > +        - operating-points-v2
+> > +    then:
+> > +      properties:
+> > +        freq-table-hz: false
+>
+> You could also express this as:
+>
+> oneOf:
+>   - required: [ freq-table-hz ]
+>   - required: [ operating-points-v2 ]
+>   - not:
+>       required: [ freq-table-hz, operating-points-v2 ]
 
-Calling pci_resume_bus() on the secondary bus from pci_power_up() as
-it is done now is questionable, because it depends on the mandatory
-bridge power-up delays that are only covered by the PCI bus type PM
-callbacks.
+Err, NM. That doesn't work...
 
-For this reason, move the subordinate bus resume to those callbacks
-too and use the observation that if a bridge is being powered-up
-during resume from system-wide suspend, it may be still desirable
-to runtime-resume its subordinate bus after completing the system-
-wide transition (in case the resume of the devices on that bus is
-skipped during it).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
----
-
-v1 -> v3:
-   * Added R-by from Mika.
-
----
- drivers/pci/pci-driver.c |   15 +++++++++++++--
- drivers/pci/pci.c        |   15 ---------------
- 2 files changed, 13 insertions(+), 17 deletions(-)
-
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -559,6 +559,17 @@ static void pci_pm_default_resume_early(
- 	pci_pme_restore(pci_dev);
- }
- 
-+static void pci_pm_bridge_power_up_actions(struct pci_dev *pci_dev)
-+{
-+	pci_bridge_wait_for_secondary_bus(pci_dev);
-+	/*
-+	 * When powering on a bridge from D3cold, the whole hierarchy may be
-+	 * powered on into D0uninitialized state, resume them to give them a
-+	 * chance to suspend again
-+	 */
-+	pci_resume_bus(pci_dev->subordinate);
-+}
-+
- #endif
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -934,7 +945,7 @@ static int pci_pm_resume_noirq(struct de
- 	pcie_pme_root_status_cleanup(pci_dev);
- 
- 	if (!skip_bus_pm && prev_state == PCI_D3cold)
--		pci_bridge_wait_for_secondary_bus(pci_dev);
-+		pci_pm_bridge_power_up_actions(pci_dev);
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return 0;
-@@ -1321,7 +1332,7 @@ static int pci_pm_runtime_resume(struct
- 	pci_pm_default_resume(pci_dev);
- 
- 	if (prev_state == PCI_D3cold)
--		pci_bridge_wait_for_secondary_bus(pci_dev);
-+		pci_pm_bridge_power_up_actions(pci_dev);
- 
- 	if (pm && pm->runtime_resume)
- 		error = pm->runtime_resume(dev);
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -1310,21 +1310,6 @@ static int pci_dev_wait(struct pci_dev *
- int pci_power_up(struct pci_dev *dev)
- {
- 	pci_platform_power_transition(dev, PCI_D0);
--
--	/*
--	 * Mandatory power management transition delays are handled in
--	 * pci_pm_resume_noirq() and pci_pm_runtime_resume() of the
--	 * corresponding bridge.
--	 */
--	if (dev->runtime_d3cold) {
--		/*
--		 * When powering on a bridge from D3cold, the whole hierarchy
--		 * may be powered on into D0uninitialized state, resume them to
--		 * give them a chance to suspend again
--		 */
--		pci_resume_bus(dev->subordinate);
--	}
--
- 	return pci_raw_set_power_state(dev, PCI_D0);
- }
- 
-
-
-
+Reviewed-by: Rob Herring <robh@kernel.org>
