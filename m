@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D5FC433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 17:03:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64733C4332F
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Apr 2022 17:03:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243306AbiDNRGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Apr 2022 13:06:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54882 "EHLO
+        id S236574AbiDNRGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Apr 2022 13:06:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244949AbiDNRFp (ORCPT
+        with ESMTP id S244930AbiDNRFp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2022 13:05:45 -0400
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (mail-mw2nam08on2048.outbound.protection.outlook.com [40.107.101.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B32E449CB2;
-        Thu, 14 Apr 2022 09:48:16 -0700 (PDT)
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2047.outbound.protection.outlook.com [40.107.237.47])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4AB89BC3;
+        Thu, 14 Apr 2022 09:48:17 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ZU0gBkRK4Inim/KM2M1Bhh5xck8Yfz5POfQrii7D9oXm+cyDEWywZjY5V2GbE8ANJV0R1r5zrulsDPK28u7pstUonQPZWUqKwdWULtlq/Yjr8dtYuaUzRd8MKWjCFUmVWKNE8luqvsLuHM/VIkAI17F8ZDJa335bd8gw1AMJBX3fmUPDFaWCqCftgr7rmkKNem3BT5c0uSoJ01ctFJ09/Bp7NAA6xXMzzFitaDeUqzpoydcUt2aPOBwHwiYEv3uhT6G5geMyQv7hvtyKpPAHOM1wi0c2CauonqHH8kIMvatl5pBCZO2nledRejS+gSWjQvsn5zW0JZIDhDbWOzJ1/w==
+ b=K6BKK7rLq4mh7u1SCMoeIEQjyyniXHDZitC3suaL1IeHw9zqbBzN7bkpcWxuQL5KEHW0j/C4fkbDOFAaZ59bLWvJVa6lNy7mzny+WlwKwFjeyXvTNuhhBhkmWrLl3q2hHfu84Y5B6XZv8guLX81Y6IpRYYM/FD5jPH8pyoQ8diQw18r3hxTr/ivfRJz8hW5itJWah8LX4kEsv3JejQZfxr3DjEF1bZ404nPlkca8UGduDCv7X87EOu8MUe0cq3l8fDiQVYLNUp7gy/vkQSYUmxVGYHbL3Ibo92U/RDXJzyZHf96LOPu9t0O3rjc52tdO/vUr6IW5iqartUlO36UuNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Dv46hVZhOh36hdtM/zKZRvRF3Pwxj0M6Wex6v4rRaEI=;
- b=bjJW3EvqcsaZrE7/3nixvlIjftT2pOicrn79Cc56nMFVeQMRKfS81SaDNeLwR23w0ei+HeuFf2MS/2LQ0PmGnSbk1E/RnvX3i6l515bNA6GdvsP9p/GakCAiwPR/oPs8WBRO1xwpzF0K5j0wsR/uLv8Nyl5bnOFXy3g1BphZsEl6r3V7qLypDJ7qz7PWqtGP8i/yp+0xxSpAbTOispj+wpAiZm3ZSg0RhLB81MIaCpI2O1/UydOjkbXLCn+H+V+/y4a/oZe+ShpfRZhiqep8Il6A1BSXn1SgSbzENtSVPiD5dbpWIU85dsoOtTkqg8BzFEpmq9qug58s2HpnEsfFSw==
+ bh=Qmzr55cp2EbMngwaZIRCp1nStztnv1zdLphWXlYuvzI=;
+ b=M2fY+94enRrIEndrIMwkiQ7N+drgsIqH4OnjhFjBcXGjfpyVIfVEGwRHC6CsYeFbtUiS15G5Y8vkMFloFZkkEIkNhR8/4MqTXwzFn5rZT15OJFYSuVj1Ef/oQ3r3S2LNFgj5PuxIZBXkmOB+prQR/F3T5h1rXsdrILxweaRAjcn2HOz3/kngEtVFMlD36ZQe8RUAPIjjaSgrYu0V53krXMwVECTR/3mjib+xaX2sh9zhoLFXWfl8sHeBpSw6bDhKnyNCLvV63V12lCRNWV2U4s/xwn/H71m/e5XU/ufIrFdulR0L2RNiMBygmcWiDNYi6nAmi6HXzM0/3EhDdm6ojA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Dv46hVZhOh36hdtM/zKZRvRF3Pwxj0M6Wex6v4rRaEI=;
- b=ia5GOs1n5BCgotVeKhkZfbquRLtLzdTTCJ1jSOFBpD38hcmoMOGWPPGE71EMIac6i6y/8/eByEYQ/oQn54/o7tE4nRQLnURMwt+Gd4QyggYbahcsQS/TFZ+I4CWJzSzZz7qD2RRM8/Uu+9Yh5RaPYDNPaX6ePJtZcymFFNshPKI=
-Received: from BN6PR2001CA0013.namprd20.prod.outlook.com
- (2603:10b6:404:b4::23) by CY4PR12MB1671.namprd12.prod.outlook.com
- (2603:10b6:910:c::8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.18; Thu, 14 Apr
+ bh=Qmzr55cp2EbMngwaZIRCp1nStztnv1zdLphWXlYuvzI=;
+ b=seYSED5YodXkmoJXI1O+eBTXqXliHICKNpmmy+l+w5IiZt/waTCf2TgVjSQX5MYMP1F14V2BsNXq6KnR19mXXO+ND0F86L2bP0apIUendcMhlDqoqgMZqxxwOFIh6UwqRfSyPleiA/9xvbVQ0QqxoMq8euj93Yg5fO/FT/e3I1c=
+Received: from BN6PR2001CA0023.namprd20.prod.outlook.com
+ (2603:10b6:404:b4::33) by BN6PR12MB1938.namprd12.prod.outlook.com
+ (2603:10b6:404:fe::9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.20; Thu, 14 Apr
  2022 16:48:15 +0000
 Received: from BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
- (2603:10b6:404:b4:cafe::90) by BN6PR2001CA0013.outlook.office365.com
- (2603:10b6:404:b4::23) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:404:b4:cafe::ed) by BN6PR2001CA0023.outlook.office365.com
+ (2603:10b6:404:b4::33) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5164.20 via Frontend
- Transport; Thu, 14 Apr 2022 16:48:14 +0000
+ Transport; Thu, 14 Apr 2022 16:48:15 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,11 +48,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  BN8NAM11FT068.mail.protection.outlook.com (10.13.177.69) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5164.19 via Frontend Transport; Thu, 14 Apr 2022 16:48:14 +0000
+ 15.20.5164.19 via Frontend Transport; Thu, 14 Apr 2022 16:48:15 +0000
 Received: from AUS-LX-MLIMONCI.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 14 Apr
- 2022 11:48:09 -0500
+ 2022 11:48:10 -0500
 From:   Mario Limonciello <mario.limonciello@amd.com>
 To:     Rui Huang <ray.huang@amd.com>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -61,9 +61,9 @@ CC:     "open list:AMD PSTATE DRIVER" <linux-pm@vger.kernel.org>,
         Perry Yuan <Perry.Yuan@amd.com>,
         open list <linux-kernel@vger.kernel.org>,
         "Mario Limonciello" <mario.limonciello@amd.com>
-Subject: [PATCH v3 4/6] cpufreq: amd-pstate: Allow replacing acpi-cpufreq when loaded
-Date:   Thu, 14 Apr 2022 11:47:59 -0500
-Message-ID: <20220414164801.1051-5-mario.limonciello@amd.com>
+Subject: [PATCH v3 6/6] cpufreq: amd-pstate: Default to replace acpi-cpufreq
+Date:   Thu, 14 Apr 2022 11:48:01 -0500
+Message-ID: <20220414164801.1051-7-mario.limonciello@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220414164801.1051-1-mario.limonciello@amd.com>
 References: <20220414164801.1051-1-mario.limonciello@amd.com>
@@ -75,100 +75,68 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 1160d358-80d6-470d-4230-08da1e3691b7
-X-MS-TrafficTypeDiagnostic: CY4PR12MB1671:EE_
-X-Microsoft-Antispam-PRVS: <CY4PR12MB16718A2EEBF50E5F053BE97CE2EF9@CY4PR12MB1671.namprd12.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: a4d56c98-443a-4523-15cc-08da1e36920d
+X-MS-TrafficTypeDiagnostic: BN6PR12MB1938:EE_
+X-Microsoft-Antispam-PRVS: <BN6PR12MB19384EDCC01AD08B0F267A15E2EF9@BN6PR12MB1938.namprd12.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: M0MBncQEM/yrcCun4yRsVanUUgBZVWmOMJqMRDCFWi3sH6m+Q+WdanGBomFBuPbyD+Aw6evkiBrz7BX67biNUjHhdBSmtIXQSt84cg8DIs6o9lBkbIR/JHzi4c4DJeck6QwnT9Uswd3kY68OT96LCSy3BDYVvnA4juGp4h6HFFas8S6oehPGh0GL8BA7KlcE4usFXTe10vLnQjYfDhsRgZtsn8BsKvZG5XvAc7WnH4bTC9cXbR/5IZmfkWY2SMXRbChl0UWZ1ThV5y0BxVjPYExXjW5JoCyE5n34m4s26xBkfqnAFRQ1vR6tisO7NFVbqHtLOWapu313aqk1B5RaE1Xcy4d+jl3OTH76dceAxyNYON5VqBUB5GFw94nJ9e0iVTV/KenD/2acWUmIkH6AFb1NmlUpgB4H+vG+ms00TD/bW4FhOhknEfn1XLGn7+z5qBd74vtr450WHhT98sm9pOmffS51oOx2B24By/g3upCq1TFUpuy/uEsc5Y0afeHiNDn5AKe4QStiOFPAj4y7x9Y6GSWdP4LFEPN8Oqz3T/2hi2buJRdQtJ3wLI0LvzrDorr8dczp7uBd4RT4sPEjtNSTeDTfO/zdrcsN2WDbCRROynIin+B0+g6ffHJYFlDII4gl1kWpPmzXorAiH7Lk//ETaS7UaJO93i3AEDrsUePVoW6Upco7/uYad6nt637TG8qJKpUmRNbRVYCWnkzuCg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(36840700001)(40470700004)(46966006)(110136005)(54906003)(316002)(4326008)(70586007)(70206006)(8676002)(36756003)(426003)(16526019)(336012)(83380400001)(1076003)(186003)(26005)(40460700003)(47076005)(7696005)(6666004)(36860700001)(508600001)(356005)(81166007)(2616005)(86362001)(82310400005)(2906002)(5660300002)(44832011)(8936002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: PXOZXpnwRI0LBEi2kXcjCzDUCbkXmJrdnEdYVVHJXad2LJhjlqCZieNbCUpOvjToZ41Zn7efqqLrXRkaD6cxAKTSbPtXSiYqd+xaN+n6umiM86ICLO1DzybxsfKg7jMJgInhojo/iODyx0H1mu4mHzEpsrKXTs6SulUhIbOVoYUiREGfZZkscv5z7aIlRHBuFoZ2OaO8mL0JY/1e542KONLcyiRhbFONi9pv2C0jIVe+CuUp5N802UICDSFN6qomukulepoE6lRP0v7LKfb5P7DCrqVoyvP2nhYDDjP66FtEnVHxqMhyAFMYfhmlClCNF22vKBWzVIASHXDMKSKxoD/NDj7c94by+sEVwxIlDf/9kj4VtlVpQ8GAgcTnJdjQfKrQE++ED1H9njDH9cONbQbAptNaRxgqp/kYgxw4RguLO4TF6o6YL8hvNK7zqSyOqiR5AhxcTwcjHa10ewOwbsfq7/UE+2pCGfheigfqHmADBjFN/d7ZeJaghRloG0oL4rXRxyz0HGnWUUnajZKB6LkxVxR8H28egDQwNN5MjOCs5SAdh94VcK/75Qj5QzSCCDkX6IqKUbPQR+UwIwLrpMFcFVrckMHX2GnryXcEkKzMbmBZtmbqHZe+TEiWggwtXQAyCSZIRLGz9i2EMCt6h3a2sfOoJf6mUUbML3tdO7eeqyjlnnTab1K//C1oqpM/9c3I86nNj/4kNabJ4TfhSw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(46966006)(40470700004)(36840700001)(44832011)(83380400001)(82310400005)(47076005)(2616005)(186003)(16526019)(1076003)(426003)(336012)(110136005)(54906003)(5660300002)(316002)(8936002)(81166007)(86362001)(356005)(2906002)(4326008)(36756003)(6666004)(7696005)(40460700003)(26005)(508600001)(70586007)(70206006)(8676002)(36860700001)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2022 16:48:14.7495
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2022 16:48:15.3119
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1160d358-80d6-470d-4230-08da1e3691b7
+X-MS-Exchange-CrossTenant-Network-Message-Id: a4d56c98-443a-4523-15cc-08da1e36920d
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR12MB1671
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR12MB1938
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-`amd-pstate` can be compiled as a module.  This however can be a
-deficiency because `acpi-cpufreq` will be loaded earlier when compiled
-into the kernel meaning `amd-pstate` doesn't get a chance.
-`acpi-cpufreq` is also unable to be unloaded in this circumstance.
+As a side effect of using the symbol `acpi_cpufreq_exit` attempting
+to `modprobe amd-pstate` loads the acpi-cpufreq driver if it's compiled
+as a module.
 
-To better improve the usability of `amd-pstate` when compiled as a module,
-add an optional module parameter that will force it to replace other
-cpufreq drivers at startup.
+This means that module load order can't work anymore from those changes.
+To make this a more obvious default behavior set the "replace" module
+parameter for amd-pstate to true.
+
+Expected outcome is that no matter what configuration for module or
+compiled in, amd-pstate will take precedence.
+
+If a user prefers to use acpi_cpufreq, they can set `amd_pstate.replace=0`
+and then the following outcomes will happen when attempting to load
+amd-pstate:
+* acpi_cpufreq module  & amd_pstate module  -> acpi_cpufreq
+* acpi_cpufreq builtin & amd_pstate module  -> acpi_cpufreq
+* acpi_cpufreq builtin & amd_pstate builtin -> amd_pstate
+* acpi_cpufreq module  & amd_pstate builtin -> amd_pstate
 
 Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 ---
 v2->v3:
- * Rebase on earlier patches
- * Use IS_REACHABLE
- * Only add replace parameter if acpu-cpufreq is enabled
- * Only show info message once
-v1->v2:
- * Update to changes from v1.
- * Verify the driver being matched is acpi-cpufreq.
- * Show a message letting users know they can use amd-pstate.
+ * New patch, added since worse experience from patch 4.
 
- drivers/cpufreq/amd-pstate.c | 22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
+ drivers/cpufreq/amd-pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index d323f3e3888c..8ae65a2072d6 100644
+index 3330504b7070..538c9c4cea6d 100644
 --- a/drivers/cpufreq/amd-pstate.c
 +++ b/drivers/cpufreq/amd-pstate.c
-@@ -63,6 +63,13 @@ module_param(shared_mem, bool, 0444);
- MODULE_PARM_DESC(shared_mem,
+@@ -64,7 +64,7 @@ MODULE_PARM_DESC(shared_mem,
  		 "enable amd-pstate on processors with shared memory solution (false = disabled (default), true = enabled)");
  
-+#if defined(CONFIG_X86_ACPI_CPUFREQ) || defined(CONFIG_X86_ACPI_CPUFREQ_MODULE)
-+static bool replace = false;
-+module_param(replace, bool, 0444);
-+MODULE_PARM_DESC(replace,
-+		  "replace acpi-cpufreq driver upon init if necessary");
-+#endif
-+
- static struct cpufreq_driver amd_pstate_driver;
- 
- /**
-@@ -643,6 +650,7 @@ static struct cpufreq_driver amd_pstate_driver = {
- 
- static int __init amd_pstate_init(void)
- {
-+	const char *current_driver;
- 	int ret;
- 
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-@@ -666,9 +674,19 @@ static int __init amd_pstate_init(void)
- 		return -ENODEV;
- 	}
- 
--	/* don't keep reloading if cpufreq_driver exists */
--	if (cpufreq_get_current_driver())
-+	current_driver = cpufreq_get_current_driver();
-+	if (current_driver) {
-+#if IS_REACHABLE(CONFIG_X86_ACPI_CPUFREQ)
-+		if (replace && strcmp(current_driver, "acpi-cpufreq") == 0) {
-+			acpi_cpufreq_exit();
-+		} else {
-+			pr_info_once("A processor on this system supports amd-pstate, you can enable it with amd_pstate.replace=1\n");
-+			return -EEXIST;
-+		}
-+#else
- 		return -EEXIST;
-+#endif
-+	}
- 
- 	/* enable amd pstate feature */
- 	ret = amd_pstate_enable(true);
+ #if defined(CONFIG_X86_ACPI_CPUFREQ) || defined(CONFIG_X86_ACPI_CPUFREQ_MODULE)
+-static bool replace = false;
++static bool replace = true;
+ module_param(replace, bool, 0444);
+ MODULE_PARM_DESC(replace,
+ 		  "replace acpi-cpufreq driver upon init if necessary");
 -- 
 2.34.1
 
