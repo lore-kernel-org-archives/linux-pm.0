@@ -2,123 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BA8FC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 19:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E443AC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 19:20:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349037AbiDOTWq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Apr 2022 15:22:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37620 "EHLO
+        id S1349137AbiDOTWr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Apr 2022 15:22:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349044AbiDOTW1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 15:22:27 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15FE63EA8B;
-        Fri, 15 Apr 2022 12:19:58 -0700 (PDT)
-Message-ID: <20220415161206.648485667@linutronix.de>
+        with ESMTP id S1349213AbiDOTWc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 15:22:32 -0400
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E759C4ECDF;
+        Fri, 15 Apr 2022 12:20:02 -0700 (PDT)
+Message-ID: <20220415161206.817702355@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1650050396;
+        s=2020; t=1650050401;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         references:references; bh=MF+qC2b0dJXg+oWZw84Sqe0wCeDxratrkAn7t5wMy58=;
-        b=lN/Ir/t5CAtSnnNArbT4UHK+I31zNocAKQbzU6/XaqOweCDkAjninvFHeB7bqF09HE/T0W
-        OaDAHd/bIYPu7GNcb4OD+k61SxNgwDtJAbMdpbQDbxWNRAekNkEskPQFs9Ln/EIU9A9RDl
-        5F8Rb7nSmdQrowXLg+3N6wD5FyB8BQaPwTMw1rXjno2yVO7itltOnv9wwtqYj5TCPLIlvU
-        EeSZ8iJOCncNDUO61Pcge6Y6upbt48DrEwzPymS44LUe3DnxbmowfsF6T4Gbw6EJIW00mn
-        iqFoikvHHePXdoeGMjmwh+NnQALfUtZUa+7KqWOzRhHq6OMRUgF7MmC0kEmxTQ==
+         references:references; bh=qYlJQfHkHU3OcbS1sZiLCAQudGl6ztMYHcAA/fZFZtk=;
+        b=LGrEszF/kAbRdvl567m34oAJJwz6dSvwrSujKNtfqxO5EjZbvxWHXoa7KE4CADQ81/OLF+
+        RW5qo5WMfL3b5HhfId8wAF/jGnftRn0wRUX1Ua4lA9yUqDXMYMlEcjJy1LKezycjjGGSgv
+        ZetZKg6MxikTsS2pZrIkn/z86aqmMDTPIz1He9z6zajGmttD2jaWoNifRxOIl6brLYYBH2
+        ws9U79kWuK4WGwDDRJNQdL0QJQFFV21//V9+fTxdT1C9JEZW+1l8Msv1tFAOv71/7UhgXN
+        4x2hI2Rj5H/9Bb/D+kJdUTU04zYVIqolE0sMvLohIvfaMmx3puYP5rythOfPRQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1650050396;
+        s=2020e; t=1650050401;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         references:references; bh=MF+qC2b0dJXg+oWZw84Sqe0wCeDxratrkAn7t5wMy58=;
-        b=erZk8fiVQlqE6cG6sr4GDcQgl/rSmofTc9yhYqX4/jlB0u/eLJN6chvug1bvG89nCXAMfW
-        QXreSiOxq4uFB4Bg==
+         references:references; bh=qYlJQfHkHU3OcbS1sZiLCAQudGl6ztMYHcAA/fZFZtk=;
+        b=xY8Yx/ZD3ZaZx9KpDsiElK70nuaf4eZgpdAo75DVNrviEEvSAVT7PUlS2wbwCiCLjZ4pwl
+        cYiTgYGA3aULu3Dw==
 From:   Thomas Gleixner <tglx@linutronix.de>
 To:     LKML <linux-kernel@vger.kernel.org>
 Cc:     x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
         linux-pm@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
         "Paul E. McKenney" <paulmck@kernel.org>
-Subject: [patch 05/10] x86/aperfmperf: Put frequency invariance aperf/mperf
- data into a struct
+Subject: [patch 08/10] x86/aperfmperf: Store aperf/mperf data for cpu frequency reads
 References: <20220415133356.179706384@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date:   Fri, 15 Apr 2022 21:19:56 +0200 (CEST)
+Date:   Fri, 15 Apr 2022 21:20:01 +0200 (CEST)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Preparation for sharing code with the CPU frequency portion of the
-aperf/mperf code.
-
-No functional change.
+Now that the MSR readout is unconditional, store the results in the per CPU
+data structure along with a jiffies timestamp for the CPU frequency readout
+code.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/kernel/cpu/aperfmperf.c |   26 +++++++++++++++-----------
- 1 file changed, 15 insertions(+), 11 deletions(-)
+ arch/x86/kernel/cpu/aperfmperf.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 --- a/arch/x86/kernel/cpu/aperfmperf.c
 +++ b/arch/x86/kernel/cpu/aperfmperf.c
-@@ -22,6 +22,13 @@
- 
+@@ -24,11 +24,17 @@
  #include "cpu.h"
  
-+struct aperfmperf {
-+	u64		aperf;
-+	u64		mperf;
+ struct aperfmperf {
++	seqcount_t	seq;
++	unsigned long	last_update;
++	u64		acnt;
++	u64		mcnt;
+ 	u64		aperf;
+ 	u64		mperf;
+ };
+ 
+-static DEFINE_PER_CPU_SHARED_ALIGNED(struct aperfmperf, cpu_samples);
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct aperfmperf, cpu_samples) = {
++	.seq = SEQCNT_ZERO(cpu_samples.seq)
 +};
-+
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct aperfmperf, cpu_samples);
-+
+ 
  struct aperfmperf_sample {
  	unsigned int	khz;
- 	atomic_t	scfpending;
-@@ -194,8 +201,6 @@ unsigned int arch_freq_get_on_cpu(int cp
+@@ -515,6 +521,12 @@ void arch_scale_freq_tick(void)
+ 	s->aperf = aperf;
+ 	s->mperf = mperf;
  
- DEFINE_STATIC_KEY_FALSE(arch_scale_freq_key);
- 
--static DEFINE_PER_CPU(u64, arch_prev_aperf);
--static DEFINE_PER_CPU(u64, arch_prev_mperf);
- static u64 arch_turbo_freq_ratio = SCHED_CAPACITY_SCALE;
- static u64 arch_max_freq_ratio = SCHED_CAPACITY_SCALE;
- 
-@@ -407,8 +412,8 @@ static void init_counter_refs(void)
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
- 
--	this_cpu_write(arch_prev_aperf, aperf);
--	this_cpu_write(arch_prev_mperf, mperf);
-+	this_cpu_write(cpu_samples.aperf, aperf);
-+	this_cpu_write(cpu_samples.mperf, mperf);
++	raw_write_seqcount_begin(&s->seq);
++	s->last_update = jiffies;
++	s->acnt = acnt;
++	s->mcnt = mcnt;
++	raw_write_seqcount_end(&s->seq);
++
+ 	scale_freq_tick(acnt, mcnt);
  }
  
- #ifdef CONFIG_PM_SLEEP
-@@ -474,9 +479,8 @@ DEFINE_PER_CPU(unsigned long, arch_freq_
- 
- void arch_scale_freq_tick(void)
- {
--	u64 freq_scale;
--	u64 aperf, mperf;
--	u64 acnt, mcnt;
-+	struct aperfmperf *s = this_cpu_ptr(&cpu_samples);
-+	u64 aperf, mperf, acnt, mcnt, freq_scale;
- 
- 	if (!arch_scale_freq_invariant())
- 		return;
-@@ -484,11 +488,11 @@ void arch_scale_freq_tick(void)
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
- 
--	acnt = aperf - this_cpu_read(arch_prev_aperf);
--	mcnt = mperf - this_cpu_read(arch_prev_mperf);
-+	acnt = aperf - s->aperf;
-+	mcnt = mperf - s->mperf;
- 
--	this_cpu_write(arch_prev_aperf, aperf);
--	this_cpu_write(arch_prev_mperf, mperf);
-+	s->aperf = aperf;
-+	s->mperf = mperf;
- 
- 	if (check_shl_overflow(acnt, 2*SCHED_CAPACITY_SHIFT, &acnt))
- 		goto error;
 
