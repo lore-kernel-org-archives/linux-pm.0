@@ -2,34 +2,34 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C2DEC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 05:59:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D79C43217
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 05:59:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350234AbiDOGCA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Apr 2022 02:02:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48660 "EHLO
+        id S1350251AbiDOGCB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Apr 2022 02:02:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48700 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350184AbiDOGB4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 02:01:56 -0400
+        with ESMTP id S1350192AbiDOGB5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 02:01:57 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63EEF63C0;
-        Thu, 14 Apr 2022 22:59:27 -0700 (PDT)
-X-UUID: e39b32a0edac40ea8915398fa27b2dbb-20220415
-X-UUID: e39b32a0edac40ea8915398fa27b2dbb-20220415
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E8F8AE6F;
+        Thu, 14 Apr 2022 22:59:28 -0700 (PDT)
+X-UUID: 973d672824b54d04833be49530c1775c-20220415
+X-UUID: 973d672824b54d04833be49530c1775c-20220415
+Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 360693418; Fri, 15 Apr 2022 13:59:19 +0800
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 438967000; Fri, 15 Apr 2022 13:59:20 +0800
 Received: from mtkexhb01.mediatek.inc (172.21.101.102) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Fri, 15 Apr 2022 13:59:19 +0800
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Fri, 15 Apr 2022 13:59:19 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb01.mediatek.inc
  (172.21.101.102) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 15 Apr
- 2022 13:59:18 +0800
+ 2022 13:59:19 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 15 Apr 2022 13:59:18 +0800
+ Transport; Fri, 15 Apr 2022 13:59:19 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -43,9 +43,9 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH V3 02/15] cpufreq: mediatek: Use device print to show logs
-Date:   Fri, 15 Apr 2022 13:59:03 +0800
-Message-ID: <20220415055916.28350-3-rex-bc.chen@mediatek.com>
+Subject: [PATCH V3 07/15] cpufreq: mediatek: Add .get function
+Date:   Fri, 15 Apr 2022 13:59:08 +0800
+Message-ID: <20220415055916.28350-8-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220415055916.28350-1-rex-bc.chen@mediatek.com>
 References: <20220415055916.28350-1-rex-bc.chen@mediatek.com>
@@ -56,162 +56,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-- Replace pr_* with dev_* to show logs.
-- Remove usage of __func__.
+From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
+We want to get opp frequency via opp table. Therefore, we add the function
+"mtk_cpufreq_get()" to do this.
+
+Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 54 ++++++++++++++++--------------
- 1 file changed, 28 insertions(+), 26 deletions(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index dc4a87e68940..e040f3574af9 100644
+index ebc4bfd66ad5..4d46e823c24e 100644
 --- a/drivers/cpufreq/mediatek-cpufreq.c
 +++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -65,7 +65,8 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+@@ -71,6 +71,15 @@ static struct mtk_cpu_dvfs_info *mtk_cpu_dvfs_info_lookup(int cpu)
+ 	return NULL;
+ }
  
- 	old_vproc = regulator_get_voltage(proc_reg);
- 	if (old_vproc < 0) {
--		pr_err("%s: invalid Vproc value: %d\n", __func__, old_vproc);
-+		dev_err(info->cpu_dev,
-+			"invalid Vproc value: %d\n", old_vproc);
- 		return old_vproc;
- 	}
- 	/* Vsram should not exceed the maximum allowed voltage of SoC. */
-@@ -81,14 +82,14 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 		do {
- 			old_vsram = regulator_get_voltage(sram_reg);
- 			if (old_vsram < 0) {
--				pr_err("%s: invalid Vsram value: %d\n",
--				       __func__, old_vsram);
-+				dev_err(info->cpu_dev,
-+					"invalid Vsram value: %d\n", old_vsram);
- 				return old_vsram;
- 			}
- 			old_vproc = regulator_get_voltage(proc_reg);
- 			if (old_vproc < 0) {
--				pr_err("%s: invalid Vproc value: %d\n",
--				       __func__, old_vproc);
-+				dev_err(info->cpu_dev,
-+					"invalid Vproc value: %d\n", old_vproc);
- 				return old_vproc;
- 			}
- 
-@@ -136,14 +137,14 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 		do {
- 			old_vproc = regulator_get_voltage(proc_reg);
- 			if (old_vproc < 0) {
--				pr_err("%s: invalid Vproc value: %d\n",
--				       __func__, old_vproc);
-+				dev_err(info->cpu_dev,
-+					"invalid Vproc value: %d\n", old_vproc);
- 				return old_vproc;
- 			}
- 			old_vsram = regulator_get_voltage(sram_reg);
- 			if (old_vsram < 0) {
--				pr_err("%s: invalid Vsram value: %d\n",
--				       __func__, old_vsram);
-+				dev_err(info->cpu_dev,
-+					"invalid Vsram value: %d\n", old_vsram);
- 				return old_vsram;
- 			}
- 
-@@ -214,7 +215,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	old_freq_hz = clk_get_rate(cpu_clk);
- 	old_vproc = regulator_get_voltage(info->proc_reg);
- 	if (old_vproc < 0) {
--		pr_err("%s: invalid Vproc value: %d\n", __func__, old_vproc);
-+		dev_err(cpu_dev, "invalid Vproc value: %d\n", old_vproc);
- 		return old_vproc;
- 	}
- 
-@@ -222,8 +223,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 
- 	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
- 	if (IS_ERR(opp)) {
--		pr_err("cpu%d: failed to find OPP for %ld\n",
--		       policy->cpu, freq_hz);
-+		dev_err(cpu_dev, "cpu%d: failed to find OPP for %ld\n",
-+			policy->cpu, freq_hz);
- 		return PTR_ERR(opp);
- 	}
- 	vproc = dev_pm_opp_get_voltage(opp);
-@@ -237,8 +238,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	if (old_vproc < target_vproc) {
- 		ret = mtk_cpufreq_set_voltage(info, target_vproc);
- 		if (ret) {
--			pr_err("cpu%d: failed to scale up voltage!\n",
--			       policy->cpu);
-+			dev_err(cpu_dev,
-+				"cpu%d: failed to scale up voltage!\n", policy->cpu);
- 			mtk_cpufreq_set_voltage(info, old_vproc);
- 			return ret;
- 		}
-@@ -247,8 +248,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	/* Reparent the CPU clock to intermediate clock. */
- 	ret = clk_set_parent(cpu_clk, info->inter_clk);
- 	if (ret) {
--		pr_err("cpu%d: failed to re-parent cpu clock!\n",
--		       policy->cpu);
-+		dev_err(cpu_dev,
-+			"cpu%d: failed to re-parent cpu clock!\n", policy->cpu);
- 		mtk_cpufreq_set_voltage(info, old_vproc);
- 		WARN_ON(1);
- 		return ret;
-@@ -257,8 +258,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	/* Set the original PLL to target rate. */
- 	ret = clk_set_rate(armpll, freq_hz);
- 	if (ret) {
--		pr_err("cpu%d: failed to scale cpu clock rate!\n",
--		       policy->cpu);
-+		dev_err(cpu_dev,
-+			"cpu%d: failed to scale cpu clock rate!\n", policy->cpu);
- 		clk_set_parent(cpu_clk, armpll);
- 		mtk_cpufreq_set_voltage(info, old_vproc);
- 		return ret;
-@@ -267,8 +268,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	/* Set parent of CPU clock back to the original PLL. */
- 	ret = clk_set_parent(cpu_clk, armpll);
- 	if (ret) {
--		pr_err("cpu%d: failed to re-parent cpu clock!\n",
--		       policy->cpu);
-+		dev_err(cpu_dev,
-+			"cpu%d: failed to re-parent cpu clock!\n", policy->cpu);
- 		mtk_cpufreq_set_voltage(info, inter_vproc);
- 		WARN_ON(1);
- 		return ret;
-@@ -281,8 +282,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	if (vproc < inter_vproc || vproc < old_vproc) {
- 		ret = mtk_cpufreq_set_voltage(info, vproc);
- 		if (ret) {
--			pr_err("cpu%d: failed to scale down voltage!\n",
--			       policy->cpu);
-+			dev_err(cpu_dev,
-+				"cpu%d: failed to scale down voltage!\n", policy->cpu);
- 			clk_set_parent(cpu_clk, info->inter_clk);
- 			clk_set_rate(armpll, old_freq_hz);
- 			clk_set_parent(cpu_clk, armpll);
-@@ -448,15 +449,16 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
- 
- 	info = mtk_cpu_dvfs_info_lookup(policy->cpu);
- 	if (!info) {
--		pr_err("dvfs info for cpu%d is not initialized.\n",
--		       policy->cpu);
-+		dev_err(info->cpu_dev,
-+			"dvfs info for cpu%d is not initialized.\n", policy->cpu);
- 		return -EINVAL;
- 	}
- 
- 	ret = dev_pm_opp_init_cpufreq_table(info->cpu_dev, &freq_table);
- 	if (ret) {
--		pr_err("failed to init cpufreq table for cpu%d: %d\n",
--		       policy->cpu, ret);
-+		dev_err(info->cpu_dev,
-+			"failed to init cpufreq table for cpu%d: %d\n",
-+			policy->cpu, ret);
- 		return ret;
- 	}
- 
++static unsigned int mtk_cpufreq_get(unsigned int cpu)
++{
++	struct mtk_cpu_dvfs_info *info;
++
++	info = mtk_cpu_dvfs_info_lookup(cpu);
++
++	return !info ? 0 : (info->opp_freq / 1000);
++}
++
+ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 					int new_vproc)
+ {
+@@ -586,7 +595,7 @@ static struct cpufreq_driver mtk_cpufreq_driver = {
+ 		 CPUFREQ_IS_COOLING_DEV,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target_index = mtk_cpufreq_set_target,
+-	.get = cpufreq_generic_get,
++	.get = mtk_cpufreq_get,
+ 	.init = mtk_cpufreq_init,
+ 	.exit = mtk_cpufreq_exit,
+ 	.register_em = cpufreq_register_em_with_opp,
 -- 
 2.18.0
 
