@@ -2,321 +2,243 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B6FEC433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 19:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 440DAC4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 19:20:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349073AbiDOTW2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Apr 2022 15:22:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37580 "EHLO
+        id S1350103AbiDOTWn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Apr 2022 15:22:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348785AbiDOTW0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 15:22:26 -0400
+        with ESMTP id S1349163AbiDOTWb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 15:22:31 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B29E63467D;
-        Fri, 15 Apr 2022 12:19:56 -0700 (PDT)
-Message-ID: <20220415161206.592465719@linutronix.de>
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6070949CB7;
+        Fri, 15 Apr 2022 12:20:01 -0700 (PDT)
+Message-ID: <20220415161206.761988704@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1650050395;
+        s=2020; t=1650050400;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         references:references; bh=Vbg+gQ8Rxj+zh2dlsK2MvI2YGFj6irjpOgNZhjAS9Pk=;
-        b=3mdSgZHopcXMcpNGI/NA35kkALwjF6jDUs3UKfpeT28exkDTndSlutzy0vO+pJem7DD/SN
-        CO5jWLT2/u2BW0hq/d5Xd2tYRAlpNe5ca8E1Klar2QRVHLl/Z8CDh1JMPwZHXkrkTozcJ9
-        nLuu/D5xU7eBX0o4iyv35D5RDOuK6F7TdFQ7gCRoAuX2shLc9EH+vj1SkjNwrAQBUT3XOl
-        cG6PP/VPvKtGHqoRRfaL7wodtnx+hXeAQRE9AZ1MZ62/UmPTyEKB74+KJ0FCR+MgW59Tt1
-        t+tqDoI8IvAapl2ufvs/qsQiypV6o/SftpsFzrtBwmPuNJc9E3Rld90L2pCLEw==
+         references:references; bh=IvI5nbb3fvM/PCuIhyl3Bqh32RXyrehLlCthCBqe5jg=;
+        b=SeV447QGZ7IDW8XqxiW5WQlCVVYONOAt8FTX7IYXePLcTnmkGW000uWPVEkewWI0cAABY8
+        UolXkGrE0a0LmgF3dwNC4tCCChfSTQ67GkS+qYtANwHtka+Yhr0mNorM8qZIfSNGeYhs1m
+        NVIutzS6S4ZOK6uhu6fOqrOO7kirZVO13OYklLexzBg6zzYLyqQUBD+pD7IVgerSAXLsBs
+        QcJ+BEesQCT1b4BY9ogck3jhT1j9TkRSrNG9HQT0gFa6bprKX0q309GIEde6Uk83XGxcgr
+        urIrDnRjls8Z355TJkvI4+Az3RLQ//6ojHI6Y9WzfxiqQ2q/S/cUcUPpj2PGZg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1650050395;
+        s=2020e; t=1650050400;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         references:references; bh=Vbg+gQ8Rxj+zh2dlsK2MvI2YGFj6irjpOgNZhjAS9Pk=;
-        b=p7jYvFKMWytjpvilv77Uf1pDvLUcr3aa1hwkMa1myMH0veXK0lYXC9hgUh9C71VOTiDMU1
-        cjUWWTcFqRdgIFBg==
+         references:references; bh=IvI5nbb3fvM/PCuIhyl3Bqh32RXyrehLlCthCBqe5jg=;
+        b=GiAar3/6U8/VpXFHcDm3gBmXdzxteX8ugGBowYgCfKnuusFqaD1FqwPvB9iOj/T2oUOXMg
+        7E4ku/vHPnrj7YCA==
 From:   Thomas Gleixner <tglx@linutronix.de>
 To:     LKML <linux-kernel@vger.kernel.org>
 Cc:     x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
         linux-pm@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
         "Paul E. McKenney" <paulmck@kernel.org>
-Subject: [patch 04/10] x86/aperfmperf: Untangle Intel and AMD frequency
- invariance init
+Subject: [patch 07/10] x86/aperfmperf: Make parts of the frequency invariance
+ code unconditional
 References: <20220415133356.179706384@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date:   Fri, 15 Apr 2022 21:19:54 +0200 (CEST)
+Date:   Fri, 15 Apr 2022 21:19:59 +0200 (CEST)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-AMD boot CPU initialization happens late via ACPI/CPPC which prevents the
-Intel parts from being marked __init.
+The frequency invariance support is currently limited to x86/64 and SMP,
+which is the vast majority of machines.
 
-Split out the common code and provide a dedicated interface for the AMD
-initialization and mark the Intel specific code and data __init.
+arch_scale_freq_tick() is called every tick on all CPUs and reads the APERF
+and MPERF MSRs. The CPU frequency getters function do the same via dedicated
+IPIs.
 
-The remaining text size is almost cut in half:
+While it could be argued that on systems where frequency invariance support
+is disabled (32bit, !SMP) the per tick read of the APERF and MPERF MSRs can
+be avoided, it does not make sense to keep the extra code and the resulting
+runtime issues of mass IPIs around.
 
-  text:		2614	->	1350
-  init.text:	   0	->	 786
+As a first step split out the non frequency invariance specific
+initialization code and the read MSR portion of arch_scale_freq_tick(). The
+rest of the code is still conditional and guarded with a static key.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/topology.h  |   13 ++------
- arch/x86/kernel/acpi/cppc.c      |   29 +++++++-----------
- arch/x86/kernel/cpu/aperfmperf.c |   62 ++++++++++++++++++++-------------------
- arch/x86/kernel/smpboot.c        |    2 -
- 4 files changed, 49 insertions(+), 57 deletions(-)
+ arch/x86/include/asm/cpu.h       |    2 +
+ arch/x86/include/asm/topology.h  |    4 --
+ arch/x86/kernel/cpu/aperfmperf.c |   63 +++++++++++++++++++++++----------------
+ arch/x86/kernel/smpboot.c        |    3 -
+ 4 files changed, 41 insertions(+), 31 deletions(-)
 
+--- a/arch/x86/include/asm/cpu.h
++++ b/arch/x86/include/asm/cpu.h
+@@ -36,6 +36,8 @@ extern int _debug_hotplug_cpu(int cpu, i
+ #endif
+ #endif
+ 
++extern void ap_init_aperfmperf(void);
++
+ int mwait_usable(const struct cpuinfo_x86 *);
+ 
+ unsigned int x86_family(unsigned int sig);
 --- a/arch/x86/include/asm/topology.h
 +++ b/arch/x86/include/asm/topology.h
-@@ -216,24 +216,19 @@ extern void arch_scale_freq_tick(void);
- #define arch_scale_freq_tick arch_scale_freq_tick
+@@ -217,13 +217,9 @@ extern void arch_scale_freq_tick(void);
  
  extern void arch_set_max_freq_ratio(bool turbo_disabled);
--extern void bp_init_freq_invariance(bool cppc_ready);
-+extern void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled);
-+extern void bp_init_freq_invariance(void);
- extern void ap_init_freq_invariance(void);
+ extern void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled);
+-extern void bp_init_freq_invariance(void);
+-extern void ap_init_freq_invariance(void);
  #else
  static inline void arch_set_max_freq_ratio(bool turbo_disabled) { }
--static inline void bp_init_freq_invariance(bool cppc_ready) { }
-+static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled) { }
-+static inline void bp_init_freq_invariance(void) { }
- static inline void ap_init_freq_invariance(void) { }
+ static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled) { }
+-static inline void bp_init_freq_invariance(void) { }
+-static inline void ap_init_freq_invariance(void) { }
  #endif
  
  #ifdef CONFIG_ACPI_CPPC_LIB
- void init_freq_invariance_cppc(void);
- #define arch_init_invariance_cppc init_freq_invariance_cppc
--
--bool amd_set_max_freq_ratio(u64 *ratio);
--#else
--static inline bool amd_set_max_freq_ratio(u64 *ratio)
--{
--	return false;
--}
- #endif
- 
- #endif /* _ASM_X86_TOPOLOGY_H */
---- a/arch/x86/kernel/acpi/cppc.c
-+++ b/arch/x86/kernel/acpi/cppc.c
-@@ -50,20 +50,17 @@ int cpc_write_ffh(int cpunum, struct cpc
- 	return err;
- }
- 
--bool amd_set_max_freq_ratio(u64 *ratio)
-+static void amd_set_max_freq_ratio(void)
- {
- 	struct cppc_perf_caps perf_caps;
- 	u64 highest_perf, nominal_perf;
- 	u64 perf_ratio;
- 	int rc;
- 
--	if (!ratio)
--		return false;
--
- 	rc = cppc_get_perf_caps(0, &perf_caps);
- 	if (rc) {
- 		pr_debug("Could not retrieve perf counters (%d)\n", rc);
--		return false;
-+		return;
- 	}
- 
- 	highest_perf = amd_get_highest_perf();
-@@ -71,7 +68,7 @@ bool amd_set_max_freq_ratio(u64 *ratio)
- 
- 	if (!highest_perf || !nominal_perf) {
- 		pr_debug("Could not retrieve highest or nominal performance\n");
--		return false;
-+		return;
- 	}
- 
- 	perf_ratio = div_u64(highest_perf * SCHED_CAPACITY_SCALE, nominal_perf);
-@@ -79,26 +76,24 @@ bool amd_set_max_freq_ratio(u64 *ratio)
- 	perf_ratio = (perf_ratio + SCHED_CAPACITY_SCALE) >> 1;
- 	if (!perf_ratio) {
- 		pr_debug("Non-zero highest/nominal perf values led to a 0 ratio\n");
--		return false;
-+		return;
- 	}
- 
--	*ratio = perf_ratio;
--	arch_set_max_freq_ratio(false);
--
--	return true;
-+	freq_invariance_set_perf_ratio(perf_ratio, false);
- }
- 
- static DEFINE_MUTEX(freq_invariance_lock);
- 
- void init_freq_invariance_cppc(void)
- {
--	static bool secondary;
-+	static bool init_done;
- 
--	mutex_lock(&freq_invariance_lock);
--
--	if (!secondary)
--		bp_init_freq_invariance(true);
--	secondary = true;
-+	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
-+		return;
- 
-+	mutex_lock(&freq_invariance_lock);
-+	if (!init_done)
-+		amd_set_max_freq_ratio();
-+	init_done = true;
- 	mutex_unlock(&freq_invariance_lock);
- }
 --- a/arch/x86/kernel/cpu/aperfmperf.c
 +++ b/arch/x86/kernel/cpu/aperfmperf.c
-@@ -206,7 +206,7 @@ void arch_set_max_freq_ratio(bool turbo_
- }
- EXPORT_SYMBOL_GPL(arch_set_max_freq_ratio);
+@@ -17,6 +17,7 @@
+ #include <linux/smp.h>
+ #include <linux/syscore_ops.h>
  
--static bool turbo_disabled(void)
-+static bool __init turbo_disabled(void)
- {
- 	u64 misc_en;
- 	int err;
-@@ -218,7 +218,7 @@ static bool turbo_disabled(void)
- 	return (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
- }
++#include <asm/cpu.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/intel-family.h>
  
--static bool slv_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq)
-+static bool __init slv_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq)
- {
- 	int err;
- 
-@@ -240,26 +240,26 @@ static bool slv_set_max_freq_ratio(u64 *
- 	X86_MATCH_VENDOR_FAM_MODEL_FEATURE(INTEL, 6,		\
- 		INTEL_FAM6_##model, X86_FEATURE_APERFMPERF, NULL)
- 
--static const struct x86_cpu_id has_knl_turbo_ratio_limits[] = {
-+static const struct x86_cpu_id has_knl_turbo_ratio_limits[] __initconst = {
- 	X86_MATCH(XEON_PHI_KNL),
- 	X86_MATCH(XEON_PHI_KNM),
- 	{}
- };
- 
--static const struct x86_cpu_id has_skx_turbo_ratio_limits[] = {
-+static const struct x86_cpu_id has_skx_turbo_ratio_limits[] __initconst = {
- 	X86_MATCH(SKYLAKE_X),
- 	{}
- };
- 
--static const struct x86_cpu_id has_glm_turbo_ratio_limits[] = {
-+static const struct x86_cpu_id has_glm_turbo_ratio_limits[] __initconst = {
- 	X86_MATCH(ATOM_GOLDMONT),
- 	X86_MATCH(ATOM_GOLDMONT_D),
- 	X86_MATCH(ATOM_GOLDMONT_PLUS),
- 	{}
- };
- 
--static bool knl_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq,
--				int num_delta_fratio)
-+static bool __init knl_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq,
-+					  int num_delta_fratio)
- {
- 	int fratio, delta_fratio, found;
- 	int err, i;
-@@ -297,7 +297,7 @@ static bool knl_set_max_freq_ratio(u64 *
- 	return true;
+@@ -164,6 +165,17 @@ unsigned int arch_freq_get_on_cpu(int cp
+ 	return per_cpu(samples.khz, cpu);
  }
  
--static bool skx_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq, int size)
-+static bool __init skx_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq, int size)
- {
- 	u64 ratios, counts;
- 	u32 group_size;
-@@ -328,7 +328,7 @@ static bool skx_set_max_freq_ratio(u64 *
- 	return false;
- }
- 
--static bool core_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq)
-+static bool __init core_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq)
- {
- 	u64 msr;
- 	int err;
-@@ -351,7 +351,7 @@ static bool core_set_max_freq_ratio(u64
- 	return true;
- }
- 
--static bool intel_set_max_freq_ratio(void)
-+static bool __init intel_set_max_freq_ratio(void)
- {
- 	u64 base_freq, turbo_freq;
- 	u64 turbo_ratio;
-@@ -418,40 +418,42 @@ static struct syscore_ops freq_invarianc
- 
- static void register_freq_invariance_syscore_ops(void)
- {
--	/* Bail out if registered already. */
--	if (freq_invariance_syscore_ops.node.prev)
--		return;
--
- 	register_syscore_ops(&freq_invariance_syscore_ops);
- }
- #else
- static inline void register_freq_invariance_syscore_ops(void) {}
- #endif
- 
--void bp_init_freq_invariance(bool cppc_ready)
-+static void freq_invariance_enable(void)
++static void init_counter_refs(void)
 +{
-+	if (static_branch_unlikely(&arch_scale_freq_key)) {
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+	static_branch_enable(&arch_scale_freq_key);
-+	register_freq_invariance_syscore_ops();
-+	pr_info("Estimated ratio of average max frequency by base frequency (times 1024): %llu\n", arch_max_freq_ratio);
++	u64 aperf, mperf;
++
++	rdmsrl(MSR_IA32_APERF, aperf);
++	rdmsrl(MSR_IA32_MPERF, mperf);
++
++	this_cpu_write(cpu_samples.aperf, aperf);
++	this_cpu_write(cpu_samples.mperf, mperf);
 +}
 +
-+void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled)
- {
--	bool ret;
-+	arch_turbo_freq_ratio = ratio;
-+	arch_set_max_freq_ratio(turbo_disabled);
-+	freq_invariance_enable();
-+}
- 
-+void __init bp_init_freq_invariance(void)
-+{
- 	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
- 		return;
- 
- 	init_counter_refs();
- 
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
--		ret = intel_set_max_freq_ratio();
--	else if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
--		if (!cppc_ready)
--			return;
--		ret = amd_set_max_freq_ratio(&arch_turbo_freq_ratio);
--	}
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-+		return;
- 
--	if (ret) {
--		static_branch_enable(&arch_scale_freq_key);
--		register_freq_invariance_syscore_ops();
--		pr_info("Estimated ratio of average max frequency by base frequency (times 1024): %llu\n", arch_max_freq_ratio);
--	} else {
--		pr_debug("Couldn't determine max cpu frequency, necessary for scale-invariant accounting.\n");
--	}
-+	if (intel_set_max_freq_ratio())
-+		freq_invariance_enable();
+ #if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
+ /*
+  * APERF/MPERF frequency ratio computation.
+@@ -405,17 +417,6 @@ static bool __init intel_set_max_freq_ra
+ 	return true;
  }
  
- void ap_init_freq_invariance(void)
+-static void init_counter_refs(void)
+-{
+-	u64 aperf, mperf;
+-
+-	rdmsrl(MSR_IA32_APERF, aperf);
+-	rdmsrl(MSR_IA32_MPERF, mperf);
+-
+-	this_cpu_write(cpu_samples.aperf, aperf);
+-	this_cpu_write(cpu_samples.mperf, mperf);
+-}
+-
+ #ifdef CONFIG_PM_SLEEP
+ static struct syscore_ops freq_invariance_syscore_ops = {
+ 	.resume = init_counter_refs,
+@@ -447,13 +448,8 @@ void freq_invariance_set_perf_ratio(u64
+ 	freq_invariance_enable();
+ }
+ 
+-void __init bp_init_freq_invariance(void)
++static void __init bp_init_freq_invariance(void)
+ {
+-	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
+-		return;
+-
+-	init_counter_refs();
+-
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
+ 		return;
+ 
+@@ -461,12 +457,6 @@ void __init bp_init_freq_invariance(void
+ 		freq_invariance_enable();
+ }
+ 
+-void ap_init_freq_invariance(void)
+-{
+-	if (cpu_feature_enabled(X86_FEATURE_APERFMPERF))
+-		init_counter_refs();
+-}
+-
+ static void disable_freq_invariance_workfn(struct work_struct *work)
+ {
+ 	static_branch_disable(&arch_scale_freq_key);
+@@ -481,6 +471,9 @@ static void scale_freq_tick(u64 acnt, u6
+ {
+ 	u64 freq_scale;
+ 
++	if (!arch_scale_freq_invariant())
++		return;
++
+ 	if (check_shl_overflow(acnt, 2*SCHED_CAPACITY_SHIFT, &acnt))
+ 		goto error;
+ 
+@@ -501,13 +494,17 @@ static void scale_freq_tick(u64 acnt, u6
+ 	pr_warn("Scheduler frequency invariance went wobbly, disabling!\n");
+ 	schedule_work(&disable_freq_invariance_work);
+ }
++#else
++static inline void bp_init_freq_invariance(void) { }
++static inline void scale_freq_tick(u64 acnt, u64 mcnt) { }
++#endif /* CONFIG_X86_64 && CONFIG_SMP */
+ 
+ void arch_scale_freq_tick(void)
+ {
+ 	struct aperfmperf *s = this_cpu_ptr(&cpu_samples);
+ 	u64 acnt, mcnt, aperf, mperf;
+ 
+-	if (!arch_scale_freq_invariant())
++	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
+ 		return;
+ 
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+@@ -520,4 +517,20 @@ void arch_scale_freq_tick(void)
+ 
+ 	scale_freq_tick(acnt, mcnt);
+ }
+-#endif /* CONFIG_X86_64 && CONFIG_SMP */
++
++static int __init bp_init_aperfmperf(void)
++{
++	if (!cpu_feature_enabled(X86_FEATURE_APERFMPERF))
++		return 0;
++
++	init_counter_refs();
++	bp_init_freq_invariance();
++	return 0;
++}
++early_initcall(bp_init_aperfmperf);
++
++void ap_init_aperfmperf(void)
++{
++	if (cpu_feature_enabled(X86_FEATURE_APERFMPERF))
++		init_counter_refs();
++}
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -1396,7 +1396,7 @@ void __init native_smp_prepare_cpus(unsi
+@@ -186,7 +186,7 @@ static void smp_callin(void)
+ 	 */
+ 	set_cpu_sibling_map(raw_smp_processor_id());
+ 
+-	ap_init_freq_invariance();
++	ap_init_aperfmperf();
+ 
+ 	/*
+ 	 * Get our bogomips.
+@@ -1396,7 +1396,6 @@ void __init native_smp_prepare_cpus(unsi
  {
  	smp_prepare_cpus_common();
  
--	bp_init_freq_invariance(false);
-+	bp_init_freq_invariance();
+-	bp_init_freq_invariance();
  	smp_sanity_check();
  
  	switch (apic_intr_mode) {
