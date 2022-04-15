@@ -2,37 +2,38 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAD25C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 12:24:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0959CC4167B
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 12:24:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353246AbiDOM1T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Apr 2022 08:27:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53508 "EHLO
+        id S1353289AbiDOM1V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Apr 2022 08:27:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53506 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1353271AbiDOM1L (ORCPT
+        with ESMTP id S1353267AbiDOM1L (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 08:27:11 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 371279FCB;
-        Fri, 15 Apr 2022 05:24:28 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5CD02BCA;
+        Fri, 15 Apr 2022 05:24:23 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: kholk11)
-        with ESMTPSA id BCD431F47E0F
+        with ESMTPSA id C73A11F47DF9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1650025467;
-        bh=6Z+gWy9qIs5W0hqsy0FIxSakYLRz+BXCwJ6EprEUa2c=;
+        s=mail; t=1650025462;
+        bh=CgoMr81ngES5EOve3elaYWzsRcAHP5/TfWon8crvZeI=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=Paj4zcJG2Xe9RP8XaVi2C+ydlxAxfCUITLHVzfag8SfMH+Au8N0hhwwUKQ8VDOuQO
-         5ep+3UL62D8S23GqLbmJEtyY9OBUCmrQWiMOG+v+tlf270fivWoQjPPfrntTwVHGFI
-         lnom6cW1Iy2/ZGl7U3xCV3mIC4Kr62HRRXrzkOowaNklV+xnMhhySA8uHQdO9L2gXS
-         b5Kdic8/5BpfxkdSiiogCMuePNOKJLTDlsfpuCAvqWPVgmeWv7QmMhnhYLvgTGRYLv
-         mCkKvdKWle1EP2QQFvZd61UUMC26sPmLLCpnBmKlXLPf1zt8kiD0ZS/PGGpCMDneRd
-         e+eNl7EPqS1SA==
-Message-ID: <bcaeefa7-82e9-b40a-faac-a51bc78d9481@collabora.com>
-Date:   Fri, 15 Apr 2022 14:24:23 +0200
+        b=MMkbJocU1xYEPcKtyRt9KlIWzn690WXHgcaVc/H0u5GyfrHo6wLilW8U1eS6y7+MV
+         IoxmFFurFRiy1cyLOugkg3lvSNul9MZbfcZELqlpw9x20Hk4nORqD2tXBbdUUg7L67
+         2pP9E7k2HTH4joiLrnggpWMTNgxrqaZcGUjaPKex0LzNBntNgihy/ne0ZuxJAj/JKY
+         BXJ1OO3aoS1pYyUpg5NVQdNiIjyNajfu3DggcUIjWC/3ZZJmNmlqHyXX58lY6/K9hr
+         UHI+eUi1KBNm2A20xcaFPrHbSP+J8ZXIhSoKNL4ZTzNy7HluqdGRAbelvpgV9fRk7o
+         /4YbAZS3CXtNw==
+Message-ID: <9751622e-f969-c025-2a39-efcc9a612392@collabora.com>
+Date:   Fri, 15 Apr 2022 14:24:19 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH V3 02/15] cpufreq: mediatek: Use device print to show logs
+Subject: Re: [PATCH V3 04/15] cpufreq: mediatek: Record previous target vproc
+ value
 Content-Language: en-US
 To:     Rex-BC Chen <rex-bc.chen@mediatek.com>, rafael@kernel.org,
         viresh.kumar@linaro.org, robh+dt@kernel.org, krzk+dt@kernel.org,
@@ -42,12 +43,13 @@ Cc:     jia-wei.chang@mediatek.com, roger.lu@mediatek.com,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-mediatek@lists.infradead.org,
-        Project_Global_Chrome_Upstream_Group@mediatek.com
+        Project_Global_Chrome_Upstream_Group@mediatek.com,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
 References: <20220415055916.28350-1-rex-bc.chen@mediatek.com>
- <20220415055916.28350-3-rex-bc.chen@mediatek.com>
+ <20220415055916.28350-5-rex-bc.chen@mediatek.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220415055916.28350-3-rex-bc.chen@mediatek.com>
+In-Reply-To: <20220415055916.28350-5-rex-bc.chen@mediatek.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -55,11 +57,75 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 Il 15/04/22 07:59, Rex-BC Chen ha scritto:
-> - Replace pr_* with dev_* to show logs.
-> - Remove usage of __func__.
+> From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 > 
+> We found the buck voltage may not be exactly the same with what we set
+> because CPU may share the same buck with other module.
+> Therefore, we need to record the previous desired value instead of reading
+> it from regulators.
+> 
+> Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+> Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 > Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+> ---
+>   drivers/cpufreq/mediatek-cpufreq.c | 17 +++++++++++++----
+>   1 file changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index ff27f77e8ee6..fa8b193bf27b 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -40,6 +40,7 @@ struct mtk_cpu_dvfs_info {
+>   	struct list_head list_head;
+>   	int intermediate_voltage;
+>   	bool need_voltage_tracking;
+> +	int pre_vproc;
+>   };
+>   
+>   static LIST_HEAD(dvfs_info_list);
+> @@ -191,11 +192,17 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+>   
+>   static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
+>   {
+> +	int ret;
+> +
+>   	if (info->need_voltage_tracking)
+> -		return mtk_cpufreq_voltage_tracking(info, vproc);
+> +		ret = mtk_cpufreq_voltage_tracking(info, vproc);
+>   	else
+> -		return regulator_set_voltage(info->proc_reg, vproc,
+> -					     vproc + VOLT_TOL);
+> +		ret = regulator_set_voltage(info->proc_reg, vproc,
+> +					    MAX_VOLT_LIMIT);
+> +	if (!ret)
+> +		info->pre_vproc = vproc;
+> +
+> +	return ret;
+>   }
+>   
+>   static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+> @@ -213,7 +220,9 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+>   	inter_vproc = info->intermediate_voltage;
+>   
+>   	pre_freq_hz = clk_get_rate(cpu_clk);
+> -	pre_vproc = regulator_get_voltage(info->proc_reg);
+> +	pre_vproc = info->pre_vproc;
+> +	if (pre_vproc <= 0)
+> +		pre_vproc = regulator_get_voltage(info->proc_reg);
 
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com
+I would do it like that, instead:
+
+	if (unlikely(info->pre_vproc <= 0))
+		pre_vproc = regulator_get_voltage(info->proc_reg);
+	else
+		pre_vproc = info->pre_vproc;
+
+....as even though it is indeed possible that info->pre_vproc is <= 0, it is
+very unlikely to happen ;-)
+This also solves a 'pre_vproc' double assignment issue, by the way.
+
+Cheers,
+Angelo
+
 
 
