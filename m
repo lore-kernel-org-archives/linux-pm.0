@@ -2,27 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F4B8C43217
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 05:59:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF9E3C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Apr 2022 05:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350200AbiDOGB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1350198AbiDOGB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 15 Apr 2022 02:01:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48682 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350186AbiDOGB5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 02:01:57 -0400
+        with ESMTP id S1350185AbiDOGB4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2022 02:01:56 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6985DB841;
-        Thu, 14 Apr 2022 22:59:28 -0700 (PDT)
-X-UUID: 4b6099c3fbdc435d8ff3823da6f31ccb-20220415
-X-UUID: 4b6099c3fbdc435d8ff3823da6f31ccb-20220415
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 614782656;
+        Thu, 14 Apr 2022 22:59:26 -0700 (PDT)
+X-UUID: 6fd5eebf4bd04e17b0d084ee24be4fdd-20220415
+X-UUID: 6fd5eebf4bd04e17b0d084ee24be4fdd-20220415
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1227985327; Fri, 15 Apr 2022 13:59:20 +0800
+        with ESMTP id 1972311138; Fri, 15 Apr 2022 13:59:19 +0800
 Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Fri, 15 Apr 2022 13:59:18 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Fri, 15 Apr 2022 13:59:18 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
  Transport; Fri, 15 Apr 2022 13:59:18 +0800
@@ -38,11 +39,10 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>,
         Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH V3 04/15] cpufreq: mediatek: Record previous target vproc value
-Date:   Fri, 15 Apr 2022 13:59:05 +0800
-Message-ID: <20220415055916.28350-5-rex-bc.chen@mediatek.com>
+Subject: [PATCH V3 01/15] dt-bindings: cpufreq: mediatek: Add MediaTek CCI property
+Date:   Fri, 15 Apr 2022 13:59:02 +0800
+Message-ID: <20220415055916.28350-2-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220415055916.28350-1-rex-bc.chen@mediatek.com>
 References: <20220415055916.28350-1-rex-bc.chen@mediatek.com>
@@ -55,62 +55,34 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
-We found the buck voltage may not be exactly the same with what we set
-because CPU may share the same buck with other module.
-Therefore, we need to record the previous desired value instead of reading
-it from regulators.
+MediaTek Cache Coherent Interconnect (CCI) uses software devfreq module
+to scale the clock frequency and adjust the voltage.
+The phandle could be linked between CPU and MediaTek CCI for some
+MediaTek SoCs, like MT8183 and MT8186.
+Therefore, we add this property in cpufreq-mediatek.txt.
 
-Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/cpufreq/cpufreq-mediatek.txt         | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index ff27f77e8ee6..fa8b193bf27b 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -40,6 +40,7 @@ struct mtk_cpu_dvfs_info {
- 	struct list_head list_head;
- 	int intermediate_voltage;
- 	bool need_voltage_tracking;
-+	int pre_vproc;
- };
- 
- static LIST_HEAD(dvfs_info_list);
-@@ -191,11 +192,17 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 
- static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
- {
-+	int ret;
-+
- 	if (info->need_voltage_tracking)
--		return mtk_cpufreq_voltage_tracking(info, vproc);
-+		ret = mtk_cpufreq_voltage_tracking(info, vproc);
- 	else
--		return regulator_set_voltage(info->proc_reg, vproc,
--					     vproc + VOLT_TOL);
-+		ret = regulator_set_voltage(info->proc_reg, vproc,
-+					    MAX_VOLT_LIMIT);
-+	if (!ret)
-+		info->pre_vproc = vproc;
-+
-+	return ret;
- }
- 
- static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
-@@ -213,7 +220,9 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	inter_vproc = info->intermediate_voltage;
- 
- 	pre_freq_hz = clk_get_rate(cpu_clk);
--	pre_vproc = regulator_get_voltage(info->proc_reg);
-+	pre_vproc = info->pre_vproc;
-+	if (pre_vproc <= 0)
-+		pre_vproc = regulator_get_voltage(info->proc_reg);
- 	if (pre_vproc < 0) {
- 		dev_err(cpu_dev, "invalid Vproc value: %d\n", pre_vproc);
- 		return pre_vproc;
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+index b8233ec91d3d..5b1558f220ac 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+@@ -20,6 +20,11 @@ Optional properties:
+ 	       Vsram to fit SoC specific needs. When absent, the voltage scaling
+ 	       flow is handled by hardware, hence no software "voltage tracking" is
+ 	       needed.
++- mediatek,cci:
++	MediaTek Cache Coherent Interconnect (CCI) uses the software devfreq module to
++	scale the clock frequency and adjust the voltage.
++	For details, please refer to
++	Documentation/devicetree/bindings/arm/mediatek/mediatek,cci.yaml
+ - #cooling-cells:
+ 	For details, please refer to
+ 	Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
 -- 
 2.18.0
 
