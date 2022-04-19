@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD0AEC47082
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 976E1C3527D
 	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347038AbiDSQrO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:47:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55564 "EHLO
+        id S1345092AbiDSQrN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:47:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243093AbiDSQqm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:46:42 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A49ED3AA45;
-        Tue, 19 Apr 2022 09:43:59 -0700 (PDT)
+        with ESMTP id S1355031AbiDSQqZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:46:25 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D47A3AA66;
+        Tue, 19 Apr 2022 09:43:42 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 39FE4B81BEF;
-        Tue, 19 Apr 2022 16:43:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EC2BC385A5;
-        Tue, 19 Apr 2022 16:43:49 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id DF11B61879;
+        Tue, 19 Apr 2022 16:43:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D32AC385A7;
+        Tue, 19 Apr 2022 16:43:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386637;
-        bh=qlaYFyobKEQjnzQZM9MNp5qNQqkRYezyfa1kDOn31O4=;
+        s=k20201202; t=1650386621;
+        bh=/Prqr04i1fpscHVDuVcgCmngsY3hyx249dIBGFreq2Y=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=IfCx1sYsItrvvOhd62OVGq73m59nNboCQp/gH4IxEBVU5zCvpQPCNPA7TuLYFXC6C
-         LwaFif0SpZk4iKNSuUv5XERVH3Itoh7apK3zIBcowiSB/8aMiJR+86E55VqZMRViGM
-         vxBgMMnsawZno/joMpTCd+ep1ROboUpME3CMorprNKBdA5wmg9bbhuyypuFsCjLW8G
-         yE/u4h18EsDdKvT5ABnu1pHVnRKTIiK1fqnwH6cD1Nj0kuQJNcwzeZUE12odIw17Nr
-         I4FoURlNeI1+CxCMlSZX0Yt4E6U9SjEz7W8MiBWwtf7IWB7ooRCN+I7IGpKqWmgJa2
-         GROrW1/+TSmQA==
+        b=Y3PA1gNBpWemWTKgXNfQE6gZ2lkQ2OFkd5OEDO01xwY7wK6BGc9IgzXVFUA0bOzmZ
+         IdxCFkit5T5OsWlQE5O+YIuaAvNKouAQPTTolrYkcjfQij7Q0LwfC8hhcM+pUKrArL
+         jV+yRfNhU4PQ+WoL1zX7EbhPcVQ14Zq9MQGKIATzI5hPOS5KUZWHKSLomaqNqAoJ56
+         IDOxvX2ZFZltZq/w38uCesi0fdH8Nymt/I05daQ0ly4mZIZ+Mu5zj4YzGfVJGkUh2W
+         5EvHWtWx1sIW2sQh+QuJzgReXLIELwok/SAnSo1kypQDxD/mQa+4Sz3q3cq7wQQ5sQ
+         /4GyTOFmHOlXQ==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -58,10 +58,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH 39/48] power: tosa: simplify probe function
-Date:   Tue, 19 Apr 2022 18:38:01 +0200
-Message-Id: <20220419163810.2118169-40-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 37/48] ARM: pxa: move smemc register access from clk to platform
+Date:   Tue, 19 Apr 2022 18:37:59 +0200
+Message-Id: <20220419163810.2118169-38-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -73,96 +73,350 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-We have three power supplies that need similar initialization.
-As a preparation for the gpio lookup table conversion, split
-out the initialization into a separate function.
+The get_sdram_rows() and get_memclkdiv() helpers need smemc
+register that are separate from the clk registers, move
+them out of the clk driver, and use an extern declaration
+instead.
 
-Reviewed-by: Sebastian Reichel <sre@kernel.org>
-Acked-by: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
+Cc: Michael Turquette <mturquette@baylibre.com>
+Cc: Stephen Boyd <sboyd@kernel.org>
+Cc: linux-clk@vger.kernel.org
+Link: https://lore.kernel.org/lkml/87pnielzo4.fsf@belgarion.home/
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/power/supply/tosa_battery.c | 50 ++++++++++++++---------------
- 1 file changed, 24 insertions(+), 26 deletions(-)
+ arch/arm/mach-pxa/generic.c   |  6 ++++++
+ arch/arm/mach-pxa/pxa2xx.c    | 25 +++++++++++++++++++++++++
+ arch/arm/mach-pxa/pxa3xx.c    |  4 ++++
+ arch/arm/mach-pxa/smemc.c     |  9 +++++++++
+ drivers/clk/pxa/clk-pxa.c     |  4 +++-
+ drivers/clk/pxa/clk-pxa.h     |  5 +++--
+ drivers/clk/pxa/clk-pxa25x.c  | 30 +++---------------------------
+ drivers/clk/pxa/clk-pxa27x.c  | 31 +++----------------------------
+ drivers/clk/pxa/clk-pxa3xx.c  |  8 +++-----
+ include/linux/soc/pxa/smemc.h |  3 +++
+ 10 files changed, 62 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/power/supply/tosa_battery.c b/drivers/power/supply/tosa_battery.c
-index 32cc31cd4761..b26b0eca33e1 100644
---- a/drivers/power/supply/tosa_battery.c
-+++ b/drivers/power/supply/tosa_battery.c
-@@ -343,12 +343,24 @@ static int tosa_bat_resume(struct platform_device *dev)
- #define tosa_bat_resume NULL
- #endif
+diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
+index 2c2c82fcf9cb..971d25e95a1a 100644
+--- a/arch/arm/mach-pxa/generic.c
++++ b/arch/arm/mach-pxa/generic.c
+@@ -18,6 +18,7 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/soc/pxa/cpu.h>
++#include <linux/soc/pxa/smemc.h>
  
-+static int tosa_power_supply_register(struct device *dev,
-+			struct tosa_bat *bat,
-+			const struct power_supply_desc *desc)
+ #include <asm/mach/map.h>
+ #include <asm/mach-types.h>
+@@ -84,6 +85,11 @@ void pxa_smemc_set_pcmcia_socket(int nr)
+ }
+ EXPORT_SYMBOL_GPL(pxa_smemc_set_pcmcia_socket);
+ 
++void __iomem *pxa_smemc_get_mdrefr(void)
 +{
-+	struct power_supply_config cfg = {
-+		.drv_data = bat,
-+	};
-+
-+	mutex_init(&bat->work_lock);
-+	bat->psy = power_supply_register(dev, desc, &cfg);
-+
-+	return PTR_ERR_OR_ZERO(bat->psy);
++	return MDREFR;
 +}
 +
+ /*
+  * Intel PXA2xx internal register mapping.
+  *
+diff --git a/arch/arm/mach-pxa/pxa2xx.c b/arch/arm/mach-pxa/pxa2xx.c
+index ac72acb43e26..f583759ac00d 100644
+--- a/arch/arm/mach-pxa/pxa2xx.c
++++ b/arch/arm/mach-pxa/pxa2xx.c
+@@ -15,6 +15,7 @@
+ #include <mach/pxa2xx-regs.h>
+ #include "mfp-pxa25x.h"
+ #include <mach/reset.h>
++#include <mach/smemc.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+ 
+ void pxa2xx_clear_reset_status(unsigned int mask)
+@@ -50,3 +51,27 @@ void pxa2xx_transceiver_mode(struct device *dev, int mode)
+ 		BUG();
+ }
+ EXPORT_SYMBOL_GPL(pxa2xx_transceiver_mode);
 +
- static int tosa_bat_probe(struct platform_device *dev)
++#define MDCNFG_DRAC2(mdcnfg)	(((mdcnfg) >> 21) & 0x3)
++#define MDCNFG_DRAC0(mdcnfg)	(((mdcnfg) >> 5) & 0x3)
++
++int pxa2xx_smemc_get_sdram_rows(void)
++{
++	static int sdram_rows;
++	unsigned int drac2 = 0, drac0 = 0;
++	u32 mdcnfg;
++
++	if (sdram_rows)
++		return sdram_rows;
++
++	mdcnfg = readl_relaxed(MDCNFG);
++
++	if (mdcnfg & (MDCNFG_DE2 | MDCNFG_DE3))
++		drac2 = MDCNFG_DRAC2(mdcnfg);
++
++	if (mdcnfg & (MDCNFG_DE0 | MDCNFG_DE1))
++		drac0 = MDCNFG_DRAC0(mdcnfg);
++
++	sdram_rows = 1 << (11 + max(drac0, drac2));
++	return sdram_rows;
++}
+diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+index f4657f4edb3b..d486efb79dcd 100644
+--- a/arch/arm/mach-pxa/pxa3xx.c
++++ b/arch/arm/mach-pxa/pxa3xx.c
+@@ -52,6 +52,10 @@ extern void __init pxa_dt_irq_init(int (*fn)(struct irq_data *, unsigned int));
+ #define NDCR_ND_ARB_EN		(1 << 12)
+ #define NDCR_ND_ARB_CNTL	(1 << 19)
+ 
++#define CKEN_BOOT  		11      /* < Boot rom clock enable */
++#define CKEN_TPM   		19      /* < TPM clock enable */
++#define CKEN_HSIO2 		41      /* < HSIO2 clock enable */
++
+ #ifdef CONFIG_PM
+ 
+ #define ISRAM_START	0x5c000000
+diff --git a/arch/arm/mach-pxa/smemc.c b/arch/arm/mach-pxa/smemc.c
+index 47b99549d616..da0eeafdb5a0 100644
+--- a/arch/arm/mach-pxa/smemc.c
++++ b/arch/arm/mach-pxa/smemc.c
+@@ -69,4 +69,13 @@ static int __init smemc_init(void)
+ 	return 0;
+ }
+ subsys_initcall(smemc_init);
++
+ #endif
++
++static const unsigned int df_clkdiv[4] = { 1, 2, 4, 1 };
++unsigned int pxa3xx_smemc_get_memclkdiv(void)
++{
++	unsigned long memclkcfg = __raw_readl(MEMCLKCFG);
++
++	return	df_clkdiv[(memclkcfg >> 16) & 0x3];
++}
+diff --git a/drivers/clk/pxa/clk-pxa.c b/drivers/clk/pxa/clk-pxa.c
+index cfc79f942b07..831180360069 100644
+--- a/drivers/clk/pxa/clk-pxa.c
++++ b/drivers/clk/pxa/clk-pxa.c
+@@ -11,6 +11,7 @@
+ #include <linux/clkdev.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
++#include <linux/soc/pxa/smemc.h>
+ 
+ #include <dt-bindings/clock/pxa-clock.h>
+ #include "clk-pxa.h"
+@@ -150,12 +151,13 @@ void pxa2xx_core_turbo_switch(bool on)
+ }
+ 
+ void pxa2xx_cpll_change(struct pxa2xx_freq *freq,
+-			u32 (*mdrefr_dri)(unsigned int), void __iomem *mdrefr,
++			u32 (*mdrefr_dri)(unsigned int),
+ 			void __iomem *cccr)
  {
- 	int ret;
--	struct power_supply_config main_psy_cfg = {},
--				   jacket_psy_cfg = {},
--				   bu_psy_cfg = {};
+ 	unsigned int clkcfg = freq->clkcfg;
+ 	unsigned int unused, preset_mdrefr, postset_mdrefr;
+ 	unsigned long flags;
++	void __iomem *mdrefr = pxa_smemc_get_mdrefr();
  
- 	if (!machine_is_tosa())
- 		return -ENODEV;
-@@ -357,36 +369,22 @@ static int tosa_bat_probe(struct platform_device *dev)
- 	if (ret)
- 		return ret;
+ 	local_irq_save(flags);
  
--	mutex_init(&tosa_bat_main.work_lock);
--	mutex_init(&tosa_bat_jacket.work_lock);
+diff --git a/drivers/clk/pxa/clk-pxa.h b/drivers/clk/pxa/clk-pxa.h
+index 5768e0f728ce..bd688fdb7ecc 100644
+--- a/drivers/clk/pxa/clk-pxa.h
++++ b/drivers/clk/pxa/clk-pxa.h
+@@ -146,12 +146,13 @@ static inline int dummy_clk_set_parent(struct clk_hw *hw, u8 index)
+ 
+ extern void clkdev_pxa_register(int ckid, const char *con_id,
+ 				const char *dev_id, struct clk *clk);
+-extern int clk_pxa_cken_init(const struct desc_clk_cken *clks, int nb_clks);
++extern int clk_pxa_cken_init(const struct desc_clk_cken *clks,
++			     int nb_clks);
+ void clk_pxa_dt_common_init(struct device_node *np);
+ 
+ void pxa2xx_core_turbo_switch(bool on);
+ void pxa2xx_cpll_change(struct pxa2xx_freq *freq,
+-			u32 (*mdrefr_dri)(unsigned int), void __iomem *mdrefr,
++			u32 (*mdrefr_dri)(unsigned int),
+ 			void __iomem *cccr);
+ int pxa2xx_determine_rate(struct clk_rate_request *req,
+ 			  struct pxa2xx_freq *freqs,  int nb_freqs);
+diff --git a/drivers/clk/pxa/clk-pxa25x.c b/drivers/clk/pxa/clk-pxa25x.c
+index d0f957996acb..0837d59d7a67 100644
+--- a/drivers/clk/pxa/clk-pxa25x.c
++++ b/drivers/clk/pxa/clk-pxa25x.c
+@@ -15,7 +15,7 @@
+ #include <linux/io.h>
+ #include <linux/of.h>
+ #include <mach/pxa2xx-regs.h>
+-#include <mach/smemc.h>
++#include <linux/soc/pxa/smemc.h>
+ 
+ #include <dt-bindings/clock/pxa-clock.h>
+ #include "clk-pxa.h"
+@@ -33,9 +33,6 @@ enum {
+ 	 ((T) ? CLKCFG_TURBO : 0))
+ #define PXA25x_CCCR(N2, M, L) (N2 << 7 | M << 5 | L)
+ 
+-#define MDCNFG_DRAC2(mdcnfg)	(((mdcnfg) >> 21) & 0x3)
+-#define MDCNFG_DRAC0(mdcnfg)	(((mdcnfg) >> 5) & 0x3)
 -
- 	INIT_WORK(&bat_work, tosa_bat_work);
+ /* Define the refresh period in mSec for the SDRAM and the number of rows */
+ #define SDRAM_TREF	64	/* standard 64ms SDRAM */
  
--	main_psy_cfg.drv_data = &tosa_bat_main;
--	tosa_bat_main.psy = power_supply_register(&dev->dev,
--						  &tosa_bat_main_desc,
--						  &main_psy_cfg);
--	if (IS_ERR(tosa_bat_main.psy)) {
--		ret = PTR_ERR(tosa_bat_main.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_main,
-+					 &tosa_bat_main_desc);
-+	if (ret)
- 		goto err_psy_reg_main;
--	}
+@@ -57,30 +54,9 @@ static const char * const get_freq_khz[] = {
+ 	"core", "run", "cpll", "memory"
+ };
  
--	jacket_psy_cfg.drv_data = &tosa_bat_jacket;
--	tosa_bat_jacket.psy = power_supply_register(&dev->dev,
--						    &tosa_bat_jacket_desc,
--						    &jacket_psy_cfg);
--	if (IS_ERR(tosa_bat_jacket.psy)) {
--		ret = PTR_ERR(tosa_bat_jacket.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_jacket,
-+					 &tosa_bat_jacket_desc);
-+	if (ret)
- 		goto err_psy_reg_jacket;
--	}
+-static int get_sdram_rows(void)
+-{
+-	static int sdram_rows;
+-	unsigned int drac2 = 0, drac0 = 0;
+-	u32 mdcnfg;
+-
+-	if (sdram_rows)
+-		return sdram_rows;
+-
+-	mdcnfg = readl_relaxed(MDCNFG);
+-
+-	if (mdcnfg & (MDCNFG_DE2 | MDCNFG_DE3))
+-		drac2 = MDCNFG_DRAC2(mdcnfg);
+-
+-	if (mdcnfg & (MDCNFG_DE0 | MDCNFG_DE1))
+-		drac0 = MDCNFG_DRAC0(mdcnfg);
+-
+-	sdram_rows = 1 << (11 + max(drac0, drac2));
+-	return sdram_rows;
+-}
+-
+ static u32 mdrefr_dri(unsigned int freq_khz)
+ {
+-	u32 interval = freq_khz * SDRAM_TREF / get_sdram_rows();
++	u32 interval = freq_khz * SDRAM_TREF / pxa2xx_smemc_get_sdram_rows();
  
--	bu_psy_cfg.drv_data = &tosa_bat_bu;
--	tosa_bat_bu.psy = power_supply_register(&dev->dev, &tosa_bat_bu_desc,
--						&bu_psy_cfg);
--	if (IS_ERR(tosa_bat_bu.psy)) {
--		ret = PTR_ERR(tosa_bat_bu.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_bu,
-+					 &tosa_bat_bu_desc);
-+	if (ret)
- 		goto err_psy_reg_bu;
--	}
+ 	return interval / 32;
+ }
+@@ -268,7 +244,7 @@ static int clk_pxa25x_cpll_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	if (i >= ARRAY_SIZE(pxa25x_freqs))
+ 		return -EINVAL;
  
- 	ret = request_irq(gpio_to_irq(TOSA_GPIO_BAT0_CRG),
- 				tosa_bat_gpio_isr,
+-	pxa2xx_cpll_change(&pxa25x_freqs[i], mdrefr_dri, MDREFR, CCCR);
++	pxa2xx_cpll_change(&pxa25x_freqs[i], mdrefr_dri, CCCR);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/clk/pxa/clk-pxa27x.c b/drivers/clk/pxa/clk-pxa27x.c
+index 7b123105b5de..ba3aa63f2447 100644
+--- a/drivers/clk/pxa/clk-pxa27x.c
++++ b/drivers/clk/pxa/clk-pxa27x.c
+@@ -12,8 +12,7 @@
+ #include <linux/clk.h>
+ #include <linux/clkdev.h>
+ #include <linux/of.h>
+-
+-#include <mach/smemc.h>
++#include <linux/soc/pxa/smemc.h>
+ 
+ #include <dt-bindings/clock/pxa-clock.h>
+ #include "clk-pxa.h"
+@@ -50,9 +49,6 @@ enum {
+ 	 ((T)  ? CLKCFG_TURBO : 0))
+ #define PXA27x_CCCR(A, L, N2) (A << 25 | N2 << 7 | L)
+ 
+-#define MDCNFG_DRAC2(mdcnfg)	(((mdcnfg) >> 21) & 0x3)
+-#define MDCNFG_DRAC0(mdcnfg)	(((mdcnfg) >> 5) & 0x3)
+-
+ /* Define the refresh period in mSec for the SDRAM and the number of rows */
+ #define SDRAM_TREF	64	/* standard 64ms SDRAM */
+ 
+@@ -61,30 +57,9 @@ static const char * const get_freq_khz[] = {
+ 	"system_bus"
+ };
+ 
+-static int get_sdram_rows(void)
+-{
+-	static int sdram_rows;
+-	unsigned int drac2 = 0, drac0 = 0;
+-	u32 mdcnfg;
+-
+-	if (sdram_rows)
+-		return sdram_rows;
+-
+-	mdcnfg = readl_relaxed(MDCNFG);
+-
+-	if (mdcnfg & (MDCNFG_DE2 | MDCNFG_DE3))
+-		drac2 = MDCNFG_DRAC2(mdcnfg);
+-
+-	if (mdcnfg & (MDCNFG_DE0 | MDCNFG_DE1))
+-		drac0 = MDCNFG_DRAC0(mdcnfg);
+-
+-	sdram_rows = 1 << (11 + max(drac0, drac2));
+-	return sdram_rows;
+-}
+-
+ static u32 mdrefr_dri(unsigned int freq_khz)
+ {
+-	u32 interval = freq_khz * SDRAM_TREF / get_sdram_rows();
++	u32 interval = freq_khz * SDRAM_TREF / pxa2xx_smemc_get_sdram_rows();
+ 
+ 	return (interval - 31) / 32;
+ }
+@@ -260,7 +235,7 @@ static int clk_pxa27x_cpll_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	if (i >= ARRAY_SIZE(pxa27x_freqs))
+ 		return -EINVAL;
+ 
+-	pxa2xx_cpll_change(&pxa27x_freqs[i], mdrefr_dri, MDREFR, CCCR);
++	pxa2xx_cpll_change(&pxa27x_freqs[i], mdrefr_dri, CCCR);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/clk/pxa/clk-pxa3xx.c b/drivers/clk/pxa/clk-pxa3xx.c
+index 60a0db4f3790..08594fc899e2 100644
+--- a/drivers/clk/pxa/clk-pxa3xx.c
++++ b/drivers/clk/pxa/clk-pxa3xx.c
+@@ -15,7 +15,7 @@
+ #include <linux/clkdev.h>
+ #include <linux/of.h>
+ #include <linux/soc/pxa/cpu.h>
+-#include <mach/smemc.h>
++#include <linux/soc/pxa/smemc.h>
+ #include <linux/clk/pxa.h>
+ #include <mach/pxa3xx-regs.h>
+ 
+@@ -41,8 +41,6 @@ static unsigned char hss_mult[4] = { 8, 12, 16, 24 };
+ 
+ /* crystal frequency to static memory controller multiplier (SMCFS) */
+ static unsigned int smcfs_mult[8] = { 6, 0, 8, 0, 0, 16, };
+-static unsigned int df_clkdiv[4] = { 1, 2, 4, 1 };
+-
+ static const char * const get_freq_khz[] = {
+ 	"core", "ring_osc_60mhz", "run", "cpll", "system_bus"
+ };
+@@ -118,10 +116,10 @@ static unsigned long clk_pxa3xx_smemc_get_rate(struct clk_hw *hw,
+ 					      unsigned long parent_rate)
+ {
+ 	unsigned long acsr = ACSR;
+-	unsigned long memclkcfg = __raw_readl(MEMCLKCFG);
+ 
+ 	return (parent_rate / 48)  * smcfs_mult[(acsr >> 23) & 0x7] /
+-		df_clkdiv[(memclkcfg >> 16) & 0x3];
++		pxa3xx_smemc_get_memclkdiv();
++
+ }
+ PARENTS(clk_pxa3xx_smemc) = { "spll_624mhz" };
+ RATE_RO_OPS(clk_pxa3xx_smemc, "smemc");
+diff --git a/include/linux/soc/pxa/smemc.h b/include/linux/soc/pxa/smemc.h
+index cbf1a2d8af29..f1ffea236c15 100644
+--- a/include/linux/soc/pxa/smemc.h
++++ b/include/linux/soc/pxa/smemc.h
+@@ -6,5 +6,8 @@
+ 
+ void pxa_smemc_set_pcmcia_timing(int sock, u32 mcmem, u32 mcatt, u32 mcio);
+ void pxa_smemc_set_pcmcia_socket(int nr);
++int pxa2xx_smemc_get_sdram_rows(void);
++unsigned int pxa3xx_smemc_get_memclkdiv(void);
++void __iomem *pxa_smemc_get_mdrefr(void);
+ 
+ #endif
 -- 
 2.29.2
 
