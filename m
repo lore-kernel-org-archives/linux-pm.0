@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1105C4321E
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D49C5C4332F
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241870AbiDSQrG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:47:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54976 "EHLO
+        id S233931AbiDSQrR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:47:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354693AbiDSQpd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:45:33 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0C0F36152;
-        Tue, 19 Apr 2022 09:42:49 -0700 (PDT)
+        with ESMTP id S234455AbiDSQq6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:46:58 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 270DC39692;
+        Tue, 19 Apr 2022 09:44:15 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 59CF9B81BBC;
-        Tue, 19 Apr 2022 16:42:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EB59C385AE;
-        Tue, 19 Apr 2022 16:42:39 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id DDBCBB81BFD;
+        Tue, 19 Apr 2022 16:44:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61AA5C385AD;
+        Tue, 19 Apr 2022 16:44:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386567;
-        bh=XRVRts6/PmPxgnBeeTopOk8hsXuEnYK24eY44iFBTjY=;
+        s=k20201202; t=1650386652;
+        bh=xU/U9xkTvFUXFL8Wopr4rZHXHyzXgLRf0YqQRK4Kvss=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SrYcNU0XHeFfz9FFmwRnhtwk5VI3KPUyVVYDZ1vZsf/9ibd4zLruL0iYjAxUyiwgp
-         zmOuXhLr4WTdOB1309oLHotg6wtk/R/duI+zVweeCWm3uDXswBZIZxB7bVKunqu/CC
-         EdMhLyLGmp315u6yW24LoEVof2mtuD5mi09URRw/1IqaKVlqShBeopuwMcloOvibS8
-         PU5fwThkpiXRfLrjJtNm+iH3D7eSCFQGuRvIg5P1RDAEYLIRMmxDeXbThxhNRZi323
-         coE08BVk9QZsh8XR9qGt6reyxhJbZKJAWfaiL1ui30TgqLeVpFNIO7Y6/vA2Fm0la6
-         XCHr2bVGVwWJA==
+        b=OM0GwvoFjDTXu7F7DMTK9IAJLrdekpoJNNdqgKZOqnT0MxcJctOA38FNelxFTEIEi
+         rfOkyib+5L0BuGs5gSth50JnQfK4wt3P5XbEMzwjlxtkKR2D5Fp6NSpVpT6JKLzOYa
+         sUcSPu9YpMeAuC5R0d9Ntrrwz+yhMHEr/UloCY/EYZJ1RL8i+BYnDoiDTB5kDUDvsN
+         cfM9amClMURurngFRlcw5eiNrdaaZ0Wt5Rgqq1W263FPZpQFgkIEKzYtsp52+Hu//Z
+         ZDG5KKaetJsY/MAdjSi0qUGYxcFLyaW3uLnIWcs9gXXeXABgeTGYRt2fpOditJ3OfS
+         VNvsgnrEcsb+w==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -58,10 +58,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, Manuel Lauss <manuel.lauss@gmail.com>
-Subject: [PATCH 30/48] Input: wm97xx - get rid of irq_enable method in wm97xx_mach_ops
-Date:   Tue, 19 Apr 2022 18:37:52 +0200
-Message-Id: <20220419163810.2118169-31-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 41/48] ARM: pxa: remove unused mach/bitfield.h
+Date:   Tue, 19 Apr 2022 18:38:03 +0200
+Message-Id: <20220419163810.2118169-42-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -71,107 +71,153 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Now that we are using oneshot threaded IRQ this method is not used anymore.
+The sa1111.h header defines some constants using the bitfield
+macros, but those are only used on sa1100, not on pxa, and the
+users include the bitfield header through mach/hardware.h.
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-[arnd: add the db1300 change as well]
-Cc: Manuel Lauss <manuel.lauss@gmail.com>
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/mips/alchemy/devboards/db1300.c         | 9 ---------
- drivers/input/touchscreen/mainstone-wm97xx.c | 9 ---------
- drivers/input/touchscreen/zylonite-wm97xx.c  | 9 ---------
- include/linux/wm97xx.h                       | 3 ---
- 4 files changed, 30 deletions(-)
+ arch/arm/include/asm/hardware/sa1111.h    |   2 -
+ arch/arm/mach-pxa/include/mach/bitfield.h | 114 ----------------------
+ 2 files changed, 116 deletions(-)
+ delete mode 100644 arch/arm/mach-pxa/include/mach/bitfield.h
 
-diff --git a/arch/mips/alchemy/devboards/db1300.c b/arch/mips/alchemy/devboards/db1300.c
-index cd72eaa1168f..e70e529ddd91 100644
---- a/arch/mips/alchemy/devboards/db1300.c
-+++ b/arch/mips/alchemy/devboards/db1300.c
-@@ -732,16 +732,7 @@ static struct platform_device db1300_lcd_dev = {
- /**********************************************************************/
+diff --git a/arch/arm/include/asm/hardware/sa1111.h b/arch/arm/include/asm/hardware/sa1111.h
+index 2e70db6f22ea..d8c6f8a99dfa 100644
+--- a/arch/arm/include/asm/hardware/sa1111.h
++++ b/arch/arm/include/asm/hardware/sa1111.h
+@@ -13,8 +13,6 @@
+ #ifndef _ASM_ARCH_SA1111
+ #define _ASM_ARCH_SA1111
  
- #if IS_ENABLED(CONFIG_TOUCHSCREEN_WM97XX)
--static void db1300_wm97xx_irqen(struct wm97xx *wm, int enable)
--{
--	if (enable)
--		enable_irq(DB1300_AC97_PEN_INT);
--	else
--		disable_irq_nosync(DB1300_AC97_PEN_INT);
--}
+-#include <mach/bitfield.h>
 -
- static struct wm97xx_mach_ops db1300_wm97xx_ops = {
--	.irq_enable	= db1300_wm97xx_irqen,
- 	.irq_gpio	= WM97XX_GPIO_3,
- };
- 
-diff --git a/drivers/input/touchscreen/mainstone-wm97xx.c b/drivers/input/touchscreen/mainstone-wm97xx.c
-index 8f6fe68f1f99..c39f49720fe4 100644
---- a/drivers/input/touchscreen/mainstone-wm97xx.c
-+++ b/drivers/input/touchscreen/mainstone-wm97xx.c
-@@ -246,21 +246,12 @@ static void wm97xx_acc_shutdown(struct wm97xx *wm)
- 	}
- }
- 
--static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
--{
--	if (enable)
--		enable_irq(wm->pen_irq);
--	else
--		disable_irq_nosync(wm->pen_irq);
--}
+ /*
+  * Don't ask the (SAC) DMA engines to move less than this amount.
+  */
+diff --git a/arch/arm/mach-pxa/include/mach/bitfield.h b/arch/arm/mach-pxa/include/mach/bitfield.h
+deleted file mode 100644
+index fe2ca441bc0a..000000000000
+--- a/arch/arm/mach-pxa/include/mach/bitfield.h
++++ /dev/null
+@@ -1,114 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- *	FILE    	bitfield.h
+- *
+- *	Version 	1.1
+- *	Author  	Copyright (c) Marc A. Viredaz, 1998
+- *	        	DEC Western Research Laboratory, Palo Alto, CA
+- *	Date    	April 1998 (April 1997)
+- *	System  	Advanced RISC Machine (ARM)
+- *	Language	C or ARM Assembly
+- *	Purpose 	Definition of macros to operate on bit fields.
+- */
 -
- static struct wm97xx_mach_ops mainstone_mach_ops = {
- 	.acc_enabled	= 1,
- 	.acc_pen_up	= wm97xx_acc_pen_up,
- 	.acc_pen_down	= wm97xx_acc_pen_down,
- 	.acc_startup	= wm97xx_acc_startup,
- 	.acc_shutdown	= wm97xx_acc_shutdown,
--	.irq_enable	= wm97xx_irq_enable,
- 	.irq_gpio	= WM97XX_GPIO_2,
- };
- 
-diff --git a/drivers/input/touchscreen/zylonite-wm97xx.c b/drivers/input/touchscreen/zylonite-wm97xx.c
-index ed7eae638713..a70fe4abe520 100644
---- a/drivers/input/touchscreen/zylonite-wm97xx.c
-+++ b/drivers/input/touchscreen/zylonite-wm97xx.c
-@@ -160,20 +160,11 @@ static int wm97xx_acc_startup(struct wm97xx *wm)
- 	return 0;
- }
- 
--static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
--{
--	if (enable)
--		enable_irq(wm->pen_irq);
--	else
--		disable_irq_nosync(wm->pen_irq);
--}
 -
- static struct wm97xx_mach_ops zylonite_mach_ops = {
- 	.acc_enabled	= 1,
- 	.acc_pen_up	= wm97xx_acc_pen_up,
- 	.acc_pen_down	= wm97xx_acc_pen_down,
- 	.acc_startup	= wm97xx_acc_startup,
--	.irq_enable	= wm97xx_irq_enable,
- 	.irq_gpio	= WM97XX_GPIO_2,
- };
- 
-diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
-index 85bd8dd3caea..332d2b0f29b9 100644
---- a/include/linux/wm97xx.h
-+++ b/include/linux/wm97xx.h
-@@ -254,9 +254,6 @@ struct wm97xx_mach_ops {
- 	int (*acc_startup) (struct wm97xx *);
- 	void (*acc_shutdown) (struct wm97xx *);
- 
--	/* interrupt mask control - required for accelerated operation */
--	void (*irq_enable) (struct wm97xx *, int enable);
 -
- 	/* GPIO pin used for accelerated operation */
- 	int irq_gpio;
- 
+-#ifndef __BITFIELD_H
+-#define __BITFIELD_H
+-
+-#ifndef __ASSEMBLY__
+-#define UData(Data)	((unsigned long) (Data))
+-#else
+-#define UData(Data)	(Data)
+-#endif
+-
+-
+-/*
+- * MACRO: Fld
+- *
+- * Purpose
+- *    The macro "Fld" encodes a bit field, given its size and its shift value
+- *    with respect to bit 0.
+- *
+- * Note
+- *    A more intuitive way to encode bit fields would have been to use their
+- *    mask. However, extracting size and shift value information from a bit
+- *    field's mask is cumbersome and might break the assembler (255-character
+- *    line-size limit).
+- *
+- * Input
+- *    Size      	Size of the bit field, in number of bits.
+- *    Shft      	Shift value of the bit field with respect to bit 0.
+- *
+- * Output
+- *    Fld       	Encoded bit field.
+- */
+-
+-#define Fld(Size, Shft)	(((Size) << 16) + (Shft))
+-
+-
+-/*
+- * MACROS: FSize, FShft, FMsk, FAlnMsk, F1stBit
+- *
+- * Purpose
+- *    The macros "FSize", "FShft", "FMsk", "FAlnMsk", and "F1stBit" return
+- *    the size, shift value, mask, aligned mask, and first bit of a
+- *    bit field.
+- *
+- * Input
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FSize     	Size of the bit field, in number of bits.
+- *    FShft     	Shift value of the bit field with respect to bit 0.
+- *    FMsk      	Mask for the bit field.
+- *    FAlnMsk   	Mask for the bit field, aligned on bit 0.
+- *    F1stBit   	First bit of the bit field.
+- */
+-
+-#define FSize(Field)	((Field) >> 16)
+-#define FShft(Field)	((Field) & 0x0000FFFF)
+-#define FMsk(Field)	(((UData (1) << FSize (Field)) - 1) << FShft (Field))
+-#define FAlnMsk(Field)	((UData (1) << FSize (Field)) - 1)
+-#define F1stBit(Field)	(UData (1) << FShft (Field))
+-
+-
+-/*
+- * MACRO: FInsrt
+- *
+- * Purpose
+- *    The macro "FInsrt" inserts a value into a bit field by shifting the
+- *    former appropriately.
+- *
+- * Input
+- *    Value     	Bit-field value.
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FInsrt    	Bit-field value positioned appropriately.
+- */
+-
+-#define FInsrt(Value, Field) \
+-                	(UData (Value) << FShft (Field))
+-
+-
+-/*
+- * MACRO: FExtr
+- *
+- * Purpose
+- *    The macro "FExtr" extracts the value of a bit field by masking and
+- *    shifting it appropriately.
+- *
+- * Input
+- *    Data      	Data containing the bit-field to be extracted.
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FExtr     	Bit-field value.
+- */
+-
+-#define FExtr(Data, Field) \
+-                	((UData (Data) >> FShft (Field)) & FAlnMsk (Field))
+-
+-
+-#endif /* __BITFIELD_H */
 -- 
 2.29.2
 
