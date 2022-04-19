@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0486FC43217
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DC37C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344574AbiDSQrU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:47:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55678 "EHLO
+        id S234926AbiDSQrt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:47:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231271AbiDSQrG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:47:06 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC6C339692;
-        Tue, 19 Apr 2022 09:44:22 -0700 (PDT)
+        with ESMTP id S1344299AbiDSQrU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:47:20 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE7C039692;
+        Tue, 19 Apr 2022 09:44:36 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 98D31B81BB6;
-        Tue, 19 Apr 2022 16:44:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21D49C385B6;
-        Tue, 19 Apr 2022 16:44:12 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D4B961884;
+        Tue, 19 Apr 2022 16:44:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98879C385B2;
+        Tue, 19 Apr 2022 16:44:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386660;
-        bh=/6iIOutIe2dthl0F9tUwRrWmTz1Y+vHGyZSNFuNK4W0=;
+        s=k20201202; t=1650386675;
+        bh=E21UhST9fsmcKihylxjEyCuP25oDJbc3hkCHxxEC7Wk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=r9TzRbN2wJ9anV7WP0E3rP1S1Cki++xSivN4dBdyNHhyWwMh/MI+BtyAeqgYlBYXV
-         ItPRfCU6w7MqI+MFhEsR5oorVEigDVDTfLVzE3yCgnLfKVyWW3gfUdTAbpfQ+0xMlv
-         4h+YVQk5XgEEoQXPsOwj0Fou41j1UM7Ct/jvU8LRL/8ndMFQ+B79JydmegZ2DAQ0SW
-         JwbK17hawoV1JcDkXQOweIbtoMS6G5Dy/AtPICtIdIqThqKAcNwIk2Z+V0Gk8YY1UC
-         qolXwRGVZyysQKzmwpm1PVfh5Wsw43vmB7v0Jz+vdy/0bIr6cZp8M8u+LOSFSklyM5
-         I5AkVeQlQC3Hw==
+        b=EB/6DhNFIygUIJNqebbXaCuU1Caq5c1sBLelCq0shsuEm3FRNZV2B59x6I2trbDEc
+         mGp4dOD9Ygy0j8x6aPCdDEEtBsFVyQmwX6Z6ETiwL8f+P+6YAU8qYTWV4eD8Y1tRSO
+         YeNzajYLagp6ruLgMBiU+soJeU4jvRsJU8tDlT8ym5RNBHHt5mLJ6idSKE8ueFa7Fq
+         gHunt4HKHZZrSSLT70Pil89w5mgdiwlO4CenyC2gybqFS5NJ/dJWeID+kklVKdk6Y5
+         Ntms9VwIzEHT/wAhZPE58MouPij2FW+YnFEqM77U/IG+gpakryHwwwc9+78N5VekkF
+         55njOa7JMJYOw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,9 +59,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 42/48] ARM: mmp: remove tavorevb board support
-Date:   Tue, 19 Apr 2022 18:38:04 +0200
-Message-Id: <20220419163810.2118169-43-arnd@kernel.org>
+Subject: [PATCH 44/48] ARM: pxa: move plat-pxa to drivers/soc/
+Date:   Tue, 19 Apr 2022 18:38:06 +0200
+Message-Id: <20220419163810.2118169-45-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -73,192 +73,228 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two tavorevb boards in the kernel, one using a PXA930 chip in
-mach-pxa, and one using the later PXA910 chip in mach-mmp.  They use the
-same board number, which is generally a bad idea, and in a multiplatform
-kernel, we can end up with funny link errors like this one resulting
-from two boards gettting controlled by the same Kconfig symbol:
+There are two drivers in arch/arm/plat-pxa: mfp and ssp. Both
+of them should ideally not be needed at all, as there are
+proper subsystems to replace them.
 
-arch/arm/mach-mmp/tavorevb.o: In function `tavorevb_init':
-tavorevb.c:(.init.text+0x4c): undefined reference to `pxa910_device_uart1'
-tavorevb.c:(.init.text+0x50): undefined reference to `pxa910_device_gpio'
-tavorevb.o:(.arch.info.init+0x54): undefined reference to `pxa910_init_irq'
-tavorevb.o:(.arch.info.init+0x58): undefined reference to `pxa910_timer_init'
+OTOH, they are self-contained and can simply be normal
+SoC drivers, so move them over there to eliminate one more
+of the plat-* directories.
 
-The mach-pxa TavorEVB seems much more complete than the mach-mmp one
-that supports only uart, gpio and ethernet. Further, I could find no
-information about the board on the internet aside from references to
-the Linux kernel, so I assume this was never available outside of Marvell
-and can be removed entirely.
-
-There is a third board named TavorEVB in the Kconfig description,
-but this refers to the "TTC_DKB" machine. The two are clearly
-related, so I change the Kconfig description to just list both
-names.
-
-Cc: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr> (mach-pxa)
+Acked-by: Lubomir Rintel <lkundrak@v3.sk> (mach-mmp)
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-mmp/Kconfig    |  10 +---
- arch/arm/mach-mmp/Makefile   |   1 -
- arch/arm/mach-mmp/tavorevb.c | 113 -----------------------------------
- 3 files changed, 1 insertion(+), 123 deletions(-)
- delete mode 100644 arch/arm/mach-mmp/tavorevb.c
+ arch/arm/Kconfig                                            | 4 ----
+ arch/arm/Makefile                                           | 1 -
+ arch/arm/mach-mmp/mfp.h                                     | 2 +-
+ arch/arm/mach-pxa/include/mach/mfp.h                        | 2 +-
+ arch/arm/mach-pxa/mfp-pxa2xx.h                              | 2 +-
+ arch/arm/mach-pxa/mfp-pxa3xx.h                              | 2 +-
+ drivers/soc/Kconfig                                         | 1 +
+ drivers/soc/Makefile                                        | 1 +
+ {arch/arm/plat-pxa => drivers/soc/pxa}/Kconfig              | 5 ++---
+ {arch/arm/plat-pxa => drivers/soc/pxa}/Makefile             | 4 ----
+ {arch/arm/plat-pxa => drivers/soc/pxa}/mfp.c                | 2 +-
+ {arch/arm/plat-pxa => drivers/soc/pxa}/ssp.c                | 0
+ .../plat-pxa/include/plat => include/linux/soc/pxa}/mfp.h   | 6 ++----
+ 13 files changed, 11 insertions(+), 21 deletions(-)
+ rename {arch/arm/plat-pxa => drivers/soc/pxa}/Kconfig (83%)
+ rename {arch/arm/plat-pxa => drivers/soc/pxa}/Makefile (51%)
+ rename {arch/arm/plat-pxa => drivers/soc/pxa}/mfp.c (99%)
+ rename {arch/arm/plat-pxa => drivers/soc/pxa}/ssp.c (100%)
+ rename {arch/arm/plat-pxa/include/plat => include/linux/soc/pxa}/mfp.h (98%)
 
-diff --git a/arch/arm/mach-mmp/Kconfig b/arch/arm/mach-mmp/Kconfig
-index 0dd999212944..92a730a573b9 100644
---- a/arch/arm/mach-mmp/Kconfig
-+++ b/arch/arm/mach-mmp/Kconfig
-@@ -39,16 +39,8 @@ config MACH_AVENGERS_LITE
- 	  Say 'Y' here if you want to support the Marvell PXA168-based
- 	  Avengers Lite Development Board.
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 2e8091e2d8a8..eef8cbf20045 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -667,7 +667,6 @@ source "arch/arm/mach-orion5x/Kconfig"
+ source "arch/arm/mach-oxnas/Kconfig"
  
--config MACH_TAVOREVB
--	bool "Marvell's PXA910 TavorEVB Development Board"
--	depends on ARCH_MULTI_V5
--	select CPU_PXA910
--	help
--	  Say 'Y' here if you want to support the Marvell PXA910-based
--	  TavorEVB Development Board.
+ source "arch/arm/mach-pxa/Kconfig"
+-source "arch/arm/plat-pxa/Kconfig"
+ 
+ source "arch/arm/mach-qcom/Kconfig"
+ 
+@@ -753,9 +752,6 @@ config PLAT_ORION_LEGACY
+ 	bool
+ 	select PLAT_ORION
+ 
+-config PLAT_PXA
+-	bool
 -
- config MACH_TTC_DKB
--	bool "Marvell's PXA910 TavorEVB Development Board"
-+	bool "Marvell's PXA910 TavorEVB/TTC_DKB Development Board"
- 	depends on ARCH_MULTI_V5
- 	select CPU_PXA910
+ config PLAT_VERSATILE
+ 	bool
+ 
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index a2391b8de5a5..206a900fc87c 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -230,7 +230,6 @@ machine-$(CONFIG_PLAT_SPEAR)		+= spear
+ # by CONFIG_* macro name.
+ plat-$(CONFIG_ARCH_OMAP)	+= omap
+ plat-$(CONFIG_PLAT_ORION)	+= orion
+-plat-$(CONFIG_PLAT_PXA)		+= pxa
+ plat-$(CONFIG_PLAT_VERSATILE)	+= versatile
+ 
+ # The byte offset of the kernel image in RAM from the start of RAM.
+diff --git a/arch/arm/mach-mmp/mfp.h b/arch/arm/mach-mmp/mfp.h
+index 75a4acb33b1b..6f3057987756 100644
+--- a/arch/arm/mach-mmp/mfp.h
++++ b/arch/arm/mach-mmp/mfp.h
+@@ -2,7 +2,7 @@
+ #ifndef __ASM_MACH_MFP_H
+ #define __ASM_MACH_MFP_H
+ 
+-#include <plat/mfp.h>
++#include <linux/soc/pxa/mfp.h>
+ 
+ /*
+  * NOTE: the MFPR register bit definitions on PXA168 processor lines are a
+diff --git a/arch/arm/mach-pxa/include/mach/mfp.h b/arch/arm/mach-pxa/include/mach/mfp.h
+index dbb961fb570e..7e0879bd4102 100644
+--- a/arch/arm/mach-pxa/include/mach/mfp.h
++++ b/arch/arm/mach-pxa/include/mach/mfp.h
+@@ -13,6 +13,6 @@
+ #ifndef __ASM_ARCH_MFP_H
+ #define __ASM_ARCH_MFP_H
+ 
+-#include <plat/mfp.h>
++#include <linux/soc/pxa/mfp.h>
+ 
+ #endif /* __ASM_ARCH_MFP_H */
+diff --git a/arch/arm/mach-pxa/mfp-pxa2xx.h b/arch/arm/mach-pxa/mfp-pxa2xx.h
+index 980145e7ee99..683a3ea5f154 100644
+--- a/arch/arm/mach-pxa/mfp-pxa2xx.h
++++ b/arch/arm/mach-pxa/mfp-pxa2xx.h
+@@ -2,7 +2,7 @@
+ #ifndef __ASM_ARCH_MFP_PXA2XX_H
+ #define __ASM_ARCH_MFP_PXA2XX_H
+ 
+-#include <plat/mfp.h>
++#include <linux/soc/pxa/mfp.h>
+ 
+ /*
+  * the following MFP_xxx bit definitions in mfp.h are re-used for pxa2xx:
+diff --git a/arch/arm/mach-pxa/mfp-pxa3xx.h b/arch/arm/mach-pxa/mfp-pxa3xx.h
+index cdd830926d1c..81fec4fa5a0f 100644
+--- a/arch/arm/mach-pxa/mfp-pxa3xx.h
++++ b/arch/arm/mach-pxa/mfp-pxa3xx.h
+@@ -2,7 +2,7 @@
+ #ifndef __ASM_ARCH_MFP_PXA3XX_H
+ #define __ASM_ARCH_MFP_PXA3XX_H
+ 
+-#include <plat/mfp.h>
++#include <linux/soc/pxa/mfp.h>
+ 
+ #define MFPR_BASE	(0x40e10000)
+ 
+diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
+index c5aae42673d3..86ccf5970bc1 100644
+--- a/drivers/soc/Kconfig
++++ b/drivers/soc/Kconfig
+@@ -14,6 +14,7 @@ source "drivers/soc/ixp4xx/Kconfig"
+ source "drivers/soc/litex/Kconfig"
+ source "drivers/soc/mediatek/Kconfig"
+ source "drivers/soc/microchip/Kconfig"
++source "drivers/soc/pxa/Kconfig"
+ source "drivers/soc/qcom/Kconfig"
+ source "drivers/soc/renesas/Kconfig"
+ source "drivers/soc/rockchip/Kconfig"
+diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
+index 904eec2a7871..fd7717d597fc 100644
+--- a/drivers/soc/Makefile
++++ b/drivers/soc/Makefile
+@@ -19,6 +19,7 @@ obj-$(CONFIG_SOC_XWAY)		+= lantiq/
+ obj-$(CONFIG_LITEX_SOC_CONTROLLER) += litex/
+ obj-y				+= mediatek/
+ obj-y				+= microchip/
++obj-y				+= pxa/
+ obj-y				+= amlogic/
+ obj-y				+= qcom/
+ obj-y				+= renesas/
+diff --git a/arch/arm/plat-pxa/Kconfig b/drivers/soc/pxa/Kconfig
+similarity index 83%
+rename from arch/arm/plat-pxa/Kconfig
+rename to drivers/soc/pxa/Kconfig
+index 6f7a0a39c2b9..c5c265aa4f07 100644
+--- a/arch/arm/plat-pxa/Kconfig
++++ b/drivers/soc/pxa/Kconfig
+@@ -1,9 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-if PLAT_PXA
++config PLAT_PXA
++	bool
+ 
+ config PXA_SSP
+ 	tristate
  	help
-diff --git a/arch/arm/mach-mmp/Makefile b/arch/arm/mach-mmp/Makefile
-index e3758f7e1fe7..81338db77ec7 100644
---- a/arch/arm/mach-mmp/Makefile
-+++ b/arch/arm/mach-mmp/Makefile
-@@ -24,7 +24,6 @@ endif
- obj-$(CONFIG_MACH_ASPENITE)	+= aspenite.o
- obj-$(CONFIG_MACH_ZYLONITE2)	+= aspenite.o
- obj-$(CONFIG_MACH_AVENGERS_LITE)+= avengers_lite.o
--obj-$(CONFIG_MACH_TAVOREVB)	+= tavorevb.o
- obj-$(CONFIG_MACH_TTC_DKB)	+= ttc_dkb.o
- obj-$(CONFIG_MACH_BROWNSTONE)	+= brownstone.o
- obj-$(CONFIG_MACH_FLINT)	+= flint.o
-diff --git a/arch/arm/mach-mmp/tavorevb.c b/arch/arm/mach-mmp/tavorevb.c
-deleted file mode 100644
-index 3261d2322198..000000000000
---- a/arch/arm/mach-mmp/tavorevb.c
-+++ /dev/null
-@@ -1,113 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- *  linux/arch/arm/mach-mmp/tavorevb.c
+ 	  Enable support for PXA2xx SSP ports
+-
+-endif
+diff --git a/arch/arm/plat-pxa/Makefile b/drivers/soc/pxa/Makefile
+similarity index 51%
+rename from arch/arm/plat-pxa/Makefile
+rename to drivers/soc/pxa/Makefile
+index 349ea0af8450..413deceddbdd 100644
+--- a/arch/arm/plat-pxa/Makefile
++++ b/drivers/soc/pxa/Makefile
+@@ -1,8 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-#
+-# Makefile for code common across different PXA processor families
+-#
+-ccflags-$(CONFIG_ARCH_MMP) := -I$(srctree)/$(src)/include
+ 
+ obj-$(CONFIG_PXA3xx)		+= mfp.o
+ obj-$(CONFIG_ARCH_MMP)		+= mfp.o
+diff --git a/arch/arm/plat-pxa/mfp.c b/drivers/soc/pxa/mfp.c
+similarity index 99%
+rename from arch/arm/plat-pxa/mfp.c
+rename to drivers/soc/pxa/mfp.c
+index 17fc4f33f35b..6220ba321cfc 100644
+--- a/arch/arm/plat-pxa/mfp.c
++++ b/drivers/soc/pxa/mfp.c
+@@ -15,7 +15,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ 
+-#include <plat/mfp.h>
++#include <linux/soc/pxa/mfp.h>
+ 
+ #define MFPR_SIZE	(PAGE_SIZE)
+ 
+diff --git a/arch/arm/plat-pxa/ssp.c b/drivers/soc/pxa/ssp.c
+similarity index 100%
+rename from arch/arm/plat-pxa/ssp.c
+rename to drivers/soc/pxa/ssp.c
+diff --git a/arch/arm/plat-pxa/include/plat/mfp.h b/include/linux/soc/pxa/mfp.h
+similarity index 98%
+rename from arch/arm/plat-pxa/include/plat/mfp.h
+rename to include/linux/soc/pxa/mfp.h
+index 3accaa9ee781..39779cbed0c0 100644
+--- a/arch/arm/plat-pxa/include/plat/mfp.h
++++ b/include/linux/soc/pxa/mfp.h
+@@ -1,7 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+- * arch/arm/plat-pxa/include/plat/mfp.h
 - *
-- *  Support for the Marvell PXA910-based TavorEVB Development Platform.
-- */
--#include <linux/gpio.h>
--#include <linux/gpio-pxa.h>
--#include <linux/init.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/smc91x.h>
--
--#include <asm/mach-types.h>
--#include <asm/mach/arch.h>
--#include "addr-map.h"
--#include "mfp-pxa910.h"
--#include "pxa910.h"
--#include "irqs.h"
--
--#include "common.h"
--
--static unsigned long tavorevb_pin_config[] __initdata = {
--	/* UART2 */
--	GPIO47_UART2_RXD,
--	GPIO48_UART2_TXD,
--
--	/* SMC */
--	SM_nCS0_nCS0,
--	SM_ADV_SM_ADV,
--	SM_SCLK_SM_SCLK,
--	SM_SCLK_SM_SCLK,
--	SM_BE0_SM_BE0,
--	SM_BE1_SM_BE1,
--
--	/* DFI */
--	DF_IO0_ND_IO0,
--	DF_IO1_ND_IO1,
--	DF_IO2_ND_IO2,
--	DF_IO3_ND_IO3,
--	DF_IO4_ND_IO4,
--	DF_IO5_ND_IO5,
--	DF_IO6_ND_IO6,
--	DF_IO7_ND_IO7,
--	DF_IO8_ND_IO8,
--	DF_IO9_ND_IO9,
--	DF_IO10_ND_IO10,
--	DF_IO11_ND_IO11,
--	DF_IO12_ND_IO12,
--	DF_IO13_ND_IO13,
--	DF_IO14_ND_IO14,
--	DF_IO15_ND_IO15,
--	DF_nCS0_SM_nCS2_nCS0,
--	DF_ALE_SM_WEn_ND_ALE,
--	DF_CLE_SM_OEn_ND_CLE,
--	DF_WEn_DF_WEn,
--	DF_REn_DF_REn,
--	DF_RDY0_DF_RDY0,
--};
--
--static struct pxa_gpio_platform_data pxa910_gpio_pdata = {
--	.irq_base	= MMP_GPIO_TO_IRQ(0),
--};
--
--static struct smc91x_platdata tavorevb_smc91x_info = {
--	.flags	= SMC91X_USE_16BIT | SMC91X_NOWAIT,
--};
--
--static struct resource smc91x_resources[] = {
--	[0] = {
--		.start	= SMC_CS1_PHYS_BASE + 0x300,
--		.end	= SMC_CS1_PHYS_BASE + 0xfffff,
--		.flags	= IORESOURCE_MEM,
--	},
--	[1] = {
--		.start	= MMP_GPIO_TO_IRQ(80),
--		.end	= MMP_GPIO_TO_IRQ(80),
--		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
--	}
--};
--
--static struct platform_device smc91x_device = {
--	.name		= "smc91x",
--	.id		= 0,
--	.dev		= {
--		.platform_data = &tavorevb_smc91x_info,
--	},
--	.num_resources	= ARRAY_SIZE(smc91x_resources),
--	.resource	= smc91x_resources,
--};
--
--static void __init tavorevb_init(void)
--{
--	mfp_config(ARRAY_AND_SIZE(tavorevb_pin_config));
--
--	/* on-chip devices */
--	pxa910_add_uart(1);
--	platform_device_add_data(&pxa910_device_gpio, &pxa910_gpio_pdata,
--				 sizeof(struct pxa_gpio_platform_data));
--	platform_device_register(&pxa910_device_gpio);
--
--	/* off-chip devices */
--	platform_device_register(&smc91x_device);
--}
--
--MACHINE_START(TAVOREVB, "PXA910 Evaluation Board (aka TavorEVB)")
--	.map_io		= mmp_map_io,
--	.nr_irqs	= MMP_NR_IRQS,
--	.init_irq       = pxa910_init_irq,
--	.init_time	= pxa910_timer_init,
--	.init_machine   = tavorevb_init,
--	.restart	= mmp_restart,
--MACHINE_END
+  *   Common Multi-Function Pin Definitions
+  *
+  * Copyright (C) 2007 Marvell International Ltd.
+@@ -453,8 +451,8 @@ struct mfp_addr_map {
+ 
+ #define MFP_ADDR_END	{ MFP_PIN_INVALID, 0 }
+ 
+-void __init mfp_init_base(void __iomem *mfpr_base);
+-void __init mfp_init_addr(struct mfp_addr_map *map);
++void mfp_init_base(void __iomem *mfpr_base);
++void mfp_init_addr(struct mfp_addr_map *map);
+ 
+ /*
+  * mfp_{read, write}()	- for direct read/write access to the MFPR register
 -- 
 2.29.2
 
