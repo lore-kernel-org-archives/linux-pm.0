@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43EAFC3527D
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCA8EC3E8A8
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:44:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236877AbiDSQqn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:46:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53402 "EHLO
+        id S1355128AbiDSQql (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:46:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242507AbiDSQnM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:43:12 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10BD617E23;
-        Tue, 19 Apr 2022 09:40:29 -0700 (PDT)
+        with ESMTP id S1355085AbiDSQoV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:44:21 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05AF423BF4;
+        Tue, 19 Apr 2022 09:41:38 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 8B4FDB819DE;
-        Tue, 19 Apr 2022 16:40:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDD0FC385A5;
-        Tue, 19 Apr 2022 16:40:18 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 9650C61821;
+        Tue, 19 Apr 2022 16:41:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB721C385AC;
+        Tue, 19 Apr 2022 16:41:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386426;
-        bh=ptMtOudbQ5loXUIBoTxa9Js2NvWZa4r2mq6O40yUHH0=;
+        s=k20201202; t=1650386497;
+        bh=1O9MwmD3q7Efw0mNmt0vC0FIYvsOfssGwGwAEKA5gxM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=sn7fnX8rRkBuqtQMfRkdqeTmIHa3aEVyEQqy3ea6Rcph7o5+q2+oJQtgfayzkGgGD
-         pBrobPc0a288Jt5l21HSNaRfaU6aAdkHaECQNojqoW85epuPmw1VvMwvkSO6N07k/3
-         115Wizs7BJeOANhRCBPtn5ETmJ1DN/7eD9VqdGz01zYvnNHqGUiTr7Xr5IQ32fnJKz
-         73a5FySo1/OXZDPRM/Hg6r35U+vs89tmssHNWG7O1Y8buOzXQepqwD84VLvP022GvN
-         c6H9ZVfE372WNIs8vRZiLFyLD+Hr6zPSL7rCagmKzA+O8wvtPs7NCaSk+bRoY9berF
-         uj9Ak7o458yOA==
+        b=RW3t/f0q/W5/dnzfcrtw0I9fhLVY23FDmAPpcSaaDuKEEcmTyf0OhUuVzov6xRtSg
+         8/90KOb8nyH780wMfnvX+HRQ5KfSJ/tj7EytVv1D4e3RaGfAVpd8MdgrryyRnQz5sl
+         tAEHgpltGQpLFkNQV4TvKayphCQEulsFlQIA0f/Mf+RpqX1pdKuTMDiDkHI/8Hxyi7
+         CH4LD6+/aasnihfkDYTekh2dNU8/QkAcdXp4RO1bzn7uBOscXcQCaZqzuz/GBYaM0s
+         q1fLwEh5+e7KJuaGDQ6KO7+wX/GqQHM1/twbQraNRso9SVmFpc0j+LKZPWKG4wAyPe
+         xamlnDN1RvfFw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,9 +59,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 12/48] ARM: pxa: make addr-map.h header local
-Date:   Tue, 19 Apr 2022 18:37:34 +0200
-Message-Id: <20220419163810.2118169-13-arnd@kernel.org>
+Subject: [PATCH 21/48] ARM: pxa: eseries: use gpio lookup for audio
+Date:   Tue, 19 Apr 2022 18:37:43 +0200
+Message-Id: <20220419163810.2118169-22-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -73,205 +73,376 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Drivers should not rely on the contents of this file, so
-move it into the platform directory directly.
+The three eseries machines have very similar drivers for audio, all
+using the mach/eseries-gpio.h header for finding the gpio numbers.
 
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Paul Parsons <lost.distance@yahoo.com>
+Change these to use gpio descriptors to avoid the header file
+dependency.
 
+I convert the _OFF gpio numbers into GPIO_ACTIVE_LOW ones for
+consistency here.
+
+Acked-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Link: https://lore.kernel.org/lkml/87mudkmx8g.fsf@belgarion.home/
 ---
- arch/arm/mach-pxa/{include/mach => }/addr-map.h | 0
- arch/arm/mach-pxa/generic.c                     | 2 +-
- arch/arm/mach-pxa/hx4700.c                      | 2 +-
- arch/arm/mach-pxa/lpd270.c                      | 2 +-
- arch/arm/mach-pxa/magician.c                    | 2 +-
- arch/arm/mach-pxa/mainstone.c                   | 2 +-
- arch/arm/mach-pxa/pxa25x.c                      | 2 +-
- arch/arm/mach-pxa/pxa25x.h                      | 2 +-
- arch/arm/mach-pxa/pxa27x.c                      | 2 +-
- arch/arm/mach-pxa/pxa27x.h                      | 2 +-
- arch/arm/mach-pxa/pxa3xx.c                      | 2 +-
- arch/arm/mach-pxa/pxa3xx.h                      | 2 +-
- arch/arm/mach-pxa/trizeps4.h                    | 2 +-
- arch/arm/mach-pxa/xcep.c                        | 2 +-
- 14 files changed, 13 insertions(+), 13 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/addr-map.h (100%)
+ arch/arm/mach-pxa/eseries.c | 32 ++++++++++++++++++++++++++++++++
+ sound/soc/pxa/e740_wm9705.c | 35 ++++++++++++++++++-----------------
+ sound/soc/pxa/e750_wm9705.c | 31 ++++++++++++++-----------------
+ sound/soc/pxa/e800_wm9712.c | 31 ++++++++++++++-----------------
+ 4 files changed, 78 insertions(+), 51 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/include/mach/addr-map.h b/arch/arm/mach-pxa/addr-map.h
-similarity index 100%
-rename from arch/arm/mach-pxa/include/mach/addr-map.h
-rename to arch/arm/mach-pxa/addr-map.h
-diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
-index 3c3cd90bb9b4..f9083c4f0aea 100644
---- a/arch/arm/mach-pxa/generic.c
-+++ b/arch/arm/mach-pxa/generic.c
-@@ -22,7 +22,7 @@
- #include <asm/mach/map.h>
+diff --git a/arch/arm/mach-pxa/eseries.c b/arch/arm/mach-pxa/eseries.c
+index a8b6483ff665..2643a2a72408 100644
+--- a/arch/arm/mach-pxa/eseries.c
++++ b/arch/arm/mach-pxa/eseries.c
+@@ -24,6 +24,7 @@
+ #include <linux/mtd/rawnand.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/memblock.h>
++#include <linux/gpio/machine.h>
+ 
+ #include <video/w100fb.h>
+ 
+@@ -520,6 +521,16 @@ static struct platform_device e740_audio_device = {
+ 	.id		= -1,
+ };
+ 
++static struct gpiod_lookup_table e740_audio_gpio_table = {
++	.dev_id = "e740-audio",
++	.table = {
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E740_WM9705_nAVDD2, "Audio power",  GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E740_AMP_ON, "Output amp",  GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E740_MIC_ON, "Mic amp", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ /* ----------------------------------------------------------------------- */
+ 
+ static struct platform_device *e740_devices[] __initdata = {
+@@ -540,6 +551,7 @@ static void __init e740_init(void)
+ 			"UDCCLK", &pxa25x_device_udc.dev),
+ 	eseries_get_tmio_gpios();
+ 	gpiod_add_lookup_table(&e7xx_gpio_vbus_gpiod_table);
++	gpiod_add_lookup_table(&e740_audio_gpio_table);
+ 	platform_add_devices(ARRAY_AND_SIZE(e740_devices));
+ 	pxa_set_ac97_info(NULL);
+ 	pxa_set_ficp_info(&e7xx_ficp_platform_data);
+@@ -716,6 +728,15 @@ static struct platform_device e750_tc6393xb_device = {
+ 	.resource      = eseries_tmio_resources,
+ };
+ 
++static struct gpiod_lookup_table e750_audio_gpio_table = {
++	.dev_id = "e750-audio",
++	.table = {
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E750_HP_AMP_OFF, "Output amp",  GPIO_ACTIVE_LOW),
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E750_SPK_AMP_OFF, "Mic amp", GPIO_ACTIVE_LOW),
++		{ },
++	},
++};
++
+ static struct platform_device e750_audio_device = {
+ 	.name		= "e750-audio",
+ 	.id		= -1,
+@@ -740,6 +761,7 @@ static void __init e750_init(void)
+ 			"GPIO11_CLK", NULL),
+ 	eseries_get_tmio_gpios();
+ 	gpiod_add_lookup_table(&e7xx_gpio_vbus_gpiod_table);
++	gpiod_add_lookup_table(&e750_audio_gpio_table);
+ 	platform_add_devices(ARRAY_AND_SIZE(e750_devices));
+ 	pxa_set_ac97_info(NULL);
+ 	pxa_set_ficp_info(&e7xx_ficp_platform_data);
+@@ -935,6 +957,15 @@ static struct platform_device e800_tc6393xb_device = {
+ 	.resource      = eseries_tmio_resources,
+ };
+ 
++static struct gpiod_lookup_table e800_audio_gpio_table = {
++	.dev_id = "e800-audio",
++	.table = {
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E800_HP_AMP_OFF, "Output amp",  GPIO_ACTIVE_LOW),
++		GPIO_LOOKUP("gpio-pxa",  GPIO_E800_SPK_AMP_ON, "Mic amp", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ static struct platform_device e800_audio_device = {
+ 	.name		= "e800-audio",
+ 	.id		= -1,
+@@ -959,6 +990,7 @@ static void __init e800_init(void)
+ 			"GPIO11_CLK", NULL),
+ 	eseries_get_tmio_gpios();
+ 	gpiod_add_lookup_table(&e800_gpio_vbus_gpiod_table);
++	gpiod_add_lookup_table(&e800_audio_gpio_table);
+ 	platform_add_devices(ARRAY_AND_SIZE(e800_devices));
+ 	pxa_set_ac97_info(NULL);
+ }
+diff --git a/sound/soc/pxa/e740_wm9705.c b/sound/soc/pxa/e740_wm9705.c
+index f922be7e0016..4e0e9b778d4c 100644
+--- a/sound/soc/pxa/e740_wm9705.c
++++ b/sound/soc/pxa/e740_wm9705.c
+@@ -7,17 +7,19 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ 
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/soc.h>
+ 
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/eseries-gpio.h>
+ 
  #include <asm/mach-types.h>
  
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/irqs.h>
- #include <mach/reset.h>
- #include <mach/smemc.h>
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index 191a6c24fe19..140a44cb2989 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -40,7 +40,7 @@
- #include <asm/mach/arch.h>
++static struct gpio_desc *gpiod_output_amp, *gpiod_input_amp;
++static struct gpio_desc *gpiod_audio_power;
++
+ #define E740_AUDIO_OUT 1
+ #define E740_AUDIO_IN  2
  
- #include "pxa27x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/hx4700.h>
- #include <linux/platform_data/irda-pxaficp.h>
+@@ -25,9 +27,9 @@ static int e740_audio_power;
  
-diff --git a/arch/arm/mach-pxa/lpd270.c b/arch/arm/mach-pxa/lpd270.c
-index 7f10b86f85fd..e03436710752 100644
---- a/arch/arm/mach-pxa/lpd270.c
-+++ b/arch/arm/mach-pxa/lpd270.c
-@@ -38,7 +38,7 @@
+ static void e740_sync_audio_power(int status)
+ {
+-	gpio_set_value(GPIO_E740_WM9705_nAVDD2, !status);
+-	gpio_set_value(GPIO_E740_AMP_ON, (status & E740_AUDIO_OUT) ? 1 : 0);
+-	gpio_set_value(GPIO_E740_MIC_ON, (status & E740_AUDIO_IN) ? 1 : 0);
++	gpiod_set_value(gpiod_audio_power, !status);
++	gpiod_set_value(gpiod_output_amp, (status & E740_AUDIO_OUT) ? 1 : 0);
++	gpiod_set_value(gpiod_input_amp, (status & E740_AUDIO_IN) ? 1 : 0);
+ }
  
- #include "pxa27x.h"
- #include "lpd270.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
+ static int e740_mic_amp_event(struct snd_soc_dapm_widget *w,
+@@ -116,36 +118,35 @@ static struct snd_soc_card e740 = {
+ 	.fully_routed = true,
+ };
+ 
+-static struct gpio e740_audio_gpios[] = {
+-	{ GPIO_E740_MIC_ON, GPIOF_OUT_INIT_LOW, "Mic amp" },
+-	{ GPIO_E740_AMP_ON, GPIOF_OUT_INIT_LOW, "Output amp" },
+-	{ GPIO_E740_WM9705_nAVDD2, GPIOF_OUT_INIT_HIGH, "Audio power" },
+-};
+-
+ static int e740_probe(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = &e740;
+ 	int ret;
+ 
+-	ret = gpio_request_array(e740_audio_gpios,
+-				 ARRAY_SIZE(e740_audio_gpios));
++	gpiod_input_amp  = devm_gpiod_get(&pdev->dev, "Mic amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_input_amp);
++	if (ret)
++		return ret;
++	gpiod_output_amp  = devm_gpiod_get(&pdev->dev, "Output amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_output_amp);
++	if (ret)
++		return ret;
++	gpiod_audio_power = devm_gpiod_get(&pdev->dev, "Audio power", GPIOD_OUT_HIGH);
++	ret = PTR_ERR_OR_ZERO(gpiod_audio_power);
+ 	if (ret)
+ 		return ret;
+ 
+ 	card->dev = &pdev->dev;
+ 
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+-	if (ret) {
++	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+ 			ret);
+-		gpio_free_array(e740_audio_gpios, ARRAY_SIZE(e740_audio_gpios));
+-	}
+ 	return ret;
+ }
+ 
+ static int e740_remove(struct platform_device *pdev)
+ {
+-	gpio_free_array(e740_audio_gpios, ARRAY_SIZE(e740_audio_gpios));
+ 	return 0;
+ }
+ 
+diff --git a/sound/soc/pxa/e750_wm9705.c b/sound/soc/pxa/e750_wm9705.c
+index 308828cd736b..7a1e0d8bfd11 100644
+--- a/sound/soc/pxa/e750_wm9705.c
++++ b/sound/soc/pxa/e750_wm9705.c
+@@ -7,24 +7,25 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ 
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/soc.h>
+ 
  #include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
-diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index 345a44d15a2c..20ca3e28c7fb 100644
---- a/arch/arm/mach-pxa/magician.c
-+++ b/arch/arm/mach-pxa/magician.c
-@@ -34,7 +34,7 @@
- #include <asm/system_info.h>
+-#include <mach/eseries-gpio.h>
  
- #include "pxa27x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/magician.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
-diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
-index c8200fc2159d..f0072e63b456 100644
---- a/arch/arm/mach-pxa/mainstone.c
-+++ b/arch/arm/mach-pxa/mainstone.c
-@@ -51,7 +51,7 @@
- #include <linux/platform_data/irda-pxaficp.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include <linux/platform_data/keypad-pxa27x.h>
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
+ #include <asm/mach-types.h>
  
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
-index dfc90b41fba3..8d21c7eef1d2 100644
---- a/arch/arm/mach-pxa/pxa25x.c
-+++ b/arch/arm/mach-pxa/pxa25x.c
-@@ -34,7 +34,7 @@
- #include "pxa25x.h"
- #include <mach/reset.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
++static struct gpio_desc *gpiod_spk_amp, *gpiod_hp_amp;
++
+ static int e750_spk_amp_event(struct snd_soc_dapm_widget *w,
+ 				struct snd_kcontrol *kcontrol, int event)
+ {
+ 	if (event & SND_SOC_DAPM_PRE_PMU)
+-		gpio_set_value(GPIO_E750_SPK_AMP_OFF, 0);
++		gpiod_set_value(gpiod_spk_amp, 1);
+ 	else if (event & SND_SOC_DAPM_POST_PMD)
+-		gpio_set_value(GPIO_E750_SPK_AMP_OFF, 1);
++		gpiod_set_value(gpiod_spk_amp, 0);
  
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa25x.h b/arch/arm/mach-pxa/pxa25x.h
-index 403bc16c2ed2..4699ebf7b486 100644
---- a/arch/arm/mach-pxa/pxa25x.h
-+++ b/arch/arm/mach-pxa/pxa25x.h
-@@ -2,7 +2,7 @@
- #ifndef __MACH_PXA25x_H
- #define __MACH_PXA25x_H
+ 	return 0;
+ }
+@@ -33,9 +34,9 @@ static int e750_hp_amp_event(struct snd_soc_dapm_widget *w,
+ 				struct snd_kcontrol *kcontrol, int event)
+ {
+ 	if (event & SND_SOC_DAPM_PRE_PMU)
+-		gpio_set_value(GPIO_E750_HP_AMP_OFF, 0);
++		gpiod_set_value(gpiod_hp_amp, 1);
+ 	else if (event & SND_SOC_DAPM_POST_PMD)
+-		gpio_set_value(GPIO_E750_HP_AMP_OFF, 1);
++		gpiod_set_value(gpiod_hp_amp, 0);
  
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa2xx-regs.h>
- #include "mfp-pxa25x.h"
- #include <mach/irqs.h>
-diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
-index 38fdd22c4dc5..c36a9784fab8 100644
---- a/arch/arm/mach-pxa/pxa27x.c
-+++ b/arch/arm/mach-pxa/pxa27x.c
-@@ -33,7 +33,7 @@
- #include <mach/reset.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
+ 	return 0;
+ }
+@@ -100,35 +101,31 @@ static struct snd_soc_card e750 = {
+ 	.fully_routed = true,
+ };
  
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa27x.h b/arch/arm/mach-pxa/pxa27x.h
-index 6c99090647d2..bf2755561fe5 100644
---- a/arch/arm/mach-pxa/pxa27x.h
-+++ b/arch/arm/mach-pxa/pxa27x.h
-@@ -3,7 +3,7 @@
- #define __MACH_PXA27x_H
+-static struct gpio e750_audio_gpios[] = {
+-	{ GPIO_E750_HP_AMP_OFF, GPIOF_OUT_INIT_HIGH, "Headphone amp" },
+-	{ GPIO_E750_SPK_AMP_OFF, GPIOF_OUT_INIT_HIGH, "Speaker amp" },
+-};
+-
+ static int e750_probe(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = &e750;
+ 	int ret;
  
- #include <linux/suspend.h>
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa2xx-regs.h>
- #include "mfp-pxa27x.h"
- #include <mach/irqs.h>
-diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
-index 7c569fa2a6da..7881888107c7 100644
---- a/arch/arm/mach-pxa/pxa3xx.c
-+++ b/arch/arm/mach-pxa/pxa3xx.c
-@@ -32,7 +32,7 @@
- #include <mach/reset.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- #include <mach/irqs.h>
+-	ret = gpio_request_array(e750_audio_gpios,
+-				 ARRAY_SIZE(e750_audio_gpios));
++	gpiod_hp_amp  = devm_gpiod_get(&pdev->dev, "Headphone amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_hp_amp);
++	if (ret)
++		return ret;
++	gpiod_spk_amp  = devm_gpiod_get(&pdev->dev, "Speaker amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_spk_amp);
+ 	if (ret)
+ 		return ret;
  
-diff --git a/arch/arm/mach-pxa/pxa3xx.h b/arch/arm/mach-pxa/pxa3xx.h
-index 22ace053ea25..6b424d328680 100644
---- a/arch/arm/mach-pxa/pxa3xx.h
-+++ b/arch/arm/mach-pxa/pxa3xx.h
-@@ -2,7 +2,7 @@
- #ifndef __MACH_PXA3XX_H	
- #define __MACH_PXA3XX_H
+ 	card->dev = &pdev->dev;
  
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa3xx-regs.h>
- #include <mach/irqs.h>
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+-	if (ret) {
++	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+ 			ret);
+-		gpio_free_array(e750_audio_gpios, ARRAY_SIZE(e750_audio_gpios));
+-	}
+ 	return ret;
+ }
  
-diff --git a/arch/arm/mach-pxa/trizeps4.h b/arch/arm/mach-pxa/trizeps4.h
-index 7597b9de11e2..e0f37c0ff06f 100644
---- a/arch/arm/mach-pxa/trizeps4.h
-+++ b/arch/arm/mach-pxa/trizeps4.h
-@@ -11,7 +11,7 @@
- #ifndef _TRIPEPS4_H_
- #define _TRIPEPS4_H_
+ static int e750_remove(struct platform_device *pdev)
+ {
+-	gpio_free_array(e750_audio_gpios, ARRAY_SIZE(e750_audio_gpios));
+ 	return 0;
+ }
  
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
+diff --git a/sound/soc/pxa/e800_wm9712.c b/sound/soc/pxa/e800_wm9712.c
+index d74fcceef687..a39c494127cf 100644
+--- a/sound/soc/pxa/e800_wm9712.c
++++ b/sound/soc/pxa/e800_wm9712.c
+@@ -7,7 +7,7 @@
  
- /* physical memory regions */
-diff --git a/arch/arm/mach-pxa/xcep.c b/arch/arm/mach-pxa/xcep.c
-index e6ab428287ae..7389e0199144 100644
---- a/arch/arm/mach-pxa/xcep.c
-+++ b/arch/arm/mach-pxa/xcep.c
-@@ -25,7 +25,7 @@
- #include <asm/mach/map.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
  
- #include "pxa25x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+@@ -15,15 +15,16 @@
  
- #include "generic.h"
+ #include <asm/mach-types.h>
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/eseries-gpio.h>
++
++static struct gpio_desc *gpiod_spk_amp, *gpiod_hp_amp;
+ 
+ static int e800_spk_amp_event(struct snd_soc_dapm_widget *w,
+ 				struct snd_kcontrol *kcontrol, int event)
+ {
+ 	if (event & SND_SOC_DAPM_PRE_PMU)
+-		gpio_set_value(GPIO_E800_SPK_AMP_ON, 1);
++		gpiod_set_value(gpiod_spk_amp, 1);
+ 	else if (event & SND_SOC_DAPM_POST_PMD)
+-		gpio_set_value(GPIO_E800_SPK_AMP_ON, 0);
++		gpiod_set_value(gpiod_spk_amp, 0);
+ 
+ 	return 0;
+ }
+@@ -32,9 +33,9 @@ static int e800_hp_amp_event(struct snd_soc_dapm_widget *w,
+ 				struct snd_kcontrol *kcontrol, int event)
+ {
+ 	if (event & SND_SOC_DAPM_PRE_PMU)
+-		gpio_set_value(GPIO_E800_HP_AMP_OFF, 0);
++		gpiod_set_value(gpiod_hp_amp, 1);
+ 	else if (event & SND_SOC_DAPM_POST_PMD)
+-		gpio_set_value(GPIO_E800_HP_AMP_OFF, 1);
++		gpiod_set_value(gpiod_hp_amp, 0);
+ 
+ 	return 0;
+ }
+@@ -100,35 +101,31 @@ static struct snd_soc_card e800 = {
+ 	.num_dapm_routes = ARRAY_SIZE(audio_map),
+ };
+ 
+-static struct gpio e800_audio_gpios[] = {
+-	{ GPIO_E800_SPK_AMP_ON, GPIOF_OUT_INIT_HIGH, "Headphone amp" },
+-	{ GPIO_E800_HP_AMP_OFF, GPIOF_OUT_INIT_HIGH, "Speaker amp" },
+-};
+-
+ static int e800_probe(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = &e800;
+ 	int ret;
+ 
+-	ret = gpio_request_array(e800_audio_gpios,
+-				 ARRAY_SIZE(e800_audio_gpios));
++	gpiod_hp_amp  = devm_gpiod_get(&pdev->dev, "Headphone amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_hp_amp);
++	if (ret)
++		return ret;
++	gpiod_spk_amp  = devm_gpiod_get(&pdev->dev, "Speaker amp", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(gpiod_spk_amp);
+ 	if (ret)
+ 		return ret;
+ 
+ 	card->dev = &pdev->dev;
+ 
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+-	if (ret) {
++	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+ 			ret);
+-		gpio_free_array(e800_audio_gpios, ARRAY_SIZE(e800_audio_gpios));
+-	}
+ 	return ret;
+ }
+ 
+ static int e800_remove(struct platform_device *pdev)
+ {
+-	gpio_free_array(e800_audio_gpios, ARRAY_SIZE(e800_audio_gpios));
+ 	return 0;
+ }
+ 
 -- 
 2.29.2
 
