@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7FA7C4332F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A79D3C433EF
 	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355087AbiDSQqh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:46:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54046 "EHLO
+        id S1355083AbiDSQqf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:46:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237117AbiDSQoF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:44:05 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8291E23BF4;
-        Tue, 19 Apr 2022 09:41:22 -0700 (PDT)
+        with ESMTP id S1348446AbiDSQnn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:43:43 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3FF4167CF;
+        Tue, 19 Apr 2022 09:41:00 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 2060B61821;
-        Tue, 19 Apr 2022 16:41:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBCD4C385A7;
-        Tue, 19 Apr 2022 16:41:13 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 2FA08B81BB5;
+        Tue, 19 Apr 2022 16:40:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79E8DC385A5;
+        Tue, 19 Apr 2022 16:40:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386481;
-        bh=B/EPqKtpF/X7/qtDP9YwLKtvodaWStDsu3zudJ8kKz8=;
+        s=k20201202; t=1650386457;
+        bh=C2cC3nszzSR7Yg7EQ5FMtO6Bllai+VKT38Jvit2uDc8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e/RYNgH/mBUlontysDvDDbQEl/w5JkQ9KERIge+TcJ551/XZYLOWdDTGCMdx+YKy7
-         Eo/SvJOdF5wgBq+JPCny5Iz4sfnm67vOL/aV3JDNF+eu3PEHxKh+sOrXkMuKManFEB
-         FvCJgeGTM+6w0HGQJbhRtyvAVvYZhIZUQzpHF2wCtgZokugnVX+Kwy6gFqN6W1IZJt
-         h6Z8zUzZzd2yynsmy/ykvebZNOmvxQfFa0IczJPaH1E/UzhZyrRLjpixBmukOAd097
-         r+a1YGs658YewbGmFKHNY8vaSw30yUPgx99OTD0iJIm65L2L+bhpmbdN90g/nC0hhO
-         aQjZ7EgUWchew==
+        b=lJfs7uv7LS4DROe0ZEqAXf1BemzCSiR1n9q5pTBcQG14Rdk/Bok1Paom6lb0vD0cm
+         ije+/8ArHxRKJaRYvlbGz9m+iaPOzZmd1uwU5s0IOYZTrkkemNzH/kJBRzyHiOZkrG
+         KiVRrX/jL+JFZ87Q7XxHzop2CKv3G0/eQc4YVrjQsAOZ+/qLo79zDbsc5oxBF2efza
+         CDyrl5WnAOPpLGjznX6xQc+QWZhDWWihqtFWdy5w+aKST9Ab0KZIJBuMOTuHrbmZlA
+         1xPy7xRAfOi3AMuZzwWBxP7QLOwG5d+HiSgT8IPJ4ta7k1PytjOW3TnkjqmjRoC/fm
+         4YELVox8EX7Qw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -58,11 +58,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, Felipe Balbi <balbi@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 19/48] ARM: pxa: lubbock: pass udc irqs as resource
-Date:   Tue, 19 Apr 2022 18:37:41 +0200
-Message-Id: <20220419163810.2118169-20-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 16/48] ARM: pxa: poodle: use platform data for poodle asoc driver
+Date:   Tue, 19 Apr 2022 18:37:38 +0200
+Message-Id: <20220419163810.2118169-17-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,175 +73,237 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Lubbock is the only machine that has three IRQs for the UDC.
-These are currently hardcoded in the driver based on a
-machine header file.
+The poodle audio driver shows its age by using a custom
+gpio api for the "locomo" support chip.
 
-Change this to use platform device resources as we use for
-the generic IRQ anyway.
+In a perfect world, this would get converted to use gpiolib
+and a gpio lookup table.
 
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-usb@vger.kernel.org
+As the world is not perfect, just pass all the required data
+in a custom platform_data structure. to avoid the globally
+visible mach/poodle.h header.
+
+Acked-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/lubbock.c                   | 12 +++++-
- .../arm/mach-pxa/{include/mach => }/lubbock.h |  2 -
- drivers/usb/gadget/udc/pxa25x_udc.c           | 37 ++++++++++---------
- drivers/usb/gadget/udc/pxa25x_udc.h           |  7 +---
- 4 files changed, 32 insertions(+), 26 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/lubbock.h (97%)
+ arch/arm/mach-pxa/poodle.c                    | 30 ++++++++----
+ arch/arm/mach-pxa/{include/mach => }/poodle.h |  4 +-
+ include/linux/platform_data/asoc-poodle.h     | 16 ++++++
+ sound/soc/pxa/poodle.c                        | 49 ++++++++++---------
+ 4 files changed, 63 insertions(+), 36 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/poodle.h (97%)
+ create mode 100644 include/linux/platform_data/asoc-poodle.h
 
-diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
-index 46aef93c0615..201f89f49642 100644
---- a/arch/arm/mach-pxa/lubbock.c
-+++ b/arch/arm/mach-pxa/lubbock.c
-@@ -46,7 +46,7 @@
+diff --git a/arch/arm/mach-pxa/poodle.c b/arch/arm/mach-pxa/poodle.c
+index ca52882433d4..7772a39430ed 100644
+--- a/arch/arm/mach-pxa/poodle.c
++++ b/arch/arm/mach-pxa/poodle.c
+@@ -39,11 +39,13 @@
+ #include <asm/mach/irq.h>
  
  #include "pxa25x.h"
- #include <linux/platform_data/asoc-pxa.h>
--#include <mach/lubbock.h>
-+#include "lubbock.h"
+-#include <linux/platform_data/mmc-pxamci.h>
  #include "udc.h"
++#include "poodle.h"
++
++#include <linux/platform_data/mmc-pxamci.h>
  #include <linux/platform_data/irda-pxaficp.h>
+-#include <mach/poodle.h>
  #include <linux/platform_data/video-pxafb.h>
-@@ -131,6 +131,13 @@ static struct pxa2xx_udc_mach_info udc_info __initdata = {
- 	// no D+ pullup; lubbock can't connect/disconnect in software
++#include <linux/platform_data/asoc-poodle.h>
+ 
+ #include <asm/hardware/scoop.h>
+ #include <asm/hardware/locomo.h>
+@@ -155,12 +157,6 @@ static struct scoop_pcmcia_config poodle_pcmcia_config = {
+ 
+ EXPORT_SYMBOL(poodle_scoop_device);
+ 
+-
+-static struct platform_device poodle_audio_device = {
+-	.name	= "poodle-audio",
+-	.id	= -1,
+-};
+-
+ /* LoCoMo device */
+ static struct resource locomo_resources[] = {
+ 	[0] = {
+@@ -179,7 +175,7 @@ static struct locomo_platform_data locomo_info = {
+ 	.irq_base	= IRQ_BOARD_START,
  };
  
-+static struct resource lubbock_udc_resources[] = {
-+	DEFINE_RES_MEM(0x40600000, 0x10000),
-+	DEFINE_RES_IRQ(IRQ_USB),
-+	DEFINE_RES_IRQ(LUBBOCK_USB_IRQ),
-+	DEFINE_RES_IRQ(LUBBOCK_USB_DISC_IRQ),
+-struct platform_device poodle_locomo_device = {
++static struct platform_device poodle_locomo_device = {
+ 	.name		= "locomo",
+ 	.id		= 0,
+ 	.num_resources	= ARRAY_SIZE(locomo_resources),
+@@ -189,7 +185,21 @@ struct platform_device poodle_locomo_device = {
+ 	},
+ };
+ 
+-EXPORT_SYMBOL(poodle_locomo_device);
++static struct poodle_audio_platform_data poodle_audio_pdata = {
++	.locomo_dev	= &poodle_locomo_device.dev,
++
++	.gpio_amp_on   	= POODLE_LOCOMO_GPIO_AMP_ON,
++	.gpio_mute_l   	= POODLE_LOCOMO_GPIO_MUTE_L,
++	.gpio_mute_r   	= POODLE_LOCOMO_GPIO_MUTE_R,
++	.gpio_232vcc_on	= POODLE_LOCOMO_GPIO_232VCC_ON,
++	.gpio_jk_b     	= POODLE_LOCOMO_GPIO_JK_B,
 +};
 +
- /* GPIOs for SA1111 PCMCIA */
- static struct gpiod_lookup_table sa1111_pcmcia_gpio_table = {
- 	.dev_id = "1800",
-@@ -496,6 +503,9 @@ static void __init lubbock_init(void)
- 	lubbock_init_pcmcia();
++static struct platform_device poodle_audio_device = {
++	.name	= "poodle-audio",
++	.id	= -1,
++	.dev.platform_data = &poodle_audio_pdata,
++};
  
- 	clk_add_alias("SA1111_CLK", NULL, "GPIO11_CLK", NULL);
-+	/* lubbock has two extra IRQs */
-+	pxa25x_device_udc.resource = lubbock_udc_resources;
-+	pxa25x_device_udc.num_resources = ARRAY_SIZE(lubbock_udc_resources);
- 	pxa_set_udc_info(&udc_info);
- 	pxa_set_fb_info(NULL, &sharp_lm8v31);
- 	pxa_set_mci_info(&lubbock_mci_platform_data);
-diff --git a/arch/arm/mach-pxa/include/mach/lubbock.h b/arch/arm/mach-pxa/lubbock.h
+ #if defined(CONFIG_SPI_PXA2XX) || defined(CONFIG_SPI_PXA2XX_MODULE)
+ static struct pxa2xx_spi_controller poodle_spi_info = {
+diff --git a/arch/arm/mach-pxa/include/mach/poodle.h b/arch/arm/mach-pxa/poodle.h
 similarity index 97%
-rename from arch/arm/mach-pxa/include/mach/lubbock.h
-rename to arch/arm/mach-pxa/lubbock.h
-index a3af4a2f9446..8e3ff7d57121 100644
---- a/arch/arm/mach-pxa/include/mach/lubbock.h
-+++ b/arch/arm/mach-pxa/lubbock.h
-@@ -1,7 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
+rename from arch/arm/mach-pxa/include/mach/poodle.h
+rename to arch/arm/mach-pxa/poodle.h
+index b56b19351a03..e675a3d1aa18 100644
+--- a/arch/arm/mach-pxa/include/mach/poodle.h
++++ b/arch/arm/mach-pxa/poodle.h
+@@ -15,7 +15,7 @@
+ #ifndef __ASM_ARCH_POODLE_H
+ #define __ASM_ARCH_POODLE_H  1
+ 
+-#include "irqs.h" /* PXA_GPIO_TO_IRQ */
++#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
+ 
  /*
-- *  arch/arm/mach-pxa/include/mach/lubbock.h
-- *
-  *  Author:	Nicolas Pitre
-  *  Created:	Jun 15, 2001
-  *  Copyright:	MontaVista Software Inc.
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
-index 6c414c99d01c..c593fc383481 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.c
-@@ -44,10 +44,6 @@
- #include <linux/usb/gadget.h>
- #include <linux/usb/otg.h>
+  * GPIOs
+@@ -89,6 +89,4 @@
  
--#ifdef CONFIG_ARCH_LUBBOCK
--#include <mach/lubbock.h>
--#endif
+ #define POODLE_NR_IRQS		(IRQ_BOARD_START + 4)	/* 4 for LoCoMo */
+ 
+-extern struct platform_device poodle_locomo_device;
 -
- #define UDCCR	 0x0000 /* UDC Control Register */
- #define UDC_RES1 0x0004 /* UDC Undocumented - Reserved1 */
- #define UDC_RES2 0x0008 /* UDC Undocumented - Reserved2 */
-@@ -1578,18 +1574,15 @@ lubbock_vbus_irq(int irq, void *_dev)
- 	int			vbus;
+ #endif /* __ASM_ARCH_POODLE_H  */
+diff --git a/include/linux/platform_data/asoc-poodle.h b/include/linux/platform_data/asoc-poodle.h
+new file mode 100644
+index 000000000000..2052fad55c5c
+--- /dev/null
++++ b/include/linux/platform_data/asoc-poodle.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __LINUX_PLATFORM_DATA_POODLE_AUDIO
++#define __LINUX_PLATFORM_DATA_POODLE_AUDIO
++
++/* locomo is not a proper gpio driver, and uses its own api */
++struct poodle_audio_platform_data {
++	struct device	*locomo_dev;
++
++	int		gpio_amp_on;
++	int		gpio_mute_l;
++	int		gpio_mute_r;
++	int		gpio_232vcc_on;
++	int		gpio_jk_b;
++};
++
++#endif
+diff --git a/sound/soc/pxa/poodle.c b/sound/soc/pxa/poodle.c
+index 176a0441235a..5fdaa477e85d 100644
+--- a/sound/soc/pxa/poodle.c
++++ b/sound/soc/pxa/poodle.c
+@@ -21,8 +21,8 @@
  
- 	dev->stats.irqs++;
--	switch (irq) {
--	case LUBBOCK_USB_IRQ:
-+	if (irq == dev->usb_irq) {
- 		vbus = 1;
--		disable_irq(LUBBOCK_USB_IRQ);
--		enable_irq(LUBBOCK_USB_DISC_IRQ);
--		break;
--	case LUBBOCK_USB_DISC_IRQ:
-+		disable_irq(dev->usb_irq);
-+		enable_irq(dev->usb_disc_irq);
-+	} else if (irq == dev->usb_disc_irq) {
- 		vbus = 0;
--		disable_irq(LUBBOCK_USB_DISC_IRQ);
--		enable_irq(LUBBOCK_USB_IRQ);
--		break;
--	default:
-+		disable_irq(dev->usb_disc_irq);
-+		enable_irq(dev->usb_irq);
-+	} else {
- 		return IRQ_NONE;
+ #include <asm/mach-types.h>
+ #include <asm/hardware/locomo.h>
+-#include <mach/poodle.h>
+ #include <linux/platform_data/asoc-pxa.h>
++#include <linux/platform_data/asoc-poodle.h>
+ 
+ #include "../codecs/wm8731.h"
+ #include "pxa2xx-i2s.h"
+@@ -38,21 +38,23 @@
+ static int poodle_jack_func;
+ static int poodle_spk_func;
+ 
++static struct poodle_audio_platform_data *poodle_pdata;
++
+ static void poodle_ext_control(struct snd_soc_dapm_context *dapm)
+ {
+ 	/* set up jack connection */
+ 	if (poodle_jack_func == POODLE_HP) {
+ 		/* set = unmute headphone */
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 1);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_mute_l, 1);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_mute_r, 1);
+ 		snd_soc_dapm_enable_pin(dapm, "Headphone Jack");
+ 	} else {
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_MUTE_R, 0);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_mute_l, 0);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_mute_r, 0);
+ 		snd_soc_dapm_disable_pin(dapm, "Headphone Jack");
  	}
  
-@@ -2422,20 +2415,28 @@ static int pxa25x_udc_probe(struct platform_device *pdev)
+@@ -80,10 +82,10 @@ static int poodle_startup(struct snd_pcm_substream *substream)
+ static void poodle_shutdown(struct snd_pcm_substream *substream)
+ {
+ 	/* set = unmute headphone */
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 1);
+-	locomo_gpio_write(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 1);
++	locomo_gpio_write(poodle_pdata->locomo_dev,
++		poodle_pdata->gpio_mute_l, 1);
++	locomo_gpio_write(poodle_pdata->locomo_dev,
++		poodle_pdata->gpio_mute_r, 1);
+ }
  
- #ifdef CONFIG_ARCH_LUBBOCK
- 	if (machine_is_lubbock()) {
--		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_DISC_IRQ,
-+		dev->usb_irq = platform_get_irq(pdev, 1);
-+		if (dev->usb_irq < 0)
-+			return dev->usb_irq;
-+
-+		dev->usb_disc_irq = platform_get_irq(pdev, 2);
-+		if (dev->usb_disc_irq < 0)
-+			return dev->usb_disc_irq;
-+
-+		retval = devm_request_irq(&pdev->dev, dev->usb_disc_irq,
- 					  lubbock_vbus_irq, 0, driver_name,
- 					  dev);
- 		if (retval != 0) {
- 			pr_err("%s: can't get irq %i, err %d\n",
--				driver_name, LUBBOCK_USB_DISC_IRQ, retval);
-+				driver_name, dev->usb_disc_irq, retval);
- 			goto err;
- 		}
--		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_IRQ,
-+		retval = devm_request_irq(&pdev->dev, dev->usb_irq,
- 					  lubbock_vbus_irq, 0, driver_name,
- 					  dev);
- 		if (retval != 0) {
- 			pr_err("%s: can't get irq %i, err %d\n",
--				driver_name, LUBBOCK_USB_IRQ, retval);
-+				driver_name, dev->usb_irq, retval);
- 			goto err;
- 		}
- 	} else
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.h b/drivers/usb/gadget/udc/pxa25x_udc.h
-index aa4b68fd9fc0..6ab6047edc83 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.h
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.h
-@@ -117,16 +117,13 @@ struct pxa25x_udc {
- 	u64					dma_mask;
- 	struct pxa25x_ep			ep [PXA_UDC_NUM_ENDPOINTS];
- 	void __iomem				*regs;
-+	int					usb_irq;
-+	int					usb_disc_irq;
- };
- #define to_pxa25x(g)	(container_of((g), struct pxa25x_udc, gadget))
+ static int poodle_hw_params(struct snd_pcm_substream *substream,
+@@ -174,11 +176,11 @@ static int poodle_amp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+ 	if (SND_SOC_DAPM_EVENT_ON(event))
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 0);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_amp_on, 0);
+ 	else
+-		locomo_gpio_write(&poodle_locomo_device.dev,
+-			POODLE_LOCOMO_GPIO_AMP_ON, 1);
++		locomo_gpio_write(poodle_pdata->locomo_dev,
++			poodle_pdata->gpio_amp_on, 1);
  
- /*-------------------------------------------------------------------------*/
+ 	return 0;
+ }
+@@ -254,13 +256,14 @@ static int poodle_probe(struct platform_device *pdev)
+ 	struct snd_soc_card *card = &poodle;
+ 	int ret;
  
--#ifdef CONFIG_ARCH_LUBBOCK
--#include <mach/lubbock.h>
--/* lubbock can also report usb connect/disconnect irqs */
--#endif
--
- static struct pxa25x_udc *the_controller;
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_AMP_ON, 0);
++	poodle_pdata = pdev->dev.platform_data;
++	locomo_gpio_set_dir(poodle_pdata->locomo_dev,
++		poodle_pdata->gpio_amp_on, 0);
+ 	/* should we mute HP at startup - burning power ?*/
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_L, 0);
+-	locomo_gpio_set_dir(&poodle_locomo_device.dev,
+-		POODLE_LOCOMO_GPIO_MUTE_R, 0);
++	locomo_gpio_set_dir(poodle_pdata->locomo_dev,
++		poodle_pdata->gpio_mute_l, 0);
++	locomo_gpio_set_dir(poodle_pdata->locomo_dev,
++		poodle_pdata->gpio_mute_r, 0);
  
- /*-------------------------------------------------------------------------*/
+ 	card->dev = &pdev->dev;
+ 
 -- 
 2.29.2
 
