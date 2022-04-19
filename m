@@ -2,35 +2,35 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70520C3526F
-	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32B89C4167D
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355124AbiDSQqk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:46:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53402 "EHLO
+        id S1355094AbiDSQqj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:46:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355040AbiDSQnS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:43:18 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FEF228E0E;
-        Tue, 19 Apr 2022 09:40:35 -0700 (PDT)
+        with ESMTP id S1355069AbiDSQnv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2022 12:43:51 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46CC223BF4;
+        Tue, 19 Apr 2022 09:41:08 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id E336E60B34;
-        Tue, 19 Apr 2022 16:40:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E156C385AD;
-        Tue, 19 Apr 2022 16:40:26 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E6505B81BBE;
+        Tue, 19 Apr 2022 16:41:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63D13C385AB;
+        Tue, 19 Apr 2022 16:40:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386434;
-        bh=Me5Zax9Cglx1LkHOlA8xV8JEJklryJyWSe6dcCjrrgY=;
+        s=k20201202; t=1650386465;
+        bh=U6UXkGiba+IWPQ84YTVH8JdmB9ez+oeADVDoBoSMAeA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=sakbeqPI29Om+/FQz0qrFAi7y4JGvalfYfkXPgEmDAHQE5JutGOtnitKMdhD/p0lN
-         DhEAF01KwxuyAz3UGi3jwRt2GxBEtmj4vxHkA3PItSOKP3X54DH90IyriUJPKRYV1X
-         BIAvtuns7tePi7NLdUUzAV57aLC7hbjqxyX7AZDclAvUdWuFIT078ADdlzcICL/9+M
-         wgI5g6kwYoVtQAA0Eymt32oBHJZSCTUcWvhwf1aLMMuBWcXT5wyS3qq8oCJZh/mBF4
-         UDot9x1fEXjfgm7bXqg4vfaXPFcwtqapRVe3zSRHwo/Vvq34alxLUDf9aCVWAxKea7
-         RZ4Ev5Hjil72g==
+        b=Dx+/8hWSqP54Qj1bLqmbcjy7EOlZLK7fehRxrCDudwV6M9Fy7SO9kbeCNChaDPtyq
+         nsffbT6io+sZXH1/7PSZ5lArW4jYfo9IEA5PA3ZHDbrheUIW4wgeNtLX6XxzXMp7NU
+         dcGLlN+W9BezzkCXSsS0Z38Bztbsq5Tl/AIm+XmzC4ZeRrzAQBlu7Gz95MmYpNBKUO
+         +zYF0K/ue6uCvMR2BqEUgUOzd4ohj0vXKRplH8aesj7MKBVuUE0XKQbk8x9Ts6ZZtj
+         bQk4zfxsOkvz3MM9GolbI20rGgZi2As8q/AuQe5U6ARsz3ojSijMOH4RPSyzfZLrvr
+         P0YR74cjlR93A==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -58,11 +58,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, Jens Axboe <axboe@kernel.dk>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 13/48] ARM: pxa: use pdev resource for palmld mmio
-Date:   Tue, 19 Apr 2022 18:37:35 +0200
-Message-Id: <20220419163810.2118169-14-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 17/48] ARM: pxa: corgi: use gpio descriptors for audio
+Date:   Tue, 19 Apr 2022 18:37:39 +0200
+Message-Id: <20220419163810.2118169-18-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,108 +73,209 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The palmld header is almost unused in drivers, the only
-remaining thing now is the PATA device address, which should
-really be passed as a resource.
+The audio driver should not use a hardwired gpio number
+from the header. Change it to use a lookup table.
 
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: linux-ide@vger.kernel.org
+Acked-by: Mark Brown <broonie@kernel.org>
+Cc: alsa-devel@alsa-project.org
 Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/palmld-pcmcia.c             |  3 ++-
- arch/arm/mach-pxa/palmld.c                    | 12 +++++++++---
- arch/arm/mach-pxa/{include/mach => }/palmld.h |  2 +-
- drivers/ata/pata_palmld.c                     |  3 +--
- 4 files changed, 13 insertions(+), 7 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/palmld.h (98%)
+ arch/arm/mach-pxa/corgi.c                    | 22 ++++++++++-
+ arch/arm/mach-pxa/{include/mach => }/corgi.h |  2 +-
+ arch/arm/mach-pxa/corgi_pm.c                 |  2 +-
+ sound/soc/pxa/corgi.c                        | 41 +++++++++++++-------
+ 4 files changed, 51 insertions(+), 16 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/corgi.h (98%)
 
-diff --git a/arch/arm/mach-pxa/palmld-pcmcia.c b/arch/arm/mach-pxa/palmld-pcmcia.c
-index 07e0f7438db1..720294a50864 100644
---- a/arch/arm/mach-pxa/palmld-pcmcia.c
-+++ b/arch/arm/mach-pxa/palmld-pcmcia.c
-@@ -13,9 +13,10 @@
- #include <linux/gpio.h>
- 
- #include <asm/mach-types.h>
--#include <mach/palmld.h>
- #include <pcmcia/soc_common.h>
- 
-+#include "palmld.h"
-+
- static struct gpio palmld_pcmcia_gpios[] = {
- 	{ GPIO_NR_PALMLD_PCMCIA_POWER,	GPIOF_INIT_LOW,	"PCMCIA Power" },
- 	{ GPIO_NR_PALMLD_PCMCIA_RESET,	GPIOF_INIT_HIGH,"PCMCIA Reset" },
-diff --git a/arch/arm/mach-pxa/palmld.c b/arch/arm/mach-pxa/palmld.c
-index d85146957004..d821606ce0b5 100644
---- a/arch/arm/mach-pxa/palmld.c
-+++ b/arch/arm/mach-pxa/palmld.c
-@@ -29,8 +29,8 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
-+#include "palmld.h"
- #include <linux/platform_data/asoc-pxa.h>
--#include <mach/palmld.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
+diff --git a/arch/arm/mach-pxa/corgi.c b/arch/arm/mach-pxa/corgi.c
+index f897762c8b58..c546356d0f02 100644
+--- a/arch/arm/mach-pxa/corgi.c
++++ b/arch/arm/mach-pxa/corgi.c
+@@ -49,7 +49,7 @@
  #include <linux/platform_data/irda-pxaficp.h>
-@@ -279,9 +279,15 @@ static inline void palmld_leds_init(void) {}
-  * HDD
-  ******************************************************************************/
- #if defined(CONFIG_PATA_PALMLD) || defined(CONFIG_PATA_PALMLD_MODULE)
-+static struct resource palmld_ide_resources[] = {
-+	DEFINE_RES_MEM(PALMLD_IDE_PHYS, 0x1000),
-+};
-+
- static struct platform_device palmld_ide_device = {
--	.name	= "pata_palmld",
--	.id	= -1,
-+	.name		= "pata_palmld",
-+	.id		= -1,
-+	.resource	= palmld_ide_resources,
-+	.num_resources	= ARRAY_SIZE(palmld_ide_resources),
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include "udc.h"
+-#include <mach/corgi.h>
++#include "corgi.h"
+ #include "sharpsl_pm.h"
+ 
+ #include <asm/mach/sharpsl_param.h>
+@@ -472,6 +472,25 @@ static struct platform_device corgiled_device = {
+ 	},
  };
  
- static struct gpiod_lookup_table palmld_ide_gpio_table = {
-diff --git a/arch/arm/mach-pxa/include/mach/palmld.h b/arch/arm/mach-pxa/palmld.h
++static struct gpiod_lookup_table corgi_audio_gpio_table = {
++	.dev_id = "corgi-audio",
++	.table = {
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MUTE_L - CORGI_SCOOP_GPIO_BASE,
++			    "mute-l", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MUTE_R - CORGI_SCOOP_GPIO_BASE,
++			    "mute-r", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_APM_ON - CORGI_SCOOP_GPIO_BASE,
++			    "apm-on", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MIC_BIAS - CORGI_SCOOP_GPIO_BASE,
++			    "mic-bias", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ /*
+  * Corgi Audio
+  */
+@@ -744,6 +763,7 @@ static void __init corgi_init(void)
+ 
+  	pxa_set_udc_info(&udc_info);
+ 	gpiod_add_lookup_table(&corgi_mci_gpio_table);
++	gpiod_add_lookup_table(&corgi_audio_gpio_table);
+ 	pxa_set_mci_info(&corgi_mci_platform_data);
+ 	pxa_set_ficp_info(&corgi_ficp_platform_data);
+ 	pxa_set_i2c_info(NULL);
+diff --git a/arch/arm/mach-pxa/include/mach/corgi.h b/arch/arm/mach-pxa/corgi.h
 similarity index 98%
-rename from arch/arm/mach-pxa/include/mach/palmld.h
-rename to arch/arm/mach-pxa/palmld.h
-index 99a6d8b3a1e3..ee3bc15b71a2 100644
---- a/arch/arm/mach-pxa/include/mach/palmld.h
-+++ b/arch/arm/mach-pxa/palmld.h
+rename from arch/arm/mach-pxa/include/mach/corgi.h
+rename to arch/arm/mach-pxa/corgi.h
+index b565ca7b8cda..fe2fcf6532b9 100644
+--- a/arch/arm/mach-pxa/include/mach/corgi.h
++++ b/arch/arm/mach-pxa/corgi.h
 @@ -9,7 +9,7 @@
- #ifndef _INCLUDE_PALMLD_H_
- #define _INCLUDE_PALMLD_H_
+ #ifndef __ASM_ARCH_CORGI_H
+ #define __ASM_ARCH_CORGI_H  1
  
--#include "irqs.h" /* PXA_GPIO_TO_IRQ */
-+#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
+-#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
++#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
  
- /** HERE ARE GPIOs **/
+ /*
+  * Corgi (Non Standard) GPIO Definitions
+diff --git a/arch/arm/mach-pxa/corgi_pm.c b/arch/arm/mach-pxa/corgi_pm.c
+index ff1ac9bf37cb..c6ddfc737644 100644
+--- a/arch/arm/mach-pxa/corgi_pm.c
++++ b/arch/arm/mach-pxa/corgi_pm.c
+@@ -20,7 +20,7 @@
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
  
-diff --git a/drivers/ata/pata_palmld.c b/drivers/ata/pata_palmld.c
-index 2448441571ed..400e65190904 100644
---- a/drivers/ata/pata_palmld.c
-+++ b/drivers/ata/pata_palmld.c
-@@ -25,7 +25,6 @@
- #include <linux/gpio/consumer.h>
+-#include <mach/corgi.h>
++#include "corgi.h"
+ #include <mach/pxa2xx-regs.h>
+ #include "sharpsl_pm.h"
  
- #include <scsi/scsi_host.h>
--#include <mach/palmld.h>
+diff --git a/sound/soc/pxa/corgi.c b/sound/soc/pxa/corgi.c
+index 8b83709431cb..4489d2c8b124 100644
+--- a/sound/soc/pxa/corgi.c
++++ b/sound/soc/pxa/corgi.c
+@@ -21,7 +21,6 @@
+ #include <sound/soc.h>
  
- #define DRV_NAME "pata_palmld"
+ #include <asm/mach-types.h>
+-#include <mach/corgi.h>
+ #include <linux/platform_data/asoc-pxa.h>
  
-@@ -63,7 +62,7 @@ static int palmld_pata_probe(struct platform_device *pdev)
- 		return -ENOMEM;
+ #include "../codecs/wm8731.h"
+@@ -41,6 +40,9 @@
+ static int corgi_jack_func;
+ static int corgi_spk_func;
  
- 	/* remap drive's physical memory address */
--	mem = devm_ioremap(dev, PALMLD_IDE_PHYS, 0x1000);
-+	mem = devm_platform_ioremap_resource(pdev, 0);
- 	if (!mem)
- 		return -ENOMEM;
++static struct gpio_desc *gpiod_mute_l, *gpiod_mute_r,
++			*gpiod_apm_on, *gpiod_mic_bias;
++
+ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ {
+ 	snd_soc_dapm_mutex_lock(dapm);
+@@ -49,8 +51,8 @@ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ 	switch (corgi_jack_func) {
+ 	case CORGI_HP:
+ 		/* set = unmute headphone */
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 1);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++		gpiod_set_value(gpiod_mute_l, 1);
++		gpiod_set_value(gpiod_mute_r, 1);
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Headphone Jack");
+@@ -58,24 +60,24 @@ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ 		break;
+ 	case CORGI_MIC:
+ 		/* reset = mute headphone */
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 0);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 0);
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headset Jack");
+ 		break;
+ 	case CORGI_LINE:
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 0);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 0);
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headset Jack");
+ 		break;
+ 	case CORGI_HEADSET:
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 1);
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+@@ -108,8 +110,8 @@ static int corgi_startup(struct snd_pcm_substream *substream)
+ static void corgi_shutdown(struct snd_pcm_substream *substream)
+ {
+ 	/* set = unmute headphone */
+-	gpio_set_value(CORGI_GPIO_MUTE_L, 1);
+-	gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++	gpiod_set_value(gpiod_mute_l, 1);
++	gpiod_set_value(gpiod_mute_r, 1);
+ }
  
+ static int corgi_hw_params(struct snd_pcm_substream *substream,
+@@ -199,14 +201,14 @@ static int corgi_set_spk(struct snd_kcontrol *kcontrol,
+ static int corgi_amp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	gpio_set_value(CORGI_GPIO_APM_ON, SND_SOC_DAPM_EVENT_ON(event));
++	gpiod_set_value(gpiod_apm_on, SND_SOC_DAPM_EVENT_ON(event));
+ 	return 0;
+ }
+ 
+ static int corgi_mic_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	gpio_set_value(CORGI_GPIO_MIC_BIAS, SND_SOC_DAPM_EVENT_ON(event));
++	gpiod_set_value(gpiod_mic_bias, SND_SOC_DAPM_EVENT_ON(event));
+ 	return 0;
+ }
+ 
+@@ -293,6 +295,19 @@ static int corgi_probe(struct platform_device *pdev)
+ 
+ 	card->dev = &pdev->dev;
+ 
++	gpiod_mute_l = devm_gpiod_get(&pdev->dev, "mute-l", GPIOD_OUT_HIGH);
++	if (IS_ERR(gpiod_mute_l))
++		return PTR_ERR(gpiod_mute_l);
++	gpiod_mute_r = devm_gpiod_get(&pdev->dev, "mute-r", GPIOD_OUT_HIGH);
++	if (IS_ERR(gpiod_mute_r))
++		return PTR_ERR(gpiod_mute_r);
++	gpiod_apm_on = devm_gpiod_get(&pdev->dev, "apm-on", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_apm_on))
++		return PTR_ERR(gpiod_apm_on);
++	gpiod_mic_bias = devm_gpiod_get(&pdev->dev, "mic-bias", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_mic_bias))
++		return PTR_ERR(gpiod_mic_bias);
++
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+ 	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
 -- 
 2.29.2
 
