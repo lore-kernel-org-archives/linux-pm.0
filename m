@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8510BC433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 07:42:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E61C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 07:42:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1386044AbiDUHpS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 03:45:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39146 "EHLO
+        id S1386050AbiDUHpT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 03:45:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39756 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1386095AbiDUHpM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 03:45:12 -0400
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2050.outbound.protection.outlook.com [40.107.94.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82CC91AF37;
-        Thu, 21 Apr 2022 00:42:21 -0700 (PDT)
+        with ESMTP id S1386047AbiDUHpS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 03:45:18 -0400
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2086.outbound.protection.outlook.com [40.107.244.86])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 148D7DF94;
+        Thu, 21 Apr 2022 00:42:29 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=aYCK/EgtBcySOxMSrD8jaATEwdX4cK6CZq8I5HpFsfyo8GA1rcZMNGfZQx0ihWxVQPmpMxM6Oss8r8gL53i+jGLZp1PcCf1o8X6u3MZRMPGnHb6JnO8bGEI+MKmlgHMU9QA6HKyh3ChjrbvUvoKj6vrNmhftYTJ81QEO9DDicMFbKKJRYYRjyLiaSjcsI+iHj+YzMmws0KwnIUCxiAawKdN73LeKRr83bvu82XR46aUmn+95T5bzvoS52rFXkZPpLhp2uU7BCodxqLbzyFPAVuj09wnRDdLlADhTg7N0D8tPNYHMelfQ+xIk24ddyahZ7f8cWGMHNG/qRoE6O2LbXg==
+ b=gYE4hWnbdiXlJSBW6WeE083+RjqsVzTMs2Q3HXZlR82l7OPWFKDhLwLnUGanzDyKh5ls0PX3+qXZZrVnpFWuvX5xiY0GgaR48jeGjv39kyIoaD2RJTu62qe9+i7kZTmklnaJ3ZZiPzQL1B2hYN9bXG/AWqfE+Jmd98Ol5dsJnwZAwb3xIulGXs7OKKdR2onF8mJ/nvZ4E87hieMWs7NXV4AAp5mZcQCzTEOy0DDl6+qRLLXPnDeyYi+4c3KRlVV5xLY23YMa4mnlbARMn4EdDLwDdNFzMh2Yv0dS+Ku2DaMgYh4tL/0fWOCwE1C+1xeP2tBbSMqTIYmbDsJuYTTqxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=V+HIy5F3Mghw8wabNJpVsCIKnWTQy3XGzrLVsZ4po1E=;
- b=R8895m2AFEmiZQI6/R9NoL8dY7/fj2/huK9ERf/oIIv6okPf2Vim4ouW+aMKhjw4ZKkKVxczQhNt+UDs5Z57WIuKrtgsh7MJD3DZEV9Z+nkJtyMWcmjRwJsD3QtPfYG5/ufHAkOl+m1T+vqW2OvqdU7GJlQ5SJvXZEB46IqoNXs5jxLI/UHGkjl6G2VsAA1Dfai4VId16QJKcZuEvGtKM2zHSPl5Yk1B8itIgI7yrLqU0/KYgP/Mux/HP0S2PZ+fyzkHztauNN/mgB5Q0lk9s3E3ElCgVCMI4R9+epdWatBsnJxAW54BcdTV5YIcyCkvWhLA26F72y0PJwdHXnRtZg==
+ bh=DB1ujxLnLyLbXO9YjMVydcZW8jk7YR/ZWYUoV3+x02A=;
+ b=fHpr7ANn6y0N90AHOz9nVDGx1Fjv4ypZTyZfMEfZMo3oS4HtoHrF2JIMu12ipB9Yd9gp4c5rcd8E3qtdhJjuB5TJnbRRA1rKqE9XfhHs3IE+ENrhdawA6jsPsFhwSYE0SjkYWU8uAoFuO8JiJZNJ3fF9xhXQDKEdWFd6cJEqvF6PoRIIpErUu8f/gBnmmT30gFUlYJUwGVySZGhpS+VVZ/WaII5P8xBjE6DVSBb50VPjbYnwZmVyMCD7DY/eN8UnSbIHVEu+iBlqhFbf8NJ/pGHI+T19dnkNiFDG0LFHy1S4MB9bqwtitd1ydMeP4SilRTROoNtNmyC/h+3WSavARQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
  dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
  header.from=amd.com; dkim=none (message not signed); arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=V+HIy5F3Mghw8wabNJpVsCIKnWTQy3XGzrLVsZ4po1E=;
- b=i06JWyDjfnMSGRWb9qt3B5fKXPR35gY5kAgvGSsmr+3w7SCaz5IEMzj4zTXddrLC5FNJxK87mbFRinhb84EaiRNhXCoOZ+4aFOn4ULyKlV6u36V0qtAX24LAywyXed7WSENqzdu8gC3w0St5Dpp1UcPNJPt86tp9F5h12m3R/J4=
-Received: from BN8PR03CA0009.namprd03.prod.outlook.com (2603:10b6:408:94::22)
- by BN6PR12MB1795.namprd12.prod.outlook.com (2603:10b6:404:107::16) with
+ bh=DB1ujxLnLyLbXO9YjMVydcZW8jk7YR/ZWYUoV3+x02A=;
+ b=ie7rdM92nFaJAQXlP0UEQta6e7j46Y0WuB7mAXTlm3SvvtKRekdzu4U3VX9wsO+HYY+aKnqS0Fmc+DnBD0FgxLJRr1O8riL05FaNH2hVM/Ljacf7BjiBNsWmmghHw8s3ggHEN/srybnMC/gK109PAiCEFEvUlcdVseXXvXx/W8Y=
+Received: from BN8PR03CA0032.namprd03.prod.outlook.com (2603:10b6:408:94::45)
+ by MN2PR12MB2973.namprd12.prod.outlook.com (2603:10b6:208:cc::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.14; Thu, 21 Apr
- 2022 07:42:19 +0000
+ 2022 07:42:26 +0000
 Received: from BN8NAM11FT034.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:94:cafe::bd) by BN8PR03CA0009.outlook.office365.com
- (2603:10b6:408:94::22) with Microsoft SMTP Server (version=TLS1_2,
+ (2603:10b6:408:94:cafe::c9) by BN8PR03CA0032.outlook.office365.com
+ (2603:10b6:408:94::45) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.15 via Frontend
- Transport; Thu, 21 Apr 2022 07:42:19 +0000
+ Transport; Thu, 21 Apr 2022 07:42:26 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,11 +48,11 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
 Received: from SATLEXMB04.amd.com (165.204.84.17) by
  BN8NAM11FT034.mail.protection.outlook.com (10.13.176.139) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5186.14 via Frontend Transport; Thu, 21 Apr 2022 07:42:19 +0000
+ 15.20.5186.14 via Frontend Transport; Thu, 21 Apr 2022 07:42:25 +0000
 Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
  (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 21 Apr
- 2022 02:42:13 -0500
+ 2022 02:42:21 -0500
 From:   Meng Li <li.meng@amd.com>
 To:     Shuah Khan <skhan@linuxfoundation.org>,
         Huang Rui <ray.huang@amd.com>, <linux-pm@vger.kernel.org>
@@ -67,9 +67,9 @@ CC:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Borislav Petkov <bp@alien8.de>, <linux-kernel@vger.kernel.org>,
         Meng Li <li.meng@amd.com>
-Subject: [PATCH V3 1/3] cpufreq: amd-pstate: Expose struct amd_cpudata
-Date:   Thu, 21 Apr 2022 15:41:50 +0800
-Message-ID: <20220421074152.599419-2-li.meng@amd.com>
+Subject: [PATCH V3 3/3] selftests: cpufreq: Add amd_pstate_testmod kernel module for testing
+Date:   Thu, 21 Apr 2022 15:41:52 +0800
+Message-ID: <20220421074152.599419-4-li.meng@amd.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220421074152.599419-1-li.meng@amd.com>
 References: <20220421074152.599419-1-li.meng@amd.com>
@@ -81,216 +81,402 @@ X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
  (10.181.40.145)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 2027affb-9262-4ba9-2ccb-08da236a76f0
-X-MS-TrafficTypeDiagnostic: BN6PR12MB1795:EE_
-X-Microsoft-Antispam-PRVS: <BN6PR12MB17955CF8778C900FBECD6AFEF7F49@BN6PR12MB1795.namprd12.prod.outlook.com>
+X-MS-Office365-Filtering-Correlation-Id: 0e53928f-e640-4fc5-d72e-08da236a7abc
+X-MS-TrafficTypeDiagnostic: MN2PR12MB2973:EE_
+X-Microsoft-Antispam-PRVS: <MN2PR12MB2973CDE81FC5A80BF3406D95F7F49@MN2PR12MB2973.namprd12.prod.outlook.com>
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: bPBgiRyWj9gkBK1ppJkSlaBxUF5VALZoCU1mdhro4AbdaVoP4ZoPBfwPcbXMvaOaKWwJPCnLKwvR3tbl9eJ+niVYkFmUqb221Os6Hx4vYN67HO6EQJRZZij0n1bekHPfUYep3zUoyHNmxwRm293EtrQazWqBimPp/4Y2Ytrc6guuYcAaV3XAS5cN7dRc8filpq61WqmsjE/vqA2PUGo0OaOvO0bi8Dx9+yje9gcFQRX21Pb01WrHLjt8K8AlANqIbJVTLBRdq+l3fIgTqdbYLPV67O5i0ikKbLEFtVLedC6GxseLMIArQYx1z3898vczvzVB7WAsHml44FyLY8MrhdA7vrimv6fO0H7YqKGYhuRVa4BVpE8CXvAoROVUKK435fbFwsy+6Sl0MhzTvdFkyW9ilC/0W6Vo/k4pqU+W5xgQV5KycpOF/u5uqrWVRoKbESHc2RLYVRTBJuYIcl3nDlne+a5S8ILQUElfH1pW4XXi7bQtGauc03EZQKVK/mkvY8ulgI+Okj22W2ZHpxgDScJvzHgD53pJ4MYBgNC6dq234zW2vhxaEfHq4iISy+qkooIBYj328TZbcXwY4eQYROSNuvtboj9mg8L3xCPKphNZoGr9jg2/GSYof7OvbBhx8Mjckz4+s3oaYDhRhEMl7+ChKRG69b8u2tc0B/VQfrWQJI1l7cK8XElOBELqLNgDboECrPuQRpsHMc04D1W6Cg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(36840700001)(46966006)(336012)(36860700001)(1076003)(316002)(2616005)(426003)(16526019)(186003)(86362001)(356005)(70586007)(70206006)(83380400001)(81166007)(47076005)(4326008)(40460700003)(26005)(508600001)(5660300002)(7696005)(54906003)(6666004)(36756003)(2906002)(110136005)(8936002)(82310400005)(8676002)(36900700001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: tPwUHD3OhkF6y+Iforh+Lq9f+LLCx75MBddXWxNcFhxWM87wVM1qXAgO+emCEHIaQVQ5vjmAgRIGPG0dplrbiKkDNtrvD3v6RQIQzYF6g0Db5ajujqXNk1wYQdUjKI2xOpJ1G/03Qzj8ZBKDnhWXhTC102AfzYgqNE+SavFeEG9FbBTTcX7nFI7xn7hk4dX1+c2PIAfobqxmpLlQVJwCVBQrE0SKb0N27U4bp/yh2+fcxmqD0lc7wfz3fEhY+L5q1Rz/ggTTovO4uFxNxHWQDLiReyMz5QGKeL2peofPoKRUrkA90iXX3S7Xkq0xekuunxww5T50usAV/8vERv0gGkpgZ2dTt5tNefcwy5J33OOpMBRzVY8jCySczYEzdzgtB3yAHwYTygsusCOauFMDgx5nhJ1mmR4kJffEnkwUICLSw7wYT5muKR2T/xKi6pZkAptdciyC7z1apU0k6kQRrx1YQ+pL9uar9Rn+SmziZ9a8HDhTkaWYlTZfubu3gJNzA1nBdh+ZLOUjpV3ghW73cNTM8iWuC2GB4FvDTmy0m5qtkuqhJm7mzBpAL4P+5h1kg2bsRa58CPABlLqN3EhGuHKexILwBtqraATOqGjHoqRhNoOQBQDcm3634Q97SLTIkTe2+UN2sUMv4J7NPlvXHw0YCBHS5ThvKA70Fyc4n5LaMKLfklgLCReDxZZPCyEiTHA244mkcfhEDjupHPU5cg==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(36840700001)(40470700004)(46966006)(26005)(86362001)(7696005)(36860700001)(356005)(508600001)(30864003)(6666004)(2906002)(5660300002)(81166007)(8936002)(83380400001)(2616005)(70206006)(1076003)(40460700003)(336012)(47076005)(186003)(426003)(16526019)(70586007)(36756003)(82310400005)(110136005)(316002)(8676002)(54906003)(4326008)(36900700001);DIR:OUT;SFP:1101;
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2022 07:42:19.4678
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2022 07:42:25.8267
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2027affb-9262-4ba9-2ccb-08da236a76f0
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0e53928f-e640-4fc5-d72e-08da236a7abc
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT034.eop-nam11.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR12MB1795
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB2973
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Expose struct amd_cpudata to AMD P-State unit test module.
-
-This data struct will be used on the following AMD P-State unit test
-(amd_pstate_testmod) module. The amd_pstate_testmod module can get
-some AMD infomations by this data struct. For example: highest perf,
-nominal perf, boost supported etc.
+Add amd_pstate_testmod module, which is conceptually out-of-tree module
+and provides ways for selftests/cpufreq amd pstate driver to test various
+kernel module-related functionality. This module will be expected by
+some of selftests to be present and loaded.
 
 Signed-off-by: Meng Li <li.meng@amd.com>
 ---
- MAINTAINERS                  |  1 +
- drivers/cpufreq/amd-pstate.c | 60 +---------------------------
- include/linux/amd-pstate.h   | 77 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 79 insertions(+), 59 deletions(-)
- create mode 100644 include/linux/amd-pstate.h
+ .../cpufreq/amd_pstate_testmod/Makefile       |  20 ++
+ .../amd_pstate_testmod/amd_pstate_testmod.c   | 329 ++++++++++++++++++
+ 2 files changed, 349 insertions(+)
+ create mode 100644 tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
+ create mode 100644 tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 61d9f114c37f..6f814eda95b5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1020,6 +1020,7 @@ L:	linux-pm@vger.kernel.org
- S:	Supported
- F:	Documentation/admin-guide/pm/amd-pstate.rst
- F:	drivers/cpufreq/amd-pstate*
-+F:	include/linux/amd-pstate.h
- F:	tools/power/x86/amd_pstate_tracer/amd_pstate_trace.py
- 
- AMD PTDMA DRIVER
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 7be38bc6a673..5f7a00a64f76 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -36,6 +36,7 @@
- #include <linux/delay.h>
- #include <linux/uaccess.h>
- #include <linux/static_call.h>
-+#include <linux/amd-pstate.h>
- 
- #include <acpi/processor.h>
- #include <acpi/cppc_acpi.h>
-@@ -65,65 +66,6 @@ MODULE_PARM_DESC(shared_mem,
- 
- static struct cpufreq_driver amd_pstate_driver;
- 
--/**
-- * struct  amd_aperf_mperf
-- * @aperf: actual performance frequency clock count
-- * @mperf: maximum performance frequency clock count
-- * @tsc:   time stamp counter
-- */
--struct amd_aperf_mperf {
--	u64 aperf;
--	u64 mperf;
--	u64 tsc;
--};
--
--/**
-- * struct amd_cpudata - private CPU data for AMD P-State
-- * @cpu: CPU number
-- * @req: constraint request to apply
-- * @cppc_req_cached: cached performance request hints
-- * @highest_perf: the maximum performance an individual processor may reach,
-- *		  assuming ideal conditions
-- * @nominal_perf: the maximum sustained performance level of the processor,
-- *		  assuming ideal operating conditions
-- * @lowest_nonlinear_perf: the lowest performance level at which nonlinear power
-- *			   savings are achieved
-- * @lowest_perf: the absolute lowest performance level of the processor
-- * @max_freq: the frequency that mapped to highest_perf
-- * @min_freq: the frequency that mapped to lowest_perf
-- * @nominal_freq: the frequency that mapped to nominal_perf
-- * @lowest_nonlinear_freq: the frequency that mapped to lowest_nonlinear_perf
-- * @cur: Difference of Aperf/Mperf/tsc count between last and current sample
-- * @prev: Last Aperf/Mperf/tsc count value read from register
-- * @freq: current cpu frequency value
-- * @boost_supported: check whether the Processor or SBIOS supports boost mode
-- *
-- * The amd_cpudata is key private data for each CPU thread in AMD P-State, and
-- * represents all the attributes and goals that AMD P-State requests at runtime.
-- */
--struct amd_cpudata {
--	int	cpu;
--
--	struct	freq_qos_request req[2];
--	u64	cppc_req_cached;
--
--	u32	highest_perf;
--	u32	nominal_perf;
--	u32	lowest_nonlinear_perf;
--	u32	lowest_perf;
--
--	u32	max_freq;
--	u32	min_freq;
--	u32	nominal_freq;
--	u32	lowest_nonlinear_freq;
--
--	struct amd_aperf_mperf cur;
--	struct amd_aperf_mperf prev;
--
--	u64 freq;
--	bool	boost_supported;
--};
--
- static inline int pstate_enable(bool enable)
- {
- 	return wrmsrl_safe(MSR_AMD_CPPC_ENABLE, enable);
-diff --git a/include/linux/amd-pstate.h b/include/linux/amd-pstate.h
+diff --git a/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile b/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
 new file mode 100644
-index 000000000000..4dffb7db3807
+index 000000000000..8a5596cb2c18
 --- /dev/null
-+++ b/include/linux/amd-pstate.h
-@@ -0,0 +1,77 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++++ b/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
+@@ -0,0 +1,20 @@
++AMD_PSTATE_TESTMOD_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
++KDIR ?= $(abspath $(AMD_PSATE_TESTMOD_DIR)/../../../../..)
++
++ifeq ($(V),1)
++Q =
++else
++Q = @
++endif
++
++MODULES = amd_pstate_testmod.ko
++
++obj-m += amd_pstate_testmod.o
++CFLAGS_amd_pstate_testmod.o = -I$(src)
++
++all:
++	+$(Q)make -C $(KDIR) M=$(AMD_PSTATE_TESTMOD_DIR) modules
++
++clean:
++	+$(Q)make -C $(KDIR) M=$(AMD_PSTATE_TESTMOD_DIR) clean
++
+diff --git a/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c b/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
+new file mode 100644
+index 000000000000..5391412a49c4
+--- /dev/null
++++ b/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
+@@ -0,0 +1,329 @@
++// SPDX-License-Identifier: GPL-1.0-or-later
 +/*
-+ * linux/include/linux/amd-pstate.h
++ * AMD Processor P-state Frequency Driver Unit Test
 + *
-+ * Copyright (C) 2007-2010 Advanced Micro Devices, Inc.
++ * Copyright (C) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
 + *
 + * Author: Meng Li <li.meng@amd.com>
-+ */
-+
-+#ifndef _LINUX_AMD_PSTATE_H
-+#define _LINUX_AMD_PSTATE_H
-+
-+#include <linux/pm_qos.h>
-+
-+/*********************************************************************
-+ *                        AMD P-state INTERFACE                       *
-+ *********************************************************************/
-+/**
-+ * struct  amd_aperf_mperf
-+ * @aperf: actual performance frequency clock count
-+ * @mperf: maximum performance frequency clock count
-+ * @tsc:   time stamp counter
-+ */
-+struct amd_aperf_mperf {
-+	u64 aperf;
-+	u64 mperf;
-+	u64 tsc;
-+};
-+
-+/**
-+ * struct amd_cpudata - private CPU data for AMD P-State
-+ * @cpu: CPU number
-+ * @req: constraint request to apply
-+ * @cppc_req_cached: cached performance request hints
-+ * @highest_perf: the maximum performance an individual processor may reach,
-+ *		  assuming ideal conditions
-+ * @nominal_perf: the maximum sustained performance level of the processor,
-+ *		  assuming ideal operating conditions
-+ * @lowest_nonlinear_perf: the lowest performance level at which nonlinear power
-+ *			   savings are achieved
-+ * @lowest_perf: the absolute lowest performance level of the processor
-+ * @max_freq: the frequency that mapped to highest_perf
-+ * @min_freq: the frequency that mapped to lowest_perf
-+ * @nominal_freq: the frequency that mapped to nominal_perf
-+ * @lowest_nonlinear_freq: the frequency that mapped to lowest_nonlinear_perf
-+ * @cur: Difference of Aperf/Mperf/tsc count between last and current sample
-+ * @prev: Last Aperf/Mperf/tsc count value read from register
-+ * @freq: current cpu frequency value
-+ * @boost_supported: check whether the Processor or SBIOS supports boost mode
 + *
-+ * The amd_cpudata is key private data for each CPU thread in AMD P-State, and
-+ * represents all the attributes and goals that AMD P-State requests at runtime.
++ * The AMD P-State Unit Test is a test module for testing the amd-pstate
++ * driver. 1) It can help all users to verify their processor support
++ * (SBIOS/Firmware or Hardware). 2) Kernel can have a basic function
++ * test to avoid the kernel regression during the update. 3) We can
++ * introduce more functional or performance tests to align the result
++ * together, it will benefit power and performance scale optimization.
++ *
++ * At present, it only implements the basic framework and some simple
++ * test cases. Next, 1) we will add a rst document. 2) we will add more
++ * test cases to improve the depth and coverage of the test.
 + */
-+struct amd_cpudata {
-+	int	cpu;
 +
-+	struct	freq_qos_request req[2];
-+	u64	cppc_req_cached;
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+	u32	highest_perf;
-+	u32	nominal_perf;
-+	u32	lowest_nonlinear_perf;
-+	u32	lowest_perf;
++#include "../../kselftest_module.h"
 +
-+	u32	max_freq;
-+	u32	min_freq;
-+	u32	nominal_freq;
-+	u32	lowest_nonlinear_freq;
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/fs.h>
++#include <linux/amd-pstate.h>
 +
-+	struct amd_aperf_mperf cur;
-+	struct amd_aperf_mperf prev;
++#include <acpi/cppc_acpi.h>
 +
-+	u64	freq;
-+	bool	boost_supported;
++/*
++ * Abbreviations:
++ * aput: used as a shortform for AMD P-State unit test.
++ * It helps to keep variable names smaller, simpler
++ */
++
++KSTM_MODULE_GLOBALS();
++
++/*
++ * Kernel module for testing the AMD P-State unit test
++ */
++enum aput_result {
++	APUT_RESULT_PASS,
++	APUT_RESULT_FAIL,
++	MAX_APUT_RESULT,
 +};
 +
-+#endif /* _LINUX_AMD_PSTATE_H */
++struct aput_struct {
++	const char *name;
++	void (*func)(u32 index);
++	enum aput_result result;
++};
++
++static const char ap_drv[] = "amd-pstate";
++
++static void aput_x86_vendor(u32 index);
++static void aput_modprobed_driver(u32 index);
++static void aput_acpi_cpc(u32 index);
++static void aput_check_enabled(u32 index);
++static void aput_check_perf(u32 index);
++static void aput_check_freq(u32 index);
++
++static struct aput_struct aput_conditions[] = {
++	{"x86_vendor",              aput_x86_vendor          },
++	{"modprobed_amd_pstate",    aput_modprobed_driver    },
++};
++
++static struct aput_struct aput_cases[] = {
++	{"acpi_cpc_valid",   aput_acpi_cpc         },
++	{"check_enabled",    aput_check_enabled    },
++	{"check_perf",       aput_check_perf       },
++	{"check_freq",       aput_check_freq       }
++};
++
++static bool get_shared_mem(void)
++{
++	bool result = false;
++	char buf[5] = {0};
++	struct file *filp = NULL;
++	loff_t pos = 0;
++	ssize_t ret;
++
++	filp = filp_open("/sys/module/amd_pstate/parameters/shared_mem", FMODE_PREAD, 0);
++	if (IS_ERR(filp))
++		pr_err("%s Open param file fail!\n", __func__);
++	else {
++		ret = kernel_read(filp, &buf, sizeof(buf), &pos);
++		if (ret < 0)
++			pr_err("%s ret=%ld unable to read from param file!\n", __func__, ret);
++		filp_close(filp, NULL);
++	}
++
++	if ('Y' == *buf)
++		result = true;
++
++	return result;
++}
++
++static void aput_x86_vendor(u32 index)
++{
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
++		aput_conditions[index].result = APUT_RESULT_PASS;
++	else {
++		aput_conditions[index].result = APUT_RESULT_FAIL;
++		pr_warn("Exit test: the vendor is not X86_VENDOR_AMD!\n");
++	}
++}
++
++static void aput_modprobed_driver(u32 index)
++{
++	const char *cur_drv;
++
++	cur_drv = cpufreq_get_current_driver();
++	if (cur_drv) {
++		if (!strncmp(cur_drv, ap_drv, min_t(size_t, strlen(cur_drv), strlen(ap_drv))))
++			aput_conditions[index].result = APUT_RESULT_PASS;
++		else {
++			aput_conditions[index].result = APUT_RESULT_FAIL;
++			pr_warn("Exit test: current driver %s is not amd-pstate!\n", cur_drv);
++		}
++	} else {
++		aput_conditions[index].result = APUT_RESULT_FAIL;
++		pr_warn("Exit test: this cpu is not supported anymore!\n");
++	}
++}
++
++static void aput_acpi_cpc(u32 index)
++{
++	if (acpi_cpc_valid())
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_cases[index].result = APUT_RESULT_FAIL;
++}
++
++static void aput_pstate_enable(u32 index)
++{
++	int ret = 0;
++	u64 cppc_enable = 0;
++
++	ret = rdmsrl_safe(MSR_AMD_CPPC_ENABLE, &cppc_enable);
++	if (ret) {
++		aput_cases[index].result = APUT_RESULT_FAIL;
++		pr_err("%s rdmsrl_safe MSR_AMD_CPPC_ENABLE ret=%d is error!\n", __func__, ret);
++		return;
++	}
++	if (cppc_enable)
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_cases[index].result = APUT_RESULT_FAIL;
++}
++
++/*
++ *Check if enabled amd pstate
++ */
++static void aput_check_enabled(u32 index)
++{
++	if (get_shared_mem())
++		aput_cases[index].result = APUT_RESULT_PASS;
++	else
++		aput_pstate_enable(index);
++}
++
++/*
++ * Check if the each performance values are reasonable.
++ * highest_perf >= nominal_perf > lowest_nonlinear_perf > lowest_perf > 0
++ */
++static void aput_check_perf(u32 index)
++{
++	int cpu = 0, ret = 0;
++	u32 highest_perf = 0, nominal_perf = 0, lowest_nonlinear_perf = 0, lowest_perf = 0;
++	u64 cap1 = 0;
++	struct cppc_perf_caps cppc_perf;
++	struct cpufreq_policy *policy = NULL;
++	struct amd_cpudata *cpudata = NULL;
++
++	highest_perf = amd_get_highest_perf();
++
++	for_each_possible_cpu(cpu) {
++		policy = cpufreq_cpu_get(cpu);
++		if (!policy)
++			break;
++		cpudata = policy->driver_data;
++
++		if (get_shared_mem()) {
++			ret = cppc_get_perf_caps(cpu, &cppc_perf);
++			if (ret) {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s cppc_get_perf_caps ret=%d is error!\n", __func__, ret);
++				return;
++			}
++
++			nominal_perf = cppc_perf.nominal_perf;
++			lowest_nonlinear_perf = cppc_perf.lowest_nonlinear_perf;
++			lowest_perf = cppc_perf.lowest_perf;
++		} else {
++			ret = rdmsrl_safe_on_cpu(cpu, MSR_AMD_CPPC_CAP1, &cap1);
++			if (ret) {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s read CPPC_CAP1 ret=%d is error!\n", __func__, ret);
++				return;
++			}
++
++			nominal_perf = AMD_CPPC_NOMINAL_PERF(cap1);
++			lowest_nonlinear_perf = AMD_CPPC_LOWNONLIN_PERF(cap1);
++			lowest_perf = AMD_CPPC_LOWEST_PERF(cap1);
++		}
++
++		if ((highest_perf != READ_ONCE(cpudata->highest_perf)) ||
++			(nominal_perf != READ_ONCE(cpudata->nominal_perf)) ||
++			(lowest_nonlinear_perf != READ_ONCE(cpudata->lowest_nonlinear_perf)) ||
++			(lowest_perf != READ_ONCE(cpudata->lowest_perf))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d highest=%d %d nominal=%d %d lowest_nonlinear=%d %d lowest=%d %d are not equal!\n",
++				__func__, cpu, highest_perf, cpudata->highest_perf,
++				nominal_perf, cpudata->nominal_perf,
++				lowest_nonlinear_perf, cpudata->lowest_nonlinear_perf,
++				lowest_perf, cpudata->lowest_perf);
++			return;
++		}
++
++		if (!((highest_perf >= nominal_perf) &&
++			(nominal_perf > lowest_nonlinear_perf) &&
++			(lowest_nonlinear_perf > lowest_perf) &&
++			(lowest_perf > 0))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d highest=%d nominal=%d lowest_nonlinear=%d lowest=%d have error!\n",
++				__func__, cpu, highest_perf, nominal_perf,
++				lowest_nonlinear_perf, lowest_perf);
++			return;
++		}
++	}
++
++	aput_cases[index].result = APUT_RESULT_PASS;
++}
++
++/*
++ * Check if the each frequency values are reasonable.
++ * max_freq >= nominal_freq > lowest_nonlinear_freq > min_freq > 0
++ * check max freq when set support boost mode.
++ */
++static void aput_check_freq(u32 index)
++{
++	int cpu = 0;
++	struct cpufreq_policy *policy = NULL;
++	struct amd_cpudata *cpudata = NULL;
++
++	for_each_possible_cpu(cpu) {
++		policy = cpufreq_cpu_get(cpu);
++		if (!policy)
++			break;
++		cpudata = policy->driver_data;
++
++		if (!((cpudata->max_freq >= cpudata->nominal_freq) &&
++			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
++			(cpudata->lowest_nonlinear_freq > cpudata->min_freq) &&
++			(cpudata->min_freq > 0))) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d max=%d nominal=%d lowest_nonlinear=%d min=%d have error!\n",
++				__func__, cpu, cpudata->max_freq, cpudata->nominal_freq,
++				cpudata->lowest_nonlinear_freq, cpudata->min_freq);
++			return;
++		}
++
++		if (cpudata->min_freq != policy->min) {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d cpudata_min_freq=%d policy_min=%d have error!\n",
++				__func__, cpu, cpudata->min_freq, policy->min);
++			return;
++		}
++
++		if (cpudata->boost_supported) {
++			if ((policy->max == cpudata->max_freq) ||
++					(policy->max == cpudata->nominal_freq))
++				aput_cases[index].result = APUT_RESULT_PASS;
++			else {
++				aput_cases[index].result = APUT_RESULT_FAIL;
++				pr_err("%s cpu%d policy_max=%d cpu_max=%d cpu_nominal=%d have error!\n",
++					__func__, cpu, policy->max, cpudata->max_freq,
++					cpudata->nominal_freq);
++				return;
++			}
++		} else {
++			aput_cases[index].result = APUT_RESULT_FAIL;
++			pr_err("%s cpu%d not support boost!\n", __func__, cpu);
++			return;
++		}
++	}
++}
++
++static bool aput_check_conditions(void)
++{
++	bool result = true;
++	u32 i = 0, arr_size = ARRAY_SIZE(aput_conditions);
++
++	for (i = 0; i < arr_size; i++) {
++		aput_conditions[i].func(i);
++		if (aput_conditions[i].result != APUT_RESULT_PASS) {
++			result = false;
++			break;
++		}
++	}
++
++	return result;
++}
++
++static void aput_do_test_case(void)
++{
++	u32 i = 0, arr_size = ARRAY_SIZE(aput_cases);
++
++	for (i = 0; i < arr_size; i++) {
++		pr_info("****** Begin %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
++		aput_cases[i].func(i);
++		KSTM_CHECK_ZERO(aput_cases[i].result);
++		pr_info("****** End   %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
++	}
++}
++
++static void __init selftest(void)
++{
++	if (aput_check_conditions())
++		aput_do_test_case();
++}
++
++KSTM_MODULE_LOADERS(amd_pstate_testmod);
++MODULE_AUTHOR("Meng Li <li.meng@amd.com>");
++MODULE_DESCRIPTION("Unit test for AMD P-state driver");
++MODULE_LICENSE("GPL");
 -- 
 2.25.1
 
