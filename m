@@ -2,73 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED8E6C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 07:12:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4FF7C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 07:22:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1385603AbiDUHOv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 03:14:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42350 "EHLO
+        id S1358165AbiDUHYy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 03:24:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385621AbiDUHOs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 03:14:48 -0400
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D39217057
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 00:12:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1650525120; x=1682061120;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=/cw/sNTx4EM2SSc2yheXO4pAk8iXKAFIMsAs709aLGU=;
-  b=iLWEPJP6oVpu14t38aV93oHeExWQorgQ6zYQxkB7yNL4Cf4LhGMzuX4r
-   SwcA1cDRuML0FxX1FTLAudD8RWs48PvJ0mfERIfgnxA4ssG1bWzQO8ecw
-   bklinRj8xTT/N3DoLlVI2HU/NN6m/3REUwXMl5cvkRKr4YaVLoUCpDUs5
-   VZhB6KZDSRNpyi9veClT4TfgbRkxBlvkohhyaQMCiYDsuSsngoy0TwYqM
-   8X2qpA4BUEpe/G1w5ksoGtcvaUUpnXV6I3oen6/OEn8yLebplqAb72Np3
-   PBfQV0vjCzqPCDs4JIqc2W4Tvl5oFGL49xNN08WiYnElaPTBLLZm6lrdZ
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10323"; a="264434637"
-X-IronPort-AV: E=Sophos;i="5.90,278,1643702400"; 
-   d="scan'208";a="264434637"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Apr 2022 00:11:55 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,278,1643702400"; 
-   d="scan'208";a="577064194"
-Received: from rzhang1-dev.sh.intel.com ([10.239.48.43])
-  by orsmga008.jf.intel.com with ESMTP; 21 Apr 2022 00:11:54 -0700
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     rjw@rjwysocki.net
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH] powercap: intel_rapl: add support for RaptorLake
-Date:   Thu, 21 Apr 2022 23:07:36 +0800
-Message-Id: <20220421150736.94717-1-rui.zhang@intel.com>
-X-Mailer: git-send-email 2.27.0
+        with ESMTP id S229922AbiDUHYx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 03:24:53 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A12318340;
+        Thu, 21 Apr 2022 00:22:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=/C9+3qUeBS+g+il8GEFlGStsowiK3WH4YnoDjaHKK9Y=; b=YLcyMQWUra46az+F4lcpWwI+sy
+        eiorDaQRwdnLR8EGGH9CeRC0dm8tq7Bbb4LIOEAs6YnBFI1rm0GJm9B4czOUq0DRrfK3UrJhI1+80
+        ADSBtoeflXov2wCyDW/EqrNL/5kHlFh5eMYwFMr4XwXzNAx9ZjTRVeYIMhRiBRVbYSftPCw1fBWNs
+        u15E5Q3cz4Q8td4QA8yPJcW5ljsjTnLo2xEbbzECvpjRxyahORyGFGtBTxwVrufUXo3fOdNBKZ1+t
+        gqtBv+1/ogeup/gu8AIi+W+fqrOgHH/SWyqQqR4IFQN1TId6shT1+baGm5RwvFprfNmv4i2VJYfmz
+        yBdGRn4Q==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=worktop.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nhR8I-004rKD-04; Thu, 21 Apr 2022 07:21:42 +0000
+Received: by worktop.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 5C08E9861A4; Thu, 21 Apr 2022 09:21:38 +0200 (CEST)
+Date:   Thu, 21 Apr 2022 09:21:38 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     Oleg Nesterov <oleg@redhat.com>, rjw@rjwysocki.net,
+        mingo@kernel.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
+        bigeasy@linutronix.de, Will Deacon <will@kernel.org>,
+        linux-kernel@vger.kernel.org, tj@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [RFC][PATCH] ptrace: Don't change __state
+Message-ID: <20220421072138.GI2731@worktop.programming.kicks-ass.net>
+References: <20220414115410.GA32752@redhat.com>
+ <20220414183433.GC32752@redhat.com>
+ <YlikBjA3kL3XEQP5@hirez.programming.kicks-ass.net>
+ <20220415101644.GA10421@redhat.com>
+ <20220415105755.GA15217@redhat.com>
+ <Yllep6B8eva2VURJ@hirez.programming.kicks-ass.net>
+ <20220418170104.GA16199@redhat.com>
+ <20220420131731.GF2731@worktop.programming.kicks-ass.net>
+ <20220420180323.GA14947@redhat.com>
+ <875yn3zdag.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <875yn3zdag.fsf_-_@email.froward.int.ebiederm.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add intel_rapl support for the RaptorLake platform.
+On Wed, Apr 20, 2022 at 03:54:15PM -0500, Eric W. Biederman wrote:
+> 
+> I was thinking about this and I have an approach from a different
+> direction.  In particular it removes the need for ptrace_freeze_attach
+> and ptrace_unfreeze_attach to change __state.  Instead a jobctl
+> bit is used to suppress waking up a process with TASK_WAKEKILL.
+> 
+> I think this would be a good technique to completely decouple
+> PREEMPT_RT from the work that ptrace_freeze_attach does.
+> 
+> Comments?
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/powercap/intel_rapl_common.c | 1 +
- 1 file changed, 1 insertion(+)
+On first read-through, I like it! A few comments down below..
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 07611a00b78f..83da499dd6ec 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1107,6 +1107,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(ROCKETLAKE,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE_L,		&rapl_defaults_core),
-+	X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
- 	X86_MATCH_INTEL_FAM6_MODEL(LAKEFIELD,		&rapl_defaults_core),
- 
--- 
-2.17.1
+> @@ -216,13 +217,11 @@ static void ptrace_unfreeze_traced(struct task_struct *task)
+>  	 * PTRACE_LISTEN can allow ptrace_trap_notify to wake us up remotely.
+>  	 * Recheck state under the lock to close this race.
+>  	 */
+> -	spin_lock_irq(&task->sighand->siglock);
+> -	if (READ_ONCE(task->__state) == __TASK_TRACED) {
+> -		if (__fatal_signal_pending(task))
+> -			wake_up_state(task, __TASK_TRACED);
+> -		else
+> -			WRITE_ONCE(task->__state, TASK_TRACED);
+> -	}
+> +	spin_unlock_irq(&task->sighand->siglock);
 
+  ^^^^ this should be spin_lock_irq(...)
+
+> +	WARN_ON(!(task->jobctl & JOBCTL_DELAY_WAKEKILL));
+> +	task->jobctl &= ~JOBCTL_DELAY_WAKEKILL;
+> +	if (fatal_signal_pending(task))
+> +		wake_up_state(task, TASK_WAKEKILL);
+>  	spin_unlock_irq(&task->sighand->siglock);
+>  }
+>  
+> @@ -256,7 +255,7 @@ static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
+>  	 */
+>  	read_lock(&tasklist_lock);
+>  	if (child->ptrace && child->parent == current) {
+> -		WARN_ON(READ_ONCE(child->__state) == __TASK_TRACED);
+> +		WARN_ON(child->jobctl & JOBCTL_DELAY_WAKEKILL);
+>  		/*
+>  		 * child->sighand can't be NULL, release_task()
+>  		 * does ptrace_unlink() before __exit_signal().
+> @@ -267,13 +266,13 @@ static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
+>  	read_unlock(&tasklist_lock);
+>  
+>  	if (!ret && !ignore_state) {
+> -		if (!wait_task_inactive(child, __TASK_TRACED)) {
+> +		if (!wait_task_inactive(child, TASK_TRACED)) {
+
+This is still very dubious, there are spinlocks between
+set_current_state(TASK_TRACED) and schedule(), so wait_task_inactive()
+can fail where we don't want it to due to TASK_TRACED being temporarily
+held in ->saved_state.
+
+>  			/*
+>  			 * This can only happen if may_ptrace_stop() fails and
+>  			 * ptrace_stop() changes ->state back to TASK_RUNNING,
+> -			 * so we should not worry about leaking __TASK_TRACED.
+> +			 * so we should not worry about leaking JOBCTL_DELAY_WAKEKILL.
+>  			 */
+> +			WARN_ON(!(child->jobctl & JOBCTL_DELAY_WAKEKILL));
+>  			ret = -ESRCH;
+>  		}
+>  	}
