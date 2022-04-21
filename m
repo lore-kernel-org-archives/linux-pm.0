@@ -2,481 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E61C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 07:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEF19C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 08:04:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1386050AbiDUHpT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 03:45:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39756 "EHLO
+        id S1386399AbiDUIHR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 04:07:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1386047AbiDUHpS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 03:45:18 -0400
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2086.outbound.protection.outlook.com [40.107.244.86])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 148D7DF94;
-        Thu, 21 Apr 2022 00:42:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=gYE4hWnbdiXlJSBW6WeE083+RjqsVzTMs2Q3HXZlR82l7OPWFKDhLwLnUGanzDyKh5ls0PX3+qXZZrVnpFWuvX5xiY0GgaR48jeGjv39kyIoaD2RJTu62qe9+i7kZTmklnaJ3ZZiPzQL1B2hYN9bXG/AWqfE+Jmd98Ol5dsJnwZAwb3xIulGXs7OKKdR2onF8mJ/nvZ4E87hieMWs7NXV4AAp5mZcQCzTEOy0DDl6+qRLLXPnDeyYi+4c3KRlVV5xLY23YMa4mnlbARMn4EdDLwDdNFzMh2Yv0dS+Ku2DaMgYh4tL/0fWOCwE1C+1xeP2tBbSMqTIYmbDsJuYTTqxA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DB1ujxLnLyLbXO9YjMVydcZW8jk7YR/ZWYUoV3+x02A=;
- b=fHpr7ANn6y0N90AHOz9nVDGx1Fjv4ypZTyZfMEfZMo3oS4HtoHrF2JIMu12ipB9Yd9gp4c5rcd8E3qtdhJjuB5TJnbRRA1rKqE9XfhHs3IE+ENrhdawA6jsPsFhwSYE0SjkYWU8uAoFuO8JiJZNJ3fF9xhXQDKEdWFd6cJEqvF6PoRIIpErUu8f/gBnmmT30gFUlYJUwGVySZGhpS+VVZ/WaII5P8xBjE6DVSBb50VPjbYnwZmVyMCD7DY/eN8UnSbIHVEu+iBlqhFbf8NJ/pGHI+T19dnkNiFDG0LFHy1S4MB9bqwtitd1ydMeP4SilRTROoNtNmyC/h+3WSavARQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DB1ujxLnLyLbXO9YjMVydcZW8jk7YR/ZWYUoV3+x02A=;
- b=ie7rdM92nFaJAQXlP0UEQta6e7j46Y0WuB7mAXTlm3SvvtKRekdzu4U3VX9wsO+HYY+aKnqS0Fmc+DnBD0FgxLJRr1O8riL05FaNH2hVM/Ljacf7BjiBNsWmmghHw8s3ggHEN/srybnMC/gK109PAiCEFEvUlcdVseXXvXx/W8Y=
-Received: from BN8PR03CA0032.namprd03.prod.outlook.com (2603:10b6:408:94::45)
- by MN2PR12MB2973.namprd12.prod.outlook.com (2603:10b6:208:cc::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.14; Thu, 21 Apr
- 2022 07:42:26 +0000
-Received: from BN8NAM11FT034.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:94:cafe::c9) by BN8PR03CA0032.outlook.office365.com
- (2603:10b6:408:94::45) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5186.15 via Frontend
- Transport; Thu, 21 Apr 2022 07:42:26 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT034.mail.protection.outlook.com (10.13.176.139) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5186.14 via Frontend Transport; Thu, 21 Apr 2022 07:42:25 +0000
-Received: from jasmine-meng.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 21 Apr
- 2022 02:42:21 -0500
-From:   Meng Li <li.meng@amd.com>
-To:     Shuah Khan <skhan@linuxfoundation.org>,
-        Huang Rui <ray.huang@amd.com>, <linux-pm@vger.kernel.org>
-CC:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Nathan Fontenot <nathan.fontenot@amd.com>,
-        Deepak Sharma <deepak.sharma@amd.com>,
-        "Alex Deucher" <alexander.deucher@amd.com>,
-        Mario Limonciello <mario.limonciello@amd.com>,
-        Jinzhou Su <Jinzhou.Su@amd.com>,
-        Perry Yuan <Perry.Yuan@amd.com>,
-        Xiaojian Du <Xiaojian.Du@amd.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Borislav Petkov <bp@alien8.de>, <linux-kernel@vger.kernel.org>,
-        Meng Li <li.meng@amd.com>
-Subject: [PATCH V3 3/3] selftests: cpufreq: Add amd_pstate_testmod kernel module for testing
-Date:   Thu, 21 Apr 2022 15:41:52 +0800
-Message-ID: <20220421074152.599419-4-li.meng@amd.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220421074152.599419-1-li.meng@amd.com>
-References: <20220421074152.599419-1-li.meng@amd.com>
+        with ESMTP id S1384066AbiDUIHQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 04:07:16 -0400
+Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3006B1DA44
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 01:04:27 -0700 (PDT)
+Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-e5e433d66dso4644132fac.5
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 01:04:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=5BVjlGwH06cTyu6muXsNBsyVK6oxj3UYMa0frNggqds=;
+        b=DW5A8NyrPu5kmtG6ZlwJsLfXNpG7VuBOeXgRhetvMBOfIpBJZ74ru8E03tjXxmvd+X
+         aTPl5MB8ba9gBc2hX7NQogMvyWug9swFGeE6el5EXsMuiVASFXiATSgRsneQ7tant1Ny
+         VsMSqP+yIbaMr8wWKqnDkjIRglGy/D6RQRzmmF08jDIB2uxobioRu0OouR6mGKOfmxAx
+         3T7JXsBZoaBjSw70q6iUm5umC9UUyMIY+Rbo5405g77+oTYcx1d62W7AtAWgp2as7pnp
+         htTdHxQt54wmw5KjhS2D6TVan8zS24RfO1Bf5JTZAqX3LhusLoz4k/SaUvktAw7xycvG
+         p0eA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=5BVjlGwH06cTyu6muXsNBsyVK6oxj3UYMa0frNggqds=;
+        b=0NG3figTe0/FZAJqnOOXwpeVPAwJfgiCLNRrwTbApo8p15xjvMM+2817QHiZx4UsVz
+         /q+GMzrB97/E+4ksIgOPH8LhI/t2C7ZlmWIbuvv2Mf+lsUeJKicVeqvY+KzMbcNgpDjr
+         jm/biVrnkE7qRfMGijYk35mo26d86J0ayWT1w+wvezGZGzjXnjoOw8h5taXtY/FXYPHY
+         aNRt1mXoySDuzRBWRL6u1nZElog4VaCTelke0F69XIB8r3Sr5J/SSpA4i9wD4bY/naaU
+         k67C/qrjUgop5dVf20CmBVS30yzW+hH4SH8iCu0HYQCqQgjf2qnt9pnB84Ghuge5vlCW
+         RbMA==
+X-Gm-Message-State: AOAM532CpNSu3tERbblYkSUyh1jWTRW90dcbYYW1doKm6M58uAnHlE8a
+        3er4kRN+BqzP2ETcbDJIBDOb+CPkvKtNcEH02d2eLQ==
+X-Google-Smtp-Source: ABdhPJxWY3/xQrMA/LGLDcUbYJsNHYAuaDCQ0ZZwkR5qeQGTshY+L+HBii+8hjXoK0Sn1TiQp41iyOWJUdQus1maen8=
+X-Received: by 2002:a05:6870:d254:b0:db:12b5:da3 with SMTP id
+ h20-20020a056870d25400b000db12b50da3mr3327530oac.211.1650528266235; Thu, 21
+ Apr 2022 01:04:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 0e53928f-e640-4fc5-d72e-08da236a7abc
-X-MS-TrafficTypeDiagnostic: MN2PR12MB2973:EE_
-X-Microsoft-Antispam-PRVS: <MN2PR12MB2973CDE81FC5A80BF3406D95F7F49@MN2PR12MB2973.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: tPwUHD3OhkF6y+Iforh+Lq9f+LLCx75MBddXWxNcFhxWM87wVM1qXAgO+emCEHIaQVQ5vjmAgRIGPG0dplrbiKkDNtrvD3v6RQIQzYF6g0Db5ajujqXNk1wYQdUjKI2xOpJ1G/03Qzj8ZBKDnhWXhTC102AfzYgqNE+SavFeEG9FbBTTcX7nFI7xn7hk4dX1+c2PIAfobqxmpLlQVJwCVBQrE0SKb0N27U4bp/yh2+fcxmqD0lc7wfz3fEhY+L5q1Rz/ggTTovO4uFxNxHWQDLiReyMz5QGKeL2peofPoKRUrkA90iXX3S7Xkq0xekuunxww5T50usAV/8vERv0gGkpgZ2dTt5tNefcwy5J33OOpMBRzVY8jCySczYEzdzgtB3yAHwYTygsusCOauFMDgx5nhJ1mmR4kJffEnkwUICLSw7wYT5muKR2T/xKi6pZkAptdciyC7z1apU0k6kQRrx1YQ+pL9uar9Rn+SmziZ9a8HDhTkaWYlTZfubu3gJNzA1nBdh+ZLOUjpV3ghW73cNTM8iWuC2GB4FvDTmy0m5qtkuqhJm7mzBpAL4P+5h1kg2bsRa58CPABlLqN3EhGuHKexILwBtqraATOqGjHoqRhNoOQBQDcm3634Q97SLTIkTe2+UN2sUMv4J7NPlvXHw0YCBHS5ThvKA70Fyc4n5LaMKLfklgLCReDxZZPCyEiTHA244mkcfhEDjupHPU5cg==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(36840700001)(40470700004)(46966006)(26005)(86362001)(7696005)(36860700001)(356005)(508600001)(30864003)(6666004)(2906002)(5660300002)(81166007)(8936002)(83380400001)(2616005)(70206006)(1076003)(40460700003)(336012)(47076005)(186003)(426003)(16526019)(70586007)(36756003)(82310400005)(110136005)(316002)(8676002)(54906003)(4326008)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2022 07:42:25.8267
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0e53928f-e640-4fc5-d72e-08da236a7abc
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT034.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB2973
+References: <0000000000004ecea505c28504b9@google.com> <0000000000007b1cbd05dd1cab5a@google.com>
+In-Reply-To: <0000000000007b1cbd05dd1cab5a@google.com>
+From:   Dmitry Vyukov <dvyukov@google.com>
+Date:   Thu, 21 Apr 2022 10:04:15 +0200
+Message-ID: <CACT4Y+ZWAFKBCnj18n8g8KsrQL9bxO7uCMmcQjk8-24G_caZHw@mail.gmail.com>
+Subject: Re: [syzbot] general protection fault in pm_qos_update_target
+To:     syzbot <syzbot+f7d9295d2565ee819d21@syzkaller.appspotmail.com>
+Cc:     alsa-devel@alsa-project.org, len.brown@intel.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        pavel@ucw.cz, perex@perex.cz, rjw@rjwysocki.net,
+        syzkaller-bugs@googlegroups.com, tiwai@suse.com, tiwai@suse.de
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add amd_pstate_testmod module, which is conceptually out-of-tree module
-and provides ways for selftests/cpufreq amd pstate driver to test various
-kernel module-related functionality. This module will be expected by
-some of selftests to be present and loaded.
+On Wed, 20 Apr 2022 at 23:28, syzbot
+<syzbot+f7d9295d2565ee819d21@syzkaller.appspotmail.com> wrote:
+>
+> syzbot suspects this issue was fixed by commit:
+>
+> commit 3c3201f8c7bb77eb53b08a3ca8d9a4ddc500b4c0
+> Author: Takashi Iwai <tiwai@suse.de>
+> Date:   Tue Mar 22 17:07:19 2022 +0000
+>
+>     ALSA: pcm: Fix races among concurrent prepare and hw_params/hw_free calls
+>
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=104e3034f00000
+> start commit:   dbb5afad100a ptrace: make ptrace() fail if the tracee chan..
+> git tree:       upstream
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=91ff0467ce169bc
+> dashboard link: https://syzkaller.appspot.com/bug?extid=f7d9295d2565ee819d21
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16c75e73d00000
+>
+> If the result looks correct, please mark the issue as fixed by replying with:
+>
+> #syz fix: ALSA: pcm: Fix races among concurrent prepare and hw_params/hw_free calls
+>
+> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
 
-Signed-off-by: Meng Li <li.meng@amd.com>
----
- .../cpufreq/amd_pstate_testmod/Makefile       |  20 ++
- .../amd_pstate_testmod/amd_pstate_testmod.c   | 329 ++++++++++++++++++
- 2 files changed, 349 insertions(+)
- create mode 100644 tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
- create mode 100644 tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
 
-diff --git a/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile b/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
-new file mode 100644
-index 000000000000..8a5596cb2c18
---- /dev/null
-+++ b/tools/testing/selftests/cpufreq/amd_pstate_testmod/Makefile
-@@ -0,0 +1,20 @@
-+AMD_PSTATE_TESTMOD_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-+KDIR ?= $(abspath $(AMD_PSATE_TESTMOD_DIR)/../../../../..)
-+
-+ifeq ($(V),1)
-+Q =
-+else
-+Q = @
-+endif
-+
-+MODULES = amd_pstate_testmod.ko
-+
-+obj-m += amd_pstate_testmod.o
-+CFLAGS_amd_pstate_testmod.o = -I$(src)
-+
-+all:
-+	+$(Q)make -C $(KDIR) M=$(AMD_PSTATE_TESTMOD_DIR) modules
-+
-+clean:
-+	+$(Q)make -C $(KDIR) M=$(AMD_PSTATE_TESTMOD_DIR) clean
-+
-diff --git a/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c b/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
-new file mode 100644
-index 000000000000..5391412a49c4
---- /dev/null
-+++ b/tools/testing/selftests/cpufreq/amd_pstate_testmod/amd_pstate_testmod.c
-@@ -0,0 +1,329 @@
-+// SPDX-License-Identifier: GPL-1.0-or-later
-+/*
-+ * AMD Processor P-state Frequency Driver Unit Test
-+ *
-+ * Copyright (C) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
-+ *
-+ * Author: Meng Li <li.meng@amd.com>
-+ *
-+ * The AMD P-State Unit Test is a test module for testing the amd-pstate
-+ * driver. 1) It can help all users to verify their processor support
-+ * (SBIOS/Firmware or Hardware). 2) Kernel can have a basic function
-+ * test to avoid the kernel regression during the update. 3) We can
-+ * introduce more functional or performance tests to align the result
-+ * together, it will benefit power and performance scale optimization.
-+ *
-+ * At present, it only implements the basic framework and some simple
-+ * test cases. Next, 1) we will add a rst document. 2) we will add more
-+ * test cases to improve the depth and coverage of the test.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include "../../kselftest_module.h"
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/fs.h>
-+#include <linux/amd-pstate.h>
-+
-+#include <acpi/cppc_acpi.h>
-+
-+/*
-+ * Abbreviations:
-+ * aput: used as a shortform for AMD P-State unit test.
-+ * It helps to keep variable names smaller, simpler
-+ */
-+
-+KSTM_MODULE_GLOBALS();
-+
-+/*
-+ * Kernel module for testing the AMD P-State unit test
-+ */
-+enum aput_result {
-+	APUT_RESULT_PASS,
-+	APUT_RESULT_FAIL,
-+	MAX_APUT_RESULT,
-+};
-+
-+struct aput_struct {
-+	const char *name;
-+	void (*func)(u32 index);
-+	enum aput_result result;
-+};
-+
-+static const char ap_drv[] = "amd-pstate";
-+
-+static void aput_x86_vendor(u32 index);
-+static void aput_modprobed_driver(u32 index);
-+static void aput_acpi_cpc(u32 index);
-+static void aput_check_enabled(u32 index);
-+static void aput_check_perf(u32 index);
-+static void aput_check_freq(u32 index);
-+
-+static struct aput_struct aput_conditions[] = {
-+	{"x86_vendor",              aput_x86_vendor          },
-+	{"modprobed_amd_pstate",    aput_modprobed_driver    },
-+};
-+
-+static struct aput_struct aput_cases[] = {
-+	{"acpi_cpc_valid",   aput_acpi_cpc         },
-+	{"check_enabled",    aput_check_enabled    },
-+	{"check_perf",       aput_check_perf       },
-+	{"check_freq",       aput_check_freq       }
-+};
-+
-+static bool get_shared_mem(void)
-+{
-+	bool result = false;
-+	char buf[5] = {0};
-+	struct file *filp = NULL;
-+	loff_t pos = 0;
-+	ssize_t ret;
-+
-+	filp = filp_open("/sys/module/amd_pstate/parameters/shared_mem", FMODE_PREAD, 0);
-+	if (IS_ERR(filp))
-+		pr_err("%s Open param file fail!\n", __func__);
-+	else {
-+		ret = kernel_read(filp, &buf, sizeof(buf), &pos);
-+		if (ret < 0)
-+			pr_err("%s ret=%ld unable to read from param file!\n", __func__, ret);
-+		filp_close(filp, NULL);
-+	}
-+
-+	if ('Y' == *buf)
-+		result = true;
-+
-+	return result;
-+}
-+
-+static void aput_x86_vendor(u32 index)
-+{
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-+		aput_conditions[index].result = APUT_RESULT_PASS;
-+	else {
-+		aput_conditions[index].result = APUT_RESULT_FAIL;
-+		pr_warn("Exit test: the vendor is not X86_VENDOR_AMD!\n");
-+	}
-+}
-+
-+static void aput_modprobed_driver(u32 index)
-+{
-+	const char *cur_drv;
-+
-+	cur_drv = cpufreq_get_current_driver();
-+	if (cur_drv) {
-+		if (!strncmp(cur_drv, ap_drv, min_t(size_t, strlen(cur_drv), strlen(ap_drv))))
-+			aput_conditions[index].result = APUT_RESULT_PASS;
-+		else {
-+			aput_conditions[index].result = APUT_RESULT_FAIL;
-+			pr_warn("Exit test: current driver %s is not amd-pstate!\n", cur_drv);
-+		}
-+	} else {
-+		aput_conditions[index].result = APUT_RESULT_FAIL;
-+		pr_warn("Exit test: this cpu is not supported anymore!\n");
-+	}
-+}
-+
-+static void aput_acpi_cpc(u32 index)
-+{
-+	if (acpi_cpc_valid())
-+		aput_cases[index].result = APUT_RESULT_PASS;
-+	else
-+		aput_cases[index].result = APUT_RESULT_FAIL;
-+}
-+
-+static void aput_pstate_enable(u32 index)
-+{
-+	int ret = 0;
-+	u64 cppc_enable = 0;
-+
-+	ret = rdmsrl_safe(MSR_AMD_CPPC_ENABLE, &cppc_enable);
-+	if (ret) {
-+		aput_cases[index].result = APUT_RESULT_FAIL;
-+		pr_err("%s rdmsrl_safe MSR_AMD_CPPC_ENABLE ret=%d is error!\n", __func__, ret);
-+		return;
-+	}
-+	if (cppc_enable)
-+		aput_cases[index].result = APUT_RESULT_PASS;
-+	else
-+		aput_cases[index].result = APUT_RESULT_FAIL;
-+}
-+
-+/*
-+ *Check if enabled amd pstate
-+ */
-+static void aput_check_enabled(u32 index)
-+{
-+	if (get_shared_mem())
-+		aput_cases[index].result = APUT_RESULT_PASS;
-+	else
-+		aput_pstate_enable(index);
-+}
-+
-+/*
-+ * Check if the each performance values are reasonable.
-+ * highest_perf >= nominal_perf > lowest_nonlinear_perf > lowest_perf > 0
-+ */
-+static void aput_check_perf(u32 index)
-+{
-+	int cpu = 0, ret = 0;
-+	u32 highest_perf = 0, nominal_perf = 0, lowest_nonlinear_perf = 0, lowest_perf = 0;
-+	u64 cap1 = 0;
-+	struct cppc_perf_caps cppc_perf;
-+	struct cpufreq_policy *policy = NULL;
-+	struct amd_cpudata *cpudata = NULL;
-+
-+	highest_perf = amd_get_highest_perf();
-+
-+	for_each_possible_cpu(cpu) {
-+		policy = cpufreq_cpu_get(cpu);
-+		if (!policy)
-+			break;
-+		cpudata = policy->driver_data;
-+
-+		if (get_shared_mem()) {
-+			ret = cppc_get_perf_caps(cpu, &cppc_perf);
-+			if (ret) {
-+				aput_cases[index].result = APUT_RESULT_FAIL;
-+				pr_err("%s cppc_get_perf_caps ret=%d is error!\n", __func__, ret);
-+				return;
-+			}
-+
-+			nominal_perf = cppc_perf.nominal_perf;
-+			lowest_nonlinear_perf = cppc_perf.lowest_nonlinear_perf;
-+			lowest_perf = cppc_perf.lowest_perf;
-+		} else {
-+			ret = rdmsrl_safe_on_cpu(cpu, MSR_AMD_CPPC_CAP1, &cap1);
-+			if (ret) {
-+				aput_cases[index].result = APUT_RESULT_FAIL;
-+				pr_err("%s read CPPC_CAP1 ret=%d is error!\n", __func__, ret);
-+				return;
-+			}
-+
-+			nominal_perf = AMD_CPPC_NOMINAL_PERF(cap1);
-+			lowest_nonlinear_perf = AMD_CPPC_LOWNONLIN_PERF(cap1);
-+			lowest_perf = AMD_CPPC_LOWEST_PERF(cap1);
-+		}
-+
-+		if ((highest_perf != READ_ONCE(cpudata->highest_perf)) ||
-+			(nominal_perf != READ_ONCE(cpudata->nominal_perf)) ||
-+			(lowest_nonlinear_perf != READ_ONCE(cpudata->lowest_nonlinear_perf)) ||
-+			(lowest_perf != READ_ONCE(cpudata->lowest_perf))) {
-+			aput_cases[index].result = APUT_RESULT_FAIL;
-+			pr_err("%s cpu%d highest=%d %d nominal=%d %d lowest_nonlinear=%d %d lowest=%d %d are not equal!\n",
-+				__func__, cpu, highest_perf, cpudata->highest_perf,
-+				nominal_perf, cpudata->nominal_perf,
-+				lowest_nonlinear_perf, cpudata->lowest_nonlinear_perf,
-+				lowest_perf, cpudata->lowest_perf);
-+			return;
-+		}
-+
-+		if (!((highest_perf >= nominal_perf) &&
-+			(nominal_perf > lowest_nonlinear_perf) &&
-+			(lowest_nonlinear_perf > lowest_perf) &&
-+			(lowest_perf > 0))) {
-+			aput_cases[index].result = APUT_RESULT_FAIL;
-+			pr_err("%s cpu%d highest=%d nominal=%d lowest_nonlinear=%d lowest=%d have error!\n",
-+				__func__, cpu, highest_perf, nominal_perf,
-+				lowest_nonlinear_perf, lowest_perf);
-+			return;
-+		}
-+	}
-+
-+	aput_cases[index].result = APUT_RESULT_PASS;
-+}
-+
-+/*
-+ * Check if the each frequency values are reasonable.
-+ * max_freq >= nominal_freq > lowest_nonlinear_freq > min_freq > 0
-+ * check max freq when set support boost mode.
-+ */
-+static void aput_check_freq(u32 index)
-+{
-+	int cpu = 0;
-+	struct cpufreq_policy *policy = NULL;
-+	struct amd_cpudata *cpudata = NULL;
-+
-+	for_each_possible_cpu(cpu) {
-+		policy = cpufreq_cpu_get(cpu);
-+		if (!policy)
-+			break;
-+		cpudata = policy->driver_data;
-+
-+		if (!((cpudata->max_freq >= cpudata->nominal_freq) &&
-+			(cpudata->nominal_freq > cpudata->lowest_nonlinear_freq) &&
-+			(cpudata->lowest_nonlinear_freq > cpudata->min_freq) &&
-+			(cpudata->min_freq > 0))) {
-+			aput_cases[index].result = APUT_RESULT_FAIL;
-+			pr_err("%s cpu%d max=%d nominal=%d lowest_nonlinear=%d min=%d have error!\n",
-+				__func__, cpu, cpudata->max_freq, cpudata->nominal_freq,
-+				cpudata->lowest_nonlinear_freq, cpudata->min_freq);
-+			return;
-+		}
-+
-+		if (cpudata->min_freq != policy->min) {
-+			aput_cases[index].result = APUT_RESULT_FAIL;
-+			pr_err("%s cpu%d cpudata_min_freq=%d policy_min=%d have error!\n",
-+				__func__, cpu, cpudata->min_freq, policy->min);
-+			return;
-+		}
-+
-+		if (cpudata->boost_supported) {
-+			if ((policy->max == cpudata->max_freq) ||
-+					(policy->max == cpudata->nominal_freq))
-+				aput_cases[index].result = APUT_RESULT_PASS;
-+			else {
-+				aput_cases[index].result = APUT_RESULT_FAIL;
-+				pr_err("%s cpu%d policy_max=%d cpu_max=%d cpu_nominal=%d have error!\n",
-+					__func__, cpu, policy->max, cpudata->max_freq,
-+					cpudata->nominal_freq);
-+				return;
-+			}
-+		} else {
-+			aput_cases[index].result = APUT_RESULT_FAIL;
-+			pr_err("%s cpu%d not support boost!\n", __func__, cpu);
-+			return;
-+		}
-+	}
-+}
-+
-+static bool aput_check_conditions(void)
-+{
-+	bool result = true;
-+	u32 i = 0, arr_size = ARRAY_SIZE(aput_conditions);
-+
-+	for (i = 0; i < arr_size; i++) {
-+		aput_conditions[i].func(i);
-+		if (aput_conditions[i].result != APUT_RESULT_PASS) {
-+			result = false;
-+			break;
-+		}
-+	}
-+
-+	return result;
-+}
-+
-+static void aput_do_test_case(void)
-+{
-+	u32 i = 0, arr_size = ARRAY_SIZE(aput_cases);
-+
-+	for (i = 0; i < arr_size; i++) {
-+		pr_info("****** Begin %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
-+		aput_cases[i].func(i);
-+		KSTM_CHECK_ZERO(aput_cases[i].result);
-+		pr_info("****** End   %-5d\t %-20s\t ******\n", i+1, aput_cases[i].name);
-+	}
-+}
-+
-+static void __init selftest(void)
-+{
-+	if (aput_check_conditions())
-+		aput_do_test_case();
-+}
-+
-+KSTM_MODULE_LOADERS(amd_pstate_testmod);
-+MODULE_AUTHOR("Meng Li <li.meng@amd.com>");
-+MODULE_DESCRIPTION("Unit test for AMD P-state driver");
-+MODULE_LICENSE("GPL");
--- 
-2.25.1
+Looks legit, that code is in the stack trace:
 
+#syz fix:
+ALSA: pcm: Fix races among concurrent prepare and hw_params/hw_free calls
