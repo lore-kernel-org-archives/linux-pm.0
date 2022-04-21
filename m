@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB0ACC4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:10:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F31EC433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:10:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1389910AbiDUPNi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 11:13:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46938 "EHLO
+        id S1389913AbiDUPNj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 11:13:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1389883AbiDUPNf (ORCPT
+        with ESMTP id S1389885AbiDUPNf (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 11:13:35 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 243D93E0F4;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2392B2F00D;
         Thu, 21 Apr 2022 08:10:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
         Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
         Content-ID:Content-Description:In-Reply-To;
-        bh=bZGwtg721/vos0v+4uWN1TQ12j+Iplb0bq7iDFHye/U=; b=CNJ9qoSVzEA3wjShMAZfbYMINP
-        JDXosMX0wuWfG3faLbx7Qj89bwjkqLHHBT+Ut7AxeTBVisC3KXEKilhwhDMFIASY5CgmcevAVqbSL
-        uPHwSjaMcu5Y2h7oIZS86wusSqXlZDZ4k32/Xgr4cA/u0W5CCdp+dcGujNFaVmvKhwUR6T+Qs/gLy
-        KTRoWKxHyNf2AXMtTRQs756eXD2ZgjJqBHOXxh1Br8QKKUt4vBjv4t5IWBLGjcq9Xkn5Ld2ZBQic0
-        5t6NRBxIZdZ7J97ASTNCIcRvUfGwb4I9EoRR7GU5RRC25eOakDmeg240kBBvQEnGFBa776O2BXL1m
-        G34eWlPA==;
+        bh=oF+PVY6vIU4SUP3fyaaG3nUd44JsjVm4tT8uFNkBQgY=; b=NVN13hy2D2IC+wwCb5CK1GDrqQ
+        I4LEzJzh5Nen6kEHH5tL1QNf4SrCEBth4RSqQmzHvOFoeAFZBM/Em9iDKEr6KWNbao8tC49AizD2F
+        2G3M0L6a7zM4pIv9Q9H3H9zTOAlE5PfN6SmdKI3ZR7FYINdZSIyGEn2I9UUjTGonMHBhZNPeS3PE3
+        CHRxH5l/YC640b79WAICyCAia68d3Go6wl44Oj5tyJz0nEC0gufG5Twi9r5kI5ct/rs3ifaVywB8l
+        ascBhlJmjwFIJUBZkNM4Dv09b9bVj7vlLlHhQx6ZrCfQJP1V7Di2yo1tOiLLkRoa9l2SiseahAday
+        5zinzkhA==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nhYRk-007QKS-4a; Thu, 21 Apr 2022 15:10:16 +0000
+        id 1nhYRk-007QKP-3l; Thu, 21 Apr 2022 15:10:16 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9C159300750;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 98C8A30066D;
         Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 740C82B553DF1; Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
-Message-ID: <20220421150654.879033968@infradead.org>
+        id 65FDF2B34A737; Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
+Message-ID: <20220421150654.757693825@infradead.org>
 User-Agent: quilt/0.66
-Date:   Thu, 21 Apr 2022 17:02:51 +0200
+Date:   Thu, 21 Apr 2022 17:02:49 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -45,7 +45,7 @@ To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         bigeasy@linutronix.de, Will Deacon <will@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 3/5] freezer: Have {,un}lock_system_sleep() save/restore flags
+Subject: [PATCH v2 1/5] sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
 References: <20220421150248.667412396@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -53,438 +53,223 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rafael explained that the reason for having both PF_NOFREEZE and
-PF_FREEZER_SKIP is that {,un}lock_system_sleep() is callable from
-kthread context that has previously called set_freezable().
+Currently ptrace_stop() / do_signal_stop() rely on the special states
+TASK_TRACED and TASK_STOPPED resp. to keep unique state. That is, this
+state exists only in task->__state and nowhere else.
 
-In preparation of merging the flags, have {,un}lock_system_slee() save
-and restore current->flags.
+There's two spots of bother with this:
+
+ - PREEMPT_RT has task->saved_state which complicates matters,
+   meaning task_is_{traced,stopped}() needs to check an additional
+   variable.
+
+ - An alternative freezer implementation that itself relies on a
+   special TASK state would loose TASK_TRACED/TASK_STOPPED and will
+   result in misbehaviour.
+
+As such, add additional state to task->jobctl to track this state
+outside of task->__state.
+
+NOTE: this doesn't actually fix anything yet, just adds extra state.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/acpi/x86/s2idle.c         |   12 ++++++++----
- drivers/scsi/scsi_transport_spi.c |    7 ++++---
- include/linux/suspend.h           |    8 ++++----
- kernel/power/hibernate.c          |   35 ++++++++++++++++++++++-------------
- kernel/power/main.c               |   16 ++++++++++------
- kernel/power/suspend.c            |   12 ++++++++----
- kernel/power/user.c               |   24 ++++++++++++++----------
- 7 files changed, 70 insertions(+), 44 deletions(-)
+ include/linux/sched.h        |    8 +++-----
+ include/linux/sched/jobctl.h |    6 ++++++
+ include/linux/sched/signal.h |    5 ++++-
+ kernel/ptrace.c              |   26 +++++++++++++++-----------
+ kernel/signal.c              |   16 ++++++++++++----
+ 5 files changed, 40 insertions(+), 21 deletions(-)
 
---- a/drivers/acpi/x86/s2idle.c
-+++ b/drivers/acpi/x86/s2idle.c
-@@ -538,12 +538,14 @@ void acpi_s2idle_setup(void)
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -118,11 +118,9 @@ struct task_group;
  
- int acpi_register_lps0_dev(struct acpi_s2idle_dev_ops *arg)
- {
-+	unsigned int sleep_flags;
+ #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
+ 
+-#define task_is_traced(task)		((READ_ONCE(task->__state) & __TASK_TRACED) != 0)
+-
+-#define task_is_stopped(task)		((READ_ONCE(task->__state) & __TASK_STOPPED) != 0)
+-
+-#define task_is_stopped_or_traced(task)	((READ_ONCE(task->__state) & (__TASK_STOPPED | __TASK_TRACED)) != 0)
++#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
++#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
++#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
+ 
+ /*
+  * Special states are those that do not use the normal wait-loop pattern. See
+--- a/include/linux/sched/jobctl.h
++++ b/include/linux/sched/jobctl.h
+@@ -20,6 +20,9 @@ struct task_struct;
+ #define JOBCTL_LISTENING_BIT	22	/* ptracer is listening for events */
+ #define JOBCTL_TRAP_FREEZE_BIT	23	/* trap for cgroup freezer */
+ 
++#define JOBCTL_STOPPED_BIT	24	/* do_signal_stop() */
++#define JOBCTL_TRACED_BIT	25	/* ptrace_stop() */
 +
- 	if (!lps0_device_handle || sleep_no_lps0)
- 		return -ENODEV;
+ #define JOBCTL_STOP_DEQUEUED	(1UL << JOBCTL_STOP_DEQUEUED_BIT)
+ #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
+ #define JOBCTL_STOP_CONSUME	(1UL << JOBCTL_STOP_CONSUME_BIT)
+@@ -29,6 +32,9 @@ struct task_struct;
+ #define JOBCTL_LISTENING	(1UL << JOBCTL_LISTENING_BIT)
+ #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
  
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 	list_add(&arg->list_node, &lps0_s2idle_devops_head);
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
++#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
++#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
++
+ #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP | JOBCTL_TRAP_NOTIFY)
+ #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
+ 
+--- a/include/linux/sched/signal.h
++++ b/include/linux/sched/signal.h
+@@ -294,8 +294,10 @@ static inline int kernel_dequeue_signal(
+ static inline void kernel_signal_stop(void)
+ {
+ 	spin_lock_irq(&current->sighand->siglock);
+-	if (current->jobctl & JOBCTL_STOP_DEQUEUED)
++	if (current->jobctl & JOBCTL_STOP_DEQUEUED) {
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
++	}
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+ 	schedule();
+@@ -439,6 +441,7 @@ static inline void signal_wake_up(struct
+ {
+ 	signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
+ }
++
+ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
+ {
+ 	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -185,7 +185,12 @@ static bool looks_like_a_spurious_pid(st
+ 	return true;
+ }
+ 
+-/* Ensure that nothing can wake it up, even SIGKILL */
++/*
++ * Ensure that nothing can wake it up, even SIGKILL
++ *
++ * A task is switched to this state while a ptrace operation is in progress;
++ * such that the ptrace operation is uninterruptible.
++ */
+ static bool ptrace_freeze_traced(struct task_struct *task)
+ {
+ 	bool ret = false;
+@@ -218,9 +223,10 @@ static void ptrace_unfreeze_traced(struc
+ 	 */
+ 	spin_lock_irq(&task->sighand->siglock);
+ 	if (READ_ONCE(task->__state) == __TASK_TRACED) {
+-		if (__fatal_signal_pending(task))
++		if (__fatal_signal_pending(task)) {
++			task->jobctl &= ~JOBCTL_TRACED;
+ 			wake_up_state(task, __TASK_TRACED);
+-		else
++		} else
+ 			WRITE_ONCE(task->__state, TASK_TRACED);
+ 	}
+ 	spin_unlock_irq(&task->sighand->siglock);
+@@ -475,8 +481,10 @@ static int ptrace_attach(struct task_str
+ 	 * in and out of STOPPED are protected by siglock.
+ 	 */
+ 	if (task_is_stopped(task) &&
+-	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
++	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING)) {
++		task->jobctl &= ~JOBCTL_STOPPED;
+ 		signal_wake_up_state(task, __TASK_STOPPED);
++	}
+ 
+ 	spin_unlock(&task->sighand->siglock);
+ 
+@@ -850,8 +858,6 @@ static long ptrace_get_rseq_configuratio
+ static int ptrace_resume(struct task_struct *child, long request,
+ 			 unsigned long data)
+ {
+-	bool need_siglock;
+-
+ 	if (!valid_signal(data))
+ 		return -EIO;
+ 
+@@ -892,13 +898,11 @@ static int ptrace_resume(struct task_str
+ 	 * status and clears the code too; this can't race with the tracee, it
+ 	 * takes siglock after resume.
+ 	 */
+-	need_siglock = data && !thread_group_empty(current);
+-	if (need_siglock)
+-		spin_lock_irq(&child->sighand->siglock);
++	spin_lock_irq(&child->sighand->siglock);
+ 	child->exit_code = data;
++	child->jobctl &= ~JOBCTL_TRACED;
+ 	wake_up_state(child, __TASK_TRACED);
+-	if (need_siglock)
+-		spin_unlock_irq(&child->sighand->siglock);
++	spin_unlock_irq(&child->sighand->siglock);
  
  	return 0;
  }
-@@ -551,12 +553,14 @@ EXPORT_SYMBOL_GPL(acpi_register_lps0_dev
- 
- void acpi_unregister_lps0_dev(struct acpi_s2idle_dev_ops *arg)
- {
-+	unsigned int sleep_flags;
-+
- 	if (!lps0_device_handle || sleep_no_lps0)
- 		return;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 	list_del(&arg->list_node);
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- }
- EXPORT_SYMBOL_GPL(acpi_unregister_lps0_dev);
- 
---- a/drivers/scsi/scsi_transport_spi.c
-+++ b/drivers/scsi/scsi_transport_spi.c
-@@ -998,8 +998,9 @@ void
- spi_dv_device(struct scsi_device *sdev)
- {
- 	struct scsi_target *starget = sdev->sdev_target;
--	u8 *buffer;
- 	const int len = SPI_MAX_ECHO_BUFFER_SIZE*2;
-+	unsigned int sleep_flags;
-+	u8 *buffer;
- 
- 	/*
- 	 * Because this function and the power management code both call
-@@ -1007,7 +1008,7 @@ spi_dv_device(struct scsi_device *sdev)
- 	 * while suspend or resume is in progress. Hence the
- 	 * lock/unlock_system_sleep() calls.
- 	 */
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	if (scsi_autopm_get_device(sdev))
- 		goto unlock_system_sleep;
-@@ -1058,7 +1059,7 @@ spi_dv_device(struct scsi_device *sdev)
- 	scsi_autopm_put_device(sdev);
- 
- unlock_system_sleep:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- }
- EXPORT_SYMBOL(spi_dv_device);
- 
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -510,8 +510,8 @@ extern bool pm_save_wakeup_count(unsigne
- extern void pm_wakep_autosleep_enabled(bool set);
- extern void pm_print_active_wakeup_sources(void);
- 
--extern void lock_system_sleep(void);
--extern void unlock_system_sleep(void);
-+extern unsigned int lock_system_sleep(void);
-+extern void unlock_system_sleep(unsigned int);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
-@@ -534,8 +534,8 @@ static inline void pm_system_wakeup(void
- static inline void pm_wakeup_clear(bool reset) {}
- static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
- 
--static inline void lock_system_sleep(void) {}
--static inline void unlock_system_sleep(void) {}
-+static inline unsigned int lock_system_sleep(void) { return 0; }
-+static inline void unlock_system_sleep(unsigned int flags) {}
- 
- #endif /* !CONFIG_PM_SLEEP */
- 
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -92,20 +92,24 @@ bool hibernation_available(void)
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -762,7 +762,10 @@ static int dequeue_synchronous_signal(ke
   */
- void hibernation_set_ops(const struct platform_hibernation_ops *ops)
+ void signal_wake_up_state(struct task_struct *t, unsigned int state)
  {
-+	unsigned int sleep_flags;
++	lockdep_assert_held(&t->sighand->siglock);
 +
- 	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
- 	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
- 	    && ops->restore_cleanup && ops->leave)) {
- 		WARN_ON(1);
- 		return;
- 	}
--	lock_system_sleep();
+ 	set_tsk_thread_flag(t, TIF_SIGPENDING);
 +
-+	sleep_flags = lock_system_sleep();
-+
- 	hibernation_ops = ops;
- 	if (ops)
- 		hibernation_mode = HIBERNATION_PLATFORM;
- 	else if (hibernation_mode == HIBERNATION_PLATFORM)
- 		hibernation_mode = HIBERNATION_SHUTDOWN;
- 
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- }
- EXPORT_SYMBOL_GPL(hibernation_set_ops);
- 
-@@ -713,6 +717,7 @@ static int load_image_and_restore(void)
- int hibernate(void)
- {
- 	bool snapshot_test = false;
-+	unsigned int sleep_flags;
- 	int error;
- 
- 	if (!hibernation_available()) {
-@@ -720,7 +725,7 @@ int hibernate(void)
- 		return -EPERM;
- 	}
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 	/* The snapshot device should not be opened while we're running */
- 	if (!hibernate_acquire()) {
- 		error = -EBUSY;
-@@ -794,7 +799,7 @@ int hibernate(void)
- 	pm_restore_console();
- 	hibernate_release();
-  Unlock:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 	pr_info("hibernation exit\n");
- 
- 	return error;
-@@ -809,9 +814,10 @@ int hibernate(void)
-  */
- int hibernate_quiet_exec(int (*func)(void *data), void *data)
- {
-+	unsigned int sleep_flags;
- 	int error;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	if (!hibernate_acquire()) {
- 		error = -EBUSY;
-@@ -891,7 +897,7 @@ int hibernate_quiet_exec(int (*func)(voi
- 	hibernate_release();
- 
- unlock:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 
- 	return error;
- }
-@@ -1100,11 +1106,12 @@ static ssize_t disk_show(struct kobject
- static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			  const char *buf, size_t n)
- {
-+	int mode = HIBERNATION_INVALID;
-+	unsigned int sleep_flags;
- 	int error = 0;
--	int i;
- 	int len;
- 	char *p;
--	int mode = HIBERNATION_INVALID;
-+	int i;
- 
- 	if (!hibernation_available())
- 		return -EPERM;
-@@ -1112,7 +1119,7 @@ static ssize_t disk_store(struct kobject
- 	p = memchr(buf, '\n', n);
- 	len = p ? p - buf : n;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
- 		if (len == strlen(hibernation_modes[i])
- 		    && !strncmp(buf, hibernation_modes[i], len)) {
-@@ -1142,7 +1149,7 @@ static ssize_t disk_store(struct kobject
- 	if (!error)
- 		pm_pr_dbg("Hibernation mode set to '%s'\n",
- 			       hibernation_modes[mode]);
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 	return error ? error : n;
- }
- 
-@@ -1158,9 +1165,10 @@ static ssize_t resume_show(struct kobjec
- static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			    const char *buf, size_t n)
- {
--	dev_t res;
-+	unsigned int sleep_flags;
- 	int len = n;
- 	char *name;
-+	dev_t res;
- 
- 	if (len && buf[len-1] == '\n')
- 		len--;
-@@ -1173,9 +1181,10 @@ static ssize_t resume_store(struct kobje
- 	if (!res)
- 		return -EINVAL;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 	swsusp_resume_device = res;
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
-+
- 	pm_pr_dbg("Configured hibernation resume from disk to %u\n",
- 		  swsusp_resume_device);
- 	noresume = 0;
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -21,14 +21,16 @@
- 
- #ifdef CONFIG_PM_SLEEP
- 
--void lock_system_sleep(void)
-+unsigned int lock_system_sleep(void)
- {
-+	unsigned int flags = current->flags;
- 	current->flags |= PF_FREEZER_SKIP;
- 	mutex_lock(&system_transition_mutex);
-+	return flags;
- }
- EXPORT_SYMBOL_GPL(lock_system_sleep);
- 
--void unlock_system_sleep(void)
-+void unlock_system_sleep(unsigned int flags)
- {
  	/*
- 	 * Don't use freezer_count() because we don't want the call to
-@@ -46,7 +48,8 @@ void unlock_system_sleep(void)
- 	 * Which means, if we use try_to_freeze() here, it would make them
- 	 * enter the refrigerator, thus causing hibernation to lockup.
+ 	 * TASK_WAKEKILL also means wake it up in the stopped/traced/killable
+ 	 * case. We don't check t->state here because there is a race with it
+@@ -770,7 +773,9 @@ void signal_wake_up_state(struct task_st
+ 	 * By using wake_up_state, we ensure the process will wake up and
+ 	 * handle its death signal.
  	 */
--	current->flags &= ~PF_FREEZER_SKIP;
-+	if (!(flags & PF_FREEZER_SKIP))
-+		current->flags &= ~PF_FREEZER_SKIP;
- 	mutex_unlock(&system_transition_mutex);
+-	if (!wake_up_state(t, state | TASK_INTERRUPTIBLE))
++	if (wake_up_state(t, state | TASK_INTERRUPTIBLE))
++		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
++	else
+ 		kick_process(t);
  }
- EXPORT_SYMBOL_GPL(unlock_system_sleep);
-@@ -260,16 +263,17 @@ static ssize_t pm_test_show(struct kobje
- static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
- 				const char *buf, size_t n)
+ 
+@@ -884,7 +889,7 @@ static int check_kill_permission(int sig
+ static void ptrace_trap_notify(struct task_struct *t)
  {
-+	unsigned int sleep_flags;
- 	const char * const *s;
-+	int error = -EINVAL;
- 	int level;
- 	char *p;
- 	int len;
--	int error = -EINVAL;
+ 	WARN_ON_ONCE(!(t->ptrace & PT_SEIZED));
+-	assert_spin_locked(&t->sighand->siglock);
++	lockdep_assert_held(&t->sighand->siglock);
  
- 	p = memchr(buf, '\n', n);
- 	len = p ? p - buf : n;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	level = TEST_FIRST;
- 	for (s = &pm_tests[level]; level <= TEST_MAX; s++, level++)
-@@ -279,7 +283,7 @@ static ssize_t pm_test_store(struct kobj
- 			break;
+ 	task_set_jobctl_pending(t, JOBCTL_TRAP_NOTIFY);
+ 	ptrace_signal_wake_up(t, t->jobctl & JOBCTL_LISTENING);
+@@ -930,9 +935,10 @@ static bool prepare_signal(int sig, stru
+ 		for_each_thread(p, t) {
+ 			flush_sigqueue_mask(&flush, &t->pending);
+ 			task_clear_jobctl_pending(t, JOBCTL_STOP_PENDING);
+-			if (likely(!(t->ptrace & PT_SEIZED)))
++			if (likely(!(t->ptrace & PT_SEIZED))) {
++				t->jobctl &= ~JOBCTL_STOPPED;
+ 				wake_up_state(t, __TASK_STOPPED);
+-			else
++			} else
+ 				ptrace_trap_notify(t);
  		}
  
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
+@@ -2219,6 +2225,7 @@ static int ptrace_stop(int exit_code, in
+ 	 * schedule() will not sleep if there is a pending signal that
+ 	 * can awaken the task.
+ 	 */
++	current->jobctl |= JOBCTL_TRACED;
+ 	set_special_state(TASK_TRACED);
  
- 	return error ? error : n;
- }
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -75,9 +75,11 @@ EXPORT_SYMBOL_GPL(pm_suspend_default_s2i
+ 	/*
+@@ -2460,6 +2467,7 @@ static bool do_signal_stop(int signr)
+ 		if (task_participate_group_stop(current))
+ 			notify = CLD_STOPPED;
  
- void s2idle_set_ops(const struct platform_s2idle_ops *ops)
- {
--	lock_system_sleep();
-+	unsigned int sleep_flags;
-+
-+	sleep_flags = lock_system_sleep();
- 	s2idle_ops = ops;
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- }
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
+ 		spin_unlock_irq(&current->sighand->siglock);
  
- static void s2idle_begin(void)
-@@ -200,7 +202,9 @@ __setup("mem_sleep_default=", mem_sleep_
-  */
- void suspend_set_ops(const struct platform_suspend_ops *ops)
- {
--	lock_system_sleep();
-+	unsigned int sleep_flags;
-+
-+	sleep_flags = lock_system_sleep();
- 
- 	suspend_ops = ops;
- 
-@@ -216,7 +220,7 @@ void suspend_set_ops(const struct platfo
- 			mem_sleep_current = PM_SUSPEND_MEM;
- 	}
- 
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- }
- EXPORT_SYMBOL_GPL(suspend_set_ops);
- 
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -46,12 +46,13 @@ int is_hibernate_resume_dev(dev_t dev)
- static int snapshot_open(struct inode *inode, struct file *filp)
- {
- 	struct snapshot_data *data;
-+	unsigned int sleep_flags;
- 	int error;
- 
- 	if (!hibernation_available())
- 		return -EPERM;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	if (!hibernate_acquire()) {
- 		error = -EBUSY;
-@@ -97,7 +98,7 @@ static int snapshot_open(struct inode *i
- 	data->dev = 0;
- 
-  Unlock:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 
- 	return error;
- }
-@@ -105,8 +106,9 @@ static int snapshot_open(struct inode *i
- static int snapshot_release(struct inode *inode, struct file *filp)
- {
- 	struct snapshot_data *data;
-+	unsigned int sleep_flags;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	swsusp_free();
- 	data = filp->private_data;
-@@ -123,7 +125,7 @@ static int snapshot_release(struct inode
- 			PM_POST_HIBERNATION : PM_POST_RESTORE);
- 	hibernate_release();
- 
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 
- 	return 0;
- }
-@@ -131,11 +133,12 @@ static int snapshot_release(struct inode
- static ssize_t snapshot_read(struct file *filp, char __user *buf,
-                              size_t count, loff_t *offp)
- {
-+	loff_t pg_offp = *offp & ~PAGE_MASK;
- 	struct snapshot_data *data;
-+	unsigned int sleep_flags;
- 	ssize_t res;
--	loff_t pg_offp = *offp & ~PAGE_MASK;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	data = filp->private_data;
- 	if (!data->ready) {
-@@ -156,7 +159,7 @@ static ssize_t snapshot_read(struct file
- 		*offp += res;
- 
-  Unlock:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 
- 	return res;
- }
-@@ -164,11 +167,12 @@ static ssize_t snapshot_read(struct file
- static ssize_t snapshot_write(struct file *filp, const char __user *buf,
-                               size_t count, loff_t *offp)
- {
-+	loff_t pg_offp = *offp & ~PAGE_MASK;
- 	struct snapshot_data *data;
-+	unsigned int sleep_flags;
- 	ssize_t res;
--	loff_t pg_offp = *offp & ~PAGE_MASK;
- 
--	lock_system_sleep();
-+	sleep_flags = lock_system_sleep();
- 
- 	data = filp->private_data;
- 
-@@ -190,7 +194,7 @@ static ssize_t snapshot_write(struct fil
- 	if (res > 0)
- 		*offp += res;
- unlock:
--	unlock_system_sleep();
-+	unlock_system_sleep(sleep_flags);
- 
- 	return res;
- }
 
 
