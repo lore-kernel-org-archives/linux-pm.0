@@ -2,42 +2,42 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8392C433F5
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:10:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B514C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:10:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1389888AbiDUPNf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 11:13:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46914 "EHLO
+        id S1389898AbiDUPNg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 11:13:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232354AbiDUPNe (ORCPT
+        with ESMTP id S1389877AbiDUPNe (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 11:13:34 -0400
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23BDB3299D;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2387F2ED7A;
         Thu, 21 Apr 2022 08:10:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Subject:Cc:To:From:Date:Message-ID:
-        Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
-        Content-ID:Content-Description:In-Reply-To:References;
-        bh=4rWOXJsvuobYbiGoWOq011uN1R9GhH39hya4yiHq06A=; b=DfAJsgGXTHsCtf/8unN3gWA2wH
-        yoC+BnND0K6m4IGyU7/G5FNcjA3agmRBpUoO9qZC/eB4/Jtt5UpuMkC7K0T9JAbHVQYuXcdK3o/JS
-        bOpLMLK8XuFbzi93q6gAsY9jDcfu22RhhDtjZtoYxOoEZ6Mj6nplGj0q5j+BTf2RQsewA62vxggFi
-        k/clpnM+9WCaCxVwyre3joSS+KcL8zuKehO6cnERl6r+OZiH4EHeqD0Y+iTEwPuQqY/S5ctG7Ojj8
-        +unNQIq4dGz1chrFR2SdUDHrOHKQphduo3tep+5FanU2SjWGODgCjy/zYx3fI3k4C8GWK1mzHbBmv
-        wJAM7G5w==;
+        d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+        Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To;
+        bh=knAjhsG/6jthQQWVo2QqXwIZ8VPSdd1nuBR6NhivhIM=; b=TOgR8P+26tGgWgiGF/Q8xDLhu4
+        JXfqmp3WHvsI+j1twYZiPHFhDHAYZoGULR55vSQpneJtLu9vv1lsaFXvIn5EAO08QW9U4o6ON0YEX
+        uhC3S3p0sTi9A7DI0NaZGUDBKN3HKSsulbk1al/snEF5dgBJTw6cJrobBZbQ06A29/7BfQlb+7WVC
+        HeaZAURee2zm/BF/Nn8fa0VPNuSAsoLuXUiS6L9dH9M1L4Upj9YoP2rDceKls+CRuxxl86yW5pm93
+        hOHaRzQgBHjzj5QQb8ItCzNLMF55Z51WH5NYvZ3//pa8Prm0DMqUouytBpjfwn6e9ZKNBGT/Ji5W1
+        5a2WN6jw==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
         by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nhYRk-007QKR-48; Thu, 21 Apr 2022 15:10:16 +0000
+        id 1nhYRk-007QKQ-3l; Thu, 21 Apr 2022 15:10:16 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
         (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9A6543006C5;
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9E17E300923;
         Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-        id 5FA6A2B32F273; Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
-Message-ID: <20220421150248.667412396@infradead.org>
+        id 7AC582B553DF3; Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
+Message-ID: <20220421150654.940646810@infradead.org>
 User-Agent: quilt/0.66
-Date:   Thu, 21 Apr 2022 17:02:48 +0200
+Date:   Thu, 21 Apr 2022 17:02:52 +0200
 From:   Peter Zijlstra <peterz@infradead.org>
 To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
@@ -45,62 +45,99 @@ To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
         bigeasy@linutronix.de, Will Deacon <will@kernel.org>
 Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 0/5] ptrace-vs-PREEMPT_RT and freezer rewrite
+Subject: [PATCH v2 4/5] freezer,umh: Clean up freezer/initrd interaction
+References: <20220421150248.667412396@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Find here a new posting of the ptrace and freezer patches :-)
+handle_initrd() marks itself as PF_FREEZER_SKIP in order to ensure
+that the UMH, which is going to freeze the system, doesn't
+indefinitely wait for it's caller.
 
-The majority of the changes are in patch 2, which with much feedback from Oleg
-and Eric has changed lots.
+Rework things by adding UMH_FREEZABLE to indicate the completion is
+freezable.
 
-I'm hoping we're converging on something agreeable.
-
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/acpi/x86/s2idle.c         |  12 +-
- drivers/android/binder.c          |   4 +-
- drivers/media/pci/pt3/pt3.c       |   4 +-
- drivers/scsi/scsi_transport_spi.c |   7 +-
- fs/cifs/inode.c                   |   4 +-
- fs/cifs/transport.c               |   5 +-
- fs/coredump.c                     |   5 +-
- fs/nfs/file.c                     |   3 +-
- fs/nfs/inode.c                    |  12 +-
- fs/nfs/nfs3proc.c                 |   3 +-
- fs/nfs/nfs4proc.c                 |  14 +--
- fs/nfs/nfs4state.c                |   3 +-
- fs/nfs/pnfs.c                     |   4 +-
- fs/xfs/xfs_trans_ail.c            |   8 +-
- include/linux/completion.h        |   1 +
- include/linux/freezer.h           | 244 ++------------------------------------
- include/linux/sched.h             |  49 ++++----
- include/linux/sched/jobctl.h      |  10 ++
- include/linux/sched/signal.h      |   5 +-
- include/linux/sunrpc/sched.h      |   7 +-
- include/linux/suspend.h           |   8 +-
- include/linux/umh.h               |   9 +-
- include/linux/wait.h              |  40 ++++++-
- init/do_mounts_initrd.c           |  10 +-
- kernel/cgroup/legacy_freezer.c    |  23 ++--
- kernel/exit.c                     |   4 +-
- kernel/fork.c                     |   5 +-
- kernel/freezer.c                  | 137 +++++++++++++++------
- kernel/futex/waitwake.c           |   8 +-
- kernel/hung_task.c                |   4 +-
- kernel/power/hibernate.c          |  35 ++++--
- kernel/power/main.c               |  18 +--
- kernel/power/process.c            |  10 +-
- kernel/power/suspend.c            |  12 +-
- kernel/power/user.c               |  24 ++--
- kernel/ptrace.c                   | 114 ++++++++++--------
- kernel/sched/completion.c         |   9 ++
- kernel/sched/core.c               |  24 ++--
- kernel/signal.c                   |  62 +++++++---
- kernel/time/hrtimer.c             |   4 +-
- kernel/umh.c                      |  18 ++-
- mm/khugepaged.c                   |   4 +-
- net/sunrpc/sched.c                |  12 +-
- net/unix/af_unix.c                |   8 +-
- 44 files changed, 478 insertions(+), 528 deletions(-)
+ include/linux/umh.h     |    9 +++++----
+ init/do_mounts_initrd.c |   10 +---------
+ kernel/umh.c            |    8 ++++++++
+ 3 files changed, 14 insertions(+), 13 deletions(-)
+
+--- a/include/linux/umh.h
++++ b/include/linux/umh.h
+@@ -11,10 +11,11 @@
+ struct cred;
+ struct file;
+ 
+-#define UMH_NO_WAIT	0	/* don't wait at all */
+-#define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
+-#define UMH_WAIT_PROC	2	/* wait for the process to complete */
+-#define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
++#define UMH_NO_WAIT	0x00	/* don't wait at all */
++#define UMH_WAIT_EXEC	0x01	/* wait for the exec, but not the process */
++#define UMH_WAIT_PROC	0x02	/* wait for the process to complete */
++#define UMH_KILLABLE	0x04	/* wait for EXEC/PROC killable */
++#define UMH_FREEZABLE	0x08	/* wait for EXEC/PROC freezable */
+ 
+ struct subprocess_info {
+ 	struct work_struct work;
+--- a/init/do_mounts_initrd.c
++++ b/init/do_mounts_initrd.c
+@@ -79,19 +79,11 @@ static void __init handle_initrd(void)
+ 	init_mkdir("/old", 0700);
+ 	init_chdir("/old");
+ 
+-	/*
+-	 * In case that a resume from disk is carried out by linuxrc or one of
+-	 * its children, we need to tell the freezer not to wait for us.
+-	 */
+-	current->flags |= PF_FREEZER_SKIP;
+-
+ 	info = call_usermodehelper_setup("/linuxrc", argv, envp_init,
+ 					 GFP_KERNEL, init_linuxrc, NULL, NULL);
+ 	if (!info)
+ 		return;
+-	call_usermodehelper_exec(info, UMH_WAIT_PROC);
+-
+-	current->flags &= ~PF_FREEZER_SKIP;
++	call_usermodehelper_exec(info, UMH_WAIT_PROC|UMH_FREEZABLE);
+ 
+ 	/* move initrd to rootfs' /old */
+ 	init_mount("..", ".", NULL, MS_MOVE, NULL);
+--- a/kernel/umh.c
++++ b/kernel/umh.c
+@@ -28,6 +28,7 @@
+ #include <linux/async.h>
+ #include <linux/uaccess.h>
+ #include <linux/initrd.h>
++#include <linux/freezer.h>
+ 
+ #include <trace/events/module.h>
+ 
+@@ -436,6 +437,9 @@ int call_usermodehelper_exec(struct subp
+ 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
+ 		goto unlock;
+ 
++	if (wait & UMH_FREEZABLE)
++		freezer_do_not_count();
++
+ 	if (wait & UMH_KILLABLE) {
+ 		retval = wait_for_completion_killable(&done);
+ 		if (!retval)
+@@ -448,6 +452,10 @@ int call_usermodehelper_exec(struct subp
+ 	}
+ 
+ 	wait_for_completion(&done);
++
++	if (wait & UMH_FREEZABLE)
++		freezer_count();
++
+ wait_done:
+ 	retval = sub_info->retval;
+ out:
+
 
