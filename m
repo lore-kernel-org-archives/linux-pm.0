@@ -2,105 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92FFBC4332F
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8392C433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 15:10:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1389875AbiDUPH6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 11:07:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44260 "EHLO
+        id S1389888AbiDUPNf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 11:13:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46914 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1389867AbiDUPH4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 11:07:56 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32EBC193D5
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 08:05:06 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id v64-20020a1cac43000000b0038cfd1b3a6dso6070684wme.5
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 08:05:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=E15M9Ws9rPTsezqPUu5FPX35Ipux/TcBsX6BpW7X7Mc=;
-        b=AITr5RnwDxY5IpwPra9w2ksKNUuSqTH7IVfpHD8VTH5aL8oRt0tlPRC795QKxcXho3
-         V48Ael5YBf8nTu1aM5DmbsbaErIHF1Lr5hU/0xREThm2sTjVsUU3d+eyRZM+dGyQoLTA
-         enZLQStav9Xck7aYA0FWtfA1thm+CiQosv5sUFs94xqHUhcEKt+Fa3kFzXK7dK+TrGhj
-         uQsRTqi50G5R6nycUOXBt2Td94u0HY9znZLbl4JeUO7MMXxdVxmILh3ezdVP+BMGio+A
-         hY7Cke1BuzrJtGi5QvE1SM+PjB4/afX1pf9LnxB2euCwEyu2Z5KGjCgfWTRFUp9KT7qD
-         9amA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=E15M9Ws9rPTsezqPUu5FPX35Ipux/TcBsX6BpW7X7Mc=;
-        b=3NnjOX2SU8SqMAEn4Qhnbg3zAnR5WgkxWE6TvJIVSMPHvN+o4w/IO8n1HtXeTkeI3a
-         OSeatYpgi0lAsVq+R15SRhszYvdLvMIfcCswvmxyo1eohsaMeYM1miPn5fNovh8X35kp
-         T9aricWqENOSa3fv/FGBERPjiz/DNU/3ZE6SgTBrz8jmmZ0YUUTWOguFLso8OB65LUou
-         6J0ruzP+jILlrWxKbPPAUQeaJEuuHFaStgkFBDl/sHCzMwQZNo00/UqaaWAyFCcHJKwQ
-         Xl0mG9ccGvNBPBxLpRwnMtIMpNLxBQld1PkpxpPFMyhVvfNC9tslVDS7peTglgXP7KMp
-         uZrw==
-X-Gm-Message-State: AOAM531M4hhjK6VdoTqt6O1rI/dNf5MTZeiAjAusohwyarn4/YlJqkjd
-        9MC/3OSPGfKGds/L/AlGwqdCbw==
-X-Google-Smtp-Source: ABdhPJwTQ+9A9qQhbowMT6ITAZESTr+JAZ57+aJU0Gok1/P01kUj2CpfBFcvhWOpWAV3HNG+gO3qaw==
-X-Received: by 2002:a05:600c:19c9:b0:391:d98d:2cf3 with SMTP id u9-20020a05600c19c900b00391d98d2cf3mr9137192wmq.136.1650553504458;
-        Thu, 21 Apr 2022 08:05:04 -0700 (PDT)
-Received: from [192.168.1.41] (176-182-171-101.abo.bbox.fr. [176.182.171.101])
-        by smtp.googlemail.com with ESMTPSA id a4-20020a056000188400b0020a9ec6e8e3sm2875350wri.55.2022.04.21.08.05.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 Apr 2022 08:05:03 -0700 (PDT)
-Message-ID: <e10b3f13-75b6-c19b-9a27-d75e2e80054a@linaro.org>
-Date:   Thu, 21 Apr 2022 17:05:02 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH v3 0/4] tools/thermal: thermal library and tools
-Content-Language: en-US
-To:     srinivas pandruvada <srinivas.pandruvada@linux.intel.com>,
-        rafael@kernel.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20220420160933.347088-1-daniel.lezcano@linaro.org>
- <8610206dac7bf538eaf8fa81569741a91e4b8dc7.camel@linux.intel.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <8610206dac7bf538eaf8fa81569741a91e4b8dc7.camel@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S232354AbiDUPNe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 11:13:34 -0400
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23BDB3299D;
+        Thu, 21 Apr 2022 08:10:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=Subject:Cc:To:From:Date:Message-ID:
+        Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=4rWOXJsvuobYbiGoWOq011uN1R9GhH39hya4yiHq06A=; b=DfAJsgGXTHsCtf/8unN3gWA2wH
+        yoC+BnND0K6m4IGyU7/G5FNcjA3agmRBpUoO9qZC/eB4/Jtt5UpuMkC7K0T9JAbHVQYuXcdK3o/JS
+        bOpLMLK8XuFbzi93q6gAsY9jDcfu22RhhDtjZtoYxOoEZ6Mj6nplGj0q5j+BTf2RQsewA62vxggFi
+        k/clpnM+9WCaCxVwyre3joSS+KcL8zuKehO6cnERl6r+OZiH4EHeqD0Y+iTEwPuQqY/S5ctG7Ojj8
+        +unNQIq4dGz1chrFR2SdUDHrOHKQphduo3tep+5FanU2SjWGODgCjy/zYx3fI3k4C8GWK1mzHbBmv
+        wJAM7G5w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nhYRk-007QKR-48; Thu, 21 Apr 2022 15:10:16 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9A6543006C5;
+        Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
+        id 5FA6A2B32F273; Thu, 21 Apr 2022 17:10:13 +0200 (CEST)
+Message-ID: <20220421150248.667412396@infradead.org>
+User-Agent: quilt/0.66
+Date:   Thu, 21 Apr 2022 17:02:48 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, ebiederm@xmission.com,
+        bigeasy@linutronix.de, Will Deacon <will@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, peterz@infradead.org, tj@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/5] ptrace-vs-PREEMPT_RT and freezer rewrite
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21/04/2022 05:59, srinivas pandruvada wrote:
-> On Wed, 2022-04-20 at 18:09 +0200, Daniel Lezcano wrote:
+Find here a new posting of the ptrace and freezer patches :-)
 
-[ ... ]
+The majority of the changes are in patch 2, which with much feedback from Oleg
+and Eric has changed lots.
 
-> But I still see these errors in applying patches:
-> 
-> Applying: tools/lib/thermal: Add a thermal library
-> Applying: tools/thermal: Add util library
-> Applying: tools/thermal: Add a temperature capture tool
-> .git/rebase-apply/patch:809: space before tab in indent.
-> 	      	polling = 100; }
-> .git/rebase-apply/patch:90: new blank line at EOF.
-> +
-> .git/rebase-apply/patch:221: new blank line at EOF.
-> +
-> warning: 3 lines add whitespace errors.
-> Applying: tools/thermal: Add thermal daemon skeleton
-> .git/rebase-apply/patch:86: new blank line at EOF.
-> +
-> warning: 1 line adds whitespace errors.
+I'm hoping we're converging on something agreeable.
 
-Ok, I'll apply it with --whitespace=fix
+---
+ drivers/acpi/x86/s2idle.c         |  12 +-
+ drivers/android/binder.c          |   4 +-
+ drivers/media/pci/pt3/pt3.c       |   4 +-
+ drivers/scsi/scsi_transport_spi.c |   7 +-
+ fs/cifs/inode.c                   |   4 +-
+ fs/cifs/transport.c               |   5 +-
+ fs/coredump.c                     |   5 +-
+ fs/nfs/file.c                     |   3 +-
+ fs/nfs/inode.c                    |  12 +-
+ fs/nfs/nfs3proc.c                 |   3 +-
+ fs/nfs/nfs4proc.c                 |  14 +--
+ fs/nfs/nfs4state.c                |   3 +-
+ fs/nfs/pnfs.c                     |   4 +-
+ fs/xfs/xfs_trans_ail.c            |   8 +-
+ include/linux/completion.h        |   1 +
+ include/linux/freezer.h           | 244 ++------------------------------------
+ include/linux/sched.h             |  49 ++++----
+ include/linux/sched/jobctl.h      |  10 ++
+ include/linux/sched/signal.h      |   5 +-
+ include/linux/sunrpc/sched.h      |   7 +-
+ include/linux/suspend.h           |   8 +-
+ include/linux/umh.h               |   9 +-
+ include/linux/wait.h              |  40 ++++++-
+ init/do_mounts_initrd.c           |  10 +-
+ kernel/cgroup/legacy_freezer.c    |  23 ++--
+ kernel/exit.c                     |   4 +-
+ kernel/fork.c                     |   5 +-
+ kernel/freezer.c                  | 137 +++++++++++++++------
+ kernel/futex/waitwake.c           |   8 +-
+ kernel/hung_task.c                |   4 +-
+ kernel/power/hibernate.c          |  35 ++++--
+ kernel/power/main.c               |  18 +--
+ kernel/power/process.c            |  10 +-
+ kernel/power/suspend.c            |  12 +-
+ kernel/power/user.c               |  24 ++--
+ kernel/ptrace.c                   | 114 ++++++++++--------
+ kernel/sched/completion.c         |   9 ++
+ kernel/sched/core.c               |  24 ++--
+ kernel/signal.c                   |  62 +++++++---
+ kernel/time/hrtimer.c             |   4 +-
+ kernel/umh.c                      |  18 ++-
+ mm/khugepaged.c                   |   4 +-
+ net/sunrpc/sched.c                |  12 +-
+ net/unix/af_unix.c                |   8 +-
+ 44 files changed, 478 insertions(+), 528 deletions(-)
 
-I did a try and it fixes the trailing whitespace
-
-Is ok for you Rafael ?
-
-
-
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
