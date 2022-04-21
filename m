@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85913C4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 14:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 420CEC433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Apr 2022 14:27:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1389269AbiDUOag (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Apr 2022 10:30:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35436 "EHLO
+        id S1389398AbiDUOaj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Apr 2022 10:30:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1389279AbiDUOaP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 10:30:15 -0400
-Received: from mail-oi1-x231.google.com (mail-oi1-x231.google.com [IPv6:2607:f8b0:4864:20::231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 578AF3EBA9
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 07:27:24 -0700 (PDT)
-Received: by mail-oi1-x231.google.com with SMTP id b188so5736928oia.13
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 07:27:24 -0700 (PDT)
+        with ESMTP id S1389253AbiDUOaK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2022 10:30:10 -0400
+Received: from mail-oi1-x22e.google.com (mail-oi1-x22e.google.com [IPv6:2607:f8b0:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FC723ED09
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 07:27:20 -0700 (PDT)
+Received: by mail-oi1-x22e.google.com with SMTP id z8so5793973oix.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2022 07:27:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:subject:date:message-id:in-reply-to:references:mime-version
          :content-transfer-encoding;
-        bh=Ufjm8eQVOmHSq6mbSZuwdtOmOtgkiUv7cvs2d7Tsqzg=;
-        b=lc88I4IrzjCDq0usz3Ap64eq6els4c0Q8dPBj3xtOtsvVg15OT65MhjcL1VTJ3rlGR
-         r1n6vPBJyEGyrBZvAboUG/VOXBD2/rZIQ7jlSRy95NoPV09fJxSUGuZypZ33mmXYDknd
-         1coVYs8aTrVmSwQpbK0+i4KTuq04CpyUT/8vxIvPxJR6RXSKVRduGsMDvopcy7yEBRRX
-         KaaTc2HE7RA2bO8jBL1hzzhNYoN6/CBP1eFsXzCWQVST7gqCq+386VisxLwDfFF+IChF
-         lkZGvy8W17oRUESRArTDYfh9Qv8a77ENtcaFVV8yM/MNZgivs1D9t4pvLkp/iHsiI75J
-         2MbQ==
+        bh=Ax4avlN0oglfzD6swQB5upAnrR9vbmcO4lly1CB9MS0=;
+        b=WsC04F1RsX1JNzcannfCWEjoteFcPfSy9HqfKLlLLTSxKaAMW7vo8kPvQ7SvxIA6Az
+         9YtRXmHBaxvC9+gXLPvne/Qy+0JtquZhXTKVBz5Ea99QSDnatgl1Ir0cnm+nIHD8GLYl
+         G9lIfXbTKgztzzhNMoNW7xaq4yvZ2xzkfXXfKBRurKTXLxBCIbdsin7VitVBvUFo7fD2
+         BMLl1XY+ISNNf9Yd9ZL7WADg+zhKDnfBQ8F4wLelxoXPNzDcLlTSR0JigF5DZteMcXTd
+         9ooTO4DRB31uXzPaPfZVuBZtmL63ckMptbfxHy1rT689f4dbtNMflQ+kL9z72FB9g2rk
+         mOZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Ufjm8eQVOmHSq6mbSZuwdtOmOtgkiUv7cvs2d7Tsqzg=;
-        b=JVRKZfo2cs00l9GdGwXFZR8QuQNqMk0vbfEKMMTmKw5hQPqugmm10xEWijpGIPQJ5M
-         7/r1FQFo9rkL1oGRPO5eVqyTg9bHC5w1az10ymE1yRMrt+ZgojSVWQPBdTD5PC4fNsp+
-         2C68D5/DG9e0g2hoLBcVAMT6HC0boD/HT3AwAgyMT3BApC2iDg/p0upU0uzB9tm33JgH
-         m4td2E+JFCRWUBli9ad6gIHIvBlcT16ObR2rGk/vDvkwCHzBqhLB3AoGjsw/fam5dx7/
-         WQCZOqbsuGlfuWew9qke3KcsTNPl6/q4dEKJllhRbq8ChHkQBZ2tGDNr2ISUyzPRoLGd
-         Ka3A==
-X-Gm-Message-State: AOAM5317VPnj6xq9FxBtgRJTm0taMwO24232CpCjtVJmX0RRX0MivVKa
-        Lv3oDPcefcLwg3SruO5IgGrqv0xFvoCKMwuM
-X-Google-Smtp-Source: ABdhPJxxHRoVLE3Remv3U2pn0rDem4OQU5/ftPllny7x5E7b3nt4YxU+rbz6XgxbotrSgEfF98DB1w==
-X-Received: by 2002:a05:6808:138e:b0:322:2dcd:dc7d with SMTP id c14-20020a056808138e00b003222dcddc7dmr4351042oiw.159.1650551243482;
-        Thu, 21 Apr 2022 07:27:23 -0700 (PDT)
+        bh=Ax4avlN0oglfzD6swQB5upAnrR9vbmcO4lly1CB9MS0=;
+        b=MzNemwRCB64wHvYCTzotB4Paqm7SxXpQmJ+eoyceD0+kLKJ4WX3u2lVD89B+46a0jn
+         TWVBqbIkcbNnCeELJzc3KLdmeQdBD5exhg9f8UA9A5AVzhvOxlj0shmDRy4zjnlHLfdi
+         FTl1LlsVN9Ds6sufJXyJ+zbTsGHcK3aSb7DkIwzFYr6DyBENBM+/TJL9H65Kge5CdC6L
+         QHe1W+Z0E8beDSX18er5W2pMeU0nIzbqtpH9mcwbrabDG22EbC24glBIM9RPcODNMzNP
+         yburzJEjDAO1J3pInt3c7Ac1w7OvXQ29d+G+rjDAvZhrA34mpCzk4HYQU0COhksEN5in
+         BmRA==
+X-Gm-Message-State: AOAM533iOtyX6xsWmWoDxSFyOb48KkzhL9pbdadaMNNcy1UczNR8KYUb
+        29zkZBlHDV+ROko75mb9XOy77fXRR65d0Gl5
+X-Google-Smtp-Source: ABdhPJwaFVAfSTDez3Zu80iJyqsv3GD/rPUN1R5xCe3IUJJdfZQU4qTP1ofMsk33NJeB4R6esgp1sQ==
+X-Received: by 2002:a05:6808:180c:b0:322:3d43:c38b with SMTP id bh12-20020a056808180c00b003223d43c38bmr4162516oib.8.1650551239426;
+        Thu, 21 Apr 2022 07:27:19 -0700 (PDT)
 Received: from builder.lan ([2600:1700:a0:3dc8:3697:f6ff:fe85:aac9])
-        by smtp.gmail.com with ESMTPSA id s14-20020a0568302a8e00b006054e841915sm4296295otu.73.2022.04.21.07.27.22
+        by smtp.gmail.com with ESMTPSA id s14-20020a0568302a8e00b006054e841915sm4296295otu.73.2022.04.21.07.27.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Apr 2022 07:27:22 -0700 (PDT)
+        Thu, 21 Apr 2022 07:27:18 -0700 (PDT)
 From:   Bjorn Andersson <bjorn.andersson@linaro.org>
 To:     linux-pm@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -56,12 +56,12 @@ To:     linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org,
         Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Vamsi krishna Lanka <quic_vamslank@quicinc.com>
-Subject: Re: (subset) [PATCH 3/4] arm64: dts: qcom: do not use underscore in BCM node name
-Date:   Thu, 21 Apr 2022 09:26:59 -0500
-Message-Id: <165055095990.2574292.8000062145772271455.b4-ty@linaro.org>
+Subject: Re: (subset) [PATCH 1/4] ARM: dts: qcom: sdx55: do not use underscore in BCM node name
+Date:   Thu, 21 Apr 2022 09:26:56 -0500
+Message-Id: <165055095989.2574292.3311309854371304681.b4-ty@linaro.org>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220411085935.130072-3-krzysztof.kozlowski@linaro.org>
-References: <20220411085935.130072-1-krzysztof.kozlowski@linaro.org> <20220411085935.130072-3-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220411085935.130072-1-krzysztof.kozlowski@linaro.org>
+References: <20220411085935.130072-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -69,7 +69,7 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 11 Apr 2022 10:59:34 +0200, Krzysztof Kozlowski wrote:
+On Mon, 11 Apr 2022 10:59:32 +0200, Krzysztof Kozlowski wrote:
 > Align BCM voter node with DT schema by using hyphen instead of
 > underscore.
 > 
@@ -77,8 +77,8 @@ On Mon, 11 Apr 2022 10:59:34 +0200, Krzysztof Kozlowski wrote:
 
 Applied, thanks!
 
-[3/4] arm64: dts: qcom: do not use underscore in BCM node name
-      commit: fc0e7dd6d2e2c9f8b2c6497a190ee29d8f3aef3a
+[1/4] ARM: dts: qcom: sdx55: do not use underscore in BCM node name
+      commit: 568cd3243331b6bf0702665f7bd90baa93e2b3ac
 
 Best regards,
 -- 
