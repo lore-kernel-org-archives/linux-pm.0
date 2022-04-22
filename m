@@ -2,40 +2,41 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2378EC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E36D3C4321E
 	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 07:53:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1445132AbiDVHz6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 03:55:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35360 "EHLO
+        id S1445107AbiDVHz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 03:55:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1445089AbiDVHzw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 03:55:52 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43C1251E4E;
-        Fri, 22 Apr 2022 00:52:55 -0700 (PDT)
-X-UUID: bbcd0c72067f4f8a82f138e100b109f1-20220422
+        with ESMTP id S1445093AbiDVHzx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 03:55:53 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C73B51E53;
+        Fri, 22 Apr 2022 00:52:56 -0700 (PDT)
+X-UUID: ead6da1dca8e433cb3d773776b06b7c9-20220422
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:a3b27990-5e3e-4a72-a8f1-64a13edcba98,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:faefae9,CLOUDID:334097f0-da02-41b4-b6df-58f4ccd36682,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
-X-UUID: bbcd0c72067f4f8a82f138e100b109f1-20220422
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+X-CID-O-INFO: VERSION:1.1.4,REQID:3194f88c-ff74-4c73-bbc8-7799193ea351,OB:30,L
+        OB:30,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,A
+        CTION:release,TS:95
+X-CID-INFO: VERSION:1.1.4,REQID:3194f88c-ff74-4c73-bbc8-7799193ea351,OB:30,LOB
+        :30,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,A
+        CTION:quarantine,TS:95
+X-CID-META: VersionHash:faefae9,CLOUDID:dd4fc1ef-06b0-4305-bfbf-554bfc9d151a,C
+        OID:8b78e545382b,Recheck:0,SF:13|15|28|17|19|48,TC:nil,Content:0,EDM:-3,Fi
+        le:nil,QS:0,BEC:nil
+X-UUID: ead6da1dca8e433cb3d773776b06b7c9-20220422
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 416833887; Fri, 22 Apr 2022 15:52:50 +0800
-Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+        with ESMTP id 1262990247; Fri, 22 Apr 2022 15:52:48 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
  mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Fri, 22 Apr 2022 15:52:48 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
- (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 22 Apr
- 2022 15:52:47 +0800
+ 15.2.792.15; Fri, 22 Apr 2022 15:52:46 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 22 Apr 2022 15:52:47 +0800
+ Transport; Fri, 22 Apr 2022 15:52:46 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -48,11 +49,10 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Rex-BC Chen <rex-bc.chen@mediatek.com>,
-        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
-Subject: [PATCH V4 13/14] arm64: dts: mediatek: Add MediaTek CCI node for MT8183
-Date:   Fri, 22 Apr 2022 15:52:38 +0800
-Message-ID: <20220422075239.16437-14-rex-bc.chen@mediatek.com>
+        Rex-BC Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH V4 08/14] cpufreq: mediatek: Make sram regulator optional
+Date:   Fri, 22 Apr 2022 15:52:33 +0800
+Message-ID: <20220422075239.16437-9-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
 References: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
@@ -63,65 +63,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add MediaTek CCI devfreq node for MT8183.
+From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
-Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+For some MediaTek SoCs, like MT8186, it's possible that the sram regulator
+is shared between CPU and CCI.
+We hope regulator framework can return error for error handling rather
+than a dummy handler from regulator_get api.
+Therefore, we choose to use regulator_get_optional.
+
+Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8183-evb.dts    | 4 ++++
- arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi | 4 ++++
- arch/arm64/boot/dts/mediatek/mt8183.dtsi       | 7 +++++++
- 3 files changed, 15 insertions(+)
+ drivers/cpufreq/mediatek-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
-index 8953dbf84f3e..7ac9864db9de 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
-@@ -412,6 +412,10 @@
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index 0b2ca0c8eddc..97ce96421241 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -438,7 +438,7 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+ 	}
  
- };
- 
-+&cci {
-+	proc-supply = <&mt6358_vproc12_reg>;
-+};
-+
- &cpu0 {
- 	proc-supply = <&mt6358_vproc12_reg>;
- };
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi b/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
-index 8d5bf73a9099..b035e06840e6 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
-@@ -230,6 +230,10 @@
- 	status = "okay";
- };
- 
-+&cci {
-+	proc-supply = <&mt6358_vproc12_reg>;
-+};
-+
- &cpu0 {
- 	proc-supply = <&mt6358_vproc12_reg>;
- };
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 1db3322f9daa..c95eec5fb704 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -280,6 +280,13 @@
- 		};
- 	};
- 
-+	cci: cci {
-+		compatible = "mediatek,mt8183-cci";
-+		clocks = <&apmixedsys CLK_APMIXED_CCIPLL>;
-+		clock-names = "cci_clock";
-+		operating-points-v2 = <&cci_opp>;
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ 	/* Both presence and absence of sram regulator are valid cases. */
+-	info->sram_reg = regulator_get_exclusive(cpu_dev, "sram");
++	info->sram_reg = regulator_get_optional(cpu_dev, "sram");
+ 	if (IS_ERR(info->sram_reg))
+ 		info->sram_reg = NULL;
+ 	else {
 -- 
 2.18.0
 
