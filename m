@@ -2,130 +2,73 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A574C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 14:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7170DC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 14:40:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354840AbiDVOla (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 10:41:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55712 "EHLO
+        id S1448607AbiDVOnu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 10:43:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1444460AbiDVOl2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 10:41:28 -0400
-Received: from mail-yw1-f178.google.com (mail-yw1-f178.google.com [209.85.128.178])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 621015BE45;
-        Fri, 22 Apr 2022 07:38:35 -0700 (PDT)
-Received: by mail-yw1-f178.google.com with SMTP id 00721157ae682-2ebf4b91212so87470967b3.8;
-        Fri, 22 Apr 2022 07:38:35 -0700 (PDT)
+        with ESMTP id S1448788AbiDVOnt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 10:43:49 -0400
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32C6D5BE68
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2022 07:40:53 -0700 (PDT)
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-2ef4a241cc5so87571477b3.2
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2022 07:40:53 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=y0Vftok5Nvg9cisIqL5OFcU6eRNBtw4NVj7c2gCi/PY=;
-        b=xNBx5ixEw9m0VQD0QmEuq2v1scW9Rdq/IViSkIFqkLsJar+psOm4l6VvlQBBxwcLpr
-         7+DFFbeTKP9czNVSKLIN4s19UZLhT+UYrMonc15/sZlAanQ9fyGsQ1zzraTxW4sy3GsK
-         55SteBudpS4QhrE+0JmmKnOAm2V6mXhxsmhNa/CxtDi5jeGG/NLR5dlEJzoVl6kY5E9J
-         9z/Ljl4686uxpjInGdB8hq1ycrlABYSjnD8lLFVdUG4jeXk3vbGmhdRz5aKi5ysxik6W
-         xJw2y9jDLwSGRt2NaMqqxVlkjEMpNaN5+GGj3EYwQpxLf16lU6KEaaDdbhbamm+PCvPA
-         RGAg==
-X-Gm-Message-State: AOAM533HaJOUdnJnFr4ieV8VBbJPbnBcfIYzgIJFauL1K480X63eO4ff
-        KpUdN8GYJsC5+NV0Ftc+e7R2JdsTV+8oO2JYNm8=
-X-Google-Smtp-Source: ABdhPJwtcD+GP67nrddpykrQMidPY41LYes/g/zoTRBXgWrqje6WF7feM6ueQL6pY/H9+15vshyAMAKhw+xg5vCnPAw=
-X-Received: by 2002:a81:1096:0:b0:2ec:4a46:7e5a with SMTP id
- 144-20020a811096000000b002ec4a467e5amr5328668ywq.196.1650638314653; Fri, 22
- Apr 2022 07:38:34 -0700 (PDT)
+        bh=OlSK0GM7NNVVMzyxoMPAM462t1fSPrlLvFDxyrh1E8Q=;
+        b=ivCJoqXK4raAusldXNSO1niJkl7rjI8aNcHz8HXNQdrhcd/54F775IeH5g4wdw+6MO
+         Lutepis1k20ThlLUeCxiyZJjSPFOlHNtT6ZF2gT02h+O/9obdPjmilasuovccxIMs6yk
+         wBSttGBefzTBW9yZzNKKKxpeh+w+YHl6KQvXM1okpAx07jBO8RptDhns/71RcuknqK+5
+         T5rdB54qfXlmmjwvZwVaLUkUXQ1iIGxOm7F2m8Xci3BcZLLm4qeGree3bIzZr0TYHdEM
+         9Rgvd8wT705L7V99N1KEpOSGRJYWvYax2fKy46OtObHYTguEcjtNW0n1RDcjnIzf0m8i
+         Lr+w==
+X-Gm-Message-State: AOAM531Wmv3gSU1JEsZFcykvBW80hmcNPhJd2KjBo72+SlmmCng+Snba
+        UyBSEHEHLL/0Uns0qP/3GvO7JnkElewqVHJY4gtR5WxF
+X-Google-Smtp-Source: ABdhPJwyLgtKdeTbZdheVfyPRiVvoVUYXS6oSIgBajn+CxUe1ofqgfQ+adUc3nVY3o2vr2ygbmr59ZDNuOwKGYag20o=
+X-Received: by 2002:a81:4b8e:0:b0:2ef:5240:69fc with SMTP id
+ y136-20020a814b8e000000b002ef524069fcmr5107548ywa.19.1650638452519; Fri, 22
+ Apr 2022 07:40:52 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220420191541.99528-1-schspa@gmail.com>
-In-Reply-To: <20220420191541.99528-1-schspa@gmail.com>
+References: <20220421150736.94717-1-rui.zhang@intel.com>
+In-Reply-To: <20220421150736.94717-1-rui.zhang@intel.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 22 Apr 2022 16:38:23 +0200
-Message-ID: <CAJZ5v0guPiGx-ZnC0RcqVgDEp0bh4DcKC7QYjjO0PF_3kHdVGg@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: fix race on cpufreq online
-To:     Schspa Shi <schspa@gmail.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date:   Fri, 22 Apr 2022 16:40:41 +0200
+Message-ID: <CAJZ5v0hopS-96rcQLP9Oj3mAzf8bbnAk-5svMYHqrOROtnGTeg@mail.gmail.com>
+Subject: Re: [PATCH] powercap: intel_rapl: add support for RaptorLake
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Apr 20, 2022 at 9:16 PM Schspa Shi <schspa@gmail.com> wrote:
+On Thu, Apr 21, 2022 at 9:12 AM Zhang Rui <rui.zhang@intel.com> wrote:
 >
-> When cpufreq online failed, policy->cpus are not empty while
-> cpufreq sysfs file available, we may access some data freed.
+> Add intel_rapl support for the RaptorLake platform.
 >
-> Take policy->clk as an example:
->
-> static int cpufreq_online(unsigned int cpu)
-> {
->   ...
->   // policy->cpus != 0 at this time
->   down_write(&policy->rwsem);
->   ret = cpufreq_add_dev_interface(policy);
->   up_write(&policy->rwsem);
->
->   return 0;
->
-> out_destroy_policy:
->         for_each_cpu(j, policy->real_cpus)
->                 remove_cpu_dev_symlink(policy, get_cpu_device(j));
->     up_write(&policy->rwsem);
-> ...
-> out_exit_policy:
->   if (cpufreq_driver->exit)
->     cpufreq_driver->exit(policy);
->       clk_put(policy->clk);
->       // policy->clk is a wild pointer
-> ...
->                                     ^
->                                     |
->                             Another process access
->                             __cpufreq_get
->                               cpufreq_verify_current_freq
->                                 cpufreq_generic_get
->                                   // acces wild pointer of policy->clk;
->                                     |
->                                     |
-> out_offline_policy:                 |
->   cpufreq_policy_free(policy);      |
->     // deleted here, and will wait for no body reference
->     cpufreq_policy_put_kobj(policy);
-> }
->
-> Signed-off-by: Schspa Shi <schspa@gmail.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 > ---
->  drivers/cpufreq/cpufreq.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  drivers/powercap/intel_rapl_common.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 80f535cc8a75..0d58b0f8f3af 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1533,8 +1533,6 @@ static int cpufreq_online(unsigned int cpu)
->         for_each_cpu(j, policy->real_cpus)
->                 remove_cpu_dev_symlink(policy, get_cpu_device(j));
+> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+> index 07611a00b78f..83da499dd6ec 100644
+> --- a/drivers/powercap/intel_rapl_common.c
+> +++ b/drivers/powercap/intel_rapl_common.c
+> @@ -1107,6 +1107,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+>         X86_MATCH_INTEL_FAM6_MODEL(ROCKETLAKE,          &rapl_defaults_core),
+>         X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE,           &rapl_defaults_core),
+>         X86_MATCH_INTEL_FAM6_MODEL(ALDERLAKE_L,         &rapl_defaults_core),
+> +       X86_MATCH_INTEL_FAM6_MODEL(RAPTORLAKE,          &rapl_defaults_core),
+>         X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,    &rapl_defaults_spr_server),
+>         X86_MATCH_INTEL_FAM6_MODEL(LAKEFIELD,           &rapl_defaults_core),
 >
-> -       up_write(&policy->rwsem);
-> -
->  out_offline_policy:
->         if (cpufreq_driver->offline)
->                 cpufreq_driver->offline(policy);
-> @@ -1543,6 +1541,9 @@ static int cpufreq_online(unsigned int cpu)
->         if (cpufreq_driver->exit)
->                 cpufreq_driver->exit(policy);
->
-> +       cpumask_clear(policy->cpus);
-> +       up_write(&policy->rwsem);
-
-This change is correct AFAICS, but it doesn't really fix the race,
-because show_cpuinfo_cur_freq() uses __cpufreq_get() directly without
-locking.
-
-It should use cpufreq_get() instead.
-
-> +
->  out_free_policy:
->         cpufreq_policy_free(policy);
->         return ret;
 > --
+
+Applied as 5.19 material, thanks!
