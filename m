@@ -2,41 +2,39 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E36D3C4321E
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 07:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB44C4167D
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 07:53:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1445107AbiDVHz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1445136AbiDVHz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 22 Apr 2022 03:55:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35366 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35368 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1445093AbiDVHzx (ORCPT
+        with ESMTP id S1445092AbiDVHzx (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 03:55:53 -0400
 Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C73B51E53;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C5D851E52;
         Fri, 22 Apr 2022 00:52:56 -0700 (PDT)
-X-UUID: ead6da1dca8e433cb3d773776b06b7c9-20220422
+X-UUID: bad63f417056459f820c9ab62b929d63-20220422
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:3194f88c-ff74-4c73-bbc8-7799193ea351,OB:30,L
-        OB:30,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,A
-        CTION:release,TS:95
-X-CID-INFO: VERSION:1.1.4,REQID:3194f88c-ff74-4c73-bbc8-7799193ea351,OB:30,LOB
-        :30,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,A
-        CTION:quarantine,TS:95
-X-CID-META: VersionHash:faefae9,CLOUDID:dd4fc1ef-06b0-4305-bfbf-554bfc9d151a,C
-        OID:8b78e545382b,Recheck:0,SF:13|15|28|17|19|48,TC:nil,Content:0,EDM:-3,Fi
-        le:nil,QS:0,BEC:nil
-X-UUID: ead6da1dca8e433cb3d773776b06b7c9-20220422
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+X-CID-O-INFO: VERSION:1.1.4,REQID:6d4504e7-4210-4b8a-a5d2-65e3bab26e6e,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:faefae9,CLOUDID:394097f0-da02-41b4-b6df-58f4ccd36682,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
+X-UUID: bad63f417056459f820c9ab62b929d63-20220422
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1262990247; Fri, 22 Apr 2022 15:52:48 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Fri, 22 Apr 2022 15:52:46 +0800
+        with ESMTP id 1679407433; Fri, 22 Apr 2022 15:52:47 +0800
+Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 22 Apr 2022 15:52:46 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
+ (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 22 Apr
+ 2022 15:52:44 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 22 Apr 2022 15:52:46 +0800
+ Transport; Fri, 22 Apr 2022 15:52:44 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -49,10 +47,11 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>,
         Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH V4 08/14] cpufreq: mediatek: Make sram regulator optional
-Date:   Fri, 22 Apr 2022 15:52:33 +0800
-Message-ID: <20220422075239.16437-9-rex-bc.chen@mediatek.com>
+Subject: [PATCH V4 04/14] cpufreq: mediatek: Record previous target vproc value
+Date:   Fri, 22 Apr 2022 15:52:29 +0800
+Message-ID: <20220422075239.16437-5-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
 References: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
@@ -65,32 +64,65 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
-For some MediaTek SoCs, like MT8186, it's possible that the sram regulator
-is shared between CPU and CCI.
-We hope regulator framework can return error for error handling rather
-than a dummy handler from regulator_get api.
-Therefore, we choose to use regulator_get_optional.
+We found the buck voltage may not be exactly the same with what we set
+because CPU may share the same buck with other module.
+Therefore, we need to record the previous desired value instead of reading
+it from regulators.
 
+Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 0b2ca0c8eddc..97ce96421241 100644
+index ff27f77e8ee6..1688cf68849c 100644
 --- a/drivers/cpufreq/mediatek-cpufreq.c
 +++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -438,7 +438,7 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 	}
+@@ -40,6 +40,7 @@ struct mtk_cpu_dvfs_info {
+ 	struct list_head list_head;
+ 	int intermediate_voltage;
+ 	bool need_voltage_tracking;
++	int pre_vproc;
+ };
  
- 	/* Both presence and absence of sram regulator are valid cases. */
--	info->sram_reg = regulator_get_exclusive(cpu_dev, "sram");
-+	info->sram_reg = regulator_get_optional(cpu_dev, "sram");
- 	if (IS_ERR(info->sram_reg))
- 		info->sram_reg = NULL;
- 	else {
+ static LIST_HEAD(dvfs_info_list);
+@@ -191,11 +192,17 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 
+ static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
+ {
++	int ret;
++
+ 	if (info->need_voltage_tracking)
+-		return mtk_cpufreq_voltage_tracking(info, vproc);
++		ret = mtk_cpufreq_voltage_tracking(info, vproc);
+ 	else
+-		return regulator_set_voltage(info->proc_reg, vproc,
+-					     vproc + VOLT_TOL);
++		ret = regulator_set_voltage(info->proc_reg, vproc,
++					    MAX_VOLT_LIMIT);
++	if (!ret)
++		info->pre_vproc = vproc;
++
++	return ret;
+ }
+ 
+ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+@@ -213,7 +220,12 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	inter_vproc = info->intermediate_voltage;
+ 
+ 	pre_freq_hz = clk_get_rate(cpu_clk);
+-	pre_vproc = regulator_get_voltage(info->proc_reg);
++
++	if (unlikely(info->pre_vproc <= 0))
++		pre_vproc = regulator_get_voltage(info->proc_reg);
++	else
++		pre_vproc = info->pre_vproc;
++
+ 	if (pre_vproc < 0) {
+ 		dev_err(cpu_dev, "invalid Vproc value: %d\n", pre_vproc);
+ 		return pre_vproc;
 -- 
 2.18.0
 
