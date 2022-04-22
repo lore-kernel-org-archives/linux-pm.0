@@ -2,164 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BE70C433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 21:54:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7164C433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 21:58:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230353AbiDVV5p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 17:57:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33206 "EHLO
+        id S230472AbiDVWBT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 18:01:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230346AbiDVV5D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 17:57:03 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A2251AFF5D;
-        Fri, 22 Apr 2022 13:39:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1650659994; x=1682195994;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=UMRs4BhTByG3T0yDZhW94axoO98VgNSgjnfEZMM3/as=;
-  b=lTZxpBoeWfaai/QN924GKvdQdblQhJN+yIquj7iG17bZU9wVF+ZtEATd
-   g4EzUzX2PBNfZxxxhXbdar/MlVdXpCo7G2W5cqIBafWFYEBnbkkBwjHDd
-   gQn3aOhXe9muB8XyTHcjnEDOTZVbiyQrZ32OYozuZwk6mUTB0DJn9wmGY
-   A0UdrnFc1/hLtAi3JLLwIKvnCAMIAGNwUrMmUfvDNDeozsJnFrLgynl7U
-   kAnzMs6BtMA58hC2CEiXWwQB5HFlXFRiGNsmQuEBacqMnfvRc4qRiTfW8
-   arGJCAwsyRRkCJ7ojUxgSXFNpzSj6YKQPFGAS5ajFE/wXTLWzd7hTc+zV
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10324"; a="325202821"
-X-IronPort-AV: E=Sophos;i="5.90,282,1643702400"; 
-   d="scan'208";a="325202821"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2022 11:17:00 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,282,1643702400"; 
-   d="scan'208";a="594251782"
-Received: from lkp-server01.sh.intel.com (HELO 3abc53900bec) ([10.239.97.150])
-  by orsmga001.jf.intel.com with ESMTP; 22 Apr 2022 11:16:57 -0700
-Received: from kbuild by 3abc53900bec with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1nhxpx-000ARo-9g;
-        Fri, 22 Apr 2022 18:16:57 +0000
-Date:   Sat, 23 Apr 2022 02:16:08 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Cixi Geng <gengcixi@gmail.com>, sre@kernel.org,
-        orsonzhai@gmail.com, baolin.wang7@gmail.com, zhang.lyra@gmail.com,
-        chenyongzhi811@gmail.com
-Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: supply: Add enable the primary charger interface
-Message-ID: <202204230206.9TgyhSb1-lkp@intel.com>
-References: <20220422074109.1709106-1-gengcixi@gmail.com>
+        with ESMTP id S231205AbiDVWBS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 18:01:18 -0400
+Received: from mail-oa1-x33.google.com (mail-oa1-x33.google.com [IPv6:2001:4860:4864:20::33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5BF12C66E2
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2022 13:44:02 -0700 (PDT)
+Received: by mail-oa1-x33.google.com with SMTP id 586e51a60fabf-e2442907a1so9829995fac.8
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2022 13:44:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:in-reply-to:references:from:user-agent:date:message-id
+         :subject:to:cc;
+        bh=8fNT3B9xShMp8YjDhB8mNsFwDWX1HRS1Y91CrVG13FY=;
+        b=A1Yt+jpSTR8vU8ep0aUKLOsD88y/Ntg+K6gPVRkqcFHGbnr5asBMqtQ3LP4oMIyBl8
+         OjQ3WRB2aedSWEX4Gm/d6wCfkUbgPOoLUdsvi2FKp6SR4f5XV7SFuppJnMiTxYXImXGu
+         u3G6TJ2AP6MnAJClkh4o5q0x5y4yqP4L+41Ds=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from
+         :user-agent:date:message-id:subject:to:cc;
+        bh=8fNT3B9xShMp8YjDhB8mNsFwDWX1HRS1Y91CrVG13FY=;
+        b=T3CkZqKNKtBgpeA1sSBHKDlnyvk0ILRev8tV1Nl/zn4VwOiX1IL1graOugkZlpvow/
+         fwrzIrV8nVvLXKGuQeB8rPU/+HJkGV/Q3nYziC3bfzP+xlJUaJ1dB8dhyz4jpUo/V3K4
+         vmFCv95rGA2MytkiPGyAE5lFYSL4z8UPnmKZS55YhEviy3c1tWFgMrQoR0ishl5ip+Og
+         TxW+cffH5+ZRqRC84IN73e3UoA6clIwvVpiO1rxrQxKdixqdGjxYJHIoEJsMk9lp1tb7
+         AOxO/V4SIJAc3mxM3+OfMGpB6sXRhRjlepbH6EzWXxb+AOcovS4AcJXx2ll6ye9PjiW8
+         BABA==
+X-Gm-Message-State: AOAM531Kyn0oph1gGP6FWKyFBuY1b2l6x0RRlWbZFVTWvU0wm8NaPL8q
+        Y+zA4I5yDfmCrn+pyb5zS7u6mgQyu6X8Bi4Hjtfy9dmZMrQ=
+X-Google-Smtp-Source: ABdhPJzqMbbeseVcLoVmKetnixFamZypwpLkOXrtgjUg5Boaskdudv5pEv5IHeI79MhQOMHrOAB0NVnPKI+8x5c4v7A=
+X-Received: by 2002:a05:6870:15ca:b0:e9:551:6d1c with SMTP id
+ k10-20020a05687015ca00b000e905516d1cmr1468427oad.193.1650659676785; Fri, 22
+ Apr 2022 13:34:36 -0700 (PDT)
+Received: from 753933720722 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 22 Apr 2022 13:34:36 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220422074109.1709106-1-gengcixi@gmail.com>
+In-Reply-To: <e54804ee-15f8-36a1-bbc5-9a218a4aec56@kernel.org>
+References: <20220412220033.1273607-1-swboyd@chromium.org> <20220415005828.1980055-1-swboyd@chromium.org>
+ <Yl92UkRwlQsd71mr@ripper> <e54804ee-15f8-36a1-bbc5-9a218a4aec56@kernel.org>
+From:   Stephen Boyd <swboyd@chromium.org>
+User-Agent: alot/0.10
+Date:   Fri, 22 Apr 2022 13:34:36 -0700
+Message-ID: <CAE-0n50OvNmcX9fir8+zgaz9sE+sksNzTjN3vWgzT3A7ay6s+A@mail.gmail.com>
+Subject: Re: [PATCH 3/2] arm64: dts: qcom: sc7180: Remove ipa interconnect node
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <djakov@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, patches@lists.linux.dev,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        Doug Anderson <dianders@chromium.org>,
+        Alex Elder <elder@linaro.org>,
+        Taniya Das <quic_tdas@quicinc.com>,
+        Mike Tipton <quic_mdtipton@quicinc.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Cixi,
+Quoting Georgi Djakov (2022-04-22 00:01:24)
+> On 20.04.22 5:56, Bjorn Andersson wrote:
+> > On Thu 14 Apr 17:58 PDT 2022, Stephen Boyd wrote:
+> >
+> >> This device node is unused now that we've removed the driver that
+> >> consumed it in the kernel. Drop the unused node to save some space.
+> >>
+> >
+> > I'm expecting that merging patch 3 and 4 will work, but cause sync_state
+> > to not happen until the driver changes are merged.
+> >
+> > Can you confirm my expectation? And perhaps confirm that it's fine for
+> > Georgi to pick the driver changes independently of the dts changes...
 
-Thank you for the patch! Perhaps something to improve:
+It should be OK to pick the driver changes independently of the dts.
+They fix a boot up issue.
 
-[auto build test WARNING on sre-power-supply/for-next]
-[also build test WARNING on v5.18-rc3 next-20220422]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+>
+> I have picked the driver changes, as the boot failure definitely needs to
+> be addressed. The sync-state might not happen until we have the DT changes
+> merged, as the framework is matching the count of probed drivers with the
+> count of providers in DT.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Cixi-Geng/power-supply-Add-enable-the-primary-charger-interface/20220422-154432
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
-config: riscv-randconfig-r042-20220422 (https://download.01.org/0day-ci/archive/20220423/202204230206.9TgyhSb1-lkp@intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 5bd87350a5ae429baf8f373cb226a57b62f87280)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install riscv cross compiling tool for clang build
-        # apt-get install binutils-riscv64-linux-gnu
-        # https://github.com/intel-lab-lkp/linux/commit/a566cf23ffad8453d1e1f611086b6eda3f14515d
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Cixi-Geng/power-supply-Add-enable-the-primary-charger-interface/20220422-154432
-        git checkout a566cf23ffad8453d1e1f611086b6eda3f14515d
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash drivers/power/supply/
+Indeed. The DT change is required to actually have sync-state happen
+when the driver changes are merged. Without the DT change I'm not able
+to enter suspend. I didn't notice this earlier, ugh.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+This means that the DTS change needs to be backported to fix suspend,
+because otherwise the _other_ interconnects that aren't IPA keep the
+initial sync-state request forever, waiting for the IPA provider in DT
+to be probed by a driver that doesn't exist. One solution is to have the
+DT change, which makes the probed driver and provider counts match.
 
-All warnings (new ones prefixed by >>):
+Maybe a better solution is to ignore these compatibles in the provider
+count? That way we aren't required to backport a DTS change and
+everything is still contained to driver code.
 
->> drivers/power/supply/sc2731_charger.c:156:13: warning: variable 'ret' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-           } else if (val && !info->charging) {
-                      ^~~~~~~~~~~~~~~~~~~~~~
-   drivers/power/supply/sc2731_charger.c:164:9: note: uninitialized use occurs here
-           return ret;
-                  ^~~
-   drivers/power/supply/sc2731_charger.c:156:9: note: remove the 'if' if its condition is always true
-           } else if (val && !info->charging) {
-                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/power/supply/sc2731_charger.c:156:13: warning: variable 'ret' is used uninitialized whenever '&&' condition is false [-Wsometimes-uninitialized]
-           } else if (val && !info->charging) {
-                      ^~~
-   drivers/power/supply/sc2731_charger.c:164:9: note: uninitialized use occurs here
-           return ret;
-                  ^~~
-   drivers/power/supply/sc2731_charger.c:156:13: note: remove the '&&' if its condition is always true
-           } else if (val && !info->charging) {
-                      ^~~~~~
->> drivers/power/supply/sc2731_charger.c:153:6: warning: variable 'ret' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
-           if (!val && info->charging) {
-               ^~~~~~~~~~~~~~~~~~~~~~
-   drivers/power/supply/sc2731_charger.c:164:9: note: uninitialized use occurs here
-           return ret;
-                  ^~~
-   drivers/power/supply/sc2731_charger.c:153:2: note: remove the 'if' if its condition is always false
-           if (!val && info->charging) {
-           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/power/supply/sc2731_charger.c:151:9: note: initialize the variable 'ret' to silence this warning
-           int ret;
-                  ^
-                   = 0
-   drivers/power/supply/sc2731_charger.c:255:7: warning: variable 'ret' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-                   if (val->intval == true) {
-                       ^~~~~~~~~~~~~~~~~~~
-   drivers/power/supply/sc2731_charger.c:268:9: note: uninitialized use occurs here
-           return ret;
-                  ^~~
-   drivers/power/supply/sc2731_charger.c:255:3: note: remove the 'if' if its condition is always true
-                   if (val->intval == true) {
-                   ^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/power/supply/sc2731_charger.c:225:9: note: initialize the variable 'ret' to silence this warning
-           int ret;
-                  ^
-                   = 0
-   4 warnings generated.
+----8<----
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 80ed03f4dfd0..bfa6788afca1 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -1087,9 +1087,15 @@ static int of_count_icc_providers(struct device_node *np)
+ {
+ 	struct device_node *child;
+ 	int count = 0;
++	const struct of_device_id ignore_list[] = {
++		{ .compatible = "qcom,sc7180-ipa-virt", },
++		{ .compatible = "qcom,sdx55-ipa-virt", },
++		{}
++	};
 
-
-vim +156 drivers/power/supply/sc2731_charger.c
-
-   148	
-   149	static int sc2731_charger_set_status(struct sc2731_charger_info *info, int val)
-   150	{
-   151		int ret;
-   152	
- > 153		if (!val && info->charging) {
-   154			sc2731_charger_stop_charge(info);
-   155			info->charging = false;
- > 156		} else if (val && !info->charging) {
-   157			ret = sc2731_charger_start_charge(info);
-   158			if (ret)
-   159				dev_err(info->dev, "start charge failed\n");
-   160			else
-   161				info->charging = true;
-   162		}
-   163	
-   164		return ret;
-   165	}
-   166	
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+ 	for_each_available_child_of_node(np, child) {
+-		if (of_property_read_bool(child, "#interconnect-cells"))
++		if (of_property_read_bool(child, "#interconnect-cells") &&
++		    likely(!of_match_node(ignore_list, child)))
+ 			count++;
+ 		count += of_count_icc_providers(child);
+ 	}
