@@ -2,82 +2,185 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9131CC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 22:21:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0721AC43219
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 22:21:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232477AbiDVWYE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 18:24:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39920 "EHLO
+        id S232590AbiDVWYk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 18:24:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232981AbiDVWWk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 18:22:40 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 239F133B1EB;
-        Fri, 22 Apr 2022 14:13:53 -0700 (PDT)
-Date:   Fri, 22 Apr 2022 23:13:50 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1650662031;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=96/sG4U1PMahw+5F2cvDWRLKP9CkFv2MeGAwdZV08Lo=;
-        b=ANh7OX8dy7UDbQE5tUInn+33OnlAEFzf2qzE0jCgaNtnwimp1tja/4cy43aHj8733bssAs
-        1t6UCwG3hHS2yBSn1x+B8KFA8LuthbsSKj0mwq6uv4UhCpkqwGD3ezC+guhJRCc1BOoiu4
-        4kq6u33r744ppk4w7zTzheEfqaKOVUb/oxmgd60GSOAboABQXmNq4vZ6gKN3eff8c4azGe
-        USicNG7lxkrk6Hq8QPzCjhc8FkUpWc0oGSjNdA6tagIApvuB2tm2glYrNq3lIqJhDucLFF
-        mZt1ywOy5kbVVWHpK04iBZwMd0vSKVy2OIew1szGwt+g3nOT3VL/edqBe0+kRQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1650662031;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=96/sG4U1PMahw+5F2cvDWRLKP9CkFv2MeGAwdZV08Lo=;
-        b=2fqKG24m2+QfMM/URFklauogxCi4xCU6UwTmlOdXwzuDKiG6RVeO8XwDQuGfIwGvRkPwH5
-        XfxCrWoRXUEZGNCA==
-From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To:     "Eric W. Biederman" <ebiederm@xmission.com>
-Cc:     Peter Zijlstra <peterz@infradead.org>, rjw@rjwysocki.net,
-        oleg@redhat.com, mingo@kernel.org, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
-        Will Deacon <will@kernel.org>, linux-kernel@vger.kernel.org,
-        tj@kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 0/5] ptrace-vs-PREEMPT_RT and freezer rewrite
-Message-ID: <zzzZz7zJzopLquA6@linutronix.de>
-References: <20220421150248.667412396@infradead.org>
- <YmLpNhXD8+EzF9/D@linutronix.de>
- <878rrxnd48.fsf@email.froward.int.ebiederm.org>
+        with ESMTP id S234118AbiDVWXl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 18:23:41 -0400
+Received: from alexa-out.qualcomm.com (alexa-out.qualcomm.com [129.46.98.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B045333FD93;
+        Fri, 22 Apr 2022 14:15:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qcdkim;
+  t=1650662149; x=1682198149;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=EdQ4+pbii1s0GkIfqo8a1S7OEIRav3qnPqvnYhkYj3g=;
+  b=MbEz6Z2TomSdbBzrhEzX6Gt5rDCO4ayQKBJnPchYbLkN1vqUWmA79c3h
+   BPkCkMztJjsNj1VVN7KLOeHASSjd8W1mqTYmWiQIpdBeQ1X3fN3YGFJcO
+   8sHdNJUZOzwkd8sVnwoBOxGxiXa6v8ej+2SF+NhWHwQsPijaH3ufUUUcD
+   Q=;
+Received: from ironmsg09-lv.qualcomm.com ([10.47.202.153])
+  by alexa-out.qualcomm.com with ESMTP; 22 Apr 2022 12:14:36 -0700
+X-QCInternal: smtphost
+Received: from nasanex01c.na.qualcomm.com ([10.47.97.222])
+  by ironmsg09-lv.qualcomm.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2022 12:14:36 -0700
+Received: from nalasex01a.na.qualcomm.com (10.47.209.196) by
+ nasanex01c.na.qualcomm.com (10.47.97.222) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.22; Fri, 22 Apr 2022 12:14:34 -0700
+Received: from hu-amelende-lv.qualcomm.com (10.49.16.6) by
+ nalasex01a.na.qualcomm.com (10.47.209.196) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.986.22; Fri, 22 Apr 2022 12:14:33 -0700
+From:   Anjelique Melendez <quic_amelende@quicinc.com>
+To:     <dmitry.torokhov@gmail.com>, <corbet@lwn.net>, <sre@kernel.org>,
+        <robh+dt@kernel.org>
+CC:     <linux-input@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-msm@vger.kernel.org>, <bjorn.andersson@linaro.org>,
+        <swboyd@chromium.org>, <linux-doc@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        Anjelique Melendez <quic_amelende@quicinc.com>
+Subject: [PATCH v6 3/5] input: misc: pm8941-pwrkey: add support for PON GEN3 base addresses
+Date:   Fri, 22 Apr 2022 12:12:41 -0700
+Message-ID: <20220422191239.6271-4-quic_amelende@quicinc.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220422191239.6271-1-quic_amelende@quicinc.com>
+References: <20220422191239.6271-1-quic_amelende@quicinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <878rrxnd48.fsf@email.froward.int.ebiederm.org>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.49.16.6]
+X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
+ nalasex01a.na.qualcomm.com (10.47.209.196)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2022-04-22 14:15:35 [-0500], Eric W. Biederman wrote:
-> Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
-> 
-> > On 2022-04-21 17:02:48 [+0200], Peter Zijlstra wrote:
-> >> Find here a new posting of the ptrace and freezer patches :-)
-> >> 
-> >> The majority of the changes are in patch 2, which with much feedback from Oleg
-> >> and Eric has changed lots.
-> >> 
-> >> I'm hoping we're converging on something agreeable.
-> >
-> > I tested this under RT (had to remove the preempt-disable section in
-> > ptrace_stop()) with ssdd [0]. It forks a few tasks and then
-> > PTRACE_SINGLESTEPs them for a few iterations.
-> 
-> Out of curiosity why did you need to remove the preempt_disable section
-> on PREEMPT_RT?  It should have lasted for just a moment until schedule
-> was called.
+Currently, PON address is read from the "reg" property. For PON GEN3,
+which starts with PMK8350, the "reg" property will have both the PON
+HLOS and PON PBS addesses defined. Add support so that all PON
+generations can be configured.
 
-within that section spinlock_t locks are acquired. These locks are
-sleeping locks on PREEMPT_RT and must not be acquired within a
-preempt-disable section. (A spinlock_t lock does not disable preemption
-on PREEMPT_RT.)
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
+Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+---
+ drivers/input/misc/pm8941-pwrkey.c | 31 +++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
-> Eric
+diff --git a/drivers/input/misc/pm8941-pwrkey.c b/drivers/input/misc/pm8941-pwrkey.c
+index e0240db12d4f..43106e4cfd23 100644
+--- a/drivers/input/misc/pm8941-pwrkey.c
++++ b/drivers/input/misc/pm8941-pwrkey.c
+@@ -12,6 +12,7 @@
+ #include <linux/log2.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/reboot.h>
+@@ -44,6 +45,7 @@ struct pm8941_data {
+ 	unsigned int	status_bit;
+ 	bool		supports_ps_hold_poff_config;
+ 	bool		supports_debounce_config;
++	bool		has_pon_pbs;
+ 	const char	*name;
+ 	const char	*phys;
+ };
+@@ -52,6 +54,7 @@ struct pm8941_pwrkey {
+ 	struct device *dev;
+ 	int irq;
+ 	u32 baseaddr;
++	u32 pon_pbs_baseaddr;
+ 	struct regmap *regmap;
+ 	struct input_dev *input;
+ 
+@@ -167,6 +170,8 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
+ 	struct pm8941_pwrkey *pwrkey;
+ 	bool pull_up;
+ 	struct device *parent;
++	struct device_node *regmap_node;
++	const __be32 *addr;
+ 	u32 req_delay;
+ 	int error;
+ 
+@@ -188,8 +193,10 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
+ 	pwrkey->data = of_device_get_match_data(&pdev->dev);
+ 
+ 	parent = pdev->dev.parent;
++	regmap_node = pdev->dev.of_node;
+ 	pwrkey->regmap = dev_get_regmap(parent, NULL);
+ 	if (!pwrkey->regmap) {
++		regmap_node = parent->of_node;
+ 		/*
+ 		 * We failed to get regmap for parent. Let's see if we are
+ 		 * a child of pon node and read regmap and reg from its
+@@ -200,15 +207,21 @@ static int pm8941_pwrkey_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev, "failed to locate regmap\n");
+ 			return -ENODEV;
+ 		}
++	}
+ 
+-		error = of_property_read_u32(parent->of_node,
+-					     "reg", &pwrkey->baseaddr);
+-	} else {
+-		error = of_property_read_u32(pdev->dev.of_node, "reg",
+-					     &pwrkey->baseaddr);
++	addr = of_get_address(regmap_node, 0, NULL, NULL);
++	if (!addr) {
++		dev_err(&pdev->dev, "reg property missing\n");
++		return -EINVAL;
++	}
++	pwrkey->baseaddr = be32_to_cpup(addr);
++
++	if (pwrkey->data->has_pon_pbs) {
++		/* PON_PBS base address is optional */
++		addr = of_get_address(regmap_node, 1, NULL, NULL);
++		if (addr)
++			pwrkey->pon_pbs_baseaddr = be32_to_cpup(addr);
+ 	}
+-	if (error)
+-		return error;
+ 
+ 	pwrkey->irq = platform_get_irq(pdev, 0);
+ 	if (pwrkey->irq < 0)
+@@ -316,6 +329,7 @@ static const struct pm8941_data pwrkey_data = {
+ 	.phys = "pm8941_pwrkey/input0",
+ 	.supports_ps_hold_poff_config = true,
+ 	.supports_debounce_config = true,
++	.has_pon_pbs = false,
+ };
+ 
+ static const struct pm8941_data resin_data = {
+@@ -325,6 +339,7 @@ static const struct pm8941_data resin_data = {
+ 	.phys = "pm8941_resin/input0",
+ 	.supports_ps_hold_poff_config = true,
+ 	.supports_debounce_config = true,
++	.has_pon_pbs = false,
+ };
+ 
+ static const struct pm8941_data pon_gen3_pwrkey_data = {
+@@ -333,6 +348,7 @@ static const struct pm8941_data pon_gen3_pwrkey_data = {
+ 	.phys = "pmic_pwrkey/input0",
+ 	.supports_ps_hold_poff_config = false,
+ 	.supports_debounce_config = false,
++	.has_pon_pbs = true,
+ };
+ 
+ static const struct pm8941_data pon_gen3_resin_data = {
+@@ -341,6 +357,7 @@ static const struct pm8941_data pon_gen3_resin_data = {
+ 	.phys = "pmic_resin/input0",
+ 	.supports_ps_hold_poff_config = false,
+ 	.supports_debounce_config = false,
++	.has_pon_pbs = true,
+ };
+ 
+ static const struct of_device_id pm8941_pwr_key_id_table[] = {
+-- 
+2.35.1
 
-Sebastian
