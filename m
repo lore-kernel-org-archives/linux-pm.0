@@ -2,39 +2,36 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB44C4167D
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 07:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05713C4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 07:53:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1445136AbiDVHz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 03:55:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35368 "EHLO
+        id S1445140AbiDVH4A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 03:56:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1445092AbiDVHzx (ORCPT
+        with ESMTP id S1445090AbiDVHzx (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 03:55:53 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C5D851E52;
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D93B51E51;
         Fri, 22 Apr 2022 00:52:56 -0700 (PDT)
-X-UUID: bad63f417056459f820c9ab62b929d63-20220422
+X-UUID: 0c3df5fa6e5a4685a9f8cb5d4eddd55c-20220422
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:6d4504e7-4210-4b8a-a5d2-65e3bab26e6e,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.4,REQID:c2985e55-d41e-421c-a6af-e622fde8906d,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:faefae9,CLOUDID:394097f0-da02-41b4-b6df-58f4ccd36682,C
+X-CID-META: VersionHash:faefae9,CLOUDID:354097f0-da02-41b4-b6df-58f4ccd36682,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
-X-UUID: bad63f417056459f820c9ab62b929d63-20220422
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+X-UUID: 0c3df5fa6e5a4685a9f8cb5d4eddd55c-20220422
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1679407433; Fri, 22 Apr 2022 15:52:47 +0800
-Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+        with ESMTP id 55451949; Fri, 22 Apr 2022 15:52:48 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
  mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Fri, 22 Apr 2022 15:52:46 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
- (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 22 Apr
- 2022 15:52:44 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Fri, 22 Apr 2022 15:52:44 +0800
+ Transport; Fri, 22 Apr 2022 15:52:46 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -47,11 +44,10 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>,
         Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH V4 04/14] cpufreq: mediatek: Record previous target vproc value
-Date:   Fri, 22 Apr 2022 15:52:29 +0800
-Message-ID: <20220422075239.16437-5-rex-bc.chen@mediatek.com>
+Subject: [PATCH V4 11/14] cpufreq: mediatek: Add support for MT8186
+Date:   Fri, 22 Apr 2022 15:52:36 +0800
+Message-ID: <20220422075239.16437-12-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
 References: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
@@ -64,65 +60,44 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 
-We found the buck voltage may not be exactly the same with what we set
-because CPU may share the same buck with other module.
-Therefore, we need to record the previous desired value instead of reading
-it from regulators.
+The platform data of MT8186 is different from previous MediaTek SoCs,
+so we add a new compatible and platform data for it.
 
-Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/cpufreq/mediatek-cpufreq.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index ff27f77e8ee6..1688cf68849c 100644
+index 4c1329fe92c9..9fc793453231 100644
 --- a/drivers/cpufreq/mediatek-cpufreq.c
 +++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -40,6 +40,7 @@ struct mtk_cpu_dvfs_info {
- 	struct list_head list_head;
- 	int intermediate_voltage;
- 	bool need_voltage_tracking;
-+	int pre_vproc;
+@@ -708,6 +708,15 @@ static const struct mtk_cpufreq_platform_data mt8183_platform_data = {
+ 	.ccifreq_supported = true,
  };
  
- static LIST_HEAD(dvfs_info_list);
-@@ -191,11 +192,17 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 
- static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
- {
-+	int ret;
++static const struct mtk_cpufreq_platform_data mt8186_platform_data = {
++	.min_volt_shift = 100000,
++	.max_volt_shift = 250000,
++	.proc_max_volt = 1118750,
++	.sram_min_volt = 850000,
++	.sram_max_volt = 1118750,
++	.ccifreq_supported = true,
++};
 +
- 	if (info->need_voltage_tracking)
--		return mtk_cpufreq_voltage_tracking(info, vproc);
-+		ret = mtk_cpufreq_voltage_tracking(info, vproc);
- 	else
--		return regulator_set_voltage(info->proc_reg, vproc,
--					     vproc + VOLT_TOL);
-+		ret = regulator_set_voltage(info->proc_reg, vproc,
-+					    MAX_VOLT_LIMIT);
-+	if (!ret)
-+		info->pre_vproc = vproc;
-+
-+	return ret;
- }
- 
- static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
-@@ -213,7 +220,12 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	inter_vproc = info->intermediate_voltage;
- 
- 	pre_freq_hz = clk_get_rate(cpu_clk);
--	pre_vproc = regulator_get_voltage(info->proc_reg);
-+
-+	if (unlikely(info->pre_vproc <= 0))
-+		pre_vproc = regulator_get_voltage(info->proc_reg);
-+	else
-+		pre_vproc = info->pre_vproc;
-+
- 	if (pre_vproc < 0) {
- 		dev_err(cpu_dev, "invalid Vproc value: %d\n", pre_vproc);
- 		return pre_vproc;
+ /* List of machines supported by this driver */
+ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
+ 	{ .compatible = "mediatek,mt2701", .data = &mt2701_platform_data },
+@@ -719,6 +728,7 @@ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
+ 	{ .compatible = "mediatek,mt8173", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt8176", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt8183", .data = &mt8183_platform_data },
++	{ .compatible = "mediatek,mt8186", .data = &mt8186_platform_data },
+ 	{ .compatible = "mediatek,mt8365", .data = &mt2701_platform_data },
+ 	{ .compatible = "mediatek,mt8516", .data = &mt2701_platform_data },
+ 	{ }
 -- 
 2.18.0
 
