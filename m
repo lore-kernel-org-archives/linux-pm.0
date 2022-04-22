@@ -2,147 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89420C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 22:33:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ED5EC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Apr 2022 22:57:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232769AbiDVWgp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Apr 2022 18:36:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60418 "EHLO
+        id S234036AbiDVXAW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Apr 2022 19:00:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233027AbiDVWgb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 18:36:31 -0400
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C7FC22A7A3;
-        Fri, 22 Apr 2022 14:51:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1650664295; x=1682200295;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0gVXv4zdiE+5GYP0dMIQyiSfQoI7LTDt1AyL2vYRv9g=;
-  b=FUI0vUUZ7ml3FNftD5DjEsnJxUZmaunyt3MIV2AIYRrQw/o1nFLBBZx6
-   Pr+niM46uOLml1krrnaMpQxxRjp/0ugROF3NShP1qGkMu9IH7uONQE+DW
-   4VsbGXt0vro17kIXT+r/rlxIkz20naIwB5QsJfcH3YZMlfYOab4AeUZz5
-   T5vnHWNbqYVHt7LG/jcSoLi7vXXQHRJg+Bzfg4OIJgtHu/QcTCHNyGxeJ
-   yfEiedIPQiR3yyisxgASwa1OCY7WZ7r/CDQ6j7SNkGyaFLx1a/4EodAbh
-   fTxK6Gd2emAZAp3fh1aXUwY9JvWlYAxU+G/sOnAHci/UkSt64ROqmxqJx
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10324"; a="245366524"
-X-IronPort-AV: E=Sophos;i="5.90,282,1643702400"; 
-   d="scan'208";a="245366524"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2022 14:51:34 -0700
-X-IronPort-AV: E=Sophos;i="5.90,282,1643702400"; 
-   d="scan'208";a="511753979"
-Received: from mlbroadh-mobl2.amr.corp.intel.com (HELO guptapa-desk) ([10.212.136.108])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2022 14:51:33 -0700
-Date:   Fri, 22 Apr 2022 14:51:32 -0700
-From:   Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        the arch/x86 maintainers <x86@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Pelton, Kyle D" <kyle.d.pelton@intel.com>
-Subject: Re: [PATCH] x86/cpu: Load microcode during restore_processor_state()
-Message-ID: <20220422215132.3lmmgzkzhw36iabu@guptapa-desk>
-References: <4350dfbf785cd482d3fafa72b2b49c83102df3ce.1650386317.git.pawan.kumar.gupta@linux.intel.com>
- <CAJZ5v0gQCzmnMX_1_6TCiexARJ99rtLKg58Ewi-xwUKUrGOQzg@mail.gmail.com>
+        with ESMTP id S234056AbiDVW7w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2022 18:59:52 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A03713AB56;
+        Fri, 22 Apr 2022 15:24:51 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 85047B832DD;
+        Fri, 22 Apr 2022 22:24:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0321DC385A4;
+        Fri, 22 Apr 2022 22:24:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1650666289;
+        bh=fxJN1ADA+sWdw61IyEj2dQRFCoL52sBZQvlid/cA61E=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=VqtUDtOScYsh+v96PGvVuNJA4iiHe4wsX46n78PX9q4xuJr4S6lfCl6udE4phxR/u
+         sDHXMGvuAzZc6k/O/ylBMrhWqoKUnBwG7C5ApaG3dvc/NuXg1nY8RauzA29/0GmDro
+         1ICAMa6ItEkonugBzifApV07hA+ZOEtw5b0KBCMGl5070QULczZzfIXskxOEF+najl
+         aTycO/QVOeHZPtNQuDSa0R8rzenzctAjN95/NGV3u1gWS26b6FORAce58dfg65PyO/
+         ufKiRA4WAVh9U+K66a47bC89lTQwcc7r4i++WXCUnFem/zek52SNa/UNDn4q96ZeV4
+         dD7MKEizgG/SQ==
+Date:   Fri, 22 Apr 2022 17:24:46 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Rajvi Jingar <rajvi.jingar@intel.com>
+Cc:     bhelgaas@google.com, david.e.box@linux.intel.com,
+        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        mika.westerberg@linux.intel.com, koba.ko@canonical.com,
+        baolu.lu@linux.intel.com,
+        sathyanarayanan.kuppuswamy@linux.intel.com,
+        Russell Currey <ruscur@russell.cc>,
+        Oliver O'Halloran <oohall@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/2] PCI/PM: Fix pci_pm_suspend_noirq() to disable PTM
+Message-ID: <20220422222446.GA1522716@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gQCzmnMX_1_6TCiexARJ99rtLKg58Ewi-xwUKUrGOQzg@mail.gmail.com>
+In-Reply-To: <ba571993-90fb-ae67-6617-0b63571298be@intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Apr 22, 2022 at 04:09:57PM +0200, Rafael J. Wysocki wrote:
->On Tue, Apr 19, 2022 at 6:52 PM Pawan Gupta
-><pawan.kumar.gupta@linux.intel.com> wrote:
->>
->> From: Borislav Petkov <bp@suse.de>
->>
->> When resuming from system sleep state, restore_processor_state()
->> restores the boot CPU MSRs. These MSRs could be emulated by the
->> microcode. If microcode is not loaded yet, writing to emulated MSRs
->> leads to unchecked MSR access error:
->>
->>   [   28.702947] PM: Calling lapic_suspend+0x0/0x210
->>   [   28.703345] unchecked MSR access error: WRMSR to 0x10f (tried to write 0=x0000000000000000) at rIP: 0xffffffff9b2819e4 (native_write_msr+0x4/0x20)
->>   [   28.703357] Call Trace:
->>   [   28.703359]  <TASK>
->>   [   28.703361]  ? restore_processor_state+0x255/0x2d0
->>   [   28.703369]  x86_acpi_suspend_lowlevel+0x11f/0x170
->>   [   28.703374]  acpi_suspend_enter+0x4f/0x1f0
->>   [   28.703379]  suspend_devices_and_enter+0x6e0/0x7d0
->>   [   28.703384]  pm_suspend.cold+0x35c/0x3a7
->>   [   28.703388]  state_store+0x81/0xe0
->>   [   28.703392]  kobj_attr_store+0x12/0x20
->>   [   28.703396]  sysfs_kf_write+0x3f/0x50
->>   [   28.703399]  kernfs_fop_write_iter+0x13b/0x1d0
->>   [   28.703403]  new_sync_write+0x101/0x180
->>   [   28.703408]  vfs_write+0x217/0x2a0
->>   [   28.703413]  ksys_write+0x67/0xe0
->>   [   28.703417]  __x64_sys_write+0x1a/0x20
->>   [   28.703421]  do_syscall_64+0x3b/0x90
->>   [   28.703426]  entry_SYSCALL_64_after_hwframe+0x44/0xae
->>   [   28.703429] RIP: 0033:0x7fda13c260a7
->>   [   28.703434] Code: 64 89 02 48 c7 c0 ff ff ff ff eb bb 0f 1f 80 00 00 00 =
->>   00 f3 0f 1e fa 64 8b 04 25 18 00 00 00 85 c0 75 10 b8 01 00 00 00 0f 05 <48=
->>   > 3d 00 f0 ff ff 77 51 c3 48 83 ec 28 48 89 54 24 18 48 89 74 24
->>   [   28.703437] RSP: 002b:00007fffa4060268 EFLAGS: 00000246 ORIG_RAX: 000000=0000000001
->>   [   28.703441] RAX: ffffffffffffffda RBX: 0000000000000004 RCX: 00007fda13c=260a7
->>   [   28.703443] RDX: 0000000000000004 RSI: 000055a41f65a570 RDI: 00000000000=00004
->>   [   28.703444] RBP: 000055a41f65a570 R08: 0000000000000000 R09: 00000000000=00004
->>   [   28.703446] R10: 000055a41f0cc2a6 R11: 0000000000000246 R12: 00000000000=00004
->>   [   28.703447] R13: 000055a41f657510 R14: 00007fda13d014a0 R15: 00007fda13d=008a0
->
->__restore_processor_state() is used during resume from both
->suspend-to-RAM and hibernation, but I don't think that the latter is
->affected by the issue at hand, because microcode should be loaded by
->the restore kernel in that case.  However, loading the boot processor
->microcode in __restore_processor_state() during resume from
->hibernation still works, although it is redundant in that case.
->
->It would be good to acknowledge the above in the changelog and also
->mention in it that the issue is specific to suspend-to-RAM (ACPI S3 on
->x86 PC systems).
+[+cc other folks interested in PTM from https://lore.kernel.org/r/20220408153159.106741-1-kai.heng.feng@canonical.com]
 
-Yes, it will be good to add this.
+On Thu, Apr 14, 2022 at 07:54:02PM +0200, Rafael J. Wysocki wrote:
+> On 3/25/2022 8:50 PM, Rajvi Jingar wrote:
+> > For the PCIe devices (like nvme) that do not go into D3 state still need to
+> > disable PTM on PCIe root ports to allow the port to enter a lower-power PM
+> > state and the SoC to reach a lower-power idle state as a whole. Move the
+> > pci_disable_ptm() out of pci_prepare_to_sleep() as this code path is not
+> > followed for devices that do not go into D3. This patch fixes the issue
+> > seen on Dell XPS 9300 with Ice Lake CPU and Dell Precision 5530 with Coffee
+> > Lake CPU platforms to get improved residency in low power idle states.
+> > 
+> > Fixes: a697f072f5da ("PCI: Disable PTM during suspend to save power")
+> > Signed-off-by: Rajvi Jingar <rajvi.jingar@intel.com>
+> > Suggested-by: David E. Box <david.e.box@linux.intel.com>
 
-[...]
->> @@ -262,11 +263,18 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
->>         x86_platform.restore_sched_clock_state();
->>         mtrr_bp_restore();
->>         perf_restore_debug_store();
->> -       msr_restore_context(ctxt);
->>
->>         c = &cpu_data(smp_processor_id());
->>         if (cpu_has(c, X86_FEATURE_MSR_IA32_FEAT_CTL))
->>                 init_ia32_feat_ctl(c);
->
->The change of the ordering between the above and msr_restore_context()
->needs to be explained in the changelog too.
+> > ---
+> >   v1 -> v2: add Fixes tag in commit message
+> >   v2 -> v3: move changelog after "---" marker
+> >   v3 -> v4: add "---" marker after changelog
+> > ---
+> >   drivers/pci/pci-driver.c | 10 ++++++++++
+> >   drivers/pci/pci.c        | 10 ----------
+> >   2 files changed, 10 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> > index 8b55a90126a2..ab733374a260 100644
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -847,6 +847,16 @@ static int pci_pm_suspend_noirq(struct device *dev)
+> >   	if (!pci_dev->state_saved) {
+> >   		pci_save_state(pci_dev);
+> > +		/*
+> > +		 * There are systems (for example, Intel mobile chips since Coffee
+> > +		 * Lake) where the power drawn while suspended can be significantly
+> > +		 * reduced by disabling PTM on PCIe root ports as this allows the
+> > +		 * port to enter a lower-power PM state and the SoC to reach a
+> > +		 * lower-power idle state as a whole.
+> > +		 */
+> > +		if (pci_pcie_type(pci_dev) == PCI_EXP_TYPE_ROOT_PORT)
+> > +			pci_disable_ptm(pci_dev);
 
-This patch is already queued in tip tree. I am not sure if we can update
-the commit message in tip tree?
+Why is disabling PTM dependent on pci_dev->state_saved?  The point of
+this is to change the behavior of the device, and it seems like we
+want to do that regardless of whether the driver has used
+pci_save_state().
 
-Thanks,
-Pawan
-
->> +
->> +       microcode_bsp_resume();
->> +
->> +       /*
->> +        * This needs to happen after the microcode has been updated upon resume
->> +        * because some of the MSRs are "emulated" in microcode.
->> +        */
->> +       msr_restore_context(ctxt);
->>  }
->>
->>  /* Needed by apm.c */
+Bjorn
