@@ -2,99 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17BEBC35275
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Apr 2022 22:21:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB033C433F5
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Apr 2022 23:20:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236817AbiDYWYy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 Apr 2022 18:24:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37854 "EHLO
+        id S232117AbiDYXX5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 Apr 2022 19:23:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60392 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343519AbiDYVbA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2022 17:31:00 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8574625291
-        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 14:27:54 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id w19so28529962lfu.11
-        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 14:27:54 -0700 (PDT)
+        with ESMTP id S237647AbiDYXXr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2022 19:23:47 -0400
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09C1B193EB
+        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 16:20:42 -0700 (PDT)
+Received: by mail-lj1-x22d.google.com with SMTP id 4so6215763ljw.11
+        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 16:20:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3gVY44DVF1y7zdefajo6u3CKe3aVY/euE49UOOawFzk=;
-        b=jRmo0SpHDBz5apKEalXqAVnP3JNXwC7+7qia8GGi4s29oRf4tpppZx81UJ8xpalkXa
-         99kv5SA9q5apsKoqs4Ay7wP6B+uw6LNJq2k0rmVYxQfxkUDQVmNBVJpwuzXvtNCcC7MI
-         zl3+zKJECuuTRqFvE/xgGgAWjvbQCJgmaOUICvE0xiaf4yzSU8w1tWQlOVCla7PU3bv8
-         g++aykqaJ4RkMeQ95A0PR2yEg4ZefxW9tOtjQbumouvfrWRuin9M8eMCzQRnxRQWYaq1
-         c4e79A9dLJBuOyyv2WasqlE6csEzFV9i/BDZfS8KWu+O8xLJn2aeSLulTZyrE86QnMil
-         Ouog==
+        d=telus.net; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=xCteESL2qJwjAahA4hmyXY9OLMALrlUpGNGW2t2pRDI=;
+        b=HT1uPZp7s66zomDLhHrQyv5sHuehalu7Po5n5ZQV7yolsfoy8auMhWPK73hglXrLs2
+         zr+cR/oLtKkYFbgxtqch5NzgxtnB9wFopVpNTgHIbeqsBNFNZlUkN37lI9dHvbki2tST
+         bIL7CrC+wlle5FUtEkt7f48OSU8OUNQe+XWl3mMlUztwS4GabtBmdR0sYooY7nM1ij/E
+         do/1WlRsK2TjiEFBKYtNgVc3uIL13DdyfKbA7v9LB1/q6HxlDld6QuTw0OOoCh/6+9Ay
+         Av3grWD8jqLDcM3bCOKAunWBGjkQAR5+DUeou3Qx6c5dLcFL/lE0Ssfg28wA3WRGdl6g
+         fgVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3gVY44DVF1y7zdefajo6u3CKe3aVY/euE49UOOawFzk=;
-        b=7EzC9hfGA431mbsb3rYg010n3UbKR1GdkpMmGU/oqd+KiWgIUr50ncccaBTgc/wyL7
-         S39HrrVgU2tUsq9gKHLm54fknVZp2b5HAiypiB8Wt4sV/fFWS08F3jFqengBwefLhedd
-         cGJjhl0WgNST7LhD1vmgrNJ8vxy+w1V9jiS+SBZxAiuMosMmwj1CQ4OXAtbHV4pGdw1i
-         PUXlzHCE1Fj1wc+omiwRaUidJSdT9WTiaVs9phB6gryWtG5PMgrzk+bZbi+QkuzkJ5ja
-         i1QXHg/hhRyQRVjIKpRcWAe0Ja8jh+bxJ9nkNWAMmlFc20nppqBW87/iGm0b6drgO/LF
-         hwqA==
-X-Gm-Message-State: AOAM532sU2RTPx9iEiN9mS4nHwMdCsOmGZHRD63pg/5Rp+fOcojNALbA
-        gwWulBm3r+ohc9xk9DSt/Uv/pw==
-X-Google-Smtp-Source: ABdhPJz7e+TOf2sNiJDfS84im2PT7UAjBiL9ICoMFGaLk1Fe7kPvyMqdqdXDDus3YzQZEvT/mM0O2A==
-X-Received: by 2002:ac2:4e0c:0:b0:472:5d1:ce49 with SMTP id e12-20020ac24e0c000000b0047205d1ce49mr5340928lfr.602.1650922072862;
-        Mon, 25 Apr 2022 14:27:52 -0700 (PDT)
-Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id l13-20020a19494d000000b0046ba0e38750sm1533314lfj.3.2022.04.25.14.27.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Apr 2022 14:27:52 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: [PATCH v3 0/3] arm: qcom: qcom-apq8064: add separate device node for tsens
-Date:   Tue, 26 Apr 2022 00:27:47 +0300
-Message-Id: <20220425212750.2749135-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.35.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=xCteESL2qJwjAahA4hmyXY9OLMALrlUpGNGW2t2pRDI=;
+        b=20QDei0ieCl8Eq99wRl7q8EYZcKB69kxJMSWBqsjvM7ca9CtuFbEWGhSG3JYiIVlm9
+         cv0SVBwcgA3CnIPqWZrAVqCWw0oK96zV/OaMig6ocakrbVLz+PKAbRtpWJS2DQwmO7sW
+         XJUG/Z/RVBdMsMP40SXAwNJJt0epdHYxxPxBD/qUHxWU9OhHShUUK8Sv2/NuYfd4Xems
+         7E1+hWrRXxhWQB2FpCGDW6ag/i1PbyHjR7g4j5QenC38EP89SaZDOmRZjLyvh74FgqP4
+         2oygoSlGqW3/R/Cc5hq0xaxvbcmPAGfbfU9DwfpOHBdqqzkutAwbPs5kP6FCxusDQyY9
+         cTQA==
+X-Gm-Message-State: AOAM5328HLLXw8MbnwA8/lzflwRRNTcPrpb4+IR3YVydwsLp/icH0MVZ
+        4VmiOpLcIMczZx1r1jiGFBUYdgyw+zbVFcN074zmTzqbLtE=
+X-Google-Smtp-Source: ABdhPJzoJOs8Y+tExvebbu0gN8AOzNrZusnpf2jwoelPtNoR3MzIxmK6nHZZScRXDF2CT6E8hE/VvvN4SyHZZLQPlFI=
+X-Received: by 2002:a2e:9b57:0:b0:24f:12ea:fd26 with SMTP id
+ o23-20020a2e9b57000000b0024f12eafd26mr3796665ljj.352.1650928840302; Mon, 25
+ Apr 2022 16:20:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220415133356.179706384@linutronix.de> <005001d85413$75e5dce0$61b196a0$@telus.net>
+ <CAJZ5v0jf-NGa4-xaNaxehkLGPVqwhZrUhLXw2cJ1avtjgT5yPA@mail.gmail.com>
+ <87bkwwvkwa.ffs@tglx> <005501d85503$3b00ca40$b1025ec0$@telus.net> <87pml5180p.ffs@tglx>
+In-Reply-To: <87pml5180p.ffs@tglx>
+From:   Doug Smythies <dsmythies@telus.net>
+Date:   Mon, 25 Apr 2022 16:20:30 -0700
+Message-ID: <CAAYoRsUKCnQy6aqVp=-n81tOh3b+o0hss7ydwDHcO_AL_rNWoA@mail.gmail.com>
+Subject: Re: [patch 00/10] x86/cpu: Consolidate APERF/MPERF code
+To:     Thomas Gleixner <tglx@linutronix.de>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        dsmythies <dsmythies@telus.net>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently gcc-msm8960 driver manually creates tsens device. Instantiate
-the device using DT node instead. This makes the APQ8064 follow the
-IPQ8064 device tree schema (which is also closer to the way tsens
-devices are described on newer Qualcomm platforms).
+On Mon, Apr 25, 2022 at 8:45 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, Apr 20 2022 at 15:08, Doug Smythies wrote:
+>> On 2022.04.19 14:11 Thomas Gleixner wrote:
+>>>> That's because after the changes in this series scaling_cur_freq
+>>>> returns 0 if the given CPU is idle.
+>>>
+>>> Which is sensible IMO as there is really no point in waking an idle CPU
+>>> just to read those MSRs, then wait 20ms wake it up again to read those
+>>> MSRs again.
+>>
+>> I totally agree.
+>> It is the inconsistency for what is displayed as a function of driver/governor
+>> that is my concern.
+>
+> Raphael suggested to move the show_cpuinfo() logic into the a/mperf
+> code. See below.
 
-Compatibility with the previous devices trees is kept intact.
+Hi Thomas,
 
-Changes since v2:
-- Remove patches merged by Daniel
-- Rephrase commit messages to emphasize that these changes make apq8064
-  follow ipq8064
+I tested the patch on top of your 10 patch set on kernel 5.18-rc3.
+It addresses my consistency concerns.
 
-Changes since v1:
-- populate child devices in gcc-msm8960
-- add syscon to the gcc device tree node
+Thank you
 
-Dmitry Baryshkov (3):
-  clk: qcom: gcc-msm8960: create tsens device if there are no child
-    nodes
-  arm: dts: qcom-apq8064: create tsens device node
-  dt-bindings: clock: qcom,gcc-apq8064: split tsens to the child node
+... Doug
 
- .../bindings/clock/qcom,gcc-apq8064.yaml      | 45 +++++++------------
- arch/arm/boot/dts/qcom-apq8064.dtsi           | 25 +++++++----
- drivers/clk/qcom/gcc-msm8960.c                |  6 ++-
- 3 files changed, 39 insertions(+), 37 deletions(-)
-
--- 
-2.35.1
-
+> ---
+> Subject: x86/aperfmperf: Integrate the fallback code from show_cpuinfo()
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Mon, 25 Apr 2022 15:19:29 +0200
+>
+...
