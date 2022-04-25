@@ -2,112 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF6DC46467
-	for <linux-pm@archiver.kernel.org>; Mon, 25 Apr 2022 22:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7B65C4707A
+	for <linux-pm@archiver.kernel.org>; Mon, 25 Apr 2022 22:21:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236353AbiDYWYv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S236419AbiDYWYv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 25 Apr 2022 18:24:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37884 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40792 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343520AbiDYVbB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2022 17:31:01 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A96D34B84
-        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 14:27:55 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id w1so28532734lfa.4
-        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2022 14:27:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=qCBZ0j+ES0QNdxwqckFAUR3wGLW9E7d1PkVjGCIYt/4=;
-        b=tfwRU6PjP2z7GtTk8zFEqbic2HdeSUCv+l17OSytmRIosB+xRy4hev7E+z/t1OOv/7
-         FqPPCtnSu0r9iPis8lzP3t0ics4vx5B/SKLRghQCr9JOvvn/Tuqa7RdxUSZHDCLhv6Ap
-         WvN0K0roJRcbQeJf2LuMV8bj2oxHw7atNJRdGFF+HHHc6kno0DVlRMWygNbi+wP+2d+L
-         zJnqzLOWoqbQWl4J3XSvlFKkPQoqcUowFFd/8zowKT6ZnooTRTPCvynYG0a88th0o5fZ
-         dpBirZyVMpeC24AXrP1Hb3Lz9rF8GCCo0eOx+0x9KaRPa56mDKBeJP14TEZjqTOcyZX9
-         3Oow==
+        with ESMTP id S1343621AbiDYVsQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2022 17:48:16 -0400
+Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com [209.85.167.177])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF53E23BEF;
+        Mon, 25 Apr 2022 14:45:10 -0700 (PDT)
+Received: by mail-oi1-f177.google.com with SMTP id z8so18661916oix.3;
+        Mon, 25 Apr 2022 14:45:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=qCBZ0j+ES0QNdxwqckFAUR3wGLW9E7d1PkVjGCIYt/4=;
-        b=tYLvxu/CPdI6n0gQRcmdTRNQSynjz3ROVXfQKn2kL8drDALT1Dhwq6zPp3GRvZ/bmF
-         b7L1AXDV9fJtBLK0yu1rnnKolwD6wzvyOyiyQrO4Ih6cPi4Civt6ucwOuaebNFiOkklB
-         7RtEr/SogT0Kcerah/BMp+tquiQZ18JhAp9DFhNuJ7tFECl/hihwlMyYKJ5q4aLTtu3j
-         q15UISh4ih6Ud7iKwWxl63HmIRnOW+pnc+MsOJfmFbBqoTFKidj3oA2OiZG5Hrw8xvIV
-         yR+l2zrQlTT7LKTxIiSoSBz/YYyghnEyYBvyIhFWqZr30fSyscDb/dODcQ0wxolNHStp
-         voQA==
-X-Gm-Message-State: AOAM531zICjB5W/PPRA3W++YAHhS20VbsaCJuAuh6v5GElXXBODOlmqr
-        +PVjMg7Mj9Iyi5p04Hg6KMdZew==
-X-Google-Smtp-Source: ABdhPJxPWNml4l/27j85PwCcp8D+OzEMrTnQLdwPO6otEFklP8LzdUGs6ynDRCbv+ttEB0i2Bgqaew==
-X-Received: by 2002:ac2:4bd0:0:b0:46b:c3ea:ea04 with SMTP id o16-20020ac24bd0000000b0046bc3eaea04mr14292158lfq.537.1650922073765;
-        Mon, 25 Apr 2022 14:27:53 -0700 (PDT)
-Received: from eriador.lan ([37.153.55.125])
-        by smtp.gmail.com with ESMTPSA id l13-20020a19494d000000b0046ba0e38750sm1533314lfj.3.2022.04.25.14.27.52
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=VZMstEGR59a6WeLJcSDZzBTL969MVFol/7kqyWovv4c=;
+        b=obXWrnqaFu91kMdRfKfdulQkxPwilw0ID+21Ett64qWaxPNy2uxP56wO5XJYositR4
+         JYKRdFty/787G2glyiFp7CU3t5wNUcGCiuiM8sEgOty3FvrKKaGmppIQTRMmjSJVUkfl
+         r/3YRJnB7JsuJz1axlyrYmzwhNLWW3Qqpc4UJu+1WXwdw1xstSP5exDmt9o783RMywPa
+         cux8yPkniuL3yrj10Gw8dl1br+4z+rWQh93G32YsX7XROWQ8k8Y28PnaqdCBlZgPKwKw
+         O/QSvb6YB+6OCESeRpjGLzQKUE2gbHy2H4ieQCD7iFYgpH2yZos3w9YOjuA3850z8QAy
+         fcDQ==
+X-Gm-Message-State: AOAM530UFRAaIHYtUyu6K+J4lfs68JMO/6ZzCPODjR3QrlpPiS3iVkmC
+        Z3Wt2+GDSOIWX3GoVeYQUg==
+X-Google-Smtp-Source: ABdhPJy/rpBx/iJkVWRVcZNGd8eAyl3X6OyANl4MITXioNcKwEoeJ12MJdt0640bsxJiI2ms7mVrhw==
+X-Received: by 2002:a05:6808:2388:b0:325:e69:4ec5 with SMTP id bp8-20020a056808238800b003250e694ec5mr5220386oib.10.1650923110270;
+        Mon, 25 Apr 2022 14:45:10 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id x64-20020acae043000000b003222bb3dfb0sm4208670oig.36.2022.04.25.14.45.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Apr 2022 14:27:53 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: [PATCH v3 1/3] clk: qcom: gcc-msm8960: create tsens device if there are no child nodes
-Date:   Tue, 26 Apr 2022 00:27:48 +0300
-Message-Id: <20220425212750.2749135-2-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220425212750.2749135-1-dmitry.baryshkov@linaro.org>
-References: <20220425212750.2749135-1-dmitry.baryshkov@linaro.org>
+        Mon, 25 Apr 2022 14:45:09 -0700 (PDT)
+Received: (nullmailer pid 344104 invoked by uid 1000);
+        Mon, 25 Apr 2022 21:45:09 -0000
+Date:   Mon, 25 Apr 2022 16:45:08 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Anjelique Melendez <quic_amelende@quicinc.com>
+Cc:     dmitry.torokhov@gmail.com, corbet@lwn.net, sre@kernel.org,
+        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org,
+        swboyd@chromium.org, linux-doc@vger.kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        David Collins <collinsd@quicinc.com>,
+        David Collins <quic_collinsd@quicinc.com>
+Subject: Re: [PATCH v6] dt-bindings: power: reset: qcom-pon: update "reg"
+ property details
+Message-ID: <YmcWZLp2X8UYOVas@robh.at.kernel.org>
+References: <20220422191239.6271-1-quic_amelende@quicinc.com>
+ <20220422191239.6271-2-quic_amelende@quicinc.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220422191239.6271-2-quic_amelende@quicinc.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently gcc-msm8960 driver manually creates tsens platform device
-manually. It would be better to follow IPQ8064 approach, where tsens
-device is defined as gcc's child device in the device tree. If nothing
-else, it removes gcc's dependency on QFPROM, thus allowing clock
-controller to be probed earlier.
+On Fri, Apr 22, 2022 at 12:12:38PM -0700, Anjelique Melendez wrote:
+> From: David Collins <collinsd@quicinc.com>
+> 
+> Update the description of "reg" property to add the PON_PBS base
+> address along with PON_HLOS base address.  Also add "reg-names"
+> property description.
+> 
+> Signed-off-by: David Collins <quic_collinsd@quicinc.com>
+> Signed-off-by: Anjelique Melendez <quic_amelende@quicinc.com>
+> ---
+>  .../bindings/power/reset/qcom,pon.yaml | 19 ++++++++++++++++++-
+>  1 file changed, 18 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> index 353f155d..65ec8197 100644
+> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> +++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
+> @@ -26,7 +26,24 @@ properties:
+>        - qcom,pm8998-pon
+>  
+>    reg:
+> -    maxItems: 1
+> +    description: |
+> +      Specifies the SPMI base address for the PON (power-on) peripheral.  For
+> +      PMICs that have the PON peripheral (GEN3) split into PON_HLOS and PON_PBS
+> +      (e.g. PMK8350), this can hold addresses of both PON_HLOS and PON_PBS
+> +      peripherals.  In that case, the PON_PBS address needs to be specified to
+> +      facilitate software debouncing on some PMICs.
+> +    minItems: 1
+> +    maxItems: 2
+> +
+> +  reg-names:
+> +    description: |
+> +      For PON GEN1 and GEN2, it should be "pon".  For PON GEN3 it should include
+> +      "pon_hlos" and optionally "pon_pbs".
+> +    minItems: 1
+> +    items:
+> +      - const: pon_hlos
+> +      - const: pon_pbs
+> +      - const: pon
 
-Don't create it in case there are available child nodes (tsens) inside
-the gcc's device tree node.
+Did you test that 'reg-names = "pon";' works? It doesn't. The schema 
+says 'pon' is the 3rd entry in reg-names.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- drivers/clk/qcom/gcc-msm8960.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+As 'reg-names' is new I thin this should be:
 
-diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-index 051745ef99c8..a6e13b91e4c8 100644
---- a/drivers/clk/qcom/gcc-msm8960.c
-+++ b/drivers/clk/qcom/gcc-msm8960.c
-@@ -3641,6 +3641,9 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
- 		hfpll_l2.d = &hfpll_l2_8064_data;
- 	}
- 
-+	if (of_get_available_child_count(pdev->dev.of_node) != 0)
-+		return devm_of_platform_populate(&pdev->dev);
-+
- 	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
- 					      NULL, 0);
- 	if (IS_ERR(tsens))
-@@ -3655,7 +3658,8 @@ static int gcc_msm8960_remove(struct platform_device *pdev)
- {
- 	struct platform_device *tsens = platform_get_drvdata(pdev);
- 
--	platform_device_unregister(tsens);
-+	if (tsens)
-+		platform_device_unregister(tsens);
- 
- 	return 0;
- }
--- 
-2.35.1
+items:
+  - const: hlos
+  - const: pbs
 
+And if there's 1 entry, then 'reg-names' should not be there.
+
+Rob
