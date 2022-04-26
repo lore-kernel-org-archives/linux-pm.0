@@ -2,218 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB5C5C433EF
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Apr 2022 22:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A24C433F5
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Apr 2022 22:51:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355707AbiDZWTl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Apr 2022 18:19:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37740 "EHLO
+        id S1351543AbiDZWyS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Apr 2022 18:54:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355733AbiDZWS4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2022 18:18:56 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42D9D3F321
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2022 15:15:47 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id n126-20020a1c2784000000b0038e8af3e788so133016wmn.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2022 15:15:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linexp-org.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=P1RwEk6UMhSV0WlQ0OxuiFr38k8Axw4qKNQEGZIv6iU=;
-        b=QKQybkVzURgeI+tMJ8w51LnBMOsyEpcW6GaYr2EWcgioEfA/zFfepWd47I1jyLod97
-         IWqQqSRg8mQJeuPG1dlbX96xNfk2QyyXGDeK1bgaOwhXFzjAHQii6b1tv0vRF3ADSPeW
-         Iua2IjldIzTPTwBm9EGwt/6fxNGEbJTqmhU0cAzWzUoRh20FBqNhoHsz29o00YpP2HtD
-         3ChRcOruxOMapmMdGwdjNtmHcbvJKTGAM6tr+NzvH2uDvhHec3wMwRi1/yqe4EpyVy0f
-         zRgnqRSXuY/Ifcm0RGkhGqje87+0MudBdAfOhLVCo5mUWo7kmKnx8jskwcgQqW7n85F3
-         Kvqw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=P1RwEk6UMhSV0WlQ0OxuiFr38k8Axw4qKNQEGZIv6iU=;
-        b=e9QJOThLGYX/vX70aVm8SfVYhpnbVZITShunPbNKtNtxfHQckg9WDCBttbzqppR2sQ
-         jU+stUzqTm0ix77vfxFECn1bpjbZ4PmSz/iRdagNIB1HbkleQXMUM5z0GUM7p9FVr4xh
-         JEbyg/3B35PGSd+IS0rNYX7E1040UTDtvZBLxXAgxusozywpI0XLveEaYQeCDh67Qmbx
-         kuEP2oxVnfS2lLC9XKVbDwNqZS3MTZtDefOpjVwZxYV4nY5rv+YM6Y/Xx//IMyxCTbil
-         MEU+/Gyoxd9PpX4DKDjhov8KwhNACpyKIIaYO6wiERhEJZf1Um1Cu2V6oOkU4XdxlD5s
-         Ua1g==
-X-Gm-Message-State: AOAM530DibfjEGjz3EjywcyC6lp0dhKJOephTH02VOYfhiyInPRpooW2
-        Wtmdldfh+P/X3SHVJH3eH4CQyQ==
-X-Google-Smtp-Source: ABdhPJxcZ4rRyWIm+bCZmxUETGu9bxO2QRKfNWK78Anhv9GWEXiyOvKUHwYfO7F4LI/+1nntyxu55A==
-X-Received: by 2002:a05:600c:3509:b0:393:ec9f:e884 with SMTP id h9-20020a05600c350900b00393ec9fe884mr10246330wmq.74.1651011345867;
-        Tue, 26 Apr 2022 15:15:45 -0700 (PDT)
-Received: from localhost.localdomain (static-176-182-171-101.ncc.abo.bbox.fr. [176.182.171.101])
-        by smtp.gmail.com with ESMTPSA id j19-20020adfb313000000b0020aed8ece65sm393314wrd.32.2022.04.26.15.15.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Apr 2022 15:15:45 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linexp.org>
-To:     rafael@kernel.org, daniel.lezcano@linaro.org
-Cc:     khilman@baylibre.com, abailon@baylibre.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 14/15] thermal/of: Use thermal trips stored in the thermal zone
-Date:   Wed, 27 Apr 2022 00:15:22 +0200
-Message-Id: <20220426221523.3056696-15-daniel.lezcano@linexp.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220426221523.3056696-1-daniel.lezcano@linexp.org>
-References: <20220426221523.3056696-1-daniel.lezcano@linexp.org>
+        with ESMTP id S245546AbiDZWyR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2022 18:54:17 -0400
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B4043AF6;
+        Tue, 26 Apr 2022 15:51:08 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:60786)
+        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1njU1Q-00Fjdd-J7; Tue, 26 Apr 2022 16:51:04 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:35762 helo=email.froward.int.ebiederm.org.xmission.com)
+        by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1njU1P-0069qu-F8; Tue, 26 Apr 2022 16:51:04 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
+        Kees Cook <keescook@chromium.org>
+References: <20220421150248.667412396@infradead.org>
+        <20220421150654.817117821@infradead.org>
+        <87czhap9dy.fsf@email.froward.int.ebiederm.org>
+Date:   Tue, 26 Apr 2022 17:50:21 -0500
+In-Reply-To: <87czhap9dy.fsf@email.froward.int.ebiederm.org> (Eric
+        W. Biederman's message of "Thu, 21 Apr 2022 13:40:57 -0500")
+Message-ID: <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-XM-SPF: eid=1njU1P-0069qu-F8;;;mid=<878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1+owb0c0Gz7E4NISzDrmUFadshStTe596o=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: [PATCH 0/9] ptrace: cleaning up ptrace_stop
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that we have the thermal trip stored in the thermal zone in a
-generic way, we can rely on them and remove one indirection we found
-in the thermal_of code and do one more step forward the removal of the
-duplicated structures.
 
-Cc: Alexandre Bailon <abailon@baylibre.com>
-Cc: Kevin Hilman <khilman@baylibre.com>
-Cc; Eduardo Valentin <eduval@amazon.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
----
- drivers/thermal/thermal_of.c | 53 +++++++++++-------------------------
- 1 file changed, 16 insertions(+), 37 deletions(-)
+While looking at how ptrace is broken on PREEMPT_RT I realized
+that ptrace_stop would be much simpler and more maintainable
+if tsk->ptrace, tsk->parent, and tsk->real_parent were protected
+by siglock.  Most of the changes are general cleanups in support
+of this locking change.
 
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index 069b421a54ae..a356a7b2d73d 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -118,12 +118,7 @@ static int of_thermal_set_trips(struct thermal_zone *tz,
-  */
- int of_thermal_get_ntrips(struct thermal_zone *tz)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (!data || IS_ERR(data))
--		return -ENODEV;
--
--	return data->ntrips;
-+	return tz->ntrips;
- }
- EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
- 
-@@ -139,9 +134,7 @@ EXPORT_SYMBOL_GPL(of_thermal_get_ntrips);
-  */
- bool of_thermal_is_trip_valid(struct thermal_zone *tz, int trip)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (!data || trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return false;
- 
- 	return true;
-@@ -161,12 +154,7 @@ EXPORT_SYMBOL_GPL(of_thermal_is_trip_valid);
- const struct thermal_trip *
- of_thermal_get_trip_points(struct thermal_zone *tz)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (!data)
--		return NULL;
--
--	return data->trips;
-+	return tz->trips;
- }
- EXPORT_SYMBOL_GPL(of_thermal_get_trip_points);
- 
-@@ -273,12 +261,10 @@ static int of_thermal_unbind(struct thermal_zone *thermal,
- static int of_thermal_get_trip_type(struct thermal_zone *tz, int trip,
- 				    enum thermal_trip_type *type)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return -EDOM;
- 
--	*type = data->trips[trip].type;
-+	*type = tz->trips[trip].type;
- 
- 	return 0;
- }
-@@ -286,12 +272,10 @@ static int of_thermal_get_trip_type(struct thermal_zone *tz, int trip,
- static int of_thermal_get_trip_temp(struct thermal_zone *tz, int trip,
- 				    int *temp)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return -EDOM;
- 
--	*temp = data->trips[trip].temperature;
-+	*temp = tz->trips[trip].temperature;
- 
- 	return 0;
- }
-@@ -301,7 +285,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone *tz, int trip,
- {
- 	struct __thermal_zone *data = tz->devdata;
- 
--	if (trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return -EDOM;
- 
- 	if (data->ops && data->ops->set_trip_temp) {
-@@ -313,7 +297,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone *tz, int trip,
- 	}
- 
- 	/* thermal framework should take care of data->mask & (1 << trip) */
--	data->trips[trip].temperature = temp;
-+	tz->trips[trip].temperature = temp;
- 
- 	return 0;
- }
-@@ -321,12 +305,10 @@ static int of_thermal_set_trip_temp(struct thermal_zone *tz, int trip,
- static int of_thermal_get_trip_hyst(struct thermal_zone *tz, int trip,
- 				    int *hyst)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return -EDOM;
- 
--	*hyst = data->trips[trip].hysteresis;
-+	*hyst = tz->trips[trip].hysteresis;
- 
- 	return 0;
- }
-@@ -334,13 +316,11 @@ static int of_thermal_get_trip_hyst(struct thermal_zone *tz, int trip,
- static int of_thermal_set_trip_hyst(struct thermal_zone *tz, int trip,
- 				    int hyst)
- {
--	struct __thermal_zone *data = tz->devdata;
--
--	if (trip >= data->ntrips || trip < 0)
-+	if (trip >= tz->ntrips || trip < 0)
- 		return -EDOM;
- 
- 	/* thermal framework should take care of data->mask & (1 << trip) */
--	data->trips[trip].hysteresis = hyst;
-+	tz->trips[trip].hysteresis = hyst;
- 
- 	return 0;
- }
-@@ -348,12 +328,11 @@ static int of_thermal_set_trip_hyst(struct thermal_zone *tz, int trip,
- static int of_thermal_get_crit_temp(struct thermal_zone *tz,
- 				    int *temp)
- {
--	struct __thermal_zone *data = tz->devdata;
- 	int i;
- 
--	for (i = 0; i < data->ntrips; i++)
--		if (data->trips[i].type == THERMAL_TRIP_CRITICAL) {
--			*temp = data->trips[i].temperature;
-+	for (i = 0; i < tz->ntrips; i++)
-+		if (tz->trips[i].type == THERMAL_TRIP_CRITICAL) {
-+			*temp = tz->trips[i].temperature;
- 			return 0;
- 		}
- 
--- 
-2.25.1
+While making the necessary changes to protect tsk->ptrace with
+siglock I discovered we have two architectures xtensa and um
+that were using tsk->ptrace for what most other architectures
+use TIF_SIGPENDING for and not protecting tsk->ptrace with any lock.
 
+By the end of this series ptrace should work on PREEMPT_RT with the
+CONFIG_FREEZER and CONFIG_CGROUPS disabled, by the simple fact that the
+ptrace_stop code becomes less special.  The function cgroup_enter_frozen
+because it takes a lock which is a sleeping lock on PREEMPT_RT with
+preemption disabled definitely remains a problem.  Peter Zijlstra has
+been rewriting the classic freezer and in earlier parts of this
+discussion so I presume it is also a problem for PREEMPT_RT.
+
+Peter's series rewriting the freezer[1] should work on top of this
+series with minimal changes and patch 2/5 removed.
+
+Eric W. Biederman (9):
+      signal: Rename send_signal send_signal_locked
+      signal: Replace __group_send_sig_info with send_signal_locked
+      ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
+      ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
+      signal: Protect parent child relationships by childs siglock
+      signal: Always call do_notify_parent_cldstop with siglock held
+      ptrace: Simplify the wait_task_inactive call in ptrace_check_attach
+      ptrace: Use siglock instead of tasklist_lock in ptrace_check_attach
+      ptrace: Don't change __state
+
+ arch/um/include/asm/thread_info.h |   2 +
+ arch/um/kernel/exec.c             |   2 +-
+ arch/um/kernel/process.c          |   2 +-
+ arch/um/kernel/ptrace.c           |   8 +-
+ arch/um/kernel/signal.c           |   4 +-
+ arch/xtensa/kernel/ptrace.c       |   4 +-
+ arch/xtensa/kernel/signal.c       |   4 +-
+ drivers/tty/tty_jobctrl.c         |   4 +-
+ include/linux/ptrace.h            |   7 --
+ include/linux/sched/jobctl.h      |   2 +
+ include/linux/sched/signal.h      |   3 +-
+ include/linux/signal.h            |   3 +-
+ kernel/exit.c                     |   4 +
+ kernel/fork.c                     |  12 +--
+ kernel/ptrace.c                   |  61 ++++++-------
+ kernel/signal.c                   | 187 ++++++++++++++------------------------
+ kernel/time/posix-cpu-timers.c    |   6 +-
+ 17 files changed, 131 insertions(+), 184 deletions(-)
+
+[1] https://lkml.kernel.org/r/20220421150248.667412396@infradead.org
+
+Eric
