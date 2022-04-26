@@ -2,115 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA7D1C43217
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Apr 2022 10:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC8CC433FE
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Apr 2022 10:35:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348673AbiDZKUW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Apr 2022 06:20:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36290 "EHLO
+        id S237276AbiDZKiL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Apr 2022 06:38:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348497AbiDZKSD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2022 06:18:03 -0400
-Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48985D1CEA
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2022 02:41:48 -0700 (PDT)
-Received: by mail-lj1-x231.google.com with SMTP id 4so7649055ljw.11
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2022 02:41:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=E33tHlRMyT/tQ3OBJ+K+rhgYkqV/EjV+D77gWmceEHU=;
-        b=DsnrfIwmgTW8zfFWlRe9NdvqoP0cBHwxnnpLmJkvhXHenP8plVKz7JB8AEvuxFO99e
-         98rH+WgE61hOh78cPtsUeJj6fSc/NuXTrbAPFdZ6JZeNl1eWghKpCHhF57glaj9kGE3n
-         dbrWnlepSnABrgq2N2U9FTZjmtwauObRONtnvbLZJrfUM+VUtBFYJeg3jiC3ab+Pfqqe
-         RVYEbgWjblMHU66+zspPHrqi+RwUBMhcRq20amk9UjbOVFAOsn1jU3Qw+CwMhPsVfXSu
-         h62RP+e8TyWtKRdcB8gJMnahb1XU23c4BlxlZa713sWp+ph4+mMefRgznthmBiz1iqIb
-         Ustw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=E33tHlRMyT/tQ3OBJ+K+rhgYkqV/EjV+D77gWmceEHU=;
-        b=HnrfsUKAmmfPyuYGHEBNKYpSrS/VuuaXj5Ux/arGDiS8sCRCkITV8jxFFEwPYUlelV
-         RejvHp/mDnlkg6VJsRwEuRT/22HTU9/o0q6XKsIASDwbJGLdW0hxrBa6isJd+3szWgoi
-         RBSOvDoH6SoVvEjlhVclIdzZvqWYjOu93o4VOZgABL64DU6aI/sPjj353fhOMSZaoaBH
-         lHmslLCTE4LTazIdw4YXa8yr6CglbezwQ76Ue4WVXsyXlrVP0ZLcwoQuz5UbCKyPsUID
-         kLD4fp3zhG6lcftEMJOe3XFlN89SjjBZ0Me/+QamKEvvdAk6iQSlmSOWyFAQVRqAB81+
-         APXA==
-X-Gm-Message-State: AOAM530SiGCoxBd/fG5sV/5B9caO6Nt+akfG3+EJZiiVKAVQhXQEcAkF
-        s2QZAbe4V6T96Q5Yx2b6ghj9Yw==
-X-Google-Smtp-Source: ABdhPJxmYjd+mtxXuvzQgQT+f0ern72OnmODDZCzbYt48kEcU4DHv7JGCyNCCVypOhmaRJ2qS/W8JA==
-X-Received: by 2002:a2e:9e03:0:b0:24f:153c:c479 with SMTP id e3-20020a2e9e03000000b0024f153cc479mr4022106ljk.13.1650966106612;
-        Tue, 26 Apr 2022 02:41:46 -0700 (PDT)
-Received: from eriador.lumag.spb.ru ([188.162.64.30])
-        by smtp.gmail.com with ESMTPSA id y28-20020a19641c000000b00471f6806403sm1330117lfb.16.2022.04.26.02.41.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Apr 2022 02:41:46 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-        quic_tdas@quicinc.com
-Subject: [PATCH v4 0/3] arm: qcom: qcom-apq8064: add separate device node for tsens
-Date:   Tue, 26 Apr 2022 12:41:41 +0300
-Message-Id: <20220426094144.2958416-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.35.1
+        with ESMTP id S240986AbiDZKhz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2022 06:37:55 -0400
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2619F10DE
+        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2022 03:22:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1650968566; x=1682504566;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=93qH1TAJOPKEYm0Y8RSvYHDJaobslV+cAJ0c9DtOyEg=;
+  b=BLm+4fkmgMlY/rbNVPloaGx/seh2xpzH3Tc8AEH5NLM2kCpP5whg3K9e
+   JYSlRS/4+29eDdqptuvliOHRWw9knWsQWALVARgXOF0qNyZigylow7d8x
+   C1CjnlU3G4WoZrupalks2N382z/t8Ae/ttvaudopSYe91ADKmmrH+G+CU
+   Ef24Ge/NzdWx9P4GreWTOVIOjSWGvYAb6YcPsPTM4iyFlh0rZWnHhuqES
+   PK3UrNazBoi3wRnjxqd6LjzLTCQEvABPVyn4GujDUFJ2Ogm961dWm01/a
+   9eo8+uJiTRUuNZesHj+HoCgY+VyNbr6HrMwd6koKlDptJNedR3KnmZxga
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10328"; a="265697460"
+X-IronPort-AV: E=Sophos;i="5.90,290,1643702400"; 
+   d="scan'208";a="265697460"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Apr 2022 03:22:45 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,290,1643702400"; 
+   d="scan'208";a="650137692"
+Received: from linux.intel.com ([10.54.29.200])
+  by FMSMGA003.fm.intel.com with ESMTP; 26 Apr 2022 03:22:45 -0700
+Received: from abityuts-desk1.fi.intel.com (abityuts-desk1.fi.intel.com [10.237.72.79])
+        by linux.intel.com (Postfix) with ESMTP id C5F79580AE2;
+        Tue, 26 Apr 2022 03:22:44 -0700 (PDT)
+Message-ID: <339d6f1495779ba402dab7f7940cdcae3bb94e71.camel@linux.intel.com>
+Subject: Re: your patch "intel_idle: add core C6 optimization for SPR"
+From:   Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+To:     Jan Beulich <jbeulich@suse.com>
+Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Date:   Tue, 26 Apr 2022 13:22:43 +0300
+In-Reply-To: <af7b829e-0d4c-8e4d-faf7-e86f2813cdab@suse.com>
+References: <af7b829e-0d4c-8e4d-faf7-e86f2813cdab@suse.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.4 (3.38.4-1.fc33) 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently gcc-msm8960 driver manually creates tsens device. Instantiate
-the device using DT node instead. This makes the APQ8064 follow the
-IPQ8064 device tree schema (which is also closer to the way tsens
-devices are described on newer Qualcomm platforms).
+On Tue, 2022-04-26 at 11:35 +0200, Jan Beulich wrote:
+> Artem,
+> 
+> somewhat similarly to the C1E patch, while porting this one to our
+> driver clone in Xen I've noticed that the code added here would not
+> be reached in case the user specified a conflicting C1E-related
+> command line option (which ought to be unrelated to C6 handling).
+> In my port of the patch I've converted to
+> 
+>         /* Check if user prefers C1E over C1. */
+>         if (preferred_states_mask & BIT(2, U) &&
+>             /* Both can't be enabled, stick to the defaults. */
+>             !(preferred_states_mask & BIT(1, U))) {
+>                 ...
+>         }
 
-Compatibility with the previous devices trees is kept intact.
-
-Changes since v3:
-- Fix a typo qcom,gcc-msm8060 -> qcom,gcc-msm8960 (noted by Krzyshtof)
-- Fixed indentation in the example (also noted by Krzyshtof)
-
-Changes since v2:
-- Remove patches merged by Daniel
-- Rephrase commit messages to emphasize that these changes make apq8064
-  follow ipq8064
-
-Changes since v1:
-- populate child devices in gcc-msm8960
-- add syscon to the gcc device tree node
-
-Dmitry Baryshkov (3):
-  clk: qcom: gcc-msm8960: create tsens device if there are no child
-    nodes
-  arm: dts: qcom-apq8064: create tsens device node
-  dt-bindings: clock: qcom,gcc-apq8064: split tsens to the child node
-
-Dmitry Baryshkov (3):
-  clk: qcom: gcc-msm8960: create tsens device if there are no child
-    nodes
-  arm: dts: qcom-apq8064: create tsens device node
-  dt-bindings: clock: qcom,gcc-apq8064: split tsens to the child node
-
- .../bindings/clock/qcom,gcc-apq8064.yaml      | 45 +++++++------------
- arch/arm/boot/dts/qcom-apq8064.dtsi           | 25 +++++++----
- drivers/clk/qcom/gcc-msm8960.c                |  6 ++-
- 3 files changed, 39 insertions(+), 37 deletions(-)
+Hi, ack, I'll send a fix for this too.
 
 
-base-commit: 3123109284176b1532874591f7c81f3837bbdc17
-prerequisite-patch-id: b5aad2b1e0db4e6d77d6a2faa2fe95acf274b3c8
-prerequisite-patch-id: a0c7dcfc85a1eac4969530b73230f226006d6e1a
-prerequisite-patch-id: 775709cdc871c90669902f9b431ac7b4f51408b5
--- 
-2.35.1
 
