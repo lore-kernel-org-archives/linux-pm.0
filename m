@@ -2,191 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C928CC4167B
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Apr 2022 13:12:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D294CC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Apr 2022 13:36:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235613AbiD0NPn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Apr 2022 09:15:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46442 "EHLO
+        id S236198AbiD0Njp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Apr 2022 09:39:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235620AbiD0NPi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2022 09:15:38 -0400
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F40E15C3B1
-        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2022 06:12:00 -0700 (PDT)
-Received: by mail-ej1-x630.google.com with SMTP id r13so3319010ejd.5
-        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2022 06:12:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Zo30U2a3x9h8gZmVnKlzICGjV7EErdQKTWjBgF+XEsk=;
-        b=enGbpjMNb0lU0hAevh127t9WQAvthP/Q1dK2zgs0wxhlwwIFvbgj5Cuu7QKBfxHl+T
-         2LDymhT9ZWmyx2XdDPs4YM9LcX5jsNW+YqktQtP6wuAVoGlNFdnp6oL+f7xKlCxiGVBw
-         5cECJlrL6DsG+Ek02hfGAJ66kPXL8MKGcGE0O/yR9bzjX6ci8bC2+naBcnej0Ob6bDzR
-         RUX1AIGzIW7uFxhBZDiFtgJSCuasxH6RjUWYZxnKlhNoPWl3i0AXoJ6BLfCna0H1BVuB
-         3KDduRORx764x67bpD8wj8jFxWOolm9rpT5sVNsVz09ZwgYC+3+0xrgFTnfI18UTVMsd
-         WmEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Zo30U2a3x9h8gZmVnKlzICGjV7EErdQKTWjBgF+XEsk=;
-        b=4Fook88JYCxC/vwO4DoWcQ2toHHCUow/H45yRdU85ZEG/qFkWvXtRmdHV307MxkZaV
-         iFOYvqhSrC2YA2aDtzeq+KLXzW+zuzb5s04VLSP59VrkmOjfEKsDp2XBdHFNLMfoHAky
-         8SBJxRB9JIeLzniOH6/50B8t4qScDb+PpMwwpA0dv1BTNqif77vGJeGNFtaEds5I0uwP
-         idTRlQur0f1RRieCvMV5RRboUf8/vqPV1iZS60xAhX+oHLlCcNXGCFq/lppOYoJmlX7b
-         6ZQIREjWoyWccgW36gFLOopB/KWciJSdx2ZdME76uZbWsoOZMIJzu7qkYa3wqgQgn2Kv
-         qnGg==
-X-Gm-Message-State: AOAM531GfRwjWmQP1HrPLTGkk5+b7n3wGGildptRrdssgUjzBRnASwnk
-        Rt07mtM1Zaq+vMBvoHt0Q+0Z7g==
-X-Google-Smtp-Source: ABdhPJxTjNa8hRlOr0lMdgB81fJ3uKNVMzPZ/Tat4sDhuysmdYW4gHfjUpOTAYgrl0MP0Wx5lpeXJQ==
-X-Received: by 2002:a17:907:3e18:b0:6f3:6abc:a904 with SMTP id hp24-20020a1709073e1800b006f36abca904mr22192208ejc.341.1651065119149;
-        Wed, 27 Apr 2022 06:11:59 -0700 (PDT)
-Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id o23-20020a509b17000000b00425edfe72a3sm4881031edi.43.2022.04.27.06.11.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Apr 2022 06:11:58 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <djakov@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH 2/3] interconnect: qcom: sc8280xp: constify icc_node pointers
-Date:   Wed, 27 Apr 2022 15:11:53 +0200
-Message-Id: <20220427131154.302581-2-krzysztof.kozlowski@linaro.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220427131154.302581-1-krzysztof.kozlowski@linaro.org>
-References: <20220427131154.302581-1-krzysztof.kozlowski@linaro.org>
+        with ESMTP id S236491AbiD0Njc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2022 09:39:32 -0400
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8C134B43A;
+        Wed, 27 Apr 2022 06:36:20 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:46958)
+        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1njhq4-00BNMo-N6; Wed, 27 Apr 2022 07:36:16 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:35834 helo=email.froward.int.ebiederm.org.xmission.com)
+        by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1njhq3-008HKf-Lv; Wed, 27 Apr 2022 07:36:16 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+        Oleg Nesterov <oleg@redhat.com>, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        inux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>
+References: <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+        <20220426225211.308418-5-ebiederm@xmission.com>
+        <YmjlScztfmfWBfGi@linutronix.de>
+Date:   Wed, 27 Apr 2022 08:35:47 -0500
+In-Reply-To: <YmjlScztfmfWBfGi@linutronix.de> (Sebastian Andrzej Siewior's
+        message of "Wed, 27 Apr 2022 08:40:09 +0200")
+Message-ID: <87tuaebqdo.fsf@email.froward.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-XM-SPF: eid=1njhq3-008HKf-Lv;;;mid=<87tuaebqdo.fsf@email.froward.int.ebiederm.org>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX186AxdiWfPFH1v/oamRbqPMj7VzLJuq57s=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 5/9] signal: Protect parent child relationships by
+ childs siglock
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Pointers to struct qcom_icc_node (and similar structures) are not
-modified, so they can be made const for safety.  The contents of struct
-qcom_icc_node must stay non-const.
+Sebastian Andrzej Siewior <bigeasy@linutronix.de> writes:
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- drivers/interconnect/qcom/sc8280xp.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+> On 2022-04-26 17:52:07 [-0500], Eric W. Biederman wrote:
+>> The functions ptrace_stop and do_signal_stop have to drop siglock
+>> and grab tasklist_lock because the parent/child relation ship
+>> is guarded by siglock and not siglock.
+>
+>  "is guarded by tasklist_lock and not siglock." ?
 
-diff --git a/drivers/interconnect/qcom/sc8280xp.c b/drivers/interconnect/qcom/sc8280xp.c
-index 7e6967d7b4a7..408f6ade29e4 100644
---- a/drivers/interconnect/qcom/sc8280xp.c
-+++ b/drivers/interconnect/qcom/sc8280xp.c
-@@ -2014,7 +2014,7 @@ static struct qcom_icc_bcm *aggre1_noc_bcms[] = {
- 	&bcm_sn5,
- };
- 
--static struct qcom_icc_node *aggre1_noc_nodes[] = {
-+static struct qcom_icc_node * const aggre1_noc_nodes[] = {
- 	[MASTER_QSPI_0] = &qhm_qspi,
- 	[MASTER_QUP_1] = &qhm_qup1,
- 	[MASTER_QUP_2] = &qhm_qup2,
-@@ -2046,7 +2046,7 @@ static struct qcom_icc_bcm *aggre2_noc_bcms[] = {
- 	&bcm_sn4,
- };
- 
--static struct qcom_icc_node *aggre2_noc_nodes[] = {
-+static struct qcom_icc_node * const aggre2_noc_nodes[] = {
- 	[MASTER_QDSS_BAM] = &qhm_qdss_bam,
- 	[MASTER_QUP_0] = &qhm_qup0,
- 	[MASTER_A2NOC_CFG] = &qnm_a2noc_cfg,
-@@ -2083,7 +2083,7 @@ static struct qcom_icc_bcm *clk_virt_bcms[] = {
- 	&bcm_qup2,
- };
- 
--static struct qcom_icc_node *clk_virt_nodes[] = {
-+static struct qcom_icc_node * const clk_virt_nodes[] = {
- 	[MASTER_IPA_CORE] = &ipa_core_master,
- 	[MASTER_QUP_CORE_0] = &qup0_core_master,
- 	[MASTER_QUP_CORE_1] = &qup1_core_master,
-@@ -2110,7 +2110,7 @@ static struct qcom_icc_bcm *config_noc_bcms[] = {
- 	&bcm_sn10,
- };
- 
--static struct qcom_icc_node *config_noc_nodes[] = {
-+static struct qcom_icc_node * const config_noc_nodes[] = {
- 	[MASTER_GEM_NOC_CNOC] = &qnm_gemnoc_cnoc,
- 	[MASTER_GEM_NOC_PCIE_SNOC] = &qnm_gemnoc_pcie,
- 	[SLAVE_AHB2PHY_0] = &qhs_ahb2phy0,
-@@ -2208,7 +2208,7 @@ static const struct qcom_icc_desc sc8280xp_config_noc = {
- static struct qcom_icc_bcm *dc_noc_bcms[] = {
- };
- 
--static struct qcom_icc_node *dc_noc_nodes[] = {
-+static struct qcom_icc_node * const dc_noc_nodes[] = {
- 	[MASTER_CNOC_DC_NOC] = &qnm_cnoc_dc_noc,
- 	[SLAVE_LLCC_CFG] = &qhs_llcc,
- 	[SLAVE_GEM_NOC_CFG] = &qns_gemnoc,
-@@ -2226,7 +2226,7 @@ static struct qcom_icc_bcm *gem_noc_bcms[] = {
- 	&bcm_sh2,
- };
- 
--static struct qcom_icc_node *gem_noc_nodes[] = {
-+static struct qcom_icc_node * const gem_noc_nodes[] = {
- 	[MASTER_GPU_TCU] = &alm_gpu_tcu,
- 	[MASTER_PCIE_TCU] = &alm_pcie_tcu,
- 	[MASTER_SYS_TCU] = &alm_sys_tcu,
-@@ -2259,7 +2259,7 @@ static struct qcom_icc_bcm *lpass_ag_noc_bcms[] = {
- 	&bcm_sn9,
- };
- 
--static struct qcom_icc_node *lpass_ag_noc_nodes[] = {
-+static struct qcom_icc_node * const lpass_ag_noc_nodes[] = {
- 	[MASTER_CNOC_LPASS_AG_NOC] = &qhm_config_noc,
- 	[MASTER_LPASS_PROC] = &qxm_lpass_dsp,
- 	[SLAVE_LPASS_CORE_CFG] = &qhs_lpass_core,
-@@ -2283,7 +2283,7 @@ static struct qcom_icc_bcm *mc_virt_bcms[] = {
- 	&bcm_mc0,
- };
- 
--static struct qcom_icc_node *mc_virt_nodes[] = {
-+static struct qcom_icc_node * const mc_virt_nodes[] = {
- 	[MASTER_LLCC] = &llcc_mc,
- 	[SLAVE_EBI1] = &ebi,
- };
-@@ -2300,7 +2300,7 @@ static struct qcom_icc_bcm *mmss_noc_bcms[] = {
- 	&bcm_mm1,
- };
- 
--static struct qcom_icc_node *mmss_noc_nodes[] = {
-+static struct qcom_icc_node * const mmss_noc_nodes[] = {
- 	[MASTER_CAMNOC_HF] = &qnm_camnoc_hf,
- 	[MASTER_MDP0] = &qnm_mdp0_0,
- 	[MASTER_MDP1] = &qnm_mdp0_1,
-@@ -2331,7 +2331,7 @@ static struct qcom_icc_bcm *nspa_noc_bcms[] = {
- 	&bcm_nsa1,
- };
- 
--static struct qcom_icc_node *nspa_noc_nodes[] = {
-+static struct qcom_icc_node * const nspa_noc_nodes[] = {
- 	[MASTER_CDSP_NOC_CFG] = &qhm_nsp_noc_config,
- 	[MASTER_CDSP_PROC] = &qxm_nsp,
- 	[SLAVE_CDSP_MEM_NOC] = &qns_nsp_gemnoc,
-@@ -2351,7 +2351,7 @@ static struct qcom_icc_bcm *nspb_noc_bcms[] = {
- 	&bcm_nsb1,
- };
- 
--static struct qcom_icc_node *nspb_noc_nodes[] = {
-+static struct qcom_icc_node * const nspb_noc_nodes[] = {
- 	[MASTER_CDSPB_NOC_CFG] = &qhm_nspb_noc_config,
- 	[MASTER_CDSP_PROC_B] = &qxm_nspb,
- 	[SLAVE_CDSPB_MEM_NOC] = &qns_nspb_gemnoc,
-@@ -2375,7 +2375,7 @@ static struct qcom_icc_bcm *system_noc_main_bcms[] = {
- 	&bcm_sn9,
- };
- 
--static struct qcom_icc_node *system_noc_main_nodes[] = {
-+static struct qcom_icc_node * const system_noc_main_nodes[] = {
- 	[MASTER_A1NOC_SNOC] = &qnm_aggre1_noc,
- 	[MASTER_A2NOC_SNOC] = &qnm_aggre2_noc,
- 	[MASTER_USB_NOC_SNOC] = &qnm_aggre_usb_noc,
--- 
-2.32.0
+Yes.   Thank you.  I will fix that.
 
+>> Simplify things by guarding the parent/child relationship
+>> with siglock.  For the most part this just requires a little bit
+>> of code motion.  In a couple of places more locking was needed.
+>> 
+>> 
+>> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>
+> Sebastian
+
+Eric
