@@ -2,117 +2,124 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DFF4C4332F
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Apr 2022 18:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 786F4C433F5
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Apr 2022 20:52:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231950AbiD0Szn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Apr 2022 14:55:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40598 "EHLO
+        id S237185AbiD0U4H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Apr 2022 16:56:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234000AbiD0Syr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2022 14:54:47 -0400
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EDD3B0A4B
-        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2022 11:41:22 -0700 (PDT)
-Received: by mail-wr1-x431.google.com with SMTP id v12so3693399wrv.10
-        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2022 11:41:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=N6G/xcwWCTxvb9G73B2XRdjPPr2MF5UR6WrCerpPvtI=;
-        b=Eq8RmBUa6QZIrPBoaS4wU4l9ksQhkbE+j9QQwicFPr7ea96HlDJXhgWVybK81lp291
-         A32tb/pPMKlpwfXAfDCIpaEPK+Hx5xBCZuDGPJlnk2iAT5Vhu59xnuFOJok//ATLLCkB
-         st01pOkCOOY5SiT9Xx0G9FC4T9dc7TthrvU/JlKqINfASBOYtr6fQmn6IrEGGtLSPBe0
-         HpwmdfsuvUwQ8dYQFEiGjuHmGQNVUDYibL1rHMy7Ki1GTKyG9mbFszIVfe6/spogSqw9
-         CWq/TX7YQM4l9Xza2E9f8Wo/+xRdzrcbZsLTUHqpNib8ebjuILDJWkJDmue6HGx6gXqJ
-         1phA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=N6G/xcwWCTxvb9G73B2XRdjPPr2MF5UR6WrCerpPvtI=;
-        b=TyxeIWGq6MTZ5lXESH8AgQjpubu/OD2gVQ9jch3HnDEp5TLw2KyiE+urYeh2JtM6MH
-         oME29/xEuQGNORM9SkW2WuubyaIYb8+n1sX4viRb0J8hn1QuUyeSzdPZb4GTphhOXVgd
-         vpNGEvwzmNO7qqajzrOZNJqGz/O8Z9oxJ5U9ZwgCO8dJCFcoQ2Ixjyw7ZmWoNG1i/AWh
-         HaPdJlOpr6mHYG5Xeclr20I+phP/BRK17avi++ndbPMm1znjN85resLKvXSPLCIuUgFg
-         0gK848/LJITpturS8oT0B2j3cUGOE4uEQOa5tZt4HT0NVG1azdjXDWQC+nMr7U62uFsM
-         lyhw==
-X-Gm-Message-State: AOAM532Cx6FWGuVtF86pv2rE6PZUQ2L6AJt2QowiIkLAXBWs3SE1k4cv
-        iJHIdyID0b7ezdi5/ZtmIN2+Fw==
-X-Google-Smtp-Source: ABdhPJwZVKozldr6zcXz35GYlRTsb+89wBHEbE1Uy4aFsPphD87s+fTEG/jHqJh2dUUwdOsRDpNklA==
-X-Received: by 2002:a5d:6752:0:b0:20a:ce1f:2ceb with SMTP id l18-20020a5d6752000000b0020ace1f2cebmr20539629wrw.715.1651084881147;
-        Wed, 27 Apr 2022 11:41:21 -0700 (PDT)
-Received: from localhost.localdomain (cpc78119-cwma10-2-0-cust590.7-3.cable.virginm.net. [81.96.50.79])
-        by smtp.gmail.com with ESMTPSA id f3-20020a5d64c3000000b0020aef267950sm1992798wri.49.2022.04.27.11.41.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Apr 2022 11:41:20 -0700 (PDT)
-From:   Caleb Connolly <caleb.connolly@linaro.org>
-To:     caleb.connolly@linaro.org, Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Cc:     Amit Pundir <amit.pundir@linaro.org>,
-        Sumit Semwal <sumit.semwal@linaro.org>
-Subject: [PATCH 4/6] arm64: dts: qcom: sdm845-db845c: enable pmi8998 charger
-Date:   Wed, 27 Apr 2022 19:40:29 +0100
-Message-Id: <20220427184031.2569442-5-caleb.connolly@linaro.org>
-X-Mailer: git-send-email 2.36.0
-In-Reply-To: <20220427184031.2569442-1-caleb.connolly@linaro.org>
-References: <20220427184031.2569442-1-caleb.connolly@linaro.org>
+        with ESMTP id S236962AbiD0U4F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2022 16:56:05 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36BE781194;
+        Wed, 27 Apr 2022 13:52:48 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id DFC11B82A53;
+        Wed, 27 Apr 2022 20:52:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74C48C385A9;
+        Wed, 27 Apr 2022 20:52:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1651092765;
+        bh=v307TXmNX7Dq2c5DVdjkniPVMOiPiXk6sD1IgSoBwuk=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=P9m+UfRC0IpQ/qL6+CZa0XyV1aGev8ss06l5wt3Yo2ywAQRD6OP06klVRAbABES23
+         N2Oi/mMC6KXz8eVr+GUoeKqkDgCD3YM+hptXm57Kaduc2pB5MwXp2P/shI0Nwr1ZL1
+         E08z7RTZdZxY1tyd/di4kcYEcLU5syNHhpzpn8fnNZT3ejRECInNUE98m+DgDZ91W6
+         /SOxVtJO58S/Xqw2Z5vIszx0U93UwjtzsZBk6V7liJHJ2sZEL4FrGIL1VqCZsgn+uU
+         h5CZnWI1yyF0PeSvJNSnrWD/2HBEcDyY7HdbPu8A+o0iBz6/jEWHvn8wz0Ypms0rmb
+         /qlh5sdvvsJGQ==
+Message-ID: <38149635-26ee-ab02-7c69-c5dd5f64fab5@kernel.org>
+Date:   Wed, 27 Apr 2022 23:52:39 +0300
 MIME-Version: 1.0
+Subject: Re: [PATCH] interconnect: Restore sync state by ignoring ipa-virt in
+ provider count
+Content-Language: en-US
+To:     Alex Elder <elder@linaro.org>, Stephen Boyd <swboyd@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, patches@lists.linux.dev,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Doug Anderson <dianders@chromium.org>,
+        Taniya Das <quic_tdas@quicinc.com>,
+        Mike Tipton <quic_mdtipton@quicinc.com>
+References: <20220427013226.341209-1-swboyd@chromium.org>
+ <fb1f9a17-9b27-b0ac-124d-66644851e204@linaro.org>
+From:   Georgi Djakov <djakov@kernel.org>
+In-Reply-To: <fb1f9a17-9b27-b0ac-124d-66644851e204@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable the smb2 charger driver on the db845c and add a simple-battery
-node to report the correct VBAT voltage.
+On 27.04.22 15:00, Alex Elder wrote:
+> On 4/26/22 8:32 PM, Stephen Boyd wrote:
+>> Ignore compatible strings for the IPA virt drivers that were removed in
+>> commits 2fb251c26560 ("interconnect: qcom: sdx55: Drop IP0
+>> interconnects") and 2f3724930eb4 ("interconnect: qcom: sc7180: Drop IP0
+>> interconnects") so that the sync state logic can kick in again.
+>> Otherwise all the interconnects in the system will stay pegged at max
+>> speeds because 'providers_count' is always going to be one larger than
+>> the number of drivers that will ever probe on sc7180 or sdx55. This
+>> fixes suspend on sc7180 and sdx55 devices when you don't have a
+>> devicetree patch to remove the ipa-virt compatible node.
+>>
+>> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+>> Cc: Doug Anderson <dianders@chromium.org>
+>> Cc: Alex Elder <elder@linaro.org>
+>> Cc: Taniya Das <quic_tdas@quicinc.com>
+>> Cc: Mike Tipton <quic_mdtipton@quicinc.com>
+>> Fixes: 2fb251c26560 ("interconnect: qcom: sdx55: Drop IP0 interconnects")
+>> Fixes: 2f3724930eb4 ("interconnect: qcom: sc7180: Drop IP0 interconnects")
+>> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+> 
+> So of_count_icc_providers() counts the number of
+> interconnect providers defined in the DTB, regardless
+> of whether anything in the code supports it.
 
-Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
----
- arch/arm64/boot/dts/qcom/sdm845-db845c.dts | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+Yes, that's the case currently. There could be multiple provider drivers
+in different modules, and the modules may be loaded even not during boot,
+but later. So we rely on DT.
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845-db845c.dts b/arch/arm64/boot/dts/qcom/sdm845-db845c.dts
-index 40a290b6d4f3..3b73b5305c51 100644
---- a/arch/arm64/boot/dts/qcom/sdm845-db845c.dts
-+++ b/arch/arm64/boot/dts/qcom/sdm845-db845c.dts
-@@ -240,6 +240,18 @@ vph_pwr: vph-pwr-regulator {
- 
- 		vin-supply = <&vbat_som>;
- 	};
-+
-+	/*
-+	 * The db845c doesn't actually have a battery, but the charger circuitry
-+	 * is still wired up to support one, it needs to be programmed for nominal
-+	 * vbat voltage. See the vbat-regulator above.
-+	 */
-+	battery: battery {
-+		compatible = "simple-battery";
-+
-+		voltage-min-design-microvolt = <4200000>;
-+		voltage-max-design-microvolt = <4200000>;
-+	};
- };
- 
- &adsp_pas {
-@@ -603,6 +615,12 @@ &pmi8998_rradc {
- 	status = "okay";
- };
- 
-+&pmi8998_charger {
-+	status = "okay";
-+
-+	monitored-battery = <&battery>;
-+};
-+
- /* QUAT I2S Uses 4 I2S SD Lines for audio on LT9611 HDMI Bridge */
- &q6afedai {
- 	qi2s@22 {
--- 
-2.36.0
+Thanks,
+Georgi
+
+> This seems to be a more general problem, but I
+> suppose in practice it's not likely to occur.
+> 
+> I think your solution looks fine, but I'm interested
+> in what Georgi has to say.
+> 
+> Reviewed-by: Alex Elder <elder@linaro.org>
+> 
+> 
+>> ---
+>>   drivers/interconnect/core.c | 8 +++++++-
+>>   1 file changed, 7 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+>> index 9050ca1f4285..c52915a58b22 100644
+>> --- a/drivers/interconnect/core.c
+>> +++ b/drivers/interconnect/core.c
+>> @@ -1087,9 +1087,15 @@ static int of_count_icc_providers(struct device_node *np)
+>>   {
+>>       struct device_node *child;
+>>       int count = 0;
+>> +    const struct of_device_id ignore_list[] = {
+>> +        { .compatible = "qcom,sc7180-ipa-virt" },
+>> +        { .compatible = "qcom,sdx55-ipa-virt" },
+>> +        {}
+>> +    };
+>>       for_each_available_child_of_node(np, child) {
+>> -        if (of_property_read_bool(child, "#interconnect-cells"))
+>> +        if (of_property_read_bool(child, "#interconnect-cells") &&
+>> +            likely(!of_match_node(ignore_list, child)))
+>>               count++;
+>>           count += of_count_icc_providers(child);
+>>       }
+>>
+>> base-commit: 2fb251c265608636fc961b7d38e1a03937e57371
+> 
 
