@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB054C4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 10:43:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B2DC433F5
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 10:43:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343899AbiD1KqO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Apr 2022 06:46:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57758 "EHLO
+        id S236262AbiD1KqL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Apr 2022 06:46:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57778 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245401AbiD1KqL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 06:46:11 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 987EC8594D
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:54 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id gh6so8796013ejb.0
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:54 -0700 (PDT)
+        with ESMTP id S244994AbiD1KqH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 06:46:07 -0400
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18FBA85964
+        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:51 -0700 (PDT)
+Received: by mail-ed1-x529.google.com with SMTP id d6so5013647ede.8
+        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=eVrG7ytRhvfMLwg4sL6jbIdDhYj5gKeUGxhEwn4Bejk=;
-        b=BJXlGK81Gi71Z8HxoEnY11K+gDOzQVNHqhtuUdEI8MGf68sHJf+x768slqQyn/S9+k
-         iy1lDOkc1p3T4q9qa9V9Q10QQ5LBa9xudCJaVZBztiEy26LfiyjDRCO1rdrQTLzYmm2s
-         mk3ffQ8YvBTwSzeP1rSXOljFCx0xNzu0/t1NQcz+Yt5FC4zWLRTgv9fHaOhJZScXwNoQ
-         nUkkYbRoAzQbgodD7ONX4+jOvJtB2wQZeapWoFs+AhVRoaVhvpf5GZv/Eg3AebW8z7me
-         f/dQHPs+Jx6tMj9vDgFTEhAcscAn2vDRMKSsKKY+kQBsrZjxExyBT8GoMhoEJW9dpjf4
-         eovQ==
+        bh=EOzQqgz02aXb8qIj3DdqRtK5QB4xG5+T1rYPUXMs6Ec=;
+        b=fWvIQQJeFXrda8Ur2+SsRaqvcZ8BmjCQsWq1dyasRRaviFhPmCRJ6ptJnBcRO6njS2
+         pZ2e+bzzD1FMTX1NvhX/XmFRVNGisEujIMextBEuw16ABp+3xirZrEpKe6NpTwynu60B
+         vV24ClYqyW1h/+M0pqnzd7tAVGddio3/vcx2EU8igg+Yb9lwG+w7LKF++691lsr6DF/8
+         I+8vFSMymGGegdCh6ViEpwo09My3+VZB5eyAnkPJDGWsiiWSlHu5jF3+C5GLKVZZFWA6
+         cFyflY605GJ3Asqna87zfdu3VTnbWSoE9iB4/NT8INSB59ggclcjpWwo4P2QMZEbiouc
+         O7QQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=eVrG7ytRhvfMLwg4sL6jbIdDhYj5gKeUGxhEwn4Bejk=;
-        b=uZxz+qpdea2DUNAZHd+wt+cinlLqYi8PhTJa/ZTD4xTVd5X7yLfmAu7FG66+bgGbgb
-         zvvq6SdVZKW7SSR1ZX3DjShH28+pKGZbnSkM9q5f+cWUz8+4VpjefyPaIzCoQi61RBs9
-         RqA8dlga0+TsNQpiP5vT1Sfecid1daDfwN51JI8mit+pzljnf/0uxtEFlKqAo8gmzHfl
-         Im25mPLPsImv+mt2SyiMNaZMbiBycirpM0xr+zpE3kY9WEwS+29xlGBSxFmsC4679Z04
-         0huAES+gB+4w5WilLuLnXz3V2C7yMChrX48IBb/YeNjei/RhYE0KbiQQsdkLHNpPdwfE
-         G5EA==
-X-Gm-Message-State: AOAM531xgifFeYdafp0Yqa1S3l9e8+Sd+DvrSnYH2Sur6fDlkriTlQyq
-        OwJOCL8eXDFBUAjGun9D1R8SsQ==
-X-Google-Smtp-Source: ABdhPJzqQ4xoq3ewwa2SFLN6+Qifk+2YjdCez3ZVLT7Mv4oKmLqYRUYKBKSzP6eNxb+f5xRpRHg7wg==
-X-Received: by 2002:a17:906:804b:b0:6f3:8d78:ffa8 with SMTP id x11-20020a170906804b00b006f38d78ffa8mr20612885ejw.588.1651142573217;
-        Thu, 28 Apr 2022 03:42:53 -0700 (PDT)
+        bh=EOzQqgz02aXb8qIj3DdqRtK5QB4xG5+T1rYPUXMs6Ec=;
+        b=K1/26mjzyIvcDwaC2cATt17g3BMqq6jVES8sDlyIjbDpZNq8KIaogxVUkL9udUDEls
+         IiODo132uB3urFmNJXApdAEMUtSI0QsNJcQlN53b5db3JWlFAfWQXXM09RtF2rDvxUoU
+         7zVE2xWnTO9QFU7V0DnMj8n0VoKzACLyLkoYn4etbhhGRG8cMQjp/ysUEAx9bUCtNv+3
+         gsnoJBKkjykBKyNVKtCi6qiTh7rxWkeCTG62Vkq66gl2bvayo4lcQ7EDUH3lOQTxJiZ+
+         ak1RULUq1I0qxwbd4qig0yahasdRSHk+NN7UW+/ReSuZ+3jINL8Tl4EHfWsUn0vnBpam
+         02Cw==
+X-Gm-Message-State: AOAM533rzSCVQgED4fFyF4sAHHP4jaja/vuh9J85eKW5JaVIiZCW+bSe
+        NOkYi5yCchayOsMz8Jmn9ye9QQ==
+X-Google-Smtp-Source: ABdhPJz/r0wtITcJ5NGANqGMCjDdZiQ7xMZvN8VMFgcxl1tXMBZ9RXKAtsh5GST7FPVW1drRSrXLGQ==
+X-Received: by 2002:a50:ed0e:0:b0:425:e476:f4ed with SMTP id j14-20020a50ed0e000000b00425e476f4edmr22316159eds.32.1651142569586;
+        Thu, 28 Apr 2022 03:42:49 -0700 (PDT)
 Received: from localhost.localdomain (cpc78119-cwma10-2-0-cust590.7-3.cable.virginm.net. [81.96.50.79])
-        by smtp.gmail.com with ESMTPSA id mf1-20020a1709071a4100b006f39f556011sm4982583ejc.125.2022.04.28.03.42.51
+        by smtp.gmail.com with ESMTPSA id mf1-20020a1709071a4100b006f39f556011sm4982583ejc.125.2022.04.28.03.42.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Apr 2022 03:42:52 -0700 (PDT)
+        Thu, 28 Apr 2022 03:42:48 -0700 (PDT)
 From:   Caleb Connolly <caleb.connolly@linaro.org>
 To:     caleb.connolly@linaro.org, Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -57,9 +57,9 @@ To:     caleb.connolly@linaro.org, Sebastian Reichel <sre@kernel.org>,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 Cc:     Amit Pundir <amit.pundir@linaro.org>,
         Sumit Semwal <sumit.semwal@linaro.org>
-Subject: [PATCH v2 5/6] arm64: dts: qcom: sdm845-xiaomi-beryllium enable pmi8998 charger
-Date:   Thu, 28 Apr 2022 11:42:32 +0100
-Message-Id: <20220428104233.2980806-6-caleb.connolly@linaro.org>
+Subject: [PATCH v2 3/6] arm64: dts: sdm845-oneplus: enable pmi8998 charger
+Date:   Thu, 28 Apr 2022 11:42:30 +0100
+Message-Id: <20220428104233.2980806-4-caleb.connolly@linaro.org>
 X-Mailer: git-send-email 2.36.0
 In-Reply-To: <20220428104233.2980806-1-caleb.connolly@linaro.org>
 References: <20220428104233.2980806-1-caleb.connolly@linaro.org>
@@ -69,45 +69,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable the smb2 charger driver and add a battery node to report the
-battery stats correctly.
+Enable the smb2 charger to expose usb attach/detach events, charging
+stats etc.
 
 Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
 ---
- .../arm64/boot/dts/qcom/sdm845-xiaomi-beryllium.dts | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi   | 4 ++++
+ arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts | 4 ++++
+ arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts    | 4 ++++
+ 3 files changed, 12 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845-xiaomi-beryllium.dts b/arch/arm64/boot/dts/qcom/sdm845-xiaomi-beryllium.dts
-index b3b6aa4e0fa3..1a5e127d7a43 100644
---- a/arch/arm64/boot/dts/qcom/sdm845-xiaomi-beryllium.dts
-+++ b/arch/arm64/boot/dts/qcom/sdm845-xiaomi-beryllium.dts
-@@ -109,6 +109,14 @@ rmtfs_mem: memory@f6301000 {
- 		};
- 	};
- 
-+	battery: battery {
-+		compatible = "simple-battery";
-+
-+		charge-full-design-microamp-hours = <4000000>;
-+		voltage-min-design-microvolt = <3400000>;
-+		voltage-max-design-microvolt = <4400000>;
-+	};
-+
- 	vreg_s4a_1p8: vreg-s4a-1p8 {
- 		compatible = "regulator-fixed";
- 		regulator-name = "vreg_s4a_1p8";
-@@ -302,6 +310,11 @@ vol_up_pin_a: vol-up-active {
+diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+index 9c91ddc766af..b1fa00a8047b 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+@@ -461,6 +461,10 @@ pinconf {
  	};
  };
  
 +&pmi8998_charger {
 +	status = "okay";
++};
++
+ &pmi8998_rradc {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+index bf2cf92e8976..4e119a78c568 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
++++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dts
+@@ -32,3 +32,7 @@ &display_panel {
+ &bq27441_fg {
+ 	monitored-battery = <&battery>;
+ };
++
++&pmi8998_charger {
++	monitored-battery = <&battery>;
++};
+diff --git a/arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts b/arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts
+index 1b6b5bf368df..0b610e3a8d9c 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts
++++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-fajita.dts
+@@ -33,6 +33,10 @@ &bq27441_fg {
+ 	monitored-battery = <&battery>;
+ };
+ 
++&pmi8998_charger {
 +	monitored-battery = <&battery>;
 +};
 +
- &pm8998_pon {
- 	resin {
- 		compatible = "qcom,pm8941-resin";
+ &rmi4_f12 {
+ 	touchscreen-y-mm = <148>;
+ };
 -- 
 2.36.0
 
