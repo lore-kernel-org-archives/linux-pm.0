@@ -2,108 +2,127 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70323C433EF
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 10:43:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DB5FC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 11:16:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245202AbiD1KqK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Apr 2022 06:46:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57698 "EHLO
+        id S1345440AbiD1LUH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Apr 2022 07:20:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46752 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244629AbiD1KqH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 06:46:07 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF32385956
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:49 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id p18so5015736edr.7
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2022 03:42:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=5PDc4kwfq5Abwa8nZKwgraCJqPwJeISvtFvxURCWRYI=;
-        b=Ew5KCg2phGMV+OlxGFxDY0ICfO7GTUKjam96t6qlNWEPwnXxSVtiVZ7gex/Rucl3Cl
-         ToXn4Md9FB1/iF/Xp7Li/DTXFuOh4p3UP1VA20OaZEuBL4tceMnqjlzaziITbJEWE2sp
-         8nGfWopm/bIIvlBozwjemM/p718KG1l1Kj6TU0LpqWcoY+3WOi8SgN9zOZe33rOqEzvb
-         NtTkre3sDE0CoW3ek7xpQVcPxoWHqPuOmoe0c8MQcbpZ+Ivv4ZUSaE/DlckMYEPIhLn2
-         e0Pw1ZmW79aNMLT6MMTiCPxbDeMJ0hcpBRARjyLQVyZhDwhBsvVGkSsl29ydfh2zLKC2
-         DBMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=5PDc4kwfq5Abwa8nZKwgraCJqPwJeISvtFvxURCWRYI=;
-        b=G5n3gEJ8lu+EYc1SUCwcJfht85Ot2xEx2xUeMwO0Y219oqpwKCYAZJ9bKhO2aZ8OCl
-         OjqrMWAEyqkL4ziColnUH9AXegrFpjLgFf9bOim7WLf1wY5+hmXv3dq0SuOvM/rBzEIZ
-         MPMcJKJ0YH/UCN+m7Di1KqNcR7Q1hCU9nE/mLvkCdrMbrJnifxkDbB8jpWrzwL9m7cMY
-         SMEQER6O4vw5MX4fu++5nMuKjOk3EuKPvqcoBO1hku0tHlLjYug0iMzj5O+AP/tjWN09
-         NyxOdaGyG53C56XTjVpdGe5GCmcNvnvu7Hr2TZeYxpJnMzqqDT5mYxylSN8JxVRR88eH
-         abSA==
-X-Gm-Message-State: AOAM533aypub47EGMVqD9PWfu4OQYuYwHNPXG4C6t5YgKGZE05i2V2Un
-        WIi/1CNrYsm0x36/do76VyQG9g==
-X-Google-Smtp-Source: ABdhPJy+Z7OawzbDT2c6fhA1n0JDALjZMKnTFACGqeHKsRKc9FV+bC5HddeI8Rw53Qh9jaOOXd8nkA==
-X-Received: by 2002:a05:6402:270b:b0:424:7dd:9d7b with SMTP id y11-20020a056402270b00b0042407dd9d7bmr35038575edd.92.1651142568227;
-        Thu, 28 Apr 2022 03:42:48 -0700 (PDT)
-Received: from localhost.localdomain (cpc78119-cwma10-2-0-cust590.7-3.cable.virginm.net. [81.96.50.79])
-        by smtp.gmail.com with ESMTPSA id mf1-20020a1709071a4100b006f39f556011sm4982583ejc.125.2022.04.28.03.42.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Apr 2022 03:42:47 -0700 (PDT)
-From:   Caleb Connolly <caleb.connolly@linaro.org>
-To:     caleb.connolly@linaro.org, Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Cc:     Amit Pundir <amit.pundir@linaro.org>,
-        Sumit Semwal <sumit.semwal@linaro.org>
-Subject: [PATCH v2 2/6] arm64: dts: qcom: pmi8998: add charger node
-Date:   Thu, 28 Apr 2022 11:42:29 +0100
-Message-Id: <20220428104233.2980806-3-caleb.connolly@linaro.org>
-X-Mailer: git-send-email 2.36.0
-In-Reply-To: <20220428104233.2980806-1-caleb.connolly@linaro.org>
-References: <20220428104233.2980806-1-caleb.connolly@linaro.org>
+        with ESMTP id S1345471AbiD1LUA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 07:20:00 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BFD9E52B12;
+        Thu, 28 Apr 2022 04:16:41 -0700 (PDT)
+X-UUID: 99dcd6c7b8c14047b1fc936b4ede6ca6-20220428
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.4,REQID:6ce3acf7-14bd-4058-bdb1-c51983d16a9b,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:faefae9,CLOUDID:8c8dd3c6-85ee-4ac1-ac05-bd3f1e72e732,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
+X-UUID: 99dcd6c7b8c14047b1fc936b4ede6ca6-20220428
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw02.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 2020644970; Thu, 28 Apr 2022 19:16:34 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Thu, 28 Apr 2022 19:16:33 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 28 Apr 2022 19:16:32 +0800
+Message-ID: <346736a339bed576817179ded3795d61f71fa06a.camel@mediatek.com>
+Subject: Re: [PATCH V4 07/14] cpufreq: mediatek: Add .get function
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+CC:     <rafael@kernel.org>, <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
+        <matthias.bgg@gmail.com>, <jia-wei.chang@mediatek.com>,
+        <roger.lu@mediatek.com>, <hsinyi@google.com>,
+        <khilman@baylibre.com>, <angelogioacchino.delregno@collabora.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Thu, 28 Apr 2022 19:16:32 +0800
+In-Reply-To: <20220427031141.or2owu5wrh2cadfo@vireshk-i7>
+References: <20220422075239.16437-1-rex-bc.chen@mediatek.com>
+         <20220422075239.16437-8-rex-bc.chen@mediatek.com>
+         <20220425053548.72w2jh2g6lpzgz6g@vireshk-i7>
+         <64c690e8edf493ec0a4a14e0fdaad2d8e88e6da7.camel@mediatek.com>
+         <20220425100058.4kbvmpi63ygni6k5@vireshk-i7>
+         <078b1f9b39690da98cbd3c4528ba28374a097083.camel@mediatek.com>
+         <20220427031141.or2owu5wrh2cadfo@vireshk-i7>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a node for the smb2 charger hardware found on the pmi8998.
+On Wed, 2022-04-27 at 08:41 +0530, Viresh Kumar wrote:
+> On 26-04-22, 19:13, Rex-BC Chen wrote:
+> > We have a non-upstream driver which tries to get frequency by
+> > 'cpufreq_get'.
+> 
+> This is the right thing to do there.
+> 
+> > When we use that non-upstream driver, 'cpufreq_verify_current_freq'
+> > will be further invoked by 'cpufreq_get' and it would cause voltage
+> > pulse issue as I described previously.
+> 
+> I see this will eventually resolve to __cpufreq_driver_target(),
+> which
+> should return without any frequency updates.
+> 
 
-Signed-off-by: Caleb Connolly <caleb.connolly@linaro.org>
----
- arch/arm64/boot/dts/qcom/pmi8998.dtsi | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+Hello Viresh,
 
-diff --git a/arch/arm64/boot/dts/qcom/pmi8998.dtsi b/arch/arm64/boot/dts/qcom/pmi8998.dtsi
-index da10668c361d..962a8719b07a 100644
---- a/arch/arm64/boot/dts/qcom/pmi8998.dtsi
-+++ b/arch/arm64/boot/dts/qcom/pmi8998.dtsi
-@@ -9,6 +9,23 @@ pmi8998_lsid0: pmic@2 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
-+		pmi8998_charger: charger@1000 {
-+			compatible = "qcom,pmi8998-charger";
-+			reg = <0x1000>;
-+
-+			interrupts = <0x2 0x13 0x4 IRQ_TYPE_EDGE_BOTH>,
-+				     <0x2 0x12 0x2 IRQ_TYPE_EDGE_BOTH>,
-+				     <0x2 0x16 0x1 IRQ_TYPE_EDGE_RISING>,
-+				     <0x2 0x13 0x6 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "usb-plugin", "bat-ov", "wdog-bark", "usbin-icl-change";
-+
-+			io-channels = <&pmi8998_rradc 3>,
-+				      <&pmi8998_rradc 4>;
-+			io-channel-names = "usbin_i", "usbin_v";
-+
-+			status = "disabled";
-+		};
-+
- 		pmi8998_gpio: gpios@c000 {
- 			compatible = "qcom,pmi8998-gpio", "qcom,spmi-gpio";
- 			reg = <0xc000>;
--- 
-2.36.0
+Yes, the call stack will eventually go to __cpufreq_driver_target.
+However, we can observe the mismatch between target_freq and policy-cur 
+with a tiny difference.
+e.g.
+[ 553.065356] cpufreq: target for CPU 0: 500000 kHz, relation 0,
+requested 500000 kHz
+[ 553.066366] cpufreq: target_freq/policy->cur: 500000/499999 kHz
+
+We check the assignment of policy->cur could be either from
+cpufreq_driver->get_intermediate or from cpufreq_driver->get.
+But it is strange to have the frequency value like 499999 kHz.
+Is the result of tiny frequency difference expected from your point of
+view?
+
+> What do you mean by "voltage pulse" here? What actually happens which
+> you want to avoid.
+> 
+
+When cpufreq is fixed to lowest opp, "voltage pulse" is a quick voltage
+rising and falling phenomenon which can be observed if 'cpufreq_get' is
+invoked.
+From top of view, if 'cpufreq_get' is NOT invoked in that condition,
+the voltage pulse will no longer occur.
+That's why we add this patch for this series.
+
+> > Therefore, we apply the solution in this series.
+> 
+> I won't call it a solution but a Bug as .get() is supposed to read
+> real freq of the hardware.
+> 
+> > Recently, we found that using 'cpufreq_generic_get' directly in our
+> > non-upstream driver can do the same thing without pulse issue.
+> 
+> That would be an abuse of the cpufreq_generic_get() API. It is ONLY
+> allowed to be used while setting .get callback in the driver.
+> 
+
+Thank you for sharing the correct information.
+Is it possible to get frequency (API) a simple way, like get current
+opp frequency?
+
+BRs,
+Rex
 
