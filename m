@@ -2,130 +2,88 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B751C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 08:57:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D39E0C433EF
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Apr 2022 09:46:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238558AbiD1JAf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Apr 2022 05:00:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54096 "EHLO
+        id S229846AbiD1Jtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Apr 2022 05:49:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56862 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231327AbiD1JAe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 05:00:34 -0400
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A9B15EBCA;
-        Thu, 28 Apr 2022 01:57:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1651136240; x=1682672240;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=Vb+Obz4SOBsiUFxFTmlKUeqpzWqk5SoR/ePiSeY24G4=;
-  b=U08bNFfxDGLs/0AFCP358PafuBN3rqwft0N6jnDOgzdyBs/6uA92opAy
-   2Yk8xfEeT/7a1j9U9w53huxGxIRA//5Tvtr1WQRM2hN+OsPtUaYcMIkW4
-   t5oXOow93qB/zqFTB27QwpyMrMs8OHUtoB3Tc/hLb8ppcFL7pI+U66E9S
-   VVE+aN3X+kQdrUJfwd21tby1WstU4vDJwXT3+GGoVP+wlkFtIF549fN1/
-   2RWuWm1O3URPTG9/Xe+0gUSWRV7bH8FInjApaDDnhfTf2Wmxww3V/ru1Q
-   OisdwmyQ/XIv9Vx/E5qBFY9o6ib5fpCCBa3iDF16HsYuInz3yRQJPIa5d
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10330"; a="329158620"
-X-IronPort-AV: E=Sophos;i="5.90,295,1643702400"; 
-   d="scan'208";a="329158620"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Apr 2022 01:57:17 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,295,1643702400"; 
-   d="scan'208";a="682291748"
-Received: from lkp-server01.sh.intel.com (HELO 5056e131ad90) ([10.239.97.150])
-  by orsmga004.jf.intel.com with ESMTP; 28 Apr 2022 01:57:16 -0700
-Received: from kbuild by 5056e131ad90 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1njzxb-0005DT-KZ;
-        Thu, 28 Apr 2022 08:57:15 +0000
-Date:   Thu, 28 Apr 2022 16:56:19 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     kbuild-all@lists.01.org, linux-acpi@vger.kernel.org,
-        devel@acpica.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:testing 12/12] drivers/idle/intel_idle.c:1701:17: error:
- 'disable_promotion_to_c1e' undeclared
-Message-ID: <202204281634.Ho3eVKJ7-lkp@intel.com>
+        with ESMTP id S230385AbiD1JhI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2022 05:37:08 -0400
+Received: from relmlie5.idc.renesas.com (relmlor1.renesas.com [210.160.252.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A1B6A95486;
+        Thu, 28 Apr 2022 02:33:53 -0700 (PDT)
+X-IronPort-AV: E=Sophos;i="5.90,295,1643641200"; 
+   d="scan'208";a="118308451"
+Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
+  by relmlie5.idc.renesas.com with ESMTP; 28 Apr 2022 18:33:53 +0900
+Received: from localhost.localdomain (unknown [10.226.92.182])
+        by relmlir5.idc.renesas.com (Postfix) with ESMTP id AB39D40065BC;
+        Thu, 28 Apr 2022 18:33:49 +0900 (JST)
+From:   Biju Das <biju.das.jz@bp.renesas.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Biju Das <biju.das.jz@bp.renesas.com>, linux-pm@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Chris Paterson <Chris.Paterson2@renesas.com>,
+        Biju Das <biju.das@bp.renesas.com>,
+        Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+        linux-renesas-soc@vger.kernel.org
+Subject: [PATCH] thermal/drivers/rz2gl: Fix OTP Calibration Register values
+Date:   Thu, 28 Apr 2022 10:33:46 +0100
+Message-Id: <20220428093346.7552-1-biju.das.jz@bp.renesas.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git testing
-head:   55ecda6f25ef6de769ae64f162828aee4812c313
-commit: 55ecda6f25ef6de769ae64f162828aee4812c313 [12/12] Merge branch 'intel-idle' into linux-next
-config: x86_64-randconfig-c001 (https://download.01.org/0day-ci/archive/20220428/202204281634.Ho3eVKJ7-lkp@intel.com/config)
-compiler: gcc-11 (Debian 11.2.0-20) 11.2.0
-reproduce (this is a W=1 build):
-        # https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?id=55ecda6f25ef6de769ae64f162828aee4812c313
-        git remote add rafael-pm https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-        git fetch --no-tags rafael-pm testing
-        git checkout 55ecda6f25ef6de769ae64f162828aee4812c313
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/
+As per the latest RZ/G2L Hardware User's Manual (Rev.1.10 Apr, 2022),
+the bit 31 of TSU OTP Calibration Register(OTPTSUTRIM) indicates
+whether bit [11:0] of OTPTSUTRIM is valid or invalid.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+This patch updates the code to reflect this change.
 
-All errors (new ones prefixed by >>):
+Signed-off-by: Biju Das <biju.das.jz@bp.renesas.com>
+---
+ drivers/thermal/rzg2l_thermal.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-   drivers/idle/intel_idle.c: In function 'adl_idle_state_table_update':
->> drivers/idle/intel_idle.c:1701:17: error: 'disable_promotion_to_c1e' undeclared (first use in this function)
-    1701 |                 disable_promotion_to_c1e = true;
-         |                 ^~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/idle/intel_idle.c:1701:17: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/idle/intel_idle.c:1706:9: error: implicit declaration of function 'c1e_promotion_enable' [-Werror=implicit-function-declaration]
-    1706 |         c1e_promotion_enable();
-         |         ^~~~~~~~~~~~~~~~~~~~
-   drivers/idle/intel_idle.c: At top level:
-   drivers/idle/intel_idle.c:1854:13: warning: conflicting types for 'c1e_promotion_enable'; have 'void(void)'
-    1854 | static void c1e_promotion_enable(void)
-         |             ^~~~~~~~~~~~~~~~~~~~
-   drivers/idle/intel_idle.c:1854:13: error: static declaration of 'c1e_promotion_enable' follows non-static declaration
-   drivers/idle/intel_idle.c:1706:9: note: previous implicit declaration of 'c1e_promotion_enable' with type 'void(void)'
-    1706 |         c1e_promotion_enable();
-         |         ^~~~~~~~~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
-
-
-vim +/disable_promotion_to_c1e +1701 drivers/idle/intel_idle.c
-
-64233338499126 Chen Yu   2021-05-28  1685  
-cc6e234b826408 Zhang Rui 2022-04-15  1686  /**
-cc6e234b826408 Zhang Rui 2022-04-15  1687   * adl_idle_state_table_update - Adjust AlderLake idle states table.
-cc6e234b826408 Zhang Rui 2022-04-15  1688   */
-cc6e234b826408 Zhang Rui 2022-04-15  1689  static void __init adl_idle_state_table_update(void)
-cc6e234b826408 Zhang Rui 2022-04-15  1690  {
-cc6e234b826408 Zhang Rui 2022-04-15  1691  	/* Check if user prefers C1 over C1E. */
-cc6e234b826408 Zhang Rui 2022-04-15  1692  	if (preferred_states_mask & BIT(1)) {
-cc6e234b826408 Zhang Rui 2022-04-15  1693  		if (preferred_states_mask & BIT(2))
-cc6e234b826408 Zhang Rui 2022-04-15  1694  			/* Both can't be enabled, stick to the defaults. */
-cc6e234b826408 Zhang Rui 2022-04-15  1695  			goto end;
-cc6e234b826408 Zhang Rui 2022-04-15  1696  
-cc6e234b826408 Zhang Rui 2022-04-15  1697  		cpuidle_state_table[0].flags &= ~CPUIDLE_FLAG_UNUSABLE;
-cc6e234b826408 Zhang Rui 2022-04-15  1698  		cpuidle_state_table[1].flags |= CPUIDLE_FLAG_UNUSABLE;
-cc6e234b826408 Zhang Rui 2022-04-15  1699  
-cc6e234b826408 Zhang Rui 2022-04-15  1700  		/* Disable C1E by clearing the "C1E promotion" bit. */
-cc6e234b826408 Zhang Rui 2022-04-15 @1701  		disable_promotion_to_c1e = true;
-cc6e234b826408 Zhang Rui 2022-04-15  1702  		return;
-cc6e234b826408 Zhang Rui 2022-04-15  1703  	}
-cc6e234b826408 Zhang Rui 2022-04-15  1704  end:
-cc6e234b826408 Zhang Rui 2022-04-15  1705  	/* Make sure C1E is enabled by default */
-cc6e234b826408 Zhang Rui 2022-04-15 @1706  	c1e_promotion_enable();
-cc6e234b826408 Zhang Rui 2022-04-15  1707  }
-cc6e234b826408 Zhang Rui 2022-04-15  1708  
-
-:::::: The code at line 1701 was first introduced by commit
-:::::: cc6e234b8264089d11c34f82d6be925281ca52ba intel_idle: Add AlderLake support
-
-:::::: TO: Zhang Rui <rui.zhang@intel.com>
-:::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
+diff --git a/drivers/thermal/rzg2l_thermal.c b/drivers/thermal/rzg2l_thermal.c
+index 7a9cdc1f37ca..be07e04c6926 100644
+--- a/drivers/thermal/rzg2l_thermal.c
++++ b/drivers/thermal/rzg2l_thermal.c
+@@ -32,6 +32,8 @@
+ #define TSU_SS		0x10
+ 
+ #define OTPTSUTRIM_REG(n)	(0x18 + ((n) * 0x4))
++#define OTPTSUTRIM_EN_MASK	BIT(31)
++#define OTPTSUTRIM_MASK		GENMASK(11, 0)
+ 
+ /* Sensor Mode Register(TSU_SM) */
+ #define TSU_SM_EN_TS		BIT(0)
+@@ -183,11 +185,15 @@ static int rzg2l_thermal_probe(struct platform_device *pdev)
+ 	pm_runtime_get_sync(dev);
+ 
+ 	priv->calib0 = rzg2l_thermal_read(priv, OTPTSUTRIM_REG(0));
+-	if (!priv->calib0)
++	if (priv->calib0 & OTPTSUTRIM_EN_MASK)
++		priv->calib0 &= OTPTSUTRIM_MASK;
++	else
+ 		priv->calib0 = SW_CALIB0_VAL;
+ 
+ 	priv->calib1 = rzg2l_thermal_read(priv, OTPTSUTRIM_REG(1));
+-	if (!priv->calib1)
++	if (priv->calib1 & OTPTSUTRIM_EN_MASK)
++		priv->calib1 &= OTPTSUTRIM_MASK;
++	else
+ 		priv->calib1 = SW_CALIB1_VAL;
+ 
+ 	platform_set_drvdata(pdev, priv);
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.25.1
+
