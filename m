@@ -2,152 +2,192 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD595C4167B
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 17:48:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FDB4C43219
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 18:05:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379829AbiD2RwA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Apr 2022 13:52:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34296 "EHLO
+        id S1379900AbiD2SJI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Apr 2022 14:09:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379808AbiD2Rv6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 13:51:58 -0400
-Received: from mail-oi1-x230.google.com (mail-oi1-x230.google.com [IPv6:2607:f8b0:4864:20::230])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E046AD3D90;
-        Fri, 29 Apr 2022 10:48:38 -0700 (PDT)
-Received: by mail-oi1-x230.google.com with SMTP id m11so9239827oib.11;
-        Fri, 29 Apr 2022 10:48:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=m5t7cdt/CWgC/r7ZaFwRZ/Pe0JhVgK8SGggmxnAqq8E=;
-        b=OnQlHi3ErSMC6qSiLPAQK9tsaNNmGUsK/yx8P84vl8ZH25FjCToTTPCP6xYzUtp823
-         nQu8zFOChn7TRclx0bhUluxvWGG31ISy3vYfQGsDQqCS3EjmUrqIVRNyq2psGtG3IDpi
-         1W6Ytq3a5RYAKQBAidu7fUxQYTQpt+5vW3SEkCPANbWWQlmsLBqc9x1cEkbQPaLnW01H
-         /gSIWuD7kQ5j7LODOU/HAxL6B5EQxZzhqJDbdqVUp7cmUle2rokPIwVHwnAzyzTxiKGl
-         riWnsbp5SbzhiGJgU3qP8CBvVkoxV+4fTE0nup4rFZ2hllcAmSpZXHHWttMly/Jd1ESk
-         NA5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
-         :subject:content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=m5t7cdt/CWgC/r7ZaFwRZ/Pe0JhVgK8SGggmxnAqq8E=;
-        b=udmPLQBOZ0l0YxVOjotvF9nbHe5bj0fFvHlEfo190PuI0Y0u0HSbhBqy8Y3WAFVMmc
-         zU5QqximbdIUopnrej6PQSFEKvupe3fZIgRz1pEjegLnyrqguPoTaoLy0aHChaBFTAcG
-         fWmDV93KiodLGEeM8Ysk7+FcvAI1YRUMlNR6wGFUYT9Kq+4tkLd1TR2eA6gaxXW/XBNN
-         MV3d0//EYER7AzemZWUeWestg/pOil66ViLoX5lrp8b4pyUHswsIGssCQ//TJtPre7mV
-         GR/ELhsXBJAKuWXCY5QELuHRDRmdrbvg4yZCS0uFjZt7XkIq1AuE6pmqkT0SxcDdiu87
-         aVEg==
-X-Gm-Message-State: AOAM533rAFbWNzed8JHj2loMEujnerVvJuj9A2OvVCDkgNcIXgwhoCAZ
-        pzqfnobXL0AntLf1UXJXTXk=
-X-Google-Smtp-Source: ABdhPJxkF8A90UBe5FIUXgDpVBp8codcF4hzbNyKrz59fIRSWDCgfC0jKHUvcyNxHQ5kW9qHkRB58A==
-X-Received: by 2002:a05:6808:11ca:b0:2d4:6861:2a9e with SMTP id p10-20020a05680811ca00b002d468612a9emr282421oiv.114.1651254518245;
-        Fri, 29 Apr 2022 10:48:38 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id b7-20020a9d5d07000000b00605e7b6b19dsm1261051oti.39.2022.04.29.10.48.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 29 Apr 2022 10:48:37 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <6f1b27fa-96d1-4be7-ac6a-762610314f2a@roeck-us.net>
-Date:   Fri, 29 Apr 2022 10:48:33 -0700
+        with ESMTP id S1379882AbiD2SIz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 14:08:55 -0400
+Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FC102DD61;
+        Fri, 29 Apr 2022 11:05:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+        s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=CfgJSltNTETfm69VgWZeJ1xxMOJuVJJeVDaV1//hOM4=; b=slyIgXmeUq77MnrSUr5lBtJx9z
+        m86cp15BT6gKICc3jCqWbY2B0tpa99u5bAed7DYYXL/rMf6XHJRMLSIrTGUcJCHpVtGl/+APLcmrh
+        RXQpa9HZXWVydxhVU95+hp+ZiaA0uHFZXPx5zEc5qg8trUY5PT1GKrapnos8zeTpFOAoQJEAx9vvn
+        efpqnWK3jhpJIbXy7DD12LOMiGnr6GupNgQCAiVUmjcrI2J6NMnifvEjcuVQUbIlOFxyQL8HlLyj5
+        ydadfwYuZkTNnyuPFseli5ffoVSkxD0MS5bvuilrJblEdywU2jKWaFEjPPnVXRJf3ScYrp3fr3KhT
+        ij4JQKSA==;
+Received: from [179.113.53.197] (helo=[192.168.1.60])
+        by fanzine2.igalia.com with esmtpsa 
+        (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+        id 1nkUzF-0006RF-Du; Fri, 29 Apr 2022 20:05:01 +0200
+Message-ID: <0147d038-571b-0802-c210-ccd4d52cd5dd@igalia.com>
+Date:   Fri, 29 Apr 2022 15:04:22 -0300
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
+ Thunderbird/91.8.0
+Subject: Re: [PATCH 19/30] panic: Add the panic hypervisor notifier list
 Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Sergey Lapin <slapin@ossfans.org>,
+To:     "Michael Kelley (LINUX)" <mikelley@microsoft.com>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "bhe@redhat.com" <bhe@redhat.com>,
+        "pmladek@suse.com" <pmladek@suse.com>,
+        "kexec@lists.infradead.org" <kexec@lists.infradead.org>
+Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "bcm-kernel-feedback-list@broadcom.com" 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+        "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+        "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+        "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-remoteproc@vger.kernel.org" <linux-remoteproc@vger.kernel.org>,
+        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+        "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>,
+        "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "openipmi-developer@lists.sourceforge.net" 
+        <openipmi-developer@lists.sourceforge.net>,
+        "rcu@vger.kernel.org" <rcu@vger.kernel.org>,
+        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+        "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "kernel-dev@igalia.com" <kernel-dev@igalia.com>,
+        "kernel@gpiccoli.net" <kernel@gpiccoli.net>,
+        "halves@canonical.com" <halves@canonical.com>,
+        "fabiomirmar@gmail.com" <fabiomirmar@gmail.com>,
+        "alejandro.j.jimenez@oracle.com" <alejandro.j.jimenez@oracle.com>,
+        "andriy.shevchenko@linux.intel.com" 
+        <andriy.shevchenko@linux.intel.com>,
+        "arnd@arndb.de" <arnd@arndb.de>, "bp@alien8.de" <bp@alien8.de>,
+        "corbet@lwn.net" <corbet@lwn.net>,
+        "d.hatayama@jp.fujitsu.com" <d.hatayama@jp.fujitsu.com>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "dyoung@redhat.com" <dyoung@redhat.com>,
+        "feng.tang@intel.com" <feng.tang@intel.com>,
+        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "hidehiro.kawai.ez@hitachi.com" <hidehiro.kawai.ez@hitachi.com>,
+        "jgross@suse.com" <jgross@suse.com>,
+        "john.ogness@linutronix.de" <john.ogness@linutronix.de>,
+        "keescook@chromium.org" <keescook@chromium.org>,
+        "luto@kernel.org" <luto@kernel.org>,
+        "mhiramat@kernel.org" <mhiramat@kernel.org>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "paulmck@kernel.org" <paulmck@kernel.org>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "rostedt@goodmis.org" <rostedt@goodmis.org>,
+        "senozhatsky@chromium.org" <senozhatsky@chromium.org>,
+        "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "vgoyal@redhat.com" <vgoyal@redhat.com>,
+        vkuznets <vkuznets@redhat.com>,
+        "will@kernel.org" <will@kernel.org>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Andrea Parri <parri.andrea@gmail.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Brian Norris <computersforpeace@gmail.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        David Gow <davidgow@google.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Dexuan Cui <decui@microsoft.com>,
+        Doug Berger <opendmb@gmail.com>,
+        Evan Green <evgreen@chromium.org>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Julius Werner <jwerner@chromium.org>,
+        Justin Chen <justinpopo6@gmail.com>,
+        KY Srinivasan <kys@microsoft.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Markus Mayer <mmayer@broadcom.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Mihai Carabas <mihai.carabas@oracle.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+        Scott Branden <scott.branden@broadcom.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Shile Zhang <shile.zhang@linux.alibaba.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
         Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-References: <20220419163810.2118169-1-arnd@kernel.org>
- <20220422170530.GA2338209@roeck-us.net>
- <CAK8P3a3V=qxUqYT3Yt=dpXVv58-Y+HVi952wO6D4LPN5NNphGA@mail.gmail.com>
- <8b36d3a4-ec85-2f9f-e4b7-734d8ddd3d8f@roeck-us.net>
- <CAK8P3a0R9cpEb1d2=e9KnGSbi_uRv48RWfCu_J4DDak_cGZSuw@mail.gmail.com>
- <20220422234150.GA3442771@roeck-us.net>
- <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
- <3b4046ed-fd75-13ea-fac3-06469172806c@roeck-us.net>
- <CAK8P3a1LzEG1vo+5nMrnL3TOMcbSKJ3u=StcfY8dajV2raUBjA@mail.gmail.com>
- <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net>
- <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
- <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+        Tianyu Lan <Tianyu.Lan@microsoft.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Wang ShaoBo <bobo.shaobowang@huawei.com>,
+        Wei Liu <wei.liu@kernel.org>,
+        zhenwei pi <pizhenwei@bytedance.com>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-20-gpiccoli@igalia.com>
+ <PH0PR21MB30256260CCF4CAB713BBB11ED7FC9@PH0PR21MB3025.namprd21.prod.outlook.com>
+From:   "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+In-Reply-To: <PH0PR21MB30256260CCF4CAB713BBB11ED7FC9@PH0PR21MB3025.namprd21.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 4/28/22 06:44, Arnd Bergmann wrote:
-> On Sun, Apr 24, 2022 at 8:48 PM Arnd Bergmann <arnd@kernel.org> wrote:
->> On Sun, Apr 24, 2022 at 5:28 PM Guenter Roeck <linux@roeck-us.net> wrote:
->>> On 4/24/22 01:52, Arnd Bergmann wrote:
->>>> On Sun, Apr 24, 2022 at 4:09 AM Guenter Roeck <linux@roeck-us.net> wrote:
->>>> into the defconfig file, otherwise the multiplatform target defaults to
->>>> an ARMv7 instead of ARMv5 build. For an OMAP15xx as in the SX1,
->>>> you also need to enable CONFIG_ARCH_MULTI_V4T.
->>>>
->>>> This is slightly unfortunate, but I don't see any way to avoid it, and the
->>>> modified defconfig will still work fine with older kernel trees.
->>>>
->>>
->>> Yes, that works. I changed it in my configuration.
+On 29/04/2022 14:30, Michael Kelley (LINUX) wrote:
+> From: Guilherme G. Piccoli <gpiccoli@igalia.com> Sent: Wednesday, April 27, 2022 3:49 PM
+>> [...]
 >>
->> Ok, great!. I managed to boot the z2 machine with PCMCIA support
->> and it gets around the issue with my patch, correctly detecting the
->> CF card.
+>> @@ -2843,7 +2843,7 @@ static void __exit vmbus_exit(void)
+>>  	if (ms_hyperv.misc_features & HV_FEATURE_GUEST_CRASH_MSR_AVAILABLE) {
+>>  		kmsg_dump_unregister(&hv_kmsg_dumper);
+>>  		unregister_die_notifier(&hyperv_die_report_block);
+>> -		atomic_notifier_chain_unregister(&panic_notifier_list,
+>> +		atomic_notifier_chain_unregister(&panic_hypervisor_list,
+>>  						&hyperv_panic_report_block);
+>>  	}
+>>
 > 
-> Hi Guenter,
-> 
-> I have now sent out a fix that I'm happy with, and applied it to the
-> pxa-multiplatform-5.18 branch of the soc tree as well as the
-> combined arm/multiplatform tree.
-> 
-> I have not merged this new version into the for-next branch
-> since I would like to see if there are any other regressions first.
-> 
-> Can you run your boot tests on the arm/multiplatform branch
-> and let me know if that fixes everything you found? If that
-> takes a lot of manual steps on your side, I'd just wait for the
-> build bots and merge it after all there are no new compile-time
-> issues.
+> Using the hypervisor_list here produces a bit of a mismatch.  In many cases
+> this notifier will do nothing, and will defer to the kmsg_dump() mechanism
+> to notify the hypervisor about the panic.   Running the kmsg_dump()
+> mechanism is linked to the info_list, so I'm thinking the Hyper-V panic report
+> notifier should be on the info_list as well.  That way the reporting behavior
+> is triggered at the same point in the panic path regardless of which
+> reporting mechanism is used.
 > 
 
-I tried the pxa-multiplatform-5.18 branch. Its failures match
-those in v5.18-rc1.
+Hi Michael, thanks for your feedback! I agree that your idea could work,
+but...there is one downside: imagine the kmsg_dump() approach is not set
+in some Hyper-V guest, then we would rely in the regular notification
+mechanism [hv_die_panic_notify_crash()], right?
+But...you want then to run this notifier in the informational list,
+which...won't execute *by default* before kdump if no kmsg_dump() is
+set. So, this logic is convoluted when you mix it with the default level
+concept + kdump.
 
-Should I try soc/arm/multiplatform as well ?
+May I suggest something? If possible, take a run with this patch set +
+DEBUG_NOTIFIER=y, in *both* cases (with and without the kmsg_dump()
+set). I did that and they run almost at the same time...I've checked the
+notifiers called, it's like almost nothing runs in-between.
 
-Guenter
+I feel the panic notification mechanism does really fit with a
+hypervisor list, it's a good match with the nature of the list, which
+aims at informing the panic notification to the hypervisor/FW.
+Of course we can modify it if you prefer...but please take into account
+the kdump case and how it complicates the logic.
+
+Let me know your considerations, in case you can experiment with the
+patch set as-is.
+Cheers,
+
+
+Guilherme
