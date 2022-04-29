@@ -2,119 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 913ACC433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A16CC433EF
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:28:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381444AbiD2WPz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Apr 2022 18:15:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36284 "EHLO
+        id S1381482AbiD2Wb7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Apr 2022 18:31:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381448AbiD2WPt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:15:49 -0400
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CE9FDCE06;
-        Fri, 29 Apr 2022 15:12:24 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:38182)
-        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nkYSx-00AIAD-EI; Fri, 29 Apr 2022 15:47:55 -0600
-Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:36454 helo=email.froward.int.ebiederm.org.xmission.com)
-        by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nkYSv-005dKg-DP; Fri, 29 Apr 2022 15:47:55 -0600
-From:   "Eric W. Biederman" <ebiederm@xmission.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        with ESMTP id S239151AbiD2Wbz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:31:55 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63490289A7;
+        Fri, 29 Apr 2022 15:28:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=R5m8qcj/TBlfc3wYbiF2A/onmhBLqu9GlFpGk0U50/I=; b=ofMLjzi/nSpalldb3o1frzjtCJ
+        yvxQNRyC6D3rUUxwtj3fBk0gLI5zxBz3cxT2Zu+u8KeYWcRPULol6yWkCbeRGvgy9ufd1yts1L8Ox
+        +sMMkuZ0aZAJOSPxvTFZ72BRx3EXOj2IbaWecIwapUPEMVatcaTUeIMkRFm5dHgYau8qWIuT88KzE
+        osrv6AD/HA/BH097sOtGCJhlqhiqOjkuhbsWEZJLIQIfpw0pIwCypCAXfHIMqkL9glD2iqG1G/EKk
+        2VddDaqXzYGc1d4npTbzv5PByMllsAA8Juflw2cT0vqQyHkHeEzQITi84Tb8IEbnb38CnYX5mq6A+
+        dn2aAW5Q==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nkZ5i-00CrZH-FP; Fri, 29 Apr 2022 22:27:58 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B55D33002B1;
+        Sat, 30 Apr 2022 00:27:55 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 741F120295B05; Sat, 30 Apr 2022 00:27:55 +0200 (CEST)
+Date:   Sat, 30 Apr 2022 00:27:55 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+        Oleg Nesterov <oleg@redhat.com>, mingo@kernel.org,
         vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
         rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
         Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
+        linux-pm@vger.kernel.org, Richard Weinberger <richard@nod.at>,
         Anton Ivanov <anton.ivanov@cambridgegreys.com>,
         Johannes Berg <johannes@sipsolutions.net>,
         linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
         Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
-        Kees Cook <keescook@chromium.org>, linux-ia64@vger.kernel.org
-References: <20220421150248.667412396@infradead.org>
-        <20220421150654.817117821@infradead.org>
-        <87czhap9dy.fsf@email.froward.int.ebiederm.org>
-        <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
-Date:   Fri, 29 Apr 2022 16:46:59 -0500
-In-Reply-To: <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org> (Eric
-        W. Biederman's message of "Tue, 26 Apr 2022 17:50:21 -0500")
-Message-ID: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
+        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v2 07/12] ptrace: Don't change __state
+Message-ID: <Ymxma2vRP+FjEkgq@hirez.programming.kicks-ass.net>
+References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+ <20220429214837.386518-7-ebiederm@xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1nkYSv-005dKg-DP;;;mid=<87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+ZIVHGWhwXaAZQuMgvUvy1NsqcM6xYpoc=
-X-SA-Exim-Connect-IP: 68.227.174.4
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH 0/12] ptrace: cleaning up ptrace_stop
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220429214837.386518-7-ebiederm@xmission.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Fri, Apr 29, 2022 at 04:48:32PM -0500, Eric W. Biederman wrote:
+> Stop playing with tsk->__state to remove TASK_WAKEKILL while a ptrace
+> command is executing.
+> 
+> Instead TASK_WAKEKILL from the definition of TASK_TRACED, and
+> implemention a new jobctl flag TASK_PTRACE_FROZEN.  This new This new
+> flag is set in jobctl_freeze_task and cleared when ptrace_stop is
+> awoken or in jobctl_unfreeze_task (when ptrace_stop remains asleep).
+> 
+> In singal_wake_up add __TASK_TRACED to state along with TASK_WAKEKILL
+> when it is indicated a fatal signal is pending.  Skip adding
+> __TASK_TRACED when TASK_PTRACE_FROZEN is not set.  This has the same
+> effect as changing TASK_TRACED to __TASK_TRACED as all of the wake_ups
+> that use TASK_KILLABLE go through signal_wake_up.
+> 
+> Don't set TASK_TRACED if fatal_signal_pending so that the code
+> continues not to sleep if there was a pending fatal signal before
+> ptrace_stop is called.  With TASK_WAKEKILL no longer present in
+> TASK_TRACED signal_pending_state will no longer prevent ptrace_stop
+> from sleeping if there is a pending fatal signal.
+> 
+> Previously the __state value of __TASK_TRACED was changed to
+> TASK_RUNNING when woken up or back to TASK_TRACED when the code was
+> left in ptrace_stop.  Now when woken up ptrace_stop now clears
+> JOBCTL_PTRACE_FROZEN and when left sleeping ptrace_unfreezed_traced
+> clears JOBCTL_PTRACE_FROZEN.
+> 
+> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> ---
+>  include/linux/sched.h        |  2 +-
+>  include/linux/sched/jobctl.h |  2 ++
+>  include/linux/sched/signal.h |  8 +++++++-
+>  kernel/ptrace.c              | 21 ++++++++-------------
+>  kernel/signal.c              |  9 +++------
+>  5 files changed, 21 insertions(+), 21 deletions(-)
 
-The states TASK_STOPPED and TASK_TRACE are special in they can not
-handle spurious wake-ups.  This plus actively depending upon and
-changing the value of tsk->__state causes problems for PREEMPT_RT and
-Peter's freezer rewrite.
+Please fold this hunk:
 
-There are a lot of details we have to get right to sort out the
-technical challenges and this is my parred back version of the changes
-that contains just those problems I see good solutions to that I believe
-are ready.
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6310,10 +6310,7 @@ static void __sched notrace __schedule(u
+ 
+ 	/*
+ 	 * We must load prev->state once (task_struct::state is volatile), such
+-	 * that:
+-	 *
+-	 *  - we form a control dependency vs deactivate_task() below.
+-	 *  - ptrace_{,un}freeze_traced() can change ->state underneath us.
++	 * that we form a control dependency vs deactivate_task() below.
+ 	 */
+ 	prev_state = READ_ONCE(prev->__state);
+ 	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
 
-In particular I don't have a solution that is ready for the challenges
-presented by wait_task_inactive.
-
-I hope we can review these changes and then have a firm foundation
-for the rest of the challenges.
-
-There are cleanups to the ptrace support for xtensa, um, and
-ia64.
-
-I have sucked in the first patch of Peter's freezer change as
-with minor modifications I believe it is ready to go.
-
-Eric W. Biederman (12):
-      signal: Rename send_signal send_signal_locked
-      signal: Replace __group_send_sig_info with send_signal_locked
-      ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
-      ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
-      signal: Use lockdep_assert_held instead of assert_spin_locked
-      ptrace: Reimplement PTRACE_KILL by always sending SIGKILL
-      ptrace: Don't change __state
-      ptrace: Remove arch_ptrace_attach
-      ptrace: Always take siglock in ptrace_resume
-      ptrace: Only return signr from ptrace_stop if it was provided
-      ptrace: Always call schedule in ptrace_stop
-      sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
-
- arch/ia64/include/asm/ptrace.h    |   4 --
- arch/ia64/kernel/ptrace.c         |  57 ----------------
- arch/um/include/asm/thread_info.h |   2 +
- arch/um/kernel/exec.c             |   2 +-
- arch/um/kernel/process.c          |   2 +-
- arch/um/kernel/ptrace.c           |   8 +--
- arch/um/kernel/signal.c           |   4 +-
- arch/xtensa/kernel/ptrace.c       |   4 +-
- arch/xtensa/kernel/signal.c       |   4 +-
- drivers/tty/tty_jobctrl.c         |   4 +-
- include/linux/ptrace.h            |   7 --
- include/linux/sched.h             |  10 ++-
- include/linux/sched/jobctl.h      |  10 +++
- include/linux/sched/signal.h      |  23 ++++++-
- include/linux/signal.h            |   3 +-
- kernel/ptrace.c                   |  88 +++++++++----------------
- kernel/signal.c                   | 135 +++++++++++++++++---------------------
- kernel/time/posix-cpu-timers.c    |   6 +-
- 18 files changed, 145 insertions(+), 228 deletions(-)
-
-Eric
