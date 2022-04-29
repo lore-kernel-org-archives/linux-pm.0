@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C5F4C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 21:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 019A3C433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 21:49:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239437AbiD2Vw2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Apr 2022 17:52:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47468 "EHLO
+        id S239528AbiD2Vwa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Apr 2022 17:52:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239499AbiD2Vw1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 17:52:27 -0400
+        with ESMTP id S239541AbiD2Vwa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 17:52:30 -0400
 Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8878DDB494;
-        Fri, 29 Apr 2022 14:49:08 -0700 (PDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:49802)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 490C5DB4B6;
+        Fri, 29 Apr 2022 14:49:11 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:49840)
         by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nkYU7-007OC4-8V; Fri, 29 Apr 2022 15:49:07 -0600
+        id 1nkYUA-007OD7-DD; Fri, 29 Apr 2022 15:49:10 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:36464 helo=localhost.localdomain)
         by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nkYU6-007RIp-6O; Fri, 29 Apr 2022 15:49:06 -0600
+        id 1nkYU9-007RIp-7i; Fri, 29 Apr 2022 15:49:09 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -39,101 +39,59 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Max Filippov <jcmvbkbc@gmail.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>, stable@vger.kernel.org
-Date:   Fri, 29 Apr 2022 16:48:29 -0500
-Message-Id: <20220429214837.386518-4-ebiederm@xmission.com>
+        "Eric W. Biederman" <ebiederm@xmission.com>
+Date:   Fri, 29 Apr 2022 16:48:30 -0500
+Message-Id: <20220429214837.386518-5-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
 References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nkYU6-007RIp-6O;;;mid=<20220429214837.386518-4-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+l1YL71w1w1BKCUUmYDmX3zFUC3cyNA9I=
+X-XM-SPF: eid=1nkYU9-007RIp-7i;;;mid=<20220429214837.386518-5-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1/m1omujSCUx+WoYaAXDnsPr1oSU3IgaAc=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v2 04/12] ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
+Subject: [PATCH v2 05/12] signal: Use lockdep_assert_held instead of assert_spin_locked
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-xtensa is the last user of the PT_SINGLESTEP flag.  Changing tsk->ptrace in
-user_enable_single_step and user_disable_single_step without locking could
-potentiallly cause problems.
+The distinction is that assert_spin_locked() checks if the lock is
+held *by*anyone* whereas lockdep_assert_held() asserts the current
+context holds the lock.  Also, the check goes away if you build
+without lockdep.
 
-So use a thread info flag instead of a flag in tsk->ptrace.  Use TIF_SINGLESTEP
-that xtensa already had defined but unused.
-
-Remove the definitions of PT_SINGLESTEP and PT_BLOCKSTEP as they have no more users.
-
-Cc: stable@vger.kernel.org
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/Ympr/+PX4XgT/UKU@hirez.programming.kicks-ass.net
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/xtensa/kernel/ptrace.c | 4 ++--
- arch/xtensa/kernel/signal.c | 4 ++--
- include/linux/ptrace.h      | 6 ------
- 3 files changed, 4 insertions(+), 10 deletions(-)
+ kernel/signal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/xtensa/kernel/ptrace.c b/arch/xtensa/kernel/ptrace.c
-index 323c678a691f..b952e67cc0cc 100644
---- a/arch/xtensa/kernel/ptrace.c
-+++ b/arch/xtensa/kernel/ptrace.c
-@@ -225,12 +225,12 @@ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
- 
- void user_enable_single_step(struct task_struct *child)
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 72d96614effc..3fd2ce133387 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -884,7 +884,7 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
+ static void ptrace_trap_notify(struct task_struct *t)
  {
--	child->ptrace |= PT_SINGLESTEP;
-+	set_tsk_thread_flag(child, TIF_SINGLESTEP);
- }
+ 	WARN_ON_ONCE(!(t->ptrace & PT_SEIZED));
+-	assert_spin_locked(&t->sighand->siglock);
++	lockdep_assert_held(&t->sighand->siglock);
  
- void user_disable_single_step(struct task_struct *child)
- {
--	child->ptrace &= ~PT_SINGLESTEP;
-+	clear_tsk_thread_flag(child, TIF_SINGLESTEP);
- }
+ 	task_set_jobctl_pending(t, JOBCTL_TRAP_NOTIFY);
+ 	ptrace_signal_wake_up(t, t->jobctl & JOBCTL_LISTENING);
+@@ -1079,7 +1079,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
+ 	int override_rlimit;
+ 	int ret = 0, result;
  
- /*
-diff --git a/arch/xtensa/kernel/signal.c b/arch/xtensa/kernel/signal.c
-index 6f68649e86ba..ac50ec46c8f1 100644
---- a/arch/xtensa/kernel/signal.c
-+++ b/arch/xtensa/kernel/signal.c
-@@ -473,7 +473,7 @@ static void do_signal(struct pt_regs *regs)
- 		/* Set up the stack frame */
- 		ret = setup_frame(&ksig, sigmask_to_save(), regs);
- 		signal_setup_done(ret, &ksig, 0);
--		if (current->ptrace & PT_SINGLESTEP)
-+		if (test_thread_flag(TIF_SINGLESTEP))
- 			task_pt_regs(current)->icountlevel = 1;
+-	assert_spin_locked(&t->sighand->siglock);
++	lockdep_assert_held(&t->sighand->siglock);
  
- 		return;
-@@ -499,7 +499,7 @@ static void do_signal(struct pt_regs *regs)
- 	/* If there's no signal to deliver, we just restore the saved mask.  */
- 	restore_saved_sigmask();
- 
--	if (current->ptrace & PT_SINGLESTEP)
-+	if (test_thread_flag(TIF_SINGLESTEP))
- 		task_pt_regs(current)->icountlevel = 1;
- 	return;
- }
-diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-index 4c06f9f8ef3f..c952c5ba8fab 100644
---- a/include/linux/ptrace.h
-+++ b/include/linux/ptrace.h
-@@ -46,12 +46,6 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
- #define PT_EXITKILL		(PTRACE_O_EXITKILL << PT_OPT_FLAG_SHIFT)
- #define PT_SUSPEND_SECCOMP	(PTRACE_O_SUSPEND_SECCOMP << PT_OPT_FLAG_SHIFT)
- 
--/* single stepping state bits (used on ARM and PA-RISC) */
--#define PT_SINGLESTEP_BIT	31
--#define PT_SINGLESTEP		(1<<PT_SINGLESTEP_BIT)
--#define PT_BLOCKSTEP_BIT	30
--#define PT_BLOCKSTEP		(1<<PT_BLOCKSTEP_BIT)
--
- extern long arch_ptrace(struct task_struct *child, long request,
- 			unsigned long addr, unsigned long data);
- extern int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len);
+ 	result = TRACE_SIGNAL_IGNORED;
+ 	if (!prepare_signal(sig, t, force))
 -- 
 2.35.3
 
