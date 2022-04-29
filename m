@@ -2,147 +2,202 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 603B0C433F5
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:00:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53B9DC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:07:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381126AbiD2WEJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Apr 2022 18:04:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51096 "EHLO
+        id S1348757AbiD2WKn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Apr 2022 18:10:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46300 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379096AbiD2WDu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:03:50 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B74B013FBA;
-        Fri, 29 Apr 2022 15:00:25 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id AED0962275;
-        Fri, 29 Apr 2022 22:00:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDC10C385A7;
-        Fri, 29 Apr 2022 22:00:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1651269624;
-        bh=yNgvZ1w6j0wn0gJjn3Jaaz8UA8LJOCaxNlCblYsp6Fs=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=Ey/m78Y6tu0GBqTH6NyWHzaC7vgRNJhEY6Vw+hMPcj4Fiq4wF8lLbYXSJID6UbS61
-         3qfdckpr3iC4r/Day5Vxaq6phJAcWANrxyoTmiYG1UpeUOvuCECA8JWjDSUmjQNVeX
-         //qNOhJwNmYbbQLZRcm0DHusz0JaLv/dWrmLzW2Wgv1yO4UhSlC4XbHTgdaXFO+dOB
-         K8/k23uG5cTkWPZKYDhSGFzjNLXWZHlHJLxc5WmfxL+dYPfyClhuAsqZafdYrm47Su
-         hkvrUQWMqSJRPNSqY6gnHqelGJDkuHvsu0DZZC5HFsjW59Ot7eIOwvaowmb9LaKSuE
-         kes/J6RG3f/Hw==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=why.misterjones.org)
-        by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <maz@kernel.org>)
-        id 1nkYez-0082vp-Lb; Fri, 29 Apr 2022 23:00:21 +0100
-Date:   Fri, 29 Apr 2022 23:00:21 +0100
-Message-ID: <87ilqr8s96.wl-maz@kernel.org>
-From:   Marc Zyngier <maz@kernel.org>
-To:     "Russell King (Oracle)" <linux@armlinux.org.uk>
-Cc:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-        "Michael Kelley (LINUX)" <mikelley@microsoft.com>,
-        akpm@linux-foundation.org, bhe@redhat.com, pmladek@suse.com,
-        kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com,
-        linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-xtensa@linux-xtensa.org,
-        netdev@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
-        rcu@vger.kernel.org, sparclinux@vger.kernel.org,
-        xen-devel@lists.xenproject.org, x86@kernel.org,
-        kernel-dev@igalia.com, kernel@gpiccoli.net, halves@canonical.com,
-        fabiomirmar@gmail.com, alejandro.j.jimenez@oracle.com,
-        andriy.shevchenko@linux.intel.com, arnd@arndb.de, bp@alien8.de,
-        corbet@lwn.net, d.hatayama@jp.fujitsu.com,
-        dave.hansen@linux.intel.com, dyoung@redhat.com,
-        feng.tang@intel.com, gregkh@linuxfoundation.org,
-        hidehiro.kawai.ez@hitachi.com, jgross@suse.com,
-        john.ogness@linutronix.de, keescook@chromium.org, luto@kernel.org,
-        mhiramat@kernel.org, mingo@redhat.com, paulmck@kernel.org,
-        peterz@infradead.org, rostedt@goodmis.org,
-        senozhatsky@chromium.org, stern@rowland.harvard.edu,
-        tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com,
-        will@kernel.org
-Subject: Re: [PATCH 02/30] ARM: kexec: Disable IRQs/FIQs also on crash CPUs shutdown path
-In-Reply-To: <Ymxcaqy6DwhoQrZT@shell.armlinux.org.uk>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
-        <20220427224924.592546-3-gpiccoli@igalia.com>
-        <87mtg392fm.wl-maz@kernel.org>
-        <71d829c4-b280-7d6e-647d-79a1baf9408b@igalia.com>
-        <Ymxcaqy6DwhoQrZT@shell.armlinux.org.uk>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/27.1
- (x86_64-pc-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: linux@armlinux.org.uk, gpiccoli@igalia.com, mikelley@microsoft.com, akpm@linux-foundation.org, bhe@redhat.com, pmladek@suse.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-leds@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org, linux-um@lists.infradead.org, linux-xtensa@linux-xtensa.org, netdev@vger.kernel.org, openipmi-developer@lists.sourceforge.net, rcu@vger.kernel.org, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org, kernel-dev@igalia.com, kernel@gpiccoli.net, halves@canonical.com, fabiomirmar@gmail.com, alejandro.j.jimenez@oracle.com, andriy.shevchenko@linux.intel.com, arnd@arndb.de, 
- bp@alien8.de, corbet@lwn.net, d.hatayama@jp.fujitsu.com, dave.hansen@linux.intel.com, dyoung@redhat.com, feng.tang@intel.com, gregkh@linuxfoundation.org, hidehiro.kawai.ez@hitachi.com, jgross@suse.com, john.ogness@linutronix.de, keescook@chromium.org, luto@kernel.org, mhiramat@kernel.org, mingo@redhat.com, paulmck@kernel.org, peterz@infradead.org, rostedt@goodmis.org, senozhatsky@chromium.org, stern@rowland.harvard.edu, tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com, will@kernel.org
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+        with ESMTP id S234141AbiD2WKn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:10:43 -0400
+X-Greylist: delayed 1164 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 29 Apr 2022 15:07:23 PDT
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E9668DBD36;
+        Fri, 29 Apr 2022 15:07:22 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:54628)
+        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nkYU4-00AIHv-5u; Fri, 29 Apr 2022 15:49:04 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:36464 helo=localhost.localdomain)
+        by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nkYU1-007RIp-SJ; Fri, 29 Apr 2022 15:49:03 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
+        mingo@kernel.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
+        bigeasy@linutronix.de, Will Deacon <will@kernel.org>,
+        tj@kernel.org, linux-pm@vger.kernel.org,
+        Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
+        "Eric W. Biederman" <ebiederm@xmission.com>, stable@vger.kernel.org
+Date:   Fri, 29 Apr 2022 16:48:28 -0500
+Message-Id: <20220429214837.386518-3-ebiederm@xmission.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-XM-SPF: eid=1nkYU1-007RIp-SJ;;;mid=<20220429214837.386518-3-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX180O+oNrK8kueX5JDUgMLmEvvwqhHxDh38=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: [PATCH v2 03/12] ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 29 Apr 2022 22:45:14 +0100,
-"Russell King (Oracle)" <linux@armlinux.org.uk> wrote:
-> 
-> On Fri, Apr 29, 2022 at 06:38:19PM -0300, Guilherme G. Piccoli wrote:
-> > Thanks Marc and Michael for the review/discussion.
-> > 
-> > On 29/04/2022 15:20, Marc Zyngier wrote:
-> > > [...]
-> > 
-> > > My expectations would be that, since we're getting here using an IPI,
-> > > interrupts are already masked. So what reenabled them the first place?
-> > > 
-> > > Thanks,
-> > > 
-> > > 	M.
-> > > 
-> > 
-> > Marc, I did some investigation in the code (and tried/failed in the ARM
-> > documentation as well heh), but this is still not 100% clear for me.
-> > 
-> > You're saying IPI calls disable IRQs/FIQs by default in the the target
-> > CPUs? Where does it happen? I'm a bit confused if this a processor
-> > mechanism, or it's in code.
-> 
-> When we taken an IRQ, IRQs will be masked, FIQs will not. IPIs are
-> themselves interrupts, so IRQs will be masked while the IPI is being
-> processed. Therefore, there should be no need to re-disable the
-> already disabled interrupts.
-> 
-> > But crash_smp_send_stop() is different, it seems to IPI the other CPUs
-> > with the flag IPI_CALL_FUNC, which leads to calling
-> > generic_smp_call_function_interrupt() - does it disable interrupts/FIQs
-> > as well? I couldn't find it.
-> 
-> It's buried in the architecture behaviour. When the CPU takes an
-> interrupt and jumps to the interrupt vector in the vectors page, it is
-> architecturally defined that interrupts will be disabled. If they
-> weren't architecturally disabled at this point, then as soon as the
-> first instruction is processed (at the interrupt vector, likely a
-> branch) the CPU would immediately take another jump to the interrupt
-> vector, and this process would continue indefinitely, making interrupt
-> handling utterly useless.
-> 
-> So, you won't find an explicit instruction in the code path from the
-> vectors to the IPI handler that disables interrupts - because it's
-> written into the architecture that this is what must happen.
-> 
-> IRQs are a lower priority than FIQs, so FIQs remain unmasked.
+User mode linux is the last user of the PT_DTRACE flag.  Using the flag to indicate
+single stepping is a little confusing and worse changing tsk->ptrace without locking
+could potentionally cause problems.
 
-Ah, you're of course right. That's one of the huge differences between
-AArch32 and AArch64, where the former has per target mode masking
-rules, and the later masks everything on entry...
+So use a thread info flag with a better name instead of flag in tsk->ptrace.
 
-	M.
+Remove the definition PT_DTRACE as uml is the last user.
 
+Cc: stable@vger.kernel.org
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+---
+ arch/um/include/asm/thread_info.h | 2 ++
+ arch/um/kernel/exec.c             | 2 +-
+ arch/um/kernel/process.c          | 2 +-
+ arch/um/kernel/ptrace.c           | 8 ++++----
+ arch/um/kernel/signal.c           | 4 ++--
+ include/linux/ptrace.h            | 1 -
+ 6 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/arch/um/include/asm/thread_info.h b/arch/um/include/asm/thread_info.h
+index 1395cbd7e340..c7b4b49826a2 100644
+--- a/arch/um/include/asm/thread_info.h
++++ b/arch/um/include/asm/thread_info.h
+@@ -60,6 +60,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_RESTORE_SIGMASK	7
+ #define TIF_NOTIFY_RESUME	8
+ #define TIF_SECCOMP		9	/* secure computing */
++#define TIF_SINGLESTEP		10	/* single stepping userspace */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -68,5 +69,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
++#define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ 
+ #endif
+diff --git a/arch/um/kernel/exec.c b/arch/um/kernel/exec.c
+index c85e40c72779..58938d75871a 100644
+--- a/arch/um/kernel/exec.c
++++ b/arch/um/kernel/exec.c
+@@ -43,7 +43,7 @@ void start_thread(struct pt_regs *regs, unsigned long eip, unsigned long esp)
+ {
+ 	PT_REGS_IP(regs) = eip;
+ 	PT_REGS_SP(regs) = esp;
+-	current->ptrace &= ~PT_DTRACE;
++	clear_thread_flag(TIF_SINGLESTEP);
+ #ifdef SUBARCH_EXECVE1
+ 	SUBARCH_EXECVE1(regs->regs);
+ #endif
+diff --git a/arch/um/kernel/process.c b/arch/um/kernel/process.c
+index 80504680be08..88c5c7844281 100644
+--- a/arch/um/kernel/process.c
++++ b/arch/um/kernel/process.c
+@@ -335,7 +335,7 @@ int singlestepping(void * t)
+ {
+ 	struct task_struct *task = t ? t : current;
+ 
+-	if (!(task->ptrace & PT_DTRACE))
++	if (!test_thread_flag(TIF_SINGLESTEP))
+ 		return 0;
+ 
+ 	if (task->thread.singlestep_syscall)
+diff --git a/arch/um/kernel/ptrace.c b/arch/um/kernel/ptrace.c
+index bfaf6ab1ac03..5154b27de580 100644
+--- a/arch/um/kernel/ptrace.c
++++ b/arch/um/kernel/ptrace.c
+@@ -11,7 +11,7 @@
+ 
+ void user_enable_single_step(struct task_struct *child)
+ {
+-	child->ptrace |= PT_DTRACE;
++	set_tsk_thread_flag(child, TIF_SINGLESTEP);
+ 	child->thread.singlestep_syscall = 0;
+ 
+ #ifdef SUBARCH_SET_SINGLESTEPPING
+@@ -21,7 +21,7 @@ void user_enable_single_step(struct task_struct *child)
+ 
+ void user_disable_single_step(struct task_struct *child)
+ {
+-	child->ptrace &= ~PT_DTRACE;
++	clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+ 	child->thread.singlestep_syscall = 0;
+ 
+ #ifdef SUBARCH_SET_SINGLESTEPPING
+@@ -120,7 +120,7 @@ static void send_sigtrap(struct uml_pt_regs *regs, int error_code)
+ }
+ 
+ /*
+- * XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
++ * XXX Check TIF_SINGLESTEP for singlestepping check and
+  * PT_PTRACED vs TIF_SYSCALL_TRACE for syscall tracing check
+  */
+ int syscall_trace_enter(struct pt_regs *regs)
+@@ -144,7 +144,7 @@ void syscall_trace_leave(struct pt_regs *regs)
+ 	audit_syscall_exit(regs);
+ 
+ 	/* Fake a debug trap */
+-	if (ptraced & PT_DTRACE)
++	if (test_thread_flag(TIF_SINGLESTEP))
+ 		send_sigtrap(&regs->regs, 0);
+ 
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+diff --git a/arch/um/kernel/signal.c b/arch/um/kernel/signal.c
+index 88cd9b5c1b74..ae4658f576ab 100644
+--- a/arch/um/kernel/signal.c
++++ b/arch/um/kernel/signal.c
+@@ -53,7 +53,7 @@ static void handle_signal(struct ksignal *ksig, struct pt_regs *regs)
+ 	unsigned long sp;
+ 	int err;
+ 
+-	if ((current->ptrace & PT_DTRACE) && (current->ptrace & PT_PTRACED))
++	if (test_thread_flag(TIF_SINGLESTEP) && (current->ptrace & PT_PTRACED))
+ 		singlestep = 1;
+ 
+ 	/* Did we come from a system call? */
+@@ -128,7 +128,7 @@ void do_signal(struct pt_regs *regs)
+ 	 * on the host.  The tracing thread will check this flag and
+ 	 * PTRACE_SYSCALL if necessary.
+ 	 */
+-	if (current->ptrace & PT_DTRACE)
++	if (test_thread_flag(TIF_SINGLESTEP))
+ 		current->thread.singlestep_syscall =
+ 			is_syscall(PT_REGS_IP(&current->thread.regs));
+ 
+diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+index 15b3d176b6b4..4c06f9f8ef3f 100644
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -30,7 +30,6 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
+ 
+ #define PT_SEIZED	0x00010000	/* SEIZE used, enable new behavior */
+ #define PT_PTRACED	0x00000001
+-#define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
+ 
+ #define PT_OPT_FLAG_SHIFT	3
+ /* PT_TRACE_* event enable flags */
 -- 
-Without deviation from the norm, progress is not possible.
+2.35.3
+
