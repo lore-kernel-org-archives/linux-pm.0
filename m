@@ -2,203 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1F31C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 913ACC433F5
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Apr 2022 22:12:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353412AbiD2WNA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Apr 2022 18:13:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54572 "EHLO
+        id S1381444AbiD2WPz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Apr 2022 18:15:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381336AbiD2WM6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:12:58 -0400
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35072DCA99
-        for <linux-pm@vger.kernel.org>; Fri, 29 Apr 2022 15:09:38 -0700 (PDT)
-Received: by mail-yb1-xb49.google.com with SMTP id 7-20020a250c07000000b0064137917a4eso8544708ybm.12
-        for <linux-pm@vger.kernel.org>; Fri, 29 Apr 2022 15:09:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=hKM9bITdw0PGb2XwX81mFD9iQzTpEY1OKJb9nL2wmVM=;
-        b=OoLk1SvFv/jTJtrMYW0SOQyQRGCBGpFgc/vEoNllR1AaKSyYPbAn38fZE7kG1JaLNw
-         sexAk7BDkPLMod8qlp9KvRVu4XZVkwoG6sot1ziSm12s8n1f0lWwP3pd4NZO9hDjSCIo
-         n4EVt4n/T4i6LWzvHIC5efT4Il77PiWFZq+vsVus4b88F/GLYaYnxrTF2BhYrTHjVvyZ
-         YJSlHx/76rMlgL8unw+vVcNr0SJeZky16wGNg4m9e30BDCrhD2L42ccHx+nJLraDz9Cv
-         QE7K62V9FK7wicbv99MdhKS9km/Q3/YCc5Tw9pA87iGWFI/wHo6va2SanzKXtugCTKxa
-         BOOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=hKM9bITdw0PGb2XwX81mFD9iQzTpEY1OKJb9nL2wmVM=;
-        b=f9B/T2BjKsWhkpNdfXa3PKw+6HPRweOxN2cYv7TxFQZYwvZ4y5uQO6sV1ODgZWG1/g
-         7X7cpH/GovXkuHaMgyIKXdNgQSHj9gDekc40o+jyTqpvMl12nvT1ZwVk7iMjOyWZYkcv
-         vbb3XP40YFrlypKpchAH5PpVtewNOED4tRrInqT0L+mURRdlj8FfXAzGHrel34eCRroy
-         z1XyGWBcSkJJUWokykqF5NrZKpa0mvNy4jqsi2PW1bNaNoFS1EJAZBbIiLwcww4zFyra
-         n3UvrfIwLKat+yFRsDGd+Lyl9SHd2zcEr9mkJ8l9J+J2iXzsC1R19uiEXXqwAgYGCPRy
-         TF1A==
-X-Gm-Message-State: AOAM530hCFDF7C+6eQaKAxanVBJWwhBQ6FCuhGOEJZuWt5BUecADhfn/
-        eZsVian1i48Ii+MZag/QFcMInsx5aSsBei0=
-X-Google-Smtp-Source: ABdhPJwkaqvpwIOQfXloIgXrKBqVrkXz9dU2lTi8+9Th0do7w1YPgiKZjeu5emN11KLpq4+CmhlxSMcUnqAj3JA=
-X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:52dc:281f:8619:9d36])
- (user=saravanak job=sendgmr) by 2002:a81:b88:0:b0:2f7:ccdd:642f with SMTP id
- 130-20020a810b88000000b002f7ccdd642fmr1475417ywl.303.1651270177291; Fri, 29
- Apr 2022 15:09:37 -0700 (PDT)
-Date:   Fri, 29 Apr 2022 15:09:32 -0700
-Message-Id: <20220429220933.1350374-1-saravanak@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.36.0.464.gb9c8b46e94-goog
-Subject: [PATCH v1] driver core: Extend deferred probe timeout on driver registration
-From:   Saravana Kannan <saravanak@google.com>
-To:     Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Saravana Kannan <saravanak@google.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Will Deacon <will@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Thierry Reding <treding@nvidia.com>,
-        Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        Paul Kocialkowski <paul.kocialkowski@bootlin.com>,
-        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-        iommu@lists.linux-foundation.org, kernel-team@android.com,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        with ESMTP id S1381448AbiD2WPt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2022 18:15:49 -0400
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CE9FDCE06;
+        Fri, 29 Apr 2022 15:12:24 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:38182)
+        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nkYSx-00AIAD-EI; Fri, 29 Apr 2022 15:47:55 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:36454 helo=email.froward.int.ebiederm.org.xmission.com)
+        by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nkYSv-005dKg-DP; Fri, 29 Apr 2022 15:47:55 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
+        Kees Cook <keescook@chromium.org>, linux-ia64@vger.kernel.org
+References: <20220421150248.667412396@infradead.org>
+        <20220421150654.817117821@infradead.org>
+        <87czhap9dy.fsf@email.froward.int.ebiederm.org>
+        <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+Date:   Fri, 29 Apr 2022 16:46:59 -0500
+In-Reply-To: <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org> (Eric
+        W. Biederman's message of "Tue, 26 Apr 2022 17:50:21 -0500")
+Message-ID: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
+X-XM-SPF: eid=1nkYSv-005dKg-DP;;;mid=<87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1+ZIVHGWhwXaAZQuMgvUvy1NsqcM6xYpoc=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: [PATCH 0/12] ptrace: cleaning up ptrace_stop
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The deferred probe timer that's used for this currently starts at
-late_initcall and runs for driver_deferred_probe_timeout seconds. The
-assumption being that all available drivers would be loaded and
-registered before the timer expires. This means, the
-driver_deferred_probe_timeout has to be pretty large for it to cover the
-worst case. But if we set the default value for it to cover the worst
-case, it would significantly slow down the average case. For this
-reason, the default value is set to 0.
 
-Also, with CONFIG_MODULES=y and the current default values of
-driver_deferred_probe_timeout=0 and fw_devlink=on, devices with missing
-drivers will cause their consumer devices to always defer their probes.
-This is because device links created by fw_devlink defer the probe even
-before the consumer driver's probe() is called.
+The states TASK_STOPPED and TASK_TRACE are special in they can not
+handle spurious wake-ups.  This plus actively depending upon and
+changing the value of tsk->__state causes problems for PREEMPT_RT and
+Peter's freezer rewrite.
 
-Instead of a fixed timeout, if we extend an unexpired deferred probe
-timer on every successful driver registration, with the expectation more
-modules would be loaded in the near future, then the default value of
-driver_deferred_probe_timeout only needs to be as long as the worst case
-time difference between two consecutive module loads.
+There are a lot of details we have to get right to sort out the
+technical challenges and this is my parred back version of the changes
+that contains just those problems I see good solutions to that I believe
+are ready.
 
-So let's implement that and set the default value to 10 seconds when
-CONFIG_MODULES=y.
+In particular I don't have a solution that is ready for the challenges
+presented by wait_task_inactive.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Will Deacon <will@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Thierry Reding <treding@nvidia.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Cc: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
-Cc: linux-gpio@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: iommu@lists.linux-foundation.org
-Signed-off-by: Saravana Kannan <saravanak@google.com>
----
- .../admin-guide/kernel-parameters.txt         |  6 ++++--
- drivers/base/base.h                           |  1 +
- drivers/base/dd.c                             | 19 +++++++++++++++++++
- drivers/base/driver.c                         |  1 +
- 4 files changed, 25 insertions(+), 2 deletions(-)
+I hope we can review these changes and then have a firm foundation
+for the rest of the challenges.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 7123524a86b8..fcc1dfc877a9 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -939,8 +939,10 @@
- 			[KNL] Debugging option to set a timeout in seconds for
- 			deferred probe to give up waiting on dependencies to
- 			probe. Only specific dependencies (subsystems or
--			drivers) that have opted in will be ignored. A timeout of 0
--			will timeout at the end of initcalls. This option will also
-+			drivers) that have opted in will be ignored. A timeout
-+			of 0 will timeout at the end of initcalls. If the time
-+			out hasn't expired, it'll be restarted by each
-+			successful driver registration. This option will also
- 			dump out devices still on the deferred probe list after
- 			retrying.
- 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 2882af26392a..ab71403d102f 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -159,6 +159,7 @@ extern char *make_class_name(const char *name, struct kobject *kobj);
- extern int devres_release_all(struct device *dev);
- extern void device_block_probing(void);
- extern void device_unblock_probing(void);
-+extern void deferred_probe_extend_timeout(void);
- 
- /* /sys/devices directory */
- extern struct kset *devices_kset;
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index f47cab21430f..603379b5f9dd 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -255,7 +255,12 @@ static int deferred_devs_show(struct seq_file *s, void *data)
- }
- DEFINE_SHOW_ATTRIBUTE(deferred_devs);
- 
-+#ifdef CONFIG_MODULES
-+int driver_deferred_probe_timeout = 10;
-+#else
- int driver_deferred_probe_timeout;
-+#endif
-+
- EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
- static DECLARE_WAIT_QUEUE_HEAD(probe_timeout_waitqueue);
- 
-@@ -315,6 +320,20 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
- }
- static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
- 
-+void deferred_probe_extend_timeout(void)
-+{
-+	/*
-+	 * If the work hasn't been queued yet or if the work expired, don't
-+	 * start a new one.
-+	 */
-+	if (cancel_delayed_work(&deferred_probe_timeout_work)) {
-+		schedule_delayed_work(&deferred_probe_timeout_work,
-+				driver_deferred_probe_timeout * HZ);
-+		pr_debug("Extended deferred probe timeout by %d secs\n",
-+					driver_deferred_probe_timeout);
-+	}
-+}
-+
- /**
-  * deferred_probe_initcall() - Enable probing of deferred devices
-  *
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index 8c0d33e182fd..77a77b2095cd 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -177,6 +177,7 @@ int driver_register(struct device_driver *drv)
- 		return ret;
- 	}
- 	kobject_uevent(&drv->p->kobj, KOBJ_ADD);
-+	deferred_probe_extend_timeout();
- 
- 	return ret;
- }
--- 
-2.36.0.464.gb9c8b46e94-goog
+There are cleanups to the ptrace support for xtensa, um, and
+ia64.
 
+I have sucked in the first patch of Peter's freezer change as
+with minor modifications I believe it is ready to go.
+
+Eric W. Biederman (12):
+      signal: Rename send_signal send_signal_locked
+      signal: Replace __group_send_sig_info with send_signal_locked
+      ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
+      ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
+      signal: Use lockdep_assert_held instead of assert_spin_locked
+      ptrace: Reimplement PTRACE_KILL by always sending SIGKILL
+      ptrace: Don't change __state
+      ptrace: Remove arch_ptrace_attach
+      ptrace: Always take siglock in ptrace_resume
+      ptrace: Only return signr from ptrace_stop if it was provided
+      ptrace: Always call schedule in ptrace_stop
+      sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
+
+ arch/ia64/include/asm/ptrace.h    |   4 --
+ arch/ia64/kernel/ptrace.c         |  57 ----------------
+ arch/um/include/asm/thread_info.h |   2 +
+ arch/um/kernel/exec.c             |   2 +-
+ arch/um/kernel/process.c          |   2 +-
+ arch/um/kernel/ptrace.c           |   8 +--
+ arch/um/kernel/signal.c           |   4 +-
+ arch/xtensa/kernel/ptrace.c       |   4 +-
+ arch/xtensa/kernel/signal.c       |   4 +-
+ drivers/tty/tty_jobctrl.c         |   4 +-
+ include/linux/ptrace.h            |   7 --
+ include/linux/sched.h             |  10 ++-
+ include/linux/sched/jobctl.h      |  10 +++
+ include/linux/sched/signal.h      |  23 ++++++-
+ include/linux/signal.h            |   3 +-
+ kernel/ptrace.c                   |  88 +++++++++----------------
+ kernel/signal.c                   | 135 +++++++++++++++++---------------------
+ kernel/time/posix-cpu-timers.c    |   6 +-
+ 18 files changed, 145 insertions(+), 228 deletions(-)
+
+Eric
