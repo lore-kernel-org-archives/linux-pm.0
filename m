@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E16C433F5
-	for <linux-pm@archiver.kernel.org>; Sat, 30 Apr 2022 20:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A8E7C4332F
+	for <linux-pm@archiver.kernel.org>; Sat, 30 Apr 2022 20:51:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245229AbiD3Uyd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 30 Apr 2022 16:54:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35266 "EHLO
+        id S245291AbiD3Uyn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 Apr 2022 16:54:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35550 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245206AbiD3Uyc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Apr 2022 16:54:32 -0400
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 980C6532E9;
-        Sat, 30 Apr 2022 13:51:09 -0700 (PDT)
-Received: by mail-ed1-x533.google.com with SMTP id p4so12736747edx.0;
-        Sat, 30 Apr 2022 13:51:09 -0700 (PDT)
+        with ESMTP id S245242AbiD3Uyg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 Apr 2022 16:54:36 -0400
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0C3F5371B;
+        Sat, 30 Apr 2022 13:51:12 -0700 (PDT)
+Received: by mail-ed1-x52a.google.com with SMTP id b24so12654682edu.10;
+        Sat, 30 Apr 2022 13:51:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=LFkwqeNMXvWSRmicZbw5B/Ot0aDTRBEW7BnChVj7xEc=;
-        b=otpsIF8sueEsELZJ6LGa5NwG7TNIzfBab+KTQUTMAO7W2tSysaRa4Gs183WeGU0yh+
-         E+/3g66TWlcP8hZKy6Ssqa6CgHT2V2SIcfUmzVh5FV0J71N+DdpP7ZDLQeSK9Fwe2ZkF
-         37huykerUr3gTLmjAR7dgKSxXL5Iak3hsI7eH5MLsYmfrUi+W0Pdt41WJHOiGKrOM5wp
-         E9mBIz9iBFyX+XUrlQb6cvNvp7QoGf/HJln7ymBvHMt8faRHgbhF65YrVl+Gj3vGi/Hv
-         0gRd4gQmCybQ+fiJFPPh+hVWJ8GW10AqaYpcSOQ0E82517pNnNNFJcfDuUg/4MHA3jtb
-         t0cA==
+        bh=7ksfYzQBn7UrcwfXPR8oQDY9eW9oGago9RfblkVMga0=;
+        b=lbbeV85svKR/bRew4SlVcnU7nKENj7PIy5vr9kwC7wZyk9oAw4Cf5Qom1isdGy3HNN
+         /ExHhd318S12iwxEtUbgOARjqB0JZYGM2gx0U9ef/mkFbtAjitQk3koipNBKCh9hgTqD
+         t5WzLDarBpvId3J0h8ctSKY6jqYgXVaR8IpZEloFpNIzFRDFLlG9KtkpjwcMYkjggY2t
+         FPieRX/dsaudrRpHaTrJwBbXNLlWUsx9ljtji0/VV6vZDs15ExiamaEP7MM/UfJlLa3I
+         Y3isqioUi0RZBY9G56FRKoxJnQKH1Z9gINsKiTdueNyBvHKg+bvXaF+R1YGd7ntgwRPN
+         Gw3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=LFkwqeNMXvWSRmicZbw5B/Ot0aDTRBEW7BnChVj7xEc=;
-        b=50sBRefQsfUbvCwx+fVCc8VkoYKr3u/9ic2vmbnW+QK2TPgmDA4QJUS4aQ5INqBYbc
-         Wu34yUMfZdHatYPCp2o2GrsXavFbSlAM6XNS9AxUts84QtN5QPWJLIBPjpw2vygFKYra
-         cVOBd+6bQKYbv028UlMx67iw5FxWNtXhZfNfdNc87jNHdLrLdiUCWHSakInQnrWKCj4f
-         dExKrvF0fSIX6h1z+Aa1Cq9VcbPrwSdHyK7VuoblHMrgUnSOOuhiYbVDdCK0sLQNrO+w
-         k7w8kS0DulJGepYupR/HjGY36/DLV47FOES1Ih3ZKUfA7BWTtKgPLoBUO7alKY3uCz9d
-         2IHA==
-X-Gm-Message-State: AOAM532+H0sSHLkxYxTTJLjUguXS/O+TkkCnAcRqqNh/wcQU1iIomiIz
-        zXYiBxnRcxLz7REFr8Khhq0=
-X-Google-Smtp-Source: ABdhPJwaKWb5VBGvDPU2LLGfyk0OCYzX0aWU8+lLdvGtfniyGyrsQbOzhbktfSERpISco92/ms2rXg==
-X-Received: by 2002:aa7:de93:0:b0:418:d700:662a with SMTP id j19-20020aa7de93000000b00418d700662amr5843854edv.107.1651351868110;
-        Sat, 30 Apr 2022 13:51:08 -0700 (PDT)
+        bh=7ksfYzQBn7UrcwfXPR8oQDY9eW9oGago9RfblkVMga0=;
+        b=UQ4/ZkS5NxwrUHa5Fj99zxcMJYsBQc7NaxFOQXgvXK77TsNrtmqqiY7dsUYBJiltSV
+         AFVHxs2wljtIJ4W4g0+YnLi5hN1RTMncsurKfwrzokh96jPgvIOrKSvhwTTG2HxnEWMq
+         9xGj2opY0m9VcbmMdurJxyBQMSRG3Hp16kRp/V6Gc0am+W98pUOXJw1yzcZhCS/ZYnTx
+         yhYph+tzOiOxucpMycTYMgvX1tuL5fyLUbRIEWueOI86A92hx8yAASxNAV1fOcSIE+hq
+         I/2EKnMyWDqqPrnlyk+3GDdN9berOMviXps73JljlyQXdAU413HLBJmLCXGKcfP8TG/G
+         kLyA==
+X-Gm-Message-State: AOAM5335Vv6LZC5mFqK00u24gf/5/jCn8X/UIX4HO8okKoASlyh2DzmS
+        uQyXHmGRbZZTmtKdxo483mtc40BPUEPnfw==
+X-Google-Smtp-Source: ABdhPJyK4z4U7e4b9q0BbzIwYcjagpOwUuAvrQ8PA11smPbHiuEIm63CGxBatjpbvYaT1pRfgL+0Dg==
+X-Received: by 2002:a05:6402:3488:b0:427:b4ec:991b with SMTP id v8-20020a056402348800b00427b4ec991bmr1157230edc.319.1651351871415;
+        Sat, 30 Apr 2022 13:51:11 -0700 (PDT)
 Received: from fedora.robimarko.hr (cpe-94-253-165-113.zg.cable.xnet.hr. [94.253.165.113])
-        by smtp.googlemail.com with ESMTPSA id p14-20020a056402154e00b0042617ba63a8sm4457852edx.50.2022.04.30.13.51.06
+        by smtp.googlemail.com with ESMTPSA id p14-20020a056402154e00b0042617ba63a8sm4457852edx.50.2022.04.30.13.51.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 30 Apr 2022 13:51:07 -0700 (PDT)
+        Sat, 30 Apr 2022 13:51:10 -0700 (PDT)
 From:   Robert Marko <robimarko@gmail.com>
 To:     agross@kernel.org, bjorn.andersson@linaro.org, amitk@kernel.org,
         thara.gopinath@linaro.org, rafael@kernel.org,
@@ -55,9 +55,9 @@ To:     agross@kernel.org, bjorn.andersson@linaro.org, amitk@kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     Robert Marko <robimarko@gmail.com>
-Subject: [PATCH 3/5] drivers: thermal: tsens: allow configuring min and max trips
-Date:   Sat, 30 Apr 2022 22:50:59 +0200
-Message-Id: <20220430205101.459782-3-robimarko@gmail.com>
+Subject: [PATCH 5/5] arm64: dts: ipq8074: add thermal nodes
+Date:   Sat, 30 Apr 2022 22:51:01 +0200
+Message-Id: <20220430205101.459782-5-robimarko@gmail.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220430205101.459782-1-robimarko@gmail.com>
 References: <20220430205101.459782-1-robimarko@gmail.com>
@@ -67,111 +67,131 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IPQ8074 and IPQ6018 dont support negative trip temperatures and support
-up to 204 degrees C as the max trip temperature.
+IPQ8074 has a tsens v2.3.0 peripheral which monitors
+temperatures around the various subsystems on the
+die.
 
-So, instead of always setting the -40 as min and 120 degrees C as max
-allow it to be configured as part of the features.
+So lets add the tsens and thermal zone nodes, passive
+CPU cooling will come in later patches after CPU frequency
+scaling is supported.
 
 Signed-off-by: Robert Marko <robimarko@gmail.com>
 ---
- drivers/thermal/qcom/tsens-8960.c | 2 ++
- drivers/thermal/qcom/tsens-v0_1.c | 2 ++
- drivers/thermal/qcom/tsens-v1.c   | 2 ++
- drivers/thermal/qcom/tsens-v2.c   | 2 ++
- drivers/thermal/qcom/tsens.c      | 4 ++--
- drivers/thermal/qcom/tsens.h      | 4 ++++
- 6 files changed, 14 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/qcom/ipq8074.dtsi | 96 +++++++++++++++++++++++++++
+ 1 file changed, 96 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index ee584e5b07e5..4585904fb380 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -273,6 +273,8 @@ static struct tsens_features tsens_8960_feat = {
- 	.adc		= 1,
- 	.srot_split	= 0,
- 	.max_sensors	= 11,
-+	.trip_min_temp	= -40000,
-+	.trip_max_temp	= 120000,
+diff --git a/arch/arm64/boot/dts/qcom/ipq8074.dtsi b/arch/arm64/boot/dts/qcom/ipq8074.dtsi
+index afbae86cf6d3..76e02490b968 100644
+--- a/arch/arm64/boot/dts/qcom/ipq8074.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq8074.dtsi
+@@ -332,6 +332,16 @@ prng: rng@e3000 {
+ 			status = "disabled";
+ 		};
+ 
++		tsens: thermal-sensor@4a9000 {
++			compatible = "qcom,ipq8074-tsens";
++			reg = <0x4a9000 0x1000>, /* TM */
++			      <0x4a8000 0x1000>; /* SROT */
++			interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "combined";
++			#qcom,sensors = <16>;
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		cryptobam: dma-controller@704000 {
+ 			compatible = "qcom,bam-v1.7.0";
+ 			reg = <0x00704000 0x20000>;
+@@ -1092,4 +1102,90 @@ wifi: wifi@c0000000 {
+ 			status = "disabled";
+ 		};
+ 	};
++
++	thermal-zones {
++		nss-top-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 4>;
++		};
++
++		nss0-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 5>;
++		};
++
++		nss1-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 6>;
++		};
++
++		wcss-phya0-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 7>;
++		};
++
++		wcss-phya1-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 8>;
++		};
++
++		cpu0_thermal: cpu0-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 9>;
++		};
++
++		cpu1_thermal: cpu1-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 10>;
++		};
++
++		cpu2_thermal: cpu2-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 11>;
++		};
++
++		cpu3_thermal: cpu3-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 12>;
++		};
++
++		cluster_thermal: cluster-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 13>;
++		};
++
++		wcss-phyb0-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 14>;
++		};
++
++		wcss-phyb1-thermal {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&tsens 15>;
++		};
++	};
  };
- 
- struct tsens_plat_data data_8960 = {
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index 6effb822bf3c..2c203ff374e6 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -543,6 +543,8 @@ static struct tsens_features tsens_v0_1_feat = {
- 	.adc		= 1,
- 	.srot_split	= 1,
- 	.max_sensors	= 11,
-+	.trip_min_temp	= -40000,
-+	.trip_max_temp	= 120000,
- };
- 
- static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
-diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-index a4f561a6e582..1d7f8a80bd13 100644
---- a/drivers/thermal/qcom/tsens-v1.c
-+++ b/drivers/thermal/qcom/tsens-v1.c
-@@ -306,6 +306,8 @@ static struct tsens_features tsens_v1_feat = {
- 	.adc		= 1,
- 	.srot_split	= 1,
- 	.max_sensors	= 11,
-+	.trip_min_temp	= -40000,
-+	.trip_max_temp	= 120000,
- };
- 
- static const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 129cdb247381..9babc69bfd22 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -35,6 +35,8 @@ static struct tsens_features tsens_v2_feat = {
- 	.adc		= 0,
- 	.srot_split	= 1,
- 	.max_sensors	= 16,
-+	.trip_min_temp	= -40000,
-+	.trip_max_temp	= 120000,
- };
- 
- static const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 69b6f7b97e9e..b7701d5efdfc 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -572,8 +572,8 @@ static int tsens_set_trips(void *_sensor, int low, int high)
- 	dev_dbg(dev, "[%u] %s: proposed thresholds: (%d:%d)\n",
- 		hw_id, __func__, low, high);
- 
--	cl_high = clamp_val(high, -40000, 120000);
--	cl_low  = clamp_val(low, -40000, 120000);
-+	cl_high = clamp_val(high, priv->feat->trip_min_temp, priv->feat->trip_max_temp);
-+	cl_low  = clamp_val(low, priv->feat->trip_min_temp, priv->feat->trip_max_temp);
- 
- 	high_val = tsens_mC_to_hw(s, cl_high);
- 	low_val  = tsens_mC_to_hw(s, cl_low);
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 4614177944d6..747004476347 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -501,6 +501,8 @@ enum regfield_ids {
-  *              with SROT only being available to secure boot firmware?
-  * @has_watchdog: does this IP support watchdog functionality?
-  * @max_sensors: maximum sensors supported by this version of the IP
-+ * @trip_min_temp: minimum trip temperature supported by this version of the IP
-+ * @trip_max_temp: maximum trip temperature supported by this version of the IP
-  */
- struct tsens_features {
- 	unsigned int ver_major;
-@@ -510,6 +512,8 @@ struct tsens_features {
- 	unsigned int srot_split:1;
- 	unsigned int has_watchdog:1;
- 	unsigned int max_sensors;
-+	int trip_min_temp;
-+	int trip_max_temp;
- };
- 
- /**
 -- 
 2.35.1
 
