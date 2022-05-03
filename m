@@ -2,181 +2,149 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55D1EC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 12:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14C08C4167B
+	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 14:05:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232108AbiECMzT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 May 2022 08:55:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34982 "EHLO
+        id S236670AbiECOIi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 May 2022 10:08:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230339AbiECMzS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 08:55:18 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 421081EEE1;
-        Tue,  3 May 2022 05:51:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1651582306; x=1683118306;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=WX6XFwDnmHmpDEaYBGqBQvPfcxBsdxudi3zrPKmjFJA=;
-  b=V9bUy+jLpOu/0KEJoTsYzW5ZssELHirqG4IPT4Ys+CWgE3iqJ9he3QYU
-   NB4kiGmMus94gDaXposepCDE6kMU8w4ZUyMAdZA/MjwV5az0vIs1umPrV
-   OucaNw95Zo0xRgycFr5kOauBLP0td47UCqGP2tZhmfORpjUk+nEuxlT+r
-   YUfmPJsxwmUtTCUzvvb0Owhr/GbzIEHWwsN2sGlTvVKzx6czGUYLpGw2J
-   slbWYyz+sbcBT308h0PnbhAk5z+w3vXXg0bfSHtOnmHV7BYCheZhMTHVt
-   yS+miw1YMvY9sNRwA2xztE2lihxirm0DrcEusQB6tlNl+38r6BSiP8VG/
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10335"; a="267060710"
-X-IronPort-AV: E=Sophos;i="5.91,195,1647327600"; 
-   d="scan'208";a="267060710"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2022 05:51:45 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,195,1647327600"; 
-   d="scan'208";a="547492780"
-Received: from lkp-server01.sh.intel.com (HELO 5056e131ad90) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 03 May 2022 05:51:43 -0700
-Received: from kbuild by 5056e131ad90 with local (Exim 4.95)
-        (envelope-from <lkp@intel.com>)
-        id 1nls0E-000ATS-7R;
-        Tue, 03 May 2022 12:51:42 +0000
-Date:   Tue, 3 May 2022 20:51:26 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Daniel Lezcano <daniel.lezcano@linexp.org>, rafael@kernel.org,
-        daniel.lezcano@linaro.org
-Cc:     kbuild-all@lists.01.org, khilman@baylibre.com,
-        abailon@baylibre.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/15] thermal/core: Rename thermal_zone_device to
- thermal_zone
-Message-ID: <202205032051.rSqUYbp8-lkp@intel.com>
-References: <20220426221523.3056696-2-daniel.lezcano@linexp.org>
+        with ESMTP id S236230AbiECOIg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 10:08:36 -0400
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E36161EADD;
+        Tue,  3 May 2022 07:05:03 -0700 (PDT)
+Received: by mail-oi1-x22b.google.com with SMTP id z8so18283201oix.3;
+        Tue, 03 May 2022 07:05:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=sender:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=b5zcWYUFPO27QgFEnMVs+54HuZPkQ0FL3sPCUBagWEs=;
+        b=nmtAO8elN+lD21aNW4PeFwV5qviuq6Y4sVLZWcQC9zZn6UqsLXYF5ciWRgl0+lA1Wo
+         Q3rLe4Fskzg95B7RE9bBDzCWYoXQcNXwViucb5QcW8FGpQqDvUf5YZDsdBhza6rYepvt
+         JfGvKjbu2S1tIWfgmVuDBkIJnidthNgLCkvix0KKZ/uKOs1c5s5gsxh2uVagQLRY6nw/
+         ziKH7/MVdkOxup3VPlggEPris50qLUCDUg9E33r7OhDbS5bq0RNLc5yT2Ouqb/LH4LOT
+         N/oRmt4dIHZssgokdRevfTbu/juuu2xeyRBaFEeQbqQW6cVYD7R5t3xz7Vo6hhn100CX
+         OKdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
+         :subject:content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=b5zcWYUFPO27QgFEnMVs+54HuZPkQ0FL3sPCUBagWEs=;
+        b=yDASM6rLJbKX9+ZVLg892YHe+za9Eudw4dVMdkqwtGrE/Fsso8IYnAC6pDNj3glBci
+         h5qmg4AzpgUPm+NZIIzKePXcxlKrKcojE25DvCs+EkMUd/g03kbK2c4e5vLQ+YBxX5Sq
+         tedkXejWxzGvqYo8xhGeAEMyqqpHNBR+/mI4hYUCjGdroTGIY531YrdI1PBIY4Oc/RR9
+         FsGW8BwSprfejNnrqZ7ffZJMU4PQ75dv11xNKpn4uzx+yrsS7dZrdc2Xta1cuvblikHR
+         u/ZB6O5zrAx5E0snvd2ULn5sdIC/gnTHCUOwHXivFgG7KcOURKqzWt+zCuOJ3JQQGRPd
+         kX5A==
+X-Gm-Message-State: AOAM5334v8GF7VvLDFyoThb5yWDY715wrSL36U1B4eQNUHMlIAT44ltn
+        /AIqRT/yMjljZjdbP3069QE=
+X-Google-Smtp-Source: ABdhPJzzGJEdAdih1u7jF2kiLOrOxmCv3lvE9XNEtKe9LYoSPKte95Aq4ECL/l2Oq3F4Q7XGCpzu3g==
+X-Received: by 2002:a05:6808:2007:b0:325:7c10:475e with SMTP id q7-20020a056808200700b003257c10475emr1861677oiw.250.1651586703247;
+        Tue, 03 May 2022 07:05:03 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id k6-20020a056830168600b0060603221249sm4013581otr.25.2022.05.03.07.04.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 03 May 2022 07:05:00 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <d4eb4752-d8c0-715a-1d69-829f39c88d2e@roeck-us.net>
+Date:   Tue, 3 May 2022 07:04:56 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220426221523.3056696-2-daniel.lezcano@linexp.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@arndb.de>
+Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Marek Vasut <marek.vasut@gmail.com>,
+        Philipp Zabel <philipp.zabel@gmail.com>,
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Paul Parsons <lost.distance@yahoo.com>,
+        Sergey Lapin <slapin@ossfans.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+        IDE-ML <linux-ide@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
+        linux-mmc <linux-mmc@vger.kernel.org>,
+        linux-mtd <linux-mtd@lists.infradead.org>,
+        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        ALSA Development Mailing List <alsa-devel@alsa-project.org>
+References: <20220419163810.2118169-1-arnd@kernel.org>
+ <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
+ <6f1b27fa-96d1-4be7-ac6a-762610314f2a@roeck-us.net>
+ <8d6d453a-e6fc-439b-2f34-e60c22fc9e98@roeck-us.net>
+ <CAK8P3a2Ekvis1YcrJZtuga+XQdbeTC98PkOszCpS2DiZri7VMQ@mail.gmail.com>
+ <149509dd-f43d-1b27-4395-81eab4ff3455@roeck-us.net>
+ <CAK8P3a05vFdBnXXAMPVS82xX29+uinvWPcWxAgvj0TfoOk+1kg@mail.gmail.com>
+ <b13783aa-9225-d52a-3800-c97ad772688b@roeck-us.net>
+ <CAK8P3a3S5OjkKq_u5FpnwzYv+0+typya6Z4MzTez5ZH+do00xQ@mail.gmail.com>
+ <CAK8P3a3jiqf_zpBsZyvAb5ZtkwDa7KkqExqDAdpY_pYqkr_NgQ@mail.gmail.com>
+ <4dcdbfe2-9edf-320b-d123-3b62c8b5e28e@roeck-us.net>
+ <CAK8P3a0ogn1wgPBDHkT=Fb8ufA+y8Ax1Qov2-vRXfC08QqnrQA@mail.gmail.com>
+ <c001d58e-9a78-6338-a533-d0f215b3dfd1@roeck-us.net>
+ <CAK8P3a1X3YH0RqqmqgqFAaY94yreD-PfY-pvyMf+xU3nGeqvsg@mail.gmail.com>
+ <04840b4f-5b9d-b29a-62f7-e5148d415313@roeck-us.net>
+ <CAK8P3a39oiWyDwp=BHuCsBVwfzyZ802-NwL9G9r-t6X8KSr6nA@mail.gmail.com>
+From:   Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <CAK8P3a39oiWyDwp=BHuCsBVwfzyZ802-NwL9G9r-t6X8KSr6nA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+On 5/3/22 00:17, Arnd Bergmann wrote:
+> On Tue, May 3, 2022 at 4:55 AM Guenter Roeck <linux@roeck-us.net> wrote:
+>> On 5/2/22 14:03, Arnd Bergmann wrote:
+>>> On Mon, May 2, 2022 at 10:35 PM Guenter Roeck <linux@roeck-us.net> wrote:
+>>>> On 5/2/22 12:21, Arnd Bergmann wrote:
+>>
+>> qemu puts initrd in the middle of available memory. With the image size
+>> being ~1MB larger than with v5.18-rc, this is too much, and the kernel
+>> overwrites part of initrd. This causes it to be corrupted.
+>>
+>> It looks like that would have happened eventually, your patch series just
+>> made it happen now. The kernel is just getting too large to run on such small
+>> systems. I worked around the problem in my version of qemu by loading initrd
+>> at the end of the (small) RAM. With that, I no longer see the boot failure.
+> 
+> Ok, thanks for confirming. If it's just the image size that changed,
+> then I think
+> we can live with it. Having the kernel image grow by 1MB seems excessive
+> though, I'd like to understand better where that increase comes from.
+> 
+> Starting out from pxa_defconfig, I see a 40KB increase from the final patch
+> that moves to multiplatform support, which I think is fine.
+> 
+> If you have a z2 specific config, that would probably not enable CONFIG_OF,
+> which is always turned on for multiplatform, but again that only adds around
+> 250KB in my builds (using gcc-11). This is more than I'd like it to be, but
+> still much less than 1MB.
+> 
 
-I love your patch! Yet something to improve:
+Maybe it is a bit less; I only compared the size of "Image". Either case,
+it is enough to cause the problem. I am not sure if it is worth the time
+trying to track this down further.
 
-[auto build test ERROR on tegra/for-next]
-[also build test ERROR on sre-power-supply/for-next linus/master v5.18-rc5]
-[cannot apply to rafael-pm/thermal next-20220503]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Daniel-Lezcano/thermal-OF-rework/20220427-061937
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git for-next
-config: arm-allyesconfig (https://download.01.org/0day-ci/archive/20220503/202205032051.rSqUYbp8-lkp@intel.com/config)
-compiler: arm-linux-gnueabi-gcc (GCC) 11.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/72a43d27b527d58caee73e164c22f25afe773669
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Daniel-Lezcano/thermal-OF-rework/20220427-061937
-        git checkout 72a43d27b527d58caee73e164c22f25afe773669
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.3.0 make.cross W=1 O=build_dir ARCH=arm SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   drivers/power/supply/ab8500_btemp.c: In function 'ab8500_btemp_periodic_work':
->> drivers/power/supply/ab8500_btemp.c:288:39: error: passing argument 1 of 'thermal_zone_get_temp' from incompatible pointer type [-Werror=incompatible-pointer-types]
-     288 |         ret = thermal_zone_get_temp(di->tz, &bat_temp);
-         |                                     ~~^~~~
-         |                                       |
-         |                                       struct thermal_zone_device *
-   In file included from drivers/power/supply/ab8500_btemp.c:29:
-   include/linux/thermal.h:389:48: note: expected 'struct thermal_zone *' but argument is of type 'struct thermal_zone_device *'
-     389 | int thermal_zone_get_temp(struct thermal_zone *tz, int *temp);
-         |                           ~~~~~~~~~~~~~~~~~~~~~^~
-   drivers/power/supply/ab8500_btemp.c: In function 'ab8500_btemp_probe':
->> drivers/power/supply/ab8500_btemp.c:727:16: error: assignment to 'struct thermal_zone_device *' from incompatible pointer type 'struct thermal_zone *' [-Werror=incompatible-pointer-types]
-     727 |         di->tz = thermal_zone_get_zone_by_name("battery-thermal");
-         |                ^
-   cc1: some warnings being treated as errors
-
-
-vim +/thermal_zone_get_temp +288 drivers/power/supply/ab8500_btemp.c
-
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  264  
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  265  /**
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  266   * ab8500_btemp_periodic_work() - Measuring the temperature periodically
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  267   * @work:	pointer to the work_struct structure
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  268   *
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  269   * Work function for measuring the temperature periodically
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  270   */
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  271  static void ab8500_btemp_periodic_work(struct work_struct *work)
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  272  {
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  273  	int interval;
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  274  	int bat_temp;
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  275  	struct ab8500_btemp *di = container_of(work,
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  276  		struct ab8500_btemp, btemp_periodic_work.work);
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  277  	/* Assume 25 degrees celsius as start temperature */
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  278  	static int prev = 25;
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  279  	int ret;
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  280  
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  281  	if (!di->initialized) {
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  282  		/* Identify the battery */
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  283  		if (ab8500_btemp_id(di) < 0)
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  284  			dev_warn(di->dev, "failed to identify the battery\n");
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  285  	}
-f6271b4fb1d5ce drivers/power/ab8500_btemp.c        Jonas Aaberg        2012-02-27  286  
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  287  	/* Failover if a reading is erroneous, use last meausurement */
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29 @288  	ret = thermal_zone_get_temp(di->tz, &bat_temp);
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  289  	if (ret) {
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  290  		dev_err(di->dev, "error reading temperature\n");
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  291  		bat_temp = prev;
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  292  	} else {
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  293  		/* Convert from millicentigrades to centigrades */
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  294  		bat_temp /= 1000;
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  295  		prev = bat_temp;
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  296  	}
-2b0e7ac0841b39 drivers/power/supply/ab8500_btemp.c Linus Walleij       2022-01-29  297  
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  298  	/*
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  299  	 * Filter battery temperature.
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  300  	 * Allow direct updates on temperature only if two samples result in
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  301  	 * same temperature. Else only allow 1 degree change from previous
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  302  	 * reported value in the direction of the new measurement.
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  303  	 */
-2c4c40ac0052ea drivers/power/ab8500_btemp.c        Rupesh Kumar        2012-08-22  304  	if ((bat_temp == di->prev_bat_temp) || !di->initialized) {
-2c4c40ac0052ea drivers/power/ab8500_btemp.c        Rupesh Kumar        2012-08-22  305  		if ((di->bat_temp != di->prev_bat_temp) || !di->initialized) {
-2c4c40ac0052ea drivers/power/ab8500_btemp.c        Rupesh Kumar        2012-08-22  306  			di->initialized = true;
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  307  			di->bat_temp = bat_temp;
-297d716f6260cc drivers/power/ab8500_btemp.c        Krzysztof Kozlowski 2015-03-12  308  			power_supply_changed(di->btemp_psy);
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  309  		}
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  310  	} else if (bat_temp < di->prev_bat_temp) {
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  311  		di->bat_temp--;
-297d716f6260cc drivers/power/ab8500_btemp.c        Krzysztof Kozlowski 2015-03-12  312  		power_supply_changed(di->btemp_psy);
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  313  	} else if (bat_temp > di->prev_bat_temp) {
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  314  		di->bat_temp++;
-297d716f6260cc drivers/power/ab8500_btemp.c        Krzysztof Kozlowski 2015-03-12  315  		power_supply_changed(di->btemp_psy);
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  316  	}
-908fe8d6a575e2 drivers/power/ab8500_btemp.c        Hakan Berg          2012-07-17  317  	di->prev_bat_temp = bat_temp;
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  318  
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  319  	if (di->events.ac_conn || di->events.usb_conn)
-b0284de05e07d5 drivers/power/ab8500_btemp.c        Lee Jones           2012-11-30  320  		interval = di->bm->temp_interval_chg;
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  321  	else
-b0284de05e07d5 drivers/power/ab8500_btemp.c        Lee Jones           2012-11-30  322  		interval = di->bm->temp_interval_nochg;
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  323  
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  324  	/* Schedule a new measurement */
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  325  	queue_delayed_work(di->btemp_wq,
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  326  		&di->btemp_periodic_work,
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  327  		round_jiffies(interval * HZ));
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  328  }
-1f855824757efa drivers/power/ab8500_btemp.c        Arun Murthy         2012-02-29  329  
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Guenter
