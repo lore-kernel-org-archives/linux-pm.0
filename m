@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0201EC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 20:08:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 351B1C43219
+	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 20:08:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238250AbiECUM0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 May 2022 16:12:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45964 "EHLO
+        id S242160AbiECUM1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 May 2022 16:12:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46470 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234689AbiECUMU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 16:12:20 -0400
-Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com [IPv6:2a00:1450:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C60BB40924;
-        Tue,  3 May 2022 13:08:17 -0700 (PDT)
-Received: by mail-ej1-x631.google.com with SMTP id kq17so35482039ejb.4;
-        Tue, 03 May 2022 13:08:17 -0700 (PDT)
+        with ESMTP id S242250AbiECUMV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 16:12:21 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D6034093C;
+        Tue,  3 May 2022 13:08:23 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id g23so21070199edy.13;
+        Tue, 03 May 2022 13:08:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7TqgrTONdYchEwgr6zN1k5TY6YG09ErgwU27PFjZsGs=;
-        b=Jn8aoiI2ikVrlZIYq9rqh8SoHYiW/1m6s1JrW0hTdhmr19BSJjk+lPEN8x23p7EK+w
-         XYGCNkJfmeXCuOf4H+O4RT2INXSqtQObntwZjKoU5hJfOTU8lEaVgiY0YqqaLBbqXMZx
-         vbMBYku1R5bdWWKlr4/2wg0LI8cK1atNl3MGb4myEYlmtQ6L+aC/eOdXRoPd+usvGOEo
-         h4HaLotLMsFU6uF8u2y6mPxi4/eMyKsUa5+uAt6t8vhr2+QUD11Ge1ElBh+KA+8QMRsG
-         +2Cpl8Ucyj6RZYutcBUA6A4GB8hE8MfsDKuH26DLHNSr8mflUKEkLCKJiBbLUhVFNHLO
-         qZxQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=WTxPRlSp8k/tQZEOjjNIb49rT6gGrw+y6fIhsPtqfJw=;
+        b=U+4hBfSOv9Abvqqi+SKK7arXEjCuYzM+IVRVZ6f0Ajq6bHA0VsHYdpooYARsGwQXy8
+         VZnQ/0gA8g8bn97eeSU4xsMyr6CWQHQJcCzbQKxc/r5Ed0mNSNMi3S92X7lX9zUierQ6
+         JuOJr9qpsMK7YsJEqk7KOKDXri8Z4ONs7Z2bo0pfpBKHpIbx+Vwy4qjyp26cwZ7X18BJ
+         0mKEfzb2ZzUQcrgHYaTvCfrs9rFpWbxS3haPbxc5swktPAx/2kCfQ9XjKT8ku+gl8Yuk
+         UyKOkniBnGrquSdtT3vu02SvtNcZW+xRKpyie512TKCNv44XN1UksBkpEhXnVGrvvPkw
+         xGwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7TqgrTONdYchEwgr6zN1k5TY6YG09ErgwU27PFjZsGs=;
-        b=vNRNC3MaiX7eWwUzE5550y93uSldDmt2SDydIK38F6HGYIw5UvwnCILjUz8/7YFQmC
-         XwXN/eS2c74iYuXP4sXd34LD31q5i7okAl6pw7I9wlHwdDQU1KXclZsKplYH3WTTNq8+
-         VU9Y5fq5uO+sOb09hep79UyFExnzuqugx1580vCM54e+3lxpmbY2CcqnhtC9/W5X24rO
-         vzeP+YW8RNxevwCx5M0gtBIPGLBTHyqjcujOAB9/LM05MxRQj3D95RNevplgornprNY9
-         jCrhMgLc+pWR42EcHfYPWMV8dZJQxdsJxd4b1Lts2XVyUVS7XrY34Q1RGyYyEoF4f8cT
-         SrEg==
-X-Gm-Message-State: AOAM532IraHsPRTJl4ZGPWiXsfqokZbSdRyU7NIEL+xBleiKMZiBexkU
-        SOZxVu+/gRY9REBJ2+SwROY=
-X-Google-Smtp-Source: ABdhPJyhMc1NyL4B9pTCp0N118EakOxTWFSloDpilfKE1xgUQVkuCjz0Eud6mUmK07n/EFMd185Qlw==
-X-Received: by 2002:a17:906:974e:b0:6bb:4f90:a6ae with SMTP id o14-20020a170906974e00b006bb4f90a6aemr17628682ejy.452.1651608496367;
-        Tue, 03 May 2022 13:08:16 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=WTxPRlSp8k/tQZEOjjNIb49rT6gGrw+y6fIhsPtqfJw=;
+        b=Q+Ak0pkqsfT3W65t6fcvJDd8HPjUxTjjPFj2V5YWPHV2JtByayCua7NXvJsBp1dFrs
+         Qkfy7r66wjLwSRRKXe98n89ckzHQSQByK2yOwDgUnqp1cA57SOtyKoMVpenYiG/WyDZX
+         wnk4muFir7puk/8kF4C/Pa5oF9lwRypxJuV7z7zvPr5ZU1jN2775f6FM2lO0rpXVl/E1
+         7Ayq6tkUyoxiNOvsNPAJ5XM2B2zm0p4XF6/MckQaAHykXRSbsdDMxVZuYTTN3z+J+1TS
+         R4B0hIzrgnfjXKqswDmO2wKJO5RNOQ/6w7hqwqgZaI9qAYlpVmK++ykBaK7Aq/RO7aGP
+         2kXA==
+X-Gm-Message-State: AOAM530yIrFo/pwFV30voCZQu+sKIasyF7Rk8CiT64x+l093w2+yEBOU
+        B1P/qyKF1SYpd1BWT9353JI=
+X-Google-Smtp-Source: ABdhPJxzLXZX/4fzon2yUiUfry6PLx3nQQFep3+kyJROygcA//BHXoh8imiCaSFh+ETPQxcWCvTyHw==
+X-Received: by 2002:a05:6402:2204:b0:426:34f1:1d2d with SMTP id cq4-20020a056402220400b0042634f11d2dmr19684916edb.335.1651608501590;
+        Tue, 03 May 2022 13:08:21 -0700 (PDT)
 Received: from fedora.robimarko.hr (dh207-96-149.xnet.hr. [88.207.96.149])
-        by smtp.googlemail.com with ESMTPSA id ml11-20020a170906cc0b00b006f3ef214e59sm4967466ejb.191.2022.05.03.13.08.15
+        by smtp.googlemail.com with ESMTPSA id ml11-20020a170906cc0b00b006f3ef214e59sm4967466ejb.191.2022.05.03.13.08.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 May 2022 13:08:15 -0700 (PDT)
+        Tue, 03 May 2022 13:08:21 -0700 (PDT)
 From:   Robert Marko <robimarko@gmail.com>
 To:     amitk@kernel.org, thara.gopinath@linaro.org, agross@kernel.org,
         bjorn.andersson@linaro.org, rafael@kernel.org,
@@ -54,160 +54,91 @@ To:     amitk@kernel.org, thara.gopinath@linaro.org, agross@kernel.org,
         krzysztof.kozlowski+dt@linaro.org, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Cc:     Robert Marko <robimarko@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: [PATCH v4 1/5] dt-bindings: thermal: tsens: Add ipq8074 compatible
-Date:   Tue,  3 May 2022 22:08:09 +0200
-Message-Id: <20220503200813.4020698-1-robimarko@gmail.com>
+Cc:     Robert Marko <robimarko@gmail.com>
+Subject: [PATCH v4 4/5] drivers: thermal: tsens: add IPQ8074 support
+Date:   Tue,  3 May 2022 22:08:12 +0200
+Message-Id: <20220503200813.4020698-4-robimarko@gmail.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220503200813.4020698-1-robimarko@gmail.com>
+References: <20220503200813.4020698-1-robimarko@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Qualcomm IPQ8074 has tsens v2.3.0 block, though unlike existing v2 IP it
-only uses one IRQ, so tsens v2 compatible cannot be used as the fallback.
-
-We also have to make sure that correct interrupts are set according to
-compatibles, so populate interrupt information per compatibles.
+Qualcomm IPQ8074 uses tsens v2.3 IP, however unlike other tsens v2 IP
+it only has one IRQ, that is used for up/low as well as critical.
+It also does not support negative trip temperatures.
 
 Signed-off-by: Robert Marko <robimarko@gmail.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
-Changes in v4:
-* Add the forgotten Reviewed-by tag from Krzysztof
+ drivers/thermal/qcom/tsens-v2.c | 17 +++++++++++++++++
+ drivers/thermal/qcom/tsens.c    |  3 +++
+ drivers/thermal/qcom/tsens.h    |  2 +-
+ 3 files changed, 21 insertions(+), 1 deletion(-)
 
-Changes in v3:
-* Remove implied min/maxItem properties as pointed by Rob
-
-Changes in v2:
-* No need for a list in compatible check
-* Specify minItems and maxItems for interrupt and interrupt-names
----
- .../bindings/thermal/qcom-tsens.yaml          | 76 ++++++++++++++++---
- 1 file changed, 65 insertions(+), 11 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index b6406bcc683f..23f69eead67e 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -56,6 +56,10 @@ properties:
-               - qcom,sm8350-tsens
-           - const: qcom,tsens-v2
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 9babc69bfd22..29a61d2d6ca3 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -39,6 +39,17 @@ static struct tsens_features tsens_v2_feat = {
+ 	.trip_max_temp	= 120000,
+ };
  
-+      - description: v2 of TSENS with combined interrupt
-+        enum:
-+          - qcom,ipq8074-tsens
++static struct tsens_features ipq8074_feat = {
++	.ver_major	= VER_2_X,
++	.crit_int	= 1,
++	.combo_int	= 1,
++	.adc		= 0,
++	.srot_split	= 1,
++	.max_sensors	= 16,
++	.trip_min_temp	= 0,
++	.trip_max_temp	= 204000,
++};
 +
-   reg:
-     items:
-       - description: TM registers
-@@ -63,15 +67,11 @@ properties:
+ static const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
+ 	/* ----- SROT ------ */
+ 	/* VERSION */
+@@ -104,6 +115,12 @@ struct tsens_plat_data data_tsens_v2 = {
+ 	.fields	= tsens_v2_regfields,
+ };
  
-   interrupts:
-     minItems: 1
--    items:
--      - description: Combined interrupt if upper or lower threshold crossed
--      - description: Interrupt if critical threshold crossed
-+    maxItems: 2
- 
-   interrupt-names:
-     minItems: 1
--    items:
--      - const: uplow
--      - const: critical
-+    maxItems: 2
- 
-   nvmem-cells:
-     minItems: 1
-@@ -124,22 +124,61 @@ allOf:
-     then:
-       properties:
-         interrupts:
--          maxItems: 1
-+          items:
-+            - description: Combined interrupt if upper or lower threshold crossed
-         interrupt-names:
--          maxItems: 1
-+          items:
-+            - const: uplow
- 
--    else:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,msm8953-tsens
-+              - qcom,msm8996-tsens
-+              - qcom,msm8998-tsens
-+              - qcom,sc7180-tsens
-+              - qcom,sc7280-tsens
-+              - qcom,sc8180x-tsens
-+              - qcom,sdm630-tsens
-+              - qcom,sdm845-tsens
-+              - qcom,sm8150-tsens
-+              - qcom,sm8250-tsens
-+              - qcom,sm8350-tsens
-+              - qcom,tsens-v2
-+    then:
-+      properties:
-+        interrupts:
-+          items:
-+            - description: Combined interrupt if upper or lower threshold crossed
-+            - description: Interrupt if critical threshold crossed
-+        interrupt-names:
-+          items:
-+            - const: uplow
-+            - const: critical
++struct tsens_plat_data data_ipq8074 = {
++	.ops		= &ops_generic_v2,
++	.feat		= &ipq8074_feat,
++	.fields	= tsens_v2_regfields,
++};
 +
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - qcom,ipq8074-tsens
-+    then:
-       properties:
-         interrupts:
--          minItems: 2
-+          items:
-+            - description: Combined interrupt if upper, lower or critical thresholds crossed
-         interrupt-names:
--          minItems: 2
-+          items:
-+            - const: combined
+ /* Kept around for backward compatibility with old msm8996.dtsi */
+ struct tsens_plat_data data_8996 = {
+ 	.num_sensors	= 13,
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index b7701d5efdfc..3624daaaf34b 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -990,6 +990,9 @@ static const struct of_device_id tsens_table[] = {
+ 	{
+ 		.compatible = "qcom,ipq8064-tsens",
+ 		.data = &data_8960,
++	}, {
++		.compatible = "qcom,ipq8074-tsens",
++		.data = &data_ipq8074,
+ 	}, {
+ 		.compatible = "qcom,mdm9607-tsens",
+ 		.data = &data_9607,
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 747004476347..8dd990d944ad 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -599,6 +599,6 @@ extern struct tsens_plat_data data_8916, data_8939, data_8974, data_9607;
+ extern struct tsens_plat_data data_tsens_v1, data_8976;
  
-   - if:
-       properties:
-         compatible:
-           contains:
-             enum:
-+              - qcom,ipq8074-tsens
-               - qcom,tsens-v0_1
-               - qcom,tsens-v1
-               - qcom,tsens-v2
-@@ -222,4 +261,19 @@ examples:
-            #qcom,sensors = <13>;
-            #thermal-sensor-cells = <1>;
-     };
-+
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    // Example 4 (for any IPQ8074 based SoC-s):
-+    tsens4: thermal-sensor@4a9000 {
-+           compatible = "qcom,ipq8074-tsens";
-+           reg = <0x4a9000 0x1000>,
-+                 <0x4a8000 0x1000>;
-+
-+           interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
-+           interrupt-names = "combined";
-+
-+           #qcom,sensors = <16>;
-+           #thermal-sensor-cells = <1>;
-+    };
- ...
+ /* TSENS v2 targets */
+-extern struct tsens_plat_data data_8996, data_tsens_v2;
++extern struct tsens_plat_data data_8996, data_ipq8074, data_tsens_v2;
+ 
+ #endif /* __QCOM_TSENS_H__ */
 -- 
 2.35.1
 
