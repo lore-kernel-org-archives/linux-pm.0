@@ -2,121 +2,176 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E67EC433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 19:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44EC6C43219
+	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 20:05:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238959AbiECTlA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 May 2022 15:41:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36016 "EHLO
+        id S238118AbiECUJR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 May 2022 16:09:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229480AbiECTk7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 15:40:59 -0400
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27B9924597;
-        Tue,  3 May 2022 12:37:26 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:56078)
-        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nlyKo-00AaEh-5z; Tue, 03 May 2022 13:37:22 -0600
-Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:36796 helo=email.froward.int.ebiederm.org.xmission.com)
-        by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nlyKn-007Sew-2a; Tue, 03 May 2022 13:37:21 -0600
-From:   "Eric W. Biederman" <ebiederm@xmission.com>
-To:     Oleg Nesterov <oleg@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        stable@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
-        <20220429214837.386518-6-ebiederm@xmission.com>
-        <20220502143750.GC17276@redhat.com>
-Date:   Tue, 03 May 2022 14:36:55 -0500
-In-Reply-To: <20220502143750.GC17276@redhat.com> (Oleg Nesterov's message of
-        "Mon, 2 May 2022 16:37:51 +0200")
-Message-ID: <87y1zio1bc.fsf@email.froward.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
+        with ESMTP id S238111AbiECUJM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 16:09:12 -0400
+Received: from mail-ed1-x52e.google.com (mail-ed1-x52e.google.com [IPv6:2a00:1450:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6CF0D17A9C;
+        Tue,  3 May 2022 13:05:38 -0700 (PDT)
+Received: by mail-ed1-x52e.google.com with SMTP id g20so21064447edw.6;
+        Tue, 03 May 2022 13:05:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=LFkwqeNMXvWSRmicZbw5B/Ot0aDTRBEW7BnChVj7xEc=;
+        b=S7mbVu6+3bbSuyR9MBMSh10cZl+yedOVDmkIw2pNMHgBBw1iblztjezZ0R7KkCa/Z+
+         bDvzGlXeUzzQ9EpmVOfyp61y9NY+jm6ROSi+EQkGPfv5ylgvVSLqe16kXmSPHCaGvdyQ
+         I4+zIBIRS4QdtoClkqkIYeuXq1MvrWi2BzzFbuITPDdxbxNBDWpnWjz9M3w9POvpmxkB
+         lojzM/Z8xicb/X4DZOVsPleus9oNkfn+VHlP//XYSmGxtGazkzGgW1XUZzw7sBqsFaTC
+         lViGiz0/Srh+gxW3ImGx8sqGNk7xwXsMT2hx5pnJhUjMq5+Tj0CUDv5gwsZACjo56pqS
+         eImg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=LFkwqeNMXvWSRmicZbw5B/Ot0aDTRBEW7BnChVj7xEc=;
+        b=5BK0KP3Ub5dow+vouxIBDQXOcyWBpSxpGcdzTtOBPzba/pofeNfKSnXxzGRh1/c5SP
+         B+4hMKGu2kWaeu/R1V7O6JcwWxIv9smKg0a+ql6ansZEbFPAKBbrmlr8R24mHGzOccAh
+         EruuWR8sTsN5RGLLVLifsGYSAsKDtpvQhdc5J3/ucXCrbhFRF+RHEJ2Wve7Sy8Q0WzoB
+         n6OICJMSHaThouEXwoEXSP4E7q4J7dS+TsUj9ll9mfoE1+W+9eMZFEwyaLsNLNSq2rm8
+         qAeat7ORWEPv0JR1Y8idTVg+zTROniT7/FknrcCgolNqYLy/6Wm348KH8FxVc6MXAwtx
+         nfYw==
+X-Gm-Message-State: AOAM530jvqTSBRkeG42tS9vOBc7SJNmRot/o6On9fK9PPzee4e1C8MKm
+        XRFKRYuKBLAWK+fX4SVsGO4=
+X-Google-Smtp-Source: ABdhPJw0E3FIvglNgN66EYv5teb9pu7TDi7cQ2ljqDL5wBNZ+kedyY2qYnnpA1CKfQihjG1Lp/e/wg==
+X-Received: by 2002:a05:6402:1a42:b0:424:20bb:3e37 with SMTP id bf2-20020a0564021a4200b0042420bb3e37mr20164328edb.29.1651608337002;
+        Tue, 03 May 2022 13:05:37 -0700 (PDT)
+Received: from fedora.robimarko.hr (dh207-96-149.xnet.hr. [88.207.96.149])
+        by smtp.googlemail.com with ESMTPSA id ee47-20020a056402292f00b0041d893ed437sm8688450edb.2.2022.05.03.13.05.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 May 2022 13:05:36 -0700 (PDT)
+From:   Robert Marko <robimarko@gmail.com>
+To:     amitk@kernel.org, thara.gopinath@linaro.org, agross@kernel.org,
+        bjorn.andersson@linaro.org, rafael@kernel.org,
+        daniel.lezcano@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org,
+        krzysztof.kozlowski+dt@linaro.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Robert Marko <robimarko@gmail.com>
+Subject: [PATCH v3 3/5] drivers: thermal: tsens: allow configuring min and max trips
+Date:   Tue,  3 May 2022 22:05:28 +0200
+Message-Id: <20220503200530.4019673-3-robimarko@gmail.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220503200530.4019673-1-robimarko@gmail.com>
+References: <20220503200530.4019673-1-robimarko@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1nlyKn-007Sew-2a;;;mid=<87y1zio1bc.fsf@email.froward.int.ebiederm.org>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+j7nUi9NCECp7X522Zs1J0RePdyckNPD8=
-X-SA-Exim-Connect-IP: 68.227.174.4
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH v2 06/12] ptrace: Reimplement PTRACE_KILL by always
- sending SIGKILL
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> writes:
+IPQ8074 and IPQ6018 dont support negative trip temperatures and support
+up to 204 degrees C as the max trip temperature.
 
-> On 04/29, Eric W. Biederman wrote:
->>
->> Call send_sig_info in PTRACE_KILL instead of ptrace_resume.  Calling
->> ptrace_resume is not safe to call if the task has not been stopped
->> with ptrace_freeze_traced.
->
-> Oh, I was never, never able to understand why do we have PTRACE_KILL
-> and what should it actually do.
->
-> I suggested many times to simply remove it but OK, we probably can't
-> do this.
+So, instead of always setting the -40 as min and 120 degrees C as max
+allow it to be configured as part of the features.
 
-I thought I remembered you suggesting fixing it in some other way.
+Signed-off-by: Robert Marko <robimarko@gmail.com>
+---
+ drivers/thermal/qcom/tsens-8960.c | 2 ++
+ drivers/thermal/qcom/tsens-v0_1.c | 2 ++
+ drivers/thermal/qcom/tsens-v1.c   | 2 ++
+ drivers/thermal/qcom/tsens-v2.c   | 2 ++
+ drivers/thermal/qcom/tsens.c      | 4 ++--
+ drivers/thermal/qcom/tsens.h      | 4 ++++
+ 6 files changed, 14 insertions(+), 2 deletions(-)
 
-I took at quick look in codesearch.debian.net and PTRACE_KILL is
-definitely in use. I find uses in gcc-10, firefox-esr_91.8,
-llvm_toolchain, qtwebengine.  At which point I stopped looking.
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
+index ee584e5b07e5..4585904fb380 100644
+--- a/drivers/thermal/qcom/tsens-8960.c
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -273,6 +273,8 @@ static struct tsens_features tsens_8960_feat = {
+ 	.adc		= 1,
+ 	.srot_split	= 0,
+ 	.max_sensors	= 11,
++	.trip_min_temp	= -40000,
++	.trip_max_temp	= 120000,
+ };
+ 
+ struct tsens_plat_data data_8960 = {
+diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
+index 6effb822bf3c..2c203ff374e6 100644
+--- a/drivers/thermal/qcom/tsens-v0_1.c
++++ b/drivers/thermal/qcom/tsens-v0_1.c
+@@ -543,6 +543,8 @@ static struct tsens_features tsens_v0_1_feat = {
+ 	.adc		= 1,
+ 	.srot_split	= 1,
+ 	.max_sensors	= 11,
++	.trip_min_temp	= -40000,
++	.trip_max_temp	= 120000,
+ };
+ 
+ static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
+diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+index a4f561a6e582..1d7f8a80bd13 100644
+--- a/drivers/thermal/qcom/tsens-v1.c
++++ b/drivers/thermal/qcom/tsens-v1.c
+@@ -306,6 +306,8 @@ static struct tsens_features tsens_v1_feat = {
+ 	.adc		= 1,
+ 	.srot_split	= 1,
+ 	.max_sensors	= 11,
++	.trip_min_temp	= -40000,
++	.trip_max_temp	= 120000,
+ };
+ 
+ static const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 129cdb247381..9babc69bfd22 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -35,6 +35,8 @@ static struct tsens_features tsens_v2_feat = {
+ 	.adc		= 0,
+ 	.srot_split	= 1,
+ 	.max_sensors	= 16,
++	.trip_min_temp	= -40000,
++	.trip_max_temp	= 120000,
+ };
+ 
+ static const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 69b6f7b97e9e..b7701d5efdfc 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -572,8 +572,8 @@ static int tsens_set_trips(void *_sensor, int low, int high)
+ 	dev_dbg(dev, "[%u] %s: proposed thresholds: (%d:%d)\n",
+ 		hw_id, __func__, low, high);
+ 
+-	cl_high = clamp_val(high, -40000, 120000);
+-	cl_low  = clamp_val(low, -40000, 120000);
++	cl_high = clamp_val(high, priv->feat->trip_min_temp, priv->feat->trip_max_temp);
++	cl_low  = clamp_val(low, priv->feat->trip_min_temp, priv->feat->trip_max_temp);
+ 
+ 	high_val = tsens_mC_to_hw(s, cl_high);
+ 	low_val  = tsens_mC_to_hw(s, cl_low);
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 4614177944d6..747004476347 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -501,6 +501,8 @@ enum regfield_ids {
+  *              with SROT only being available to secure boot firmware?
+  * @has_watchdog: does this IP support watchdog functionality?
+  * @max_sensors: maximum sensors supported by this version of the IP
++ * @trip_min_temp: minimum trip temperature supported by this version of the IP
++ * @trip_max_temp: maximum trip temperature supported by this version of the IP
+  */
+ struct tsens_features {
+ 	unsigned int ver_major;
+@@ -510,6 +512,8 @@ struct tsens_features {
+ 	unsigned int srot_split:1;
+ 	unsigned int has_watchdog:1;
+ 	unsigned int max_sensors;
++	int trip_min_temp;
++	int trip_max_temp;
+ };
+ 
+ /**
+-- 
+2.35.1
 
-
->> --- a/kernel/ptrace.c
->> +++ b/kernel/ptrace.c
->> @@ -1238,7 +1238,7 @@ int ptrace_request(struct task_struct *child, long request,
->>  	case PTRACE_KILL:
->>  		if (child->exit_state)	/* already dead */
->>  			return 0;
->> -		return ptrace_resume(child, request, SIGKILL);
->> +		return send_sig_info(SIGKILL, SEND_SIG_NOINFO, child);
->
-> Note that currently ptrace(PTRACE_KILL) can never fail (yes, yes, it
-> is unsafe), but send_sig_info() can. If we do not remove PTRACE_KILL,
-> then I'd suggest
->
-> 	case PTRACE_KILL:
-> 		if (!child->exit_state)
-> 			send_sig_info(SIGKILL);
-> 		return 0;
->
-> to make this change a bit more compatible.
-
-
-Quite.  The only failure I can find from send_sig_info is if
-lock_task_sighand fails and PTRACE_KILL is deliberately ignoring errors
-when the target task has exited.
-
- 	case PTRACE_KILL:
- 		send_sig_info(SIGKILL);
- 		return 0;
-
-I think that should suffice.
-
-
-> Also, please remove the note about PTRACE_KILL in
-> set_task_blockstep().
-
-Good catch, thank you.
-
-Eric
