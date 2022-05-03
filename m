@@ -2,117 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A8B9C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 15:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB886C433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 15:17:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238071AbiECPNL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 May 2022 11:13:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39690 "EHLO
+        id S236381AbiECPU4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 May 2022 11:20:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238025AbiECPNG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 11:13:06 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2081E3B003
-        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 08:09:33 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S238008AbiECPUz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 11:20:55 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 46EBF3A5D6
+        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 08:17:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1651591042;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=jtQ9B5IdhnfCEt2aG9WPbx5ZitVQKl3Yo50OcP90VbM=;
+        b=bXDkKMWg6kb83iIZJvek1ZLfkLxZGU4dL9NL0lzTJoaNlgEWMXd8x1kiYY7x8ZDDdpZWkV
+        bq+ST76jJwn/rgSujTFaCGWyjLYHqBdWpviagd06qHnhJyZMBkLQId9L6WaNQgyHbl5E4F
+        0QXw6X0//bVtTZqhI1RMSa1Qs5TYq+Y=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-616-T_k4BQPuPx2pU21-jOK9CA-1; Tue, 03 May 2022 09:42:59 -0400
+X-MC-Unique: T_k4BQPuPx2pU21-jOK9CA-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id AB8CEB81ED0
-        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 15:09:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 56E7EC385A4
-        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 15:09:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1651590570;
-        bh=P4m+sGkIKiZnUwUw7HipcwL0pw96ASnEf+jcB8YF0PU=;
-        h=From:To:Subject:Date:From;
-        b=EOMLCV4A/MDKRI4u1rNzgRTKEW2OTfhq7h5faHdVkteSMsNzqY/tQIz9cX4Ux7wai
-         sgIJ0PRHvnEGCIjzQljAr+POdTOP3ayXwGOvuy24tz8p9u7meoFaMtqlLlO25TcG6i
-         m4vrjpKVMMKTRweTb96RNVfkoYiPG8FaD7uo1GVXUQAuRX8o/wrEWZeju+gR6r7zWQ
-         70TplsCYi8XW3geynkpjcFrZiyn7U569h9+IyZMusHQJ/ooozwS5KohAgSykEVji+4
-         3ibD2e86h7ALSWoW4y7rtL2Kf3nF5FJ0tXkLs1BDibBFVypG7NnaC7hll0oacGPXbf
-         Ok8pwjXMFy9cQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id 44426C05FCE; Tue,  3 May 2022 15:09:30 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215938] New: amd-pstate ignoring scaling_max_freq after waking
- from suspend
-Date:   Tue, 03 May 2022 15:09:29 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: new
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: alexmaras@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version
- cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
- priority component assigned_to reporter cf_regression
-Message-ID: <bug-215938-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9BCEF3D36FE7;
+        Tue,  3 May 2022 13:41:58 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.194.243])
+        by smtp.corp.redhat.com (Postfix) with SMTP id AD5E915376BB;
+        Tue,  3 May 2022 13:41:53 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+        oleg@redhat.com; Tue,  3 May 2022 15:41:56 +0200 (CEST)
+Date:   Tue, 3 May 2022 15:41:50 +0200
+From:   Oleg Nesterov <oleg@redhat.com>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v2 07/12] ptrace: Don't change __state
+Message-ID: <20220503134149.GA22999@redhat.com>
+References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+ <20220429214837.386518-7-ebiederm@xmission.com>
+ <20220502153934.GD17276@redhat.com>
+ <87levjrixl.fsf@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87levjrixl.fsf@email.froward.int.ebiederm.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.85 on 10.11.54.7
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215938
+On 05/02, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> writes:
+>
+> >>  #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
+> >>  #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
+> >> -#define TASK_TRACED			(TASK_WAKEKILL | __TASK_TRACED)
+> >> +#define TASK_TRACED			__TASK_TRACED
+> > ...
+> >>  static inline void signal_wake_up(struct task_struct *t, bool resume)
+> >>  {
+> >> -	signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
+> >> +	unsigned int state = 0;
+> >> +	if (resume) {
+> >> +		state = TASK_WAKEKILL;
+> >> +		if (!(t->jobctl & JOBCTL_PTRACE_FROZEN))
+> >> +			state |= __TASK_TRACED;
+> >> +	}
+> >> +	signal_wake_up_state(t, state);
+> >
+> > Can't understand why is this better than the previous version which removed
+> > TASK_WAKEKILL if resume... Looks a bit strange to me. But again, I didn't
+> > look at the next patches yet.
+>
+> The goal is to replace the existing mechanism with an equivalent one,
+> so that we don't have to be clever and deal with it being slightly
+> different in one case.
+>
+> The difference is how does signal_pending_state affect how schedule will
+> sleep in ptrace_stop.
 
-            Bug ID: 215938
-           Summary: amd-pstate ignoring scaling_max_freq after waking from
-                    suspend
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 5.17.5
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: alexmaras@gmail.com
-        Regression: No
+But why is it bad if the tracee doesn't sleep in schedule ? If it races
+with SIGKILL. I still can't understand this.
 
-Using the amd-pstate driver for cpu scaling, I'm only able to enforce a max=
-imum
-clock speed when my laptop has not slept. I do the following:
+Yes, wait_task_inactive() can fail, so you need to remove WARN_ON_ONCE()
+in 11/12.
 
-echo 'ondemand' | sudo tee
-/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+Why is removing TASK_WAKEKILL from TASK_TRACED and complicating
+*signal_wake_up() better?
 
-echo '1400000' | sudo tee
-/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
+And even if we need to ensure the tracee will always block after
+ptrace_freeze_traced(), we can change signal_pending_state() to
+return false if JOBCTL_PTRACE_FROZEN. Much simpler, imo. But still
+looks unnecessary to me.
 
-cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq
 
-At this point, all reported frequencies for all cores are below 1.4ghz. If I
-then suspend the laptop, then wake it up, then checking the core frequencies
-again will show that it is behaving as if the ondemand governor was not set.
-This behavior will persist until a reboot, even if the governor is switched=
- to
-another mode and then back, or if the scaling_max_freq value is changed. All
-settings will be ignored.=20
 
-I have replicated this behavior on another identical model of laptop (Lenovo
-IdeaPad 5 14ARE05),=20
+> Peter's plans to fix PREEMPT_RT or the freezer wait_task_inactive needs
+> to cope with the final being changed by something else. (TASK_FROZEN in
+> the freezer case).  I can only see that happening by removing the
+> dependency on the final state in wait_task_inactive.  Which we can't do
+> if we depend on wait_task_inactive failing if the process is in the
+> wrong state.
 
-cpupower frequency-info also reports that the current CPU frequency is set =
-to
-1.4GHZ and that the governor is set to ondemand.
+OK, I guess this is what I do not understand. Could you spell please?
 
---=20
-You may reply to this email to add a comment.
+And speaking of RT, wait_task_inactive() still can fail because
+cgroup_enter_frozen() takes css_set_lock? And it is called under
+preempt_disable() ? I don't understand the plan :/
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+> At a practical level I think it also has an impact on patch:
+> "10/12 ptrace: Only return signr from ptrace_stop if it was provided".
+
+I didn't look at JOBCTL_PTRACE_SIGNR yet. But this looks minor to me,
+I mean, I am not sure it worth the trouble.
+
+Oleg.
+
