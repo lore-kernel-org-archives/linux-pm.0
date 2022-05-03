@@ -2,138 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB886C433EF
-	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 15:17:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F50C433EF
+	for <linux-pm@archiver.kernel.org>; Tue,  3 May 2022 15:32:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236381AbiECPU4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 May 2022 11:20:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50380 "EHLO
+        id S238574AbiECPgZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 May 2022 11:36:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238008AbiECPUz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 11:20:55 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 46EBF3A5D6
-        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 08:17:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651591042;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=jtQ9B5IdhnfCEt2aG9WPbx5ZitVQKl3Yo50OcP90VbM=;
-        b=bXDkKMWg6kb83iIZJvek1ZLfkLxZGU4dL9NL0lzTJoaNlgEWMXd8x1kiYY7x8ZDDdpZWkV
-        bq+ST76jJwn/rgSujTFaCGWyjLYHqBdWpviagd06qHnhJyZMBkLQId9L6WaNQgyHbl5E4F
-        0QXw6X0//bVtTZqhI1RMSa1Qs5TYq+Y=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-616-T_k4BQPuPx2pU21-jOK9CA-1; Tue, 03 May 2022 09:42:59 -0400
-X-MC-Unique: T_k4BQPuPx2pU21-jOK9CA-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com [10.11.54.7])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9BCEF3D36FE7;
-        Tue,  3 May 2022 13:41:58 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.194.243])
-        by smtp.corp.redhat.com (Postfix) with SMTP id AD5E915376BB;
-        Tue,  3 May 2022 13:41:53 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
-        oleg@redhat.com; Tue,  3 May 2022 15:41:56 +0200 (CEST)
-Date:   Tue, 3 May 2022 15:41:50 +0200
-From:   Oleg Nesterov <oleg@redhat.com>
-To:     "Eric W. Biederman" <ebiederm@xmission.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH v2 07/12] ptrace: Don't change __state
-Message-ID: <20220503134149.GA22999@redhat.com>
-References: <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
- <20220429214837.386518-7-ebiederm@xmission.com>
- <20220502153934.GD17276@redhat.com>
- <87levjrixl.fsf@email.froward.int.ebiederm.org>
+        with ESMTP id S233589AbiECPgY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2022 11:36:24 -0400
+Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BB142CE1C
+        for <linux-pm@vger.kernel.org>; Tue,  3 May 2022 08:32:51 -0700 (PDT)
+Received: by mail-oi1-x22f.google.com with SMTP id r8so18546575oib.5
+        for <linux-pm@vger.kernel.org>; Tue, 03 May 2022 08:32:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=XnQmOhsCZK19KFsjaZWzKreHbtLS7E4MAuj6me5xfA4=;
+        b=e93gker8XSUGtP9FNQzNbA3o8jNHWWcEose726ZqruHmgrvDB6XNDCXe7pZbHRDROa
+         qYb/NaGqpYxL4Z8sTqsoPbLPcLSrje8PJNt043evZevPWI3kIrBFYKul4LicV+pvUZrA
+         jjRtIlggoU+i0AyhjtBiCCEXSo1/wpZADFzanrftOTBWJG6Q+DUQyuNmTve/RNnbBAIH
+         1HvGNirA6jfGl0osjYrSghaU6VKQtnqGP4RIVWaM3typQ2AbuUkNl5i4UzbJrkBz5uZ7
+         BwOKF7idQCqwcT6+PnX/vwDFwMW2xnU3c5VClxep6rw5EeZKnA1M7pWl5yI6ZsMRBwQs
+         nDoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=XnQmOhsCZK19KFsjaZWzKreHbtLS7E4MAuj6me5xfA4=;
+        b=Cy3u/GB2MLkrvJ8dnuJzVXG1xQRsE5FkMMdXrHkybN8INgIRDW6oq/hdfKphkhR5aw
+         DugaB5+OmBeyhXzJBQBiKAIYjMToLrHRy6gaxvMc6b2m1Ii2u3gAXQIqPGiN54Spiyaq
+         nZNFuU+jaY3Z3CKYP9yzIOLbhIRDJNTBlwJT4/z+6bv5j/5YSp6/bmMiAFuPFA31AEw+
+         Q3BnF9/en650quP7IU1nJgA6SZv0N2Z1fXxs32LviDYuM4EOBlgzVabVupVy65rpkwUj
+         EWHINkHuTe2wl1gcfW9bl25+K/PAaRc1iwe4SVTkd/2JNHWaF2S7goRGYLFYu2QtaBvt
+         K99Q==
+X-Gm-Message-State: AOAM532Rv5pZNZwvChFALik7cq3OM1jlOEq5psh3Q/myRHmyu0KZx2XG
+        YVwZG/rw0K9xh1K2S+PpUNCchg==
+X-Google-Smtp-Source: ABdhPJxHKuxC9rmkYi2NQblFYNBfCKjkd4iYQI+D1hZPwuCjICezisBZiLi1dY6rZjY6TScVwvLZ5Q==
+X-Received: by 2002:a05:6808:f8d:b0:325:1e81:ffe5 with SMTP id o13-20020a0568080f8d00b003251e81ffe5mr2084792oiw.253.1651591970783;
+        Tue, 03 May 2022 08:32:50 -0700 (PDT)
+Received: from ripper.. (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id s4-20020a4adb84000000b00333220959b9sm4955736oou.1.2022.05.03.08.32.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 May 2022 08:32:50 -0700 (PDT)
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v2] dt-bindings: thermal: tsens: Add sc8280xp compatible
+Date:   Tue,  3 May 2022 08:34:36 -0700
+Message-Id: <20220503153436.960184-1-bjorn.andersson@linaro.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220408225037.627432-1-bjorn.andersson@linaro.org>
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87levjrixl.fsf@email.froward.int.ebiederm.org>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.85 on 10.11.54.7
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/02, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@redhat.com> writes:
->
-> >>  #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
-> >>  #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
-> >> -#define TASK_TRACED			(TASK_WAKEKILL | __TASK_TRACED)
-> >> +#define TASK_TRACED			__TASK_TRACED
-> > ...
-> >>  static inline void signal_wake_up(struct task_struct *t, bool resume)
-> >>  {
-> >> -	signal_wake_up_state(t, resume ? TASK_WAKEKILL : 0);
-> >> +	unsigned int state = 0;
-> >> +	if (resume) {
-> >> +		state = TASK_WAKEKILL;
-> >> +		if (!(t->jobctl & JOBCTL_PTRACE_FROZEN))
-> >> +			state |= __TASK_TRACED;
-> >> +	}
-> >> +	signal_wake_up_state(t, state);
-> >
-> > Can't understand why is this better than the previous version which removed
-> > TASK_WAKEKILL if resume... Looks a bit strange to me. But again, I didn't
-> > look at the next patches yet.
->
-> The goal is to replace the existing mechanism with an equivalent one,
-> so that we don't have to be clever and deal with it being slightly
-> different in one case.
->
-> The difference is how does signal_pending_state affect how schedule will
-> sleep in ptrace_stop.
+The Qualcomm SC8280XP platform has three instances of the tsens block,
+add a compatible for these instances.
 
-But why is it bad if the tracee doesn't sleep in schedule ? If it races
-with SIGKILL. I still can't understand this.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
 
-Yes, wait_task_inactive() can fail, so you need to remove WARN_ON_ONCE()
-in 11/12.
+I apprently missed the '2' in the compatible. Retaining Krzysztof's ack under
+the assumption that he's even more okay with the patch now that it's content is
+correct.
 
-Why is removing TASK_WAKEKILL from TASK_TRACED and complicating
-*signal_wake_up() better?
+Changes since v1:
+- Fix compatible to say 8280, instead of 8180
 
-And even if we need to ensure the tracee will always block after
-ptrace_freeze_traced(), we can change signal_pending_state() to
-return false if JOBCTL_PTRACE_FROZEN. Much simpler, imo. But still
-looks unnecessary to me.
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-
-> Peter's plans to fix PREEMPT_RT or the freezer wait_task_inactive needs
-> to cope with the final being changed by something else. (TASK_FROZEN in
-> the freezer case).  I can only see that happening by removing the
-> dependency on the final state in wait_task_inactive.  Which we can't do
-> if we depend on wait_task_inactive failing if the process is in the
-> wrong state.
-
-OK, I guess this is what I do not understand. Could you spell please?
-
-And speaking of RT, wait_task_inactive() still can fail because
-cgroup_enter_frozen() takes css_set_lock? And it is called under
-preempt_disable() ? I don't understand the plan :/
-
-> At a practical level I think it also has an impact on patch:
-> "10/12 ptrace: Only return signr from ptrace_stop if it was provided".
-
-I didn't look at JOBCTL_PTRACE_SIGNR yet. But this looks minor to me,
-I mean, I am not sure it worth the trouble.
-
-Oleg.
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index d72122bbaf3d..038d81338fcf 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -50,6 +50,7 @@ properties:
+               - qcom,sc7180-tsens
+               - qcom,sc7280-tsens
+               - qcom,sc8180x-tsens
++              - qcom,sc8280xp-tsens
+               - qcom,sdm630-tsens
+               - qcom,sdm845-tsens
+               - qcom,sm6350-tsens
+-- 
+2.35.1
 
