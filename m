@@ -2,120 +2,83 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2E85C433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 17:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E23CFC433F5
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 18:02:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355405AbiEDSCI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 14:02:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42060 "EHLO
+        id S1376434AbiEDSGR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 14:06:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377378AbiEDSAx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 14:00:53 -0400
-Received: from mail-yb1-f172.google.com (mail-yb1-f172.google.com [209.85.219.172])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D57F6631A;
-        Wed,  4 May 2022 10:15:36 -0700 (PDT)
-Received: by mail-yb1-f172.google.com with SMTP id m128so3508242ybm.5;
-        Wed, 04 May 2022 10:15:36 -0700 (PDT)
+        with ESMTP id S1359669AbiEDSGL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 14:06:11 -0400
+Received: from mail-oa1-x2d.google.com (mail-oa1-x2d.google.com [IPv6:2001:4860:4864:20::2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A74D26D3B4
+        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 10:21:31 -0700 (PDT)
+Received: by mail-oa1-x2d.google.com with SMTP id 586e51a60fabf-ed9a75c453so1827979fac.11
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 10:21:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=9uwOGnLYMEJR/9HVxcO1OnuSImbrqYL22DFR4CN456k=;
+        b=kh2l6tCUfmXum7Viz5IbpjauRsyWy+uzfTkiP9KgnsQUkleUr4A6KD0Fe7X4vR5x1q
+         KWopCu6yA3HGBZ1PE+2F4ru5MRJ1n6Ok3T2dOwRAUhCAuTsUWJkXK5BaNTl3Tq65rE0l
+         VYU/2pnMkejXlkY+VqA38ZOHgEFHNUZE3RmHfqHZrK3NsxP0UjoyatuSS8su+i7JpWzk
+         igX6QrQfKxO6QOGU+j+f0JexMpSIDTjTDtKQoN2mmQ1iTM763De2ptE4Xl2Du1h9/d2b
+         YkF7ck96I8jcVIYoiESssMp9/8J7WRJljX/RhdiLkF3U3LkZWufAE1Dquc2yF+iC2J8F
+         Ocrg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=OFV/p74juyEoPxSYXHrzkAx2l6TnhNSxPpzNHi+zhs4=;
-        b=4+b1SFPFX4jUr8n7X41dAVG7CcgfqSCIxnhZGEjv+FtmCuDSmycDybFkrhdgaHGWEU
-         4QTrUmd8XHulaAZP1oVgWJh814JGp6K+D7qRLtWMbAvwKVZ96RjnL4n9x1Zgcdw8ZZuy
-         ABd/nH8sXqXK0XE8KP+359Hewt9LfoRhl46gWAmwJlfm1qf5W9nvvwTeMgtFxR1OKSgQ
-         EYJjerXyqkf6m9i68ubaJltVS2p0Kwl4a0n7FJTiGoI0O5gw4uO4lXvZwLe0DtUeB6yN
-         D/KuDUO440NYwp50eVnvg2fjxLPuaLsIKVfeuXRHSH6aEWb5HJi5PIZ4oD62y4Ow4Kve
-         WVIw==
-X-Gm-Message-State: AOAM530JkiU2tX7wjZDuLau/eoMpoEHmyvO/JjFNtIuCMNoEFZ/17d1a
-        MN8yh3dvLnbiHDzAEJ9c1Nn3htugiE46rJWv/C8=
-X-Google-Smtp-Source: ABdhPJzjRfM0DpouS6xdyXwR/B26C26P2+1p0G7fDh2ZXfbBTY+AxBBIPZjUd3fdQqUDpXtFohq4/YXNynsvaWYmFMg=
-X-Received: by 2002:a05:6902:187:b0:63d:9c95:edca with SMTP id
- t7-20020a056902018700b0063d9c95edcamr17647508ybh.81.1651684535365; Wed, 04
- May 2022 10:15:35 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=9uwOGnLYMEJR/9HVxcO1OnuSImbrqYL22DFR4CN456k=;
+        b=51evfB0EJxnQJiJn9ThPbRPMZ+MAYtgBn9oFY8D2u/uacEPJD41EJci8QuQfC9YHjj
+         bpsSGgkP7ESRkQhbtxajQEL+mi4aBNuYCePrmfH5YSWi0I2+ZJSdlhRT/R+yjGfVb2SV
+         UCpZCWd4jrJtuKiXiunnPNa+3Re7Eo+1Ckpvg6W7aS5khEUBQ/42+nDD5FpRYiGAnxoV
+         jE8QRUh04xUoPm+0nmBWuQkTSmDVz45O4t3HVmDZ6+PCSs2uzlfJVTiON6gMe0KDeGT1
+         zPpwX+xZEWH+UGO42Tkao20EPDRA+W9KgjGWR4QSPviDwJ/CuzktF8iExfi1jBaaFFDT
+         MyVA==
+X-Gm-Message-State: AOAM532GOkVUHQQ7qHui6q6kJiG7PxQLbsbYotUd8isGQk7sHWk5qnxm
+        npu43VisS8y2MmpzTY+Xqgai+g==
+X-Google-Smtp-Source: ABdhPJw0NytvaSnOYdTa7GUSqGzJJxnqCVMGNXFaU+Bu60k1BERVeupvou3p01pEwFJ+Dhp7gFPtHw==
+X-Received: by 2002:a05:6870:a910:b0:e6:dca:5fd3 with SMTP id eq16-20020a056870a91000b000e60dca5fd3mr264373oab.202.1651684891384;
+        Wed, 04 May 2022 10:21:31 -0700 (PDT)
+Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id a7-20020a056870b14700b000ead8b89484sm5785452oal.5.2022.05.04.10.21.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 May 2022 10:21:30 -0700 (PDT)
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     Alex Elder <elder@linaro.org>, Georgi Djakov <djakov@kernel.org>,
+        Doug Anderson <dianders@chromium.org>,
+        Taniya Das <quic_tdas@quicinc.com>, patches@lists.linux.dev,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Mike Tipton <quic_mdtipton@quicinc.com>
+Subject: Re: (subset) [PATCH 4/2] ARM: dts: qcom: sdx55: Remove ipa interconnect node
+Date:   Wed,  4 May 2022 12:21:15 -0500
+Message-Id: <165168485227.3730817.7400663039437041029.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220415005828.1980055-2-swboyd@chromium.org>
+References: <20220412220033.1273607-1-swboyd@chromium.org> <20220415005828.1980055-1-swboyd@chromium.org> <20220415005828.1980055-2-swboyd@chromium.org>
 MIME-Version: 1.0
-References: <YnFtjzGYwe28tVAA@dev-arch.thelio-3990X> <20220504165409.GA453565@bhelgaas>
-In-Reply-To: <20220504165409.GA453565@bhelgaas>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 4 May 2022 19:15:24 +0200
-Message-ID: <CAJZ5v0g7oN534uyNh4YBeArH8xqGxYCXrrqAz2jiH=D4cyx=+w@mail.gmail.com>
-Subject: Re: [PATCH v3 4/9] PCI/PM: Rework changing power states of PCI devices
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     Nathan Chancellor <nathan@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Anders Roxell <anders.roxell@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, May 4, 2022 at 7:03 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> [+cc Anders]
->
-> On Tue, May 03, 2022 at 10:59:43AM -0700, Nathan Chancellor wrote:
-> > On Thu, Apr 14, 2022 at 03:11:21PM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > There are some issues related to changing power states of PCI
-> > > devices, mostly related to carrying out unnecessary actions in some
-> > > places, and the code is generally hard to follow.
-> > >
-> > >  1. pci_power_up() has two callers, pci_set_power_state() and
-> > >     pci_pm_default_resume_early().  The latter updates the current
-> > >     power state of the device right after calling pci_power_up()
-> > >     and it restores the entire config space of the device right
-> > >     after that, so pci_power_up() itself need not read the
-> > >     PCI_PM_CTRL register or restore the BARs after programming the
-> > >     device into D0 in that case.
-> > >
-> > >  2. It is generally hard to get a clear view of the pci_power_up()
-> > >     code flow, especially in some corner cases, due to all of the
-> > >     involved PCI_PM_CTRL register reads and writes occurring in
-> > >     pci_platform_power_transition() and in pci_raw_set_power_state(),
-> > >     some of which are redundant.
-> > >
-> > >  3. The transitions from low-power states to D0 and the other way
-> > >     around are unnecessarily tangled in pci_raw_set_power_state()
-> > >     which causes it to use a redundant local variable and makes it
-> > >     rather hard to follow.
-> > >
-> > > To address the above shortcomings, make the following changes:
-> > >
-> > >  a. Remove the code handling transitions into D0
-> > >     from pci_raw_set_power_state() and rename it as
-> > >     pci_set_low_power_state().
-> > >
-> > >  b. Add the code handling transitions into D0 directly
-> > >     to pci_power_up() and to a new wrapper function
-> > >     pci_set_full_power_state() calling it internally that is
-> > >     only used in pci_set_power_state().
-> > >
-> > >  c. Make pci_power_up() avoid redundant PCI_PM_CTRL register reads
-> > >     and make it work in the same way for transitions from any
-> > >     low-power states (transitions from D1 and D2 are handled
-> > >     slightly differently before the change).
-> > >
-> > >  d. Put the restoration of the BARs and the PCI_PM_CTRL
-> > >     register read confirming the power state change into
-> > >     pci_set_full_power_state() to avoid doing that in
-> > >     pci_pm_default_resume_early() unnecessarily.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> >
-> > This change as commit 5bffe4c611f5 ("PCI/PM: Rework changing power
-> > states of PCI devices") causes my AMD-based system to fail to fully
-> > boot.
->
-> I dropped 5bffe4c611f5 and subsequent pci/pm patches temporarily while
-> this gets worked out.
+On Thu, 14 Apr 2022 17:58:27 -0700, Stephen Boyd wrote:
+> This device node is unused now that we've removed the driver that
+> consumed it in the kernel. Drop the unused node to save some space.
+> 
+> 
 
-OK
+Applied, thanks!
 
-It looks like I missed something subtle that triggers on a subset of
-systems only.
+[4/4] ARM: dts: qcom: sdx55: Remove ipa interconnect node
+      commit: 02fbeb1649534d564b100a994b05d4eaa167ea19
+
+Best regards,
+-- 
+Bjorn Andersson <bjorn.andersson@linaro.org>
