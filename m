@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D310C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF061C43219
 	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 23:59:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383734AbiEEAA0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 20:00:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41818 "EHLO
+        id S1383743AbiEEAA2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 20:00:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1383106AbiEDXZO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 19:25:14 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D2F64ECCE
-        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 16:21:36 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id p6so2297986plr.12
-        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 16:21:36 -0700 (PDT)
+        with ESMTP id S237222AbiEDXZF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 19:25:05 -0400
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FE204D9EE
+        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 16:21:20 -0700 (PDT)
+Received: by mail-pl1-x632.google.com with SMTP id j8so2815649pll.11
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 16:21:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=oSCDp+BlWHOAe2tqoHinPSSzUxabaz3SWirbYWgZ7iE=;
-        b=AK96nFD2jq9As8QRqe4ZZgrKB3muSxd4UKPDu0PiPgxZCEkF09YM3a/lbxSE2Aolhc
-         8/11YUs8xGSuIa13K4FNjPmrXP32NRaFX2/fqhw5ycNjYisg1PBFJZiM4dKkwgF7l4SI
-         8V/qwibG9N2Kolpq0e2PDsUZD0WN7jb8AqoT4=
+        bh=kOErKHWJujqLaWOkztm6Xtg2ojuojMVj+Fr4mvN2bHY=;
+        b=jYMzIpOHiHfN+4bIj/5tb5+YNcUhAnEFKP1KNaU1R74wa7pXmowvB0kqxvMPbZiDX0
+         ce4lExddCHHxXaFEgN/WpLdcoE4xyxvt+gbwyI00DWN4BxPSmJibPrsZuKSJB2Qp1sj2
+         rog+u88u3r0YgEA4474NdK7ebeueNp8BCQJW8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=oSCDp+BlWHOAe2tqoHinPSSzUxabaz3SWirbYWgZ7iE=;
-        b=qqmOQLgI5OQ7LOb0kwtscLy9igqBoYSSQipM8kSkr61jx+ZuEilLw2RhkVpbQDdIti
-         50Sobgjl3SGNRJS5rEwAXGC+zs7P+rNSzE/xL6dNFUir2aNSG9zvaYHMLUFziv5zpYzr
-         MmNoSVoNKiVPgbXQXOt/y/LGWY3Hsr8yx1laZwT+Gb7dSlJ15lAvZV85nMXTzHSC+EvW
-         7fqbc3F2SFHOIUJDyvCCj6+0Ea5BIGekA/TXiQTqEccKA8g3mnSI6mX+RNkk7SLpD2nH
-         do3C9yFI2DwIDyzgQ0d6m2UbnIiydqSj+jIBjc5k9TpeYaXy5PDFyqU5R/fzN6nRLC8a
-         oT8Q==
-X-Gm-Message-State: AOAM533lGl6219AnmGkbfHBL37MakHafiWvPZWUxmMOV5XGu71L0KmxA
-        AlGJ+xev36OWWDi78BbewYC2PA==
-X-Google-Smtp-Source: ABdhPJyWCNX/I16qyW4fvcathhxcuAgJ0GjSbW0c5vLuKr3I6Bnp2rIZfhNKLxSoEtDyFcQM2HOpmw==
-X-Received: by 2002:a17:902:7e01:b0:15e:caea:d6 with SMTP id b1-20020a1709027e0100b0015ecaea00d6mr4372912plm.33.1651706495884;
-        Wed, 04 May 2022 16:21:35 -0700 (PDT)
+        bh=kOErKHWJujqLaWOkztm6Xtg2ojuojMVj+Fr4mvN2bHY=;
+        b=jj6EZXj4SsWugZVl/DqUcixsYAmI5vx68AHfCzpmj4l0gACU2M81wvNqJew1cMotYt
+         bqgBZK3H89jmidXr+E5Ph59XSHIL+Gd38ED1hoCTy8fvTlK9qSIjHapsFtTzTrXL/prp
+         wnGb2Gtea66GrH/5xQ+VHJiHtnvJeTw9B9gePg1Y6DWuMke+PryT1KpEqJMumgiZOgPL
+         m+/DoKZWj8RkZQNHtr0sIa2CzSrFBFmajmcA50siDZAUprJz1+QR3lEISsC7e5r4uJLe
+         4eB6M5RUqVo4MxLPlV+MZzgGbC7RRsOuNPFEyAhJkjuQp87Megsqa6OaiDKRXHMV3npD
+         cMjQ==
+X-Gm-Message-State: AOAM5306lIHZIQOAQafvSZX8UdJwO2mDOGoZc+jW+ExEi5D1QxbRqHFS
+        V54kq7OlhEMoxJrahAfhZgPxPg==
+X-Google-Smtp-Source: ABdhPJyyPuRAXT9i6lNMadNV8m2hItTolkkOwTobBqzOGh/jcV0ZGvreW1VB1z9+Q9zAcbwiLZEuOg==
+X-Received: by 2002:a17:902:da90:b0:15e:adc2:191d with SMTP id j16-20020a170902da9000b0015eadc2191dmr14406754plx.134.1651706479816;
+        Wed, 04 May 2022 16:21:19 -0700 (PDT)
 Received: from evgreen-glaptop.lan ([98.47.98.87])
-        by smtp.gmail.com with ESMTPSA id q12-20020a170902f78c00b0015e8d4eb2d6sm1901pln.288.2022.05.04.16.21.34
+        by smtp.gmail.com with ESMTPSA id q12-20020a170902f78c00b0015e8d4eb2d6sm1901pln.288.2022.05.04.16.21.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 May 2022 16:21:35 -0700 (PDT)
+        Wed, 04 May 2022 16:21:19 -0700 (PDT)
 From:   Evan Green <evgreen@chromium.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Matthew Garrett <mgarrett@aurora.tech>, dlunev@google.com,
@@ -52,14 +52,12 @@ Cc:     Matthew Garrett <mgarrett@aurora.tech>, dlunev@google.com,
         gwendal@chromium.org, jarkko@kernel.org, linux-pm@vger.kernel.org,
         Matthew Garrett <matthewgarrett@google.com>,
         Matthew Garrett <mjg59@google.com>,
-        Evan Green <evgreen@chromium.org>,
-        David Howells <dhowells@redhat.com>,
-        James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>, keyrings@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: [PATCH 04/10] security: keys: trusted: Allow storage of PCR values in creation data
-Date:   Wed,  4 May 2022 16:20:56 -0700
-Message-Id: <20220504161439.4.I32591db064b6cdc91850d777f363c9d05c985b39@changeid>
+        Evan Green <evgreen@chromium.org>, Hao Wu <hao.wu@rubrik.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Peter Huewe <peterhuewe@gmx.de>, axelj <axelj@axis.com>
+Subject: [PATCH 01/10] tpm: Add support for in-kernel resetting of PCRs
+Date:   Wed,  4 May 2022 16:20:53 -0700
+Message-Id: <20220504161439.1.I776854f47e3340cc2913ed4d8ecdd328048b73c3@changeid>
 X-Mailer: git-send-email 2.31.0
 In-Reply-To: <20220504232102.469959-1-evgreen@chromium.org>
 References: <20220504232102.469959-1-evgreen@chromium.org>
@@ -71,132 +69,211 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Matthew Garrett <matthewgarrett@google.com>
 
-When TPMs generate keys, they can also generate some information
-describing the state of the PCRs at creation time. This data can then
-later be certified by the TPM, allowing verification of the PCR values.
-This allows us to determine the state of the system at the time a key
-was generated. Add an additional argument to the trusted key creation
-options, allowing the user to provide the set of PCRs that should have
-their values incorporated into the creation data.
+Add an internal command for resetting a PCR. This will be used by the
+encrypted hibernation code to set PCR23 to a known value. The
+hibernation code will seal the hibernation key with a policy specifying
+PCR23 be set to this known value as a mechanism to ensure that the
+hibernation key is genuine. But to do this repeatedly, resetting the PCR
+is necessary as well.
 
 From: Matthew Garrett <mjg59@google.com>
 Signed-off-by: Matthew Garrett <mjg59@google.com>
 
 Signed-off-by: Evan Green <evgreen@chromium.org>
 ---
-Matthew's original version of this patch is at:
-https://patchwork.kernel.org/patch/12096503/
+Matthew's original version of this patch was at:
+https://patchwork.kernel.org/patch/12096487/
 
- .../security/keys/trusted-encrypted.rst       |  4 +++
- include/keys/trusted-type.h                   |  1 +
- security/keys/trusted-keys/trusted_tpm1.c     |  9 +++++++
- security/keys/trusted-keys/trusted_tpm2.c     | 25 +++++++++++++++++--
- 4 files changed, 37 insertions(+), 2 deletions(-)
+ drivers/char/tpm/tpm-interface.c | 28 +++++++++++++++++++++++++
+ drivers/char/tpm/tpm.h           |  2 ++
+ drivers/char/tpm/tpm1-cmd.c      | 34 ++++++++++++++++++++++++++++++
+ drivers/char/tpm/tpm2-cmd.c      | 36 ++++++++++++++++++++++++++++++++
+ include/linux/tpm.h              |  7 +++++++
+ 5 files changed, 107 insertions(+)
 
-diff --git a/Documentation/security/keys/trusted-encrypted.rst b/Documentation/security/keys/trusted-encrypted.rst
-index f614dad7de12f9..7215b067bf128f 100644
---- a/Documentation/security/keys/trusted-encrypted.rst
-+++ b/Documentation/security/keys/trusted-encrypted.rst
-@@ -170,6 +170,10 @@ Usage::
-        policyhandle= handle to an authorization policy session that defines the
-                      same policy and with the same hash algorithm as was used to
-                      seal the key.
-+       creationpcrs= hex integer representing the set of PCR values to be
-+                     included in the PCR creation data. The bit corresponding
-+		     to each PCR should be 1 to be included, 0 to be ignored.
-+		     TPM2 only.
+diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
+index 1621ce8187052c..17b8643ee109c2 100644
+--- a/drivers/char/tpm/tpm-interface.c
++++ b/drivers/char/tpm/tpm-interface.c
+@@ -342,6 +342,34 @@ int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+ }
+ EXPORT_SYMBOL_GPL(tpm_pcr_extend);
  
- "keyctl print" returns an ascii hex copy of the sealed key, which is in standard
- TPM_STORED_DATA format.  The key length for new keys are always in bytes.
-diff --git a/include/keys/trusted-type.h b/include/keys/trusted-type.h
-index 8a793ae1ad9f70..b3ac4afe8ba987 100644
---- a/include/keys/trusted-type.h
-+++ b/include/keys/trusted-type.h
-@@ -54,6 +54,7 @@ struct trusted_key_options {
- 	uint32_t policydigest_len;
- 	unsigned char policydigest[MAX_DIGEST_SIZE];
- 	uint32_t policyhandle;
-+	uint32_t creation_pcrs;
- };
- 
- struct trusted_key_ops {
-diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/trusted-keys/trusted_tpm1.c
-index aa108bea6739b3..2975827c01bec0 100644
---- a/security/keys/trusted-keys/trusted_tpm1.c
-+++ b/security/keys/trusted-keys/trusted_tpm1.c
-@@ -713,6 +713,7 @@ enum {
- 	Opt_hash,
- 	Opt_policydigest,
- 	Opt_policyhandle,
-+	Opt_creationpcrs,
- };
- 
- static const match_table_t key_tokens = {
-@@ -725,6 +726,7 @@ static const match_table_t key_tokens = {
- 	{Opt_hash, "hash=%s"},
- 	{Opt_policydigest, "policydigest=%s"},
- 	{Opt_policyhandle, "policyhandle=%s"},
-+	{Opt_creationpcrs, "creationpcrs=%s"},
- 	{Opt_err, NULL}
- };
- 
-@@ -858,6 +860,13 @@ static int getoptions(char *c, struct trusted_key_payload *pay,
- 				return -EINVAL;
- 			opt->policyhandle = handle;
- 			break;
-+		case Opt_creationpcrs:
-+			if (!tpm2)
-+				return -EINVAL;
-+			res = kstrtoint(args[0].from, 16, &opt->creation_pcrs);
-+			if (res < 0)
-+				return -EINVAL;
-+			break;
- 		default:
- 			return -EINVAL;
- 		}
-diff --git a/security/keys/trusted-keys/trusted_tpm2.c b/security/keys/trusted-keys/trusted_tpm2.c
-index 296a00f872ba40..b7ddb78e644d17 100644
---- a/security/keys/trusted-keys/trusted_tpm2.c
-+++ b/security/keys/trusted-keys/trusted_tpm2.c
-@@ -290,7 +290,7 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
- 	struct tpm_buf buf;
- 	u32 hash;
- 	u32 flags;
--	int i;
-+	int i, j;
- 	int rc;
- 
- 	for (i = 0; i < ARRAY_SIZE(tpm2_hash_map); i++) {
-@@ -359,7 +359,28 @@ int tpm2_seal_trusted(struct tpm_chip *chip,
- 	tpm_buf_append_u16(&buf, 0);
- 
- 	/* creation PCR */
--	tpm_buf_append_u32(&buf, 0);
-+	if (options->creation_pcrs) {
-+		/* One bank */
-+		tpm_buf_append_u32(&buf, 1);
-+		/* Which bank to use */
-+		tpm_buf_append_u16(&buf, hash);
-+		/* Length of the PCR bitmask */
-+		tpm_buf_append_u8(&buf, 3);
-+		/* PCR bitmask */
-+		for (i = 0; i < 3; i++) {
-+			char tmp = 0;
++/**
++ * tpm_pcr_reset - reset the specified PCR
++ * @chip:	a &struct tpm_chip instance, %NULL for the default chip
++ * @pcr_idx:	the PCR to be reset
++ *
++ * Return: same as with tpm_transmit_cmd()
++ */
++int tpm_pcr_reset(struct tpm_chip *chip, u32 pcr_idx)
++{
++	int rc;
 +
-+			for (j = 0; j < 8; j++) {
-+				char bit = (i * 8) + j;
++	chip = tpm_find_get_ops(chip);
++	if (!chip)
++		return -ENODEV;
 +
-+				if (options->creation_pcrs & (1 << bit))
-+					tmp |= (1 << j);
-+			}
-+			tpm_buf_append_u8(&buf, tmp);
-+		}
-+	} else {
-+		tpm_buf_append_u32(&buf, 0);
++	if (chip->flags & TPM_CHIP_FLAG_TPM2) {
++		rc = tpm2_pcr_reset(chip, pcr_idx);
++		goto out;
 +	}
++
++	rc = tpm1_pcr_reset(chip, pcr_idx, "attempting to reset a PCR");
++
++out:
++	tpm_put_ops(chip);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(tpm_pcr_reset);
++
+ /**
+  * tpm_send - send a TPM command
+  * @chip:	a &struct tpm_chip instance, %NULL for the default chip
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index 2163c6ee0d364f..72b6c0873852c6 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -174,6 +174,7 @@ int tpm1_get_timeouts(struct tpm_chip *chip);
+ unsigned long tpm1_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal);
+ int tpm1_pcr_extend(struct tpm_chip *chip, u32 pcr_idx, const u8 *hash,
+ 		    const char *log_msg);
++int tpm1_pcr_reset(struct tpm_chip *chip, u32 pcr_idx, const char *log_msg);
+ int tpm1_pcr_read(struct tpm_chip *chip, u32 pcr_idx, u8 *res_buf);
+ ssize_t tpm1_getcap(struct tpm_chip *chip, u32 subcap_id, cap_t *cap,
+ 		    const char *desc, size_t min_cap_length);
+@@ -216,6 +217,7 @@ int tpm2_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
+ 		  struct tpm_digest *digest, u16 *digest_size_ptr);
+ int tpm2_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+ 		    struct tpm_digest *digests);
++int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx);
+ int tpm2_get_random(struct tpm_chip *chip, u8 *dest, size_t max);
+ ssize_t tpm2_get_tpm_pt(struct tpm_chip *chip, u32 property_id,
+ 			u32 *value, const char *desc);
+diff --git a/drivers/char/tpm/tpm1-cmd.c b/drivers/char/tpm/tpm1-cmd.c
+index f7dc986fa4a0a2..9b9ad1fc20ccfd 100644
+--- a/drivers/char/tpm/tpm1-cmd.c
++++ b/drivers/char/tpm/tpm1-cmd.c
+@@ -478,6 +478,40 @@ int tpm1_pcr_extend(struct tpm_chip *chip, u32 pcr_idx, const u8 *hash,
+ 	return rc;
+ }
  
- 	if (buf.flags & TPM_BUF_OVERFLOW) {
- 		rc = -E2BIG;
++struct tpm_pcr_selection {
++	u16 size_of_select;
++	u8  pcr_select[3];
++} __packed;
++
++#define TPM_ORD_PCR_RESET 200
++int tpm1_pcr_reset(struct tpm_chip *chip, u32 pcr_idx, const char *log_msg)
++{
++	struct tpm_pcr_selection selection;
++	struct tpm_buf buf;
++	int i, rc;
++	char tmp;
++
++	rc = tpm_buf_init(&buf, TPM_TAG_RQU_COMMAND, TPM_ORD_PCR_RESET);
++	if (rc)
++		return rc;
++
++	selection.size_of_select = 3;
++
++	for (i = 0; i < selection.size_of_select; i++) {
++		tmp = 0;
++		if (pcr_idx / 3 == i) {
++			pcr_idx -= i * 8;
++			tmp |= 1 << pcr_idx;
++		}
++		selection.pcr_select[i] = tmp;
++	}
++	tpm_buf_append(&buf, (u8 *)&selection, sizeof(selection));
++
++	rc = tpm_transmit_cmd(chip, &buf, sizeof(selection), log_msg);
++	tpm_buf_destroy(&buf);
++	return rc;
++}
++
+ #define TPM_ORD_GET_CAP 101
+ ssize_t tpm1_getcap(struct tpm_chip *chip, u32 subcap_id, cap_t *cap,
+ 		    const char *desc, size_t min_cap_length)
+diff --git a/drivers/char/tpm/tpm2-cmd.c b/drivers/char/tpm/tpm2-cmd.c
+index 4704fa553098b5..c0806b4447c8b2 100644
+--- a/drivers/char/tpm/tpm2-cmd.c
++++ b/drivers/char/tpm/tpm2-cmd.c
+@@ -269,6 +269,42 @@ int tpm2_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+ 	return rc;
+ }
+ 
++/**
++ * tpm2_pcr_reset() - reset a PCR
++ *
++ * @chip:	TPM chip to use.
++ * @pcr_idx:	index of the PCR.
++ *
++ * Return: Same as with tpm_transmit_cmd.
++ */
++int tpm2_pcr_reset(struct tpm_chip *chip, u32 pcr_idx)
++{
++	struct tpm_buf buf;
++	struct tpm2_null_auth_area auth_area;
++	int rc;
++
++	rc = tpm_buf_init(&buf, TPM2_ST_SESSIONS, TPM2_CC_PCR_RESET);
++	if (rc)
++		return rc;
++
++	tpm_buf_append_u32(&buf, pcr_idx);
++
++	auth_area.handle = cpu_to_be32(TPM2_RS_PW);
++	auth_area.nonce_size = 0;
++	auth_area.attributes = 0;
++	auth_area.auth_size = 0;
++
++	tpm_buf_append_u32(&buf, sizeof(struct tpm2_null_auth_area));
++	tpm_buf_append(&buf, (const unsigned char *)&auth_area,
++		       sizeof(auth_area));
++
++	rc = tpm_transmit_cmd(chip, &buf, 0, "attempting to reset a PCR");
++
++	tpm_buf_destroy(&buf);
++
++	return rc;
++}
++
+ struct tpm2_get_random_out {
+ 	__be16 size;
+ 	u8 buffer[TPM_MAX_RNG_DATA];
+diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+index dfeb25a0362dee..8320cbac6f4009 100644
+--- a/include/linux/tpm.h
++++ b/include/linux/tpm.h
+@@ -219,6 +219,7 @@ enum tpm2_command_codes {
+ 	TPM2_CC_HIERARCHY_CONTROL       = 0x0121,
+ 	TPM2_CC_HIERARCHY_CHANGE_AUTH   = 0x0129,
+ 	TPM2_CC_CREATE_PRIMARY          = 0x0131,
++	TPM2_CC_PCR_RESET		= 0x013D,
+ 	TPM2_CC_SEQUENCE_COMPLETE       = 0x013E,
+ 	TPM2_CC_SELF_TEST	        = 0x0143,
+ 	TPM2_CC_STARTUP		        = 0x0144,
+@@ -423,6 +424,7 @@ extern ssize_t tpm_transmit_cmd(struct tpm_chip *chip, struct tpm_buf *buf,
+ 				size_t min_rsp_body_length, const char *desc);
+ extern int tpm_pcr_read(struct tpm_chip *chip, u32 pcr_idx,
+ 			struct tpm_digest *digest);
++extern int tpm_pcr_reset(struct tpm_chip *chip, u32 pcr_idx);
+ extern int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+ 			  struct tpm_digest *digests);
+ extern int tpm_send(struct tpm_chip *chip, void *cmd, size_t buflen);
+@@ -440,6 +442,11 @@ static inline int tpm_pcr_read(struct tpm_chip *chip, int pcr_idx,
+ 	return -ENODEV;
+ }
+ 
++static inline int tpm_pcr_reset(struct tpm_chip *chip, int pcr_idx)
++{
++	return -ENODEV;
++}
++
+ static inline int tpm_pcr_extend(struct tpm_chip *chip, u32 pcr_idx,
+ 				 struct tpm_digest *digests)
+ {
 -- 
 2.31.0
 
