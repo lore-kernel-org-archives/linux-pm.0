@@ -2,83 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 124EAC433FE
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 18:02:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F234C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 18:04:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1359616AbiEDSGa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 14:06:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44862 "EHLO
+        id S1376482AbiEDSIW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 14:08:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1359647AbiEDSGL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 14:06:11 -0400
-Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15C226D3AF
-        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 10:21:30 -0700 (PDT)
-Received: by mail-oi1-x22b.google.com with SMTP id l203so1868811oif.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 10:21:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=wGaNEgkga2C3vR38cQjxSl3nf4BfaDAQqYW9Vv/BBTc=;
-        b=PEfoXor+JdsqfPlN+A3GqSST7jD5o0bcF7nggWSaH6F54b6L4ub2nPZsEEL0/L8je6
-         L4JS9CJXWZsNNZdMhgBhz8n/d1YQjBCcUoikb8NTH6h1ofErB23tOgwNHxn5sNy9bd4g
-         ntydlC27R1G0Q0xUUUXK4+0O7HIoYEPFZkFa8VglaiHOo+ojUHG41As2Q925/PPtwt8C
-         6iuIXGAuAWlSWr/laNZFzGfJAnj1iKhjkKwrm3tE7kBS4LgCeeJHHUMtWl70k+08eHIy
-         qMJvomyu/rTkI/PjGmFUaHuimmIVCIwk6c3fZpoGkteqD/ynqbLr1fDQq2tqvz3Klae9
-         nevg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=wGaNEgkga2C3vR38cQjxSl3nf4BfaDAQqYW9Vv/BBTc=;
-        b=WWK8V+WiHkrZrzd6Up5WkQoaO5xWO2z0UCj4aFcXoD6aMc33UZLXbzlS2BG3wj9DdQ
-         FbMWQGhmdb/x+02jDlTlbt/3h69G3o5pN8UF/0h8II+2ObAzw8tzsKCUYVg7ItDMdZmj
-         qqQtJ7tZFa+2AWlytIuUWh2zsMk8n017gs5X//97qrIarpysZAoIOG8UZ2AztYohkpel
-         7UulQXq8r79OvLyBsd2lsTg3R2Z0hL44Fu92KcRNAmHe9Ehm0IZ9HDq4BijczQMqyelg
-         GPpI9iXgjRSdmB8MZhk9y/Ghg9J9OhKkUxNhFMTBpK1mb9e9SW0gd5GBYIR71G+8V7dU
-         0KSQ==
-X-Gm-Message-State: AOAM531Oa02czRLmIN3LnCtx7g8Ka2IeWS8h4DblnUjcGsKTDsedPoJ8
-        +rKr9HtrINr+f5hLXOmBK8BAGA==
-X-Google-Smtp-Source: ABdhPJwa6dp2UBzeU6Egf+BrynvyfLaVErlWkcSLlDE67ay70zmXc3sc2mENXNU1OiQ9R77IHyoDJQ==
-X-Received: by 2002:a05:6808:1646:b0:2f7:50ea:85f3 with SMTP id az6-20020a056808164600b002f750ea85f3mr242567oib.137.1651684890264;
-        Wed, 04 May 2022 10:21:30 -0700 (PDT)
-Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
-        by smtp.gmail.com with ESMTPSA id a7-20020a056870b14700b000ead8b89484sm5785452oal.5.2022.05.04.10.21.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 May 2022 10:21:29 -0700 (PDT)
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Stephen Boyd <swboyd@chromium.org>
-Cc:     Alex Elder <elder@linaro.org>, Georgi Djakov <djakov@kernel.org>,
-        Doug Anderson <dianders@chromium.org>,
-        Taniya Das <quic_tdas@quicinc.com>, patches@lists.linux.dev,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Mike Tipton <quic_mdtipton@quicinc.com>
-Subject: Re: (subset) [PATCH 3/2] arm64: dts: qcom: sc7180: Remove ipa interconnect node
-Date:   Wed,  4 May 2022 12:21:14 -0500
-Message-Id: <165168485226.3730817.11676742538463355486.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220415005828.1980055-1-swboyd@chromium.org>
-References: <20220412220033.1273607-1-swboyd@chromium.org> <20220415005828.1980055-1-swboyd@chromium.org>
+        with ESMTP id S1376328AbiEDSIM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 14:08:12 -0400
+Received: from jabberwock.ucw.cz (jabberwock.ucw.cz [46.255.230.98])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA70C7092E;
+        Wed,  4 May 2022 10:23:30 -0700 (PDT)
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+        id 65AF91C0BBB; Wed,  4 May 2022 19:23:29 +0200 (CEST)
+Date:   Wed, 4 May 2022 19:23:28 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Caleb Connolly <caleb.connolly@linaro.org>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Amit Pundir <amit.pundir@linaro.org>,
+        Sumit Semwal <sumit.semwal@linaro.org>
+Subject: Re: [PATCH 0/6] power: supply: introduce support for the Qualcomm
+ smb2 charger
+Message-ID: <20220504172328.GC1623@bug>
+References: <20220427184031.2569442-1-caleb.connolly@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220427184031.2569442-1-caleb.connolly@linaro.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 14 Apr 2022 17:58:26 -0700, Stephen Boyd wrote:
-> This device node is unused now that we've removed the driver that
-> consumed it in the kernel. Drop the unused node to save some space.
-> 
-> 
+Hi!
 
-Applied, thanks!
+> Add a driver for the Qualcomm PMI8998/PM660 Switch-Mode Battery Charger.
+> This is the second generation SMB charger, and replaces the previous
+> SMBB hardware found in older PMICs.
+> 
+> This driver provides basic support for initialising the hardware,
+> configuring the USB input current limit and reporting information about
+> the state of the charger. Features like type-c dual role support and OTG
+> switching will be added in future patches.
+> 
+> This patch series depends on my previous series adding support for
+> the Round Robin ADC which is used for reading the USB voltage and
+> current, it can be found here:
+> https://lore.kernel.org/linux-arm-msm/20220323162820.110806-1-caleb@connolly.tech/
 
-[3/3] arm64: dts: qcom: sc7180: Remove ipa interconnect node
-      commit: 067bc653b85e466048914c48e46659a50a907fa6
+Please cc phone-devel mailing list with this and related stuff.
 
 Best regards,
--- 
-Bjorn Andersson <bjorn.andersson@linaro.org>
+									Pavel
