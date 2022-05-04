@@ -2,48 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B64BC433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E683C433FE
 	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 23:59:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383732AbiEEAA0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 20:00:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42230 "EHLO
+        id S1383729AbiEEAAZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 20:00:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41534 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385501AbiEDXZ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 19:25:27 -0400
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 897414D9FD
-        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 16:21:49 -0700 (PDT)
-Received: by mail-pl1-x633.google.com with SMTP id p6so2298367plr.12
-        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 16:21:49 -0700 (PDT)
+        with ESMTP id S1382255AbiEDXYy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 19:24:54 -0400
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 034034D9FD
+        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 16:21:15 -0700 (PDT)
+Received: by mail-pj1-x1031.google.com with SMTP id cx11-20020a17090afd8b00b001d9fe5965b3so6470898pjb.3
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 16:21:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=T0Ha5PjFrQlu4myFqDfG5tFx9BSiu6/SZECZT4sF2bI=;
-        b=lygx6dOsIFOk6hF+4C4Y8LRBekgsVCS6E/2MWFWQDMqc5bqCTYepfliMJM1myFV70X
-         jLFK02Fm2WKNyG22x0nZg+TsW5CsKzRyxkbYqV5+/PZ+gd4MpqDNr7coCd5Kt+2BDZNd
-         ONxJuOjN2+D6qeZ3Xquf1Dcw1BHsLe77ypccU=
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=f0BxOsiS7N+HTfWR68wbuI5GyHjxWUqAQAvHwIwW+yE=;
+        b=R5D0DOFVkQco+OK496uEyWM8qRT/qEDa61ADRf8s0rAJeF034c8CBOcJkI9DhSK99P
+         T9KGcuzycnvXcJPNISrJKPRM0NBDojZJdo/30qDInqLY8l2tGI62dZHO/kSe2d29NFi9
+         K7Vu8cNCpHGLqj5AbbquXriJVZ5gqG2e3HHcg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=T0Ha5PjFrQlu4myFqDfG5tFx9BSiu6/SZECZT4sF2bI=;
-        b=vG9xtL9NmeqlJZdJ04+S5Hu3u8yxBhbY3DqSIajxOn72fwaVFCPv6iGyh3u6SomvmX
-         fmrAoCqxtC44QAdOqoVr7JTF1S0Fhcej+0qeFL+BzlhC//kErqr8zVCeRqblY/7OHMts
-         nUZq8jPY+MtyYhdJFzuQVyal9uRIgriGvmvScm1qN7qZa15u6zEa2WJ68TMbQefOlkcC
-         8X9WqWdXmiTY+2sno7om+ROS0hk0oOseve6/UpelgeuMuzZR+Ve/2fkcPS6C+mxa8GqC
-         MtazgfVvGS7U57waZnUpMRAkUnWzobxKxRvm/3qxqmaBtYeVEAb7e/82VC96QrEp3Dhe
-         w+NQ==
-X-Gm-Message-State: AOAM5304JhK6ogsNWawPpE3SxtPK5pAgchfWJn9YDACH4i5z40o3uWQx
-        C2O+LgEcQxL+7pHrGhLTnfGc7w==
-X-Google-Smtp-Source: ABdhPJwTek7lbCixRIDyD0usxwvu26W1HK2YAo0odHiNuXLR54TGcMPEtMfBRJ0xUOtP1S0Xrla3iw==
-X-Received: by 2002:a17:903:22c9:b0:15e:a8a0:2a79 with SMTP id y9-20020a17090322c900b0015ea8a02a79mr16125068plg.31.1651706508866;
-        Wed, 04 May 2022 16:21:48 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=f0BxOsiS7N+HTfWR68wbuI5GyHjxWUqAQAvHwIwW+yE=;
+        b=Ck9aOzZYej/ex5QsHUqfjWNi/EYzKWSqsmFqRnyS7bcAhhOKfw3w4luVoc6LTtNLvY
+         4X1C9vjEbVHqIFSh8ni9xB/twcmKaaXeNz2IEottOY+w4mSwqoqfXsGSh4gyPF699SiZ
+         uHVzRWEYEkSGnp+yAcSw47B9DaRLd4cn8u/o4xtq+TVw/ZbJ/7y+taf9szLZ60ge8OOt
+         As3eM6Q3u+vcK4o4N2BB7vxCk4whvZVf6x2YSuVSfRJflwV7+s9pGB9gvB/3UXF8EdS5
+         vD3YjEreWYRtH7stxJTepAqO6KFo9mE8/hbkyvqHr8z09OGzu6yioH/NyEjFljec2nz/
+         lyBA==
+X-Gm-Message-State: AOAM533JStIsQAzAwIF1FQUVlq//JdmQbOqyloE0HjJ9alOydB+aMBvS
+        YpcH3XbInV/Wh9dXA6w3Ll2eKA==
+X-Google-Smtp-Source: ABdhPJz4iqQo29US5gcPdIjO5OrbAwRmVDtwaNJJOfTh1rXJxFOpVW3YvogErA3bWiWXuRJJXotSlg==
+X-Received: by 2002:a17:90b:4b83:b0:1dc:5073:b704 with SMTP id lr3-20020a17090b4b8300b001dc5073b704mr2397627pjb.94.1651706474455;
+        Wed, 04 May 2022 16:21:14 -0700 (PDT)
 Received: from evgreen-glaptop.lan ([98.47.98.87])
-        by smtp.gmail.com with ESMTPSA id q12-20020a170902f78c00b0015e8d4eb2d6sm1901pln.288.2022.05.04.16.21.47
+        by smtp.gmail.com with ESMTPSA id q12-20020a170902f78c00b0015e8d4eb2d6sm1901pln.288.2022.05.04.16.21.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 May 2022 16:21:48 -0700 (PDT)
+        Wed, 04 May 2022 16:21:14 -0700 (PDT)
 From:   Evan Green <evgreen@chromium.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Matthew Garrett <mgarrett@aurora.tech>, dlunev@google.com,
@@ -51,190 +51,141 @@ Cc:     Matthew Garrett <mgarrett@aurora.tech>, dlunev@google.com,
         linux-integrity@vger.kernel.org, corbet@lwn.net, rjw@rjwysocki.net,
         gwendal@chromium.org, jarkko@kernel.org, linux-pm@vger.kernel.org,
         Evan Green <evgreen@chromium.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [PATCH 09/10] PM: hibernate: Verify the digest encryption key
-Date:   Wed,  4 May 2022 16:21:01 -0700
-Message-Id: <20220504161439.9.I504d456c7a94ef1aaa7a2c63775ce9690c3ad7ab@changeid>
+        David Howells <dhowells@redhat.com>,
+        Hao Wu <hao.wu@rubrik.com>, James Morris <jmorris@namei.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Len Brown <len.brown@intel.com>,
+        Matthew Garrett <matthewgarrett@google.com>,
+        Pavel Machek <pavel@ucw.cz>, Peter Huewe <peterhuewe@gmx.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Serge E. Hallyn" <serge@hallyn.com>, axelj <axelj@axis.com>,
+        keyrings@vger.kernel.org, linux-doc@vger.kernel.org,
+        linux-security-module@vger.kernel.org
+Subject: [PATCH 00/10] Encrypted Hibernation
+Date:   Wed,  4 May 2022 16:20:52 -0700
+Message-Id: <20220504232102.469959-1-evgreen@chromium.org>
 X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20220504232102.469959-1-evgreen@chromium.org>
-References: <20220504232102.469959-1-evgreen@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We want to ensure that the key used to encrypt the digest was created by
-the kernel during hibernation. To do this we request that the TPM
-include information about the value of PCR 23 at the time of key
-creation in the sealed blob. On resume, we can make sure that the PCR
-information in the creation data blob (already certified by the TPM to
-be accurate) corresponds to the expected value. Since only
-the kernel can touch PCR 23, if an attacker generates a key themselves
-the value of PCR 23 will have been different, allowing us to reject the
-key and boot normally instead of resuming.
+We are exploring enabling hibernation in some new scenarios. However,
+our security team has a few requirements, listed below:
+1. The hibernate image must be encrypted with protection derived from
+   both the platform (eg TPM) and user authentication data (eg
+   password).
+2. Hibernation must not be a vector by which a malicious userspace can
+   escalate to the kernel.
 
-Sourced-from: Matthew Garrett <mjg59@google.com>
-Signed-off-by: Evan Green <evgreen@chromium.org>
+Requirement #1 can be achieved solely with uswsusp, however requirement
+2 necessitates mechanisms in the kernel to guarantee integrity of the
+hibernate image. The kernel needs a way to authenticate that it generated
+the hibernate image being loaded, and that the image has not been tampered
+with. Adding support for in-kernel AEAD encryption with a TPM-sealed key
+allows us to achieve both requirements with a single computation pass.
 
----
-Matthew's original version of this patch is here:
-https://patchwork.kernel.org/project/linux-pm/patch/20210220013255.1083202-9-matthewgarrett@google.com/
+Matthew Garrett published a series [1] that aligns closely with this
+goal. His series utilized the fact that PCR23 is a resettable PCR that
+can be blocked from access by usermode. The TPM can create a sealed key
+tied to PCR23 in two ways. First, the TPM can attest to the value of
+PCR23 when the key was created, which the kernel can use on resume to
+verify that the kernel must have created the key (since it is the only
+one capable of modifying PCR23). It can also create a policy that enforces
+PCR23 be set to a specific value as a condition of unsealing the key,
+preventing usermode from unsealing the key by talking directly to the
+TPM.
 
-I moved the TPM2_CC_CERTIFYCREATION code into a separate change in the
-trusted key code because the blob_handle was being flushed and was no
-longer valid for use in CC_CERTIFYCREATION after the key was loaded. As
-an added benefit of moving the certification into the trusted keys code,
-we can drop the other patch from the original series that squirrelled
-the blob_handle away.
+This series adopts that primitive as a foundation, tweaking and building
+on it a bit. Where Matthew's series used the TPM-backed key to encrypt a
+hash of the image, this series uses the key directly as a gcm(aes)
+encryption key, which the kernel uses to encrypt and decrypt the
+hibernate image in chunks of 16 pages. This provides both encryption and
+integrity, which turns out to be a noticeable performance improvement over
+separate passes for encryption and hashing.
 
- kernel/power/snapenc.c | 96 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 94 insertions(+), 2 deletions(-)
+The series also introduces the concept of mixing user key material into
+the encryption key. This allows usermode to introduce key material
+based on unspecified external authentication data (in our case derived
+from something like the user password or PIN), without requiring
+usermode to do a separate encryption pass.
 
-diff --git a/kernel/power/snapenc.c b/kernel/power/snapenc.c
-index 067f49c05a4d54..38bc820f780d8b 100644
---- a/kernel/power/snapenc.c
-+++ b/kernel/power/snapenc.c
-@@ -23,6 +23,45 @@ static struct tpm_digest known_digest = { .alg_id = TPM_ALG_SHA256,
- 		   0xf1, 0x22, 0x38, 0x6c, 0x33, 0xb1, 0x14, 0xb7, 0xec, 0x05,
- 		   0x5f, 0x49}};
- 
-+/* sha256(sha256(empty_pcr | known_digest)) */
-+static const char expected_digest[] = {0x2f, 0x96, 0xf2, 0x1b, 0x70, 0xa9, 0xe8,
-+	0x42, 0x25, 0x8e, 0x66, 0x07, 0xbe, 0xbc, 0xe3, 0x1f, 0x2c, 0x84, 0x4a,
-+	0x3f, 0x85, 0x17, 0x31, 0x47, 0x9a, 0xa5, 0x53, 0xbb, 0x23, 0x0c, 0x32,
-+	0xf3};
-+
-+static int sha256_data(char *buf, int size, char *output)
-+{
-+	struct crypto_shash *tfm;
-+	struct shash_desc *desc;
-+	int ret;
-+
-+	tfm = crypto_alloc_shash("sha256", 0, 0);
-+	if (IS_ERR(tfm))
-+		return PTR_ERR(tfm);
-+
-+	desc = kmalloc(sizeof(struct shash_desc) +
-+			       crypto_shash_descsize(tfm), GFP_KERNEL);
-+	if (!desc) {
-+		crypto_free_shash(tfm);
-+		return -ENOMEM;
-+	}
-+
-+	desc->tfm = tfm;
-+	ret = crypto_shash_init(desc);
-+	if (ret != 0) {
-+		crypto_free_shash(tfm);
-+		kfree(desc);
-+		return ret;
-+	}
-+
-+	crypto_shash_update(desc, buf, size);
-+	crypto_shash_final(desc, output);
-+	crypto_free_shash(desc->tfm);
-+	kfree(desc);
-+
-+	return 0;
-+}
-+
- /* Derive a key from the kernel and user keys for data encryption. */
- static int snapshot_use_user_key(struct snapshot_data *data)
- {
-@@ -515,7 +554,7 @@ static int snapshot_create_kernel_key(struct snapshot_data *data)
- 	struct key *key;
- 	int ret, i;
- 	/* Create a key sealed by the SRK. */
--	char *keyinfo = "new\t32\tkeyhandle=0x81000000";
-+	char *keyinfo = "new\t32\tkeyhandle=0x81000000\tcreationpcrs=0x00800000";
- 
- 	chip = tpm_default_chip();
- 	if (!chip)
-@@ -628,6 +667,7 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
- 	struct uswsusp_key_blob *blob)
- {
- 
-+	char certhash[SHA256_DIGEST_SIZE];
- 	const struct cred *cred = current_cred();
- 	char *keytemplate = "load\t%s\tkeyhandle=0x81000000";
- 	struct tpm_digest *digests = NULL;
-@@ -635,6 +675,7 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
- 	char *keyinfo = NULL;
- 	struct tpm_chip *chip;
- 	struct key *key;
-+	struct trusted_key_payload *payload;
- 	int i, ret;
- 
- 	chip = tpm_default_chip();
-@@ -650,8 +691,10 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
- 
- 	digests = kcalloc(chip->nr_allocated_banks, sizeof(struct tpm_digest),
- 			  GFP_KERNEL);
--	if (!digests)
-+	if (!digests) {
-+		ret = -ENOMEM;
- 		goto reset;
-+	}
- 
- 	for (i = 0; i <= chip->nr_allocated_banks; i++) {
- 		digests[i].alg_id = chip->allocated_banks[i].alg_id;
-@@ -690,6 +733,55 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
- 	if (ret < 0)
- 		goto out;
- 
-+	/* Verify the creation hash matches the creation data. */
-+	payload = key->payload.data[0];
-+	ret = sha256_data(payload->creation, payload->creation_len, certhash);
-+	if (ret < 0)
-+		goto out;
-+
-+	if (memcmp(payload->creation_hash, certhash, SHA256_DIGEST_SIZE) != 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* We now know that the creation data is authentic - parse it */
-+
-+	/* TPML_PCR_SELECTION.count */
-+	if (be32_to_cpu(*(int *)payload->creation) != 1) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (be16_to_cpu(*(u16 *)&payload->creation[4]) != TPM_ALG_SHA256) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (*(char *)&payload->creation[6] != 3) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* PCR 23 selected */
-+	if (be32_to_cpu(*(int *)&payload->creation[6]) != 0x03000080) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (be16_to_cpu(*(u16 *)&payload->creation[10]) !=
-+	    SHA256_DIGEST_SIZE) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* Verify PCR 23 contained the expected value when the key was created. */
-+	if (memcmp(&payload->creation[12], expected_digest,
-+		   SHA256_DIGEST_SIZE) != 0) {
-+
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
- 	data->key = key;
- 	key = NULL;
- 
+Matthew also documented issues his series had [2] related to generating
+fake images by booting alternate kernels without the PCR23 limiting.
+With access to PCR23 on the same machine, usermode can create fake
+hibernate images that are indistinguishable to the new kernel from
+genuine ones. His post outlines a solution that involves adding more
+PCRs into the creation data and policy, with some gyrations to make this
+work well on a standard PC.
+
+Our approach would be similar: on our machines PCR 0 indicates whether
+the system is booted in secure/verified mode or developer mode. By
+adding PCR0 to the policy, we can reject hibernate images made in
+developer mode while in verified mode (or vice versa).
+
+Additionally, mixing in the user authentication data limits both
+data exfiltration attacks (eg a stolen laptop) and forged hibernation
+image attacks to attackers that already know the authentication data (eg
+user's password). This, combined with our relatively sealed userspace
+(dm-verity on the rootfs), and some judicious clearing of the hibernate
+image (such as across an OS update) further reduce the risk of an online
+attack. The remaining attack space of a forgery from someone with
+physical access to the device and knowledge of the authentication data
+is out of scope for us, given that flipping to developer mode or
+reflashing RO firmware trivially achieves the same thing.
+
+A couple of patches still need to be written on top of this series. The
+generalized functionality to OR in additional PCRs via Kconfig (like PCR
+0 or 5) still needs to be added. We'll also need a patch that disallows
+unencrypted forms of resume from hibernation, to fully close the door
+to malicious userspace. However, I wanted to get this series out first
+and get reactions from upstream before continuing to add to it.
+
+[1] https://patchwork.kernel.org/project/linux-pm/cover/20210220013255.1083202-1-matthewgarrett@google.com/
+[2] https://mjg59.dreamwidth.org/58077.html
+
+
+Evan Green (6):
+  security: keys: trusted: Verify creation data
+  PM: hibernate: Add kernel-based encryption
+  PM: hibernate: Use TPM-backed keys to encrypt image
+  PM: hibernate: Mix user key in encrypted hibernate
+  PM: hibernate: Verify the digest encryption key
+  PM: hibernate: seal the encryption key with a PCR policy
+
+Matthew Garrett (4):
+  tpm: Add support for in-kernel resetting of PCRs
+  tpm: Allow PCR 23 to be restricted to kernel-only use
+  security: keys: trusted: Parse out individual components of the key
+    blob
+  security: keys: trusted: Allow storage of PCR values in creation data
+
+ Documentation/power/userland-swsusp.rst       |    8 +
+ .../security/keys/trusted-encrypted.rst       |    4 +
+ drivers/char/tpm/Kconfig                      |   10 +
+ drivers/char/tpm/tpm-dev-common.c             |    8 +
+ drivers/char/tpm/tpm-interface.c              |   28 +
+ drivers/char/tpm/tpm.h                        |   23 +
+ drivers/char/tpm/tpm1-cmd.c                   |   69 ++
+ drivers/char/tpm/tpm2-cmd.c                   |   58 +
+ drivers/char/tpm/tpm2-space.c                 |    2 +-
+ include/keys/trusted-type.h                   |    9 +
+ include/linux/tpm.h                           |   12 +
+ include/uapi/linux/suspend_ioctls.h           |   28 +-
+ kernel/power/Kconfig                          |   15 +
+ kernel/power/Makefile                         |    1 +
+ kernel/power/power.h                          |    1 +
+ kernel/power/snapenc.c                        | 1076 +++++++++++++++++
+ kernel/power/snapshot.c                       |    5 +
+ kernel/power/user.c                           |   44 +-
+ kernel/power/user.h                           |  114 ++
+ security/keys/trusted-keys/trusted_tpm1.c     |    9 +
+ security/keys/trusted-keys/trusted_tpm2.c     |  164 ++-
+ 21 files changed, 1670 insertions(+), 18 deletions(-)
+ create mode 100644 kernel/power/snapenc.c
+ create mode 100644 kernel/power/user.h
+
 -- 
 2.31.0
 
