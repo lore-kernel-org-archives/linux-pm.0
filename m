@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1DE1C433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 08:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4446C4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 08:18:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238146AbiEDIVe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 04:21:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48660 "EHLO
+        id S1346179AbiEDIVf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 04:21:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346140AbiEDIVb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 04:21:31 -0400
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1BD0205F2
-        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 01:17:55 -0700 (PDT)
-Received: by mail-ed1-x536.google.com with SMTP id g23so817265edy.13
-        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 01:17:55 -0700 (PDT)
+        with ESMTP id S1346169AbiEDIVd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 04:21:33 -0400
+Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F27B22B2F
+        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 01:17:58 -0700 (PDT)
+Received: by mail-ej1-x632.google.com with SMTP id i27so1401396ejd.9
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 01:17:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=UkkhaokilCoJ0QaueTDdKBuZpYOWRWhVaZ7JrjJkA3o=;
-        b=Y11uNctIy3cOjG6//dW4N/QbxtkNnNXXbt+YGwGQrk/ajhsEyznptbi8AU2y1d8d3m
-         xfJFJj/HnqUXGjTRJbdMWvjs35Tjktq5qksuGSqzGMQdf++TkE03pAq06h4VxV9JdBep
-         vvpF9B6o3zxxstfB5dwrksjHu8wRR+s5jjbMFL2oEE8nv93HeUz8Hhu09yoRtOE16nCr
-         fFvTMcPo++ZeX16PQDLYmGqbzqeMZ83XFCbugAF0aM+1jBvRF+GbIS8wv8AhoMQdP5Ax
-         8CytUGSiRWGADXtdvZC/Lw86iFzqKMIdbFBAMCYtpviYOQ1PkX2yyVG/YDTk2vQdx19f
-         CtBg==
+        h=from:to:subject:date:message-id:in-reply-to:references:mime-version
+         :content-transfer-encoding;
+        bh=O6GbIkgJZE5Z6glq7Iv2emVY00yo6pcgnwtnrebV2k4=;
+        b=ur/0KL9Fhaf7eYBEvSL291bNaCYRN55DUwp8WCBgMYvdAcjjBUF1mB02qqKIsoAtHf
+         +hDN/7Z004Dg4IywRI5N4h137KL0DLdcF9jO4qgsa9drkhDfIZiDv+a7WX6UBWXu5P2T
+         0Bn7cfBL95hejAZmK3VTyU/GQuJDH9q+JR+wGB2GFDyw1F9FJS0L4rjTJFsmMMfIEK8+
+         V3ccPgCQEblCxvfQgZ/vsKjfvrAE7rSyfvc5mIabMrgebJtwHj+CqeqvmOhqUCwy7CRF
+         2Q8UXVoZjfzH7XkWGjI/VeSWCJPgcQ0GmuEK34h4mF+pFkUxApGiwRuga7AJJ6ZVo/Gy
+         XecA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+        h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UkkhaokilCoJ0QaueTDdKBuZpYOWRWhVaZ7JrjJkA3o=;
-        b=mYBCw+U4sppNCQ36hn296QpEd1e2mUIp/Aljufwh0POk7yFPgmBiS/51tAk1GfW55H
-         +RRCyk2QUb1AAJtZONhRLSdSb4OwcKnxTzJRZRIK37Cl+5nSvyCyNtDzgFGmf0ANrpsb
-         FvHkaAubRnQNFSFc9ty14bkSSHjUSvTVlrvMAHkiViDG0F3BUa42mgKJHeZTK07na3rb
-         sJSAkkfi/0LyK4x6mUYlgzyd8t+/uX0Udf50q2bnH4rwg5QI4zmipeFfmFh4V2U1Jqyh
-         M6aGUTcuf8QwEVM9qxXzNyLSp0Qky6DcvzzJ/8/QvLSlFsQDkBVkSmp66JRj0raHk7bs
-         vEAQ==
-X-Gm-Message-State: AOAM532lYAZYXHHPHcBEI1T6em/f7BUTUeUg2Q8ZEbJIAeRYrTPbqy+0
-        36FNnxcNXVYqHfhMNhKeHizyFg==
-X-Google-Smtp-Source: ABdhPJzBMLLxZOXcRZjm+dXHMkMN32sM1xFJ73fZ+Pc96EBg2i1XMKbCHPBOw7zEo6ONnmcJgPY1KQ==
-X-Received: by 2002:a05:6402:35c3:b0:423:f765:4523 with SMTP id z3-20020a05640235c300b00423f7654523mr21785036edc.311.1651652274429;
-        Wed, 04 May 2022 01:17:54 -0700 (PDT)
+        bh=O6GbIkgJZE5Z6glq7Iv2emVY00yo6pcgnwtnrebV2k4=;
+        b=RhY3zsSIVbn6Fwf1cwPViI/hgAdgm7rni0gdLCcEkf1IsFHNLhpLc09gwFyMQV3rTH
+         zaSCdt36cuBq37i280QLqhjkWa91VjemEB7McKayZbYo6FjiL2WBtMXV1Z4Atp3lRRyo
+         tfSUW6LeZIuYVc1KQpevd2r+wtuE3kkfSOJIXLTdbMWXs6F5SvN3nEIJ9MS/uAdl/q2z
+         pcwCTBHIQomE8vL8bMr8yVvKMjWZNAdxIyx4AZwpZSx9MTrTKY6nIVKs/dbkRRPFI/4I
+         JTJMBBccg3RHPP1EvDjpBa0h3a9kKBKUUeq0xaXt6vxasBH2Z/y9cB1or6l6AOK8np/p
+         T//w==
+X-Gm-Message-State: AOAM530S6RQhUzx2bC7ljh7XXQ1v5ScpIZ5IMOLxKhVc0SDYOqSFUavH
+        bSWqwvJ8N9sZRLNDbL+dSZoZBA==
+X-Google-Smtp-Source: ABdhPJw8cwfUkl3cLE4Gx+H/jj1KdfjNqfXkg98cWmonAuCaRjNsaNnMBDBwVQQSS/yKkpS8GHFk5w==
+X-Received: by 2002:a17:906:c156:b0:6f3:9e3c:5cc8 with SMTP id dp22-20020a170906c15600b006f39e3c5cc8mr19000557ejc.17.1651652276973;
+        Wed, 04 May 2022 01:17:56 -0700 (PDT)
 Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
-        by smtp.gmail.com with ESMTPSA id l21-20020a056402345500b0042617ba6393sm8781322edc.29.2022.05.04.01.17.53
+        by smtp.gmail.com with ESMTPSA id l21-20020a056402345500b0042617ba6393sm8781322edc.29.2022.05.04.01.17.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 May 2022 01:17:53 -0700 (PDT)
+        Wed, 04 May 2022 01:17:56 -0700 (PDT)
 From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         Andy Gross <agross@kernel.org>,
@@ -61,10 +61,9 @@ To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Cc:     Thara Gopinath <thara.gopinath@linaro.org>
-Subject: [PATCH v2 2/5] opp: Add apis to retrieve opps with interconnect bandwidth
-Date:   Wed,  4 May 2022 10:17:32 +0200
-Message-Id: <20220504081735.26906-3-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v2 4/5] arm64: defconfig: enable Qualcomm Bandwidth Monitor
+Date:   Wed,  4 May 2022 10:17:34 +0200
+Message-Id: <20220504081735.26906-5-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.32.0
 In-Reply-To: <20220504081735.26906-1-krzysztof.kozlowski@linaro.org>
 References: <20220504081735.26906-1-krzysztof.kozlowski@linaro.org>
@@ -74,187 +73,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add dev_pm_opp_find_bw_ceil and dev_pm_opp_find_bw_floor to retrieve opps
-based on interconnect associated with the opp and bandwidth. The index
-variable is the index of the interconnect as specified in the opp table
-in Devicetree.
+Enable the Qualcomm Bandwidth Monitor to allow scaling interconnects
+depending on bandwidth usage between CPU and memory.  This is used
+already on Qualcomm SDM845 SoC.
 
-Co-developed-by: Thara Gopinath <thara.gopinath@linaro.org>
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/opp/core.c     | 120 +++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h |  19 +++++++
- 2 files changed, 139 insertions(+)
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 2945f3c1ce09..8125342cee2f 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -729,6 +729,126 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil_by_volt(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_ceil_by_volt);
- 
-+/**
-+ * dev_pm_opp_find_bw_ceil() - Search for a rounded ceil bandwidth
-+ * @dev:	device for which we do this operation
-+ * @freq:	start bandwidth
-+ * @index:	which bandwidth to compare, in case of OPPs with several values
-+ *
-+ * Search for the matching floor *available* OPP from a starting bandwidth
-+ * for a device.
-+ *
-+ * Return: matching *opp and refreshes *bw accordingly, else returns
-+ * ERR_PTR in case of error and should be handled using IS_ERR. Error return
-+ * values can be:
-+ * EINVAL:	for bad pointer
-+ * ERANGE:	no match found for search
-+ * ENODEV:	if device not found in list of registered devices
-+ *
-+ * The callers are required to call dev_pm_opp_put() for the returned OPP after
-+ * use.
-+ */
-+struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev,
-+					   unsigned int *bw, int index)
-+{
-+	struct opp_table *opp_table;
-+	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
-+
-+	if (!dev || !bw) {
-+		dev_err(dev, "%s: Invalid argument bw=%p\n", __func__, bw);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table))
-+		return ERR_CAST(opp_table);
-+
-+	if (index >= opp_table->path_count)
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&opp_table->lock);
-+
-+	list_for_each_entry(temp_opp, &opp_table->opp_list, node) {
-+		if (temp_opp->available && temp_opp->bandwidth) {
-+			if (temp_opp->bandwidth[index].peak >= *bw) {
-+				opp = temp_opp;
-+				*bw = opp->bandwidth[index].peak;
-+
-+				/* Increment the reference count of OPP */
-+				dev_pm_opp_get(opp);
-+				break;
-+			}
-+		}
-+	}
-+
-+	mutex_unlock(&opp_table->lock);
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+	return opp;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_find_bw_ceil);
-+
-+/**
-+ * dev_pm_opp_find_bw_floor() - Search for a rounded floor bandwidth
-+ * @dev:	device for which we do this operation
-+ * @freq:	start bandwidth
-+ * @index:	which bandwidth to compare, in case of OPPs with several values
-+ *
-+ * Search for the matching floor *available* OPP from a starting bandwidth
-+ * for a device.
-+ *
-+ * Return: matching *opp and refreshes *bw accordingly, else returns
-+ * ERR_PTR in case of error and should be handled using IS_ERR. Error return
-+ * values can be:
-+ * EINVAL:	for bad pointer
-+ * ERANGE:	no match found for search
-+ * ENODEV:	if device not found in list of registered devices
-+ *
-+ * The callers are required to call dev_pm_opp_put() for the returned OPP after
-+ * use.
-+ */
-+struct dev_pm_opp *dev_pm_opp_find_bw_floor(struct device *dev,
-+					    unsigned int *bw, int index)
-+{
-+	struct opp_table *opp_table;
-+	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
-+
-+	if (!dev || !bw) {
-+		dev_err(dev, "%s: Invalid argument bw=%p\n", __func__, bw);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table))
-+		return ERR_CAST(opp_table);
-+
-+	if (index >= opp_table->path_count)
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&opp_table->lock);
-+
-+	list_for_each_entry(temp_opp, &opp_table->opp_list, node) {
-+		if (temp_opp->available && temp_opp->bandwidth) {
-+			/* go to the next node, before choosing prev */
-+			if (temp_opp->bandwidth[index].peak > *bw)
-+				break;
-+			opp = temp_opp;
-+		}
-+	}
-+
-+	/* Increment the reference count of OPP */
-+	if (!IS_ERR(opp))
-+		dev_pm_opp_get(opp);
-+	mutex_unlock(&opp_table->lock);
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+	if (!IS_ERR(opp))
-+		*bw = opp->bandwidth[index].peak;
-+
-+	return opp;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_find_bw_floor);
-+
- static int _set_opp_voltage(struct device *dev, struct regulator *reg,
- 			    struct dev_pm_opp_supply *supply)
- {
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 0d85a63a1f78..dcea178868c9 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -129,6 +129,13 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil_by_volt(struct device *dev,
- 
- struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 					     unsigned long *freq);
-+
-+struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev,
-+					   unsigned int *bw, int index);
-+
-+struct dev_pm_opp *dev_pm_opp_find_bw_floor(struct device *dev,
-+					   unsigned int *bw, int index);
-+
- void dev_pm_opp_put(struct dev_pm_opp *opp);
- 
- int dev_pm_opp_add(struct device *dev, unsigned long freq,
-@@ -279,6 +286,18 @@ static inline struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	return ERR_PTR(-EOPNOTSUPP);
- }
- 
-+static inline struct dev_pm_opp *dev_pm_opp_find_bw_ceil(struct device *dev,
-+					unsigned int *bw, int index)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
-+static inline struct dev_pm_opp *dev_pm_opp_find_bw_floor(struct device *dev,
-+					unsigned int *bw, int index)
-+{
-+	return ERR_PTR(-EOPNOTSUPP);
-+}
-+
- static inline void dev_pm_opp_put(struct dev_pm_opp *opp) {}
- 
- static inline int dev_pm_opp_add(struct device *dev, unsigned long freq,
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 6906b83f5e45..6edbcfd3f4ca 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1096,6 +1096,7 @@ CONFIG_QCOM_SOCINFO=m
+ CONFIG_QCOM_STATS=m
+ CONFIG_QCOM_WCNSS_CTRL=m
+ CONFIG_QCOM_APR=m
++CONFIG_QCOM_ICC_BWMON=m
+ CONFIG_ARCH_R8A77995=y
+ CONFIG_ARCH_R8A77990=y
+ CONFIG_ARCH_R8A77950=y
 -- 
 2.32.0
 
