@@ -2,279 +2,352 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 124DAC4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 22:42:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03424C433EF
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 23:54:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378482AbiEDWqJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 18:46:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32906 "EHLO
+        id S230361AbiEDX53 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 19:57:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379069AbiEDWqB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 18:46:01 -0400
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1340053731;
-        Wed,  4 May 2022 15:41:58 -0700 (PDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:52142)
-        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgz-002E7F-6C; Wed, 04 May 2022 16:41:57 -0600
-Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37004 helo=localhost.localdomain)
-        by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgw-00GI0k-Sk; Wed, 04 May 2022 16:41:56 -0600
-From:   "Eric W. Biederman" <ebiederm@xmission.com>
+        with ESMTP id S1385524AbiEDXZ3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 19:25:29 -0400
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F06BD4D9FD
+        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 16:21:51 -0700 (PDT)
+Received: by mail-pf1-x42d.google.com with SMTP id v11so2296946pff.6
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2022 16:21:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=JZes23V8D29o9o+3/8Wg3E/cTc0rQTuNxnYi5rLsric=;
+        b=XrelHwAQ5nZclhDVNUhijM04rz+AIMdWor66LM+U6mT7FdbzNPxCB1jEHkolFtO4pA
+         MhjNNy3YXQuvcea24SJHqpTqMomdy1jVehXiIhPxQ32FHx6DMgjDu5+wKs0EavqHS1ao
+         4OTz4nqw6vO7eIYGX95TlNSpXeIVZrvpANGY8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=JZes23V8D29o9o+3/8Wg3E/cTc0rQTuNxnYi5rLsric=;
+        b=xKk4e2mfPyA25QTRf0mUg1supO1vQcblmlbIs27LPP/mdFFUFTsil4ubTjWNSfIs2Y
+         5ufzEQJkGKpF/5brETrwLAIkrGun+NNKejbDW3n9N6Oqou8giJBJ90rjN0MGsIWFbsN+
+         OK4ead+f4YsrwpZfMvI34yJteixTCEbAMNLkdOIjysDEwdgVQ/7gMIM5ZeTYbF1uDDxM
+         7sqjCycCRad9GTqGsY7hRu5guq0bManbYylml/kdUs2/z5z1mqIHWXq4og76+sSMg1CI
+         xBE2OxEw0gZpoX8qhqgeQpVqXKca9uEoVkEN3Bg/6Fe1ET3mtDi2FrmZCeoQDBAW6YbG
+         pERw==
+X-Gm-Message-State: AOAM532w+vXbqJe+d8Cxpxj3QMN1HstxUsKhc8MgGQ2zJMSyCbvoC6qm
+        8Xf1j3h8HVYXRsWgnF9ll43Dfw==
+X-Google-Smtp-Source: ABdhPJxkwEzrHWGeAldGbUw4MtrMMRq8pNSoFW6ViiQ7UOM/5tnP8ce/RBsuczT6aEuLXMgf7vqdQA==
+X-Received: by 2002:a63:91c4:0:b0:3c1:d47f:1a4c with SMTP id l187-20020a6391c4000000b003c1d47f1a4cmr18349062pge.396.1651706511488;
+        Wed, 04 May 2022 16:21:51 -0700 (PDT)
+Received: from evgreen-glaptop.lan ([98.47.98.87])
+        by smtp.gmail.com with ESMTPSA id q12-20020a170902f78c00b0015e8d4eb2d6sm1901pln.288.2022.05.04.16.21.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 May 2022 16:21:51 -0700 (PDT)
+From:   Evan Green <evgreen@chromium.org>
 To:     linux-kernel@vger.kernel.org
-Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
-        mingo@kernel.org, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
-        bigeasy@linutronix.de, Will Deacon <will@kernel.org>,
-        tj@kernel.org, linux-pm@vger.kernel.org,
-        Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        "Eric W . Biederman" <ebiederm@xmission.com>
-Date:   Wed,  4 May 2022 17:40:58 -0500
-Message-Id: <20220504224058.476193-11-ebiederm@xmission.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
-References: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
+Cc:     Matthew Garrett <mgarrett@aurora.tech>, dlunev@google.com,
+        zohar@linux.ibm.com, jejb@linux.ibm.com,
+        linux-integrity@vger.kernel.org, corbet@lwn.net, rjw@rjwysocki.net,
+        gwendal@chromium.org, jarkko@kernel.org, linux-pm@vger.kernel.org,
+        Evan Green <evgreen@chromium.org>, Hao Wu <hao.wu@rubrik.com>,
+        Len Brown <len.brown@intel.com>,
+        Matthew Garrett <matthewgarrett@google.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>, axelj <axelj@axis.com>
+Subject: [PATCH 10/10] PM: hibernate: seal the encryption key with a PCR policy
+Date:   Wed,  4 May 2022 16:21:02 -0700
+Message-Id: <20220504161439.10.Ifce072ae1ef1ce39bd681fff55af13a054045d9f@changeid>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20220504232102.469959-1-evgreen@chromium.org>
+References: <20220504232102.469959-1-evgreen@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmNgw-00GI0k-Sk;;;mid=<20220504224058.476193-11-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1/4O1Me+wjAHiAxCjW+9VhfNjaKni2YTZs=
-X-SA-Exim-Connect-IP: 68.227.174.4
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v3 11/11] sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peter Zijlstra <peterz@infradead.org>
+The key blob is not secret, and by default the TPM will happily unseal
+it regardless of system state. We can protect against that by sealing
+the secret with a PCR policy - if the current PCR state doesn't match,
+the TPM will refuse to release the secret. For now let's just seal it to
+PCR 23. In the long term we may want a more flexible policy around this,
+such as including PCR 7 for PCs or 0 for Chrome OS.
 
-Currently ptrace_stop() / do_signal_stop() rely on the special states
-TASK_TRACED and TASK_STOPPED resp. to keep unique state. That is, this
-state exists only in task->__state and nowhere else.
-
-There's two spots of bother with this:
-
- - PREEMPT_RT has task->saved_state which complicates matters,
-   meaning task_is_{traced,stopped}() needs to check an additional
-   variable.
-
- - An alternative freezer implementation that itself relies on a
-   special TASK state would loose TASK_TRACED/TASK_STOPPED and will
-   result in misbehaviour.
-
-As such, add additional state to task->jobctl to track this state
-outside of task->__state.
-
-NOTE: this doesn't actually fix anything yet, just adds extra state.
-
---EWB
-  * didn't add a unnecessary newline in signal.h
-  * Update t->jobctl in signal_wake_up and ptrace_signal_wake_up
-    instead of in signal_wake_up_state.  This prevents the clearing
-    of TASK_STOPPED and TASK_TRACED from getting lost.
-  * Added warnings if JOBCTL_STOPPED or JOBCTL_TRACED are not cleared
-
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Link: https://lkml.kernel.org/r/20220421150654.757693825@infradead.org
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Sourced-from: Matthew Garrett <mjg59@google.com>
+Signed-off-by: Evan Green <evgreen@chromium.org>
 ---
- include/linux/sched.h        |  8 +++-----
- include/linux/sched/jobctl.h |  6 ++++++
- include/linux/sched/signal.h | 19 +++++++++++++++----
- kernel/ptrace.c              | 16 +++++++++++++---
- kernel/signal.c              | 10 ++++++++--
- 5 files changed, 45 insertions(+), 14 deletions(-)
+The original version of this patch is here:
+https://patchwork.kernel.org/project/linux-pm/patch/20210220013255.1083202-10-matthewgarrett@google.com/
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 610f2fdb1e2c..cbe5c899599c 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -118,11 +118,9 @@ struct task_group;
+ include/linux/tpm.h    |   4 +
+ kernel/power/snapenc.c | 163 +++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 160 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+index 438f8bc0a50582..cd520efc515bca 100644
+--- a/include/linux/tpm.h
++++ b/include/linux/tpm.h
+@@ -233,18 +233,22 @@ enum tpm2_command_codes {
+ 	TPM2_CC_CONTEXT_LOAD	        = 0x0161,
+ 	TPM2_CC_CONTEXT_SAVE	        = 0x0162,
+ 	TPM2_CC_FLUSH_CONTEXT	        = 0x0165,
++	TPM2_CC_START_AUTH_SESSION      = 0x0176,
+ 	TPM2_CC_VERIFY_SIGNATURE        = 0x0177,
+ 	TPM2_CC_GET_CAPABILITY	        = 0x017A,
+ 	TPM2_CC_GET_RANDOM	        = 0x017B,
+ 	TPM2_CC_PCR_READ	        = 0x017E,
++	TPM2_CC_POLICY_PCR              = 0x017F,
+ 	TPM2_CC_PCR_EXTEND	        = 0x0182,
+ 	TPM2_CC_EVENT_SEQUENCE_COMPLETE = 0x0185,
+ 	TPM2_CC_HASH_SEQUENCE_START     = 0x0186,
++	TPM2_CC_POLICY_GET_DIGEST       = 0x0189,
+ 	TPM2_CC_CREATE_LOADED           = 0x0191,
+ 	TPM2_CC_LAST		        = 0x0193, /* Spec 1.36 */
+ };
  
- #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
+ enum tpm2_permanent_handles {
++	TPM2_RH_NULL		= 0x40000007,
+ 	TPM2_RS_PW		= 0x40000009,
+ };
  
--#define task_is_traced(task)		((READ_ONCE(task->__state) & __TASK_TRACED) != 0)
--
--#define task_is_stopped(task)		((READ_ONCE(task->__state) & __TASK_STOPPED) != 0)
--
--#define task_is_stopped_or_traced(task)	((READ_ONCE(task->__state) & (__TASK_STOPPED | __TASK_TRACED)) != 0)
-+#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-+#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
-+#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
+diff --git a/kernel/power/snapenc.c b/kernel/power/snapenc.c
+index 38bc820f780d8b..9d140c62b49db1 100644
+--- a/kernel/power/snapenc.c
++++ b/kernel/power/snapenc.c
+@@ -495,6 +495,111 @@ void snapshot_teardown_encryption(struct snapshot_data *data)
+ 	memset(data->user_key, 0, sizeof(data->user_key));
+ }
  
- /*
-  * Special states are those that do not use the normal wait-loop pattern. See
-diff --git a/include/linux/sched/jobctl.h b/include/linux/sched/jobctl.h
-index d556c3425963..68876d0a7ef9 100644
---- a/include/linux/sched/jobctl.h
-+++ b/include/linux/sched/jobctl.h
-@@ -21,6 +21,9 @@ struct task_struct;
- #define JOBCTL_TRAP_FREEZE_BIT	23	/* trap for cgroup freezer */
- #define JOBCTL_PTRACE_FROZEN_BIT	24	/* frozen for ptrace */
- 
-+#define JOBCTL_STOPPED_BIT	26	/* do_signal_stop() */
-+#define JOBCTL_TRACED_BIT	27	/* ptrace_stop() */
++static int tpm_setup_policy(struct tpm_chip *chip, int *session_handle)
++{
++	struct tpm_header *head;
++	struct tpm_buf buf;
++	char nonce[32] = {0x00};
++	int rc;
 +
- #define JOBCTL_STOP_DEQUEUED	(1UL << JOBCTL_STOP_DEQUEUED_BIT)
- #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
- #define JOBCTL_STOP_CONSUME	(1UL << JOBCTL_STOP_CONSUME_BIT)
-@@ -31,6 +34,9 @@ struct task_struct;
- #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
- #define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
- 
-+#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
-+#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
++	rc = tpm_buf_init(&buf, TPM2_ST_NO_SESSIONS,
++			  TPM2_CC_START_AUTH_SESSION);
++	if (rc)
++		return rc;
 +
- #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP | JOBCTL_TRAP_NOTIFY)
- #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
- 
-diff --git a/include/linux/sched/signal.h b/include/linux/sched/signal.h
-index e66948abbee4..07ba3404fcde 100644
---- a/include/linux/sched/signal.h
-+++ b/include/linux/sched/signal.h
-@@ -294,8 +294,10 @@ static inline int kernel_dequeue_signal(void)
- static inline void kernel_signal_stop(void)
- {
- 	spin_lock_irq(&current->sighand->siglock);
--	if (current->jobctl & JOBCTL_STOP_DEQUEUED)
-+	if (current->jobctl & JOBCTL_STOP_DEQUEUED) {
-+		current->jobctl |= JOBCTL_STOPPED;
- 		set_special_state(TASK_STOPPED);
++	/* Decrypt key */
++	tpm_buf_append_u32(&buf, TPM2_RH_NULL);
++
++	/* Auth entity */
++	tpm_buf_append_u32(&buf, TPM2_RH_NULL);
++
++	/* Nonce - blank is fine here */
++	tpm_buf_append_u16(&buf, sizeof(nonce));
++	tpm_buf_append(&buf, nonce, sizeof(nonce));
++
++	/* Encrypted secret - empty */
++	tpm_buf_append_u16(&buf, 0);
++
++	/* Policy type - session */
++	tpm_buf_append_u8(&buf, 0x01);
++
++	/* Encryption type - NULL */
++	tpm_buf_append_u16(&buf, TPM_ALG_NULL);
++
++	/* Hash type - SHA256 */
++	tpm_buf_append_u16(&buf, TPM_ALG_SHA256);
++
++	rc = tpm_send(chip, buf.data, tpm_buf_length(&buf));
++	if (rc)
++		goto out;
++
++	head = (struct tpm_header *)buf.data;
++	if (be32_to_cpu(head->length) != sizeof(struct tpm_header) +
++	    sizeof(int) + sizeof(u16) + sizeof(nonce)) {
++		rc = -EINVAL;
++		goto out;
 +	}
- 	spin_unlock_irq(&current->sighand->siglock);
- 
- 	schedule();
-@@ -437,12 +439,21 @@ extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
- 
- static inline void signal_wake_up(struct task_struct *t, bool fatal)
- {
--	fatal = fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN);
--	signal_wake_up_state(t, fatal ? TASK_WAKEKILL | __TASK_TRACED : 0);
-+	unsigned int state = 0;
-+	if (fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN)) {
-+		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
-+		state = TASK_WAKEKILL | __TASK_TRACED;
++
++	*session_handle = be32_to_cpu(*(int *)&buf.data[10]);
++	memcpy(nonce, &buf.data[16], sizeof(nonce));
++	tpm_buf_destroy(&buf);
++	rc = tpm_buf_init(&buf, TPM2_ST_NO_SESSIONS, TPM2_CC_POLICY_PCR);
++	if (rc)
++		return rc;
++
++	tpm_buf_append_u32(&buf, *session_handle);
++
++	/* PCR digest - read from the PCR, we'll verify creation data later */
++	tpm_buf_append_u16(&buf, 0);
++
++	/* One PCR */
++	tpm_buf_append_u32(&buf, 1);
++
++	/* SHA256 banks */
++	tpm_buf_append_u16(&buf, TPM_ALG_SHA256);
++
++	/* Select PCR 23 */
++	tpm_buf_append_u32(&buf, 0x03000080);
++	rc = tpm_send(chip, buf.data, tpm_buf_length(&buf));
++	if (rc)
++		goto out;
++
++out:
++	tpm_buf_destroy(&buf);
++	return rc;
++}
++
++static int tpm_policy_get_digest(struct tpm_chip *chip, int handle,
++				 char *digest)
++{
++	struct tpm_header *head;
++	struct tpm_buf buf;
++	int rc;
++
++	rc = tpm_buf_init(&buf, TPM2_ST_NO_SESSIONS, TPM2_CC_POLICY_GET_DIGEST);
++	if (rc)
++		return rc;
++
++	tpm_buf_append_u32(&buf, handle);
++	rc = tpm_send(chip, buf.data, tpm_buf_length(&buf));
++
++	if (rc)
++		goto out;
++
++	head = (struct tpm_header *)buf.data;
++	if (be32_to_cpu(head->length) != sizeof(struct tpm_header) +
++	    sizeof(u16) + SHA256_DIGEST_SIZE) {
++		rc = -EINVAL;
++		goto out;
 +	}
-+	signal_wake_up_state(t, state);
- }
- static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
++
++	memcpy(digest, &buf.data[12], SHA256_DIGEST_SIZE);
++
++out:
++	tpm_buf_destroy(&buf);
++	return rc;
++}
++
+ static int snapshot_setup_encryption_common(struct snapshot_data *data)
  {
--	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
-+	unsigned int state = 0;
-+	if (resume) {
-+		t->jobctl &= ~JOBCTL_TRACED;
-+		state = __TASK_TRACED;
+ 	int i, rc;
+@@ -554,7 +659,11 @@ static int snapshot_create_kernel_key(struct snapshot_data *data)
+ 	struct key *key;
+ 	int ret, i;
+ 	/* Create a key sealed by the SRK. */
+-	char *keyinfo = "new\t32\tkeyhandle=0x81000000\tcreationpcrs=0x00800000";
++	char *keyinfo = NULL;
++	const char *keytemplate = "new\t32\tkeyhandle=0x81000000\tcreationpcrs=0x00800000\tpolicydigest=%s";
++	char policy[SHA256_DIGEST_SIZE];
++	char *policydigest = NULL;
++	int session_handle = -1;
+ 
+ 	chip = tpm_default_chip();
+ 	if (!chip)
+@@ -584,13 +693,35 @@ static int snapshot_create_kernel_key(struct snapshot_data *data)
+ 	if (ret != 0)
+ 		goto reset;
+ 
++	policydigest = kmalloc(SHA256_DIGEST_SIZE * 2 + 1, GFP_KERNEL);
++	if (!policydigest) {
++		ret = -ENOMEM;
++		goto reset;
 +	}
-+	signal_wake_up_state(t, state);
- }
++
++	ret = tpm_setup_policy(chip, &session_handle);
++	if (ret != 0)
++		goto reset;
++
++	ret = tpm_policy_get_digest(chip, session_handle, policy);
++	if (ret != 0)
++		goto flush;
++
++	bin2hex(policydigest, policy, SHA256_DIGEST_SIZE);
++	policydigest[SHA256_DIGEST_SIZE * 2] = '\0';
++	keyinfo = kasprintf(GFP_KERNEL, keytemplate, policydigest);
++	if (!keyinfo) {
++		ret = -ENOMEM;
++		goto flush;
++	}
++
+ 	key = key_alloc(&key_type_trusted, "swsusp", GLOBAL_ROOT_UID,
+ 			GLOBAL_ROOT_GID, cred, 0, KEY_ALLOC_NOT_IN_QUOTA,
+ 			NULL);
  
- void task_join_group_stop(struct task_struct *task);
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 36a5b7a00d2f..328a34a99124 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -185,7 +185,12 @@ static bool looks_like_a_spurious_pid(struct task_struct *task)
- 	return true;
- }
- 
--/* Ensure that nothing can wake it up, even SIGKILL */
-+/*
-+ * Ensure that nothing can wake it up, even SIGKILL
-+ *
-+ * A task is switched to this state while a ptrace operation is in progress;
-+ * such that the ptrace operation is uninterruptible.
-+ */
- static bool ptrace_freeze_traced(struct task_struct *task)
- {
- 	bool ret = false;
-@@ -216,8 +221,10 @@ static void ptrace_unfreeze_traced(struct task_struct *task)
- 	 */
- 	if (lock_task_sighand(task, &flags)) {
- 		task->jobctl &= ~JOBCTL_PTRACE_FROZEN;
--		if (__fatal_signal_pending(task))
-+		if (__fatal_signal_pending(task)) {
-+			task->jobctl &= ~TASK_TRACED;
- 			wake_up_state(task, __TASK_TRACED);
-+		}
- 		unlock_task_sighand(task, &flags);
+ 	if (IS_ERR(key)) {
+ 		ret = PTR_ERR(key);
+-		goto reset;
++		goto flush;
  	}
+ 
+ 	ret = key_instantiate_and_link(key, keyinfo, strlen(keyinfo) + 1, NULL,
+@@ -606,8 +737,14 @@ static int snapshot_create_kernel_key(struct snapshot_data *data)
+ 		key_revoke(key);
+ 		key_put(key);
+ 	}
++
++flush:
++	tpm2_flush_context(chip, session_handle);
++
+ reset:
+ 	kfree(digests);
++	kfree(keyinfo);
++	kfree(policydigest);
+ 	tpm_pcr_reset(chip, 23);
+ 	return ret;
  }
-@@ -462,8 +469,10 @@ static int ptrace_attach(struct task_struct *task, long request,
- 	 * in and out of STOPPED are protected by siglock.
- 	 */
- 	if (task_is_stopped(task) &&
--	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
-+	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING)) {
-+		task->jobctl &= ~JOBCTL_STOPPED;
- 		signal_wake_up_state(task, __TASK_STOPPED);
-+	}
+@@ -669,13 +806,14 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
  
- 	spin_unlock(&task->sighand->siglock);
+ 	char certhash[SHA256_DIGEST_SIZE];
+ 	const struct cred *cred = current_cred();
+-	char *keytemplate = "load\t%s\tkeyhandle=0x81000000";
++	char *keytemplate = "load\t%s\tkeyhandle=0x81000000\tpolicyhandle=0x%x";
+ 	struct tpm_digest *digests = NULL;
+ 	char *blobstring = NULL;
+ 	char *keyinfo = NULL;
+ 	struct tpm_chip *chip;
+ 	struct key *key;
+ 	struct trusted_key_payload *payload;
++	int session_handle = -1;
+ 	int i, ret;
  
-@@ -875,6 +884,7 @@ static int ptrace_resume(struct task_struct *child, long request,
- 	 */
- 	spin_lock_irq(&child->sighand->siglock);
- 	child->exit_code = data;
-+	child->jobctl &= ~JOBCTL_TRACED;
- 	wake_up_state(child, __TASK_TRACED);
- 	spin_unlock_irq(&child->sighand->siglock);
+ 	chip = tpm_default_chip();
+@@ -706,17 +844,24 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
+ 	if (ret != 0)
+ 		goto reset;
  
-diff --git a/kernel/signal.c b/kernel/signal.c
-index e0b416b21ad3..80108017783d 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -762,7 +762,10 @@ static int dequeue_synchronous_signal(kernel_siginfo_t *info)
-  */
- void signal_wake_up_state(struct task_struct *t, unsigned int state)
- {
-+	lockdep_assert_held(&t->sighand->siglock);
+-	blobstring = kmalloc(blob->blob_len * 2, GFP_KERNEL);
++	ret = tpm_setup_policy(chip, &session_handle);
++	if (ret != 0)
++		goto reset;
 +
- 	set_tsk_thread_flag(t, TIF_SIGPENDING);
++	blobstring = kmalloc(blob->blob_len * 2 + 1, GFP_KERNEL);
+ 	if (!blobstring) {
+ 		ret = -ENOMEM;
+-		goto reset;
++		goto flush;
+ 	}
+ 
+ 	bin2hex(blobstring, blob->blob, blob->blob_len);
+-	keyinfo = kasprintf(GFP_KERNEL, keytemplate, blobstring);
++	blobstring[blob->blob_len * 2] = '\0';
++	keyinfo = kasprintf(GFP_KERNEL, keytemplate, blobstring,
++			    session_handle);
 +
- 	/*
- 	 * TASK_WAKEKILL also means wake it up in the stopped/traced/killable
- 	 * case. We don't check t->state here because there is a race with it
-@@ -930,9 +933,10 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
- 		for_each_thread(p, t) {
- 			flush_sigqueue_mask(&flush, &t->pending);
- 			task_clear_jobctl_pending(t, JOBCTL_STOP_PENDING);
--			if (likely(!(t->ptrace & PT_SEIZED)))
-+			if (likely(!(t->ptrace & PT_SEIZED))) {
-+				t->jobctl &= ~JOBCTL_STOPPED;
- 				wake_up_state(t, __TASK_STOPPED);
--			else
-+			} else
- 				ptrace_trap_notify(t);
- 		}
+ 	if (!keyinfo) {
+ 		ret = -ENOMEM;
+-		goto reset;
++		goto flush;
+ 	}
  
-@@ -2218,6 +2222,7 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
- 		return exit_code;
- 
- 	set_special_state(TASK_TRACED);
-+	current->jobctl |= JOBCTL_TRACED;
- 
- 	/*
- 	 * We're committing to trapping.  TRACED should be visible before
-@@ -2437,6 +2442,7 @@ static bool do_signal_stop(int signr)
- 		if (task_participate_group_stop(current))
- 			notify = CLD_STOPPED;
- 
-+		current->jobctl |= JOBCTL_STOPPED;
- 		set_special_state(TASK_STOPPED);
- 		spin_unlock_irq(&current->sighand->siglock);
- 
+ 	key = key_alloc(&key_type_trusted, "swsusp", GLOBAL_ROOT_UID,
+@@ -790,6 +935,10 @@ static int snapshot_load_kernel_key(struct snapshot_data *data,
+ 		key_revoke(key);
+ 		key_put(key);
+ 	}
++
++flush:
++	tpm2_flush_context(chip, session_handle);
++
+ reset:
+ 	kfree(keyinfo);
+ 	kfree(blobstring);
 -- 
-2.35.3
+2.31.0
 
