@@ -2,25 +2,25 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53544C4332F
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 07:52:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83334C43219
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 07:52:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345913AbiEDH4I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 03:56:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56156 "EHLO
+        id S1345873AbiEDH4J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 03:56:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243507AbiEDHzr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 03:55:47 -0400
+        with ESMTP id S239297AbiEDHzu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 03:55:50 -0400
 Received: from mail.marcansoft.com (marcansoft.com [IPv6:2a01:298:fe:f::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D6AD1C10C
-        for <linux-pm@vger.kernel.org>; Wed,  4 May 2022 00:52:11 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3093618E33;
+        Wed,  4 May 2022 00:52:15 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
         (No client certificate requested)
         (Authenticated sender: hector@marcansoft.com)
-        by mail.marcansoft.com (Postfix) with ESMTPSA id E009741E64;
-        Wed,  4 May 2022 07:52:00 +0000 (UTC)
+        by mail.marcansoft.com (Postfix) with ESMTPSA id D3128421F5;
+        Wed,  4 May 2022 07:52:09 +0000 (UTC)
 From:   Hector Martin <marcan@marcan.st>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>
@@ -34,66 +34,158 @@ Cc:     Hector Martin <marcan@marcan.st>, Sven Peter <sven@svenpeter.dev>,
         Mark Kettenis <mark.kettenis@xs4all.nl>,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/4] Apple SoC cpufreq driver
-Date:   Wed,  4 May 2022 16:51:49 +0900
-Message-Id: <20220504075153.185208-1-marcan@marcan.st>
+Subject: [PATCH v2 2/4] dt-bindings: cpufreq: apple,soc-cpufreq: Add binding for Apple SoC cpufreq
+Date:   Wed,  4 May 2022 16:51:51 +0900
+Message-Id: <20220504075153.185208-3-marcan@marcan.st>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220504075153.185208-1-marcan@marcan.st>
+References: <20220504075153.185208-1-marcan@marcan.st>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi folks,
+This binding represents the cpufreq/DVFS hardware present in Apple SoCs.
+The hardware has an independent controller per CPU cluster, but we
+represent them as a single cpufreq node since there can only be one
+systemwide cpufreq device (and since in the future, interactions with
+memory controller performance states will also involve cooperation
+between multiple frequency domains).
 
-Here's a second take on the cpufreq driver for Apple SoCs. This is a
-complete rewrite using a stand-alone cpufreq driver instead of using the
-cpufreq-dt infrastructure.
-
-Since v1 we ran some experiments on the memory controller performance
-switching and it turns out it doesn't make a huge difference, so it
-makes sense to punt that feature to the future (perhaps once a proper
-memory controller driver exists for other reasons, e.g. for error
-handling).
-
-One advantage of having a standalone cpufreq driver is that we can
-support fast switching. This also means any future interaction with
-the memory controller will probably use some bespoke mechanism instead
-of the genpd infrastructure, so we can keep the fast path without
-allowing sleeps/etc.
-
-The driver is based on scpi-cpufreq.c, with some bits (e.g. the
-apple,freq-domain stuff) inspired by how cpufreq-qcom-hw does it.
-I'm not sure if that particular property should be described
-in a binding, since it goes in the cpu nodes (qcom doesn't have it
-anywhere...).
-
-Changes since v1:
-- Complete rewrite
-- Reports current frequency to userspace properly (incl. if different
-  from requested due to hardware constraints)
-- Supports fast switching
-- MCC latency control stuff no longer included, punted for later
-- Supports exposing higher states as turbo states
-
-Hector Martin (4):
-  MAINTAINERS: Add entries for Apple SoC cpufreq driver
-  dt-bindings: cpufreq: apple,soc-cpufreq: Add binding for Apple SoC
-    cpufreq
-  cpufreq: apple-soc: Add new driver to control Apple SoC CPU P-states
-  arm64: dts: apple: Add CPU topology & cpufreq nodes for t8103
-
- .../bindings/cpufreq/apple,soc-cpufreq.yaml   | 121 +++++++
- MAINTAINERS                                   |   2 +
- arch/arm64/boot/dts/apple/t8103.dtsi          | 203 ++++++++++-
- drivers/cpufreq/Kconfig.arm                   |   9 +
- drivers/cpufreq/Makefile                      |   1 +
- drivers/cpufreq/apple-soc-cpufreq.c           | 330 ++++++++++++++++++
- drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
- 7 files changed, 658 insertions(+), 10 deletions(-)
+Signed-off-by: Hector Martin <marcan@marcan.st>
+---
+ .../bindings/cpufreq/apple,soc-cpufreq.yaml   | 121 ++++++++++++++++++
+ 1 file changed, 121 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
- create mode 100644 drivers/cpufreq/apple-soc-cpufreq.c
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
+new file mode 100644
+index 000000000000..f398c1bd5de5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
+@@ -0,0 +1,121 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/cpufreq/apple,soc-cpufreq.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Apple SoC cpufreq device
++
++maintainers:
++  - Hector Martin <marcan@marcan.st>
++
++description: |
++  Apple SoCs (e.g. M1) have a per-cpu-cluster DVFS controller that is part of
++  the cluster management register block. This binding uses the standard
++  operating-points-v2 table to define the CPU performance states, with the
++  opp-level property specifying the hardware p-state index for that level.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - apple,t8103-soc-cpufreq
++          - apple,t6000-soc-cpufreq
++      - const: apple,soc-cpufreq
++
++  reg:
++    minItems: 1
++    maxItems: 6
++    description: One register region per CPU cluster DVFS controller
++
++  reg-names:
++    minItems: 1
++    items:
++      - const: cluster0
++      - const: cluster1
++      - const: cluster2
++      - const: cluster3
++      - const: cluster4
++      - const: cluster5
++
++  '#freq-domain-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - reg-names
++  - '#freq-domain-cells'
++
++additionalProperties: false
++
++examples:
++  - |
++    // This example shows a single CPU per domain and 2 domains,
++    // with two p-states per domain.
++    // Shipping hardware has 2-4 CPUs per domain and 2-6 domains.
++    cpus {
++      #address-cells = <2>;
++      #size-cells = <0>;
++
++      cpu@0 {
++        compatible = "apple,icestorm";
++        device_type = "cpu";
++        reg = <0x0 0x0>;
++        operating-points-v2 = <&ecluster_opp>;
++        apple,freq-domain = <&cpufreq_hw 0>;
++      };
++
++      cpu@10100 {
++        compatible = "apple,firestorm";
++        device_type = "cpu";
++        reg = <0x0 0x10100>;
++        operating-points-v2 = <&pcluster_opp>;
++        apple,freq-domain = <&cpufreq_hw 1>;
++      };
++    };
++
++    ecluster_opp: opp-table-0 {
++      compatible = "operating-points-v2";
++      opp-shared;
++
++      opp01 {
++        opp-hz = /bits/ 64 <600000000>;
++        opp-level = <1>;
++        clock-latency-ns = <7500>;
++      };
++      opp02 {
++        opp-hz = /bits/ 64 <972000000>;
++        opp-level = <2>;
++        clock-latency-ns = <22000>;
++      };
++    };
++
++    pcluster_opp: opp-table-1 {
++      compatible = "operating-points-v2";
++      opp-shared;
++
++      opp01 {
++        opp-hz = /bits/ 64 <600000000>;
++        opp-level = <1>;
++        clock-latency-ns = <8000>;
++      };
++      opp02 {
++        opp-hz = /bits/ 64 <828000000>;
++        opp-level = <2>;
++        clock-latency-ns = <19000>;
++      };
++    };
++
++    soc {
++      #address-cells = <2>;
++      #size-cells = <2>;
++
++      cpufreq_hw: cpufreq@210e20000 {
++        compatible = "apple,t8103-soc-cpufreq", "apple,soc-cpufreq";
++        reg = <0x2 0x10e20000 0 0x1000>,
++              <0x2 0x11e20000 0 0x1000>;
++        reg-names = "cluster0", "cluster1";
++        #freq-domain-cells = <1>;
++      };
++    };
 -- 
 2.35.1
 
