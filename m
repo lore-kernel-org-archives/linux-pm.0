@@ -2,136 +2,130 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8527BC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 12:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C96AAC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 13:05:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346850AbiEDNDF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 09:03:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45810 "EHLO
+        id S1347049AbiEDNJa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 09:09:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235988AbiEDNDE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 09:03:04 -0400
-Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com [209.85.219.170])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DC703BFBF;
-        Wed,  4 May 2022 05:59:28 -0700 (PDT)
-Received: by mail-yb1-f170.google.com with SMTP id f38so2233591ybi.3;
-        Wed, 04 May 2022 05:59:28 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=gmvxIQHG/ljLt51DjNy57CzPAA1TYfJjkUMDlKRN2cw=;
-        b=SfjjF1dfuEKuRJMWiDZvsj94oyQ0i+I3oOECAT+stn1MnUhZRhDjizIDBibra7sN00
-         DJy1I347O5t54FAyuZ0gkLt5XfITqcKgkxi5aa+78E5xEhFv0HFh/oiaYrO4Yzv8LGf9
-         uApgEeoLrvNEutl0ZluIcIUGwXR87rXKjefJgFmmQQJrKRa+8TXhjleNWnSl+MnTpOqq
-         Jis9meyBZCE9k/UyqSxKFgf6aXFgrIYO2zuzx9CJUjZHVWB7ZPO6NgmZyAnqhertr63X
-         7T+2vzXOpt0crXgvoOKa71bVjssawjhMruTTKL5goxc+X8p6XDWHbW67aIDHI/9+3cMe
-         FyeA==
-X-Gm-Message-State: AOAM531vXSJO8DITv5b9o+tCxMoR2VnX5qDuSD4/R5LgIThCKpvt5j4/
-        I4eb+7d4y3KMGWSs5NFd4bIFlh0IstzvUFYrr1B21oZ39L8=
-X-Google-Smtp-Source: ABdhPJzXVZ/1w3GPYeCO2dkamDxMnp8QXC2QHFPATCMzTrRgP9tKaW861v6nF7Uy5dyU4a+K22nPQzaM4JHk+ZqMOW8=
-X-Received: by 2002:a05:6902:100e:b0:649:7385:5e68 with SMTP id
- w14-20020a056902100e00b0064973855e68mr11693394ybt.622.1651669167783; Wed, 04
- May 2022 05:59:27 -0700 (PDT)
+        with ESMTP id S1350317AbiEDNJ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 09:09:28 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E9D01CB0F;
+        Wed,  4 May 2022 06:05:47 -0700 (PDT)
+X-UUID: 9791f8ba0d6d42bcbc298291b423b99a-20220504
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.4,REQID:3675d0f8-5835-4617-9836-b0db31eff240,OB:0,LO
+        B:20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Release_Ham,AC
+        TION:release,TS:95
+X-CID-INFO: VERSION:1.1.4,REQID:3675d0f8-5835-4617-9836-b0db31eff240,OB:0,LOB:
+        20,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:95,FILE:0,RULE:Spam_GS981B3D,AC
+        TION:quarantine,TS:95
+X-CID-META: VersionHash:faefae9,CLOUDID:f65d8cb2-56b5-4c9e-8d83-0070b288eb6a,C
+        OID:2f6b36ec9f32,Recheck:0,SF:28|17|19|48,TC:nil,Content:0,EDM:-3,File:nil
+        ,QS:0,BEC:nil
+X-UUID: 9791f8ba0d6d42bcbc298291b423b99a-20220504
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 787941072; Wed, 04 May 2022 21:05:43 +0800
+Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Wed, 4 May 2022 21:05:42 +0800
+Received: from mtkmbs11n2.mediatek.inc (172.21.101.187) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 4 May 2022 21:05:42 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by
+ mtkmbs11n2.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.792.3 via Frontend Transport; Wed, 4 May 2022 21:05:42 +0800
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
+        <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
+        <matthias.bgg@gmail.com>
+CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
+        <hsinyi@google.com>, <khilman@baylibre.com>,
+        <angelogioacchino.delregno@collabora.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Rex-BC Chen <rex-bc.chen@mediatek.com>,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
+Subject: [PATCH v5 8/9] arm64: dts: mediatek: Add MediaTek CCI node for MT8183
+Date:   Wed, 4 May 2022 21:05:39 +0800
+Message-ID: <20220504130540.5902-9-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220504130540.5902-1-rex-bc.chen@mediatek.com>
+References: <20220504130540.5902-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-References: <4419002.LvFx2qVVIh@kreacher> <11975904.O9o76ZdvQC@kreacher>
- <5838942.lOV4Wx5bFT@kreacher> <3687697.kQq0lBPeGt@kreacher> <YnFtjzGYwe28tVAA@dev-arch.thelio-3990X>
-In-Reply-To: <YnFtjzGYwe28tVAA@dev-arch.thelio-3990X>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 4 May 2022 14:59:17 +0200
-Message-ID: <CAJZ5v0i1Ynt54yb7aMJorkYUvqkxhxOqvQJb8AdA7Ps1aBO5tg@mail.gmail.com>
-Subject: Re: [PATCH v3 4/9] PCI/PM: Rework changing power states of PCI devices
-To:     Nathan Chancellor <nathan@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, May 3, 2022 at 7:59 PM Nathan Chancellor <nathan@kernel.org> wrote:
->
-> Hi Rafael,
->
-> On Thu, Apr 14, 2022 at 03:11:21PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > There are some issues related to changing power states of PCI
-> > devices, mostly related to carrying out unnecessary actions in some
-> > places, and the code is generally hard to follow.
-> >
-> >  1. pci_power_up() has two callers, pci_set_power_state() and
-> >     pci_pm_default_resume_early().  The latter updates the current
-> >     power state of the device right after calling pci_power_up()
-> >     and it restores the entire config space of the device right
-> >     after that, so pci_power_up() itself need not read the
-> >     PCI_PM_CTRL register or restore the BARs after programming the
-> >     device into D0 in that case.
-> >
-> >  2. It is generally hard to get a clear view of the pci_power_up()
-> >     code flow, especially in some corner cases, due to all of the
-> >     involved PCI_PM_CTRL register reads and writes occurring in
-> >     pci_platform_power_transition() and in pci_raw_set_power_state(),
-> >     some of which are redundant.
-> >
-> >  3. The transitions from low-power states to D0 and the other way
-> >     around are unnecessarily tangled in pci_raw_set_power_state()
-> >     which causes it to use a redundant local variable and makes it
-> >     rather hard to follow.
-> >
-> > To address the above shortcomings, make the following changes:
-> >
-> >  a. Remove the code handling transitions into D0
-> >     from pci_raw_set_power_state() and rename it as
-> >     pci_set_low_power_state().
-> >
-> >  b. Add the code handling transitions into D0 directly
-> >     to pci_power_up() and to a new wrapper function
-> >     pci_set_full_power_state() calling it internally that is
-> >     only used in pci_set_power_state().
-> >
-> >  c. Make pci_power_up() avoid redundant PCI_PM_CTRL register reads
-> >     and make it work in the same way for transitions from any
-> >     low-power states (transitions from D1 and D2 are handled
-> >     slightly differently before the change).
-> >
-> >  d. Put the restoration of the BARs and the PCI_PM_CTRL
-> >     register read confirming the power state change into
-> >     pci_set_full_power_state() to avoid doing that in
-> >     pci_pm_default_resume_early() unnecessarily.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
->
-> This change as commit 5bffe4c611f5 ("PCI/PM: Rework changing power
-> states of PCI devices") causes my AMD-based system to fail to fully
-> boot. As far as I can tell, this might be NVMe related, which might make
-> getting a full log difficult, as journalctl won't have anywhere to save
-> it. I see:
->
-> nvme nvme0: I/O 8 QID 0 timeout, completion polled
->
-> then shortly afterwards:
->
-> nvme nvme0: I/O 24 QID 0 timeout, completion polled
-> nvme nvme0: missing or invalid SUBNQN field
->
-> then I am dropped into an emergency shell.
+Add MediaTek CCI devfreq node for MT8183.
 
-Thanks for the report!
+Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ arch/arm64/boot/dts/mediatek/mt8183-evb.dts    | 4 ++++
+ arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi | 4 ++++
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi       | 7 +++++++
+ 3 files changed, 15 insertions(+)
 
-> This is a log from the previous commit, which may give some hints about
-> the configuration of this particular system.
->
-> https://gist.github.com/nathanchance/8a56f0939410cb187896e904c72e41e7/raw/b47b2620bdd32d43c7a3b209fcfd9e3d4668f058/good-boot.log
->
-> If there is any additional debugging information I can provide or
-> patches I can try, please let me know!
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
+index 8953dbf84f3e..7ac9864db9de 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
++++ b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
+@@ -412,6 +412,10 @@
+ 
+ };
+ 
++&cci {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
+ &cpu0 {
+ 	proc-supply = <&mt6358_vproc12_reg>;
+ };
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi b/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
+index 8d5bf73a9099..b035e06840e6 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183-kukui.dtsi
+@@ -230,6 +230,10 @@
+ 	status = "okay";
+ };
+ 
++&cci {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
+ &cpu0 {
+ 	proc-supply = <&mt6358_vproc12_reg>;
+ };
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index cecf96b628b7..11caf3dd85cd 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -280,6 +280,13 @@
+ 		};
+ 	};
+ 
++	cci: cci {
++		compatible = "mediatek,mt8183-cci";
++		clocks = <&apmixedsys CLK_APMIXED_CCIPLL>;
++		clock-names = "cci_clock";
++		operating-points-v2 = <&cci_opp>;
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-- 
+2.18.0
 
-Please see what happens if the "if (dev->current_state == PCI_D0)"
-check and the following "return 0" statement in pci_power_up() are
-commented out.
