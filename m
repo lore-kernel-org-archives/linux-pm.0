@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92F5EC433EF
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 22:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A676EC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 22:41:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239151AbiEDWoy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 18:44:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59354 "EHLO
+        id S1378429AbiEDWpG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 18:45:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59526 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232292AbiEDWoy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 18:44:54 -0400
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F1B74888C;
-        Wed,  4 May 2022 15:41:16 -0700 (PDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:51346)
-        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        with ESMTP id S1377062AbiEDWpE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 18:45:04 -0400
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A60AA4C43C;
+        Wed,  4 May 2022 15:41:24 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:54100)
+        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgJ-002DzC-E5; Wed, 04 May 2022 16:41:15 -0600
+        id 1nmNgR-00EDP7-MV; Wed, 04 May 2022 16:41:23 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37004 helo=localhost.localdomain)
         by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgH-00GI0k-4Y; Wed, 04 May 2022 16:41:15 -0600
+        id 1nmNgP-00GI0k-Ia; Wed, 04 May 2022 16:41:23 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -39,146 +39,164 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Max Filippov <jcmvbkbc@gmail.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Wed,  4 May 2022 17:40:48 -0500
-Message-Id: <20220504224058.476193-1-ebiederm@xmission.com>
+        "Eric W. Biederman" <ebiederm@xmission.com>, stable@vger.kernel.org
+Date:   Wed,  4 May 2022 17:40:50 -0500
+Message-Id: <20220504224058.476193-3-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
 References: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmNgH-00GI0k-4Y;;;mid=<20220504224058.476193-1-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+jVpUgWdpJbsR7ViOEHxSscRpMoLx4UTc=
+X-XM-SPF: eid=1nmNgP-00GI0k-Ia;;;mid=<20220504224058.476193-3-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1+wjCEf0Th8yeh00J7nC1sO3s2+WBomL3Q=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v3 01/11] signal: Rename send_signal send_signal_locked
+Subject: [PATCH v3 03/11] ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rename send_signal and __send_signal to send_signal_locked and
-__send_signal_locked to make send_signal usable outside of
-signal.c.
+User mode linux is the last user of the PT_DTRACE flag.  Using the flag to indicate
+single stepping is a little confusing and worse changing tsk->ptrace without locking
+could potentionally cause problems.
 
+So use a thread info flag with a better name instead of flag in tsk->ptrace.
+
+Remove the definition PT_DTRACE as uml is the last user.
+
+Cc: stable@vger.kernel.org
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- include/linux/signal.h |  2 ++
- kernel/signal.c        | 24 ++++++++++++------------
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ arch/um/include/asm/thread_info.h | 2 ++
+ arch/um/kernel/exec.c             | 2 +-
+ arch/um/kernel/process.c          | 2 +-
+ arch/um/kernel/ptrace.c           | 8 ++++----
+ arch/um/kernel/signal.c           | 4 ++--
+ include/linux/ptrace.h            | 1 -
+ 6 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/signal.h b/include/linux/signal.h
-index a6db6f2ae113..55605bdf5ce9 100644
---- a/include/linux/signal.h
-+++ b/include/linux/signal.h
-@@ -283,6 +283,8 @@ extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
- extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
- 			       struct task_struct *p, enum pid_type type);
- extern int __group_send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
-+extern int send_signal_locked(int sig, struct kernel_siginfo *info,
-+			      struct task_struct *p, enum pid_type type);
- extern int sigprocmask(int, sigset_t *, sigset_t *);
- extern void set_current_blocked(sigset_t *);
- extern void __set_current_blocked(const sigset_t *);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 30cd1ca43bcd..b0403197b0ad 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1071,8 +1071,8 @@ static inline bool legacy_queue(struct sigpending *signals, int sig)
- 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
- }
+diff --git a/arch/um/include/asm/thread_info.h b/arch/um/include/asm/thread_info.h
+index 1395cbd7e340..c7b4b49826a2 100644
+--- a/arch/um/include/asm/thread_info.h
++++ b/arch/um/include/asm/thread_info.h
+@@ -60,6 +60,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_RESTORE_SIGMASK	7
+ #define TIF_NOTIFY_RESUME	8
+ #define TIF_SECCOMP		9	/* secure computing */
++#define TIF_SINGLESTEP		10	/* single stepping userspace */
  
--static int __send_signal(int sig, struct kernel_siginfo *info, struct task_struct *t,
--			enum pid_type type, bool force)
-+static int __send_signal_locked(int sig, struct kernel_siginfo *info,
-+				struct task_struct *t, enum pid_type type, bool force)
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -68,5 +69,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
++#define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+ 
+ #endif
+diff --git a/arch/um/kernel/exec.c b/arch/um/kernel/exec.c
+index c85e40c72779..58938d75871a 100644
+--- a/arch/um/kernel/exec.c
++++ b/arch/um/kernel/exec.c
+@@ -43,7 +43,7 @@ void start_thread(struct pt_regs *regs, unsigned long eip, unsigned long esp)
  {
- 	struct sigpending *pending;
- 	struct sigqueue *q;
-@@ -1212,8 +1212,8 @@ static inline bool has_si_pid_and_uid(struct kernel_siginfo *info)
- 	return ret;
- }
- 
--static int send_signal(int sig, struct kernel_siginfo *info, struct task_struct *t,
--			enum pid_type type)
-+int send_signal_locked(int sig, struct kernel_siginfo *info,
-+		       struct task_struct *t, enum pid_type type)
+ 	PT_REGS_IP(regs) = eip;
+ 	PT_REGS_SP(regs) = esp;
+-	current->ptrace &= ~PT_DTRACE;
++	clear_thread_flag(TIF_SINGLESTEP);
+ #ifdef SUBARCH_EXECVE1
+ 	SUBARCH_EXECVE1(regs->regs);
+ #endif
+diff --git a/arch/um/kernel/process.c b/arch/um/kernel/process.c
+index 80504680be08..88c5c7844281 100644
+--- a/arch/um/kernel/process.c
++++ b/arch/um/kernel/process.c
+@@ -335,7 +335,7 @@ int singlestepping(void * t)
  {
- 	/* Should SIGKILL or SIGSTOP be received by a pid namespace init? */
- 	bool force = false;
-@@ -1245,7 +1245,7 @@ static int send_signal(int sig, struct kernel_siginfo *info, struct task_struct
- 			force = true;
- 		}
- 	}
--	return __send_signal(sig, info, t, type, force);
-+	return __send_signal_locked(sig, info, t, type, force);
- }
+ 	struct task_struct *task = t ? t : current;
  
- static void print_fatal_signal(int signr)
-@@ -1284,7 +1284,7 @@ __setup("print-fatal-signals=", setup_print_fatal_signals);
- int
- __group_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
+-	if (!(task->ptrace & PT_DTRACE))
++	if (!test_thread_flag(TIF_SINGLESTEP))
+ 		return 0;
+ 
+ 	if (task->thread.singlestep_syscall)
+diff --git a/arch/um/kernel/ptrace.c b/arch/um/kernel/ptrace.c
+index bfaf6ab1ac03..5154b27de580 100644
+--- a/arch/um/kernel/ptrace.c
++++ b/arch/um/kernel/ptrace.c
+@@ -11,7 +11,7 @@
+ 
+ void user_enable_single_step(struct task_struct *child)
  {
--	return send_signal(sig, info, p, PIDTYPE_TGID);
-+	return send_signal_locked(sig, info, p, PIDTYPE_TGID);
+-	child->ptrace |= PT_DTRACE;
++	set_tsk_thread_flag(child, TIF_SINGLESTEP);
+ 	child->thread.singlestep_syscall = 0;
+ 
+ #ifdef SUBARCH_SET_SINGLESTEPPING
+@@ -21,7 +21,7 @@ void user_enable_single_step(struct task_struct *child)
+ 
+ void user_disable_single_step(struct task_struct *child)
+ {
+-	child->ptrace &= ~PT_DTRACE;
++	clear_tsk_thread_flag(child, TIF_SINGLESTEP);
+ 	child->thread.singlestep_syscall = 0;
+ 
+ #ifdef SUBARCH_SET_SINGLESTEPPING
+@@ -120,7 +120,7 @@ static void send_sigtrap(struct uml_pt_regs *regs, int error_code)
  }
  
- int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p,
-@@ -1294,7 +1294,7 @@ int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p
- 	int ret = -ESRCH;
+ /*
+- * XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
++ * XXX Check TIF_SINGLESTEP for singlestepping check and
+  * PT_PTRACED vs TIF_SYSCALL_TRACE for syscall tracing check
+  */
+ int syscall_trace_enter(struct pt_regs *regs)
+@@ -144,7 +144,7 @@ void syscall_trace_leave(struct pt_regs *regs)
+ 	audit_syscall_exit(regs);
  
- 	if (lock_task_sighand(p, &flags)) {
--		ret = send_signal(sig, info, p, type);
-+		ret = send_signal_locked(sig, info, p, type);
- 		unlock_task_sighand(p, &flags);
- 	}
+ 	/* Fake a debug trap */
+-	if (ptraced & PT_DTRACE)
++	if (test_thread_flag(TIF_SINGLESTEP))
+ 		send_sigtrap(&regs->regs, 0);
  
-@@ -1347,7 +1347,7 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
- 	if (action->sa.sa_handler == SIG_DFL &&
- 	    (!t->ptrace || (handler == HANDLER_EXIT)))
- 		t->signal->flags &= ~SIGNAL_UNKILLABLE;
--	ret = send_signal(sig, info, t, PIDTYPE_PID);
-+	ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
- 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+diff --git a/arch/um/kernel/signal.c b/arch/um/kernel/signal.c
+index 88cd9b5c1b74..ae4658f576ab 100644
+--- a/arch/um/kernel/signal.c
++++ b/arch/um/kernel/signal.c
+@@ -53,7 +53,7 @@ static void handle_signal(struct ksignal *ksig, struct pt_regs *regs)
+ 	unsigned long sp;
+ 	int err;
  
- 	return ret;
-@@ -1567,7 +1567,7 @@ int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr,
+-	if ((current->ptrace & PT_DTRACE) && (current->ptrace & PT_PTRACED))
++	if (test_thread_flag(TIF_SINGLESTEP) && (current->ptrace & PT_PTRACED))
+ 		singlestep = 1;
  
- 	if (sig) {
- 		if (lock_task_sighand(p, &flags)) {
--			ret = __send_signal(sig, &info, p, PIDTYPE_TGID, false);
-+			ret = __send_signal_locked(sig, &info, p, PIDTYPE_TGID, false);
- 			unlock_task_sighand(p, &flags);
- 		} else
- 			ret = -ESRCH;
-@@ -2103,7 +2103,7 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
- 	 * parent's namespaces.
+ 	/* Did we come from a system call? */
+@@ -128,7 +128,7 @@ void do_signal(struct pt_regs *regs)
+ 	 * on the host.  The tracing thread will check this flag and
+ 	 * PTRACE_SYSCALL if necessary.
  	 */
- 	if (valid_signal(sig) && sig)
--		__send_signal(sig, &info, tsk->parent, PIDTYPE_TGID, false);
-+		__send_signal_locked(sig, &info, tsk->parent, PIDTYPE_TGID, false);
- 	__wake_up_parent(tsk, tsk->parent);
- 	spin_unlock_irqrestore(&psig->siglock, flags);
+-	if (current->ptrace & PT_DTRACE)
++	if (test_thread_flag(TIF_SINGLESTEP))
+ 		current->thread.singlestep_syscall =
+ 			is_syscall(PT_REGS_IP(&current->thread.regs));
  
-@@ -2601,7 +2601,7 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
- 	/* If the (new) signal is now blocked, requeue it.  */
- 	if (sigismember(&current->blocked, signr) ||
- 	    fatal_signal_pending(current)) {
--		send_signal(signr, info, current, type);
-+		send_signal_locked(signr, info, current, type);
- 		signr = 0;
- 	}
+diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+index 15b3d176b6b4..4c06f9f8ef3f 100644
+--- a/include/linux/ptrace.h
++++ b/include/linux/ptrace.h
+@@ -30,7 +30,6 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
  
-@@ -4793,7 +4793,7 @@ void kdb_send_sig(struct task_struct *t, int sig)
- 			   "the deadlock.\n");
- 		return;
- 	}
--	ret = send_signal(sig, SEND_SIG_PRIV, t, PIDTYPE_PID);
-+	ret = send_signal_locked(sig, SEND_SIG_PRIV, t, PIDTYPE_PID);
- 	spin_unlock(&t->sighand->siglock);
- 	if (ret)
- 		kdb_printf("Fail to deliver Signal %d to process %d.\n",
+ #define PT_SEIZED	0x00010000	/* SEIZE used, enable new behavior */
+ #define PT_PTRACED	0x00000001
+-#define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
+ 
+ #define PT_OPT_FLAG_SHIFT	3
+ /* PT_TRACE_* event enable flags */
 -- 
 2.35.3
 
