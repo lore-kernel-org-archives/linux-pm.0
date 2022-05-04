@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A25DFC433F5
-	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 22:42:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 124DAC4332F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 May 2022 22:42:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379152AbiEDWqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 18:46:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60264 "EHLO
+        id S1378482AbiEDWqJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 18:46:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379105AbiEDWpb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 18:45:31 -0400
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B8CC52E4B;
-        Wed,  4 May 2022 15:41:53 -0700 (PDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:56942)
-        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        with ESMTP id S1379069AbiEDWqB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 18:46:01 -0400
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1340053731;
+        Wed,  4 May 2022 15:41:58 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:52142)
+        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgu-004uJm-Ua; Wed, 04 May 2022 16:41:52 -0600
+        id 1nmNgz-002E7F-6C; Wed, 04 May 2022 16:41:57 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37004 helo=localhost.localdomain)
         by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmNgs-00GI0k-T1; Wed, 04 May 2022 16:41:52 -0600
+        id 1nmNgw-00GI0k-Sk; Wed, 04 May 2022 16:41:56 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -39,67 +39,242 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Max Filippov <jcmvbkbc@gmail.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Wed,  4 May 2022 17:40:57 -0500
-Message-Id: <20220504224058.476193-10-ebiederm@xmission.com>
+        "Eric W . Biederman" <ebiederm@xmission.com>
+Date:   Wed,  4 May 2022 17:40:58 -0500
+Message-Id: <20220504224058.476193-11-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
 References: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmNgs-00GI0k-T1;;;mid=<20220504224058.476193-10-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1/pkv1iYfm/nXJgj0Lm6o2PFT2hvX4ewTk=
+X-XM-SPF: eid=1nmNgw-00GI0k-Sk;;;mid=<20220504224058.476193-11-ebiederm@xmission.com>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1/4O1Me+wjAHiAxCjW+9VhfNjaKni2YTZs=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v3 10/11] ptrace: Always take siglock in ptrace_resume
+Subject: [PATCH v3 11/11] sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make code analysis simpler and future changes easier by
-always taking siglock in ptrace_resume.
+From: Peter Zijlstra <peterz@infradead.org>
 
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Currently ptrace_stop() / do_signal_stop() rely on the special states
+TASK_TRACED and TASK_STOPPED resp. to keep unique state. That is, this
+state exists only in task->__state and nowhere else.
+
+There's two spots of bother with this:
+
+ - PREEMPT_RT has task->saved_state which complicates matters,
+   meaning task_is_{traced,stopped}() needs to check an additional
+   variable.
+
+ - An alternative freezer implementation that itself relies on a
+   special TASK state would loose TASK_TRACED/TASK_STOPPED and will
+   result in misbehaviour.
+
+As such, add additional state to task->jobctl to track this state
+outside of task->__state.
+
+NOTE: this doesn't actually fix anything yet, just adds extra state.
+
+--EWB
+  * didn't add a unnecessary newline in signal.h
+  * Update t->jobctl in signal_wake_up and ptrace_signal_wake_up
+    instead of in signal_wake_up_state.  This prevents the clearing
+    of TASK_STOPPED and TASK_TRACED from getting lost.
+  * Added warnings if JOBCTL_STOPPED or JOBCTL_TRACED are not cleared
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/20220421150654.757693825@infradead.org
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- kernel/ptrace.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ include/linux/sched.h        |  8 +++-----
+ include/linux/sched/jobctl.h |  6 ++++++
+ include/linux/sched/signal.h | 19 +++++++++++++++----
+ kernel/ptrace.c              | 16 +++++++++++++---
+ kernel/signal.c              | 10 ++++++++--
+ 5 files changed, 45 insertions(+), 14 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 610f2fdb1e2c..cbe5c899599c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -118,11 +118,9 @@ struct task_group;
+ 
+ #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
+ 
+-#define task_is_traced(task)		((READ_ONCE(task->__state) & __TASK_TRACED) != 0)
+-
+-#define task_is_stopped(task)		((READ_ONCE(task->__state) & __TASK_STOPPED) != 0)
+-
+-#define task_is_stopped_or_traced(task)	((READ_ONCE(task->__state) & (__TASK_STOPPED | __TASK_TRACED)) != 0)
++#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
++#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
++#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
+ 
+ /*
+  * Special states are those that do not use the normal wait-loop pattern. See
+diff --git a/include/linux/sched/jobctl.h b/include/linux/sched/jobctl.h
+index d556c3425963..68876d0a7ef9 100644
+--- a/include/linux/sched/jobctl.h
++++ b/include/linux/sched/jobctl.h
+@@ -21,6 +21,9 @@ struct task_struct;
+ #define JOBCTL_TRAP_FREEZE_BIT	23	/* trap for cgroup freezer */
+ #define JOBCTL_PTRACE_FROZEN_BIT	24	/* frozen for ptrace */
+ 
++#define JOBCTL_STOPPED_BIT	26	/* do_signal_stop() */
++#define JOBCTL_TRACED_BIT	27	/* ptrace_stop() */
++
+ #define JOBCTL_STOP_DEQUEUED	(1UL << JOBCTL_STOP_DEQUEUED_BIT)
+ #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
+ #define JOBCTL_STOP_CONSUME	(1UL << JOBCTL_STOP_CONSUME_BIT)
+@@ -31,6 +34,9 @@ struct task_struct;
+ #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
+ #define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
+ 
++#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
++#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
++
+ #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP | JOBCTL_TRAP_NOTIFY)
+ #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
+ 
+diff --git a/include/linux/sched/signal.h b/include/linux/sched/signal.h
+index e66948abbee4..07ba3404fcde 100644
+--- a/include/linux/sched/signal.h
++++ b/include/linux/sched/signal.h
+@@ -294,8 +294,10 @@ static inline int kernel_dequeue_signal(void)
+ static inline void kernel_signal_stop(void)
+ {
+ 	spin_lock_irq(&current->sighand->siglock);
+-	if (current->jobctl & JOBCTL_STOP_DEQUEUED)
++	if (current->jobctl & JOBCTL_STOP_DEQUEUED) {
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
++	}
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+ 	schedule();
+@@ -437,12 +439,21 @@ extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
+ 
+ static inline void signal_wake_up(struct task_struct *t, bool fatal)
+ {
+-	fatal = fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN);
+-	signal_wake_up_state(t, fatal ? TASK_WAKEKILL | __TASK_TRACED : 0);
++	unsigned int state = 0;
++	if (fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN)) {
++		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
++		state = TASK_WAKEKILL | __TASK_TRACED;
++	}
++	signal_wake_up_state(t, state);
+ }
+ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
+ {
+-	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
++	unsigned int state = 0;
++	if (resume) {
++		t->jobctl &= ~JOBCTL_TRACED;
++		state = __TASK_TRACED;
++	}
++	signal_wake_up_state(t, state);
+ }
+ 
+ void task_join_group_stop(struct task_struct *task);
 diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 83ed28262708..36a5b7a00d2f 100644
+index 36a5b7a00d2f..328a34a99124 100644
 --- a/kernel/ptrace.c
 +++ b/kernel/ptrace.c
-@@ -837,8 +837,6 @@ static long ptrace_get_rseq_configuration(struct task_struct *task,
- static int ptrace_resume(struct task_struct *child, long request,
- 			 unsigned long data)
- {
--	bool need_siglock;
--
- 	if (!valid_signal(data))
- 		return -EIO;
- 
-@@ -874,18 +872,11 @@ static int ptrace_resume(struct task_struct *child, long request,
- 	 * Note that we need siglock even if ->exit_code == data and/or this
- 	 * status was not reported yet, the new status must not be cleared by
- 	 * wait_task_stopped() after resume.
--	 *
--	 * If data == 0 we do not care if wait_task_stopped() reports the old
--	 * status and clears the code too; this can't race with the tracee, it
--	 * takes siglock after resume.
- 	 */
--	need_siglock = data && !thread_group_empty(current);
--	if (need_siglock)
--		spin_lock_irq(&child->sighand->siglock);
-+	spin_lock_irq(&child->sighand->siglock);
- 	child->exit_code = data;
- 	wake_up_state(child, __TASK_TRACED);
--	if (need_siglock)
--		spin_unlock_irq(&child->sighand->siglock);
-+	spin_unlock_irq(&child->sighand->siglock);
- 
- 	return 0;
+@@ -185,7 +185,12 @@ static bool looks_like_a_spurious_pid(struct task_struct *task)
+ 	return true;
  }
+ 
+-/* Ensure that nothing can wake it up, even SIGKILL */
++/*
++ * Ensure that nothing can wake it up, even SIGKILL
++ *
++ * A task is switched to this state while a ptrace operation is in progress;
++ * such that the ptrace operation is uninterruptible.
++ */
+ static bool ptrace_freeze_traced(struct task_struct *task)
+ {
+ 	bool ret = false;
+@@ -216,8 +221,10 @@ static void ptrace_unfreeze_traced(struct task_struct *task)
+ 	 */
+ 	if (lock_task_sighand(task, &flags)) {
+ 		task->jobctl &= ~JOBCTL_PTRACE_FROZEN;
+-		if (__fatal_signal_pending(task))
++		if (__fatal_signal_pending(task)) {
++			task->jobctl &= ~TASK_TRACED;
+ 			wake_up_state(task, __TASK_TRACED);
++		}
+ 		unlock_task_sighand(task, &flags);
+ 	}
+ }
+@@ -462,8 +469,10 @@ static int ptrace_attach(struct task_struct *task, long request,
+ 	 * in and out of STOPPED are protected by siglock.
+ 	 */
+ 	if (task_is_stopped(task) &&
+-	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
++	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING)) {
++		task->jobctl &= ~JOBCTL_STOPPED;
+ 		signal_wake_up_state(task, __TASK_STOPPED);
++	}
+ 
+ 	spin_unlock(&task->sighand->siglock);
+ 
+@@ -875,6 +884,7 @@ static int ptrace_resume(struct task_struct *child, long request,
+ 	 */
+ 	spin_lock_irq(&child->sighand->siglock);
+ 	child->exit_code = data;
++	child->jobctl &= ~JOBCTL_TRACED;
+ 	wake_up_state(child, __TASK_TRACED);
+ 	spin_unlock_irq(&child->sighand->siglock);
+ 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index e0b416b21ad3..80108017783d 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -762,7 +762,10 @@ static int dequeue_synchronous_signal(kernel_siginfo_t *info)
+  */
+ void signal_wake_up_state(struct task_struct *t, unsigned int state)
+ {
++	lockdep_assert_held(&t->sighand->siglock);
++
+ 	set_tsk_thread_flag(t, TIF_SIGPENDING);
++
+ 	/*
+ 	 * TASK_WAKEKILL also means wake it up in the stopped/traced/killable
+ 	 * case. We don't check t->state here because there is a race with it
+@@ -930,9 +933,10 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
+ 		for_each_thread(p, t) {
+ 			flush_sigqueue_mask(&flush, &t->pending);
+ 			task_clear_jobctl_pending(t, JOBCTL_STOP_PENDING);
+-			if (likely(!(t->ptrace & PT_SEIZED)))
++			if (likely(!(t->ptrace & PT_SEIZED))) {
++				t->jobctl &= ~JOBCTL_STOPPED;
+ 				wake_up_state(t, __TASK_STOPPED);
+-			else
++			} else
+ 				ptrace_trap_notify(t);
+ 		}
+ 
+@@ -2218,6 +2222,7 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
+ 		return exit_code;
+ 
+ 	set_special_state(TASK_TRACED);
++	current->jobctl |= JOBCTL_TRACED;
+ 
+ 	/*
+ 	 * We're committing to trapping.  TRACED should be visible before
+@@ -2437,6 +2442,7 @@ static bool do_signal_stop(int signr)
+ 		if (task_participate_group_stop(current))
+ 			notify = CLD_STOPPED;
+ 
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
+ 		spin_unlock_irq(&current->sighand->siglock);
+ 
 -- 
 2.35.3
 
