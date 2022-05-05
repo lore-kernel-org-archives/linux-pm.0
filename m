@@ -2,100 +2,219 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 373C9C433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C39C433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241325AbiEEShP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 14:37:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57816 "EHLO
+        id S1348920AbiEESh4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 14:37:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381112AbiEESff (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:35:35 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D242D14087;
-        Thu,  5 May 2022 11:26:38 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id e30f9251d57c40cd; Thu, 5 May 2022 20:19:30 +0200
-Received: from kreacher.localnet (unknown [213.134.161.219])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 0EFE266C2F2;
-        Thu,  5 May 2022 20:19:30 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PCI <linux-pci@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Anders Roxell <anders.roxell@linaro.org>
-Subject: [PATCH v1 09/11] PCI/PM: Clean up pci_set_low_power_state()
-Date:   Thu, 05 May 2022 20:15:34 +0200
-Message-ID: <2539071.Lt9SDvczpP@kreacher>
-In-Reply-To: <4738492.GXAFRqVoOG@kreacher>
-References: <4738492.GXAFRqVoOG@kreacher>
+        with ESMTP id S1384212AbiEEShG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:37:06 -0400
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E44D5E177;
+        Thu,  5 May 2022 11:27:27 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:53338)
+        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nmgCE-004ZDo-6K; Thu, 05 May 2022 12:27:26 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37118 helo=localhost.localdomain)
+        by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nmgCC-002BtP-VG; Thu, 05 May 2022 12:27:25 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
+        mingo@kernel.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
+        bigeasy@linutronix.de, Will Deacon <will@kernel.org>,
+        tj@kernel.org, linux-pm@vger.kernel.org,
+        Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
+        "Eric W. Biederman" <ebiederm@xmission.com>
+Date:   Thu,  5 May 2022 13:26:38 -0500
+Message-Id: <20220505182645.497868-5-ebiederm@xmission.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
+References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.161.219
-X-CLIENT-HOSTNAME: 213.134.161.219
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrfedugdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrdduiedurddvudelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeiuddrvdduledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgv
- lhdrtghomhdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehnrghthhgrnheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnuggvrhhsrdhrohigvghllheslhhinhgrrhhordhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Transfer-Encoding: 8bit
+X-XM-SPF: eid=1nmgCC-002BtP-VG;;;mid=<20220505182645.497868-5-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1/Y91Z+k7ckI3FPQY9G7PbOZct7wt7eL6M=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: [PATCH v4 05/12] ptrace: Remove arch_ptrace_attach
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The last remaining implementation of arch_ptrace_attach is ia64's
+ptrace_attach_sync_user_rbs which was added at the end of 2007 in
+commit aa91a2e90044 ("[IA64] Synchronize RBS on PTRACE_ATTACH").
 
-Make the following assorted non-essential changes in
-pci_set_low_power_state():
+Reading the comments and examining the code ptrace_attach_sync_user_rbs
+has the sole purpose of saving registers to the stack when ptrace_attach
+changes TASK_STOPPED to TASK_TRACED.  In all other cases arch_ptrace_stop
+takes care of the register saving.
 
- 1. Drop two redundant checks from it (the caller takes care of these
-    conditions).
+In commit d79fdd6d96f4 ("ptrace: Clean transitions between TASK_STOPPED and TRACED")
+modified ptrace_attach to wake up the thread and enter ptrace_stop normally even
+when the thread starts out stopped.
 
- 2. Change the log level of a messages printed by it to "debug",
-    because it only indicates a programming mistake.
+This makes ptrace_attach_sync_user_rbs completely unnecessary.  So just
+remove it.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: linux-ia64@vger.kernel.org
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- drivers/pci/pci.c |    9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ arch/ia64/include/asm/ptrace.h |  4 ---
+ arch/ia64/kernel/ptrace.c      | 57 ----------------------------------
+ kernel/ptrace.c                | 18 -----------
+ 3 files changed, 79 deletions(-)
 
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -1341,16 +1341,9 @@ static int pci_set_low_power_state(struc
+diff --git a/arch/ia64/include/asm/ptrace.h b/arch/ia64/include/asm/ptrace.h
+index a10a498eede1..402874489890 100644
+--- a/arch/ia64/include/asm/ptrace.h
++++ b/arch/ia64/include/asm/ptrace.h
+@@ -139,10 +139,6 @@ static inline long regs_return_value(struct pt_regs *regs)
+   #define arch_ptrace_stop_needed() \
+ 	(!test_thread_flag(TIF_RESTORE_RSE))
+ 
+-  extern void ptrace_attach_sync_user_rbs (struct task_struct *);
+-  #define arch_ptrace_attach(child) \
+-	ptrace_attach_sync_user_rbs(child)
+-
+   #define arch_has_single_step()  (1)
+   #define arch_has_block_step()   (1)
+ 
+diff --git a/arch/ia64/kernel/ptrace.c b/arch/ia64/kernel/ptrace.c
+index a19acd9f5e1f..a45f529046c3 100644
+--- a/arch/ia64/kernel/ptrace.c
++++ b/arch/ia64/kernel/ptrace.c
+@@ -617,63 +617,6 @@ void ia64_sync_krbs(void)
+ 	unw_init_running(do_sync_rbs, ia64_sync_kernel_rbs);
+ }
+ 
+-/*
+- * After PTRACE_ATTACH, a thread's register backing store area in user
+- * space is assumed to contain correct data whenever the thread is
+- * stopped.  arch_ptrace_stop takes care of this on tracing stops.
+- * But if the child was already stopped for job control when we attach
+- * to it, then it might not ever get into ptrace_stop by the time we
+- * want to examine the user memory containing the RBS.
+- */
+-void
+-ptrace_attach_sync_user_rbs (struct task_struct *child)
+-{
+-	int stopped = 0;
+-	struct unw_frame_info info;
+-
+-	/*
+-	 * If the child is in TASK_STOPPED, we need to change that to
+-	 * TASK_TRACED momentarily while we operate on it.  This ensures
+-	 * that the child won't be woken up and return to user mode while
+-	 * we are doing the sync.  (It can only be woken up for SIGKILL.)
+-	 */
+-
+-	read_lock(&tasklist_lock);
+-	if (child->sighand) {
+-		spin_lock_irq(&child->sighand->siglock);
+-		if (READ_ONCE(child->__state) == TASK_STOPPED &&
+-		    !test_and_set_tsk_thread_flag(child, TIF_RESTORE_RSE)) {
+-			set_notify_resume(child);
+-
+-			WRITE_ONCE(child->__state, TASK_TRACED);
+-			stopped = 1;
+-		}
+-		spin_unlock_irq(&child->sighand->siglock);
+-	}
+-	read_unlock(&tasklist_lock);
+-
+-	if (!stopped)
+-		return;
+-
+-	unw_init_from_blocked_task(&info, child);
+-	do_sync_rbs(&info, ia64_sync_user_rbs);
+-
+-	/*
+-	 * Now move the child back into TASK_STOPPED if it should be in a
+-	 * job control stop, so that SIGCONT can be used to wake it up.
+-	 */
+-	read_lock(&tasklist_lock);
+-	if (child->sighand) {
+-		spin_lock_irq(&child->sighand->siglock);
+-		if (READ_ONCE(child->__state) == TASK_TRACED &&
+-		    (child->signal->flags & SIGNAL_STOP_STOPPED)) {
+-			WRITE_ONCE(child->__state, TASK_STOPPED);
+-		}
+-		spin_unlock_irq(&child->sighand->siglock);
+-	}
+-	read_unlock(&tasklist_lock);
+-}
+-
+ /*
+  * Write f32-f127 back to task->thread.fph if it has been modified.
+  */
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index ccc4b465775b..da30dcd477a0 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -1285,10 +1285,6 @@ int ptrace_request(struct task_struct *child, long request,
+ 	return ret;
+ }
+ 
+-#ifndef arch_ptrace_attach
+-#define arch_ptrace_attach(child)	do { } while (0)
+-#endif
+-
+ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
+ 		unsigned long, data)
  {
- 	u16 pmcsr;
+@@ -1297,8 +1293,6 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
  
--	/* Check if we're already there */
--	if (dev->current_state == state)
--		return 0;
--
- 	if (!dev->pm_cap)
- 		return -EIO;
+ 	if (request == PTRACE_TRACEME) {
+ 		ret = ptrace_traceme();
+-		if (!ret)
+-			arch_ptrace_attach(current);
+ 		goto out;
+ 	}
  
--	if (state < PCI_D1 || state > PCI_D3hot)
--		return -EINVAL;
--
- 	/*
- 	 * Validate transition: We can enter D0 from any state, but if
- 	 * we're already in a low-power state, we can only go deeper.  E.g.,
-@@ -1358,7 +1351,7 @@ static int pci_set_low_power_state(struc
- 	 * we'd have to go from D3 to D0, then to D1.
- 	 */
- 	if (dev->current_state <= PCI_D3cold && dev->current_state > state) {
--		pci_err(dev, "invalid power transition (from %s to %s)\n",
-+		pci_dbg(dev, "Invalid power transition (from %s to %s)\n",
- 			pci_power_name(dev->current_state),
- 			pci_power_name(state));
- 		return -EINVAL;
-
-
+@@ -1310,12 +1304,6 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
+ 
+ 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
+ 		ret = ptrace_attach(child, request, addr, data);
+-		/*
+-		 * Some architectures need to do book-keeping after
+-		 * a ptrace attach.
+-		 */
+-		if (!ret)
+-			arch_ptrace_attach(child);
+ 		goto out_put_task_struct;
+ 	}
+ 
+@@ -1455,12 +1443,6 @@ COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
+ 
+ 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
+ 		ret = ptrace_attach(child, request, addr, data);
+-		/*
+-		 * Some architectures need to do book-keeping after
+-		 * a ptrace attach.
+-		 */
+-		if (!ret)
+-			arch_ptrace_attach(child);
+ 		goto out_put_task_struct;
+ 	}
+ 
+-- 
+2.35.3
 
