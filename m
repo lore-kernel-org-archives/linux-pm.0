@@ -2,110 +2,72 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA56C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 15:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBA14C433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 15:04:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233555AbiEEPFx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 11:05:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55360 "EHLO
+        id S1349006AbiEEPH6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 11:07:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1380949AbiEEPFx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 11:05:53 -0400
-Received: from us-smtp-delivery-74.mimecast.com (us-smtp-delivery-74.mimecast.com [170.10.129.74])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 80AE822510
-        for <linux-pm@vger.kernel.org>; Thu,  5 May 2022 08:02:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651762932;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=I3fL/x7Xenik54basEds0J2F7uKxunsCuMprnbYoyPM=;
-        b=AlyOKMLCwFGGKPWAv56iif+m7GzkiMSdKAG+XNDtXe9XrF+MWWxDV6IiIGtL+DFBppAzx3
-        2mT/INl4WUj0L2EdPMfLZj5X1eh3lAaJdOKpKLLBrG/HU+MUhJ1ufNKnqh5pORkFHmiDFI
-        yCL53aK50TGP+gAy6h7hxA5ja8fo4Gw=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-517-_OCgwZHFOa-R75Os49XEVg-1; Thu, 05 May 2022 11:02:09 -0400
-X-MC-Unique: _OCgwZHFOa-R75Os49XEVg-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CEADA1014A69;
-        Thu,  5 May 2022 15:02:06 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.192.3])
-        by smtp.corp.redhat.com (Postfix) with SMTP id AD2C49E94;
-        Thu,  5 May 2022 15:02:01 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
-        oleg@redhat.com; Thu,  5 May 2022 17:02:05 +0200 (CEST)
-Date:   Thu, 5 May 2022 17:01:59 +0200
-From:   Oleg Nesterov <oleg@redhat.com>
-To:     "Eric W. Biederman" <ebiederm@xmission.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH v3 08/11] ptrace: Admit ptrace_stop can generate spuriuos
- SIGTRAPs
-Message-ID: <20220505150158.GB13929@redhat.com>
-References: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
- <20220504224058.476193-8-ebiederm@xmission.com>
+        with ESMTP id S243206AbiEEPH5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 11:07:57 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A300B56430;
+        Thu,  5 May 2022 08:04:18 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: kholk11)
+        with ESMTPSA id 754D41F45912
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1651763057;
+        bh=CvWL0d92LTexS+0TabDQSn5dqaw57JFYhNx34gLvT+4=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=FymySwbCbDQl4GF3l/lIkKKEPFBziW0d1hu4fmNOOGncPJRlggPbECJOkic3hNT4K
+         cl9A3RkP/QPmQDeirnZHyngRLX4MiVEMNuB47cfXJDaf9/N04OxMj6DVK9KqCli+eY
+         HBxIeetLXKDJqR+9jTcyxpK6KqMhCt8/Rge//og6LNx/ealuvT/J03zU0NUjfGmG+q
+         S7N3hSGeKfBF8wmWRrHdtQq+dGZ9cH6VPj6PjhHU6wm9ToIptVUtdhRqPbjq4PvcSi
+         k0fH6vBYIICtwFYmnIrAXhTSSAICy1h1N7HiosBncuBXhwud9Ul1ibgP5YYY7BzoAz
+         z/rTsZqbcatTA==
+Message-ID: <af9724fe-181d-3ba4-79b9-bf3fab1ca80d@collabora.com>
+Date:   Thu, 5 May 2022 17:04:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220504224058.476193-8-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.79 on 10.11.54.5
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v6 02/10] cpufreq: mediatek: Add
+ platform_device_unregister when driver exit
+Content-Language: en-US
+To:     Rex-BC Chen <rex-bc.chen@mediatek.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org, robh+dt@kernel.org, krzk+dt@kernel.org,
+        matthias.bgg@gmail.com
+Cc:     jia-wei.chang@mediatek.com, roger.lu@mediatek.com,
+        hsinyi@google.com, khilman@baylibre.com, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org,
+        Project_Global_Chrome_Upstream_Group@mediatek.com
+References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
+ <20220505115226.20130-3-rex-bc.chen@mediatek.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220505115226.20130-3-rex-bc.chen@mediatek.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/04, Eric W. Biederman wrote:
->
-> With the removal of the incomplete detection of the tracer going away
-> in ptrace_stop, ptrace_stop always sleeps in schedule after
-> ptrace_freeze_traced succeeds.  Modify ptrace_check_attach to
-> warn if wait_task_inactive fails.
+Il 05/05/22 13:52, Rex-BC Chen ha scritto:
+> We register the platform device when driver inits. However, we do not
+> unregister it when driver exits.
+> To resolve this, we declare the platform data to be a global static
+> variable and rename it to be "cpufreq_pdev".
+> With this global variable, we can do platform_device_unregister() when
+> driver exits.
+> 
+> Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 
-Oh. Again, I don't understand the changelog. If we forget about RT,
-ptrace_stop() will always sleep if ptrace_freeze_traced() succeeds.
-may_ptrace_stop() has gone.
+Hello Rex,
+this commit needs a Fixes: tag.
 
-IOW. Lets forget about RT
-
-> --- a/kernel/ptrace.c
-> +++ b/kernel/ptrace.c
-> @@ -266,17 +266,9 @@ static int ptrace_check_attach(struct task_struct *child, bool ignore_state)
->  	}
->  	read_unlock(&tasklist_lock);
->
-> -	if (!ret && !ignore_state) {
-> -		if (!wait_task_inactive(child, __TASK_TRACED)) {
-> -			/*
-> -			 * This can only happen if may_ptrace_stop() fails and
-> -			 * ptrace_stop() changes ->state back to TASK_RUNNING,
-> -			 * so we should not worry about leaking __TASK_TRACED.
-> -			 */
-> -			WARN_ON(READ_ONCE(child->__state) == __TASK_TRACED);
-> -			ret = -ESRCH;
-> -		}
-> -	}
-> +	if (!ret && !ignore_state &&
-> +	    WARN_ON_ONCE(!wait_task_inactive(child, __TASK_TRACED)))
-> +		ret = -ESRCH;
->
->  	return ret;
->  }
-
-Why do you think this change would be wrong without any other changes?
-
-Oleg.
+Cheers,
+Angelo
 
