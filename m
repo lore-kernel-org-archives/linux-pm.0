@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C39C433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14766C43217
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348920AbiEESh4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 14:37:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38810 "EHLO
+        id S1384354AbiEESh6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 14:37:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38020 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1384212AbiEEShG (ORCPT
+        with ESMTP id S1384213AbiEEShG (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:37:06 -0400
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E44D5E177;
-        Thu,  5 May 2022 11:27:27 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:53338)
-        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0F795DBED;
+        Thu,  5 May 2022 11:27:30 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:59548)
+        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgCE-004ZDo-6K; Thu, 05 May 2022 12:27:26 -0600
+        id 1nmgCI-00GUuH-0o; Thu, 05 May 2022 12:27:30 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37118 helo=localhost.localdomain)
         by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgCC-002BtP-VG; Thu, 05 May 2022 12:27:25 -0600
+        id 1nmgCG-002BtP-5H; Thu, 05 May 2022 12:27:29 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -40,181 +40,58 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
         "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Thu,  5 May 2022 13:26:38 -0500
-Message-Id: <20220505182645.497868-5-ebiederm@xmission.com>
+Date:   Thu,  5 May 2022 13:26:39 -0500
+Message-Id: <20220505182645.497868-6-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmgCC-002BtP-VG;;;mid=<20220505182645.497868-5-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1/Y91Z+k7ckI3FPQY9G7PbOZct7wt7eL6M=
+X-XM-SPF: eid=1nmgCG-002BtP-5H;;;mid=<20220505182645.497868-6-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1+xBxycjJYYOeyHTOMyFYs6QPKTTdJxq/c=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v4 05/12] ptrace: Remove arch_ptrace_attach
+Subject: [PATCH v4 06/12] signal: Use lockdep_assert_held instead of assert_spin_locked
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The last remaining implementation of arch_ptrace_attach is ia64's
-ptrace_attach_sync_user_rbs which was added at the end of 2007 in
-commit aa91a2e90044 ("[IA64] Synchronize RBS on PTRACE_ATTACH").
+The distinction is that assert_spin_locked() checks if the lock is
+held *by*anyone* whereas lockdep_assert_held() asserts the current
+context holds the lock.  Also, the check goes away if you build
+without lockdep.
 
-Reading the comments and examining the code ptrace_attach_sync_user_rbs
-has the sole purpose of saving registers to the stack when ptrace_attach
-changes TASK_STOPPED to TASK_TRACED.  In all other cases arch_ptrace_stop
-takes care of the register saving.
-
-In commit d79fdd6d96f4 ("ptrace: Clean transitions between TASK_STOPPED and TRACED")
-modified ptrace_attach to wake up the thread and enter ptrace_stop normally even
-when the thread starts out stopped.
-
-This makes ptrace_attach_sync_user_rbs completely unnecessary.  So just
-remove it.
-
-Cc: linux-ia64@vger.kernel.org
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/Ympr/+PX4XgT/UKU@hirez.programming.kicks-ass.net
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/ia64/include/asm/ptrace.h |  4 ---
- arch/ia64/kernel/ptrace.c      | 57 ----------------------------------
- kernel/ptrace.c                | 18 -----------
- 3 files changed, 79 deletions(-)
+ kernel/signal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/ia64/include/asm/ptrace.h b/arch/ia64/include/asm/ptrace.h
-index a10a498eede1..402874489890 100644
---- a/arch/ia64/include/asm/ptrace.h
-+++ b/arch/ia64/include/asm/ptrace.h
-@@ -139,10 +139,6 @@ static inline long regs_return_value(struct pt_regs *regs)
-   #define arch_ptrace_stop_needed() \
- 	(!test_thread_flag(TIF_RESTORE_RSE))
- 
--  extern void ptrace_attach_sync_user_rbs (struct task_struct *);
--  #define arch_ptrace_attach(child) \
--	ptrace_attach_sync_user_rbs(child)
--
-   #define arch_has_single_step()  (1)
-   #define arch_has_block_step()   (1)
- 
-diff --git a/arch/ia64/kernel/ptrace.c b/arch/ia64/kernel/ptrace.c
-index a19acd9f5e1f..a45f529046c3 100644
---- a/arch/ia64/kernel/ptrace.c
-+++ b/arch/ia64/kernel/ptrace.c
-@@ -617,63 +617,6 @@ void ia64_sync_krbs(void)
- 	unw_init_running(do_sync_rbs, ia64_sync_kernel_rbs);
- }
- 
--/*
-- * After PTRACE_ATTACH, a thread's register backing store area in user
-- * space is assumed to contain correct data whenever the thread is
-- * stopped.  arch_ptrace_stop takes care of this on tracing stops.
-- * But if the child was already stopped for job control when we attach
-- * to it, then it might not ever get into ptrace_stop by the time we
-- * want to examine the user memory containing the RBS.
-- */
--void
--ptrace_attach_sync_user_rbs (struct task_struct *child)
--{
--	int stopped = 0;
--	struct unw_frame_info info;
--
--	/*
--	 * If the child is in TASK_STOPPED, we need to change that to
--	 * TASK_TRACED momentarily while we operate on it.  This ensures
--	 * that the child won't be woken up and return to user mode while
--	 * we are doing the sync.  (It can only be woken up for SIGKILL.)
--	 */
--
--	read_lock(&tasklist_lock);
--	if (child->sighand) {
--		spin_lock_irq(&child->sighand->siglock);
--		if (READ_ONCE(child->__state) == TASK_STOPPED &&
--		    !test_and_set_tsk_thread_flag(child, TIF_RESTORE_RSE)) {
--			set_notify_resume(child);
--
--			WRITE_ONCE(child->__state, TASK_TRACED);
--			stopped = 1;
--		}
--		spin_unlock_irq(&child->sighand->siglock);
--	}
--	read_unlock(&tasklist_lock);
--
--	if (!stopped)
--		return;
--
--	unw_init_from_blocked_task(&info, child);
--	do_sync_rbs(&info, ia64_sync_user_rbs);
--
--	/*
--	 * Now move the child back into TASK_STOPPED if it should be in a
--	 * job control stop, so that SIGCONT can be used to wake it up.
--	 */
--	read_lock(&tasklist_lock);
--	if (child->sighand) {
--		spin_lock_irq(&child->sighand->siglock);
--		if (READ_ONCE(child->__state) == TASK_TRACED &&
--		    (child->signal->flags & SIGNAL_STOP_STOPPED)) {
--			WRITE_ONCE(child->__state, TASK_STOPPED);
--		}
--		spin_unlock_irq(&child->sighand->siglock);
--	}
--	read_unlock(&tasklist_lock);
--}
--
- /*
-  * Write f32-f127 back to task->thread.fph if it has been modified.
-  */
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index ccc4b465775b..da30dcd477a0 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -1285,10 +1285,6 @@ int ptrace_request(struct task_struct *child, long request,
- 	return ret;
- }
- 
--#ifndef arch_ptrace_attach
--#define arch_ptrace_attach(child)	do { } while (0)
--#endif
--
- SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
- 		unsigned long, data)
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 72d96614effc..3fd2ce133387 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -884,7 +884,7 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
+ static void ptrace_trap_notify(struct task_struct *t)
  {
-@@ -1297,8 +1293,6 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
+ 	WARN_ON_ONCE(!(t->ptrace & PT_SEIZED));
+-	assert_spin_locked(&t->sighand->siglock);
++	lockdep_assert_held(&t->sighand->siglock);
  
- 	if (request == PTRACE_TRACEME) {
- 		ret = ptrace_traceme();
--		if (!ret)
--			arch_ptrace_attach(current);
- 		goto out;
- 	}
+ 	task_set_jobctl_pending(t, JOBCTL_TRAP_NOTIFY);
+ 	ptrace_signal_wake_up(t, t->jobctl & JOBCTL_LISTENING);
+@@ -1079,7 +1079,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
+ 	int override_rlimit;
+ 	int ret = 0, result;
  
-@@ -1310,12 +1304,6 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
+-	assert_spin_locked(&t->sighand->siglock);
++	lockdep_assert_held(&t->sighand->siglock);
  
- 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
- 		ret = ptrace_attach(child, request, addr, data);
--		/*
--		 * Some architectures need to do book-keeping after
--		 * a ptrace attach.
--		 */
--		if (!ret)
--			arch_ptrace_attach(child);
- 		goto out_put_task_struct;
- 	}
- 
-@@ -1455,12 +1443,6 @@ COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
- 
- 	if (request == PTRACE_ATTACH || request == PTRACE_SEIZE) {
- 		ret = ptrace_attach(child, request, addr, data);
--		/*
--		 * Some architectures need to do book-keeping after
--		 * a ptrace attach.
--		 */
--		if (!ret)
--			arch_ptrace_attach(child);
- 		goto out_put_task_struct;
- 	}
- 
+ 	result = TRACE_SIGNAL_IGNORED;
+ 	if (!prepare_signal(sig, t, force))
 -- 
 2.35.3
 
