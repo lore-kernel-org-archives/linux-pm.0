@@ -2,138 +2,286 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B28C433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:06:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7206AC433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:52:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353861AbiEELKV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 07:10:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44752 "EHLO
+        id S1358568AbiEEL42 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 07:56:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60582 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344317AbiEELKU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:10:20 -0400
-Received: from mail.marcansoft.com (marcansoft.com [IPv6:2a01:298:fe:f::2])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B86D313F06;
-        Thu,  5 May 2022 04:06:40 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: marcan@marcan.st)
-        by mail.marcansoft.com (Postfix) with ESMTPSA id 7FB7E41F28;
-        Thu,  5 May 2022 11:06:34 +0000 (UTC)
-Message-ID: <39ad7d44-7320-bc7c-8645-6643a1e69c06@marcan.st>
-Date:   Thu, 5 May 2022 20:06:31 +0900
+        with ESMTP id S1356209AbiEEL41 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:27 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11FD754696;
+        Thu,  5 May 2022 04:52:41 -0700 (PDT)
+X-UUID: 3357646738684a098c04ee1ab0358742-20220505
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.4,REQID:d304df2c-ad96-430f-8eaa-ff25fa176b05,OB:0,LO
+        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
+        ON:release,TS:0
+X-CID-META: VersionHash:faefae9,CLOUDID:1794b1b2-56b5-4c9e-8d83-0070b288eb6a,C
+        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
+X-UUID: 3357646738684a098c04ee1ab0358742-20220505
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1062747904; Thu, 05 May 2022 19:52:35 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Thu, 5 May 2022 19:52:34 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Thu, 5 May 2022 19:52:34 +0800
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
+        <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
+        <matthias.bgg@gmail.com>
+CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
+        <hsinyi@google.com>, <khilman@baylibre.com>,
+        <angelogioacchino.delregno@collabora.com>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
+        Rex-BC Chen <rex-bc.chen@mediatek.com>
+Subject: [PATCH v6 03/10] cpufreq: mediatek: Move voltage limits to platform data
+Date:   Thu, 5 May 2022 19:52:19 +0800
+Message-ID: <20220505115226.20130-4-rex-bc.chen@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
+References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Content-Language: es-ES
-To:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Sven Peter <sven@svenpeter.dev>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Marc Zyngier <maz@kernel.org>,
-        Mark Kettenis <mark.kettenis@xs4all.nl>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20220504075153.185208-1-marcan@marcan.st>
- <20220504075153.185208-3-marcan@marcan.st>
- <a7e87c9a-7b3e-ea46-6171-4a87d1052a98@linaro.org>
-From:   Hector Martin <marcan@marcan.st>
-Subject: Re: [PATCH v2 2/4] dt-bindings: cpufreq: apple,soc-cpufreq: Add
- binding for Apple SoC cpufreq
-In-Reply-To: <a7e87c9a-7b3e-ea46-6171-4a87d1052a98@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/05/2022 17.43, Krzysztof Kozlowski wrote:
-> On 04/05/2022 09:51, Hector Martin wrote:
->> This binding represents the cpufreq/DVFS hardware present in Apple SoCs.
->> The hardware has an independent controller per CPU cluster, but we
->> represent them as a single cpufreq node since there can only be one
->> systemwide cpufreq device (and since in the future, interactions with
->> memory controller performance states will also involve cooperation
->> between multiple frequency domains).
->>
->> Signed-off-by: Hector Martin <marcan@marcan.st>
->> ---
->>  .../bindings/cpufreq/apple,soc-cpufreq.yaml   | 121 ++++++++++++++++++
->>  1 file changed, 121 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml b/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
->> new file mode 100644
->> index 000000000000..f398c1bd5de5
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/apple,soc-cpufreq.yaml
->> @@ -0,0 +1,121 @@
->> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/cpufreq/apple,soc-cpufreq.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Apple SoC cpufreq device
->> +
->> +maintainers:
->> +  - Hector Martin <marcan@marcan.st>
->> +
->> +description: |
->> +  Apple SoCs (e.g. M1) have a per-cpu-cluster DVFS controller that is part of
->> +  the cluster management register block. This binding uses the standard
->> +  operating-points-v2 table to define the CPU performance states, with the
->> +  opp-level property specifying the hardware p-state index for that level.
->> +
->> +properties:
->> +  compatible:
->> +    items:
->> +      - enum:
->> +          - apple,t8103-soc-cpufreq
->> +          - apple,t6000-soc-cpufreq
->> +      - const: apple,soc-cpufreq
->> +
->> +  reg:
->> +    minItems: 1
->> +    maxItems: 6
-> 
-> Is the number of clusters fixed for t8103 and t6000? Are these
-> compatibles strictly related to some specific M1 SoC? If yes, then you
-> should have constraints in allOf:if:then.
+Voltages and shifts are defined as macros originally.
+There are different requirements of these values for each MediaTek SoCs.
+Therefore, we add the platform data and move these values into it.
 
-No, t6000 includes t6002 which is a 2-die version and has 6 clusters,
-t6001 and t6000 have 3. t8103 always has 2, but it's conceivable that
-compatible could be used for other chips within the same generation with
-a different number.
+Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+---
+ drivers/cpufreq/mediatek-cpufreq.c | 84 +++++++++++++++++++++---------
+ 1 file changed, 58 insertions(+), 26 deletions(-)
 
-The general idea for these compats is as a fallback in case we need to
-quirk something for individual SoCs or start using registers which
-changed for some reason, but right now they are not used. But I think
-given how closely related t6000/t6001/t6002 are (t6002 is literally two
-t6001 dies, and t6000 is almost identical to t6001 with a chunk
-missing), I think spelling those out as 3 separate compatibles is
-overkill. In general we treat those 3 SoCs as identical in terms of
-compatibles, but the one-cpufreq-node limitation means t6002 does have
-twice the clusters.
-
-It's also conceivable that Apple could start releasing CPUs with entire
-clusters fused off, so then our bootloader would have to start mutating
-the reg entry to represent that.
-
-I can add constraints to express some of this if you really want me to,
-but I'm not sure it's that useful. The way I see it, the compatibles
-really *mean* "this soc has t8103 clusters" or "this soc has t6000
-clusters" and the number of clusters is arbitrary and the driver will
-never care about that. Honestly I'd rather have separate cpufreq nodes
-for each cluster, but nobody else does it like that and there's only one
-driver instance, so that gets complicated...
-
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index d15cbef4a72e..0b6c3479c8cc 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -10,15 +10,21 @@
+ #include <linux/cpumask.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+ #include <linux/regulator/consumer.h>
+ 
+-#define MIN_VOLT_SHIFT		(100000)
+-#define MAX_VOLT_SHIFT		(200000)
+-#define MAX_VOLT_LIMIT		(1150000)
+ #define VOLT_TOL		(10000)
+ 
++struct mtk_cpufreq_platform_data {
++	int min_volt_shift;
++	int max_volt_shift;
++	int proc_max_volt;
++	int sram_min_volt;
++	int sram_max_volt;
++};
++
+ /*
+  * The struct mtk_cpu_dvfs_info holds necessary information for doing CPU DVFS
+  * on each CPU power/clock domain of Mediatek SoCs. Each CPU cluster in
+@@ -41,6 +47,7 @@ struct mtk_cpu_dvfs_info {
+ 	int intermediate_voltage;
+ 	bool need_voltage_tracking;
+ 	int pre_vproc;
++	const struct mtk_cpufreq_platform_data *soc_data;
+ };
+ 
+ static struct platform_device *cpufreq_pdev;
+@@ -62,6 +69,7 @@ static struct mtk_cpu_dvfs_info *mtk_cpu_dvfs_info_lookup(int cpu)
+ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 					int new_vproc)
+ {
++	const struct mtk_cpufreq_platform_data *soc_data = info->soc_data;
+ 	struct regulator *proc_reg = info->proc_reg;
+ 	struct regulator *sram_reg = info->sram_reg;
+ 	int pre_vproc, pre_vsram, new_vsram, vsram, vproc, ret;
+@@ -73,7 +81,8 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 		return pre_vproc;
+ 	}
+ 	/* Vsram should not exceed the maximum allowed voltage of SoC. */
+-	new_vsram = min(new_vproc + MIN_VOLT_SHIFT, MAX_VOLT_LIMIT);
++	new_vsram = min(new_vproc + soc_data->min_volt_shift,
++			soc_data->sram_max_volt);
+ 
+ 	if (pre_vproc < new_vproc) {
+ 		/*
+@@ -96,10 +105,11 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 				return pre_vproc;
+ 			}
+ 
+-			vsram = min(new_vsram, pre_vproc + MAX_VOLT_SHIFT);
++			vsram = min(new_vsram,
++				    pre_vproc + soc_data->min_volt_shift);
+ 
+-			if (vsram + VOLT_TOL >= MAX_VOLT_LIMIT) {
+-				vsram = MAX_VOLT_LIMIT;
++			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
++				vsram = soc_data->sram_max_volt;
+ 
+ 				/*
+ 				 * If the target Vsram hits the maximum voltage,
+@@ -117,7 +127,7 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 				ret = regulator_set_voltage(sram_reg, vsram,
+ 							    vsram + VOLT_TOL);
+ 
+-				vproc = vsram - MIN_VOLT_SHIFT;
++				vproc = vsram - soc_data->min_volt_shift;
+ 			}
+ 			if (ret)
+ 				return ret;
+@@ -151,7 +161,8 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 				return pre_vsram;
+ 			}
+ 
+-			vproc = max(new_vproc, pre_vsram - MAX_VOLT_SHIFT);
++			vproc = max(new_vproc,
++				    pre_vsram - soc_data->max_volt_shift);
+ 			ret = regulator_set_voltage(proc_reg, vproc,
+ 						    vproc + VOLT_TOL);
+ 			if (ret)
+@@ -160,10 +171,11 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 			if (vproc == new_vproc)
+ 				vsram = new_vsram;
+ 			else
+-				vsram = max(new_vsram, vproc + MIN_VOLT_SHIFT);
++				vsram = max(new_vsram,
++					    vproc + soc_data->min_volt_shift);
+ 
+-			if (vsram + VOLT_TOL >= MAX_VOLT_LIMIT) {
+-				vsram = MAX_VOLT_LIMIT;
++			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
++				vsram = soc_data->sram_max_volt;
+ 
+ 				/*
+ 				 * If the target Vsram hits the maximum voltage,
+@@ -194,13 +206,14 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
+ 
+ static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
+ {
++	const struct mtk_cpufreq_platform_data *soc_data = info->soc_data;
+ 	int ret;
+ 
+ 	if (info->need_voltage_tracking)
+ 		ret = mtk_cpufreq_voltage_tracking(info, vproc);
+ 	else
+ 		ret = regulator_set_voltage(info->proc_reg, vproc,
+-					    MAX_VOLT_LIMIT);
++					    soc_data->proc_max_volt);
+ 	if (!ret)
+ 		info->pre_vproc = vproc;
+ 
+@@ -509,9 +522,17 @@ static struct cpufreq_driver mtk_cpufreq_driver = {
+ 
+ static int mtk_cpufreq_probe(struct platform_device *pdev)
+ {
++	const struct mtk_cpufreq_platform_data *data;
+ 	struct mtk_cpu_dvfs_info *info, *tmp;
+ 	int cpu, ret;
+ 
++	data = dev_get_platdata(&pdev->dev);
++	if (!data) {
++		dev_err(&pdev->dev,
++			"failed to get mtk cpufreq platform data\n");
++		return -ENODEV;
++	}
++
+ 	for_each_possible_cpu(cpu) {
+ 		info = mtk_cpu_dvfs_info_lookup(cpu);
+ 		if (info)
+@@ -523,6 +544,7 @@ static int mtk_cpufreq_probe(struct platform_device *pdev)
+ 			goto release_dvfs_info_list;
+ 		}
+ 
++		info->soc_data = data;
+ 		ret = mtk_cpu_dvfs_info_init(info, cpu);
+ 		if (ret) {
+ 			dev_err(&pdev->dev,
+@@ -558,20 +580,27 @@ static struct platform_driver mtk_cpufreq_platdrv = {
+ 	.probe		= mtk_cpufreq_probe,
+ };
+ 
++static const struct mtk_cpufreq_platform_data mt2701_platform_data = {
++	.min_volt_shift = 100000,
++	.max_volt_shift = 200000,
++	.proc_max_volt = 1150000,
++	.sram_min_volt = 0,
++	.sram_max_volt = 1150000,
++};
++
+ /* List of machines supported by this driver */
+ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
+-	{ .compatible = "mediatek,mt2701", },
+-	{ .compatible = "mediatek,mt2712", },
+-	{ .compatible = "mediatek,mt7622", },
+-	{ .compatible = "mediatek,mt7623", },
+-	{ .compatible = "mediatek,mt8167", },
+-	{ .compatible = "mediatek,mt817x", },
+-	{ .compatible = "mediatek,mt8173", },
+-	{ .compatible = "mediatek,mt8176", },
+-	{ .compatible = "mediatek,mt8183", },
+-	{ .compatible = "mediatek,mt8365", },
+-	{ .compatible = "mediatek,mt8516", },
+-
++	{ .compatible = "mediatek,mt2701", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt2712", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt7622", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt7623", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8167", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt817x", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8173", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8176", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8183", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8365", .data = &mt2701_platform_data },
++	{ .compatible = "mediatek,mt8516", .data = &mt2701_platform_data },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, mtk_cpufreq_machines);
+@@ -580,6 +609,7 @@ static int __init mtk_cpufreq_driver_init(void)
+ {
+ 	struct device_node *np;
+ 	const struct of_device_id *match;
++	const struct mtk_cpufreq_platform_data *data;
+ 	int err;
+ 
+ 	np = of_find_node_by_path("/");
+@@ -592,6 +622,7 @@ static int __init mtk_cpufreq_driver_init(void)
+ 		pr_debug("Machine is not compatible with mtk-cpufreq\n");
+ 		return -ENODEV;
+ 	}
++	data = match->data;
+ 
+ 	err = platform_driver_register(&mtk_cpufreq_platdrv);
+ 	if (err)
+@@ -603,7 +634,8 @@ static int __init mtk_cpufreq_driver_init(void)
+ 	 * and the device registration codes are put here to handle defer
+ 	 * probing.
+ 	 */
+-	cpufreq_pdev = platform_device_register_simple("mtk-cpufreq", -1, NULL, 0);
++	cpufreq_pdev = platform_device_register_data(NULL, "mtk-cpufreq", -1,
++						     data, sizeof(*data));
+ 	if (IS_ERR(cpufreq_pdev)) {
+ 		pr_err("failed to register mtk-cpufreq platform device\n");
+ 		platform_driver_unregister(&mtk_cpufreq_platdrv);
 -- 
-Hector Martin (marcan@marcan.st)
-Public Key: https://mrcn.st/pub
+2.18.0
+
