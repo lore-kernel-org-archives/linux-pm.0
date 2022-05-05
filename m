@@ -2,50 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65EF8C43217
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 01:58:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39FE8C43217
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 01:58:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236927AbiEECCG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 May 2022 22:02:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38284 "EHLO
+        id S236972AbiEECCU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 May 2022 22:02:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236720AbiEECCF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 22:02:05 -0400
+        with ESMTP id S236879AbiEECCS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2022 22:02:18 -0400
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BADB473BD;
-        Wed,  4 May 2022 18:58:28 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C14251E4F;
+        Wed,  4 May 2022 18:58:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1651715908; x=1683251908;
+  t=1651715917; x=1683251917;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=7tqwlSchStXbCHGSxqQd/Vgz7WRZ8Bl2Gc0YOUqfvzI=;
-  b=GY3F26P6rm6HbGCcqFCL7OeP2IvNGau+SakvCASh51/fm1XzhAuRuFDx
-   sFdqx1AMHJP6FxshoNaOePUtTcQd53qT17IQA/JSIgLlrcSOne4jrB8uK
-   dsC3tZeH+UwbF3Jj0qd9ze/NMspC+5hwfK3xJVshu4jJNxnplqAhoVO3F
-   3n3UpNxvcOVIe5pIQ/OrTekCVs6SIuDQb7k2Dzs9nownKZ6LN7Ozo6qKL
-   TKvPbPO6uf6sIAE2QWzkVIQXz7jE5wHl6OK5RUx6cDLJtWiEu+B7Fo9Gg
-   pUYjD3D+7r3bl0vF9PgWjAF2/yPAZLlFGZR2W/i8YGjI4VHes8ZEjroj1
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10337"; a="293153477"
+  bh=5JGo0CUXEeDd0hKD63fYj2DEOqA2I95e7owhFGJ3cD0=;
+  b=T2vi7lviGPNuzJvBAs+HON3xp/9sCWSnLTDimeia0D56KrotSEV/osNb
+   cSmPXn9jx54NpSw9Z/xa0wZlefRSSsxmLNzQc0cuJSHUPIf84XCQk2wlW
+   Y1W+ITpjRceo7oJbyYnxUWma9Ux7IsMXEg+kCqK3xVOngKBlexFeHSnPd
+   WYLEo3dv4ud/1r5DW6is32jnywbQKSZCsU+pnxbwO/yF+6euoSCfdissl
+   aLRU9OLGvSG0cD44ahEv0bqg5VVUYI7uDI5EQXqwNfERfHGCzABWIaN4c
+   AAavDzmW/fEr0Vznirer6G/oq7LbWPn3WRYZuAHazalNtvkaBMfBgAQ7l
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10337"; a="293153507"
 X-IronPort-AV: E=Sophos;i="5.91,199,1647327600"; 
-   d="scan'208";a="293153477"
+   d="scan'208";a="293153507"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2022 18:58:27 -0700
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 May 2022 18:58:36 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.91,199,1647327600"; 
-   d="scan'208";a="537106007"
+   d="scan'208";a="537106061"
 Received: from rzhang1-dev.sh.intel.com ([10.239.48.43])
-  by orsmga006.jf.intel.com with ESMTP; 04 May 2022 18:58:24 -0700
+  by orsmga006.jf.intel.com with ESMTP; 04 May 2022 18:58:33 -0700
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     rjw@rjwysocki.net, kvalo@kernel.org, alexandre.belloni@bootlin.com
 Cc:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
         linux-rtc@vger.kernel.org, linux-wireless@vger.kernel.org,
         daniel.lezcano@linaro.org, merez@codeaurora.org, mat.jonczyk@o2.pl,
         sumeet.r.pawnikar@intel.com, len.brown@intel.com
-Subject: [PATCH 4/7] ACPI: video: improve PM notifer callback
-Date:   Thu,  5 May 2022 09:58:11 +0800
-Message-Id: <20220505015814.3727692-5-rui.zhang@intel.com>
+Subject: [PATCH 7/7] rtc: cmos: Add suspend/resume endurance testing hook
+Date:   Thu,  5 May 2022 09:58:14 +0800
+Message-Id: <20220505015814.3727692-8-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20220505015814.3727692-1-rui.zhang@intel.com>
 References: <20220505015814.3727692-1-rui.zhang@intel.com>
@@ -55,62 +55,148 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-PM notifier callbacks should check for supported events rather than filter
-out the unsupported events. So that it won't break when a new event is
-introduced.
+Automated suspend/resume testing uses the RTC for wakeup.
+A short rtcwake period is desirable, so that more suspend/resume
+cycles can be completed, while the machine is available for testing.
 
-No functional change in this patch.
+But if too short a wake interval is specified, the event can occur,
+while still suspending, and then no event wakes the suspended system
+until the user notices that testing has stalled, and manually intervenes.
 
+Here we add a hook to the rtc-cmos driver to
+a) remove the alarm timer in the beginning of suspend, if there is any
+b) arm the wakeup in PM notifier callback, which is in the very late stage
+   before the system really suspends
+The remaining part of suspend is usually measured under 10 ms,
+and so arming the timer at this point could be as fast as the minimum
+time of 1-second.
+
+But there is a 2nd race.  The RTC has 1-second granularity, and unless
+you are timing the timer with a higher resolution timer,
+there is no telling if the current time + 1 will occur immediately,
+or a full second in the future.  And so 2-seconds is the safest minimum:
+
+Run 1,000 s2idle cycles with (max of) 2 second wakeup period:
+
+ # echo 2 > /sys/module/rtc_cmos/parameters/rtc_wake_override_sec
+ # sleepgraph.py -m freeze -multi 1000 0 -skiphtml -gzip
+
+Clear the timer override, to not interfere with subsequent
+real use of the machine's suspend/resume feature:
+
+ # echo 0 > /sys/module/rtc_cmos/parameters/rtc_wake_override_sec
+
+Originally-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Tested-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
 ---
- drivers/acpi/acpi_video.c | 31 +++++++++++++++----------------
- 1 file changed, 15 insertions(+), 16 deletions(-)
+ drivers/rtc/interface.c |  1 +
+ drivers/rtc/rtc-cmos.c  | 45 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
 
-diff --git a/drivers/acpi/acpi_video.c b/drivers/acpi/acpi_video.c
-index 990ff5b0aeb8..e07782b1fbb6 100644
---- a/drivers/acpi/acpi_video.c
-+++ b/drivers/acpi/acpi_video.c
-@@ -1707,24 +1707,23 @@ static int acpi_video_resume(struct notifier_block *nb,
- 	int i;
+diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
+index 9edd662c69ac..fb93aa2dc99c 100644
+--- a/drivers/rtc/interface.c
++++ b/drivers/rtc/interface.c
+@@ -1020,6 +1020,7 @@ void rtc_timer_cancel(struct rtc_device *rtc, struct rtc_timer *timer)
+ 		rtc_timer_remove(rtc, timer);
+ 	mutex_unlock(&rtc->ops_lock);
+ }
++EXPORT_SYMBOL_GPL(rtc_timer_cancel);
  
- 	switch (val) {
--	case PM_HIBERNATION_PREPARE:
--	case PM_SUSPEND_PREPARE:
--	case PM_RESTORE_PREPARE:
--		return NOTIFY_DONE;
--	}
--
--	video = container_of(nb, struct acpi_video_bus, pm_nb);
--
--	dev_info(&video->device->dev, "Restoring backlight state\n");
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_SUSPEND:
-+	case PM_POST_RESTORE:
-+		video = container_of(nb, struct acpi_video_bus, pm_nb);
-+
-+		dev_info(&video->device->dev, "Restoring backlight state\n");
-+
-+		for (i = 0; i < video->attached_count; i++) {
-+			video_device = video->attached_array[i].bind_info;
-+			if (video_device && video_device->brightness)
-+				acpi_video_device_lcd_set_level(video_device,
-+						video_device->brightness->curr);
-+		}
+ /**
+  * rtc_read_offset - Read the amount of rtc offset in parts per billion
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index 7c006c2b125f..9590c40fa9d8 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -32,6 +32,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
++#include <linux/suspend.h>
+ #include <linux/platform_device.h>
+ #include <linux/log2.h>
+ #include <linux/pm.h>
+@@ -70,6 +71,9 @@ static inline int cmos_use_acpi_alarm(void)
+ }
+ #endif
  
--	for (i = 0; i < video->attached_count; i++) {
--		video_device = video->attached_array[i].bind_info;
--		if (video_device && video_device->brightness)
--			acpi_video_device_lcd_set_level(video_device,
--					video_device->brightness->curr);
-+		return NOTIFY_OK;
- 	}
--
--	return NOTIFY_OK;
-+	return NOTIFY_DONE;
++static int rtc_wake_override_sec;
++module_param(rtc_wake_override_sec, int, 0644);
++
+ struct cmos_rtc {
+ 	struct rtc_device	*rtc;
+ 	struct device		*dev;
+@@ -89,6 +93,7 @@ struct cmos_rtc {
+ 	u8			century;
+ 
+ 	struct rtc_wkalrm	saved_wkalrm;
++	struct notifier_block	pm_nb;
+ };
+ 
+ /* both platform and pnp busses use negative numbers for invalid irqs */
+@@ -744,6 +749,42 @@ static irqreturn_t cmos_interrupt(int irq, void *p)
+ 		return IRQ_NONE;
  }
  
- static acpi_status
++static int cmos_pm_notify(struct notifier_block *nb, unsigned long mode, void *_unused)
++{
++	struct cmos_rtc *cmos = container_of(nb, struct cmos_rtc, pm_nb);
++	struct rtc_device       *rtc = cmos->rtc;
++	unsigned long           now;
++	struct rtc_wkalrm       alm;
++
++	if (rtc_wake_override_sec == 0)
++		return NOTIFY_OK;
++
++	switch (mode) {
++	case PM_SUSPEND_PREPARE:
++		/*
++		 * Cancel the timer to make sure it won't fire
++		 * before rtc is rearmed later.
++		 */
++		rtc_timer_cancel(rtc, &rtc->aie_timer);
++		break;
++	case PM_SUSPEND_LATE:
++		if (rtc_read_time(rtc, &alm.time))
++			return NOTIFY_BAD;
++
++		now = rtc_tm_to_time64(&alm.time);
++		memset(&alm, 0, sizeof(alm));
++		rtc_time64_to_tm(now + rtc_wake_override_sec, &alm.time);
++		alm.enabled = true;
++		if (rtc_set_alarm(rtc, &alm))
++			return NOTIFY_BAD;
++		if (cmos->wake_on)
++			cmos->wake_on(cmos->dev);
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
+ #ifdef	CONFIG_PNP
+ #define	INITSECTION
+ 
+@@ -937,6 +978,9 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
+ 		 nvmem_cfg.size,
+ 		 use_hpet_alarm() ? ", hpet irqs" : "");
+ 
++	cmos_rtc.pm_nb.notifier_call = cmos_pm_notify;
++	register_pm_notifier(&cmos_rtc.pm_nb);
++
+ 	return 0;
+ 
+ cleanup2:
+@@ -965,6 +1009,7 @@ static void cmos_do_remove(struct device *dev)
+ 	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
+ 	struct resource *ports;
+ 
++	unregister_pm_notifier(&cmos_rtc.pm_nb);
+ 	cmos_do_shutdown(cmos->irq);
+ 
+ 	if (is_valid_irq(cmos->irq)) {
 -- 
 2.17.1
 
