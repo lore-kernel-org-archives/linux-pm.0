@@ -2,127 +2,194 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 945E3C433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 15:54:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A120C433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 16:45:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381001AbiEEP6N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 11:58:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45750 "EHLO
+        id S1381571AbiEEQtc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 12:49:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381457AbiEEP6K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 11:58:10 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C38305C34A;
-        Thu,  5 May 2022 08:54:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1651766058;
-        bh=OZPw31eDi3knqjv/5JX7svy8ZOi10sgL+1UBIT7O9hA=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=VPgKzqK3v9rsJuPUzzZdLF9vobW+4Iy8lwwwRG1x9FSOCDHVfDpJdpgVY63PaqBPW
-         87JjH+ITRev8lg/rN9JC1mElcqL8Is/xB/8EDxSMGOHjs6hynLO4fA7OR6jG0ChGmX
-         LFTPqlP+N5h835ymU3ZM1nPPlvxZ03BdA8lqGY/4=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [217.61.145.208] ([217.61.145.208]) by web-mail.gmx.net
- (3c-app-gmx-bs47.server.lan [172.19.170.99]) (via HTTP); Thu, 5 May 2022
- 17:54:18 +0200
-MIME-Version: 1.0
-Message-ID: <trinity-6a6249b9-69eb-459c-96f1-dbf8f031a86f-1651766058085@3c-app-gmx-bs47>
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Frank Wunderlich <linux@fw-web.de>, linux-pm@vger.kernel.org,
+        with ESMTP id S230474AbiEEQtc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 12:49:32 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BE39140E4
+        for <linux-pm@vger.kernel.org>; Thu,  5 May 2022 09:45:52 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id w5-20020a17090aaf8500b001d74c754128so8537732pjq.0
+        for <linux-pm@vger.kernel.org>; Thu, 05 May 2022 09:45:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=+TBIdvlOJIeAZLlUH3ltx+xD24LgL4B/TL6SthL09iE=;
+        b=jPFTxZhNy8P8I57ysGL8O7NhJLEO+m/BV9OiLJqP95qcGWqqcuLbmQ+SiwYeagFWeI
+         oZeK0KqiF9tzEmGRX6oTvPzB3JwnjGQLnOQUmDnr2Y92sQQa0ms4lCk1j9Ku60Sap21O
+         Rke/rPnerLL2j7fILyK5KqBnefIVvPCjvMSC0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=+TBIdvlOJIeAZLlUH3ltx+xD24LgL4B/TL6SthL09iE=;
+        b=2aMvxzZa35z2rrzwk2aZegZ1s130Mm2fBebhWWhOcl/fRG6FKQW/AeMETI68znlavl
+         zqIRay8ha1bgr6ZYTNDUN9dzgR/5s5Yg5Ssfmes4MC0nsou19+OCrVWBHe7ZEnkRdEhF
+         P9C/Zb+ipalucHKWemwIqS0XZG8bYrfMNuZsJogsGyxnZZUYKg5mWPcIOaxNZm/Ugmw2
+         vEXjKvN7P5gilwUCDWoyRcOA4dU6482Odms3RZHz3wvlZqPh1/YHSl3oOTNAF2QJWVQ8
+         7ipNXvE2bOldq9IQNu4OLJam/TSpVg++6rMKb8zXAHGONHxYufdOpX+PqMyDhzYHogtv
+         qxJA==
+X-Gm-Message-State: AOAM530iFGGYyWA29nrZEzcxOHJMUaOmAPxDHIAM9sg1bunBiLKq8BSt
+        JHMrZT1Bx3fm0GtcZYLxhUMZ4L937v7DiQ==
+X-Google-Smtp-Source: ABdhPJxXxB4lWpwbKRTOIHg2/PYNrZeJ89rDwPZDBEkxyplEIxF2hwF7jddtU/57yDbA/hTxLLC9tQ==
+X-Received: by 2002:a17:90a:a82:b0:1da:3763:5cf5 with SMTP id 2-20020a17090a0a8200b001da37635cf5mr7218492pjw.55.1651769151549;
+        Thu, 05 May 2022 09:45:51 -0700 (PDT)
+Received: from localhost ([2620:15c:202:201:827b:7f14:bb7e:2898])
+        by smtp.gmail.com with UTF8SMTPSA id x20-20020aa78f14000000b0050dc76281e7sm1588230pfr.193.2022.05.05.09.45.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 05 May 2022 09:45:51 -0700 (PDT)
+Date:   Thu, 5 May 2022 09:45:49 -0700
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Pavan Kondeti <quic_pkondeti@quicinc.com>
+Cc:     Rob Herring <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Aw: Re: [RFC v1] opp: add config option for debug
-Content-Type: text/plain; charset=UTF-8
-Date:   Thu, 5 May 2022 17:54:18 +0200
-Importance: normal
-Sensitivity: Normal
-In-Reply-To: <20220505055857.bqjm72qkzwcbuvuh@vireshk-i7>
-References: <20220504174823.156709-1-linux@fw-web.de>
- <20220505055857.bqjm72qkzwcbuvuh@vireshk-i7>
-X-UI-Message-Type: mail
-X-Priority: 3
-X-Provags-ID: V03:K1:JjduCuy3fMLSoCYKA+wbDZgJVEMTvSr/Ee7dpRQd+Ou029TLzUuMdZTMe9kWdAGoO0JwZ
- uCD3Pmr5HT0ZLOald0gZZq0R2vpMR+JbiXX1PifMhhh6FinR7iJbagfUyhn92lo8nQLLgIK9YZez
- Qp5oOG/lJ/9V+s4Z0rAoN/Jzx1zZq6wcAPlLN77z6i7lX5r3Gxx6kwUQ8KiMzcFRsABdSoTeZUto
- +zCJ22IjDwbY3Rg+jTEkV0WYsjQr9rMicnJUigY2AOALJPyR4l0c8gPdi+F7eCoA7lnfVFWmaRXc
- lA=
-X-UI-Out-Filterresults: notjunk:1;V03:K0:KnF/vpqsQGY=:3vPuSDaC4JWuuJfCu9W3gn
- ax+NYjBqoTnGxJEsKRyIQaKfY05OLni/CAWgwlw1EsR6fKcTDZRo4kl+wXzg+Er4hEcqXNonu
- rYHg2aLh3enVIZfXz1cIQeQ5nAZyw/TIM41ScmFWQ9835RUG2WyepXJYxipVRtUXzkaFHFjcC
- 6WQGuvosI5VZyaPZ1ONCw/zJgSy4TN5VEnVCLnPLzrql0s1wAXYsE/TQNrn0FqCeDauI9CtCk
- C0zHKm0FV3pj05TYT9C5CM2CqtI1eioq0v3vgmUgS4DFDLIbUapw5LmJ/czkC9WnmmiIseodL
- 6h+Gixl+aSpxAgFgPO/2VuScSCPCBlB5+t2LN71kjPWriSD+ShLRuPegqbqNQPpy261kjUoVx
- 48OUkmFcfAQidKVzGm5B3RQFwKbM3oF1xvgIiuip7qVCvyRrP5FRuLxaIKrNxhKaYxwuJF1fR
- 4y9aj8BEaw1oAbFysJEIIbIDWjQDNWxlldt6enMqGpl2wk32GEhpIoGM1Lcgnc78sLTF3vNQS
- DneJmuOfT8UuqxHX8zBtv17GRVBPMfHSW/83gs+ihWtUJLPIKBo67uqpSAsgNlfpdp3upDMR8
- mZJwCa29Pm6SCFcpp5jDbacoDTq4qxGMxQE7oJi7OZyuJh7+r2VW6YA+pIkZlmA5MyzlMV3HR
- cPQ8aS2+qjadiXFomckMhH3lPBWKnIycECbNpjqtfI0l//0vkwrMvq+u2LcZTcU7xualjm+Hp
- y3lSzVJgjftIAwKUFEP6XUuWwYAIu/4w5oWw2yc0xJQXJdj8a5uoqwlcEHvoK3/vAcPdds5QF
- q2z2mZT
-Content-Transfer-Encoding: quoted-printable
+        Felipe Balbi <balbi@kernel.org>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Doug Anderson <dianders@chromium.org>,
+        Mathias Nyman <mathias.nyman@intel.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-kernel@vger.kernel.org, quic_ppratap@quicinc.com,
+        quic_kriskura@quicinc.com, quic_vpulyala@quicinc.com
+Subject: Re: [PATCH v14 3/7] usb: dwc3: core: Host wake up support from
+ system suspend
+Message-ID: <YnP/PZViq1u0f2yl@google.com>
+References: <1650395470-31333-1-git-send-email-quic_c_sanm@quicinc.com>
+ <1650395470-31333-4-git-send-email-quic_c_sanm@quicinc.com>
+ <YnK79i3NiTdMmC98@google.com>
+ <20220505032618.GC4640@hu-pkondeti-hyd.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20220505032618.GC4640@hu-pkondeti-hyd.qualcomm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, May 05, 2022 at 08:56:18AM +0530, Pavan Kondeti wrote:
+> On Wed, May 04, 2022 at 10:46:30AM -0700, Matthias Kaehlcke wrote:
+> > On Wed, Apr 20, 2022 at 12:41:06AM +0530, Sandeep Maheswaram wrote:
+> > > During suspend read the status of all port and set hs phy mode
+> > > based on current speed. Use this hs phy mode to configure wakeup
+> > > interrupts in qcom glue driver.
+> > > 
+> > > Check wakeup-source property for dwc3 core node to set the
+> > > wakeup capability. Drop the device_init_wakeup call from
+> > > runtime suspend and resume.
+> > > 
+> > > Also check during suspend if any wakeup capable devices are
+> > > connected to the controller (directly or through hubs), if there
+> > > are none set a flag to indicate that the PHY is powered
+> > > down during suspend.
+> > > 
+> > > Signed-off-by: Sandeep Maheswaram <quic_c_sanm@quicinc.com>
+> > > ---
+> > > v14:
+> > > Used device_children_wakeup_capable instead of usb_wakeup_enabled_descendants.
+> > > 
+> > > v13:
+> > > Changed dwc3_set_phy_speed_mode to dwc3_check_phy_speed_mode.
+> > > Removed device_init_wakeup calls from dwc3_runtime_suspend and dwc3_runtime_resume
+> > > as we have a new dt property wakeup-source.
+> > > 
+> > > 
+> > >  drivers/usb/dwc3/core.c | 33 ++++++++++++++++++++-------------
+> > >  drivers/usb/dwc3/core.h |  4 ++++
+> > >  drivers/usb/dwc3/host.c | 24 ++++++++++++++++++++++++
+> > >  3 files changed, 48 insertions(+), 13 deletions(-)
+> > > 
+> > > diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+> > > index 1170b80..898aa66 100644
+> > > --- a/drivers/usb/dwc3/core.c
+> > > +++ b/drivers/usb/dwc3/core.c
+> > > @@ -32,6 +32,7 @@
+> > >  #include <linux/usb/gadget.h>
+> > >  #include <linux/usb/of.h>
+> > >  #include <linux/usb/otg.h>
+> > > +#include <linux/usb/hcd.h>
+> > >  
+> > >  #include "core.h"
+> > >  #include "gadget.h"
+> > > @@ -1723,6 +1724,7 @@ static int dwc3_probe(struct platform_device *pdev)
+> > >  
+> > >  	platform_set_drvdata(pdev, dwc);
+> > >  	dwc3_cache_hwparams(dwc);
+> > > +	device_init_wakeup(&pdev->dev, of_property_read_bool(dev->of_node, "wakeup-source"));
+> > >  
+> > >  	spin_lock_init(&dwc->lock);
+> > >  	mutex_init(&dwc->mutex);
+> > > @@ -1865,6 +1867,7 @@ static int dwc3_suspend_common(struct dwc3 *dwc, pm_message_t msg)
+> > >  {
+> > >  	unsigned long	flags;
+> > >  	u32 reg;
+> > > +	struct usb_hcd  *hcd = platform_get_drvdata(dwc->xhci);
+> > >  
+> > >  	switch (dwc->current_dr_role) {
+> > >  	case DWC3_GCTL_PRTCAP_DEVICE:
+> > > @@ -1877,10 +1880,7 @@ static int dwc3_suspend_common(struct dwc3 *dwc, pm_message_t msg)
+> > >  		dwc3_core_exit(dwc);
+> > >  		break;
+> > >  	case DWC3_GCTL_PRTCAP_HOST:
+> > > -		if (!PMSG_IS_AUTO(msg)) {
+> > > -			dwc3_core_exit(dwc);
+> > > -			break;
+> > > -		}
+> > > +		dwc3_check_phy_speed_mode(dwc);
+> > >  
+> > >  		/* Let controller to suspend HSPHY before PHY driver suspends */
+> > >  		if (dwc->dis_u2_susphy_quirk ||
+> > > @@ -1896,6 +1896,16 @@ static int dwc3_suspend_common(struct dwc3 *dwc, pm_message_t msg)
+> > >  
+> > >  		phy_pm_runtime_put_sync(dwc->usb2_generic_phy);
+> > >  		phy_pm_runtime_put_sync(dwc->usb3_generic_phy);
+> > > +
+> > > +		if (!PMSG_IS_AUTO(msg)) {
+> > > +			if (device_may_wakeup(dwc->dev) &&
+> > > +			    device_children_wakeup_capable(&hcd->self.root_hub->dev)) {
+> > > +				dwc->phy_power_off = false;
+> > > +			} else {
+> > > +				dwc->phy_power_off = true;
+> > > +				dwc3_core_exit(dwc);
+> > 
+> > I found that shutting the PHYs down during suspend leads to high power
+> > consumption of a downstream hub (about 80mW vs 15mW when the PHYs are
+> > not shut down).
+> > 
+> > It would be interesting to know if this also impacts other non-hub
+> > peripherals. Unfortunately I can't test that, the hub on my system is
+> > soldered to the board.
+> > 
+> > I understand that shutting the PHYs down might be beneficial in terms
+> > of power on some systems, however on those I'm looking at we'd strongly
+> > prefer to save the 65mW of power consumed by the hub, rather than
+> > whatever smaller amount of power that is saved by powering down the
+> > PHYs.
+> > 
+> > Could we introduce a sysfs attribute (or some other sort of knob) to
+> > allow the admin to configure whether the PHYs should remain on or off
+> > during suspend? That is assuming that it is actually desirable to power
+> > them off on some systems.
+> 
+> The result may vary across SoCs also. The current proposal is to keep PHY
+> powered during system suspend if any of the downstream USB devices are enabled
+> for wakeup. This also includes USB2/USB3 root hub. If one wants to keep PHY
+> always powered on even when no device is attached, they can do so by enabling
+> wakeup (echo enabled > /sys/bus/usb/devices/usbX/power/wakeup). This is anyway
+> needed if you want to detect a peripheral attach during system suspend.
 
-> Gesendet: Donnerstag, 05. Mai 2022 um 07:58 Uhr
-> Von: "Viresh Kumar" <viresh.kumar@linaro.org>
-> An: "Frank Wunderlich" <linux@fw-web.de>
-> Cc: linux-pm@vger.kernel.org, "Frank Wunderlich" <frank-w@public-files.d=
-e>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"=
- <rafael@kernel.org>, "Viresh Kumar" <vireshk@kernel.org>, "Nishanth Menon=
-" <nm@ti.com>, "Stephen Boyd" <sboyd@kernel.org>, linux-kernel@vger.kernel=
-.org
-> Betreff: Re: [RFC v1] opp: add config option for debug
->
-> On 04-05-22, 19:48, Frank Wunderlich wrote:
-> > From: Frank Wunderlich <frank-w@public-files.de>
-> >
-> > Currently OPP debug is enabled by DEBUG_DRIVER option. This is generic
-> > driver debug and opp floods serial console. This is annoying if opp is
-> > not needed so give it an additional config-key.
-> >
-> > Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-> > ---
-> >  drivers/base/Kconfig | 1 +
-> >  drivers/opp/Kconfig  | 7 +++++++
-> >  drivers/opp/Makefile | 2 +-
-> >  3 files changed, 9 insertions(+), 1 deletion(-)
->
-> Isn't something like Dynamic Debug helpful here ?
+My concern is that it is not evident for an admin what causes the high power
+consumption of the USB client (if they detect/localize it in the first place),
+and even less that wakeup needs to be enabled to mitigate it.
 
-you mean something like this:
-
-https://www.kernel.org/doc/html/v5.17/admin-guide/dynamic-debug-howto.html=
-#debug-messages-during-boot-process
-
-so enabling debug only with cmdline-param...
-
-have you a simple example how to implement it? have not done anything with=
- dynamic-debug yet...seems mighty but not trivial to implement.
-
-currently dev_dbg() is used for the messages that i try to disable...but s=
-how others from driver_debug at debug level.
-
-What needs to be changed to filter it via DYNAMIC_DEBUG?
-
-found this, but i'm not sure if i interpret it the right way...
-
-https://elixir.bootlin.com/linux/v5.18-rc5/source/drivers/acpi/utils.c#L49=
-5
-defines __acpi_handle_debug
-called via acpi_handle_debug macro
-https://elixir.bootlin.com/linux/v5.18-rc5/source/include/linux/acpi.h#L11=
-36
-
-so basicly convert dev_dbg to __dynamic_pr_debug
-
-at least much more changed code because all dev_*/pr_* needs to be changed=
- to own handler which does the switch based on CONFIG_DYNAMIC_DEBUG set or=
- not.
-
-regards Frank
+Why can't we just put the PHYs in suspend, rather than taking the controller
+down completely during suspend?
