@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E79DAC433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6DBAC4332F
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1384481AbiEESiR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 14:38:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38156 "EHLO
+        id S1383135AbiEESiT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 14:38:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344831AbiEEShG (ORCPT
+        with ESMTP id S1384398AbiEEShG (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:37:06 -0400
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D9565EBE7;
-        Thu,  5 May 2022 11:27:42 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:53554)
-        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15EE35EBF9;
+        Thu,  5 May 2022 11:27:51 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:53836)
+        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgCT-004ZGt-Aw; Thu, 05 May 2022 12:27:41 -0600
+        id 1nmgCc-007C2r-RS; Thu, 05 May 2022 12:27:50 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37118 helo=localhost.localdomain)
         by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgCQ-002BtP-58; Thu, 05 May 2022 12:27:40 -0600
+        id 1nmgCb-002BtP-DG; Thu, 05 May 2022 12:27:50 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -39,216 +39,242 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         Max Filippov <jcmvbkbc@gmail.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
-        "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Thu,  5 May 2022 13:26:42 -0500
-Message-Id: <20220505182645.497868-9-ebiederm@xmission.com>
+        "Eric W . Biederman" <ebiederm@xmission.com>
+Date:   Thu,  5 May 2022 13:26:45 -0500
+Message-Id: <20220505182645.497868-12-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmgCQ-002BtP-58;;;mid=<20220505182645.497868-9-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+RYgbnT7ltQiZdmoTN1j5HqtZdsxHb5UM=
+X-XM-SPF: eid=1nmgCb-002BtP-DG;;;mid=<20220505182645.497868-12-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX19yXDGzbN+79Chr1ZRx7vBHfiqPGCKeUto=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v4 09/12] ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs
+Subject: [PATCH v4 12/12] sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Long ago and far away there was a BUG_ON at the start of ptrace_stop
-that did "BUG_ON(!(current->ptrace & PT_PTRACED));" [1].  The BUG_ON
-had never triggered but examination of the code showed that the BUG_ON
-could actually trigger.  To complement removing the BUG_ON an attempt
-to better handle the race was added.
+From: Peter Zijlstra <peterz@infradead.org>
 
-The code detected the tracer had gone away and did not call
-do_notify_parent_cldstop.  The code also attempted to prevent
-ptrace_report_syscall from sending spurious SIGTRAPs when the tracer
-went away.
+Currently ptrace_stop() / do_signal_stop() rely on the special states
+TASK_TRACED and TASK_STOPPED resp. to keep unique state. That is, this
+state exists only in task->__state and nowhere else.
 
-The code to detect when the tracer had gone away before sending a
-signal to tracer was a legitimate fix and continues to work to this
-date.
+There's two spots of bother with this:
 
-The code to prevent sending spurious SIGTRAPs is a failure.  At the
-time and until today the code only catches it when the tracer goes
-away after siglock is dropped and before read_lock is acquired.  If
-the tracer goes away after read_lock is dropped a spurious SIGTRAP can
-still be sent to the tracee.  The tracer going away after read_lock
-is dropped is the far likelier case as it is the bigger window.
+ - PREEMPT_RT has task->saved_state which complicates matters,
+   meaning task_is_{traced,stopped}() needs to check an additional
+   variable.
 
-Given that the attempt to prevent the generation of a SIGTRAP was a
-failure and continues to be a failure remove the code that attempts to
-do that.  This simplifies the code in ptrace_stop and makes
-ptrace_stop much easier to reason about.
+ - An alternative freezer implementation that itself relies on a
+   special TASK state would loose TASK_TRACED/TASK_STOPPED and will
+   result in misbehaviour.
 
-To successfully deal with the tracer going away, all of the tracer's
-instrumentation of the child would need to be removed, and reliably
-detecting when the tracer has set a signal to continue with would need
-to be implemented.
+As such, add additional state to task->jobctl to track this state
+outside of task->__state.
 
-[1] 66519f549ae5 ("[PATCH] fix ptracer death race yielding bogus BUG_ON")
-History-Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+NOTE: this doesn't actually fix anything yet, just adds extra state.
+
+--EWB
+  * didn't add a unnecessary newline in signal.h
+  * Update t->jobctl in signal_wake_up and ptrace_signal_wake_up
+    instead of in signal_wake_up_state.  This prevents the clearing
+    of TASK_STOPPED and TASK_TRACED from getting lost.
+  * Added warnings if JOBCTL_STOPPED or JOBCTL_TRACED are not cleared
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/20220421150654.757693825@infradead.org
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- kernel/signal.c | 92 ++++++++++++++++++++-----------------------------
- 1 file changed, 38 insertions(+), 54 deletions(-)
+ include/linux/sched.h        |  8 +++-----
+ include/linux/sched/jobctl.h |  6 ++++++
+ include/linux/sched/signal.h | 19 +++++++++++++++----
+ kernel/ptrace.c              | 16 +++++++++++++---
+ kernel/signal.c              | 10 ++++++++--
+ 5 files changed, 45 insertions(+), 14 deletions(-)
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 3fd2ce133387..d2d0c753156c 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2187,13 +2187,12 @@ static void do_notify_parent_cldstop(struct task_struct *tsk,
-  * with.  If the code did not stop because the tracer is gone,
-  * the stop signal remains unchanged unless clear_code.
-  */
--static int ptrace_stop(int exit_code, int why, int clear_code,
--			unsigned long message, kernel_siginfo_t *info)
-+static int ptrace_stop(int exit_code, int why, unsigned long message,
-+		       kernel_siginfo_t *info)
- 	__releases(&current->sighand->siglock)
- 	__acquires(&current->sighand->siglock)
- {
- 	bool gstop_done = false;
--	bool read_code = true;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 610f2fdb1e2c..cbe5c899599c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -118,11 +118,9 @@ struct task_group;
  
- 	if (arch_ptrace_stop_needed()) {
- 		/*
-@@ -2212,7 +2211,14 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
- 	/*
- 	 * schedule() will not sleep if there is a pending signal that
- 	 * can awaken the task.
-+	 *
-+	 * After this point ptrace_signal_wake_up will clear TASK_TRACED
-+	 * if ptrace_unlink happens.  Handle previous ptrace_unlinks
-+	 * here to prevent ptrace_stop sleeping in schedule.
- 	 */
-+	if (!current->ptrace)
-+		return exit_code;
-+
- 	set_special_state(TASK_TRACED);
+ #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
  
- 	/*
-@@ -2259,54 +2265,33 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
- 
- 	spin_unlock_irq(&current->sighand->siglock);
- 	read_lock(&tasklist_lock);
--	if (likely(current->ptrace)) {
--		/*
--		 * Notify parents of the stop.
--		 *
--		 * While ptraced, there are two parents - the ptracer and
--		 * the real_parent of the group_leader.  The ptracer should
--		 * know about every stop while the real parent is only
--		 * interested in the completion of group stop.  The states
--		 * for the two don't interact with each other.  Notify
--		 * separately unless they're gonna be duplicates.
--		 */
-+	/*
-+	 * Notify parents of the stop.
-+	 *
-+	 * While ptraced, there are two parents - the ptracer and
-+	 * the real_parent of the group_leader.  The ptracer should
-+	 * know about every stop while the real parent is only
-+	 * interested in the completion of group stop.  The states
-+	 * for the two don't interact with each other.  Notify
-+	 * separately unless they're gonna be duplicates.
-+	 */
-+	if (current->ptrace)
- 		do_notify_parent_cldstop(current, true, why);
--		if (gstop_done && ptrace_reparented(current))
--			do_notify_parent_cldstop(current, false, why);
-+	if (gstop_done && (!current->ptrace || ptrace_reparented(current)))
-+		do_notify_parent_cldstop(current, false, why);
- 
--		/*
--		 * Don't want to allow preemption here, because
--		 * sys_ptrace() needs this task to be inactive.
--		 *
--		 * XXX: implement read_unlock_no_resched().
--		 */
--		preempt_disable();
--		read_unlock(&tasklist_lock);
--		cgroup_enter_frozen();
--		preempt_enable_no_resched();
--		freezable_schedule();
--		cgroup_leave_frozen(true);
--	} else {
--		/*
--		 * By the time we got the lock, our tracer went away.
--		 * Don't drop the lock yet, another tracer may come.
--		 *
--		 * If @gstop_done, the ptracer went away between group stop
--		 * completion and here.  During detach, it would have set
--		 * JOBCTL_STOP_PENDING on us and we'll re-enter
--		 * TASK_STOPPED in do_signal_stop() on return, so notifying
--		 * the real parent of the group stop completion is enough.
--		 */
--		if (gstop_done)
--			do_notify_parent_cldstop(current, false, why);
+-#define task_is_traced(task)		((READ_ONCE(task->__state) & __TASK_TRACED) != 0)
 -
--		/* tasklist protects us from ptrace_freeze_traced() */
--		__set_current_state(TASK_RUNNING);
--		read_code = false;
--		if (clear_code)
--			exit_code = 0;
--		read_unlock(&tasklist_lock);
--	}
-+	/*
-+	 * Don't want to allow preemption here, because
-+	 * sys_ptrace() needs this task to be inactive.
-+	 *
-+	 * XXX: implement read_unlock_no_resched().
-+	 */
-+	preempt_disable();
-+	read_unlock(&tasklist_lock);
-+	cgroup_enter_frozen();
-+	preempt_enable_no_resched();
-+	freezable_schedule();
-+	cgroup_leave_frozen(true);
+-#define task_is_stopped(task)		((READ_ONCE(task->__state) & __TASK_STOPPED) != 0)
+-
+-#define task_is_stopped_or_traced(task)	((READ_ONCE(task->__state) & (__TASK_STOPPED | __TASK_TRACED)) != 0)
++#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
++#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
++#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
  
- 	/*
- 	 * We are back.  Now reacquire the siglock before touching
-@@ -2314,8 +2299,7 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
- 	 * any signal-sending on another CPU that wants to examine it.
- 	 */
+ /*
+  * Special states are those that do not use the normal wait-loop pattern. See
+diff --git a/include/linux/sched/jobctl.h b/include/linux/sched/jobctl.h
+index d556c3425963..68876d0a7ef9 100644
+--- a/include/linux/sched/jobctl.h
++++ b/include/linux/sched/jobctl.h
+@@ -21,6 +21,9 @@ struct task_struct;
+ #define JOBCTL_TRAP_FREEZE_BIT	23	/* trap for cgroup freezer */
+ #define JOBCTL_PTRACE_FROZEN_BIT	24	/* frozen for ptrace */
+ 
++#define JOBCTL_STOPPED_BIT	26	/* do_signal_stop() */
++#define JOBCTL_TRACED_BIT	27	/* ptrace_stop() */
++
+ #define JOBCTL_STOP_DEQUEUED	(1UL << JOBCTL_STOP_DEQUEUED_BIT)
+ #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
+ #define JOBCTL_STOP_CONSUME	(1UL << JOBCTL_STOP_CONSUME_BIT)
+@@ -31,6 +34,9 @@ struct task_struct;
+ #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
+ #define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
+ 
++#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
++#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
++
+ #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP | JOBCTL_TRAP_NOTIFY)
+ #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
+ 
+diff --git a/include/linux/sched/signal.h b/include/linux/sched/signal.h
+index e66948abbee4..07ba3404fcde 100644
+--- a/include/linux/sched/signal.h
++++ b/include/linux/sched/signal.h
+@@ -294,8 +294,10 @@ static inline int kernel_dequeue_signal(void)
+ static inline void kernel_signal_stop(void)
+ {
  	spin_lock_irq(&current->sighand->siglock);
--	if (read_code)
--		exit_code = current->exit_code;
-+	exit_code = current->exit_code;
- 	current->last_siginfo = NULL;
- 	current->ptrace_message = 0;
- 	current->exit_code = 0;
-@@ -2343,7 +2327,7 @@ static int ptrace_do_notify(int signr, int exit_code, int why, unsigned long mes
- 	info.si_uid = from_kuid_munged(current_user_ns(), current_uid());
+-	if (current->jobctl & JOBCTL_STOP_DEQUEUED)
++	if (current->jobctl & JOBCTL_STOP_DEQUEUED) {
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
++	}
+ 	spin_unlock_irq(&current->sighand->siglock);
  
- 	/* Let the debugger run.  */
--	return ptrace_stop(exit_code, why, 1, message, &info);
-+	return ptrace_stop(exit_code, why, message, &info);
+ 	schedule();
+@@ -437,12 +439,21 @@ extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
+ 
+ static inline void signal_wake_up(struct task_struct *t, bool fatal)
+ {
+-	fatal = fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN);
+-	signal_wake_up_state(t, fatal ? TASK_WAKEKILL | __TASK_TRACED : 0);
++	unsigned int state = 0;
++	if (fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN)) {
++		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
++		state = TASK_WAKEKILL | __TASK_TRACED;
++	}
++	signal_wake_up_state(t, state);
+ }
+ static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
+ {
+-	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
++	unsigned int state = 0;
++	if (resume) {
++		t->jobctl &= ~JOBCTL_TRACED;
++		state = __TASK_TRACED;
++	}
++	signal_wake_up_state(t, state);
  }
  
- int ptrace_notify(int exit_code, unsigned long message)
-@@ -2515,7 +2499,7 @@ static void do_jobctl_trap(void)
- 				 CLD_STOPPED, 0);
- 	} else {
- 		WARN_ON_ONCE(!signr);
--		ptrace_stop(signr, CLD_STOPPED, 0, 0, NULL);
-+		ptrace_stop(signr, CLD_STOPPED, 0, NULL);
+ void task_join_group_stop(struct task_struct *task);
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 36a5b7a00d2f..328a34a99124 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -185,7 +185,12 @@ static bool looks_like_a_spurious_pid(struct task_struct *task)
+ 	return true;
+ }
+ 
+-/* Ensure that nothing can wake it up, even SIGKILL */
++/*
++ * Ensure that nothing can wake it up, even SIGKILL
++ *
++ * A task is switched to this state while a ptrace operation is in progress;
++ * such that the ptrace operation is uninterruptible.
++ */
+ static bool ptrace_freeze_traced(struct task_struct *task)
+ {
+ 	bool ret = false;
+@@ -216,8 +221,10 @@ static void ptrace_unfreeze_traced(struct task_struct *task)
+ 	 */
+ 	if (lock_task_sighand(task, &flags)) {
+ 		task->jobctl &= ~JOBCTL_PTRACE_FROZEN;
+-		if (__fatal_signal_pending(task))
++		if (__fatal_signal_pending(task)) {
++			task->jobctl &= ~TASK_TRACED;
+ 			wake_up_state(task, __TASK_TRACED);
++		}
+ 		unlock_task_sighand(task, &flags);
  	}
  }
- 
-@@ -2568,7 +2552,7 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
- 	 * comment in dequeue_signal().
+@@ -462,8 +469,10 @@ static int ptrace_attach(struct task_struct *task, long request,
+ 	 * in and out of STOPPED are protected by siglock.
  	 */
- 	current->jobctl |= JOBCTL_STOP_DEQUEUED;
--	signr = ptrace_stop(signr, CLD_TRAPPED, 0, 0, info);
-+	signr = ptrace_stop(signr, CLD_TRAPPED, 0, info);
+ 	if (task_is_stopped(task) &&
+-	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING))
++	    task_set_jobctl_pending(task, JOBCTL_TRAP_STOP | JOBCTL_TRAPPING)) {
++		task->jobctl &= ~JOBCTL_STOPPED;
+ 		signal_wake_up_state(task, __TASK_STOPPED);
++	}
  
- 	/* We're back.  Did the debugger cancel the sig?  */
- 	if (signr == 0)
+ 	spin_unlock(&task->sighand->siglock);
+ 
+@@ -875,6 +884,7 @@ static int ptrace_resume(struct task_struct *child, long request,
+ 	 */
+ 	spin_lock_irq(&child->sighand->siglock);
+ 	child->exit_code = data;
++	child->jobctl &= ~JOBCTL_TRACED;
+ 	wake_up_state(child, __TASK_TRACED);
+ 	spin_unlock_irq(&child->sighand->siglock);
+ 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index a58b68a2d3c6..e782c2611b64 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -762,7 +762,10 @@ static int dequeue_synchronous_signal(kernel_siginfo_t *info)
+  */
+ void signal_wake_up_state(struct task_struct *t, unsigned int state)
+ {
++	lockdep_assert_held(&t->sighand->siglock);
++
+ 	set_tsk_thread_flag(t, TIF_SIGPENDING);
++
+ 	/*
+ 	 * TASK_WAKEKILL also means wake it up in the stopped/traced/killable
+ 	 * case. We don't check t->state here because there is a race with it
+@@ -930,9 +933,10 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
+ 		for_each_thread(p, t) {
+ 			flush_sigqueue_mask(&flush, &t->pending);
+ 			task_clear_jobctl_pending(t, JOBCTL_STOP_PENDING);
+-			if (likely(!(t->ptrace & PT_SEIZED)))
++			if (likely(!(t->ptrace & PT_SEIZED))) {
++				t->jobctl &= ~JOBCTL_STOPPED;
+ 				wake_up_state(t, __TASK_STOPPED);
+-			else
++			} else
+ 				ptrace_trap_notify(t);
+ 		}
+ 
+@@ -2218,6 +2222,7 @@ static int ptrace_stop(int exit_code, int why, unsigned long message,
+ 		return exit_code;
+ 
+ 	set_special_state(TASK_TRACED);
++	current->jobctl |= JOBCTL_TRACED;
+ 
+ 	/*
+ 	 * We're committing to trapping.  TRACED should be visible before
+@@ -2436,6 +2441,7 @@ static bool do_signal_stop(int signr)
+ 		if (task_participate_group_stop(current))
+ 			notify = CLD_STOPPED;
+ 
++		current->jobctl |= JOBCTL_STOPPED;
+ 		set_special_state(TASK_STOPPED);
+ 		spin_unlock_irq(&current->sighand->siglock);
+ 
 -- 
 2.35.3
 
