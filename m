@@ -2,28 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBDCEC4332F
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E79DAC433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:34:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376753AbiEESiD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 14:38:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38142 "EHLO
+        id S1384481AbiEESiR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 14:38:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38156 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354257AbiEEShG (ORCPT
+        with ESMTP id S1344831AbiEEShG (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:37:06 -0400
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5B5F5DBE2;
-        Thu,  5 May 2022 11:27:14 -0700 (PDT)
-Received: from in01.mta.xmission.com ([166.70.13.51]:59294)
-        by out03.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D9565EBE7;
+        Thu,  5 May 2022 11:27:42 -0700 (PDT)
+Received: from in01.mta.xmission.com ([166.70.13.51]:53554)
+        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgC1-00GUiV-Jg; Thu, 05 May 2022 12:27:13 -0600
+        id 1nmgCT-004ZGt-Aw; Thu, 05 May 2022 12:27:41 -0600
 Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37118 helo=localhost.localdomain)
         by in01.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <ebiederm@xmission.com>)
-        id 1nmgC0-002BtP-9P; Thu, 05 May 2022 12:27:13 -0600
+        id 1nmgCQ-002BtP-58; Thu, 05 May 2022 12:27:40 -0600
 From:   "Eric W. Biederman" <ebiederm@xmission.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
@@ -40,145 +40,215 @@ Cc:     rjw@rjwysocki.net, Oleg Nesterov <oleg@redhat.com>,
         linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
         Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org,
         "Eric W. Biederman" <ebiederm@xmission.com>
-Date:   Thu,  5 May 2022 13:26:34 -0500
-Message-Id: <20220505182645.497868-1-ebiederm@xmission.com>
+Date:   Thu,  5 May 2022 13:26:42 -0500
+Message-Id: <20220505182645.497868-9-ebiederm@xmission.com>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-XM-SPF: eid=1nmgC0-002BtP-9P;;;mid=<20220505182645.497868-1-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX1+sxj7RG91YT/pP21A3hNOLeyrzh/sWVtM=
+X-XM-SPF: eid=1nmgCQ-002BtP-58;;;mid=<20220505182645.497868-9-ebiederm@xmission.com>;;;hst=in01.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX1+RYgbnT7ltQiZdmoTN1j5HqtZdsxHb5UM=
 X-SA-Exim-Connect-IP: 68.227.174.4
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH v4 01/12] signal: Rename send_signal send_signal_locked
+Subject: [PATCH v4 09/12] ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs
 X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
 X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rename send_signal and __send_signal to send_signal_locked and
-__send_signal_locked to make send_signal usable outside of
-signal.c.
+Long ago and far away there was a BUG_ON at the start of ptrace_stop
+that did "BUG_ON(!(current->ptrace & PT_PTRACED));" [1].  The BUG_ON
+had never triggered but examination of the code showed that the BUG_ON
+could actually trigger.  To complement removing the BUG_ON an attempt
+to better handle the race was added.
 
+The code detected the tracer had gone away and did not call
+do_notify_parent_cldstop.  The code also attempted to prevent
+ptrace_report_syscall from sending spurious SIGTRAPs when the tracer
+went away.
+
+The code to detect when the tracer had gone away before sending a
+signal to tracer was a legitimate fix and continues to work to this
+date.
+
+The code to prevent sending spurious SIGTRAPs is a failure.  At the
+time and until today the code only catches it when the tracer goes
+away after siglock is dropped and before read_lock is acquired.  If
+the tracer goes away after read_lock is dropped a spurious SIGTRAP can
+still be sent to the tracee.  The tracer going away after read_lock
+is dropped is the far likelier case as it is the bigger window.
+
+Given that the attempt to prevent the generation of a SIGTRAP was a
+failure and continues to be a failure remove the code that attempts to
+do that.  This simplifies the code in ptrace_stop and makes
+ptrace_stop much easier to reason about.
+
+To successfully deal with the tracer going away, all of the tracer's
+instrumentation of the child would need to be removed, and reliably
+detecting when the tracer has set a signal to continue with would need
+to be implemented.
+
+[1] 66519f549ae5 ("[PATCH] fix ptracer death race yielding bogus BUG_ON")
+History-Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- include/linux/signal.h |  2 ++
- kernel/signal.c        | 24 ++++++++++++------------
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ kernel/signal.c | 92 ++++++++++++++++++++-----------------------------
+ 1 file changed, 38 insertions(+), 54 deletions(-)
 
-diff --git a/include/linux/signal.h b/include/linux/signal.h
-index a6db6f2ae113..55605bdf5ce9 100644
---- a/include/linux/signal.h
-+++ b/include/linux/signal.h
-@@ -283,6 +283,8 @@ extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
- extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
- 			       struct task_struct *p, enum pid_type type);
- extern int __group_send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
-+extern int send_signal_locked(int sig, struct kernel_siginfo *info,
-+			      struct task_struct *p, enum pid_type type);
- extern int sigprocmask(int, sigset_t *, sigset_t *);
- extern void set_current_blocked(sigset_t *);
- extern void __set_current_blocked(const sigset_t *);
 diff --git a/kernel/signal.c b/kernel/signal.c
-index 30cd1ca43bcd..b0403197b0ad 100644
+index 3fd2ce133387..d2d0c753156c 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1071,8 +1071,8 @@ static inline bool legacy_queue(struct sigpending *signals, int sig)
- 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
- }
- 
--static int __send_signal(int sig, struct kernel_siginfo *info, struct task_struct *t,
--			enum pid_type type, bool force)
-+static int __send_signal_locked(int sig, struct kernel_siginfo *info,
-+				struct task_struct *t, enum pid_type type, bool force)
+@@ -2187,13 +2187,12 @@ static void do_notify_parent_cldstop(struct task_struct *tsk,
+  * with.  If the code did not stop because the tracer is gone,
+  * the stop signal remains unchanged unless clear_code.
+  */
+-static int ptrace_stop(int exit_code, int why, int clear_code,
+-			unsigned long message, kernel_siginfo_t *info)
++static int ptrace_stop(int exit_code, int why, unsigned long message,
++		       kernel_siginfo_t *info)
+ 	__releases(&current->sighand->siglock)
+ 	__acquires(&current->sighand->siglock)
  {
- 	struct sigpending *pending;
- 	struct sigqueue *q;
-@@ -1212,8 +1212,8 @@ static inline bool has_si_pid_and_uid(struct kernel_siginfo *info)
- 	return ret;
- }
+ 	bool gstop_done = false;
+-	bool read_code = true;
  
--static int send_signal(int sig, struct kernel_siginfo *info, struct task_struct *t,
--			enum pid_type type)
-+int send_signal_locked(int sig, struct kernel_siginfo *info,
-+		       struct task_struct *t, enum pid_type type)
- {
- 	/* Should SIGKILL or SIGSTOP be received by a pid namespace init? */
- 	bool force = false;
-@@ -1245,7 +1245,7 @@ static int send_signal(int sig, struct kernel_siginfo *info, struct task_struct
- 			force = true;
- 		}
- 	}
--	return __send_signal(sig, info, t, type, force);
-+	return __send_signal_locked(sig, info, t, type, force);
- }
- 
- static void print_fatal_signal(int signr)
-@@ -1284,7 +1284,7 @@ __setup("print-fatal-signals=", setup_print_fatal_signals);
- int
- __group_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
- {
--	return send_signal(sig, info, p, PIDTYPE_TGID);
-+	return send_signal_locked(sig, info, p, PIDTYPE_TGID);
- }
- 
- int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p,
-@@ -1294,7 +1294,7 @@ int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p
- 	int ret = -ESRCH;
- 
- 	if (lock_task_sighand(p, &flags)) {
--		ret = send_signal(sig, info, p, type);
-+		ret = send_signal_locked(sig, info, p, type);
- 		unlock_task_sighand(p, &flags);
- 	}
- 
-@@ -1347,7 +1347,7 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
- 	if (action->sa.sa_handler == SIG_DFL &&
- 	    (!t->ptrace || (handler == HANDLER_EXIT)))
- 		t->signal->flags &= ~SIGNAL_UNKILLABLE;
--	ret = send_signal(sig, info, t, PIDTYPE_PID);
-+	ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
- 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
- 
- 	return ret;
-@@ -1567,7 +1567,7 @@ int kill_pid_usb_asyncio(int sig, int errno, sigval_t addr,
- 
- 	if (sig) {
- 		if (lock_task_sighand(p, &flags)) {
--			ret = __send_signal(sig, &info, p, PIDTYPE_TGID, false);
-+			ret = __send_signal_locked(sig, &info, p, PIDTYPE_TGID, false);
- 			unlock_task_sighand(p, &flags);
- 		} else
- 			ret = -ESRCH;
-@@ -2103,7 +2103,7 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
- 	 * parent's namespaces.
+ 	if (arch_ptrace_stop_needed()) {
+ 		/*
+@@ -2212,7 +2211,14 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
+ 	/*
+ 	 * schedule() will not sleep if there is a pending signal that
+ 	 * can awaken the task.
++	 *
++	 * After this point ptrace_signal_wake_up will clear TASK_TRACED
++	 * if ptrace_unlink happens.  Handle previous ptrace_unlinks
++	 * here to prevent ptrace_stop sleeping in schedule.
  	 */
- 	if (valid_signal(sig) && sig)
--		__send_signal(sig, &info, tsk->parent, PIDTYPE_TGID, false);
-+		__send_signal_locked(sig, &info, tsk->parent, PIDTYPE_TGID, false);
- 	__wake_up_parent(tsk, tsk->parent);
- 	spin_unlock_irqrestore(&psig->siglock, flags);
++	if (!current->ptrace)
++		return exit_code;
++
+ 	set_special_state(TASK_TRACED);
  
-@@ -2601,7 +2601,7 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
- 	/* If the (new) signal is now blocked, requeue it.  */
- 	if (sigismember(&current->blocked, signr) ||
- 	    fatal_signal_pending(current)) {
--		send_signal(signr, info, current, type);
-+		send_signal_locked(signr, info, current, type);
- 		signr = 0;
- 	}
+ 	/*
+@@ -2259,54 +2265,33 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
  
-@@ -4793,7 +4793,7 @@ void kdb_send_sig(struct task_struct *t, int sig)
- 			   "the deadlock.\n");
- 		return;
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	read_lock(&tasklist_lock);
+-	if (likely(current->ptrace)) {
+-		/*
+-		 * Notify parents of the stop.
+-		 *
+-		 * While ptraced, there are two parents - the ptracer and
+-		 * the real_parent of the group_leader.  The ptracer should
+-		 * know about every stop while the real parent is only
+-		 * interested in the completion of group stop.  The states
+-		 * for the two don't interact with each other.  Notify
+-		 * separately unless they're gonna be duplicates.
+-		 */
++	/*
++	 * Notify parents of the stop.
++	 *
++	 * While ptraced, there are two parents - the ptracer and
++	 * the real_parent of the group_leader.  The ptracer should
++	 * know about every stop while the real parent is only
++	 * interested in the completion of group stop.  The states
++	 * for the two don't interact with each other.  Notify
++	 * separately unless they're gonna be duplicates.
++	 */
++	if (current->ptrace)
+ 		do_notify_parent_cldstop(current, true, why);
+-		if (gstop_done && ptrace_reparented(current))
+-			do_notify_parent_cldstop(current, false, why);
++	if (gstop_done && (!current->ptrace || ptrace_reparented(current)))
++		do_notify_parent_cldstop(current, false, why);
+ 
+-		/*
+-		 * Don't want to allow preemption here, because
+-		 * sys_ptrace() needs this task to be inactive.
+-		 *
+-		 * XXX: implement read_unlock_no_resched().
+-		 */
+-		preempt_disable();
+-		read_unlock(&tasklist_lock);
+-		cgroup_enter_frozen();
+-		preempt_enable_no_resched();
+-		freezable_schedule();
+-		cgroup_leave_frozen(true);
+-	} else {
+-		/*
+-		 * By the time we got the lock, our tracer went away.
+-		 * Don't drop the lock yet, another tracer may come.
+-		 *
+-		 * If @gstop_done, the ptracer went away between group stop
+-		 * completion and here.  During detach, it would have set
+-		 * JOBCTL_STOP_PENDING on us and we'll re-enter
+-		 * TASK_STOPPED in do_signal_stop() on return, so notifying
+-		 * the real parent of the group stop completion is enough.
+-		 */
+-		if (gstop_done)
+-			do_notify_parent_cldstop(current, false, why);
+-
+-		/* tasklist protects us from ptrace_freeze_traced() */
+-		__set_current_state(TASK_RUNNING);
+-		read_code = false;
+-		if (clear_code)
+-			exit_code = 0;
+-		read_unlock(&tasklist_lock);
+-	}
++	/*
++	 * Don't want to allow preemption here, because
++	 * sys_ptrace() needs this task to be inactive.
++	 *
++	 * XXX: implement read_unlock_no_resched().
++	 */
++	preempt_disable();
++	read_unlock(&tasklist_lock);
++	cgroup_enter_frozen();
++	preempt_enable_no_resched();
++	freezable_schedule();
++	cgroup_leave_frozen(true);
+ 
+ 	/*
+ 	 * We are back.  Now reacquire the siglock before touching
+@@ -2314,8 +2299,7 @@ static int ptrace_stop(int exit_code, int why, int clear_code,
+ 	 * any signal-sending on another CPU that wants to examine it.
+ 	 */
+ 	spin_lock_irq(&current->sighand->siglock);
+-	if (read_code)
+-		exit_code = current->exit_code;
++	exit_code = current->exit_code;
+ 	current->last_siginfo = NULL;
+ 	current->ptrace_message = 0;
+ 	current->exit_code = 0;
+@@ -2343,7 +2327,7 @@ static int ptrace_do_notify(int signr, int exit_code, int why, unsigned long mes
+ 	info.si_uid = from_kuid_munged(current_user_ns(), current_uid());
+ 
+ 	/* Let the debugger run.  */
+-	return ptrace_stop(exit_code, why, 1, message, &info);
++	return ptrace_stop(exit_code, why, message, &info);
+ }
+ 
+ int ptrace_notify(int exit_code, unsigned long message)
+@@ -2515,7 +2499,7 @@ static void do_jobctl_trap(void)
+ 				 CLD_STOPPED, 0);
+ 	} else {
+ 		WARN_ON_ONCE(!signr);
+-		ptrace_stop(signr, CLD_STOPPED, 0, 0, NULL);
++		ptrace_stop(signr, CLD_STOPPED, 0, NULL);
  	}
--	ret = send_signal(sig, SEND_SIG_PRIV, t, PIDTYPE_PID);
-+	ret = send_signal_locked(sig, SEND_SIG_PRIV, t, PIDTYPE_PID);
- 	spin_unlock(&t->sighand->siglock);
- 	if (ret)
- 		kdb_printf("Fail to deliver Signal %d to process %d.\n",
+ }
+ 
+@@ -2568,7 +2552,7 @@ static int ptrace_signal(int signr, kernel_siginfo_t *info, enum pid_type type)
+ 	 * comment in dequeue_signal().
+ 	 */
+ 	current->jobctl |= JOBCTL_STOP_DEQUEUED;
+-	signr = ptrace_stop(signr, CLD_TRAPPED, 0, 0, info);
++	signr = ptrace_stop(signr, CLD_TRAPPED, 0, info);
+ 
+ 	/* We're back.  Did the debugger cancel the sig?  */
+ 	if (signr == 0)
 -- 
 2.35.3
 
