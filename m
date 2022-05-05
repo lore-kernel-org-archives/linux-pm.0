@@ -2,40 +2,37 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDCECC43219
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:52:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C98D7C433FE
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:52:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358703AbiEEL43 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 07:56:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60610 "EHLO
+        id S1358606AbiEEL42 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 07:56:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358621AbiEEL42 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:28 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7445546A0;
-        Thu,  5 May 2022 04:52:48 -0700 (PDT)
-X-UUID: 1d6c65ef8f544f088fc74d7d610b3050-20220505
+        with ESMTP id S1358559AbiEEL41 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:27 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12422546A1;
+        Thu,  5 May 2022 04:52:42 -0700 (PDT)
+X-UUID: 1263883c8a534ef1bc6eb08877dd42f3-20220505
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:910d6d1b-65a8-4fb0-92e4-e63f81867b2e,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.4,REQID:1dc2fd7f-6dbf-4e5e-8cd8-5a515951cc2f,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:faefae9,CLOUDID:e093b1b2-56b5-4c9e-8d83-0070b288eb6a,C
+X-CID-META: VersionHash:faefae9,CLOUDID:14ea5116-2e53-443e-b81a-655c13977218,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
-X-UUID: 1d6c65ef8f544f088fc74d7d610b3050-20220505
-Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
+X-UUID: 1263883c8a534ef1bc6eb08877dd42f3-20220505
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw01.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 48444504; Thu, 05 May 2022 19:52:32 +0800
-Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Thu, 5 May 2022 19:52:28 +0800
+        with ESMTP id 1645116647; Thu, 05 May 2022 19:52:37 +0800
 Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 5 May 2022 19:52:28 +0800
+ mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
+ Thu, 5 May 2022 19:52:35 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 5 May 2022 19:52:27 +0800
+ Transport; Thu, 5 May 2022 19:52:35 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -48,10 +45,11 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v6 01/10] dt-bindings: cpufreq: mediatek: Add MediaTek CCI property
-Date:   Thu, 5 May 2022 19:52:17 +0800
-Message-ID: <20220505115226.20130-2-rex-bc.chen@mediatek.com>
+        Rex-BC Chen <rex-bc.chen@mediatek.com>,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
+Subject: [PATCH v6 08/10] arm64: dts: mediatek: Add opp table and clock property for MT8183 cpufreq
+Date:   Thu, 5 May 2022 19:52:24 +0800
+Message-ID: <20220505115226.20130-9-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
 References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
@@ -62,40 +60,398 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-MediaTek Cache Coherent Interconnect (CCI) uses software devfreq module
-for scaling clock frequency and adjust voltage.
-The phandle could be linked between CPU and MediaTek CCI for some
-MediaTek SoCs, like MT8183 and MT8186.
+- Add cpufreq opp table.
+- Add MediaTek cci opp table.
+- Add property of opp table and clock fro cpufreq.
 
-The reason we need the link status between cpufreq and MediaTek cci is
-cpufreq and mediatek cci could share the same regulator in some MediaTek
-SoCs. Therefore, to prevent the issue of high frequency and low voltage,
-we need to use this to make sure mediatek cci is ready.
-
+Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- .../devicetree/bindings/cpufreq/cpufreq-mediatek.txt       | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt8183-evb.dts |  32 +++
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi    | 270 ++++++++++++++++++++
+ 2 files changed, 302 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-index b8233ec91d3d..e0a4ba599abc 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-@@ -20,6 +20,13 @@ Optional properties:
- 	       Vsram to fit SoC specific needs. When absent, the voltage scaling
- 	       flow is handled by hardware, hence no software "voltage tracking" is
- 	       needed.
-+- mediatek,cci:
-+	Used to confirm the link status between cpufreq and mediatek cci. Because
-+	cpufreq and mediatek cci could share the same regulator in some MediaTek SoCs.
-+	To prevent the issue of high frequency and low voltage, we need to use this
-+	property to make sure mediatek cci is ready.
-+	For details of mediatek cci, please refer to
-+	Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
- - #cooling-cells:
- 	For details, please refer to
- 	Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
+index f3fd3cca23e9..8953dbf84f3e 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
++++ b/arch/arm64/boot/dts/mediatek/mt8183-evb.dts
+@@ -412,6 +412,38 @@
+ 
+ };
+ 
++&cpu0 {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
++&cpu1 {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
++&cpu2 {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
++&cpu3 {
++	proc-supply = <&mt6358_vproc12_reg>;
++};
++
++&cpu4 {
++	proc-supply = <&mt6358_vproc11_reg>;
++};
++
++&cpu5 {
++	proc-supply = <&mt6358_vproc11_reg>;
++};
++
++&cpu6 {
++	proc-supply = <&mt6358_vproc11_reg>;
++};
++
++&cpu7 {
++	proc-supply = <&mt6358_vproc11_reg>;
++};
++
+ &uart0 {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 01e650251928..cecf96b628b7 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -42,6 +42,244 @@
+ 		rdma1 = &rdma1;
+ 	};
+ 
++	cluster0_opp: opp-table-cluster0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++		opp0-793000000 {
++			opp-hz = /bits/ 64 <793000000>;
++			opp-microvolt = <650000>;
++			required-opps = <&opp2_00>;
++		};
++		opp0-910000000 {
++			opp-hz = /bits/ 64 <910000000>;
++			opp-microvolt = <687500>;
++			required-opps = <&opp2_01>;
++		};
++		opp0-1014000000 {
++			opp-hz = /bits/ 64 <1014000000>;
++			opp-microvolt = <718750>;
++			required-opps = <&opp2_02>;
++		};
++		opp0-1131000000 {
++			opp-hz = /bits/ 64 <1131000000>;
++			opp-microvolt = <756250>;
++			required-opps = <&opp2_03>;
++		};
++		opp0-1248000000 {
++			opp-hz = /bits/ 64 <1248000000>;
++			opp-microvolt = <800000>;
++			required-opps = <&opp2_04>;
++		};
++		opp0-1326000000 {
++			opp-hz = /bits/ 64 <1326000000>;
++			opp-microvolt = <818750>;
++			required-opps = <&opp2_05>;
++		};
++		opp0-1417000000 {
++			opp-hz = /bits/ 64 <1417000000>;
++			opp-microvolt = <850000>;
++			required-opps = <&opp2_06>;
++		};
++		opp0-1508000000 {
++			opp-hz = /bits/ 64 <1508000000>;
++			opp-microvolt = <868750>;
++			required-opps = <&opp2_07>;
++		};
++		opp0-1586000000 {
++			opp-hz = /bits/ 64 <1586000000>;
++			opp-microvolt = <893750>;
++			required-opps = <&opp2_08>;
++		};
++		opp0-1625000000 {
++			opp-hz = /bits/ 64 <1625000000>;
++			opp-microvolt = <906250>;
++			required-opps = <&opp2_09>;
++		};
++		opp0-1677000000 {
++			opp-hz = /bits/ 64 <1677000000>;
++			opp-microvolt = <931250>;
++			required-opps = <&opp2_10>;
++		};
++		opp0-1716000000 {
++			opp-hz = /bits/ 64 <1716000000>;
++			opp-microvolt = <943750>;
++			required-opps = <&opp2_11>;
++		};
++		opp0-1781000000 {
++			opp-hz = /bits/ 64 <1781000000>;
++			opp-microvolt = <975000>;
++			required-opps = <&opp2_12>;
++		};
++		opp0-1846000000 {
++			opp-hz = /bits/ 64 <1846000000>;
++			opp-microvolt = <1000000>;
++			required-opps = <&opp2_13>;
++		};
++		opp0-1924000000 {
++			opp-hz = /bits/ 64 <1924000000>;
++			opp-microvolt = <1025000>;
++			required-opps = <&opp2_14>;
++		};
++		opp0-1989000000 {
++			opp-hz = /bits/ 64 <1989000000>;
++			opp-microvolt = <1050000>;
++			required-opps = <&opp2_15>;
++		};	};
++
++	cluster1_opp: opp-table-cluster1 {
++		compatible = "operating-points-v2";
++		opp-shared;
++		opp1-793000000 {
++			opp-hz = /bits/ 64 <793000000>;
++			opp-microvolt = <700000>;
++			required-opps = <&opp2_00>;
++		};
++		opp1-910000000 {
++			opp-hz = /bits/ 64 <910000000>;
++			opp-microvolt = <725000>;
++			required-opps = <&opp2_01>;
++		};
++		opp1-1014000000 {
++			opp-hz = /bits/ 64 <1014000000>;
++			opp-microvolt = <750000>;
++			required-opps = <&opp2_02>;
++		};
++		opp1-1131000000 {
++			opp-hz = /bits/ 64 <1131000000>;
++			opp-microvolt = <775000>;
++			required-opps = <&opp2_03>;
++		};
++		opp1-1248000000 {
++			opp-hz = /bits/ 64 <1248000000>;
++			opp-microvolt = <800000>;
++			required-opps = <&opp2_04>;
++		};
++		opp1-1326000000 {
++			opp-hz = /bits/ 64 <1326000000>;
++			opp-microvolt = <825000>;
++			required-opps = <&opp2_05>;
++		};
++		opp1-1417000000 {
++			opp-hz = /bits/ 64 <1417000000>;
++			opp-microvolt = <850000>;
++			required-opps = <&opp2_06>;
++		};
++		opp1-1508000000 {
++			opp-hz = /bits/ 64 <1508000000>;
++			opp-microvolt = <875000>;
++			required-opps = <&opp2_07>;
++		};
++		opp1-1586000000 {
++			opp-hz = /bits/ 64 <1586000000>;
++			opp-microvolt = <900000>;
++			required-opps = <&opp2_08>;
++		};
++		opp1-1625000000 {
++			opp-hz = /bits/ 64 <1625000000>;
++			opp-microvolt = <912500>;
++			required-opps = <&opp2_09>;
++		};
++		opp1-1677000000 {
++			opp-hz = /bits/ 64 <1677000000>;
++			opp-microvolt = <931250>;
++			required-opps = <&opp2_10>;
++		};
++		opp1-1716000000 {
++			opp-hz = /bits/ 64 <1716000000>;
++			opp-microvolt = <950000>;
++			required-opps = <&opp2_11>;
++		};
++		opp1-1781000000 {
++			opp-hz = /bits/ 64 <1781000000>;
++			opp-microvolt = <975000>;
++			required-opps = <&opp2_12>;
++		};
++		opp1-1846000000 {
++			opp-hz = /bits/ 64 <1846000000>;
++			opp-microvolt = <1000000>;
++			required-opps = <&opp2_13>;
++		};
++		opp1-1924000000 {
++			opp-hz = /bits/ 64 <1924000000>;
++			opp-microvolt = <1025000>;
++			required-opps = <&opp2_14>;
++		};
++		opp1-1989000000 {
++			opp-hz = /bits/ 64 <1989000000>;
++			opp-microvolt = <1050000>;
++			required-opps = <&opp2_15>;
++		};
++	};
++
++	cci_opp: opp-table-cci {
++		compatible = "operating-points-v2";
++		opp-shared;
++		opp2_00: opp-273000000 {
++			opp-hz = /bits/ 64 <273000000>;
++			opp-microvolt = <650000>;
++		};
++		opp2_01: opp-338000000 {
++			opp-hz = /bits/ 64 <338000000>;
++			opp-microvolt = <687500>;
++		};
++		opp2_02: opp-403000000 {
++			opp-hz = /bits/ 64 <403000000>;
++			opp-microvolt = <718750>;
++		};
++		opp2_03: opp-463000000 {
++			opp-hz = /bits/ 64 <463000000>;
++			opp-microvolt = <756250>;
++		};
++		opp2_04: opp-546000000 {
++			opp-hz = /bits/ 64 <546000000>;
++			opp-microvolt = <800000>;
++		};
++		opp2_05: opp-624000000 {
++			opp-hz = /bits/ 64 <624000000>;
++			opp-microvolt = <818750>;
++		};
++		opp2_06: opp-689000000 {
++			opp-hz = /bits/ 64 <689000000>;
++			opp-microvolt = <850000>;
++		};
++		opp2_07: opp-767000000 {
++			opp-hz = /bits/ 64 <767000000>;
++			opp-microvolt = <868750>;
++		};
++		opp2_08: opp-845000000 {
++			opp-hz = /bits/ 64 <845000000>;
++			opp-microvolt = <893750>;
++		};
++		opp2_09: opp-871000000 {
++			opp-hz = /bits/ 64 <871000000>;
++			opp-microvolt = <906250>;
++		};
++		opp2_10: opp-923000000 {
++			opp-hz = /bits/ 64 <923000000>;
++			opp-microvolt = <931250>;
++		};
++		opp2_11: opp-962000000 {
++			opp-hz = /bits/ 64 <962000000>;
++			opp-microvolt = <943750>;
++		};
++		opp2_12: opp-1027000000 {
++			opp-hz = /bits/ 64 <1027000000>;
++			opp-microvolt = <975000>;
++		};
++		opp2_13: opp-1092000000 {
++			opp-hz = /bits/ 64 <1092000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp2_14: opp-1144000000 {
++			opp-hz = /bits/ 64 <1144000000>;
++			opp-microvolt = <1025000>;
++		};
++		opp2_15: opp-1196000000 {
++			opp-hz = /bits/ 64 <1196000000>;
++			opp-microvolt = <1050000>;
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -85,6 +323,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <741>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP0>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -96,6 +338,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <741>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP0>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -107,6 +353,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <741>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP0>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -118,6 +368,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <741>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP0>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster0_opp>;
+ 			dynamic-power-coefficient = <84>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -129,6 +383,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <1024>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP1>;
++			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -140,6 +398,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <1024>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP1>;
++			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -151,6 +413,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <1024>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP1>;
++			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
+ 		};
+@@ -162,6 +428,10 @@
+ 			enable-method = "psci";
+ 			capacity-dmips-mhz = <1024>;
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP1>;
++			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
++				 <&topckgen CLK_TOP_ARMPLL_DIV_PLL1>;
++			clock-names = "cpu", "intermediate";
++			operating-points-v2 = <&cluster1_opp>;
+ 			dynamic-power-coefficient = <211>;
+ 			#cooling-cells = <2>;
+ 		};
 -- 
 2.18.0
 
