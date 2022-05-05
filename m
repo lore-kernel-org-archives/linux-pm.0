@@ -2,189 +2,133 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A060AC433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:32:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 584E4C433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:33:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1383176AbiEESdx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 14:33:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56332 "EHLO
+        id S1384285AbiEESgi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 14:36:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385318AbiEESaU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:30:20 -0400
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A22E54BF4;
-        Thu,  5 May 2022 11:21:00 -0700 (PDT)
-Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
- by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id cb2124d2900a9eb5; Thu, 5 May 2022 20:19:37 +0200
-Received: from kreacher.localnet (unknown [213.134.161.219])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id BEF7266C2F2;
-        Thu,  5 May 2022 20:19:36 +0200 (CEST)
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PCI <linux-pci@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Anders Roxell <anders.roxell@linaro.org>
-Subject: [PATCH v1 05/11] PCI/PM: Do not call pci_update_current_state() from pci_power_up()
-Date:   Thu, 05 May 2022 20:09:12 +0200
-Message-ID: <3695055.kQq0lBPeGt@kreacher>
-In-Reply-To: <4738492.GXAFRqVoOG@kreacher>
-References: <4738492.GXAFRqVoOG@kreacher>
+        with ESMTP id S1385620AbiEESfZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:35:25 -0400
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EABF17E1B;
+        Thu,  5 May 2022 11:26:35 -0700 (PDT)
+Received: from in02.mta.xmission.com ([166.70.13.52]:35900)
+        by out01.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nmgAw-004YvQ-5P; Thu, 05 May 2022 12:26:06 -0600
+Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37108 helo=email.froward.int.ebiederm.org.xmission.com)
+        by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <ebiederm@xmission.com>)
+        id 1nmgAv-003VYC-3m; Thu, 05 May 2022 12:26:05 -0600
+From:   "Eric W. Biederman" <ebiederm@xmission.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, oleg@redhat.com, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
+        Kees Cook <keescook@chromium.org>, linux-ia64@vger.kernel.org
+References: <20220421150248.667412396@infradead.org>
+        <20220421150654.817117821@infradead.org>
+        <87czhap9dy.fsf@email.froward.int.ebiederm.org>
+        <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+        <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+        <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
+Date:   Thu, 05 May 2022 13:25:57 -0500
+In-Reply-To: <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org> (Eric
+        W. Biederman's message of "Wed, 04 May 2022 17:39:33 -0500")
+Message-ID: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-X-CLIENT-IP: 213.134.161.219
-X-CLIENT-HOSTNAME: 213.134.161.219
-X-VADE-SPAMSTATE: clean
-X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrfedugdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecujffqoffgrffnpdggtffipffknecuuegrihhlohhuthemucduhedtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkfgjfhgggfgtsehtufertddttdejnecuhfhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqnecuggftrfgrthhtvghrnhepvdffueeitdfgvddtudegueejtdffteetgeefkeffvdeftddttdeuhfegfedvjefhnecukfhppedvudefrddufeegrdduiedurddvudelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddufedrudefgedrudeiuddrvdduledphhgvlhhopehkrhgvrggthhgvrhdrlhhotggrlhhnvghtpdhmrghilhhfrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqedpnhgspghrtghpthhtohepjedprhgtphhtthhopehlihhnuhigqdhptghisehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhhikhgrrdifvghsthgvrhgsvghrgheslhhinhhugidrihhnthgv
- lhdrtghomhdprhgtphhtthhopehhvghlghgrrghssehkvghrnhgvlhdrohhrghdprhgtphhtthhopehnrghthhgrnheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghnuggvrhhsrdhrohigvghllheslhhinhgrrhhordhorhhg
-X-DCC--Metrics: v370.home.net.pl 1024; Body=7 Fuz1=7 Fuz2=7
+Content-Type: text/plain
+X-XM-SPF: eid=1nmgAv-003VYC-3m;;;mid=<87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
+X-XM-AID: U2FsdGVkX18JBIioV2PhpJQppVzrfu1tMMPl3nYOVbs=
+X-SA-Exim-Connect-IP: 68.227.174.4
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: [PATCH v4 0/12] ptrace: cleaning up ptrace_stop
+X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Notice that calling pci_update_current_state() from pci_power_up() is
-redundant and may be harmful in some cases.
+The states TASK_STOPPED and TASK_TRACE are special in they can not
+handle spurious wake-ups.  This plus actively depending upon and
+changing the value of tsk->__state causes problems for PREEMPT_RT and
+Peter's freezer rewrite.
 
-First, if the device is in a low-power state before pci_power_up()
-gets called for it and platform_pci_set_power_state() successfully
-changes its power state to D0, pci_update_current_state() will update
-current_state to reflect that and pci_power_up() will return success
-right away without restoring the device's BARs or reconfiguring ASPM
-which may be necessary.  This is arguably incorrect and definitely
-inconsistent with the case when platform_pci_set_power_state() returns
-an error (for example, because the device is not power-manageable by
-the platform firmware).
+There are a lot of details we have to get right to sort out the
+technical challenges and this is my parred back version of the changes
+that contains just those problems I see good solutions to that I believe
+are ready.
 
-Second, current_state should not be overwritten until the decision
-whether or not to restore the device's BARs is made, because that
-decision generally depends on its value.  Again, calling
-pci_update_current_state() in pci_power_up() is not consistent with
-this observation.
+A couple of issues have been pointed but I think this parred back set of
+changes is still on the right track.  The biggest change in v4 is the
+split of "ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs" into
+two patches because the dependency I thought exited between two
+different changes did not exist.  The rest of the changes are minor
+tweaks to "ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs";
+removing an always true branch, and adding an early  test to see if the
+ptracer had gone, before TASK_TRAPPING was set.
 
-Next, pci_power_up() attempts to read from the device's PCI_PM_CTRL
-register regardless of the current_state value unless it is PCI_D0,
-including the case when pci_update_current_state() sets current_state
-to PCI_D3cold to indicate that the device is not accessible.  If the
-register read is not successful, current_state will be set to
-PCI_D3cold anyway, so that pci_update_current_state() action is
-redundant.
+This set of changes should support Peter's freezer rewrite, and with the
+addition of changing wait_task_inactive(TASK_TRACED) to be
+wait_task_inactive(0) in ptrace_check_attach I don't think there are any
+races or issues to be concerned about from the ptrace side.
 
-Further, if pci_update_current_state() reads the device's PCI_PM_CTRL
-register, pci_power_up() will repeat that read going forward and
-it is not necessary to update current_state in the meantime.
+More work is needed to support PREEMPT_RT, but these changes get things
+closer.
 
-Finally, if pm_cap is not set (in which case the PCI_PM_CTRL register
-is not present), the power state of the device should be determined
-with the help of the platform firmware or set to D0 if that's not
-possible and pci_update_current_state() does not do that.
+This set of changes continues to look like it will provide a firm
+foundation for solving the PREEMPT_RT and freezer challenges.
 
-Accordingly, rearrange pci_power_up() so as to address the above
-shortcomings.
+Eric W. Biederman (11):
+      signal: Rename send_signal send_signal_locked
+      signal: Replace __group_send_sig_info with send_signal_locked
+      ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
+      ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
+      ptrace: Remove arch_ptrace_attach
+      signal: Use lockdep_assert_held instead of assert_spin_locked
+      ptrace: Reimplement PTRACE_KILL by always sending SIGKILL
+      ptrace: Document that wait_task_inactive can't fail
+      ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs
+      ptrace: Don't change __state
+      ptrace: Always take siglock in ptrace_resume
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pci.c |   49 ++++++++++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 21 deletions(-)
+Peter Zijlstra (1):
+      sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
 
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -1192,23 +1192,24 @@ static int pci_dev_wait(struct pci_dev *
-  */
- int pci_power_up(struct pci_dev *dev)
- {
--	bool need_restore = false;
-+	bool need_restore;
-+	pci_power_t state;
- 	u16 pmcsr;
--	int ret;
- 
--	ret = platform_pci_set_power_state(dev, PCI_D0);
--	if (!ret) {
--		pci_update_current_state(dev, PCI_D0);
--	} else if (!dev->pm_cap) { /* Fall back to PCI_D0 */
--		dev->current_state = PCI_D0;
--		return 0;
--	}
-+	platform_pci_set_power_state(dev, PCI_D0);
-+
-+	if (!dev->pm_cap) {
-+		state = platform_pci_get_power_state(dev);
-+		if (state == PCI_UNKNOWN)
-+			dev->current_state = PCI_D0;
-+		else
-+			dev->current_state = state;
- 
--	if (dev->current_state == PCI_D0)
--		return 0;
-+		if (state == PCI_D0)
-+			return 0;
- 
--	if (!dev->pm_cap)
- 		return -EIO;
-+	}
- 
- 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
- 	if (PCI_POSSIBLE_ERROR(pmcsr)) {
-@@ -1218,26 +1219,31 @@ int pci_power_up(struct pci_dev *dev)
- 		return -EIO;
- 	}
- 
-+	state = pmcsr & PCI_PM_CTRL_STATE_MASK;
-+
-+	need_restore = (state == PCI_D3hot || dev->current_state >= PCI_D3hot) &&
-+			!(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET);
-+
-+	if (state == PCI_D0) {
-+		dev->current_state = PCI_D0;
-+		goto end;
-+	}
-+
- 	/*
- 	 * If we're (effectively) in D3, force entire word to 0. This doesn't
- 	 * affect PME_Status, disables PME_En, and sets PowerState to 0.
- 	 */
--	if (dev->current_state >= PCI_D3hot) {
--		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot &&
--		    !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET))
--			need_restore = true;
--
-+	if (state == PCI_D3hot)
- 		pmcsr = 0;
--	} else {
-+	else
- 		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
--	}
- 
- 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
- 
- 	/* Mandatory transition delays; see PCI PM 1.2. */
--	if (dev->current_state == PCI_D3hot)
-+	if (state == PCI_D3hot)
- 		pci_dev_d3_sleep(dev);
--	else if (dev->current_state == PCI_D2)
-+	else if (state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
- 
- 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-@@ -1246,6 +1252,7 @@ int pci_power_up(struct pci_dev *dev)
- 		pci_info_ratelimited(dev, "Refused to change power state from %s to D0\n",
- 				     pci_power_name(dev->current_state));
- 
-+end:
- 	/*
- 	 * According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
+ arch/ia64/include/asm/ptrace.h    |   4 --
+ arch/ia64/kernel/ptrace.c         |  57 ----------------
+ arch/um/include/asm/thread_info.h |   2 +
+ arch/um/kernel/exec.c             |   2 +-
+ arch/um/kernel/process.c          |   2 +-
+ arch/um/kernel/ptrace.c           |   8 +--
+ arch/um/kernel/signal.c           |   4 +-
+ arch/x86/kernel/step.c            |   3 +-
+ arch/xtensa/kernel/ptrace.c       |   4 +-
+ arch/xtensa/kernel/signal.c       |   4 +-
+ drivers/tty/tty_jobctrl.c         |   4 +-
+ include/linux/ptrace.h            |   7 --
+ include/linux/sched.h             |  10 ++-
+ include/linux/sched/jobctl.h      |   8 +++
+ include/linux/sched/signal.h      |  20 ++++--
+ include/linux/signal.h            |   3 +-
+ kernel/ptrace.c                   |  87 ++++++++---------------
+ kernel/sched/core.c               |   5 +-
+ kernel/signal.c                   | 140 +++++++++++++++++---------------------
+ kernel/time/posix-cpu-timers.c    |   6 +-
+ 20 files changed, 140 insertions(+), 240 deletions(-)
 
-
-
+Eric
