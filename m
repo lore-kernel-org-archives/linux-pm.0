@@ -2,27 +2,27 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C1BBC433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:31:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8015DC433F5
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 18:31:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1385598AbiEESfZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1354157AbiEESfZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 5 May 2022 14:35:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56946 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55026 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385269AbiEESaS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:30:18 -0400
+        with ESMTP id S1385227AbiEESaQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 14:30:16 -0400
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C929913FBD;
-        Thu,  5 May 2022 11:20:53 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BC5F5F241;
+        Thu,  5 May 2022 11:20:50 -0700 (PDT)
 Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
  by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
- id 673a922d1a087de5; Thu, 5 May 2022 20:19:29 +0200
+ id 1873c2b789deefa0; Thu, 5 May 2022 20:19:36 +0200
 Received: from kreacher.localnet (unknown [213.134.161.219])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by v370.home.net.pl (Postfix) with ESMTPSA id 422AB66C2F5;
-        Thu,  5 May 2022 20:19:28 +0200 (CEST)
+        by v370.home.net.pl (Postfix) with ESMTPSA id 2DF7D66C2F2;
+        Thu,  5 May 2022 20:19:35 +0200 (CEST)
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PCI <linux-pci@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Bjorn Helgaas <helgaas@kernel.org>,
         Nathan Chancellor <nathan@kernel.org>,
         Anders Roxell <anders.roxell@linaro.org>
-Subject: [PATCH v1 10/11] PCI/PM: Rearrange pci_set_power_state()
-Date:   Thu, 05 May 2022 20:16:50 +0200
-Message-ID: <2139440.Mh6RI2rZIc@kreacher>
+Subject: [PATCH v1 06/11] PCI/PM: Write 0 to PMCSR in pci_power_up() in all cases
+Date:   Thu, 05 May 2022 20:10:43 +0200
+Message-ID: <5748066.MhkbZ0Pkbq@kreacher>
 In-Reply-To: <4738492.GXAFRqVoOG@kreacher>
 References: <4738492.GXAFRqVoOG@kreacher>
 MIME-Version: 1.0
@@ -51,63 +51,39 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The part of pci_set_power_state() related to transitions into
-low-power states is unnecessary convoluted, so clearly divide it
-into the D3cold special case and the general case covering all of
-the other states.
-
-Also fix a potential issue with calling pci_bus_set_current_state()
-to set the current state of all devices on the subordinate bus to
-D3cold without checking if the power state of the parent bridge has
-really changed to D3cold.
+Make pci_power_up() write 0 to the device's PCI_PM_CTRL register in
+order to put it into D0 regardless of the power state returned by
+the previous read from that register which should not matter.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 ---
- drivers/pci/pci.c |   28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+ drivers/pci/pci.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
 Index: linux-pm/drivers/pci/pci.c
 ===================================================================
 --- linux-pm.orig/drivers/pci/pci.c
 +++ linux-pm/drivers/pci/pci.c
-@@ -1446,19 +1446,25 @@ int pci_set_power_state(struct pci_dev *
- 	if (state >= PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
- 		return 0;
+@@ -1230,15 +1230,10 @@ int pci_power_up(struct pci_dev *dev)
+ 	}
  
--	/*
--	 * To put device in D3cold, we put device into D3hot in native
--	 * way, then put device into D3cold with platform ops
--	 */
--	error = pci_set_low_power_state(dev, state > PCI_D3hot ?
--					PCI_D3hot : state);
-+	if (state == PCI_D3cold) {
-+		/*
-+		 * To put the device in D3cold, put it into D3hot in the native
-+		 * way, then put it into D3cold using platform ops.
-+		 */
-+		error = pci_set_low_power_state(dev, PCI_D3hot);
+ 	/*
+-	 * If we're (effectively) in D3, force entire word to 0. This doesn't
+-	 * affect PME_Status, disables PME_En, and sets PowerState to 0.
++	 * Force the entire word to 0. This doesn't affect PME_Status, disables
++	 * PME_En, and sets PowerState to 0.
+ 	 */
+-	if (state == PCI_D3hot)
+-		pmcsr = 0;
+-	else
+-		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
+-
+-	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
++	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, 0);
  
--	if (pci_platform_power_transition(dev, state))
--		return error;
-+		if (pci_platform_power_transition(dev, PCI_D3cold))
-+			return error;
- 
--	/* Powering off a bridge may power off the whole hierarchy */
--	if (state == PCI_D3cold)
--		pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
-+		/* Powering off a bridge may power off the whole hierarchy */
-+		if (dev->current_state == PCI_D3cold)
-+			pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
-+	} else {
-+		error = pci_set_low_power_state(dev, state);
-+
-+		if (pci_platform_power_transition(dev, state))
-+			return error;
-+	}
- 
- 	return 0;
- }
+ 	/* Mandatory transition delays; see PCI PM 1.2. */
+ 	if (state == PCI_D3hot)
+
 
 
 
