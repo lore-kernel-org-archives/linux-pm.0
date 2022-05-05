@@ -2,318 +2,167 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A2ABC433F5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:53:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90590C433EF
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:58:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1359058AbiEEL4m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 07:56:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60980 "EHLO
+        id S1359223AbiEEMCL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 08:02:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358932AbiEEL4k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:40 -0400
-Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAB2B54BC2;
-        Thu,  5 May 2022 04:52:57 -0700 (PDT)
-X-UUID: 35bd6907d964431fbdd3d671ed358e75-20220505
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:988eb562-cf0a-4669-a5de-ce645dbd87cb,OB:0,LO
-        B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
-        ON:release,TS:0
-X-CID-META: VersionHash:faefae9,CLOUDID:11ea5116-2e53-443e-b81a-655c13977218,C
-        OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
-X-UUID: 35bd6907d964431fbdd3d671ed358e75-20220505
-Received: from mtkmbs10n2.mediatek.inc [(172.21.101.183)] by mailgw02.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
-        with ESMTP id 1849246779; Thu, 05 May 2022 19:52:35 +0800
-Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
- mtkmbs10n2.mediatek.inc (172.21.101.183) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Thu, 5 May 2022 19:52:35 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 5 May 2022 19:52:34 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 5 May 2022 19:52:34 +0800
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
-        <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
-        <matthias.bgg@gmail.com>
-CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
-        <hsinyi@google.com>, <khilman@baylibre.com>,
-        <angelogioacchino.delregno@collabora.com>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <Project_Global_Chrome_Upstream_Group@mediatek.com>,
-        Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v6 04/10] cpufreq: mediatek: Refine mtk_cpufreq_voltage_tracking()
-Date:   Thu, 5 May 2022 19:52:20 +0800
-Message-ID: <20220505115226.20130-5-rex-bc.chen@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
-References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
+        with ESMTP id S232409AbiEEMCI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 08:02:08 -0400
+Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com [209.85.219.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC94854F9A;
+        Thu,  5 May 2022 04:58:28 -0700 (PDT)
+Received: by mail-yb1-f174.google.com with SMTP id e12so7171256ybc.11;
+        Thu, 05 May 2022 04:58:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ZdpkfPpjlgj+BjtkQkQRFzNPoUnYFAkYolYnzJCRfGg=;
+        b=WS9wYLWRQjRbPba/RC0Ugqw9UAU4RcCkCsdBpbHzI5dX3dg40gJ4v7IKbK9u3HC34N
+         QBZ8bRrdeRdYP1z/7fUmVVfxYxF7towx5IhPt7GDDH0EanOyQj4j6D3pmrKIFMZViPLi
+         TX91+FXmXrRf0jpqR0bOqmLOsbjQO8QODS5Nt7xy0YFTmoKyfjUsAV9b8gBQ5tcCieWg
+         eDCk0IWXvPLqcykTYVgsSv1uorCBiAYk9vtWcmrBwzIO7I41uMb7UwqmGpUz7e/RI2eA
+         4g4niS6TJ+DraarLfyCLRki+aPIEhlBx2xVtxuGtYmPkJpL2HlgjotseWUFl8JPzpU9V
+         qvnQ==
+X-Gm-Message-State: AOAM530chs80aB1rHKqCRH0tGXyrzBh6wpXv5jOWCokGNHOa4VEdtuST
+        Plcg3HrjSedUuickx6qqf0jwAWFV7GSwjAQ627wCL4WW
+X-Google-Smtp-Source: ABdhPJzik3aLC1FIebu4+vOjKc8Q7bVB0QF3GEbyurQXIQeWK+r2oHOfyjQdhBmQeBK/u3Vjnem9d+vlMvL9iufFdZU=
+X-Received: by 2002:a25:3795:0:b0:648:fa25:5268 with SMTP id
+ e143-20020a253795000000b00648fa255268mr22539195yba.153.1651751908074; Thu, 05
+ May 2022 04:58:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+References: <4419002.LvFx2qVVIh@kreacher> <CAJZ5v0i1Ynt54yb7aMJorkYUvqkxhxOqvQJb8AdA7Ps1aBO5tg@mail.gmail.com>
+ <YnKrcFSjLr+W+myL@dev-arch.thelio-3990X> <2650302.mvXUDI8C0e@kreacher> <YnLVgOqGOPaSrC7G@dev-arch.thelio-3990X>
+In-Reply-To: <YnLVgOqGOPaSrC7G@dev-arch.thelio-3990X>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 5 May 2022 13:58:17 +0200
+Message-ID: <CAJZ5v0i85XEjMKOPrHGCqgW526eqVDH_26mMsmZBJOj0dtStoA@mail.gmail.com>
+Subject: Re: [PATCH v3 4/9] PCI/PM: Rework changing power states of PCI devices
+To:     Nathan Chancellor <nathan@kernel.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+On Wed, May 4, 2022 at 9:35 PM Nathan Chancellor <nathan@kernel.org> wrote:
+>
+> On Wed, May 04, 2022 at 08:00:33PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, May 4, 2022 6:36:00 PM CEST Nathan Chancellor wrote:
+> > > On Wed, May 04, 2022 at 02:59:17PM +0200, Rafael J. Wysocki wrote:
+> > > > On Tue, May 3, 2022 at 7:59 PM Nathan Chancellor <nathan@kernel.org> wrote:
+> > > > >
+> > > > > Hi Rafael,
+> > > > >
+> > > > > On Thu, Apr 14, 2022 at 03:11:21PM +0200, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > >
+> > > > > > There are some issues related to changing power states of PCI
+> > > > > > devices, mostly related to carrying out unnecessary actions in some
+> > > > > > places, and the code is generally hard to follow.
+> > > > > >
+> > > > > >  1. pci_power_up() has two callers, pci_set_power_state() and
+> > > > > >     pci_pm_default_resume_early().  The latter updates the current
+> > > > > >     power state of the device right after calling pci_power_up()
+> > > > > >     and it restores the entire config space of the device right
+> > > > > >     after that, so pci_power_up() itself need not read the
+> > > > > >     PCI_PM_CTRL register or restore the BARs after programming the
+> > > > > >     device into D0 in that case.
+> > > > > >
+> > > > > >  2. It is generally hard to get a clear view of the pci_power_up()
+> > > > > >     code flow, especially in some corner cases, due to all of the
+> > > > > >     involved PCI_PM_CTRL register reads and writes occurring in
+> > > > > >     pci_platform_power_transition() and in pci_raw_set_power_state(),
+> > > > > >     some of which are redundant.
+> > > > > >
+> > > > > >  3. The transitions from low-power states to D0 and the other way
+> > > > > >     around are unnecessarily tangled in pci_raw_set_power_state()
+> > > > > >     which causes it to use a redundant local variable and makes it
+> > > > > >     rather hard to follow.
+> > > > > >
+> > > > > > To address the above shortcomings, make the following changes:
+> > > > > >
+> > > > > >  a. Remove the code handling transitions into D0
+> > > > > >     from pci_raw_set_power_state() and rename it as
+> > > > > >     pci_set_low_power_state().
+> > > > > >
+> > > > > >  b. Add the code handling transitions into D0 directly
+> > > > > >     to pci_power_up() and to a new wrapper function
+> > > > > >     pci_set_full_power_state() calling it internally that is
+> > > > > >     only used in pci_set_power_state().
+> > > > > >
+> > > > > >  c. Make pci_power_up() avoid redundant PCI_PM_CTRL register reads
+> > > > > >     and make it work in the same way for transitions from any
+> > > > > >     low-power states (transitions from D1 and D2 are handled
+> > > > > >     slightly differently before the change).
+> > > > > >
+> > > > > >  d. Put the restoration of the BARs and the PCI_PM_CTRL
+> > > > > >     register read confirming the power state change into
+> > > > > >     pci_set_full_power_state() to avoid doing that in
+> > > > > >     pci_pm_default_resume_early() unnecessarily.
+> > > > > >
+> > > > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > > > >
+> > > > > This change as commit 5bffe4c611f5 ("PCI/PM: Rework changing power
+> > > > > states of PCI devices") causes my AMD-based system to fail to fully
+> > > > > boot. As far as I can tell, this might be NVMe related, which might make
+> > > > > getting a full log difficult, as journalctl won't have anywhere to save
+> > > > > it. I see:
+> > > > >
+> > > > > nvme nvme0: I/O 8 QID 0 timeout, completion polled
+> > > > >
+> > > > > then shortly afterwards:
+> > > > >
+> > > > > nvme nvme0: I/O 24 QID 0 timeout, completion polled
+> > > > > nvme nvme0: missing or invalid SUBNQN field
+> > > > >
+> > > > > then I am dropped into an emergency shell.
+> > > >
+> > > > Thanks for the report!
+> > > >
+> > > > > This is a log from the previous commit, which may give some hints about
+> > > > > the configuration of this particular system.
+> > > > >
+> > > > > https://gist.github.com/nathanchance/8a56f0939410cb187896e904c72e41e7/raw/b47b2620bdd32d43c7a3b209fcfd9e3d4668f058/good-boot.log
+> > > > >
+> > > > > If there is any additional debugging information I can provide or
+> > > > > patches I can try, please let me know!
+> > > >
+> > > > Please see what happens if the "if (dev->current_state == PCI_D0)"
+> > > > check and the following "return 0" statement in pci_power_up() are
+> > > > commented out.
+> > >
+> > > If I understand you correctly, this? Unfortunately, that does not help.
+> >
+> > Thanks for testing.
+> >
+> > Please check if the patch below makes any difference.
+>
+> Unfortunately, there is still no difference. Even worse, I thought I
+> might be able to get some information from the emergency shell but I
+> don't think the HID driver is loaded yet so my keyboard does not work. I
+> am not sure of how to get any further information from the problematic
+> kernel; if anyone has any ideas, I am happy to test them! I am more than
+> happy to continue to test patches or provide information, I just don't
+> want to be a waste of time :)
 
-Because the difference of sram and proc should in a range of min_volt_shift
-and max_volt_shift. We need to adjust the sram and proc step by step.
+It's not a waste of time if you run tests I ask for.
 
-We replace VOLT_TOL (voltage tolerance) with the platform data and update the
-logic to determine the voltage boundary and invoking regulator_set_voltage.
+Anyway, I'm going to change the approach, because we're looking for a
+subtle change in behavior that breaks your system and there are quite
+a few of these in the problematic patch.
 
-- Use 'sram_min_volt' and 'sram_max_volt' to determine the voltage boundary
-  of sram regulator.
-- Use (sram_min_volt - min_volt_shift) and 'proc_max_volt' to determine the
-  voltage boundary of vproc regulator.
+I'll post a new series of patches to replace the commits dropped by
+Bjorn later today.
 
-Moreover, to prevent infinite loop when tracking voltage, we calculate the
-maximum value for each platform data.
-We assume min voltage is 0 and tracking target voltage using
-min_volt_shift for each iteration.
-The retry_max is 3 times of expeted iteration count.
-
-Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
-Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/cpufreq/mediatek-cpufreq.c | 147 ++++++++++-------------------
- 1 file changed, 51 insertions(+), 96 deletions(-)
-
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 0b6c3479c8cc..fe205eca657d 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -8,6 +8,7 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/minmax.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
-@@ -15,8 +16,6 @@
- #include <linux/pm_opp.h>
- #include <linux/regulator/consumer.h>
- 
--#define VOLT_TOL		(10000)
--
- struct mtk_cpufreq_platform_data {
- 	int min_volt_shift;
- 	int max_volt_shift;
-@@ -48,6 +47,7 @@ struct mtk_cpu_dvfs_info {
- 	bool need_voltage_tracking;
- 	int pre_vproc;
- 	const struct mtk_cpufreq_platform_data *soc_data;
-+	int vtrack_max;
- };
- 
- static struct platform_device *cpufreq_pdev;
-@@ -73,6 +73,7 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 	struct regulator *proc_reg = info->proc_reg;
- 	struct regulator *sram_reg = info->sram_reg;
- 	int pre_vproc, pre_vsram, new_vsram, vsram, vproc, ret;
-+	int retry = info->vtrack_max;
- 
- 	pre_vproc = regulator_get_voltage(proc_reg);
- 	if (pre_vproc < 0) {
-@@ -80,91 +81,44 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 			"invalid Vproc value: %d\n", pre_vproc);
- 		return pre_vproc;
- 	}
--	/* Vsram should not exceed the maximum allowed voltage of SoC. */
--	new_vsram = min(new_vproc + soc_data->min_volt_shift,
--			soc_data->sram_max_volt);
--
--	if (pre_vproc < new_vproc) {
--		/*
--		 * When scaling up voltages, Vsram and Vproc scale up step
--		 * by step. At each step, set Vsram to (Vproc + 200mV) first,
--		 * then set Vproc to (Vsram - 100mV).
--		 * Keep doing it until Vsram and Vproc hit target voltages.
--		 */
--		do {
--			pre_vsram = regulator_get_voltage(sram_reg);
--			if (pre_vsram < 0) {
--				dev_err(info->cpu_dev,
--					"invalid Vsram value: %d\n", pre_vsram);
--				return pre_vsram;
--			}
--			pre_vproc = regulator_get_voltage(proc_reg);
--			if (pre_vproc < 0) {
--				dev_err(info->cpu_dev,
--					"invalid Vproc value: %d\n", pre_vproc);
--				return pre_vproc;
--			}
--
--			vsram = min(new_vsram,
--				    pre_vproc + soc_data->min_volt_shift);
- 
--			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
--				vsram = soc_data->sram_max_volt;
-+	pre_vsram = regulator_get_voltage(sram_reg);
-+	if (pre_vsram < 0) {
-+		dev_err(info->cpu_dev, "invalid Vsram value: %d\n", pre_vsram);
-+		return pre_vsram;
-+	}
- 
--				/*
--				 * If the target Vsram hits the maximum voltage,
--				 * try to set the exact voltage value first.
--				 */
--				ret = regulator_set_voltage(sram_reg, vsram,
--							    vsram);
--				if (ret)
--					ret = regulator_set_voltage(sram_reg,
--							vsram - VOLT_TOL,
--							vsram);
-+	new_vsram = clamp(new_vproc + soc_data->min_volt_shift,
-+			  soc_data->sram_min_volt, soc_data->sram_max_volt);
- 
--				vproc = new_vproc;
--			} else {
--				ret = regulator_set_voltage(sram_reg, vsram,
--							    vsram + VOLT_TOL);
-+	do {
-+		if (pre_vproc <= new_vproc) {
-+			vsram = clamp(pre_vproc + soc_data->max_volt_shift,
-+				      soc_data->sram_min_volt, new_vsram);
-+			ret = regulator_set_voltage(sram_reg, vsram,
-+						    soc_data->sram_max_volt);
- 
--				vproc = vsram - soc_data->min_volt_shift;
--			}
- 			if (ret)
- 				return ret;
- 
-+			if (vsram == soc_data->sram_max_volt ||
-+			    new_vsram == soc_data->sram_min_volt)
-+				vproc = new_vproc;
-+			else
-+				vproc = vsram - soc_data->min_volt_shift;
-+
- 			ret = regulator_set_voltage(proc_reg, vproc,
--						    vproc + VOLT_TOL);
-+						    soc_data->proc_max_volt);
- 			if (ret) {
- 				regulator_set_voltage(sram_reg, pre_vsram,
--						      pre_vsram);
-+						      soc_data->sram_max_volt);
- 				return ret;
- 			}
--		} while (vproc < new_vproc || vsram < new_vsram);
--	} else if (pre_vproc > new_vproc) {
--		/*
--		 * When scaling down voltages, Vsram and Vproc scale down step
--		 * by step. At each step, set Vproc to (Vsram - 200mV) first,
--		 * then set Vproc to (Vproc + 100mV).
--		 * Keep doing it until Vsram and Vproc hit target voltages.
--		 */
--		do {
--			pre_vproc = regulator_get_voltage(proc_reg);
--			if (pre_vproc < 0) {
--				dev_err(info->cpu_dev,
--					"invalid Vproc value: %d\n", pre_vproc);
--				return pre_vproc;
--			}
--			pre_vsram = regulator_get_voltage(sram_reg);
--			if (pre_vsram < 0) {
--				dev_err(info->cpu_dev,
--					"invalid Vsram value: %d\n", pre_vsram);
--				return pre_vsram;
--			}
--
-+		} else if (pre_vproc > new_vproc) {
- 			vproc = max(new_vproc,
- 				    pre_vsram - soc_data->max_volt_shift);
- 			ret = regulator_set_voltage(proc_reg, vproc,
--						    vproc + VOLT_TOL);
-+						    soc_data->proc_max_volt);
- 			if (ret)
- 				return ret;
- 
-@@ -174,32 +128,24 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 				vsram = max(new_vsram,
- 					    vproc + soc_data->min_volt_shift);
- 
--			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
--				vsram = soc_data->sram_max_volt;
--
--				/*
--				 * If the target Vsram hits the maximum voltage,
--				 * try to set the exact voltage value first.
--				 */
--				ret = regulator_set_voltage(sram_reg, vsram,
--							    vsram);
--				if (ret)
--					ret = regulator_set_voltage(sram_reg,
--							vsram - VOLT_TOL,
--							vsram);
--			} else {
--				ret = regulator_set_voltage(sram_reg, vsram,
--							    vsram + VOLT_TOL);
--			}
--
-+			ret = regulator_set_voltage(sram_reg, vsram,
-+						    soc_data->sram_max_volt);
- 			if (ret) {
- 				regulator_set_voltage(proc_reg, pre_vproc,
--						      pre_vproc);
-+						      soc_data->proc_max_volt);
- 				return ret;
- 			}
--		} while (vproc > new_vproc + VOLT_TOL ||
--			 vsram > new_vsram + VOLT_TOL);
--	}
-+		}
-+
-+		pre_vproc = vproc;
-+		pre_vsram = vsram;
-+
-+		if (--retry < 0) {
-+			dev_err(info->cpu_dev,
-+				"over loop count, failed to set voltage\n");
-+			return -EINVAL;
-+		}
-+	} while (vproc != new_vproc || vsram != new_vsram);
- 
- 	return 0;
- }
-@@ -261,8 +207,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	 * If the new voltage or the intermediate voltage is higher than the
- 	 * current voltage, scale up voltage first.
- 	 */
--	target_vproc = (inter_vproc > vproc) ? inter_vproc : vproc;
--	if (pre_vproc < target_vproc) {
-+	target_vproc = max(inter_vproc, vproc);
-+	if (pre_vproc <= target_vproc) {
- 		ret = mtk_cpufreq_set_voltage(info, target_vproc);
- 		if (ret) {
- 			dev_err(cpu_dev,
-@@ -417,6 +363,15 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 	 */
- 	info->need_voltage_tracking = (info->sram_reg != NULL);
- 
-+	/*
-+	 * We assume min voltage is 0 and tracking target voltage using
-+	 * min_volt_shift for each iteration.
-+	 * The vtrack_max is 3 times of expeted iteration count.
-+	 */
-+	info->vtrack_max = 3 * DIV_ROUND_UP(max(info->soc_data->sram_max_volt,
-+						info->soc_data->proc_max_volt),
-+					    info->soc_data->min_volt_shift);
-+
- 	return 0;
- 
- out_disable_inter_clock:
--- 
-2.18.0
-
+Thanks!
