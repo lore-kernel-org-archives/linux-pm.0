@@ -2,37 +2,40 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7206AC433EF
-	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDCECC43219
+	for <linux-pm@archiver.kernel.org>; Thu,  5 May 2022 11:52:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358568AbiEEL42 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 May 2022 07:56:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60582 "EHLO
+        id S1358703AbiEEL43 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 May 2022 07:56:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1356209AbiEEL41 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:27 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11FD754696;
-        Thu,  5 May 2022 04:52:41 -0700 (PDT)
-X-UUID: 3357646738684a098c04ee1ab0358742-20220505
+        with ESMTP id S1358621AbiEEL42 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2022 07:56:28 -0400
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7445546A0;
+        Thu,  5 May 2022 04:52:48 -0700 (PDT)
+X-UUID: 1d6c65ef8f544f088fc74d7d610b3050-20220505
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.4,REQID:d304df2c-ad96-430f-8eaa-ff25fa176b05,OB:0,LO
+X-CID-O-INFO: VERSION:1.1.4,REQID:910d6d1b-65a8-4fb0-92e4-e63f81867b2e,OB:0,LO
         B:0,IP:0,URL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,RULE:Release_Ham,ACTI
         ON:release,TS:0
-X-CID-META: VersionHash:faefae9,CLOUDID:1794b1b2-56b5-4c9e-8d83-0070b288eb6a,C
+X-CID-META: VersionHash:faefae9,CLOUDID:e093b1b2-56b5-4c9e-8d83-0070b288eb6a,C
         OID:IGNORED,Recheck:0,SF:nil,TC:nil,Content:0,EDM:-3,File:nil,QS:0,BEC:nil
-X-UUID: 3357646738684a098c04ee1ab0358742-20220505
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+X-UUID: 1d6c65ef8f544f088fc74d7d610b3050-20220505
+Received: from mtkmbs11n2.mediatek.inc [(172.21.101.187)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1062747904; Thu, 05 May 2022 19:52:35 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+        with ESMTP id 48444504; Thu, 05 May 2022 19:52:32 +0800
+Received: from mtkmbs07n1.mediatek.inc (172.21.101.16) by
  mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.792.3;
- Thu, 5 May 2022 19:52:34 +0800
+ Thu, 5 May 2022 19:52:28 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Thu, 5 May 2022 19:52:28 +0800
 Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 5 May 2022 19:52:34 +0800
+ Transport; Thu, 5 May 2022 19:52:27 +0800
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     <rafael@kernel.org>, <viresh.kumar@linaro.org>,
         <robh+dt@kernel.org>, <krzk+dt@kernel.org>,
@@ -46,9 +49,9 @@ CC:     <jia-wei.chang@mediatek.com>, <roger.lu@mediatek.com>,
         <linux-mediatek@lists.infradead.org>,
         <Project_Global_Chrome_Upstream_Group@mediatek.com>,
         Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH v6 03/10] cpufreq: mediatek: Move voltage limits to platform data
-Date:   Thu, 5 May 2022 19:52:19 +0800
-Message-ID: <20220505115226.20130-4-rex-bc.chen@mediatek.com>
+Subject: [PATCH v6 01/10] dt-bindings: cpufreq: mediatek: Add MediaTek CCI property
+Date:   Thu, 5 May 2022 19:52:17 +0800
+Message-ID: <20220505115226.20130-2-rex-bc.chen@mediatek.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
 References: <20220505115226.20130-1-rex-bc.chen@mediatek.com>
@@ -59,229 +62,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Voltages and shifts are defined as macros originally.
-There are different requirements of these values for each MediaTek SoCs.
-Therefore, we add the platform data and move these values into it.
+MediaTek Cache Coherent Interconnect (CCI) uses software devfreq module
+for scaling clock frequency and adjust voltage.
+The phandle could be linked between CPU and MediaTek CCI for some
+MediaTek SoCs, like MT8183 and MT8186.
 
-Signed-off-by: Jia-Wei Chang <jia-wei.chang@mediatek.com>
+The reason we need the link status between cpufreq and MediaTek cci is
+cpufreq and mediatek cci could share the same regulator in some MediaTek
+SoCs. Therefore, to prevent the issue of high frequency and low voltage,
+we need to use this to make sure mediatek cci is ready.
+
 Signed-off-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 84 +++++++++++++++++++++---------
- 1 file changed, 58 insertions(+), 26 deletions(-)
+ .../devicetree/bindings/cpufreq/cpufreq-mediatek.txt       | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index d15cbef4a72e..0b6c3479c8cc 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -10,15 +10,21 @@
- #include <linux/cpumask.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/regulator/consumer.h>
- 
--#define MIN_VOLT_SHIFT		(100000)
--#define MAX_VOLT_SHIFT		(200000)
--#define MAX_VOLT_LIMIT		(1150000)
- #define VOLT_TOL		(10000)
- 
-+struct mtk_cpufreq_platform_data {
-+	int min_volt_shift;
-+	int max_volt_shift;
-+	int proc_max_volt;
-+	int sram_min_volt;
-+	int sram_max_volt;
-+};
-+
- /*
-  * The struct mtk_cpu_dvfs_info holds necessary information for doing CPU DVFS
-  * on each CPU power/clock domain of Mediatek SoCs. Each CPU cluster in
-@@ -41,6 +47,7 @@ struct mtk_cpu_dvfs_info {
- 	int intermediate_voltage;
- 	bool need_voltage_tracking;
- 	int pre_vproc;
-+	const struct mtk_cpufreq_platform_data *soc_data;
- };
- 
- static struct platform_device *cpufreq_pdev;
-@@ -62,6 +69,7 @@ static struct mtk_cpu_dvfs_info *mtk_cpu_dvfs_info_lookup(int cpu)
- static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 					int new_vproc)
- {
-+	const struct mtk_cpufreq_platform_data *soc_data = info->soc_data;
- 	struct regulator *proc_reg = info->proc_reg;
- 	struct regulator *sram_reg = info->sram_reg;
- 	int pre_vproc, pre_vsram, new_vsram, vsram, vproc, ret;
-@@ -73,7 +81,8 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 		return pre_vproc;
- 	}
- 	/* Vsram should not exceed the maximum allowed voltage of SoC. */
--	new_vsram = min(new_vproc + MIN_VOLT_SHIFT, MAX_VOLT_LIMIT);
-+	new_vsram = min(new_vproc + soc_data->min_volt_shift,
-+			soc_data->sram_max_volt);
- 
- 	if (pre_vproc < new_vproc) {
- 		/*
-@@ -96,10 +105,11 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 				return pre_vproc;
- 			}
- 
--			vsram = min(new_vsram, pre_vproc + MAX_VOLT_SHIFT);
-+			vsram = min(new_vsram,
-+				    pre_vproc + soc_data->min_volt_shift);
- 
--			if (vsram + VOLT_TOL >= MAX_VOLT_LIMIT) {
--				vsram = MAX_VOLT_LIMIT;
-+			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
-+				vsram = soc_data->sram_max_volt;
- 
- 				/*
- 				 * If the target Vsram hits the maximum voltage,
-@@ -117,7 +127,7 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 				ret = regulator_set_voltage(sram_reg, vsram,
- 							    vsram + VOLT_TOL);
- 
--				vproc = vsram - MIN_VOLT_SHIFT;
-+				vproc = vsram - soc_data->min_volt_shift;
- 			}
- 			if (ret)
- 				return ret;
-@@ -151,7 +161,8 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 				return pre_vsram;
- 			}
- 
--			vproc = max(new_vproc, pre_vsram - MAX_VOLT_SHIFT);
-+			vproc = max(new_vproc,
-+				    pre_vsram - soc_data->max_volt_shift);
- 			ret = regulator_set_voltage(proc_reg, vproc,
- 						    vproc + VOLT_TOL);
- 			if (ret)
-@@ -160,10 +171,11 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 			if (vproc == new_vproc)
- 				vsram = new_vsram;
- 			else
--				vsram = max(new_vsram, vproc + MIN_VOLT_SHIFT);
-+				vsram = max(new_vsram,
-+					    vproc + soc_data->min_volt_shift);
- 
--			if (vsram + VOLT_TOL >= MAX_VOLT_LIMIT) {
--				vsram = MAX_VOLT_LIMIT;
-+			if (vsram + VOLT_TOL >= soc_data->sram_max_volt) {
-+				vsram = soc_data->sram_max_volt;
- 
- 				/*
- 				 * If the target Vsram hits the maximum voltage,
-@@ -194,13 +206,14 @@ static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
- 
- static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
- {
-+	const struct mtk_cpufreq_platform_data *soc_data = info->soc_data;
- 	int ret;
- 
- 	if (info->need_voltage_tracking)
- 		ret = mtk_cpufreq_voltage_tracking(info, vproc);
- 	else
- 		ret = regulator_set_voltage(info->proc_reg, vproc,
--					    MAX_VOLT_LIMIT);
-+					    soc_data->proc_max_volt);
- 	if (!ret)
- 		info->pre_vproc = vproc;
- 
-@@ -509,9 +522,17 @@ static struct cpufreq_driver mtk_cpufreq_driver = {
- 
- static int mtk_cpufreq_probe(struct platform_device *pdev)
- {
-+	const struct mtk_cpufreq_platform_data *data;
- 	struct mtk_cpu_dvfs_info *info, *tmp;
- 	int cpu, ret;
- 
-+	data = dev_get_platdata(&pdev->dev);
-+	if (!data) {
-+		dev_err(&pdev->dev,
-+			"failed to get mtk cpufreq platform data\n");
-+		return -ENODEV;
-+	}
-+
- 	for_each_possible_cpu(cpu) {
- 		info = mtk_cpu_dvfs_info_lookup(cpu);
- 		if (info)
-@@ -523,6 +544,7 @@ static int mtk_cpufreq_probe(struct platform_device *pdev)
- 			goto release_dvfs_info_list;
- 		}
- 
-+		info->soc_data = data;
- 		ret = mtk_cpu_dvfs_info_init(info, cpu);
- 		if (ret) {
- 			dev_err(&pdev->dev,
-@@ -558,20 +580,27 @@ static struct platform_driver mtk_cpufreq_platdrv = {
- 	.probe		= mtk_cpufreq_probe,
- };
- 
-+static const struct mtk_cpufreq_platform_data mt2701_platform_data = {
-+	.min_volt_shift = 100000,
-+	.max_volt_shift = 200000,
-+	.proc_max_volt = 1150000,
-+	.sram_min_volt = 0,
-+	.sram_max_volt = 1150000,
-+};
-+
- /* List of machines supported by this driver */
- static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
--	{ .compatible = "mediatek,mt2701", },
--	{ .compatible = "mediatek,mt2712", },
--	{ .compatible = "mediatek,mt7622", },
--	{ .compatible = "mediatek,mt7623", },
--	{ .compatible = "mediatek,mt8167", },
--	{ .compatible = "mediatek,mt817x", },
--	{ .compatible = "mediatek,mt8173", },
--	{ .compatible = "mediatek,mt8176", },
--	{ .compatible = "mediatek,mt8183", },
--	{ .compatible = "mediatek,mt8365", },
--	{ .compatible = "mediatek,mt8516", },
--
-+	{ .compatible = "mediatek,mt2701", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt2712", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt7622", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt7623", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8167", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt817x", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8173", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8176", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8183", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8365", .data = &mt2701_platform_data },
-+	{ .compatible = "mediatek,mt8516", .data = &mt2701_platform_data },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, mtk_cpufreq_machines);
-@@ -580,6 +609,7 @@ static int __init mtk_cpufreq_driver_init(void)
- {
- 	struct device_node *np;
- 	const struct of_device_id *match;
-+	const struct mtk_cpufreq_platform_data *data;
- 	int err;
- 
- 	np = of_find_node_by_path("/");
-@@ -592,6 +622,7 @@ static int __init mtk_cpufreq_driver_init(void)
- 		pr_debug("Machine is not compatible with mtk-cpufreq\n");
- 		return -ENODEV;
- 	}
-+	data = match->data;
- 
- 	err = platform_driver_register(&mtk_cpufreq_platdrv);
- 	if (err)
-@@ -603,7 +634,8 @@ static int __init mtk_cpufreq_driver_init(void)
- 	 * and the device registration codes are put here to handle defer
- 	 * probing.
- 	 */
--	cpufreq_pdev = platform_device_register_simple("mtk-cpufreq", -1, NULL, 0);
-+	cpufreq_pdev = platform_device_register_data(NULL, "mtk-cpufreq", -1,
-+						     data, sizeof(*data));
- 	if (IS_ERR(cpufreq_pdev)) {
- 		pr_err("failed to register mtk-cpufreq platform device\n");
- 		platform_driver_unregister(&mtk_cpufreq_platdrv);
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+index b8233ec91d3d..e0a4ba599abc 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+@@ -20,6 +20,13 @@ Optional properties:
+ 	       Vsram to fit SoC specific needs. When absent, the voltage scaling
+ 	       flow is handled by hardware, hence no software "voltage tracking" is
+ 	       needed.
++- mediatek,cci:
++	Used to confirm the link status between cpufreq and mediatek cci. Because
++	cpufreq and mediatek cci could share the same regulator in some MediaTek SoCs.
++	To prevent the issue of high frequency and low voltage, we need to use this
++	property to make sure mediatek cci is ready.
++	For details of mediatek cci, please refer to
++	Documentation/devicetree/bindings/interconnect/mediatek,cci.yaml
+ - #cooling-cells:
+ 	For details, please refer to
+ 	Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
 -- 
 2.18.0
 
