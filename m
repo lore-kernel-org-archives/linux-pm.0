@@ -2,82 +2,148 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3DCCC433F5
-	for <linux-pm@archiver.kernel.org>; Fri,  6 May 2022 19:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CC93C433EF
+	for <linux-pm@archiver.kernel.org>; Fri,  6 May 2022 21:26:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1391094AbiEFTqq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 May 2022 15:46:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49142 "EHLO
+        id S1444423AbiEFVaY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 May 2022 17:30:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234627AbiEFTqp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2022 15:46:45 -0400
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0C2368FB3;
-        Fri,  6 May 2022 12:43:00 -0700 (PDT)
-Received: from in02.mta.xmission.com ([166.70.13.52]:48382)
-        by out02.mta.xmission.com with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nn3qr-00AmLz-LF; Fri, 06 May 2022 13:42:57 -0600
-Received: from ip68-227-174-4.om.om.cox.net ([68.227.174.4]:37254 helo=email.froward.int.ebiederm.org.xmission.com)
-        by in02.mta.xmission.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1nn3qp-00AEeV-Kg; Fri, 06 May 2022 13:42:57 -0600
-From:   "Eric W. Biederman" <ebiederm@xmission.com>
-To:     Oleg Nesterov <oleg@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        with ESMTP id S1444426AbiEFVaW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2022 17:30:22 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 753D86F48A
+        for <linux-pm@vger.kernel.org>; Fri,  6 May 2022 14:26:38 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id iq2-20020a17090afb4200b001d93cf33ae9so11868673pjb.5
+        for <linux-pm@vger.kernel.org>; Fri, 06 May 2022 14:26:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=o6Oz7HOQ3x6czvwnoivav5HCYoCnmrdh+Dm8MPs0jWw=;
+        b=SwSsYkfN9KDMSB9pu+/5JgU2+rc3oBkAjfkvyVVfj4lcVjlMSeXz7cn1HFWsS0mdbe
+         ZRjWpTVwLSz/9p3vpGcOcbvBkpxNLjdAtOqAHGzkEKp1Kd3d8Q383mYCiHBojVpARBTn
+         eEeMZFbq42IX6E84oH9rQEVpC2kuaoCp2yZ9g=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=o6Oz7HOQ3x6czvwnoivav5HCYoCnmrdh+Dm8MPs0jWw=;
+        b=JR9CMcr3Gzua2Jk43VTsFWvvyLwhApz+Tp0ArdDUotmiOizyCUv9PvYzBWuHWUlD4Z
+         tPYzlOF/wQkJwJumlw1SqRcRnt0nI0sbPtQzNKgGU6gJ2pmb0YIxf8seDQrD0ikeLQj3
+         PN1B0KHevbdLfDwYS5n/G9F3gH+IcJlhKLx5VWq36ia9dSIuEa6Urh+kmSR3XWgWpdfd
+         vaEpfeTwdG7bN7kXPmr6RhVpQREWFcS3Nm+Ztvo1tnkO98Kv2binHfee5ppJYalBykJX
+         53x4WQ/UY/lIA+oL+v7eJv+QJGw+5c2GFkYLCAg2bfc3D2Km3SReU+T0DBiDgmCfDV3v
+         2R+A==
+X-Gm-Message-State: AOAM531B/hVevewwuJzm831PFdQ7JZOS3aawnhZ6BC7k+LT8leI745TV
+        l9Y9n/ReHRDNjQSmC8ImYKBF5g==
+X-Google-Smtp-Source: ABdhPJxqHSDMOut62U5hSxiCpUfOF+RHgmwoJ/cR7WT5zkFNH1CBodbZioDdYdrafVGnTPdDOvN6/g==
+X-Received: by 2002:a17:902:f612:b0:14c:e978:f99e with SMTP id n18-20020a170902f61200b0014ce978f99emr5727111plg.23.1651872397724;
+        Fri, 06 May 2022 14:26:37 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id c17-20020a63ef51000000b003c2f9540127sm3713041pgk.93.2022.05.06.14.26.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 May 2022 14:26:37 -0700 (PDT)
+Date:   Fri, 6 May 2022 14:26:36 -0700
+From:   Kees Cook <keescook@chromium.org>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, oleg@redhat.com,
+        mingo@kernel.org, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, mgorman@suse.de,
+        bigeasy@linutronix.de, Will Deacon <will@kernel.org>,
+        tj@kernel.org, linux-pm@vger.kernel.org,
+        Peter Zijlstra <peterz@infradead.org>,
         Richard Weinberger <richard@nod.at>,
         Anton Ivanov <anton.ivanov@cambridgegreys.com>,
         Johannes Berg <johannes@sipsolutions.net>,
         linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
         Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
-References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
-        <20220505182645.497868-10-ebiederm@xmission.com>
-        <20220506150903.GB16084@redhat.com>
-Date:   Fri, 06 May 2022 14:42:16 -0500
-In-Reply-To: <20220506150903.GB16084@redhat.com> (Oleg Nesterov's message of
-        "Fri, 6 May 2022 17:09:04 +0200")
-Message-ID: <874k2230tj.fsf@email.froward.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
+        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
+        linux-ia64@vger.kernel.org, Robert O'Callahan <roc@pernos.co>,
+        Kyle Huey <khuey@pernos.co>
+Subject: Re: [PATCH v4 0/12] ptrace: cleaning up ptrace_stop
+Message-ID: <202205061348.927E94729E@keescook>
+References: <20220421150248.667412396@infradead.org>
+ <20220421150654.817117821@infradead.org>
+ <87czhap9dy.fsf@email.froward.int.ebiederm.org>
+ <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+ <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+ <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
+ <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1nn3qp-00AEeV-Kg;;;mid=<874k2230tj.fsf@email.froward.int.ebiederm.org>;;;hst=in02.mta.xmission.com;;;ip=68.227.174.4;;;frm=ebiederm@xmission.com;;;spf=softfail
-X-XM-AID: U2FsdGVkX193hxkPxGdrMoGxQM4MFn+uyJKR1dj9OVA=
-X-SA-Exim-Connect-IP: 68.227.174.4
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH v4 10/12] ptrace: Don't change __state
-X-SA-Exim-Version: 4.2.1 (built Sat, 08 Feb 2020 21:53:50 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> writes:
+On Thu, May 05, 2022 at 01:25:57PM -0500, Eric W. Biederman wrote:
+> The states TASK_STOPPED and TASK_TRACE are special in they can not
+> handle spurious wake-ups.  This plus actively depending upon and
+> changing the value of tsk->__state causes problems for PREEMPT_RT and
+> Peter's freezer rewrite.
+> 
+> There are a lot of details we have to get right to sort out the
+> technical challenges and this is my parred back version of the changes
+> that contains just those problems I see good solutions to that I believe
+> are ready.
+> 
+> A couple of issues have been pointed but I think this parred back set of
+> changes is still on the right track.  The biggest change in v4 is the
+> split of "ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs" into
+> two patches because the dependency I thought exited between two
+> different changes did not exist.  The rest of the changes are minor
+> tweaks to "ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs";
+> removing an always true branch, and adding an early  test to see if the
+> ptracer had gone, before TASK_TRAPPING was set.
+> 
+> This set of changes should support Peter's freezer rewrite, and with the
+> addition of changing wait_task_inactive(TASK_TRACED) to be
+> wait_task_inactive(0) in ptrace_check_attach I don't think there are any
+> races or issues to be concerned about from the ptrace side.
+> 
+> More work is needed to support PREEMPT_RT, but these changes get things
+> closer.
+> 
+> This set of changes continues to look like it will provide a firm
+> foundation for solving the PREEMPT_RT and freezer challenges.
 
-> On 05/05, Eric W. Biederman wrote:
->>
->> --- a/include/linux/sched.h
->> +++ b/include/linux/sched.h
->> @@ -103,7 +103,7 @@ struct task_group;
->>  /* Convenience macros for the sake of set_current_state: */
->>  #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
->>  #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
->> -#define TASK_TRACED			(TASK_WAKEKILL | __TASK_TRACED)
->> +#define TASK_TRACED			__TASK_TRACED
->
-> however I personally still dislike this change. But let me read the
-> code with this series applied, perhaps I will change my mind. If not,
-> I will argue ;)
+One of the more sensitive projects to changes around ptrace is rr
+(Robert and Kyle added to CC). I ran rr's selftests before/after this
+series and saw no changes. My failures remained the same; I assume
+they're due to missing CPU features (pkeys) or build configs (bpf), etc:
 
-That is fair.  I kind of grew on my after I implemented it and wrapped
-my head around what was going on, as it is simple and there are no
-implicit cases.
+99% tests passed, 19 tests failed out of 2777
 
-Eric
+Total Test time (real) = 773.40 sec
+
+The following tests FAILED:
+         42 - bpf_map (Failed)
+         43 - bpf_map-no-syscallbuf (Failed)
+        414 - netfilter (Failed)
+        415 - netfilter-no-syscallbuf (Failed)
+        454 - x86/pkeys (Failed)
+        455 - x86/pkeys-no-syscallbuf (Failed)
+        1152 - ttyname (Failed)
+        1153 - ttyname-no-syscallbuf (Failed)
+        1430 - bpf_map-32 (Failed)
+        1431 - bpf_map-32-no-syscallbuf (Failed)
+        1502 - detach_sigkill-32 (Failed)
+        1802 - netfilter-32 (Failed)
+        1803 - netfilter-32-no-syscallbuf (Failed)
+        1842 - x86/pkeys-32 (Failed)
+        1843 - x86/pkeys-32-no-syscallbuf (Failed)
+        2316 - crash_in_function-32 (Failed)
+        2317 - crash_in_function-32-no-syscallbuf (Failed)
+        2540 - ttyname-32 (Failed)
+        2541 - ttyname-32-no-syscallbuf (Failed)
+
+So, I guess:
+
+Tested-by: Kees Cook <keescook@chromium.org>
+
+:)
+
+-- 
+Kees Cook
