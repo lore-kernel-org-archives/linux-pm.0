@@ -2,60 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF59FC433F5
-	for <linux-pm@archiver.kernel.org>; Sat,  7 May 2022 12:55:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F08FC433FE
+	for <linux-pm@archiver.kernel.org>; Sat,  7 May 2022 12:55:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1384897AbiEGM7S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 7 May 2022 08:59:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56918 "EHLO
+        id S1385051AbiEGM7T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 7 May 2022 08:59:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385051AbiEGM7B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 May 2022 08:59:01 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4584E4B1C1
-        for <linux-pm@vger.kernel.org>; Sat,  7 May 2022 05:55:14 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id l62-20020a1c2541000000b0038e4570af2fso5857035wml.5
-        for <linux-pm@vger.kernel.org>; Sat, 07 May 2022 05:55:14 -0700 (PDT)
+        with ESMTP id S1385081AbiEGM7L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 May 2022 08:59:11 -0400
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FE034160B
+        for <linux-pm@vger.kernel.org>; Sat,  7 May 2022 05:55:19 -0700 (PDT)
+Received: by mail-wr1-x429.google.com with SMTP id q23so13441059wra.1
+        for <linux-pm@vger.kernel.org>; Sat, 07 May 2022 05:55:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=H9bQlM9gg7UBQwLA/AvFpX2Y6HQDQSBbVmYVoUf7zx8=;
-        b=l64hwqcDceXvHHe2+llejtFh2jk8jX6S46HbYJ+N98So3DvC6m+iEEER5UGioOPsiB
-         dKPOBdqogch8CLjrthyR72A89B+fsMoRcLilJlX5ZwijbvAcTkcxG7N8zrxrx8fH9XxN
-         7rLwJlRcFePwppdBfnRI0QJmiRzJ2FO9TB95qe7oiAuII1JChkG5GHBrRFGhTMDt727q
-         KcprLIdTQLAsZPRHtT9I0vMAFHVYTQdYtD1uRTa3YgUDoi7wdUcQOZOgX1wdaDWOUKlx
-         JoLKqDabg5fH9ZxHXLnW+6GktjphB7foqvLRG9+++SuzXr3h4BvDhwguyH0YOwCl2+DI
-         WKeg==
+        bh=kBV1Agc9Pdc/aJxtc/EdKC25XzazArIEAhwHD2saev8=;
+        b=5wzzR1Gx29D7UCg5Rn8b33Gcil8GrzuziYJ6DqgyLdYuX9aVBZY52pdOH6UvzlwXGu
+         7/3b09HtWXMapswWgkONWdoS5oj00CUkpILmOu2xnl9hlgYuHA/kuV73WJOjclR+Iajk
+         TiqGzcHY6A3kbmXXA7/AhhEtx0lD0qTXbsxBgPLkz+HJFPLERWZ0GxYkfaSg4Q5ManfG
+         XcXPuZjrKi+dmshUUGTIPOerQyO/C/RnmsXDbMGrd3iH3G6EsWaHdlYe8hI3LzYv9Lxu
+         B5bujOc0gH+qpGGmAtccxruYjqSBC3CXgYfbR+2O35zWgV6zYmj0u3uUvhKKv4Lswxkf
+         Jiwg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=H9bQlM9gg7UBQwLA/AvFpX2Y6HQDQSBbVmYVoUf7zx8=;
-        b=4JcqAeNgYUD8cWWrEXBtSIakW8HB27fDwiGIqiLjFLlePhDdeiyJ9aDmVuMJ7WIOSQ
-         sQGw49KK2A5HRkZGf/V43aujkwr6ReULcbGcXPptfQ1hVGdJ/3vZ6urTbhb66HHmGY6x
-         acwxPoSZvutOhk5ZHOACuyGIsfJD0eh+9gpBBEWeSJfiI4rI1ZAYhPTXcSPL4oyBlLJT
-         F4ujz+vVhch+fSpUILHEDFkyeG8ZhV0f4W4YRc8OPlJJVhQVvA6PhBPOwzCsUkmItYtu
-         14Cd1u9exgaK8uF2DTMtfEZb1kt8eE8kysru2WgiHid5ewisPr6NCpEfNXEUWPEdTr/X
-         Jxdw==
-X-Gm-Message-State: AOAM531ev7fjHS5xc5r7LOMSuNypZpdENdGW+DauoWbq5MDJSEACxjAr
-        GE7ZL+GULif0KLerRPdkLOFq7g==
-X-Google-Smtp-Source: ABdhPJxjwzxdFF9Unrndlh742n7Cnyqf12EENRFzGjxx9FUR2JNdz4S/dtZAIKYUf1E0IlOJvRWtVg==
-X-Received: by 2002:a05:600c:1552:b0:394:52a9:e48a with SMTP id f18-20020a05600c155200b0039452a9e48amr14473567wmg.45.1651928112897;
-        Sat, 07 May 2022 05:55:12 -0700 (PDT)
+        bh=kBV1Agc9Pdc/aJxtc/EdKC25XzazArIEAhwHD2saev8=;
+        b=OnsduSFk1l+awKBrTTGOQxDzZapdcT7fvJ/Kh2rpDV+Z7jFN+62GhzBwE1TG26DCSq
+         sZsi0/RRThJ3yO9kS2ha8EW4NDvMiC6lNl2DTh4gjylNyPTxKT6LeytTsng02ysXp0g0
+         ORzLr1aGnY+2VCDBvJFhB07KNQWWZFMYC4gXtTXYQzAAhkT5yK1/3jbTUvzBQb1b/vTa
+         sETtwcNgfk9kvu11J42DyvhTVX11fEgQ+x4LXh3jNTtmvAM120yeGjJBPYS77GEKaPko
+         dbXikPkOnv7D+XvUIHrXJbYAfMvFGAN6wXi2cnc/OP7vzzbS+6LrB/Npbu/tiFqh631T
+         CMMA==
+X-Gm-Message-State: AOAM533QW64piPXos8Yke38O9ugIVuUjkXjmbn3aPkaP4IJgkvmUGaTe
+        Cy7Xin9RNq7qVVc8b7zUOHJqqw==
+X-Google-Smtp-Source: ABdhPJwZz0TjvaRxteDz5LlnI0c6giwXgkh1Y/IRty4TL5F1Mj+InwcqJUS2j5CSCd5M2fXGSBXN/w==
+X-Received: by 2002:a05:6000:86:b0:20a:d7be:e09b with SMTP id m6-20020a056000008600b0020ad7bee09bmr6405140wrx.398.1651928119004;
+        Sat, 07 May 2022 05:55:19 -0700 (PDT)
 Received: from localhost.localdomain (static-176-182-171-101.ncc.abo.bbox.fr. [176.182.171.101])
-        by smtp.gmail.com with ESMTPSA id e9-20020a05600c218900b0039453fe55a7sm10470345wme.35.2022.05.07.05.55.12
+        by smtp.gmail.com with ESMTPSA id e9-20020a05600c218900b0039453fe55a7sm10470345wme.35.2022.05.07.05.55.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 May 2022 05:55:12 -0700 (PDT)
+        Sat, 07 May 2022 05:55:18 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     khilman@baylibre.com, abailon@baylibre.com,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v2 07/14] thermal/core: Remove unneeded EXPORT_SYMBOLS
-Date:   Sat,  7 May 2022 14:54:35 +0200
-Message-Id: <20220507125443.2766939-8-daniel.lezcano@linexp.org>
+Subject: [PATCH v2 10/14] thermal/core: Add thermal_trip in thermal_zone
+Date:   Sat,  7 May 2022 14:54:38 +0200
+Message-Id: <20220507125443.2766939-11-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220507125443.2766939-1-daniel.lezcano@linexp.org>
 References: <20220507125443.2766939-1-daniel.lezcano@linexp.org>
@@ -65,37 +65,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Different functions are exporting the symbols but are actually only
-used by the thermal framework internals. Remove these EXPORT_SYMBOLS.
+The thermal trip points are properties of a thermal zone and the
+different sub systems should be able to save them in the thermal zone
+structure instead of having their own definition.
+
+Give the opportunity to the drivers to create a thermal zone with
+thermal trips which will be accessible directly from the thermal core
+framework.
 
 Cc: Alexandre Bailon <abailon@baylibre.com>
 Cc: Kevin Hilman <khilman@baylibre.com>
 Cc; Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
 ---
- drivers/thermal/thermal_helpers.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/thermal/thermal_core.h | 10 ++++++++++
+ include/linux/thermal.h        |  1 +
+ 2 files changed, 11 insertions(+)
 
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 334478fe40fa..beb97cd6b799 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -39,7 +39,6 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index c991bb290512..84e341c1e0fc 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -113,6 +113,16 @@ int thermal_build_list_of_policies(char *buf);
+ /* Helpers */
+ void thermal_zone_set_trips(struct thermal_zone_device *tz);
  
- 	return trend;
- }
--EXPORT_SYMBOL(get_tz_trend);
- 
- struct thermal_instance *
- get_thermal_instance(struct thermal_zone_device *tz,
-@@ -228,7 +227,6 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	}
- 	mutex_unlock(&cdev->lock);
- }
--EXPORT_SYMBOL(thermal_cdev_update);
- 
- /**
-  * thermal_zone_get_slope - return the slope attribute of the thermal zone
++static inline struct thermal_trip *thermal_zone_get_trips(struct thermal_zone *tz)
++{
++	return tz->trips;
++}
++
++static inline int thermal_zone_get_ntrips(struct thermal_zone *tz)
++{
++	return tz->ntrips;
++}
++
+ /* sysfs I/F */
+ int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+ void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e11c3d922c18..a11c00062ef1 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -184,6 +184,7 @@ struct thermal_zone_device {
+ 	struct thermal_sensor sensor;
+ 	struct thermal_zone_params *tzp;
+ 	struct thermal_governor *governor;
++	struct thermal_trip *trips;
+ 	void *governor_data;
+ 	struct list_head thermal_instances;
+ 	struct ida ida;
 -- 
 2.25.1
 
