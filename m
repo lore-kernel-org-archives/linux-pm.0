@@ -2,159 +2,224 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B37BC433F5
-	for <linux-pm@archiver.kernel.org>; Sat,  7 May 2022 12:54:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DECC4167B
+	for <linux-pm@archiver.kernel.org>; Sat,  7 May 2022 12:55:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377441AbiEGM6h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 7 May 2022 08:58:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56440 "EHLO
+        id S1384906AbiEGM7D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 7 May 2022 08:59:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354023AbiEGM6e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 May 2022 08:58:34 -0400
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95CA63EBAD
-        for <linux-pm@vger.kernel.org>; Sat,  7 May 2022 05:54:47 -0700 (PDT)
-Received: by mail-wr1-x435.google.com with SMTP id d5so13434020wrb.6
-        for <linux-pm@vger.kernel.org>; Sat, 07 May 2022 05:54:47 -0700 (PDT)
+        with ESMTP id S1385012AbiEGM67 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 May 2022 08:58:59 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 127F24474F
+        for <linux-pm@vger.kernel.org>; Sat,  7 May 2022 05:55:12 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id k126-20020a1ca184000000b003943fd07180so5873527wme.3
+        for <linux-pm@vger.kernel.org>; Sat, 07 May 2022 05:55:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linexp-org.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=4qLNqRHvGThMnKCh8JxH+zMKQlY3uNLQAnfUyMgDeJ0=;
-        b=tyVJyu1og+k8qz+Q0Yp4FF1vz1lZIa7YVQExpwHYljQuHEUITYRKaSu9lwUanHwWmn
-         EmrXNgYq3h+JSV/yDYMkwpB/LVnkRlFHnHIfXGT50ej/hQHeEUXsvnFFMaBBpU7J4CHu
-         PGzXTbPU/a28lLiEQoJix1MCJc9Csaj4liwipVnA1Q/ZQkHoABcCR1vbj+KFByICL+UT
-         s+vKWs3dsbJGTKOJ5NA0EgCuPDbXo1PHKk3x5UTHg78Pft7pRnKzU+oAZcV/VKx/RAwp
-         kgP6OVHxwW8wmLdY12f6oiCloXXIJPtGbjpAFRtQK6wpV1LatpKFcZ5knwUW7BD//7tg
-         cNpg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=aJTpdtZ3Dvv2pgbB16rUZnzGfgzRayyB+EehmrYmI4I=;
+        b=r8DEyWCaOn3aWY2lI6UgyxsgndLqA3OA747yuYprq1WCUe1gMkuX4+0zwPRLI0T+9r
+         okytRUZk6Nu0/FQp6nM+0jBMjrZpzOfmAuxYKkpQ3+p/n5OnfKoIf95+p+nNwBo1uvRU
+         vFBMdPEWEyJobBUPndajOygUtvmwQlZHrRwVga3C0/yHaoHSoOBv5JEhxk+YLPQHSuve
+         am8qEsc+gava0AE6j98gwvKHhXD8YFRoEBOUtnrgc9FO0iSuf/DD/H0bedUcqIMEAZjj
+         OT0ipqij64Faxxan8nl54xm3N8a6Sj51Lz1ufbqBxDPV3IaP0uMcewe0eQVi2RG1MWi+
+         fvQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=4qLNqRHvGThMnKCh8JxH+zMKQlY3uNLQAnfUyMgDeJ0=;
-        b=Z/lsaXRPe80YaT8+ONLPLdIatbi0D92g7RyupWgOXqTVj/iFFx9Qy7cgxRRvy1iH9M
-         +udGFjkWYm/kQNTvx5ACqRJUwr4W5N921VTcg8e3HCFN7I93Z1bEyfnWXntiN0ub+eOW
-         mPXyrPqnxuSCllQwo3WMBP1j5NfFXGVCfiQbIRYscFYyhigDs/VJ1nWJkY3WjiJpsdvO
-         T5WANWvBhp7bFEOTQBqu5yck2Tq9RuPgLjSE5GtBoh55p08Irx+LrifVbTs3ap1Oyj9R
-         Dbrjhs6Vigi/CR9W44DzcXtertP5DCYccaMfUfB9QQIgdtOUZJz9X+daX8pyJUOZzom2
-         YKfQ==
-X-Gm-Message-State: AOAM5309utbO7miuBSDrmfQnCvBQg+ddfzYpjR48N/KmWUS+zihIReP5
-        m0eHrfFzfZBDbo+PKjWjXeomwCH/BhwUDLqvlWQ=
-X-Google-Smtp-Source: ABdhPJylh6922PCoagUrF2YYaK7DCbeMrGccC2W/GwcT01UroYD73UMX9Yz386A2CCvCT4A1wkJ+eg==
-X-Received: by 2002:a05:6000:86:b0:20a:d7be:e09b with SMTP id m6-20020a056000008600b0020ad7bee09bmr6403590wrx.398.1651928086156;
-        Sat, 07 May 2022 05:54:46 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=aJTpdtZ3Dvv2pgbB16rUZnzGfgzRayyB+EehmrYmI4I=;
+        b=CU5gyVPm9vRR9inE6hQJtbs590raaNRXnaaBBmPkY4nRMEnRxD+nwqnBhtnbTxILRT
+         dbrpXZgQzAFhP/rGI5laCpxL5OD7agVzSzY87GG5grH9PVeZjsHCE8S07cKaGL1NozKY
+         Yqi77iCu3dNEu9S8vKVSBWvK8IePpu/BQEs03TgLs59j7v5PwFF4rHAyg6L0TzIWR0TL
+         qRgB1BvxvOWHo8KTg3hTLD0QiQGmYLaMged4DDDLlfld3v86I00quoVX3lsvlV1koSh0
+         4WfZmTJPVlTjj7xL3ajwcMEk2EkXAqDxn8pOL+x6/zHaESdc5h6p8CJnJB+sBOJ+d4XJ
+         MgoA==
+X-Gm-Message-State: AOAM531IynPiuJv+9sMvox0SAL6/xQKcymuPk0YRz7B8ueNPlqTs1dxN
+        A0UI0zaKBBtLF2SK2GENBHX8lQ==
+X-Google-Smtp-Source: ABdhPJwVzX01+jP/THCWZgaTNGuZUeO5WZLo7PjVFPBEODAUucRQdLdpDOc0XorIz8nqdXE/AoSclg==
+X-Received: by 2002:a1c:7512:0:b0:394:16ee:ab9b with SMTP id o18-20020a1c7512000000b0039416eeab9bmr7921228wmc.176.1651928110390;
+        Sat, 07 May 2022 05:55:10 -0700 (PDT)
 Received: from localhost.localdomain (static-176-182-171-101.ncc.abo.bbox.fr. [176.182.171.101])
-        by smtp.gmail.com with ESMTPSA id e9-20020a05600c218900b0039453fe55a7sm10470345wme.35.2022.05.07.05.54.45
+        by smtp.gmail.com with ESMTPSA id e9-20020a05600c218900b0039453fe55a7sm10470345wme.35.2022.05.07.05.55.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 May 2022 05:54:45 -0700 (PDT)
+        Sat, 07 May 2022 05:55:10 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linexp.org>
 To:     daniel.lezcano@linaro.org, rafael@kernel.org
 Cc:     khilman@baylibre.com, abailon@baylibre.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 00/14] thermal OF rework
-Date:   Sat,  7 May 2022 14:54:28 +0200
-Message-Id: <20220507125443.2766939-1-daniel.lezcano@linexp.org>
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Amit Kucheria <amitk@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH v2 04/14] thermal/of: Replace device node match with device node search
+Date:   Sat,  7 May 2022 14:54:32 +0200
+Message-Id: <20220507125443.2766939-5-daniel.lezcano@linexp.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220507125443.2766939-1-daniel.lezcano@linexp.org>
+References: <20220507125443.2766939-1-daniel.lezcano@linexp.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal framework initialization with the device tree appears to
-be complicated and hard to make it to evolve.
+The thermal_of code builds a trip array associated with the node
+pointer in order to compare the trip point phandle with the list.
 
-It contains duplication of almost the same thermal generic structures
-and has an assymetric initialization making hard any kind of serious
-changes for more complex features. One of them is the multiple sensors
-support per thermal zone.
+The thermal trip is a thermal zone property and should be moved
+there. If some sensors have hardcoded trip points, they should use the
+exported structure instead of redefining again and again their own
+structure and data to describe exactly the same things.
 
-In order to set the scene for the aforementioned feature with generic
-code, we need to cleanup and rework the device tree initialization.
+In order to move this to the thermal.h header and allow more cleanup,
+we need to remove the node pointer from the structure.
 
-However this rework is not obvious because of the multiple components
-entering in the composition of a thermal zone and being initialized at
-different moments. For instance, a cooling device can be initialized
-before a sensor, so the thermal zones must exist before the cooling
-device as well as the sensor. This asynchonous initialization forces
-the thermal zone to be created with fake ops because they are
-mandotory and build a list of cooling devices which is used to lookup
-afterwards when the cooling device driver is registering itself.
+Instead of building storing the device node, we search directly in the
+device tree the corresponding node. That results in a simplification
+of the code and allows to move the structure to thermal.h
 
-As there could be a large number of changes, this first series provide
-some steps forward for a simpler device tree initialization.
+Cc: Alexandre Bailon <abailon@baylibre.com>
+Cc: Kevin Hilman <khilman@baylibre.com>
+Cc; Eduardo Valentin <eduval@amazon.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linexp.org>
+---
+ drivers/thermal/thermal_of.c | 62 ++++++++++++++++++++++++------------
+ 1 file changed, 42 insertions(+), 20 deletions(-)
 
-Changelog:
- - V2:
-   - Drop patch 1/15 which contains too many changes for a simple
-     structure renaming. This could be addressed in a separate series as
-     it is not necessary for the OF rework
-     
-   - Fixed of_node_put with gchild not initialized as reported by
-     kbuild and Dan Carpenter
-
- - V1:
-   - Initial post
-
-Daniel Lezcano (14):
-  thermal/core: Change thermal_zone_ops to thermal_sensor_ops
-  thermal/core: Add a thermal sensor structure in the thermal zone
-  thermal/core: Remove duplicate information when an error occurs
-  thermal/of: Replace device node match with device node search
-  thermal/of: Remove the device node pointer for thermal_trip
-  thermal/of: Move thermal_trip structure to thermal.h
-  thermal/core: Remove unneeded EXPORT_SYMBOLS
-  thermal/core: Move thermal_set_delay_jiffies to static
-  thermal/core: Rename trips to ntrips
-  thermal/core: Add thermal_trip in thermal_zone
-  thermal/core: Register with the trip points
-  thermal/of: Store the trips in the thermal zone
-  thermal/of: Use thermal trips stored in the thermal zone
-  thermal/of: Initialize trip points separately
-
- .../driver-api/thermal/sysfs-api.rst          |   2 +-
- drivers/acpi/thermal.c                        |   6 +-
- .../ethernet/chelsio/cxgb4/cxgb4_thermal.c    |   2 +-
- .../ethernet/mellanox/mlxsw/core_thermal.c    |   6 +-
- drivers/net/wireless/intel/iwlwifi/mvm/tt.c   |   2 +-
- drivers/platform/x86/acerhdf.c                |   2 +-
- drivers/power/supply/power_supply_core.c      |   2 +-
- drivers/thermal/armada_thermal.c              |   2 +-
- drivers/thermal/broadcom/bcm2835_thermal.c    |   2 +-
- drivers/thermal/da9062-thermal.c              |   2 +-
- drivers/thermal/dove_thermal.c                |   2 +-
- drivers/thermal/gov_bang_bang.c               |   6 +-
- drivers/thermal/gov_fair_share.c              |  10 +-
- drivers/thermal/gov_power_allocator.c         |  22 +-
- drivers/thermal/gov_step_wise.c               |   4 +-
- drivers/thermal/imx_thermal.c                 |   2 +-
- .../intel/int340x_thermal/int3400_thermal.c   |   2 +-
- .../int340x_thermal/int340x_thermal_zone.c    |   6 +-
- .../int340x_thermal/int340x_thermal_zone.h    |   4 +-
- .../processor_thermal_device.c                |   4 +-
- .../processor_thermal_device_pci.c            |   2 +-
- drivers/thermal/intel/intel_pch_thermal.c     |   2 +-
- .../thermal/intel/intel_quark_dts_thermal.c   |   2 +-
- drivers/thermal/intel/intel_soc_dts_iosf.c    |   2 +-
- drivers/thermal/intel/x86_pkg_temp_thermal.c  |   2 +-
- drivers/thermal/kirkwood_thermal.c            |   2 +-
- drivers/thermal/rcar_gen3_thermal.c           |   6 +-
- drivers/thermal/rcar_thermal.c                |   4 +-
- drivers/thermal/samsung/exynos_tmu.c          |   6 +-
- drivers/thermal/spear_thermal.c               |   2 +-
- drivers/thermal/st/st_thermal.c               |   2 +-
- drivers/thermal/tegra/soctherm.c              |  10 +-
- drivers/thermal/tegra/tegra30-tsensor.c       |   6 +-
- drivers/thermal/thermal_core.c                | 102 ++++----
- drivers/thermal/thermal_core.h                |  25 +-
- drivers/thermal/thermal_helpers.c             |  35 ++-
- drivers/thermal/thermal_hwmon.c               |   4 +-
- drivers/thermal/thermal_netlink.c             |  10 +-
- drivers/thermal/thermal_of.c                  | 221 ++++++++++--------
- drivers/thermal/thermal_sysfs.c               |  62 ++---
- include/linux/thermal.h                       |  34 ++-
- 41 files changed, 341 insertions(+), 290 deletions(-)
-
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index d6917f1bc486..d8b4a0ad2d5f 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -659,6 +659,35 @@ EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_unregister);
+ 
+ /***   functions parsing device tree nodes   ***/
+ 
++static int of_find_trip_id(struct device_node *np, struct device_node *trip)
++{
++	struct device_node *trips;
++	struct device_node *t;
++	int i = 0;
++
++	trips = of_get_child_by_name(np, "trips");
++	if (!trips) {
++		pr_err("Failed to find 'trips' node\n");
++		return -EINVAL;
++	}
++
++	/*
++	 * Find the trip id point associated with the cooling device map
++	 */
++	for_each_child_of_node(trips, t) {
++
++		if (t == trip)
++			goto out;
++		i++;
++	}
++
++	i = -ENXIO;
++out:	
++	of_node_put(trips);
++
++	return i;
++}
++
+ /**
+  * thermal_of_populate_bind_params - parse and fill cooling map data
+  * @np: DT node containing a cooling-map node
+@@ -674,14 +703,13 @@ EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_unregister);
+  * Return: 0 on success, proper error code otherwise
+  */
+ static int thermal_of_populate_bind_params(struct device_node *np,
+-					   struct __thermal_bind_params *__tbp,
+-					   struct thermal_trip *trips,
+-					   int ntrips)
++					   struct __thermal_bind_params *__tbp)
+ {
+ 	struct of_phandle_args cooling_spec;
+ 	struct __thermal_cooling_bind_param *__tcbp;
+ 	struct device_node *trip;
+ 	int ret, i, count;
++	int trip_id;
+ 	u32 prop;
+ 
+ 	/* Default weight. Usage is optional */
+@@ -696,18 +724,14 @@ static int thermal_of_populate_bind_params(struct device_node *np,
+ 		return -ENODEV;
+ 	}
+ 
+-	/* match using device_node */
+-	for (i = 0; i < ntrips; i++)
+-		if (trip == trips[i].np) {
+-			__tbp->trip_id = i;
+-			break;
+-		}
+-
+-	if (i == ntrips) {
+-		ret = -ENODEV;
++	trip_id = of_find_trip_id(np, trip);
++	if (trip_id < 0) {
++		ret = trip_id;
+ 		goto end;
+ 	}
+ 
++	__tbp->trip_id = trip_id;
++	
+ 	count = of_count_phandle_with_args(np, "cooling-device",
+ 					   "#cooling-cells");
+ 	if (count <= 0) {
+@@ -856,6 +880,7 @@ static struct __thermal_zone
+ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ {
+ 	struct device_node *child = NULL, *gchild;
++	struct device_node *trips;
+ 	struct __thermal_zone *tz;
+ 	int ret, i;
+ 	u32 prop, coef[2];
+@@ -898,13 +923,13 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 	}
+ 
+ 	/* trips */
+-	child = of_get_child_by_name(np, "trips");
++	trips = of_get_child_by_name(np, "trips");
+ 
+ 	/* No trips provided */
+-	if (!child)
++	if (!trips)
+ 		goto finish;
+ 
+-	tz->ntrips = of_get_child_count(child);
++	tz->ntrips = of_get_child_count(trips);
+ 	if (tz->ntrips == 0) /* must have at least one child */
+ 		goto finish;
+ 
+@@ -915,14 +940,12 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 	}
+ 
+ 	i = 0;
+-	for_each_child_of_node(child, gchild) {
++	for_each_child_of_node(trips, gchild) {
+ 		ret = thermal_of_populate_trip(gchild, &tz->trips[i++]);
+ 		if (ret)
+ 			goto free_trips;
+ 	}
+ 
+-	of_node_put(child);
+-
+ 	/* cooling-maps */
+ 	child = of_get_child_by_name(np, "cooling-maps");
+ 
+@@ -942,8 +965,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 
+ 	i = 0;
+ 	for_each_child_of_node(child, gchild) {
+-		ret = thermal_of_populate_bind_params(gchild, &tz->tbps[i++],
+-						      tz->trips, tz->ntrips);
++		ret = thermal_of_populate_bind_params(gchild, &tz->tbps[i++]);
+ 		if (ret)
+ 			goto free_tbps;
+ 	}
 -- 
 2.25.1
 
