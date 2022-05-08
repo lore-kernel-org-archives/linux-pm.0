@@ -2,295 +2,145 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C21C433EF
-	for <linux-pm@archiver.kernel.org>; Sat,  7 May 2022 15:02:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B5C6C433FE
+	for <linux-pm@archiver.kernel.org>; Sun,  8 May 2022 07:17:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1446575AbiEGPGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 7 May 2022 11:06:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57806 "EHLO
+        id S229772AbiEHHUy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 8 May 2022 03:20:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44136 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1446550AbiEGPFy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 May 2022 11:05:54 -0400
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E54164476F;
-        Sat,  7 May 2022 08:02:07 -0700 (PDT)
-Received: by mail-pj1-x102c.google.com with SMTP id a15-20020a17090ad80f00b001dc2e23ad84so13298015pjv.4;
-        Sat, 07 May 2022 08:02:07 -0700 (PDT)
+        with ESMTP id S229617AbiEHHUx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 May 2022 03:20:53 -0400
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7457EBF64
+        for <linux-pm@vger.kernel.org>; Sun,  8 May 2022 00:17:03 -0700 (PDT)
+Received: by mail-pf1-x42f.google.com with SMTP id bo5so9736038pfb.4
+        for <linux-pm@vger.kernel.org>; Sun, 08 May 2022 00:17:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=6gkoSFOyPPzO47GFBH6H76ByTgZlADmJrCRFgljxq6E=;
-        b=CaduLt9L+kJfEPF9xzJXkIO5VwXZY4Y40m0WC3KN+wG/TyZiM3PdKEBP48c3PCzOzC
-         awG0BJHT0E3Q6W2yWaZ8i3VjalynzLRe7f+44S8C4cGJUAEtJmKCePcJ2j1x6+X/NYOM
-         64y6AvMt1tiFcNWoCQ9ibhtR80yr2mdoGwX4M8rK09+QhDdVcfBj/5sWQeXApCmC+Cxd
-         HrHnO5eJvqqwVEHPVvUWBk+G/R8fH0+I1HxYMvYRfa27Icg1jf2OvyY9YjxeTAgtmhVB
-         WWaf/inctytBrltH9PBaQBFmHx/cMXa8yRydfLUMas2qUZtUqNYnbeIzyPWr4fkQ5yvk
-         ZvwQ==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=Pmia3f83d9c4z0pslQdQjq3eRCIFxyb8z/IWO9Z38ao=;
+        b=t6kDm7iTCtb4FmyDMxma8umwQwzKL2JupjfLGk02JjYTGCWzc8I9DDOPnVU/JulmG3
+         KszspKzJB8w+ttIZYkI7L9z8UUJJLtx7CRWRGfS4VPRBlXRFRwct2yAOUziTqaForIGg
+         cQ2nzM8vWDrOU+oGjD+0OaCFvvIOTShiAvA3dEbYlt4A1OjormyjvG4wAs5wuCYWCo+v
+         GtVuJvYGKEok/g5gq8PoHIBzscVGuzN6nrWgmAw/Oy8ah9YMJAt0zOlTYX64UPACkMcq
+         6ej+hbT8CBfWY63RjIuDHc97Tm1zW/HQl8Zg9TEzo4m3QuLQ+oD/beHpyUnUbWMgCFBH
+         JeKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=6gkoSFOyPPzO47GFBH6H76ByTgZlADmJrCRFgljxq6E=;
-        b=O6XUPm8QWbaJdxny4tSsGeU1xYsDTIdrpxAl/0Jyxx5NiA/lzEPRqXpaPoN9j6FFmS
-         7UudRQDCEnauMHR32IrERy6MvKRb0u1woCxru98ZeRT/lVxElMKfhZDARU+o+aBpA14g
-         buIqnb/BDoL4FBvjSDb4umeU3dqyZKPxNXmo/sqilZzpcVBf6r6lBZwuVnwhb733uLh8
-         O5tS14iwRzojoXIr8Zdy7Qa8w5R78BJodTvpYU475vdnKWpvsL64BHUYSXdr7Y2YSsU/
-         BH1bXt58mfgXdk6jdHL25bvi2ss/Rib9YLoQwZ0ynhmquJBJozLE+Kwr8DGWdUZm0i3Q
-         yyRQ==
-X-Gm-Message-State: AOAM533EHMEVz8frveUnnjl6AjoiKjakKLydgV491dfurj9zDg1V+yZe
-        ZGI11ztAJihgMFYit2kRHPSGqpwVwU/nAg==
-X-Google-Smtp-Source: ABdhPJwWiMfZN8JuUxfjHnSN8j/2LC0Jkd9nv5SAdUKBsL/fgsvwNuYEFfGBNiOx1y3nzlnfsJi2SQ==
-X-Received: by 2002:a17:903:1107:b0:15e:f451:4034 with SMTP id n7-20020a170903110700b0015ef4514034mr5478393plh.3.1651935727228;
-        Sat, 07 May 2022 08:02:07 -0700 (PDT)
-Received: from localhost.localdomain ([14.32.163.5])
-        by smtp.gmail.com with ESMTPSA id v21-20020a170902ca9500b0015e8d4eb2a8sm3711007pld.242.2022.05.07.08.02.03
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=Pmia3f83d9c4z0pslQdQjq3eRCIFxyb8z/IWO9Z38ao=;
+        b=p1jzQN0ZTCjsNt2XT54kDgX+douvdqgKTXCrUHCVITwdkTDk2mEd+LvE0Tcb4WVuLV
+         MF3eGBQWOOX/MGZLLqabUtixgbLiwAj3Y39pDt/IRm9z+GM0Y6DQ4Z/yAB8FXJ8+RWll
+         SYU3E9VmtHP3sObg9WY0gwxp+wYkaScBH948tbU0eMsTcFhXI7gUoYn6ujHP14z16MPl
+         pc+uANXbNsGHCZ8J0RWOVjnJ6PVfXw/dJIAlsLhW5aGJxg2I/p00edL/fTt5tXjzNnai
+         nX+NVr9E0aVELbwZsdIOvB68WBp6jI0TWAnWZlclnfROsNKvAO0YgkbwIskWWK8oIoA8
+         gsRg==
+X-Gm-Message-State: AOAM5308Le0snPoVExMKo94i8mGFGWTVKSHZn+KvIqrbumh78T1jb+TV
+        Kiko+QU+ShOEmep1qkctHmw7
+X-Google-Smtp-Source: ABdhPJxu5CrFctjLtjT1lTJIK1jFwL+XEsVaS5Sz7j5qObZKbONmEaEZJKQEO5T8vskmUppYOSmqGw==
+X-Received: by 2002:a05:6a00:26cf:b0:4f6:fc52:7b6a with SMTP id p15-20020a056a0026cf00b004f6fc527b6amr10673139pfw.39.1651994222762;
+        Sun, 08 May 2022 00:17:02 -0700 (PDT)
+Received: from thinkpad ([27.111.75.235])
+        by smtp.gmail.com with ESMTPSA id iy11-20020a17090b16cb00b001dc37aef4ffsm6363055pjb.48.2022.05.08.00.16.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 May 2022 08:02:06 -0700 (PDT)
-From:   Chanwoo Choi <cwchoi00@gmail.com>
-X-Google-Original-From: Chanwoo Choi <cw00.choi@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     cw00.choi@samsung.com, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com, johnson.wang@mediatek.com,
-        mka@chromium.org, jia-wei.chang@mediatek.com,
-        andrew-sh.cheng@mediatek.com, hsinyi@chromium.org,
-        sibis@codeaurora.org, saravanak@google.com
-Subject: [PATCH v2 4/5] PM / devfreq: passive: Keep cpufreq_policy for possible cpus
-Date:   Sun,  8 May 2022 00:01:44 +0900
-Message-Id: <20220507150145.531864-5-cw00.choi@samsung.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220507150145.531864-1-cw00.choi@samsung.com>
-References: <20220507150145.531864-1-cw00.choi@samsung.com>
+        Sun, 08 May 2022 00:17:02 -0700 (PDT)
+Date:   Sun, 8 May 2022 12:46:56 +0530
+From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Hector Martin <marcan@marcan.st>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Sven Peter <sven@svenpeter.dev>,
+        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Marc Zyngier <maz@kernel.org>,
+        Mark Kettenis <mark.kettenis@xs4all.nl>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/4] Apple SoC cpufreq driver
+Message-ID: <20220508071656.GA42059@thinkpad>
+References: <20220504075153.185208-1-marcan@marcan.st>
+ <20220504102745.fv5bl2cphq7ft4lm@vireshk-i7>
+ <20220504160019.GB3507@thinkpad>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220504160019.GB3507@thinkpad>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The passive governor requires the cpu data to get the next target frequency
-of devfreq device if depending on cpu. In order to reduce the unnecessary
-memory data, keep cpufreq_policy data for possible cpus instead of NR_CPU.
+On Wed, May 04, 2022 at 09:30:26PM +0530, Manivannan Sadhasivam wrote:
+> Hi Viresh,
+> 
+> On Wed, May 04, 2022 at 03:57:45PM +0530, Viresh Kumar wrote:
+> > On 04-05-22, 16:51, Hector Martin wrote:
+> > > Hi folks,
+> > > 
+> > > Here's a second take on the cpufreq driver for Apple SoCs. This is a
+> > > complete rewrite using a stand-alone cpufreq driver instead of using the
+> > > cpufreq-dt infrastructure.
+> > > 
+> > > Since v1 we ran some experiments on the memory controller performance
+> > > switching and it turns out it doesn't make a huge difference, so it
+> > > makes sense to punt that feature to the future (perhaps once a proper
+> > > memory controller driver exists for other reasons, e.g. for error
+> > > handling).
+> > > 
+> > > One advantage of having a standalone cpufreq driver is that we can
+> > > support fast switching. This also means any future interaction with
+> > > the memory controller will probably use some bespoke mechanism instead
+> > > of the genpd infrastructure, so we can keep the fast path without
+> > > allowing sleeps/etc.
+> > > 
+> > > The driver is based on scpi-cpufreq.c, with some bits (e.g. the
+> > > apple,freq-domain stuff) inspired by how cpufreq-qcom-hw does it.
+> > > I'm not sure if that particular property should be described
+> > > in a binding, since it goes in the cpu nodes (qcom doesn't have it
+> > > anywhere...).
+> > 
+> > Hi Mani,
+> > 
+> > I can see that Rob asked you to add this somewhere, maybe in arm/cpu
+> > stuff, but I don't think you ever sent a patch with that. What
+> > happened ?
+> > 
+> > https://lore.kernel.org/lkml/20201013171800.GA3716411@bogus/
+> > 
+> 
+> Oops. Looks like that one slipped through the cracks. I did add it to my todo
+> list for qcom-cpufreq but missed it completely.
+> 
+> I will look into it.
+> 
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/governor.h         |  3 ++
- drivers/devfreq/governor_passive.c | 73 ++++++++++++++++++++++++------
- include/linux/devfreq.h            |  4 +-
- 3 files changed, 63 insertions(+), 17 deletions(-)
+So I did send a patch for adding the qcom specific property [1], but Rob asked
+for a common one and that's where it got lost.
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index 335c4a491254..0adfebc0467a 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -49,6 +49,7 @@
- 
- /**
-  * struct devfreq_cpu_data - Hold the per-cpu data
-+ * @node:	list node
-  * @dev:	reference to cpu device.
-  * @first_cpu:	the cpumask of the first cpu of a policy.
-  * @opp_table:	reference to cpu opp table.
-@@ -60,6 +61,8 @@
-  * This is auto-populated by the governor.
-  */
- struct devfreq_cpu_data {
-+	struct list_head node;
-+
- 	struct device *dev;
- 	unsigned int first_cpu;
- 
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index a738a30eb3c0..b34dbe750c0a 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -18,6 +18,22 @@
- 
- #define HZ_PER_KHZ	1000
- 
-+static struct devfreq_cpu_data *
-+get_parent_cpu_data(struct devfreq_passive_data *p_data,
-+		    struct cpufreq_policy *policy)
-+{
-+	struct devfreq_cpu_data *parent_cpu_data;
-+
-+	if (!p_data || !policy)
-+		return NULL;
-+
-+	list_for_each_entry(parent_cpu_data, &p_data->cpu_data_list, node)
-+		if (parent_cpu_data->first_cpu == cpumask_first(policy->related_cpus))
-+			return parent_cpu_data;
-+
-+	return NULL;
-+}
-+
- static unsigned long get_target_freq_by_required_opp(struct device *p_dev,
- 						struct opp_table *p_opp_table,
- 						struct opp_table *opp_table,
-@@ -50,14 +66,24 @@ static int get_target_freq_with_cpufreq(struct devfreq *devfreq,
- 	struct devfreq_passive_data *p_data =
- 				(struct devfreq_passive_data *)devfreq->data;
- 	struct devfreq_cpu_data *parent_cpu_data;
-+	struct cpufreq_policy *policy;
- 	unsigned long cpu, cpu_cur, cpu_min, cpu_max, cpu_percent;
- 	unsigned long dev_min, dev_max;
- 	unsigned long freq = 0;
-+	int ret = 0;
- 
- 	for_each_online_cpu(cpu) {
--		parent_cpu_data = p_data->parent_cpu_data[cpu];
--		if (!parent_cpu_data || parent_cpu_data->first_cpu != cpu)
-+		policy = cpufreq_cpu_get(cpu);
-+		if (!policy) {
-+			ret = -EINVAL;
-+			continue;
-+		}
-+
-+		parent_cpu_data = get_parent_cpu_data(p_data, policy);
-+		if (!parent_cpu_data) {
-+			cpufreq_cpu_put(policy);
- 			continue;
-+		}
- 
- 		/* Get target freq via required opps */
- 		cpu_cur = parent_cpu_data->cur_freq * HZ_PER_KHZ;
-@@ -66,6 +92,7 @@ static int get_target_freq_with_cpufreq(struct devfreq *devfreq,
- 					devfreq->opp_table, cpu_cur);
- 		if (freq) {
- 			*target_freq = max(freq, *target_freq);
-+			cpufreq_cpu_put(policy);
- 			continue;
- 		}
- 
-@@ -80,9 +107,10 @@ static int get_target_freq_with_cpufreq(struct devfreq *devfreq,
- 		freq = dev_min + mult_frac(dev_max - dev_min, cpu_percent, 100);
- 
- 		*target_freq = max(freq, *target_freq);
-+		cpufreq_cpu_put(policy);
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static int get_target_freq_with_devfreq(struct devfreq *devfreq,
-@@ -167,12 +195,11 @@ static int cpufreq_passive_notifier_call(struct notifier_block *nb,
- 	unsigned int cur_freq;
- 	int ret;
- 
--	if (event != CPUFREQ_POSTCHANGE || !freqs ||
--		!p_data->parent_cpu_data[freqs->policy->cpu])
-+	if (event != CPUFREQ_POSTCHANGE || !freqs)
- 		return 0;
- 
--	parent_cpu_data = p_data->parent_cpu_data[freqs->policy->cpu];
--	if (parent_cpu_data->cur_freq == freqs->new)
-+	parent_cpu_data = get_parent_cpu_data(p_data, freqs->policy);
-+	if (!parent_cpu_data || parent_cpu_data->cur_freq == freqs->new)
- 		return 0;
- 
- 	cur_freq = parent_cpu_data->cur_freq;
-@@ -195,7 +222,7 @@ static int cpufreq_passive_unregister_notifier(struct devfreq *devfreq)
- 	struct devfreq_passive_data *p_data
- 			= (struct devfreq_passive_data *)devfreq->data;
- 	struct devfreq_cpu_data *parent_cpu_data;
--	int cpu, ret;
-+	int cpu, ret = 0;
- 
- 	if (p_data->nb.notifier_call) {
- 		ret = cpufreq_unregister_notifier(&p_data->nb,
-@@ -205,16 +232,26 @@ static int cpufreq_passive_unregister_notifier(struct devfreq *devfreq)
- 	}
- 
- 	for_each_possible_cpu(cpu) {
--		parent_cpu_data = p_data->parent_cpu_data[cpu];
--		if (!parent_cpu_data)
-+		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-+		if (!policy) {
-+			ret = -EINVAL;
- 			continue;
-+		}
- 
-+		parent_cpu_data = get_parent_cpu_data(p_data, policy);
-+		if (!parent_cpu_data) {
-+			cpufreq_cpu_put(policy);
-+			continue;
-+		}
-+
-+		list_del(&parent_cpu_data->node);
- 		if (parent_cpu_data->opp_table)
- 			dev_pm_opp_put_opp_table(parent_cpu_data->opp_table);
- 		kfree(parent_cpu_data);
-+		cpufreq_cpu_put(policy);
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
-@@ -229,6 +266,9 @@ static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
- 	unsigned int cpu;
- 	int ret;
- 
-+	p_data->cpu_data_list
-+		= (struct list_head)LIST_HEAD_INIT(p_data->cpu_data_list);
-+
- 	p_data->nb.notifier_call = cpufreq_passive_notifier_call;
- 	ret = cpufreq_register_notifier(&p_data->nb, CPUFREQ_TRANSITION_NOTIFIER);
- 	if (ret) {
-@@ -238,15 +278,18 @@ static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
- 	}
- 
- 	for_each_possible_cpu(cpu) {
--		if (p_data->parent_cpu_data[cpu])
--			continue;
--
- 		policy = cpufreq_cpu_get(cpu);
- 		if (!policy) {
- 			ret = -EPROBE_DEFER;
- 			goto err;
- 		}
- 
-+		parent_cpu_data = get_parent_cpu_data(p_data, policy);
-+		if (parent_cpu_data) {
-+			cpufreq_cpu_put(policy);
-+			continue;
-+		}
-+
- 		parent_cpu_data = kzalloc(sizeof(*parent_cpu_data),
- 						GFP_KERNEL);
- 		if (!parent_cpu_data) {
-@@ -275,7 +318,7 @@ static int cpufreq_passive_register_notifier(struct devfreq *devfreq)
- 		parent_cpu_data->min_freq = policy->cpuinfo.min_freq;
- 		parent_cpu_data->max_freq = policy->cpuinfo.max_freq;
- 
--		p_data->parent_cpu_data[cpu] = parent_cpu_data;
-+		list_add_tail(&parent_cpu_data->node, &p_data->cpu_data_list);
- 		cpufreq_cpu_put(policy);
- 	}
- 
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index ccebb5c84d62..2fca831db564 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -309,7 +309,7 @@ enum devfreq_parent_dev_type {
-  + * @this:		the devfreq instance of own device.
-  + * @nb:		the notifier block for DEVFREQ_TRANSITION_NOTIFIER or
-  *			CPUFREQ_TRANSITION_NOTIFIER list.
-- + * @cpu_data:		the state min/max/current frequency of all online cpu's
-+ + * @cpu_data_list:	the cpufreq_policy list of all possible cpus.
-  *
-  * The devfreq_passive_data have to set the devfreq instance of parent
-  * device with governors except for the passive governor. But, don't need to
-@@ -329,7 +329,7 @@ struct devfreq_passive_data {
- 	/* For passive governor's internal use. Don't need to set them */
- 	struct devfreq *this;
- 	struct notifier_block nb;
--	struct devfreq_cpu_data *parent_cpu_data[NR_CPUS];
-+	struct list_head cpu_data_list;
- };
- #endif
- 
+But in the last revision [2], you've asked for converting the qcom cpufreq
+driver to support the generic performance domains instead. For maintaining
+compatibility with the old dts files, we need to support the qcom specific
+property as well.
+
+I will send a series for that.
+
+Thanks,
+Mani
+
+[1] https://patchwork.kernel.org/project/linux-pm/patch/20201020153944.18047-1-manivannan.sadhasivam@linaro.org/#23718065
+[2] https://patchwork.kernel.org/project/linux-pm/patch/20210701105730.322718-4-angelogioacchino.delregno@somainline.org/ 
+> Thanks,
+> Mani
+> 
+> > -- 
+> > viresh
+
 -- 
-2.25.1
-
+மணிவண்ணன் சதாசிவம்
