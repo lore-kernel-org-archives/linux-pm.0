@@ -2,107 +2,204 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CD34C433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 04:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09357C433F5
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 04:31:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232433AbiEIEK4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 00:10:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46808 "EHLO
+        id S229979AbiEIEdi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 00:33:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234415AbiEIEBi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 00:01:38 -0400
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA12510634A
-        for <linux-pm@vger.kernel.org>; Sun,  8 May 2022 20:57:44 -0700 (PDT)
-Received: by mail-pg1-x530.google.com with SMTP id g184so8470337pgc.1
-        for <linux-pm@vger.kernel.org>; Sun, 08 May 2022 20:57:44 -0700 (PDT)
+        with ESMTP id S234093AbiEIE35 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 00:29:57 -0400
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA8AB34BA0
+        for <linux-pm@vger.kernel.org>; Sun,  8 May 2022 21:26:03 -0700 (PDT)
+Received: by mail-pf1-x42e.google.com with SMTP id i24so11216787pfa.7
+        for <linux-pm@vger.kernel.org>; Sun, 08 May 2022 21:26:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QA3QBtPI3O1Tfh2czp5nCb1ZHar3YqBZK+8IBbh2GL4=;
-        b=XLrOMOGf7eUqDcGo2C93lcSbcOVHHwJ9AgWvnOp8InbUmMb/p3Scnt+HB8KagrN/tc
-         UjylYfTzYjNZRUfJqWwtyl51PBL3wEUZ8yVf8OR3+euT7YTetZ851DxFJi5YuQa1d7lm
-         uFvF3reXbjEUoD1nBmIOTiCP1wj+Y295CLSSFeA6m+2RBshBptzctNgjEgFWhAwXrvp4
-         XnPP6Ol9tToQu0lWkTS3TxmwTZmuaxWKIUGOdN0RlTCKMvoN8oBPyg/q2Wdv1ESm0ScD
-         es+sg8xzgki86NGN9fG04yl6k6R15szh60hwNjgmJ6mMjNM0k9iyOre+UpjfhNlBEzAv
-         8xYg==
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=mZjP4dNTKy30RT9KsXwzpA3EHoMN585jvCR1XFDuLEc=;
+        b=nBNg+tHZflBjGIS0XPj5Tmj27fS8cL8mQm0nI/LyYEthrACAFVmuVfbXjqcD3sQnTO
+         kmivvn/pU1dK3Y0JdheVKDRZDi/CCl0csGg4Md5G+jbn4Eq6NxU4T+CmjudaxnMQdVez
+         IxSFKuDQmoFDTamIY9S9dXezXOQqnpJKsowXw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=QA3QBtPI3O1Tfh2czp5nCb1ZHar3YqBZK+8IBbh2GL4=;
-        b=eSA3q/I/r320MVRZGAIrkGIvyphhU9TS9V/v2twiDHqlgVRVZb3tDRyNzQTd4hGC6t
-         Ta4e5ZNusVMVDVKuZxcu1WruSfI13sXy+8U1ApwH4Cmr15CkjANYu8hcz+pp4N0HHHwl
-         CDoKmcBgkqRtrYibr7V4vklekwGiBoHXBtG+4kt2ZDHUz3kK1Ut2x8kyeEQlcRTptl9x
-         UjHewK4EVAZdsumoruKTkEyaPddF6KKTWp3r2/7WzacBUj5aqUWh6pfEF4b3Uqrw/28R
-         019PI/+BdJBdohB9y25GNTjO0lp4YaioYrq9AThBTs2nU7wG78jGI/2pGN6T3D7fdLnU
-         LqcQ==
-X-Gm-Message-State: AOAM532cr9iEFZChtxoeQiN9iE6Y29DQ1j/A/hRq+Z2cuzXLytgW012c
-        7K0efTq/bw1Ik2mD68dLOPOA8w==
-X-Google-Smtp-Source: ABdhPJyfcZT4vyA7LsNd4ftNp8j+EWMdDGp+1rPoJM6Ybs2WwPT8EbYICPTbejvD3GjrYAYUfrqAgA==
-X-Received: by 2002:a62:ce82:0:b0:50d:512f:7b76 with SMTP id y124-20020a62ce82000000b0050d512f7b76mr14401183pfg.79.1652068663103;
-        Sun, 08 May 2022 20:57:43 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id l4-20020a170903244400b0015e8d4eb1d0sm5961358pls.26.2022.05.08.20.57.42
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=mZjP4dNTKy30RT9KsXwzpA3EHoMN585jvCR1XFDuLEc=;
+        b=TNjJyqENqj6fGhvYM7Pg6NxljNEdjX4eNysnE+/VPWOJ9WtAO8a+9mm96hFvvqoQ6r
+         ovKbdwxOez/Xgo5no85RCyiZF33AYeA1Du0ZGHUJiFpYnHZhznUidz4A+2+mtCfyhcBE
+         RLyxFDsRy2IYPpu4t/HkrKrKmP4Si2y3Q70yuoPqE9DbSG6FYC+/+N4JFxEoh822f+GO
+         /y9ixmL3PVQsJjfFe4VNRBOEpR048W8d3TQtQO8e40NAyHMZKvgfooIUR/zS7FKN/Yrz
+         QpQzgOJn8Sdzee7c8VyCEor93I0O5SlgxaPmXebb+lMkfizSJY/gWIzS7+hLKo36SCaQ
+         4wBA==
+X-Gm-Message-State: AOAM533TCtPc8zrrpxUhf677h6Co4wP6v8VsLrwOiEJWi71xsP1ykkiT
+        CXWEujOf65zoE7IalfDLdEeedg==
+X-Google-Smtp-Source: ABdhPJzrANxqU33W/Ssp3fR5eUxPwB81F/Oe0FFkPLJbJUxvMEmAwhD7R/7F6MGgzD3ydHD3eRFfdg==
+X-Received: by 2002:a62:7ccc:0:b0:510:4e07:79f3 with SMTP id x195-20020a627ccc000000b005104e0779f3mr13894842pfc.10.1652070363403;
+        Sun, 08 May 2022 21:26:03 -0700 (PDT)
+Received: from google.com ([2401:fa00:1:10:97ce:ca39:c9e7:b20e])
+        by smtp.gmail.com with ESMTPSA id g10-20020aa7818a000000b0050dc76281a6sm7472520pfi.128.2022.05.08.21.26.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 May 2022 20:57:42 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Schspa Shi <schspa@gmail.com>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] Revert "cpufreq: Fix possible race in cpufreq online error path"
-Date:   Mon,  9 May 2022 09:27:37 +0530
-Message-Id: <7f505491f4e8207bb5d79b1b7b34a28b6d1f03b6.1652068655.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
+        Sun, 08 May 2022 21:26:03 -0700 (PDT)
+Date:   Mon, 9 May 2022 12:25:59 +0800
+From:   Chen-Yu Tsai <wenst@chromium.org>
+To:     Chanwoo Choi <cwchoi00@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        cw00.choi@samsung.com, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com, johnson.wang@mediatek.com,
+        mka@chromium.org, jia-wei.chang@mediatek.com,
+        andrew-sh.cheng@mediatek.com, hsinyi@chromium.org,
+        sibis@codeaurora.org, saravanak@google.com
+Subject: Re: [PATCH v2 5/5] PM / devfreq: passive: Update frequency when
+ start governor
+Message-ID: <YniX1w+oI1eOCmCx@google.com>
+References: <20220507150145.531864-1-cw00.choi@samsung.com>
+ <20220507150145.531864-6-cw00.choi@samsung.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220507150145.531864-6-cw00.choi@samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This reverts commit f346e96267cd76175d6c201b40f770c0116a8a04.
+Hi,
 
-The commit tried to fix a possible real bug but it made it even worse.
-The fix was simply buggy as now an error out to out_offline_policy or
-out_exit_policy will try to release a semaphore which was never taken in
-the first place. This works fine only if we failed late, i.e. via
-out_destroy_policy.
+On Sun, May 08, 2022 at 12:01:45AM +0900, Chanwoo Choi wrote:
+> If the parent device changes the their frequency before registering
+> the passive device, the passive device cannot receive the notification
+> from parent device and then the passive device cannot be able to
+> set the proper frequency according to the frequency of parent device.
+> 
+> So, when start the passive governor, update the frequency
+> according to the frequency of parent device.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Link: https://lore.kernel.org/r/20220507150145.531864-6-cw00.choi@samsung.com
+> ---
+>  drivers/devfreq/governor_passive.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
+> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+> index b34dbe750c0a..74d26c193fdb 100644
+> --- a/drivers/devfreq/governor_passive.c
+> +++ b/drivers/devfreq/governor_passive.c
+> @@ -412,6 +412,23 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
+>  		if (!p_data->this)
+>  			p_data->this = devfreq;
+>  
+> +		/*
+> +		 * If the parent device changes the their frequency before
+> +		 * registering the passive device, the passive device cannot
+> +		 * receive the notification from parent device and then the
+> +		 * passive device cannot be able to set the proper frequency
+> +		 * according to the frequency of parent device.
+> +		 *
+> +		 * When start the passive governor, update the frequency
+> +		 * according to the frequency of parent device.
+> +		 */
+> +		mutex_lock(&devfreq->lock);
+> +		ret = devfreq_update_target(devfreq, parent->previous_freq);
 
-Fixes: f346e96267cd ("cpufreq: Fix possible race in cpufreq online error path")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+This crashes when parent is NULL, in the case where parent is cpufreq.
+This is the case with the MTK ccifreq driver, which produces the panic
+and backtrace below [1].
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 233e8af48848..fbaa8e6c7d23 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1534,6 +1534,8 @@ static int cpufreq_online(unsigned int cpu)
- 	for_each_cpu(j, policy->real_cpus)
- 		remove_cpu_dev_symlink(policy, get_cpu_device(j));
- 
-+	up_write(&policy->rwsem);
-+
- out_offline_policy:
- 	if (cpufreq_driver->offline)
- 		cpufreq_driver->offline(policy);
-@@ -1542,9 +1544,6 @@ static int cpufreq_online(unsigned int cpu)
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- 
--	cpumask_clear(policy->cpus);
--	up_write(&policy->rwsem);
--
- out_free_policy:
- 	cpufreq_policy_free(policy);
- 	return ret;
--- 
-2.31.1.272.g89b43f80a514
+I made a fix for a previous version of this patch:
 
+    https://github.com/wens/linux/commit/f85c1834dd07388abb57a00200c80f7440823a03
+
+BTW, could you CC me on future revisions? I'm not subscribed to the
+linux-pm mailing list.
+
+
+Regards
+ChenYu
+
+[1]
+
+Unable to handle kernel read from unreadable memory at virtual address 0000000000000420
+Mem abort info:
+ESR = 0x0000000096000005
+EC = 0x25: DABT (current EL), IL = 32 bits
+SET = 0, FnV = 0
+EA = 0, S1PTW = 0
+FSC = 0x05: level 1 translation fault
+Data abort info:
+ISV = 0, ISS = 0x00000005
+CM = 0, WnR = 0
+[0000000000000420] user address but active_mm is swapper
+Internal error: Oops: 96000005 [#1] PREEMPT SMP
+Modules linked in:
+CPU: 7 PID: 1 Comm: swapper/0 Not tainted 5.18.0-rc5-next-20220505-09393-g38dc825c1d73 #155 b348fdb8d61a403eef7a9c5857bc02a261fcb213
+Hardware name: Google juniper sku16 board (DT)
+pstate: 60400005 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : devfreq_passive_event_handler (drivers/devfreq/governor_passive.c:426)
+lr : devfreq_passive_event_handler (drivers/devfreq/governor_passive.c:426)
+sp : ffffffc00808ba80
+x29: ffffffc00808ba80 x28: 0000000000000000 x27: ffffffe99bb90458
+x26: 0000000000000010 x25: ffffff80c1843848 x24: ffffff80c1843810
+x23: ffffffe99babf3f5 x22: ffffffe99c278190 x21: ffffff80c0924d80
+x20: ffffff80c1843800 x19: 0000000000000000 x18: 0000000000000000
+x17: 0000000065516d0e x16: 00000000fc90660b x15: 0000000000000018
+x14: 0000000000000000 x13: ffffffffff000000 x12: 0000000000000038
+x11: 0101010101010101 x10: 8000000000000000 x9 : ffffffe99acb8458
+x8 : 0065766973000000 x7 : 0000000000000080 x6 : 0000000000000000
+x5 : 8000000000000000 x4 : 0000000000000000 x3 : ffffff80c1843810
+x2 : ffffff80c0228000 x1 : 0000000000000000 x0 : 0000000000000000
+Call trace:
+devfreq_passive_event_handler (drivers/devfreq/governor_passive.c:426)
+devfreq_add_device (drivers/devfreq/devfreq.c:932)
+devm_devfreq_add_device (drivers/devfreq/devfreq.c:1028)
+mtk_ccifreq_probe (drivers/devfreq/mtk-cci-devfreq.c:366)
+platform_probe (drivers/base/platform.c:1398)
+really_probe (drivers/base/dd.c:542 drivers/base/dd.c:621 drivers/base/dd.c:566)
+__driver_probe_device (drivers/base/dd.c:752)
+driver_probe_device (drivers/base/dd.c:782)
+__driver_attach (drivers/base/dd.c:1143 drivers/base/dd.c:1094)
+bus_for_each_dev (drivers/base/bus.c:301)
+driver_attach (drivers/base/dd.c:1160)
+bus_add_driver (drivers/base/bus.c:619)
+driver_register (drivers/base/driver.c:240)
+__platform_driver_register (drivers/base/platform.c:866)
+mtk_ccifreq_platdrv_init (drivers/devfreq/mtk-cci-devfreq.c:468)
+do_one_initcall (init/main.c:1301)
+kernel_init_freeable (init/main.c:1375 init/main.c:1392 init/main.c:1411 init/main.c:1618)
+kernel_init (init/main.c:1511)
+ret_from_fork (arch/arm64/kernel/entry.S:868)
+Code: f9000eb4 91004298 aa1803e0 940979d4 (f9421261)
+All code
+========
+   0:	f9000eb4 	str	x20, [x21, #24]
+   4:	91004298 	add	x24, x20, #0x10
+   8:	aa1803e0 	mov	x0, x24
+   c:	940979d4 	bl	0x25e75c
+  10:*	f9421261 	ldr	x1, [x19, #1056]		<-- trapping instruction
+
+Code starting with the faulting instruction
+===========================================
+   0:	f9421261 	ldr	x1, [x19, #1056]
+---[ end trace 0000000000000000 ]---
+Kernel panic - not syncing: Oops: Fatal exception
+SMP: stopping secondary CPUs
+Kernel Offset: 0x2992c00000 from 0xffffffc008000000
+PHYS_OFFSET: 0x40000000
+CPU features: 0x000,00324811,00001086
+Memory Limit: none
+PANIC in EL3.
+
+> +		if (ret < 0)
+> +			dev_warn(&devfreq->dev,
+> +			"failed to update devfreq using passive governor\n");
+> +		mutex_unlock(&devfreq->lock);
+> +
+>  		if (p_data->parent_type == DEVFREQ_PARENT_DEV)
+>  			ret = devfreq_passive_register_notifier(devfreq);
+>  		else if (p_data->parent_type == CPUFREQ_PARENT_DEV)
+> 
+> -- 
+> 2.25.1
+> 
