@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC6FC433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 858E9C433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:35:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232785AbiEIXjC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 19:39:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41198 "EHLO
+        id S232554AbiEIXjX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 19:39:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232705AbiEIXhz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:55 -0400
+        with ESMTP id S233054AbiEIXiL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:38:11 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0553A24BB30;
-        Mon,  9 May 2022 16:33:31 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA34B250E9A;
+        Mon,  9 May 2022 16:34:14 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: dmitry.osipenko)
-        with ESMTPSA id DDF821F430B3
+        with ESMTPSA id E7D5B1F441FD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1652139210;
-        bh=YK0F6fR8XWeV2rG0cbTxAWJjHbs9t/ROkX6NXAfeuRc=;
+        s=mail; t=1652139253;
+        bh=i0EpyUpthjBui1PGSfTlV0XdMEaBb9rmJl1vNRe/ntg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=WX2wLAoFqw2NcqFA+1BgEi+pnSqQ/OT0ntArBclZh3rRdgYWFpNobAvm6ZwR47f5O
-         UVB/nJt08DF0z35eem1y5e29iS6TGa3FlqumDo8Gztlg9RTEy3yXgoM/PdqWZ72qjH
-         BBXHhpZMhXXq1gmyrAUnf9JuPFEL0VuxOWgpl0g7gErLQMCAr8EBR7mlBfM7b/CzpF
-         rbbVZCAv5Su19JHE0dZAYAwszfCQR2CPfwc4wUkYqtr+WKd4w8pxs2RFEPFv5Qa681
-         /mjY+RYiodQ7Rz1Y3p36rejWNrVlI8LiNaH4VL6v6O9rIPyvlE8v1d9uqae+R0n5sB
-         mZdrZdLthuUpw==
+        b=cOsU2r2Eblivwj/4cs5M9vQ+EIm4O22kzOvkVpXBwVaGlQQqUaU+9c9J8h2kpjBSt
+         GpXjMQQdLCoJJlIHF5IfMSLeGCyJvESoQPCKt3kCPQedCVqLaoeEopcTf+HEY5q1lO
+         jJ/uDMUpGaMZkBso16PjrWo29hM7vhwjdcV20pn3IDz86wk5E9pcvm7DLWuJ5eN3xe
+         Rv7XJipXyrsWHlwyWVQKKYth00nFChhonNPtOvFo1TEnjkAjXR2JiSFF1yvm2SKeAq
+         YVHXAi1edwQHbtnVBglD/8RVeEInLaeMWxknedL6gsMlzSmRogo0SRclXVYd+laLv3
+         s6F3Ihd0ore/g==
 From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -78,72 +78,47 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v8 07/27] kernel/reboot: Add kernel_can_power_off()
-Date:   Tue, 10 May 2022 02:32:15 +0300
-Message-Id: <20220509233235.995021-8-dmitry.osipenko@collabora.com>
+Subject: [PATCH v8 18/27] x86: Use do_kernel_power_off()
+Date:   Tue, 10 May 2022 02:32:26 +0300
+Message-Id: <20220509233235.995021-19-dmitry.osipenko@collabora.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 References: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add kernel_can_power_off() helper that replaces open-coded checks of
-the global pm_power_off variable. This is a necessary step towards
-supporting chained power-off handlers.
+Kernel now supports chained power-off handlers. Use do_kernel_power_off()
+that invokes chained power-off handlers. It also invokes legacy
+pm_power_off() for now, which will be removed once all drivers will
+be converted to the new sys-off API.
 
+Reviewed-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 ---
- include/linux/reboot.h |  1 +
- kernel/reboot.c        | 14 +++++++++++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+ arch/x86/kernel/reboot.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 6b951d68c0c7..c52f77ee4ddd 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -149,6 +149,7 @@ extern void kernel_restart_prepare(char *cmd);
- extern void kernel_restart(char *cmd);
- extern void kernel_halt(void);
- extern void kernel_power_off(void);
-+extern bool kernel_can_power_off(void);
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index fa700b46588e..c3636ea4aa71 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -739,10 +739,10 @@ static void native_machine_halt(void)
  
- void ctrl_alt_del(void);
- 
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index eaede35f45e2..982e58c11ce8 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -523,6 +523,18 @@ void do_kernel_power_off(void)
- 	atomic_notifier_call_chain(&power_off_handler_list, 0, NULL);
- }
- 
-+/**
-+ *	kernel_can_power_off - check whether system can be powered off
-+ *
-+ *	Returns true if power-off handler is registered and system can be
-+ *	powered off, false otherwise.
-+ */
-+bool kernel_can_power_off(void)
-+{
-+	return !atomic_notifier_call_chain_is_empty(&power_off_handler_list);
-+}
-+EXPORT_SYMBOL_GPL(kernel_can_power_off);
-+
- /**
-  *	kernel_power_off - power_off the system
-  *
-@@ -581,7 +593,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 	/* Instead of trying to make the power_off code look like
- 	 * halt when pm_power_off is not set do it the easy way.
- 	 */
--	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
-+	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !kernel_can_power_off())
- 		cmd = LINUX_REBOOT_CMD_HALT;
- 
- 	mutex_lock(&system_transition_mutex);
+ static void native_machine_power_off(void)
+ {
+-	if (pm_power_off) {
++	if (kernel_can_power_off()) {
+ 		if (!reboot_force)
+ 			machine_shutdown();
+-		pm_power_off();
++		do_kernel_power_off();
+ 	}
+ 	/* A fallback in case there is no PM info available */
+ 	tboot_shutdown(TB_SHUTDOWN_HALT);
 -- 
 2.35.1
 
