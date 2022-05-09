@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4E63C433F5
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:33:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B054FC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:34:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232588AbiEIXhS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 19:37:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40848 "EHLO
+        id S232939AbiEIXh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 19:37:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232535AbiEIXhG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:06 -0400
+        with ESMTP id S232620AbiEIXhY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:24 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CC1721B169;
-        Mon,  9 May 2022 16:33:11 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAB4521B169;
+        Mon,  9 May 2022 16:33:19 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: dmitry.osipenko)
-        with ESMTPSA id 5E2CD1F4195B
+        with ESMTPSA id 17BD61F41D8C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1652139187;
-        bh=fLk9P/8GBXV/gow9gw4QGytkxQFyLU71HSagZYJ8o5I=;
+        s=mail; t=1652139198;
+        bh=95ioqXFiu/sMhB4rC2pN2mOqsgk/IiTVsJJFignNnOY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YhxhnTI9NvbLfj67ZcRhPX86XV8hnVmvB2+NtO95NIqYARKmayRkU9nopvPEQT8Me
-         W2nnVXm0D2hSk50qdVKpG+UHHCKbjvMu3DEa3LaZ5ZzUrWUuvj9BT9vVQEbRgMTGth
-         m/otgMrFJikr7jdN+Q40cxAuxrylVYKjYtjLq4WIIwC/OBLKnmv6GgSMh0Y+uGoD/L
-         1hhg9iEoCH1Pdja7DSW7Pk4PTjR/qfW5ULonIQQvmnkEROj2Q2BUmPpY9d1Q7Ecq17
-         xmwMvW1NNWwMi/Qww4oq/Msiaz19CBS0NzvNZDBPy+6YaGpixClw4HeYhLf1899Vzj
-         FC16JVNO96lKg==
+        b=kd6IbYNbTMtYO8XHzDROg022CiuVMjD14vclGIX2y/UPqQJTY83k+AAQHlzWmnvvY
+         DIbOq+AJ+ca0dm9KVPtIZY6LIwJR0dvHVODvj+gWmFv2rrA23tSPFfLb/Ld7WXpuF/
+         H2du8HyPkBmRsP8eQLukPdey+A1NM1blJJ0oKFmsjrsM19cx1w60DHdJiFj+BNJHgA
+         CT2Gw205sJVKh3AqToaLUeLHth6M3pyFt+gPqA8mU19vHxX0uyWcQDKqZ8zNR9Nmqu
+         cRtxZ2gdReA9506AcmJOJiJA6+rn1NttYLHyho2AlivK1XjmQN+dXmlaF9eF72LNY1
+         oD4iLEbpsl5mw==
 From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -78,66 +78,89 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v8 01/27] notifier: Add atomic_notifier_call_chain_is_empty()
-Date:   Tue, 10 May 2022 02:32:09 +0300
-Message-Id: <20220509233235.995021-2-dmitry.osipenko@collabora.com>
+Subject: [PATCH v8 04/27] kernel/reboot: Wrap legacy power-off callbacks into sys-off handlers
+Date:   Tue, 10 May 2022 02:32:12 +0300
+Message-Id: <20220509233235.995021-5-dmitry.osipenko@collabora.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 References: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add atomic_notifier_call_chain_is_empty() that returns true if given
-atomic call chain is empty.
+Wrap legacy power-off callbacks into sys-off handlers in order to
+support co-existence of both legacy and new callbacks while we're
+in process of upgrading legacy callbacks to the new API.
 
-Reviewed-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 ---
- include/linux/notifier.h |  2 ++
- kernel/notifier.c        | 13 +++++++++++++
- 2 files changed, 15 insertions(+)
+ kernel/reboot.c | 44 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 42 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index 87069b8459af..95e2440037de 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -173,6 +173,8 @@ extern int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh
- extern int raw_notifier_call_chain_robust(struct raw_notifier_head *nh,
- 		unsigned long val_up, unsigned long val_down, void *v);
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 672a658f21ee..2fb0357d9483 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -463,6 +463,47 @@ int devm_register_sys_off_handler(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(devm_register_sys_off_handler);
  
-+extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh);
-+
- #define NOTIFY_DONE		0x0000		/* Don't care */
- #define NOTIFY_OK		0x0001		/* Suits me */
- #define NOTIFY_STOP_MASK	0x8000		/* Don't call further */
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index ba005ebf4730..aaf5b56452a6 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -204,6 +204,19 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
- EXPORT_SYMBOL_GPL(atomic_notifier_call_chain);
- NOKPROBE_SYMBOL(atomic_notifier_call_chain);
- 
-+/**
-+ *	atomicnotifier_call_chain_is_empty - Check whether notifier chain is empty
-+ *	@nh: Pointer to head of the blocking notifier chain
-+ *
-+ *	Checks whether notifier chain is empty.
-+ *
-+ *	Returns true is notifier chain is empty, false otherwise.
-+ */
-+bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
++static int legacy_pm_power_off_prepare(struct sys_off_data *data)
 +{
-+	return !rcu_access_pointer(nh->head);
++	if (pm_power_off_prepare)
++		pm_power_off_prepare();
++
++	return NOTIFY_DONE;
 +}
 +
- /*
-  *	Blocking notifier chain routines.  All access to the chain is
-  *	synchronized by an rwsem.
++static int legacy_pm_power_off(struct sys_off_data *data)
++{
++	if (pm_power_off)
++		pm_power_off();
++
++	return NOTIFY_DONE;
++}
++
++/*
++ * Register sys-off handlers for legacy PM callbacks. This allows legacy
++ * PM callbacks co-exist with the new sys-off API.
++ *
++ * TODO: Remove legacy handlers once all legacy PM users will be switched
++ *       to the sys-off based APIs.
++ */
++static int __init legacy_pm_init(void)
++{
++	register_sys_off_handler(SYS_OFF_MODE_POWER_OFF_PREPARE,
++				 SYS_OFF_PRIO_DEFAULT,
++				 legacy_pm_power_off_prepare, NULL);
++
++	register_sys_off_handler(SYS_OFF_MODE_POWER_OFF, SYS_OFF_PRIO_DEFAULT,
++				 legacy_pm_power_off, NULL);
++
++	return 0;
++}
++core_initcall(legacy_pm_init);
++
++static void do_kernel_power_off_prepare(void)
++{
++	blocking_notifier_call_chain(&power_off_prep_handler_list, 0, NULL);
++}
++
+ /**
+  *	kernel_power_off - power_off the system
+  *
+@@ -471,8 +512,7 @@ EXPORT_SYMBOL_GPL(devm_register_sys_off_handler);
+ void kernel_power_off(void)
+ {
+ 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+-	if (pm_power_off_prepare)
+-		pm_power_off_prepare();
++	do_kernel_power_off_prepare();
+ 	migrate_to_reboot_cpu();
+ 	syscore_shutdown();
+ 	pr_emerg("Power down\n");
 -- 
 2.35.1
 
