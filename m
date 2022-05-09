@@ -2,109 +2,150 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0BD7C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 09:11:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30FA2C4332F
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 09:44:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233724AbiEIJNN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 05:13:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52080 "EHLO
+        id S230209AbiEIJod (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 05:44:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236094AbiEIImP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 04:42:15 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB7611312A9
-        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 01:38:18 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 3D47FB8108E
-        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 08:38:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 043C7C385B0
-        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 08:38:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1652085482;
-        bh=Kz6CDz5kIbeJlC1q5ITghEDiaJwsNSBobnynDHjS1x4=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=jstWMA9PWVc1TCfJDIImiMQelNyMv9cGS5yAIHOUdXflOJGLk59PmGLEazJBWGJnp
-         zH5+wciMuFJos4DA1fGc9/WOOLqhdsIl6unVkExOkLULiMQ1f+VP56NcaN4KDnPhhl
-         acEXGXo5G0bTENtx1l5zMRHIPbJN4F27fuvZctVC85V8CbRzj/xEYgvh+YxlVx2Sjj
-         Mhv5n+u2c4nY1CblFvbxmNqSyxm7ryQxtjhqYvfilnufsVo84iGqUSCKmdFo61L2jR
-         a7KL4u0s9wfmV8VyHVJRWQyMEzAY1NPl1bwJhtuqM9ecVdlZH/f+VG/Isj4ZhoUSbm
-         UR4n13OTF1LWg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-        id E0569C05FD0; Mon,  9 May 2022 08:38:01 +0000 (UTC)
-From:   bugzilla-daemon@kernel.org
-To:     linux-pm@vger.kernel.org
-Subject: [Bug 215729] amd-pstate driver has a much higher idle power
- consumption for a desktop Zen 3 CPU
-Date:   Mon, 09 May 2022 08:38:00 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: aros@gmx.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-215729-137361-NVvfoHP98z@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-215729-137361@https.bugzilla.kernel.org/>
-References: <bug-215729-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+        with ESMTP id S235372AbiEIJbl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 05:31:41 -0400
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42A2B210B83;
+        Mon,  9 May 2022 02:27:45 -0700 (PDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+        by mailout.west.internal (Postfix) with ESMTP id 85ACD3200914;
+        Mon,  9 May 2022 05:27:43 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute5.internal (MEProxy); Mon, 09 May 2022 05:27:44 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
+        :cc:content-transfer-encoding:content-type:date:date:from:from
+        :in-reply-to:in-reply-to:message-id:mime-version:references
+        :reply-to:sender:subject:subject:to:to; s=fm3; t=1652088463; x=
+        1652174863; bh=z5peICARyV6gw69WenVqUK4dOs/cJCiJ9yWzJBPFzDE=; b=o
+        kTtnZCT4WeqieMEGPaqyNLWwcEKjRrxPrpCLDclxp7cS6vEKFMSl/pZPO/J5s3EU
+        HBfq1j8IPn+Wj43Gf9lb8Ea05aFlUqt2Uv4PxzRMTjY0H0gfhMs0MSGI6iwNHD6V
+        RKNEnxG6v+6sMcqLEoj4KmE3Xj/JBngzyztnnJHH/1RzhjiCZLzM2d2ePf6NBSu4
+        GaSK97vIjSwgTCSXZPaVaqhmvlAlM/J/dUuXrQpg5LNC0Ih9QT+/ay/gQ0ERk+Bn
+        ABwkcW9a/E0KorbSyPvPh1DOtz0AkAOBW9iABcUtXO6UrBdpWFwnKtj97XAMdhaA
+        nPQGYggFQEyUceszxNxoQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-transfer-encoding
+        :content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm1; t=1652088463; x=1652174863; bh=z5peICARyV6gw
+        69WenVqUK4dOs/cJCiJ9yWzJBPFzDE=; b=KUa9Jq29tvqGiT7uEf+FwpGtC4y11
+        rJ+rPV8FWiaAwDEwWFGzDqWdTP4TtQfMlWTQ7eZnfs/SfkvVHOatLWdqjUapBN2p
+        nNHhd2nlA9lIgV9x2OCMz9qgxi6Ek7RhCMzGexerhOuDeL3jd8JWVntUMTLVeYrk
+        TxXvhA4GcKAVKPF2gv/fKICn+m8hhs8SNPpieaP3MVkllFsOCUnM8K3eDfwscdtT
+        uyT8ASLxb0UMgqJbIyd3907EfjAUpk9t24Ha0Gg+C5bRLNsybR3fc3RlI/tUF+hN
+        ScMsIUn15VzxpaxOFWYVkGFmlYMFQdEGPvYYiBTxBE1Pf3jS8axf25Wtw==
+X-ME-Sender: <xms:jt54YvkOIbFttto_DW8q0SLk69Eb8rBjNkZQ93IkJHQEYsaxdmjptQ>
+    <xme:jt54Yi0yCSL0a6gFQHB7pkDSdJ_KrjMFCHmTJ0yRg6Vxs5-zLVFRfXVJ_n624r4Wj
+    aAmIhGBVgcJe64j5Ko>
+X-ME-Received: <xmr:jt54Yloj2__KFd5aKy6belo4TMFx-SHLvpdQrHtO3D8evABhtLs2pjwqZrqX9b9AeTHGz3mP6EVF5gInpHXJNtlJTUjtmaqLHZ5CXa0>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrfeelgdduhecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvvefukfhfgggtugfgjgesthhqredttddtvdenucfhrhhomhepofgrgihi
+    mhgvucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrg
+    htthgvrhhnpedutdejgffftdehheetteduhfekgeevgeffteetfeejudfhuddukeefvdeg
+    geeuleenucffohhmrghinhepghhithhhuhgsrdgtohhmnecuvehluhhsthgvrhfuihiivg
+    eptdenucfrrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggt
+    hh
+X-ME-Proxy: <xmx:jt54YnlV7LkQsB0RtQEXuyrZQdOlGUOYUXMe1anqypbDjIgWILGSxQ>
+    <xmx:jt54Yt3eOnTEawnqCtpFEAvX2U6ZUCJr8tsKzOJu8KzZMHLEQJbDvA>
+    <xmx:jt54YmsO7vszbzzMMfN7TNXE47chBmrGlqmN9rX6CU9Ra1aPwVEsCA>
+    <xmx:j954YnzGlUW4O3tjftTK39IT_HjBY6AWxQdbNZH7VN8-zvIi3pOOKg>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 9 May 2022 05:27:42 -0400 (EDT)
+Date:   Mon, 9 May 2022 11:27:40 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     qianfanguijin@163.com
+Cc:     linux-sunxi@lists.linux.dev, Rob Herring <robh+dt@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1] drivers: cpufreq: sun8i-r40: Add cpufreq support
+Message-ID: <20220509092740.qmpizwxappy77ggc@houat>
+References: <20220509084853.17068-1-qianfanguijin@163.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20220509084853.17068-1-qianfanguijin@163.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D215729
-
---- Comment #9 from Artem S. Tashkinov (aros@gmx.com) ---
-(In reply to Joe from comment #8)
-> Hello,
+On Mon, May 09, 2022 at 04:48:53PM +0800, qianfanguijin@163.com wrote:
+> From: qianfan Zhao <qianfanguijin@163.com>
 >=20
-> I reproduce this issue on my local.=20=20
+> OPP table value is get from allwinner lichee 3.10 kernel.
 >=20
-> Your device (CPU family:  25, Model:  33) should be shared memory solution
-> with AMD P-state driver. Updating CPPC request with shared memory will ne=
-ed
-> more energy  than writing MSR register directly. We are checking this iss=
-ue
-> now.
+> Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
+> ---
+>  arch/arm/boot/dts/sun8i-r40.dtsi     | 47 ++++++++++++++++++++++++++++
+>  drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
+>  2 files changed, 48 insertions(+)
 >=20
-> For ondemand governor, could you please try to reduce the sampling_rate a=
-nd
-> then check to energy consumption again? Thanks a lot!
->=20
-> Here is the command=20
->=20
-> cd /sys/devices/system/cpu/cpufreq/ondemand
-> echo 50000 > sampling_rate
->=20
-> Thanks
-> Joe
+> diff --git a/arch/arm/boot/dts/sun8i-r40.dtsi b/arch/arm/boot/dts/sun8i-r=
+40.dtsi
+> index 291f4784e86c..90de119095fa 100644
+> --- a/arch/arm/boot/dts/sun8i-r40.dtsi
+> +++ b/arch/arm/boot/dts/sun8i-r40.dtsi
+> @@ -54,6 +54,41 @@ / {
+>  	#size-cells =3D <1>;
+>  	interrupt-parent =3D <&gic>;
+> =20
+> +	cpu0_opp_table: opp_table0 {
+> +		compatible =3D "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp-720000000 {
+> +			opp-hz =3D /bits/ 64 <720000000>;
+> +			opp-microvolt =3D <1000000 1000000 1300000>;
+> +			clock-latency-ns =3D <2000000>;
+> +		};
+> +
+> +		opp-912000000 {
+> +			opp-hz =3D /bits/ 64 <912000000>;
+> +			opp-microvolt =3D <1100000 1100000 1300000>;
+> +			clock-latency-ns =3D <2000000>;
+> +		};
+> +
+> +		opp-1008000000 {
+> +			opp-hz =3D /bits/ 64 <1008000000>;
+> +			opp-microvolt =3D <1160000 1160000 1300000>;
+> +			clock-latency-ns =3D <2000000>;
+> +		};
+> +
+> +		opp-1104000000 {
+> +			opp-hz =3D /bits/ 64 <1104000000>;
+> +			opp-microvolt =3D <1240000 1240000 1300000>;
+> +			clock-latency-ns =3D <2000000>;
+> +		};
+> +
+> +		opp-1200000000 {
+> +			opp-hz =3D /bits/ 64 <1200000000>;
+> +			opp-microvolt =3D <1300000 1300000 1300000>;
+> +			clock-latency-ns =3D <2000000>;
+> +		};
+> +	};
+> +
 
-Changing sampling_rate from default 2000 to 50000 has improved the situation
-considerably but still acpi-cpufreq has a tiny better idle power consumptio=
-n.
+How were these OPPs tested? If you didn't, please test with
+https://github.com/ssvb/cpuburn-arm/blob/master/cpufreq-ljt-stress-test
 
-acpi-cpufreq: ~20W
-amd-pstate with default ondemand settings: ~23W
-amd-pstate with ondemand/sampling_rate=3D50k: ~21W
+And report the results
 
-Looks like the ondemand scheduler is not super efficient with the amd-pstate
-driver.
+Also, U-Boot sets the 1008MHz OPP by default, and the voltage to match.
+How is this going to play out on device tree where the CPU regulators
+aren't set?
 
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+Maxime
