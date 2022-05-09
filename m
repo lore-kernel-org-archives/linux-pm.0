@@ -2,85 +2,94 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A79C433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00EB4C433EF
 	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 09:45:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234319AbiEIJsd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 05:48:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42922 "EHLO
+        id S236058AbiEIJsf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 05:48:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234300AbiEIJPW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 05:15:22 -0400
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F90B1ED5AE
-        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 02:11:28 -0700 (PDT)
-Received: by mail-pf1-x42c.google.com with SMTP id x52so11718644pfu.11
-        for <linux-pm@vger.kernel.org>; Mon, 09 May 2022 02:11:28 -0700 (PDT)
+        with ESMTP id S238282AbiEIJfn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 05:35:43 -0400
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2163D1A0AC5
+        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 02:31:49 -0700 (PDT)
+Received: by mail-pg1-x533.google.com with SMTP id s16so1453422pgs.3
+        for <linux-pm@vger.kernel.org>; Mon, 09 May 2022 02:31:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=7QpxuoVC9zQ059fU/VCO45VAfx6s8GhPEiX2c3POePM=;
-        b=NcDYpNTw04yugULw2lGRPP8uvp5iDaWIg0Cp83izxqM6A+vpvp3r73InUADA5S/+yl
-         /bUQgAbVun7lO/SrKqe3BscfTx87KV0KGXXOUtm05SEuQT2T/EzBfyBziD+Ru1pSxYxB
-         uRheeODB9N5K98Z+wxZkt75t7PyiIEBycBKZiwdobxmqb20wJMq6/69yPJXXtLYiBUta
-         p7NLsTeoh0mDe6rxbNgt23gvteCIu4YTAqeHIQTdeOWvQcu5t3cD5n6Q5aaK/JxJcWrw
-         qwQLl3kimsJcId7BZDfqPXNvL/Aw5boIH8aoSWxaIuiyYhEyH5CRxIzACxYLjwd96QS9
-         TttA==
+        bh=JpCRaDNZYevpLkY4KOz+K7YSl/uzka5d9oakp3W77tc=;
+        b=HCmVcQ84A1B0mzXMIys8FhK9PENXHAKemAfPPPxoXKFdSh1QQXAzaPKVIqUEZLBs3/
+         H3pOb5uEAcuA5+F3hsUEogfhE/lRjNABeErSGu86+1ArNxEujpz8rVgWRX6v8tqEHwvx
+         0Xqpg/6Ry0GYJyosH55MLUfXrVeFOeBbGMK0uDInQXOaKGgdh2bcfZdABop9RngLLwa+
+         byDloH8cGSO4Dgs0GAKgT2GGWD3uNvjIr77nTWojR1RPoerG/QTxBZopGJZ/enkgNXjI
+         JKPl1sWprQahCNAmvlKDtaIJKpENBTMrQIA16/z2HPN40vin7eLoO7VkkbrQPSCVNvLk
+         7pew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=7QpxuoVC9zQ059fU/VCO45VAfx6s8GhPEiX2c3POePM=;
-        b=2aJfWG/U0eYIiEHlD2LKw0XgYnivVoj6ZoKeyr1AkvIaFD9SliTcAQRn35eO7pEcbR
-         oNsOXH5TIr+Cblqgu1o629JnDpGwPHZB/VssB7+baXJNA0dOyIaN3fcUpV4WMM9DO1/c
-         5F+hrgu1xMz1cv+GMq/pvrGcRRXq8b0RAi982xI3lt0UVUS5M5s22M7Hki5LUOBzdiZx
-         QDFWmqOhVdCnCKtq0TQuYtvTyqU4rYXPZBdSB06Cd69eNyEqO7dMUy27UXBxKtzDrk5A
-         LKc0pOjlsLKNNvcmiheiLsUFFG01QEaSxj3/Lp24v00TeWS17fB6PPi+0ogBD7rMiovy
-         oXag==
-X-Gm-Message-State: AOAM531R3qrs3udsWn48DbFkD5Weyz10fhaegMIkFkfLj3tqvGB036b0
-        kGG0wPePAKwOR1dNnT9jNCZuUQ==
-X-Google-Smtp-Source: ABdhPJxOwO6usL9axVziBSOIzqmZTG8IQH2ceVvogPLS2D4/RbZmODDEy76gkcTU+6D0WXe67qjY/A==
-X-Received: by 2002:a63:d43:0:b0:3c1:475e:8341 with SMTP id 3-20020a630d43000000b003c1475e8341mr12236858pgn.533.1652087488293;
-        Mon, 09 May 2022 02:11:28 -0700 (PDT)
+        bh=JpCRaDNZYevpLkY4KOz+K7YSl/uzka5d9oakp3W77tc=;
+        b=Dc4FvLP7URHfm+OTcyEOh4ZFYecIHGYoBykIjYSShJzkZTPwOhGw926hk/jNKb/+Dp
+         kI5EgV4uuHXrYzJntD3459Xj1PFb+Rel5D8bfdfjd+NgfEarBo7w+OiyJQE3FCgcXgcN
+         pob70v7I96dV7ACsJmzPaP1q5mtK6zy3lqA3ASEKWxZiJ6WlTOEN0fJr20imhFhyICCr
+         tvQn2UJoMz2pW/tdPkode7gaFU40pkRoXOf2w1rO6S4p8QoF1mjfvhVpZLHq+7OKts3Q
+         EpMxcxqxdTM3fQyCtnEDRRhKd9ggQmiNd5KV4wrmmMNV/fhrDEkIyWQo/HQ3L2DqQn2Z
+         wuYA==
+X-Gm-Message-State: AOAM530eb2eUnhe4oSFwUBOExJ9dt4UOCtLnnS8Jh5wzl6oMyZuITw7s
+        hTvCxsKcY4cmoBjUMNN6xREspg==
+X-Google-Smtp-Source: ABdhPJxdD04mCtOjOZoG59KlHgaCvKklPPxlk10wG2ZHb2KCQ4qNWZv9oKioDl7bTyyCDTPNP632lQ==
+X-Received: by 2002:a63:ad0c:0:b0:374:50b4:c955 with SMTP id g12-20020a63ad0c000000b0037450b4c955mr12237883pgf.530.1652088692871;
+        Mon, 09 May 2022 02:31:32 -0700 (PDT)
 Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id h27-20020a056a00001b00b0050dc76281d7sm8361307pfk.177.2022.05.09.02.11.27
+        by smtp.gmail.com with ESMTPSA id n28-20020a056a000d5c00b0050dc7628148sm8110335pfv.34.2022.05.09.02.31.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 May 2022 02:11:27 -0700 (PDT)
-Date:   Mon, 9 May 2022 14:41:25 +0530
+        Mon, 09 May 2022 02:31:32 -0700 (PDT)
+Date:   Mon, 9 May 2022 15:01:30 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     qianfanguijin@163.com
-Cc:     linux-sunxi@lists.linux.dev, Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
+To:     Maxime Ripard <maxime@cerno.tech>
+Cc:     qianfanguijin@163.com, linux-sunxi@lists.linux.dev,
+        Rob Herring <robh+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
         Jernej Skrabec <jernej.skrabec@gmail.com>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Subject: Re: [PATCH v1] drivers: cpufreq: sun8i-r40: Add cpufreq support
-Message-ID: <20220509091125.tps3zwaq276jlgh3@vireshk-i7>
+Message-ID: <20220509093130.jegqpe6m7xtbouqa@vireshk-i7>
 References: <20220509084853.17068-1-qianfanguijin@163.com>
+ <20220509091125.tps3zwaq276jlgh3@vireshk-i7>
+ <20220509092306.22ttfunrislztbvh@houat>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220509084853.17068-1-qianfanguijin@163.com>
+In-Reply-To: <20220509092306.22ttfunrislztbvh@houat>
 User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09-05-22, 16:48, qianfanguijin@163.com wrote:
-> From: qianfan Zhao <qianfanguijin@163.com>
+On 09-05-22, 11:23, Maxime Ripard wrote:
+> Hi,
 > 
-> OPP table value is get from allwinner lichee 3.10 kernel.
+> On Mon, May 09, 2022 at 02:41:25PM +0530, Viresh Kumar wrote:
+> > On 09-05-22, 16:48, qianfanguijin@163.com wrote:
+> > > From: qianfan Zhao <qianfanguijin@163.com>
+> > > 
+> > > OPP table value is get from allwinner lichee 3.10 kernel.
+> > > 
+> > > Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
+> > > ---
+> > >  arch/arm/boot/dts/sun8i-r40.dtsi     | 47 ++++++++++++++++++++++++++++
+> > >  drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
+> > >  2 files changed, 48 insertions(+)
+> > 
+> > Applied. Thanks.
 > 
-> Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
-> ---
->  arch/arm/boot/dts/sun8i-r40.dtsi     | 47 ++++++++++++++++++++++++++++
->  drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
->  2 files changed, 48 insertions(+)
+> Shouldn't you wait for the maintainers feedback for the DT bits at least?
 
-Applied. Thanks.
+I should have, will drop it.
 
 -- 
 viresh
