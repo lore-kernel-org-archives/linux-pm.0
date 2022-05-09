@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F809C4332F
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:35:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC6FC433EF
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:35:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232775AbiEIXjB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 19:39:01 -0400
+        id S232785AbiEIXjC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 19:39:02 -0400
 Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41198 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232858AbiEIXh6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:58 -0400
+        with ESMTP id S232705AbiEIXhz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:55 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59E89250E98;
-        Mon,  9 May 2022 16:33:47 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0553A24BB30;
+        Mon,  9 May 2022 16:33:31 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: dmitry.osipenko)
-        with ESMTPSA id 73E431F441D0
+        with ESMTPSA id DDF821F430B3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1652139226;
-        bh=NosviWpVno2jyBA/nRbYSTQtEBj8GV4Z9PewSWM1PEE=;
+        s=mail; t=1652139210;
+        bh=YK0F6fR8XWeV2rG0cbTxAWJjHbs9t/ROkX6NXAfeuRc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=AZGjg6ajBdqbT1rRkOpHVX0Fuw48bMRqsSdYq9OtGSbC/n4RUaCQK6bD1TfVppwXu
-         A7CMRQ1sz+q7MHQphaKKP01aCStcy0QSDdJj6vPvNjv9pUTGAbqF3VBfFZMfHZLrUT
-         4gIsmgu/2N3okauIgJNPFKpgzlwu1WqpdL2MvAV4GSqjXPbt4r9xFqMPheNolvDet2
-         kMcoUipX5yr2TOyCk4QjYL0MBISYscS7bfG03xrjN4MwX8RPG34WsyJWFAxY/Npiwj
-         8KVsTsWb21V2VhPTYdzbV4VLe2voj7X93srVxn9dA4Uv/y1s9ujK0+2rqIH75bp++P
-         fqEdP4SIC3mNA==
+        b=WX2wLAoFqw2NcqFA+1BgEi+pnSqQ/OT0ntArBclZh3rRdgYWFpNobAvm6ZwR47f5O
+         UVB/nJt08DF0z35eem1y5e29iS6TGa3FlqumDo8Gztlg9RTEy3yXgoM/PdqWZ72qjH
+         BBXHhpZMhXXq1gmyrAUnf9JuPFEL0VuxOWgpl0g7gErLQMCAr8EBR7mlBfM7b/CzpF
+         rbbVZCAv5Su19JHE0dZAYAwszfCQR2CPfwc4wUkYqtr+WKd4w8pxs2RFEPFv5Qa681
+         /mjY+RYiodQ7Rz1Y3p36rejWNrVlI8LiNaH4VL6v6O9rIPyvlE8v1d9uqae+R0n5sB
+         mZdrZdLthuUpw==
 From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -78,56 +78,72 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v8 11/27] riscv: Use do_kernel_power_off()
-Date:   Tue, 10 May 2022 02:32:19 +0300
-Message-Id: <20220509233235.995021-12-dmitry.osipenko@collabora.com>
+Subject: [PATCH v8 07/27] kernel/reboot: Add kernel_can_power_off()
+Date:   Tue, 10 May 2022 02:32:15 +0300
+Message-Id: <20220509233235.995021-8-dmitry.osipenko@collabora.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 References: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Kernel now supports chained power-off handlers. Use do_kernel_power_off()
-that invokes chained power-off handlers. It also invokes legacy
-pm_power_off() for now, which will be removed once all drivers will
-be converted to the new sys-off API.
+Add kernel_can_power_off() helper that replaces open-coded checks of
+the global pm_power_off variable. This is a necessary step towards
+supporting chained power-off handlers.
 
-Acked-by: Palmer Dabbelt <palmer@dabbelt.com>
-Reviewed-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 ---
- arch/riscv/kernel/reset.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ include/linux/reboot.h |  1 +
+ kernel/reboot.c        | 14 +++++++++++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/reset.c b/arch/riscv/kernel/reset.c
-index 9c842c41684a..912288572226 100644
---- a/arch/riscv/kernel/reset.c
-+++ b/arch/riscv/kernel/reset.c
-@@ -23,16 +23,12 @@ void machine_restart(char *cmd)
+diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+index 6b951d68c0c7..c52f77ee4ddd 100644
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -149,6 +149,7 @@ extern void kernel_restart_prepare(char *cmd);
+ extern void kernel_restart(char *cmd);
+ extern void kernel_halt(void);
+ extern void kernel_power_off(void);
++extern bool kernel_can_power_off(void);
  
- void machine_halt(void)
- {
--	if (pm_power_off != NULL)
--		pm_power_off();
--	else
--		default_power_off();
-+	do_kernel_power_off();
-+	default_power_off();
+ void ctrl_alt_del(void);
+ 
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index eaede35f45e2..982e58c11ce8 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -523,6 +523,18 @@ void do_kernel_power_off(void)
+ 	atomic_notifier_call_chain(&power_off_handler_list, 0, NULL);
  }
  
- void machine_power_off(void)
- {
--	if (pm_power_off != NULL)
--		pm_power_off();
--	else
--		default_power_off();
-+	do_kernel_power_off();
-+	default_power_off();
- }
++/**
++ *	kernel_can_power_off - check whether system can be powered off
++ *
++ *	Returns true if power-off handler is registered and system can be
++ *	powered off, false otherwise.
++ */
++bool kernel_can_power_off(void)
++{
++	return !atomic_notifier_call_chain_is_empty(&power_off_handler_list);
++}
++EXPORT_SYMBOL_GPL(kernel_can_power_off);
++
+ /**
+  *	kernel_power_off - power_off the system
+  *
+@@ -581,7 +593,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 	/* Instead of trying to make the power_off code look like
+ 	 * halt when pm_power_off is not set do it the easy way.
+ 	 */
+-	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
++	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !kernel_can_power_off())
+ 		cmd = LINUX_REBOOT_CMD_HALT;
+ 
+ 	mutex_lock(&system_transition_mutex);
 -- 
 2.35.1
 
