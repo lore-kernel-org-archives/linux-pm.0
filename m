@@ -2,82 +2,79 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01B4FC433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 10:09:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAF40C43217
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 10:13:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229510AbiEIKNf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 06:13:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38500 "EHLO
+        id S230190AbiEIKRb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 06:17:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231238AbiEIKN2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 06:13:28 -0400
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7792E236765
-        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 03:09:29 -0700 (PDT)
-Received: by mail-wr1-x434.google.com with SMTP id k2so18674151wrd.5
-        for <linux-pm@vger.kernel.org>; Mon, 09 May 2022 03:09:29 -0700 (PDT)
+        with ESMTP id S230395AbiEIKRa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 06:17:30 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03703D80
+        for <linux-pm@vger.kernel.org>; Mon,  9 May 2022 03:13:37 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id q23so18712762wra.1
+        for <linux-pm@vger.kernel.org>; Mon, 09 May 2022 03:13:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=message-id:date:mime-version:user-agent:subject:content-language:to
          :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=8mW1LB/3xk/JFr5DRDA+1iyfluKPG+C8OWci7XLHlOI=;
-        b=xhgL6RYHPSjOvHktvcvis+SsBd4qfCzbxNj2mGWp4Imaj/miEK6wEwpxRErSBp7QgY
-         LRJPtqEp/zPAnZ4oqysJNHwAsSqBTCGaw2+qiUqFyN0UMe3VORKOToHRxp3VglZ+GQc1
-         VZZgI/1PVjvWNTFYtVKSTrYuGWbHVpEj7a8Jk6KTIngIBDw56oreVnpV9LQtjKSQs8cn
-         1bJVnZBlinMPamM9Rdwzv26iqqrdnJuC6U89oY4bvhkt552ZmmK6Khe/YIJl2QnSe1xz
-         0j+IoExELihv7+IXx6DwTRDMnyjavidRFhV1ayJS0wz6cb/o5cphekdrFl8oxIokrCbN
-         wi9Q==
+        bh=GaL3qU7bb4pmLuktb+ToXSRDw1RPg3fK4StNqr8O7Jc=;
+        b=Cnd8XL4p3KywJ1VFeWVLi3Mp7nqaMYuxgmKTvhDr8/YY2nNTwyb4eSN0K1EhWy4pC5
+         KQ+88i5mg9/TCDwNowz2joE8vX49Tzkj2WYFEsdRNA8o0+tAa91+Cbnjj56eHwAJ8Aha
+         bVETIz81lLjrwglyanJ3Vfkn7J+w19hCTuM9XjtjEtkMVdXGmv/4EGedf0/SJTCXSb3M
+         J/ugrt5ePNJyDcS+/37WmKoCG2lsEiJPgG88JELuwIH08ge5y+MJlOX1/B3rxigpfl8F
+         s/joObtLGx1wL2echropz4MCCqg3HRH8e+WqTiPeqy16Qdtkc8peg1J6vdkZdp7RrwuF
+         oLqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=8mW1LB/3xk/JFr5DRDA+1iyfluKPG+C8OWci7XLHlOI=;
-        b=TNyW8SlMhV3Z4EUkwWlrGQ9x6XyP3rGHa6VXr2ovZeKP1/6ZwQ3h0uuRza2F0y9uyL
-         fRdoAA81Sd+6ZvtiA7Cm2HYqwyASYVjlzFLbEmjRQJODLFhf9UF8nT5NAeOr6sB37Ld3
-         MS0ugovb5Ukr7vUIcwxQrODUthisIJqd1j5zaizocYgLbCBnOJQ2+N6RNO8fzIPkLpe7
-         IyRn0v1NQYwyTuVDu1T+aKLmhUqrh1gsxzK4PLRGZz6rVk4mEl/5T+NODESFzPw35jO1
-         xy0gVQzQ+qwAoLMvSbUDuICnxdVdpaQqWOwREfKyTUyYoJvsMnzWHM0dzLI8QY37ZN4M
-         YRig==
-X-Gm-Message-State: AOAM533YYrtQtUFCnMJODj4edUCAIYOs4ESEWtd1i1508ObMSGdBe1ka
-        /CgT6KxLVvB5VOZylx3zmmNX7Q==
-X-Google-Smtp-Source: ABdhPJwxF0svyy4gCUu4jIp+gkqJ//alRcrgGzNmiSDwD0S1Uo4GaJvRo2JaI+B3ChfLEecBLzlrng==
-X-Received: by 2002:adf:f3cb:0:b0:20c:8afd:9572 with SMTP id g11-20020adff3cb000000b0020c8afd9572mr12775063wrp.179.1652090822719;
-        Mon, 09 May 2022 03:07:02 -0700 (PDT)
+        bh=GaL3qU7bb4pmLuktb+ToXSRDw1RPg3fK4StNqr8O7Jc=;
+        b=d/1AidQrrOAuQBC8EwLtjZ2BdfYjweHTZarvTtk6KfIykNb1JDaI6o30Al5zK8oS7i
+         z1at9qmZ/gfEF1KKwgigxbRz0pSuKG8LKsVsGTelItYioZd2WbI8k+SBxl3TeIkFLH5U
+         TsZe16ZfjorQ50QYzOe24wziKbFGKWr7ZgqD4Msa/EZWyWwOlykkQoxWuIQ6kRHJGWGA
+         itFcEB5pCDkhcv6yA05C/3p2D/jzTpyrkL1WlvZQoYPK3UZoV/Kpb0CbWVpOJmTfYnYT
+         Ys3iwFSszaYaLKMQ7j00xXyUORjQ6y/WegjvPUfm6301Mz5waOkPxQwkHPYs6VdSVabQ
+         yukQ==
+X-Gm-Message-State: AOAM5338VW1jwr4dXqFS3szGMBCPaFUTxZDxHhfIUHHrypJLdMQV+mwL
+        fG9cuD5re6O5hy5Fb2NYBMHC2Sg+h4xJtA==
+X-Google-Smtp-Source: ABdhPJxaRsRd1b6LMcq7fpAaqxNBS7p91qx1h/SxBc2ekN6EZDk3+R7aKcmlFH68RZT4BqwzylppNA==
+X-Received: by 2002:a05:6000:186d:b0:20c:6b74:f31a with SMTP id d13-20020a056000186d00b0020c6b74f31amr13129777wri.286.1652091111077;
+        Mon, 09 May 2022 03:11:51 -0700 (PDT)
 Received: from [192.168.1.41] (176-182-171-101.abo.bbox.fr. [176.182.171.101])
-        by smtp.googlemail.com with ESMTPSA id b12-20020adfc74c000000b0020c5253d8e8sm11114014wrh.52.2022.05.09.03.07.01
+        by smtp.googlemail.com with ESMTPSA id bu17-20020a056000079100b0020c5253d8e9sm9799243wrb.53.2022.05.09.03.11.49
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 09 May 2022 03:07:02 -0700 (PDT)
-Message-ID: <49f1e84f-3769-ae8f-b8de-4a5315110f5d@linaro.org>
-Date:   Mon, 9 May 2022 12:07:01 +0200
+        Mon, 09 May 2022 03:11:50 -0700 (PDT)
+Message-ID: <d7b562cc-4360-de76-f92b-8b435d11afa3@linaro.org>
+Date:   Mon, 9 May 2022 12:11:49 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH v2] dt-bindings: thermal: tsens: Add sc8280xp compatible
+Subject: Re: [PATCH] tools/thermal: Remove unneeded semicolon
 Content-Language: en-US
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+To:     Haowen Bai <baihaowen@meizu.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-References: <20220503153436.960184-1-bjorn.andersson@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1651801831-24944-1-git-send-email-baihaowen@meizu.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-In-Reply-To: <20220503153436.960184-1-bjorn.andersson@linaro.org>
+In-Reply-To: <1651801831-24944-1-git-send-email-baihaowen@meizu.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 03/05/2022 17:34, Bjorn Andersson wrote:
-> The Qualcomm SC8280XP platform has three instances of the tsens block,
-> add a compatible for these instances.
+On 06/05/2022 03:50, Haowen Bai wrote:
+> Fixes coccicheck warning:
 > 
-> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+> tools/thermal/thermometer/thermometer.c:147:3-4: Unneeded semicolon
+> 
+> Signed-off-by: Haowen Bai <baihaowen@meizu.com>
 > ---
 
 Applied, thanks
