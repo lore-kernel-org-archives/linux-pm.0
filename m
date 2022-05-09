@@ -2,31 +2,31 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B054FC433EF
-	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:34:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 493A8C4167E
+	for <linux-pm@archiver.kernel.org>; Mon,  9 May 2022 23:34:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232939AbiEIXh7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 May 2022 19:37:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41234 "EHLO
+        id S232958AbiEIXiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 May 2022 19:38:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232620AbiEIXhY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:24 -0400
+        with ESMTP id S232634AbiEIXhx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2022 19:37:53 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAB4521B169;
-        Mon,  9 May 2022 16:33:19 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 036AE22A8B2;
+        Mon,  9 May 2022 16:33:27 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: dmitry.osipenko)
-        with ESMTPSA id 17BD61F41D8C
+        with ESMTPSA id EB6021F43062
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1652139198;
-        bh=95ioqXFiu/sMhB4rC2pN2mOqsgk/IiTVsJJFignNnOY=;
+        s=mail; t=1652139206;
+        bh=ADq4GZWEPNK7q9JUz/PJH0s7RkDgF/Hn0bL9XYpd1xY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kd6IbYNbTMtYO8XHzDROg022CiuVMjD14vclGIX2y/UPqQJTY83k+AAQHlzWmnvvY
-         DIbOq+AJ+ca0dm9KVPtIZY6LIwJR0dvHVODvj+gWmFv2rrA23tSPFfLb/Ld7WXpuF/
-         H2du8HyPkBmRsP8eQLukPdey+A1NM1blJJ0oKFmsjrsM19cx1w60DHdJiFj+BNJHgA
-         CT2Gw205sJVKh3AqToaLUeLHth6M3pyFt+gPqA8mU19vHxX0uyWcQDKqZ8zNR9Nmqu
-         cRtxZ2gdReA9506AcmJOJiJA6+rn1NttYLHyho2AlivK1XjmQN+dXmlaF9eF72LNY1
-         oD4iLEbpsl5mw==
+        b=KGyjgFeHS4c4whO9DLRPI4YnH/I1kcxhGjuZMUHWMXxrPTowBH3nsSioG+grbG2E8
+         mnkheS9YppXiE1XFZmpN8+NhD/nzj2UXihmV79dBZXmBvvWVTCKWXHTP8bvClUAXj1
+         4nlNgidw2ooBaq465rODMaKeABNVE6nkuJ7Q8Xm3bGYMUs6PLqgcdGYa5CtQU2PUK/
+         Jza3RN8pd4IlpFmarCSW5s3ufDshdt5+jjA/5gruEo9hsKxIniPgqZA10L6lW8+LoM
+         tuiD7AddByNEUUZsYAIaBWxhshHGAxlCDHWH4Mq16erEhm603eMlSqLobcqsLKpUet
+         qm4lCWHEs4Jdw==
 From:   Dmitry Osipenko <dmitry.osipenko@collabora.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -78,9 +78,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org,
         linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
         xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
-Subject: [PATCH v8 04/27] kernel/reboot: Wrap legacy power-off callbacks into sys-off handlers
-Date:   Tue, 10 May 2022 02:32:12 +0300
-Message-Id: <20220509233235.995021-5-dmitry.osipenko@collabora.com>
+Subject: [PATCH v8 06/27] kernel/reboot: Add stub for pm_power_off
+Date:   Tue, 10 May 2022 02:32:14 +0300
+Message-Id: <20220509233235.995021-7-dmitry.osipenko@collabora.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
 References: <20220509233235.995021-1-dmitry.osipenko@collabora.com>
@@ -90,77 +90,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Wrap legacy power-off callbacks into sys-off handlers in order to
-support co-existence of both legacy and new callbacks while we're
-in process of upgrading legacy callbacks to the new API.
+Add weak stub for the global pm_power_off callback variable. This will
+allow us to remove pm_power_off definitions from arch/ code and transition
+to the new sys-off based API that will replace the global variable.
 
 Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 ---
- kernel/reboot.c | 44 ++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 42 insertions(+), 2 deletions(-)
+ kernel/reboot.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/kernel/reboot.c b/kernel/reboot.c
-index 672a658f21ee..2fb0357d9483 100644
+index 9afa99a32d62..eaede35f45e2 100644
 --- a/kernel/reboot.c
 +++ b/kernel/reboot.c
-@@ -463,6 +463,47 @@ int devm_register_sys_off_handler(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(devm_register_sys_off_handler);
+@@ -57,6 +57,12 @@ struct sys_off_handler {
+ 	void *list;
+ };
  
-+static int legacy_pm_power_off_prepare(struct sys_off_data *data)
-+{
-+	if (pm_power_off_prepare)
-+		pm_power_off_prepare();
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int legacy_pm_power_off(struct sys_off_data *data)
-+{
-+	if (pm_power_off)
-+		pm_power_off();
-+
-+	return NOTIFY_DONE;
-+}
-+
 +/*
-+ * Register sys-off handlers for legacy PM callbacks. This allows legacy
-+ * PM callbacks co-exist with the new sys-off API.
-+ *
-+ * TODO: Remove legacy handlers once all legacy PM users will be switched
-+ *       to the sys-off based APIs.
++ * Temporary stub that prevents linkage failure while we're in process
++ * of removing all uses of legacy pm_power_off() around the kernel.
 + */
-+static int __init legacy_pm_init(void)
-+{
-+	register_sys_off_handler(SYS_OFF_MODE_POWER_OFF_PREPARE,
-+				 SYS_OFF_PRIO_DEFAULT,
-+				 legacy_pm_power_off_prepare, NULL);
++void __weak (*pm_power_off)(void);
 +
-+	register_sys_off_handler(SYS_OFF_MODE_POWER_OFF, SYS_OFF_PRIO_DEFAULT,
-+				 legacy_pm_power_off, NULL);
-+
-+	return 0;
-+}
-+core_initcall(legacy_pm_init);
-+
-+static void do_kernel_power_off_prepare(void)
-+{
-+	blocking_notifier_call_chain(&power_off_prep_handler_list, 0, NULL);
-+}
-+
- /**
-  *	kernel_power_off - power_off the system
-  *
-@@ -471,8 +512,7 @@ EXPORT_SYMBOL_GPL(devm_register_sys_off_handler);
- void kernel_power_off(void)
- {
- 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
--	if (pm_power_off_prepare)
--		pm_power_off_prepare();
-+	do_kernel_power_off_prepare();
- 	migrate_to_reboot_cpu();
- 	syscore_shutdown();
- 	pr_emerg("Power down\n");
+ /*
+  * If set, this is used for preparing the system to power off.
+  */
 -- 
 2.35.1
 
