@@ -2,92 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6FFAC433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 14:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E61C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 14:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344196AbiEJOhh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 May 2022 10:37:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55016 "EHLO
+        id S1344883AbiEJOwI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 May 2022 10:52:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45476 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344626AbiEJOfJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 10:35:09 -0400
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C44F72DD793;
-        Tue, 10 May 2022 06:54:12 -0700 (PDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        with ESMTP id S1345284AbiEJOvM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 10:51:12 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 87A18266041
+        for <linux-pm@vger.kernel.org>; Tue, 10 May 2022 07:11:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1652191897;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=rtq28CnPqdWCcQU57wEB4HrePwIAG8WJOylvl7UVi70=;
+        b=jSsZU7nCkRa7tJEuhoHC1XCFn1H0w9aTIqVdbE9aMMs9Oi3HTZlyYHP5+xOOpMKC9/DXt+
+        90dRgCDDYaCWIZph+WSSZ5vdZtlRiwGehy/lMmmL9PPTsjthsEqz5Vc1Yk6Z42W2pDvnNK
+        A+JC4zQdjpW8uGpyeKnKFfhMNj0I4H0=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-371-raQYS_JPNre-oUAAvyhb7w-1; Tue, 10 May 2022 10:11:30 -0400
+X-MC-Unique: raQYS_JPNre-oUAAvyhb7w-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mail.ozlabs.org (Postfix) with ESMTPSA id 4KyKJp4qqdz4yTd;
-        Tue, 10 May 2022 23:54:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-        s=201909; t=1652190848;
-        bh=RKiZUE5HvPhTVnUibJtmltdG/qpHsl+mSP0bgs2lHhQ=;
-        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-        b=Z05kSyfn/tRZEkMC+xx0iIJQ7Am+MQO7HLgvv0mZSHOcfpqTom2o/uwqzS0x8Mf2S
-         +MV9rZ+Fzf71f3gh47v8ZN6FuQpE+0hL2e6Ug+4kF9Y6fEpYke0W/joqSUA70Lwp5I
-         4Ppma9tFa9PkRNG20BN4X8MRlMpJ63sRO/S19u9v0FZlEHa4Js3eqk1sS3wGAa85dR
-         +Jh96R1o2OAtJhZFfuVMo1EZ8CMSa8mkEAFP0AyoLzOV+kygqKbLAfKRxs3fKgbcsD
-         1Vaxn4RMiVSaImYmC7RQ1ktIs3LG4P5Jb+tgoFnzybYroBhkWvfkc77elbZWKz1nx/
-         2xhke52QkhhQQ==
-From:   Michael Ellerman <mpe@ellerman.id.au>
-To:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
-        Hari Bathini <hbathini@linux.ibm.com>
-Cc:     linux-kernel@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com,
-        linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
-        linux-edac@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        pmladek@suse.com, kexec@lists.infradead.org, bhe@redhat.com,
-        linux-leds@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-remoteproc@vger.kernel.org, linux-s390@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-um@lists.infradead.org,
-        linux-xtensa@linux-xtensa.org, netdev@vger.kernel.org,
-        openipmi-developer@lists.sourceforge.net, rcu@vger.kernel.org,
-        sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
-        x86@kernel.org, kernel-dev@igalia.com, kernel@gpiccoli.net,
-        halves@canonical.com, fabiomirmar@gmail.com,
-        alejandro.j.jimenez@oracle.com, andriy.shevchenko@linux.intel.com,
-        arnd@arndb.de, bp@alien8.de, corbet@lwn.net,
-        d.hatayama@jp.fujitsu.com, dave.hansen@linux.intel.com,
-        dyoung@redhat.com, feng.tang@intel.com, gregkh@linuxfoundation.org,
-        mikelley@microsoft.com, hidehiro.kawai.ez@hitachi.com,
-        jgross@suse.com, john.ogness@linutronix.de, keescook@chromium.org,
-        luto@kernel.org, mhiramat@kernel.org, mingo@redhat.com,
-        paulmck@kernel.org, peterz@infradead.org, rostedt@goodmis.org,
-        senozhatsky@chromium.org, stern@rowland.harvard.edu,
-        tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com,
-        will@kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org
-Subject: Re: [PATCH 08/30] powerpc/setup: Refactor/untangle panic notifiers
-In-Reply-To: <f9c3de3c-1709-a1aa-2ece-c9fbfd5e6d6a@igalia.com>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-9-gpiccoli@igalia.com>
- <3c34d8e2-6f84-933f-a4ed-338cd300d6b0@linux.ibm.com>
- <f9c3de3c-1709-a1aa-2ece-c9fbfd5e6d6a@igalia.com>
-Date:   Tue, 10 May 2022 23:53:56 +1000
-Message-ID: <87fslh8pe3.fsf@mpe.ellerman.id.au>
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 6DE863833286;
+        Tue, 10 May 2022 14:11:29 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.192.98])
+        by smtp.corp.redhat.com (Postfix) with SMTP id 8C11BC28106;
+        Tue, 10 May 2022 14:11:24 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+        oleg@redhat.com; Tue, 10 May 2022 16:11:26 +0200 (CEST)
+Date:   Tue, 10 May 2022 16:11:21 +0200
+From:   Oleg Nesterov <oleg@redhat.com>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Jann Horn <jannh@google.com>,
+        Kees Cook <keescook@chromium.org>, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v4 0/12] ptrace: cleaning up ptrace_stop
+Message-ID: <20220510141119.GA23277@redhat.com>
+References: <20220421150248.667412396@infradead.org>
+ <20220421150654.817117821@infradead.org>
+ <87czhap9dy.fsf@email.froward.int.ebiederm.org>
+ <878rrrh32q.fsf_-_@email.froward.int.ebiederm.org>
+ <87k0b7v9yk.fsf_-_@email.froward.int.ebiederm.org>
+ <87k0b0apne.fsf_-_@email.froward.int.ebiederm.org>
+ <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.85 on 10.11.54.8
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-"Guilherme G. Piccoli" <gpiccoli@igalia.com> writes:
-> On 05/05/2022 15:55, Hari Bathini wrote:
->> [...] 
->> The change looks good. I have tested it on an LPAR (ppc64).
->> 
->> Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
->> 
+On 05/05, Eric W. Biederman wrote:
 >
-> Hi Michael. do you think it's possible to add this one to powerpc/next
-> (or something like that), or do you prefer a V2 with his tag?
+> Eric W. Biederman (11):
+>       signal: Rename send_signal send_signal_locked
+>       signal: Replace __group_send_sig_info with send_signal_locked
+>       ptrace/um: Replace PT_DTRACE with TIF_SINGLESTEP
+>       ptrace/xtensa: Replace PT_SINGLESTEP with TIF_SINGLESTEP
+>       ptrace: Remove arch_ptrace_attach
+>       signal: Use lockdep_assert_held instead of assert_spin_locked
+>       ptrace: Reimplement PTRACE_KILL by always sending SIGKILL
+>       ptrace: Document that wait_task_inactive can't fail
+>       ptrace: Admit ptrace_stop can generate spuriuos SIGTRAPs
+>       ptrace: Don't change __state
+>       ptrace: Always take siglock in ptrace_resume
+>
+> Peter Zijlstra (1):
+>       sched,signal,ptrace: Rework TASK_TRACED, TASK_STOPPED state
 
-Ah sorry, I assumed it was going in as part of the whole series. I guess
-I misread the cover letter.
+OK, lgtm.
 
-So you want me to take this patch on its own via the powerpc tree?
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 
-cheers
+
+I still dislike you removed TASK_WAKEKILL from TASK_TRACED, but I can't
+find a good argument against it ;) and yes, this is subjective.
+
+Oleg.
+
