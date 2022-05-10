@@ -2,122 +2,97 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C5A2C4332F
-	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 15:30:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF175C433EF
+	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 15:38:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345885AbiEJPed (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 May 2022 11:34:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50478 "EHLO
+        id S243575AbiEJPl6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 May 2022 11:41:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345654AbiEJPeU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 11:34:20 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A0A436B52;
-        Tue, 10 May 2022 08:28:44 -0700 (PDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out1.suse.de (Postfix) with ESMTP id BDBAF21B8C;
-        Tue, 10 May 2022 15:28:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-        t=1652196522; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        with ESMTP id S1346101AbiEJPjj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 11:39:39 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8165D1F8C64
+        for <linux-pm@vger.kernel.org>; Tue, 10 May 2022 08:35:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1652196904;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=e4wukkdgHyYEEL082h2+8MXPywOa6STdjbSVdRIKUGE=;
-        b=rR4mS/+oT4jH07pNjBmARAg7zdRtaoeIif/UACNxEBTH30BjG7Bppc3qvkDfJRoCh4TawW
-        6luoRejPAMFZr+z9Kvz9iubCA5AxZw1bIiLsMXPqeMDKaF9ra8TkGI7FOIFKW72kOoldt+
-        xkdV40YW6dtF4zTHXKWuKX4kUttIYC0=
-Received: from suse.cz (unknown [10.100.208.146])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        bh=KAUYAL6xtEy1vEbUJu56EBQK32UGZSvLvF0XFVQ8Fq4=;
+        b=Vm4suJuURI5PNU+Y2TBZngNsCqtwQrHaEL6jBYAJcz5vCyT31TjPDg/eEIjv36QaU/7SX1
+        4hBWptBOuHSgUlCqkWWMtbR79BixoQsvFXpTDW+SxgCWsDFmpd5oyoWqx4KNiiKemDiTT3
+        yLRh5PHvVchaREmBDHL7D6RHiVEZDQU=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-135-0inn2KGNM_GDY5x2WVygpg-1; Tue, 10 May 2022 11:35:03 -0400
+X-MC-Unique: 0inn2KGNM_GDY5x2WVygpg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com [10.11.54.2])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 913582C141;
-        Tue, 10 May 2022 15:28:41 +0000 (UTC)
-Date:   Tue, 10 May 2022 17:28:40 +0200
-From:   Petr Mladek <pmladek@suse.com>
-To:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-Cc:     akpm@linux-foundation.org, bhe@redhat.com,
-        kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com, coresight@lists.linaro.org,
-        linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
-        linux-hyperv@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-xtensa@linux-xtensa.org,
-        netdev@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
-        rcu@vger.kernel.org, sparclinux@vger.kernel.org,
-        xen-devel@lists.xenproject.org, x86@kernel.org,
-        kernel-dev@igalia.com, kernel@gpiccoli.net, halves@canonical.com,
-        fabiomirmar@gmail.com, alejandro.j.jimenez@oracle.com,
-        andriy.shevchenko@linux.intel.com, arnd@arndb.de, bp@alien8.de,
-        corbet@lwn.net, d.hatayama@jp.fujitsu.com,
-        dave.hansen@linux.intel.com, dyoung@redhat.com,
-        feng.tang@intel.com, gregkh@linuxfoundation.org,
-        mikelley@microsoft.com, hidehiro.kawai.ez@hitachi.com,
-        jgross@suse.com, john.ogness@linutronix.de, keescook@chromium.org,
-        luto@kernel.org, mhiramat@kernel.org, mingo@redhat.com,
-        paulmck@kernel.org, peterz@infradead.org, rostedt@goodmis.org,
-        senozhatsky@chromium.org, stern@rowland.harvard.edu,
-        tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com,
-        will@kernel.org, Brian Norris <computersforpeace@gmail.com>,
-        Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 15/30] bus: brcmstb_gisb: Clean-up panic/die notifiers
-Message-ID: <YnqEqDnMfUgC4dM6@alley>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-16-gpiccoli@igalia.com>
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B03B6811E75;
+        Tue, 10 May 2022 15:34:59 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.192.98])
+        by smtp.corp.redhat.com (Postfix) with SMTP id 8B237403579A;
+        Tue, 10 May 2022 15:34:54 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+        oleg@redhat.com; Tue, 10 May 2022 17:34:59 +0200 (CEST)
+Date:   Tue, 10 May 2022 17:34:53 +0200
+From:   Oleg Nesterov <oleg@redhat.com>
+To:     "Eric W. Biederman" <ebiederm@xmission.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
+        Will Deacon <will@kernel.org>, tj@kernel.org,
+        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+        Richard Weinberger <richard@nod.at>,
+        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+        Max Filippov <jcmvbkbc@gmail.com>,
+        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
+        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v4 10/12] ptrace: Don't change __state
+Message-ID: <20220510153452.GA23707@redhat.com>
+References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
+ <20220505182645.497868-10-ebiederm@xmission.com>
+ <20220510142202.GB23277@redhat.com>
+ <87ee11wh6b.fsf@email.froward.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220427224924.592546-16-gpiccoli@igalia.com>
+In-Reply-To: <87ee11wh6b.fsf@email.froward.int.ebiederm.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.84 on 10.11.54.2
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed 2022-04-27 19:49:09, Guilherme G. Piccoli wrote:
-> This patch improves the panic/die notifiers in this driver by
-> making use of a passed "id" instead of comparing pointer
-> address; also, it removes an useless prototype declaration
-> and unnecessary header inclusion.
-> 
-> This is part of a panic notifiers refactor - this notifier in
-> the future will be moved to a new list, that encompass the
-> information notifiers only.
-> 
-> --- a/drivers/bus/brcmstb_gisb.c
-> +++ b/drivers/bus/brcmstb_gisb.c
-> @@ -347,25 +346,14 @@ static irqreturn_t brcmstb_gisb_bp_handler(int irq, void *dev_id)
->  /*
->   * Dump out gisb errors on die or panic.
->   */
-> -static int dump_gisb_error(struct notifier_block *self, unsigned long v,
-> -			   void *p);
-> -
-> -static struct notifier_block gisb_die_notifier = {
-> -	.notifier_call = dump_gisb_error,
-> -};
-> -
-> -static struct notifier_block gisb_panic_notifier = {
-> -	.notifier_call = dump_gisb_error,
-> -};
-> -
->  static int dump_gisb_error(struct notifier_block *self, unsigned long v,
->  			   void *p)
->  {
->  	struct brcmstb_gisb_arb_device *gdev;
-> -	const char *reason = "panic";
-> +	const char *reason = "die";
->  
-> -	if (self == &gisb_die_notifier)
-> -		reason = "die";
-> +	if (v == PANIC_NOTIFIER)
-> +		reason = "panic";
+On 05/10, Eric W. Biederman wrote:
+>
+> > But I still think that a lockless
+> >
+> > 	if (!(task->jobctl & JOBCTL_PTRACE_FROZEN))
+> > 		return;
+> >
+> > check at the start of ptrace_unfreeze_traced() makes sense to avoid
+> > lock_task_sighand() if possible.
+> >
+> > And ptrace_resume() can probably clear JOBCTL_PTRACE_FROZEN along with
+> > JOBCTL_TRACED to make this optimization work better. The same for
+> > ptrace_signal_wake_up().
+>
+> What do you have that suggests that taking siglock there is a problem?
 
-IMHO, the check of the @self parameter was the proper solution.
+Not necessarily a problem, but this optimization is free. If the tracee
+was resumed, it can compete for siglock with debugger.
 
-"gisb_die_notifier" list uses @val from enum die_val.
-"gisb_panic_notifier" list uses @val from enum panic_notifier_val.
+> What you propose will definitely work as an incremental change, and
+> in an incremental change we can explain why doing the stupid simple
+> thing is not good enough.
 
-These are unrelated types. It might easily break when
-someone defines the same constant also in enum die_val.
+OK.
 
-Best Regards,
-Petr
+Oleg.
+
