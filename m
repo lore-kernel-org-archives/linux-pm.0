@@ -2,103 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BF64C433F5
-	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 14:57:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE2DEC43217
+	for <linux-pm@archiver.kernel.org>; Tue, 10 May 2022 14:59:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239573AbiEJPBf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 May 2022 11:01:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36614 "EHLO
+        id S241611AbiEJPDp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 May 2022 11:03:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55346 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345091AbiEJPAj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 11:00:39 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7DED36B7DE
-        for <linux-pm@vger.kernel.org>; Tue, 10 May 2022 07:23:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1652192608;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+        with ESMTP id S1345496AbiEJPDe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2022 11:03:34 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C51731361;
+        Tue, 10 May 2022 07:28:24 -0700 (PDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+        by smtp-out2.suse.de (Postfix) with ESMTP id 3A6AE1F896;
+        Tue, 10 May 2022 14:28:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1652192903; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=+S573656I/Ry3IV8BOR6MdvvHexB5xLndPCMThW4Hec=;
-        b=B76sT0T1INbwODDV+SKEkAKcAW/sk5EqALa6s3RvPykrCHiyo9lnDBFrclrzatuUUVweHB
-        MjRlJUemWHTTEMLSjlLKpmije1E+4PUQ928cenNI5DQ2iMyRKOCJ/corS2yfP2bVFM+ddX
-        W1z0uvgy/oNof4PPufRKKcN7xqX/sIo=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-592-e3vPlTW5NMShYGiJsluNNQ-1; Tue, 10 May 2022 10:23:24 -0400
-X-MC-Unique: e3vPlTW5NMShYGiJsluNNQ-1
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com [10.11.54.2])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        bh=5Vk/8pdLWJKvC1pkcnRQ/HwoU2ABECojPYTjSUx9JWI=;
+        b=qCuBe8399OKc/XhS2YM19THr9x0w+LK3v0+yrYrVMx1O5y8bO2nhr7ld/xwzdNWpoeMnQv
+        KDbf9vzeiGs4Zk4jc5/KyT1Cq3WiPlflRqYiR6m11RKyyC/hq4LcZ09p+y2XB4Mv583rFK
+        /mj4yXQtU5XfZ45MAwfj3oDOrq6/m9Q=
+Received: from suse.cz (unknown [10.100.208.146])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2C58C3831C4C;
-        Tue, 10 May 2022 14:23:23 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.40.192.98])
-        by smtp.corp.redhat.com (Postfix) with SMTP id 10F38403D165;
-        Tue, 10 May 2022 14:23:18 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
-        oleg@redhat.com; Tue, 10 May 2022 16:23:22 +0200 (CEST)
-Date:   Tue, 10 May 2022 16:23:18 +0200
-From:   Oleg Nesterov <oleg@redhat.com>
-To:     "Eric W. Biederman" <ebiederm@xmission.com>
-Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net, mingo@kernel.org,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, mgorman@suse.de, bigeasy@linutronix.de,
-        Will Deacon <will@kernel.org>, tj@kernel.org,
-        linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+        by relay2.suse.de (Postfix) with ESMTPS id 344FF2C141;
+        Tue, 10 May 2022 14:28:22 +0000 (UTC)
+Date:   Tue, 10 May 2022 16:28:21 +0200
+From:   Petr Mladek <pmladek@suse.com>
+To:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Cc:     akpm@linux-foundation.org, bhe@redhat.com,
+        kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+        bcm-kernel-feedback-list@broadcom.com, coresight@lists.linaro.org,
+        linuxppc-dev@lists.ozlabs.org, linux-alpha@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
+        linux-hyperv@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-xtensa@linux-xtensa.org,
+        netdev@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+        rcu@vger.kernel.org, sparclinux@vger.kernel.org,
+        xen-devel@lists.xenproject.org, x86@kernel.org,
+        kernel-dev@igalia.com, kernel@gpiccoli.net, halves@canonical.com,
+        fabiomirmar@gmail.com, alejandro.j.jimenez@oracle.com,
+        andriy.shevchenko@linux.intel.com, arnd@arndb.de, bp@alien8.de,
+        corbet@lwn.net, d.hatayama@jp.fujitsu.com,
+        dave.hansen@linux.intel.com, dyoung@redhat.com,
+        feng.tang@intel.com, gregkh@linuxfoundation.org,
+        mikelley@microsoft.com, hidehiro.kawai.ez@hitachi.com,
+        jgross@suse.com, john.ogness@linutronix.de, keescook@chromium.org,
+        luto@kernel.org, mhiramat@kernel.org, mingo@redhat.com,
+        paulmck@kernel.org, peterz@infradead.org, rostedt@goodmis.org,
+        senozhatsky@chromium.org, stern@rowland.harvard.edu,
+        tglx@linutronix.de, vgoyal@redhat.com, vkuznets@redhat.com,
+        will@kernel.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>,
         Johannes Berg <johannes@sipsolutions.net>,
-        linux-um@lists.infradead.org, Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        linux-xtensa@linux-xtensa.org, Kees Cook <keescook@chromium.org>,
-        Jann Horn <jannh@google.com>, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH v4 10/12] ptrace: Don't change __state
-Message-ID: <20220510142202.GB23277@redhat.com>
-References: <87a6bv6dl6.fsf_-_@email.froward.int.ebiederm.org>
- <20220505182645.497868-10-ebiederm@xmission.com>
+        Richard Weinberger <richard@nod.at>
+Subject: Re: [PATCH 11/30] um: Improve panic notifiers consistency and
+ ordering
+Message-ID: <Ynp2hRodh04K3pzK@alley>
+References: <20220427224924.592546-1-gpiccoli@igalia.com>
+ <20220427224924.592546-12-gpiccoli@igalia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220505182645.497868-10-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.84 on 10.11.54.2
+In-Reply-To: <20220427224924.592546-12-gpiccoli@igalia.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05/05, Eric W. Biederman wrote:
->
->  static void ptrace_unfreeze_traced(struct task_struct *task)
->  {
-> -	if (READ_ONCE(task->__state) != __TASK_TRACED)
-> -		return;
-> -
-> -	WARN_ON(!task->ptrace || task->parent != current);
-> +	unsigned long flags;
->  
->  	/*
-> -	 * PTRACE_LISTEN can allow ptrace_trap_notify to wake us up remotely.
-> -	 * Recheck state under the lock to close this race.
-> +	 * The child may be awake and may have cleared
-> +	 * JOBCTL_PTRACE_FROZEN (see ptrace_resume).  The child will
-> +	 * not set JOBCTL_PTRACE_FROZEN or enter __TASK_TRACED anew.
->  	 */
-> -	spin_lock_irq(&task->sighand->siglock);
-> -	if (READ_ONCE(task->__state) == __TASK_TRACED) {
-> +	if (lock_task_sighand(task, &flags)) {
+On Wed 2022-04-27 19:49:05, Guilherme G. Piccoli wrote:
+> Currently the panic notifiers from user mode linux don't follow
+> the convention for most of the other notifiers present in the
+> kernel (indentation, priority setting, numeric return).
+> More important, the priorities could be improved, since it's a
+> special case (userspace), hence we could run the notifiers earlier;
+> user mode linux shouldn't care much with other panic notifiers but
+> the ordering among the mconsole and arch notifier is important,
+> given that the arch one effectively triggers a core dump.
 
-But I still think that a lockless
+It is not clear to me why user mode linux should not care about
+the other notifiers. It might be because I do not know much
+about the user mode linux.
 
-	if (!(task->jobctl & JOBCTL_PTRACE_FROZEN))
-		return;
+Is the because they always create core dump or are never running
+in a hypervisor or ...?
 
-check at the start of ptrace_unfreeze_traced() makes sense to avoid
-lock_task_sighand() if possible.
+AFAIK, the notifiers do many different things. For example, there
+is a notifier that disables RCU watchdog, print some extra
+information. Why none of them make sense here?
 
-And ptrace_resume() can probably clear JOBCTL_PTRACE_FROZEN along with
-JOBCTL_TRACED to make this optimization work better. The same for
-ptrace_signal_wake_up().
+> This patch fixes that by running the mconsole notifier as the first
+> panic notifier, followed by the architecture one (that coredumps).
+> Also, we remove a useless header inclusion.
 
-Oleg.
 
+Best Regards,
+Petr
