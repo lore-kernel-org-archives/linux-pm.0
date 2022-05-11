@@ -2,51 +2,51 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B360C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 14:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39E88C4332F
+	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 14:57:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245295AbiEKO5m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 May 2022 10:57:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35204 "EHLO
+        id S245288AbiEKO5n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 May 2022 10:57:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35330 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245293AbiEKO5f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 10:57:35 -0400
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B450712F9
-        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 07:57:27 -0700 (PDT)
-Received: by mail-lj1-x22c.google.com with SMTP id t25so2956004ljd.6
-        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 07:57:27 -0700 (PDT)
+        with ESMTP id S245291AbiEKO5j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 10:57:39 -0400
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 599D21F3EBC
+        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 07:57:31 -0700 (PDT)
+Received: by mail-lf1-x12b.google.com with SMTP id y32so4042435lfa.6
+        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 07:57:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=o0SVdNZTesTCt27Lh8nfNAnhtcZlgzCNi0eR/b6PWgs=;
-        b=btWLqxTiISmaw5e1BljDRvBH2qafHAGi+/5/pMimaSVkt/0UTBLhs9SqsV0uEaLFt2
-         NLn2wz4Srkn2BZJWzNPD8D/xV9qv29WDGHyd4GTTH77GWOwL8X+5HeezMNr8KpbEXnJD
-         EfUOJNVvwQetEL9xVC5VFP2V3XykQ+SV6lo4cXjoRhkSHwkCLhFrN4vG4mPGvGHoC/Dx
-         MrPIXa+Re/2PPgzGTzW2iqBCM/4ex3tpxxlh+HTTyNyfWxFis6pD6197IP8JhpVVXsGw
-         3uzdXjzSPnP2uZ+PpprRuKT01aeOrPl/BcMZd3fN4wKMy5RWss1bpCc9q3pT0Cjpi3bF
-         7bQg==
+        bh=2gFFvwdN/Sbzb6gl/THgYR/bjpxtOmE1Z07RfTChlck=;
+        b=AKMBOxosg+GEA7ZZLPUVvSF9Nz2ZhFwCheRbwlKRxf5eHcI/lcg2XZ/v0Q1fKU3Y8r
+         PyEMzM0zsZpNRhjZ/q3kO6e+AS1vgy1HuYHmkxc3od8ILggFTkUv33Q7QR9m+ikgKhwt
+         bK6jV3XkOGqKRwsa5Vr8Took8lIY9B7N75kQyHZBrbsJEXIsVreCgmzUbXHffQGKsaTE
+         4PFbREOn5I8aK2EUBC/48mzJHHMVl4buN8+wyF2G7ysE30SgmFl44/boOgrPx9ZhOnJI
+         LkHXt1ItXHq8C6FaK0r/YlZjmFLmH8bfe58M/tZcC+H9vIiPtym5x8NqCC2FLyfh1h/B
+         4PpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=o0SVdNZTesTCt27Lh8nfNAnhtcZlgzCNi0eR/b6PWgs=;
-        b=Wfi9LdBLWP2/QWH9TG71WuZHFIfvsRWOPREqbDEprOrkb91bvF4Jw+FC8dRvMTx2Rt
-         8y+ZD/U5+MhHePkH4ftMPA/HvKHszaT/zn2+ql2NLPl37/+fA4gHmf0tlkySZGm7FuKT
-         WB93/2EzjFZ8fRz/p1UoWysSWwqV/WhyrkisheupY+c7JB/1O81U36cvHlDyH9R7JKLP
-         sseWpSD2JJZCfwT6SFJyhINGSUbE2mXyQSDCzChEDvnBpEzWnIoM+ToesXEUuRcQ0ONs
-         QXs1yNjNAg7rvgDyyM7pqCN+aHH0BzqY+L/DudnZLeVOt/4TuhSPXEEEVVHyKU3re17w
-         DzVA==
-X-Gm-Message-State: AOAM531Kixz++2OU//eQpzB53xwEK3hN6T+R62trRIDPv+iBFWv9jamL
-        FiG/AgvWFLC/l8PZHcKgrUB48A==
-X-Google-Smtp-Source: ABdhPJzGAxm2Ip0gBbvXZ4HIZMDDktzLw0NmQQSoajM67RWvgRmy7EZgRS/ywmFdRNSc6+KE8jk78g==
-X-Received: by 2002:a2e:8496:0:b0:24f:130d:e38b with SMTP id b22-20020a2e8496000000b0024f130de38bmr17242674ljh.498.1652281045536;
-        Wed, 11 May 2022 07:57:25 -0700 (PDT)
+        bh=2gFFvwdN/Sbzb6gl/THgYR/bjpxtOmE1Z07RfTChlck=;
+        b=1weC6oL7OG5hUhzuIVhu511ivrKHgKIPwyU53w8flvVT60MrpdLC38KdXxpH+maq45
+         /Rqe2jbxmel2so3kzvil6fFORZojGaEXVoU0YYYx4nti8fzMGPPbC9NTeCLu0Iy3IQJo
+         Fffvxv3vDafJgR7ziO6n/AAJaKuxTnw7w22pFmcDkJujpInRPfRwxshiPYnPn8BPmVXh
+         RFZGRqA3uS6NmxtmCON2FTH3bLPeENAWzOaS+lSymk19MmsarusNB6AIGDVNvx2/Cpv2
+         GCD9FyMuG1g2BZj+TTfvPssR2NJqkXTbJt+lvb9fJ1RoRyEQzJipNqNYRT3+QWk4W4fP
+         rDpw==
+X-Gm-Message-State: AOAM531CJF263/SvCm+H+CT0QzNnt2XXYEObJ7h1PMVXgJnFLiJArO9V
+        1WpvZhlWJ12kWwmCqIs3Nj3Vmw==
+X-Google-Smtp-Source: ABdhPJyKM/oX7q2GnhgQf0vJUOqTliTzVsmMWV8dFynsx6Tt6u0Zi82/g1j3o0k081btT4lf1QlnJQ==
+X-Received: by 2002:ac2:5456:0:b0:471:f9e6:7388 with SMTP id d22-20020ac25456000000b00471f9e67388mr19548791lfn.504.1652281051171;
+        Wed, 11 May 2022 07:57:31 -0700 (PDT)
 Received: from localhost.localdomain (h-98-128-181-154.NA.cust.bahnhof.se. [98.128.181.154])
-        by smtp.gmail.com with ESMTPSA id z26-20020a19f71a000000b0047255d210f3sm320793lfe.34.2022.05.11.07.57.24
+        by smtp.gmail.com with ESMTPSA id z26-20020a19f71a000000b0047255d210f3sm320793lfe.34.2022.05.11.07.57.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 May 2022 07:57:24 -0700 (PDT)
+        Wed, 11 May 2022 07:57:30 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
 Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
@@ -58,9 +58,9 @@ Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 04/14] PM: domains: Rename irq_safe_dev_in_no_sleep_domain() in genpd
-Date:   Wed, 11 May 2022 16:56:54 +0200
-Message-Id: <20220511145704.698189-5-ulf.hansson@linaro.org>
+Subject: [PATCH 07/14] PM: domains: Move the next_wakeup variable into the struct gpd_timing_data
+Date:   Wed, 11 May 2022 16:56:57 +0200
+Message-Id: <20220511145704.698189-8-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220511145704.698189-1-ulf.hansson@linaro.org>
 References: <20220511145704.698189-1-ulf.hansson@linaro.org>
@@ -70,72 +70,93 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The name "irq_safe_dev_in_no_sleep_domain", doesn't really match the
-conditions that are being checked in the function, hence the code becomes a
-bit confusing to read.
+If the corresponding genpd for the device doesn't use a governor, the
+variable next_wakeup within the struct generic_pm_domain_data becomes
+superfluous.
 
-Let's clarify this by renaming it into "irq_safe_dev_in_sleep_domain" and
-let's also take the opportunity to clarify a corresponding comment in the
-code.
+To avoid wasting memory, let's move it into the struct gpd_timing_data,
+which is already being allocated based upon if there is governor assigned.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/base/power/domain.c          | 9 +++++----
+ drivers/base/power/domain_governor.c | 2 +-
+ include/linux/pm_domain.h            | 2 +-
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5059c5d2e64a..269bfa3d2303 100644
+index ca86fb3db901..4c059a858957 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -131,7 +131,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
- #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
- #define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
- 
--static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
-+static inline bool irq_safe_dev_in_sleep_domain(struct device *dev,
- 		const struct generic_pm_domain *genpd)
+@@ -478,15 +478,16 @@ EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
+  */
+ void dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
  {
- 	bool ret;
-@@ -139,9 +139,9 @@ static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
- 	ret = pm_runtime_is_irq_safe(dev) && !genpd_is_irq_safe(genpd);
+-	struct generic_pm_domain_data *gpd_data;
+ 	struct generic_pm_domain *genpd;
++	struct gpd_timing_data *td;
  
- 	/*
--	 * Warn once if an IRQ safe device is attached to a no sleep domain, as
--	 * to indicate a suboptimal configuration for PM. For an always on
--	 * domain this isn't case, thus don't warn.
-+	 * Warn once if an IRQ safe device is attached to a domain, which
-+	 * callbacks are allowed to sleep. This indicates a suboptimal
-+	 * configuration for PM, but it doesn't matter for an always on domain.
- 	 */
- 	if (ret && !genpd_is_always_on(genpd))
- 		dev_warn_once(dev, "PM domain %s will not be powered off\n",
-@@ -653,7 +653,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 		 * device is part of a non-IRQ safe domain.
- 		 */
- 		if (!pm_runtime_suspended(pdd->dev) ||
--			irq_safe_dev_in_no_sleep_domain(pdd->dev, genpd))
-+			irq_safe_dev_in_sleep_domain(pdd->dev, genpd))
- 			not_suspended++;
+ 	genpd = dev_to_genpd_safe(dev);
+ 	if (!genpd)
+ 		return;
+ 
+-	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
+-	gpd_data->next_wakeup = next;
++	td = to_gpd_data(dev->power.subsys_data->domain_data)->td;
++	if (td)
++		td->next_wakeup = next;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
+ 
+@@ -1518,7 +1519,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 
+ 	gpd_data->base.dev = dev;
+ 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+-	gpd_data->next_wakeup = KTIME_MAX;
+ 
+ 	/* Allocate data used by a governor. */
+ 	if (has_governor) {
+@@ -1530,6 +1530,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 
+ 		td->constraint_changed = true;
+ 		td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
++		td->next_wakeup = KTIME_MAX;
+ 		gpd_data->td = td;
  	}
  
-@@ -925,7 +925,7 @@ static int genpd_runtime_suspend(struct device *dev)
- 	 * If power.irq_safe is set, this routine may be run with
- 	 * IRQs disabled, so suspend only if the PM domain also is irq_safe.
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 62be9b3f8c90..599b3909821c 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -139,7 +139,7 @@ static void update_domain_next_wakeup(struct generic_pm_domain *genpd, ktime_t n
+ 	 * is able to enter its optimal idle state.
  	 */
--	if (irq_safe_dev_in_no_sleep_domain(dev, genpd))
-+	if (irq_safe_dev_in_sleep_domain(dev, genpd))
- 		return 0;
+ 	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+-		next_wakeup = to_gpd_data(pdd)->next_wakeup;
++		next_wakeup = to_gpd_data(pdd)->td->next_wakeup;
+ 		if (next_wakeup != KTIME_MAX && !ktime_before(next_wakeup, now))
+ 			if (ktime_before(next_wakeup, domain_wakeup))
+ 				domain_wakeup = next_wakeup;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 126a4b9ab215..1f370f074f30 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -182,6 +182,7 @@ struct gpd_timing_data {
+ 	s64 suspend_latency_ns;
+ 	s64 resume_latency_ns;
+ 	s64 effective_constraint_ns;
++	ktime_t	next_wakeup;
+ 	bool constraint_changed;
+ 	bool cached_suspend_ok;
+ };
+@@ -200,7 +201,6 @@ struct generic_pm_domain_data {
+ 	unsigned int performance_state;
+ 	unsigned int default_pstate;
+ 	unsigned int rpm_pstate;
+-	ktime_t	next_wakeup;
+ 	void *data;
+ };
  
- 	genpd_lock(genpd);
-@@ -965,7 +965,7 @@ static int genpd_runtime_resume(struct device *dev)
- 	 * As we don't power off a non IRQ safe domain, which holds
- 	 * an IRQ safe device, we don't need to restore power to it.
- 	 */
--	if (irq_safe_dev_in_no_sleep_domain(dev, genpd)) {
-+	if (irq_safe_dev_in_sleep_domain(dev, genpd)) {
- 		timed = false;
- 		goto out;
- 	}
 -- 
 2.25.1
 
