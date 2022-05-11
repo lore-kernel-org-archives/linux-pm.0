@@ -2,134 +2,105 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FD55C4321E
-	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 15:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56D62C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 15:52:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245582AbiEKPMs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 May 2022 11:12:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59258 "EHLO
+        id S1343980AbiEKPwA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 May 2022 11:52:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56034 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242600AbiEKPMh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 11:12:37 -0400
-Received: from mail-oa1-x2c.google.com (mail-oa1-x2c.google.com [IPv6:2001:4860:4864:20::2c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAFE260B83;
-        Wed, 11 May 2022 08:12:36 -0700 (PDT)
-Received: by mail-oa1-x2c.google.com with SMTP id 586e51a60fabf-ed9a75c453so3131409fac.11;
-        Wed, 11 May 2022 08:12:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=DUCwHnpEBZWvV+TfQ2kOF7vKh2668nns0uSQ/D4T0+w=;
-        b=mpa3J5Vld3Dm5QiFIItHCDwdXGMZiJsoXZHFl7q/67GbnFhsG0ZNau9F9hjZigDGyb
-         RSqxs+ef/bQI9XSDbDlHlM63Ls97iugjJMcDjj/y9yTAbId2j9m7K7ios4hgxCyjCGGn
-         4oqq2B+2CJ9dpKnOyPUW9k8saVXTy6k0RmShLZaMYHZqDh42na32W2H7rkGBK9lQX0UM
-         rJ9cr5oPo6z3ILVQ0MQudj1VJnGaM4n6ZDYi56QA5K2pU00DdHE58ohOAkCRZKZRCp3B
-         hG28i/Qmuejzx6fxa7sN4VCxp/R8a3joMPI9AWKgiSPyH33F8b+UrpSR97a9BIeGGMON
-         uXMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=DUCwHnpEBZWvV+TfQ2kOF7vKh2668nns0uSQ/D4T0+w=;
-        b=p724bCkneK6NHdoIcKbypF0rx/QO/d8fSAazjVoXF6p2hi0Bol0a5dd/ur1haFRt05
-         X/GIG0+ZTXst0P6gVt2ABquzkee+B4/bRJFO3t3iOyTO3aaUlbSTLO19rX1T4EXMstBh
-         lh7xsdaoV3sXiaoubRbiHcx6JuFMn9B6YpEKEIp7XK66OrTqlNXigGNneXeGWgh6qaYL
-         //RDy5ub9bTlt9zogE8DGjlY6uSpMgBUmVcHL36u1oZthm4dBjU3AC+J6krYztSiREs+
-         CKyEVcM3C0dOfF/3vZ63UMhK+OP4db57KNEIMl9c+y2MZJ99SE0ZfpLJ9zhbfEyY9Hjh
-         9KWQ==
-X-Gm-Message-State: AOAM532pHC8bb1pCnia/p2UfjRQGR6klg7UxXifJBQl42vjXMQbYFXki
-        eWGuLMfyS421W5N50HButap3dtv1+Nc5Qg==
-X-Google-Smtp-Source: ABdhPJxEpONNgy/avRlEVwlFZ58TZazzcu2tObteJMDTfsTabiZm83KhSInAsCeabhGAf0p5TpZ32g==
-X-Received: by 2002:a05:6870:648d:b0:ec:b32d:3e1b with SMTP id cz13-20020a056870648d00b000ecb32d3e1bmr2954238oab.283.1652281956136;
-        Wed, 11 May 2022 08:12:36 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id 6-20020a4a0306000000b0035eb4e5a6d0sm984750ooi.38.2022.05.11.08.12.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 May 2022 08:12:35 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-To:     "Rafael J . Wysocki" <rafael@kernel.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, linux-hwmon@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 1/3] hwmon: Introduce hwmon_device_register_for_thermal
-Date:   Wed, 11 May 2022 08:12:28 -0700
-Message-Id: <20220511151230.2983227-2-linux@roeck-us.net>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220511151230.2983227-1-linux@roeck-us.net>
-References: <20220511151230.2983227-1-linux@roeck-us.net>
+        with ESMTP id S232122AbiEKPv7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 11:51:59 -0400
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl [79.96.170.134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B65B263BDC;
+        Wed, 11 May 2022 08:51:57 -0700 (PDT)
+Received: from localhost (127.0.0.1) (HELO v370.home.net.pl)
+ by /usr/run/smtp (/usr/run/postfix/private/idea_relay_lmtp) via UNIX with SMTP (IdeaSmtpServer 5.0.0)
+ id d8280e60ce8cbe7d; Wed, 11 May 2022 17:51:55 +0200
+Received: from kreacher.localnet (unknown [213.134.181.161])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by v370.home.net.pl (Postfix) with ESMTPSA id E7F4066C3E6;
+        Wed, 11 May 2022 17:51:54 +0200 (CEST)
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH v1 3/3] cpufreq: Rearrange locking in cpufreq_remove_dev()
+Date:   Wed, 11 May 2022 17:51:39 +0200
+Message-ID: <1836239.tdWV9SEqCh@kreacher>
+In-Reply-To: <5585781.DvuYhMxLoT@kreacher>
+References: <5585781.DvuYhMxLoT@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+X-CLIENT-IP: 213.134.181.161
+X-CLIENT-HOSTNAME: 213.134.181.161
+X-VADE-SPAMSTATE: clean
+X-VADE-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrgeehgdeltdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfjqffogffrnfdpggftiffpkfenuceurghilhhouhhtmecuudehtdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvvefufffkjghfggfgtgesthfuredttddtjeenucfhrhhomhepfdftrghfrggvlhculfdrucghhihsohgtkhhifdcuoehrjhifsehrjhifhihsohgtkhhirdhnvghtqeenucggtffrrghtthgvrhhnpedvffeuiedtgfdvtddugeeujedtffetteegfeekffdvfedttddtuefhgeefvdejhfenucfkphepvddufedrudefgedrudekuddrudeiudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvudefrddufeegrddukedurdduiedupdhhvghlohepkhhrvggrtghhvghrrdhlohgtrghlnhgvthdpmhgrihhlfhhrohhmpedftfgrfhgrvghlucflrdcuhgihshhotghkihdfuceorhhjfiesrhhjfiihshhotghkihdrnhgvtheqpdhnsggprhgtphhtthhopeefpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepvhhirhgvshhhrdhkuhhmrghrsehlihhnrghrohdrohhrgh
+X-DCC--Metrics: v370.home.net.pl 1024; Body=3 Fuz1=3 Fuz2=3
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The thermal subsystem registers a hwmon driver without providing
-chip or sysfs group information. This is for legacy reasons and
-would be difficult to change. At the same time, we want to enforce
-that chip information is provided when registering a hwmon device
-using hwmon_device_register_with_info(). To enable this, introduce
-a special API for use only by the thermal subsystem.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Currently, cpufreq_remove_dev() invokes the ->exit() driver callback
+without holding the policy rwsem which is inconsistent with what
+happens if ->exit() is invoked directly from cpufreq_offline().
+
+It also manipulates the real_cpus mask and removes the CPU device
+symlink without holding the policy rwsem, but cpufreq_offline() holds
+the rwsem around the modifications thereof.
+
+For consistency, modify cpufreq_remove_dev() to hold the policy rwsem
+until the ->exit() callback has been called (or it has been determined
+that it is not necessary to call it).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/hwmon/hwmon.c | 25 +++++++++++++++++++++++++
- include/linux/hwmon.h |  3 +++
- 2 files changed, 28 insertions(+)
+ drivers/cpufreq/cpufreq.c |   21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index 5915ccfdb7d9..13053a4edc9e 100644
---- a/drivers/hwmon/hwmon.c
-+++ b/drivers/hwmon/hwmon.c
-@@ -916,6 +916,31 @@ hwmon_device_register_with_info(struct device *dev, const char *name,
- }
- EXPORT_SYMBOL_GPL(hwmon_device_register_with_info);
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1659,19 +1659,26 @@ static void cpufreq_remove_dev(struct de
+ 	if (!policy)
+ 		return;
  
-+/**
-+ * hwmon_device_register_for_thermal - register hwmon device for thermal subsystem
-+ * @dev: the parent device
-+ * @name: hwmon name attribute
-+ * @drvdata: driver data to attach to created device
-+ *
-+ * The use of this function is restricted. It is provided for legacy reasons
-+ * and must only be called from the thermal subsystem.
-+ *
-+ * hwmon_device_unregister() must be called when the device is no
-+ * longer needed.
-+ *
-+ * Returns the pointer to the new device.
-+ */
-+struct device *
-+hwmon_device_register_for_thermal(struct device *dev, const char *name,
-+				  void *drvdata)
-+{
-+	if (!name || !dev)
-+		return ERR_PTR(-EINVAL);
++	down_write(&policy->rwsem);
 +
-+	return __hwmon_device_register(dev, name, drvdata, NULL, NULL);
-+}
-+EXPORT_SYMBOL_NS_GPL(hwmon_device_register_for_thermal, HWMON_THERMAL);
+ 	if (cpu_online(cpu))
+-		cpufreq_offline(cpu);
++		__cpufreq_offline(cpu, policy);
+ 
+ 	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 	remove_cpu_dev_symlink(policy, dev);
+ 
+-	if (cpumask_empty(policy->real_cpus)) {
+-		/* We did light-weight exit earlier, do full tear down now */
+-		if (cpufreq_driver->offline)
+-			cpufreq_driver->exit(policy);
+-
+-		cpufreq_policy_free(policy);
++	if (!cpumask_empty(policy->real_cpus)) {
++		up_write(&policy->rwsem);
++		return;
+ 	}
 +
++	/* We did light-weight exit earlier, do full tear down now */
++	if (cpufreq_driver->offline)
++		cpufreq_driver->exit(policy);
++
++	up_write(&policy->rwsem);
++
++	cpufreq_policy_free(policy);
+ }
+ 
  /**
-  * hwmon_device_register - register w/ hwmon
-  * @dev: the device to register
-diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index 4efaf06fd2b8..14325f93c6b2 100644
---- a/include/linux/hwmon.h
-+++ b/include/linux/hwmon.h
-@@ -450,6 +450,9 @@ hwmon_device_register_with_info(struct device *dev,
- 				const struct hwmon_chip_info *info,
- 				const struct attribute_group **extra_groups);
- struct device *
-+hwmon_device_register_for_thermal(struct device *dev, const char *name,
-+				  void *drvdata);
-+struct device *
- devm_hwmon_device_register_with_info(struct device *dev,
- 				const char *name, void *drvdata,
- 				const struct hwmon_chip_info *info,
--- 
-2.35.1
+
+
 
