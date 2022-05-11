@@ -2,247 +2,141 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86C8AC433F5
-	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 04:35:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07772C433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 04:57:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229766AbiEKEfV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 May 2022 00:35:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55380 "EHLO
+        id S232048AbiEKE5V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 May 2022 00:57:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234542AbiEKEfT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 00:35:19 -0400
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B509C9B1BB
-        for <linux-pm@vger.kernel.org>; Tue, 10 May 2022 21:35:18 -0700 (PDT)
-Received: by mail-pj1-x1035.google.com with SMTP id iq2-20020a17090afb4200b001d93cf33ae9so3793566pjb.5
-        for <linux-pm@vger.kernel.org>; Tue, 10 May 2022 21:35:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=dV4WsBT9ftPx6yaQb9rdbf6XsiVSnfObebmDzI5cz4I=;
-        b=OyLfG1JFN9LPV9gAe3HeVkM+fm3O5Rm5aQ4dv8I2HYmkSt6AcGB2erlPyAUXo9fz2X
-         wN4YIWy/gK9zIXGfQbS9cWsoIZ/FO2srrXwT7xWcTAFQwF1t3/VnGeHjxo3NbtywfddD
-         GgGQ6GbBBwOUAmJse1+ivEEM1CE022upJSE/MQV3E9vWLBv0pduxs1sqcds0pi60MkYy
-         38q1RTZn7cSYaNjf67H+XX4PANLTeiJqVIm11mWeUG0ABLouWRw/d78E/ghW/xU13dz/
-         m+xgypK1c2BY/+GD/GJAMzn8dZjFiM4qJ3hjhjXBzQpO/5IDC6xLDXV6fqgmZLItG9OW
-         NaZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=dV4WsBT9ftPx6yaQb9rdbf6XsiVSnfObebmDzI5cz4I=;
-        b=Xhs7Mrc8d5VLUKfyXme/rc9Zh32wpO6ehGXWUciS8UUM4Kbz1kX2HTwkAco9fn5vQc
-         LPKwSrMzFHuvPok+UnovxW6CHEbnx6tL+/jeTTlkoUtNCrFXFygGslla5TZiqN6AmHVu
-         Se758kiAJpA9xKoDgWj84vs1bQCqB7kX5O1/Yk8LAne9NpKhmLI8SHMo0FEW5VdZooAF
-         rPyN/ztMxY4ETjeRsRpqMlhKcOMmOgjZiOcgO9oRAM6s2TRQn+e13zv3ntfffOS1ORPh
-         lJDyAN/nDJ4GFPjjF97NZQ2bPReOKS6syJVuipvcuPexiquY/Qr2Yc9EeTLRwF9Y4cK7
-         FEug==
-X-Gm-Message-State: AOAM530fIUBs08sm9gitDnzMqwY8B/l8yN8zLQdpHCUUJ1czxf7WzmNy
-        DQRarZgfo+eQekva86wn6MyByg==
-X-Google-Smtp-Source: ABdhPJxGhj4QhJC/wnNwmC1f907XtQnF5Lx8eQ5FWQi5l5r8ulD7vJxK5irUq1FnZURG61cJNVBLuA==
-X-Received: by 2002:a17:902:d48d:b0:15e:c236:4fd3 with SMTP id c13-20020a170902d48d00b0015ec2364fd3mr23683614plg.113.1652243718250;
-        Tue, 10 May 2022 21:35:18 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id w10-20020a170902e88a00b0015e8d4eb1c2sm535966plg.12.2022.05.10.21.35.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 May 2022 21:35:17 -0700 (PDT)
-Date:   Wed, 11 May 2022 10:05:15 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Schspa Shi <schspa@gmail.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rafael@kernel.org
-Subject: Re: [PATCH v3] cpufreq: fix race on cpufreq online
-Message-ID: <20220511043515.fn2gz6q3kcpdai5p@vireshk-i7>
-References: <20220510035259.5ep52sgahd2a6rie@vireshk-i7>
- <20220510154236.88753-1-schspa@gmail.com>
+        with ESMTP id S229464AbiEKE5U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 00:57:20 -0400
+Received: from lelv0143.ext.ti.com (lelv0143.ext.ti.com [198.47.23.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BA3EBA981;
+        Tue, 10 May 2022 21:57:17 -0700 (PDT)
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 24B4v8MD009060;
+        Tue, 10 May 2022 23:57:08 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1652245028;
+        bh=nTz7YT0yRqP5kLgxJz0n83SBM4tCZh4oJr4tKzF560c=;
+        h=Date:Subject:To:CC:References:From:In-Reply-To;
+        b=Prioy0KvgkySR8MuJXpUWhWdXwff8EzSci6WKuhIVkun72tmhLVL5ZgvO59qepVVV
+         PMgv6zLrdirZvFcetVI372ORxY9p4vhwzyrcxpqZ9znLKd4hS6b+pDZesMS+1k8HNZ
+         Y/SepBW3GWN/pswogDyK+UyJ7ehR8t6GCTIjYzvE=
+Received: from DFLE104.ent.ti.com (dfle104.ent.ti.com [10.64.6.25])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 24B4v8rJ108735
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Tue, 10 May 2022 23:57:08 -0500
+Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE104.ent.ti.com
+ (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Tue, 10
+ May 2022 23:57:08 -0500
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE114.ent.ti.com
+ (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
+ Frontend Transport; Tue, 10 May 2022 23:57:08 -0500
+Received: from [172.24.145.176] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 24B4v4bK026680;
+        Tue, 10 May 2022 23:57:05 -0500
+Message-ID: <6054e7e6-928e-1378-fed5-587fd7fe3442@ti.com>
+Date:   Wed, 11 May 2022 10:27:04 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220510154236.88753-1-schspa@gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+Subject: Re: [PATCH v6 4/4] thermal: k3_j72xx_bandgap: Add the bandgap driver
+ support
+Content-Language: en-US
+To:     "J, KEERTHY" <j-keerthy@ti.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        <robh+dt@kernel.org>, <rui.zhang@intel.com>, <amitk@kernel.org>,
+        <kristo@kernel.org>, <krzysztof.kozlowski@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+References: <20220427064635.24898-1-j-keerthy@ti.com>
+ <20220427064635.24898-5-j-keerthy@ti.com>
+ <78a3cc4d-8ce4-0dae-2f4e-7522a0a3aa0b@ti.com>
+ <d94ea6b0-e138-951d-5405-375255104adb@linaro.org>
+ <ffafc50e-9adb-9d66-3d1f-4ebc9f91f47d@ti.com>
+From:   Vignesh Raghavendra <vigneshr@ti.com>
+In-Reply-To: <ffafc50e-9adb-9d66-3d1f-4ebc9f91f47d@ti.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Don't use in-reply-to for single patches. It is mostly used when you are
-updating a single patch in a patchset and it makes sense to continue the
-discussion in the same thread. In this case, we have a fresh patchset and it
-makes the same thread messy.
 
-On 10-05-22, 23:42, Schspa Shi wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 80f535cc8a75..d93958dbdab8 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1337,12 +1337,12 @@ static int cpufreq_online(unsigned int cpu)
->  		down_write(&policy->rwsem);
->  		policy->cpu = cpu;
->  		policy->governor = NULL;
-> -		up_write(&policy->rwsem);
->  	} else {
->  		new_policy = true;
->  		policy = cpufreq_policy_alloc(cpu);
->  		if (!policy)
->  			return -ENOMEM;
-> +		down_write(&policy->rwsem);
->  	}
 
-I am not sure, but maybe there were issues in calling init() with rwsem held, as
-it may want to call some API from there.
+On 10/05/22 22:47, J, KEERTHY wrote:
+> 
+> 
+> On 5/10/2022 8:55 PM, Daniel Lezcano wrote:
+>> On 09/05/2022 05:10, J, KEERTHY wrote:
+>>>
+>>>
+>>> On 4/27/2022 12:16 PM, Keerthy wrote:
+>>>> Add VTM thermal support. In the Voltage Thermal Management
+>>>> Module(VTM), K3 J72XX supplies a voltage reference and a temperature
+>>>> sensor feature that are gathered in the band gap voltage and
+>>>> temperature sensor (VBGAPTS) module. The band gap provides current and
+>>>> voltage reference for its internal circuits and other analog IP
+>>>> blocks. The analog-to-digital converter (ADC) produces an output value
+>>>> that is proportional to the silicon temperature.
+>>>>
+>>>> Currently reading temperatures only is supported.  There are no
+>>>> active/passive cooling agent supported.
+>>>>
+>>>> J721e SoCs have errata i2128: https://www.ti.com/lit/pdf/sprz455
+>>>>
+>>>> The VTM Temperature Monitors (TEMPSENSORs) are trimmed during
+>>>> production,
+>>>> with the resulting values stored in software-readable registers.
+>>>> Software
+>>>> should use these  register values when translating the Temperature
+>>>> Monitor output codes to temperature values.
+>>>>
+>>>> It has an involved workaround. Software needs to read the error
+>>>> codes for
+>>>> -40C, 30C, 125C from the efuse for each device & derive a new look
+>>>> up table
+>>>> for adc to temperature conversion. Involved calculating slopes &
+>>>> constants
+>>>> using 3 different straight line equations with adc refernce codes as
+>>>> the
+>>>> y-axis & error codes in the x-axis.
+>>>>
+>>>> -40C to 30C
+>>>> 30C to 125C
+>>>> 125C to 150C
+>>>>
+>>>> With the above 2 line equations we derive the full look-up table to
+>>>> workaround the errata i2128 for j721e SoC.
+>>>
+>>> Hi Daniel,
+>>>
+>>> Any feedback on this series? Let me know.
+>>
+>> There are a few but that would be nit picking and I don't want to
+>> postpone this driver any longer.
+>>
+>> How do you want to proceed? Shall I take it through my tree?
+> 
+> Hi Daniel,
+> 
+> Patch 1 & 4 i.e Documentation patch and driver patch can be picked by
+> you. I believe Vignesh will take the dts patches.
+> 
+> Vignesh,
+> 
+> Can you confirm?
+> 
 
->  	if (!new_policy && cpufreq_driver->online) {
-> @@ -1382,7 +1382,6 @@ static int cpufreq_online(unsigned int cpu)
->  		cpumask_copy(policy->related_cpus, policy->cpus);
->  	}
->  
-> -	down_write(&policy->rwsem);
->  	/*
->  	 * affected cpus must always be the one, which are online. We aren't
->  	 * managing offline cpus here.
-> @@ -1533,7 +1532,7 @@ static int cpufreq_online(unsigned int cpu)
->  	for_each_cpu(j, policy->real_cpus)
->  		remove_cpu_dev_symlink(policy, get_cpu_device(j));
->  
-> -	up_write(&policy->rwsem);
-> +	cpumask_clear(policy->cpus);
+Yes, please decouple DT patches from driver+binding patches as they are
+to be applied to different trees.
 
-I don't think you can do that safely. offline() or exit() may depend on
-policy->cpus being set to all CPUs.
-
->  
->  out_offline_policy:
->  	if (cpufreq_driver->offline)
-> @@ -1542,6 +1541,7 @@ static int cpufreq_online(unsigned int cpu)
->  out_exit_policy:
->  	if (cpufreq_driver->exit)
->  		cpufreq_driver->exit(policy);
-> +	up_write(&policy->rwsem);
->  
->  out_free_policy:
->  	cpufreq_policy_free(policy);
-
-Apart from the issues highlighted about, I think we are trying to fix an issue
-locally which can happen at other places as well. Does something like this fix
-your problem at hand ?
-
-Untested.
 
 -- 
-viresh
-
--------------------------8<-------------------------
-
-From e379921d3efa58a40d9565a4506a2580318a437d Mon Sep 17 00:00:00 2001
-Message-Id: <e379921d3efa58a40d9565a4506a2580318a437d.1652243573.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 11 May 2022 09:13:26 +0530
-Subject: [PATCH] cpufreq: Allow sysfs access only for active policies
-
-It is currently possible, in a corner case, to access the sysfs files
-and reach show_cpuinfo_cur_freq(), etc, for a partly initialized policy.
-
-This can happen for example if cpufreq_online() fails after adding the
-sysfs files, which are immediately accessed by another process. There
-can easily be other such cases, which aren't identified yet.
-
-Process A:					Process B
-
-cpufreq_online()
-  down_write(&policy->rwsem);
-  if (new_policy) {
-    ret = cpufreq_add_dev_interface(policy);
-    /* This fails after adding few files */
-    if (ret)
-      goto out_destroy_policy;
-
-    ...
-  }
-
-  ...
-
-out_destroy_policy:
-  ...
-  up_write(&policy->rwsem);
-						/*
-						 * This will end up accessing the policy
-						 * which isn't fully initialized.
-						 */
-						show_cpuinfo_cur_freq()
-
-if (cpufreq_driver->offline)
-    cpufreq_driver->offline(policy);
-
-  if (cpufreq_driver->exit)
-    cpufreq_driver->exit(policy);
-
-  cpufreq_policy_free(policy);
-
-Fix these by checking in show/store if the policy is active or not and
-update policy_is_inactive() to also check if the policy is added to the
-global list or not.
-
-Reported-by: Schspa Shi <schspa@gmail.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 10 ++++++----
- include/linux/cpufreq.h   |  3 ++-
- 2 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index fbaa8e6c7d23..036314d05ded 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -948,13 +948,14 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
- {
- 	struct cpufreq_policy *policy = to_policy(kobj);
- 	struct freq_attr *fattr = to_attr(attr);
--	ssize_t ret;
-+	ssize_t ret = -EBUSY;
- 
- 	if (!fattr->show)
- 		return -EIO;
- 
- 	down_read(&policy->rwsem);
--	ret = fattr->show(policy, buf);
-+	if (!policy_is_inactive(policy))
-+		ret = fattr->show(policy, buf);
- 	up_read(&policy->rwsem);
- 
- 	return ret;
-@@ -965,7 +966,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- {
- 	struct cpufreq_policy *policy = to_policy(kobj);
- 	struct freq_attr *fattr = to_attr(attr);
--	ssize_t ret = -EINVAL;
-+	ssize_t ret = -EBUSY;
- 
- 	if (!fattr->store)
- 		return -EIO;
-@@ -979,7 +980,8 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- 
- 	if (cpu_online(policy->cpu)) {
- 		down_write(&policy->rwsem);
--		ret = fattr->store(policy, buf, count);
-+		if (!policy_is_inactive(policy))
-+			ret = fattr->store(policy, buf, count);
- 		up_write(&policy->rwsem);
- 	}
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 35c7d6db4139..03e5e114c996 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -209,7 +209,8 @@ static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
- 
- static inline bool policy_is_inactive(struct cpufreq_policy *policy)
- {
--	return cpumask_empty(policy->cpus);
-+	return unlikely(cpumask_empty(policy->cpus) ||
-+			list_empty(&policy->policy_list));
- }
- 
- static inline bool policy_is_shared(struct cpufreq_policy *policy)
--- 
-2.31.1.272.g89b43f80a514
-
+Regards
+Vignesh
