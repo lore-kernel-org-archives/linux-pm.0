@@ -2,117 +2,181 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F8E9C433EF
-	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 09:06:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07D2DC433EF
+	for <linux-pm@archiver.kernel.org>; Wed, 11 May 2022 09:36:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230310AbiEKJGk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 May 2022 05:06:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36064 "EHLO
+        id S232860AbiEKJgZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 May 2022 05:36:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53156 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244051AbiEKJGd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 05:06:33 -0400
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 151D81D0CA
-        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 02:06:31 -0700 (PDT)
-Received: by mail-pj1-x102c.google.com with SMTP id a15-20020a17090ad80f00b001dc2e23ad84so4333572pjv.4
-        for <linux-pm@vger.kernel.org>; Wed, 11 May 2022 02:06:31 -0700 (PDT)
+        with ESMTP id S241792AbiEKJgH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2022 05:36:07 -0400
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE5551901F;
+        Wed, 11 May 2022 02:36:04 -0700 (PDT)
+Received: by mail-pg1-x533.google.com with SMTP id s16so1322261pgs.3;
+        Wed, 11 May 2022 02:36:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nsHL/Fgf/VRDzuQNj7TOsqpyMCDcKbQUomZXfLWBfKI=;
-        b=e+IuamdFJTZpf5n5zxxUPfE3eAwTLOKFTxWIbi0xVTgF8k5lupUYviT1ldVmDLwI5b
-         UcizCvRPkzjQ7X21TsMxwUhVLknK9YzpAqT8wDqB+HGxU2CSZXU0bfE6SL3FiHbaTEyN
-         8Ccl1gnC952TZNg/1j/mmr4UdySSOlYhCj3liTNwPOKtjQHgRLYxrhNpTrKpvY80K1x0
-         JdqDYcxeVvny6JJzbsmP7HVaKiPIGedXHaCOza361rAjSOs2q7CZTzqtV4jeGuPx3Wk8
-         Yjo+gzUN4rEhUrYJ1jl53HzENhO6c2DHRy5KjVTOg6MmNeHPOZ82y/pUisIqC4RDWo0O
-         MQIA==
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=a8xDXgJ4/lqPi969fLyf/an203hLh1dd+Ogx2mSsnkc=;
+        b=eMs9bvwzqXI93+qWBooZmVhbDqAMQPjAlRGALO3t9ZCfGAFhbVrV8Pde/+l1js8d1f
+         xTVLuqJIkLtuY/6DA94I66c8ZNHSZnv67S5mpZGoo/qsAEoTBOOIyuJGexUtkyx0vuVf
+         X9eg1rNplzgG3V7eV1Nrd5Z8QPRrV76721WjZeo/65G6gaPynB+OIhTy7pIT1L8IX0fV
+         y258u0VtVGz+vSiI3TTU2MnqX8wpsE+saLauo5mb+dKy9tLfVZ1XEP0YgJ0hmGmVYl/y
+         8oy5j+MsPDcfSA+kUyatQELsMN4ILm2DwHY93lTAzk7PF6pgylFm57WvOdLbfw9lD86y
+         5x9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nsHL/Fgf/VRDzuQNj7TOsqpyMCDcKbQUomZXfLWBfKI=;
-        b=JJWqoP5z6Tmi3NVlnR5RKvzM2nNAxfpQz9YS0ibN9bTd3Z0QSPz3CPmqQ5faPgoEnn
-         XVxuNfC6gYvcGPJ8De1Sf6/caxtNA22UkEV75fvXO2YnY8SCHOauojD4c+jRTvYauBWy
-         OghHoHARG8svyNDtquzWu797ub5YSd++B0erAmi92WhRYNVjc+vwsOWSADYsPLThdNca
-         U+h0mn3zkndfm2y3Yor158VtqERJctxET7kmeGLqtPXwSZg4ItAMkcBj4FCHQAIZbnkF
-         8aAFrbUBe94WtVncWm+yXckudY+ayWDLn0YB7IZoCvtvb0+s2KqJQKPTs4f1Jb82obGO
-         i/4A==
-X-Gm-Message-State: AOAM532SfSzd5Pgk7guxYbllw8wNgeeTOgxxdJfEd34+TGgkkXxKodW8
-        TOivOznZGleaCrERB15Yx09YE2QaxhwKBw==
-X-Google-Smtp-Source: ABdhPJwBVKz8nB+2n8dSZV3VanQ8pn3CfXK/2OC9FcSog0V/gl5h4NUyfyOrtBFiBZcleQJCGXfFxg==
-X-Received: by 2002:a17:902:b412:b0:15e:dc07:4c14 with SMTP id x18-20020a170902b41200b0015edc074c14mr24522004plr.99.1652259991350;
-        Wed, 11 May 2022 02:06:31 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id w63-20020a628242000000b0050dc7628151sm1098779pfd.43.2022.05.11.02.06.30
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=a8xDXgJ4/lqPi969fLyf/an203hLh1dd+Ogx2mSsnkc=;
+        b=TUMPLLnyJSyVKUJhUxa9t1UyWwBCXNPOscX43BGHrIIMMsDvlQIGbJy6S7v4p8xK/A
+         xQjRWFEBId0OYEXRM/lVz/jKqImiPgdPjacG0QtQ/qalgtpkUsTWt3UF4VODNxUpOdzz
+         zzdxdlK/oO0PjHsTHUQHuRnkUqVZEXNHNI9pSeI25H36wA7+iGAyvTJOGgu6mep0egJ5
+         tUVf8jV7/s8kTfo+FBcL04Ll/5Ngtfyrfmq1UVkIZvweiRZyLq23HPS5W0RLPB8Ob/qU
+         /qelzdC6rHOp2baT90K8gomEYuWW63H+eIWdhwCFpLBVqeLvJhEf58tAWena1bNYCgd/
+         8fsg==
+X-Gm-Message-State: AOAM532ORaioMn/W3XB8Ag0nYQeO7cbSziagRDQPaRhNJLLT9JTFKeFK
+        v6n5rk1D/g1KqXtT8IatiUJCPWJ6umxsow==
+X-Google-Smtp-Source: ABdhPJz6s5p+3CkeRyqasps8BZIK0qNbPTF8EjUWReQ669cBXXbxwFQwZIc3WLIU2U1bqGjNOO5xZA==
+X-Received: by 2002:a63:d145:0:b0:3c1:4ba0:d890 with SMTP id c5-20020a63d145000000b003c14ba0d890mr20160529pgj.607.1652261764063;
+        Wed, 11 May 2022 02:36:04 -0700 (PDT)
+Received: from localhost.localdomain ([14.32.163.5])
+        by smtp.gmail.com with ESMTPSA id p14-20020a17090a428e00b001dcf8960a13sm3492640pjg.40.2022.05.11.02.36.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 May 2022 02:06:30 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq: Clear real_cpus mask from remove_cpu_dev_symlink()
-Date:   Wed, 11 May 2022 14:36:24 +0530
-Message-Id: <b44e39176bbba43c256ae75df26c1fd051353ff9.1652259889.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
+        Wed, 11 May 2022 02:36:03 -0700 (PDT)
+From:   Chanwoo Choi <cwchoi00@gmail.com>
+X-Google-Original-From: Chanwoo Choi <cw00.choi@samsung.com>
+To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     johnson.wang@mediatek.com, mka@chromium.org, wenst@chromium.org,
+        jia-wei.chang@mediatek.com, andrew-sh.cheng@mediatek.com,
+        hsinyi@chromium.org, saravanak@google.com, cw00.choi@samsung.com,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Subject: [PATCH v4 1/4] PM / devfreq: Export devfreq_get_freq_range symbol within devfreq
+Date:   Wed, 11 May 2022 18:35:51 +0900
+Message-Id: <20220511093554.17535-2-cw00.choi@samsung.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220511093554.17535-1-cw00.choi@samsung.com>
+References: <20220511093554.17535-1-cw00.choi@samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-add_cpu_dev_symlink() is responsible for setting the CPUs in the
-real_cpus mask, the reverse of which should be done from
-remove_cpu_dev_symlink() to make it look clean and avoid any breakage
-later on.
+In order to get frequency range within devfreq governors,
+export devfreq_get_freq_range symbol within devfreq.
 
-Move the call to clear the mask to remove_cpu_dev_symlink().
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Chen-Yu Tsai <wenst@chromium.org>
+Tested-by: Johnson Wang <johnson.wang@mediatek.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/cpufreq/cpufreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/devfreq/devfreq.c  | 20 ++++++++++++--------
+ drivers/devfreq/governor.h |  2 ++
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index fbaa8e6c7d23..c8bf6c68597c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1020,11 +1020,12 @@ static void add_cpu_dev_symlink(struct cpufreq_policy *policy, unsigned int cpu,
- 		dev_err(dev, "cpufreq symlink creation failed\n");
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a525a609dfc6..01474daf4548 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -112,16 +112,16 @@ static unsigned long find_available_max_freq(struct devfreq *devfreq)
  }
  
--static void remove_cpu_dev_symlink(struct cpufreq_policy *policy,
-+static void remove_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu,
- 				   struct device *dev)
+ /**
+- * get_freq_range() - Get the current freq range
++ * devfreq_get_freq_range() - Get the current freq range
+  * @devfreq:	the devfreq instance
+  * @min_freq:	the min frequency
+  * @max_freq:	the max frequency
+  *
+  * This takes into consideration all constraints.
+  */
+-static void get_freq_range(struct devfreq *devfreq,
+-			   unsigned long *min_freq,
+-			   unsigned long *max_freq)
++void devfreq_get_freq_range(struct devfreq *devfreq,
++			    unsigned long *min_freq,
++			    unsigned long *max_freq)
  {
- 	dev_dbg(dev, "%s: Removing symlink\n", __func__);
- 	sysfs_remove_link(&dev->kobj, "cpufreq");
-+	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 	unsigned long *freq_table = devfreq->profile->freq_table;
+ 	s32 qos_min_freq, qos_max_freq;
+@@ -158,6 +158,7 @@ static void get_freq_range(struct devfreq *devfreq,
+ 	if (*min_freq > *max_freq)
+ 		*min_freq = *max_freq;
  }
++EXPORT_SYMBOL(devfreq_get_freq_range);
  
- static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
-@@ -1532,7 +1533,7 @@ static int cpufreq_online(unsigned int cpu)
+ /**
+  * devfreq_get_freq_level() - Lookup freq_table for the frequency
+@@ -418,7 +419,7 @@ int devfreq_update_target(struct devfreq *devfreq, unsigned long freq)
+ 	err = devfreq->governor->get_target_freq(devfreq, &freq);
+ 	if (err)
+ 		return err;
+-	get_freq_range(devfreq, &min_freq, &max_freq);
++	devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
  
- out_destroy_policy:
- 	for_each_cpu(j, policy->real_cpus)
--		remove_cpu_dev_symlink(policy, get_cpu_device(j));
-+		remove_cpu_dev_symlink(policy, j, get_cpu_device(j));
+ 	if (freq < min_freq) {
+ 		freq = min_freq;
+@@ -785,6 +786,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ {
+ 	struct devfreq *devfreq;
+ 	struct devfreq_governor *governor;
++	unsigned long min_freq, max_freq;
+ 	int err = 0;
  
- 	up_write(&policy->rwsem);
+ 	if (!dev || !profile || !governor_name) {
+@@ -849,6 +851,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_dev;
+ 	}
  
-@@ -1657,8 +1658,7 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- 	if (cpu_online(cpu))
- 		cpufreq_offline(cpu);
++	devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
++
+ 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
+ 	devfreq->opp_table = dev_pm_opp_get_opp_table(dev);
+ 	if (IS_ERR(devfreq->opp_table))
+@@ -1587,7 +1591,7 @@ static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
+ 	unsigned long min_freq, max_freq;
  
--	cpumask_clear_cpu(cpu, policy->real_cpus);
--	remove_cpu_dev_symlink(policy, dev);
-+	remove_cpu_dev_symlink(policy, cpu, dev);
+ 	mutex_lock(&df->lock);
+-	get_freq_range(df, &min_freq, &max_freq);
++	devfreq_get_freq_range(df, &min_freq, &max_freq);
+ 	mutex_unlock(&df->lock);
  
- 	if (cpumask_empty(policy->real_cpus)) {
- 		/* We did light-weight exit earlier, do full tear down now */
+ 	return sprintf(buf, "%lu\n", min_freq);
+@@ -1641,7 +1645,7 @@ static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
+ 	unsigned long min_freq, max_freq;
+ 
+ 	mutex_lock(&df->lock);
+-	get_freq_range(df, &min_freq, &max_freq);
++	devfreq_get_freq_range(df, &min_freq, &max_freq);
+ 	mutex_unlock(&df->lock);
+ 
+ 	return sprintf(buf, "%lu\n", max_freq);
+@@ -1955,7 +1959,7 @@ static int devfreq_summary_show(struct seq_file *s, void *data)
+ 
+ 		mutex_lock(&devfreq->lock);
+ 		cur_freq = devfreq->previous_freq;
+-		get_freq_range(devfreq, &min_freq, &max_freq);
++		devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
+ 		timer = devfreq->profile->timer;
+ 
+ 		if (IS_SUPPORTED_ATTR(devfreq->governor->attrs, POLLING_INTERVAL))
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index 002a7d67e39d..b0dbfee8bbf2 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -89,6 +89,8 @@ int devm_devfreq_add_governor(struct device *dev,
+ 
+ int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
+ int devfreq_update_target(struct devfreq *devfreq, unsigned long freq);
++void devfreq_get_freq_range(struct devfreq *devfreq, unsigned long *min_freq,
++			    unsigned long *max_freq);
+ 
+ static inline int devfreq_update_stats(struct devfreq *df)
+ {
 -- 
-2.31.1.272.g89b43f80a514
+2.25.1
 
