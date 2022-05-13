@@ -2,106 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24399C433EF
-	for <linux-pm@archiver.kernel.org>; Fri, 13 May 2022 06:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80544C4332F
+	for <linux-pm@archiver.kernel.org>; Fri, 13 May 2022 06:14:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348025AbiEMGNu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 May 2022 02:13:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47228 "EHLO
+        id S1377194AbiEMGOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 May 2022 02:14:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350008AbiEMGNt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2022 02:13:49 -0400
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EBCFD26CC7A
-        for <linux-pm@vger.kernel.org>; Thu, 12 May 2022 23:13:46 -0700 (PDT)
-Received: by mail-pj1-x102d.google.com with SMTP id qe3-20020a17090b4f8300b001dc24e4da73so7244407pjb.1
-        for <linux-pm@vger.kernel.org>; Thu, 12 May 2022 23:13:46 -0700 (PDT)
+        with ESMTP id S1377198AbiEMGOP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2022 02:14:15 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FFCE26CC7A
+        for <linux-pm@vger.kernel.org>; Thu, 12 May 2022 23:14:13 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id c190-20020a1c35c7000000b0038e37907b5bso6360398wma.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 May 2022 23:14:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=kUZ2JsyK3ZUZK31g+pozQdNwm9zwv4kOdXsDjmRgytw=;
-        b=b/B7oTtsYLzf9v+BgX7A5Op62ccI59r0/Gjhdo9XmmKLpZcCFvpRLYh0T1diKGFssq
-         +D1oFMpGEgS3dedSc1hx7m+97/PBP5klDt+XFKkZOa+SOzIrkbz1GdHO++9ofGkrxJ8X
-         OBDyJBz9lVt6T0PwBvZcESLXtdeww0QiyN1QSBOVKTRVdoug+uWnUXaqBTcI+SLZlGxW
-         d/wFh1WGoXM3hXFZh7/R2JE+MWVpg8YQJxBo/MMDlZxsxswQtP3iucxs3+7+Pc7+G1bj
-         VpvgDRFalC1lZluL98subl2H3sTFs2PpA4Lk0apLT2FNL5FZHn4AE6GtfzHwPMSkRun1
-         p1Vw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=j60Q+m0nDVDVeq/kqo9om6jZKItdmd/25D1fiKUieoo=;
+        b=RXdzPf6RIzYbLiWfscYfUw6T2WzdY+PgkUVapfUOjjVwymUsMjbC26PCR35K/9ros3
+         NFCHpbJFnlIG89xtEy3Y8fJuHDs+f8y2VWtdjyFzlJNHqMWyxu/4TS0DPZBsmdXlvRfO
+         gOLDtt3A/M8SMk1hz6AeH3bZfptUbnH8srkE0oGQgkPBc4uhxYckRGx+iphp7MkOWgBT
+         Ebk/eV5bimzuyoo0GoKPNTzwrrxVsJuRM3lyE2FTid1oRakLXfLEAbUMBbZ6azdMuZck
+         AT14UTj/IIsDlEaeXLMvp4YOFlzorgSQCY7QkLrxR7FJ5oZSqzKhgU4mKwztI8qW8DHA
+         pRHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=kUZ2JsyK3ZUZK31g+pozQdNwm9zwv4kOdXsDjmRgytw=;
-        b=woFDQH2p5qRmmC87mVMaIlR2JBeSioQCK82jN2GNdxFSRm3EHcqLqdaMLZKXmBBuY3
-         I2UXa8WCu/1Tnt2zRxuk1I0ESS51i4wNm0UjzRnI3tijoxlW85MzY4ynprgAxjLh90qW
-         WoMAGMlI9QO/8d+WDGZGS2ryXQcM/FhKaTGgIGU9ROstToe4DD+Cad+CU6PsCbs0VWlW
-         sFmh2thEokFi5p+ZkxLylQQtQnXqJmMLIXIadWbSeGwjIhm6cr/SIuf9I4hIUHuT3jtA
-         UsUETcPs7ODQZbmv3Q+gO97TE+eqaOL07M/v6Chbl05OhCFKuD/ut6OkyS3krJkseMSB
-         M1qg==
-X-Gm-Message-State: AOAM530U5zS5JflXGWO7HSQwal2CoqFNmERylABpUJmzPIIW0nXsRv63
-        CGF3UcrWAA1T8RQwc22K9ng9wQ==
-X-Google-Smtp-Source: ABdhPJwtZ+ZrOvv/RBk2TLd92omy7V3a10rbbih+EthlQBwXfimJ1ehIKFYHeBwhoactNuDqC2MxdQ==
-X-Received: by 2002:a17:90a:e517:b0:1d7:5bbd:f9f0 with SMTP id t23-20020a17090ae51700b001d75bbdf9f0mr3233860pjy.77.1652422426455;
-        Thu, 12 May 2022 23:13:46 -0700 (PDT)
-Received: from localhost ([122.162.234.2])
-        by smtp.gmail.com with ESMTPSA id u11-20020a17090341cb00b0015e8d4eb219sm941603ple.99.2022.05.12.23.13.45
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=j60Q+m0nDVDVeq/kqo9om6jZKItdmd/25D1fiKUieoo=;
+        b=5iCEixjKdol5xMcxnX2rP594OVkxxtqYCmNI00XhgxRFWMF6NqFoTEcjpUvcAlrQBA
+         wWCXWfEa1MedTVY62tGaKiIQPj8UVXvxpDKC8Pd4gPbB5KApiX6z5jKvUdcNcN0C0cEE
+         +DT05eDF4x0UZKor4bIa2B13RNMk9MIxZDJtJvAx80q9D5OHdkgUrwot3zbGWmWmLmcF
+         w69uA45vyh1+W+wTIuijN5YhIq+jZ2awAC3jtJVY+S4+kdS3ISRTlfG5O1kfUS/NZYP6
+         jazsRyftjD5pUQYuPj38EF45XzgRiugv+6FoWoZ7AU+N+OI52HrCOKKyphEPNYDxfcKc
+         6IHQ==
+X-Gm-Message-State: AOAM530RkTFbXIQx5pvP+23yZojrKQretoROAsYE8MucNcRDv+vkYqVT
+        Da2kJI9oKHB7zEKJfo/RNmmM3A==
+X-Google-Smtp-Source: ABdhPJxxiNFky+FKvagxgESN3eexGwvVdyb6o64BeUJIDlYUYHYzW412ZYFbVs0kakubT1n7lNKQ5A==
+X-Received: by 2002:a1c:19c1:0:b0:393:a19f:8f95 with SMTP id 184-20020a1c19c1000000b00393a19f8f95mr2940751wmz.149.1652422451913;
+        Thu, 12 May 2022 23:14:11 -0700 (PDT)
+Received: from localhost.localdomain (xdsl-188-155-176-92.adslplus.ch. [188.155.176.92])
+        by smtp.gmail.com with ESMTPSA id g4-20020adfbc84000000b0020c5253d8f3sm1477760wrh.63.2022.05.12.23.14.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 May 2022 23:13:45 -0700 (PDT)
-Date:   Fri, 13 May 2022 11:43:43 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Schspa Shi <schspa@gmail.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 1/2] cpufreq: fix race on cpufreq online
-Message-ID: <20220513061343.wndyhjeehoqmfofp@vireshk-i7>
-References: <20220512135231.10076-1-schspa@gmail.com>
- <20220513041833.mcubozfhl2qd2rps@vireshk-i7>
- <CAMA88Tpjms4HEos0GJHmQR5YZd4hhdqpgMO7JmxTxVpF0oMUCg@mail.gmail.com>
+        Thu, 12 May 2022 23:14:11 -0700 (PDT)
+From:   Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Avri Altman <avri.altman@wdc.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Taniya Das <tdas@codeaurora.org>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [PATCH v3 1/7] dt-bindings: clock: qcom,gcc-sdm845: add parent power domain
+Date:   Fri, 13 May 2022 08:13:41 +0200
+Message-Id: <20220513061347.46480-2-krzysztof.kozlowski@linaro.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220513061347.46480-1-krzysztof.kozlowski@linaro.org>
+References: <20220513061347.46480-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMA88Tpjms4HEos0GJHmQR5YZd4hhdqpgMO7JmxTxVpF0oMUCg@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13-05-22, 14:06, Schspa Shi wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
-> > On 12-05-22, 21:52, Schspa Shi wrote:
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index 80f535cc8a75..35dffd738580 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -953,7 +953,10 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
-> >>              return -EIO;
-> >>
-> >>      down_read(&policy->rwsem);
-> >> -    ret = fattr->show(policy, buf);
-> >> +    if (unlikely(policy_is_inactive(policy)))
-> >> +            ret = -EBUSY;
-> >> +    else
-> >> +            ret = fattr->show(policy, buf);
-> >
-> > I like it the way I have done earlier, initialize ret to -EBUSY and
-> > get rid of the else part and call show/store in if itself. Same for
-> > below.
-> >
-> 
-> I add a unlikely here, to avoid branch prediction failed.
+Allow Qualcomm GCC to register its parent power domain (e.g. RPMHPD) to
+properly pass performance state from children.
 
-I am not asking you to drop it, I also added the unlikely within the
-implementation of policy_is_inactive() then. It can be written as:
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
 
-if (likely(!policy_is_inactive(policy)))
-        ret = fattr->show(policy, buf);
+---
 
-> And move the
-> to the fail path to avoid a register assignment to -EBUSY.
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+ Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
 
-We don't care about such assignments for performance to be honest.
-This makes the code smaller by few lines, that's enough.
-
+diff --git a/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml b/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
+index d902f137ab17..daf7906ebc40 100644
+--- a/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
++++ b/Documentation/devicetree/bindings/clock/qcom,gcc-sdm845.yaml
+@@ -43,6 +43,9 @@ properties:
+   '#reset-cells':
+     const: 1
+ 
++  power-domains:
++    maxItems: 1
++
+   '#power-domain-cells':
+     const: 1
+ 
 -- 
-viresh
+2.32.0
+
